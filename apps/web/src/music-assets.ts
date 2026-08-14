@@ -131,7 +131,11 @@ export function downloadMusicAsset(
   );
   const anchor = document.createElement("a");
   anchor.href = url;
-  const safeId = ref.id.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "gys-asset";
+  const safeId =
+    ref.id
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "") ?? "gys-asset";
   anchor.download = `${safeId}.${extension}`;
   anchor.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 1_000);

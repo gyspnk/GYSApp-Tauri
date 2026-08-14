@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GYSApp · Quiet Sanctuary</title>
+    <script>
+      // GitHub Pages has no server-side history fallback. Preserve the route
+      // in a short-lived query parameter, then main.tsx restores it before
+      // React Router mounts.
+      (function () {
+        var base = "/GYSApp-Tauri/";
+        var path =
+          window.location.pathname.indexOf(base) === 0
+            ? window.location.pathname.slice(base.length)
+            : window.location.pathname.replace(/^\//, "");
+        var target = base + "?p=" + encodeURIComponent("/" + path);
+        if (window.location.search && window.location.search !== "?")
+          target += "&q=" + encodeURIComponent(window.location.search.slice(1));
+        if (window.location.hash) target += window.location.hash;
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    Memuat GYSApp…
+  </body>
+</html>
