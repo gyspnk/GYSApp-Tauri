@@ -1612,9 +1612,9 @@ blockquote {
   .media-surface {
     right: 14px;
     bottom: calc(76px + env(safe-area-inset-bottom));
-    width: calc(100vw - 28px);
-    max-width: 250px;
-    grid-template-columns: 31px minmax(0, 1fr) 30px;
+    width: 70px;
+    max-width: 70px;
+    grid-template-columns: 31px 30px;
     gap: 8px;
     padding: 7px;
   }
@@ -1623,7 +1623,8 @@ blockquote {
     height: 31px;
   }
   .media-meta small,
-  .media-meta span {
+  .media-meta span,
+  .media-meta {
     display: none;
   }
   .media-meta strong {
