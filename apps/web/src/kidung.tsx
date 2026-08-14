@@ -392,9 +392,17 @@ function HymnDetail({
         bytes,
       });
       await midiPlayer.load(item.id, item.title, loaded.midi);
-      await midiPlayer.play();
       setMidiStatus("ready");
-      show("MIDI siap diputar; pemutar dapat diminimalkan.");
+      // Loading the binary/parser is independent from starting Web Audio.
+      // Browsers may reject an AudioContext created after the network await;
+      // the shared floating player remains ready so the next user gesture can
+      // start playback without losing the successfully loaded MIDI.
+      try {
+        await midiPlayer.play();
+        show("MIDI sedang diputar; pemutar dapat diminimalkan.");
+      } catch {
+        show("MIDI siap; tekan Putar pada pemutar untuk mengaktifkan suara.");
+      }
     } catch {
       setMidiStatus("error");
       show("MIDI belum dapat dimuat. Coba lagi saat online.");
