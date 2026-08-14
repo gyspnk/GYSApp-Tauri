@@ -6,6 +6,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TouchEvent,
@@ -30,6 +31,13 @@ type PackState =
   | { status: "loading" }
   | { status: "ready"; pack: BibleReaderPack }
   | { status: "error"; message: string };
+
+type SelectionToolbarState = {
+  text: string;
+  verseId?: string;
+  left: number;
+  top: number;
+};
 
 const BOOK_KEY = "gys-bible-book";
 const CHAPTER_KEY = "gys-bible-chapter";
@@ -156,6 +164,8 @@ function ChapterPane({
   onBookmark,
   onTouchStart,
   onTouchEnd,
+  onQuickNavPointerDown,
+  onQuickNavKeyDown,
 }: {
   book: BibleBook;
   chapter: number;
@@ -169,13 +179,26 @@ function ChapterPane({
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
+  onQuickNavPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onQuickNavKeyDown?: (event: ReactKeyboardEvent<HTMLDivElement>) => void;
 }) {
   return (
     <section
       className={`bible-pane${secondary ? " bible-pane-secondary" : ""}`}
       aria-label={`${book.name} ${chapter}`}
     >
-      <div className="reader-heading">
+      <div
+        className={`reader-heading${onQuickNavPointerDown ? " quick-nav-handle" : ""}`}
+        onPointerDown={onQuickNavPointerDown}
+        onKeyDown={onQuickNavKeyDown}
+        role={onQuickNavPointerDown ? "button" : undefined}
+        tabIndex={onQuickNavPointerDown ? 0 : undefined}
+        aria-label={
+          onQuickNavPointerDown
+            ? "Geser judul untuk berpindah pasal"
+            : undefined
+        }
+      >
         <div>
           <p className="date-line">Terjemahan Baru</p>
           <h2>
@@ -253,6 +276,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectionToolbar, setSelectionToolbar] = useState<
+    SelectionToolbarState | undefined
+  >();
   const [splitView, setSplitView] = useState(() =>
     readBoolean(SPLIT_KEY, false),
   );
@@ -264,6 +290,18 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const touchStartX = useRef<number | undefined>(undefined);
   const splitLayoutRef = useRef<HTMLDivElement | null>(null);
   const splitDragging = useRef(false);
+  const quickNavRef = useRef<
+    | {
+        pointerId: number;
+        startY: number;
+        startChapter: number;
+        bookId: number;
+      }
+    | undefined
+  >(undefined);
+  const [quickNav, setQuickNav] = useState<
+    { bookId: number; chapter: number } | undefined
+  >();
 
   useEffect(() => {
     const updateRatio = (event: PointerEvent) => {
@@ -294,6 +332,31 @@ export function BiblePage({ locale }: { locale: Locale }) {
     splitDragging.current = true;
     document.body.classList.add("is-resizing-bible");
     event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const startQuickNav = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const bookId = book?.id ?? selectedBook;
+    quickNavRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startChapter: chapter,
+      bookId,
+    };
+    setQuickNav({ bookId, chapter });
+  };
+
+  const quickNavKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!book) return;
+    if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      setSelectedChapter((value) => Math.max(1, value - 1));
+    } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+      event.preventDefault();
+      setSelectedChapter((value) => Math.min(book.chapters, value + 1));
+    }
   };
 
   useEffect(() => {
@@ -333,6 +396,37 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const book =
     books.find((candidate) => candidate.id === selectedBook) ?? books[0];
   const chapter = Math.min(selectedChapter, book?.chapters ?? selectedChapter);
+  useEffect(() => {
+    const move = (event: PointerEvent) => {
+      const active = quickNavRef.current;
+      if (!active || active.pointerId !== event.pointerId) return;
+      const targetBook = books.find(
+        (candidate) => candidate.id === active.bookId,
+      );
+      if (!targetBook) return;
+      event.preventDefault();
+      const delta = Math.round((active.startY - event.clientY) / 48);
+      const nextChapter = Math.max(
+        1,
+        Math.min(targetBook.chapters, active.startChapter + delta),
+      );
+      setSelectedChapter(nextChapter);
+      setQuickNav({ bookId: active.bookId, chapter: nextChapter });
+    };
+    const end = (event: PointerEvent) => {
+      if (quickNavRef.current?.pointerId !== event.pointerId) return;
+      quickNavRef.current = undefined;
+      window.setTimeout(() => setQuickNav(undefined), 120);
+    };
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
+  }, [books]);
   const chapterVerses = useMemo(() => {
     if (packState.status !== "ready" || !book) return [];
     return packState.pack.verses.filter(
@@ -351,6 +445,41 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const selectedVerse = selectedVerseId
     ? chapterVerses.find((verse) => verse.id === selectedVerseId)
     : undefined;
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const selection = window.getSelection();
+      const text = selection?.toString().trim() ?? "";
+      if (!selection || selection.isCollapsed || text.length < 2) {
+        setSelectionToolbar(undefined);
+        return;
+      }
+      const node = selection.anchorNode;
+      const element =
+        node?.nodeType === Node.ELEMENT_NODE
+          ? (node as Element)
+          : node?.parentElement;
+      const reader = element?.closest(".bible-reader");
+      if (!reader) {
+        setSelectionToolbar(undefined);
+        return;
+      }
+      const range = selection.rangeCount ? selection.getRangeAt(0) : undefined;
+      const rect = range?.getBoundingClientRect();
+      if (!rect) return;
+      const verse = element?.closest<HTMLElement>(".verse-row");
+      const left = Math.max(8, Math.min(window.innerWidth - 280, rect.left));
+      const top = Math.max(8, rect.top - 58);
+      setSelectionToolbar({
+        text,
+        left,
+        top,
+        ...(verse?.id ? { verseId: verse.id.replace("bible-verse-", "") } : {}),
+      });
+    };
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () =>
+      document.removeEventListener("selectionchange", onSelectionChange);
+  }, []);
   const speechSnapshot = useSyncExternalStore(
     speechPlayer.subscribe,
     speechPlayer.snapshot,
@@ -526,6 +655,35 @@ export function BiblePage({ locale }: { locale: Locale }) {
     } else {
       await copyText(text);
     }
+  };
+
+  const copySelection = async () => {
+    if (!selectionToolbar) return;
+    await copyText(selectionToolbar.text, "Teks tersalin");
+    window.getSelection()?.removeAllRanges();
+    setSelectionToolbar(undefined);
+  };
+
+  const shareSelection = async () => {
+    if (!selectionToolbar) return;
+    if (navigator.share) {
+      await navigator
+        .share({
+          title: "Alkitab Terjemahan Baru",
+          text: selectionToolbar.text,
+        })
+        .catch(() => undefined);
+    } else {
+      await copyText(selectionToolbar.text, "Teks tersalin");
+    }
+    window.getSelection()?.removeAllRanges();
+    setSelectionToolbar(undefined);
+  };
+
+  const noteSelection = () => {
+    if (selectionToolbar?.verseId) setSelectedVerseId(selectionToolbar.verseId);
+    window.getSelection()?.removeAllRanges();
+    setSelectionToolbar(undefined);
   };
 
   const saveNote = () => {
@@ -810,6 +968,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
           className={`bible-reader${splitView ? " is-split" : ""}`}
           aria-label={translate(locale, "page.bibleTitle")}
         >
+          {quickNav && (
+            <div className="quick-nav-floater" role="status" aria-live="polite">
+              <strong>{book.name}</strong>
+              <span>Pasal {quickNav.chapter}</span>
+              <small>Lepaskan untuk membuka</small>
+            </div>
+          )}
           <div className="reader-toolbar">
             <Select
               value={book.id}
@@ -968,6 +1133,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onBookmark={toggleBookmark}
               onTouchStart={onVerseTouchStart}
               onTouchEnd={onVerseTouchEnd}
+              onQuickNavPointerDown={startQuickNav}
+              onQuickNavKeyDown={quickNavKeyDown}
             />
             {splitView && (
               <div
@@ -1034,6 +1201,37 @@ export function BiblePage({ locale }: { locale: Locale }) {
         </section>
       )}
       {packState.status === "ready" && renderSidePanel()}
+      {selectionToolbar && (
+        <div
+          className="selection-toolbar"
+          role="toolbar"
+          aria-label="Tindakan teks terpilih"
+          style={{ left: selectionToolbar.left, top: selectionToolbar.top }}
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          <button type="button" onClick={() => void copySelection()}>
+            Salin
+          </button>
+          <button type="button" onClick={() => void shareSelection()}>
+            Bagikan
+          </button>
+          {selectionToolbar.verseId && (
+            <button type="button" onClick={noteSelection}>
+              Catat
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label="Tutup tindakan teks"
+            onClick={() => {
+              window.getSelection()?.removeAllRanges();
+              setSelectionToolbar(undefined);
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

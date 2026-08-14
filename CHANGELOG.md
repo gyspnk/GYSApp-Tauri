@@ -2,6 +2,16 @@
 
 ## Unreleased — GA hardening slice
 
+- Merged Home Daily Verse with the current Sauh Bagi Jiwa record and added
+  internal `/sauh`, `/suara`, and `/suara/:postId` routes. The BFF now exposes a
+  safe, bounded TJC article reader that strips executable markup, decodes
+  entities, validates the response, and keeps the official source link as an
+  explicit secondary action; Pages previews without a Worker use a similarly
+  sanitized WordPress post-feed fallback.
+- Added Bible title-drag/keyboard chapter quick navigation, a contextual
+  selection toolbar for copy/share/note, and quoted phrase search with Unicode
+  normalization. Duplicate external content opens were removed from the
+  primary flow.
 - Unified the Home “continue” surface so the same recent activity is not shown
   twice; Daily Verse now selects today’s Sauh Bagi Jiwa entry and keeps its
   source, verse, and image provenance.
@@ -45,7 +55,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 78.1 KiB gzip main application chunk and 140.6
+- Preserved the bundle gate: 79.8 KiB gzip main application chunk and 150.5
   KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.
 

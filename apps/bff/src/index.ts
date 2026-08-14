@@ -19,6 +19,7 @@ import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
 import { normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
 import { fetchLiteratureCatalog } from "./literature.js";
 import { fetchSuaraSejati } from "./suara.js";
+import { fetchArticle, htmlToText } from "./article.js";
 import { egysUpstreamCommit } from "./egys-provenance.js";
 
 const ContentKindSchema = z.enum([
@@ -92,14 +93,7 @@ function errorResponse(c: AppContext, code: ErrorCode, message: string) {
 }
 
 function safeText(value: string): string {
-  return value
-    .replace(
-      /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
-      " ",
-    )
-    .replace(/<[^>]*>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return htmlToText(value).replace(/\s+/g, " ").trim();
 }
 
 function originList(c: AppContext, fallback: readonly string[]): string[] {
@@ -223,6 +217,17 @@ export function createApp(
         expiresAt: number;
       }
     | undefined;
+  const articleCache = new Map<
+    string,
+    { article: Awaited<ReturnType<typeof fetchArticle>>; expiresAt: number }
+  >();
+  const articleInflight = new Map<
+    string,
+    Promise<{
+      article: Awaited<ReturnType<typeof fetchArticle>>;
+      expiresAt: number;
+    }>
+  >();
 
   app.use("*", async (c, next) => {
     const origin = c.req.header("origin");
@@ -417,6 +422,74 @@ export function createApp(
     } catch {
       return errorResponse(c, "UPSTREAM_UNAVAILABLE", "PDF source unavailable");
     }
+  });
+
+  /**
+   * Internal article reader source. The URL is constrained to the official
+   * TJC origin, fetched once into a short-lived Worker cache, and normalized to
+   * plain text before it ever reaches the browser. The UI keeps the source
+   * link as an explicit secondary action, but never redirects the reader.
+   */
+  app.get("/api/v1/content/article", async (c) => {
+    const rawUrl = c.req.query("url");
+    if (!rawUrl || rawUrl.length > 2_048)
+      return errorResponse(c, "VALIDATION_ERROR", "Article url is required");
+    let url: URL;
+    try {
+      url = new URL(rawUrl);
+    } catch {
+      return errorResponse(c, "VALIDATION_ERROR", "Article url is invalid");
+    }
+    if (
+      url.protocol !== "https:" ||
+      !["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase()) ||
+      /\.pdf$/i.test(url.pathname)
+    )
+      return errorResponse(c, "FORBIDDEN", "Article source is not allowlisted");
+    const key = url.toString();
+    const now = Date.now();
+    let entry = articleCache.get(key);
+    if (!entry || entry.expiresAt <= now) {
+      const shared = articleInflight.get(key);
+      try {
+        if (shared) {
+          entry = await shared;
+        } else {
+          // The shared fetch must not inherit one caller's disconnect: another
+          // simultaneous reader may still be waiting for the same article.
+          const pending = fetchArticle(key).then((article) => {
+            const next = { article, expiresAt: Date.now() + 10 * 60_000 };
+            if (articleCache.size >= 32) {
+              const oldest = articleCache.keys().next().value;
+              if (oldest) articleCache.delete(oldest);
+            }
+            articleCache.set(key, next);
+            return next;
+          });
+          articleInflight.set(key, pending);
+          try {
+            entry = await pending;
+          } finally {
+            if (articleInflight.get(key) === pending)
+              articleInflight.delete(key);
+          }
+        }
+      } catch {
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Article source is unavailable",
+        );
+      }
+    }
+    const etag = `W/\"article-${entry.article.id}-${entry.article.fetchedAt}\"`;
+    c.header("etag", etag);
+    c.header(
+      "cache-control",
+      "public, max-age=300, stale-while-revalidate=3600",
+    );
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+    return c.json(entry.article);
   });
 
   /**

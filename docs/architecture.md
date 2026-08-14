@@ -24,6 +24,31 @@ flowchart TB
   BFF --> EGYS
 ```
 
+Online devotional content follows the same shell and cache boundary as
+offline readers. Home selects the current Sauh record once; the route-level
+Sauh and Suara screens reuse that record instead of opening duplicate tabs.
+When a Suara item is selected, only the allowlisted TJC article endpoint is
+fetched through the BFF. The worker strips executable/embedded markup, limits
+the body, validates `OnlineArticle`, and returns a reader document. The source
+link remains available as an explicit secondary action. A Pages preview with
+no `VITE_BFF_BASE_URL` uses the same allowlisted WordPress post feed and client
+sanitizer as a compatibility fallback; it never injects upstream HTML.
+
+```mermaid
+sequenceDiagram
+  participant Home as Home / Daily Verse
+  participant Shell as App shell router
+  participant BFF as Hono article boundary
+  participant TJC as TJC article
+  Home->>Shell: Link to /sauh or /suara/:postId
+  Shell->>BFF: GET /api/v1/content/article?url=...
+  BFF->>TJC: HTTPS allowlisted fetch
+  TJC-->>BFF: HTML
+  BFF->>BFF: strip scripts + decode entities + bound text
+  BFF-->>Shell: OnlineArticle (validated)
+  Shell-->>Home: in-app reader + explicit source link
+```
+
 ## Module responsibilities
 
 | Area                    | Responsibility                                                                                                                                                                    |

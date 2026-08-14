@@ -3,6 +3,11 @@ import { SauhPostSchema, type SauhPost } from "@gys/contracts";
 const STATIC_URL = `${import.meta.env.BASE_URL}offline/sauh.json`;
 const WORDPRESS_URL =
   "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia";
+const CACHE_TTL_MS = 5 * 60_000;
+
+let cachedToday:
+  { dayKey: string; expiresAt: number; items: SauhPost[] } | undefined;
+let inFlightToday: { dayKey: string; promise: Promise<SauhPost[]> } | undefined;
 
 function decodeEntities(value: string): string {
   return value
@@ -161,6 +166,29 @@ function localDateKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
+function waitFor<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted)
+    return Promise.reject(signal.reason ?? new Error("Request aborted"));
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => {
+      signal.removeEventListener("abort", abort);
+      reject(signal.reason ?? new Error("Request aborted"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", abort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
+    );
+  });
+}
+
 /** The home surface intentionally exposes only today's Sauh entry. */
 export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
   const today = localDateKey(now);
@@ -208,29 +236,63 @@ async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
 }
 
 export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
-  const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  const networkCandidates = [
-    bff ? `${bff.replace(/\/$/, "")}/api/v1/content/sauh` : undefined,
-    WORDPRESS_URL,
-  ].filter((value): value is string => Boolean(value));
-  // Offline users should see the pinned daily snapshot immediately instead
-  // of waiting for two network timeouts before the fallback is attempted.
-  const candidates =
-    typeof navigator !== "undefined" && !navigator.onLine
-      ? [STATIC_URL, ...networkCandidates]
-      : [...networkCandidates, STATIC_URL];
-  let lastError: unknown;
-  for (const url of candidates) {
-    try {
-      const items = await request(url, signal);
-      const today = selectTodaySauh(items);
-      if (today.length) return today;
-    } catch (error) {
-      if (signal?.aborted) throw error;
-      lastError = error;
+  const dayKey = localDateKey(new Date());
+  if (
+    cachedToday &&
+    cachedToday.dayKey === dayKey &&
+    cachedToday.expiresAt > Date.now()
+  )
+    return [...cachedToday.items];
+  const existing =
+    inFlightToday?.dayKey === dayKey ? inFlightToday.promise : undefined;
+  if (existing) return [...(await waitFor(existing, signal))];
+  const shared = (async () => {
+    const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
+    const networkCandidates = [
+      bff ? `${bff.replace(/\/$/, "")}/api/v1/content/sauh` : undefined,
+      WORDPRESS_URL,
+    ].filter((value): value is string => Boolean(value));
+    // Offline users should see the pinned daily snapshot immediately instead
+    // of waiting for two network timeouts before the fallback is attempted.
+    const candidates =
+      typeof navigator !== "undefined" && !navigator.onLine
+        ? [STATIC_URL, ...networkCandidates]
+        : [...networkCandidates, STATIC_URL];
+    let lastError: unknown;
+    for (const url of candidates) {
+      try {
+        const items = await request(url);
+        const today = selectTodaySauh(items);
+        if (today.length) return today;
+      } catch (error) {
+        lastError = error;
+      }
     }
-  }
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Sauh Bagi Jiwa is unavailable");
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("Sauh Bagi Jiwa is unavailable");
+  })();
+  const tracked = shared.then(
+    (items) => {
+      cachedToday = {
+        dayKey,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+        items: [...items],
+      };
+      return items;
+    },
+    (error: unknown) => {
+      throw error;
+    },
+  );
+  inFlightToday = { dayKey, promise: tracked };
+  void tracked.then(
+    () => {
+      if (inFlightToday?.promise === tracked) inFlightToday = undefined;
+    },
+    () => {
+      if (inFlightToday?.promise === tracked) inFlightToday = undefined;
+    },
+  );
+  return [...(await waitFor(tracked, signal))];
 }

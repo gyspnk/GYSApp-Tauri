@@ -4,6 +4,7 @@ import {
   type LiteratureCatalog,
   type LiteratureItem,
 } from "@gys/contracts";
+import { htmlToText } from "./article.js";
 
 const SOURCE = "https://tjc.org/id/literatur/";
 const BOOK_SOURCE = "https://tjc.org/id/literatur/buku/";
@@ -15,18 +16,7 @@ const sections: Array<[LiteratureCategory, string]> = [
 ];
 
 function decode(value: string) {
-  return value
-    .replace(/&#8211;|&#x2013;/gi, "–")
-    .replace(/&#8217;|&#x27;|&#039;/gi, "'")
-    .replace(/&#8220;|&#x201c;/gi, "“")
-    .replace(/&#8221;|&#x201d;/gi, "”")
-    .replace(/&quot;|&#34;/gi, '"')
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&#x2f;|&#47;/gi, "/")
-    .replace(/<[^>]+>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return htmlToText(value).replace(/\s+/g, " ").trim();
 }
 
 function absolute(value: string, base = SOURCE) {

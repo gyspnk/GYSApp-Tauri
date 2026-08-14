@@ -321,6 +321,75 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("serves allowlisted articles as sanitized internal-reader documents", async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response(
+        "<nav>Menu</nav><article><h1>Kesaksian resmi</h1><p>Isi <b>yang</b> dibaca.</p><script>bad()</script></article>",
+        { headers: { "content-type": "text/html" } },
+      );
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const invalid = await app.request(
+        `/api/v1/content/article?url=${encodeURIComponent("https://evil.example/article")}`,
+      );
+      expect(invalid.status).toBe(403);
+      const url = "https://tjc.org/id/kesaksian/resmi/";
+      const first = await app.request(
+        `/api/v1/content/article?url=${encodeURIComponent(url)}`,
+      );
+      expect(first.status).toBe(200);
+      expect(await first.json()).toMatchObject({
+        title: "Kesaksian resmi",
+        body: "Kesaksian resmi\nIsi yang dibaca.",
+      });
+      const second = await app.request(
+        `/api/v1/content/article?url=${encodeURIComponent(url)}`,
+        { headers: { "if-none-match": first.headers.get("etag") ?? "" } },
+      );
+      expect(second.status).toBe(304);
+      expect(calls).toBe(1);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("deduplicates simultaneous article fetches", async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      return new Response("<article><p>Isi bersama.</p></article>", {
+        headers: { "content-type": "text/html" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const url = "https://tjc.org/id/kesaksian/serentak/";
+      const [first, second] = await Promise.all([
+        app.request(`/api/v1/content/article?url=${encodeURIComponent(url)}`),
+        app.request(`/api/v1/content/article?url=${encodeURIComponent(url)}`),
+      ]);
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
+      expect(calls).toBe(1);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves the canonical Suara Sejati feed with thumbnails", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>

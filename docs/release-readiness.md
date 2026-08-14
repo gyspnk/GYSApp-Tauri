@@ -21,8 +21,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **80.6 KiB gzip**; the complete initial
-  JavaScript set is **145.0 KiB gzip**. PDF.js and its worker remain lazy
+- The initial web application chunk is **79.8 KiB gzip**; the complete initial
+  JavaScript set is **150.5 KiB gzip**. PDF.js and its worker remain lazy
   chunks, and the bundle gate fails if the initial application chunk exceeds
   250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
@@ -30,8 +30,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 16 passing flows, including split-reader keyboard resize,
-  persistent/minimizable media, MIDI queue persistence, canonical chord fetch,
+  current suite has 20 passing flows, including split-reader keyboard resize,
+  Bible title-drag chapter navigation, contextual selection actions, internal
+  Sauh/Suara/article readers, persistent/minimizable media, MIDI queue
+  persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then

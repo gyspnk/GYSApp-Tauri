@@ -25,14 +25,110 @@ export type BibleSearchOptions = {
   wholeWord?: boolean;
 };
 
-/** Remove the small markup tokens used by the source TB reader pack. */
+const SKIPPED_HTML_TAGS = new Set(["script", "style", "svg", "template"]);
+
+function decodeBibleEntity(value: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    nbsp: " ",
+    quot: '"',
+    lt: "<",
+    gt: ">",
+  };
+  return value.replace(
+    /&(?:#(\d+)|#x([0-9a-f]+)|([a-z][a-z0-9]+));/gi,
+    (whole, decimal: string, hexadecimal: string, name: string) => {
+      const codePoint = decimal
+        ? Number(decimal)
+        : hexadecimal
+          ? Number.parseInt(hexadecimal, 16)
+          : undefined;
+      if (
+        codePoint !== undefined &&
+        Number.isInteger(codePoint) &&
+        codePoint >= 0 &&
+        codePoint <= 0x10ffff
+      )
+        return String.fromCodePoint(codePoint);
+      return name ? (named[name.toLowerCase()] ?? whole) : whole;
+    },
+  );
+}
+
+function removeBibleMarkup(value: string): string {
+  let output = "";
+  let skip: string | undefined;
+  let index = 0;
+  while (index < value.length) {
+    if (value[index] === "<") {
+      let end = index + 1;
+      let quote = "";
+      for (; end < value.length; end += 1) {
+        const character = value[end];
+        if (quote) {
+          if (character === quote) quote = "";
+        } else if (character === '"' || character === "'") quote = character;
+        else if (character === ">") break;
+      }
+      const tag = value.slice(index + 1, end).trim();
+      const closing = tag.startsWith("/");
+      const name = tag.replace(/^\//, "").split(/\s|\//, 1)[0]?.toLowerCase();
+      if (skip) {
+        if (closing && name === skip) skip = undefined;
+      } else if (name && !closing && SKIPPED_HTML_TAGS.has(name)) {
+        skip = name;
+        const closingTag = value.toLowerCase().indexOf(`</${name}`, end + 1);
+        index = closingTag >= 0 ? closingTag : value.length;
+        continue;
+      } else if (name === "br" || name === "p") {
+        output += "\n";
+      }
+      index = Math.min(value.length, end + 1);
+      continue;
+    }
+    const nextTag = value.indexOf("<", index);
+    const nextEntity = value.indexOf("&", index);
+    const end = Math.min(
+      nextTag >= 0 ? nextTag : value.length,
+      nextEntity >= 0 ? nextEntity : value.length,
+    );
+    if (end === index && value[index] === "&") {
+      const semicolon = value.indexOf(";", index + 1);
+      if (semicolon > index && semicolon - index <= 32) {
+        output += decodeBibleEntity(value.slice(index, semicolon + 1));
+        index = semicolon + 1;
+        continue;
+      }
+    }
+    output += value.slice(index, end);
+    index = end;
+  }
+  return output;
+}
+
+/** Remove markup tokens used by the source TB reader pack safely. */
 export function sanitizeBibleText(value: string): string {
-  return value
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/\s+/g, " ")
-    .trim();
+  return removeBibleMarkup(value).replace(/\s+/g, " ").trim();
+}
+
+function normalizeSearchText(value: string): string {
+  return sanitizeBibleText(value)
+    .toLocaleLowerCase()
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "");
+}
+
+function parseSearchQuery(value: string): {
+  terms: string[];
+  phrases: string[];
+} {
+  const phrases = [...value.matchAll(/"([^\"]+)"/g)]
+    .map((match) => normalizeSearchText(match[1] ?? ""))
+    .filter(Boolean);
+  const unquoted = value.replace(/"[^\"]*"/g, " ");
+  const terms = normalizeSearchText(unquoted).split(/\s+/).filter(Boolean);
+  return { terms, phrases };
 }
 
 export class BibleRepository {
@@ -108,22 +204,31 @@ export class BibleRepository {
     query: string,
     options: BibleSearchOptions | string = {},
   ): Promise<BibleVerse[]> {
-    const normalized = query.trim().toLocaleLowerCase();
+    const normalized = normalizeSearchText(query.trim());
     if (!normalized) return [];
     const searchOptions: BibleSearchOptions =
       typeof options === "string" ? { book: options } : options;
-    const terms = normalized.split(/\s+/).filter(Boolean);
+    const { terms, phrases } = parseSearchQuery(query);
+    if (!terms.length && !phrases.length) return [];
     await new Promise<void>((resolve) => queueMicrotask(resolve));
     return this.pack.filter((verse) => {
       if (searchOptions.book && verse.book !== searchOptions.book) return false;
       const searchable =
         this.normalizedText.get(verse.id) ??
-        `${verse.book} ${verse.chapter}:${verse.verse} ${sanitizeBibleText(verse.text)}`.toLocaleLowerCase();
+        normalizeSearchText(
+          `${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`,
+        );
       this.normalizedText.set(verse.id, searchable);
-      if (searchOptions.exactPhrase && !searchable.includes(normalized))
+      if (
+        (searchOptions.exactPhrase &&
+          phrases.length === 0 &&
+          !searchable.includes(normalized)) ||
+        phrases.some((phrase) => !searchable.includes(phrase))
+      )
         return false;
       if (
         !searchOptions.exactPhrase &&
+        phrases.length === 0 &&
         !terms.every((term) => searchable.includes(term))
       )
         return false;

@@ -274,6 +274,21 @@ export const SuaraSejatiFeedSchema = z.object({
 });
 export type SuaraSejatiFeed = z.infer<typeof SuaraSejatiFeedSchema>;
 
+/**
+ * Sanitized article content rendered by the application shell. The source URL
+ * is retained for an explicit "source resmi" action, but the reader itself
+ * never navigates the user to the upstream site.
+ */
+export const OnlineArticleSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  url: z.string().url(),
+  source: z.literal("tjc.org"),
+  fetchedAt: z.string().datetime({ offset: true }),
+});
+export type OnlineArticle = z.infer<typeof OnlineArticleSchema>;
+
 export const AssetKindSchema = z.enum([
   "pack",
   "bible",

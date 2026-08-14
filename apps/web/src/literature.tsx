@@ -18,6 +18,7 @@ import { type Locale } from "./i18n.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
+import { fetchOnlineArticle } from "./online-article.js";
 import {
   getRecentLiteratureIds,
   isResumeLocationValid,
@@ -477,7 +478,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                         {formatLabels[item.format]} ·{" "}
                         {dateLabel(item.publishedAt, locale)}
                       </small>
-                      <em>Buka di tjc.org ↗</em>
+                      <em>Buka detail</em>
                     </span>
                     <span className="literature-arrow" aria-hidden="true">
                       ›
@@ -529,6 +530,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerError, setReaderError] = useState("");
+  const [articleOpen, setArticleOpen] = useState(false);
+  const [articleStatus, setArticleStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [articleBody, setArticleBody] = useState<string>();
   const resourceVersion = item?.updatedAt ?? "unknown";
   const pdfSourceUrl =
     item?.format === "pdf" ? literaturePdfUrl(item.url) : undefined;
@@ -575,6 +581,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     setProgress(opened);
     progressRef.current = opened;
     setFavorite(isFavorite("literature", item.id));
+    setArticleOpen(false);
+    setArticleStatus("idle");
+    setArticleBody(undefined);
     let cancelled = false;
     setDownloadStatus(item.format === "pdf" ? "checking" : "idle");
     void (async () => {
@@ -655,6 +664,20 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     },
     [item, updateProgress],
   );
+
+  const openArticle = useCallback(async () => {
+    if (!item || item.format === "pdf") return;
+    setArticleOpen(true);
+    setArticleStatus("loading");
+    try {
+      const article = await fetchOnlineArticle(item.url);
+      setArticleBody(article.body);
+      setArticleStatus("ready");
+      updateProgress(Math.max(1, progressRef.current?.percent ?? 0));
+    } catch {
+      setArticleStatus("error");
+    }
+  }, [item, updateProgress]);
 
   const openReader = useCallback(async () => {
     if (!item || !pdfAsset) return;
@@ -786,15 +809,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 {hasResume ? "Lanjutkan membaca" : "Baca di aplikasi"}
               </button>
             ) : (
-              <a
+              <button
                 className="primary-button"
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => updateProgress(Math.max(1, progressPercent))}
+                type="button"
+                onClick={() => void openArticle()}
               >
-                {hasResume ? "Lanjutkan membaca ↗" : "Buka bacaan ↗"}
-              </a>
+                {hasResume ? "Lanjutkan membaca" : "Baca di aplikasi"}
+              </button>
             )}
             <a
               className="quiet-button"
@@ -919,6 +940,56 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               onPageChange={onPageChange}
             />
           </Suspense>
+        </section>
+      )}
+      {articleOpen && item.format !== "pdf" && (
+        <section
+          className="literature-reader-panel"
+          aria-label={`Membaca ${item.title}`}
+          data-testid="literature-article-reader"
+        >
+          <div className="section-title-row">
+            <h2>{item.title}</h2>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setArticleOpen(false)}
+            >
+              Tutup
+            </button>
+          </div>
+          {articleStatus === "loading" && (
+            <div className="loading-panel" role="status">
+              Memuat bacaan resmi di aplikasi…
+            </div>
+          )}
+          {articleStatus === "error" && (
+            <div className="error-panel" role="alert">
+              <strong>Bacaan belum dapat dimuat di aplikasi.</strong>
+              <span>
+                Worker artikel belum tersedia atau sumber sedang bermasalah.
+                Gunakan sumber resmi bila ingin membuka situs asal.
+              </span>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void openArticle()}
+              >
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {articleStatus === "ready" && articleBody && (
+            <article className="online-article-body">
+              {articleBody
+                .split(/\n{2,}/)
+                .map((paragraph) => paragraph.trim())
+                .filter(Boolean)
+                .map((paragraph, index) => (
+                  <p key={`${index}-${paragraph.slice(0, 16)}`}>{paragraph}</p>
+                ))}
+            </article>
+          )}
         </section>
       )}
       {notice && (

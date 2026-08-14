@@ -64,6 +64,21 @@ const LiteratureDetailPage = lazy(() =>
     default: Page,
   })),
 );
+const SauhPage = lazy(() =>
+  import("./online-content.js").then(({ SauhPage: Page }) => ({
+    default: Page,
+  })),
+);
+const SuaraDetailPage = lazy(() =>
+  import("./online-content.js").then(({ SuaraDetailPage: Page }) => ({
+    default: Page,
+  })),
+);
+const SuaraPage = lazy(() =>
+  import("./online-content.js").then(({ SuaraPage: Page }) => ({
+    default: Page,
+  })),
+);
 
 type Theme = "light" | "dark" | "system";
 type IconName =
@@ -1036,14 +1051,9 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           <div className="verse-actions">
             {selected && (
-              <a
-                className="quiet-button"
-                href={selected.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Buka Sauh
-              </a>
+              <Link className="quiet-button" to="/sauh">
+                Baca Sauh
+              </Link>
             )}
             {selected && (
               <button
@@ -1125,14 +1135,9 @@ function HomePage({ locale }: { locale: Locale }) {
             <p className="date-line">Cerita dan kesaksian</p>
             <h2 id="suara-sejati-title">Suara Sejati</h2>
           </div>
-          <a
-            className="text-button"
-            href="https://tjc.org/id/suarasejati/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Lihat semua ↗
-          </a>
+          <Link className="text-button" to="/suara">
+            Lihat semua
+          </Link>
         </div>
         {suaraStatus === "loading" && (
           <div className="loading-panel" role="status">
@@ -1148,11 +1153,9 @@ function HomePage({ locale }: { locale: Locale }) {
         {suaraStatus === "ready" && (
           <div className="suara-shelf">
             {suara.slice(0, 4).map((post) => (
-              <a
+              <Link
                 className="suara-item"
-                href={post.url}
-                target="_blank"
-                rel="noreferrer"
+                to={`/suara/${encodeURIComponent(post.id)}`}
                 key={post.id}
               >
                 {post.imageUrl ? (
@@ -1174,7 +1177,7 @@ function HomePage({ locale }: { locale: Locale }) {
                     {new Date(post.publishedAt).toLocaleDateString(locale)}
                   </em>
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         )}
@@ -1191,6 +1194,12 @@ function RoutedApp() {
     <Routes>
       <Route element={<Shell {...settings} />}>
         <Route path="/" element={<HomePage locale={locale} />} />
+        <Route path="/sauh" element={<SauhPage />} />
+        <Route path="/suara" element={<SuaraPage />} />
+        <Route
+          path="/suara/:postId"
+          element={<SuaraDetailPage locale={locale} />}
+        />
         <Route path="/bible" element={<BiblePage locale={locale} />} />
         <Route path="/kidung" element={<KidungPage locale={locale} />} />
         <Route

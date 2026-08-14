@@ -696,6 +696,115 @@ blockquote {
   background: #fbf1e4;
 }
 
+.online-content-page {
+  max-width: 920px;
+}
+
+.online-article-card {
+  display: grid;
+  gap: 1rem;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.online-article-card h1 {
+  max-width: 18ch;
+  margin: 0;
+}
+
+.online-article-image {
+  width: 100%;
+  max-height: 24rem;
+  object-fit: cover;
+  border-radius: 0.9rem;
+  background: var(--surface-soft);
+}
+
+.online-article-reference {
+  margin: 0;
+  color: var(--blue);
+  font-weight: 650;
+}
+
+.online-article-body {
+  display: grid;
+  gap: 0.9rem;
+  color: var(--ink);
+  font-size: 1.02rem;
+  line-height: 1.85;
+}
+
+.online-article-body p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.suara-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+}
+
+.suara-library-item {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+
+.suara-library-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-lift);
+}
+
+.suara-library-item img,
+.suara-library-item .suara-thumbnail-fallback {
+  width: 5rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.65rem;
+}
+
+.suara-library-item > span:last-child {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.suara-library-item strong {
+  line-height: 1.35;
+}
+
+.suara-library-item small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.suara-library-item em {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-style: normal;
+}
+
 .lower-grid {
   display: grid;
   grid-template-columns: 1fr 0.9fr;
@@ -1177,6 +1286,88 @@ body.is-resizing-bible {
   justify-content: space-between;
   gap: 20px;
   padding: 28px 30px 18px;
+}
+
+.quick-nav-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.quick-nav-handle:active {
+  cursor: grabbing;
+}
+
+.quick-nav-floater {
+  position: sticky;
+  z-index: 3;
+  top: 0.75rem;
+  display: grid;
+  gap: 0.15rem;
+  width: fit-content;
+  min-width: 11rem;
+  margin: 0 auto -3.5rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--blue) 40%, var(--line));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface) 94%, var(--blue));
+  box-shadow: var(--shadow-lift);
+  text-align: center;
+  pointer-events: none;
+  animation: quick-nav-in var(--motion-fast) var(--ease-out);
+}
+
+.quick-nav-floater span {
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.quick-nav-floater small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.selection-toolbar {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  gap: 0.25rem;
+  max-width: calc(100vw - 1rem);
+  padding: 0.3rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  animation: quick-nav-in var(--motion-fast) var(--ease-out);
+}
+
+.selection-toolbar button {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.selection-toolbar button:hover,
+.selection-toolbar button:focus-visible {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+@keyframes quick-nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .reader-heading h2 {
   margin: 0;

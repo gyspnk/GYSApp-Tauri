@@ -12,6 +12,7 @@ import {
   HymnCatalogEntrySchema,
   HymnalPdfManifestSchema,
   LiteratureCatalogSchema,
+  OnlineArticleSchema,
   SuaraSejatiFeedSchema,
   UpstreamMusicLockSchema,
 } from "./index.js";
@@ -218,6 +219,18 @@ describe("public contracts", () => {
         provider: "egys",
       }).isMember,
     ).toBe(true);
+  });
+
+  it("validates bounded internal article reader documents", () => {
+    const article = OnlineArticleSchema.parse({
+      id: "id/kesaksian/cahaya",
+      title: "Cahaya",
+      body: "Isi yang sudah dinormalisasi.",
+      url: "https://tjc.org/id/kesaksian/cahaya/",
+      source: "tjc.org",
+      fetchedAt: "2026-08-14T00:00:00.000Z",
+    });
+    expect(article.source).toBe("tjc.org");
   });
 
   it("validates bounded Edge speech requests", () => {

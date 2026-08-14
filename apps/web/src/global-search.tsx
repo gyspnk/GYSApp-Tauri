@@ -99,8 +99,7 @@ function createIndex(
       title: item.title,
       detail: `Sauh Bagi Jiwa${item.reference ? ` · ${item.reference}` : ""}`,
       searchText: `${item.title} ${item.reference ?? ""} ${item.verse ?? ""} ${item.body}`,
-      href: item.url,
-      external: true,
+      href: "/sauh",
     });
   }
   for (const item of suara.items) {
@@ -110,8 +109,7 @@ function createIndex(
       title: item.title,
       detail: "Suara Sejati · tjc.org",
       searchText: `${item.title} ${item.excerpt}`,
-      href: item.url,
-      external: true,
+      href: `/suara/${encodeURIComponent(item.id)}`,
     });
   }
   return entries;
@@ -265,10 +263,6 @@ export function GlobalSearch({
   const submit = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
   const openResult = (entry: SearchEntry) => {
     onClose();
-    if (entry.external && entry.href) {
-      window.open(entry.href, "_blank", "noopener,noreferrer");
-      return;
-    }
     if (entry.href) navigate(entry.href);
   };
 

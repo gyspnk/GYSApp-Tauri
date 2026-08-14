@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   AssetManifestV1Schema,
   type AccountProfile,
@@ -539,14 +540,11 @@ export function MorePage({ locale }: { locale: Locale }) {
         <span className="pack-badge">Offline-first</span>
       </section>
       <section className="more-grid">
-        <a
-          className="more-card more-action"
-          href={`${import.meta.env.BASE_URL}literatur`}
-        >
+        <Link className="more-card more-action" to="/literatur">
           <span className="more-icon">▤</span>
           <strong>Literatur</strong>
           <small>Jelajahi kesaksian, warta, panduan, dan PDF resmi</small>
-        </a>
+        </Link>
         <article className="more-card more-card-wide">
           <div className="more-card-heading">
             <div>

@@ -108,5 +108,10 @@ describe("BibleRepository", () => {
     expect(sanitizeBibleText("<pb/><f>ⓐ</f>Firman &amp; terang")).toBe(
       "ⓐFirman & terang",
     );
+    expect(
+      (await repository.search('"begitu besar" kasih')).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["joh-3-16", "joh-3-18"]);
   });
 });

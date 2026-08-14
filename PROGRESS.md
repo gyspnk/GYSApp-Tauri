@@ -14,6 +14,11 @@ service or platform artifact that cannot be exercised in this workspace.
   `Lanjutkan` home item.
 - Today's Sauh Bagi Jiwa and real Suara Sejati feed with validated static
   snapshots, online/BFF revalidation, image mapping, and offline recovery.
+  Home Daily Verse is sourced from the same Sauh item, while `/sauh`,
+  `/suara`, and `/suara/:postId` keep the reader inside the application shell.
+  TJC article HTML is normalized by the BFF into a bounded, schema-validated
+  plain-text reader; Pages previews without a Worker use the same constrained
+  WordPress feed fallback, and no remote page is opened as the primary action.
 - GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
   hymnal PDF database/download source with signed package fallback, local
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
@@ -31,7 +36,8 @@ service or platform artifact that cannot be exercised in this workspace.
 - TB reader hardening: source markup is sanitized, search supports token/phrase/
   whole-word filters with local history, and the reader has persistent notes,
   highlights, verse selection, split columns with a draggable/keyboard-safe
-  divider, chapter scrubber, and swipe navigation. Bible read-aloud now uses
+  divider, title-drag chapter quick navigation, contextual selection actions,
+  chapter scrubber, and swipe navigation. Bible read-aloud now uses
   the shared SpeechProvider/orchestrator, prefers a configured Edge
   compatibility gateway with an explicit local fallback, queues verse ranges,
   exposes engine/voice/rate controls, and shares the global media surface so
@@ -49,7 +55,8 @@ service or platform artifact that cannot be exercised in this workspace.
   checked-in commit is unchanged.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
-  plus mobile visual baselines pass locally. A browser media flow also opens
+  plus mobile visual baselines pass locally. The current Playwright suite has
+  20 passing flows. A browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
   same hymn detail route. Native `cargo check` is wired into the pre-push gate.
 

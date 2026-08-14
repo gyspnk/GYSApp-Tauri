@@ -88,6 +88,52 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
 
+test("Bible title drag exposes quick chapter navigation with keyboard fallback", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const handle = page.getByRole("button", {
+    name: "Geser judul untuk berpindah pasal",
+  });
+  const box = await handle.boundingBox();
+  if (!box) throw new Error("Bible quick navigation handle is not measurable");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 96);
+  await expect(page.locator(".quick-nav-floater")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByRole("heading", { name: /Yohanes 5/ })).toBeVisible();
+  await handle.focus();
+  await handle.press("ArrowUp");
+  await expect(page.getByRole("heading", { name: /Yohanes 4/ })).toBeVisible();
+});
+
+test("Bible text selection exposes contextual copy/share/note actions", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.evaluate(() => {
+    const node = document.querySelector(".verse-text");
+    if (!node) throw new Error("Verse text is not rendered");
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  });
+  await expect(
+    page.getByRole("toolbar", { name: "Tindakan teks terpilih" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Catat" }).click();
+  await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
+});
+
 test("home surfaces today's Sauh and canonical Suara Sejati feed", async ({
   page,
 }) => {
@@ -96,6 +142,17 @@ test("home surfaces today's Sauh and canonical Suara Sejati feed", async ({
     { timeout: 15_000 },
   );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
+});
+
+test("online content opens inside the application shell", async ({ page }) => {
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("link", { name: "Baca Sauh" }).click();
+  await expect(page).toHaveURL(/\/sauh$/);
+  await expect(page.getByTestId("sauh-page")).toBeVisible();
+  await page.getByRole("link", { name: "Beranda" }).first().click();
+  await page.locator(".suara-item").first().click();
+  await expect(page).toHaveURL(/\/suara\//);
+  await expect(page.getByTestId("suara-detail-page")).toBeVisible();
 });
 
 test("literature behaves as a searchable ebook shelf and hymn opens by detail route", async ({
@@ -259,6 +316,17 @@ test("literature detail persists favorite and progress controls", async ({
     page.getByRole("heading", { name: "Terakhir dilihat" }),
   ).toBeVisible();
   await expect(page.locator(".literature-recent-item")).toHaveCount(1);
+});
+
+test("literature article primary action stays in the internal reader", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  await page.locator(".literature-row").first().click();
+  await expect(page.locator('[data-testid="literature-detail"]')).toBeVisible();
+  await page.getByRole("button", { name: "Baca di aplikasi" }).click();
+  await expect(page.getByTestId("literature-article-reader")).toBeVisible();
+  await expect(page).toHaveURL(/\/literatur\//);
 });
 
 test("MIDI queue persists from a hymn detail into the utility surface", async ({
