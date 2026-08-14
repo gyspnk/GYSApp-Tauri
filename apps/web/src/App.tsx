@@ -1,7 +1,9 @@
 import {
   Component,
+  lazy,
+  memo,
+  Suspense,
   useEffect,
-  useMemo,
   useState,
   type ErrorInfo,
   type ReactNode,
@@ -17,12 +19,30 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
-import { BiblePage } from "./bible.js";
-import { KidungPage } from "./kidung.js";
-import { FaithPage } from "./faith.js";
-import { MorePage } from "./more.js";
+
+const BiblePage = lazy(() =>
+  import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
+);
+const KidungPage = lazy(() =>
+  import("./kidung.js").then(({ KidungPage: Page }) => ({ default: Page })),
+);
+const FaithPage = lazy(() =>
+  import("./faith.js").then(({ FaithPage: Page }) => ({ default: Page })),
+);
+const MorePage = lazy(() =>
+  import("./more.js").then(({ MorePage: Page }) => ({ default: Page })),
+);
 
 type Theme = "light" | "dark" | "system";
+type IconName =
+  | Destination["icon"]
+  | "sun"
+  | "moon"
+  | "system"
+  | "play"
+  | "pause"
+  | "arrow"
+  | "book";
 
 class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -57,19 +77,79 @@ class AppErrorBoundary extends Component<
   }
 }
 
-function Icon({
+const ICON_PATHS: Record<IconName, ReactNode> = {
+  home: (
+    <>
+      <path d="m3 10 9-7 9 7" />
+      <path d="M5 9.5V21h14V9.5" />
+      <path d="M9 21v-7h6v7" />
+    </>
+  ),
+  bible: (
+    <>
+      <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z" />
+      <path d="M5 4.5v17" />
+      <path d="M9 7h7M9 11h7" />
+    </>
+  ),
+  music: (
+    <>
+      <path d="M9 18V5l10-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="16" cy="16" r="3" />
+    </>
+  ),
+  faith: (
+    <>
+      <path d="M12 3v18M6 9h12" />
+      <path d="M5 21h14" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </>
+  ),
+  moon: <path d="M20.7 15.3A8.5 8.5 0 0 1 8.7 3.3 8.5 8.5 0 1 0 20.7 15.3Z" />,
+  system: (
+    <>
+      <rect x="3" y="4" width="18" height="13" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </>
+  ),
+  play: <path d="m9 5 10 7-10 7z" />,
+  pause: (
+    <>
+      <path d="M8 5v14M16 5v14" />
+    </>
+  ),
+  arrow: (
+    <>
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M4 5a2 2 0 0 1 2-2h14v17H6a2 2 0 0 0-2 2z" />
+      <path d="M4 5v17" />
+    </>
+  ),
+};
+
+const Icon = memo(function Icon({
   name,
   size = 20,
 }: {
-  name:
-    | Destination["icon"]
-    | "sun"
-    | "moon"
-    | "system"
-    | "play"
-    | "pause"
-    | "arrow"
-    | "book";
+  name: IconName;
   size?: number;
 }) {
   const common = {
@@ -83,77 +163,8 @@ function Icon({
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
   };
-  const paths: Record<string, ReactNode> = {
-    home: (
-      <>
-        <path d="m3 10 9-7 9 7" />
-        <path d="M5 9.5V21h14V9.5" />
-        <path d="M9 21v-7h6v7" />
-      </>
-    ),
-    bible: (
-      <>
-        <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z" />
-        <path d="M5 4.5v17" />
-        <path d="M9 7h7M9 11h7" />
-      </>
-    ),
-    music: (
-      <>
-        <path d="M9 18V5l10-2v13" />
-        <circle cx="6" cy="18" r="3" />
-        <circle cx="16" cy="16" r="3" />
-      </>
-    ),
-    faith: (
-      <>
-        <path d="M12 3v18M6 9h12" />
-        <path d="M5 21h14" />
-      </>
-    ),
-    more: (
-      <>
-        <circle cx="5" cy="12" r="1" />
-        <circle cx="12" cy="12" r="1" />
-        <circle cx="19" cy="12" r="1" />
-      </>
-    ),
-    sun: (
-      <>
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-      </>
-    ),
-    moon: (
-      <path d="M20.7 15.3A8.5 8.5 0 0 1 8.7 3.3 8.5 8.5 0 1 0 20.7 15.3Z" />
-    ),
-    system: (
-      <>
-        <rect x="3" y="4" width="18" height="13" rx="2" />
-        <path d="M8 21h8M12 17v4" />
-      </>
-    ),
-    play: <path d="m9 5 10 7-10 7z" />,
-    pause: (
-      <>
-        <path d="M8 5v14M16 5v14" />
-      </>
-    ),
-    arrow: (
-      <>
-        <path d="M5 12h14" />
-        <path d="m13 6 6 6-6 6" />
-      </>
-    ),
-    book: (
-      <>
-        <path d="M4 5a2 2 0 0 1 2-2h14v17H6a2 2 0 0 0-2 2z" />
-        <path d="M4 5v17" />
-      </>
-    ),
-  };
-  return <svg {...common}>{paths[name]}</svg>;
-}
+  return <svg {...common}>{ICON_PATHS[name]}</svg>;
+});
 
 function useAppSettings() {
   const [locale, setLocale] = useState<Locale>(
@@ -175,7 +186,10 @@ function useAppSettings() {
 
 function Navigation({ locale }: { locale: Locale }) {
   return (
-    <nav className="primary-nav" aria-label="Primary">
+    <nav
+      className="primary-nav"
+      aria-label={translate(locale, "shell.navigation")}
+    >
       {DESTINATIONS.map((destination) => (
         <NavLink
           key={destination.path}
@@ -221,9 +235,10 @@ function Header({
       <div className="topbar-actions">
         <span
           className={`connection-status ${online ? "is-online" : "is-offline"}`}
+          aria-live="polite"
         >
           <i aria-hidden="true" />
-          {online ? "Online" : "Offline"}
+          {translate(locale, online ? "shell.online" : "shell.offline")}
         </span>
         <label className="select-label">
           <span className="sr-only">{translate(locale, "shell.language")}</span>
@@ -247,13 +262,13 @@ function Header({
             <option value="dark">☾</option>
           </select>
         </label>
-        <button
+        <Link
           className="account-button"
-          type="button"
+          to="/lainnya"
           aria-label={translate(locale, "shell.account")}
         >
           <span>TS</span>
-        </button>
+        </Link>
       </div>
     </header>
   );
@@ -297,6 +312,7 @@ function Shell({
   setTheme,
 }: ReturnType<typeof useAppSettings>) {
   const [online, setOnline] = useState(() => navigator.onLine);
+  const location = useLocation();
   useEffect(() => {
     const on = () => setOnline(true);
     const off = () => setOnline(false);
@@ -309,9 +325,12 @@ function Shell({
   }, []);
   return (
     <div className="app-frame">
+      <a className="skip-link" href="#main-content">
+        Lewati ke konten utama
+      </a>
       <Header {...{ locale, setLocale, theme, setTheme, online }} />
       <div className="workspace">
-        <aside className="desktop-sidebar">
+        <aside className="navigation-shell">
           <Navigation locale={locale} />
           <div className="sidebar-foot">
             <span className="offline-note">
@@ -321,12 +340,19 @@ function Shell({
             <small>v0.1 preview</small>
           </div>
         </aside>
-        <main className="main-content">
-          <Outlet context={{ locale }} />
+        <main className="main-content" id="main-content" tabIndex={-1}>
+          <div className="route-view" key={location.pathname}>
+            <Suspense
+              fallback={
+                <div className="loading-panel route-loading" role="status">
+                  Membuka ruang ini…
+                </div>
+              }
+            >
+              <Outlet context={{ locale }} />
+            </Suspense>
+          </div>
         </main>
-      </div>
-      <div className="mobile-navigation">
-        <Navigation locale={locale} />
       </div>
       <MediaSurface locale={locale} />
     </div>
@@ -342,22 +368,28 @@ function HomePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "home.title")}</h1>
           <p className="intro-copy">{translate(locale, "home.subtitle")}</p>
         </div>
-        <button className="quiet-button" type="button">
+        <Link className="quiet-button" to="/bible">
           {translate(locale, "home.continue")} <Icon name="arrow" size={16} />
-        </button>
+        </Link>
       </section>
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">
           <div className="section-heading">
-            <span>{translate(locale, "home.dailyVerse")}</span>
+            <span>{translate(locale, "home.dailyLabel")}</span>
             <small>{translate(locale, "home.reference")}</small>
           </div>
           <blockquote>“{translate(locale, "home.dailyVerse")}”</blockquote>
           <div className="verse-actions">
-            <button type="button">{translate(locale, "home.continue")}</button>
-            <button type="button" className="icon-only" aria-label="Open verse">
+            <Link className="quiet-button" to="/bible">
+              {translate(locale, "home.openBible")}
+            </Link>
+            <Link
+              className="quiet-button icon-only"
+              to="/bible"
+              aria-label={translate(locale, "home.openBible")}
+            >
               <Icon name="arrow" size={17} />
-            </button>
+            </Link>
           </div>
         </article>
         <article className="continue-panel">
@@ -365,7 +397,7 @@ function HomePage({ locale }: { locale: Locale }) {
             <span>{translate(locale, "home.continue")}</span>
             <small>2 min ago</small>
           </div>
-          <div className="continue-item">
+          <Link className="continue-item" to="/bible">
             <div className="item-icon">
               <Icon name="book" size={21} />
             </div>
@@ -374,8 +406,8 @@ function HomePage({ locale }: { locale: Locale }) {
               <span>Alkitab Terjemahan Baru</span>
             </div>
             <Icon name="arrow" size={17} />
-          </div>
-          <div className="continue-item">
+          </Link>
+          <Link className="continue-item" to="/kidung">
             <div className="item-icon music-icon">
               <Icon name="music" size={21} />
             </div>
@@ -384,31 +416,29 @@ function HomePage({ locale }: { locale: Locale }) {
               <span>Kidung Rohani · 001</span>
             </div>
             <Icon name="arrow" size={17} />
-          </div>
+          </Link>
         </article>
       </section>
       <section className="lower-grid">
         <div>
           <div className="section-title-row">
-            <h2>{translate(locale, "home.shortcuts")}</h2>
-            <Link to="/lainnya">
-              {translate(locale, "nav.more")} <Icon name="arrow" size={15} />
-            </Link>
+            <h2>{translate(locale, "home.recent")}</h2>
           </div>
-          <div className="shortcut-list">
-            <Link to="/bible">
+          <div className="recent-list">
+            <Link className="recent-item" to="/bible">
               <Icon name="bible" />
-              <span>{translate(locale, "home.openBible")}</span>
+              <span>
+                <strong>Yohanes 3</strong>
+                <small>{translate(locale, "home.readToday")}</small>
+              </span>
               <Icon name="arrow" size={16} />
             </Link>
-            <Link to="/kidung">
+            <Link className="recent-item" to="/kidung">
               <Icon name="music" />
-              <span>{translate(locale, "home.openSong")}</span>
-              <Icon name="arrow" size={16} />
-            </Link>
-            <Link to="/iman">
-              <Icon name="faith" />
-              <span>{translate(locale, "nav.iman")}</span>
+              <span>
+                <strong>Kasih Setia-Mu</strong>
+                <small>{translate(locale, "home.songContinue")}</small>
+              </span>
               <Icon name="arrow" size={16} />
             </Link>
           </div>
@@ -426,48 +456,9 @@ function HomePage({ locale }: { locale: Locale }) {
   );
 }
 
-function FeaturePage({
-  locale,
-  kind,
-}: {
-  locale: Locale;
-  kind: "bible" | "kidung" | "iman" | "more";
-}) {
-  const data = {
-    bible: ["page.bibleTitle", "page.bibleBody", "home.openBible", "bible"],
-    kidung: ["page.kidungTitle", "page.kidungBody", "home.openSong", "music"],
-    iman: ["page.imanTitle", "page.imanBody", "nav.iman", "faith"],
-    more: ["page.moreTitle", "page.moreBody", "nav.more", "more"],
-  }[kind] as [string, string, string, Destination["icon"]];
-  return (
-    <div className="page feature-page">
-      <section className="page-intro">
-        <div>
-          <p className="date-line">GYSApp</p>
-          <h1>{translate(locale, data[0])}</h1>
-          <p className="intro-copy">{translate(locale, data[1])}</p>
-        </div>
-        <button className="quiet-button" type="button">
-          {translate(locale, data[2])} <Icon name="arrow" size={16} />
-        </button>
-      </section>
-      <div className="feature-empty">
-        <div className="feature-mark">
-          <Icon name={data[3]} size={29} />
-        </div>
-        <h2>{translate(locale, data[0])}</h2>
-        <p>{translate(locale, data[1])}</p>
-        <button className="primary-button" type="button">
-          {translate(locale, data[2])} <Icon name="arrow" size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function RoutedApp() {
   const settings = useAppSettings();
-  const locale = useMemo(() => settings.locale, [settings.locale]);
+  const locale = settings.locale;
   return (
     <Routes>
       <Route element={<Shell {...settings} />}>

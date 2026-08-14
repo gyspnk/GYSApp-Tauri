@@ -31,6 +31,20 @@ pnpm dev
 Node 24 and pnpm 11 are used in CI. No runtime CDN assets or client secrets are
 required for local development.
 
+## Delivery and performance
+
+The web app is configured for a GitHub Pages project deployment at
+`/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
+generated provenance, and enforces the initial JavaScript budget. The current
+baseline is 78.8 KiB gzip for the main application chunk and 107.5 KiB gzip for
+all initial JavaScript; PDF.js stays lazy-loaded. Use `pnpm verify:bundle` to
+check the budget locally.
+
+The shell uses one responsive navigation surface across desktop, rail, and
+mobile breakpoints. Offline TB/hymn/faith packs remain local, while larger
+Bible database and PDF assets are loaded on demand to keep first install and
+first paint predictable.
+
 ## License
 
 MIT. Upstream provenance and asset licensing notes are documented in

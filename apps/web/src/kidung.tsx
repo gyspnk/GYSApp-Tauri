@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   UpstreamMusicLockSchema,
   type HymnCatalogEntry,
@@ -57,9 +64,11 @@ export function KidungPage({ locale }: { locale: Locale }) {
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const [showPdf, setShowPdf] = useState(false);
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock | undefined>();
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,7 +113,7 @@ export function KidungPage({ locale }: { locale: Locale }) {
     [items],
   );
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase();
+    const normalized = deferredQuery.trim().toLocaleLowerCase();
     return items
       .filter((item) => book === "all" || item.book === book)
       .filter(
@@ -115,7 +124,7 @@ export function KidungPage({ locale }: { locale: Locale }) {
             .includes(normalized),
       )
       .sort((left, right) => left.number - right.number);
-  }, [book, items, query]);
+  }, [book, deferredQuery, items]);
   const selected =
     items.find((item) => item.id === selectedId) ?? filtered[0] ?? items[0];
   const renderedKey = keyAtOffset(KEYS.indexOf(key) + transpose);
@@ -276,6 +285,14 @@ export function KidungPage({ locale }: { locale: Locale }) {
                       ? "MIDI siap"
                       : "Putar MIDI"}
                 </button>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => setShowPdf((visible) => !visible)}
+                  aria-expanded={showPdf}
+                >
+                  {showPdf ? "Tutup PDF" : "Buka PDF"}
+                </button>
               </div>
             </div>
             <div className="song-controls" aria-label="Song controls">
@@ -334,15 +351,17 @@ export function KidungPage({ locale }: { locale: Locale }) {
                   ),
                 )}
             </article>
-            <Suspense
-              fallback={
-                <div className="loading-panel">PDF reader wordt geladen…</div>
-              }
-            >
-              <PdfReader
-                src={`${import.meta.env.BASE_URL}${selected.pdfPath.replace(/^assets\//, "assets/")}`}
-              />
-            </Suspense>
+            {showPdf && (
+              <Suspense
+                fallback={
+                  <div className="loading-panel">PDF reader wordt geladen…</div>
+                }
+              >
+                <PdfReader
+                  src={`${import.meta.env.BASE_URL}${selected.pdfPath.replace(/^assets\//, "assets/")}`}
+                />
+              </Suspense>
+            )}
           </section>
         </div>
       )}

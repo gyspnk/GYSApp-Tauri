@@ -61,24 +61,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, []);
 
-  const repository =
-    packState.status === "ready"
-      ? new BibleRepository(packState.pack.verses)
-      : undefined;
+  const repository = useMemo(
+    () =>
+      packState.status === "ready"
+        ? new BibleRepository(packState.pack.verses)
+        : undefined,
+    [packState],
+  );
   const books = packState.status === "ready" ? packState.pack.books : [];
   const book =
     books.find((candidate) => candidate.id === selectedBook) ?? books[0];
   const chapter = Math.min(selectedChapter, book?.chapters ?? selectedChapter);
-  const chapterVerses = useMemo(
-    () =>
-      packState.status === "ready" && book
-        ? packState.pack.verses.filter(
-            (verse) =>
-              verse.book === String(book.id) && verse.chapter === chapter,
-          )
-        : [],
-    [book, chapter, packState],
-  );
+  const chapterVerses = useMemo(() => {
+    if (!packState || packState.status !== "ready" || !book) return [];
+    const key = `${book.id}:${chapter}`;
+    return packState.pack.verses.filter(
+      (verse) => `${verse.book}:${verse.chapter}` === key,
+    );
+  }, [book, chapter, packState]);
 
   useEffect(() => {
     if (!book) return;

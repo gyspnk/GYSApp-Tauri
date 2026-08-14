@@ -20,8 +20,12 @@ describe("BFF public boundary", () => {
       headers: { Origin: "https://evil.example" },
     });
     expect(response.status).toBe(403);
-    const payload = (await response.json()) as { error: { code: string } };
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    const payload = (await response.json()) as {
+      error: { code: string; requestId: string };
+    };
     expect(payload.error.code).toBe("FORBIDDEN");
+    expect(response.headers.get("x-request-id")).toBe(payload.error.requestId);
   });
 
   it("serves catalog content with an allowed origin and cache headers", async () => {
@@ -49,6 +53,29 @@ describe("BFF public boundary", () => {
     const payload = (await response.json()) as { items: unknown[] };
     expect(payload.items).toHaveLength(1);
     expect(JSON.stringify(payload.items)).not.toContain("<script>");
+    const unchanged = await app.request("/api/v1/content/catalog", {
+      headers: {
+        Origin: "https://good.example",
+        "if-none-match": response.headers.get("etag") ?? "",
+      },
+    });
+    expect(unchanged.status).toBe(304);
+  });
+
+  it("uses the deployment allowlist binding when provided", async () => {
+    const app = createApp({
+      allowedOrigins: ["https://fallback.example"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const allowed = await app.request(
+      "/api/v1/content/catalog",
+      {
+        headers: { Origin: "https://pages.example" },
+      },
+      { ALLOWED_ORIGINS: "https://pages.example" },
+    );
+    expect(allowed.status).toBe(200);
   });
 
   it("returns a typed validation error for an unknown content kind", async () => {

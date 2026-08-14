@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,9 @@ jobs:
           cache: pnpm
       - uses: actions/configure-pages@v5
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @gys/web build
+      - run: pnpm verify:generated
+      - run: pnpm build
+      - run: pnpm verify:bundle
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/dist

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import {
+  getDocument,
+  GlobalWorkerOptions,
+  type PDFDocumentProxy,
+  type PDFPageProxy,
+} from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 
@@ -15,6 +20,9 @@ export function PdfReader({
   initialPage?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [documentProxy, setDocumentProxy] = useState<PDFDocumentProxy | null>(
+    null,
+  );
   const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -24,25 +32,15 @@ export function PdfReader({
 
   useEffect(() => {
     let disposed = false;
-    const loadingTask = getDocument({ url: src });
+    setDocumentProxy(null);
+    setTotal(0);
     setStatus("loading");
+    const loadingTask = getDocument({ url: src });
     void loadingTask.promise
-      .then(async (document) => {
+      .then((document) => {
         if (disposed) return;
         setTotal(document.numPages);
-        const safePage = Math.max(1, Math.min(document.numPages, page));
-        const pdfPage = await document.getPage(safePage);
-        if (disposed || !canvasRef.current) return;
-        const viewport = pdfPage.getViewport({ scale: zoom });
-        const canvas = canvasRef.current;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await pdfPage.render({
-          canvas,
-          canvasContext: canvas.getContext("2d")!,
-          viewport,
-        }).promise;
-        if (!disposed) setStatus("ready");
+        setDocumentProxy(document);
       })
       .catch(() => {
         if (!disposed) setStatus("error");
@@ -50,8 +48,38 @@ export function PdfReader({
     return () => {
       disposed = true;
       void loadingTask.destroy();
+      setDocumentProxy(null);
     };
-  }, [page, src, zoom]);
+  }, [src]);
+
+  useEffect(() => {
+    if (!documentProxy || !canvasRef.current) return;
+    let disposed = false;
+    let renderTask: ReturnType<PDFPageProxy["render"]> | undefined;
+    void documentProxy
+      .getPage(Math.max(1, Math.min(documentProxy.numPages, page)))
+      .then(async (pdfPage) => {
+        if (disposed || !canvasRef.current) return;
+        const viewport = pdfPage.getViewport({ scale: zoom });
+        const canvas = canvasRef.current;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        renderTask = pdfPage.render({
+          canvas,
+          canvasContext: canvas.getContext("2d")!,
+          viewport,
+        });
+        await renderTask.promise;
+        if (!disposed) setStatus("ready");
+      })
+      .catch(() => {
+        if (!disposed) setStatus("error");
+      });
+    return () => {
+      disposed = true;
+      renderTask?.cancel();
+    };
+  }, [documentProxy, page, zoom]);
 
   return (
     <section className="pdf-reader" aria-label="PDF reader">

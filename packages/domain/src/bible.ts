@@ -22,6 +22,8 @@ export type BibleRepositoryOptions = {
 export class BibleRepository {
   private readonly pack: readonly BibleVerse[];
   private readonly byId = new Map<string, BibleVerse>();
+  private readonly byChapter = new Map<string, BibleVerse[]>();
+  private readonly normalizedText = new Map<string, string>();
   private readonly bookmarksSet = new Set<string>();
   private readonly notesById = new Map<string, string>();
   private readonly highlightsById = new Map<string, string>();
@@ -42,7 +44,13 @@ export class BibleRepository {
         left.chapter - right.chapter ||
         left.verse - right.verse,
     );
-    for (const verse of this.pack) this.byId.set(verse.id, verse);
+    for (const verse of this.pack) {
+      this.byId.set(verse.id, verse);
+      const key = `${verse.book}:${verse.chapter}`;
+      const chapter = this.byChapter.get(key) ?? [];
+      chapter.push(verse);
+      this.byChapter.set(key, chapter);
+    }
     this.pericopes = options.pericopes ?? [];
     this.referencesById = options.references ?? {};
   }
@@ -77,22 +85,21 @@ export class BibleRepository {
     book: string,
     chapter: number,
   ): Promise<BibleVerse[]> {
-    return this.pack.filter(
-      (verse) => verse.book === book && verse.chapter === chapter,
-    );
+    return [...(this.byChapter.get(`${book}:${chapter}`) ?? [])];
   }
 
   public async search(query: string, book?: string): Promise<BibleVerse[]> {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return [];
     await new Promise<void>((resolve) => queueMicrotask(resolve));
-    return this.pack.filter(
-      (verse) =>
-        (!book || verse.book === book) &&
-        `${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`
-          .toLocaleLowerCase()
-          .includes(normalized),
-    );
+    return this.pack.filter((verse) => {
+      if (book && verse.book !== book) return false;
+      const searchable =
+        this.normalizedText.get(verse.id) ??
+        `${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`.toLocaleLowerCase();
+      this.normalizedText.set(verse.id, searchable);
+      return searchable.includes(normalized);
+    });
   }
 
   public async setLastReading(reference: BibleReference): Promise<void> {

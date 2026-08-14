@@ -40,6 +40,10 @@ export type BffBindings = {
   ALLOWED_ORIGINS?: string;
 };
 
+type BffVariables = {
+  requestId: string;
+};
+
 const statusFor: Record<ErrorCode, ContentfulStatusCode> = {
   VALIDATION_ERROR: 400,
   UNAUTHORIZED: 401,
@@ -53,17 +57,22 @@ const statusFor: Record<ErrorCode, ContentfulStatusCode> = {
   INTERNAL_ERROR: 500,
 };
 
-function requestId(c: {
-  req: { header(name: string): string | undefined };
-}): string {
-  return c.req.header("x-request-id") ?? crypto.randomUUID();
+type AppContext = Context<{
+  Bindings: BffBindings;
+  Variables: BffVariables;
+}>;
+
+function requestId(c: AppContext): string {
+  return (
+    c.get("requestId") ?? c.req.header("x-request-id") ?? crypto.randomUUID()
+  );
 }
 
-type AppContext = Context<{ Bindings: BffBindings }>;
-
 function errorResponse(c: AppContext, code: ErrorCode, message: string) {
+  const id = requestId(c);
+  c.header("x-request-id", id);
   const body = ErrorResponseSchema.parse({
-    error: { code, message, requestId: requestId(c) },
+    error: { code, message, requestId: id },
   });
   return c.json(body, statusFor[code]);
 }
@@ -72,7 +81,21 @@ function safeText(value: string): string {
   return value.replace(/<[^>]*>/g, "").trim();
 }
 
-export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
+function originList(c: AppContext, fallback: readonly string[]): string[] {
+  const configured = c.env?.ALLOWED_ORIGINS?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return configured?.length ? configured : [...fallback];
+}
+
+function etagForContent(items: readonly OnlineContent[]): string {
+  const version = items.map((item) => `${item.id}:${item.updatedAt}`).join("|");
+  return `W/"content-${version.length}-${version.slice(0, 48)}"`;
+}
+
+export function createApp(
+  config: BffConfig,
+): Hono<{ Bindings: BffBindings; Variables: BffVariables }> {
   const manifest = ChordManifestV1Schema.parse(config.chordManifest);
   const content = config.content.map((item) =>
     OnlineContentSchema.parse({
@@ -81,17 +104,51 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
       body: safeText(item.body),
     }),
   );
-  const app = new Hono<{ Bindings: BffBindings }>();
+  const app = new Hono<{
+    Bindings: BffBindings;
+    Variables: BffVariables;
+  }>();
   const rateLimit = config.rateLimit ?? { max: 120, windowMs: 60_000 };
   const buckets = new Map<string, { startedAt: number; count: number }>();
+  let lastBucketSweep = 0;
+  const catalogEtag = etagForContent(content);
 
   app.use("*", async (c, next) => {
     const origin = c.req.header("origin");
-    if (origin && !config.allowedOrigins.includes(origin))
+    const allowedOrigins = originList(c, config.allowedOrigins);
+    const id = requestId(c);
+    c.set("requestId", id);
+    c.header("x-request-id", id);
+    c.header("x-content-type-options", "nosniff");
+    c.header("referrer-policy", "strict-origin-when-cross-origin");
+    c.header("x-frame-options", "DENY");
+    c.header(
+      "strict-transport-security",
+      "max-age=31536000; includeSubDomains",
+    );
+    c.header("cross-origin-resource-policy", "same-site");
+    c.header("permissions-policy", "camera=(), microphone=(), geolocation=()");
+    c.header(
+      "content-security-policy",
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    );
+    if (origin && !allowedOrigins.includes(origin))
       return errorResponse(c, "FORBIDDEN", "Origin is not allowed");
+    if (origin) {
+      c.header("access-control-allow-origin", origin);
+      c.header("access-control-allow-credentials", "true");
+      c.header("vary", "Origin");
+    }
     const key =
       c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
     const now = Date.now();
+    if (now - lastBucketSweep > rateLimit.windowMs) {
+      for (const [bucketKey, value] of buckets) {
+        if (now - value.startedAt >= rateLimit.windowMs)
+          buckets.delete(bucketKey);
+      }
+      lastBucketSweep = now;
+    }
     const current = buckets.get(key);
     const bucket =
       !current || now - current.startedAt >= rateLimit.windowMs
@@ -107,25 +164,17 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
       return errorResponse(c, "RATE_LIMITED", "Too many requests");
     }
     await next();
-    c.header("x-request-id", requestId(c));
-    c.header("x-content-type-options", "nosniff");
-    c.header("referrer-policy", "strict-origin-when-cross-origin");
-    c.header("permissions-policy", "camera=(), microphone=(), geolocation=()");
-    c.header(
-      "content-security-policy",
-      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
-    );
-    if (origin) {
-      c.header("access-control-allow-origin", origin);
-      c.header("vary", "Origin");
-    }
   });
 
   app.options("*", (c) => {
     const origin = c.req.header("origin");
-    if (origin && !config.allowedOrigins.includes(origin))
+    if (origin && !originList(c, config.allowedOrigins).includes(origin))
       return errorResponse(c, "FORBIDDEN", "Origin is not allowed");
-    if (origin) c.header("access-control-allow-origin", origin);
+    if (origin) {
+      c.header("access-control-allow-origin", origin);
+      c.header("access-control-allow-credentials", "true");
+      c.header("vary", "Origin");
+    }
     c.header("access-control-allow-methods", "GET,POST,OPTIONS");
     c.header(
       "access-control-allow-headers",
@@ -136,7 +185,9 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
   });
 
   app.get("/api/v1/content/catalog", (c) => {
+    c.header("etag", catalogEtag);
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
+    if (c.req.header("if-none-match") === catalogEtag) return c.body(null, 304);
     return c.json({ items: content });
   });
 
@@ -144,12 +195,19 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
     const kind = ContentKindSchema.safeParse(c.req.param("kind"));
     if (!kind.success)
       return errorResponse(c, "VALIDATION_ERROR", "Unknown content kind");
+    const items = content.filter((item) => item.kind === kind.data);
+    const etag = `${catalogEtag}-${kind.data}`;
+    c.header("etag", etag);
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
-    return c.json({ items: content.filter((item) => item.kind === kind.data) });
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+    return c.json({ items });
   });
 
   app.get("/api/v1/content/sauh", (c) => {
+    const etag = `${catalogEtag}-sauh`;
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
+    c.header("etag", etag);
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json({ items: content.filter((item) => item.kind === "sauh") });
   });
 
@@ -165,6 +223,7 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
   });
 
   app.post("/api/v1/auth/exchange/:provider", (c) => {
+    c.header("cache-control", "no-store");
     const provider = ProviderSchema.safeParse(c.req.param("provider"));
     if (!provider.success)
       return errorResponse(
@@ -180,12 +239,14 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
   });
 
   app.get("/api/v1/auth/session", (c) => {
+    c.header("cache-control", "no-store");
     if (!c.req.header("authorization") && !c.req.header("cookie"))
       return errorResponse(c, "UNAUTHORIZED", "No active session");
     return c.json({ authenticated: true });
   });
 
   app.post("/api/v1/auth/logout", (c) => {
+    c.header("cache-control", "no-store");
     c.header(
       "set-cookie",
       "gys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
@@ -194,12 +255,21 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
   });
 
   app.get("/api/v1/account/profile", (c) => {
+    c.header("cache-control", "no-store");
     if (!c.req.header("authorization") && !c.req.header("cookie"))
       return errorResponse(c, "UNAUTHORIZED", "No active session");
     return c.json({ profile: null });
   });
 
   app.post("/api/v1/report", async (c) => {
+    c.header("cache-control", "no-store");
+    const contentLength = Number(c.req.header("content-length") ?? 0);
+    if (contentLength > 64_000)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Report payload is too large",
+      );
     const parsed = ReportSchema.safeParse(
       await c.req.json().catch(() => undefined),
     );
