@@ -33,21 +33,40 @@ async function loadMapping() {
 async function decodePackage(bytes: Uint8Array) {
   const magic = new TextDecoder().decode(bytes.slice(0, 7));
   if (magic !== "GYSPKG1") return bytes;
+  // The Flutter `encrypt` package defaults to AESMode.sic (CTR), not CBC.
+  // Keep the exact GYSApp-Fork package semantics so the KR master PDF can be
+  // reused without shipping a second copy of every song PDF.
   const key = await crypto.subtle.importKey(
     "raw",
     KEY_BYTES,
-    { name: "AES-CBC" },
+    { name: "AES-CTR" },
     false,
     ["decrypt"],
   );
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-CBC", iv: bytes.slice(7, 23) },
-    key,
-    bytes.slice(23),
+  const decrypted = new Uint8Array(
+    await crypto.subtle.decrypt(
+      { name: "AES-CTR", counter: bytes.slice(7, 23), length: 128 },
+      key,
+      bytes.slice(23),
+    ),
   );
+  // `encrypt` wraps AES/SIC in PKCS7 padding by default.  SIC is a stream
+  // mode, so the padding bytes are still present after WebCrypto decrypt and
+  // must be removed before feeding the payload to the gzip decoder.
+  const padding = decrypted.at(-1) ?? 0;
+  if (padding > 0 && padding <= 16) {
+    const start = decrypted.length - padding;
+    if (decrypted.slice(start).every((value) => value === padding)) {
+      return decompressGzip(decrypted.slice(0, start));
+    }
+  }
+  return decompressGzip(decrypted);
+}
+
+async function decompressGzip(decrypted: Uint8Array) {
   if (!("DecompressionStream" in globalThis))
     throw new Error("GYSPKG decompression unavailable");
-  const stream = new Blob([decrypted])
+  const stream = new Blob([decrypted.buffer as ArrayBuffer])
     .stream()
     .pipeThrough(new DecompressionStream("gzip"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
