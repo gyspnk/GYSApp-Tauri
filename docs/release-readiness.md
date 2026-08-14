@@ -12,3 +12,7 @@ The rewrite is intentionally milestone-driven:
 
 This repository currently provides Preview foundations only. It does not claim
 Beta/GA parity until the remaining reports and platform artifacts exist.
+
+`pages.yml` is the GitHub Pages Preview pipeline. `worker.yml` is deliberately
+manual and no-ops unless protected `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` secrets are present.
