@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T09:27:03.520Z",
+  "generatedAt": "2026-08-14T11:07:55.551Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -56,7 +56,7 @@
       "id": "fork-hymnal-map",
       "path": "offline/fork-hymnal-manifest.json",
       "bytes": 60711,
-      "sha256": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401"
+      "sha256": "44f71b9515a8d53269bb696642b8534570c5a5da96b8350baad42166bd5da4cc"
     },
     {
       "id": "soundfont-timgm",

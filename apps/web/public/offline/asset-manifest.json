@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T09:27:03.520Z",
+  "generatedAt": "2026-08-14T11:07:55.551Z",
   "items": [
     {
       "id": "bible-tb",
@@ -11,7 +11,7 @@
       "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
       "bytes": 21340160,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "bible-tb-reader",
@@ -22,7 +22,7 @@
       "sha256": "e5ebc8fc2351dde57029c02337ff7ccd912df3fe9165ef59c5eacb314db23421",
       "bytes": 7317700,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "hymn-catalog",
@@ -33,7 +33,7 @@
       "sha256": "26e43a2b3e1fc08cacf0727eea24b731b10872c8bb0228525555a693338fd39e",
       "bytes": 868856,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "music-lock",
@@ -44,7 +44,7 @@
       "sha256": "6d251d7867895a3b91a244d9aa490361aecb71ed5aa54c442f563d4d187b036a",
       "bytes": 307591,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "faith-topics",
@@ -55,7 +55,7 @@
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
       "bytes": 8311,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "sauh-feed",
@@ -66,7 +66,7 @@
       "sha256": "50da65c8983c1c404d3fb341289bdc422d6e08e2e30742e2379d93cfe69c3838",
       "bytes": 676,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "literature-catalog",
@@ -77,7 +77,7 @@
       "sha256": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490",
       "bytes": 150389,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "suara-sejati",
@@ -88,18 +88,18 @@
       "sha256": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b",
       "bytes": 3342,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "fork-hymnal-map",
       "kind": "pack",
       "source": "local",
       "path": "offline/fork-hymnal-manifest.json",
-      "version": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401",
-      "sha256": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401",
+      "version": "44f71b9515a8d53269bb696642b8534570c5a5da96b8350baad42166bd5da4cc",
+      "sha256": "44f71b9515a8d53269bb696642b8534570c5a5da96b8350baad42166bd5da4cc",
       "bytes": 60711,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "soundfont-timgm",
@@ -110,7 +110,7 @@
       "sha256": "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1",
       "bytes": 5994284,
       "status": "available",
-      "lastUpdated": "2026-08-14T09:27:03.520Z"
+      "lastUpdated": "2026-08-14T11:07:55.551Z"
     },
     {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",

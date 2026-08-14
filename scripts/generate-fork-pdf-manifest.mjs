@@ -9,7 +9,7 @@ const raw = JSON.parse(
   await readFile(`${root}/assets/data/index/kr_pdf_manifest.json`, "utf8"),
 );
 const manifest = {
-  sourceRepo: "ThenGB/GYSApp-Data",
+  sourceRepo: "ThenGB/GYSAPP-Fork",
   sourceCommit,
   generatedAt: new Date().toISOString(),
   bookCode: "KR",

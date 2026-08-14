@@ -145,7 +145,7 @@ export const HymnalPdfSongSchema = z.object({
   source: z.string().min(1),
 });
 export const HymnalPdfManifestSchema = z.object({
-  sourceRepo: z.literal("ThenGB/GYSApp-Data"),
+  sourceRepo: z.literal("ThenGB/GYSAPP-Fork"),
   sourceCommit: SourceCommitSchema,
   generatedAt: z.string().datetime({ offset: true }),
   bookCode: z.literal("KR"),

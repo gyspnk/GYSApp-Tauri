@@ -166,7 +166,7 @@ describe("public contracts", () => {
     ).toBe(true);
     expect(
       HymnalPdfManifestSchema.parse({
-        sourceRepo: "ThenGB/GYSApp-Data",
+        sourceRepo: "ThenGB/GYSAPP-Fork",
         sourceCommit: "4f0d39b",
         generatedAt: "2026-08-14T00:00:00.000Z",
         bookCode: "KR",
