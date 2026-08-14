@@ -39,6 +39,14 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Sauh/Suara/article readers, persistent/minimizable media, MIDI queue
   persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
+- Kidung detail now has an automated mutual-exclusion assertion: the Lirik,
+  Chord, and PDF tabs unmount the other viewer surfaces. The native boundary
+  check passes with 17 required offline/runtime assets totaling 36,844,871
+  bytes in the current build; this is a packaging proof, not a signed
+  installer artifact.
+- e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
+  flow. The public BFF validates the upstream `SignInResponse` and normalizes
+  the upstream WhatsApp READY response without returning session credentials.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then
   local), `edge`, or `local`. It remains unavailable until a protected

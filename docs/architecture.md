@@ -110,6 +110,26 @@ normalized copy in the repository boundary. Split columns, bookmarks,
 highlights, notes, and query history live in versioned local keys and remain
 available offline.
 
+Kidung detail is a single viewer with three exclusive modes. The selected mode
+is persisted per hymn in a versioned, bounded preference key. Selecting Chord
+or PDF starts the corresponding verified fetch and switches the surface only
+after the mode is selected; the Lyrics article is unmounted while either media
+viewer is active. This prevents duplicate lyrics/PDF and lyrics/chord layouts
+on small screens.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Lyrics
+  Lyrics --> Chord: select chord
+  Lyrics --> PDF: select PDF
+  Chord --> Lyrics: select lirik
+  Chord --> PDF: select PDF
+  PDF --> Lyrics: close/select lirik
+  PDF --> Chord: select chord
+  Chord --> Chord: verified cache/revalidate
+  PDF --> PDF: verified cache/revalidate
+```
+
 ```mermaid
 stateDiagram-v2
   [*] --> Missing
@@ -128,7 +148,9 @@ stateDiagram-v2
 Local `pnpm verify:prepush` runs the same primary gates used by CI: e-GYS
 revision/contract verification, formatting, lint, strict typecheck, unit and
 contract tests, production builds, bundle budget, and Playwright critical
-flows. GitHub Actions is a secondary verification layer; it is not the first
+flows. It also runs `verify:native-assets` after the web build, which checks
+the Tauri `frontendDist` boundary and every default offline/runtime binary.
+GitHub Actions is a secondary verification layer; it is not the first
 place a developer should discover an upstream incompatibility.
 
 ```mermaid

@@ -1,5 +1,6 @@
 import {
   AccountProfileSchema,
+  EgysSignInResponseSchema,
   EgysProvidersSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
@@ -90,7 +91,7 @@ export async function getEgysProviders(
 export async function exchangeEgysToken(
   provider: "google" | "apple",
   idToken: string,
-): Promise<void> {
+): Promise<{ accountId: string; expiresAt: string }> {
   if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
   const response = await request(apiUrl(`/api/v1/auth/exchange/${provider}`), {
     method: "POST",
@@ -99,6 +100,7 @@ export async function exchangeEgysToken(
     body: JSON.stringify({ idToken }),
   });
   if (!response.ok) throw new Error(`e-GYS sign-in failed: ${response.status}`);
+  return EgysSignInResponseSchema.parse(await response.json());
 }
 
 export async function startEgysWhatsAppLogin(signal?: AbortSignal) {

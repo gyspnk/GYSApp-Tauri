@@ -6,7 +6,9 @@ import {
   ChordDocumentV2Schema,
   EdgeTtsRequestSchema,
   ErrorResponseSchema,
+  EgysMeResponseSchema,
   EgysProvidersSchema,
+  EgysSignInResponseSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
   HymnCatalogEntrySchema,
@@ -188,6 +190,35 @@ describe("public contracts", () => {
     expect(EgysWhatsAppLoginStateSchema.parse({ state: "WAITING" }).state).toBe(
       "WAITING",
     );
+    expect(
+      EgysSignInResponseSchema.parse({
+        accountId: "account-1",
+        expiresAt: "2026-08-14T00:00:00.000Z",
+      }).accountId,
+    ).toBe("account-1");
+    expect(
+      EgysWhatsAppLoginStateSchema.parse({
+        accountId: "account-1",
+        expiresAt: "2026-08-14T00:00:00.000Z",
+      }).state,
+    ).toBe("READY");
+    expect(
+      EgysMeResponseSchema.parse({
+        accountId: "account-1",
+        personId: "person-1",
+        fullName: "Jemaat",
+        email: "jemaat@example.com",
+        can: {
+          viewMembers: true,
+          createMembers: false,
+          updateMembers: false,
+          deleteMembers: false,
+        },
+        branchScope: "Jakarta Selatan",
+        homeBranchId: "branch-1",
+        language: "id",
+      }).homeBranchId,
+    ).toBe("branch-1");
   });
 
   it("keeps media provenance and native e-GYS profile fields typed", () => {

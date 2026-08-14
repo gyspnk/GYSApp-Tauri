@@ -37,6 +37,11 @@ import {
   selectMidiPlaylistItem,
   subscribeMidiPlaylist,
 } from "./midi-playlist.js";
+import {
+  readHymnViewerMode,
+  type HymnViewerMode,
+  writeHymnViewerMode,
+} from "./hymn-view-mode.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -136,6 +141,7 @@ export function KidungPage({ locale }: { locale: Locale }) {
   if (songId)
     return (
       <HymnDetail
+        key={songId}
         locale={locale}
         songId={songId}
         state={catalog}
@@ -286,7 +292,9 @@ function HymnDetail({
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
-  const [showPdf, setShowPdf] = useState(false);
+  const [viewerMode, setViewerMode] = useState<HymnViewerMode>(() =>
+    readHymnViewerMode(songId),
+  );
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
@@ -298,6 +306,7 @@ function HymnDetail({
   const [favorite, setFavorite] = useState(false);
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const touchStartX = useRef<number | undefined>(undefined);
+  const autoLoadedSong = useRef<string | undefined>(undefined);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const verses = getHymnVerses(item);
@@ -355,6 +364,13 @@ function HymnDetail({
       void prefetchMusicAsset(ref);
     }
   }, [chordRepository, item, musicLock, next, prev]);
+  useEffect(() => {
+    if (!item || autoLoadedSong.current === item.id) return;
+    autoLoadedSong.current = item.id;
+    const saved = readHymnViewerMode(item.id);
+    if (saved === "chord" && chordStatus === "idle") void loadChord();
+    if (saved === "pdf" && pdfStatus === "idle") void loadPdf();
+  }, [item, chordStatus, pdfStatus]);
   if (state.status === "loading")
     return (
       <div className="page">
@@ -406,6 +422,8 @@ function HymnDetail({
     );
   };
   const loadChord = async () => {
+    setViewerMode("chord");
+    writeHymnViewerMode(item.id, "chord");
     setChordStatus("loading");
     try {
       setChordDocument(await chordRepository.getChord(item.id));
@@ -417,6 +435,8 @@ function HymnDetail({
     }
   };
   const loadPdf = async () => {
+    setViewerMode("pdf");
+    writeHymnViewerMode(item.id, "pdf");
     setPdfStatus("loading");
     try {
       let bytes: Uint8Array;
@@ -448,7 +468,6 @@ function HymnDetail({
         return nextUrl;
       });
       setPdfStatus("ready");
-      setShowPdf(true);
       show(
         source === "fork"
           ? "PDF Kidung Rohani dibuka dari database GYSApp-Fork."
@@ -458,6 +477,12 @@ function HymnDetail({
       setPdfStatus("error");
       show("PDF gagal dimuat. Periksa koneksi atau cache.");
     }
+  };
+  const selectViewerMode = (mode: HymnViewerMode) => {
+    writeHymnViewerMode(item.id, mode);
+    setViewerMode(mode);
+    if (mode === "chord" && chordStatus !== "ready") void loadChord();
+    if (mode === "pdf" && pdfStatus !== "ready") void loadPdf();
   };
   const loadMidi = async () => {
     if (!musicLock) {
@@ -558,7 +583,7 @@ function HymnDetail({
           <button
             type="button"
             className="quiet-button"
-            onClick={() => void loadChord()}
+            onClick={() => selectViewerMode("chord")}
             disabled={chordStatus === "loading"}
           >
             {chordStatus === "loading"
@@ -623,12 +648,16 @@ function HymnDetail({
           <button
             type="button"
             className="quiet-button"
-            onClick={() => (showPdf ? setShowPdf(false) : void loadPdf())}
+            onClick={() =>
+              viewerMode === "pdf"
+                ? selectViewerMode("lyrics")
+                : selectViewerMode("pdf")
+            }
             disabled={pdfStatus === "loading"}
           >
             {pdfStatus === "loading"
               ? "Memuat PDF…"
-              : showPdf
+              : viewerMode === "pdf"
                 ? "Tutup PDF"
                 : "Buka PDF"}
           </button>
@@ -712,25 +741,81 @@ function HymnDetail({
             }))}
           />
         </div>
-        {!showPdf && (
-          <>
-            <article
-              className="lyrics-sheet verse-enter"
-              key={`${item.id}-${safeVerseIndex}`}
-              aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
-              onTouchStart={onVerseTouchStart}
-              onTouchEnd={onVerseTouchEnd}
+        <div
+          className="viewer-mode-tabs"
+          role="tablist"
+          aria-label="Mode tampilan kidung"
+        >
+          {(
+            [
+              ["lyrics", "Lirik"],
+              ["chord", "Chord"],
+              ["pdf", "PDF"],
+            ] as const
+          ).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              aria-selected={viewerMode === mode}
+              className={
+                viewerMode === mode
+                  ? "viewer-mode-tab is-active"
+                  : "viewer-mode-tab"
+              }
+              onClick={() => selectViewerMode(mode)}
+              disabled={
+                (mode === "chord" && chordStatus === "loading") ||
+                (mode === "pdf" && pdfStatus === "loading")
+              }
             >
-              {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
-                <p key={`${index}-${line}`}>{line || " "}</p>
-              ))}
-            </article>
-            {chordDocument && (
-              <ChordViewer document={chordDocument} transpose={transpose} />
-            )}
-          </>
+              {mode === "chord" && chordStatus === "loading"
+                ? "Memuat chord…"
+                : mode === "pdf" && pdfStatus === "loading"
+                  ? "Memuat PDF…"
+                  : label}
+            </button>
+          ))}
+        </div>
+        {viewerMode === "lyrics" && (
+          <article
+            className="lyrics-sheet verse-enter"
+            key={`${item.id}-${safeVerseIndex}`}
+            aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
+            onTouchStart={onVerseTouchStart}
+            onTouchEnd={onVerseTouchEnd}
+          >
+            {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
+              <p key={`${index}-${line}`}>{line || " "}</p>
+            ))}
+          </article>
         )}
-        {showPdf && (
+        {viewerMode === "chord" && chordStatus === "loading" && (
+          <div className="loading-panel" role="status">
+            Chord sedang diverifikasi…
+          </div>
+        )}
+        {viewerMode === "chord" && chordStatus === "error" && (
+          <div className="error-panel" role="alert">
+            <strong>Chord belum tersedia</strong>
+            <span>Sambungkan internet lalu coba lagi.</span>
+          </div>
+        )}
+        {viewerMode === "chord" && chordDocument && (
+          <ChordViewer document={chordDocument} transpose={transpose} />
+        )}
+        {viewerMode === "pdf" && pdfStatus === "loading" && (
+          <div className="loading-panel" role="status">
+            PDF reader sedang dibuka…
+          </div>
+        )}
+        {viewerMode === "pdf" && pdfStatus === "error" && (
+          <div className="error-panel" role="alert">
+            <strong>PDF gagal dimuat</strong>
+            <span>Periksa koneksi atau cache, lalu coba lagi.</span>
+          </div>
+        )}
+        {viewerMode === "pdf" && pdfStatus === "ready" && (
           <Suspense
             fallback={
               <div className="loading-panel">PDF reader sedang dibuka…</div>

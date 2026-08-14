@@ -418,7 +418,7 @@ export function MorePage({ locale }: { locale: Locale }) {
             client_id: clientId,
             callback: (response) => {
               void exchangeEgysToken("google", response.credential)
-                .then(resolve)
+                .then(() => resolve())
                 .catch(reject);
             },
           });

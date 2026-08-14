@@ -439,7 +439,13 @@ describe("BFF public boundary", () => {
           fullName: "Jemaat GYS",
           email: "jemaat@example.com",
           branchScope: "Jakarta Selatan",
-          can: { viewMembers: true },
+          homeBranchId: "branch-1",
+          can: {
+            viewMembers: true,
+            createMembers: false,
+            updateMembers: false,
+            deleteMembers: false,
+          },
           language: "id",
         });
       if (url.endsWith("/api/v1/members/person-1"))
@@ -532,6 +538,127 @@ describe("BFF public boundary", () => {
       );
       expect(state.status).toBe(200);
       expect(((await state.json()) as { state: string }).state).toBe("WAITING");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("exchanges a provider ID token without exposing it to the browser", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenBody = "";
+    globalThis.fetch = (async (input, init) => {
+      expect(String(input)).toBe("https://egys.example/api/v1/auth/google");
+      seenBody = String(init?.body ?? "");
+      return Response.json(
+        {
+          accountId: "account-1",
+          expiresAt: "2026-08-15T12:00:00+07:00",
+        },
+        {
+          headers: {
+            "set-cookie":
+              "egys_session=opaque; Domain=egys.example; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Lax",
+          },
+        },
+      );
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/auth/exchange/google",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ idToken: "provider-secret" }),
+        },
+        { EGYS_API_BASE_URL: "https://egys.example" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        authenticated: true,
+        expiresAt: "2026-08-15T12:00:00+07:00",
+      });
+      expect(seenBody).toBe(JSON.stringify({ idToken: "provider-secret" }));
+      const cookie = response.headers.get("set-cookie") ?? "";
+      expect(cookie).toContain("egys_session=opaque");
+      expect(cookie).toContain("Path=/");
+      expect(cookie).not.toContain("Domain=");
+      expect(cookie).not.toContain("provider-secret");
+
+      const invalidProvider = await app.request(
+        "/api/v1/auth/exchange/github",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ idToken: "provider-secret" }),
+        },
+        { EGYS_API_BASE_URL: "https://egys.example" },
+      );
+      expect(invalidProvider.status).toBe(400);
+      expect(
+        ((await invalidProvider.json()) as { error: { code: string } }).error
+          .code,
+      ).toBe("VALIDATION_ERROR");
+
+      const invalidBody = await app.request(
+        "/api/v1/auth/exchange/google",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({}),
+        },
+        { EGYS_API_BASE_URL: "https://egys.example" },
+      );
+      expect(invalidBody.status).toBe(400);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("normalizes the READY WhatsApp response and forwards its session cookie", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      Response.json(
+        {
+          accountId: "account-1",
+          expiresAt: "2026-08-15T12:00:00+07:00",
+        },
+        {
+          headers: {
+            "set-cookie":
+              "egys_session=opaque; Domain=egys.example; Path=/; HttpOnly; Secure; SameSite=Lax",
+          },
+        },
+      )) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/auth/whatsapp/state?token=poll-token",
+        { headers: { Origin: "http://localhost:5173" } },
+        { EGYS_API_BASE_URL: "https://egys.example" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ state: "READY" });
+      expect(response.headers.get("set-cookie")).toContain(
+        "egys_session=opaque",
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }

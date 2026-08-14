@@ -26,9 +26,12 @@ configuration remain deployment prerequisites.
 
 1. The identity provider SDK obtains a short-lived Google or Apple `idToken` in the client.
 2. The client posts `{ "idToken": "…" }` to `/api/v1/auth/exchange/google` or `/api/v1/auth/exchange/apple`.
-3. The Worker forwards the token to e-GYS `/api/v1/auth/{provider}` and rewrites the upstream `Set-Cookie` domain to the BFF origin.
+3. The Worker forwards the token to e-GYS `/api/v1/auth/{provider}`, validates the typed `SignInResponse`, and rewrites the upstream `Set-Cookie` domain to the BFF origin.
 4. `/api/v1/account/profile` and `/api/v1/auth/session` forward the HttpOnly cookie to e-GYS `/api/v1/auth/me`.
-5. Logout forwards to `/api/v1/auth/signout` and clears the local cookie.
+5. Logout forwards to `/api/v1/auth/signout` and clears the local cookie. The
+   WhatsApp poll endpoint returns the same `SignInResponse` when it reaches
+   `READY`; the BFF consumes that response, forwards its HttpOnly cookie, and
+   exposes only `{ state: "READY" }` to the browser.
 
 The upstream e-GYS repository is private and does not expose a public production base URL. Configure it only as a Cloudflare Worker secret:
 

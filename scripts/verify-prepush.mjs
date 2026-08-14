@@ -17,5 +17,6 @@ run("pnpm", ["typecheck"]);
 run("pnpm", ["native:check"]);
 run("pnpm", ["test"]);
 run("pnpm", ["build"]);
+run("pnpm", ["verify:native-assets"]);
 run("pnpm", ["verify:bundle"]);
 run("pnpm", ["--filter", "@gys/web", "test:e2e"]);

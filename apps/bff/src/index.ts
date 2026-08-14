@@ -9,7 +9,9 @@ import {
   type ChordManifestV1,
   type ErrorCode,
   type OnlineContent,
+  EgysMeResponseSchema,
   EgysProvidersSchema,
+  EgysSignInResponseSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
   EdgeTtsRequestSchema,
@@ -802,7 +804,19 @@ export function createApp(
     // access token or provider payload to the browser.
     if (!upstream.ok)
       return errorResponse(c, "UNAUTHORIZED", "e-GYS authentication failed");
-    return c.json({ authenticated: true });
+    const body = EgysSignInResponseSchema.safeParse(
+      await upstream.json().catch(() => undefined),
+    );
+    if (!body.success)
+      return errorResponse(
+        c,
+        "INTEGRITY_ERROR",
+        "e-GYS authentication response is invalid",
+      );
+    return c.json({
+      authenticated: true,
+      expiresAt: body.data.expiresAt,
+    });
   });
 
   app.get("/api/v1/auth/session", async (c) => {
@@ -835,22 +849,16 @@ export function createApp(
     const upstream = await proxyEgysJson(c, "auth/me");
     if (!upstream.ok)
       return errorResponse(c, "UNAUTHORIZED", "No active session");
-    const raw = (await upstream.json().catch(() => undefined)) as
-      | {
-          accountId?: unknown;
-          personId?: unknown;
-          fullName?: unknown;
-          email?: unknown;
-          branchScope?: unknown;
-          can?: {
-            viewMembers?: unknown;
-            createMembers?: unknown;
-            updateMembers?: unknown;
-            deleteMembers?: unknown;
-          };
-          language?: unknown;
-        }
-      | undefined;
+    const parsedIdentity = EgysMeResponseSchema.safeParse(
+      await upstream.json().catch(() => undefined),
+    );
+    if (!parsedIdentity.success)
+      return errorResponse(
+        c,
+        "INTEGRITY_ERROR",
+        "e-GYS session response is invalid",
+      );
+    const raw = parsedIdentity.data;
     let member:
       | {
           fullName?: unknown;
@@ -864,7 +872,7 @@ export function createApp(
           }>;
         }
       | undefined;
-    if (typeof raw?.personId === "string" && raw.personId) {
+    if (raw.personId) {
       try {
         const memberResponse = await requestEgys(
           c,
@@ -896,19 +904,19 @@ export function createApp(
     const branchName =
       typeof currentMembership?.branchName === "string"
         ? currentMembership.branchName
-        : typeof raw?.branchScope === "string"
+        : typeof raw.branchScope === "string"
           ? raw.branchScope
           : undefined;
     const profile = AccountProfileSchema.parse({
-      id: String(raw?.accountId ?? "egys"),
-      ...(typeof raw?.personId === "string" ? { personId: raw.personId } : {}),
-      displayName: String(raw?.fullName ?? "e-GYS"),
-      ...(typeof raw?.email === "string" && raw.email.includes("@")
-        ? { email: raw.email }
-        : {}),
+      id: raw.accountId,
+      personId: raw.personId,
+      displayName: raw.fullName ?? "e-GYS",
+      ...(raw.email ? { email: raw.email } : {}),
       ...(typeof currentMembership?.branchCode === "string"
         ? { branchCode: currentMembership.branchCode }
-        : {}),
+        : raw.homeBranchId
+          ? { branchCode: raw.homeBranchId }
+          : {}),
       ...(branchName ? { branchName } : {}),
       ...(typeof member?.membershipNo === "string"
         ? { membershipNo: member.membershipNo }
@@ -918,7 +926,7 @@ export function createApp(
         : member
           ? { isMember: true }
           : {}),
-      ...(raw?.can && typeof raw.can === "object"
+      ...(raw.can
         ? {
             permissions: {
               ...(typeof raw.can.viewMembers === "boolean"
@@ -937,8 +945,7 @@ export function createApp(
           }
         : {}),
       provider: "egys",
-      locale:
-        raw?.language === "en" || raw?.language === "zh" ? raw.language : "id",
+      locale: raw.language === "en" ? "en" : "id",
     });
     return c.json({ profile });
   });

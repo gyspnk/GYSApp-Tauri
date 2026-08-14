@@ -47,6 +47,15 @@
   dilihat” shelf.
 - Added a continuous GYSChordWeb-style PDF mode with lazy per-page rendering,
   keyboard focus, smooth page jumps, and bounded mobile memory use.
+- Added a per-hymn, persisted Lirik/Chord/PDF mode selector so only one viewer
+  surface is mounted at a time; mode tabs are responsive, keyboard-visible,
+  and reduced-motion aware.
+- Hardened the e-GYS boundary with typed provider/session schemas, explicit
+  provider-exchange tests, HttpOnly cookie forwarding assertions, and correct
+  normalization of the upstream WhatsApp READY response.
+- Added a native packaging asset gate that fails when the Tauri frontend
+  boundary omits any required Bible, hymn, soundfont, FluidSynth, or logo
+  asset; the current verified core is 36,844,871 bytes.
 - Added a same-origin canonical music proxy for MIDI/chord/PDF/soundfont bytes,
   with immutable source-commit checks and raw-asset fallback to prevent binary
   loads from being blocked by browser CORS/range behavior.

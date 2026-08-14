@@ -26,7 +26,8 @@
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs",
     "sync:egys": "node scripts/sync-egys.mjs --write --strict",
     "verify:precommit": "node scripts/verify-precommit.mjs",
-    "verify:prepush": "node scripts/verify-prepush.mjs"
+    "verify:prepush": "node scripts/verify-prepush.mjs",
+    "verify:native-assets": "node scripts/verify-native-assets.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

@@ -27,7 +27,9 @@ service or platform artifact that cannot be exercised in this workspace.
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
   Web Audio fallback, and shell-level minimizable media surface with seek,
   volume, mute, tempo, transpose, Media Session, wake-lock, and persisted
-  pointer-drag positioning controls.
+  pointer-drag positioning controls. Hymn detail now has an explicit
+  mutually-exclusive `Lirik` / `Chord` / `PDF` viewer mode, remembers the
+  last mode per song, and never renders lyrics beside a chord or PDF surface.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -35,7 +37,10 @@ service or platform artifact that cannot be exercised in this workspace.
   entries to source cover images; the remaining 18 have explicit source-backed
   fallback because no cover is exposed by the upstream metadata.
 - Native e-GYS BFF/session/profile adapter with branch and membership mapping;
-  no WebView or client-side credential storage.
+  no WebView or client-side credential storage. Provider exchange and
+  WhatsApp READY responses are schema-validated against the upstream
+  ID-token/HttpOnly-cookie contract; upstream session identity is validated
+  before profile normalization.
 - TB reader hardening: source markup is sanitized, search supports token/phrase/
   whole-word filters with local history, and the reader has persistent notes,
   highlights, verse selection, split columns with a draggable/keyboard-safe
@@ -62,6 +67,8 @@ service or platform artifact that cannot be exercised in this workspace.
   20 passing flows. A browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
   same hymn detail route. Native `cargo check` is wired into the pre-push gate.
+  `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
+  17 required offline/runtime assets (36,844,871 bytes in the current build).
 
 ## Implemented / Needs Verification
 

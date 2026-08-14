@@ -165,6 +165,31 @@ export const EgysProvidersSchema = z.object({
   whatsapp: z.boolean(),
 });
 export type EgysProviders = z.infer<typeof EgysProvidersSchema>;
+/** Response returned after e-GYS accepts a provider ID token. The session
+ * itself is carried only by the HttpOnly cookie. */
+export const EgysSignInResponseSchema = z.object({
+  accountId: z.string().min(1),
+  expiresAt: z.string().datetime({ offset: true }),
+});
+export type EgysSignInResponse = z.infer<typeof EgysSignInResponseSchema>;
+export const EgysMeResponseSchema = z.object({
+  accountId: z.string().min(1),
+  personId: z.string().min(1),
+  fullName: z.string().min(1).nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  can: z
+    .object({
+      viewMembers: z.boolean(),
+      createMembers: z.boolean(),
+      updateMembers: z.boolean(),
+      deleteMembers: z.boolean(),
+    })
+    .optional(),
+  branchScope: z.string().min(1).nullable().optional(),
+  homeBranchId: z.string().min(1).nullable().optional(),
+  language: z.enum(["id", "en", "ms"]).nullable().optional(),
+});
+export type EgysMeResponse = z.infer<typeof EgysMeResponseSchema>;
 export const EgysWhatsAppLoginStartedSchema = z.object({
   pollToken: z.string().min(1),
   referenceCode: z.string().min(1),
@@ -174,9 +199,19 @@ export const EgysWhatsAppLoginStartedSchema = z.object({
 export type EgysWhatsAppLoginStarted = z.infer<
   typeof EgysWhatsAppLoginStartedSchema
 >;
-export const EgysWhatsAppLoginStateSchema = z.object({
-  state: z.enum(["WAITING", "READY", "UNKNOWN_SENDER", "EXPIRED"]),
-});
+export const EgysWhatsAppLoginStateSchema = z
+  .union([
+    z.object({
+      state: z.enum(["WAITING", "READY", "UNKNOWN_SENDER", "EXPIRED"]),
+    }),
+    // The upstream returns SignInResponse (and sets the cookie) when a poll
+    // transitions to READY. Normalize that response at the public boundary
+    // so the browser never needs account/session details from the body.
+    EgysSignInResponseSchema,
+  ])
+  .transform((value) =>
+    "state" in value ? value : { state: "READY" as const },
+  );
 export type EgysWhatsAppLoginState = z.infer<
   typeof EgysWhatsAppLoginStateSchema
 >;
