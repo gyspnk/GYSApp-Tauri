@@ -11,6 +11,7 @@ const chord = await readJson(
 );
 const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
+const literature = await readJson("apps/web/public/offline/literature.json");
 
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
@@ -25,6 +26,16 @@ if (hymns.sourceCommit !== lock.sourceCommit || hymns.items.length !== 533)
   throw new Error("hymn catalog drifted from music lock");
 if (pack.hymns !== hymns.items.length)
   throw new Error("offline pack hymn count drifted");
+if (literature.source !== "tjc.org" || literature.items.length < 1)
+  throw new Error("literature snapshot is invalid");
+for (const item of literature.items) {
+  if (
+    item.imageUrl &&
+    (!item.imageUrl.startsWith("https://tjc.org/") ||
+      !/\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(item.imageUrl))
+  )
+    throw new Error(`literature cover source is invalid: ${item.id}`);
+}
 
 for (const item of pack.items) {
   const bytes = await readFile(join("apps/web/public", item.path));
@@ -34,5 +45,5 @@ for (const item of pack.items) {
 }
 
 console.log(
-  `Generated provenance verified: ${lock.items.length} music items, ${hymns.items.length} hymns, ${pack.items.length} offline assets.`,
+  `Generated provenance verified: ${lock.items.length} music items, ${hymns.items.length} hymns, ${pack.items.length} offline assets, ${literature.items.filter((item) => item.imageUrl).length}/${literature.items.length} literature covers.`,
 );

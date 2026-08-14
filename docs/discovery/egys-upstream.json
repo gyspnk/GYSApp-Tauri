@@ -1,6 +1,8 @@
 {
   "sourceRepo": "Gereja-Yesus-Sejati/egys",
   "sourceCommit": "cdfc3d105dc85e7c5ee29bf998782daa0f88d45a",
-  "checkedAt": "2026-08-14T00:00:00.000Z",
-  "integration": "versioned REST contract; source code is not copied"
+  "checkedAt": "2026-08-14T08:29:16.621Z",
+  "integration": "versioned REST contract; source code is not copied",
+  "contractHash": "43c26f8ad2bff683a001821330cd1f0b2e80ab6b47089d324c878634d92f583e",
+  "compatibility": "compatible"
 }

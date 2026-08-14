@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   LiteratureCatalogSchema,
   type LiteratureCategory,
@@ -6,6 +7,7 @@ import {
 } from "@gys/contracts";
 import { type Locale } from "./i18n.js";
 import { Select } from "./select.js";
+import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 
 const labels: Record<LiteratureCategory | "all", string> = {
   all: "Semua koleksi",
@@ -44,7 +46,40 @@ async function loadCatalog(signal: AbortSignal) {
       const response = await fetch(url, { signal, cache: "no-cache" });
       if (!response.ok)
         throw new Error(`Literature request failed: ${response.status}`);
-      return LiteratureCatalogSchema.parse(await response.json());
+      const catalog = LiteratureCatalogSchema.parse(await response.json());
+      // The Worker can be refreshed independently from the checked-in pack.
+      // Merge the verified cover index from the same revision so a BFF catalog
+      // never regresses to generic covers while its HTML parser is updating.
+      if (url !== `${import.meta.env.BASE_URL}offline/literature.json`) {
+        try {
+          const snapshotResponse = await fetch(
+            `${import.meta.env.BASE_URL}offline/literature.json`,
+            { signal, cache: "force-cache" },
+          );
+          if (snapshotResponse.ok) {
+            const snapshot = LiteratureCatalogSchema.parse(
+              await snapshotResponse.json(),
+            );
+            const covers = new Map(
+              snapshot.items
+                .filter((item) => item.imageUrl)
+                .map((item) => [item.id, item.imageUrl]),
+            );
+            return {
+              ...catalog,
+              items: catalog.items.map((item) => ({
+                ...item,
+                ...(item.imageUrl || !covers.get(item.id)
+                  ? {}
+                  : { imageUrl: covers.get(item.id) }),
+              })),
+            };
+          }
+        } catch {
+          // A valid BFF catalog remains usable without its optional cover map.
+        }
+      }
+      return catalog;
     } catch (error) {
       if (signal.aborted) throw error;
       lastError = error;
@@ -53,6 +88,56 @@ async function loadCatalog(signal: AbortSignal) {
   throw lastError instanceof Error
     ? lastError
     : new Error("Literature catalog unavailable");
+}
+
+type CatalogState =
+  | { status: "loading" }
+  | { status: "ready"; items: LiteratureItem[] }
+  | { status: "error" };
+
+function useLiteratureCatalog() {
+  const [state, setState] = useState<CatalogState>({ status: "loading" });
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadCatalog(controller.signal)
+      .then((catalog) =>
+        setState({
+          status: "ready",
+          items: [
+            ...new Map(catalog.items.map((item) => [item.id, item])).values(),
+          ],
+        }),
+      )
+      .catch(() => {
+        if (!controller.signal.aborted) setState({ status: "error" });
+      });
+    return () => controller.abort();
+  }, []);
+  return state;
+}
+
+type LiteratureProgress = {
+  percent: number;
+  updatedAt: string;
+  downloadedAt?: string;
+};
+const PROGRESS_KEY = "gys-literature-progress-v1";
+const DOWNLOAD_CACHE = "gys-literature-downloads-v1";
+
+function readLiteratureProgress(): Record<string, LiteratureProgress> {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROGRESS_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLiteratureProgress(id: string, progress: LiteratureProgress) {
+  const next = readLiteratureProgress();
+  next[id] = progress;
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent("gys-literature-progress-change"));
 }
 
 function dateLabel(value: string | undefined, locale: Locale) {
@@ -75,6 +160,8 @@ function Cover({
   item: LiteratureItem;
   compact?: boolean;
 }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [item.imageUrl]);
   const initials = item.title
     .split(/\s+/)
     .filter(Boolean)
@@ -82,12 +169,14 @@ function Cover({
     .map((word) => word[0])
     .join("")
     .toUpperCase();
-  return item.imageUrl ? (
+  return item.imageUrl && !failed ? (
     <img
       className={`literature-cover ${compact ? "is-compact" : ""}`}
       src={item.imageUrl}
       alt=""
       loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
     />
   ) : (
     <span
@@ -101,30 +190,14 @@ function Cover({
 }
 
 export function LiteraturePage({ locale }: { locale: Locale }) {
-  const [items, setItems] = useState<LiteratureItem[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
+  const catalogState = useLiteratureCatalog();
+  const items = catalogState.status === "ready" ? catalogState.items : [];
+  const status = catalogState.status;
   const [category, setCategory] = useState<LiteratureCategory | "all">("all");
   const [sort, setSort] = useState<"recent" | "title">("recent");
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(40);
   const deferredQuery = useDeferredValue(query);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void loadCatalog(controller.signal)
-      .then((catalog) => {
-        setItems([
-          ...new Map(catalog.items.map((item) => [item.id, item])).values(),
-        ]);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setStatus("error");
-      });
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => setVisibleCount(40), [category, deferredQuery, sort]);
 
@@ -221,11 +294,9 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             </div>
             <div className="literature-shelf">
               {featured.map((item) => (
-                <a
+                <Link
                   className="literature-shelf-item"
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
+                  to={`/literatur/${encodeURIComponent(item.id)}`}
                   key={item.id}
                 >
                   <Cover item={item} compact />
@@ -236,7 +307,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                       {dateLabel(item.publishedAt, locale)}
                     </small>
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </section>
@@ -308,11 +379,9 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               </div>
               <div className="literature-list">
                 {groupItems.map((item) => (
-                  <a
+                  <Link
                     className="literature-row"
-                    href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
+                    to={`/literatur/${encodeURIComponent(item.id)}`}
                     key={item.id}
                   >
                     <Cover item={item} />
@@ -327,7 +396,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     <span className="literature-arrow" aria-hidden="true">
                       ›
                     </span>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -342,6 +411,273 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         >
           Muat 40 judul lagi
         </button>
+      )}
+    </div>
+  );
+}
+
+function itemFromRoute(items: LiteratureItem[], encodedId: string | undefined) {
+  if (!encodedId) return undefined;
+  try {
+    const id = decodeURIComponent(encodedId);
+    return items.find((item) => item.id === id);
+  } catch {
+    return undefined;
+  }
+}
+
+export function LiteratureDetailPage({ locale }: { locale: Locale }) {
+  const { itemId } = useParams();
+  const catalogState = useLiteratureCatalog();
+  const item =
+    catalogState.status === "ready"
+      ? itemFromRoute(catalogState.items, itemId)
+      : undefined;
+  const [progress, setProgress] = useState<LiteratureProgress>();
+  const [favorite, setFavorite] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<
+    "idle" | "checking" | "downloading" | "ready" | "error"
+  >("idle");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    if (!item) return;
+    const existing = readLiteratureProgress()[item.id];
+    const opened = {
+      percent: existing?.percent ?? 0,
+      updatedAt: new Date().toISOString(),
+      ...(existing?.downloadedAt
+        ? { downloadedAt: existing.downloadedAt }
+        : {}),
+    };
+    saveLiteratureProgress(item.id, opened);
+    setProgress(opened);
+    setFavorite(isFavorite("literature", item.id));
+    let cancelled = false;
+    setDownloadStatus("checking");
+    void (async () => {
+      if (typeof caches === "undefined") {
+        if (!cancelled) setDownloadStatus("idle");
+        return;
+      }
+      const cached = await caches.match(item.url);
+      if (!cancelled) setDownloadStatus(cached ? "ready" : "idle");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [item]);
+
+  useEffect(() => {
+    return subscribeFavorites(() => {
+      if (item) setFavorite(isFavorite("literature", item.id));
+    });
+  }, [item]);
+
+  const flash = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), 2600);
+  };
+
+  const updateProgress = (percent: number) => {
+    if (!item) return;
+    const next = {
+      percent: Math.max(0, Math.min(100, Math.round(percent))),
+      updatedAt: new Date().toISOString(),
+      ...(progress?.downloadedAt
+        ? { downloadedAt: progress.downloadedAt }
+        : {}),
+    };
+    saveLiteratureProgress(item.id, next);
+    setProgress(next);
+  };
+
+  const toggle = () => {
+    if (!item) return;
+    const next = toggleFavorite({
+      kind: "literature",
+      id: item.id,
+      title: item.title,
+    });
+    setFavorite(next);
+    flash(next ? "Ditambahkan ke favorit perangkat." : "Dihapus dari favorit.");
+  };
+
+  const download = async () => {
+    if (!item || item.format !== "pdf") return;
+    setDownloadStatus("downloading");
+    try {
+      const response = await fetch(item.url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`download failed: ${response.status}`);
+      const bytes = await response.arrayBuffer();
+      if (bytes.byteLength < 5) throw new Error("empty literature file");
+      const contentType = response.headers.get("content-type") ?? "";
+      if (item.format === "pdf") {
+        const header = new TextDecoder().decode(bytes.slice(0, 5));
+        if (!header.startsWith("%PDF") && !contentType.includes("pdf"))
+          throw new Error("downloaded resource is not a PDF");
+      }
+      if (typeof caches === "undefined") throw new Error("cache unavailable");
+      const cache = await caches.open(DOWNLOAD_CACHE);
+      await cache.put(
+        item.url,
+        new Response(bytes, {
+          headers: { "content-type": contentType || "application/pdf" },
+        }),
+      );
+      const next = {
+        percent: progress?.percent ?? 0,
+        updatedAt: progress?.updatedAt ?? new Date().toISOString(),
+        downloadedAt: new Date().toISOString(),
+      };
+      saveLiteratureProgress(item.id, next);
+      setProgress(next);
+      setDownloadStatus("ready");
+      flash("PDF tersimpan untuk dibaca offline.");
+    } catch {
+      setDownloadStatus("error");
+      flash("PDF belum dapat disimpan. Periksa koneksi dan coba lagi.");
+    }
+  };
+
+  const openCached = async () => {
+    if (!item || typeof caches === "undefined") return;
+    const cached = await caches.match(item.url);
+    if (!cached) return;
+    const blob = await cached.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener,noreferrer");
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  };
+
+  if (catalogState.status === "loading")
+    return (
+      <div className="page">
+        <div className="loading-panel" role="status">
+          Membuka detail literatur…
+        </div>
+      </div>
+    );
+  if (catalogState.status === "error" || !item)
+    return (
+      <div className="page">
+        <div className="error-panel" role="alert">
+          <strong>Literatur tidak ditemukan</strong>
+          <Link className="quiet-button" to="/literatur">
+            Kembali ke katalog
+          </Link>
+        </div>
+      </div>
+    );
+  const categoryLabel = labels[item.category];
+  const progressPercent = progress?.percent ?? 0;
+  return (
+    <div
+      className="page literature-detail-page"
+      data-testid="literature-detail"
+    >
+      <div className="detail-back">
+        <Link className="text-button" to="/literatur">
+          ← Semua literatur
+        </Link>
+        <span>{categoryLabel}</span>
+      </div>
+      <section className="literature-detail-hero">
+        <Cover item={item} />
+        <div className="literature-detail-copy">
+          <p className="date-line">Perpustakaan rohani · {categoryLabel}</p>
+          <h1>{item.title}</h1>
+          <p className="intro-copy">
+            {item.description || "Bacaan resmi dari arsip Gereja Yesus Sejati."}
+          </p>
+          <div className="literature-detail-meta">
+            <span>{formatLabels[item.format]}</span>
+            <span>{dateLabel(item.publishedAt, locale)}</span>
+          </div>
+          <div className="detail-actions">
+            <a
+              className="primary-button"
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Buka sumber resmi ↗
+            </a>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={toggle}
+              aria-pressed={favorite}
+            >
+              {favorite ? "★ Favorit" : "☆ Simpan favorit"}
+            </button>
+          </div>
+        </div>
+      </section>
+      <section className="literature-reading-panel">
+        <div className="section-title-row">
+          <div>
+            <p className="date-line">Perangkat ini</p>
+            <h2>Lanjutkan membaca</h2>
+          </div>
+          <span>{progressPercent}%</span>
+        </div>
+        <progress
+          value={progressPercent}
+          max={100}
+          aria-label={`Kemajuan membaca ${progressPercent}%`}
+        />
+        <div className="literature-progress-actions">
+          <button
+            className="quiet-button"
+            type="button"
+            onClick={() => updateProgress(Math.max(1, progressPercent))}
+          >
+            Mulai membaca
+          </button>
+          <button
+            className="quiet-button"
+            type="button"
+            onClick={() => updateProgress(100)}
+          >
+            Tandai selesai
+          </button>
+          {item.format === "pdf" && (
+            <>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void download()}
+                disabled={downloadStatus === "downloading"}
+              >
+                {downloadStatus === "downloading"
+                  ? "Mengunduh…"
+                  : downloadStatus === "ready"
+                    ? "Perbarui PDF offline"
+                    : "Unduh PDF"}
+              </button>
+              {downloadStatus === "ready" && (
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => void openCached()}
+                >
+                  Buka offline
+                </button>
+              )}
+            </>
+          )}
+        </div>
+        <small className="literature-progress-note">
+          {progress?.updatedAt
+            ? `Terakhir dibuka ${new Date(progress.updatedAt).toLocaleDateString(locale)}`
+            : "Kemajuan tersimpan di perangkat ini."}
+        </small>
+      </section>
+      {notice && (
+        <div className="toast" role="status">
+          {notice}
+        </div>
       )}
     </div>
   );

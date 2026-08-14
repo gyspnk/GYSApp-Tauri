@@ -4,6 +4,7 @@ import {
   memo,
   Suspense,
   useEffect,
+  useCallback,
   useState,
   useSyncExternalStore,
   type ErrorInfo,
@@ -24,6 +25,7 @@ import { fetchSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
+import { GlobalSearch } from "./global-search.js";
 import {
   getActivity,
   subscribeActivity,
@@ -47,6 +49,11 @@ const LiteraturePage = lazy(() =>
     default: Page,
   })),
 );
+const LiteratureDetailPage = lazy(() =>
+  import("./literature.js").then(({ LiteratureDetailPage: Page }) => ({
+    default: Page,
+  })),
+);
 
 type Theme = "light" | "dark" | "system";
 type IconName =
@@ -57,7 +64,9 @@ type IconName =
   | "play"
   | "pause"
   | "arrow"
-  | "book";
+  | "book"
+  | "search"
+  | "person";
 
 class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -158,6 +167,18 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <path d="M4 5v17" />
     </>
   ),
+  search: (
+    <>
+      <circle cx="10.8" cy="10.8" r="6.5" />
+      <path d="m16 16 5 5" />
+    </>
+  ),
+  person: (
+    <>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 21a7 7 0 0 1 14 0" />
+    </>
+  ),
 };
 
 const Icon = memo(function Icon({
@@ -231,12 +252,14 @@ function Header({
   theme,
   setTheme,
   online,
+  onOpenSearch,
 }: {
   locale: Locale;
   setLocale: (value: Locale) => void;
   theme: Theme;
   setTheme: (value: Theme) => void;
   online: boolean;
+  onOpenSearch: () => void;
 }) {
   return (
     <header className="topbar">
@@ -251,6 +274,16 @@ function Header({
         />
       </Link>
       <div className="topbar-actions">
+        <button
+          className="search-trigger"
+          type="button"
+          onClick={onOpenSearch}
+          aria-label="Cari di seluruh aplikasi"
+        >
+          <Icon name="search" size={18} />
+          <span>Cari</span>
+          <kbd>⌘K</kbd>
+        </button>
         <span
           className={`connection-status ${online ? "is-online" : "is-offline"}`}
           aria-live="polite"
@@ -285,7 +318,7 @@ function Header({
           to="/lainnya"
           aria-label={translate(locale, "shell.account")}
         >
-          <span>TS</span>
+          <Icon name="person" size={18} />
         </Link>
       </div>
     </header>
@@ -363,7 +396,10 @@ function Shell({
   setTheme,
 }: ReturnType<typeof useAppSettings>) {
   const [online, setOnline] = useState(() => navigator.onLine);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
   useEffect(() => {
     const on = () => setOnline(true);
     const off = () => setOnline(false);
@@ -374,12 +410,34 @@ function Shell({
       window.removeEventListener("offline", off);
     };
   }, []);
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+      if (
+        event.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes(
+          (event.target as HTMLElement | null)?.tagName ?? "",
+        )
+      ) {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onShortcut);
+    return () => window.removeEventListener("keydown", onShortcut);
+  }, []);
   return (
     <div className="app-frame">
       <a className="skip-link" href="#main-content">
         Lewati ke konten utama
       </a>
-      <Header {...{ locale, setLocale, theme, setTheme, online }} />
+      <Header
+        {...{ locale, setLocale, theme, setTheme, online }}
+        onOpenSearch={openSearch}
+      />
       <div className="workspace">
         <aside className="navigation-shell">
           <Navigation locale={locale} />
@@ -406,6 +464,7 @@ function Shell({
         </main>
       </div>
       <MediaSurface locale={locale} />
+      <GlobalSearch locale={locale} open={searchOpen} onClose={closeSearch} />
     </div>
   );
 }
@@ -671,6 +730,10 @@ function RoutedApp() {
         />
         <Route path="/iman" element={<FaithPage locale={locale} />} />
         <Route path="/literatur" element={<LiteraturePage locale={locale} />} />
+        <Route
+          path="/literatur/:itemId"
+          element={<LiteratureDetailPage locale={locale} />}
+        />
         <Route path="/lainnya" element={<MorePage locale={locale} />} />
         <Route path="*" element={<HomePage locale={locale} />} />
       </Route>

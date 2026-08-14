@@ -109,3 +109,36 @@ test("home keeps one continue item when Bible and hymn history coexist", async (
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".continue-item")).toHaveCount(1);
 });
+
+test("global search indexes real offline content and navigates to a result", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("button", { name: /Cari di seluruh aplikasi/ }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Temukan sesuatu" }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Cari Kidung, Literatur, Iman, atau media")
+    .fill("Pujilah Allah Yang Maha Esa");
+  await expect(
+    page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }).first(),
+  ).toBeVisible({ timeout: 15_000 });
+  await page
+    .getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+});
+
+test("literature detail persists favorite and progress controls", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  await page.locator(".literature-row").first().click();
+  await expect(page.locator('[data-testid="literature-detail"]')).toBeVisible();
+  await page.getByRole("button", { name: /Simpan favorit/ }).click();
+  await expect(page.getByRole("button", { name: /Favorit/ })).toBeVisible();
+  await page.getByRole("button", { name: "Mulai membaca" }).click();
+  await expect(page.locator("progress")).toHaveAttribute("value", "1");
+});

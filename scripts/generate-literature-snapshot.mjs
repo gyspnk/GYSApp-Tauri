@@ -46,6 +46,104 @@ const formatFor = (url, title) =>
     : /\b(?:edisi|buletin|warta|pelita)\b/i.test(title)
       ? "issue"
       : "article";
+
+function imageFromPost(post) {
+  const media = post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  const rendered = post?.content?.rendered;
+  const match =
+    typeof rendered === "string"
+      ? rendered.match(
+          /(?:data-src|data-lazy-src|src)=["'](https?:[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)/i,
+        )
+      : undefined;
+  const value = typeof media === "string" ? media : match?.[1];
+  if (!value || !/^https:\/\/tjc\.org\//i.test(value)) return undefined;
+  return value;
+}
+
+async function coverFor(item) {
+  const path = new URL(item.url).pathname.split("/").filter(Boolean);
+  const slug = path.at(-1);
+  if (!slug) return item;
+  const endpoints = ["posts", "pages"].map(
+    (type) =>
+      `https://tjc.org/id/wp-json/wp/v2/${type}?slug=${encodeURIComponent(slug)}&_embed=wp:featuredmedia`,
+  );
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        headers: {
+          accept: "application/json",
+          "user-agent": "GYSApp-Tauri/1.0",
+        },
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!response.ok) continue;
+      const value = await response.json();
+      const cover = Array.isArray(value) ? imageFromPost(value[0]) : undefined;
+      if (cover) return { ...item, imageUrl: cover };
+    } catch {
+      // A missing post/cover is a valid catalog state; keep the source item.
+    }
+  }
+  return item;
+}
+
+async function loadCategoryCovers() {
+  const categories = [118, 116, 152];
+  const map = new Map();
+  for (const category of categories) {
+    try {
+      const response = await fetch(
+        `https://tjc.org/id/wp-json/wp/v2/posts?categories=${category}&per_page=100&_embed=wp:featuredmedia`,
+        {
+          headers: {
+            accept: "application/json",
+            "user-agent": "GYSApp-Tauri/1.0",
+          },
+          signal: AbortSignal.timeout(20_000),
+        },
+      );
+      if (!response.ok) continue;
+      const posts = await response.json();
+      if (!Array.isArray(posts)) continue;
+      for (const post of posts) {
+        const cover = imageFromPost(post);
+        const link = typeof post?.link === "string" ? post.link : undefined;
+        const slug = typeof post?.slug === "string" ? post.slug : undefined;
+        if (cover && link) map.set(new URL(link).toString(), cover);
+        if (cover && slug) map.set(`slug:${slug}`, cover);
+      }
+    } catch {
+      // Item-level discovery below remains the fallback for a source outage.
+    }
+  }
+  return map;
+}
+
+async function enrichCovers(values) {
+  const categoryCovers = await loadCategoryCovers();
+  const enriched = [];
+  const missing = [];
+  for (const item of values) {
+    const path = new URL(item.url).pathname.split("/").filter(Boolean);
+    const slug = path.at(-1);
+    const cover =
+      categoryCovers.get(item.url) ??
+      (slug ? categoryCovers.get(`slug:${slug}`) : undefined);
+    if (cover) enriched.push({ ...item, imageUrl: cover });
+    else missing.push(item);
+  }
+  for (let index = 0; index < missing.length; index += 8) {
+    const batch = await Promise.all(
+      missing.slice(index, index + 8).map(coverFor),
+    );
+    enriched.push(...batch);
+  }
+  const byId = new Map(enriched.map((item) => [item.id, item]));
+  return values.map((item) => byId.get(item.id) ?? item);
+}
+
 const generatedAt = new Date().toISOString();
 const items = [];
 for (const [category, url, marker] of pages) {
@@ -101,7 +199,11 @@ for (const [category, url, marker] of pages) {
     });
   }
 }
-const catalog = { source: "tjc.org", generatedAt, items };
+const catalog = {
+  source: "tjc.org",
+  generatedAt,
+  items: await enrichCovers(items),
+};
 await mkdir("apps/web/public/offline", { recursive: true });
 await writeFile(
   "apps/web/public/offline/literature.json",

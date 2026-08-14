@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 
 type FaithItem = { number: string; text: string };
@@ -22,9 +23,12 @@ function isFaithPack(value: unknown): value is FaithPack {
 }
 
 export function FaithPage({ locale }: { locale: Locale }) {
+  const [searchParams] = useSearchParams();
   const [pack, setPack] = useState<FaithPack | undefined>();
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState("1");
+  const [selected, setSelected] = useState(
+    () => searchParams.get("item") ?? "1",
+  );
   const [note, setNote] = useState(
     () => localStorage.getItem("gys-faith-note-1") ?? "",
   );

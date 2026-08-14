@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T07:32:17.048Z",
+  "generatedAt": "2026-08-14T08:28:17.941Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -37,8 +37,8 @@
     {
       "id": "literature-catalog",
       "path": "offline/literature.json",
-      "bytes": 124210,
-      "sha256": "00c6e376ad595deeb17b226e53f9b930c29bd7e252d80fcf2ff43cd903e1a1b5"
+      "bytes": 150389,
+      "sha256": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490"
     },
     {
       "id": "suara-sejati",

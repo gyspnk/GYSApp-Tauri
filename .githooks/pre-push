@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${GYS_SKIP_HOOKS:-}" = "1" ] || [ "${CI:-}" = "true" ]; then
+  exit 0
+fi
+
+pnpm verify:prepush

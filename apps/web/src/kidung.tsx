@@ -23,6 +23,7 @@ import { ChordViewer } from "./chord-viewer.js";
 import { downloadMusicAsset, loadMusicAsset } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
+import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
 
@@ -268,6 +269,7 @@ function HymnDetail({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
+  const [favorite, setFavorite] = useState(false);
   const touchStartX = useRef<number | undefined>(undefined);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
@@ -282,6 +284,11 @@ function HymnDetail({
         safeVerseIndex,
       );
   }, [item, safeVerseIndex]);
+  useEffect(() => {
+    if (!item) return;
+    setFavorite(isFavorite("hymn", item.id));
+    return subscribeFavorites(() => setFavorite(isFavorite("hymn", item.id)));
+  }, [item]);
   useEffect(
     () => () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -314,6 +321,16 @@ function HymnDetail({
   const show = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);
+  };
+  const toggle = () => {
+    if (!item) return;
+    const next = toggleFavorite({
+      kind: "hymn",
+      id: item.id,
+      title: item.title,
+    });
+    setFavorite(next);
+    show(next ? "Kidung disimpan sebagai favorit." : "Favorit dihapus.");
   };
   const onVerseTouchStart = (event: TouchEvent<HTMLElement>) => {
     if (event.touches.length === 1)
@@ -485,6 +502,14 @@ function HymnDetail({
               : chordStatus === "ready"
                 ? "Chord siap"
                 : "Buka chord"}
+          </button>
+          <button
+            type="button"
+            className="quiet-button"
+            onClick={toggle}
+            aria-pressed={favorite}
+          >
+            {favorite ? "★ Favorit" : "☆ Simpan favorit"}
           </button>
           <button
             type="button"
