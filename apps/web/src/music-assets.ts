@@ -20,7 +20,11 @@ export function assetUrl(
   ref: Pick<UpstreamMusicItem, "path" | "sha256">,
   lock: UpstreamMusicLock,
 ): string {
-  return `${RAW_ROOT}/${lock.sourceCommit}/docs/${ref.path}`;
+  const path = ref.path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+  return `${RAW_ROOT}/${encodeURIComponent(lock.sourceCommit)}/docs/${path}`;
 }
 
 export async function loadMusicLock(): Promise<UpstreamMusicLock> {
@@ -127,7 +131,8 @@ export function downloadMusicAsset(
   );
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `${ref.id}.${extension}`;
+  const safeId = ref.id.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "gys-asset";
+  anchor.download = `${safeId}.${extension}`;
   anchor.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }

@@ -12,6 +12,8 @@ apps/native/src-tauri/target/
 apps/native/src-tauri/gen/
 docs/performance/raw/
 .tmp-gyschordweb-*/
+.tmp-gysapp-fork-*/
+.tmp-egys-*/
 apps/web/test-results/
 apps/web/playwright-report/
 .playwright-mcp/

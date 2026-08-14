@@ -22,6 +22,12 @@ import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
 import { midiPlayer } from "./midi-player.js";
+import { Select } from "./select.js";
+import {
+  getActivity,
+  subscribeActivity,
+  type ActivityState,
+} from "./history.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -34,6 +40,11 @@ const FaithPage = lazy(() =>
 );
 const MorePage = lazy(() =>
   import("./more.js").then(({ MorePage: Page }) => ({ default: Page })),
+);
+const LiteraturePage = lazy(() =>
+  import("./literature.js").then(({ LiteraturePage: Page }) => ({
+    default: Page,
+  })),
 );
 
 type Theme = "light" | "dark" | "system";
@@ -228,12 +239,15 @@ function Header({
 }) {
   return (
     <header className="topbar">
-      <Link className="brand" to="/" aria-label="GYSApp home">
-        <img src={`${import.meta.env.BASE_URL}assets/gys-logo.png`} alt="GYS" />
-        <span>
-          <strong>GYSApp</strong>
-          <small>Quiet sanctuary</small>
-        </span>
+      <Link
+        className="brand brand-mark"
+        to="/"
+        aria-label="Gereja Yesus Sejati"
+      >
+        <img
+          src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
+          alt="Gereja Yesus Sejati"
+        />
       </Link>
       <div className="topbar-actions">
         <span
@@ -243,28 +257,28 @@ function Header({
           <i aria-hidden="true" />
           {translate(locale, online ? "shell.online" : "shell.offline")}
         </span>
-        <label className="select-label">
-          <span className="sr-only">{translate(locale, "shell.language")}</span>
-          <select
-            value={locale}
-            onChange={(event) => setLocale(event.target.value as Locale)}
-          >
-            <option value="id">ID</option>
-            <option value="en">EN</option>
-            <option value="zh">中文</option>
-          </select>
-        </label>
-        <label className="select-label theme-select">
-          <span className="sr-only">{translate(locale, "shell.theme")}</span>
-          <select
-            value={theme}
-            onChange={(event) => setTheme(event.target.value as Theme)}
-          >
-            <option value="system">◐</option>
-            <option value="light">☼</option>
-            <option value="dark">☾</option>
-          </select>
-        </label>
+        <Select
+          value={locale}
+          onChange={setLocale}
+          className="topbar-select"
+          label={translate(locale, "shell.language")}
+          options={[
+            { value: "id", label: "ID" },
+            { value: "en", label: "EN" },
+            { value: "zh", label: "中文" },
+          ]}
+        />
+        <Select
+          value={theme}
+          onChange={setTheme}
+          className="topbar-select theme-select"
+          label={translate(locale, "shell.theme")}
+          options={[
+            { value: "system", label: "◐" },
+            { value: "light", label: "☼" },
+            { value: "dark", label: "☾" },
+          ]}
+        />
         <Link
           className="account-button"
           to="/lainnya"
@@ -401,6 +415,13 @@ function HomePage({ locale }: { locale: Locale }) {
     "loading",
   );
   const [selectedSauh, setSelectedSauh] = useState(0);
+  const [activity, setActivity] = useState<ActivityState>(() => getActivity());
+  useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
+  const continuePath =
+    activity.hymn &&
+    (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
+      ? `/kidung/${activity.hymn.id}`
+      : "/bible";
   const loadSauh = () => {
     setSauhStatus("loading");
     void fetchSauh()
@@ -427,7 +448,7 @@ function HomePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "home.title")}</h1>
           <p className="intro-copy">{translate(locale, "home.subtitle")}</p>
         </div>
-        <Link className="quiet-button" to="/bible">
+        <Link className="quiet-button" to={continuePath}>
           {translate(locale, "home.continue")} <Icon name="arrow" size={16} />
         </Link>
       </section>
@@ -489,44 +510,67 @@ function HomePage({ locale }: { locale: Locale }) {
         <article className="continue-panel">
           <div className="section-heading">
             <span>{translate(locale, "home.continue")}</span>
-            <small>2 min ago</small>
+            <small>
+              {activity.bible || activity.hymn
+                ? "Tersimpan di perangkat ini"
+                : "Mulai dari salah satu ruang"}
+            </small>
           </div>
-          <Link className="continue-item" to="/bible">
-            <div className="item-icon">
-              <Icon name="book" size={21} />
+          {activity.bible && (
+            <Link className="continue-item" to="/bible">
+              <div className="item-icon">
+                <Icon name="book" size={21} />
+              </div>
+              <div>
+                <strong>
+                  {activity.bible.book} {activity.bible.chapter}
+                </strong>
+                <span>Alkitab Terjemahan Baru</span>
+              </div>
+              <Icon name="arrow" size={17} />
+            </Link>
+          )}
+          {activity.hymn && (
+            <Link className="continue-item" to={`/kidung/${activity.hymn.id}`}>
+              <div className="item-icon music-icon">
+                <Icon name="music" size={21} />
+              </div>
+              <div>
+                <strong>{activity.hymn.title}</strong>
+                <span>
+                  Kidung Rohani ·{" "}
+                  {String(activity.hymn.number).padStart(3, "0")}
+                </span>
+              </div>
+              <Icon name="arrow" size={17} />
+            </Link>
+          )}
+          {!activity.bible && !activity.hymn && (
+            <div className="empty-inline">
+              <p>Belum ada bacaan terakhir.</p>
+              <div>
+                <Link className="quiet-button" to="/bible">
+                  Buka Alkitab
+                </Link>
+                <Link className="quiet-button" to="/kidung">
+                  Pilih Kidung
+                </Link>
+              </div>
             </div>
-            <div>
-              <strong>Yohanes 3</strong>
-              <span>Alkitab Terjemahan Baru</span>
-            </div>
-            <Icon name="arrow" size={17} />
-          </Link>
-          <Link className="continue-item" to="/kidung">
-            <div className="item-icon music-icon">
-              <Icon name="music" size={21} />
-            </div>
-            <div>
-              <strong>Kasih Setia-Mu</strong>
-              <span>Kidung Rohani · 001</span>
-            </div>
-            <Icon name="arrow" size={17} />
-          </Link>
+          )}
         </article>
       </section>
       {sauh.length > 1 && (
         <div className="sauh-adjust" aria-label="Sesuaikan sumber Sauh">
-          <label htmlFor="sauh-select">Sesuaikan renungan</label>
-          <select
-            id="sauh-select"
+          <Select
             value={selectedSauh}
-            onChange={(event) => setSelectedSauh(Number(event.target.value))}
-          >
-            {sauh.map((item, index) => (
-              <option value={index} key={item.id}>
-                {item.title}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedSauh}
+            label="Sesuaikan renungan"
+            options={sauh.map((item, index) => ({
+              value: index,
+              label: item.title,
+            }))}
+          />
         </div>
       )}
     </div>
@@ -542,7 +586,12 @@ function RoutedApp() {
         <Route path="/" element={<HomePage locale={locale} />} />
         <Route path="/bible" element={<BiblePage locale={locale} />} />
         <Route path="/kidung" element={<KidungPage locale={locale} />} />
+        <Route
+          path="/kidung/:songId"
+          element={<KidungPage locale={locale} />}
+        />
         <Route path="/iman" element={<FaithPage locale={locale} />} />
+        <Route path="/literatur" element={<LiteraturePage locale={locale} />} />
         <Route path="/lainnya" element={<MorePage locale={locale} />} />
         <Route path="*" element={<HomePage locale={locale} />} />
       </Route>

@@ -85,8 +85,12 @@ export function createBrowserChordRepository(): ChordRepository {
       };
     },
     async fetchChord(ref: ChordRef, signal): Promise<ChordFetchResult> {
+      const encodedPath = ref.path
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/");
       const response = await fetch(
-        `${RAW_ROOT}/${ref.sourceCommit}/docs/${ref.path}`,
+        `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
         signal ? { signal, cache: "force-cache" } : { cache: "force-cache" },
       );
       if (!response.ok)

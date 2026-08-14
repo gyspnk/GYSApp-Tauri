@@ -6,7 +6,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  HymnCatalogEntrySchema,
   UpstreamMusicLockSchema,
   type ChordDocumentV2,
   type HymnCatalogEntry,
@@ -18,50 +20,238 @@ import { createBrowserChordRepository } from "./chords.js";
 import { ChordViewer } from "./chord-viewer.js";
 import { downloadMusicAsset, loadMusicAsset } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
+import { Select } from "./select.js";
+import { setHymnActivity } from "./history.js";
+import { loadForkHymnalPdf } from "./fork-pdf.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
     default: Component,
   })),
 );
-
 type CatalogState =
   | { status: "loading" }
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
-
 const KEYS = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
 
-function isCatalog(value: unknown): value is { items: HymnCatalogEntry[] } {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as { items?: unknown };
-  return (
-    Array.isArray(candidate.items) &&
-    candidate.items.length > 0 &&
-    candidate.items.every(
-      (item) =>
-        item &&
-        typeof item === "object" &&
-        typeof (item as { title?: unknown }).title === "string" &&
-        typeof (item as { lyrics?: unknown }).lyrics === "string",
-    )
+function parseCatalog(value: unknown): HymnCatalogEntry[] {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    !Array.isArray((value as { items?: unknown }).items)
+  )
+    throw new Error("Hymn catalog is invalid");
+  return (value as { items: unknown[] }).items.map((item) =>
+    HymnCatalogEntrySchema.parse(item),
   );
 }
 
-function keyAtOffset(offset: number): string {
-  return KEYS[((offset % KEYS.length) + KEYS.length) % KEYS.length] ?? "C";
+function useHymnData() {
+  const [catalog, setCatalog] = useState<CatalogState>({ status: "loading" });
+  const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
+      signal: controller.signal,
+      cache: "force-cache",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Offline hymn catalog unavailable");
+        setCatalog({
+          status: "ready",
+          items: parseCatalog(await response.json()),
+        });
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted)
+          setCatalog({
+            status: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Unable to load hymn catalog",
+          });
+      });
+    return () => controller.abort();
+  }, []);
+  useEffect(() => {
+    void fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
+      cache: "force-cache",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("MIDI lock unavailable");
+        setMusicLock(UpstreamMusicLockSchema.parse(await response.json()));
+      })
+      .catch(() => setMusicLock(undefined));
+  }, []);
+  return { catalog, musicLock };
+}
+
+function numberLabel(number: number) {
+  return String(number).padStart(3, "0");
+}
+function uniqueItems(items: HymnCatalogEntry[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.number}:${item.title.trim().toLocaleLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export function KidungPage({ locale }: { locale: Locale }) {
-  const [catalogState, setCatalogState] = useState<CatalogState>({
-    status: "loading",
-  });
+  const { songId } = useParams();
+  const { catalog, musicLock } = useHymnData();
+  if (songId)
+    return (
+      <HymnDetail
+        locale={locale}
+        songId={songId}
+        state={catalog}
+        {...(musicLock ? { musicLock } : {})}
+      />
+    );
+  return <HymnCatalog locale={locale} state={catalog} />;
+}
+
+function HymnCatalog({
+  locale,
+  state,
+}: {
+  locale: Locale;
+  state: CatalogState;
+}) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
-  const [selectedId, setSelectedId] = useState("hymn-001");
+  const deferredQuery = useDeferredValue(query);
+  const items = state.status === "ready" ? uniqueItems(state.items) : [];
+  const books = useMemo(
+    () => [...new Set(items.map((item) => item.book))].sort(),
+    [items],
+  );
+  const filtered = useMemo(() => {
+    const q = deferredQuery.trim().toLocaleLowerCase();
+    return items
+      .filter(
+        (item) =>
+          (book === "all" || item.book === book) &&
+          (!q ||
+            `${item.number} ${item.title} ${item.lyrics}`
+              .toLocaleLowerCase()
+              .includes(q)),
+      )
+      .sort((a, b) => a.number - b.number);
+  }, [book, deferredQuery, items]);
+  return (
+    <div className="page hymn-page">
+      <section className="page-intro">
+        <div>
+          <p className="date-line">533 lagu · katalog canonical</p>
+          <h1>{translate(locale, "page.kidungTitle")}</h1>
+          <p className="intro-copy">
+            Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau
+            iringan MIDI.
+          </p>
+        </div>
+        <span className="pack-badge">Offline · 533</span>
+      </section>
+      {state.status === "loading" && (
+        <div className="loading-panel" role="status">
+          Membuka katalog kidung offline…
+        </div>
+      )}
+      {state.status === "error" && (
+        <div className="error-panel" role="alert">
+          <strong>Katalog kidung belum tersedia</strong>
+          <span>{state.message}</span>
+        </div>
+      )}
+      {state.status === "ready" && (
+        <section className="hymn-catalog-shell">
+          <div className="catalog-toolbar">
+            <label className="search-field">
+              <span>Cari lagu</span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Nomor atau judul…"
+              />
+            </label>
+            <Select
+              value={book}
+              onChange={setBook}
+              label="Koleksi"
+              options={[
+                { value: "all", label: "Semua koleksi" },
+                ...books.map((value) => ({ value, label: value })),
+              ]}
+            />
+          </div>
+          <div className="catalog-heading">
+            <div>
+              <p className="date-line">GysChordWeb · daftar pujian</p>
+              <h2>{filtered.length} lagu tersedia</h2>
+            </div>
+            <small>Ketuk baris untuk membuka detail</small>
+          </div>
+          <ol className="pujian-list">
+            {filtered.slice(0, 200).map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className="pujian-row"
+                  onClick={() => navigate(`/kidung/${item.id}`)}
+                >
+                  <span className="pujian-number">
+                    {numberLabel(item.number)}
+                  </span>
+                  <span className="pujian-copy">
+                    <strong>{item.title}</strong>
+                    <small>
+                      {item.book} · {item.verses.length} bait · PDF{" "}
+                      {item.pdfPath ? "tersedia" : "—"}
+                    </small>
+                  </span>
+                  <span className="pujian-arrow" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          {filtered.length > 200 && (
+            <p className="catalog-note">
+              Tampilkan pencarian lebih spesifik untuk melihat lagu lainnya.
+            </p>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+
+function HymnDetail({
+  locale,
+  songId,
+  state,
+  musicLock,
+}: {
+  locale: Locale;
+  songId: string;
+  state: CatalogState;
+  musicLock?: UpstreamMusicLock;
+}) {
+  const navigate = useNavigate();
+  const item =
+    state.status === "ready"
+      ? state.items.find((candidate) => candidate.id === songId)
+      : undefined;
+  const [verseIndex, setVerseIndex] = useState(0);
   const [transpose, setTranspose] = useState(0);
   const [key, setKey] = useState("C");
-  const [notice, setNotice] = useState("");
   const [chordStatus, setChordStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
@@ -72,399 +262,335 @@ export function KidungPage({ locale }: { locale: Locale }) {
   const [showPdf, setShowPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
+  const [pdfInitialPage, setPdfInitialPage] = useState(1);
+  const [pdfSource, setPdfSource] = useState<"fork" | "canonical">("fork");
   const [pdfStatus, setPdfStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
-  const [musicLock, setMusicLock] = useState<UpstreamMusicLock | undefined>();
+  const [notice, setNotice] = useState("");
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
-  const deferredQuery = useDeferredValue(query);
-
+  const verses = item?.verses?.length
+    ? item.verses
+    : (item?.lyrics.split(/\n\s*\n/).filter(Boolean) ?? []);
+  const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   useEffect(() => {
-    const controller = new AbortController();
-    void fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
-      signal: controller.signal,
-      cache: "force-cache",
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Offline hymn catalog unavailable");
-        const json: unknown = await response.json();
-        if (!isCatalog(json)) throw new Error("Hymn catalog is invalid");
-        setCatalogState({ status: "ready", items: json.items });
-      })
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted)
-          setCatalogState({
-            status: "error",
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unable to load hymn catalog",
-          });
-      });
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    void fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
-      cache: "force-cache",
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("MIDI lock unavailable");
-        const parsed = UpstreamMusicLockSchema.parse(await response.json());
-        setMusicLock(parsed);
-      })
-      .catch(() => setMusicLock(undefined));
-  }, []);
-
-  useEffect(() => {
-    return () => {
+    if (item)
+      setHymnActivity(
+        { id: item.id, title: item.title, number: item.number },
+        safeVerseIndex,
+      );
+  }, [item, safeVerseIndex]);
+  useEffect(
+    () => () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
-
-  const items = catalogState.status === "ready" ? catalogState.items : [];
-  const uniqueItems = useMemo(() => {
-    const seen = new Set<string>();
-    return items.filter((item) => {
-      const identity = `${item.book}:${item.number}:${item.title.trim().toLocaleLowerCase()}`;
-      if (seen.has(identity)) return false;
-      seen.add(identity);
-      return true;
-    });
-  }, [items]);
-  const books = useMemo(
-    () => [...new Set(uniqueItems.map((item) => item.book))].sort(),
-    [uniqueItems],
+    },
+    [pdfUrl],
   );
-  const filtered = useMemo(() => {
-    const normalized = deferredQuery.trim().toLocaleLowerCase();
-    return uniqueItems
-      .filter((item) => book === "all" || item.book === book)
-      .filter(
-        (item) =>
-          !normalized ||
-          `${item.number} ${item.title} ${item.lyrics}`
-            .toLocaleLowerCase()
-            .includes(normalized),
-      )
-      .sort((left, right) => left.number - right.number);
-  }, [book, deferredQuery, uniqueItems]);
-  const selected =
-    items.find((item) => item.id === selectedId) ?? filtered[0] ?? items[0];
-  const renderedKey = keyAtOffset(KEYS.indexOf(key) + transpose);
-
-  useEffect(() => {
-    if (selected && selected.id !== selectedId) setSelectedId(selected.id);
-  }, [selected, selectedId]);
-
-  useEffect(() => {
-    setChordDocument(undefined);
-    setChordStatus("idle");
-    setShowPdf(false);
-    setPdfBytes(undefined);
-    setPdfStatus("idle");
-    setPdfUrl((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return undefined;
-    });
-  }, [selected?.id]);
-
-  const showNotice = (message: string) => {
+  if (state.status === "loading")
+    return (
+      <div className="page">
+        <div className="loading-panel" role="status">
+          Membuka pujian…
+        </div>
+      </div>
+    );
+  if (state.status === "error" || !item)
+    return (
+      <div className="page">
+        <div className="error-panel" role="alert">
+          <strong>Pujian tidak ditemukan</strong>
+          <Link className="quiet-button" to="/kidung">
+            Kembali ke daftar
+          </Link>
+        </div>
+      </div>
+    );
+  const index = state.items.findIndex((candidate) => candidate.id === item.id);
+  const prev = state.items[index - 1];
+  const next = state.items[index + 1];
+  const show = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);
   };
   const loadChord = async () => {
-    if (!selected) return;
     setChordStatus("loading");
     try {
-      const document = await chordRepository.getChord(selected.id);
-      setChordDocument(document);
+      setChordDocument(await chordRepository.getChord(item.id));
       setChordStatus("ready");
-      showNotice("Chord diverifikasi dan siap dipakai.");
+      show("Chord diverifikasi dari sumber canonical.");
     } catch {
       setChordStatus("error");
-      showNotice(
-        "Chord belum tersedia offline; sambungkan internet lalu coba lagi.",
-      );
+      show("Chord belum tersedia offline; sambungkan internet lalu coba lagi.");
     }
   };
   const loadPdf = async () => {
-    if (!selected || !musicLock) return;
-    const ref = musicLock.items.find(
-      (item) => item.kind === "pdf" && item.path === selected.pdfPath,
-    );
-    if (!ref) {
-      setPdfStatus("error");
-      showNotice("PDF belum ada di immutable lock untuk lagu ini.");
-      return;
-    }
     setPdfStatus("loading");
     try {
-      const bytes = await loadMusicAsset(ref);
+      let bytes: Uint8Array;
+      let initialPage = 1;
+      let source: "fork" | "canonical" = "fork";
+      try {
+        const forkPdf = await loadForkHymnalPdf(item.number);
+        bytes = forkPdf.bytes;
+        initialPage = forkPdf.initialPage;
+      } catch {
+        const ref = musicLock?.items.find(
+          (candidate) =>
+            candidate.kind === "pdf" && candidate.path === item.pdfPath,
+        );
+        if (!ref) throw new Error("PDF unavailable");
+        bytes = await loadMusicAsset(ref);
+        source = "canonical";
+      }
       const nextUrl = URL.createObjectURL(
         new Blob([bytes.slice().buffer as ArrayBuffer], {
           type: "application/pdf",
         }),
       );
       setPdfBytes(bytes);
+      setPdfInitialPage(initialPage);
+      setPdfSource(source);
       setPdfUrl((previous) => {
         if (previous) URL.revokeObjectURL(previous);
         return nextUrl;
       });
       setPdfStatus("ready");
       setShowPdf(true);
+      show(
+        source === "fork"
+          ? "PDF Kidung Rohani dibuka dari database GYSApp-Fork."
+          : "PDF canonical dibuka sebagai fallback.",
+      );
     } catch {
       setPdfStatus("error");
-      showNotice("PDF gagal dimuat. Periksa koneksi atau coba pin ulang.");
+      show("PDF gagal dimuat. Periksa koneksi atau cache.");
     }
   };
   const loadMidi = async () => {
-    if (!selected) return;
-    const ref = musicLock?.items.find(
-      (item) => item.kind === "midi" && item.path === selected.midiPath,
+    if (!musicLock) {
+      setMidiStatus("error");
+      show("MIDI lock belum siap; coba lagi sebentar.");
+      return;
+    }
+    const ref = musicLock.items.find(
+      (candidate) =>
+        candidate.kind === "midi" && candidate.path === item.midiPath,
     );
     if (!ref) {
       setMidiStatus("error");
-      showNotice("MIDI belum ada di immutable lock untuk lagu ini.");
+      show("MIDI belum tersedia pada lock asset.");
       return;
     }
     setMidiStatus("loading");
     try {
       const bytes = await loadMusicAsset(ref);
       const loaded = await midiLoader.load({
-        id: selected.id,
-        url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock?.sourceCommit ?? "cbc7d386"}/docs/${ref.path}`,
+        id: item.id,
+        url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`,
         sourceHash: ref.sha256,
         bytes,
       });
-      await midiPlayer.load(selected.id, selected.title, loaded.midi);
+      await midiPlayer.load(item.id, item.title, loaded.midi);
       await midiPlayer.play();
       setMidiStatus("ready");
-      showNotice(
-        `MIDI tervalidasi · ${loaded.midi.events.length} event siap dijadwalkan.`,
-      );
+      show("MIDI siap diputar; pemutar dapat diminimalkan.");
     } catch {
       setMidiStatus("error");
-      showNotice(
-        "MIDI belum tersedia offline; sambungkan internet lalu coba lagi.",
-      );
+      show("MIDI belum dapat dimuat. Coba lagi saat online.");
     }
   };
-
+  const renderedKey =
+    KEYS[
+      (((KEYS.indexOf(key) + transpose) % KEYS.length) + KEYS.length) %
+        KEYS.length
+    ];
   return (
-    <div className="page hymn-page">
-      <section className="page-intro">
+    <div className="page hymn-detail-page">
+      <div className="detail-back">
+        <Link className="text-button" to="/kidung">
+          ← Semua kidung
+        </Link>
+        <span>
+          {numberLabel(item.number)} · {item.book}
+        </span>
+      </div>
+      <section className="detail-hero">
         <div>
-          <p className="date-line">533 lagu · offline catalog</p>
-          <h1>{translate(locale, "page.kidungTitle")}</h1>
-          <p className="intro-copy">{translate(locale, "page.kidungBody")}</p>
+          <p className="date-line">
+            Kidung Rohani · {numberLabel(item.number)}
+          </p>
+          <h1>{item.title}</h1>
+          <p className="intro-copy">
+            Lirik per bait dari katalog GYSChordWeb. Pilih mode baca sesuai
+            kebutuhan.
+          </p>
         </div>
-        <button
-          className="quiet-button"
-          type="button"
-          onClick={() =>
-            showNotice("MIDI akan diunduh saat lagu pertama kali diputar.")
-          }
-        >
-          TimGM 6 MB <span aria-hidden="true">·</span> siap
-        </button>
+        <div className="detail-neighbors">
+          <button
+            type="button"
+            className="quiet-button"
+            disabled={!prev}
+            onClick={() => prev && navigate(`/kidung/${prev.id}`)}
+          >
+            Sebelumnya
+          </button>
+          <button
+            type="button"
+            className="quiet-button"
+            disabled={!next}
+            onClick={() => next && navigate(`/kidung/${next.id}`)}
+          >
+            Berikutnya
+          </button>
+        </div>
       </section>
-
-      {catalogState.status === "loading" && (
-        <div className="loading-panel" role="status">
-          Membuka katalog kidung offline…
+      <section className="hymn-detail-surface">
+        <div className="detail-actions">
+          <button
+            type="button"
+            className="quiet-button"
+            onClick={() => void loadChord()}
+            disabled={chordStatus === "loading"}
+          >
+            {chordStatus === "loading"
+              ? "Memuat chord…"
+              : chordStatus === "ready"
+                ? "Chord siap"
+                : "Buka chord"}
+          </button>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => void loadMidi()}
+            disabled={midiStatus === "loading"}
+          >
+            {midiStatus === "loading"
+              ? "Memuat MIDI…"
+              : midiStatus === "ready"
+                ? "MIDI siap"
+                : "Putar MIDI"}
+          </button>
+          <button
+            type="button"
+            className="quiet-button"
+            onClick={() => (showPdf ? setShowPdf(false) : void loadPdf())}
+            disabled={pdfStatus === "loading"}
+          >
+            {pdfStatus === "loading"
+              ? "Memuat PDF…"
+              : showPdf
+                ? "Tutup PDF"
+                : "Buka PDF"}
+          </button>
+          {pdfBytes && (
+            <button
+              type="button"
+              className="quiet-button"
+              onClick={() => {
+                const ref = musicLock?.items.find(
+                  (candidate) =>
+                    candidate.kind === "pdf" && candidate.path === item.pdfPath,
+                );
+                if (pdfSource === "canonical" && ref)
+                  downloadMusicAsset(ref, pdfBytes);
+                if (pdfSource === "fork")
+                  downloadMusicAsset(
+                    {
+                      id: `KR-${numberLabel(item.number)}`,
+                      path: "kr_master.pdf",
+                    },
+                    pdfBytes,
+                  );
+              }}
+            >
+              Unduh PDF
+            </button>
+          )}
         </div>
-      )}
-      {catalogState.status === "error" && (
-        <div className="error-panel" role="alert">
-          <strong>Katalog kidung belum tersedia</strong>
-          <span>{catalogState.message}</span>
-        </div>
-      )}
-
-      {items.length > 0 && selected && (
-        <div className="hymn-layout">
-          <aside className="hymn-browser" aria-label="Hymn catalog">
-            <div className="hymn-filter">
-              <label htmlFor="hymn-query">Cari lagu</label>
-              <input
-                id="hymn-query"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Nomor atau judul…"
-              />
-              <select
-                value={book}
-                onChange={(event) => setBook(event.target.value)}
+        <div className="song-controls">
+          <Select
+            value={key}
+            onChange={(value) => {
+              setKey(value);
+              setTranspose(0);
+            }}
+            label="Nada dasar"
+            options={KEYS.map((value) => ({ value, label: value }))}
+          />
+          <div className="transpose-control">
+            <span>Nada tampil · {renderedKey}</span>
+            <div>
+              <button
+                type="button"
+                onClick={() => setTranspose((value) => Math.max(-6, value - 1))}
               >
-                <option value="all">Semua buku</option>
-                {books.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="hymn-list">
-              {filtered.slice(0, 80).map((item) => (
-                <button
-                  className={`hymn-list-item${item.id === selected.id ? " is-selected" : ""}`}
-                  key={item.id}
-                  type="button"
-                  onClick={() => setSelectedId(item.id)}
-                >
-                  <span>{String(item.number).padStart(3, "0")}</span>
-                  <strong>{item.title}</strong>
-                </button>
-              ))}
-            </div>
-            <small className="hymn-count">
-              {filtered.length} lagu ditemukan · duplikat disederhanakan
-            </small>
-          </aside>
-
-          <section className="hymn-detail">
-            <div className="hymn-heading">
-              <div>
-                <p className="date-line">
-                  {selected.book} · {String(selected.number).padStart(3, "0")}
-                </p>
-                <h2>{selected.title}</h2>
-              </div>
-              <div className="hymn-actions">
-                <button
-                  className="quiet-button"
-                  type="button"
-                  onClick={() => void loadChord()}
-                  disabled={chordStatus === "loading"}
-                >
-                  {chordStatus === "loading"
-                    ? "Memuat…"
-                    : chordStatus === "ready"
-                      ? "Chord siap"
-                      : "Chord"}
-                </button>
-                <button
-                  className="primary-button"
-                  type="button"
-                  onClick={() => void loadMidi()}
-                  disabled={midiStatus === "loading"}
-                >
-                  {midiStatus === "loading"
-                    ? "Memuat MIDI…"
-                    : midiStatus === "ready"
-                      ? "MIDI siap"
-                      : "Putar MIDI"}
-                </button>
-                <button
-                  className="quiet-button"
-                  type="button"
-                  onClick={() => {
-                    if (showPdf) setShowPdf(false);
-                    else void loadPdf();
-                  }}
-                  aria-expanded={showPdf}
-                  disabled={pdfStatus === "loading"}
-                >
-                  {pdfStatus === "loading"
-                    ? "Memuat PDF…"
-                    : showPdf
-                      ? "Tutup PDF"
-                      : "Buka PDF"}
-                </button>
-                {pdfBytes && (
-                  <button
-                    className="quiet-button"
-                    type="button"
-                    onClick={() => {
-                      const ref = musicLock?.items.find(
-                        (item) =>
-                          item.kind === "pdf" && item.path === selected.pdfPath,
-                      );
-                      if (ref) downloadMusicAsset(ref, pdfBytes);
-                    }}
-                  >
-                    Unduh PDF
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="song-controls" aria-label="Song controls">
-              <label>
-                <span>Nada dasar</span>
-                <select
-                  value={key}
-                  onChange={(event) => {
-                    setKey(event.target.value);
-                    setTranspose(0);
-                  }}
-                >
-                  {KEYS.map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="transpose-control">
-                <span>Transpose · {renderedKey}</span>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setTranspose((value) => Math.max(-6, value - 1))
-                    }
-                    aria-label="Transpose down"
-                  >
-                    −
-                  </button>
-                  <strong>{transpose > 0 ? `+${transpose}` : transpose}</strong>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setTranspose((value) => Math.min(6, value + 1))
-                    }
-                    aria-label="Transpose up"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-            <article className="lyrics-sheet" aria-label={selected.title}>
-              {selected.lyrics
-                .split("\n")
-                .map((line, index) =>
-                  line.trim() ? (
-                    <p key={`${selected.id}-${index}`}>{line}</p>
-                  ) : (
-                    <div
-                      className="lyrics-break"
-                      key={`${selected.id}-${index}`}
-                    />
-                  ),
-                )}
-            </article>
-            {chordDocument && (
-              <ChordViewer document={chordDocument} transpose={transpose} />
-            )}
-            {showPdf && (
-              <Suspense
-                fallback={
-                  <div className="loading-panel">PDF reader wordt geladen…</div>
-                }
+                −
+              </button>
+              <strong>{transpose > 0 ? `+${transpose}` : transpose}</strong>
+              <button
+                type="button"
+                onClick={() => setTranspose((value) => Math.min(6, value + 1))}
               >
-                <PdfReader
-                  src={pdfUrl ?? ""}
-                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
-                  title={selected.title}
-                />
-              </Suspense>
-            )}
-          </section>
+                +
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+        <div className="verse-switcher">
+          <span>Bait</span>
+          <div className="verse-tabs" role="tablist">
+            {verses.map((_, index) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={index === safeVerseIndex}
+                className={index === safeVerseIndex ? "is-active" : ""}
+                key={index}
+                onClick={() => setVerseIndex(index)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <Select
+            value={safeVerseIndex}
+            onChange={setVerseIndex}
+            label="Pilih bait"
+            options={verses.map((_, index) => ({
+              value: index,
+              label: `Bait ${index + 1}`,
+            }))}
+          />
+        </div>
+        <article
+          className="lyrics-sheet verse-enter"
+          key={`${item.id}-${safeVerseIndex}`}
+          aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
+        >
+          {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
+            <p key={`${index}-${line}`}>{line || " "}</p>
+          ))}
+        </article>
+        {chordDocument && (
+          <ChordViewer document={chordDocument} transpose={transpose} />
+        )}
+        {showPdf && (
+          <Suspense
+            fallback={
+              <div className="loading-panel">PDF reader sedang dibuka…</div>
+            }
+          >
+            <PdfReader
+              src={pdfUrl ?? ""}
+              {...(pdfBytes ? { data: pdfBytes } : {})}
+              initialPage={pdfInitialPage}
+              {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
+              title={item.title}
+            />
+          </Suspense>
+        )}
+      </section>
       {notice && (
         <div className="toast" role="status">
           {notice}

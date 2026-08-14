@@ -5,5 +5,6 @@ compatibility_date = "2026-08-01"
 [vars]
 ALLOWED_ORIGINS = "https://gyspnk.github.io,http://localhost:5173"
 SAUH_SOURCE_URL = "https://tjc.org/id/wp-json/wp/v2/posts"
+LITERATURE_SOURCE_URL = "https://tjc.org/id/literatur/"
 # EGYS_API_BASE_URL is intentionally a protected deployment secret. It must
 # point at the e-GYS backend origin and is never bundled into the web client.

@@ -5,6 +5,10 @@ import {
   BibleReaderPackSchema,
   ChordDocumentV2Schema,
   ErrorResponseSchema,
+  EgysProvidersSchema,
+  HymnCatalogEntrySchema,
+  HymnalPdfManifestSchema,
+  LiteratureCatalogSchema,
   UpstreamMusicLockSchema,
 } from "./index.js";
 
@@ -116,5 +120,57 @@ describe("public contracts", () => {
         },
       }).error.code,
     ).toBe("VALIDATION_ERROR");
+  });
+
+  it("keeps hymn verses and upstream content sources explicit", () => {
+    const hymn = HymnCatalogEntrySchema.parse({
+      id: "hymn-001",
+      book: "rohani",
+      number: 1,
+      title: "Pujilah",
+      verses: ["Bait pertama"],
+      lyrics: "Bait pertama",
+      midiPath: "assets/midi/001.mid",
+      pdfPath: "assets/pdf/001.pdf",
+    });
+    expect(hymn.verses).toHaveLength(1);
+    expect(
+      LiteratureCatalogSchema.parse({
+        source: "tjc.org",
+        generatedAt: "2026-08-14T00:00:00.000Z",
+        items: [
+          {
+            id: "kesaksian-1",
+            category: "kesaksian",
+            title: "Kesaksian",
+            description: "",
+            url: "https://tjc.org/id/kesaksian/",
+            updatedAt: "2026-08-14T00:00:00.000Z",
+            source: "tjc.org",
+          },
+        ],
+      }).items,
+    ).toHaveLength(1);
+  });
+
+  it("matches e-GYS provider and fork PDF database contracts", () => {
+    expect(
+      EgysProvidersSchema.parse({
+        google: { enabled: true, clientId: "google-client" },
+        apple: { enabled: false },
+        whatsapp: false,
+      }).google.enabled,
+    ).toBe(true);
+    expect(
+      HymnalPdfManifestSchema.parse({
+        sourceRepo: "ThenGB/GYSApp-Data",
+        sourceCommit: "4f0d39b",
+        generatedAt: "2026-08-14T00:00:00.000Z",
+        bookCode: "KR",
+        masterPath: "assets/data/pdf/kr/kr_master.pdf",
+        pageCount: 649,
+        songs: { "001": { startPage: 5, pageCount: 1, source: "001.pdf" } },
+      }).songs["001"]?.startPage,
+    ).toBe(5);
   });
 });

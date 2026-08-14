@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T05:25:19.602Z",
+  "generatedAt": "2026-08-14T06:07:53.838Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -19,8 +19,8 @@
     {
       "id": "hymn-catalog",
       "path": "offline/hymn-catalog.json",
-      "bytes": 489489,
-      "sha256": "108030a68dc95bfea7d907836238fa2101c1dc0ae20e24ee96587861844cc0ff"
+      "bytes": 868856,
+      "sha256": "26e43a2b3e1fc08cacf0727eea24b731b10872c8bb0228525555a693338fd39e"
     },
     {
       "id": "music-lock",
@@ -33,6 +33,18 @@
       "path": "offline/faith.json",
       "bytes": 8311,
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52"
+    },
+    {
+      "id": "literature-catalog",
+      "path": "offline/literature.json",
+      "bytes": 131781,
+      "sha256": "c63af4eff1510064a84724b0bfb1027026b357db04c3e5965c2d26d9515935ff"
+    },
+    {
+      "id": "fork-hymnal-map",
+      "path": "offline/fork-hymnal-manifest.json",
+      "bytes": 60711,
+      "sha256": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401"
     },
     {
       "id": "soundfont-timgm",

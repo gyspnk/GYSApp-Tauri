@@ -23,3 +23,10 @@ and `generate-bible-reader-pack.py` build the user-facing projections. CI runs
   ~0.42 s, heap ~167 MB. Duplicate MIDI fetches were observed in the canonical
   page. The official baseline will be repeated as cold/warm median and p95 on
   the same fixture and machine.
+
+The PDF detail path now consumes the clean-room generated
+`fork-hymnal-manifest.json` (KR master PDF page ranges) derived from the
+`GYSAPP-Fork` index. On the web it attempts the signed `GYSApp-Data` KR package
+with the same checksum/decode rules as the functional source, then falls back
+to the immutable `gyschordweb` per-song PDF when the package is unavailable.
+The viewer remains local PDF.js with page, layout, zoom, and download controls.

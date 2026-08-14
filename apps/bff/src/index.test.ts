@@ -163,4 +163,32 @@ describe("BFF public boundary", () => {
     expect(valid.status).toBe(202);
     expect(JSON.stringify(await valid.json())).not.toContain("<b>");
   });
+
+  it("normalizes the live literature page and caches it", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        '<table id="posts-table-1"><tr><td><a href="https://tjc.org/id/kesaksian/demo/">Demo Kesaksian</a></td></tr></table>',
+        { headers: { "content-type": "text/html" } },
+      )) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const first = await app.request("/api/v1/content/literature");
+      expect(first.status).toBe(200);
+      const payload = (await first.json()) as {
+        items: Array<{ title: string }>;
+      };
+      expect(payload.items[0]?.title).toBe("Demo Kesaksian");
+      const second = await app.request("/api/v1/content/literature", {
+        headers: { "if-none-match": first.headers.get("etag") ?? "" },
+      });
+      expect(second.status).toBe(304);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

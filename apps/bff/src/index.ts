@@ -9,10 +9,12 @@ import {
   type ChordManifestV1,
   type ErrorCode,
   type OnlineContent,
+  EgysProvidersSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
 import { normalizeSauhPosts } from "./sauh.js";
+import { fetchLiteratureCatalog } from "./literature.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -42,6 +44,8 @@ export type BffBindings = {
   ALLOWED_ORIGINS?: string;
   SAUH_SOURCE_URL?: string;
   EGYS_API_BASE_URL?: string;
+  LITERATURE_SOURCE_URL?: string;
+  EGYS_UPSTREAM_COMMIT?: string;
 };
 
 type BffVariables = {
@@ -179,6 +183,13 @@ export function createApp(
   const buckets = new Map<string, { startedAt: number; count: number }>();
   let lastBucketSweep = 0;
   const catalogEtag = etagForContent(content);
+  let literatureCache:
+    | {
+        catalog: Awaited<ReturnType<typeof fetchLiteratureCatalog>>;
+        etag: string;
+        expiresAt: number;
+      }
+    | undefined;
 
   app.use("*", async (c, next) => {
     const origin = c.req.header("origin");
@@ -258,6 +269,33 @@ export function createApp(
     return c.json({ items: content });
   });
 
+  app.get("/api/v1/content/literature", async (c) => {
+    try {
+      const now = Date.now();
+      if (!literatureCache || literatureCache.expiresAt <= now) {
+        const catalog = await fetchLiteratureCatalog(
+          c.env?.LITERATURE_SOURCE_URL?.trim() || undefined,
+        );
+        const etag = `W/\"literature-${catalog.items.length}-${catalog.items[0]?.updatedAt ?? "empty"}\"`;
+        literatureCache = { catalog, etag, expiresAt: now + 5 * 60_000 };
+      }
+      const { catalog, etag } = literatureCache;
+      c.header("etag", etag);
+      c.header(
+        "cache-control",
+        "public, max-age=300, stale-while-revalidate=3600",
+      );
+      if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+      return c.json(catalog);
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Literature source is unavailable",
+      );
+    }
+  });
+
   app.get("/api/v1/content/:kind", (c) => {
     const kind = ContentKindSchema.safeParse(c.req.param("kind"));
     if (!kind.success)
@@ -314,13 +352,22 @@ export function createApp(
     c.header("cache-control", "public, max-age=300");
     if (!egysBase(c)) return c.json({ providers: [] });
     const upstream = await proxyEgysJson(c, "auth/providers");
-    return c.body(
-      await upstream.text(),
-      upstream.status as ContentfulStatusCode,
-      {
-        "content-type": "application/json",
-      },
+    if (!upstream.ok)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS providers unavailable",
+      );
+    const parsed = EgysProvidersSchema.safeParse(
+      await upstream.json().catch(() => undefined),
     );
+    return parsed.success
+      ? c.json(parsed.data)
+      : errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "e-GYS provider response is invalid",
+        );
   });
 
   app.post("/api/v1/auth/exchange/:provider", async (c) => {
@@ -429,6 +476,13 @@ export function createApp(
       202,
     );
   });
+
+  app.get("/api/v1/meta/egys", (c) =>
+    c.json({
+      sourceRepo: "Gereja-Yesus-Sejati/egys",
+      sourceCommit: c.env?.EGYS_UPSTREAM_COMMIT ?? null,
+    }),
+  );
 
   app.notFound((c) => errorResponse(c, "NOT_FOUND", "Route not found"));
   app.onError((error, c) => {

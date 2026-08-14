@@ -6,6 +6,8 @@ import {
 } from "@gys/contracts";
 import { BibleRepository, type BibleVerse } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
+import { Select } from "./select.js";
+import { setBibleActivity } from "./history.js";
 
 type PackState =
   | { status: "loading" }
@@ -94,6 +96,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         "gys-bible-last-reading",
         JSON.stringify({ book: book.name, chapter }),
       );
+    if (book) setBibleActivity(book.name, chapter);
   }, [book, chapter, selectedBook]);
 
   useEffect(() => {
@@ -238,40 +241,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
           aria-label={translate(locale, "page.bibleTitle")}
         >
           <div className="reader-toolbar">
-            <label>
-              <span>{translate(locale, "bible.book")}</span>
-              <select
-                value={book.id}
-                onChange={(event) => {
-                  setSelectedBook(Number(event.target.value));
-                  setSelectedChapter(1);
-                }}
-              >
-                {books.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>{translate(locale, "bible.chapter")}</span>
-              <select
-                value={chapter}
-                onChange={(event) =>
-                  setSelectedChapter(Number(event.target.value))
-                }
-              >
-                {Array.from(
-                  { length: book.chapters },
-                  (_, index) => index + 1,
-                ).map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              value={book.id}
+              onChange={(value) => {
+                setSelectedBook(value);
+                setSelectedChapter(1);
+              }}
+              label={translate(locale, "bible.book")}
+              options={books.map((option) => ({
+                value: option.id,
+                label: option.name,
+              }))}
+            />
+            <Select
+              value={chapter}
+              onChange={setSelectedChapter}
+              label={translate(locale, "bible.chapter")}
+              options={Array.from({ length: book.chapters }, (_, index) => ({
+                value: index + 1,
+                label: String(index + 1),
+              }))}
+            />
             <span className="reader-spacer" />
             <button
               className="quiet-button"

@@ -1,6 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { translate, type Locale } from "./i18n.js";
-import { getEgysProfile, signOutEgys } from "./egys.js";
+import {
+  exchangeEgysToken,
+  getEgysProfile,
+  getEgysProviders,
+  signOutEgys,
+} from "./egys.js";
 
 type PackManifest = {
   version: number;
@@ -21,6 +26,8 @@ export function MorePage({ locale }: { locale: Locale }) {
   const [notice, setNotice] = useState("");
   const [accountName, setAccountName] = useState<string>();
   const [accountLoading, setAccountLoading] = useState(true);
+  const [providers, setProviders] =
+    useState<Awaited<ReturnType<typeof getEgysProviders>>>();
 
   useEffect(() => {
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -30,6 +37,14 @@ export function MorePage({ locale }: { locale: Locale }) {
         if (response.ok) setManifest((await response.json()) as PackManifest);
       })
       .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void getEgysProviders(controller.signal)
+      .then(setProviders)
+      .catch(() => setProviders(undefined));
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -49,7 +64,9 @@ export function MorePage({ locale }: { locale: Locale }) {
     event.preventDefault();
     if (!report.trim()) return;
     try {
-      const response = await fetch("/api/v1/report", {
+      const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+      if (!base) throw new Error("BFF not configured");
+      const response = await fetch(`${base.replace(/\/$/, "")}/api/v1/report`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ category: "web", message: report.trim() }),
@@ -63,11 +80,105 @@ export function MorePage({ locale }: { locale: Locale }) {
     }
   };
 
+  const signInWithProvider = async (provider: "google" | "apple") => {
+    show(
+      `Buka ${provider === "google" ? "Google" : "Apple"} untuk menyelesaikan login e-GYS.`,
+    );
+    const sdkUrl =
+      provider === "google"
+        ? "https://accounts.google.com/gsi/client"
+        : "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+    try {
+      await new Promise<void>((resolve, reject) => {
+        if (document.querySelector(`script[src="${sdkUrl}"]`)) return resolve();
+        const script = document.createElement("script");
+        script.src = sdkUrl;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("SDK unavailable"));
+        document.head.appendChild(script);
+      });
+      if (provider === "google") {
+        const clientId = providers?.google.clientId;
+        const google = (
+          window as Window & {
+            google?: {
+              accounts?: {
+                id?: {
+                  initialize: (config: {
+                    client_id: string;
+                    callback: (response: { credential: string }) => void;
+                  }) => void;
+                  prompt: () => void;
+                };
+              };
+            };
+          }
+        ).google;
+        if (!clientId || !google?.accounts?.id)
+          throw new Error("Google client unavailable");
+        await new Promise<void>((resolve, reject) => {
+          google.accounts?.id?.initialize({
+            client_id: clientId,
+            callback: (response) => {
+              void exchangeEgysToken("google", response.credential)
+                .then(resolve)
+                .catch(reject);
+            },
+          });
+          google.accounts?.id?.prompt();
+        });
+      } else {
+        const apple = (
+          window as Window & {
+            AppleID?: {
+              auth?: {
+                init: (config: {
+                  clientId: string;
+                  scope: string;
+                  redirectURI: string;
+                  usePopup: boolean;
+                }) => void;
+                signIn: () => Promise<{
+                  authorization?: { id_token?: string };
+                }>;
+              };
+            };
+          }
+        ).AppleID;
+        const clientId = providers?.apple.clientId;
+        if (!clientId || !apple?.auth)
+          throw new Error("Apple client unavailable");
+        apple.auth.init({
+          clientId,
+          scope: "name email",
+          redirectURI: window.location.origin,
+          usePopup: true,
+        });
+        const result = await apple.auth.signIn();
+        const token = result.authorization?.id_token;
+        if (!token) throw new Error("Apple token unavailable");
+        await exchangeEgysToken("apple", token);
+      }
+      const profile = await getEgysProfile();
+      setAccountName(profile?.displayName);
+      show(
+        profile
+          ? `Selamat datang, ${profile.displayName}.`
+          : "Login e-GYS berhasil.",
+      );
+    } catch {
+      show(
+        "Login e-GYS belum dapat diselesaikan. Pastikan Worker dan client provider sudah dikonfigurasi.",
+      );
+    }
+  };
+
   return (
     <div className="page more-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">GYSApp · settings & collections</p>
+          <p className="date-line">Perangkat · koleksi & bantuan</p>
           <h1>{translate(locale, "page.moreTitle")}</h1>
           <p className="intro-copy">{translate(locale, "page.moreBody")}</p>
         </div>
@@ -80,6 +191,14 @@ export function MorePage({ locale }: { locale: Locale }) {
         </button>
       </section>
       <section className="more-grid">
+        <a
+          className="more-card more-action"
+          href={`${import.meta.env.BASE_URL}literatur`}
+        >
+          <span className="more-icon">▤</span>
+          <strong>Literatur</strong>
+          <small>Jelajahi bacaan, warta, dan renungan resmi</small>
+        </a>
         <article className="more-card more-card-wide">
           <div className="more-card-heading">
             <div>
@@ -162,8 +281,35 @@ export function MorePage({ locale }: { locale: Locale }) {
           <small>
             {accountName
               ? "Keluar dari sesi e-GYS"
-              : "Google, Apple, atau e-GYS"}
+              : providers?.google.enabled || providers?.apple.enabled
+                ? "Pilih provider untuk masuk"
+                : "Google, Apple, atau e-GYS"}
           </small>
+          {!accountName &&
+            providers &&
+            (providers.google.enabled || providers.apple.enabled) && (
+              <span className="account-provider-actions">
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    providers.google.enabled &&
+                    void signInWithProvider("google")
+                  }
+                >
+                  Google
+                </button>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    providers.apple.enabled && void signInWithProvider("apple")
+                  }
+                >
+                  Apple
+                </button>
+              </span>
+            )}
         </button>
         <button
           className="more-card more-action"

@@ -8,6 +8,8 @@ const files = [
   ["hymn-catalog", "offline/hymn-catalog.json"],
   ["music-lock", "offline/music-lock.json"],
   ["faith-topics", "offline/faith.json"],
+  ["literature-catalog", "offline/literature.json"],
+  ["fork-hymnal-map", "offline/fork-hymnal-manifest.json"],
   ["soundfont-timgm", "offline/soundfont/TimGM6mb.sf2"],
 ];
 await mkdir(join("apps", "web", "public", "offline"), { recursive: true });

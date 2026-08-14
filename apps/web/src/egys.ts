@@ -1,4 +1,9 @@
-import { AccountProfileSchema, type AccountProfile } from "@gys/contracts";
+import {
+  AccountProfileSchema,
+  EgysProvidersSchema,
+  type AccountProfile,
+  type EgysProviders,
+} from "@gys/contracts";
 
 function apiUrl(path: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
@@ -24,6 +29,30 @@ export async function getEgysProfile(
   if (!response.ok) throw new Error(`e-GYS profile failed: ${response.status}`);
   const body = (await response.json()) as { profile?: unknown };
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
+}
+
+export async function getEgysProviders(
+  signal?: AbortSignal,
+): Promise<EgysProviders | undefined> {
+  if (!configuredBase()) return undefined;
+  const response = await fetch(apiUrl("/api/v1/auth/providers"), {
+    credentials: "include",
+    ...(signal ? { signal } : {}),
+    cache: "no-store",
+  });
+  if (!response.ok)
+    throw new Error(`e-GYS providers failed: ${response.status}`);
+  const body: unknown = await response.json();
+  const parsed = EgysProvidersSchema.safeParse(body);
+  if (parsed.success) return parsed.data;
+  const legacy = (body as { providers?: unknown })?.providers;
+  return Array.isArray(legacy)
+    ? EgysProvidersSchema.parse({
+        google: { enabled: legacy.includes("google") },
+        apple: { enabled: legacy.includes("apple") },
+        whatsapp: false,
+      })
+    : undefined;
 }
 
 export async function exchangeEgysToken(

@@ -100,12 +100,69 @@ export const HymnCatalogEntrySchema = z.object({
   ]),
   number: z.number().int().positive(),
   title: z.string().min(1),
+  verses: z.array(z.string().min(1)).min(1),
   lyrics: z.string().min(1),
   midiPath: z.string().min(1),
   pdfPath: z.string().min(1),
   chordRef: ChordRefSchema.optional(),
 });
 export type HymnCatalogEntry = z.infer<typeof HymnCatalogEntrySchema>;
+
+export const LiteratureCategorySchema = z.enum([
+  "kesaksian",
+  "warta",
+  "panduan",
+  "renungan",
+  "pelita-kecil",
+  "pujian",
+  "buku",
+]);
+export type LiteratureCategory = z.infer<typeof LiteratureCategorySchema>;
+
+export const LiteratureItemSchema = z.object({
+  id: z.string().min(1),
+  category: LiteratureCategorySchema,
+  title: z.string().min(1),
+  description: z.string().default(""),
+  url: z.string().url(),
+  imageUrl: z.string().url().optional(),
+  updatedAt: z.string().datetime({ offset: true }),
+  source: z.literal("tjc.org"),
+});
+export const LiteratureCatalogSchema = z.object({
+  source: z.literal("tjc.org"),
+  generatedAt: z.string().datetime({ offset: true }),
+  items: z.array(LiteratureItemSchema),
+});
+export type LiteratureItem = z.infer<typeof LiteratureItemSchema>;
+export type LiteratureCatalog = z.infer<typeof LiteratureCatalogSchema>;
+
+export const HymnalPdfSongSchema = z.object({
+  startPage: z.number().int().positive(),
+  pageCount: z.number().int().positive(),
+  source: z.string().min(1),
+});
+export const HymnalPdfManifestSchema = z.object({
+  sourceRepo: z.literal("ThenGB/GYSApp-Data"),
+  sourceCommit: SourceCommitSchema,
+  generatedAt: z.string().datetime({ offset: true }),
+  bookCode: z.literal("KR"),
+  masterPath: z.string().min(1),
+  pageCount: z.number().int().positive(),
+  songs: z.record(z.string(), HymnalPdfSongSchema),
+});
+export type HymnalPdfManifest = z.infer<typeof HymnalPdfManifestSchema>;
+
+export const EgysProviderInfoSchema = z.object({
+  enabled: z.boolean(),
+  clientId: z.string().min(1).optional(),
+});
+export const EgysProvidersSchema = z.object({
+  google: EgysProviderInfoSchema,
+  apple: EgysProviderInfoSchema,
+  whatsapp: z.boolean(),
+});
+export type EgysProviders = z.infer<typeof EgysProvidersSchema>;
 
 export const MidiPlaylistItemSchema = z.object({
   songId: z.string().min(1),

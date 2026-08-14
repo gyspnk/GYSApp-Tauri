@@ -14,11 +14,13 @@ export { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 
 export function PdfReader({
   src,
+  data,
   initialPage = 1,
   downloadUrl,
   title = "PDF reader",
 }: {
   src: string;
+  data?: Uint8Array;
   initialPage?: number;
   downloadUrl?: string;
   title?: string;
@@ -42,11 +44,13 @@ export function PdfReader({
     setDocumentProxy(null);
     setTotal(0);
     setStatus("loading");
-    if (!src) {
+    if (!src && !data) {
       setStatus("error");
       return () => undefined;
     }
-    const loadingTask = getDocument({ url: src });
+    const loadingTask = getDocument(
+      data ? { data: data.slice() } : { url: src },
+    );
     void loadingTask.promise
       .then((document) => {
         if (disposed) return;
@@ -61,7 +65,7 @@ export function PdfReader({
       void loadingTask.destroy();
       setDocumentProxy(null);
     };
-  }, [src]);
+  }, [data, src]);
 
   useEffect(() => {
     if (!documentProxy || !canvasRef.current) return;

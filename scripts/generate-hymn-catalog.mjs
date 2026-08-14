@@ -19,6 +19,7 @@ const items = source.map((entry) => {
     book: "rohani",
     number,
     title: entry.title,
+    verses: entry.verses,
     lyrics: entry.verses.join("\n\n"),
     midiPath: `assets/midi/${stem}.mid`,
     pdfPath: `assets/pdf/${stem}.pdf`,

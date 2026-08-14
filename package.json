@@ -20,6 +20,7 @@
     "generate:music-lock": "node scripts/generate-music-lock.mjs",
     "generate:chord-manifest": "node scripts/generate-chord-manifest.mjs",
     "generate:hymn-catalog": "node scripts/generate-hymn-catalog.mjs",
+    "generate:literature": "node scripts/generate-literature-snapshot.mjs",
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs"
   },
   "devDependencies": {

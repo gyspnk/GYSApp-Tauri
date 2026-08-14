@@ -1,0 +1,2675 @@
+{
+  "sourceRepo": "ThenGB/GYSApp-Data",
+  "sourceCommit": "4f0d39b",
+  "generatedAt": "2026-08-14T06:04:04.544Z",
+  "bookCode": "KR",
+  "masterPath": "assets/data/pdf/kr/kr_master.pdf",
+  "pageCount": 649,
+  "songs": {
+    "100": {
+      "startPage": 122,
+      "pageCount": 1,
+      "source": "100_Berkorban_Untuk_Tuhan.pdf"
+    },
+    "101": {
+      "startPage": 123,
+      "pageCount": 1,
+      "source": "101_Hanya_Cinta_Yesus.pdf"
+    },
+    "102": {
+      "startPage": 124,
+      "pageCount": 1,
+      "source": "102_Hidup_Untuk_Tuhan.pdf"
+    },
+    "103": {
+      "startPage": 125,
+      "pageCount": 1,
+      "source": "103_Lebih_Baik_Ada_Yesus.pdf"
+    },
+    "104": {
+      "startPage": 126,
+      "pageCount": 1,
+      "source": "104_Aku_Amat_Cinta_Yesus.pdf"
+    },
+    "105": {
+      "startPage": 127,
+      "pageCount": 1,
+      "source": "105_Mati_Untuk_Tuhan.pdf"
+    },
+    "106": {
+      "startPage": 128,
+      "pageCount": 1,
+      "source": "106_Aku_Murid_Yesus.pdf"
+    },
+    "107": {
+      "startPage": 129,
+      "pageCount": 1,
+      "source": "107_Ikut_Yesus.pdf"
+    },
+    "108": {
+      "startPage": 130,
+      "pageCount": 1,
+      "source": "108_Ikut_Almasih.pdf"
+    },
+    "109": {
+      "startPage": 131,
+      "pageCount": 1,
+      "source": "109_Turut_Jejak_Tuhan.pdf"
+    },
+    "110": {
+      "startPage": 132,
+      "pageCount": 1,
+      "source": "110_Tinggalkan_Segalanya_Ikut_Tuhan.pdf"
+    },
+    "111": {
+      "startPage": 133,
+      "pageCount": 1,
+      "source": "111_Ikut_Juruselamat.pdf"
+    },
+    "112": {
+      "startPage": 134,
+      "pageCount": 1,
+      "source": "112_Aku_Mau_Ikut_Tuhan.pdf"
+    },
+    "113": {
+      "startPage": 135,
+      "pageCount": 1,
+      "source": "113_Pentahbisan_Gedung_Gereja.pdf"
+    },
+    "114": {
+      "startPage": 136,
+      "pageCount": 1,
+      "source": "114_Persembahan_Syukur.pdf"
+    },
+    "115": {
+      "startPage": 137,
+      "pageCount": 1,
+      "source": "115_Gedung_Gereja_Terbangun.pdf"
+    },
+    "116": {
+      "startPage": 138,
+      "pageCount": 1,
+      "source": "116_Persembahkan_Jiwa_Raga.pdf"
+    },
+    "117": {
+      "startPage": 139,
+      "pageCount": 1,
+      "source": "117_Terimalah_Persembahanku.pdf"
+    },
+    "118": {
+      "startPage": 140,
+      "pageCount": 1,
+      "source": "118_Persembahkan_Seluruh_Hidupku.pdf"
+    },
+    "119": {
+      "startPage": 141,
+      "pageCount": 1,
+      "source": "119_Semuanya_Bagi_Yesus.pdf"
+    },
+    "120": {
+      "startPage": 142,
+      "pageCount": 1,
+      "source": "120_Mempersembahkan_Semua.pdf"
+    },
+    "121": {
+      "startPage": 143,
+      "pageCount": 1,
+      "source": "121_Apa_Yang_Kupersembahkan.pdf"
+    },
+    "122": {
+      "startPage": 144,
+      "pageCount": 1,
+      "source": "122_Saling_Mengasihi.pdf"
+    },
+    "123": {
+      "startPage": 145,
+      "pageCount": 1,
+      "source": "123_Sampai_Bertemu_Lagi.pdf"
+    },
+    "125": {
+      "startPage": 148,
+      "pageCount": 1,
+      "source": "125_Kidung_Perpisahan.pdf"
+    },
+    "126": {
+      "startPage": 149,
+      "pageCount": 1,
+      "source": "126_Mengasihi_Sesama_Saudara.pdf"
+    },
+    "127": {
+      "startPage": 150,
+      "pageCount": 1,
+      "source": "127_Saling_Mengasihi_Dengan_Sungguh.pdf"
+    },
+    "128": {
+      "startPage": 151,
+      "pageCount": 1,
+      "source": "128_Hari_Kudus_Nan_Bahagia.pdf"
+    },
+    "129": {
+      "startPage": 152,
+      "pageCount": 1,
+      "source": "129_Peringati_Hari_Kudus.pdf"
+    },
+    "130": {
+      "startPage": 153,
+      "pageCount": 1,
+      "source": "130_Sabat_Kudus.pdf"
+    },
+    "131": {
+      "startPage": 154,
+      "pageCount": 1,
+      "source": "131_Girang_Berhari_Sabat.pdf"
+    },
+    "133": {
+      "startPage": 158,
+      "pageCount": 2,
+      "source": "133_Yesus_Takkan_Berubah.pdf"
+    },
+    "134": {
+      "startPage": 160,
+      "pageCount": 1,
+      "source": "134_Pandanglah_Tuhan.pdf"
+    },
+    "135": {
+      "startPage": 161,
+      "pageCount": 1,
+      "source": "135_Mengapa_Sibuk_.pdf"
+    },
+    "136": {
+      "startPage": 162,
+      "pageCount": 1,
+      "source": "136_Aku_Tahu_Siapa_yang_Kupercaya.pdf"
+    },
+    "137": {
+      "startPage": 163,
+      "pageCount": 1,
+      "source": "137_Yesus_Sahabatku.pdf"
+    },
+    "138": {
+      "startPage": 164,
+      "pageCount": 1,
+      "source": "138_Bila_Menolak_Almasih.pdf"
+    },
+    "139": {
+      "startPage": 165,
+      "pageCount": 1,
+      "source": "139_Mendengar_Yesus_Lewat.pdf"
+    },
+    "140": {
+      "startPage": 166,
+      "pageCount": 1,
+      "source": "140_Almasih_Tahu_Dukamu.pdf"
+    },
+    "141": {
+      "startPage": 167,
+      "pageCount": 1,
+      "source": "141_Bahagia_Kekal_atau_Sengsara_Kekal.pdf"
+    },
+    "142": {
+      "startPage": 168,
+      "pageCount": 1,
+      "source": "142_Sandar_Tuhan_Hapuskan_Duka.pdf"
+    },
+    "143": {
+      "startPage": 169,
+      "pageCount": 1,
+      "source": "143_Aku_Mau_Sandar_Tuhan.pdf"
+    },
+    "144": {
+      "startPage": 170,
+      "pageCount": 1,
+      "source": "144_Percayalah_Tuhan_Dengan_Sungguh.pdf"
+    },
+    "145": {
+      "startPage": 171,
+      "pageCount": 1,
+      "source": "145_Bersandar_Pada_Yesus.pdf"
+    },
+    "146": {
+      "startPage": 172,
+      "pageCount": 1,
+      "source": "146_Sandar_Tuhan_Setiap_Waktu.pdf"
+    },
+    "147": {
+      "startPage": 173,
+      "pageCount": 1,
+      "source": "147_Carilah_Dahulu_Kerajaan_Allah.pdf"
+    },
+    "148": {
+      "startPage": 174,
+      "pageCount": 1,
+      "source": "148_Yesus_Gembalaku.pdf"
+    },
+    "149": {
+      "startPage": 175,
+      "pageCount": 1,
+      "source": "149_Tenteram_di_Bawah_Lengan_Tuhan.pdf"
+    },
+    "150": {
+      "startPage": 176,
+      "pageCount": 1,
+      "source": "150_Gembala_yang_Baik_Menjaga.pdf"
+    },
+    "151": {
+      "startPage": 177,
+      "pageCount": 1,
+      "source": "151_Tuhan_Menjagamu.pdf"
+    },
+    "152": {
+      "startPage": 178,
+      "pageCount": 1,
+      "source": "152_Tuhan_Menyediakan.pdf"
+    },
+    "153": {
+      "startPage": 179,
+      "pageCount": 1,
+      "source": "153_Setiap_Waktu_Berserah_Pada_Tuhan.pdf"
+    },
+    "154": {
+      "startPage": 180,
+      "pageCount": 1,
+      "source": "154_Yesus_Bentengku_yang_Kokoh.pdf"
+    },
+    "155": {
+      "startPage": 181,
+      "pageCount": 1,
+      "source": "155_Tuhan_Selalu_Menjagaku.pdf"
+    },
+    "156": {
+      "startPage": 182,
+      "pageCount": 1,
+      "source": "156_Jalan_Bersama_Tuhan.pdf"
+    },
+    "157": {
+      "startPage": 183,
+      "pageCount": 1,
+      "source": "157_Surga_di_Dalam_Hati.pdf"
+    },
+    "158": {
+      "startPage": 184,
+      "pageCount": 1,
+      "source": "158_Berjalan_di_Jalan_Tuhan.pdf"
+    },
+    "159": {
+      "startPage": 185,
+      "pageCount": 1,
+      "source": "159_Tuhan_Beri_Sejahtera.pdf"
+    },
+    "160": {
+      "startPage": 186,
+      "pageCount": 1,
+      "source": "160_Terang_Sejati_di_Hati.pdf"
+    },
+    "161": {
+      "startPage": 187,
+      "pageCount": 1,
+      "source": "161_Di_Bawah_Naungan_Tuhan.pdf"
+    },
+    "162": {
+      "startPage": 188,
+      "pageCount": 1,
+      "source": "162_Tuhan_Pikul_Bebanku.pdf"
+    },
+    "163": {
+      "startPage": 189,
+      "pageCount": 1,
+      "source": "163_Giranglah_Jiwaku.pdf"
+    },
+    "164": {
+      "startPage": 190,
+      "pageCount": 2,
+      "source": "164_Cukuplah_Kasih_Karunia_Tuhan.pdf"
+    },
+    "165": {
+      "startPage": 192,
+      "pageCount": 2,
+      "source": "165_Yesus_Memeluk_Aku.pdf"
+    },
+    "166": {
+      "startPage": 194,
+      "pageCount": 1,
+      "source": "166_Di_Bawah_Naungan_Tuhan.pdf"
+    },
+    "167": {
+      "startPage": 195,
+      "pageCount": 1,
+      "source": "167_Laskar_Salib.pdf"
+    },
+    "168": {
+      "startPage": 196,
+      "pageCount": 1,
+      "source": "168_Laskar_Kristus_Maju.pdf"
+    },
+    "169": {
+      "startPage": 197,
+      "pageCount": 1,
+      "source": "169_Baik_dan_Jahat_Berlawanan.pdf"
+    },
+    "170": {
+      "startPage": 198,
+      "pageCount": 1,
+      "source": "170_Maju_Untuk_Tuhan.pdf"
+    },
+    "171": {
+      "startPage": 199,
+      "pageCount": 1,
+      "source": "171_Gereja_Yesus_Sejati.pdf"
+    },
+    "172": {
+      "startPage": 200,
+      "pageCount": 1,
+      "source": "172_Kau_Pasti_Menang.pdf"
+    },
+    "173": {
+      "startPage": 201,
+      "pageCount": 1,
+      "source": "173_Panji_Salib.pdf"
+    },
+    "174": {
+      "startPage": 202,
+      "pageCount": 1,
+      "source": "174_GerejaNya_Pasti_Maju.pdf"
+    },
+    "175": {
+      "startPage": 203,
+      "pageCount": 1,
+      "source": "175_Pantang_Mundur.pdf"
+    },
+    "176": {
+      "startPage": 204,
+      "pageCount": 1,
+      "source": "176_Pastilah_Menang.pdf"
+    },
+    "177": {
+      "startPage": 205,
+      "pageCount": 1,
+      "source": "177_Jangan_Turut_Bujukan.pdf"
+    },
+    "178": {
+      "startPage": 206,
+      "pageCount": 2,
+      "source": "178_Menuju_Ke_Surga.pdf"
+    },
+    "179": {
+      "startPage": 208,
+      "pageCount": 1,
+      "source": "179_Bersiap_Masuk_Surga.pdf"
+    },
+    "180": {
+      "startPage": 209,
+      "pageCount": 1,
+      "source": "180_Jalan_Hidup_Kekal.pdf"
+    },
+    "181": {
+      "startPage": 210,
+      "pageCount": 1,
+      "source": "181_Ku_Harus_Maju.pdf"
+    },
+    "182": {
+      "startPage": 211,
+      "pageCount": 1,
+      "source": "182_Maju_Terus.pdf"
+    },
+    "183": {
+      "startPage": 212,
+      "pageCount": 1,
+      "source": "183_Maju_Tak_Gentar.pdf"
+    },
+    "184": {
+      "startPage": 213,
+      "pageCount": 1,
+      "source": "184_Berjalan_di_Atas_Jalan_Surgawi.pdf"
+    },
+    "185": {
+      "startPage": 214,
+      "pageCount": 2,
+      "source": "185_Rindu_Rumah_di_Surga.pdf"
+    },
+    "186": {
+      "startPage": 216,
+      "pageCount": 2,
+      "source": "186_Surga_Rumahku.pdf"
+    },
+    "187": {
+      "startPage": 218,
+      "pageCount": 1,
+      "source": "187_Datang_ke_Tempat_nan_Indah.pdf"
+    },
+    "188": {
+      "startPage": 219,
+      "pageCount": 1,
+      "source": "188_Kembali_ke_surga_Mulia.pdf"
+    },
+    "189": {
+      "startPage": 220,
+      "pageCount": 1,
+      "source": "189_Surga_Indah.pdf"
+    },
+    "190": {
+      "startPage": 221,
+      "pageCount": 1,
+      "source": "190_Umat_Surga.pdf"
+    },
+    "191": {
+      "startPage": 222,
+      "pageCount": 1,
+      "source": "191_Rumahku_di_Surga.pdf"
+    },
+    "192": {
+      "startPage": 223,
+      "pageCount": 1,
+      "source": "192_Salib_Pimpin_Jalanku.pdf"
+    },
+    "193": {
+      "startPage": 224,
+      "pageCount": 2,
+      "source": "193_Surga_Yang_Mulia.pdf"
+    },
+    "194": {
+      "startPage": 226,
+      "pageCount": 1,
+      "source": "194_Perhentian_di_Surga.pdf"
+    },
+    "195": {
+      "startPage": 227,
+      "pageCount": 1,
+      "source": "195_Rindu_Tempat_Bahagia.pdf"
+    },
+    "196": {
+      "startPage": 228,
+      "pageCount": 2,
+      "source": "196_Surga_Indah.pdf"
+    },
+    "197": {
+      "startPage": 230,
+      "pageCount": 2,
+      "source": "197_Pulang_ke_Rumah.pdf"
+    },
+    "198": {
+      "startPage": 232,
+      "pageCount": 1,
+      "source": "198_Sandar_Tuhan_ke_Surga.pdf"
+    },
+    "199": {
+      "startPage": 233,
+      "pageCount": 1,
+      "source": "199_Rumahku_Yang_di_Surga.pdf"
+    },
+    "200": {
+      "startPage": 234,
+      "pageCount": 1,
+      "source": "200_Merindukan_Rumah_di_Surga.pdf"
+    },
+    "201": {
+      "startPage": 235,
+      "pageCount": 1,
+      "source": "201_Kemuliaan_Kekal.pdf"
+    },
+    "202": {
+      "startPage": 236,
+      "pageCount": 1,
+      "source": "202_Surga_Tempat_Bahagia.pdf"
+    },
+    "203": {
+      "startPage": 237,
+      "pageCount": 1,
+      "source": "203_Bunga_Bakung.pdf"
+    },
+    "204": {
+      "startPage": 238,
+      "pageCount": 1,
+      "source": "204_Berpengharapan_Karena_Iman.pdf"
+    },
+    "205": {
+      "startPage": 239,
+      "pageCount": 1,
+      "source": "205_Di_Dalam_Kristus_Pasti_Bangkit.pdf"
+    },
+    "206": {
+      "startPage": 240,
+      "pageCount": 1,
+      "source": "206_Aku_Pasti_Berjumpa_Dengan_Tuhan.pdf"
+    },
+    "207": {
+      "startPage": 241,
+      "pageCount": 1,
+      "source": "207_Merindukan_Kedatangan_Tuhan.pdf"
+    },
+    "208": {
+      "startPage": 242,
+      "pageCount": 2,
+      "source": "208_Umat_Kudus_Diangkat.pdf"
+    },
+    "209": {
+      "startPage": 244,
+      "pageCount": 1,
+      "source": "209_Aku_Akan_Melihat_Tuhan.pdf"
+    },
+    "210": {
+      "startPage": 245,
+      "pageCount": 1,
+      "source": "210_Di_Kala_Hidup_Ini_Berakhir.pdf"
+    },
+    "211": {
+      "startPage": 246,
+      "pageCount": 1,
+      "source": "211_Allah_Mengawasi.pdf"
+    },
+    "212": {
+      "startPage": 247,
+      "pageCount": 1,
+      "source": "212_Bersinar_Bagi_Tuhan.pdf"
+    },
+    "213": {
+      "startPage": 248,
+      "pageCount": 1,
+      "source": "213_Walau_Sedikit_Namun_Berarti.pdf"
+    },
+    "214": {
+      "startPage": 249,
+      "pageCount": 1,
+      "source": "214_Delapan_Kebahagiaan.pdf"
+    },
+    "215": {
+      "startPage": 250,
+      "pageCount": 1,
+      "source": "215_Akhlak_Gereja_Benar.pdf"
+    },
+    "216": {
+      "startPage": 251,
+      "pageCount": 1,
+      "source": "216_Budi_Pekerti_Umat_Suci.pdf"
+    },
+    "217": {
+      "startPage": 252,
+      "pageCount": 1,
+      "source": "217_Melakukan_Firman_Tuhan.pdf"
+    },
+    "218": {
+      "startPage": 253,
+      "pageCount": 1,
+      "source": "218_Buah_Roh_Kudus.pdf"
+    },
+    "219": {
+      "startPage": 254,
+      "pageCount": 1,
+      "source": "219_Di_mana_Saja_Bersinar.pdf"
+    },
+    "220": {
+      "startPage": 255,
+      "pageCount": 1,
+      "source": "220_Api_Pengujian.pdf"
+    },
+    "221": {
+      "startPage": 256,
+      "pageCount": 1,
+      "source": "221_Taklukkan_Keinginan_Daging.pdf"
+    },
+    "222": {
+      "startPage": 257,
+      "pageCount": 1,
+      "source": "222_Berbahagialah_Yang_Suci_Hatinya.pdf"
+    },
+    "223": {
+      "startPage": 258,
+      "pageCount": 1,
+      "source": "223_Kidung_Umat_Pilihan.pdf"
+    },
+    "224": {
+      "startPage": 259,
+      "pageCount": 1,
+      "source": "224_Mohon_Tuhan_Selidiki.pdf"
+    },
+    "225": {
+      "startPage": 260,
+      "pageCount": 1,
+      "source": "225_Turut_Roh_Kudus.pdf"
+    },
+    "226": {
+      "startPage": 261,
+      "pageCount": 1,
+      "source": "226_Jadilah_Kehendak_Tuhan.pdf"
+    },
+    "227": {
+      "startPage": 262,
+      "pageCount": 1,
+      "source": "227_Berbahagialah_Yang_Mendengar_PerintahNya.pdf"
+    },
+    "228": {
+      "startPage": 263,
+      "pageCount": 1,
+      "source": "228_Berbahagialah_Yang_Turut_PerintahNya.pdf"
+    },
+    "229": {
+      "startPage": 264,
+      "pageCount": 1,
+      "source": "229_Sepuluh_Perintah_Allah.pdf"
+    },
+    "230": {
+      "startPage": 265,
+      "pageCount": 1,
+      "source": "230_Berbahagialah_Orang_yang_Benar.pdf"
+    },
+    "231": {
+      "startPage": 266,
+      "pageCount": 1,
+      "source": "231_Jadilah_Seperti_KehendakMu.pdf"
+    },
+    "232": {
+      "startPage": 267,
+      "pageCount": 1,
+      "source": "232_Seperti_Yesus.pdf"
+    },
+    "233": {
+      "startPage": 268,
+      "pageCount": 1,
+      "source": "233_Milik_Yesus.pdf"
+    },
+    "234": {
+      "startPage": 269,
+      "pageCount": 1,
+      "source": "234_Ingin_Lebih_Dekat_Tuhan.pdf"
+    },
+    "235": {
+      "startPage": 270,
+      "pageCount": 1,
+      "source": "235_Tuhan_dan_Aku_Satu_Tubuh.pdf"
+    },
+    "236": {
+      "startPage": 271,
+      "pageCount": 1,
+      "source": "236_Aku_Milik_Yesus.pdf"
+    },
+    "237": {
+      "startPage": 272,
+      "pageCount": 1,
+      "source": "237_Sejak_Yesus_di_hatiku.pdf"
+    },
+    "238": {
+      "startPage": 273,
+      "pageCount": 1,
+      "source": "238_Yesus_Tinggallah_di_hatiku.pdf"
+    },
+    "239": {
+      "startPage": 274,
+      "pageCount": 1,
+      "source": "239_Tuhan_Tinggallah_Bersamaku.pdf"
+    },
+    "240": {
+      "startPage": 275,
+      "pageCount": 1,
+      "source": "240_Girang_Bersama_Tuhan.pdf"
+    },
+    "241": {
+      "startPage": 276,
+      "pageCount": 1,
+      "source": "241_Raja_Jiwaku.pdf"
+    },
+    "242": {
+      "startPage": 277,
+      "pageCount": 1,
+      "source": "242_Tuhan_Menanti_di_Luar_Pintu.pdf"
+    },
+    "243": {
+      "startPage": 278,
+      "pageCount": 1,
+      "source": "243_Dekatkanlah_Aku_PadaMu.pdf"
+    },
+    "244": {
+      "startPage": 279,
+      "pageCount": 1,
+      "source": "244_Tuhan_Aku_Mau_SepertiMu.pdf"
+    },
+    "245": {
+      "startPage": 280,
+      "pageCount": 1,
+      "source": "245_Tinggal_Bersama_Tuhan.pdf"
+    },
+    "246": {
+      "startPage": 281,
+      "pageCount": 1,
+      "source": "246_Memohon_Roh_Kudus.pdf"
+    },
+    "247": {
+      "startPage": 282,
+      "pageCount": 2,
+      "source": "247_Kuasa_Roh_Kudus.pdf"
+    },
+    "248": {
+      "startPage": 284,
+      "pageCount": 1,
+      "source": "248_Mohon_Roh_Kudus.pdf"
+    },
+    "249": {
+      "startPage": 285,
+      "pageCount": 1,
+      "source": "249_Roh_Kudus_Baptis_Semua.pdf"
+    },
+    "250": {
+      "startPage": 286,
+      "pageCount": 1,
+      "source": "250_Mendapat_Kekuatan_Baru.pdf"
+    },
+    "251": {
+      "startPage": 287,
+      "pageCount": 1,
+      "source": "251_Baptisan_Roh_Kudus.pdf"
+    },
+    "252": {
+      "startPage": 288,
+      "pageCount": 1,
+      "source": "252_Rindu_Kepenuhan_Roh_Kudus.pdf"
+    },
+    "253": {
+      "startPage": 289,
+      "pageCount": 1,
+      "source": "253_Roh_Kudus_Telah_Datang.pdf"
+    },
+    "254": {
+      "startPage": 290,
+      "pageCount": 2,
+      "source": "254_Berbahasa_Roh_Sangat_Penting.pdf"
+    },
+    "255": {
+      "startPage": 292,
+      "pageCount": 2,
+      "source": "255_Kebaktian_Kebangunan_Rohani.pdf"
+    },
+    "256": {
+      "startPage": 294,
+      "pageCount": 1,
+      "source": "256_Hujan_Yang_Membawa_Berkat.pdf"
+    },
+    "257": {
+      "startPage": 295,
+      "pageCount": 1,
+      "source": "257_Berjagajaga_dan_Berdoa.pdf"
+    },
+    "258": {
+      "startPage": 296,
+      "pageCount": 1,
+      "source": "258_Berdoa_dan_Berpuasa.pdf"
+    },
+    "259": {
+      "startPage": 297,
+      "pageCount": 1,
+      "source": "259_Tekun_Berdoa.pdf"
+    },
+    "260": {
+      "startPage": 298,
+      "pageCount": 1,
+      "source": "260_Pujian_di_Pagi_Hari.pdf"
+    },
+    "261": {
+      "startPage": 299,
+      "pageCount": 1,
+      "source": "261_Doa_di_Malam_Hari.pdf"
+    },
+    "262": {
+      "startPage": 300,
+      "pageCount": 1,
+      "source": "262_Bersekutu_Dalam_Roh_Dengan_Tuhan.pdf"
+    },
+    "263": {
+      "startPage": 301,
+      "pageCount": 1,
+      "source": "263_Yesus_Sahabat_Yang_Baik.pdf"
+    },
+    "264": {
+      "startPage": 302,
+      "pageCount": 1,
+      "source": "264_Tuhan_Dengarlah_Doaku.pdf"
+    },
+    "265": {
+      "startPage": 303,
+      "pageCount": 1,
+      "source": "265_Lekas_Beritahu_Yesus.pdf"
+    },
+    "266": {
+      "startPage": 304,
+      "pageCount": 1,
+      "source": "266_Memberitakan_Injil.pdf"
+    },
+    "267": {
+      "startPage": 305,
+      "pageCount": 1,
+      "source": "267_Menuruti_Pengutusan_Tuhan.pdf"
+    },
+    "268": {
+      "startPage": 306,
+      "pageCount": 1,
+      "source": "268_Turut_Panggilan_Tuhan.pdf"
+    },
+    "269": {
+      "startPage": 307,
+      "pageCount": 1,
+      "source": "269_Dengar_Tuhan_Memanggilku.pdf"
+    },
+    "270": {
+      "startPage": 308,
+      "pageCount": 1,
+      "source": "270_Ke_Tempat_Nan_Jauh.pdf"
+    },
+    "271": {
+      "startPage": 309,
+      "pageCount": 1,
+      "source": "271_Jangan_Takut.pdf"
+    },
+    "272": {
+      "startPage": 310,
+      "pageCount": 2,
+      "source": "272_Roh_Penghibur_Datang.pdf"
+    },
+    "273": {
+      "startPage": 312,
+      "pageCount": 2,
+      "source": "273_Kabar_Gembira.pdf"
+    },
+    "274": {
+      "startPage": 314,
+      "pageCount": 1,
+      "source": "274_Hujan_Akhir_Turun.pdf"
+    },
+    "275": {
+      "startPage": 315,
+      "pageCount": 1,
+      "source": "275_Bawa_Berkas_ke_Rumah.pdf"
+    },
+    "276": {
+      "startPage": 316,
+      "pageCount": 2,
+      "source": "276_Dengarlah_InjilNya.pdf"
+    },
+    "277": {
+      "startPage": 318,
+      "pageCount": 2,
+      "source": "277_Girang_Memberitakan_Injil.pdf"
+    },
+    "278": {
+      "startPage": 320,
+      "pageCount": 1,
+      "source": "278_Tuhan_Tolong.pdf"
+    },
+    "279": {
+      "startPage": 321,
+      "pageCount": 1,
+      "source": "279_Pintu_Anugerah_Terbuka.pdf"
+    },
+    "280": {
+      "startPage": 322,
+      "pageCount": 1,
+      "source": "280_Beritakan_Injil.pdf"
+    },
+    "281": {
+      "startPage": 323,
+      "pageCount": 1,
+      "source": "281_Keluhan_Jiwa.pdf"
+    },
+    "282": {
+      "startPage": 324,
+      "pageCount": 1,
+      "source": "282_Giatlah_Bekerja.pdf"
+    },
+    "283": {
+      "startPage": 325,
+      "pageCount": 1,
+      "source": "283_Menuai_Untuk_Tuhan.pdf"
+    },
+    "284": {
+      "startPage": 326,
+      "pageCount": 1,
+      "source": "284_Bersinarkan_Terang_Injil.pdf"
+    },
+    "285": {
+      "startPage": 327,
+      "pageCount": 1,
+      "source": "285_Bertolak_Ke_Lautan_Dalam.pdf"
+    },
+    "286": {
+      "startPage": 328,
+      "pageCount": 2,
+      "source": "286_Beritakan_Anugerah_Keselamatan.pdf"
+    },
+    "287": {
+      "startPage": 330,
+      "pageCount": 1,
+      "source": "287_Bekerja_Untuk_Yesus.pdf"
+    },
+    "288": {
+      "startPage": 331,
+      "pageCount": 1,
+      "source": "288_Lekas_Bekerja.pdf"
+    },
+    "289": {
+      "startPage": 332,
+      "pageCount": 1,
+      "source": "289_Mengutus_Pekerja_Kudus.pdf"
+    },
+    "290": {
+      "startPage": 333,
+      "pageCount": 1,
+      "source": "290_Upacara_Pentahbisan.pdf"
+    },
+    "291": {
+      "startPage": 334,
+      "pageCount": 1,
+      "source": "291_Sumber_Penghapus_Dosa.pdf"
+    },
+    "292": {
+      "startPage": 335,
+      "pageCount": 1,
+      "source": "292_Anugerah_Penebusan_Dosa.pdf"
+    },
+    "293": {
+      "startPage": 336,
+      "pageCount": 1,
+      "source": "293_Dosa_Dibersihkan.pdf"
+    },
+    "294": {
+      "startPage": 337,
+      "pageCount": 1,
+      "source": "294_Aku_Menghampiri_Mu.pdf"
+    },
+    "295": {
+      "startPage": 338,
+      "pageCount": 1,
+      "source": "295_Sakramen_Pembasuhan_Kaki.pdf"
+    },
+    "296": {
+      "startPage": 339,
+      "pageCount": 1,
+      "source": "296_Memperingati_Kematian_Tuhan.pdf"
+    },
+    "297": {
+      "startPage": 340,
+      "pageCount": 1,
+      "source": "297_Apakah_Tekadku_Untuk_Tuhan.pdf"
+    },
+    "298": {
+      "startPage": 341,
+      "pageCount": 1,
+      "source": "298_Upacara_Pernikahan_Umat_Suci.pdf"
+    },
+    "299": {
+      "startPage": 342,
+      "pageCount": 1,
+      "source": "299_Pemberkatan_Nikah.pdf"
+    },
+    "300": {
+      "startPage": 343,
+      "pageCount": 1,
+      "source": "300_Ucapan_Selamat_Berbahagia.pdf"
+    },
+    "301": {
+      "startPage": 344,
+      "pageCount": 1,
+      "source": "301_Hidup_Manusia_Tidak_Lama.pdf"
+    },
+    "302": {
+      "startPage": 345,
+      "pageCount": 1,
+      "source": "302_Pemakaman.pdf"
+    },
+    "303": {
+      "startPage": 346,
+      "pageCount": 1,
+      "source": "303_Surga_Telah_Datang.pdf"
+    },
+    "304": {
+      "startPage": 347,
+      "pageCount": 1,
+      "source": "304_Anak_Hilang_Telah_Kembali.pdf"
+    },
+    "305": {
+      "startPage": 348,
+      "pageCount": 1,
+      "source": "305_Mawas_Diri.pdf"
+    },
+    "306": {
+      "startPage": 349,
+      "pageCount": 1,
+      "source": "306_Bertobat_dan_Lahir_Kembali.pdf"
+    },
+    "307": {
+      "startPage": 350,
+      "pageCount": 2,
+      "source": "307_Pulanglah_.pdf"
+    },
+    "308": {
+      "startPage": 352,
+      "pageCount": 2,
+      "source": "308_Tuhan_Teman_Orang_Berdosa.pdf"
+    },
+    "309": {
+      "startPage": 354,
+      "pageCount": 1,
+      "source": "309_Pengharapan_di_Tahun_Baru.pdf"
+    },
+    "310": {
+      "startPage": 355,
+      "pageCount": 1,
+      "source": "310_Ucapan_Syukur_di_Akhir_Tahun.pdf"
+    },
+    "311": {
+      "startPage": 356,
+      "pageCount": 1,
+      "source": "311_Segala_Ciptaan_Tuhan.pdf"
+    },
+    "312": {
+      "startPage": 357,
+      "pageCount": 1,
+      "source": "312_Mari_Berkumpul_MenyembahNya.pdf"
+    },
+    "313": {
+      "startPage": 358,
+      "pageCount": 1,
+      "source": "313_Besar_KesetiaanMu.pdf"
+    },
+    "314": {
+      "startPage": 359,
+      "pageCount": 1,
+      "source": "314_Sungguh_Besar_Allahku.pdf"
+    },
+    "315": {
+      "startPage": 360,
+      "pageCount": 1,
+      "source": "315_Allah_yang_Esa_Kekal_dan_tak_Nampak.pdf"
+    },
+    "316": {
+      "startPage": 361,
+      "pageCount": 1,
+      "source": "316_Sembahlah_Sang_Raja.pdf"
+    },
+    "317": {
+      "startPage": 362,
+      "pageCount": 2,
+      "source": "317_Tuhan_Telah_Datang.pdf"
+    },
+    "318": {
+      "startPage": 364,
+      "pageCount": 1,
+      "source": "318_Pelabuhan_Jiwa.pdf"
+    },
+    "319": {
+      "startPage": 365,
+      "pageCount": 1,
+      "source": "319_Malaikat_dari_Tempat_Mulia.pdf"
+    },
+    "320": {
+      "startPage": 366,
+      "pageCount": 1,
+      "source": "320_Kemuliaan_Bagi_Allah.pdf"
+    },
+    "321": {
+      "startPage": 367,
+      "pageCount": 1,
+      "source": "321_Marilah_Memuji.pdf"
+    },
+    "322": {
+      "startPage": 368,
+      "pageCount": 1,
+      "source": "322_Kemuliaan_Untuk_Tuhan.pdf"
+    },
+    "323": {
+      "startPage": 369,
+      "pageCount": 1,
+      "source": "323_Muliakanlah_Yesus.pdf"
+    },
+    "324": {
+      "startPage": 370,
+      "pageCount": 1,
+      "source": "324_Mulialah_NamaMu.pdf"
+    },
+    "325": {
+      "startPage": 371,
+      "pageCount": 1,
+      "source": "325_Yesus_Amatlah_Berharga.pdf"
+    },
+    "326": {
+      "startPage": 372,
+      "pageCount": 1,
+      "source": "326_Dia_Membuat_Ku_Selalu_Bernyanyi.pdf"
+    },
+    "327": {
+      "startPage": 373,
+      "pageCount": 1,
+      "source": "327_Lebih_Mengenal_Yesus.pdf"
+    },
+    "328": {
+      "startPage": 374,
+      "pageCount": 1,
+      "source": "328_Puji_Tuhan_Yang_MahaKuasa.pdf"
+    },
+    "329": {
+      "startPage": 375,
+      "pageCount": 1,
+      "source": "329_Allah_Abraham_Ishak_dan_Yakub.pdf"
+    },
+    "330": {
+      "startPage": 376,
+      "pageCount": 2,
+      "source": "330_Damai_Anugerah_Tuhan.pdf"
+    },
+    "331": {
+      "startPage": 378,
+      "pageCount": 2,
+      "source": "331_Kasih_Setia_dan_Rahmat.pdf"
+    },
+    "332": {
+      "startPage": 380,
+      "pageCount": 2,
+      "source": "332_Kasih_Allah.pdf"
+    },
+    "333": {
+      "startPage": 382,
+      "pageCount": 1,
+      "source": "333_Tiap_Minggu_DijagaNya.pdf"
+    },
+    "334": {
+      "startPage": 383,
+      "pageCount": 1,
+      "source": "334_Yesus_Mawar_Saron.pdf"
+    },
+    "335": {
+      "startPage": 384,
+      "pageCount": 1,
+      "source": "335_Yesus_Datang.pdf"
+    },
+    "336": {
+      "startPage": 385,
+      "pageCount": 1,
+      "source": "336_Apakah_Yesus_Memperhatikan.pdf"
+    },
+    "337": {
+      "startPage": 386,
+      "pageCount": 2,
+      "source": "337_Sebab_Dia_Hidup.pdf"
+    },
+    "338": {
+      "startPage": 388,
+      "pageCount": 1,
+      "source": "338_Dia_Mengangkatku.pdf"
+    },
+    "339": {
+      "startPage": 389,
+      "pageCount": 1,
+      "source": "339_Yesus_Segalanya_Bagiku.pdf"
+    },
+    "340": {
+      "startPage": 390,
+      "pageCount": 1,
+      "source": "340_Juruselamat_Kita_Yang_Agung.pdf"
+    },
+    "341": {
+      "startPage": 391,
+      "pageCount": 1,
+      "source": "341_Undanglah_Yesus_ke_Hatimu.pdf"
+    },
+    "342": {
+      "startPage": 392,
+      "pageCount": 2,
+      "source": "342_Pelita_Kecil_Berkobarlah.pdf"
+    },
+    "343": {
+      "startPage": 394,
+      "pageCount": 2,
+      "source": "343_KasihNya_Mengangkatku.pdf"
+    },
+    "344": {
+      "startPage": 396,
+      "pageCount": 1,
+      "source": "344_Betapa_Dia_Mengasihi_Kau_dan_Aku.pdf"
+    },
+    "345": {
+      "startPage": 397,
+      "pageCount": 1,
+      "source": "345_Sungguh_Dalam_Kasih_Yesus.pdf"
+    },
+    "346": {
+      "startPage": 398,
+      "pageCount": 1,
+      "source": "346_Lemah_Lembut_PanggilanNya.pdf"
+    },
+    "347": {
+      "startPage": 399,
+      "pageCount": 1,
+      "source": "347_Batu_Karang_yang_Kokoh.pdf"
+    },
+    "348": {
+      "startPage": 400,
+      "pageCount": 2,
+      "source": "348_Anugerah_Yesus_yang_Ajaib.pdf"
+    },
+    "349": {
+      "startPage": 402,
+      "pageCount": 1,
+      "source": "349_Ajaib_Ajaiblah_Yesus.pdf"
+    },
+    "350": {
+      "startPage": 403,
+      "pageCount": 1,
+      "source": "350_Hadirkah_Kau.pdf"
+    },
+    "351": {
+      "startPage": 404,
+      "pageCount": 2,
+      "source": "351_Dia_Hidup.pdf"
+    },
+    "352": {
+      "startPage": 406,
+      "pageCount": 2,
+      "source": "352_Dia_Menaungi_Jiwaku.pdf"
+    },
+    "353": {
+      "startPage": 408,
+      "pageCount": 2,
+      "source": "353_Di_bawah_Salib_Yesus.pdf"
+    },
+    "354": {
+      "startPage": 410,
+      "pageCount": 2,
+      "source": "354_Kemenangan_Dalam_Yesus.pdf"
+    },
+    "355": {
+      "startPage": 412,
+      "pageCount": 2,
+      "source": "355_Kekal_di_hatiku.pdf"
+    },
+    "356": {
+      "startPage": 414,
+      "pageCount": 2,
+      "source": "356_Imanlah_Kemenangan.pdf"
+    },
+    "357": {
+      "startPage": 416,
+      "pageCount": 1,
+      "source": "357_Tuhan_adalah_Gembalaku.pdf"
+    },
+    "358": {
+      "startPage": 417,
+      "pageCount": 1,
+      "source": "358_Roh_Kudus_Penuhilah_Aku.pdf"
+    },
+    "359": {
+      "startPage": 418,
+      "pageCount": 2,
+      "source": "359_Kita_Berjalan_ke_Sion.pdf"
+    },
+    "360": {
+      "startPage": 420,
+      "pageCount": 1,
+      "source": "360_Adakah_Tempat_Bagi_Yesus.pdf"
+    },
+    "361": {
+      "startPage": 421,
+      "pageCount": 1,
+      "source": "361_Haruskah_Yesus_Memikul_Salib_Sendiri.pdf"
+    },
+    "362": {
+      "startPage": 422,
+      "pageCount": 1,
+      "source": "362_Tuhan_Roti_Hidup.pdf"
+    },
+    "363": {
+      "startPage": 423,
+      "pageCount": 1,
+      "source": "363_Berpegang_Pada_JanjiNya.pdf"
+    },
+    "364": {
+      "startPage": 424,
+      "pageCount": 1,
+      "source": "364_Hatiku_Simpan_FirmanMu.pdf"
+    },
+    "365": {
+      "startPage": 425,
+      "pageCount": 1,
+      "source": "365_Kepala_Tuhan_Kini_Terluka.pdf"
+    },
+    "366": {
+      "startPage": 426,
+      "pageCount": 2,
+      "source": "366_Berimanlah_Kepada_Tuhan.pdf"
+    },
+    "367": {
+      "startPage": 428,
+      "pageCount": 2,
+      "source": "367_Burung_Pipit_Dia_Jaga.pdf"
+    },
+    "368": {
+      "startPage": 430,
+      "pageCount": 2,
+      "source": "368_Ku_Tahu_Siapa_Pegang_Hari_Esok.pdf"
+    },
+    "369": {
+      "startPage": 432,
+      "pageCount": 1,
+      "source": "369_Perlu_Yesus.pdf"
+    },
+    "370": {
+      "startPage": 433,
+      "pageCount": 1,
+      "source": "370_Bila_Tuhan_Beserta_Kita.pdf"
+    },
+    "371": {
+      "startPage": 434,
+      "pageCount": 1,
+      "source": "371_Dalam_Pencobaan.pdf"
+    },
+    "372": {
+      "startPage": 435,
+      "pageCount": 1,
+      "source": "372_Saat_Ini.pdf"
+    },
+    "373": {
+      "startPage": 436,
+      "pageCount": 1,
+      "source": "373_Percayalah.pdf"
+    },
+    "374": {
+      "startPage": 437,
+      "pageCount": 1,
+      "source": "374_Raja_kekal_Pimpinlah.pdf"
+    },
+    "375": {
+      "startPage": 438,
+      "pageCount": 1,
+      "source": "375_Bekas_Paku_di_TanganNya.pdf"
+    },
+    "376": {
+      "startPage": 439,
+      "pageCount": 1,
+      "source": "376_Batu_Karang.pdf"
+    },
+    "377": {
+      "startPage": 440,
+      "pageCount": 1,
+      "source": "377_Tuhan_Kau_Mengingatku.pdf"
+    },
+    "378": {
+      "startPage": 441,
+      "pageCount": 1,
+      "source": "378_Percaya_dan_Taat.pdf"
+    },
+    "379": {
+      "startPage": 442,
+      "pageCount": 1,
+      "source": "379_Pandanglah_Pada_Yesus.pdf"
+    },
+    "380": {
+      "startPage": 443,
+      "pageCount": 1,
+      "source": "380_Yesus_Segalanya_Bagiku.pdf"
+    },
+    "381": {
+      "startPage": 444,
+      "pageCount": 1,
+      "source": "381_Betapa_Aku_Mengasihi_Yesus.pdf"
+    },
+    "382": {
+      "startPage": 445,
+      "pageCount": 1,
+      "source": "382_Di_hatiku_Ada_Melodi_Kasih.pdf"
+    },
+    "383": {
+      "startPage": 446,
+      "pageCount": 1,
+      "source": "383_Suatu_Hari_Nanti.pdf"
+    },
+    "384": {
+      "startPage": 447,
+      "pageCount": 1,
+      "source": "384_Cepat_Atau_Lambat.pdf"
+    },
+    "385": {
+      "startPage": 448,
+      "pageCount": 1,
+      "source": "385_Di_Tepi_Yordan.pdf"
+    },
+    "386": {
+      "startPage": 449,
+      "pageCount": 1,
+      "source": "386_Aku_Menemukan_Sobat_Setia.pdf"
+    },
+    "387": {
+      "startPage": 450,
+      "pageCount": 1,
+      "source": "387_Tuhan_Bersabdalah_Padaku.pdf"
+    },
+    "388": {
+      "startPage": 451,
+      "pageCount": 1,
+      "source": "388_Dekat_Dengan_Tuhan_ku.pdf"
+    },
+    "389": {
+      "startPage": 452,
+      "pageCount": 1,
+      "source": "389_Lebih_Dekat_Kepada_Tuhan.pdf"
+    },
+    "390": {
+      "startPage": 453,
+      "pageCount": 1,
+      "source": "390_Lebih_Dekat_PadaMu.pdf"
+    },
+    "391": {
+      "startPage": 454,
+      "pageCount": 2,
+      "source": "391_Ku_Tak_Akan_Pernah_Sendiri.pdf"
+    },
+    "392": {
+      "startPage": 456,
+      "pageCount": 2,
+      "source": "392_Aku_Akan_Pergi_ke_Mana_Engkau_Mengutusku.pdf"
+    },
+    "393": {
+      "startPage": 458,
+      "pageCount": 1,
+      "source": "393_Terima_Kasih_Tuhan.pdf"
+    },
+    "394": {
+      "startPage": 459,
+      "pageCount": 1,
+      "source": "394_Terima_Kasih_Pada_Tuhan.pdf"
+    },
+    "395": {
+      "startPage": 460,
+      "pageCount": 1,
+      "source": "395_Di_Tempat_yang_Lebih_Tinggi.pdf"
+    },
+    "396": {
+      "startPage": 461,
+      "pageCount": 1,
+      "source": "396_Aku_Akan_Setia.pdf"
+    },
+    "397": {
+      "startPage": 462,
+      "pageCount": 1,
+      "source": "397_Nyatakan_Yesus_Dalammu.pdf"
+    },
+    "398": {
+      "startPage": 463,
+      "pageCount": 1,
+      "source": "398_Hidup_Untuk_Yesus.pdf"
+    },
+    "399": {
+      "startPage": 464,
+      "pageCount": 1,
+      "source": "399_Tuhan_Ku_Mau_Menjadi_Kristen.pdf"
+    },
+    "400": {
+      "startPage": 465,
+      "pageCount": 1,
+      "source": "400_Aku_Mau_Seperti_Yesus.pdf"
+    },
+    "401": {
+      "startPage": 466,
+      "pageCount": 1,
+      "source": "401_Kuduskan_Dirimu.pdf"
+    },
+    "402": {
+      "startPage": 467,
+      "pageCount": 1,
+      "source": "402_Jalan_Tuhan.pdf"
+    },
+    "403": {
+      "startPage": 468,
+      "pageCount": 1,
+      "source": "403_Tuhan_Jadilah_KehendakMu.pdf"
+    },
+    "404": {
+      "startPage": 469,
+      "pageCount": 1,
+      "source": "404_Tuhan_Memberkatimu.pdf"
+    },
+    "405": {
+      "startPage": 470,
+      "pageCount": 2,
+      "source": "405_Berdoakah_Engkau.pdf"
+    },
+    "406": {
+      "startPage": 472,
+      "pageCount": 1,
+      "source": "406_Aku_Harus_Memberitahu_Yesus.pdf"
+    },
+    "407": {
+      "startPage": 473,
+      "pageCount": 1,
+      "source": "407_Dalam_Taman.pdf"
+    },
+    "408": {
+      "startPage": 474,
+      "pageCount": 2,
+      "source": "408_Masuklah_Dalam_hatiku.pdf"
+    },
+    "409": {
+      "startPage": 476,
+      "pageCount": 2,
+      "source": "409_Jadikan_Aku_Saluran_Berkat.pdf"
+    },
+    "410": {
+      "startPage": 478,
+      "pageCount": 1,
+      "source": "410_Ajarlah_Aku_Berdoa.pdf"
+    },
+    "411": {
+      "startPage": 479,
+      "pageCount": 1,
+      "source": "411_Taman_Doa_Nan_indah.pdf"
+    },
+    "412": {
+      "startPage": 480,
+      "pageCount": 2,
+      "source": "412_Indahnya_Saat_Berdoa.pdf"
+    },
+    "413": {
+      "startPage": 482,
+      "pageCount": 2,
+      "source": "413_Layanilah_Tuhan_Dengan_Suka_cita.pdf"
+    },
+    "414": {
+      "startPage": 484,
+      "pageCount": 2,
+      "source": "414_Bila_Aku_Semakin_Melayani_Dia.pdf"
+    },
+    "415": {
+      "startPage": 486,
+      "pageCount": 2,
+      "source": "415_Serahkan_Yang_Terbaik_padaNya.pdf"
+    },
+    "416": {
+      "startPage": 488,
+      "pageCount": 2,
+      "source": "416_Kau_Sanggupkah_Tanya_Yesus.pdf"
+    },
+    "417": {
+      "startPage": 490,
+      "pageCount": 1,
+      "source": "417_Mengikut_Yesus.pdf"
+    },
+    "418": {
+      "startPage": 491,
+      "pageCount": 1,
+      "source": "418_Sudahkah_Kau_Persembahkan_Semua.pdf"
+    },
+    "419": {
+      "startPage": 492,
+      "pageCount": 1,
+      "source": "419_Jadikan_Aku_Saluran_Berkat.pdf"
+    },
+    "420": {
+      "startPage": 493,
+      "pageCount": 1,
+      "source": "420_Persembahan_Bagi_Tuhan.pdf"
+    },
+    "421": {
+      "startPage": 494,
+      "pageCount": 1,
+      "source": "421_Datanglah_ke_PestaNya.pdf"
+    },
+    "422": {
+      "startPage": 495,
+      "pageCount": 1,
+      "source": "422_Beritakan_KasihNya.pdf"
+    },
+    "423": {
+      "startPage": 496,
+      "pageCount": 1,
+      "source": "423_Ceritakanlah_Tentang_Yesus.pdf"
+    },
+    "424": {
+      "startPage": 497,
+      "pageCount": 1,
+      "source": "424_Perintah_Raja.pdf"
+    },
+    "425": {
+      "startPage": 498,
+      "pageCount": 1,
+      "source": "425_Ulurkan_Tali_Keselamatan.pdf"
+    },
+    "426": {
+      "startPage": 499,
+      "pageCount": 1,
+      "source": "426_Juruselamat_Yang_Ajaib.pdf"
+    },
+    "427": {
+      "startPage": 500,
+      "pageCount": 1,
+      "source": "427_Ceritakan_Pada_Bangsa_Bangsa.pdf"
+    },
+    "428": {
+      "startPage": 501,
+      "pageCount": 1,
+      "source": "428_Orang_Yang_Penuh_Kesengsaraan.pdf"
+    },
+    "429": {
+      "startPage": 502,
+      "pageCount": 1,
+      "source": "429_Aku_Telah_Melihat_KemuliaanNya.pdf"
+    },
+    "430": {
+      "startPage": 503,
+      "pageCount": 1,
+      "source": "430_Berhimpunkah_di_Surga_Kehidupan.pdf"
+    },
+    "431": {
+      "startPage": 504,
+      "pageCount": 1,
+      "source": "431_Kasih_Sempurna.pdf"
+    },
+    "432": {
+      "startPage": 505,
+      "pageCount": 1,
+      "source": "432_Pengertian_Yang_Mendalam.pdf"
+    },
+    "433": {
+      "startPage": 506,
+      "pageCount": 1,
+      "source": "433_Damai_Nan_Ajaib.pdf"
+    },
+    "434": {
+      "startPage": 507,
+      "pageCount": 1,
+      "source": "434_Di_Suatu_Negeri_Yang_Mulia.pdf"
+    },
+    "435": {
+      "startPage": 508,
+      "pageCount": 2,
+      "source": "435_Dia_Mengampuni_Semua_Dosaku.pdf"
+    },
+    "436": {
+      "startPage": 510,
+      "pageCount": 2,
+      "source": "436_Sepanjang_Jalan_Tuhan_Memimpinku.pdf"
+    },
+    "437": {
+      "startPage": 512,
+      "pageCount": 1,
+      "source": "437_Tuhan_Buatlah_Hatiku_Bersemi.pdf"
+    },
+    "438": {
+      "startPage": 513,
+      "pageCount": 1,
+      "source": "438_Untuk_Keindahan_Bumi.pdf"
+    },
+    "439": {
+      "startPage": 514,
+      "pageCount": 2,
+      "source": "439_Setiap_Saat.pdf"
+    },
+    "440": {
+      "startPage": 516,
+      "pageCount": 2,
+      "source": "440_Biarlah_Semua_Makhluk.pdf"
+    },
+    "441": {
+      "startPage": 518,
+      "pageCount": 1,
+      "source": "441_Bersuka_citalah.pdf"
+    },
+    "442": {
+      "startPage": 519,
+      "pageCount": 1,
+      "source": "442_Tuhan_Memimpin_Kita.pdf"
+    },
+    "443": {
+      "startPage": 520,
+      "pageCount": 1,
+      "source": "443_Iman_UmatUmat_Kudus.pdf"
+    },
+    "444": {
+      "startPage": 521,
+      "pageCount": 1,
+      "source": "444_Yesuslah_Nama_Yang_Terindah.pdf"
+    },
+    "445": {
+      "startPage": 522,
+      "pageCount": 1,
+      "source": "445_Anugerah_Lebih_Besar_dari_Dosa.pdf"
+    },
+    "446": {
+      "startPage": 523,
+      "pageCount": 1,
+      "source": "446_Terpujilah_Nama_Tuhan.pdf"
+    },
+    "447": {
+      "startPage": 524,
+      "pageCount": 1,
+      "source": "447_Imanku_Menemukan_Tempat_Perhentian.pdf"
+    },
+    "448": {
+      "startPage": 525,
+      "pageCount": 1,
+      "source": "448_Bersuka_citalah_Tuhan_Itu_Raja.pdf"
+    },
+    "449": {
+      "startPage": 526,
+      "pageCount": 2,
+      "source": "449_Mungkinkah.pdf"
+    },
+    "450": {
+      "startPage": 528,
+      "pageCount": 1,
+      "source": "450_Serukanlah_Perang.pdf"
+    },
+    "451": {
+      "startPage": 529,
+      "pageCount": 1,
+      "source": "451_Serukanlah_Dari_Puncak_Gunung.pdf"
+    },
+    "452": {
+      "startPage": 530,
+      "pageCount": 1,
+      "source": "452_Jadilah_Visiku.pdf"
+    },
+    "453": {
+      "startPage": 531,
+      "pageCount": 1,
+      "source": "453_Anak_Raja.pdf"
+    },
+    "454": {
+      "startPage": 532,
+      "pageCount": 1,
+      "source": "454_Oh_Datanglah_Imanuel.pdf"
+    },
+    "455": {
+      "startPage": 533,
+      "pageCount": 1,
+      "source": "455_Nama_Yang_Indah.pdf"
+    },
+    "456": {
+      "startPage": 534,
+      "pageCount": 1,
+      "source": "456_Yesuslah_Terang_Dunia.pdf"
+    },
+    "457": {
+      "startPage": 535,
+      "pageCount": 1,
+      "source": "457_Hanyalah_JamahanMu.pdf"
+    },
+    "458": {
+      "startPage": 536,
+      "pageCount": 1,
+      "source": "458_Janganlah_Pergi_Tanpa_Yesus.pdf"
+    },
+    "459": {
+      "startPage": 537,
+      "pageCount": 1,
+      "source": "459_Yesuslah_Terang_Dunia.pdf"
+    },
+    "460": {
+      "startPage": 538,
+      "pageCount": 1,
+      "source": "460_Yesus_Paling_Mengenalmu.pdf"
+    },
+    "461": {
+      "startPage": 539,
+      "pageCount": 1,
+      "source": "461_Semua_Karena_Bukit_Golgota.pdf"
+    },
+    "462": {
+      "startPage": 540,
+      "pageCount": 1,
+      "source": "462_Penebus_Agung.pdf"
+    },
+    "463": {
+      "startPage": 541,
+      "pageCount": 1,
+      "source": "463_Roh_Kudus_Penolongku.pdf"
+    },
+    "464": {
+      "startPage": 542,
+      "pageCount": 1,
+      "source": "464_Tertegun_di_HadapanNya.pdf"
+    },
+    "465": {
+      "startPage": 543,
+      "pageCount": 1,
+      "source": "465_Yesus_Perlindunganku_Yang_Teguh.pdf"
+    },
+    "466": {
+      "startPage": 544,
+      "pageCount": 1,
+      "source": "466_Tiap_Hari_Tiap_Waktu.pdf"
+    },
+    "467": {
+      "startPage": 545,
+      "pageCount": 1,
+      "source": "467_Percayalah_Pada_Yesus.pdf"
+    },
+    "468": {
+      "startPage": 546,
+      "pageCount": 1,
+      "source": "468_Kristus_Hidup_di_Dalam_Ku.pdf"
+    },
+    "469": {
+      "startPage": 547,
+      "pageCount": 1,
+      "source": "469_Dia_Menuntunmu.pdf"
+    },
+    "470": {
+      "startPage": 548,
+      "pageCount": 1,
+      "source": "470_Hai_Sion_Bersegeralah.pdf"
+    },
+    "471": {
+      "startPage": 549,
+      "pageCount": 1,
+      "source": "471_Di_Kalvari.pdf"
+    },
+    "472": {
+      "startPage": 550,
+      "pageCount": 1,
+      "source": "472_Dengarlah_Doa_Kami_Ya_Tuhan.pdf"
+    },
+    "473": {
+      "startPage": 551,
+      "pageCount": 1,
+      "source": "473_Tuhan_Pakailah_Daku.pdf"
+    },
+    "474": {
+      "startPage": 552,
+      "pageCount": 1,
+      "source": "474_Datanglah_dengan_Hati_yang_Hancur.pdf"
+    },
+    "475": {
+      "startPage": 553,
+      "pageCount": 1,
+      "source": "475_Juruselamat_Menantimu.pdf"
+    },
+    "476": {
+      "startPage": 554,
+      "pageCount": 2,
+      "source": "476_Diamlah_Jiwaku.pdf"
+    },
+    "477": {
+      "startPage": 556,
+      "pageCount": 1,
+      "source": "477_Dunia_Berlalu.pdf"
+    },
+    "478": {
+      "startPage": 557,
+      "pageCount": 1,
+      "source": "478_Ku_Mau_Seperti_Yesus.pdf"
+    },
+    "479": {
+      "startPage": 558,
+      "pageCount": 1,
+      "source": "479_Bawalah_Mereka.pdf"
+    },
+    "480": {
+      "startPage": 559,
+      "pageCount": 1,
+      "source": "480_Mengapa_Tidak_Sekarang.pdf"
+    },
+    "481": {
+      "startPage": 560,
+      "pageCount": 2,
+      "source": "481_Pujilah_Dia.pdf"
+    },
+    "482": {
+      "startPage": 562,
+      "pageCount": 2,
+      "source": "482_Surga_Datang.pdf"
+    },
+    "483": {
+      "startPage": 564,
+      "pageCount": 2,
+      "source": "483_Hanya_Satu_Rencana.pdf"
+    },
+    "484": {
+      "startPage": 566,
+      "pageCount": 2,
+      "source": "484_Sang_Raja_Telah_Datang.pdf"
+    },
+    "485": {
+      "startPage": 568,
+      "pageCount": 1,
+      "source": "485_Sumber_Air_Kehidupan.pdf"
+    },
+    "486": {
+      "startPage": 569,
+      "pageCount": 1,
+      "source": "486_Tentara_Salibkah_Aku.pdf"
+    },
+    "487": {
+      "startPage": 570,
+      "pageCount": 1,
+      "source": "487_Sampai_ke_Seluruh_Dunia.pdf"
+    },
+    "488": {
+      "startPage": 571,
+      "pageCount": 1,
+      "source": "488_Bawalah_Daku_ya_Bapa.pdf"
+    },
+    "489": {
+      "startPage": 572,
+      "pageCount": 1,
+      "source": "489_Bukan_Perak_atau_Emas.pdf"
+    },
+    "490": {
+      "startPage": 573,
+      "pageCount": 1,
+      "source": "490_Saat_Fajar_Tiba.pdf"
+    },
+    "491": {
+      "startPage": 574,
+      "pageCount": 1,
+      "source": "491_Aku_Memuji_Penebusku.pdf"
+    },
+    "492": {
+      "startPage": 575,
+      "pageCount": 1,
+      "source": "492_Allahku_Yang_Ajaib.pdf"
+    },
+    "493": {
+      "startPage": 576,
+      "pageCount": 1,
+      "source": "493_Kita_Berkumpul_Bersama.pdf"
+    },
+    "494": {
+      "startPage": 577,
+      "pageCount": 1,
+      "source": "494_Bersama_Mu.pdf"
+    },
+    "495": {
+      "startPage": 578,
+      "pageCount": 1,
+      "source": "495_Datanglah.pdf"
+    },
+    "496": {
+      "startPage": 579,
+      "pageCount": 1,
+      "source": "496_Yesus_Menjamahku.pdf"
+    },
+    "497": {
+      "startPage": 580,
+      "pageCount": 1,
+      "source": "497_Janji_Tuhan_Bagiku.pdf"
+    },
+    "498": {
+      "startPage": 581,
+      "pageCount": 1,
+      "source": "498_Yesus_Pimpin_Kita_Pulang.pdf"
+    },
+    "499": {
+      "startPage": 582,
+      "pageCount": 1,
+      "source": "499_Jamahan_Tangan_Tuhan.pdf"
+    },
+    "500": {
+      "startPage": 583,
+      "pageCount": 1,
+      "source": "500_Siapa_di_Muka_Pintuku.pdf"
+    },
+    "501": {
+      "startPage": 584,
+      "pageCount": 2,
+      "source": "501_Dia_Menerimaku.pdf"
+    },
+    "502": {
+      "startPage": 586,
+      "pageCount": 1,
+      "source": "502_Yesus_Juruselamatku_Yang_Ajaib.pdf"
+    },
+    "503": {
+      "startPage": 587,
+      "pageCount": 1,
+      "source": "503_Penebus_yang_Terindah.pdf"
+    },
+    "504": {
+      "startPage": 588,
+      "pageCount": 1,
+      "source": "504_Pimpin_ke_Kalvari.pdf"
+    },
+    "505": {
+      "startPage": 589,
+      "pageCount": 1,
+      "source": "505_Yang_Hampir_yakin_Percayalah.pdf"
+    },
+    "506": {
+      "startPage": 590,
+      "pageCount": 1,
+      "source": "506_Ku_Senang_Beritakan_Penebusan.pdf"
+    },
+    "507": {
+      "startPage": 591,
+      "pageCount": 1,
+      "source": "507_Beban_Terangkat_di_Kalvari.pdf"
+    },
+    "508": {
+      "startPage": 592,
+      "pageCount": 1,
+      "source": "508_Sauh_Jiwa_Kita.pdf"
+    },
+    "509": {
+      "startPage": 593,
+      "pageCount": 1,
+      "source": "509_Aku_Milik_Raja.pdf"
+    },
+    "510": {
+      "startPage": 594,
+      "pageCount": 1,
+      "source": "510_Yesus_Berjalan_Denganku.pdf"
+    },
+    "511": {
+      "startPage": 595,
+      "pageCount": 1,
+      "source": "511_Sekarang_Aku_Milik_Yesus.pdf"
+    },
+    "512": {
+      "startPage": 596,
+      "pageCount": 1,
+      "source": "512_Tuhan_Biarkan_Ku_Berjalan_Dengan_Mu.pdf"
+    },
+    "513": {
+      "startPage": 597,
+      "pageCount": 1,
+      "source": "513_Yesus_Hembuskan_Berkat_Mu.pdf"
+    },
+    "514": {
+      "startPage": 598,
+      "pageCount": 1,
+      "source": "514_Dalam_Kristus_Tiada_Timur_atau_Barat.pdf"
+    },
+    "515": {
+      "startPage": 599,
+      "pageCount": 1,
+      "source": "515_Kenangan_Indah.pdf"
+    },
+    "516": {
+      "startPage": 600,
+      "pageCount": 1,
+      "source": "516_Aku_Bertekad.pdf"
+    },
+    "517": {
+      "startPage": 601,
+      "pageCount": 1,
+      "source": "517_Allah_Abraham.pdf"
+    },
+    "518": {
+      "startPage": 602,
+      "pageCount": 2,
+      "source": "518_Kemuliaan_Selamanya_Bagi_Yesus.pdf"
+    },
+    "519": {
+      "startPage": 604,
+      "pageCount": 2,
+      "source": "519_Berlindung_Pada_Batu_Karang.pdf"
+    },
+    "520": {
+      "startPage": 606,
+      "pageCount": 2,
+      "source": "520_Menabur_Dengan_Air_Mata.pdf"
+    },
+    "521": {
+      "startPage": 608,
+      "pageCount": 1,
+      "source": "521_Akulah_DombaNya.pdf"
+    },
+    "522": {
+      "startPage": 609,
+      "pageCount": 1,
+      "source": "522_Dengan_Darah_Yesus.pdf"
+    },
+    "523": {
+      "startPage": 610,
+      "pageCount": 2,
+      "source": "523_Betapa_Mulianya_Hari_Itu.pdf"
+    },
+    "524": {
+      "startPage": 612,
+      "pageCount": 2,
+      "source": "524_Bagaimana_Bila_Sekarang.pdf"
+    },
+    "525": {
+      "startPage": 614,
+      "pageCount": 1,
+      "source": "525_Biarlah_Jiwamu_Bergembira.pdf"
+    },
+    "526": {
+      "startPage": 615,
+      "pageCount": 1,
+      "source": "526_Hosana.pdf"
+    },
+    "527": {
+      "startPage": 616,
+      "pageCount": 2,
+      "source": "527_Gerbang_Surga_Terbuka_Lebar.pdf"
+    },
+    "528": {
+      "startPage": 618,
+      "pageCount": 2,
+      "source": "528_Dia_Segalanya_Bagiku.pdf"
+    },
+    "529": {
+      "startPage": 620,
+      "pageCount": 2,
+      "source": "529_Datanglah_Pada_Yesus.pdf"
+    },
+    "530": {
+      "startPage": 622,
+      "pageCount": 2,
+      "source": "530_Doa_Bapa_Kami.pdf"
+    },
+    "001": {
+      "startPage": 5,
+      "pageCount": 1,
+      "source": "001_Pujilah_Allah_Yang_Maha_Esa.pdf"
+    },
+    "002": {
+      "startPage": 6,
+      "pageCount": 1,
+      "source": "002_Pujilah_Allah_Yang_Mahakudus.pdf"
+    },
+    "003": {
+      "startPage": 7,
+      "pageCount": 1,
+      "source": "003_Pujilah_Allah_Yang_Benar.pdf"
+    },
+    "004": {
+      "startPage": 8,
+      "pageCount": 1,
+      "source": "004_Pujilah_Bapa_Yang_di_Surga.pdf"
+    },
+    "005": {
+      "startPage": 9,
+      "pageCount": 1,
+      "source": "005_Segala_Sesuatu_Memuji_Allah.pdf"
+    },
+    "006": {
+      "startPage": 10,
+      "pageCount": 1,
+      "source": "006_Pujilah_CiptaanNya.pdf"
+    },
+    "007": {
+      "startPage": 11,
+      "pageCount": 1,
+      "source": "007_Segala_Sesuatu_Memuji_Tuhan.pdf"
+    },
+    "008": {
+      "startPage": 12,
+      "pageCount": 1,
+      "source": "008_Pujilah_Allah.pdf"
+    },
+    "009": {
+      "startPage": 13,
+      "pageCount": 1,
+      "source": "009_Bersorak_Bagi_Tuhan.pdf"
+    },
+    "010": {
+      "startPage": 14,
+      "pageCount": 1,
+      "source": "010_Muliakanlah_Yesus.pdf"
+    },
+    "011": {
+      "startPage": 15,
+      "pageCount": 1,
+      "source": "011_Gembira_di_Dalam_Tuhan.pdf"
+    },
+    "012": {
+      "startPage": 16,
+      "pageCount": 1,
+      "source": "012_Mulia_Nama_Yesus.pdf"
+    },
+    "013": {
+      "startPage": 17,
+      "pageCount": 1,
+      "source": "013_Tiada_yang_Seperti_Yesus.pdf"
+    },
+    "014": {
+      "startPage": 18,
+      "pageCount": 1,
+      "source": "014_Kristus_Maharaja.pdf"
+    },
+    "015": {
+      "startPage": 19,
+      "pageCount": 1,
+      "source": "015_Pujilah_Yesus.pdf"
+    },
+    "016": {
+      "startPage": 20,
+      "pageCount": 1,
+      "source": "016_Sembahlah_Tuhan_Langit_dan_Bumi.pdf"
+    },
+    "017": {
+      "startPage": 21,
+      "pageCount": 1,
+      "source": "017_Pujilah_Kasih_Tuhan.pdf"
+    },
+    "018": {
+      "startPage": 22,
+      "pageCount": 2,
+      "source": "018_Pujilah_Anugerah_Tuhan.pdf"
+    },
+    "019": {
+      "startPage": 24,
+      "pageCount": 2,
+      "source": "019_Hosana.pdf"
+    },
+    "020": {
+      "startPage": 26,
+      "pageCount": 1,
+      "source": "020_Pujilah_Tuhan_Sang_Raja.pdf"
+    },
+    "021": {
+      "startPage": 27,
+      "pageCount": 1,
+      "source": "021_Yesus_Terelok.pdf"
+    },
+    "022": {
+      "startPage": 28,
+      "pageCount": 1,
+      "source": "022_Pujilah_Alkitab.pdf"
+    },
+    "023": {
+      "startPage": 29,
+      "pageCount": 1,
+      "source": "023_Firman_Tuhan_Sungguh_Indah.pdf"
+    },
+    "024": {
+      "startPage": 30,
+      "pageCount": 2,
+      "source": "024_Firman_Kehidupan.pdf"
+    },
+    "025": {
+      "startPage": 32,
+      "pageCount": 1,
+      "source": "025_Firman_Allah_Murni.pdf"
+    },
+    "026": {
+      "startPage": 33,
+      "pageCount": 1,
+      "source": "026_Tuhan_Berfirmanlah_Padaku.pdf"
+    },
+    "027": {
+      "startPage": 34,
+      "pageCount": 1,
+      "source": "027_Yesus_Cintaku.pdf"
+    },
+    "028": {
+      "startPage": 35,
+      "pageCount": 1,
+      "source": "028_Yesus_Pengasih.pdf"
+    },
+    "029": {
+      "startPage": 36,
+      "pageCount": 2,
+      "source": "029_Tuhan_Mencari_Domba_yang_Hilang.pdf"
+    },
+    "030": {
+      "startPage": 38,
+      "pageCount": 2,
+      "source": "030_Kasih_Tuhan_Mencariku.pdf"
+    },
+    "031": {
+      "startPage": 40,
+      "pageCount": 2,
+      "source": "031_Semuanya_Demiku.pdf"
+    },
+    "032": {
+      "startPage": 42,
+      "pageCount": 2,
+      "source": "032_Yesus_Menerima_Orang_Berdosa.pdf"
+    },
+    "033": {
+      "startPage": 44,
+      "pageCount": 1,
+      "source": "033_Ke_Yerusalem_Baru.pdf"
+    },
+    "034": {
+      "startPage": 45,
+      "pageCount": 1,
+      "source": "034_Yesus_Memanggilmu_.pdf"
+    },
+    "035": {
+      "startPage": 46,
+      "pageCount": 1,
+      "source": "035_Hujan_Malam_Berlalu_Terbitlah_Terang.pdf"
+    },
+    "036": {
+      "startPage": 47,
+      "pageCount": 1,
+      "source": "036_Suara_Pengharapan.pdf"
+    },
+    "037": {
+      "startPage": 48,
+      "pageCount": 1,
+      "source": "037_Dosa_di_Putihkan_Seperti_Salju.pdf"
+    },
+    "038": {
+      "startPage": 49,
+      "pageCount": 1,
+      "source": "038_Aku_Mendengar_Suara_Yesus.pdf"
+    },
+    "039": {
+      "startPage": 50,
+      "pageCount": 1,
+      "source": "039_Hanya_DarahNya_Yang_Berkuasa.pdf"
+    },
+    "040": {
+      "startPage": 51,
+      "pageCount": 1,
+      "source": "040_Darah_Yesus.pdf"
+    },
+    "041": {
+      "startPage": 52,
+      "pageCount": 2,
+      "source": "041_Darah_Tuhan_Berkuasa.pdf"
+    },
+    "042": {
+      "startPage": 54,
+      "pageCount": 2,
+      "source": "042_Darah_Anak_Domba.pdf"
+    },
+    "043": {
+      "startPage": 56,
+      "pageCount": 1,
+      "source": "043_DarahNya_Membersihkan.pdf"
+    },
+    "044": {
+      "startPage": 57,
+      "pageCount": 1,
+      "source": "044_Hanya_Tuhan_Penolongku.pdf"
+    },
+    "045": {
+      "startPage": 58,
+      "pageCount": 1,
+      "source": "045_Menyelamatkan_Orang_Berdosa.pdf"
+    },
+    "046": {
+      "startPage": 59,
+      "pageCount": 1,
+      "source": "046_Tuhan_Buka_Mata_hatiku.pdf"
+    },
+    "047": {
+      "startPage": 60,
+      "pageCount": 1,
+      "source": "047_Yesus_Telah_Tolongku.pdf"
+    },
+    "048": {
+      "startPage": 61,
+      "pageCount": 1,
+      "source": "048_Anugerah_di_Atas_Salib_.pdf"
+    },
+    "049": {
+      "startPage": 62,
+      "pageCount": 1,
+      "source": "049_Tuhan_Selamatkanku.pdf"
+    },
+    "050": {
+      "startPage": 63,
+      "pageCount": 1,
+      "source": "050_Hanya_Yesus.pdf"
+    },
+    "051A": {
+      "startPage": 64,
+      "pageCount": 2,
+      "source": "051A__Batu_Zaman.pdf"
+    },
+    "051B": {
+      "startPage": 66,
+      "pageCount": 1,
+      "source": "051B__Batu_Zaman.pdf"
+    },
+    "052": {
+      "startPage": 67,
+      "pageCount": 1,
+      "source": "052_Ku_Dengar_Suara_Yesus.pdf"
+    },
+    "053": {
+      "startPage": 68,
+      "pageCount": 2,
+      "source": "053_Allah_Bapa_Pengasih.pdf"
+    },
+    "054": {
+      "startPage": 70,
+      "pageCount": 2,
+      "source": "054_Bebas_Dari_Gelap_Menuju_Terang.pdf"
+    },
+    "055": {
+      "startPage": 72,
+      "pageCount": 1,
+      "source": "055_Tuhan_Bebaskan.pdf"
+    },
+    "056": {
+      "startPage": 73,
+      "pageCount": 1,
+      "source": "056_Tahun_Yobel_Sudah_Tiba.pdf"
+    },
+    "057": {
+      "startPage": 74,
+      "pageCount": 1,
+      "source": "057_Dosaku_Amat_Berat.pdf"
+    },
+    "058": {
+      "startPage": 75,
+      "pageCount": 1,
+      "source": "058_Yesus_Pimpin.pdf"
+    },
+    "059": {
+      "startPage": 76,
+      "pageCount": 1,
+      "source": "059_Mohon_Pimpinan_Tuhan.pdf"
+    },
+    "060": {
+      "startPage": 77,
+      "pageCount": 1,
+      "source": "060_Menempuh_Jalan_Surga.pdf"
+    },
+    "061": {
+      "startPage": 78,
+      "pageCount": 1,
+      "source": "061_Tuhan_Pimpin_Jalanku.pdf"
+    },
+    "062": {
+      "startPage": 79,
+      "pageCount": 1,
+      "source": "062_Semoga_Tuhan_Menyertai.pdf"
+    },
+    "063": {
+      "startPage": 80,
+      "pageCount": 1,
+      "source": "063_Semoga_Tuhan_Pimpin.pdf"
+    },
+    "064": {
+      "startPage": 81,
+      "pageCount": 1,
+      "source": "064_Terang_Tuhan_Memimpin.pdf"
+    },
+    "065": {
+      "startPage": 82,
+      "pageCount": 1,
+      "source": "065_Dekat_Pada_Tuhan.pdf"
+    },
+    "066": {
+      "startPage": 83,
+      "pageCount": 1,
+      "source": "066_Tuhan_Aku_Menantikan_Engkau.pdf"
+    },
+    "067": {
+      "startPage": 84,
+      "pageCount": 1,
+      "source": "067_Tuhan_Tuntunlah_Aku.pdf"
+    },
+    "068": {
+      "startPage": 85,
+      "pageCount": 1,
+      "source": "068_Tuhan_Pegangilah_Tanganku.pdf"
+    },
+    "069": {
+      "startPage": 86,
+      "pageCount": 1,
+      "source": "069_Yesus_Jurumudiku.pdf"
+    },
+    "070": {
+      "startPage": 87,
+      "pageCount": 1,
+      "source": "070_Tuhan_Sumber_Segala_Berkat.pdf"
+    },
+    "071": {
+      "startPage": 88,
+      "pageCount": 1,
+      "source": "071_Yesus_Tuhanku.pdf"
+    },
+    "072": {
+      "startPage": 89,
+      "pageCount": 1,
+      "source": "072_Tuhan_Segala_Berkat.pdf"
+    },
+    "073": {
+      "startPage": 90,
+      "pageCount": 1,
+      "source": "073_Yesus_Pemberi_Berkat.pdf"
+    },
+    "074": {
+      "startPage": 91,
+      "pageCount": 1,
+      "source": "074_Dosa_di_Putihkan_Seperti_Salju.pdf"
+    },
+    "075": {
+      "startPage": 92,
+      "pageCount": 1,
+      "source": "075_Kristus_Lahir.pdf"
+    },
+    "076": {
+      "startPage": 93,
+      "pageCount": 1,
+      "source": "076_Yesus_Disalib.pdf"
+    },
+    "077": {
+      "startPage": 94,
+      "pageCount": 1,
+      "source": "077_Junjung_Tinggi_Salib_Tuhan.pdf"
+    },
+    "078": {
+      "startPage": 95,
+      "pageCount": 1,
+      "source": "078_Tuhan_Bangkit.pdf"
+    },
+    "079": {
+      "startPage": 96,
+      "pageCount": 1,
+      "source": "079_Puji_Kebangkitan_Yesus.pdf"
+    },
+    "080": {
+      "startPage": 97,
+      "pageCount": 1,
+      "source": "080_Tuhan_Telah_Kalahkan_Maut.pdf"
+    },
+    "081": {
+      "startPage": 98,
+      "pageCount": 1,
+      "source": "081_Yesus_Datang_Kembali.pdf"
+    },
+    "082": {
+      "startPage": 99,
+      "pageCount": 1,
+      "source": "082_Bersiap_dan_Berjaga.pdf"
+    },
+    "083": {
+      "startPage": 100,
+      "pageCount": 2,
+      "source": "083_Ketika_Yesus_Datang.pdf"
+    },
+    "084": {
+      "startPage": 102,
+      "pageCount": 2,
+      "source": "084_Menyambut_Rajaku.pdf"
+    },
+    "085": {
+      "startPage": 104,
+      "pageCount": 1,
+      "source": "085_Tuhan_Segera_Datang.pdf"
+    },
+    "086": {
+      "startPage": 105,
+      "pageCount": 1,
+      "source": "086_Baik_dan_Jahat_Dibalas.pdf"
+    },
+    "087": {
+      "startPage": 106,
+      "pageCount": 1,
+      "source": "087_Hari_Penghakiman.pdf"
+    },
+    "088": {
+      "startPage": 107,
+      "pageCount": 1,
+      "source": "088_Anugerah_Juruselamat.pdf"
+    },
+    "089": {
+      "startPage": 108,
+      "pageCount": 1,
+      "source": "089_AnugerahNya_Berlimpah.pdf"
+    },
+    "090": {
+      "startPage": 109,
+      "pageCount": 1,
+      "source": "090_Hitunglah_BerkatNya.pdf"
+    },
+    "091": {
+      "startPage": 110,
+      "pageCount": 2,
+      "source": "091_Tuhan_Pimpin_Jalanku.pdf"
+    },
+    "092": {
+      "startPage": 112,
+      "pageCount": 1,
+      "source": "092_Bersyukur_Atas_Kesembuhan.pdf"
+    },
+    "093": {
+      "startPage": 113,
+      "pageCount": 1,
+      "source": "093_Bersyukur_Atas_Pembaharuan.pdf"
+    },
+    "094": {
+      "startPage": 114,
+      "pageCount": 2,
+      "source": "094_Anugerah_Tuhan_Kekal.pdf"
+    },
+    "095": {
+      "startPage": 116,
+      "pageCount": 2,
+      "source": "095_Raja_yang_Diurapi.pdf"
+    },
+    "096": {
+      "startPage": 118,
+      "pageCount": 1,
+      "source": "096_Anugerah_yang_Mengherankan.pdf"
+    },
+    "097": {
+      "startPage": 119,
+      "pageCount": 1,
+      "source": "097_Tuhan_Tinggalkan_Maligai_Gading.pdf"
+    },
+    "098": {
+      "startPage": 120,
+      "pageCount": 1,
+      "source": "098_Kala_Kukenang_Salib.pdf"
+    },
+    "099": {
+      "startPage": 121,
+      "pageCount": 1,
+      "source": "099_Mencintai_Tuhan_Lebih_Dalam.pdf"
+    },
+    "124A": {
+      "startPage": 146,
+      "pageCount": 1,
+      "source": "124A__Melaksanakan_Kasih.pdf"
+    },
+    "124B": {
+      "startPage": 147,
+      "pageCount": 1,
+      "source": "124B__Melaksanakan_Kasih.pdf"
+    },
+    "132A": {
+      "startPage": 155,
+      "pageCount": 1,
+      "source": "132A__Mohon_Tuhan_Lindungi.pdf"
+    },
+    "132B": {
+      "startPage": 156,
+      "pageCount": 2,
+      "source": "132B__Mohon_Tuhan_Lindungi.pdf"
+    }
+  }
+}
