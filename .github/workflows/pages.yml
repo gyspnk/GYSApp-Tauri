@@ -17,6 +17,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Set this repository variable to the deployed Worker origin. Keeping it
+      # optional preserves a fully usable static/offline Pages preview.
+      VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

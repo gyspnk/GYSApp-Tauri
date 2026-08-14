@@ -11,6 +11,7 @@ import {
   HymnCatalogEntrySchema,
   HymnalPdfManifestSchema,
   LiteratureCatalogSchema,
+  SuaraSejatiFeedSchema,
   UpstreamMusicLockSchema,
 } from "./index.js";
 
@@ -185,5 +186,36 @@ describe("public contracts", () => {
     expect(EgysWhatsAppLoginStateSchema.parse({ state: "WAITING" }).state).toBe(
       "WAITING",
     );
+  });
+
+  it("keeps media provenance and native e-GYS profile fields typed", () => {
+    expect(
+      SuaraSejatiFeedSchema.parse({
+        source: "tjc.org",
+        generatedAt: "2026-08-14T00:00:00.000Z",
+        items: [
+          {
+            id: "cahaya",
+            title: "Cahaya Kehidupan",
+            excerpt: "Kesaksian",
+            url: "https://tjc.org/id/suarasejati/cahaya/",
+            imageUrl: "https://tjc.org/id/wp-content/uploads/cover.jpg",
+            publishedAt: "2023-12-13T00:00:00.000Z",
+            source: "tjc.org",
+          },
+        ],
+      }).items,
+    ).toHaveLength(1);
+    expect(
+      AccountProfileSchema.parse({
+        id: "account-1",
+        personId: "person-1",
+        displayName: "Jemaat",
+        branchName: "Jakarta Selatan",
+        memberStatus: "aktif",
+        isMember: true,
+        provider: "egys",
+      }).isMember,
+    ).toBe(true);
   });
 });

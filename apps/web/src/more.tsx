@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import type { AccountProfile } from "@gys/contracts";
+import {
+  decryptBackupV2,
+  encryptBackupV2,
+  importLegacyGysbk,
+} from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import {
   exchangeEgysToken,
   getEgysProfile,
   getEgysProviders,
+  getEgysUpstreamMeta,
   getEgysWhatsAppState,
   signOutEgys,
   startEgysWhatsAppLogin,
@@ -36,16 +43,146 @@ function waitFor(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
+const BACKUP_STORAGE_KEYS = [
+  "gys-locale",
+  "gys-theme",
+  "gys-activity-v1",
+  "gys-bible-book",
+  "gys-bible-chapter",
+  "gys-bible-last-reading",
+  "gys-bible-bookmarks",
+  "gys-media-minimized",
+  "gys-report-draft",
+  "gys-reminder-time-v1",
+  "gys-chord-cache-index-v1",
+];
+
+function collectBackupSettings() {
+  return Object.fromEntries(
+    BACKUP_STORAGE_KEYS.flatMap((key) => {
+      const value = localStorage.getItem(key);
+      return value === null ? [] : [[key, value]];
+    }),
+  );
+}
+
+function downloadBackup(envelope: unknown) {
+  const blob = new Blob([JSON.stringify(envelope, null, 2)], {
+    type: "application/octet-stream",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `gys-backup-${new Date().toISOString().slice(0, 10)}.gysbk`;
+  anchor.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+}
+
+async function clearAppData() {
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith("gys-")) localStorage.removeItem(key);
+  }
+  if ("caches" in window) {
+    const names = await caches.keys();
+    await Promise.all(
+      names
+        .filter((name) => name.startsWith("gys-"))
+        .map((name) => caches.delete(name)),
+    );
+  }
+}
+
+async function sha256(bytes: Uint8Array) {
+  const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
+  return [...new Uint8Array(digest)]
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function cacheOfflinePack(
+  items: PackManifest["items"],
+  onProgress: (completed: number, total: number) => void,
+) {
+  if (!("caches" in window)) throw new Error("Cache Storage unavailable");
+  const cache = await caches.open("gys-offline-pack-v1");
+  let completed = 0;
+  for (const item of items) {
+    const url = new URL(
+      item.path,
+      window.location.origin + import.meta.env.BASE_URL,
+    ).toString();
+    const response = await fetch(url, { cache: "reload" });
+    if (!response.ok) throw new Error(`${item.id} failed: ${response.status}`);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (
+      bytes.byteLength !== item.bytes ||
+      (await sha256(bytes)) !== item.sha256
+    )
+      throw new Error(`${item.id} failed integrity validation`);
+    await cache.put(
+      url,
+      new Response(bytes.slice().buffer as ArrayBuffer, {
+        headers: {
+          "content-type":
+            response.headers.get("content-type") ?? "application/octet-stream",
+        },
+      }),
+    );
+    completed += 1;
+    onProgress(completed, items.length);
+  }
+}
+
 export function MorePage({ locale }: { locale: Locale }) {
   const [manifest, setManifest] = useState<PackManifest | undefined>();
+  const [packBusy, setPackBusy] = useState(false);
+  const [packProgress, setPackProgress] = useState(0);
   const [report, setReport] = useState("");
   const [notice, setNotice] = useState("");
-  const [accountName, setAccountName] = useState<string>();
+  const [accountProfile, setAccountProfile] = useState<AccountProfile>();
   const [accountLoading, setAccountLoading] = useState(true);
   const [authBusy, setAuthBusy] = useState(false);
   const whatsappAbort = useRef<AbortController | undefined>(undefined);
   const [providers, setProviders] =
     useState<Awaited<ReturnType<typeof getEgysProviders>>>();
+  const [egysMeta, setEgysMeta] =
+    useState<Awaited<ReturnType<typeof getEgysUpstreamMeta>>>();
+  const [backupOpen, setBackupOpen] = useState(false);
+  const [backupPassword, setBackupPassword] = useState("");
+  const [backupFile, setBackupFile] = useState<File>();
+  const [reminderOpen, setReminderOpen] = useState(false);
+  const [reminderTime, setReminderTime] = useState(
+    () => localStorage.getItem("gys-reminder-time-v1") ?? "",
+  );
+
+  useEffect(() => {
+    if (!reminderTime) return;
+    let timer: number | undefined;
+    const schedule = () => {
+      const [hours, minutes] = reminderTime.split(":").map(Number);
+      const next = new Date();
+      next.setHours(hours || 0, minutes || 0, 0, 0);
+      if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
+      timer = window.setTimeout(
+        () => {
+          if (
+            "Notification" in window &&
+            Notification.permission === "granted"
+          ) {
+            new Notification("Waktu teduh GYS", {
+              body: "Saatnya membaca firman dan renungan hari ini.",
+            });
+          }
+          schedule();
+        },
+        Math.max(1_000, next.getTime() - Date.now()),
+      );
+    };
+    schedule();
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [reminderTime]);
 
   useEffect(() => {
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -69,8 +206,16 @@ export function MorePage({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     const controller = new AbortController();
+    void getEgysUpstreamMeta(controller.signal)
+      .then(setEgysMeta)
+      .catch(() => setEgysMeta(undefined));
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
     void getEgysProfile(controller.signal)
-      .then((profile) => setAccountName(profile?.displayName))
+      .then(setAccountProfile)
       .catch(() => undefined)
       .finally(() => setAccountLoading(false));
     return () => controller.abort();
@@ -97,6 +242,109 @@ export function MorePage({ locale }: { locale: Locale }) {
     } catch {
       show("Laporan disimpan sebagai draft; kirim kembali saat online.");
       localStorage.setItem("gys-report-draft", report.trim());
+    }
+  };
+
+  const exportBackup = async () => {
+    if (backupPassword.length < 8) {
+      show("Gunakan kata sandi backup minimal 8 karakter.");
+      return;
+    }
+    try {
+      const envelope = await encryptBackupV2(
+        { settings: collectBackupSettings() },
+        backupPassword,
+        { appVersion: "0.1.0", domains: ["settings"] },
+      );
+      downloadBackup(envelope);
+      setBackupPassword("");
+      setBackupOpen(false);
+      show("Backup terenkripsi berhasil diunduh.");
+    } catch {
+      show(
+        "Backup gagal dibuat. Coba lagi di perangkat yang mendukung AES-GCM.",
+      );
+    }
+  };
+
+  const importBackup = async () => {
+    if (!backupFile) {
+      show("Pilih file .gysbk terlebih dahulu.");
+      return;
+    }
+    if (backupPassword.length < 8) {
+      show("Masukkan kata sandi backup untuk membuka file.");
+      return;
+    }
+    try {
+      const text = await backupFile.text();
+      const parsed: unknown = JSON.parse(text);
+      const data = await decryptBackupV2(
+        parsed as Parameters<typeof decryptBackupV2>[0],
+        backupPassword,
+      );
+      const settings = data.settings;
+      if (!settings || typeof settings !== "object" || Array.isArray(settings))
+        throw new Error("settings missing");
+      for (const [key, value] of Object.entries(settings)) {
+        if (key.startsWith("gys-") && typeof value === "string")
+          localStorage.setItem(key, value);
+      }
+      setBackupPassword("");
+      setBackupFile(undefined);
+      setBackupOpen(false);
+      show(
+        "Backup berhasil dipulihkan. Muat ulang untuk menerapkan semua preferensi.",
+      );
+    } catch {
+      try {
+        const legacy = await importLegacyGysbk(await backupFile.text());
+        localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
+        show(
+          "Backup lama berhasil diimpor dan disimpan untuk migrasi satu arah.",
+        );
+      } catch {
+        show("Backup tidak valid atau kata sandi salah.");
+      }
+    }
+  };
+
+  const saveReminder = async () => {
+    if (!reminderTime) {
+      localStorage.removeItem("gys-reminder-time-v1");
+      setReminderOpen(false);
+      show("Pengingat dinonaktifkan.");
+      return;
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+    localStorage.setItem("gys-reminder-time-v1", reminderTime);
+    setReminderOpen(false);
+    const notificationGranted =
+      "Notification" in window && Notification.permission === "granted";
+    show(
+      notificationGranted
+        ? `Pengingat aktif setiap hari pukul ${reminderTime}.`
+        : "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
+    );
+  };
+
+  const updateOfflinePack = async () => {
+    if (!manifest || packBusy) return;
+    setPackBusy(true);
+    setPackProgress(0);
+    try {
+      await cacheOfflinePack(manifest.items, (completed, total) =>
+        setPackProgress(Math.round((completed / total) * 100)),
+      );
+      show("Paket offline berhasil diverifikasi dan disimpan.");
+    } catch {
+      show(
+        "Paket offline gagal diperbarui. Periksa koneksi dan ruang penyimpanan.",
+      );
+    } finally {
+      setPackBusy(false);
     }
   };
 
@@ -181,7 +429,7 @@ export function MorePage({ locale }: { locale: Locale }) {
         await exchangeEgysToken("apple", token);
       }
       const profile = await getEgysProfile();
-      setAccountName(profile?.displayName);
+      setAccountProfile(profile);
       show(
         profile
           ? `Selamat datang, ${profile.displayName}.`
@@ -222,7 +470,7 @@ export function MorePage({ locale }: { locale: Locale }) {
         );
         if (state.state === "READY") {
           const profile = await getEgysProfile(controller.signal);
-          setAccountName(profile?.displayName ?? "e-GYS");
+          setAccountProfile(profile);
           show(
             profile
               ? `Selamat datang, ${profile.displayName}.`
@@ -259,13 +507,7 @@ export function MorePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "page.moreTitle")}</h1>
           <p className="intro-copy">{translate(locale, "page.moreBody")}</p>
         </div>
-        <button
-          className="quiet-button"
-          type="button"
-          onClick={() => show("Pengaturan akan tersimpan di perangkat ini.")}
-        >
-          Perangkat ini
-        </button>
+        <span className="pack-badge">Offline-first</span>
       </section>
       <section className="more-grid">
         <a
@@ -274,7 +516,7 @@ export function MorePage({ locale }: { locale: Locale }) {
         >
           <span className="more-icon">▤</span>
           <strong>Literatur</strong>
-          <small>Jelajahi bacaan, warta, dan renungan resmi</small>
+          <small>Jelajahi kesaksian, warta, panduan, dan PDF resmi</small>
         </a>
         <article className="more-card more-card-wide">
           <div className="more-card-heading">
@@ -308,62 +550,108 @@ export function MorePage({ locale }: { locale: Locale }) {
               <small>paket inti</small>
             </span>
           </div>
+          <div className="pack-manager-actions">
+            <button
+              className="quiet-button"
+              type="button"
+              disabled={!manifest || packBusy}
+              onClick={() => void updateOfflinePack()}
+            >
+              {packBusy
+                ? `Menyimpan ${packProgress}%…`
+                : "Verifikasi & simpan paket"}
+            </button>
+            <small>
+              Manifest v{manifest?.version ?? 1} ·{" "}
+              {manifest
+                ? new Date(manifest.generatedAt).toLocaleDateString(locale)
+                : "memuat"}
+            </small>
+          </div>
         </article>
         <button
           className="more-card more-action"
           type="button"
-          onClick={() =>
-            show(
-              "Backup baru menggunakan AES-GCM; format lama hanya dapat diimpor sekali.",
-            )
-          }
+          onClick={() => setBackupOpen((open) => !open)}
         >
           <span className="more-icon">↥</span>
           <strong>Backup & import</strong>
-          <small>Ekspor terenkripsi atau impor .gysbk lama</small>
+          <small>Ekspor AES-GCM atau impor .gysbk lama</small>
         </button>
         <button
           className="more-card more-action"
           type="button"
-          onClick={() =>
-            show(
-              "Pengingat akan memakai notifikasi perangkat setelah izin diberikan.",
-            )
-          }
+          onClick={() => setReminderOpen((open) => !open)}
         >
           <span className="more-icon">◷</span>
           <strong>Pengingat</strong>
           <small>Atur waktu baca dan renungan</small>
         </button>
-        <article className="more-card more-action account-card">
+        <article className="more-card account-card">
           <span className="more-icon">◯</span>
           <strong>
             {accountLoading || authBusy
               ? "Memeriksa akun…"
-              : (accountName ?? "Akun e-GYS")}
+              : (accountProfile?.displayName ?? "Akun e-GYS")}
           </strong>
           <small>
-            {accountName
-              ? "Keluar dari sesi e-GYS"
+            {accountProfile
+              ? "Profil native e-GYS tersambung"
               : providers?.google.enabled ||
                   providers?.apple.enabled ||
                   providers?.whatsapp
                 ? "Pilih provider untuk masuk"
                 : "Google, Apple, atau e-GYS"}
           </small>
-          {accountName ? (
-            <button
-              type="button"
-              className="text-button account-signout"
-              onClick={() => {
-                void signOutEgys().then(() => {
-                  setAccountName(undefined);
-                  show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
-                });
-              }}
-            >
-              Keluar
-            </button>
+          {egysMeta && (
+            <small className="account-sync-note">
+              Kontrak e-GYS tersinkron ·{" "}
+              {egysMeta.sourceCommit?.slice(0, 7) ?? "menunggu"}
+            </small>
+          )}
+          {accountProfile ? (
+            <>
+              <dl className="account-profile-details">
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    {accountProfile.isMember === true
+                      ? `Jemaat${accountProfile.memberStatus ? ` · ${accountProfile.memberStatus}` : ""}`
+                      : accountProfile.isMember === false
+                        ? "Bukan jemaat"
+                        : "Belum terverifikasi"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Cabang</dt>
+                  <dd>{accountProfile.branchName ?? "Belum tersedia"}</dd>
+                </div>
+                {accountProfile.membershipNo && (
+                  <div>
+                    <dt>No. jemaat</dt>
+                    <dd>{accountProfile.membershipNo}</dd>
+                  </div>
+                )}
+                {accountProfile.email && (
+                  <div>
+                    <dt>Email</dt>
+                    <dd>{accountProfile.email}</dd>
+                  </div>
+                )}
+              </dl>
+              <button
+                type="button"
+                className="text-button account-signout"
+                onClick={() => {
+                  void signOutEgys().then(() => {
+                    setAccountProfile(undefined);
+                    show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
+                  });
+                }}
+              >
+                Keluar
+              </button>
+            </>
           ) : (
             providers &&
             (providers.google.enabled ||
@@ -406,9 +694,10 @@ export function MorePage({ locale }: { locale: Locale }) {
           className="more-card more-action"
           type="button"
           onClick={() => {
-            localStorage.clear();
-            show(
-              "Preferensi lokal direset. Muat ulang halaman untuk menerapkan.",
+            void clearAppData().then(() =>
+              show(
+                "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
+              ),
             );
           }}
         >
@@ -434,6 +723,110 @@ export function MorePage({ locale }: { locale: Locale }) {
           </button>
         </form>
       </section>
+      {backupOpen && (
+        <section className="utility-panel" aria-label="Backup dan import">
+          <div className="more-card-heading">
+            <div>
+              <p className="date-line">Data lokal</p>
+              <h2>Backup terenkripsi</h2>
+            </div>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setBackupOpen(false)}
+            >
+              Tutup
+            </button>
+          </div>
+          <p>
+            Backup hanya memuat preferensi, riwayat baca, bookmark, dan indeks
+            cache. Kata sandi tidak dikirim ke server.
+          </p>
+          <label className="search-field">
+            <span>Kata sandi backup</span>
+            <input
+              type="password"
+              value={backupPassword}
+              onChange={(event) => setBackupPassword(event.target.value)}
+              minLength={8}
+              autoComplete="new-password"
+            />
+          </label>
+          <div className="utility-actions">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => void exportBackup()}
+            >
+              Ekspor .gysbk
+            </button>
+            <label className="quiet-button file-button">
+              Pilih file
+              <input
+                type="file"
+                accept=".gysbk,.json"
+                onChange={(event) => setBackupFile(event.target.files?.[0])}
+              />
+            </label>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => void importBackup()}
+              disabled={!backupFile}
+            >
+              Impor
+            </button>
+          </div>
+        </section>
+      )}
+      {reminderOpen && (
+        <section className="utility-panel" aria-label="Pengingat harian">
+          <div className="more-card-heading">
+            <div>
+              <p className="date-line">Notifikasi perangkat</p>
+              <h2>Pengingat harian</h2>
+            </div>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setReminderOpen(false)}
+            >
+              Tutup
+            </button>
+          </div>
+          <p>
+            Pilih waktu untuk pengingat membaca. Jadwal disimpan lokal dan tidak
+            memerlukan akun.
+          </p>
+          <label className="search-field">
+            <span>Waktu</span>
+            <input
+              type="time"
+              value={reminderTime}
+              onChange={(event) => setReminderTime(event.target.value)}
+            />
+          </label>
+          <div className="utility-actions">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => void saveReminder()}
+            >
+              Simpan pengingat
+            </button>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => {
+                setReminderTime("");
+                void saveReminder();
+              }}
+            >
+              Nonaktifkan
+            </button>
+          </div>
+        </section>
+      )}
       {notice && (
         <div className="toast" role="status">
           {notice}

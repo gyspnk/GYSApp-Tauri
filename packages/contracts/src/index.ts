@@ -126,6 +126,8 @@ export const LiteratureItemSchema = z.object({
   description: z.string().default(""),
   url: z.string().url(),
   imageUrl: z.string().url().optional(),
+  format: z.enum(["article", "issue", "pdf"]).default("article"),
+  publishedAt: z.string().datetime({ offset: true }).optional(),
   updatedAt: z.string().datetime({ offset: true }),
   source: z.literal("tjc.org"),
 });
@@ -255,15 +257,52 @@ export const SauhPostSchema = z.object({
 });
 export type SauhPost = z.infer<typeof SauhPostSchema>;
 
+export const SuaraSejatiPostSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  excerpt: z.string().min(1),
+  url: z.string().url(),
+  imageUrl: z.string().url().optional(),
+  publishedAt: z.string().datetime({ offset: true }),
+  source: z.literal("tjc.org"),
+});
+export type SuaraSejatiPost = z.infer<typeof SuaraSejatiPostSchema>;
+export const SuaraSejatiFeedSchema = z.object({
+  source: z.literal("tjc.org"),
+  generatedAt: z.string().datetime({ offset: true }),
+  items: z.array(SuaraSejatiPostSchema),
+});
+export type SuaraSejatiFeed = z.infer<typeof SuaraSejatiFeedSchema>;
+
 export const AccountProfileSchema = z.object({
   id: z.string().min(1),
+  personId: z.string().min(1).optional(),
   displayName: z.string().min(1),
   email: z.string().email().optional(),
   avatarUrl: z.string().url().optional(),
+  branchCode: z.string().min(1).optional(),
+  branchName: z.string().min(1).optional(),
+  membershipNo: z.string().min(1).optional(),
+  memberStatus: z.string().min(1).optional(),
+  isMember: z.boolean().optional(),
+  permissions: z
+    .object({
+      viewMembers: z.boolean().optional(),
+      createMembers: z.boolean().optional(),
+      updateMembers: z.boolean().optional(),
+      deleteMembers: z.boolean().optional(),
+    })
+    .optional(),
   provider: z.enum(["google", "apple", "egys"]).optional(),
   locale: z.enum(["id", "en", "zh"]).default("id"),
 });
 export type AccountProfile = z.infer<typeof AccountProfileSchema>;
+
+export const EgysUpstreamMetaSchema = z.object({
+  sourceRepo: z.literal("Gereja-Yesus-Sejati/egys"),
+  sourceCommit: SourceCommitSchema.nullable(),
+});
+export type EgysUpstreamMeta = z.infer<typeof EgysUpstreamMetaSchema>;
 
 export const ErrorCodeSchema = z.enum([
   "VALIDATION_ERROR",

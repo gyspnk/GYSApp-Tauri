@@ -3,6 +3,7 @@ import {
   EgysProvidersSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
+  EgysUpstreamMetaSchema,
   type AccountProfile,
   type EgysProviders,
 } from "@gys/contracts";
@@ -31,6 +32,17 @@ export async function getEgysProfile(
   if (!response.ok) throw new Error(`e-GYS profile failed: ${response.status}`);
   const body = (await response.json()) as { profile?: unknown };
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
+}
+
+export async function getEgysUpstreamMeta(signal?: AbortSignal) {
+  if (!configuredBase()) return undefined;
+  const response = await fetch(apiUrl("/api/v1/meta/egys"), {
+    ...(signal ? { signal } : {}),
+    cache: "no-store",
+  });
+  if (!response.ok)
+    throw new Error(`e-GYS metadata failed: ${response.status}`);
+  return EgysUpstreamMetaSchema.parse(await response.json());
 }
 
 export async function getEgysProviders(

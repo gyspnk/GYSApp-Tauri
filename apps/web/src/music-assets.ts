@@ -21,6 +21,7 @@ export function assetUrl(
   lock: UpstreamMusicLock,
 ): string {
   const path = ref.path
+    .replace(/^docs\//, "")
     .split("/")
     .map((segment) => encodeURIComponent(segment))
     .join("/");
@@ -39,7 +40,7 @@ export async function loadMusicLock(): Promise<UpstreamMusicLock> {
 
 function localUrl(ref: Pick<UpstreamMusicItem, "path">): string {
   return new URL(
-    ref.path.replace(/^\//, ""),
+    ref.path.replace(/^\//, "").replace(/^docs\//, ""),
     window.location.origin + import.meta.env.BASE_URL,
   ).toString();
 }

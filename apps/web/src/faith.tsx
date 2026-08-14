@@ -88,6 +88,13 @@ export function FaithPage({ locale }: { locale: Locale }) {
       flash("Berbagi dibatalkan.");
     }
   };
+  const copySection = async () => {
+    if (!active) return;
+    await navigator.clipboard?.writeText(
+      `${group?.title ?? "Iman"} ${active.number}\n${active.text}`,
+    );
+    flash("Bagian pokok iman disalin.");
+  };
 
   return (
     <div className="page faith-page">
@@ -121,66 +128,69 @@ export function FaithPage({ locale }: { locale: Locale }) {
             />
             <span>{filtered.length} pokok</span>
           </div>
-          <div className="faith-rows">
+          <div
+            className="faith-rows"
+            role="list"
+            aria-label="Daftar dasar kepercayaan"
+          >
             {filtered.map((item) => {
               const isActive = item.number === active.number;
               return (
-                <article
-                  className={`faith-row${isActive ? " is-selected" : ""}`}
-                  key={item.number}
-                >
+                <div role="listitem" key={item.number}>
                   <button
-                    className="faith-row-heading"
+                    className={`faith-row-heading${isActive ? " is-selected" : ""}`}
                     type="button"
                     onClick={() => setSelected(item.number)}
-                    aria-expanded={isActive}
+                    aria-pressed={isActive}
                   >
                     <span className="faith-number">
                       {item.number.padStart(2, "0")}
                     </span>
                     <strong>{item.text.split(/[.!?]/)[0]}</strong>
-                    <span aria-hidden="true">{isActive ? "−" : "+"}</span>
+                    <span aria-hidden="true">{isActive ? "•" : "›"}</span>
                   </button>
-                  {isActive && (
-                    <div className="faith-row-body">
-                      <p className="faith-copy">{item.text}</p>
-                      <div className="faith-actions">
-                        <button
-                          className="quiet-button"
-                          type="button"
-                          onClick={share}
-                        >
-                          Salin / bagikan
-                        </button>
-                        <button
-                          className="primary-button"
-                          type="button"
-                          onClick={() => {
-                            localStorage.setItem(
-                              `gys-faith-note-${active.number}`,
-                              note,
-                            );
-                            flash("Catatan disimpan di perangkat ini.");
-                          }}
-                        >
-                          Simpan catatan
-                        </button>
-                      </div>
-                      <label className="faith-note">
-                        <span>Catatan pribadi</span>
-                        <textarea
-                          value={note}
-                          onChange={(event) => setNote(event.target.value)}
-                          placeholder="Tambahkan refleksi…"
-                          rows={3}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </article>
+                </div>
               );
             })}
           </div>
+          <section
+            className="faith-selection"
+            aria-label={`Pokok ${active.number}`}
+          >
+            <div className="faith-selection-toolbar">
+              <span>Pokok {active.number}</span>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void copySection()}
+              >
+                Salin bagian
+              </button>
+              <button className="quiet-button" type="button" onClick={share}>
+                Salin / bagikan
+              </button>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => {
+                  localStorage.setItem(`gys-faith-note-${active.number}`, note);
+                  flash("Catatan disimpan di perangkat ini.");
+                }}
+              >
+                Simpan catatan
+              </button>
+            </div>
+            <p className="faith-copy">{active.text}</p>
+            <label className="faith-note">
+              <span>Catatan pribadi</span>
+              <textarea
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Tambahkan refleksi…"
+                rows={3}
+              />
+            </label>
+          </section>
         </section>
       )}
       {notice && (

@@ -76,13 +76,11 @@ body {
   color: var(--ink);
   overflow-x: hidden;
 }
-button,
-select {
+button {
   font: inherit;
 }
 button,
-a,
-select {
+a {
   -webkit-tap-highlight-color: transparent;
 }
 a {
@@ -93,8 +91,7 @@ button {
   color: inherit;
 }
 button:focus-visible,
-a:focus-visible,
-select:focus-visible {
+a:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
   outline-offset: 3px;
 }
@@ -190,21 +187,6 @@ select:focus-visible {
 }
 .connection-status.is-offline i {
   background: #b98132;
-}
-.select-label select {
-  appearance: none;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  padding: 8px 9px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.theme-select select {
-  width: 40px;
-  text-align: center;
-  padding-inline: 4px;
 }
 .account-button {
   border: 1px solid var(--line);
@@ -715,6 +697,7 @@ blockquote {
   display: grid;
   place-items: start center;
   overflow: auto;
+  touch-action: pan-y;
   padding: 22px;
   background: var(--surface-soft);
   border: 1px solid var(--line);
@@ -863,16 +846,6 @@ blockquote {
   display: grid;
   gap: 5px;
 }
-.reader-toolbar select {
-  min-height: 38px;
-  min-width: 125px;
-  padding: 0 9px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--surface-soft);
-  color: var(--ink);
-  font-size: 12px;
-}
 .reader-spacer {
   flex: 1;
 }
@@ -966,9 +939,7 @@ blockquote {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.hymn-filter input,
-.hymn-filter select,
-.song-controls select {
+.hymn-filter input {
   min-height: 38px;
   width: 100%;
   padding: 0 9px;
@@ -1094,6 +1065,7 @@ blockquote {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 18px;
   line-height: 1.65;
+  touch-action: pan-y;
 }
 .lyrics-sheet p {
   margin: 0;
@@ -1287,6 +1259,17 @@ blockquote {
   gap: 34px;
   flex-wrap: wrap;
 }
+.pack-manager-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.pack-manager-actions > small {
+  color: var(--muted);
+  font-size: 10px;
+}
 .pack-stats span {
   display: grid;
   gap: 3px;
@@ -1360,7 +1343,7 @@ blockquote {
   bottom: 26px;
   z-index: 20;
   display: grid;
-  grid-template-columns: 39px minmax(140px, 1fr) 34px;
+  grid-template-columns: 39px minmax(140px, 1fr) 34px 28px;
   align-items: center;
   gap: 11px;
   max-width: 320px;
@@ -1459,6 +1442,16 @@ blockquote {
   font-size: 13px;
   font-weight: 700;
 }
+.sauh-image {
+  width: min(100%, 480px);
+  max-height: 190px;
+  display: block;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin: 14px 0 16px;
+  aspect-ratio: 16 / 7;
+  background: var(--surface-soft);
+}
 .sauh-source {
   display: block;
   margin: -9px 0 20px;
@@ -1481,22 +1474,76 @@ blockquote {
 .sauh-offline-state .quiet-button {
   justify-self: start;
 }
-.sauh-adjust {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-  color: var(--muted);
-  font-size: 12px;
+.home-media-section {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
 }
-.sauh-adjust select {
-  min-height: 36px;
-  max-width: min(420px, 100%);
-  padding: 0 10px;
+.home-media-section h2 {
+  margin: 0;
+  font-size: clamp(21px, 2.5vw, 28px);
+}
+.suara-shelf {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.suara-item {
+  display: grid;
+  grid-template-rows: 110px 1fr;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--surface);
-  color: var(--ink);
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.suara-item:hover {
+  border-color: var(--blue);
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+.suara-item img,
+.suara-thumbnail-fallback {
+  width: 100%;
+  height: 110px;
+  display: grid;
+  place-items: center;
+  object-fit: cover;
+  background: var(--navy);
+  color: var(--surface);
+  font-size: 30px;
+  font-weight: 700;
+}
+.suara-item > span:last-child {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  min-width: 0;
+}
+.suara-item strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.suara-item small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.suara-item em {
+  color: var(--blue);
+  font-size: 10px;
+  font-style: normal;
 }
 .chord-viewer {
   margin-top: 28px;
@@ -1686,10 +1733,6 @@ blockquote {
   }
   .reader-toolbar label {
     flex: 1 1 0;
-  }
-  .reader-toolbar select {
-    min-width: 0;
-    width: 100%;
   }
   .reader-spacer {
     display: none;
@@ -1999,6 +2042,8 @@ blockquote {
 }
 .pujian-list li {
   border-bottom: 1px solid var(--line);
+  content-visibility: auto;
+  contain-intrinsic-size: 70px;
 }
 .pujian-row {
   width: 100%;
@@ -2177,6 +2222,29 @@ blockquote {
 .faith-rows {
   border-top: 1px solid var(--line);
 }
+.faith-rows > div {
+  border-bottom: 1px solid var(--line);
+}
+.faith-selection {
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  animation: verse-in var(--motion-normal) var(--ease-out);
+}
+.faith-selection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+.faith-selection-toolbar > span {
+  margin-right: auto;
+  color: var(--ink);
+  font-weight: 700;
+}
 .faith-row {
   border-bottom: 1px solid var(--line);
 }
@@ -2195,6 +2263,10 @@ blockquote {
 }
 .faith-row-heading:hover {
   background: var(--surface-soft);
+}
+.faith-row-heading.is-selected {
+  color: var(--blue);
+  background: var(--blue-soft);
 }
 .faith-row-heading strong {
   font-size: 16px;
@@ -2226,6 +2298,52 @@ blockquote {
   display: grid;
   gap: 28px;
 }
+.literature-featured {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-bottom: 28px;
+}
+.literature-shelf {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+.literature-shelf-item {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.literature-shelf-item:hover {
+  border-color: var(--blue);
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+.literature-shelf-item > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.literature-shelf-item strong,
+.literature-shelf-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.literature-shelf-item strong {
+  font-size: 13px;
+}
+.literature-shelf-item small {
+  color: var(--muted);
+  font-size: 10px;
+}
 .literature-list {
   border-top: 1px solid var(--line);
 }
@@ -2237,6 +2355,8 @@ blockquote {
   min-height: 84px;
   border-bottom: 1px solid var(--line);
   padding: 13px 7px;
+  content-visibility: auto;
+  contain-intrinsic-size: 84px;
   transition:
     background var(--motion-fast) var(--ease-out),
     padding var(--motion-fast) var(--ease-out);
@@ -2247,15 +2367,58 @@ blockquote {
 }
 .literature-cover {
   width: 54px;
-  height: 66px;
+  height: 72px;
   display: grid;
-  place-items: center;
+  align-content: space-between;
+  justify-items: start;
+  padding: 8px 7px;
   border-radius: 6px;
   background: var(--navy);
   color: white;
-  font-size: 24px;
-  font-weight: 700;
+  object-fit: cover;
   box-shadow: var(--shadow);
+  flex: 0 0 auto;
+}
+.literature-cover.is-compact {
+  width: 100%;
+  height: 116px;
+  border-radius: 8px;
+}
+.literature-cover small {
+  font-size: 8px;
+  line-height: 1.15;
+  text-align: left;
+  opacity: 0.82;
+}
+.literature-cover strong {
+  align-self: end;
+  font-size: 23px;
+  letter-spacing: 0.04em;
+}
+.literature-cover-kesaksian {
+  background: #213b68;
+}
+.literature-cover-warta {
+  background: #315c85;
+}
+.literature-cover-pelita-kecil {
+  background: #6b5134;
+}
+.literature-cover-panduan {
+  background: #384c74;
+}
+.literature-cover-renungan {
+  background: #4c596e;
+}
+.literature-cover-buku {
+  background: #274f55;
+}
+.literature-cover-pujian {
+  background: #54426f;
+}
+.literature-more {
+  display: block;
+  margin: 18px auto 0;
 }
 .literature-copy {
   display: grid;
@@ -2281,6 +2444,66 @@ blockquote {
   display: flex;
   gap: 8px;
   margin-top: 6px;
+}
+.account-profile-details {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.account-sync-note {
+  color: var(--blue) !important;
+  font-size: 10px !important;
+}
+.account-profile-details > div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+.account-profile-details dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+.account-profile-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.utility-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 20px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  animation: selector-in var(--motion-normal) var(--ease-out);
+}
+.utility-panel p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.utility-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.file-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.file-button input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 @keyframes selector-in {
   from {
@@ -2397,5 +2620,28 @@ blockquote {
   .hymn-heading,
   .reader-heading {
     animation: none;
+  }
+  .literature-shelf {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+    margin-inline: -4px;
+  }
+  .literature-shelf-item {
+    width: 148px;
+    flex: 0 0 148px;
+    scroll-snap-align: start;
+  }
+  .suara-shelf {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+  }
+  .suara-item {
+    width: 238px;
+    flex: 0 0 238px;
+    scroll-snap-align: start;
   }
 }

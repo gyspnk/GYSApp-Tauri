@@ -15,8 +15,10 @@ import {
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
-import { normalizeSauhPosts } from "./sauh.js";
+import { normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
 import { fetchLiteratureCatalog } from "./literature.js";
+import { fetchSuaraSejati } from "./suara.js";
+import { egysUpstreamCommit } from "./egys-provenance.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -45,6 +47,7 @@ export type BffConfig = {
 export type BffBindings = {
   ALLOWED_ORIGINS?: string;
   SAUH_SOURCE_URL?: string;
+  SUARA_SOURCE_URL?: string;
   EGYS_API_BASE_URL?: string;
   LITERATURE_SOURCE_URL?: string;
   EGYS_UPSTREAM_COMMIT?: string;
@@ -192,6 +195,13 @@ export function createApp(
         expiresAt: number;
       }
     | undefined;
+  let suaraCache:
+    | {
+        items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
+        etag: string;
+        expiresAt: number;
+      }
+    | undefined;
 
   app.use("*", async (c, next) => {
     const origin = c.req.header("origin");
@@ -298,18 +308,6 @@ export function createApp(
     }
   });
 
-  app.get("/api/v1/content/:kind", (c) => {
-    const kind = ContentKindSchema.safeParse(c.req.param("kind"));
-    if (!kind.success)
-      return errorResponse(c, "VALIDATION_ERROR", "Unknown content kind");
-    const items = content.filter((item) => item.kind === kind.data);
-    const etag = `${catalogEtag}-${kind.data}`;
-    c.header("etag", etag);
-    c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
-    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
-    return c.json({ items });
-  });
-
   app.get("/api/v1/content/sauh", async (c) => {
     let items: unknown[] = content.filter((item) => item.kind === "sauh");
     const sourceUrl = c.env?.SAUH_SOURCE_URL?.trim();
@@ -324,7 +322,8 @@ export function createApp(
         const upstream = await fetch(url, {
           headers: { accept: "application/json" },
         });
-        if (upstream.ok) items = normalizeSauhPosts(await upstream.json());
+        if (upstream.ok)
+          items = onlyTodaySauh(normalizeSauhPosts(await upstream.json()));
       } catch (error) {
         console.warn(
           "Sauh upstream unavailable; using packaged fallback",
@@ -332,9 +331,53 @@ export function createApp(
         );
       }
     }
+    items = onlyTodaySauh(
+      items.filter((item): item is import("@gys/contracts").SauhPost =>
+        Boolean(item && typeof item === "object" && "updatedAt" in item),
+      ),
+    );
     const etag = `${catalogEtag}-sauh-${JSON.stringify(items).length}`;
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     c.header("etag", etag);
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+    return c.json({ items });
+  });
+
+  app.get("/api/v1/content/suara-sejati", async (c) => {
+    try {
+      const now = Date.now();
+      if (!suaraCache || suaraCache.expiresAt <= now) {
+        const items = await fetchSuaraSejati(
+          c.env?.SUARA_SOURCE_URL?.trim() || undefined,
+        );
+        const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
+        suaraCache = { items, etag, expiresAt: now + 5 * 60_000 };
+      }
+      const { items, etag } = suaraCache;
+      c.header(
+        "cache-control",
+        "public, max-age=300, stale-while-revalidate=3600",
+      );
+      c.header("etag", etag);
+      if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+      return c.json({ items });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Suara Sejati source is unavailable",
+      );
+    }
+  });
+
+  app.get("/api/v1/content/:kind", (c) => {
+    const kind = ContentKindSchema.safeParse(c.req.param("kind"));
+    if (!kind.success)
+      return errorResponse(c, "VALIDATION_ERROR", "Unknown content kind");
+    const items = content.filter((item) => item.kind === kind.data);
+    const etag = `${catalogEtag}-${kind.data}`;
+    c.header("etag", etag);
+    c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json({ items });
   });
@@ -484,16 +527,103 @@ export function createApp(
     const raw = (await upstream.json().catch(() => undefined)) as
       | {
           accountId?: unknown;
+          personId?: unknown;
           fullName?: unknown;
           email?: unknown;
+          branchScope?: unknown;
+          can?: {
+            viewMembers?: unknown;
+            createMembers?: unknown;
+            updateMembers?: unknown;
+            deleteMembers?: unknown;
+          };
           language?: unknown;
         }
       | undefined;
+    let member:
+      | {
+          fullName?: unknown;
+          membershipNo?: unknown;
+          history?: Array<{
+            branchCode?: unknown;
+            branchName?: unknown;
+            memberStatus?: unknown;
+            status?: unknown;
+            current?: unknown;
+          }>;
+        }
+      | undefined;
+    if (typeof raw?.personId === "string" && raw.personId) {
+      try {
+        const memberResponse = await requestEgys(
+          c,
+          `members/${encodeURIComponent(raw.personId)}`,
+        );
+        if (memberResponse?.ok) {
+          const candidate: unknown = await memberResponse
+            .json()
+            .catch(() => undefined);
+          if (
+            candidate &&
+            typeof candidate === "object" &&
+            "history" in candidate
+          )
+            member = candidate as typeof member;
+        }
+      } catch {
+        // Identity remains useful even when member detail is outside this account's scope.
+      }
+    }
+    const currentMembership =
+      member?.history?.find((entry) => entry.current) ?? member?.history?.[0];
+    const memberStatus =
+      typeof currentMembership?.memberStatus === "string"
+        ? currentMembership.memberStatus
+        : typeof currentMembership?.status === "string"
+          ? currentMembership.status
+          : undefined;
+    const branchName =
+      typeof currentMembership?.branchName === "string"
+        ? currentMembership.branchName
+        : typeof raw?.branchScope === "string"
+          ? raw.branchScope
+          : undefined;
     const profile = AccountProfileSchema.parse({
       id: String(raw?.accountId ?? "egys"),
+      ...(typeof raw?.personId === "string" ? { personId: raw.personId } : {}),
       displayName: String(raw?.fullName ?? "e-GYS"),
       ...(typeof raw?.email === "string" && raw.email.includes("@")
         ? { email: raw.email }
+        : {}),
+      ...(typeof currentMembership?.branchCode === "string"
+        ? { branchCode: currentMembership.branchCode }
+        : {}),
+      ...(branchName ? { branchName } : {}),
+      ...(typeof member?.membershipNo === "string"
+        ? { membershipNo: member.membershipNo }
+        : {}),
+      ...(memberStatus
+        ? { memberStatus, isMember: true }
+        : member
+          ? { isMember: true }
+          : {}),
+      ...(raw?.can && typeof raw.can === "object"
+        ? {
+            permissions: {
+              ...(typeof raw.can.viewMembers === "boolean"
+                ? { viewMembers: raw.can.viewMembers }
+                : {}),
+              ...(typeof raw.can.createMembers === "boolean"
+                ? { createMembers: raw.can.createMembers }
+                : {}),
+              ...(typeof raw.can.updateMembers === "boolean"
+                ? { updateMembers: raw.can.updateMembers }
+                : {}),
+              ...(typeof raw.can.deleteMembers === "boolean"
+                ? { deleteMembers: raw.can.deleteMembers }
+                : {}),
+            },
+          }
         : {}),
       provider: "egys",
       locale:
@@ -528,7 +658,7 @@ export function createApp(
   app.get("/api/v1/meta/egys", (c) =>
     c.json({
       sourceRepo: "Gereja-Yesus-Sejati/egys",
-      sourceCommit: c.env?.EGYS_UPSTREAM_COMMIT ?? null,
+      sourceCommit: c.env?.EGYS_UPSTREAM_COMMIT?.trim() || egysUpstreamCommit,
     }),
   );
 

@@ -21,6 +21,7 @@ import {
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
+import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
 import {
@@ -414,7 +415,12 @@ function HomePage({ locale }: { locale: Locale }) {
   const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [selectedSauh, setSelectedSauh] = useState(0);
+  const [suara, setSuara] = useState<Awaited<ReturnType<typeof fetchSuara>>>(
+    [],
+  );
+  const [suaraStatus, setSuaraStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [activity, setActivity] = useState<ActivityState>(() => getActivity());
   useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
   const continuePath =
@@ -422,18 +428,36 @@ function HomePage({ locale }: { locale: Locale }) {
     (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
       ? `/kidung/${activity.hymn.id}`
       : "/bible";
+  const continueActivity =
+    activity.hymn &&
+    (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
+      ? { kind: "hymn" as const, value: activity.hymn }
+      : activity.bible
+        ? { kind: "bible" as const, value: activity.bible }
+        : undefined;
   const loadSauh = () => {
     setSauhStatus("loading");
     void fetchSauh()
       .then((items) => {
         setSauh(items);
-        setSelectedSauh(0);
         setSauhStatus("ready");
       })
       .catch(() => setSauhStatus("error"));
   };
   useEffect(loadSauh, []);
-  const selected = sauh[selectedSauh];
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchSuara(controller.signal)
+      .then((items) => {
+        setSuara(items);
+        setSuaraStatus("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setSuaraStatus("error");
+      });
+    return () => controller.abort();
+  }, []);
+  const selected = sauh[0];
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
@@ -476,6 +500,15 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {selected && sauhStatus === "ready" && (
             <>
+              {selected.imageUrl && (
+                <img
+                  className="sauh-image"
+                  src={selected.imageUrl}
+                  alt={`Ilustrasi ${selected.title}`}
+                  loading="eager"
+                  decoding="async"
+                />
+              )}
               <p className="sauh-title">{selected.title}</p>
               <blockquote>“{selected.verse ?? selected.body}”</blockquote>
               <small className="sauh-source">
@@ -498,54 +531,50 @@ function HomePage({ locale }: { locale: Locale }) {
                 Buka Sauh
               </a>
             )}
-            <Link
-              className="quiet-button icon-only"
-              to="/bible"
-              aria-label={translate(locale, "home.openBible")}
-            >
-              <Icon name="arrow" size={17} />
-            </Link>
           </div>
         </article>
         <article className="continue-panel">
           <div className="section-heading">
             <span>{translate(locale, "home.continue")}</span>
             <small>
-              {activity.bible || activity.hymn
+              {continueActivity
                 ? "Tersimpan di perangkat ini"
                 : "Mulai dari salah satu ruang"}
             </small>
           </div>
-          {activity.bible && (
+          {continueActivity?.kind === "bible" && (
             <Link className="continue-item" to="/bible">
               <div className="item-icon">
                 <Icon name="book" size={21} />
               </div>
               <div>
                 <strong>
-                  {activity.bible.book} {activity.bible.chapter}
+                  {continueActivity.value.book} {continueActivity.value.chapter}
                 </strong>
                 <span>Alkitab Terjemahan Baru</span>
               </div>
               <Icon name="arrow" size={17} />
             </Link>
           )}
-          {activity.hymn && (
-            <Link className="continue-item" to={`/kidung/${activity.hymn.id}`}>
+          {continueActivity?.kind === "hymn" && (
+            <Link
+              className="continue-item"
+              to={`/kidung/${continueActivity.value.id}`}
+            >
               <div className="item-icon music-icon">
                 <Icon name="music" size={21} />
               </div>
               <div>
-                <strong>{activity.hymn.title}</strong>
+                <strong>{continueActivity.value.title}</strong>
                 <span>
                   Kidung Rohani ·{" "}
-                  {String(activity.hymn.number).padStart(3, "0")}
+                  {String(continueActivity.value.number).padStart(3, "0")}
                 </span>
               </div>
               <Icon name="arrow" size={17} />
             </Link>
           )}
-          {!activity.bible && !activity.hymn && (
+          {!continueActivity && (
             <div className="empty-inline">
               <p>Belum ada bacaan terakhir.</p>
               <div>
@@ -560,19 +589,69 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
         </article>
       </section>
-      {sauh.length > 1 && (
-        <div className="sauh-adjust" aria-label="Sesuaikan sumber Sauh">
-          <Select
-            value={selectedSauh}
-            onChange={setSelectedSauh}
-            label="Sesuaikan renungan"
-            options={sauh.map((item, index) => ({
-              value: index,
-              label: item.title,
-            }))}
-          />
+      <section
+        className="home-media-section"
+        aria-labelledby="suara-sejati-title"
+      >
+        <div className="section-title-row">
+          <div>
+            <p className="date-line">Cerita dan kesaksian</p>
+            <h2 id="suara-sejati-title">Suara Sejati</h2>
+          </div>
+          <a
+            className="text-button"
+            href="https://tjc.org/id/suarasejati/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Lihat semua ↗
+          </a>
         </div>
-      )}
+        {suaraStatus === "loading" && (
+          <div className="loading-panel" role="status">
+            Mengambil Suara Sejati…
+          </div>
+        )}
+        {suaraStatus === "error" && (
+          <div className="empty-state">
+            <strong>Suara Sejati belum tersedia.</strong>
+            <span>Coba lagi saat tersambung ke internet.</span>
+          </div>
+        )}
+        {suaraStatus === "ready" && (
+          <div className="suara-shelf">
+            {suara.slice(0, 4).map((post) => (
+              <a
+                className="suara-item"
+                href={post.url}
+                target="_blank"
+                rel="noreferrer"
+                key={post.id}
+              >
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt={`Thumbnail ${post.title}`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span className="suara-thumbnail-fallback" aria-hidden="true">
+                    SS
+                  </span>
+                )}
+                <span>
+                  <strong>{post.title}</strong>
+                  <small>{post.excerpt}</small>
+                  <em>
+                    {new Date(post.publishedAt).toLocaleDateString(locale)}
+                  </em>
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

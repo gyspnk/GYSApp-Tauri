@@ -127,27 +127,55 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
   );
 }
 
-async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
-  const response = await fetch(
-    url,
-    signal ? { signal, cache: "no-cache" } : { cache: "no-cache" },
+function localDateKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+}
+
+/** The home surface intentionally exposes only today's Sauh entry. */
+export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
+  const today = localDateKey(now);
+  return posts.filter(
+    (post) => localDateKey(new Date(post.updatedAt)) === today,
   );
-  if (!response.ok) throw new Error(`Sauh request failed: ${response.status}`);
-  return parseSauhPosts(await response.json());
+}
+
+async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 4_000);
+  const abort = () => controller.abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: "no-cache",
+    });
+    if (!response.ok)
+      throw new Error(`Sauh request failed: ${response.status}`);
+    return parseSauhPosts(await response.json());
+  } finally {
+    window.clearTimeout(timer);
+    signal?.removeEventListener("abort", abort);
+  }
 }
 
 export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
   const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  const candidates = [
+  const networkCandidates = [
     bff ? `${bff.replace(/\/$/, "")}/api/v1/content/sauh` : undefined,
     WORDPRESS_URL,
-    STATIC_URL,
   ].filter((value): value is string => Boolean(value));
+  // Offline users should see the pinned daily snapshot immediately instead
+  // of waiting for two network timeouts before the fallback is attempted.
+  const candidates =
+    typeof navigator !== "undefined" && !navigator.onLine
+      ? [STATIC_URL, ...networkCandidates]
+      : [...networkCandidates, STATIC_URL];
   let lastError: unknown;
   for (const url of candidates) {
     try {
       const items = await request(url, signal);
-      if (items.length) return items;
+      const today = onlyTodaySauh(items);
+      if (today.length) return today;
     } catch (error) {
       if (signal?.aborted) throw error;
       lastError = error;

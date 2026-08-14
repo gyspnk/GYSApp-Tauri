@@ -4,7 +4,9 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
+  type TouchEvent,
 } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -21,7 +23,7 @@ import { ChordViewer } from "./chord-viewer.js";
 import { downloadMusicAsset, loadMusicAsset } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
-import { setHymnActivity } from "./history.js";
+import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
 
 const PdfReader = lazy(() =>
@@ -198,7 +200,7 @@ function HymnCatalog({
             <small>Ketuk baris untuk membuka detail</small>
           </div>
           <ol className="pujian-list">
-            {filtered.slice(0, 200).map((item) => (
+            {filtered.map((item) => (
               <li key={item.id}>
                 <button
                   type="button"
@@ -222,11 +224,6 @@ function HymnCatalog({
               </li>
             ))}
           </ol>
-          {filtered.length > 200 && (
-            <p className="catalog-note">
-              Tampilkan pencarian lebih spesifik untuk melihat lagu lainnya.
-            </p>
-          )}
         </section>
       )}
     </div>
@@ -249,7 +246,10 @@ function HymnDetail({
     state.status === "ready"
       ? state.items.find((candidate) => candidate.id === songId)
       : undefined;
-  const [verseIndex, setVerseIndex] = useState(0);
+  const [verseIndex, setVerseIndex] = useState(() => {
+    const last = getActivity().hymn;
+    return last?.id === songId ? Math.max(0, last.verseIndex) : 0;
+  });
   const [transpose, setTranspose] = useState(0);
   const [key, setKey] = useState("C");
   const [chordStatus, setChordStatus] = useState<
@@ -268,6 +268,7 @@ function HymnDetail({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
+  const touchStartX = useRef<number | undefined>(undefined);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const verses = item?.verses?.length
@@ -306,12 +307,30 @@ function HymnDetail({
         </div>
       </div>
     );
-  const index = state.items.findIndex((candidate) => candidate.id === item.id);
-  const prev = state.items[index - 1];
-  const next = state.items[index + 1];
+  const sequence = uniqueItems(state.items);
+  const index = sequence.findIndex((candidate) => candidate.id === item.id);
+  const prev = sequence[index - 1];
+  const next = sequence[index + 1];
   const show = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);
+  };
+  const onVerseTouchStart = (event: TouchEvent<HTMLElement>) => {
+    if (event.touches.length === 1)
+      touchStartX.current = event.touches[0]?.clientX;
+  };
+  const onVerseTouchEnd = (event: TouchEvent<HTMLElement>) => {
+    const start = touchStartX.current;
+    touchStartX.current = undefined;
+    if (start === undefined) return;
+    const end = event.changedTouches[0]?.clientX;
+    if (end === undefined || Math.abs(end - start) < 56) return;
+    setVerseIndex((current) =>
+      Math.max(
+        0,
+        Math.min(verses.length - 1, current + (end < start ? 1 : -1)),
+      ),
+    );
   };
   const loadChord = async () => {
     setChordStatus("loading");
@@ -571,17 +590,23 @@ function HymnDetail({
             }))}
           />
         </div>
-        <article
-          className="lyrics-sheet verse-enter"
-          key={`${item.id}-${safeVerseIndex}`}
-          aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
-        >
-          {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
-            <p key={`${index}-${line}`}>{line || " "}</p>
-          ))}
-        </article>
-        {chordDocument && (
-          <ChordViewer document={chordDocument} transpose={transpose} />
+        {!showPdf && (
+          <>
+            <article
+              className="lyrics-sheet verse-enter"
+              key={`${item.id}-${safeVerseIndex}`}
+              aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
+              onTouchStart={onVerseTouchStart}
+              onTouchEnd={onVerseTouchEnd}
+            >
+              {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
+                <p key={`${index}-${line}`}>{line || " "}</p>
+              ))}
+            </article>
+            {chordDocument && (
+              <ChordViewer document={chordDocument} transpose={transpose} />
+            )}
+          </>
         )}
         {showPdf && (
           <Suspense
@@ -593,6 +618,7 @@ function HymnDetail({
               src={pdfUrl ?? ""}
               {...(pdfBytes ? { data: pdfBytes } : {})}
               initialPage={pdfInitialPage}
+              progressKey={item.id}
               {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
               title={item.title}
             />

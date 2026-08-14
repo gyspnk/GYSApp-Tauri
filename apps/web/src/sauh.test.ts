@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSauhPosts, stripHtml } from "./sauh.js";
+import { onlyTodaySauh, parseSauhPosts, stripHtml } from "./sauh.js";
 
 describe("Sauh feed normalization", () => {
   it("extracts the title, reference, verse and source from WordPress markup", () => {
@@ -26,5 +26,32 @@ describe("Sauh feed normalization", () => {
     expect(stripHtml("<p>Satu</p><p>Dua &amp; tiga</p>")).toBe(
       "Satu\nDua & tiga",
     );
+  });
+
+  it("keeps only the current day's reflection for the home surface", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 1,
+        slug: "today",
+        date: "2026-08-14T00:00:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/today/",
+        title: { rendered: "Hari ini" },
+        content: { rendered: "<p>Renungan hari ini.</p>" },
+      },
+      {
+        id: 2,
+        slug: "yesterday",
+        date: "2026-08-13T00:00:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/yesterday/",
+        title: { rendered: "Kemarin" },
+        content: { rendered: "<p>Renungan kemarin.</p>" },
+      },
+    ]);
+    expect(
+      onlyTodaySauh(posts, new Date("2026-08-14T12:00:00.000Z")),
+    ).toHaveLength(1);
+    expect(
+      onlyTodaySauh(posts, new Date("2026-08-14T12:00:00.000Z"))[0]?.id,
+    ).toBe("today");
   });
 });

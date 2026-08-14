@@ -40,6 +40,18 @@ export function expectedSauhSlug(date = new Date()): string {
   return `sbj${year}${month}${day}`;
 }
 
+function localDateKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+}
+
+/** Sauh is a daily reflection; never expose a stale multi-day feed to clients. */
+export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
+  const today = localDateKey(now);
+  return posts.filter(
+    (post) => localDateKey(new Date(post.updatedAt)) === today,
+  );
+}
+
 export function normalizeSauhPosts(value: unknown): SauhPost[] {
   if (!Array.isArray(value)) return [];
   const result: SauhPost[] = [];

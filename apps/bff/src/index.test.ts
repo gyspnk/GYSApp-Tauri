@@ -192,6 +192,99 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("serves the canonical Suara Sejati feed with thumbnails", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      Response.json([
+        {
+          id: 12,
+          slug: "cahaya-kehidupan",
+          date: "2023-12-13T00:00:00.000Z",
+          link: "https://tjc.org/id/suarasejati/cahaya-kehidupan/",
+          title: { rendered: "Cahaya Kehidupan" },
+          excerpt: { rendered: "<p>Kesaksian terbaru.</p>" },
+          _embedded: {
+            "wp:featuredmedia": [
+              { source_url: "https://tjc.org/id/wp-content/uploads/cover.jpg" },
+            ],
+          },
+        },
+      ])) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/content/suara-sejati");
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        items: Array<{ title: string; imageUrl?: string }>;
+      };
+      expect(payload.items[0]).toMatchObject({
+        title: "Cahaya Kehidupan",
+        imageUrl: "https://tjc.org/id/wp-content/uploads/cover.jpg",
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("normalizes e-GYS identity with branch and membership tracking", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/auth/me"))
+        return Response.json({
+          accountId: "account-1",
+          personId: "person-1",
+          fullName: "Jemaat GYS",
+          email: "jemaat@example.com",
+          branchScope: "Jakarta Selatan",
+          can: { viewMembers: true },
+          language: "id",
+        });
+      if (url.endsWith("/api/v1/members/person-1"))
+        return Response.json({
+          id: "person-1",
+          fullName: "Jemaat GYS",
+          history: [
+            {
+              branchCode: "JKT-SEL",
+              branchName: "Jakarta Selatan",
+              memberStatus: "aktif",
+              current: true,
+            },
+          ],
+        });
+      return new Response("not mocked", { status: 500 });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/account/profile",
+        { headers: { cookie: "EGYS_SESSION=test" } },
+        { EGYS_API_BASE_URL: "https://egys.example" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        profile: {
+          displayName: "Jemaat GYS",
+          branchCode: "JKT-SEL",
+          branchName: "Jakarta Selatan",
+          memberStatus: "aktif",
+          isMember: true,
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("proxies and validates the e-GYS WhatsApp login flow", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input) => {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T06:07:53.838Z",
+  "generatedAt": "2026-08-14T07:32:17.048Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -37,8 +37,14 @@
     {
       "id": "literature-catalog",
       "path": "offline/literature.json",
-      "bytes": 131781,
-      "sha256": "c63af4eff1510064a84724b0bfb1027026b357db04c3e5965c2d26d9515935ff"
+      "bytes": 124210,
+      "sha256": "00c6e376ad595deeb17b226e53f9b930c29bd7e252d80fcf2ff43cd903e1a1b5"
+    },
+    {
+      "id": "suara-sejati",
+      "path": "offline/suara-sejati.json",
+      "bytes": 3342,
+      "sha256": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b"
     },
     {
       "id": "fork-hymnal-map",

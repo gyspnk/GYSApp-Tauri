@@ -9,6 +9,7 @@ const files = [
   ["music-lock", "offline/music-lock.json"],
   ["faith-topics", "offline/faith.json"],
   ["literature-catalog", "offline/literature.json"],
+  ["suara-sejati", "offline/suara-sejati.json"],
   ["fork-hymnal-map", "offline/fork-hymnal-manifest.json"],
   ["soundfont-timgm", "offline/soundfont/TimGM6mb.sf2"],
 ];

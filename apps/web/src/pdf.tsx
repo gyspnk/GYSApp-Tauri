@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 import {
   getDocument,
   GlobalWorkerOptions,
@@ -18,19 +18,27 @@ export function PdfReader({
   initialPage = 1,
   downloadUrl,
   title = "PDF reader",
+  progressKey,
 }: {
   src: string;
   data?: Uint8Array;
   initialPage?: number;
   downloadUrl?: string;
   title?: string;
+  progressKey?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const secondaryCanvasRef = useRef<HTMLCanvasElement>(null);
   const [documentProxy, setDocumentProxy] = useState<PDFDocumentProxy | null>(
     null,
   );
-  const [page, setPage] = useState(initialPage);
+  const [page, setPage] = useState(() => {
+    if (!progressKey || typeof window === "undefined") return initialPage;
+    const stored = Number(
+      window.localStorage.getItem(`gys-pdf-page:${progressKey}`),
+    );
+    return Number.isInteger(stored) && stored > 0 ? stored : initialPage;
+  });
   const [total, setTotal] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [fit, setFit] = useState(false);
@@ -38,6 +46,22 @@ export function PdfReader({
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  const pinchStart = useRef<{ distance: number; zoom: number } | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    if (!progressKey) return;
+    const stored = Number(
+      window.localStorage.getItem(`gys-pdf-page:${progressKey}`),
+    );
+    setPage(Number.isInteger(stored) && stored > 0 ? stored : initialPage);
+  }, [initialPage, progressKey]);
+
+  useEffect(() => {
+    if (!progressKey || !total) return;
+    window.localStorage.setItem(`gys-pdf-page:${progressKey}`, String(page));
+  }, [page, progressKey, total]);
 
   useEffect(() => {
     let disposed = false;
@@ -55,6 +79,7 @@ export function PdfReader({
       .then((document) => {
         if (disposed) return;
         setTotal(document.numPages);
+        setPage((current) => Math.max(1, Math.min(document.numPages, current)));
         setDocumentProxy(document);
       })
       .catch(() => {
@@ -66,6 +91,37 @@ export function PdfReader({
       setDocumentProxy(null);
     };
   }, [data, src]);
+
+  const onStageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2) return;
+    const [first, second] = [event.touches[0], event.touches[1]];
+    if (!first || !second) return;
+    pinchStart.current = {
+      distance: Math.hypot(
+        second.clientX - first.clientX,
+        second.clientY - first.clientY,
+      ),
+      zoom,
+    };
+  };
+  const onStageTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2 || !pinchStart.current) return;
+    const [first, second] = [event.touches[0], event.touches[1]];
+    if (!first || !second) return;
+    event.preventDefault();
+    const distance = Math.hypot(
+      second.clientX - first.clientX,
+      second.clientY - first.clientY,
+    );
+    setZoom(
+      clampPdfZoom(
+        pinchStart.current.zoom * (distance / pinchStart.current.distance),
+      ),
+    );
+  };
+  const onStageTouchEnd = () => {
+    pinchStart.current = undefined;
+  };
 
   useEffect(() => {
     if (!documentProxy || !canvasRef.current) return;
@@ -121,7 +177,7 @@ export function PdfReader({
           }
           disabled={page <= 1}
         >
-          Previous
+          Sebelumnya
         </button>
         <span>
           Page {page}
@@ -136,7 +192,7 @@ export function PdfReader({
           }
           disabled={total === 0 || page >= total}
         >
-          Next
+          Berikutnya
         </button>
         <label>
           Zoom{" "}
@@ -180,10 +236,17 @@ export function PdfReader({
           </a>
         )}
       </div>
-      <div className="pdf-stage">
-        {status === "loading" && <p>Loading local PDF…</p>}
+      <div
+        className="pdf-stage"
+        onTouchStart={onStageTouchStart}
+        onTouchMove={onStageTouchMove}
+        onTouchEnd={onStageTouchEnd}
+      >
+        {status === "loading" && <p>Memuat PDF lokal…</p>}
         {status === "error" && (
-          <p>PDF is unavailable offline. Pin it and try again.</p>
+          <p>
+            PDF belum tersedia offline. Simpan dulu saat tersambung internet.
+          </p>
         )}
         <div className={`pdf-pages pdf-layout-${layout}`}>
           <canvas

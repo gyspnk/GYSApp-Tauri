@@ -86,6 +86,7 @@ export function createBrowserChordRepository(): ChordRepository {
     },
     async fetchChord(ref: ChordRef, signal): Promise<ChordFetchResult> {
       const encodedPath = ref.path
+        .replace(/^docs\//, "")
         .split("/")
         .map((segment) => encodeURIComponent(segment))
         .join("/");

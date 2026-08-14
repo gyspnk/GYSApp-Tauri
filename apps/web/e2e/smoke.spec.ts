@@ -50,3 +50,62 @@ test("offline reader packs open without a network request", async ({
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
 });
+
+test("home surfaces today's Sauh and canonical Suara Sejati feed", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.getByRole("heading", { name: "Suara Sejati" })).toBeVisible(
+    { timeout: 15_000 },
+  );
+  await expect(page.locator(".sauh-image")).toHaveCount(1);
+});
+
+test("literature behaves as a searchable ebook shelf and hymn opens by detail route", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(
+    page.getByRole("heading", { name: "Literatur", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".literature-shelf-item").first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await page
+    .getByRole("link", { name: /Kidung/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/kidung$/);
+  await page
+    .getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ })
+    .click();
+  await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+  await expect(page.getByRole("tab", { name: "1" })).toBeVisible();
+});
+
+test("home keeps one continue item when Bible and hymn history coexist", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-activity-v1",
+      JSON.stringify({
+        version: 1,
+        bible: {
+          book: "Yohanes",
+          chapter: 3,
+          updatedAt: "2026-08-14T01:00:00.000Z",
+        },
+        hymn: {
+          id: "hymn-001",
+          title: "Pujilah Allah Yang Maha Esa",
+          number: 1,
+          verseIndex: 0,
+          updatedAt: "2026-08-14T02:00:00.000Z",
+        },
+      }),
+    );
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".continue-item")).toHaveCount(1);
+});
