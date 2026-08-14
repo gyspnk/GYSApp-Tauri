@@ -199,17 +199,16 @@ export function MorePage({ locale }: { locale: Locale }) {
     const controller = new AbortController();
     whatsappAbort.current = controller;
     setAuthBusy(true);
+    // Reserve the popup during the click gesture; opening it after the
+    // network round-trip is rejected by most popup blockers.
+    const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
     try {
       const started = await startEgysWhatsAppLogin(controller.signal);
-      const popup = window.open(
-        started.whatsappUrl,
-        "_blank",
-        "noopener,noreferrer",
-      );
       if (!popup) {
         show("WhatsApp diblokir browser. Izinkan pop-up lalu coba lagi.");
         return;
       }
+      popup.location.href = started.whatsappUrl;
       show(
         "Kirim pesan yang sudah disiapkan di WhatsApp; kami menunggu konfirmasi.",
       );
