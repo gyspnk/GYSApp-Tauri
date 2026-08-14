@@ -87,6 +87,7 @@ export function Select<T extends string | number>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={id}
+        aria-label={label}
         disabled={disabled || !selected}
         onClick={() => setOpen((current) => !current)}
         onKeyDown={onKeyDown}

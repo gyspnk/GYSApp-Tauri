@@ -6,7 +6,8 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Selamat datang kembali" }),
   ).toBeVisible();
-  await page.getByRole("combobox", { name: "Bahasa" }).selectOption("en");
+  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("option", { name: "EN" }).click();
   await expect(
     page.getByRole("heading", { name: "Welcome back" }),
   ).toBeVisible();
@@ -45,5 +46,7 @@ test("offline reader packs open without a network request", async ({
   await expect(
     page.getByRole("heading", { name: "Iman", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(/Dasar Kepercayaan/)).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Dasar Kepercayaan" }),
+  ).toBeVisible();
 });
