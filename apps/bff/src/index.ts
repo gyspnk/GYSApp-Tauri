@@ -10,6 +10,8 @@ import {
   type ErrorCode,
   type OnlineContent,
   EgysProvidersSchema,
+  EgysWhatsAppLoginStartedSchema,
+  EgysWhatsAppLoginStateSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
@@ -368,6 +370,52 @@ export function createApp(
           "INTEGRITY_ERROR",
           "e-GYS provider response is invalid",
         );
+  });
+
+  app.post("/api/v1/auth/whatsapp/start", async (c) => {
+    c.header("cache-control", "no-store");
+    const upstream = await proxyEgysJson(c, "auth/whatsapp/start", {
+      method: "POST",
+    });
+    if (!upstream.ok)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS WhatsApp sign-in is unavailable",
+      );
+    const parsed = EgysWhatsAppLoginStartedSchema.safeParse(
+      await upstream.json().catch(() => undefined),
+    );
+    return parsed.success
+      ? c.json(parsed.data)
+      : errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "e-GYS WhatsApp response is invalid",
+        );
+  });
+
+  app.get("/api/v1/auth/whatsapp/state", async (c) => {
+    c.header("cache-control", "no-store");
+    const token = c.req.query("token");
+    if (!token || token.length > 512)
+      return errorResponse(c, "VALIDATION_ERROR", "poll token is required");
+    const upstream = await proxyEgysJson(
+      c,
+      `auth/whatsapp/state?token=${encodeURIComponent(token)}`,
+    );
+    if (!upstream.ok)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS WhatsApp state is unavailable",
+      );
+    const parsed = EgysWhatsAppLoginStateSchema.safeParse(
+      await upstream.json().catch(() => undefined),
+    );
+    return parsed.success
+      ? c.json(parsed.data)
+      : errorResponse(c, "INTEGRITY_ERROR", "e-GYS WhatsApp state is invalid");
   });
 
   app.post("/api/v1/auth/exchange/:provider", async (c) => {

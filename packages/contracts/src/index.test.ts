@@ -6,6 +6,8 @@ import {
   ChordDocumentV2Schema,
   ErrorResponseSchema,
   EgysProvidersSchema,
+  EgysWhatsAppLoginStartedSchema,
+  EgysWhatsAppLoginStateSchema,
   HymnCatalogEntrySchema,
   HymnalPdfManifestSchema,
   LiteratureCatalogSchema,
@@ -172,5 +174,16 @@ describe("public contracts", () => {
         songs: { "001": { startPage: 5, pageCount: 1, source: "001.pdf" } },
       }).songs["001"]?.startPage,
     ).toBe(5);
+    expect(
+      EgysWhatsAppLoginStartedSchema.parse({
+        pollToken: "poll-token",
+        referenceCode: "GYS-1234",
+        whatsappUrl: "https://api.whatsapp.com/send?phone=1",
+        expiresAt: "2026-08-14T00:00:00.000Z",
+      }).referenceCode,
+    ).toBe("GYS-1234");
+    expect(EgysWhatsAppLoginStateSchema.parse({ state: "WAITING" }).state).toBe(
+      "WAITING",
+    );
   });
 });

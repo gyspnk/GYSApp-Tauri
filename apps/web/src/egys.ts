@@ -1,6 +1,8 @@
 import {
   AccountProfileSchema,
   EgysProvidersSchema,
+  EgysWhatsAppLoginStartedSchema,
+  EgysWhatsAppLoginStateSchema,
   type AccountProfile,
   type EgysProviders,
 } from "@gys/contracts";
@@ -67,6 +69,36 @@ export async function exchangeEgysToken(
     body: JSON.stringify({ idToken }),
   });
   if (!response.ok) throw new Error(`e-GYS sign-in failed: ${response.status}`);
+}
+
+export async function startEgysWhatsAppLogin(signal?: AbortSignal) {
+  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
+  const response = await fetch(apiUrl("/api/v1/auth/whatsapp/start"), {
+    method: "POST",
+    credentials: "include",
+    ...(signal ? { signal } : {}),
+  });
+  if (!response.ok)
+    throw new Error(`e-GYS WhatsApp sign-in failed: ${response.status}`);
+  return EgysWhatsAppLoginStartedSchema.parse(await response.json());
+}
+
+export async function getEgysWhatsAppState(
+  token: string,
+  signal?: AbortSignal,
+) {
+  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
+  const response = await fetch(
+    apiUrl(`/api/v1/auth/whatsapp/state?token=${encodeURIComponent(token)}`),
+    {
+      credentials: "include",
+      cache: "no-store",
+      ...(signal ? { signal } : {}),
+    },
+  );
+  if (!response.ok)
+    throw new Error(`e-GYS WhatsApp state failed: ${response.status}`);
+  return EgysWhatsAppLoginStateSchema.parse(await response.json());
 }
 
 export async function signOutEgys(): Promise<void> {

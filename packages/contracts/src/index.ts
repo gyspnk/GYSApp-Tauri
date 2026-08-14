@@ -155,7 +155,7 @@ export type HymnalPdfManifest = z.infer<typeof HymnalPdfManifestSchema>;
 
 export const EgysProviderInfoSchema = z.object({
   enabled: z.boolean(),
-  clientId: z.string().min(1).optional(),
+  clientId: z.string().min(1).nullish(),
 });
 export const EgysProvidersSchema = z.object({
   google: EgysProviderInfoSchema,
@@ -163,6 +163,21 @@ export const EgysProvidersSchema = z.object({
   whatsapp: z.boolean(),
 });
 export type EgysProviders = z.infer<typeof EgysProvidersSchema>;
+export const EgysWhatsAppLoginStartedSchema = z.object({
+  pollToken: z.string().min(1),
+  referenceCode: z.string().min(1),
+  whatsappUrl: z.string().url(),
+  expiresAt: z.string().datetime({ offset: true }),
+});
+export type EgysWhatsAppLoginStarted = z.infer<
+  typeof EgysWhatsAppLoginStartedSchema
+>;
+export const EgysWhatsAppLoginStateSchema = z.object({
+  state: z.enum(["WAITING", "READY", "UNKNOWN_SENDER", "EXPIRED"]),
+});
+export type EgysWhatsAppLoginState = z.infer<
+  typeof EgysWhatsAppLoginStateSchema
+>;
 
 export const MidiPlaylistItemSchema = z.object({
   songId: z.string().min(1),

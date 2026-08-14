@@ -1,10 +1,12 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { translate, type Locale } from "./i18n.js";
 import {
   exchangeEgysToken,
   getEgysProfile,
   getEgysProviders,
+  getEgysWhatsAppState,
   signOutEgys,
+  startEgysWhatsAppLogin,
 } from "./egys.js";
 
 type PackManifest = {
@@ -20,12 +22,28 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function waitFor(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+  });
+}
+
 export function MorePage({ locale }: { locale: Locale }) {
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [report, setReport] = useState("");
   const [notice, setNotice] = useState("");
   const [accountName, setAccountName] = useState<string>();
   const [accountLoading, setAccountLoading] = useState(true);
+  const [authBusy, setAuthBusy] = useState(false);
+  const whatsappAbort = useRef<AbortController | undefined>(undefined);
   const [providers, setProviders] =
     useState<Awaited<ReturnType<typeof getEgysProviders>>>();
 
@@ -38,6 +56,8 @@ export function MorePage({ locale }: { locale: Locale }) {
       })
       .catch(() => undefined);
   }, []);
+
+  useEffect(() => () => whatsappAbort.current?.abort(), []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -174,6 +194,64 @@ export function MorePage({ locale }: { locale: Locale }) {
     }
   };
 
+  const signInWithWhatsApp = async () => {
+    whatsappAbort.current?.abort();
+    const controller = new AbortController();
+    whatsappAbort.current = controller;
+    setAuthBusy(true);
+    try {
+      const started = await startEgysWhatsAppLogin(controller.signal);
+      const popup = window.open(
+        started.whatsappUrl,
+        "_blank",
+        "noopener,noreferrer",
+      );
+      if (!popup) {
+        show("WhatsApp diblokir browser. Izinkan pop-up lalu coba lagi.");
+        return;
+      }
+      show(
+        "Kirim pesan yang sudah disiapkan di WhatsApp; kami menunggu konfirmasi.",
+      );
+      const expiresAt = Date.parse(started.expiresAt);
+      while (!controller.signal.aborted && Date.now() < expiresAt) {
+        await waitFor(2_000, controller.signal);
+        if (controller.signal.aborted) return;
+        const state = await getEgysWhatsAppState(
+          started.pollToken,
+          controller.signal,
+        );
+        if (state.state === "READY") {
+          const profile = await getEgysProfile(controller.signal);
+          setAccountName(profile?.displayName ?? "e-GYS");
+          show(
+            profile
+              ? `Selamat datang, ${profile.displayName}.`
+              : "Login WhatsApp e-GYS berhasil.",
+          );
+          return;
+        }
+        if (state.state === "UNKNOWN_SENDER") {
+          show("Nomor WhatsApp belum terdaftar di e-GYS.");
+          return;
+        }
+        if (state.state === "EXPIRED") {
+          show("Permintaan WhatsApp sudah kedaluwarsa. Mulai lagi bila perlu.");
+          return;
+        }
+      }
+      if (!controller.signal.aborted)
+        show("Permintaan WhatsApp kedaluwarsa sebelum dikonfirmasi.");
+    } catch {
+      if (!controller.signal.aborted)
+        show(
+          "Login WhatsApp e-GYS belum tersedia. Pastikan Worker terkonfigurasi.",
+        );
+    } finally {
+      if (!controller.signal.aborted) setAuthBusy(false);
+    }
+  };
+
   return (
     <div className="page more-page">
       <section className="page-intro">
@@ -258,36 +336,40 @@ export function MorePage({ locale }: { locale: Locale }) {
           <strong>Pengingat</strong>
           <small>Atur waktu baca dan renungan</small>
         </button>
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => {
-            if (accountName) {
-              void signOutEgys().then(() => {
-                setAccountName(undefined);
-                show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
-              });
-            } else {
-              show(
-                "Login Google/Apple e-GYS dilakukan melalui Worker BFF terkonfigurasi; token tidak disimpan di client.",
-              );
-            }
-          }}
-        >
+        <article className="more-card more-action account-card">
           <span className="more-icon">◯</span>
           <strong>
-            {accountLoading ? "Memeriksa akun…" : (accountName ?? "Akun e-GYS")}
+            {accountLoading || authBusy
+              ? "Memeriksa akun…"
+              : (accountName ?? "Akun e-GYS")}
           </strong>
           <small>
             {accountName
               ? "Keluar dari sesi e-GYS"
-              : providers?.google.enabled || providers?.apple.enabled
+              : providers?.google.enabled ||
+                  providers?.apple.enabled ||
+                  providers?.whatsapp
                 ? "Pilih provider untuk masuk"
                 : "Google, Apple, atau e-GYS"}
           </small>
-          {!accountName &&
+          {accountName ? (
+            <button
+              type="button"
+              className="text-button account-signout"
+              onClick={() => {
+                void signOutEgys().then(() => {
+                  setAccountName(undefined);
+                  show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
+                });
+              }}
+            >
+              Keluar
+            </button>
+          ) : (
             providers &&
-            (providers.google.enabled || providers.apple.enabled) && (
+            (providers.google.enabled ||
+              providers.apple.enabled ||
+              providers.whatsapp) && (
               <span className="account-provider-actions">
                 <button
                   type="button"
@@ -308,9 +390,19 @@ export function MorePage({ locale }: { locale: Locale }) {
                 >
                   Apple
                 </button>
+                {providers.whatsapp && (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => void signInWithWhatsApp()}
+                  >
+                    WhatsApp
+                  </button>
+                )}
               </span>
-            )}
-        </button>
+            )
+          )}
+        </article>
         <button
           className="more-card more-action"
           type="button"

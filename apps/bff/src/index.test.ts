@@ -191,4 +191,58 @@ describe("BFF public boundary", () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it("proxies and validates the e-GYS WhatsApp login flow", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/auth/providers"))
+        return Response.json({
+          google: { enabled: false, clientId: null },
+          apple: { enabled: false, clientId: null },
+          whatsapp: true,
+        });
+      if (url.endsWith("/api/v1/auth/whatsapp/start"))
+        return Response.json({
+          pollToken: "poll-token",
+          referenceCode: "GYS-1234",
+          whatsappUrl: "https://api.whatsapp.com/send?phone=1",
+          expiresAt: "2026-08-14T00:00:00.000Z",
+        });
+      if (url.includes("/api/v1/auth/whatsapp/state"))
+        return Response.json({ state: "WAITING" });
+      return new Response("not mocked", { status: 500 });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const env = { EGYS_API_BASE_URL: "https://egys.example" };
+      const providers = await app.request("/api/v1/auth/providers", {}, env);
+      expect(providers.status).toBe(200);
+      expect(((await providers.json()) as { whatsapp: boolean }).whatsapp).toBe(
+        true,
+      );
+      const started = await app.request(
+        "/api/v1/auth/whatsapp/start",
+        { method: "POST" },
+        env,
+      );
+      expect(started.status).toBe(200);
+      expect(
+        ((await started.json()) as { referenceCode: string }).referenceCode,
+      ).toBe("GYS-1234");
+      const state = await app.request(
+        "/api/v1/auth/whatsapp/state?token=poll-token",
+        {},
+        env,
+      );
+      expect(state.status).toBe(200);
+      expect(((await state.json()) as { state: string }).state).toBe("WAITING");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });
