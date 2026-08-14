@@ -26,6 +26,7 @@ import {
   prefetchMusicAsset,
 } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
+import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
@@ -471,13 +472,17 @@ function HymnDetail({
         sourceHash: ref.sha256,
         bytes,
       });
-      await midiPlayer.load(item.id, item.title, loaded.midi);
+      await midiPlayer.load(item.id, item.title, loaded.midi, {
+        rawMidi: bytes,
+        sourceHash: ref.sha256,
+      });
       setMidiStatus("ready");
       // Loading the binary/parser is independent from starting Web Audio.
       // Browsers may reject an AudioContext created after the network await;
       // the shared floating player remains ready so the next user gesture can
       // start playback without losing the successfully loaded MIDI.
       try {
+        await speechPlayer.stop();
         await midiPlayer.play();
         show("MIDI sedang diputar; pemutar dapat diminimalkan.");
       } catch {

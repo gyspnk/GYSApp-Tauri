@@ -43,4 +43,30 @@ describe("SpeechOrchestrator", () => {
     const orchestrator = new SpeechOrchestrator([edge]);
     await expect(orchestrator.offlineStatus()).resolves.toBe(false);
   });
+
+  it("routes pause and resume to the provider during an active utterance", async () => {
+    let finish: (() => void) | undefined;
+    let paused = 0;
+    let resumed = 0;
+    const active = provider("system", true, async () => {
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+    });
+    active.pause = async () => {
+      paused += 1;
+    };
+    active.resume = async () => {
+      resumed += 1;
+    };
+    const orchestrator = new SpeechOrchestrator([active]);
+    const speaking = orchestrator.speak("Panjang", {});
+    await Promise.resolve();
+    await orchestrator.pause();
+    await orchestrator.resume();
+    finish?.();
+    await speaking;
+    expect(paused).toBe(1);
+    expect(resumed).toBe(1);
+  });
 });

@@ -16,9 +16,13 @@ Preview slice reviewable and deployable:
   31,172-verse SQLite pack, a 533-item hymn catalog with ordered search,
   transpose/lyrics/PDF entry points, ten multilingual faith topics with
   notes/share, and local pack integrity manifests;
-- PDF.js is lazy-loaded with a local worker; MIDI transport, render cache, and
-  playlist state machines are covered by domain tests; the BFF now serves a
-  generated 140-entry chord manifest with sanitization and typed report input;
+- PDF.js is lazy-loaded with a local worker; MIDI transport now renders through
+  a same-origin FluidSynth WASM worker using the offline TimGM pack (with an
+  explicit Web Audio compatibility backend), and the minimized shell player
+  exposes seek/volume/mute/tempo/transpose, Media Session, and wake-lock
+  controls. MIDI transport, render cache, and playlist state machines remain
+  covered by domain tests; the BFF serves a generated 140-entry chord manifest
+  with sanitization and typed report input;
 - Hono Worker route skeleton with origin/CORS/CSRF posture, CSP, rate limiting,
   ETags/cache headers, schema validation, structured errors, auth/profile/report
   boundaries;

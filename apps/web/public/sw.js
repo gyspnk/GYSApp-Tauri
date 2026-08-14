@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v6";
+const CACHE = "gysapp-shell-v7";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const PRECACHE = [
   "/GYSApp-Tauri/",
@@ -13,6 +13,9 @@ const PRECACHE = [
   "/GYSApp-Tauri/offline/asset-manifest.json",
   "/GYSApp-Tauri/offline/fork-hymnal-manifest.json",
   "/GYSApp-Tauri/offline/soundfont/TimGM6mb.sf2",
+  "/GYSApp-Tauri/vendor/midi-render-worker.js",
+  "/GYSApp-Tauri/vendor/js-synthesizer/js-synthesizer.min.js",
+  "/GYSApp-Tauri/vendor/js-synthesizer/libfluidsynth-2.4.6.js",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));

@@ -5,6 +5,7 @@ import {
   Suspense,
   useEffect,
   useCallback,
+  useRef,
   useState,
   useSyncExternalStore,
   type ErrorInfo,
@@ -24,6 +25,7 @@ import { translate, type Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
+import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
 import { GlobalSearch } from "./global-search.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -64,6 +66,9 @@ type IconName =
   | "system"
   | "play"
   | "pause"
+  | "stop"
+  | "volume"
+  | "volumeOff"
   | "arrow"
   | "book"
   | "search"
@@ -155,6 +160,23 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
   pause: (
     <>
       <path d="M8 5v14M16 5v14" />
+    </>
+  ),
+  stop: (
+    <>
+      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+    </>
+  ),
+  volume: (
+    <>
+      <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
+      <path d="M16 9.5a4 4 0 0 1 0 5M18.5 7a7.5 7.5 0 0 1 0 10" />
+    </>
+  ),
+  volumeOff: (
+    <>
+      <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
+      <path d="m17 9 4 6M21 9l-4 6" />
     </>
   ),
   arrow: (
@@ -333,15 +355,152 @@ function MediaSurface({ locale }: { locale: Locale }) {
     midiPlayer.snapshot,
     midiPlayer.snapshot,
   );
+  const speechSnapshot = useSyncExternalStore(
+    speechPlayer.subscribe,
+    speechPlayer.snapshot,
+    speechPlayer.snapshot,
+  );
+  const speechActive =
+    speechSnapshot.total > 0 && speechSnapshot.status !== "idle";
+  const mediaTitle = speechActive
+    ? `Alkitab · ayat ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
+    : (snapshot.title ?? snapshot.songId);
+  const wakeLock = useRef<{ release: () => Promise<void> } | undefined>(
+    undefined,
+  );
   const [minimized, setMinimized] = useState(
     () => localStorage.getItem("gys-media-minimized") === "1",
   );
   useEffect(() => {
     localStorage.setItem("gys-media-minimized", minimized ? "1" : "0");
   }, [minimized]);
-  if (!snapshot.songId || snapshot.status === "idle") return null;
-  const playing = snapshot.status === "playing";
+  useEffect(() => {
+    if ((!snapshot.songId && !speechActive) || !("mediaSession" in navigator))
+      return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: mediaTitle ?? "GYS",
+      artist: "Gereja Yesus Sejati",
+      album: speechActive ? "Alkitab TB" : "Kidung Rohani",
+    });
+    const handlers: Array<[MediaSessionAction, () => void | Promise<void>]> = [
+      [
+        "play",
+        () => {
+          if (speechActive)
+            return speechSnapshot.status === "error"
+              ? speechPlayer.stop()
+              : speechPlayer.resume();
+          void speechPlayer.stop();
+          return midiPlayer.play().catch(() => undefined);
+        },
+      ],
+      [
+        "pause",
+        () =>
+          speechActive
+            ? speechPlayer.pause()
+            : midiPlayer.pause().catch(() => undefined),
+      ],
+      [
+        "stop",
+        () =>
+          speechActive
+            ? speechPlayer.stop()
+            : midiPlayer.stop().catch(() => undefined),
+      ],
+      [
+        "seekbackward",
+        () =>
+          speechActive
+            ? speechPlayer.stop()
+            : midiPlayer.seek(Math.max(0, snapshot.position - 10)),
+      ],
+      [
+        "seekforward",
+        () =>
+          speechActive
+            ? speechPlayer.stop()
+            : midiPlayer.seek(
+                Math.min(snapshot.duration, snapshot.position + 10),
+              ),
+      ],
+      [
+        "seekto",
+        () =>
+          speechActive
+            ? speechPlayer.stop()
+            : midiPlayer.seek(snapshot.position),
+      ],
+    ];
+    for (const [action, handler] of handlers) {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        // Safari exposes the Media Session object but not every action.
+      }
+    }
+    return () => {
+      for (const [action] of handlers) {
+        try {
+          navigator.mediaSession.setActionHandler(action, null);
+        } catch {
+          /* unsupported action */
+        }
+      }
+    };
+  }, [
+    mediaTitle,
+    snapshot.duration,
+    snapshot.position,
+    snapshot.songId,
+    snapshot.title,
+    speechActive,
+  ]);
+  useEffect(() => {
+    const wake = navigator as Navigator & {
+      wakeLock?: {
+        request: (type: "screen") => Promise<{ release: () => Promise<void> }>;
+      };
+    };
+    const audible = speechActive
+      ? speechSnapshot.status === "speaking"
+      : snapshot.status === "playing";
+    if (!wake.wakeLock || !audible) {
+      const active = wakeLock.current;
+      wakeLock.current = undefined;
+      if (active) void active.release().catch(() => undefined);
+      return;
+    }
+    let cancelled = false;
+    void wake.wakeLock
+      .request("screen")
+      .then((sentinel) => {
+        if (cancelled) return sentinel.release();
+        wakeLock.current = sentinel;
+        return undefined;
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [snapshot.status, speechActive, speechSnapshot.status]);
+  if ((!snapshot.songId || snapshot.status === "idle") && !speechActive)
+    return null;
+  const playing = speechActive
+    ? speechSnapshot.status === "speaking"
+    : snapshot.status === "playing";
   const togglePlayback = () => {
+    if (speechActive) {
+      const action =
+        speechSnapshot.status === "error"
+          ? speechPlayer.stop()
+          : playing
+            ? speechPlayer.pause()
+            : speechPlayer.resume();
+      void action.catch(() => undefined);
+      return;
+    }
+    if (!playing) void speechPlayer.stop();
     void (playing ? midiPlayer.pause() : midiPlayer.play()).catch(
       () => undefined,
     );
@@ -352,15 +511,108 @@ function MediaSurface({ locale }: { locale: Locale }) {
       aria-label={translate(locale, "shell.media")}
     >
       <div className="media-art">
-        <Icon name="music" size={19} />
+        <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
-      <div className="media-meta">
-        <small>{translate(locale, "shell.media")}</small>
-        <strong>{snapshot.title ?? snapshot.songId}</strong>
-        <span>
-          {formatDuration(snapshot.position)} /{" "}
-          {formatDuration(snapshot.duration)}
-        </span>
+      <div className="media-main">
+        <div className="media-meta">
+          <small>
+            {speechActive
+              ? speechSnapshot.offline
+                ? "Bacaan offline"
+                : "Bacaan Alkitab"
+              : snapshot.status === "loading"
+                ? `Memuat MIDI ${snapshot.loadingProgress}%`
+                : snapshot.backend === "fluidsynth"
+                  ? `${translate(locale, "shell.media")} · ${snapshot.soundfont ?? "FluidSynth"}`
+                  : translate(locale, "shell.media")}
+          </small>
+          <strong>{mediaTitle}</strong>
+          <span>
+            {speechActive
+              ? speechSnapshot.status === "error"
+                ? speechSnapshot.error
+                : speechSnapshot.currentIndex >= 0
+                  ? `Ayat ${speechSnapshot.currentIndex + 1} dari ${speechSnapshot.total}`
+                  : "Siap dibaca"
+              : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
+          </span>
+        </div>
+        <label className="media-progress">
+          <span className="sr-only">Posisi MIDI</span>
+          <input
+            type="range"
+            min="0"
+            max={Math.max(0.01, snapshot.duration)}
+            step="0.1"
+            value={Math.min(snapshot.duration, snapshot.position)}
+            disabled={speechActive}
+            onChange={(event) =>
+              void midiPlayer
+                .seek(Number(event.target.value))
+                .catch(() => undefined)
+            }
+          />
+        </label>
+        {!minimized && (
+          <div className="media-adjustments">
+            <label>
+              <span>Vol</span>
+              <input
+                aria-label="Volume MIDI"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={speechActive ? speechSnapshot.volume : snapshot.volume}
+                onChange={(event) =>
+                  speechActive
+                    ? speechPlayer.setVolume(Number(event.target.value))
+                    : void midiPlayer.setVolume(Number(event.target.value))
+                }
+              />
+            </label>
+            <label>
+              <span>Tempo {snapshot.tempo}</span>
+              <input
+                aria-label="Tempo MIDI"
+                type="range"
+                min="30"
+                max="220"
+                step="1"
+                value={snapshot.tempo}
+                onChange={(event) =>
+                  void midiPlayer.setTempo(Number(event.target.value))
+                }
+              />
+            </label>
+            <div className="media-transpose">
+              <span>
+                Nada{" "}
+                {snapshot.transpose > 0
+                  ? `+${snapshot.transpose}`
+                  : snapshot.transpose}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  void midiPlayer.setTranspose(snapshot.transpose - 1)
+                }
+                aria-label="Turunkan nada"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  void midiPlayer.setTranspose(snapshot.transpose + 1)
+                }
+                aria-label="Naikkan nada"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       <button
         className="media-control"
@@ -374,6 +626,54 @@ function MediaSurface({ locale }: { locale: Locale }) {
       >
         <Icon name={playing ? "pause" : "play"} size={18} />
       </button>
+      {!minimized && (
+        <>
+          <button
+            className="media-control media-secondary-control"
+            type="button"
+            onClick={() =>
+              void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
+            }
+            aria-label="Hentikan MIDI"
+          >
+            <Icon name="stop" size={16} />
+          </button>
+          <button
+            className="media-control media-secondary-control"
+            type="button"
+            onClick={() =>
+              speechActive
+                ? speechPlayer.setVolume(speechSnapshot.volume > 0 ? 0 : 1)
+                : midiPlayer.setMuted(!snapshot.muted)
+            }
+            aria-label={
+              speechActive
+                ? speechSnapshot.volume > 0
+                  ? "Bisukan bacaan"
+                  : "Nyalakan bacaan"
+                : snapshot.muted
+                  ? "Nyalakan suara MIDI"
+                  : "Bisukan MIDI"
+            }
+            aria-pressed={
+              speechActive ? speechSnapshot.volume === 0 : snapshot.muted
+            }
+          >
+            <Icon
+              name={
+                speechActive
+                  ? speechSnapshot.volume === 0
+                    ? "volumeOff"
+                    : "volume"
+                  : snapshot.muted
+                    ? "volumeOff"
+                    : "volume"
+              }
+              size={16}
+            />
+          </button>
+        </>
+      )}
       <button
         className="media-minimize"
         type="button"
@@ -488,11 +788,6 @@ function HomePage({ locale }: { locale: Locale }) {
       : "verse",
   );
   useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
-  const continuePath =
-    activity.hymn &&
-    (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
-      ? `/kidung/${activity.hymn.id}`
-      : "/bible";
   const continueActivity =
     activity.hymn &&
     (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
@@ -542,9 +837,6 @@ function HomePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "home.title")}</h1>
           <p className="intro-copy">{translate(locale, "home.subtitle")}</p>
         </div>
-        <Link className="quiet-button" to={continuePath}>
-          {translate(locale, "home.continue")} <Icon name="arrow" size={16} />
-        </Link>
       </section>
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">

@@ -16,8 +16,9 @@ service or platform artifact that cannot be exercised in this workspace.
   snapshots, online/BFF revalidation, image mapping, and offline recovery.
 - GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
   hymnal PDF database/download source with signed package fallback, local
-  PDF.js worker, canonical MIDI loading, and shell-level minimizable media
-  surface.
+  PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
+  Web Audio fallback, and shell-level minimizable media surface with seek,
+  volume, mute, tempo, transpose, Media Session, and wake-lock controls.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -29,7 +30,9 @@ service or platform artifact that cannot be exercised in this workspace.
 - TB reader hardening: source markup is sanitized, search supports token/phrase/
   whole-word filters with local history, and the reader has persistent notes,
   highlights, verse selection, split columns, chapter scrubber, and swipe
-  navigation.
+  navigation. Bible read-aloud now uses the shared SpeechProvider/orchestrator,
+  queues verse ranges, exposes voice/rate controls, and shares the global media
+  surface so speech and MIDI never play audibly together.
 - GYSChordWeb-style continuous PDF rendering now lazy-loads visible pages;
   canonical binary assets can use the allowlisted same-origin Worker proxy,
   then fall back to the immutable raw source without duplicate in-flight fetches.

@@ -12,7 +12,10 @@
   Iman, Sauh Bagi Jiwa, and Suara Sejati, using the checked-in offline packs as
   the offline-first baseline and fresher BFF data when available.
 - Kept Kidung’s canonical gyschordweb PDF/chord/MIDI boundaries, with a shared
-  minimizable media surface and route-persistent activity.
+  minimizable media surface and route-persistent activity. MIDI now prefers a
+  same-origin local FluidSynth worker with TimGM caching, explicit oscillator
+  compatibility fallback, seek/volume/mute/tempo/transpose controls, Media
+  Session, and wake-lock handling.
 - Made the GYSAPP-Fork KR master PDF (immutable source commit) the primary
   viewer/download source, with signed GYSApp-Data package fallback and PDF
   signature validation.
@@ -36,11 +39,15 @@
 - Expanded the TB reader with sanitized source text, token/phrase/whole-word
   search, query history, chapter scrubber, swipe navigation, split reading,
   persistent bookmarks, verse selection, highlights, notes, copy, and share.
+- Connected Bible read-aloud to the shared SpeechProvider/orchestrator with
+  verse-range queueing, persistent voice/rate controls, local-voice status, and
+  audio conflict coordination with MIDI.
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 100.9 KiB gzip main application chunk and 135.7
-  KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded.
+- Preserved the bundle gate: 78.1 KiB gzip main application chunk and 140.6
+  KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded while
+  FluidSynth/WASM and TimGM stay same-origin on-demand assets.
 
 The release is not declared GA until protected e-GYS/OAuth secrets, native
 signing, device visual/accessibility evidence, and the remaining platform

@@ -9,4 +9,9 @@ sync step.
 
 The fresh-install pack includes TB Bible data plus its browser reader index,
 533 hymn metadata/lyrics, ten faith topics, and TimGM. PDFs, MIDI, chord files,
-and GeneralUser are on-demand or pinned.
+and GeneralUser are on-demand or pinned. The web MIDI path vendors only the
+small js-synthesizer runtime plus FluidSynth glue under
+`apps/web/public/vendor/js-synthesizer/`; the worker is lazy until the first
+play gesture, and the corresponding MIT/FluidSynth license texts ship beside
+the files. This keeps the initial JavaScript chunk small while making the
+playback engine same-origin and usable after the PWA shell has been installed.

@@ -136,6 +136,62 @@ test("home keeps one continue item when Bible and hymn history coexist", async (
   await expect(page.locator(".continue-item")).toHaveCount(1);
 });
 
+test("the shared read-aloud surface can be minimized without losing the session", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const voice = {
+      voiceURI: "gys-test-id",
+      name: "GYS test voice",
+      lang: "id-ID",
+      localService: true,
+      default: true,
+    };
+    const synthesis = {
+      getVoices: () => [voice],
+      speak: (utterance: { onend?: () => void }) => {
+        window.setTimeout(() => utterance.onend?.(), 1_200);
+      },
+      cancel: () => undefined,
+      pause: () => undefined,
+      resume: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    };
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: synthesis,
+    });
+    class TestUtterance {
+      public text: string;
+      public onend?: () => void;
+      public onerror?: () => void;
+      public rate = 1;
+      public pitch = 1;
+      public volume = 1;
+      public voice: unknown = null;
+      public constructor(text: string) {
+        this.text = text;
+      }
+    }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true,
+      value: TestUtterance,
+    });
+  });
+  await page.goto("/GYSApp-Tauri/bible");
+  await page.getByRole("heading", { name: "Alkitab" }).waitFor();
+  const readButton = page.getByRole("button", { name: "Bacakan" });
+  await expect(readButton).toBeEnabled({ timeout: 5_000 });
+  await readButton.click();
+  await expect(page.locator(".media-surface")).toBeVisible();
+  await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
+  await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Perbesar pemutar" }),
+  ).toBeVisible();
+});
+
 test("global search indexes real offline content and navigates to a result", async ({
   page,
 }) => {

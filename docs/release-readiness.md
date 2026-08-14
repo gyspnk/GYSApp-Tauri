@@ -21,10 +21,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **100.9 KiB gzip**; the complete initial
-  JavaScript set is **135.7 KiB gzip**. PDF.js and its worker remain lazy
+- The initial web application chunk is **78.1 KiB gzip**; the complete initial
+  JavaScript set is **140.6 KiB gzip**. PDF.js and its worker remain lazy
   chunks, and the bundle gate fails if the initial application chunk exceeds
-  250 KiB gzip.
+  250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
+  same-origin on-demand/PWA assets rather than inflating the initial chunk.
 - Playwright smoke coverage passes at desktop and 390px mobile widths, with
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the

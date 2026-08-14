@@ -3,6 +3,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type FormEvent,
   type ReactNode,
@@ -21,6 +22,7 @@ import {
 import { translate, type Locale } from "./i18n.js";
 import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
+import { speechPlayer } from "./speech-player.js";
 
 type PackState =
   | { status: "loading" }
@@ -314,8 +316,22 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const selectedVerse = selectedVerseId
     ? chapterVerses.find((verse) => verse.id === selectedVerseId)
     : undefined;
+  const speechSnapshot = useSyncExternalStore(
+    speechPlayer.subscribe,
+    speechPlayer.snapshot,
+    speechPlayer.snapshot,
+  );
   const speechAvailable =
-    typeof window !== "undefined" && "speechSynthesis" in window;
+    typeof window !== "undefined" &&
+    "speechSynthesis" in window &&
+    speechSnapshot.voices.length > 0;
+  useEffect(() => {
+    setSpeaking(
+      speechSnapshot.status === "loading" ||
+        speechSnapshot.status === "speaking" ||
+        speechSnapshot.status === "paused",
+    );
+  }, [speechSnapshot.status]);
 
   useEffect(() => {
     if (!book) return;
@@ -361,7 +377,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 0);
   }, [chapterVerses, notes, selectedVerseId]);
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => () => void speechPlayer.stop(), []);
 
   const navigateBy = (delta: number) => {
     if (!book) return;
@@ -418,21 +434,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
     );
   };
 
-  const speakChapter = () => {
-    if (!chapterVerses.length || !speechAvailable) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(
-      chapterVerses
-        .map((verse) => `${verse.verse}. ${cleanVerse(verse)}`)
-        .join(" "),
-    );
-    utterance.lang =
-      locale === "zh" ? "zh-CN" : locale === "en" ? "en-US" : "id-ID";
-    utterance.rate = 0.9;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
+  const speakVerses = (verses: readonly BibleVerse[]) => {
+    if (!verses.length || !speechAvailable) return;
     setSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    const options = {
+      rate: speechSnapshot.rate,
+      pitch: speechSnapshot.pitch,
+      volume: speechSnapshot.volume,
+      ...(speechSnapshot.voiceId ? { voiceId: speechSnapshot.voiceId } : {}),
+    };
+    void speechPlayer
+      .speak(
+        verses.map((verse) => ({
+          id: verse.id,
+          text: `${verse.verse}. ${cleanVerse(verse)}`,
+        })),
+        options,
+      )
+      .finally(() => setSpeaking(false));
+  };
+  const speakChapter = () => {
+    speakVerses(chapterVerses);
   };
 
   const copyText = async (text: string, message = "Tersalin") => {
@@ -527,6 +549,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onClick={() => void shareSelected()}
             >
               Bagikan
+            </button>
+            <button
+              className="quiet-button"
+              type="button"
+              disabled={!speechAvailable}
+              onClick={() => speakVerses([selectedVerse])}
+            >
+              Baca ayat
             </button>
           </div>
           <div className="highlight-actions" aria-label="Warna sorotan">
@@ -806,17 +836,61 @@ export function BiblePage({ locale }: { locale: Locale }) {
               className="quiet-button"
               type="button"
               onClick={() => {
-                if (speaking) {
-                  window.speechSynthesis.cancel();
+                if (speechSnapshot.status === "speaking") {
+                  void speechPlayer.pause();
+                } else if (speechSnapshot.status === "paused") {
+                  void speechPlayer.resume();
+                } else if (speaking) {
+                  void speechPlayer.stop();
                   setSpeaking(false);
                 } else speakChapter();
               }}
               disabled={!speechAvailable}
             >
-              {speaking
-                ? translate(locale, "bible.stopReading")
-                : translate(locale, "bible.readAloud")}
+              {speechSnapshot.status === "paused"
+                ? "Lanjutkan bacaan"
+                : speechSnapshot.status === "speaking"
+                  ? "Jeda bacaan"
+                  : speaking
+                    ? translate(locale, "bible.stopReading")
+                    : translate(locale, "bible.readAloud")}
             </button>
+            <div
+              className="speech-controls"
+              aria-label="Pengaturan bacaan suara"
+            >
+              <label>
+                <span>Suara</span>
+                <select
+                  value={speechSnapshot.voiceId ?? ""}
+                  onChange={(event) =>
+                    speechPlayer.setVoice(event.target.value)
+                  }
+                  disabled={speechSnapshot.voices.length === 0}
+                >
+                  <option value="">Otomatis</option>
+                  {speechSnapshot.voices.map((voice) => (
+                    <option value={voice.id} key={voice.id}>
+                      {voice.name} · {voice.language}
+                      {voice.local ? " · lokal" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Kecepatan {speechSnapshot.rate.toFixed(1)}×</span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={speechSnapshot.rate}
+                  onChange={(event) =>
+                    speechPlayer.setRate(Number(event.target.value))
+                  }
+                />
+              </label>
+            </div>
           </div>
           {splitView && (
             <label className="split-ratio-control">

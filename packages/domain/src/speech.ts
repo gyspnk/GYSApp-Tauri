@@ -30,10 +30,15 @@ export class SpeechOrchestrator {
       const status = await provider.status();
       if (!status.available) continue;
       try {
-        await provider.speak(text, options, signal);
+        // Set the active provider before awaiting its speech promise so a
+        // user can pause or cancel a long utterance while it is still being
+        // rendered.  Previously pause/resume during the first utterance was a
+        // no-op because `active` was assigned only after `speak` completed.
         this.active = provider;
+        await provider.speak(text, options, signal);
         return { providerId: provider.id, offline: status.offline };
       } catch (error) {
+        if (this.active === provider) this.active = undefined;
         lastError = error;
       }
     }

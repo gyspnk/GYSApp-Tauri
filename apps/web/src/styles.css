@@ -1766,6 +1766,10 @@ blockquote {
 .report-card .primary-button {
   justify-self: start;
 }
+.report-card .form-status {
+  color: var(--muted);
+  font-size: 11px;
+}
 
 .media-surface {
   position: fixed;
@@ -1773,11 +1777,11 @@ blockquote {
   bottom: 26px;
   z-index: 20;
   display: grid;
-  grid-template-columns: 39px minmax(140px, 1fr) 34px 28px;
+  grid-template-columns: 39px minmax(220px, 1fr) 34px 34px 34px 28px;
   align-items: center;
   gap: 11px;
-  max-width: 320px;
-  width: calc(100vw - 56px);
+  max-width: 560px;
+  width: min(560px, calc(100vw - 56px));
   padding: 11px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
@@ -1817,6 +1821,78 @@ blockquote {
   gap: 3px;
   min-width: 0;
 }
+.media-main {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.media-progress {
+  display: block;
+  width: 100%;
+}
+.media-progress input,
+.media-adjustments input {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.media-adjustments {
+  display: grid;
+  grid-template-columns: minmax(70px, 0.65fr) minmax(90px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.media-adjustments label {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.media-transpose {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.media-transpose button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+.speech-controls {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  margin-left: auto;
+}
+.speech-controls label {
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.speech-controls select {
+  min-width: 124px;
+  max-width: 180px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.speech-controls input {
+  width: 90px;
+  accent-color: var(--blue);
+}
 .media-meta small,
 .media-meta span {
   color: var(--muted);
@@ -1842,6 +1918,10 @@ blockquote {
   background: var(--blue-soft);
   cursor: pointer;
 }
+.media-secondary-control {
+  color: var(--muted);
+  background: var(--surface-soft);
+}
 .media-minimize {
   width: 28px;
   height: 28px;
@@ -1864,7 +1944,7 @@ blockquote {
   grid-template-columns: 34px 34px 28px;
   padding: 8px;
 }
-.media-surface.is-minimized .media-meta {
+.media-surface.is-minimized .media-main {
   display: none;
 }
 .sauh-title {
@@ -2310,6 +2390,19 @@ blockquote {
   .media-minimize {
     width: 28px;
     height: 30px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .media-surface {
+    right: 16px;
+    bottom: 18px;
+    width: min(480px, calc(100vw - 32px));
+    grid-template-columns: 34px minmax(150px, 1fr) 30px 30px 30px 28px;
+    gap: 7px;
+  }
+  .media-adjustments {
+    display: none;
   }
 }
 
@@ -3298,5 +3391,49 @@ blockquote {
     width: 238px;
     flex: 0 0 238px;
     scroll-snap-align: start;
+  }
+}
+
+/* Media controls stay useful on a phone without covering the reader. */
+@media (max-width: 599px) {
+  .media-surface {
+    right: 12px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    width: min(420px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    grid-template-columns: 31px minmax(0, 1fr) 30px 30px 30px 28px;
+    gap: 6px;
+    padding: 8px;
+  }
+  .media-surface:not(.is-minimized) .media-adjustments {
+    display: none;
+  }
+  .media-surface:not(.is-minimized) .media-main {
+    gap: 4px;
+  }
+  .media-surface:not(.is-minimized) .media-meta small {
+    display: block;
+  }
+  .media-surface:not(.is-minimized) .media-meta span {
+    display: block;
+  }
+  .media-surface.is-minimized {
+    grid-template-columns: 30px 30px 28px;
+    max-width: 118px;
+  }
+  .media-surface.is-minimized .media-main {
+    display: none;
+  }
+  .media-secondary-control {
+    display: grid;
+  }
+  .speech-controls {
+    width: 100%;
+    margin-left: 0;
+    align-items: stretch;
+  }
+  .speech-controls select {
+    max-width: none;
+    width: 100%;
   }
 }
