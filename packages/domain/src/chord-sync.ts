@@ -66,6 +66,8 @@ export class ChordRepository {
   private fetchedAt = Number.NEGATIVE_INFINITY;
   private lastAttemptAt = Number.NEGATIVE_INFINITY;
   private inFlight: Promise<ChordManifestV1> | undefined;
+  /** Missing songs are remembered per immutable source commit. */
+  private readonly negative = new Set<string>();
 
   public constructor(
     private readonly upstream: ChordUpstream,
@@ -125,8 +127,14 @@ export class ChordRepository {
     signal?: AbortSignal,
   ): Promise<ChordDocumentV2> {
     const manifest = await this.refreshManifest(signal);
+    const negativeKey = `${manifest.sourceCommit}:${songId}`;
+    if (this.negative.has(negativeKey))
+      throw new ChordNotAvailableError(songId);
     const ref = manifest.entries.find((entry) => entry.songId === songId);
-    if (!ref) throw new ChordNotAvailableError(songId);
+    if (!ref) {
+      this.negative.add(negativeKey);
+      throw new ChordNotAvailableError(songId);
+    }
     const cachedRef = this.cache.getRef?.(songId);
     const cached = await this.cache.get(songId);
     if (
@@ -151,6 +159,7 @@ export class ChordRepository {
     )
       throw new ChordIntegrityError("document provenance mismatch");
     await this.cache.putAtomic(ref, document, fetched.bytes);
+    this.negative.delete(negativeKey);
     return document;
   }
 }

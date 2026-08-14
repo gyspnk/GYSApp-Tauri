@@ -91,7 +91,14 @@ function errorResponse(c: AppContext, code: ErrorCode, message: string) {
 }
 
 function safeText(value: string): string {
-  return value.replace(/<[^>]*>/g, "").trim();
+  return value
+    .replace(
+      /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
+      " ",
+    )
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function originList(c: AppContext, fallback: readonly string[]): string[] {
@@ -268,7 +275,7 @@ export function createApp(
     c.header("access-control-allow-methods", "GET,POST,OPTIONS");
     c.header(
       "access-control-allow-headers",
-      "content-type,authorization,x-request-id",
+      "content-type,authorization,x-request-id,range",
     );
     c.header("access-control-max-age", "600");
     return c.body(null, 204);
@@ -341,6 +348,61 @@ export function createApp(
     c.header("etag", etag);
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json({ items });
+  });
+
+  app.get("/api/v1/content/pdf", async (c) => {
+    const rawUrl = c.req.query("url");
+    if (!rawUrl || rawUrl.length > 2_048)
+      return errorResponse(c, "VALIDATION_ERROR", "PDF url is required");
+    let url: URL;
+    try {
+      url = new URL(rawUrl);
+    } catch {
+      return errorResponse(c, "VALIDATION_ERROR", "PDF url is invalid");
+    }
+    if (
+      url.protocol !== "https:" ||
+      url.hostname !== "tjc.org" ||
+      !/\.pdf$/i.test(url.pathname)
+    )
+      return errorResponse(c, "FORBIDDEN", "PDF source is not allowlisted");
+    try {
+      const range = c.req.header("range");
+      const upstream = await fetch(url, {
+        headers: {
+          accept: "application/pdf",
+          ...(range ? { range } : {}),
+        },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok && upstream.status !== 206)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "PDF source unavailable",
+        );
+      c.header("content-type", "application/pdf");
+      c.header(
+        "cache-control",
+        "public, max-age=86400, stale-while-revalidate=604800",
+      );
+      c.header("cross-origin-resource-policy", "cross-origin");
+      for (const header of [
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "etag",
+      ]) {
+        const value = upstream.headers.get(header);
+        if (value) c.header(header, value);
+      }
+      return new Response(upstream.body, {
+        status: upstream.status,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(c, "UPSTREAM_UNAVAILABLE", "PDF source unavailable");
+    }
   });
 
   app.get("/api/v1/content/suara-sejati", async (c) => {

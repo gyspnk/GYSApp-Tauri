@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v5";
+const CACHE = "gysapp-shell-v6";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const PRECACHE = [
   "/GYSApp-Tauri/",
@@ -10,6 +10,7 @@ const PRECACHE = [
   "/GYSApp-Tauri/offline/faith.json",
   "/GYSApp-Tauri/offline/sauh.json",
   "/GYSApp-Tauri/offline/literature.json",
+  "/GYSApp-Tauri/offline/asset-manifest.json",
   "/GYSApp-Tauri/offline/fork-hymnal-manifest.json",
   "/GYSApp-Tauri/offline/soundfont/TimGM6mb.sf2",
 ];

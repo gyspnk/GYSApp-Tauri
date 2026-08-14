@@ -23,18 +23,22 @@ function read(): FavoriteState {
       localStorage.getItem(KEY) ?? "null",
     ) as Partial<FavoriteState> | null;
     if (value?.version !== 1 || !Array.isArray(value.items)) return EMPTY;
+    const items = value.items.filter((item): item is FavoriteItem =>
+      Boolean(
+        item &&
+        typeof item === "object" &&
+        typeof (item as FavoriteItem).id === "string" &&
+        ((item as FavoriteItem).kind === "hymn" ||
+          (item as FavoriteItem).kind === "literature") &&
+        typeof (item as FavoriteItem).title === "string" &&
+        (item as FavoriteItem).title.length > 0 &&
+        typeof (item as FavoriteItem).updatedAt === "string" &&
+        !Number.isNaN(Date.parse((item as FavoriteItem).updatedAt)),
+      ),
+    );
     return {
       version: 1,
-      items: value.items.filter((item): item is FavoriteItem =>
-        Boolean(
-          item &&
-          typeof item === "object" &&
-          typeof (item as FavoriteItem).id === "string" &&
-          (item as FavoriteItem).kind !== undefined &&
-          typeof (item as FavoriteItem).title === "string" &&
-          typeof (item as FavoriteItem).updatedAt === "string",
-        ),
-      ),
+      items,
     };
   } catch {
     return EMPTY;

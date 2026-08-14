@@ -26,6 +26,7 @@ import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
 import { GlobalSearch } from "./global-search.js";
+import { recordDiagnostic } from "./diagnostics.js";
 import {
   getActivity,
   subscribeActivity,
@@ -77,6 +78,7 @@ class AppErrorBoundary extends Component<
     return { failed: true };
   }
   public override componentDidCatch(error: Error, info: ErrorInfo): void {
+    recordDiagnostic("error", "react-error-boundary", error);
     console.error("GYSApp shell error", error, info);
   }
   public override render(): ReactNode {
@@ -446,7 +448,6 @@ function Shell({
               <i />
               {translate(locale, "home.offlinePack")}
             </span>
-            <small>v0.1 preview</small>
           </div>
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>
@@ -577,9 +578,6 @@ function HomePage({ locale }: { locale: Locale }) {
             </>
           )}
           <div className="verse-actions">
-            <Link className="quiet-button" to="/bible">
-              {translate(locale, "home.openBible")}
-            </Link>
             {selected && (
               <a
                 className="quiet-button"

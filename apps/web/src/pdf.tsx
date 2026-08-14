@@ -19,6 +19,7 @@ export function PdfReader({
   downloadUrl,
   title = "PDF reader",
   progressKey,
+  onPageChange,
 }: {
   src: string;
   data?: Uint8Array;
@@ -26,6 +27,7 @@ export function PdfReader({
   downloadUrl?: string;
   title?: string;
   progressKey?: string;
+  onPageChange?: (page: number, totalPages: number) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const secondaryCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -62,6 +64,10 @@ export function PdfReader({
     if (!progressKey || !total) return;
     window.localStorage.setItem(`gys-pdf-page:${progressKey}`, String(page));
   }, [page, progressKey, total]);
+
+  useEffect(() => {
+    if (total > 0) onPageChange?.(page, total);
+  }, [onPageChange, page, total]);
 
   useEffect(() => {
     let disposed = false;

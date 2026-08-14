@@ -11,12 +11,42 @@ function decodeEntities(value: string): string {
     .replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">");
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, value: string) =>
+      String.fromCodePoint(Math.min(0x10ffff, Number(value))),
+    )
+    .replace(/&#x([0-9a-f]+);/gi, (_, value: string) =>
+      String.fromCodePoint(Math.min(0x10ffff, Number.parseInt(value, 16))),
+    );
 }
 
 export function stripHtml(value: string): string {
+  const unsafeRemoved = value.replace(
+    /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
+    " ",
+  );
+  if (typeof DOMParser !== "undefined") {
+    const document = new DOMParser().parseFromString(
+      unsafeRemoved,
+      "text/html",
+    );
+    document
+      .querySelectorAll("script,style,iframe,object,embed,template,svg")
+      .forEach((element) => element.remove());
+    document
+      .querySelectorAll("br")
+      .forEach((element) => element.replaceWith("\n"));
+    document
+      .querySelectorAll("p,h1,h2,h3,h4,h5,h6,li")
+      .forEach((element) => element.append("\n"));
+    return decodeEntities(document.body.textContent ?? "")
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n\s+/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
   return decodeEntities(
-    value
+    unsafeRemoved
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/p>|<\/h[1-6]>|<\/li>/gi, "\n")
       .replace(/<[^>]*>/g, " "),

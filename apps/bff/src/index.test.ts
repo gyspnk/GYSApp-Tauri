@@ -92,6 +92,51 @@ describe("BFF public boundary", () => {
     expect(payload.error.code).toBe("VALIDATION_ERROR");
   });
 
+  it("only proxies allowlisted TJC PDF sources and preserves ranges", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenRange = "";
+    globalThis.fetch = (async (_input, init) => {
+      seenRange = new Headers(init?.headers).get("range") ?? "";
+      return new Response(new Uint8Array([37, 80, 68, 70, 45]), {
+        status: 206,
+        headers: {
+          "content-type": "application/pdf",
+          "content-range": "bytes 0-4/5",
+          "accept-ranges": "bytes",
+        },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const denied = await app.request(
+        `/api/v1/content/pdf?url=${encodeURIComponent("https://evil.example/file.pdf")}`,
+        { headers: { Origin: "http://localhost:5173" } },
+      );
+      expect(denied.status).toBe(403);
+      const proxied = await app.request(
+        `/api/v1/content/pdf?url=${encodeURIComponent("https://tjc.org/id/file.pdf")}`,
+        {
+          headers: {
+            Origin: "http://localhost:5173",
+            range: "bytes=0-4",
+          },
+        },
+      );
+      expect(proxied.status).toBe(206);
+      expect(proxied.headers.get("content-type")).toBe("application/pdf");
+      expect(proxied.headers.get("access-control-allow-origin")).toBe(
+        "http://localhost:5173",
+      );
+      expect(seenRange).toBe("bytes=0-4");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("returns the immutable chord manifest with an ETag", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],

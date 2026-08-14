@@ -17,10 +17,38 @@ const empty: ActivityState = { version: 1 };
 export function getActivity(): ActivityState {
   if (typeof window === "undefined") return empty;
   try {
-    const parsed = JSON.parse(
-      localStorage.getItem(KEY) ?? "null",
-    ) as Partial<ActivityState> | null;
-    return parsed?.version === 1 ? { ...empty, ...parsed } : empty;
+    const value: unknown = JSON.parse(localStorage.getItem(KEY) ?? "null");
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      return empty;
+    const parsed = value as Partial<ActivityState>;
+    if (parsed.version !== 1) return empty;
+    const bible = parsed.bible;
+    const hymn = parsed.hymn;
+    const validBible =
+      bible &&
+      typeof bible.book === "string" &&
+      bible.book.length > 0 &&
+      Number.isInteger(bible.chapter) &&
+      bible.chapter > 0 &&
+      typeof bible.updatedAt === "string" &&
+      !Number.isNaN(Date.parse(bible.updatedAt));
+    const validHymn =
+      hymn &&
+      typeof hymn.id === "string" &&
+      hymn.id.length > 0 &&
+      typeof hymn.title === "string" &&
+      hymn.title.length > 0 &&
+      Number.isInteger(hymn.number) &&
+      hymn.number > 0 &&
+      Number.isInteger(hymn.verseIndex) &&
+      hymn.verseIndex >= 0 &&
+      typeof hymn.updatedAt === "string" &&
+      !Number.isNaN(Date.parse(hymn.updatedAt));
+    return {
+      version: 1,
+      ...(validBible ? { bible } : {}),
+      ...(validHymn ? { hymn } : {}),
+    };
   } catch {
     return empty;
   }

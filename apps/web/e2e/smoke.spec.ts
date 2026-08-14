@@ -139,6 +139,11 @@ test("literature detail persists favorite and progress controls", async ({
   await expect(page.locator('[data-testid="literature-detail"]')).toBeVisible();
   await page.getByRole("button", { name: /Simpan favorit/ }).click();
   await expect(page.getByRole("button", { name: /Favorit/ })).toBeVisible();
-  await page.getByRole("button", { name: "Mulai membaca" }).click();
+  await page.getByRole("button", { name: "Tandai dibuka" }).click();
   await expect(page.locator("progress")).toHaveAttribute("value", "1");
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(
+    page.getByRole("heading", { name: "Terakhir dilihat" }),
+  ).toBeVisible();
+  await expect(page.locator(".literature-recent-item")).toHaveCount(1);
 });

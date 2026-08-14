@@ -1,4 +1,13 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   LiteratureCatalogSchema,
@@ -8,6 +17,29 @@ import {
 import { type Locale } from "./i18n.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
+import { assetStore } from "./asset-store.js";
+import {
+  getRecentLiteratureIds,
+  isResumeLocationValid,
+  readLiteratureProgress,
+  saveLiteratureProgress,
+  subscribeLiteratureProgress,
+  type LiteratureLocation,
+  type LiteratureProgress,
+} from "./literature-progress.js";
+
+const LiteraturePdfReader = lazy(() =>
+  import("./pdf.js").then(({ PdfReader: Component }) => ({
+    default: Component,
+  })),
+);
+
+function literaturePdfUrl(sourceUrl: string): string {
+  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+  return base
+    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf?url=${encodeURIComponent(sourceUrl)}`
+    : sourceUrl;
+}
 
 const labels: Record<LiteratureCategory | "all", string> = {
   all: "Semua koleksi",
@@ -116,30 +148,6 @@ function useLiteratureCatalog() {
   return state;
 }
 
-type LiteratureProgress = {
-  percent: number;
-  updatedAt: string;
-  downloadedAt?: string;
-};
-const PROGRESS_KEY = "gys-literature-progress-v1";
-const DOWNLOAD_CACHE = "gys-literature-downloads-v1";
-
-function readLiteratureProgress(): Record<string, LiteratureProgress> {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(PROGRESS_KEY) ?? "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveLiteratureProgress(id: string, progress: LiteratureProgress) {
-  const next = readLiteratureProgress();
-  next[id] = progress;
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(next));
-  window.dispatchEvent(new CustomEvent("gys-literature-progress-change"));
-}
-
 function dateLabel(value: string | undefined, locale: Locale) {
   if (!value) return "Terbit sesuai arsip TJC";
   try {
@@ -198,6 +206,15 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(40);
   const deferredQuery = useDeferredValue(query);
+  const [progressRevision, setProgressRevision] = useState(0);
+
+  useEffect(
+    () =>
+      subscribeLiteratureProgress(() =>
+        setProgressRevision((value) => value + 1),
+      ),
+    [],
+  );
 
   useEffect(() => setVisibleCount(40), [category, deferredQuery, sort]);
 
@@ -260,6 +277,28 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
   }, [availableCategories, category, filtered]);
   const visibleItems =
     category === "all" ? filtered : filtered.slice(0, visibleCount);
+  const progressMap = useMemo(
+    () =>
+      readLiteratureProgress(
+        new Map(items.map((item) => [item.id, item.updatedAt])),
+      ),
+    [items, progressRevision],
+  );
+  const recentItems = useMemo(
+    () =>
+      getRecentLiteratureIds(12)
+        .map((id) => items.find((item) => item.id === id))
+        .filter((item): item is LiteratureItem => Boolean(item))
+        .filter((item) => {
+          const entry = progressMap[item.id];
+          return Boolean(
+            entry &&
+            (entry.resourceVersion === item.updatedAt ||
+              entry.resourceVersion === "legacy"),
+          );
+        }),
+    [items, progressMap],
+  );
 
   return (
     <div className="page literature-page">
@@ -312,6 +351,53 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             </div>
           </section>
         )}
+
+      {status === "ready" && recentItems.length > 0 && (
+        <section
+          className="literature-recent"
+          aria-labelledby="literature-recent-title"
+        >
+          <div className="section-title-row">
+            <div>
+              <p className="date-line">Perangkat ini</p>
+              <h2 id="literature-recent-title">Terakhir dilihat</h2>
+            </div>
+            <span>{recentItems.length} bacaan</span>
+          </div>
+          <div className="literature-recent-list">
+            {recentItems.map((item) => {
+              const entry = progressMap[item.id];
+              const percent = entry?.percent ?? 0;
+              return (
+                <Link
+                  className="literature-recent-item"
+                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                  key={item.id}
+                >
+                  <Cover item={item} compact />
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>
+                      {percent > 0 ? `${percent}% selesai` : "Belum dimulai"} ·{" "}
+                      {entry?.lastOpenedAt
+                        ? new Date(entry.lastOpenedAt).toLocaleDateString(
+                            locale,
+                          )
+                        : "baru dibuka"}
+                    </small>
+                    <progress
+                      value={percent}
+                      max={100}
+                      aria-label={`Kemajuan ${item.title}`}
+                    />
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="literature-toolbar" aria-label="Filter literatur">
         <label className="search-field">
@@ -434,43 +520,96 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       ? itemFromRoute(catalogState.items, itemId)
       : undefined;
   const [progress, setProgress] = useState<LiteratureProgress>();
+  const progressRef = useRef<LiteratureProgress | undefined>(undefined);
   const [favorite, setFavorite] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState<
     "idle" | "checking" | "downloading" | "ready" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
+  const [readerOpen, setReaderOpen] = useState(false);
+  const [readerError, setReaderError] = useState("");
+  const resourceVersion = item?.updatedAt ?? "unknown";
+  const pdfSourceUrl =
+    item?.format === "pdf" ? literaturePdfUrl(item.url) : undefined;
+  const pdfAsset = useMemo(
+    () =>
+      item?.format === "pdf"
+        ? {
+            id: `literature-pdf:${item.id}`,
+            kind: "pdf" as const,
+            source: "remote" as const,
+            path: pdfSourceUrl ?? item.url,
+            url: pdfSourceUrl ?? item.url,
+            version: resourceVersion,
+            status: "remote" as const,
+            lastUpdated: resourceVersion,
+          }
+        : undefined,
+    [item, pdfSourceUrl, resourceVersion],
+  );
 
   useEffect(() => {
     if (!item) return;
-    const existing = readLiteratureProgress()[item.id];
-    const opened = {
-      percent: existing?.percent ?? 0,
+    const existing = readLiteratureProgress(
+      new Map([[item.id, resourceVersion]]),
+    )[item.id];
+    const validExisting =
+      existing &&
+      (existing.resourceVersion === resourceVersion ||
+        existing.resourceVersion === "legacy")
+        ? existing
+        : undefined;
+    const opened: LiteratureProgress = {
+      version: 2,
+      percent: validExisting?.percent ?? 0,
       updatedAt: new Date().toISOString(),
-      ...(existing?.downloadedAt
-        ? { downloadedAt: existing.downloadedAt }
+      lastOpenedAt: new Date().toISOString(),
+      resourceVersion,
+      ...(validExisting?.location ? { location: validExisting.location } : {}),
+      ...(validExisting?.downloadedAt
+        ? { downloadedAt: validExisting.downloadedAt }
         : {}),
     };
     saveLiteratureProgress(item.id, opened);
     setProgress(opened);
+    progressRef.current = opened;
     setFavorite(isFavorite("literature", item.id));
     let cancelled = false;
-    setDownloadStatus("checking");
+    setDownloadStatus(item.format === "pdf" ? "checking" : "idle");
     void (async () => {
-      if (typeof caches === "undefined") {
-        if (!cancelled) setDownloadStatus("idle");
+      if (!pdfAsset) {
         return;
       }
-      const cached = await caches.match(item.url);
+      const cached = await assetStore.get(pdfAsset);
       if (!cancelled) setDownloadStatus(cached ? "ready" : "idle");
     })();
     return () => {
       cancelled = true;
     };
-  }, [item]);
+  }, [item, pdfAsset, resourceVersion]);
 
   useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
+  useEffect(() => {
+    return subscribeLiteratureProgress(() => {
+      if (!item) return;
+      const next = readLiteratureProgress(
+        new Map([[item.id, resourceVersion]]),
+      )[item.id];
+      if (next) {
+        progressRef.current = next;
+        setProgress(next);
+      }
+    });
+  }, [item, resourceVersion]);
+
+  useEffect(() => {
+    if (!item) return;
     return subscribeFavorites(() => {
-      if (item) setFavorite(isFavorite("literature", item.id));
+      setFavorite(isFavorite("literature", item.id));
     });
   }, [item]);
 
@@ -479,18 +618,66 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     window.setTimeout(() => setNotice(""), 2600);
   };
 
-  const updateProgress = (percent: number) => {
-    if (!item) return;
-    const next = {
-      percent: Math.max(0, Math.min(100, Math.round(percent))),
-      updatedAt: new Date().toISOString(),
-      ...(progress?.downloadedAt
-        ? { downloadedAt: progress.downloadedAt }
-        : {}),
-    };
-    saveLiteratureProgress(item.id, next);
-    setProgress(next);
-  };
+  const updateProgress = useCallback(
+    (percent: number, location?: LiteratureLocation, completed = false) => {
+      if (!item) return;
+      const current = progressRef.current;
+      const now = new Date().toISOString();
+      const nextLocation = location ?? current?.location;
+      const next: LiteratureProgress = {
+        version: 2,
+        percent: Math.max(0, Math.min(100, Math.round(percent))),
+        updatedAt: now,
+        lastOpenedAt: now,
+        resourceVersion,
+        ...(nextLocation ? { location: nextLocation } : {}),
+        ...(current?.downloadedAt
+          ? { downloadedAt: current.downloadedAt }
+          : {}),
+        ...(completed ? { completed: true } : {}),
+      };
+      saveLiteratureProgress(item.id, next);
+      progressRef.current = next;
+      setProgress(next);
+    },
+    [item, resourceVersion],
+  );
+
+  const onPageChange = useCallback(
+    (page: number, totalPages: number) => {
+      if (!item || totalPages < 1) return;
+      const percent = (page / totalPages) * 100;
+      updateProgress(
+        percent,
+        { kind: "page", page, totalPages },
+        page >= totalPages,
+      );
+    },
+    [item, updateProgress],
+  );
+
+  const openReader = useCallback(async () => {
+    if (!item || !pdfAsset) return;
+    setReaderError("");
+    try {
+      const bytes =
+        pdfBytes ??
+        (downloadStatus === "ready"
+          ? ((await assetStore.get(pdfAsset)) ??
+            (await assetStore.download(pdfAsset)))
+          : await assetStore.download(pdfAsset));
+      if (!bytes || new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
+        throw new Error("not a PDF");
+      setPdfBytes(bytes);
+      setDownloadStatus("ready");
+      setReaderOpen(true);
+    } catch {
+      setReaderError(
+        "PDF belum dapat dibuka. Unduh ulang saat tersambung internet.",
+      );
+      setDownloadStatus("error");
+    }
+  }, [downloadStatus, item, pdfAsset, pdfBytes]);
 
   const toggle = () => {
     if (!item) return;
@@ -504,33 +691,26 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   };
 
   const download = async () => {
-    if (!item || item.format !== "pdf") return;
+    if (!item || !pdfAsset) return;
     setDownloadStatus("downloading");
     try {
-      const response = await fetch(item.url, { cache: "no-store" });
-      if (!response.ok) throw new Error(`download failed: ${response.status}`);
-      const bytes = await response.arrayBuffer();
-      if (bytes.byteLength < 5) throw new Error("empty literature file");
-      const contentType = response.headers.get("content-type") ?? "";
-      if (item.format === "pdf") {
-        const header = new TextDecoder().decode(bytes.slice(0, 5));
-        if (!header.startsWith("%PDF") && !contentType.includes("pdf"))
-          throw new Error("downloaded resource is not a PDF");
-      }
-      if (typeof caches === "undefined") throw new Error("cache unavailable");
-      const cache = await caches.open(DOWNLOAD_CACHE);
-      await cache.put(
-        item.url,
-        new Response(bytes, {
-          headers: { "content-type": contentType || "application/pdf" },
-        }),
-      );
-      const next = {
-        percent: progress?.percent ?? 0,
-        updatedAt: progress?.updatedAt ?? new Date().toISOString(),
+      const bytes = await assetStore.download(pdfAsset);
+      if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
+        throw new Error("downloaded resource is not a PDF");
+      setPdfBytes(bytes);
+      const current = progressRef.current;
+      const next: LiteratureProgress = {
+        version: 2,
+        percent: current?.percent ?? 0,
+        updatedAt: current?.updatedAt ?? new Date().toISOString(),
+        lastOpenedAt: new Date().toISOString(),
+        resourceVersion,
+        ...(current?.location ? { location: current.location } : {}),
         downloadedAt: new Date().toISOString(),
+        ...(current?.completed ? { completed: true } : {}),
       };
       saveLiteratureProgress(item.id, next);
+      progressRef.current = next;
       setProgress(next);
       setDownloadStatus("ready");
       flash("PDF tersimpan untuk dibaca offline.");
@@ -540,15 +720,16 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   };
 
-  const openCached = async () => {
-    if (!item || typeof caches === "undefined") return;
-    const cached = await caches.match(item.url);
-    if (!cached) return;
-    const blob = await cached.blob();
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank", "noopener,noreferrer");
-    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  };
+  const resumePage =
+    progress?.location?.kind === "page" &&
+    isResumeLocationValid(
+      progress.location,
+      resourceVersion,
+      undefined,
+      progress.resourceVersion,
+    )
+      ? progress.location.page
+      : 1;
 
   if (catalogState.status === "loading")
     return (
@@ -571,6 +752,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     );
   const categoryLabel = labels[item.category];
   const progressPercent = progress?.percent ?? 0;
+  const hasResume = Boolean(progress?.location || progressPercent > 0);
   return (
     <div
       className="page literature-detail-page"
@@ -595,13 +777,32 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             <span>{dateLabel(item.publishedAt, locale)}</span>
           </div>
           <div className="detail-actions">
+            {item.format === "pdf" ? (
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => void openReader()}
+              >
+                {hasResume ? "Lanjutkan membaca" : "Baca di aplikasi"}
+              </button>
+            ) : (
+              <a
+                className="primary-button"
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => updateProgress(Math.max(1, progressPercent))}
+              >
+                {hasResume ? "Lanjutkan membaca ↗" : "Buka bacaan ↗"}
+              </a>
+            )}
             <a
-              className="primary-button"
+              className="quiet-button"
               href={item.url}
               target="_blank"
               rel="noreferrer"
             >
-              Buka sumber resmi ↗
+              Sumber resmi ↗
             </a>
             <button
               className="quiet-button"
@@ -618,7 +819,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         <div className="section-title-row">
           <div>
             <p className="date-line">Perangkat ini</p>
-            <h2>Lanjutkan membaca</h2>
+            <h2>{hasResume ? "Lanjutkan membaca" : "Mulai membaca"}</h2>
           </div>
           <span>{progressPercent}%</span>
         </div>
@@ -628,17 +829,26 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           aria-label={`Kemajuan membaca ${progressPercent}%`}
         />
         <div className="literature-progress-actions">
+          {item.format === "pdf" && (
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => void openReader()}
+            >
+              {hasResume ? `Lanjutkan dari halaman ${resumePage}` : "Buka PDF"}
+            </button>
+          )}
           <button
             className="quiet-button"
             type="button"
             onClick={() => updateProgress(Math.max(1, progressPercent))}
           >
-            Mulai membaca
+            Tandai dibuka
           </button>
           <button
             className="quiet-button"
             type="button"
-            onClick={() => updateProgress(100)}
+            onClick={() => updateProgress(100, progress?.location, true)}
           >
             Tandai selesai
           </button>
@@ -660,7 +870,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 <button
                   className="quiet-button"
                   type="button"
-                  onClick={() => void openCached()}
+                  onClick={() => void openReader()}
                 >
                   Buka offline
                 </button>
@@ -668,12 +878,49 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             </>
           )}
         </div>
+        {readerError && (
+          <p className="error-copy" role="alert">
+            {readerError}
+          </p>
+        )}
         <small className="literature-progress-note">
-          {progress?.updatedAt
-            ? `Terakhir dibuka ${new Date(progress.updatedAt).toLocaleDateString(locale)}`
+          {progress?.location?.kind === "page"
+            ? `Terakhir di halaman ${progress.location.page} dari ${progress.location.totalPages}. `
+            : ""}
+          {progress?.lastOpenedAt
+            ? `Terakhir dibuka ${new Date(progress.lastOpenedAt).toLocaleDateString(locale)}`
             : "Kemajuan tersimpan di perangkat ini."}
         </small>
       </section>
+      {readerOpen && pdfBytes && item.format === "pdf" && (
+        <section
+          className="literature-reader-panel"
+          aria-label={`Membaca ${item.title}`}
+        >
+          <div className="section-title-row">
+            <h2>PDF · {item.title}</h2>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setReaderOpen(false)}
+            >
+              Tutup
+            </button>
+          </div>
+          <Suspense
+            fallback={<div className="loading-panel">Memuat viewer PDF…</div>}
+          >
+            <LiteraturePdfReader
+              src={pdfSourceUrl ?? item.url}
+              data={pdfBytes}
+              initialPage={resumePage}
+              title={item.title}
+              progressKey={`literature:${item.id}:${resourceVersion}`}
+              onPageChange={onPageChange}
+            />
+          </Suspense>
+        </section>
+      )}
       {notice && (
         <div className="toast" role="status">
           {notice}

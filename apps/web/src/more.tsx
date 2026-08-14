@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import type { AccountProfile } from "@gys/contracts";
+import {
+  AssetManifestV1Schema,
+  type AccountProfile,
+  type AssetManifestV1,
+} from "@gys/contracts";
 import {
   decryptBackupV2,
   encryptBackupV2,
   importLegacyGysbk,
 } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
+import { assetStore } from "./asset-store.js";
 import {
   exchangeEgysToken,
   getEgysProfile,
@@ -47,6 +52,9 @@ const BACKUP_STORAGE_KEYS = [
   "gys-locale",
   "gys-theme",
   "gys-activity-v1",
+  "gys-favorites-v1",
+  "gys-literature-progress-v2",
+  "gys-asset-index-v1",
   "gys-bible-book",
   "gys-bible-chapter",
   "gys-bible-last-reading",
@@ -92,49 +100,9 @@ async function clearAppData() {
   }
 }
 
-async function sha256(bytes: Uint8Array) {
-  const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
-  return [...new Uint8Array(digest)]
-    .map((value) => value.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function cacheOfflinePack(
-  items: PackManifest["items"],
-  onProgress: (completed: number, total: number) => void,
-) {
-  if (!("caches" in window)) throw new Error("Cache Storage unavailable");
-  const cache = await caches.open("gys-offline-pack-v1");
-  let completed = 0;
-  for (const item of items) {
-    const url = new URL(
-      item.path,
-      window.location.origin + import.meta.env.BASE_URL,
-    ).toString();
-    const response = await fetch(url, { cache: "reload" });
-    if (!response.ok) throw new Error(`${item.id} failed: ${response.status}`);
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (
-      bytes.byteLength !== item.bytes ||
-      (await sha256(bytes)) !== item.sha256
-    )
-      throw new Error(`${item.id} failed integrity validation`);
-    await cache.put(
-      url,
-      new Response(bytes.slice().buffer as ArrayBuffer, {
-        headers: {
-          "content-type":
-            response.headers.get("content-type") ?? "application/octet-stream",
-        },
-      }),
-    );
-    completed += 1;
-    onProgress(completed, items.length);
-  }
-}
-
 export function MorePage({ locale }: { locale: Locale }) {
   const [manifest, setManifest] = useState<PackManifest | undefined>();
+  const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [packBusy, setPackBusy] = useState(false);
   const [packProgress, setPackProgress] = useState(0);
   const [report, setReport] = useState("");
@@ -190,6 +158,15 @@ export function MorePage({ locale }: { locale: Locale }) {
     })
       .then(async (response) => {
         if (response.ok) setManifest((await response.json()) as PackManifest);
+      })
+      .catch(() => undefined);
+    void fetch(`${import.meta.env.BASE_URL}offline/asset-manifest.json`, {
+      cache: "force-cache",
+    })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const parsed = AssetManifestV1Schema.safeParse(await response.json());
+        if (parsed.success) setAssetManifest(parsed.data);
       })
       .catch(() => undefined);
   }, []);
@@ -331,11 +308,14 @@ export function MorePage({ locale }: { locale: Locale }) {
   };
 
   const updateOfflinePack = async () => {
-    if (!manifest || packBusy) return;
+    const items = assetManifest?.items.filter(
+      (item) => item.source === "local",
+    );
+    if (!manifest || !items?.length || packBusy) return;
     setPackBusy(true);
     setPackProgress(0);
     try {
-      await cacheOfflinePack(manifest.items, (completed, total) =>
+      await assetStore.installPack(items, undefined, (completed, total) =>
         setPackProgress(Math.round((completed / total) * 100)),
       );
       show("Paket offline berhasil diverifikasi dan disimpan.");

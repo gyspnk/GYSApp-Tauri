@@ -10,6 +10,10 @@ const pages = [
 ];
 const decode = (value) =>
   value
+    .replace(
+      /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
+      " ",
+    )
     .replace(/&#8211;|&#x2013;/gi, "–")
     .replace(/&#8217;|&#x27;|&#039;/gi, "'")
     .replace(/&#8220;|&#x201c;/gi, "“")

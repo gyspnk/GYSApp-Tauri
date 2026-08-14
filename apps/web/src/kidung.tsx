@@ -20,7 +20,11 @@ import { MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { createBrowserChordRepository } from "./chords.js";
 import { ChordViewer } from "./chord-viewer.js";
-import { downloadMusicAsset, loadMusicAsset } from "./music-assets.js";
+import {
+  downloadMusicAsset,
+  loadMusicAsset,
+  prefetchMusicAsset,
+} from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
@@ -37,6 +41,21 @@ type CatalogState =
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
 const KEYS = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const parsedLyricsCache = new Map<string, string[]>();
+
+function getHymnVerses(item: HymnCatalogEntry | undefined): string[] {
+  if (!item) return [];
+  const key = `${item.id}:${item.lyrics.length}:${item.verses.length}`;
+  const cached = parsedLyricsCache.get(key);
+  if (cached) return cached;
+  const verses = item.verses.length
+    ? item.verses
+    : item.lyrics.split(/\n\s*\n/).filter(Boolean);
+  parsedLyricsCache.set(key, verses);
+  while (parsedLyricsCache.size > 96)
+    parsedLyricsCache.delete(parsedLyricsCache.keys().next().value as string);
+  return verses;
+}
 
 function parseCatalog(value: unknown): HymnCatalogEntry[] {
   if (
@@ -273,10 +292,14 @@ function HymnDetail({
   const touchStartX = useRef<number | undefined>(undefined);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
-  const verses = item?.verses?.length
-    ? item.verses
-    : (item?.lyrics.split(/\n\s*\n/).filter(Boolean) ?? []);
+  const verses = getHymnVerses(item);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
+  const sequence = state.status === "ready" ? uniqueItems(state.items) : [];
+  const index = item
+    ? sequence.findIndex((candidate) => candidate.id === item.id)
+    : -1;
+  const prev = index > 0 ? sequence[index - 1] : undefined;
+  const next = index >= 0 ? sequence[index + 1] : undefined;
   useEffect(() => {
     if (item)
       setHymnActivity(
@@ -295,6 +318,31 @@ function HymnDetail({
     },
     [pdfUrl],
   );
+  useEffect(() => {
+    if (
+      !item ||
+      !musicLock ||
+      typeof navigator === "undefined" ||
+      !navigator.onLine
+    )
+      return;
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (connection?.saveData || connection?.effectiveType === "2g") return;
+    const candidates = [prev, next].filter(
+      (candidate): candidate is HymnCatalogEntry => Boolean(candidate),
+    );
+    for (const candidate of candidates) {
+      void chordRepository.getChord(candidate.id).catch(() => undefined);
+      const ref = musicLock.items.find(
+        (asset) => asset.kind === "midi" && asset.path === candidate.midiPath,
+      );
+      void prefetchMusicAsset(ref);
+    }
+  }, [chordRepository, item, musicLock, next, prev]);
   if (state.status === "loading")
     return (
       <div className="page">
@@ -314,10 +362,6 @@ function HymnDetail({
         </div>
       </div>
     );
-  const sequence = uniqueItems(state.items);
-  const index = sequence.findIndex((candidate) => candidate.id === item.id);
-  const prev = sequence[index - 1];
-  const next = sequence[index + 1];
   const show = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);

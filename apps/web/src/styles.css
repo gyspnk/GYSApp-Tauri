@@ -1766,6 +1766,28 @@ blockquote {
   flex-wrap: wrap;
   gap: 6px;
 }
+.chord-aligned-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: end;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.chord-aligned-cell {
+  display: inline-flex;
+  min-width: 0.52em;
+  flex-direction: column;
+  align-items: flex-start;
+  vertical-align: bottom;
+}
+.chord-aligned-cell small {
+  min-height: 1.35em;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
 .chord-chip {
   display: inline-flex;
   align-items: center;
@@ -2480,6 +2502,61 @@ blockquote {
   padding-top: 20px;
   margin-bottom: 28px;
 }
+.literature-recent {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-bottom: 28px;
+}
+.literature-recent-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.literature-recent-item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.literature-recent-item:hover {
+  border-color: var(--blue);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.literature-recent-item > span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.literature-recent-item strong,
+.literature-recent-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.literature-recent-item strong {
+  font-size: 13px;
+}
+.literature-recent-item small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.literature-recent-item progress {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--blue);
+}
 .literature-shelf {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -2672,6 +2749,20 @@ blockquote {
 .literature-progress-note {
   color: var(--muted);
   font-size: 12px;
+}
+.literature-reader-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.literature-reader-panel .pdf-reader {
+  min-width: 0;
+}
+.error-copy {
+  color: var(--danger, #a43b3b);
+  font-size: 13px;
 }
 .account-provider-actions {
   display: flex;
@@ -2903,6 +2994,17 @@ blockquote {
   .literature-shelf-item {
     width: 148px;
     flex: 0 0 148px;
+    scroll-snap-align: start;
+  }
+  .literature-recent-list {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+  }
+  .literature-recent-item {
+    width: min(82vw, 320px);
+    flex: 0 0 min(82vw, 320px);
     scroll-snap-align: start;
   }
   .suara-shelf {

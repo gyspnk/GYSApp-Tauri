@@ -18,8 +18,9 @@ service or platform artifact that cannot be exercised in this workspace.
   PDF database fallback, local PDF.js worker, canonical MIDI loading, and
   shell-level minimizable media surface.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
-  local favorites, reading progress, verified PDF offline cache, and explicit
-  error/retry states. The generated real TJC snapshot maps 279/297 catalog
+  local favorites, versioned page/scroll progress, deduplicated “Terakhir
+  dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
+  the allowlisted BFF proxy, and explicit error/retry states. The generated real TJC snapshot maps 279/297 catalog
   entries to source cover images; the remaining 18 have explicit source-backed
   fallback because no cover is exposed by the upstream metadata.
 - Native e-GYS BFF/session/profile adapter with branch and membership mapping;
@@ -28,8 +29,9 @@ service or platform artifact that cannot be exercised in this workspace.
   metadata, breaking route removal detection, repository-managed pre-commit
   and pre-push hooks, and documented workflow.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
-  bundle budget, generated provenance, and Playwright smoke coverage pass
-  locally.
+  bundle budget, generated provenance, Playwright smoke coverage, and desktop
+  plus mobile visual baselines pass locally. Native `cargo check` is wired into
+  the pre-push gate.
 
 ## Implemented / Needs Verification
 

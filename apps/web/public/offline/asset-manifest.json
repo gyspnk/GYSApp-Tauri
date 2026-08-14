@@ -1,0 +1,2966 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-14T09:27:03.520Z",
+  "items": [
+    {
+      "id": "bible-tb",
+      "kind": "bible",
+      "source": "local",
+      "path": "offline/bible/b_tb.db",
+      "version": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
+      "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
+      "bytes": 21340160,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "bible-tb-reader",
+      "kind": "bible",
+      "source": "local",
+      "path": "offline/bible/tb-reader.json",
+      "version": "e5ebc8fc2351dde57029c02337ff7ccd912df3fe9165ef59c5eacb314db23421",
+      "sha256": "e5ebc8fc2351dde57029c02337ff7ccd912df3fe9165ef59c5eacb314db23421",
+      "bytes": 7317700,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "hymn-catalog",
+      "kind": "hymn-catalog",
+      "source": "local",
+      "path": "offline/hymn-catalog.json",
+      "version": "26e43a2b3e1fc08cacf0727eea24b731b10872c8bb0228525555a693338fd39e",
+      "sha256": "26e43a2b3e1fc08cacf0727eea24b731b10872c8bb0228525555a693338fd39e",
+      "bytes": 868856,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "music-lock",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/music-lock.json",
+      "version": "6d251d7867895a3b91a244d9aa490361aecb71ed5aa54c442f563d4d187b036a",
+      "sha256": "6d251d7867895a3b91a244d9aa490361aecb71ed5aa54c442f563d4d187b036a",
+      "bytes": 307591,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "faith-topics",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/faith.json",
+      "version": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
+      "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
+      "bytes": 8311,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "sauh-feed",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/sauh.json",
+      "version": "50da65c8983c1c404d3fb341289bdc422d6e08e2e30742e2379d93cfe69c3838",
+      "sha256": "50da65c8983c1c404d3fb341289bdc422d6e08e2e30742e2379d93cfe69c3838",
+      "bytes": 676,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "literature-catalog",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/literature.json",
+      "version": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490",
+      "sha256": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490",
+      "bytes": 150389,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "suara-sejati",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/suara-sejati.json",
+      "version": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b",
+      "sha256": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b",
+      "bytes": 3342,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "fork-hymnal-map",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/fork-hymnal-manifest.json",
+      "version": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401",
+      "sha256": "11bef962a2fec1e5c7962e05638f05ba89bdbcbd39b884c5a6e3f31503957401",
+      "bytes": 60711,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "soundfont-timgm",
+      "kind": "soundfont",
+      "source": "local",
+      "path": "offline/soundfont/TimGM6mb.sf2",
+      "version": "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1",
+      "sha256": "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1",
+      "bytes": 5994284,
+      "status": "available",
+      "lastUpdated": "2026-08-14T09:27:03.520Z"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",
+      "kind": "cover",
+      "version": "2025-03-06T00:00:00.000Z",
+      "lastUpdated": "2025-03-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide22.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide22.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhadiah-terindah-2F",
+      "kind": "cover",
+      "version": "2025-03-06T00:00:00.000Z",
+      "lastUpdated": "2025-03-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide21.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide21.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmanfaatkan-peluang-2F",
+      "kind": "cover",
+      "version": "2025-03-06T00:00:00.000Z",
+      "lastUpdated": "2025-03-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide20.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide20.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftopik-17-tahun-2F",
+      "kind": "cover",
+      "version": "2025-03-06T00:00:00.000Z",
+      "lastUpdated": "2025-03-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide19.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide19.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpatung-dewa-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide18.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide18.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdi-luar-kendali-manusia-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide17.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/Slide17.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftepat-waktu-dan-saku-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide16.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide16.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenapaki-tiga-iman-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide15.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide15.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbangkit-dari-kematian-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide14.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide14.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsepuluh-potong-kue-pie-2F",
+      "kind": "cover",
+      "version": "2025-03-04T00:00:00.000Z",
+      "lastUpdated": "2025-03-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide13.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide13.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Frenungan-hidup-mama-mertua-2-2F",
+      "kind": "cover",
+      "version": "2025-02-21T00:00:00.000Z",
+      "lastUpdated": "2025-02-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide12.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide12.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fwalau-sukar-tetap-mekar-2F",
+      "kind": "cover",
+      "version": "2025-02-21T00:00:00.000Z",
+      "lastUpdated": "2025-02-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide11.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide11.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdoa-permohonan-tahun-baru-imlek-2F",
+      "kind": "cover",
+      "version": "2025-02-21T00:00:00.000Z",
+      "lastUpdated": "2025-02-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide10.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide10.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsaat-berduka-saat-bersuka-2F",
+      "kind": "cover",
+      "version": "2025-02-20T00:00:00.000Z",
+      "lastUpdated": "2025-02-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide8.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide8.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdwi-dasawarsa-2F",
+      "kind": "cover",
+      "version": "2025-02-20T00:00:00.000Z",
+      "lastUpdated": "2025-02-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide7.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide7.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbapa-2F",
+      "kind": "cover",
+      "version": "2025-02-20T00:00:00.000Z",
+      "lastUpdated": "2025-02-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide6.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide6.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftiga-jawaban-tuhan-2F",
+      "kind": "cover",
+      "version": "2025-02-20T00:00:00.000Z",
+      "lastUpdated": "2025-02-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide9.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide9.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmelewati-amuk-masa-2F",
+      "kind": "cover",
+      "version": "2025-02-19T00:00:00.000Z",
+      "lastUpdated": "2025-02-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide5.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide5.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fluka-tanda-kasih-2F",
+      "kind": "cover",
+      "version": "2025-02-19T00:00:00.000Z",
+      "lastUpdated": "2025-02-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide4.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide4.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdoa-di-kala-membara-2F",
+      "kind": "cover",
+      "version": "2025-02-19T00:00:00.000Z",
+      "lastUpdated": "2025-02-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide3.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide3.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fcahaya-kehidupan-2F",
+      "kind": "cover",
+      "version": "2025-02-19T00:00:00.000Z",
+      "lastUpdated": "2025-02-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide2.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide2.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalur-undangan-2-2-2F",
+      "kind": "cover",
+      "version": "2023-01-19T00:00:00.000Z",
+      "lastUpdated": "2023-01-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide1-300x277.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/Slide1-300x277.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenemukantuhan-2F",
+      "kind": "cover",
+      "version": "2021-11-03T00:00:00.000Z",
+      "lastUpdated": "2021-11-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-44.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-44.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmemanggil-2F",
+      "kind": "cover",
+      "version": "2021-11-01T00:00:00.000Z",
+      "lastUpdated": "2021-11-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-41.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-41.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmenyatakan-2F",
+      "kind": "cover",
+      "version": "2021-11-01T00:00:00.000Z",
+      "lastUpdated": "2021-11-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-38.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/WS110-38.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalan-yang-berputar-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Jalan_yang_Berputar.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Jalan_yang_Berputar.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftitik-balik-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Titik_Balik.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Titik_Balik.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftiang-kayu-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tiang_Kayu.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tiang_Kayu.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftidak-selalu-mudah-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tidak_Selalu_Mudah.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tidak_Selalu_Mudah.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenjadi-anak-nya-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Menjadi-Anak-Nya.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Menjadi-Anak-Nya.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftenteram-dalam-doa-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tenteram_Dalam_Doa.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tenteram_Dalam_Doa.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftaat-tanpa-pengecualian-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Taat_Tanpa_Pengecualian.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Taat_Tanpa_Pengecualian.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpunya-riwayat-penyakit-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/ccimage-14783218132_8c6f76c9cf_o.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/ccimage-14783218132_8c6f76c9cf_o.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menyediakan-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/ccimage-gd5255e6d34d3b56ab8c9945bc820ea71329c3ac8a30a78b9cc1bfcd6d246a0ddabd9d776b58e25bbf91f3070577a787c-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/ccimage-gd5255e6d34d3b56ab8c9945bc820ea71329c3ac8a30a78b9cc1bfcd6d246a0ddabd9d776b58e25bbf91f3070577a787c-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhati-gembira-adalah-obat-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Hati_Gembira_Adalah_Obat.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Hati_Gembira_Adalah_Obat.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsemua-ada-saatnya-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Semua_Ada_Saatnya.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Semua_Ada_Saatnya.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menggerakkan-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tuhan_Menggerakkan.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tuhan_Menggerakkan.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhanya-sejauh-doa-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Hanya_Sejauh_Doa.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Hanya_Sejauh_Doa.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Falas-pasir-2F",
+      "kind": "cover",
+      "version": "2021-07-03T00:00:00.000Z",
+      "lastUpdated": "2021-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Alas_Pasir.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Alas_Pasir.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjangan-tanya-mengapa-2F",
+      "kind": "cover",
+      "version": "2021-07-03T00:00:00.000Z",
+      "lastUpdated": "2021-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Jangan_Tanya_Mengapa.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Jangan_Tanya_Mengapa.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftidak-dibatasi-pandemi-2F",
+      "kind": "cover",
+      "version": "2021-07-03T00:00:00.000Z",
+      "lastUpdated": "2021-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tidak_Dibatasi_Pandemi.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/Tidak_Dibatasi_Pandemi.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menemukanku-2F",
+      "kind": "cover",
+      "version": "2021-05-27T00:00:00.000Z",
+      "lastUpdated": "2021-05-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/Hy-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/Hy-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsemua-dimulai-dengan-mendengar-nama-gereja-sejati-2F",
+      "kind": "cover",
+      "version": "2021-05-26T00:00:00.000Z",
+      "lastUpdated": "2021-05-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/ch-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/ch-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalanan-saya-percaya-kepada-tuhan-2F",
+      "kind": "cover",
+      "version": "2021-05-25T00:00:00.000Z",
+      "lastUpdated": "2021-05-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/hearthh-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/hearthh-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-adalah-tempat-perlindungan-kita-2F",
+      "kind": "cover",
+      "version": "2021-05-24T00:00:00.000Z",
+      "lastUpdated": "2021-05-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/wayy-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/wayy-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fseluruh-keluarga-percaya-kepada-tuhan-2F",
+      "kind": "cover",
+      "version": "2021-05-23T00:00:00.000Z",
+      "lastUpdated": "2021-05-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/handd-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/handd-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menyertai-kami-sepanjang-jalan-2F",
+      "kind": "cover",
+      "version": "2020-12-24T00:00:00.000Z",
+      "lastUpdated": "2020-12-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/people2.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/people2.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmeninggalkan-dusta-dan-percaya-dalam-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-12-23T00:00:00.000Z",
+      "lastUpdated": "2020-12-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/promise2.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/promise2.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmencari-roh-kudus-menemukan-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-11-27T00:00:00.000Z",
+      "lastUpdated": "2020-11-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/light1f.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/light1f.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdibangunkan-oleh-kesengsaraan-2F",
+      "kind": "cover",
+      "version": "2020-11-24T00:00:00.000Z",
+      "lastUpdated": "2020-11-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/wakeupp.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/wakeupp.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberada-di-jalan-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-11-10T00:00:00.000Z",
+      "lastUpdated": "2020-11-10T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/way.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/way.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-allah-yang-indah-2F",
+      "kind": "cover",
+      "version": "2020-11-06T00:00:00.000Z",
+      "lastUpdated": "2020-11-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/baby-hand.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/baby-hand.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Flangkah-orang-ditentukan-oleh-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-11-03T00:00:00.000Z",
+      "lastUpdated": "2020-11-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/people.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/people.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkebajikan-dan-kemurahan-mengikuti-aku-seumur-hidupku-2F",
+      "kind": "cover",
+      "version": "2020-10-27T00:00:00.000Z",
+      "lastUpdated": "2020-10-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray4.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray4.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpengalaman-saat-berdoa-2F",
+      "kind": "cover",
+      "version": "2020-10-23T00:00:00.000Z",
+      "lastUpdated": "2020-10-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray3.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray3.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmasa-bergejolak-percaya-dalam-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-10-20T00:00:00.000Z",
+      "lastUpdated": "2020-10-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/fishg.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/fishg.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsegalanya-mungkin-bagi-tuhan-2-2F",
+      "kind": "cover",
+      "version": "2020-10-16T00:00:00.000Z",
+      "lastUpdated": "2020-10-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/lightg.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/lightg.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-menyembuhkan-kaki-dan-tangan-yang-terkupas-2F",
+      "kind": "cover",
+      "version": "2020-10-13T00:00:00.000Z",
+      "lastUpdated": "2020-10-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/washf.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/washf.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-yang-menguatkan-2F",
+      "kind": "cover",
+      "version": "2020-10-09T00:00:00.000Z",
+      "lastUpdated": "2020-10-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/light111.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/light111.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsegalanya-mungkin-bagi-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-10-06T00:00:00.000Z",
+      "lastUpdated": "2020-10-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/light10.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/light10.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkasih-allah-memanggil-2F",
+      "kind": "cover",
+      "version": "2020-10-02T00:00:00.000Z",
+      "lastUpdated": "2020-10-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/familyss.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/familyss.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-pedang-putih-2F",
+      "kind": "cover",
+      "version": "2020-09-29T00:00:00.000Z",
+      "lastUpdated": "2020-09-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/sword.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/sword.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-mengasihi-domba-nya-2F",
+      "kind": "cover",
+      "version": "2020-09-25T00:00:00.000Z",
+      "lastUpdated": "2020-09-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/SHEPPs.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/SHEPPs.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fnasihat_untuk_pelajar-2F",
+      "kind": "cover",
+      "version": "2020-09-22T00:00:00.000Z",
+      "lastUpdated": "2020-09-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/talk.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/talk.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fengkaulah_mata_air_kehidupan-2F",
+      "kind": "cover",
+      "version": "2020-09-18T00:00:00.000Z",
+      "lastUpdated": "2020-09-18T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/water9.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/water9.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-benar-yang-maha-tahu-2F",
+      "kind": "cover",
+      "version": "2020-09-15T00:00:00.000Z",
+      "lastUpdated": "2020-09-15T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-membebaskanku-dari-belenggu-iblis-2F",
+      "kind": "cover",
+      "version": "2020-09-11T00:00:00.000Z",
+      "lastUpdated": "2020-09-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/fires1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/fires1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmeninggalkan-kesesatan-dan-percaya-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-09-08T00:00:00.000Z",
+      "lastUpdated": "2020-09-08T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/walks.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/walks.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdarah-tuhan-yang-berharga-2F",
+      "kind": "cover",
+      "version": "2020-09-04T00:00:00.000Z",
+      "lastUpdated": "2020-09-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/water47.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/water47.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalan-menuju-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-09-01T00:00:00.000Z",
+      "lastUpdated": "2020-09-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/child.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/child.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengalahkan-serangan-si-jahat-2F",
+      "kind": "cover",
+      "version": "2020-08-28T00:00:00.000Z",
+      "lastUpdated": "2020-08-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/pray8.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/pray8.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fia-memelihara-hidupku-2F",
+      "kind": "cover",
+      "version": "2020-08-25T00:00:00.000Z",
+      "lastUpdated": "2020-08-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/birds.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/birds.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpengalaman-saya-ketika-sakit-2F",
+      "kind": "cover",
+      "version": "2020-08-21T00:00:00.000Z",
+      "lastUpdated": "2020-08-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhilang-dan-ditemukan-kembali-2F",
+      "kind": "cover",
+      "version": "2020-08-18T00:00:00.000Z",
+      "lastUpdated": "2020-08-18T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sheep.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sheep.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanakku-hidup-kembali-2F",
+      "kind": "cover",
+      "version": "2020-08-14T00:00:00.000Z",
+      "lastUpdated": "2020-08-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/kid-hand.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/kid-hand.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-ajaib-2F",
+      "kind": "cover",
+      "version": "2020-08-11T00:00:00.000Z",
+      "lastUpdated": "2020-08-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/water4.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/water4.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdamai-sejahtera-dalam-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-08-07T00:00:00.000Z",
+      "lastUpdated": "2020-08-07T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/white-flower.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/white-flower.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-di-tengah-gempa-tohoku-2F",
+      "kind": "cover",
+      "version": "2020-08-04T00:00:00.000Z",
+      "lastUpdated": "2020-08-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/earthquake.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/earthquake.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fserahkan-segala-kekuatiranmu-kepada-nya-2F",
+      "kind": "cover",
+      "version": "2020-07-31T00:00:00.000Z",
+      "lastUpdated": "2020-07-31T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/pray6.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/pray6.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdua-kali-disembuhkan-2F",
+      "kind": "cover",
+      "version": "2020-07-28T00:00:00.000Z",
+      "lastUpdated": "2020-07-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/twice.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/twice.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanlah-kemenanganku-2F",
+      "kind": "cover",
+      "version": "2020-07-24T00:00:00.000Z",
+      "lastUpdated": "2020-07-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/win.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/win.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Faku-akan-pergi-satu-kali-lagi-2F",
+      "kind": "cover",
+      "version": "2020-07-21T00:00:00.000Z",
+      "lastUpdated": "2020-07-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/go.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/go.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Flebih-peduli-lebih-banyak-berdoa-lebih-banyak-melayani-2F",
+      "kind": "cover",
+      "version": "2020-07-17T00:00:00.000Z",
+      "lastUpdated": "2020-07-17T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/care.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/care.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftujuh-puluh-kali-tujuh-2F",
+      "kind": "cover",
+      "version": "2020-07-14T00:00:00.000Z",
+      "lastUpdated": "2020-07-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/forgive1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/forgive1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-yang-indah-2F",
+      "kind": "cover",
+      "version": "2020-07-10T00:00:00.000Z",
+      "lastUpdated": "2020-07-10T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/pray5.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/pray5.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menjaga-rumah-kami-2F",
+      "kind": "cover",
+      "version": "2020-07-07T00:00:00.000Z",
+      "lastUpdated": "2020-07-07T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/home.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/home.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fterombang-amping-di-tengah-laut-2F",
+      "kind": "cover",
+      "version": "2020-07-03T00:00:00.000Z",
+      "lastUpdated": "2020-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/ocean-waves.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/ocean-waves.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fgelas-yang-pecah-2F",
+      "kind": "cover",
+      "version": "2020-06-30T00:00:00.000Z",
+      "lastUpdated": "2020-06-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/broken.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/broken.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmemenangkan-peperangan-rohani-2F",
+      "kind": "cover",
+      "version": "2020-06-26T00:00:00.000Z",
+      "lastUpdated": "2020-06-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/warr.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/warr.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberkat-berkat-allah-yang-istimewa-2F",
+      "kind": "cover",
+      "version": "2020-06-23T00:00:00.000Z",
+      "lastUpdated": "2020-06-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/prayy.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/prayy.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkasih-tuhan-yang-besar-2F",
+      "kind": "cover",
+      "version": "2020-06-19T00:00:00.000Z",
+      "lastUpdated": "2020-06-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/car.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/car.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengenal_yesus-2F",
+      "kind": "cover",
+      "version": "2020-06-16T00:00:00.000Z",
+      "lastUpdated": "2020-06-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/lov.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/lov.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalanan-kristiani-2F",
+      "kind": "cover",
+      "version": "2020-06-12T00:00:00.000Z",
+      "lastUpdated": "2020-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-des.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-des.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmasa-depan-yang-manis-2F",
+      "kind": "cover",
+      "version": "2020-06-09T00:00:00.000Z",
+      "lastUpdated": "2020-06-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/beautiful.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/beautiful.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdi-ujung-pelangi-2F",
+      "kind": "cover",
+      "version": "2020-06-02T00:00:00.000Z",
+      "lastUpdated": "2020-06-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/rainbow.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/rainbow.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-membuka-jalan-bagiku-2F",
+      "kind": "cover",
+      "version": "2020-05-29T00:00:00.000Z",
+      "lastUpdated": "2020-05-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-lightss.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-lightss.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdipanggil-keluar-dari-dunia-2F",
+      "kind": "cover",
+      "version": "2020-05-26T00:00:00.000Z",
+      "lastUpdated": "2020-05-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/light.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/light.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbersyukur-atas-segala-kasih-kemurahan-nya-2F",
+      "kind": "cover",
+      "version": "2020-05-22T00:00:00.000Z",
+      "lastUpdated": "2020-05-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/thankss.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/thankss.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fgys-manapakkam-2F",
+      "kind": "cover",
+      "version": "2020-05-19T00:00:00.000Z",
+      "lastUpdated": "2020-05-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/prayt.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/prayt.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberjalan-dalam-kebenaran-dan-diselamatkan-2F",
+      "kind": "cover",
+      "version": "2020-05-15T00:00:00.000Z",
+      "lastUpdated": "2020-05-15T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-lightl.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/walk-lightl.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesempatan-saya-mengenal-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-05-12T00:00:00.000Z",
+      "lastUpdated": "2020-05-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/pray-know.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/pray-know.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-memberikan-anak-secara-ajaib-bagi-kami-2F",
+      "kind": "cover",
+      "version": "2020-05-08T00:00:00.000Z",
+      "lastUpdated": "2020-05-08T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/baby.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/baby.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmimpi-ajaib-2F",
+      "kind": "cover",
+      "version": "2020-05-05T00:00:00.000Z",
+      "lastUpdated": "2020-05-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/dream-1024x678-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/dream-1024x678-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmenjamahku-2F",
+      "kind": "cover",
+      "version": "2020-05-02T00:00:00.000Z",
+      "lastUpdated": "2020-05-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/ccimage-52e6d3424d54af14ea898675c6203f78083edbed5b55714c702a7b-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/ccimage-52e6d3424d54af14ea898675c6203f78083edbed5b55714c702a7b-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperahu-emas-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/goldenship-copy-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/goldenship-copy-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fteman-orang-berdosa-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/teman-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/teman-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengucap-syukur-dalam-segala-keadaan-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/grateful-copy-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/grateful-copy-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Findah-pada-akhirnya-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/beautiful-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/beautiful-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbertumbuh-melalui-pelayanan-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/footwashh.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/footwashh.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhadiah-yang-terindah-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/dove.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/dove.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjangan-melupakan-doa-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/pray.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/pray.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbudak-uang-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/money-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/money-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menjamahku-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/hand.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/hand.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalananku-di-dalam-sebuah-perjalanan-dari-ketakutan-dan-",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/myway.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/myway.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-mengembalikan-anakku-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/child.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/child.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fterlindung-dari-bahaya-kebakaran-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/fire-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/fire-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdi-laut-dan-di-gunung-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/mountain-sea.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/mountain-sea.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Faku-dapat-tersenyum-kembali-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/smile-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/smile-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbintang-yang-membawaku-kepada-gereja-yesus-sejati-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/ligth.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/ligth.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdisembuhkan-luar-dalam-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/healing.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/healing.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-yang-telah-memimpin-sepanjang-hidupku-2-2F",
+      "kind": "cover",
+      "version": "2019-11-29T00:00:00.000Z",
+      "lastUpdated": "2019-11-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/guide.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/guide.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftersesat-dalam-idealisme-duniawi-2-2F",
+      "kind": "cover",
+      "version": "2019-11-29T00:00:00.000Z",
+      "lastUpdated": "2019-11-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/11/busy.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/11/busy.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmimpi-yang-menakjubkan-2F",
+      "kind": "cover",
+      "version": "2019-11-04T00:00:00.000Z",
+      "lastUpdated": "2019-11-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/balance-1372677_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/balance-1372677_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenjadi-manusia-baru-2F",
+      "kind": "cover",
+      "version": "2019-10-31T00:00:00.000Z",
+      "lastUpdated": "2019-10-31T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/dove-893526_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/dove-893526_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbapaku-yang-di-surga-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/lisbon-1953199_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/lisbon-1953199_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesaksian-langkah-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/shell-1972980_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/shell-1972980_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesaksian-belas-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/crossbibble.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/crossbibble.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesaksian-kasih-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/05/cross.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/05/cross.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenerima-yesus-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/black-and-white-1282242_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/black-and-white-1282242_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-1-2F",
+      "kind": "cover",
+      "version": "2026-07-09T00:00:00.000Z",
+      "lastUpdated": "2026-07-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/07/ws-buletin-kehidupan-kristen-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/07/ws-buletin-kehidupan-kristen-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-3-2F",
+      "kind": "cover",
+      "version": "2026-06-30T00:00:00.000Z",
+      "lastUpdated": "2026-06-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-3.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-3.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-2-2F",
+      "kind": "cover",
+      "version": "2026-06-21T00:00:00.000Z",
+      "lastUpdated": "2026-06-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-2F",
+      "kind": "cover",
+      "version": "2026-03-27T00:00:00.000Z",
+      "lastUpdated": "2026-03-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/03/ws-buletin-kegiatan-gereja-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/03/ws-buletin-kegiatan-gereja-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws126-2F",
+      "kind": "cover",
+      "version": "2025-12-21T00:00:00.000Z",
+      "lastUpdated": "2025-12-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/12/ws126-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/12/ws126-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws125-2F",
+      "kind": "cover",
+      "version": "2025-10-11T00:00:00.000Z",
+      "lastUpdated": "2025-10-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/10/ws125-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/10/ws125-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws124-2F",
+      "kind": "cover",
+      "version": "2025-06-22T00:00:00.000Z",
+      "lastUpdated": "2025-06-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/06/ws124-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/06/ws124-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws123-2F",
+      "kind": "cover",
+      "version": "2025-02-11T00:00:00.000Z",
+      "lastUpdated": "2025-02-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/02/ws123-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/02/ws123-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws122-2F",
+      "kind": "cover",
+      "version": "2024-10-30T00:00:00.000Z",
+      "lastUpdated": "2024-10-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2024/10/ws122-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2024/10/ws122-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws121-2-2F",
+      "kind": "cover",
+      "version": "2024-07-12T00:00:00.000Z",
+      "lastUpdated": "2024-07-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2024/07/ws121-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2024/07/ws121-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws120-2F",
+      "kind": "cover",
+      "version": "2024-04-19T00:00:00.000Z",
+      "lastUpdated": "2024-04-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2024/04/ws120-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2024/04/ws120-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws119-2F",
+      "kind": "cover",
+      "version": "2024-02-06T00:00:00.000Z",
+      "lastUpdated": "2024-02-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2024/01/ws119-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2024/01/ws119-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws118-2F",
+      "kind": "cover",
+      "version": "2023-11-22T00:00:00.000Z",
+      "lastUpdated": "2023-11-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/ws118-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/ws118-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws117-2F",
+      "kind": "cover",
+      "version": "2023-09-27T00:00:00.000Z",
+      "lastUpdated": "2023-09-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/ws117-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/ws117-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws116-7-2F",
+      "kind": "cover",
+      "version": "2023-06-09T00:00:00.000Z",
+      "lastUpdated": "2023-06-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/ws116-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/ws116-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws115-2F",
+      "kind": "cover",
+      "version": "2023-02-28T00:00:00.000Z",
+      "lastUpdated": "2023-02-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/ws115-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/ws115-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws114-2F",
+      "kind": "cover",
+      "version": "2022-11-11T00:00:00.000Z",
+      "lastUpdated": "2022-11-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/11/ws114-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/11/ws114-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws113-2F",
+      "kind": "cover",
+      "version": "2022-08-03T00:00:00.000Z",
+      "lastUpdated": "2022-08-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ws113-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ws113-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws112-2F",
+      "kind": "cover",
+      "version": "2022-05-09T00:00:00.000Z",
+      "lastUpdated": "2022-05-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/cover-ws112-depan-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/cover-ws112-depan-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws111-2F",
+      "kind": "cover",
+      "version": "2022-01-25T00:00:00.000Z",
+      "lastUpdated": "2022-01-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ws111-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ws111-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws110-2F",
+      "kind": "cover",
+      "version": "2021-10-27T00:00:00.000Z",
+      "lastUpdated": "2021-10-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ws110-images-copy.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ws110-images-copy.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws109-2F",
+      "kind": "cover",
+      "version": "2021-07-09T00:00:00.000Z",
+      "lastUpdated": "2021-07-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/cover-ws109-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/cover-ws109-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws108-2F",
+      "kind": "cover",
+      "version": "2021-04-05T00:00:00.000Z",
+      "lastUpdated": "2021-04-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/03/cover-ws108-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/03/cover-ws108-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws107-2F",
+      "kind": "cover",
+      "version": "2021-01-12T00:00:00.000Z",
+      "lastUpdated": "2021-01-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/01/ws107-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/01/ws107-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws106-2F",
+      "kind": "cover",
+      "version": "2020-09-29T00:00:00.000Z",
+      "lastUpdated": "2020-09-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/ws106-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/ws106-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws105-2F",
+      "kind": "cover",
+      "version": "2020-07-29T00:00:00.000Z",
+      "lastUpdated": "2020-07-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/ws105-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/07/ws105-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws104-2F",
+      "kind": "cover",
+      "version": "2020-04-28T00:00:00.000Z",
+      "lastUpdated": "2020-04-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/ws104-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/04/ws104-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws103-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/ws103-images.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/ws103-images.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws102-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/11/ws102-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/11/ws102-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws101-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/09/ws101-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/09/ws101-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws100-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws100-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws100-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws99-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws99-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws99-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws98-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws98-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws98-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws97-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws97-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws97-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws96-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws96-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws96-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws95-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws95-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws95-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws94-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws94-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws94-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws93-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws93-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws93-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws92-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws92-image-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws92-image-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws91-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws91-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws91-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws90-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws90-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws90-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws89-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws89-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws89-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws88-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws88-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws88-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws87-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws87-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws87-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws86-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws86-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws86-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws85-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws85-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws85-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws84-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws84-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws84-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws83-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws83-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws83-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws82-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws82-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws82-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws81-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws81-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws81-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws80-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws80-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws80-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws79-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws79-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws79-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws78-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws78-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws78-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws77-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws77-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws77-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws76-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws76-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws76-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws75-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws75-image.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/08/ws75-image.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwskesaksian2012-2F",
+      "kind": "cover",
+      "version": "2012-12-30T00:00:00.000Z",
+      "lastUpdated": "2012-12-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2012.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2012.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws74-2F",
+      "kind": "cover",
+      "version": "2012-10-12T00:00:00.000Z",
+      "lastUpdated": "2012-10-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-74.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-74.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws73-2F",
+      "kind": "cover",
+      "version": "2012-09-09T00:00:00.000Z",
+      "lastUpdated": "2012-09-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-73.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-73.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws72-2F",
+      "kind": "cover",
+      "version": "2012-06-12T00:00:00.000Z",
+      "lastUpdated": "2012-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-72.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-72.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws71-2F",
+      "kind": "cover",
+      "version": "2012-03-12T00:00:00.000Z",
+      "lastUpdated": "2012-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-71.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-71.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwsrenungan2011-2F",
+      "kind": "cover",
+      "version": "2011-12-30T00:00:00.000Z",
+      "lastUpdated": "2011-12-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Renungan-2011.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Renungan-2011.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws70-2F",
+      "kind": "cover",
+      "version": "2011-10-10T00:00:00.000Z",
+      "lastUpdated": "2011-10-10T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-70.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-70.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws69-2F",
+      "kind": "cover",
+      "version": "2011-09-12T00:00:00.000Z",
+      "lastUpdated": "2011-09-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-69.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-69.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws68-2F",
+      "kind": "cover",
+      "version": "2011-06-12T00:00:00.000Z",
+      "lastUpdated": "2011-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-68.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-68.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws67-2F",
+      "kind": "cover",
+      "version": "2011-03-12T00:00:00.000Z",
+      "lastUpdated": "2011-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-67.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-67.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws66-2F",
+      "kind": "cover",
+      "version": "2010-09-12T00:00:00.000Z",
+      "lastUpdated": "2010-09-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-66.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-66.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws65-2F",
+      "kind": "cover",
+      "version": "2010-06-12T00:00:00.000Z",
+      "lastUpdated": "2010-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-65.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-65.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws64-2F",
+      "kind": "cover",
+      "version": "2010-03-12T00:00:00.000Z",
+      "lastUpdated": "2010-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-64.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-64.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwskesaksian2009-2F",
+      "kind": "cover",
+      "version": "2009-12-12T00:00:00.000Z",
+      "lastUpdated": "2009-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2009.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2009.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwsrenungan2009-2F",
+      "kind": "cover",
+      "version": "2009-11-12T00:00:00.000Z",
+      "lastUpdated": "2009-11-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Renungan-2009.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Renungan-2009.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws63-2F",
+      "kind": "cover",
+      "version": "2009-10-12T00:00:00.000Z",
+      "lastUpdated": "2009-10-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-63.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-63.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws62-2F",
+      "kind": "cover",
+      "version": "2009-08-12T00:00:00.000Z",
+      "lastUpdated": "2009-08-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-62.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-62.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws61-2F",
+      "kind": "cover",
+      "version": "2009-06-12T00:00:00.000Z",
+      "lastUpdated": "2009-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-61.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-61.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws60-2F",
+      "kind": "cover",
+      "version": "2009-03-12T00:00:00.000Z",
+      "lastUpdated": "2009-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-60.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-60.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws59-2F",
+      "kind": "cover",
+      "version": "2008-11-12T00:00:00.000Z",
+      "lastUpdated": "2008-11-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-59.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-59.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws58-2F",
+      "kind": "cover",
+      "version": "2008-08-12T00:00:00.000Z",
+      "lastUpdated": "2008-08-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-58.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-58.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws57-2F",
+      "kind": "cover",
+      "version": "2008-06-12T00:00:00.000Z",
+      "lastUpdated": "2008-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-57.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-57.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws56-2F",
+      "kind": "cover",
+      "version": "2008-03-12T00:00:00.000Z",
+      "lastUpdated": "2008-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-56.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-56.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws55-2F",
+      "kind": "cover",
+      "version": "2007-11-12T00:00:00.000Z",
+      "lastUpdated": "2007-11-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-55.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-55.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws54-2F",
+      "kind": "cover",
+      "version": "2007-08-12T00:00:00.000Z",
+      "lastUpdated": "2007-08-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-54.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-54.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws53-2F",
+      "kind": "cover",
+      "version": "2007-05-14T00:00:00.000Z",
+      "lastUpdated": "2007-05-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-53.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-53.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws52-2F",
+      "kind": "cover",
+      "version": "2007-03-12T00:00:00.000Z",
+      "lastUpdated": "2007-03-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-52.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-52.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwskesaksian2006-2F",
+      "kind": "cover",
+      "version": "2006-12-30T00:00:00.000Z",
+      "lastUpdated": "2006-12-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2006.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2006.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws51-2F",
+      "kind": "cover",
+      "version": "2006-12-12T00:00:00.000Z",
+      "lastUpdated": "2006-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-51.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-51.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws50-2F",
+      "kind": "cover",
+      "version": "2006-08-13T00:00:00.000Z",
+      "lastUpdated": "2006-08-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-50.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-50.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws49-2F",
+      "kind": "cover",
+      "version": "2006-05-13T00:00:00.000Z",
+      "lastUpdated": "2006-05-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-49.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-49.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws48-2F",
+      "kind": "cover",
+      "version": "2006-02-13T00:00:00.000Z",
+      "lastUpdated": "2006-02-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-48.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-48.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fwskesaksian2005-2F",
+      "kind": "cover",
+      "version": "2005-12-13T00:00:00.000Z",
+      "lastUpdated": "2005-12-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2005.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Kesaksian-2005.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws47-2F",
+      "kind": "cover",
+      "version": "2005-11-13T00:00:00.000Z",
+      "lastUpdated": "2005-11-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-47.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-47.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws46-2F",
+      "kind": "cover",
+      "version": "2005-08-13T00:00:00.000Z",
+      "lastUpdated": "2005-08-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-46.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-46.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws45-2F",
+      "kind": "cover",
+      "version": "2005-05-13T00:00:00.000Z",
+      "lastUpdated": "2005-05-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-45.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-45.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws44-2F",
+      "kind": "cover",
+      "version": "2005-02-13T00:00:00.000Z",
+      "lastUpdated": "2005-02-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-44.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-44.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws43-2F",
+      "kind": "cover",
+      "version": "2004-11-13T00:00:00.000Z",
+      "lastUpdated": "2004-11-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-43.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-43.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws42-2F",
+      "kind": "cover",
+      "version": "2004-08-13T00:00:00.000Z",
+      "lastUpdated": "2004-08-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-42.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-42.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws41-2F",
+      "kind": "cover",
+      "version": "2004-06-13T00:00:00.000Z",
+      "lastUpdated": "2004-06-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-41.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-41.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws40-2F",
+      "kind": "cover",
+      "version": "2004-04-13T00:00:00.000Z",
+      "lastUpdated": "2004-04-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-40.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-40.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws38-2F",
+      "kind": "cover",
+      "version": "2003-10-13T00:00:00.000Z",
+      "lastUpdated": "2003-10-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-38.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-38.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws37-2F",
+      "kind": "cover",
+      "version": "2003-08-13T00:00:00.000Z",
+      "lastUpdated": "2003-08-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-37.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-37.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws36-2F",
+      "kind": "cover",
+      "version": "2003-06-13T00:00:00.000Z",
+      "lastUpdated": "2003-06-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-36.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-36.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws33-2F",
+      "kind": "cover",
+      "version": "2002-12-13T00:00:00.000Z",
+      "lastUpdated": "2002-12-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-33.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-33.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws32-2F",
+      "kind": "cover",
+      "version": "2002-09-13T00:00:00.000Z",
+      "lastUpdated": "2002-09-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-32.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-32.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws31-2F",
+      "kind": "cover",
+      "version": "2002-08-13T00:00:00.000Z",
+      "lastUpdated": "2002-08-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-31.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-31.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws30-2F",
+      "kind": "cover",
+      "version": "2002-06-13T00:00:00.000Z",
+      "lastUpdated": "2002-06-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-30.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-30.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws28-2F",
+      "kind": "cover",
+      "version": "2002-02-12T00:00:00.000Z",
+      "lastUpdated": "2002-02-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-28.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/Warta-Sejati-Edisi-28.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk46-2F",
+      "kind": "cover",
+      "version": "2026-07-30T00:00:00.000Z",
+      "lastUpdated": "2026-07-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/07/PK_Edisi46.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/07/PK_Edisi46.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk45-2F",
+      "kind": "cover",
+      "version": "2026-04-27T00:00:00.000Z",
+      "lastUpdated": "2026-04-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi45.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi45.png",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk44-2F",
+      "kind": "cover",
+      "version": "2026-04-27T00:00:00.000Z",
+      "lastUpdated": "2026-04-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi44.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi44.png",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk43-2F",
+      "kind": "cover",
+      "version": "2026-04-27T00:00:00.000Z",
+      "lastUpdated": "2026-04-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi43.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/04/PK_Edisi43.png",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk42-2F",
+      "kind": "cover",
+      "version": "2025-09-11T00:00:00.000Z",
+      "lastUpdated": "2025-09-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/09/PK_Edisi42.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/09/PK_Edisi42.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk41-2F",
+      "kind": "cover",
+      "version": "2025-09-11T00:00:00.000Z",
+      "lastUpdated": "2025-09-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/09/PK_Edisi41.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/09/PK_Edisi41.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk40-2F",
+      "kind": "cover",
+      "version": "2025-07-06T00:00:00.000Z",
+      "lastUpdated": "2025-07-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/07/PK_Edisi40.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/07/PK_Edisi40.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk39-2F",
+      "kind": "cover",
+      "version": "2025-07-06T00:00:00.000Z",
+      "lastUpdated": "2025-07-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/07/PK_Edisi39.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/07/PK_Edisi39.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk38-2F",
+      "kind": "cover",
+      "version": "2025-03-24T00:00:00.000Z",
+      "lastUpdated": "2025-03-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi38.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi38.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk37-2F",
+      "kind": "cover",
+      "version": "2025-03-24T00:00:00.000Z",
+      "lastUpdated": "2025-03-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi37.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi37.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk36-2F",
+      "kind": "cover",
+      "version": "2025-03-24T00:00:00.000Z",
+      "lastUpdated": "2025-03-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi36.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/03/PK_Edisi36.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk35-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi35.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi35.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk34-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi34.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi34.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk33-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi33.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi33.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk32-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi32.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi32.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk31-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi31.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi31.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk30-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi30.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi30.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk29-2F",
+      "kind": "cover",
+      "version": "2025-01-02T00:00:00.000Z",
+      "lastUpdated": "2025-01-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi29.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2025/01/PK_Edisi29.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk28-2F",
+      "kind": "cover",
+      "version": "2023-01-11T00:00:00.000Z",
+      "lastUpdated": "2023-01-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi28.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi28.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk26-2F",
+      "kind": "cover",
+      "version": "2023-01-11T00:00:00.000Z",
+      "lastUpdated": "2023-01-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi26.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi26.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk25-2F",
+      "kind": "cover",
+      "version": "2023-01-11T00:00:00.000Z",
+      "lastUpdated": "2023-01-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi25.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/01/PK_Edisi25.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk24-2F",
+      "kind": "cover",
+      "version": "2022-03-29T00:00:00.000Z",
+      "lastUpdated": "2022-03-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/PK_Edisi24.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/PK_Edisi24.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk23-2F",
+      "kind": "cover",
+      "version": "2022-03-27T00:00:00.000Z",
+      "lastUpdated": "2022-03-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/PK_Edisi23.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/PK_Edisi23.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk22-2F",
+      "kind": "cover",
+      "version": "2021-11-06T00:00:00.000Z",
+      "lastUpdated": "2021-11-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/PK_Edisi22.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/PK_Edisi22.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk21-2F",
+      "kind": "cover",
+      "version": "2021-07-30T00:00:00.000Z",
+      "lastUpdated": "2021-07-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/PK_Edisi21.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/PK_Edisi21.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk20-2F",
+      "kind": "cover",
+      "version": "2021-07-29T00:00:00.000Z",
+      "lastUpdated": "2021-07-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/PK_Edisi20.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/07/PK_Edisi20.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk19-2F",
+      "kind": "cover",
+      "version": "2021-06-02T00:00:00.000Z",
+      "lastUpdated": "2021-06-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/PK_Edisi19.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/PK_Edisi19.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk18-2F",
+      "kind": "cover",
+      "version": "2021-05-28T00:00:00.000Z",
+      "lastUpdated": "2021-05-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/PK_Edisi18.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/PK_Edisi18.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk17-2F",
+      "kind": "cover",
+      "version": "2020-11-03T00:00:00.000Z",
+      "lastUpdated": "2020-11-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi17.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi17.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk16-2F",
+      "kind": "cover",
+      "version": "2020-10-31T00:00:00.000Z",
+      "lastUpdated": "2020-10-31T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi16.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi16.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk15-2F",
+      "kind": "cover",
+      "version": "2020-10-30T00:00:00.000Z",
+      "lastUpdated": "2020-10-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi15.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi15.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk14-2F",
+      "kind": "cover",
+      "version": "2020-10-29T00:00:00.000Z",
+      "lastUpdated": "2020-10-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi14.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi14.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk13-2F",
+      "kind": "cover",
+      "version": "2020-10-28T00:00:00.000Z",
+      "lastUpdated": "2020-10-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi13.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi13.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk12-2F",
+      "kind": "cover",
+      "version": "2020-10-27T00:00:00.000Z",
+      "lastUpdated": "2020-10-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi12.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi12.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk11-2F",
+      "kind": "cover",
+      "version": "2020-10-26T00:00:00.000Z",
+      "lastUpdated": "2020-10-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi11.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi11.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk10-2F",
+      "kind": "cover",
+      "version": "2020-10-25T00:00:00.000Z",
+      "lastUpdated": "2020-10-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi10.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi10.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk09-2F",
+      "kind": "cover",
+      "version": "2020-10-24T00:00:00.000Z",
+      "lastUpdated": "2020-10-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi09.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi09.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk08-2F",
+      "kind": "cover",
+      "version": "2020-10-23T00:00:00.000Z",
+      "lastUpdated": "2020-10-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi08.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi08.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk07-2F",
+      "kind": "cover",
+      "version": "2020-10-22T00:00:00.000Z",
+      "lastUpdated": "2020-10-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi07.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi07.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk06-2F",
+      "kind": "cover",
+      "version": "2020-10-21T00:00:00.000Z",
+      "lastUpdated": "2020-10-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi06.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi06.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk05-2F",
+      "kind": "cover",
+      "version": "2020-10-20T00:00:00.000Z",
+      "lastUpdated": "2020-10-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi05.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi05.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk04-2F",
+      "kind": "cover",
+      "version": "2020-10-19T00:00:00.000Z",
+      "lastUpdated": "2020-10-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi04.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi04.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk03-2F",
+      "kind": "cover",
+      "version": "2020-10-17T00:00:00.000Z",
+      "lastUpdated": "2020-10-17T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi03.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi03.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk02-2F",
+      "kind": "cover",
+      "version": "2020-10-16T00:00:00.000Z",
+      "lastUpdated": "2020-10-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi02.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi02.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk01-2F",
+      "kind": "cover",
+      "version": "2020-10-14T00:00:00.000Z",
+      "lastUpdated": "2020-10-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi01.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/11/PK_Edisi01.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "sauh-cover:sbj260814",
+      "kind": "cover",
+      "version": "2026-08-14T00:00:00+00:00",
+      "lastUpdated": "2026-08-14T00:00:00+00:00",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/08/Jagalah-Hatimu.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/08/Jagalah-Hatimu.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:147-menapaki-tiga-iman",
+      "kind": "thumbnail",
+      "version": "2023-12-19T17:00:53.000Z",
+      "lastUpdated": "2023-12-19T17:00:53.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/27.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/27.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:134-cahaya-kehidupan",
+      "kind": "thumbnail",
+      "version": "2023-12-12T17:00:16.000Z",
+      "lastUpdated": "2023-12-12T17:00:16.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/DEGW8hlVoAEjaae.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/DEGW8hlVoAEjaae.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:131-itu-bukan-kebetulan",
+      "kind": "thumbnail",
+      "version": "2023-12-05T17:00:22.000Z",
+      "lastUpdated": "2023-12-05T17:00:22.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/26.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/11/26.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:152-manfaatkan-peluang",
+      "kind": "thumbnail",
+      "version": "2023-11-28T17:00:28.000Z",
+      "lastUpdated": "2023-11-28T17:00:28.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/pexels-nothing-ahead-4585167-ffaa7ad4f165db5bea107cac3c67ca51_600x400.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/pexels-nothing-ahead-4585167-ffaa7ad4f165db5bea107cac3c67ca51_600x400.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:150-patung-dewa",
+      "kind": "thumbnail",
+      "version": "2023-11-21T17:00:58.000Z",
+      "lastUpdated": "2023-11-21T17:00:58.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/patung.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/patung.jpeg",
+      "status": "remote"
+    }
+  ]
+}

@@ -28,6 +28,12 @@ describe("Sauh feed normalization", () => {
     );
   });
 
+  it("drops executable and embedded markup before rendering text", () => {
+    expect(
+      stripHtml("<p>Aman</p><script>alert(1)</script><svg>bad</svg>"),
+    ).toBe("Aman");
+  });
+
   it("keeps only the current day's reflection for the home surface", () => {
     const posts = parseSauhPosts([
       {

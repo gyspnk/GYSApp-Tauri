@@ -2,6 +2,10 @@ import { SauhPostSchema, type SauhPost } from "@gys/contracts";
 
 export function stripHtml(value: string): string {
   return value
+    .replace(
+      /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
+      " ",
+    )
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>|<\/h[1-6]>|<\/li>/gi, "\n")
     .replace(/<[^>]*>/g, " ")
@@ -11,6 +15,12 @@ export function stripHtml(value: string): string {
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCodePoint(Math.min(0x10ffff, Number(code))),
+    )
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) =>
+      String.fromCodePoint(Math.min(0x10ffff, Number.parseInt(code, 16))),
+    )
     .replace(/[ \t]+/g, " ")
     .replace(/\n\s+/g, "\n")
     .replace(/\n{3,}/g, "\n\n")

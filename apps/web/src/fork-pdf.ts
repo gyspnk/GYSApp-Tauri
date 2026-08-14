@@ -6,6 +6,7 @@ import {
 const RELEASE_MANIFEST =
   "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json";
 const FALLBACK_MANIFEST = `${import.meta.env.BASE_URL}offline/fork-hymnal-manifest.json`;
+const PACKAGE_CACHE = "gys-fork-pdf-v1";
 const KEY_BYTES = Uint8Array.from(
   atob("yrvxIa8zgtn6cxTLH/+BsLjx5SrgGRQN7IVhK0ufB1Y="),
   (value) => value.charCodeAt(0),
@@ -74,9 +75,12 @@ async function decompressGzip(decrypted: Uint8Array) {
 
 async function loadMasterPdf() {
   packageRequest ??= (async () => {
-    const release = (await (
-      await fetch(RELEASE_MANIFEST, { cache: "no-cache" })
-    ).json()) as {
+    const releaseResponse = await fetch(RELEASE_MANIFEST, {
+      cache: "no-cache",
+    });
+    if (!releaseResponse.ok)
+      throw new Error("GYSApp-Fork PDF release unavailable");
+    const release = (await releaseResponse.json()) as {
       packages?: Array<{
         code?: string;
         downloadUrl?: string;
@@ -86,11 +90,29 @@ async function loadMasterPdf() {
     };
     const pkg = release.packages?.find((candidate) => candidate.code === "KR");
     if (!pkg?.downloadUrl) throw new Error("KR PDF package unavailable");
-    const bytes = new Uint8Array(
-      await (
-        await fetch(pkg.downloadUrl, { cache: "force-cache" })
-      ).arrayBuffer(),
-    );
+    const downloadUrl = pkg.downloadUrl;
+    let bytes: Uint8Array | undefined;
+    if (typeof caches !== "undefined") {
+      const cached = await caches
+        .open(PACKAGE_CACHE)
+        .then((cache) => cache.match(downloadUrl));
+      if (cached) bytes = new Uint8Array(await cached.arrayBuffer());
+    }
+    if (!bytes) {
+      const response = await fetch(downloadUrl, { cache: "force-cache" });
+      if (!response.ok)
+        throw new Error(`KR PDF package request failed: ${response.status}`);
+      bytes = new Uint8Array(await response.arrayBuffer());
+      if (typeof caches !== "undefined")
+        await caches.open(PACKAGE_CACHE).then((cache) =>
+          cache.put(
+            downloadUrl,
+            new Response(bytes!.slice().buffer as ArrayBuffer, {
+              headers: { "content-type": "application/octet-stream" },
+            }),
+          ),
+        );
+    }
     if (pkg.sizeBytes && bytes.byteLength !== pkg.sizeBytes)
       throw new Error("KR PDF package size mismatch");
     if (

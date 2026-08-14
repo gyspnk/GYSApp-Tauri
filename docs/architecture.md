@@ -26,15 +26,15 @@ flowchart TB
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, and feature controllers.                     |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                            |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                        |
-| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, cache headers, typed errors, and e-GYS cookie proxy.                |
-| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK. |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                           |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                          |
+| Area                    | Responsibility                                                                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers. |
+| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                            |
+| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                        |
+| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, PDF range proxy, cache headers, typed errors, and e-GYS cookie proxy.               |
+| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                 |
+| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                           |
+| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                          |
 
 ## Data and persistence flow
 
@@ -51,18 +51,25 @@ flowchart LR
 ```
 
 Critical user state is intentionally small and versioned: activity, favorites,
-reading progress, preferences, and backup metadata. A migration must preserve
+literature locations, preferences, diagnostics, and backup metadata. A migration must preserve
 valid records, validate the result, and invalidate only the affected domain
 when a record cannot be recovered.
 
 ## Asset lifecycle
 
-Music assets use immutable source commits and SHA-256 records. Literature
+Music and local pack assets use immutable source commits and SHA-256 records in
+the generated asset manifest. Literature
 cover URLs come from the TJC WordPress source where available; the generated
 snapshot currently contains 279 verified cover mappings and explicit fallback
 records for 18 entries whose source does not expose a cover. The service worker
 caches TJC media only after an image request succeeds, and the PDF/MIDI/chord
-loaders verify bytes before activating a cache entry.
+loaders verify bytes before activating a cache entry. PDF literature is fetched
+through `/api/v1/content/pdf` when a BFF is configured; the proxy allowlists
+only `https://tjc.org/*.pdf` and preserves HTTP range requests for PDF.js.
+
+Literature records keep a versioned page/scroll location. The catalog renders a
+deduplicated “Terakhir dilihat” shelf and validates a saved page against the
+current resource version before offering resume.
 
 ```mermaid
 stateDiagram-v2

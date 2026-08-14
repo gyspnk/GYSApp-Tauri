@@ -30,6 +30,7 @@ const packageFiles = [
   join("packages", "domain", "package.json"),
   join("apps", "bff", "package.json"),
   join("apps", "web", "package.json"),
+  join("apps", "native", "package.json"),
 ];
 for (const file of packageFiles) {
   try {

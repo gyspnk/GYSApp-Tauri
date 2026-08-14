@@ -16,9 +16,13 @@ domain boundary, the Quiet Sanctuary web shell, a secure BFF boundary, local
 TB Bible/hymn/faith readers, a lazy PDF reader backed by the GYSApp-Fork
 hymnal database, canonical GYSChordWeb chord/MIDI assets, real TJC literature
 and Suara Sejati feeds, today's Sauh Bagi Jiwa, encrypted backup/import, and a
-native e-GYS session/profile adapter. Upstream-backed features keep a checked
-in, integrity-verified snapshot so the app remains useful offline and can
-revalidate without downloading unchanged assets.
+native e-GYS session/profile adapter. Literature keeps a persistent “Terakhir
+dilihat” shelf with version-aware page resume, while the local PDF.js reader
+uses an allowlisted BFF range proxy when deployed. Kidung prefetches only the
+next/previous binary music assets and never eagerly downloads heavy PDFs.
+Upstream-backed features keep checked-in, integrity-verified snapshots and a
+generated asset manifest so the app remains useful offline and can revalidate
+without downloading unchanged assets.
 
 ## Architecture at a glance
 

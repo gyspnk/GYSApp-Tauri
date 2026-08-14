@@ -19,9 +19,17 @@
   invented. Raw upstream checkouts stay ignored and cannot be staged.
 - Added repository-managed pre-commit/pre-push gates, provenance checks,
   Mermaid architecture/lifecycle documentation, and a progress/release ledger.
-- Preserved the current bundle gate: roughly 99.2 KiB gzip main application
-  chunk and 127.9 KiB gzip initial JavaScript; PDF.js and its worker remain
-  lazy-loaded.
+- Added versioned local-storage migrations, diagnostics redaction, an asset
+  manifest/cache lifecycle, atomic offline-pack installation, and bounded
+  music prefetch/cache hints.
+- Added the local PDF.js reader flow for TJC literature through an allowlisted
+  BFF PDF/range proxy, with page-aware resume and a deduplicated “Terakhir
+  dilihat” shelf.
+- Added chord-token alignment, negative-cache protection, sanitized Sauh and
+  Suara snapshots, visual regression coverage, and real Cargo checks for the
+  native package.
+- Preserved the bundle gate: 104.3 KiB gzip main application chunk and 132.8
+  KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded.
 
 The release is not declared GA until protected e-GYS/OAuth secrets, native
 signing, device visual/accessibility evidence, and the remaining platform

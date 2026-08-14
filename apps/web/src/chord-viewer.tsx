@@ -35,17 +35,45 @@ export function ChordViewer({
             <span className="chord-verse-label">{verse.label}</span>
             {verse.lines.map((line, index) => (
               <div className="chord-line" key={`${verse.label}-${index}`}>
-                <div className="chord-line-tokens">
-                  {line.chords.map((token) => (
-                    <span
-                      className="chord-chip"
-                      key={`${token.index}-${token.token}`}
-                    >
-                      {transposeChord(token.token, transpose)}
-                    </span>
-                  ))}
-                </div>
-                <span>{line.text || " "}</span>
+                {line.chords.length > 0 ? (
+                  <span className="chord-aligned-line">
+                    {[...line.text].map((character, characterIndex) => {
+                      const tokens = line.chords.filter(
+                        (token) => token.index === characterIndex,
+                      );
+                      return (
+                        <span
+                          className="chord-aligned-cell"
+                          key={`${characterIndex}-${character}`}
+                        >
+                          <small>
+                            {tokens
+                              .map((token) =>
+                                transposeChord(token.token, transpose),
+                              )
+                              .join(" ")}
+                          </small>
+                          <span>{character || " "}</span>
+                        </span>
+                      );
+                    })}
+                    {line.chords
+                      .filter((token) => token.index >= line.text.length)
+                      .map((token) => (
+                        <span
+                          className="chord-aligned-cell"
+                          key={`tail-${token.index}`}
+                        >
+                          <small>
+                            {transposeChord(token.token, transpose)}
+                          </small>
+                          <span> </span>
+                        </span>
+                      ))}
+                  </span>
+                ) : (
+                  <span>{line.text || " "}</span>
+                )}
               </div>
             ))}
           </div>

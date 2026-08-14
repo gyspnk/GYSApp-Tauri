@@ -1,7 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
+import { installGlobalDiagnostics } from "./diagnostics.js";
+import { runStorageMigrations } from "./storage.js";
 import "./styles.css";
+
+runStorageMigrations();
+installGlobalDiagnostics();
 
 const routeParams = new URLSearchParams(window.location.search);
 const restoredPath = routeParams.get("p");

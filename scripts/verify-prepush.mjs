@@ -14,6 +14,7 @@ run("node", ["scripts/check-egys-upstream.mjs", "--strict"]);
 run("pnpm", ["format:check"]);
 run("pnpm", ["lint"]);
 run("pnpm", ["typecheck"]);
+run("pnpm", ["native:check"]);
 run("pnpm", ["test"]);
 run("pnpm", ["build"]);
 run("pnpm", ["verify:bundle"]);

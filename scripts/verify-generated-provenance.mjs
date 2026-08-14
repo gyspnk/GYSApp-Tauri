@@ -12,6 +12,7 @@ const chord = await readJson(
 const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
+const assets = await readJson("apps/web/public/offline/asset-manifest.json");
 
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
@@ -28,6 +29,12 @@ if (pack.hymns !== hymns.items.length)
   throw new Error("offline pack hymn count drifted");
 if (literature.source !== "tjc.org" || literature.items.length < 1)
   throw new Error("literature snapshot is invalid");
+if (
+  assets.version !== 1 ||
+  !Array.isArray(assets.items) ||
+  assets.items.length < pack.items.length
+)
+  throw new Error("asset manifest is invalid");
 for (const item of literature.items) {
   if (
     item.imageUrl &&
@@ -42,6 +49,35 @@ for (const item of pack.items) {
   const sha256 = createHash("sha256").update(bytes).digest("hex");
   if (bytes.byteLength !== item.bytes || sha256 !== item.sha256)
     throw new Error(`offline pack integrity drift: ${item.id}`);
+}
+
+for (const item of assets.items) {
+  if (
+    typeof item.id !== "string" ||
+    !item.id ||
+    !["local", "remote"].includes(item.source) ||
+    typeof item.path !== "string" ||
+    typeof item.version !== "string" ||
+    !["available", "remote", "pinned", "stale"].includes(item.status)
+  )
+    throw new Error(`asset manifest entry is invalid: ${item.id ?? "unknown"}`);
+  if (item.source === "local") {
+    const bytes = await readFile(join("apps/web/public", item.path));
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    if (
+      bytes.byteLength !== item.bytes ||
+      sha256 !== item.sha256 ||
+      item.version !== sha256
+    )
+      throw new Error(`asset manifest integrity drift: ${item.id}`);
+  } else if (
+    !item.url?.startsWith("https://tjc.org/") ||
+    !/^https:\/\/tjc\.org\//.test(item.path)
+  ) {
+    throw new Error(
+      `asset manifest remote source is not allowlisted: ${item.id}`,
+    );
+  }
 }
 
 console.log(

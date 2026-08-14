@@ -10,6 +10,10 @@ const API_URL =
 
 function stripHtml(value: string) {
   return value
+    .replace(
+      /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
+      " ",
+    )
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")

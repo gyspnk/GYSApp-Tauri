@@ -119,4 +119,27 @@ describe("ChordRepository", () => {
     );
     expect(await cache.get("hymn-001")).toEqual(document);
   });
+
+  it("negative-caches a missing song per immutable source commit", async () => {
+    let manifestCalls = 0;
+    const upstream: ChordUpstream = {
+      getManifest: async () => {
+        manifestCalls += 1;
+        return { manifest: { ...manifest, entries: [] } };
+      },
+      fetchChord: async () => ({ bytes: new Uint8Array(), document }),
+    };
+    const repository = new ChordRepository(
+      upstream,
+      new MemoryChordCache(),
+      () => 0,
+    );
+    await expect(repository.revalidateSong("hymn-404")).rejects.toThrow(
+      "not available",
+    );
+    await expect(repository.revalidateSong("hymn-404")).rejects.toThrow(
+      "not available",
+    );
+    expect(manifestCalls).toBe(1);
+  });
 });

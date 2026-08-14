@@ -274,6 +274,49 @@ export const SuaraSejatiFeedSchema = z.object({
 });
 export type SuaraSejatiFeed = z.infer<typeof SuaraSejatiFeedSchema>;
 
+export const AssetKindSchema = z.enum([
+  "pack",
+  "bible",
+  "hymn-catalog",
+  "literature",
+  "cover",
+  "thumbnail",
+  "pdf",
+  "chord",
+  "midi",
+  "soundfont",
+]);
+export const AssetSourceSchema = z.enum(["local", "remote"]);
+export const AssetStatusSchema = z.enum([
+  "available",
+  "remote",
+  "downloaded",
+  "pinned",
+  "stale",
+  "missing",
+  "corrupt",
+]);
+export const AssetManifestItemSchema = z.object({
+  id: z.string().min(1),
+  kind: AssetKindSchema,
+  source: AssetSourceSchema,
+  path: z.string().min(1),
+  url: z.string().url().optional(),
+  version: z.string().min(1),
+  sha256: Sha256Schema.optional(),
+  bytes: z.number().int().nonnegative().optional(),
+  status: AssetStatusSchema,
+  lastUpdated: z.string().datetime({ offset: true }),
+});
+export const AssetManifestV1Schema = z.object({
+  version: z.literal(1),
+  generatedAt: z.string().datetime({ offset: true }),
+  items: z.array(AssetManifestItemSchema),
+});
+export type AssetKind = z.infer<typeof AssetKindSchema>;
+export type AssetManifestItem = z.infer<typeof AssetManifestItemSchema>;
+export type AssetManifestV1 = z.infer<typeof AssetManifestV1Schema>;
+
 export const AccountProfileSchema = z.object({
   id: z.string().min(1),
   personId: z.string().min(1).optional(),

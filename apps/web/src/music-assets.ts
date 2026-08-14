@@ -8,6 +8,8 @@ const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 const CACHE_NAME = "gys-music-assets-v1";
 let lockPromise: Promise<UpstreamMusicLock> | undefined;
 const inFlight = new Map<string, Promise<Uint8Array>>();
+const MAX_MEMORY_HINTS = 96;
+const recentlyUsed = new Map<string, number>();
 
 async function sha256(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
@@ -98,6 +100,10 @@ async function networkResponse(
 export async function loadMusicAsset(
   ref: UpstreamMusicItem,
 ): Promise<Uint8Array> {
+  recentlyUsed.delete(ref.sha256);
+  recentlyUsed.set(ref.sha256, Date.now());
+  while (recentlyUsed.size > MAX_MEMORY_HINTS)
+    recentlyUsed.delete(recentlyUsed.keys().next().value as string);
   const existing = inFlight.get(ref.sha256);
   if (existing) return existing;
   const request = (async () => {
@@ -117,6 +123,49 @@ export async function loadMusicAsset(
   } finally {
     inFlight.delete(ref.sha256);
   }
+}
+
+/** Warm only binary music assets; PDF pages stay on-demand to protect mobile data. */
+export async function prefetchMusicAsset(
+  ref: UpstreamMusicItem | undefined,
+): Promise<boolean> {
+  if (!ref || ref.kind === "pdf") return false;
+  if (typeof navigator === "undefined" || !navigator.onLine) return false;
+  const connection = (
+    navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }
+  ).connection;
+  if (connection?.saveData || connection?.effectiveType === "2g") return false;
+  try {
+    await loadMusicAsset(ref);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function musicAssetStats(): Promise<{
+  entries: number;
+  bytes: number;
+}> {
+  if (typeof window === "undefined" || !("caches" in window))
+    return { entries: 0, bytes: 0 };
+  const cache = await caches.open(CACHE_NAME);
+  const requests = await cache.keys();
+  let bytes = 0;
+  for (const request of requests) {
+    const response = await cache.match(request);
+    bytes += Number(response?.headers.get("content-length") ?? 0);
+  }
+  return { entries: requests.length, bytes };
+}
+
+export async function clearMusicAssetCache(): Promise<void> {
+  inFlight.clear();
+  recentlyUsed.clear();
+  if (typeof window !== "undefined" && "caches" in window)
+    await caches.delete(CACHE_NAME);
 }
 
 export function downloadMusicAsset(
