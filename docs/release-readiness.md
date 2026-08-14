@@ -26,6 +26,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   chunks, and the bundle gate fails if the initial application chunk exceeds
   250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
+- The v8 service-worker install path precaches only the shell and compact
+  offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
+  the first usable frame, independently and only when Save-Data/2G is not
+  advertised; this keeps activation and first paint off the heavy-asset path.
 - Playwright smoke coverage passes at desktop and 390px mobile widths, with
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the

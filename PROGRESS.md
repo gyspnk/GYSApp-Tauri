@@ -9,6 +9,9 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Clean-room MIT pnpm monorepo, typed contracts, responsive Quiet Sanctuary
   shell, local PWA assets, and GitHub Pages delivery.
+- PWA bootstrap is budgeted: service-worker v8 installs the shell and compact
+  indexes first, then warms the heavy MIDI/FluidSynth binaries in the
+  background with a Save-Data/2G guard.
 - TB Bible, multilingual faith list with contextual actions, 533-song hymn
   catalog, ordered search, persistent reading/activity state, and single
   `Lanjutkan` home item.

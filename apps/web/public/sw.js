@@ -1,24 +1,56 @@
-const CACHE = "gysapp-shell-v7";
+const CACHE = "gysapp-shell-v8";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
-const PRECACHE = [
-  "/GYSApp-Tauri/",
-  "/GYSApp-Tauri/index.html",
-  "/GYSApp-Tauri/manifest.webmanifest",
-  "/GYSApp-Tauri/offline/bible/tb-reader.json",
-  "/GYSApp-Tauri/offline/hymn-catalog.json",
-  "/GYSApp-Tauri/offline/music-lock.json",
-  "/GYSApp-Tauri/offline/faith.json",
-  "/GYSApp-Tauri/offline/sauh.json",
-  "/GYSApp-Tauri/offline/literature.json",
-  "/GYSApp-Tauri/offline/asset-manifest.json",
-  "/GYSApp-Tauri/offline/fork-hymnal-manifest.json",
-  "/GYSApp-Tauri/offline/soundfont/TimGM6mb.sf2",
-  "/GYSApp-Tauri/vendor/midi-render-worker.js",
-  "/GYSApp-Tauri/vendor/js-synthesizer/js-synthesizer.min.js",
-  "/GYSApp-Tauri/vendor/js-synthesizer/libfluidsynth-2.4.6.js",
-];
+const BASE = self.location.pathname.replace(/sw\.js$/, "");
+const withBase = (path) => `${BASE}${path}`;
+const CORE = [
+  "",
+  "index.html",
+  "manifest.webmanifest",
+  "offline/bible/tb-reader.json",
+  "offline/bible/manifest.json",
+  "offline/hymn-catalog.json",
+  "offline/music-lock.json",
+  "offline/faith.json",
+  "offline/sauh.json",
+  "offline/suara-sejati.json",
+  "offline/literature.json",
+  "offline/asset-manifest.json",
+  "offline/pack-manifest.json",
+  "offline/fork-hymnal-manifest.json",
+].map(withBase);
+// Heavy audio/WASM remains available offline, but is intentionally warmed in
+// the background after the shell is ready so first paint and SW activation are
+// not held hostage by a 6 MB soundfont or multi-megabyte synthesizer runtime.
+const OPTIONAL = [
+  "offline/soundfont/TimGM6mb.sf2",
+  "vendor/midi-render-worker.js",
+  "vendor/js-synthesizer/js-synthesizer.min.js",
+  "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
+].map(withBase);
+
+async function cacheOptional() {
+  const cache = await caches.open(CACHE);
+  await Promise.allSettled(
+    OPTIONAL.map(async (url) => {
+      if (await cache.match(url)) return;
+      const response = await fetch(url, { cache: "no-cache" });
+      if (response.ok) await cache.put(url, response.clone());
+    }),
+  );
+}
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
+  event.waitUntil(
+    caches.open(CACHE).then(async (cache) => {
+      // A single missing optional/core URL must not invalidate the whole shell.
+      await Promise.allSettled(
+        CORE.map(async (url) => {
+          const response = await fetch(url, { cache: "no-cache" });
+          if (response.ok) await cache.put(url, response.clone());
+        }),
+      );
+    }),
+  );
   self.skipWaiting();
 });
 self.addEventListener("activate", (event) => {
@@ -34,6 +66,10 @@ self.addEventListener("activate", (event) => {
       )
       .then(() => self.clients.claim()),
   );
+});
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "gys-cache-optional")
+    event.waitUntil(cacheOptional());
 });
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
@@ -75,7 +111,7 @@ self.addEventListener("fetch", (event) => {
               .then((cache) => cache.put(event.request, copy));
             return response;
           })
-          .catch(() => caches.match("/GYSApp-Tauri/index.html")),
+          .catch(() => caches.match(withBase("index.html"))),
     ),
   );
 });

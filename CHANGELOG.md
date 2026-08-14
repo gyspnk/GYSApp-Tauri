@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Reduced PWA activation work by splitting the service-worker v8 cache into a
+  compact shell/index precache and a background-only TimGM/FluidSynth/MIDI
+  warm-up. Heavy assets are skipped on Save-Data/2G connections and no longer
+  block the first usable frame.
 - Merged Home Daily Verse with the current Sauh Bagi Jiwa record and added
   internal `/sauh`, `/suara`, and `/suara/:postId` routes. The BFF now exposes a
   safe, bounded TJC article reader that strips executable markup, decodes

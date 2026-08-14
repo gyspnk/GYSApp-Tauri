@@ -103,6 +103,11 @@ Bible database, PDF, MIDI, and chord assets are loaded on demand, verified by
 size/hash, and cached by source version to keep first install and first paint
 predictable.
 
+The PWA service worker follows the same budget: the v8 core cache installs only
+the shell and small verified offline indexes. TimGM/FluidSynth and the MIDI
+worker are warmed in the background after the shell is ready (and skipped on
+Save-Data/2G connections), so activation never blocks the first usable frame.
+
 ## Deployment prerequisites
 
 Pushes to `main` and `codex/**` trigger GitHub Pages. Configure the repository's

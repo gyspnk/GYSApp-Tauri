@@ -31,6 +31,16 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     void navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`)
-      .then((registration) => registration.update());
+      .then(async (registration) => {
+        await registration.update();
+        const connection = (
+          navigator as Navigator & {
+            connection?: { saveData?: boolean; effectiveType?: string };
+          }
+        ).connection;
+        if (connection?.saveData || connection?.effectiveType === "2g") return;
+        const ready = await navigator.serviceWorker.ready;
+        ready.active?.postMessage({ type: "gys-cache-optional" });
+      });
   });
 }
