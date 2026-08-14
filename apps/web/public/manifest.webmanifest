@@ -1,0 +1,16 @@
+{
+  "name": "GYSApp",
+  "short_name": "GYSApp",
+  "start_url": "/GYSApp-Tauri/",
+  "display": "standalone",
+  "background_color": "#f7faff",
+  "theme_color": "#f7faff",
+  "icons": [
+    {
+      "src": "/GYSApp-Tauri/assets/gys-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

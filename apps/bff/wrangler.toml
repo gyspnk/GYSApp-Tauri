@@ -1,0 +1,6 @@
+name = "gysapp-tauri-bff"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://gyspnk.github.io,http://localhost:5173"

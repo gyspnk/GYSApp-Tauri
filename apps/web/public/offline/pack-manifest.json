@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-14T02:17:20.902Z",
+  "bible": "TB",
+  "hymns": 533,
+  "items": [
+    {
+      "id": "bible-tb",
+      "path": "offline/bible/b_tb.db",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "soundfont-timgm",
+      "path": "offline/soundfont/TimGM6mb.sf2",
+      "bytes": 5994284,
+      "sha256": "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@gys/bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run",
+    "lint": "tsc -b --pretty false",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@gys/contracts": "workspace:*",
+    "hono": "4.13.2",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260814.1",
+    "vitest": "4.1.10",
+    "wrangler": "^4.30.0"
+  }
+}

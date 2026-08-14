@@ -1,0 +1,221 @@
+import { z } from "zod";
+
+export const Sha256Schema = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/i, "sha256 must be a 64-character hexadecimal digest");
+export const SourceCommitSchema = z
+  .string()
+  .regex(/^[a-f0-9]{7,64}$/i, "sourceCommit must be an immutable git commit");
+
+export const UpstreamMusicItemSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["midi", "pdf", "chord", "soundfont", "metadata", "asset"]),
+  path: z
+    .string()
+    .min(1)
+    .refine(
+      (value) => !value.includes(".."),
+      "asset paths cannot escape their root",
+    ),
+  size: z.number().int().nonnegative(),
+  sha256: Sha256Schema,
+});
+
+export const UpstreamMusicLockSchema = z.object({
+  sourceRepo: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
+  sourceCommit: SourceCommitSchema,
+  generatedAt: z.string().datetime({ offset: true }),
+  items: z.array(UpstreamMusicItemSchema),
+});
+export type UpstreamMusicLock = z.infer<typeof UpstreamMusicLockSchema>;
+export type UpstreamMusicItem = z.infer<typeof UpstreamMusicItemSchema>;
+
+export const ChordRefSchema = z.object({
+  songId: z.string().min(1),
+  path: z.string().min(1),
+  sourceCommit: SourceCommitSchema,
+  size: z.number().int().nonnegative(),
+  sha256: Sha256Schema,
+});
+export type ChordRef = z.infer<typeof ChordRefSchema>;
+
+export const ChordManifestV1Schema = z.object({
+  version: z.literal(1),
+  sourceRepo: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
+  sourceCommit: SourceCommitSchema,
+  generatedAt: z.string().datetime({ offset: true }),
+  entries: z.array(ChordRefSchema),
+});
+export type ChordManifestV1 = z.infer<typeof ChordManifestV1Schema>;
+
+export const ChordTokenSchema = z.object({
+  token: z.string().min(1),
+  index: z.number().int().nonnegative(),
+});
+export const ChordLineSchema = z.object({
+  text: z.string(),
+  chords: z.array(ChordTokenSchema),
+});
+export const ChordVerseSchema = z.object({
+  label: z.string().min(1),
+  lines: z.array(ChordLineSchema),
+});
+export const ChordDocumentV2Schema = z.object({
+  version: z.literal(2),
+  songId: z.string().min(1),
+  title: z.string().min(1),
+  key: z.string().min(1),
+  sourceCommit: SourceCommitSchema,
+  sourcePath: z.string().min(1),
+  verses: z.array(ChordVerseSchema),
+});
+export type ChordDocumentV2 = z.infer<typeof ChordDocumentV2Schema>;
+
+export const HymnCatalogEntrySchema = z.object({
+  id: z.string().min(1),
+  book: z.enum([
+    "rohani",
+    "kidung-jemaat",
+    "pujian",
+    "anak",
+    "mandarin",
+    "english",
+  ]),
+  number: z.number().int().positive(),
+  title: z.string().min(1),
+  lyrics: z.string().min(1),
+  midiPath: z.string().min(1),
+  pdfPath: z.string().min(1),
+  chordRef: ChordRefSchema.optional(),
+});
+export type HymnCatalogEntry = z.infer<typeof HymnCatalogEntrySchema>;
+
+export const BiblePackManifestSchema = z.object({
+  version: z.string().min(1),
+  translation: z.literal("TB"),
+  generatedAt: z.string().datetime({ offset: true }),
+  sha256: Sha256Schema,
+  bytes: z.number().int().nonnegative(),
+  books: z.number().int().positive(),
+});
+export type BiblePackManifest = z.infer<typeof BiblePackManifestSchema>;
+
+export const OnlineContentSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["literature", "media", "sauh", "announcement"]),
+  title: z.string().min(1),
+  body: z.string(),
+  updatedAt: z.string().datetime({ offset: true }),
+  url: z.string().url().optional(),
+});
+export type OnlineContent = z.infer<typeof OnlineContentSchema>;
+
+export const AccountProfileSchema = z.object({
+  id: z.string().min(1),
+  displayName: z.string().min(1),
+  email: z.string().email().optional(),
+  avatarUrl: z.string().url().optional(),
+  provider: z.enum(["google", "apple", "egys"]).optional(),
+  locale: z.enum(["id", "en", "zh"]).default("id"),
+});
+export type AccountProfile = z.infer<typeof AccountProfileSchema>;
+
+export const ErrorCodeSchema = z.enum([
+  "VALIDATION_ERROR",
+  "UNAUTHORIZED",
+  "FORBIDDEN",
+  "NOT_FOUND",
+  "CONFLICT",
+  "RATE_LIMITED",
+  "UPSTREAM_UNAVAILABLE",
+  "INTEGRITY_ERROR",
+  "OFFLINE",
+  "INTERNAL_ERROR",
+]);
+export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
+export const ErrorResponseSchema = z.object({
+  error: z.object({
+    code: ErrorCodeSchema,
+    message: z.string().min(1),
+    requestId: z.string().min(1),
+    details: z.record(z.string(), z.unknown()).optional(),
+  }),
+});
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+export const BackupEnvelopeV2Schema = z.object({
+  version: z.literal(2),
+  algorithm: z.literal("AES-GCM"),
+  kdf: z.literal("PBKDF2-SHA-256"),
+  salt: z.string().min(16),
+  nonce: z.string().min(12),
+  iterations: z.number().int().min(100_000),
+  authenticatedMetadata: z.object({
+    createdAt: z.string().datetime({ offset: true }),
+    appVersion: z.string().min(1),
+    domains: z.array(z.enum(["bible", "songs", "faith", "settings"])),
+  }),
+  ciphertext: z.string().min(1),
+  tag: z.string().min(1),
+});
+export type BackupEnvelopeV2 = z.infer<typeof BackupEnvelopeV2Schema>;
+
+export type Capability =
+  | "speech"
+  | "audio"
+  | "mediaSession"
+  | "wakeLock"
+  | "fileDialog"
+  | "share"
+  | "notifications"
+  | "deepLinks";
+
+export interface KeyValueStore {
+  get<T>(key: string): Promise<T | undefined>;
+  set<T>(key: string, value: T): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
+export interface AtomicBlobStore {
+  get(key: string): Promise<Uint8Array | undefined>;
+  putAtomic(key: string, bytes: Uint8Array): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
+export interface SpeechVoice {
+  id: string;
+  name: string;
+  language: string;
+  local: boolean;
+}
+
+export interface SpeechProvider {
+  readonly id: string;
+  status(): Promise<{ available: boolean; offline: boolean; reason?: string }>;
+  voices(signal?: AbortSignal): Promise<SpeechVoice[]>;
+  speak(
+    text: string,
+    options: {
+      voiceId?: string;
+      rate?: number;
+      pitch?: number;
+      volume?: number;
+    },
+    signal?: AbortSignal,
+  ): Promise<void>;
+  pause(): Promise<void>;
+  resume(): Promise<void>;
+  stop(): Promise<void>;
+}
+
+export interface PlatformServices {
+  hasCapability(capability: Capability): boolean;
+  keyValue: KeyValueStore;
+  blobs: AtomicBlobStore;
+  speech: SpeechProvider[];
+  openExternal(url: string): Promise<void>;
+  now(): number;
+}
+
+export const LocaleSchema = z.enum(["id", "en", "zh"]);
+export type Locale = z.infer<typeof LocaleSchema>;
