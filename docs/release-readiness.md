@@ -30,9 +30,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner.
 - GitHub Pages now builds the complete workspace, verifies generated
-  provenance, enforces the bundle budget, and can be dispatched from `main` or
-  a `codex/**` preview branch. A live deployment still depends on the
-  repository's Pages environment being enabled.
+  provenance, enforces the bundle budget, and is live at
+  https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.
+  The Pages environment permits `main` and the named preview branch; the
+  protected `main` branch remains the production promotion gate.
 
 `pages.yml` is the GitHub Pages Preview pipeline. `worker.yml` is deliberately
 manual and no-ops unless protected `CLOUDFLARE_API_TOKEN` and
