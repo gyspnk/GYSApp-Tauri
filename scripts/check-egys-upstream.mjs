@@ -4,15 +4,28 @@ import { promisify } from "node:util";
 const exec = promisify(execFile);
 const file = "docs/discovery/egys-upstream.json";
 const generatedFile = "apps/bff/src/egys-provenance.ts";
-const { stdout } = await exec("git", [
-  "ls-remote",
-  "https://github.com/Gereja-Yesus-Sejati/egys.git",
-  "HEAD",
-]);
-const current = stdout.trim().split(/\s+/)[0];
-if (!/^[a-f0-9]{40}$/i.test(current))
-  throw new Error("Unable to resolve e-GYS HEAD");
 const locked = JSON.parse(await readFile(file, "utf8"));
+const token = process.env.EGYS_UPSTREAM_TOKEN?.trim();
+const upstreamUrl = token
+  ? `https://x-access-token:${token}@github.com/Gereja-Yesus-Sejati/egys.git`
+  : "https://github.com/Gereja-Yesus-Sejati/egys.git";
+let current;
+try {
+  const { stdout } = await exec("git", ["ls-remote", upstreamUrl, "HEAD"]);
+  current = stdout.trim().split(/\s+/)[0];
+} catch (error) {
+  console.warn(
+    "e-GYS upstream is unavailable to this runner; retaining the immutable lock.",
+  );
+  if (process.argv.includes("--strict")) throw error;
+  process.exit(0);
+}
+if (!/^[a-f0-9]{40}$/i.test(current)) {
+  const error = new Error("Unable to resolve e-GYS HEAD");
+  if (process.argv.includes("--strict")) throw error;
+  console.warn(error.message);
+  process.exit(0);
+}
 console.log(`e-GYS locked=${locked.sourceCommit} current=${current}`);
 if (process.argv.includes("--write")) {
   const changed = locked.sourceCommit !== current;

@@ -57,7 +57,10 @@ Pushes to `main` and `codex/**` trigger GitHub Pages. Configure the repository's
 Pages source as **GitHub Actions**. The optional Worker workflow needs
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; set `EGYS_API_BASE_URL` and
 `EGYS_UPSTREAM_COMMIT` as protected Worker variables/secrets when the e-GYS
-backend is ready. Without those protected values, the web build still works
+backend is ready. If the e-GYS repository is private, set the optional
+`EGYS_UPSTREAM_TOKEN` repository secret so the scheduled provenance check can
+read its immutable `HEAD`; an unavailable upstream is retained as a warning,
+not fabricated as a new version. Without the protected deployment values, the web build still works
 and shows an honest unavailable-session state instead of fabricating account
 data.
 

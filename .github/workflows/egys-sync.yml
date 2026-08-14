@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: 24
       - run: node scripts/check-egys-upstream.mjs --write
+        env:
+          EGYS_UPSTREAM_TOKEN: ${{ secrets.EGYS_UPSTREAM_TOKEN }}
       - name: Open update PR when the upstream contract moves
         uses: peter-evans/create-pull-request@v7
         with:
