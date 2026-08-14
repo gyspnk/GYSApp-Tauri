@@ -60,7 +60,7 @@ export const ChordVerseSchema = z.object({
   label: z.string().min(1),
   lines: z.array(ChordLineSchema),
 });
-export const ChordDocumentV2Schema = z.object({
+const NormalizedChordDocumentV2Schema = z.object({
   version: z.literal(2),
   songId: z.string().min(1),
   title: z.string().min(1),
@@ -69,6 +69,23 @@ export const ChordDocumentV2Schema = z.object({
   sourcePath: z.string().min(1),
   verses: z.array(ChordVerseSchema),
 });
+const NoteAlignedChordDocumentV2Schema = z.object({
+  version: z.literal(2),
+  type: z.literal("note-aligned"),
+  pages: z.record(
+    z.string(),
+    z.array(
+      z.object({
+        noteIdx: z.number().int().nonnegative(),
+        chord: z.string().min(1),
+      }),
+    ),
+  ),
+});
+export const ChordDocumentV2Schema = z.union([
+  NormalizedChordDocumentV2Schema,
+  NoteAlignedChordDocumentV2Schema,
+]);
 export type ChordDocumentV2 = z.infer<typeof ChordDocumentV2Schema>;
 
 export const HymnCatalogEntrySchema = z.object({
@@ -90,6 +107,23 @@ export const HymnCatalogEntrySchema = z.object({
 });
 export type HymnCatalogEntry = z.infer<typeof HymnCatalogEntrySchema>;
 
+export const MidiPlaylistItemSchema = z.object({
+  songId: z.string().min(1),
+  title: z.string().min(1),
+  sourceHash: Sha256Schema.optional(),
+});
+export const MidiPlaylistSchema = z.object({
+  version: z.literal(1),
+  items: z.array(MidiPlaylistItemSchema),
+  currentIndex: z.number().int().nonnegative().default(0),
+  loop: z.enum(["off", "one", "all"]).default("off"),
+  shuffle: z.boolean().default(false),
+  autoNext: z.boolean().default(true),
+  crossfadeMs: z.number().int().min(0).max(10_000).default(0),
+});
+export type MidiPlaylistItem = z.infer<typeof MidiPlaylistItemSchema>;
+export type MidiPlaylist = z.infer<typeof MidiPlaylistSchema>;
+
 export const BiblePackManifestSchema = z.object({
   version: z.string().min(1),
   translation: z.literal("TB"),
@@ -99,6 +133,31 @@ export const BiblePackManifestSchema = z.object({
   books: z.number().int().positive(),
 });
 export type BiblePackManifest = z.infer<typeof BiblePackManifestSchema>;
+
+export const BibleBookSchema = z.object({
+  id: z.number().int().positive(),
+  short: z.string().min(1),
+  name: z.string().min(1),
+  chapters: z.number().int().positive(),
+});
+export const BibleVerseSchema = z.object({
+  id: z.string().min(1),
+  book: z.string().min(1),
+  bookOrder: z.number().int().positive(),
+  chapter: z.number().int().positive(),
+  verse: z.number().int().positive(),
+  text: z.string().min(1),
+});
+export const BibleReaderPackSchema = z.object({
+  version: z.literal(1),
+  translation: z.literal("TB"),
+  source: z.string().min(1),
+  books: z.array(BibleBookSchema).min(1),
+  verses: z.array(BibleVerseSchema).min(1),
+});
+export type BibleBook = z.infer<typeof BibleBookSchema>;
+export type BibleVerse = z.infer<typeof BibleVerseSchema>;
+export type BibleReaderPack = z.infer<typeof BibleReaderPackSchema>;
 
 export const OnlineContentSchema = z.object({
   id: z.string().min(1),

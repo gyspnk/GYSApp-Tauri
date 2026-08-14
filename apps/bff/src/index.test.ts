@@ -32,8 +32,8 @@ describe("BFF public boundary", () => {
         {
           id: "a1",
           kind: "announcement",
-          title: "Welcome",
-          body: "Hello",
+          title: "<b>Welcome</b>",
+          body: "<script>bad</script>Hello",
           updatedAt: "2026-08-14T00:00:00.000Z",
         },
       ],
@@ -48,6 +48,7 @@ describe("BFF public boundary", () => {
     expect(response.headers.get("cache-control")).toContain("max-age=60");
     const payload = (await response.json()) as { items: unknown[] };
     expect(payload.items).toHaveLength(1);
+    expect(JSON.stringify(payload.items)).not.toContain("<script>");
   });
 
   it("returns a typed validation error for an unknown content kind", async () => {
@@ -99,5 +100,40 @@ describe("BFF public boundary", () => {
     expect(response.status).toBe(429);
     const payload = (await response.json()) as { error: { code: string } };
     expect(payload.error.code).toBe("RATE_LIMITED");
+  });
+
+  it("rejects non-http report URLs and accepts sanitized text", async () => {
+    const app = createApp({
+      allowedOrigins: ["http://localhost:5173"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const invalid = await app.request("/api/v1/report", {
+      method: "POST",
+      headers: {
+        Origin: "http://localhost:5173",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        category: "web",
+        message: "<b>Issue</b>",
+        url: "javascript:alert(1)",
+      }),
+    });
+    expect(invalid.status).toBe(400);
+    const valid = await app.request("/api/v1/report", {
+      method: "POST",
+      headers: {
+        Origin: "http://localhost:5173",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        category: "web",
+        message: "<b>Issue</b>",
+        url: "https://example.com/page",
+      }),
+    });
+    expect(valid.status).toBe(202);
+    expect(JSON.stringify(await valid.json())).not.toContain("<b>");
   });
 });

@@ -560,6 +560,663 @@ blockquote {
   color: var(--muted);
   margin-bottom: 10px;
 }
+.pdf-reader {
+  margin-top: 36px;
+  border-top: 1px solid var(--line);
+}
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.pdf-toolbar button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.pdf-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pdf-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.pdf-toolbar input {
+  accent-color: var(--blue);
+}
+.pdf-stage {
+  min-height: 280px;
+  display: grid;
+  place-items: start center;
+  overflow: auto;
+  padding: 22px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+}
+.pdf-stage p {
+  color: var(--muted);
+}
+.pdf-stage canvas {
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 8px 26px rgba(31, 66, 112, 0.12);
+}
+
+.pack-badge {
+  align-self: center;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.bible-search {
+  display: grid;
+  gap: 9px;
+  margin-top: 28px;
+  max-width: 720px;
+}
+.bible-search > label,
+.reader-toolbar label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.search-row {
+  display: flex;
+  gap: 9px;
+}
+.search-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.search-row input::placeholder {
+  color: var(--muted);
+}
+.search-results {
+  margin-top: 26px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 12px;
+}
+.result-list {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+.result-item {
+  display: grid;
+  gap: 5px;
+  padding: 13px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.result-item strong {
+  color: var(--blue);
+  font-size: 12px;
+}
+.result-item span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.loading-panel,
+.error-panel {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+}
+.error-panel {
+  border-color: color-mix(in srgb, #b98132 45%, var(--line));
+}
+.error-panel strong {
+  color: var(--ink);
+}
+.bible-reader {
+  margin-top: 28px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.reader-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 11px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.reader-toolbar label {
+  display: grid;
+  gap: 5px;
+}
+.reader-toolbar select {
+  min-height: 38px;
+  min-width: 125px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 12px;
+}
+.reader-spacer {
+  flex: 1;
+}
+.reader-toolbar .quiet-button {
+  min-height: 38px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+.reader-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 30px 18px;
+}
+.reader-heading h2 {
+  margin: 0;
+  font-size: 27px;
+  letter-spacing: -0.035em;
+}
+.reader-heading .date-line {
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+.reader-heading > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.verse-list {
+  padding: 0 30px 26px;
+}
+.verse-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+.verse-row p {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.72;
+}
+.verse-number {
+  align-self: start;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+}
+.verse-number.is-bookmarked {
+  background: var(--blue);
+  color: #fff;
+}
+.hymn-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 30px;
+}
+.hymn-browser,
+.hymn-detail {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.hymn-browser {
+  align-self: start;
+  overflow: hidden;
+}
+.hymn-filter {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.hymn-filter label,
+.song-controls label > span,
+.transpose-control > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.hymn-filter input,
+.hymn-filter select,
+.song-controls select {
+  min-height: 38px;
+  width: 100%;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 12px;
+}
+.hymn-list {
+  max-height: 610px;
+  overflow: auto;
+}
+.hymn-list-item {
+  display: grid;
+  grid-template-columns: 31px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 15px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+.hymn-list-item:hover,
+.hymn-list-item.is-selected {
+  background: var(--blue-soft);
+  color: var(--ink);
+}
+.hymn-list-item span {
+  color: var(--blue);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.hymn-list-item strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hymn-count {
+  display: block;
+  padding: 12px 15px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.hymn-detail {
+  padding: 28px;
+}
+.hymn-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.hymn-heading h2 {
+  margin: 0;
+  max-width: 600px;
+  font-size: clamp(24px, 3vw, 37px);
+  letter-spacing: -0.04em;
+}
+.hymn-heading .date-line {
+  margin-bottom: 9px;
+  font-size: 10px;
+}
+.hymn-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+.hymn-actions button {
+  min-height: 39px;
+  padding-inline: 12px;
+  font-size: 11px;
+}
+.song-controls {
+  display: flex;
+  align-items: end;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.song-controls label {
+  display: grid;
+  gap: 7px;
+  width: 120px;
+}
+.transpose-control {
+  display: grid;
+  gap: 7px;
+}
+.transpose-control > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.transpose-control button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+.transpose-control strong {
+  min-width: 27px;
+  color: var(--blue);
+  text-align: center;
+  font-size: 12px;
+}
+.lyrics-sheet {
+  max-width: 700px;
+  padding: 24px 10px 18px;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.65;
+}
+.lyrics-sheet p {
+  margin: 0;
+}
+.lyrics-break {
+  height: 18px;
+}
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 25px;
+  z-index: 30;
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 12px 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 12px;
+}
+.faith-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 30px;
+}
+.faith-list,
+.faith-detail {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.faith-list {
+  align-self: start;
+  overflow: hidden;
+}
+.faith-list > label {
+  display: block;
+  padding: 17px 17px 8px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.faith-list > input {
+  width: calc(100% - 34px);
+  min-height: 38px;
+  margin: 0 17px 14px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 12px;
+}
+.faith-list button {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+  min-height: 55px;
+  padding: 11px 16px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+.faith-list button:hover,
+.faith-list button.is-selected {
+  background: var(--blue-soft);
+  color: var(--ink);
+}
+.faith-list button span {
+  color: var(--blue);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.faith-list button strong {
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.35;
+}
+.faith-detail {
+  padding: clamp(24px, 5vw, 56px);
+}
+.faith-number {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 30px 0 25px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 24px;
+  font-weight: 650;
+}
+.faith-copy {
+  max-width: 700px;
+  margin-bottom: 32px;
+  color: var(--navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 3vw, 31px);
+  line-height: 1.45;
+  letter-spacing: -0.025em;
+}
+.faith-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.faith-actions button {
+  min-height: 40px;
+  font-size: 12px;
+}
+.faith-note {
+  display: grid;
+  gap: 8px;
+  max-width: 620px;
+  padding-top: 22px;
+}
+.faith-note span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.faith-note textarea {
+  resize: vertical;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.more-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+.more-card {
+  min-width: 0;
+  padding: 23px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.more-card-wide,
+.report-card {
+  grid-column: span 2;
+}
+.more-card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 15px;
+}
+.more-card-heading .date-line {
+  margin-bottom: 7px;
+  font-size: 10px;
+}
+.more-card h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.more-card > p {
+  max-width: 650px;
+  margin: 20px 0 23px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pack-stats {
+  display: flex;
+  gap: 34px;
+  flex-wrap: wrap;
+}
+.pack-stats span {
+  display: grid;
+  gap: 3px;
+}
+.pack-stats strong {
+  color: var(--navy);
+  font-size: 18px;
+}
+.pack-stats small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.more-action {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.more-action:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  transform: translateY(-1px);
+}
+.more-action strong {
+  font-size: 14px;
+}
+.more-action small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.more-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 9px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 19px;
+}
+.report-card {
+  display: grid;
+  gap: 14px;
+}
+.report-card textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.report-card .primary-button {
+  justify-self: start;
+}
 
 .media-surface {
   position: fixed;
@@ -707,6 +1364,95 @@ blockquote {
   }
   .feature-empty {
     margin-top: 55px;
+  }
+  .pack-badge {
+    display: inline-flex;
+    margin-top: 20px;
+  }
+  .search-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+  .search-row .primary-button {
+    padding-inline: 13px;
+  }
+  .reader-toolbar {
+    align-items: stretch;
+  }
+  .reader-toolbar label {
+    flex: 1 1 0;
+  }
+  .reader-toolbar select {
+    min-width: 0;
+    width: 100%;
+  }
+  .reader-spacer {
+    display: none;
+  }
+  .reader-toolbar .quiet-button {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+  .reader-heading {
+    padding: 22px 19px 14px;
+  }
+  .reader-heading h2 {
+    font-size: 24px;
+  }
+  .verse-list {
+    padding-inline: 19px;
+  }
+  .verse-row p {
+    font-size: 17px;
+  }
+  .hymn-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .hymn-list {
+    max-height: 210px;
+  }
+  .hymn-detail {
+    padding: 20px;
+  }
+  .hymn-heading {
+    display: grid;
+    align-items: start;
+  }
+  .hymn-actions {
+    justify-content: start;
+  }
+  .song-controls {
+    align-items: stretch;
+  }
+  .lyrics-sheet {
+    padding-inline: 0;
+    font-size: 17px;
+  }
+  .faith-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .faith-list > div {
+    max-height: 240px;
+    overflow: auto;
+  }
+  .faith-detail {
+    padding: 24px 20px;
+  }
+  .faith-copy {
+    font-size: 22px;
+  }
+  .more-grid {
+    grid-template-columns: 1fr;
+  }
+  .more-card-wide,
+  .report-card {
+    grid-column: auto;
+  }
+  .toast {
+    right: 14px;
+    bottom: calc(144px + env(safe-area-inset-bottom));
   }
   .mobile-navigation {
     display: block;

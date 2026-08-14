@@ -7,7 +7,11 @@ import {
 } from "@gys/contracts";
 import { MemoryChordCache } from "./index.js";
 
-export type ManifestResult = { manifest: ChordManifestV1; etag?: string };
+export type ManifestResult = {
+  manifest?: ChordManifestV1;
+  etag?: string;
+  notModified?: boolean;
+};
 export type ChordFetchResult = { bytes: Uint8Array; document: unknown };
 
 export interface ChordUpstream {
@@ -87,6 +91,11 @@ export class ChordRepository {
     this.inFlight = this.upstream
       .getManifest(this.currentEtag, signal)
       .then((result) => {
+        if (result.notModified && this.currentManifest) {
+          this.fetchedAt = this.now();
+          return this.currentManifest;
+        }
+        if (!result.manifest) throw new Error("manifest response has no body");
         const next = ChordManifestV1Schema.parse(result.manifest);
         this.currentManifest = next;
         this.currentEtag = result.etag;
@@ -137,8 +146,8 @@ export class ChordRepository {
     )
       throw new ChordIntegrityError(`sha256 mismatch for ${ref.path}`);
     if (
-      document.songId !== songId ||
-      document.sourceCommit !== ref.sourceCommit
+      "songId" in document &&
+      (document.songId !== songId || document.sourceCommit !== ref.sourceCommit)
     )
       throw new ChordIntegrityError("document provenance mismatch");
     await this.cache.putAtomic(ref, document, fetched.bytes);

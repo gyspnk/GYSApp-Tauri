@@ -49,4 +49,30 @@ describe("BibleRepository", () => {
     expect(repository.isBookmarked("joh-3-16")).toBe(true);
     expect(await repository.getVerse("missing")).toBeUndefined();
   });
+
+  it("keeps notes, highlights, history, and reference boundaries typed", async () => {
+    const repository = new BibleRepository(verses, {
+      pericopes: [
+        {
+          id: "john-love",
+          title: "God's love",
+          start: { book: "Yohanes", chapter: 3, verse: 16 },
+          end: { book: "Yohanes", chapter: 3, verse: 17 },
+        },
+      ],
+      references: {
+        "joh-3-16": [{ book: "Kejadian", chapter: 1, verse: 1 }],
+      },
+    });
+    await repository.setNote("joh-3-16", "Renungkan kasih karunia");
+    await repository.setHighlight("joh-3-16", "blue");
+    await repository.setLastReading({ book: "Yohanes", chapter: 3 });
+    expect(repository.note("joh-3-16")).toContain("kasih");
+    expect(repository.highlight("joh-3-16")).toBe("blue");
+    expect(repository.history()).toHaveLength(1);
+    expect(await repository.getPericope("john-love")).toBeDefined();
+    expect(repository.references("joh-3-16")).toEqual([
+      { book: "Kejadian", chapter: 1, verse: 1 },
+    ]);
+  });
 });

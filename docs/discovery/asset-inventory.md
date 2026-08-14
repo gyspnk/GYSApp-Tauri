@@ -7,5 +7,6 @@ The canonical source currently contains 533 PDFs (~7.22 MB), 533 MIDI files
 checkout and are copied only through an explicit, provenance-preserving asset
 sync step.
 
-The fresh-install pack includes TB Bible data, 533 hymn metadata/lyrics, and
-TimGM. PDFs, MIDI, chord files, and GeneralUser are on-demand or pinned.
+The fresh-install pack includes TB Bible data plus its browser reader index,
+533 hymn metadata/lyrics, ten faith topics, and TimGM. PDFs, MIDI, chord files,
+and GeneralUser are on-demand or pinned.

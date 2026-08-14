@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   AccountProfileSchema,
+  BiblePackManifestSchema,
+  BibleReaderPackSchema,
   ChordDocumentV2Schema,
   ErrorResponseSchema,
   UpstreamMusicLockSchema,
@@ -55,7 +57,49 @@ describe("public contracts", () => {
       ],
     });
 
+    if (!("verses" in parsed)) throw new Error("normalized chord expected");
     expect(parsed.verses[0]?.lines[0]?.chords[0]?.token).toBe("C");
+  });
+
+  it("accepts canonical note-aligned page documents", () => {
+    const parsed = ChordDocumentV2Schema.parse({
+      version: 2,
+      type: "note-aligned",
+      pages: { "1": [{ noteIdx: 0, chord: "C" }] },
+    });
+    expect(parsed.version).toBe(2);
+  });
+
+  it("validates the generated TB pack manifest", () => {
+    const parsed = BiblePackManifestSchema.parse({
+      version: "1",
+      translation: "TB",
+      generatedAt: "2026-08-14T00:00:00.000Z",
+      sha256: "a".repeat(64),
+      bytes: 21_340_160,
+      books: 66,
+    });
+    expect(parsed.translation).toBe("TB");
+  });
+
+  it("validates the browser TB reader projection", () => {
+    const parsed = BibleReaderPackSchema.parse({
+      version: 1,
+      translation: "TB",
+      source: "ThenGB/GYSAPP-Fork@4f0d39b",
+      books: [{ id: 1, short: "Kej", name: "Kejadian", chapters: 50 }],
+      verses: [
+        {
+          id: "1:1:1",
+          book: "1",
+          bookOrder: 1,
+          chapter: 1,
+          verse: 1,
+          text: "Pada mulanya",
+        },
+      ],
+    });
+    expect(parsed.books[0]?.name).toBe("Kejadian");
   });
 
   it("normalizes profile and structured errors", () => {

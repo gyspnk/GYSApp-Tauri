@@ -12,6 +12,13 @@ Preview slice reviewable and deployable:
 - Quiet Sanctuary responsive shell with five routes, id/en/zh, light/dark/system,
   offline status, PWA shell, local GYS logo, persistent media surface, and
   accessible focus/44px controls;
+- Browser TB reader/search projection generated from the canonical 66-book,
+  31,172-verse SQLite pack, a 533-item hymn catalog with ordered search,
+  transpose/lyrics/PDF entry points, ten multilingual faith topics with
+  notes/share, and local pack integrity manifests;
+- PDF.js is lazy-loaded with a local worker; MIDI transport, render cache, and
+  playlist state machines are covered by domain tests; the BFF now serves a
+  generated 140-entry chord manifest with sanitization and typed report input;
 - Hono Worker route skeleton with origin/CORS/CSRF posture, CSP, rate limiting,
   ETags/cache headers, schema validation, structured errors, auth/profile/report
   boundaries;
@@ -19,7 +26,7 @@ Preview slice reviewable and deployable:
 - generated 533-item hymn catalog, 1,208-entry immutable music lock, TB/TimGM
   offline binaries, and Playwright smoke coverage.
 
-The feature-parity matrix remains explicit about the next Beta work: full chord
-SWR/pinning diagnostics, MIDI transport/audio parity and benchmarks, PDF reader,
-Bible reader/pericopes, TTS range presentation, account OAuth, and cross-platform
-artifact pipelines.
+The feature-parity matrix remains explicit about the next Beta work: real
+Web-Audio/FluidSynth MIDI output and benchmarks, chord content fetch/pinning
+diagnostics, TTS range presentation/provider adapters, Bible pericopes/split
+versions, account OAuth, and cross-platform artifact pipelines.

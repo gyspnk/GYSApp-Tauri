@@ -163,3 +163,7 @@ export * from "./chord-sync.js";
 export * from "./bible.js";
 export * from "./backup.js";
 export * from "./speech.js";
+export * from "./midi.js";
+export * from "./midi-playlist.js";
+export * from "./midi-parser.js";
+export * from "./midi-loader.js";

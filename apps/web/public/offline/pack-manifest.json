@@ -1,14 +1,38 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T02:17:20.902Z",
+  "generatedAt": "2026-08-14T03:23:16.241Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
     {
       "id": "bible-tb",
       "path": "offline/bible/b_tb.db",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "bytes": 21340160,
+      "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe"
+    },
+    {
+      "id": "bible-tb-reader",
+      "path": "offline/bible/tb-reader.json",
+      "bytes": 7317701,
+      "sha256": "007f0b8aba206e53654fc9bab601135a3ecfa6632255170cc3f5714d2121cf15"
+    },
+    {
+      "id": "hymn-catalog",
+      "path": "offline/hymn-catalog.json",
+      "bytes": 489489,
+      "sha256": "7a8d4de83206e8c9f0475c4a91aebb3dbc9334a15da8680b5aba07c85bc02ee5"
+    },
+    {
+      "id": "music-lock",
+      "path": "offline/music-lock.json",
+      "bytes": 307595,
+      "sha256": "3e89bd61a9368ef19a586649382b529b682f4b87c0220d1961b8ef42523ac2d5"
+    },
+    {
+      "id": "faith-topics",
+      "path": "offline/faith.json",
+      "bytes": 8311,
+      "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52"
     },
     {
       "id": "soundfont-timgm",

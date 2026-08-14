@@ -11,10 +11,11 @@ The rewrite starts from an empty history. Functional discovery is sourced from
 `gyspnk/gyschordweb@cbc7d386`. Both upstreams are read-only. Discovery evidence,
 provenance, and architectural decisions live in [`docs/`](./docs).
 
-The first implementation slice provides typed contracts, a testable domain
-boundary, the Quiet Sanctuary web shell, and a secure BFF skeleton. Remaining
-parity work is tracked by milestone and is intentionally not represented as
-complete until its acceptance evidence exists.
+The Preview implementation provides typed contracts, a testable domain
+boundary, the Quiet Sanctuary web shell, a secure BFF boundary, local TB
+Bible/hymn/faith readers, a lazy PDF reader, and MIDI/chord/backup state
+machines. Remaining parity work is tracked by milestone and is intentionally
+not represented as complete until its acceptance evidence exists.
 
 ## Development
 

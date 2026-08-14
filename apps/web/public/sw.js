@@ -8,6 +8,12 @@ self.addEventListener("install", (event) => {
           "/GYSApp-Tauri/",
           "/GYSApp-Tauri/index.html",
           "/GYSApp-Tauri/manifest.webmanifest",
+          "/GYSApp-Tauri/offline/bible/b_tb.db",
+          "/GYSApp-Tauri/offline/bible/tb-reader.json",
+          "/GYSApp-Tauri/offline/hymn-catalog.json",
+          "/GYSApp-Tauri/offline/music-lock.json",
+          "/GYSApp-Tauri/offline/faith.json",
+          "/GYSApp-Tauri/offline/soundfont/TimGM6mb.sf2",
         ]),
       ),
   );

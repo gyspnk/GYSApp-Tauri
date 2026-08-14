@@ -1,0 +1,988 @@
+{
+  "version": 1,
+  "sourceRepo": "gyspnk/gyschordweb",
+  "sourceCommit": "cbc7d386",
+  "generatedAt": "2026-08-14T02:15:59.328Z",
+  "entries": [
+    {
+      "songId": "hymn-001",
+      "path": "assets/chord/001_Pujilah Allah Yang Maha Esa.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1530,
+      "sha256": "a3ec060a895e95f245ac6829d7c7d8c82e55dc336167b2176d778aa168a00343"
+    },
+    {
+      "songId": "hymn-002",
+      "path": "assets/chord/002_Pujilah Allah Yang Mahakudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 670,
+      "sha256": "f45c4cea5560d8ed6d74c226f8ff81509bef6f259ae8dca1b789ebe06b22f12f"
+    },
+    {
+      "songId": "hymn-003",
+      "path": "assets/chord/003_Pujilah Allah Yang Benar.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 611,
+      "sha256": "71236b76c00e313a847a0d39cf106f95d4a1387cfe64b7dc7e574fb929400e75"
+    },
+    {
+      "songId": "hymn-004",
+      "path": "assets/chord/004_Pujilah Bapa Yang di Surga.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 867,
+      "sha256": "56733284749cd83bd3524323d9f4cd310cacb722bc15a2cfe305dabeb051be4f"
+    },
+    {
+      "songId": "hymn-005",
+      "path": "assets/chord/005_Segala Sesuatu Memuji Allah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1663,
+      "sha256": "483ee487a75efb4a2d51b68086b5f12ed4b276297bf15c08c5c2f9fa6cad511c"
+    },
+    {
+      "songId": "hymn-006",
+      "path": "assets/chord/006_Pujilah Ciptaan-Nya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2154,
+      "sha256": "c277e08ad5b962119ad3775e6c0a6e688c6e8a6fc310fff4922754d1e75d044c"
+    },
+    {
+      "songId": "hymn-007",
+      "path": "assets/chord/007_Segala Sesuatu Memuji Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1533,
+      "sha256": "4d7b316b3ab915160c3c1671ab7e0d078bba8941fc6e70a8ac3b34fa97aea443"
+    },
+    {
+      "songId": "hymn-008",
+      "path": "assets/chord/008_Pujilah Allah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1010,
+      "sha256": "efe431b84b04eb960f6ba2996035e6e4d3313e487b881c1e3c63ad4daaa5a1fc"
+    },
+    {
+      "songId": "hymn-009",
+      "path": "assets/chord/009_Bersorak Bagi Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 998,
+      "sha256": "0bd1b19ba17e2556fc44404152be5de0848d22a2669ae4bae4fb812cafdaf893"
+    },
+    {
+      "songId": "hymn-010",
+      "path": "assets/chord/010_Muliakanlah Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1069,
+      "sha256": "dd2aa74df0a9ede90a9c59f259575bbdb839a4646fa1f4e72fc8dcd24c2723c4"
+    },
+    {
+      "songId": "hymn-011",
+      "path": "assets/chord/011_Gembira di Dalam Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 878,
+      "sha256": "7c4cbe81eabf4920698eb5d35e89a3f6cfe49e13a4e450f72f1fb5149e867487"
+    },
+    {
+      "songId": "hymn-012",
+      "path": "assets/chord/012_Mulia Nama Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1802,
+      "sha256": "73484348b5684143c6f6edc2087ceefdbec21d56db14f2e5f6afcd6df3fdbe0b"
+    },
+    {
+      "songId": "hymn-013",
+      "path": "assets/chord/013_Tiada yang Seperti Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1664,
+      "sha256": "1438a8b161302971ad5f5b0ebbe2a03a4fc2f95a6a563028b7a37a27721fe0ef"
+    },
+    {
+      "songId": "hymn-014",
+      "path": "assets/chord/014_Kristus Maharaja.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1479,
+      "sha256": "6317b37eff7e5fc6a74e1e0ea531b16d1881ce0a4b2cc31befa940e97b86c9ef"
+    },
+    {
+      "songId": "hymn-015",
+      "path": "assets/chord/015_Pujilah Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1205,
+      "sha256": "aa0131a30b4d82d1ebc136b285b995146f32a964d8511b60b8bee978c20b9887"
+    },
+    {
+      "songId": "hymn-016",
+      "path": "assets/chord/016_Sembahlah Tuhan Langit dan Bumi.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1596,
+      "sha256": "c4ba77c81b46c532accaba11e02fca0abe3d8c3c2e1526579e7add0d7bd553d4"
+    },
+    {
+      "songId": "hymn-017",
+      "path": "assets/chord/017_Pujilah Kasih Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1681,
+      "sha256": "84bb4b7e9aa31e2eda5638406f61d4d6ca062fe6d780874c778face78aaa95ee"
+    },
+    {
+      "songId": "hymn-018",
+      "path": "assets/chord/018_Pujilah Anugerah Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1555,
+      "sha256": "d10e799eb238841c857a523c93070dbc82eb255ce59642f6b6d8ceab3df44f35"
+    },
+    {
+      "songId": "hymn-019",
+      "path": "assets/chord/019_Hosana.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2297,
+      "sha256": "2e81c29303d83307515569982de528f4ad6e9485ba75628defe430ca45d93cae"
+    },
+    {
+      "songId": "hymn-020",
+      "path": "assets/chord/020_Pujilah Tuhan Sang Raja.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1398,
+      "sha256": "defcd73ee4673cdb3bb66aa1b6de2a71e26e141b7726e82fa758f5b553b411de"
+    },
+    {
+      "songId": "hymn-021",
+      "path": "assets/chord/021_Yesus Terelok.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1349,
+      "sha256": "70f9d926e0442e2e022289da172e7deed3995b103c8218c75ac07acca01bfa14"
+    },
+    {
+      "songId": "hymn-022",
+      "path": "assets/chord/022_Pujilah Alkitab.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1011,
+      "sha256": "f7afbe24186392cb9b1d72cb510d28c0c59837a9509c2eb615d6a7cb7a3df454"
+    },
+    {
+      "songId": "hymn-023",
+      "path": "assets/chord/023_Firman Tuhan Sungguh Indah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1014,
+      "sha256": "0e72585adf4a973565a5418ef24ce5fcf610c8801c9a571091c3e26a9a36451b"
+    },
+    {
+      "songId": "hymn-024",
+      "path": "assets/chord/024_Firman Kehidupan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2074,
+      "sha256": "d9cb5b732ae29b64cf9e5d421df4ec1c252edef636793475816ad3fd32ff68bd"
+    },
+    {
+      "songId": "hymn-025",
+      "path": "assets/chord/025_Firman Allah Murni.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1681,
+      "sha256": "1707dd812a2a701a9e9676f214913d49c635b2e4b17157c42d57a94b46bd6ae0"
+    },
+    {
+      "songId": "hymn-026",
+      "path": "assets/chord/026_Tuhan! Berfirmanlah Padaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 948,
+      "sha256": "47e3bdd6201b4db494c0bfc1d1b0b60ec68eeb1ab9ea5791287e50d5f0cae1e4"
+    },
+    {
+      "songId": "hymn-027",
+      "path": "assets/chord/027_Yesus Cintaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1820,
+      "sha256": "ce6a5788b520a42d37296f9deb6357c1cfbb3a4be579862da7c2be5642cae328"
+    },
+    {
+      "songId": "hymn-028",
+      "path": "assets/chord/028_Yesus Pengasih.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1150,
+      "sha256": "4d9d1e5f3fd58be6cef5d08721bfef7c20befc41955e5f1466cc78e320a084af"
+    },
+    {
+      "songId": "hymn-029",
+      "path": "assets/chord/029_Tuhan Mencari Domba yang Hilang.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1767,
+      "sha256": "d7f5862e22aa16cbefdf8260b1be2790b21bf9638f3d6338c4ba5d01d8f3a2c9"
+    },
+    {
+      "songId": "hymn-030",
+      "path": "assets/chord/030_Kasih Tuhan Mencariku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2369,
+      "sha256": "6b0fdab2aff39031a3e3a334bdf91541944e9abf8441cb799cc7d4eaf447236f"
+    },
+    {
+      "songId": "hymn-031",
+      "path": "assets/chord/031_Semuanya Demiku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1680,
+      "sha256": "95a27d86eaaf2af55e9ce2df02c8e6098e6f059a4e89ff0f86be74a3e37965b9"
+    },
+    {
+      "songId": "hymn-033",
+      "path": "assets/chord/033_Ke Yerusalem Baru.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1884,
+      "sha256": "5bfcc1233c8f1dc0fa936c88c0c88d6700f9f3dcb6ed948b434f82100fbf5140"
+    },
+    {
+      "songId": "hymn-036",
+      "path": "assets/chord/036_Suara Pengharapan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2556,
+      "sha256": "ec14013ecabe72d3f09e1edc85a8623e0f358cd8e5bca36ede3b3291c8a5a319"
+    },
+    {
+      "songId": "hymn-054",
+      "path": "assets/chord/054_Bebas Dari Gelap Menuju Terang.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2007,
+      "sha256": "dc72b38d52f02cdcb9c589ab2dbf67ef5780541c9b254490eec19286ae4ed77d"
+    },
+    {
+      "songId": "hymn-059",
+      "path": "assets/chord/059_Mohon Pimpinan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1949,
+      "sha256": "bdaf86d16b50f90d9a0d3ba92df314b4f02fefc322431e38f5d9174c6815b764"
+    },
+    {
+      "songId": "hymn-067",
+      "path": "assets/chord/067_Tuhan Tuntunlah Aku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1068,
+      "sha256": "1402b6d920b37181d925d6e11ad79591c9df3166b4b21c409aef21273896fac3"
+    },
+    {
+      "songId": "hymn-084",
+      "path": "assets/chord/084_Menyambut Rajaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2091,
+      "sha256": "799f258905a19420f9932f9da1131f46f0b4cdd28f631d317d1efe9db6bc06bb"
+    },
+    {
+      "songId": "hymn-085",
+      "path": "assets/chord/085_Tuhan Segera Datang.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1693,
+      "sha256": "7837491c30a9a1ca914d61c9afb373c6ad42234b378269fa0fae9000a9f55608"
+    },
+    {
+      "songId": "hymn-089",
+      "path": "assets/chord/089_AnugerahNya Berlimpah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1669,
+      "sha256": "27fea9775069adfbfd96d64f625dfd578a6a29828088bfa6df3150709276563d"
+    },
+    {
+      "songId": "hymn-090",
+      "path": "assets/chord/090_Hitunglah BerkatNya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1490,
+      "sha256": "8498940ea69803e66b7d8c92419bc902423d1a148c13fb6002fe05ce6eef9037"
+    },
+    {
+      "songId": "hymn-091",
+      "path": "assets/chord/091_Tuhan Pimpin Jalanku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2430,
+      "sha256": "50a592fe9f99ae421325614e4e8f2c1082adc85f0b67dcc04882c5e900c3afa3"
+    },
+    {
+      "songId": "hymn-101",
+      "path": "assets/chord/101_Hanya Cinta Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1134,
+      "sha256": "22b14154c318b7aad7fad8d872cd038ecc4e1614e7b31a7b8773f0801d3d6f4e"
+    },
+    {
+      "songId": "hymn-103",
+      "path": "assets/chord/103_Lebih Baik Ada Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1801,
+      "sha256": "1c1368f210102d27b5ddbcf9d4555776a0fc608c6584be37b55b7335df5c6f2f"
+    },
+    {
+      "songId": "hymn-122",
+      "path": "assets/chord/122_Saling Mengasihi.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1072,
+      "sha256": "5d5617f77a84a31695c4c84c0040e985c908d20d3b468f58e5ac4731f089df1d"
+    },
+    {
+      "songId": "hymn-126",
+      "path": "assets/chord/126_Mengasihi Sesama Saudara.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1529,
+      "sha256": "f69920613140b0a67471ef01be6e5e5cda0edf9503232d978a085de5906484f3"
+    },
+    {
+      "songId": "hymn-129",
+      "path": "assets/chord/129_Peringati Hari Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1330,
+      "sha256": "f521edf070a84bde06f27284619d6d9e6b8020d2abce89829e5ecb75e14b9bfa"
+    },
+    {
+      "songId": "hymn-130",
+      "path": "assets/chord/130_Sabat Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1082,
+      "sha256": "e595669f63e81036dea8c37e8998c710bca63c48accf3cdf7fd74b72a9658316"
+    },
+    {
+      "songId": "hymn-131",
+      "path": "assets/chord/131_Girang Berhari Sabat.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1673,
+      "sha256": "281860d10231ebace470b85d15e046298f49eb6852d5c84b8f77644a8ac6b656"
+    },
+    {
+      "songId": "hymn-133",
+      "path": "assets/chord/133_Yesus Takkan Berubah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2935,
+      "sha256": "5a044451224b0fbf2fdb3df4392d836ad52b4498a9006bcfa4023a2323cf40a4"
+    },
+    {
+      "songId": "hymn-134",
+      "path": "assets/chord/134_Pandanglah Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1419,
+      "sha256": "64a69acf756098bcf3dbc54bdc9f4c91fc299876ecd29ad0260990579a95cbbe"
+    },
+    {
+      "songId": "hymn-137",
+      "path": "assets/chord/137_Yesus Sahabatku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1625,
+      "sha256": "b5778004db910284eff4d8aea8ba6b628ac2b27982f26b8947de8aae68431a26"
+    },
+    {
+      "songId": "hymn-138",
+      "path": "assets/chord/138_Bila Menolak Almasih.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1953,
+      "sha256": "b54e33de5ba23bb95715a0287475fb838034f3a53e16586625a3b397c196ed2f"
+    },
+    {
+      "songId": "hymn-145",
+      "path": "assets/chord/145_Bersandar Pada Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2063,
+      "sha256": "a4c684af9c2829041fa435ad66b256769b8a0765c9a47662fa6fe2770cc78744"
+    },
+    {
+      "songId": "hymn-146",
+      "path": "assets/chord/146_Sandar Tuhan Setiap Waktu.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1135,
+      "sha256": "890ba085ec9d3975b157b96634e2244d4ec92559408db29f03b77202ce694110"
+    },
+    {
+      "songId": "hymn-149",
+      "path": "assets/chord/149_Tenteram di Bawah Lengan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1681,
+      "sha256": "f863c4b50b7a05f1e4be9cd68e7e514091c96fa14aea6a3f5dcef2c5a162258a"
+    },
+    {
+      "songId": "hymn-155",
+      "path": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1525,
+      "sha256": "3637ca03ad598062cd15c5cb8f5f7125a5d5c638c1acb1641122ffec01dedcce"
+    },
+    {
+      "songId": "hymn-158",
+      "path": "assets/chord/158_Berjalan di Jalan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1490,
+      "sha256": "58f3ff2f6fb32bcd45938be5bc0b883b5b0c48a578ae66b9b9ef8888d34a8c47"
+    },
+    {
+      "songId": "hymn-161",
+      "path": "assets/chord/161_Di Bawah Naungan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1073,
+      "sha256": "1736f76229d098db35789120fe88eb3e25ff1f9bd3f85e8c36fc20f050d2238d"
+    },
+    {
+      "songId": "hymn-165",
+      "path": "assets/chord/165_Yesus Memeluk Aku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1749,
+      "sha256": "c23500b39fde38ef62b84e2b35c06516cceba1e6055c5e028c758f9a883d353f"
+    },
+    {
+      "songId": "hymn-179",
+      "path": "assets/chord/179_Bersiap Masuk Surga.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1598,
+      "sha256": "c1ddad1f13ff5036f4fd8050173b56c0386022a8a8bdb19cddfa61d6892d3817"
+    },
+    {
+      "songId": "hymn-200",
+      "path": "assets/chord/200_Merindukan Rumah di Surga.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1597,
+      "sha256": "9b7966184724fe2352569d42ad35e18e11354e9724a31d0b3ac675cd1d4310ad"
+    },
+    {
+      "songId": "hymn-201",
+      "path": "assets/chord/201_Kemuliaan Kekal.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1814,
+      "sha256": "c3cc15fb3aa55a196e26e91d34e7731b3742b0426512060c6255e5663ee8f831"
+    },
+    {
+      "songId": "hymn-202",
+      "path": "assets/chord/202_Surga Tempat Bahagia.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1614,
+      "sha256": "2e281453ec73b67a968ee802bc13c23ed15666d7fd9f7cc3d609e896f52af4d8"
+    },
+    {
+      "songId": "hymn-203",
+      "path": "assets/chord/203_Bunga Bakung.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 3361,
+      "sha256": "abf602d8abe01ff67beeaf0db435fc11b1d9ac7b76a0143689a9fac0ee671af7"
+    },
+    {
+      "songId": "hymn-204",
+      "path": "assets/chord/204_Berpengharapan Karena Iman.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1134,
+      "sha256": "df0edd957ba29a1ff4a68b184392cbb7492b10a749d28d22f9bedc20ca3a9fc7"
+    },
+    {
+      "songId": "hymn-205",
+      "path": "assets/chord/205_Di Dalam Kristus Pasti Bangkit.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2190,
+      "sha256": "e03e8a770367f79ec5c5ae59ee210d79f3fee8941fdcba2c67903d04c8b276e3"
+    },
+    {
+      "songId": "hymn-206",
+      "path": "assets/chord/206_Aku Pasti Berjumpa Dengan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1591,
+      "sha256": "9800bfe8c1f41034b96011c7ecdd0b059553465f780975ebf14875d50f650903"
+    },
+    {
+      "songId": "hymn-207",
+      "path": "assets/chord/207_Merindukan Kedatangan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1689,
+      "sha256": "2eca7c8aee3f0b747338726920caba5f0203f1dda15f3f2d575bd470dc333c9c"
+    },
+    {
+      "songId": "hymn-208",
+      "path": "assets/chord/208_Umat Kudus Diangkat.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1571,
+      "sha256": "781cf79c3582f8522061e283e6cd3b0db7f5e333aecc8242837e8f6f2a290f86"
+    },
+    {
+      "songId": "hymn-209",
+      "path": "assets/chord/209_Aku Akan Melihat Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1798,
+      "sha256": "b189686f5698f970974a9c9443ce6f3712fecbd535330f7c0896466c2c4555b8"
+    },
+    {
+      "songId": "hymn-210",
+      "path": "assets/chord/210_Di Kala Hidup Ini Berakhir.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1695,
+      "sha256": "48ba0e8784dcc3b0726c5fb3e33b27ba74ea82a9c8ca2d01dfb80f6b2fa4f100"
+    },
+    {
+      "songId": "hymn-211",
+      "path": "assets/chord/211_Allah Mengawasi.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1350,
+      "sha256": "6f3f037814abcbbb7e912ec3f1c51219984dd7539e2335a1247d57594a2ea87a"
+    },
+    {
+      "songId": "hymn-212",
+      "path": "assets/chord/212_Bersinar Bagi Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 871,
+      "sha256": "f0353991b01111be84328439ceac2b108c07c291ed20124c172a4d929c2a3e7b"
+    },
+    {
+      "songId": "hymn-213",
+      "path": "assets/chord/213_Walau Sedikit Namun Berarti.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 940,
+      "sha256": "a01e740d02b9e93b94d5edf82a9854e452c2a4c197a73451f22a4c40d3c0c003"
+    },
+    {
+      "songId": "hymn-214",
+      "path": "assets/chord/214_Delapan Kebahagiaan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1465,
+      "sha256": "7dce4fe3afbaf53f79c079a07fcb23e3d21446a71a930a327330ac0f23be31d7"
+    },
+    {
+      "songId": "hymn-215",
+      "path": "assets/chord/215_Akhlak Gereja Benar.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 998,
+      "sha256": "7ff54f497ad7a985bd2ebaa24aa2ca0aad7100765158c1114a180a3e7a060701"
+    },
+    {
+      "songId": "hymn-216",
+      "path": "assets/chord/216_Budi Pekerti Umat Suci.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1070,
+      "sha256": "9b9db722b2466df14bf04c63d4ecdc08c04332399b49732c3ed8c9a8222be690"
+    },
+    {
+      "songId": "hymn-217",
+      "path": "assets/chord/217_Melakukan Firman Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1348,
+      "sha256": "215b0720741ae889a542149eab27dfbee7e32ae44a84d37fe2ea44086bf923fd"
+    },
+    {
+      "songId": "hymn-218",
+      "path": "assets/chord/218_Buah Roh Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1678,
+      "sha256": "a0be944c5b425d98a4a3333142cc9d856a9c7af85c6056dd4904acda354d46b9"
+    },
+    {
+      "songId": "hymn-219",
+      "path": "assets/chord/219_Di mana Saja Bersinar.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1612,
+      "sha256": "e60b34daccc5e7cc7aaf98a68cb8a57532849de105d8dc24101347ef2bed7799"
+    },
+    {
+      "songId": "hymn-220",
+      "path": "assets/chord/220_Api Pengujian.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1545,
+      "sha256": "7013b22a0ceade2bfa524e93787749924c6a616f1da97f3759aa304429c00fda"
+    },
+    {
+      "songId": "hymn-221",
+      "path": "assets/chord/221_Taklukkan Keinginan Daging.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1142,
+      "sha256": "a5f717874c6dfd9de53abfae3cf88360432cd2d917f0ffe7e6e07968b31ac6a9"
+    },
+    {
+      "songId": "hymn-222",
+      "path": "assets/chord/222_Berbahagialah Yang Suci Hatinya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 673,
+      "sha256": "0dca6ec98e5fca12680d1411dd74474131c419218d87dea037c3b7546e653824"
+    },
+    {
+      "songId": "hymn-223",
+      "path": "assets/chord/223_Kidung Umat Pilihan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2129,
+      "sha256": "42d04c7fe3280bbdfc63392e379e2a2dbaac8394c8ba7dbdf7c3cd65d889b131"
+    },
+    {
+      "songId": "hymn-224",
+      "path": "assets/chord/224_Mohon Tuhan Selidiki.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1742,
+      "sha256": "b3dc8cf2ae73c32a6a2425f7739943e7dc6fb583f9971cea7dd2a431c372dbcf"
+    },
+    {
+      "songId": "hymn-225",
+      "path": "assets/chord/225_Turut Roh Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1599,
+      "sha256": "42fa7788a81d9e065b55d72d9f526a06eee1f93660be5a375f3afecb816ce5f9"
+    },
+    {
+      "songId": "hymn-226",
+      "path": "assets/chord/226_Jadilah Kehendak Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1532,
+      "sha256": "c814d0b2453c02b72e038f996a07a2d6a4078c49089743cfbbd401eeb62ec20c"
+    },
+    {
+      "songId": "hymn-227",
+      "path": "assets/chord/227_Berbahagialah Yang Mendengar PerintahNya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1076,
+      "sha256": "dd183446f9374d0a75d8ab25174bae7210325e88f8e439c59ae4c191ca126032"
+    },
+    {
+      "songId": "hymn-228",
+      "path": "assets/chord/228_Berbahagialah Yang Turut PerintahNya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1686,
+      "sha256": "3ccda0e73cd07888073a801dc994193d026700cd751128b8bd29413011a3e9f8"
+    },
+    {
+      "songId": "hymn-229",
+      "path": "assets/chord/229_Sepuluh Perintah Allah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1380,
+      "sha256": "7fe0379abe849a20c4750f2f864327b975d0e2e3c08a3e0c5e554df08b486ecc"
+    },
+    {
+      "songId": "hymn-230",
+      "path": "assets/chord/230_Berbahagialah Orang yang Benar.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1073,
+      "sha256": "20702d7033a6d19ffbb31e125c3430ed0481d6879350fedba87b667e1b9d15f2"
+    },
+    {
+      "songId": "hymn-231",
+      "path": "assets/chord/231_Jadilah Seperti Kehendak-Mu.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1531,
+      "sha256": "1c83fd216bd552320421525a372c22de257aec87acb1d7d9a8b3dbfd5d9f3f0d"
+    },
+    {
+      "songId": "hymn-232",
+      "path": "assets/chord/232_Seperti Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1872,
+      "sha256": "766b71c98eef980b94969bf087f866e9d78eb82bf8a337955e906b1b1c506ce5"
+    },
+    {
+      "songId": "hymn-233",
+      "path": "assets/chord/233_Milik Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 802,
+      "sha256": "a9833b109787f2c4c8dbf39f316c09a6fa600bef45f77d2eee447324a4cac6ea"
+    },
+    {
+      "songId": "hymn-234",
+      "path": "assets/chord/234_Ingin Lebih Dekat Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1814,
+      "sha256": "330b069cab3d30f2895c0d0efd1b43d642e6d9cbbde792dc49db3df4b2419598"
+    },
+    {
+      "songId": "hymn-235",
+      "path": "assets/chord/235_Tuhan dan Aku Satu Tubuh.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1871,
+      "sha256": "9052f89872d1ab5b6d6a1d22ab2312450c3ade995e89320c19f31d93383b23a4"
+    },
+    {
+      "songId": "hymn-236",
+      "path": "assets/chord/236_Aku Milik Yesus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1887,
+      "sha256": "8afbc1ff1dd4bce9fad1c473734fd805139135100825ef0f9f9485a2c718332b"
+    },
+    {
+      "songId": "hymn-237",
+      "path": "assets/chord/237_Sejak Yesus di Hatiku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1605,
+      "sha256": "04f66170e656da71ac6030cea2417120ee2599fa3ca2ba032054b7c5cd5b2e31"
+    },
+    {
+      "songId": "hymn-238",
+      "path": "assets/chord/238_Yesus, Tinggallah di Hatiku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1792,
+      "sha256": "0bcf1f9207d9b2bdc8e416b7e16c9d578cbe106264982eb269f3087e0a0f6ef0"
+    },
+    {
+      "songId": "hymn-239",
+      "path": "assets/chord/239_Tuhan, Tinggallah Bersamaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1741,
+      "sha256": "1d2c03bca0c2550bc147c7790a84a513e155ffd04b40541e02d973b426d3226e"
+    },
+    {
+      "songId": "hymn-240",
+      "path": "assets/chord/240_Girang Bersama Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1869,
+      "sha256": "6049752060ab74af4accdaf5f78b5a017813da633974fedfab4ef1313097b3d1"
+    },
+    {
+      "songId": "hymn-241",
+      "path": "assets/chord/241_Raja Jiwaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1015,
+      "sha256": "8a09973cb8fef1eb118cfaba80b524b33187348a522504aa47c418fb8d531bd1"
+    },
+    {
+      "songId": "hymn-242",
+      "path": "assets/chord/242_Tuhan Menanti di Luar Pintu.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1610,
+      "sha256": "77213a87d0c1178c74b939c11a5596b866ef161ea13f7c1a8dc9ccd0a734419a"
+    },
+    {
+      "songId": "hymn-243",
+      "path": "assets/chord/243_Dekatkanlah Aku PadaMu.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1933,
+      "sha256": "c829aa476e515c04d7b78b88f51ad0b3e868d6b7f447c325ec5c653d07465d3e"
+    },
+    {
+      "songId": "hymn-244",
+      "path": "assets/chord/244_Tuhan, Aku Mau Seperti-Mu.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1550,
+      "sha256": "02b5f20cf62ad503845158d245b5a74441be02bf75bc287727c6b2c56b175cf9"
+    },
+    {
+      "songId": "hymn-245",
+      "path": "assets/chord/245_Tinggal Bersama Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1081,
+      "sha256": "72e89d75f13998987267b1f26bd5c6b457ccac076a9ea53188f6ae80364c0dcf"
+    },
+    {
+      "songId": "hymn-246",
+      "path": "assets/chord/246_Memohon Roh Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 929,
+      "sha256": "f5d9545f6a390b5905cdcf22de066fc9e00bb57658dd85a563e38b7b0acb8a85"
+    },
+    {
+      "songId": "hymn-247",
+      "path": "assets/chord/247_Kuasa Roh Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1940,
+      "sha256": "28e1cbeb21827adb8feabee2c27bbc9c8d591f54c8d1abb8bb1eb0b511414881"
+    },
+    {
+      "songId": "hymn-248",
+      "path": "assets/chord/248_Mohon Roh Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1078,
+      "sha256": "540ace58d77480062e76b9b52f79c4e38c7fdc3cd20431fe1e4d33ab911982c9"
+    },
+    {
+      "songId": "hymn-249",
+      "path": "assets/chord/249_Roh Kudus Baptis Semua.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1951,
+      "sha256": "1f4c6326aaaceb872c4e931fdaad3d93ba39b1cde0503e928f82045c0335a91b"
+    },
+    {
+      "songId": "hymn-250",
+      "path": "assets/chord/250_Mendapat Kekuatan Baru.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 943,
+      "sha256": "b30a96385a57fc70385ae406ff3a47ec32b3803c26cf8febff8d2cf63c5b83b9"
+    },
+    {
+      "songId": "hymn-259",
+      "path": "assets/chord/259_Tekun Berdoa.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1872,
+      "sha256": "64350b4270a235880fb1d9e4001f9cd83bcb0d88f31b93a80c91c4467155e128"
+    },
+    {
+      "songId": "hymn-262",
+      "path": "assets/chord/262_Bersekutu Dalam Roh Dengan Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1598,
+      "sha256": "8b4e1fc61aeec8a34bffba8bc18e4d13b1510c6bd8078ecee0a327d347cd4f9f"
+    },
+    {
+      "songId": "hymn-330",
+      "path": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1541,
+      "sha256": "e7d724a42d3936633fcb5a167168a8292c4264083f7b0b9a5fa883e3fdf8bf18"
+    },
+    {
+      "songId": "hymn-332",
+      "path": "assets/chord/332_Kasih Allah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1824,
+      "sha256": "98c9e258b1aeeec5bcae73dc6627bb1be6a38c7f32088a6e329f4bebf73f7c9a"
+    },
+    {
+      "songId": "hymn-358",
+      "path": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1947,
+      "sha256": "9ae2d116f0ee318b24eba5c09438a145d5649dcd37b0daa48227d75ba8095d38"
+    },
+    {
+      "songId": "hymn-368",
+      "path": "assets/chord/368_Ku Tahu Siapa Pegang Hari Esok.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1883,
+      "sha256": "8ebfa0a1f719b246d1769194db1c19fdddf6b7b6a82516cd4799eab7587c6383"
+    },
+    {
+      "songId": "hymn-370",
+      "path": "assets/chord/370_Bila Tuhan Beserta Kita.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2001,
+      "sha256": "1227b684fc3ac7398fb1aa55849f5683514ce6fe1419d0c13a7e426834ed3fdf"
+    },
+    {
+      "songId": "hymn-373",
+      "path": "assets/chord/373_Percayalah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2001,
+      "sha256": "a28679b65456375a3705575444f91fac53f29aa876811a876c9fa65827ad4553"
+    },
+    {
+      "songId": "hymn-377",
+      "path": "assets/chord/377_Tuhan Kau Mengingatku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1335,
+      "sha256": "d125e8a996971bc200e37fa6ab5b0c9a45259b2dfbaf93cc8165177dc3eeb56f"
+    },
+    {
+      "songId": "hymn-393",
+      "path": "assets/chord/393_Terima Kasih, Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1825,
+      "sha256": "b1b02e71857721fa3d63b3aef83d7e8b7b22f5f119b9421cd5caf86e81f8149b"
+    },
+    {
+      "songId": "hymn-394",
+      "path": "assets/chord/394_Terima Kasih Pada Tuhan.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1404,
+      "sha256": "2a6b8e74f52eda22373886cc8fb9cf2b3da0a1bbb548572ecb6455aab3ed0512"
+    },
+    {
+      "songId": "hymn-405",
+      "path": "assets/chord/405_Berdoakah Engkau_.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1951,
+      "sha256": "0dbfe9c63724bc34e19bb1cfb39a55683155208d207089da91383d2c92dcb593"
+    },
+    {
+      "songId": "hymn-411",
+      "path": "assets/chord/411_Taman Doa Nan indah.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1617,
+      "sha256": "3ffdb29c011c9b432ed728bd7a408ceb0dcd8468493bd525118563d5c1f016fd"
+    },
+    {
+      "songId": "hymn-412",
+      "path": "assets/chord/412_Indahnya Saat Berdoa.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1689,
+      "sha256": "65f5ee90ae91eb32b939b8afcabaf906a8c06d89aa051768cda4e6c4a4a9f04d"
+    },
+    {
+      "songId": "hymn-416",
+      "path": "assets/chord/416_Kau Sanggupkah Tanya Yesus_.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2198,
+      "sha256": "7f2cd830641ba134ca6ba3fc6a947eadd811c9ececd5b06593b860af0d0e79c4"
+    },
+    {
+      "songId": "hymn-422",
+      "path": "assets/chord/422_Beritakan KasihNya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1489,
+      "sha256": "f3a8b5e6a0fd69f4407154c3608c6f55696d056280f1eb24a337cb8ebceb70e9"
+    },
+    {
+      "songId": "hymn-433",
+      "path": "assets/chord/433_Damai Nan Ajaib.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1876,
+      "sha256": "73c26370740969ca03f5e6e5a238cd4c6899969e2c57dedf9572b6f3182ce8d6"
+    },
+    {
+      "songId": "hymn-434",
+      "path": "assets/chord/434_Di Suatu Negeri Yang Mulia.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1818,
+      "sha256": "faeff50cd43c990d33cd2015ea51d468de21de48003b09d81871a0f8a278b6bf"
+    },
+    {
+      "songId": "hymn-435",
+      "path": "assets/chord/435_Dia Mengampuni Semua Dosaku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2368,
+      "sha256": "678f772e2ac8f02ede7adf303a6c0bec09c13121e2e8d99419f48aaf8b2a985a"
+    },
+    {
+      "songId": "hymn-443",
+      "path": "assets/chord/443_Iman Umat-Umat Kudus.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1462,
+      "sha256": "a71cecf4a8d29003574043fc08900e46d358a741d849670ff99c62cb4e3494d5"
+    },
+    {
+      "songId": "hymn-450",
+      "path": "assets/chord/450_Serukanlah Perang.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1732,
+      "sha256": "de2487724e3fd9b0bfc6cc1164555d342a71cdc597e2cf9ed06c799d14f14f09"
+    },
+    {
+      "songId": "hymn-452",
+      "path": "assets/chord/452_Jadilah Visiku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1264,
+      "sha256": "a1fa3fe8cc860d959f5cc4c396872f45a35468f73d77b1d2eb82829d6cbbd2ef"
+    },
+    {
+      "songId": "hymn-454",
+      "path": "assets/chord/454_Oh Datanglah, Imanuel.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1433,
+      "sha256": "fc6a422b2b3a2f522783642b2452558c844d36a3e746eb2978bb88c182567df0"
+    },
+    {
+      "songId": "hymn-468",
+      "path": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1621,
+      "sha256": "471dc0d77d670b8a6c45bc410ff9c8a9f0df6c995db29c9b300c41eb0e8582d4"
+    },
+    {
+      "songId": "hymn-483",
+      "path": "assets/chord/483_Hanya Satu Rencana.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2348,
+      "sha256": "4add7a5e46a56631f4116334c8ccbfa3b4ba3547309fa1e5c26d41eb8dbabf53"
+    },
+    {
+      "songId": "hymn-516",
+      "path": "assets/chord/516_Aku Bertekad.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1481,
+      "sha256": "e84ded7678cdf708a27905b8291015f7ba10fc3559afb34aa4588a15bb74a9d3"
+    },
+    {
+      "songId": "hymn-520",
+      "path": "assets/chord/520_Menabur Dengan Air Mata.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 2084,
+      "sha256": "f2ec07dca832c9bd0307732faadea7cbcab1de8b342ab989a4d39f08e9b6f11e"
+    },
+    {
+      "songId": "hymn-521",
+      "path": "assets/chord/521_Akulah DombaNya.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 1272,
+      "sha256": "7d1d340810566e959cf289062399cda90f8ef28884183c78cd2af8dd0f60a0e6"
+    },
+    {
+      "songId": "hymn-528",
+      "path": "assets/chord/528_Dia Segalanya Bagiku.chord.json",
+      "sourceCommit": "cbc7d386",
+      "size": 3482,
+      "sha256": "634cc61bca2bacd1aaafa1c988970cffbd093c11fab9359e3419b94e47944179"
+    }
+  ]
+}

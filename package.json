@@ -8,6 +8,7 @@
   },
   "scripts": {
     "check:workspace": "node scripts/verify-workspace.mjs",
+    "verify:generated": "node scripts/verify-generated-provenance.mjs",
     "dev": "pnpm --filter @gys/web dev",
     "build": "pnpm run check:workspace && pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build && pnpm --filter @gys/testkit build && pnpm --filter @gys/bff build && pnpm --filter @gys/web build",
     "typecheck": "pnpm --filter @gys/contracts typecheck && pnpm --filter @gys/domain typecheck && pnpm --filter @gys/testkit typecheck && pnpm --filter @gys/bff typecheck && pnpm --filter @gys/web typecheck",
@@ -16,6 +17,7 @@
     "format:check": "pnpm exec prettier --check .",
     "format": "pnpm exec prettier --write .",
     "generate:music-lock": "node scripts/generate-music-lock.mjs",
+    "generate:chord-manifest": "node scripts/generate-chord-manifest.mjs",
     "generate:hymn-catalog": "node scripts/generate-hymn-catalog.mjs",
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs"
   },

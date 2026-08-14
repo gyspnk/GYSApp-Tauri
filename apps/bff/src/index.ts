@@ -10,6 +10,7 @@ import {
   type OnlineContent,
 } from "@gys/contracts";
 import { z } from "zod";
+import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -21,7 +22,11 @@ const ProviderSchema = z.enum(["google", "apple", "egys"]);
 const ReportSchema = z.object({
   category: z.string().min(1).max(80),
   message: z.string().min(1).max(2_000),
-  url: z.string().url().optional(),
+  url: z
+    .string()
+    .url()
+    .refine((value) => ["http:", "https:"].includes(new URL(value).protocol))
+    .optional(),
 });
 
 export type BffConfig = {
@@ -69,7 +74,13 @@ function safeText(value: string): string {
 
 export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
   const manifest = ChordManifestV1Schema.parse(config.chordManifest);
-  const content = config.content.map((item) => OnlineContentSchema.parse(item));
+  const content = config.content.map((item) =>
+    OnlineContentSchema.parse({
+      ...item,
+      title: safeText(item.title),
+      body: safeText(item.body),
+    }),
+  );
   const app = new Hono<{ Bindings: BffBindings }>();
   const rateLimit = config.rateLimit ?? { max: 120, windowMs: 60_000 };
   const buckets = new Map<string, { startedAt: number; count: number }>();
@@ -213,13 +224,7 @@ export function createApp(config: BffConfig): Hono<{ Bindings: BffBindings }> {
 
 export const app = createApp({
   allowedOrigins: ["https://gyspnk.github.io", "http://localhost:5173"],
-  chordManifest: {
-    version: 1,
-    sourceRepo: "gyspnk/gyschordweb",
-    sourceCommit: "cbc7d386",
-    generatedAt: "2026-08-14T00:00:00.000Z",
-    entries: [],
-  },
+  chordManifest: generatedChordManifest,
   content: [],
 });
 

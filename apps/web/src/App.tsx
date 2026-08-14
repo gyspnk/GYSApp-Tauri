@@ -17,6 +17,10 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
+import { BiblePage } from "./bible.js";
+import { KidungPage } from "./kidung.js";
+import { FaithPage } from "./faith.js";
+import { MorePage } from "./more.js";
 
 type Theme = "light" | "dark" | "system";
 
@@ -468,22 +472,10 @@ function RoutedApp() {
     <Routes>
       <Route element={<Shell {...settings} />}>
         <Route path="/" element={<HomePage locale={locale} />} />
-        <Route
-          path="/bible"
-          element={<FeaturePage locale={locale} kind="bible" />}
-        />
-        <Route
-          path="/kidung"
-          element={<FeaturePage locale={locale} kind="kidung" />}
-        />
-        <Route
-          path="/iman"
-          element={<FeaturePage locale={locale} kind="iman" />}
-        />
-        <Route
-          path="/lainnya"
-          element={<FeaturePage locale={locale} kind="more" />}
-        />
+        <Route path="/bible" element={<BiblePage locale={locale} />} />
+        <Route path="/kidung" element={<KidungPage locale={locale} />} />
+        <Route path="/iman" element={<FaithPage locale={locale} />} />
+        <Route path="/lainnya" element={<MorePage locale={locale} />} />
         <Route path="*" element={<HomePage locale={locale} />} />
       </Route>
     </Routes>

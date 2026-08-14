@@ -3,8 +3,11 @@
 The initial web pack includes:
 
 - TB SQLite database derived from `ThenGB/GYSAPP-Fork@4f0d39b`;
+- a browser TB reader/search projection (66 books, 31,172 verses) generated
+  from that SQLite database;
 - 533 hymn metadata/lyrics entries derived from
   `gyspnk/gyschordweb@cbc7d386`;
+- ten faith topics in id/en/zh derived from the functional source;
 - TimGM6mb soundfont derived from `gyspnk/gyschordweb@cbc7d386`.
 
 The generated [`pack-manifest.json`](../../apps/web/public/offline/pack-manifest.json)

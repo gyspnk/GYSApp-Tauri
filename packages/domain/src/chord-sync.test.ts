@@ -62,6 +62,29 @@ describe("ChordRepository", () => {
     expect(calls).toBe(1);
   });
 
+  it("keeps the manifest body on an ETag-only 304 response", async () => {
+    let calls = 0;
+    const upstream: ChordUpstream = {
+      getManifest: async (etag) => {
+        calls += 1;
+        return etag
+          ? { notModified: true, etag }
+          : { manifest, etag: 'W/"cbc7d386"' };
+      },
+      fetchChord: async () => ({ bytes: bytesFor(document), document }),
+    };
+    let now = 0;
+    const repository = new ChordRepository(
+      upstream,
+      new MemoryChordCache(),
+      () => now,
+    );
+    await repository.refreshManifest();
+    now = 7 * 60 * 60 * 1000;
+    await repository.refreshManifest();
+    expect(calls).toBe(2);
+  });
+
   it("keeps old cached content when the changed document fails integrity validation", async () => {
     const cache = new MemoryChordCache();
     const oldBytes = bytesFor(document);
