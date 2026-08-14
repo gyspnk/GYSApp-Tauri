@@ -16,6 +16,7 @@ docs/performance/raw/
 .tmp-egys-*/
 apps/web/test-results/
 apps/web/playwright-report/
+.ci-artifacts*/
 .playwright-mcp/
 apps/web/vite.config.js
 apps/web/vite.config.js.map
