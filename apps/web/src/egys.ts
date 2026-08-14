@@ -7,9 +7,14 @@ function apiUrl(path: string): string {
     : `${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`;
 }
 
+function configuredBase(): string | undefined {
+  return import.meta.env.VITE_BFF_BASE_URL?.trim();
+}
+
 export async function getEgysProfile(
   signal?: AbortSignal,
 ): Promise<AccountProfile | undefined> {
+  if (!configuredBase()) return undefined;
   const response = await fetch(apiUrl("/api/v1/account/profile"), {
     credentials: "include",
     ...(signal ? { signal } : {}),
@@ -25,6 +30,7 @@ export async function exchangeEgysToken(
   provider: "google" | "apple",
   idToken: string,
 ): Promise<void> {
+  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
   const response = await fetch(apiUrl(`/api/v1/auth/exchange/${provider}`), {
     method: "POST",
     credentials: "include",
@@ -35,6 +41,7 @@ export async function exchangeEgysToken(
 }
 
 export async function signOutEgys(): Promise<void> {
+  if (!configuredBase()) return;
   await fetch(apiUrl("/api/v1/auth/logout"), {
     method: "POST",
     credentials: "include",

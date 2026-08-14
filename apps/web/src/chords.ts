@@ -10,18 +10,54 @@ import { createBrowserPlatformServices } from "./platform.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 
-function bffUrl(path: string): string {
+function bffUrl(path: string): string | undefined {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  return base
-    ? `${base.replace(/\/$/, "")}${path}`
-    : `${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`;
+  return base ? `${base.replace(/\/$/, "")}${path}` : undefined;
+}
+
+async function fallbackManifest(): Promise<{ manifest: ChordManifestV1 }> {
+  const lockResponse = await fetch(
+    `${import.meta.env.BASE_URL}offline/music-lock.json`,
+    { cache: "no-cache" },
+  );
+  if (!lockResponse.ok) throw new Error("offline music lock unavailable");
+  const lock = (await lockResponse.json()) as {
+    sourceCommit: string;
+    generatedAt: string;
+    items: Array<{
+      id: string;
+      kind: string;
+      path: string;
+      size: number;
+      sha256: string;
+    }>;
+  };
+  return {
+    manifest: {
+      version: 1,
+      sourceRepo: "gyspnk/gyschordweb",
+      sourceCommit: lock.sourceCommit,
+      generatedAt: lock.generatedAt,
+      entries: lock.items
+        .filter((item) => item.kind === "chord")
+        .map((item) => ({
+          songId: `hymn-${(item.path.match(/\/(\d+)_/)?.[1] ?? "0").padStart(3, "0")}`,
+          path: item.path,
+          sourceCommit: lock.sourceCommit,
+          size: item.size,
+          sha256: item.sha256,
+        })),
+    },
+  };
 }
 
 export function createBrowserChordRepository(): ChordRepository {
   const upstream: ChordUpstream = {
     async getManifest(etag, signal) {
+      const endpoint = bffUrl("/api/v1/chords/manifest");
+      if (!endpoint) return fallbackManifest();
       const response = await fetch(
-        bffUrl("/api/v1/chords/manifest"),
+        endpoint,
         signal
           ? {
               signal,
@@ -40,42 +76,7 @@ export function createBrowserChordRepository(): ChordRepository {
         !response.ok ||
         !response.headers.get("content-type")?.includes("json")
       ) {
-        // GitHub Pages has no same-origin Worker; derive the immutable manifest
-        // from the checked-in music lock so chord view remains functional.
-        const lockResponse = await fetch(
-          `${import.meta.env.BASE_URL}offline/music-lock.json`,
-          { cache: "no-cache" },
-        );
-        if (!lockResponse.ok)
-          throw new Error(`manifest request failed: ${response.status}`);
-        const lock = (await lockResponse.json()) as {
-          sourceCommit: string;
-          generatedAt: string;
-          items: Array<{
-            id: string;
-            kind: string;
-            path: string;
-            size: number;
-            sha256: string;
-          }>;
-        };
-        return {
-          manifest: {
-            version: 1,
-            sourceRepo: "gyspnk/gyschordweb",
-            sourceCommit: lock.sourceCommit,
-            generatedAt: lock.generatedAt,
-            entries: lock.items
-              .filter((item) => item.kind === "chord")
-              .map((item) => ({
-                songId: `hymn-${(item.path.match(/\/(\d+)_/)?.[1] ?? "0").padStart(3, "0")}`,
-                path: item.path,
-                sourceCommit: lock.sourceCommit,
-                size: item.size,
-                sha256: item.sha256,
-              })),
-          },
-        };
+        return fallbackManifest();
       }
       const nextEtag = response.headers.get("etag");
       return {

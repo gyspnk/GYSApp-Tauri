@@ -140,7 +140,6 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
   const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
   const candidates = [
     bff ? `${bff.replace(/\/$/, "")}/api/v1/content/sauh` : undefined,
-    `${import.meta.env.BASE_URL}api/v1/content/sauh`,
     WORDPRESS_URL,
     STATIC_URL,
   ].filter((value): value is string => Boolean(value));
