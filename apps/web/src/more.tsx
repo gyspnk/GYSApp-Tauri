@@ -20,6 +20,18 @@ import {
   signOutEgys,
   startEgysWhatsAppLogin,
 } from "./egys.js";
+import {
+  clearMidiPlaylist,
+  downloadMidiPlaylist,
+  getMidiPlaylist,
+  importMidiPlaylist,
+  moveMidiPlaylistItem,
+  removeMidiPlaylistItem,
+  selectMidiPlaylistItem,
+  subscribeMidiPlaylist,
+  updateMidiPlaylistOptions,
+} from "./midi-playlist.js";
+import { Select } from "./select.js";
 
 type PackManifest = {
   version: number;
@@ -66,11 +78,14 @@ const BACKUP_STORAGE_KEYS = [
   "gys-bible-split-ratio-v1",
   "gys-daily-sauh-mode-v1",
   "gys-media-minimized",
+  "gys-media-position-v1",
   "gys-speech-voice-v1",
   "gys-speech-rate-v1",
+  "gys-speech-engine-v1",
   "gys-report-draft",
   "gys-reminder-time-v1",
   "gys-chord-cache-index-v1",
+  "gys-midi-playlist-v1",
 ];
 
 function collectBackupSettings() {
@@ -132,6 +147,9 @@ export function MorePage({ locale }: { locale: Locale }) {
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<File>();
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [playlistOpen, setPlaylistOpen] = useState(false);
+  const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
+  const [playlistFile, setPlaylistFile] = useState<File>();
   const [reminderTime, setReminderTime] = useState(
     () => localStorage.getItem("gys-reminder-time-v1") ?? "",
   );
@@ -185,6 +203,11 @@ export function MorePage({ locale }: { locale: Locale }) {
   }, []);
 
   useEffect(() => () => whatsappAbort.current?.abort(), []);
+
+  useEffect(
+    () => subscribeMidiPlaylist(() => setPlaylist(getMidiPlaylist())),
+    [],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -593,6 +616,19 @@ export function MorePage({ locale }: { locale: Locale }) {
           <strong>Pengingat</strong>
           <small>Atur waktu baca dan renungan</small>
         </button>
+        <button
+          className="more-card more-action"
+          type="button"
+          onClick={() => setPlaylistOpen((open) => !open)}
+        >
+          <span className="more-icon">♫</span>
+          <strong>Antrean MIDI</strong>
+          <small>
+            {playlist.items.length
+              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}${playlist.loop === "off" ? "" : ` · ulang ${playlist.loop}`}`
+              : "Simpan lagu, urutkan, dan atur putar berikutnya"}
+          </small>
+        </button>
         <article className="more-card account-card">
           <span className="more-icon">◯</span>
           <strong>
@@ -844,6 +880,159 @@ export function MorePage({ locale }: { locale: Locale }) {
               Nonaktifkan
             </button>
           </div>
+        </section>
+      )}
+      {playlistOpen && (
+        <section className="utility-panel" aria-label="Antrean MIDI">
+          <div className="more-card-heading">
+            <div>
+              <p className="date-line">Kidung Rohani</p>
+              <h2>Antrean MIDI</h2>
+            </div>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setPlaylistOpen(false)}
+            >
+              Tutup
+            </button>
+          </div>
+          <div className="playlist-settings">
+            <label className="control-check">
+              <input
+                type="checkbox"
+                checked={playlist.autoNext}
+                onChange={(event) =>
+                  updateMidiPlaylistOptions({ autoNext: event.target.checked })
+                }
+              />
+              <span>Lanjut otomatis</span>
+            </label>
+            <label className="control-check">
+              <input
+                type="checkbox"
+                checked={playlist.shuffle}
+                onChange={(event) =>
+                  updateMidiPlaylistOptions({ shuffle: event.target.checked })
+                }
+              />
+              <span>Acak</span>
+            </label>
+            <Select
+              value={playlist.loop}
+              onChange={(value) => updateMidiPlaylistOptions({ loop: value })}
+              label="Ulangi"
+              options={[
+                { value: "off" as const, label: "Tidak mengulang" },
+                { value: "one" as const, label: "Lagu ini" },
+                { value: "all" as const, label: "Seluruh antrean" },
+              ]}
+            />
+          </div>
+          {playlist.items.length ? (
+            <ol className="playlist-list">
+              {playlist.items.map((item, index) => (
+                <li
+                  className={
+                    index === playlist.currentIndex ? "is-current" : ""
+                  }
+                  key={item.songId}
+                >
+                  <button
+                    className="playlist-item-main"
+                    type="button"
+                    onClick={() => selectMidiPlaylistItem(index)}
+                  >
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{item.title}</strong>
+                  </button>
+                  <div className="playlist-item-actions">
+                    <button
+                      className="text-button"
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => moveMidiPlaylistItem(index, index - 1)}
+                      aria-label={`Naikkan ${item.title}`}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="text-button"
+                      type="button"
+                      disabled={index === playlist.items.length - 1}
+                      onClick={() => moveMidiPlaylistItem(index, index + 1)}
+                      aria-label={`Turunkan ${item.title}`}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => removeMidiPlaylistItem(item.songId)}
+                      aria-label={`Hapus ${item.title}`}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div className="empty-inline">
+              <p>Belum ada lagu. Tambahkan dari detail Kidung.</p>
+            </div>
+          )}
+          <div className="utility-actions">
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={downloadMidiPlaylist}
+              disabled={!playlist.items.length}
+            >
+              Ekspor antrean
+            </button>
+            <label className="quiet-button file-button">
+              Impor antrean
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={(event) => setPlaylistFile(event.target.files?.[0])}
+              />
+            </label>
+            <button
+              className="quiet-button"
+              type="button"
+              disabled={!playlistFile}
+              onClick={() => {
+                if (!playlistFile) return;
+                void playlistFile
+                  .text()
+                  .then((value) => importMidiPlaylist(value))
+                  .then(() => {
+                    setPlaylistFile(undefined);
+                    show("Antrean MIDI berhasil diimpor.");
+                  })
+                  .catch(() => show("File antrean tidak valid."));
+              }}
+            >
+              Terapkan
+            </button>
+            <button
+              className="text-button"
+              type="button"
+              disabled={!playlist.items.length}
+              onClick={() => {
+                clearMidiPlaylist();
+                show("Antrean MIDI dikosongkan.");
+              }}
+            >
+              Kosongkan
+            </button>
+          </div>
+          <small>
+            Format antrean tervalidasi dan dapat dipulihkan melalui backup
+            aplikasi.
+          </small>
         </section>
       )}
       {notice && (

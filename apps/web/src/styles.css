@@ -1086,9 +1086,9 @@ blockquote {
   grid-template-columns: minmax(0, 1fr);
 }
 .bible-reader.is-split .bible-reader-layout {
-  grid-template-columns: minmax(0, var(--bible-split)) minmax(
+  grid-template-columns: minmax(0, var(--bible-split)) 12px minmax(
       0,
-      calc(100% - var(--bible-split))
+      calc(100% - var(--bible-split) - 12px)
     );
 }
 .bible-pane {
@@ -1097,6 +1097,34 @@ blockquote {
 .bible-pane-secondary {
   border-left: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface-soft) 42%, var(--surface));
+}
+.bible-split-divider {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  background: var(--surface);
+}
+.bible-split-divider::before {
+  content: "";
+  width: 2px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition:
+    height var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out);
+}
+.bible-split-divider:hover::before,
+.bible-split-divider:focus-visible::before {
+  height: 76px;
+  background: var(--blue);
+}
+body.is-resizing-bible {
+  cursor: col-resize;
+  user-select: none;
 }
 .chapter-scrubber,
 .split-ratio-control {
@@ -1816,6 +1844,16 @@ blockquote {
   background: var(--blue-soft);
   border-radius: 7px;
 }
+.media-drag-handle {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.media-surface.is-dragging {
+  transition: none;
+  transform: none;
+  cursor: grabbing;
+}
 .media-meta {
   display: grid;
   gap: 3px;
@@ -1829,6 +1867,19 @@ blockquote {
 .media-progress {
   display: block;
   width: 100%;
+}
+.media-queue-controls {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.media-queue-controls .text-button {
+  min-height: 26px;
+  padding: 3px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
 }
 .media-progress input,
 .media-adjustments input {
@@ -2330,6 +2381,12 @@ blockquote {
   .more-card-wide,
   .report-card {
     grid-column: auto;
+  }
+  .playlist-list li {
+    grid-template-columns: 1fr;
+  }
+  .playlist-item-actions {
+    justify-content: flex-end;
   }
   .toast {
     right: 14px;
@@ -3158,6 +3215,86 @@ blockquote {
   font-size: 13px;
   line-height: 1.6;
 }
+.playlist-settings {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.control-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+.control-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--blue);
+}
+.playlist-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.playlist-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.playlist-list li.is-current {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.playlist-item-main {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.playlist-item-main > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.playlist-item-main strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.playlist-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.playlist-item-actions .text-button {
+  min-height: 36px;
+  padding: 6px 8px;
+}
 .utility-actions {
   display: flex;
   gap: 8px;
@@ -3322,6 +3459,9 @@ blockquote {
 @media (max-width: 720px) {
   .bible-reader.is-split .bible-reader-layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .bible-split-divider {
+    display: none;
   }
   .bible-pane-secondary {
     border-top: 1px solid var(--line);

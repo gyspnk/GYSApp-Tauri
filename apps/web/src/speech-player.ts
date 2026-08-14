@@ -1,9 +1,11 @@
 import { SpeechOrchestrator } from "@gys/domain";
-import type { SpeechVoice } from "@gys/contracts";
+import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
+import { EdgeSpeechProvider } from "./edge-speech.js";
 
 export type SpeechQueueItem = { id: string; text: string };
+export type { SpeechEnginePreference } from "@gys/contracts";
 export type SpeechSnapshot = {
   status: "idle" | "loading" | "speaking" | "paused" | "error";
   currentIndex: number;
@@ -15,11 +17,14 @@ export type SpeechSnapshot = {
   rate: number;
   pitch: number;
   volume: number;
+  available: boolean;
+  engine: SpeechEnginePreference;
   error?: string | undefined;
 };
 
 const VOICE_KEY = "gys-speech-voice-v1";
 const RATE_KEY = "gys-speech-rate-v1";
+const ENGINE_KEY = "gys-speech-engine-v1";
 const initial: SpeechSnapshot = {
   status: "idle",
   currentIndex: -1,
@@ -28,11 +33,17 @@ const initial: SpeechSnapshot = {
   rate: 0.9,
   pitch: 1,
   volume: 1,
+  available: false,
+  engine: "auto",
 };
 
 class BrowserSpeechSession {
-  private readonly provider = new BrowserSpeechProvider();
-  private readonly orchestrator = new SpeechOrchestrator([this.provider]);
+  private readonly browserProvider = new BrowserSpeechProvider();
+  private readonly edgeProvider = new EdgeSpeechProvider();
+  private orchestrator = new SpeechOrchestrator([
+    this.edgeProvider,
+    this.browserProvider,
+  ]);
   private queue: SpeechQueueItem[] = [];
   private abortController: AbortController | undefined;
   private state: SpeechSnapshot = { ...initial };
@@ -47,11 +58,35 @@ class BrowserSpeechSession {
   public async loadVoices(): Promise<void> {
     if (typeof window === "undefined") return;
     try {
-      const voices = await this.provider.voices();
+      const [edgeVoices, browserVoices, edgeStatus, browserStatus] =
+        await Promise.all([
+          this.edgeProvider.voices(),
+          this.browserProvider.voices(),
+          this.edgeProvider.status(),
+          this.browserProvider.status(),
+        ]);
+      const voices = [
+        ...edgeVoices,
+        ...browserVoices.filter(
+          (voice) => !edgeVoices.some((candidate) => candidate.id === voice.id),
+        ),
+      ];
       const savedVoice = localStorage.getItem(VOICE_KEY) ?? undefined;
       const savedRate = Number(localStorage.getItem(RATE_KEY));
+      const savedEngine = localStorage.getItem(ENGINE_KEY);
+      const engine: SpeechEnginePreference =
+        savedEngine === "edge" || savedEngine === "local"
+          ? savedEngine
+          : "auto";
       this.patch({
         voices,
+        available:
+          engine === "edge"
+            ? edgeStatus.available
+            : engine === "local"
+              ? browserStatus.available
+              : edgeStatus.available || browserStatus.available,
+        engine,
         ...(savedVoice && voices.some((voice) => voice.id === savedVoice)
           ? { voiceId: savedVoice }
           : {}),
@@ -77,6 +112,9 @@ class BrowserSpeechSession {
     if (!queue.length) return;
     await midiPlayer.pause().catch(() => undefined);
     await this.stop(false);
+    this.orchestrator = new SpeechOrchestrator(
+      this.providersFor(this.state.engine),
+    );
     this.queue = queue.map((item) => ({ ...item }));
     const nextRate = clamp(options.rate ?? this.state.rate, 0.5, 2);
     const nextPitch = clamp(options.pitch ?? this.state.pitch, 0.5, 2);
@@ -157,6 +195,12 @@ class BrowserSpeechSession {
       localStorage.setItem(VOICE_KEY, voiceId);
     this.patch({ voiceId });
   }
+  public setEngine(engine: SpeechEnginePreference): void {
+    if (typeof localStorage !== "undefined")
+      localStorage.setItem(ENGINE_KEY, engine);
+    this.patch({ engine, available: false });
+    void this.refreshAvailability(engine);
+  }
   public setRate(rate: number): void {
     const next = clamp(rate, 0.5, 2);
     if (typeof localStorage !== "undefined")
@@ -173,6 +217,29 @@ class BrowserSpeechSession {
   private patch(next: Partial<SpeechSnapshot>): void {
     this.state = { ...this.state, ...next };
     for (const listener of this.listeners) listener();
+  }
+
+  private providersFor(engine: SpeechEnginePreference) {
+    if (engine === "edge") return [this.edgeProvider];
+    if (engine === "local") return [this.browserProvider];
+    return [this.edgeProvider, this.browserProvider];
+  }
+
+  private async refreshAvailability(
+    engine: SpeechEnginePreference,
+  ): Promise<void> {
+    const [edgeStatus, browserStatus] = await Promise.all([
+      this.edgeProvider.status(),
+      this.browserProvider.status(),
+    ]);
+    this.patch({
+      available:
+        engine === "edge"
+          ? edgeStatus.available
+          : engine === "local"
+            ? browserStatus.available
+            : edgeStatus.available || browserStatus.available,
+    });
   }
 }
 

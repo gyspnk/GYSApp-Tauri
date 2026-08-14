@@ -9,3 +9,6 @@ SUARA_SOURCE_URL = "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_pa
 LITERATURE_SOURCE_URL = "https://tjc.org/id/literatur/"
 # EGYS_API_BASE_URL is intentionally a protected deployment secret. It must
 # point at the e-GYS backend origin and is never bundled into the web client.
+# EDGE_TTS_URL is also protected and must point at a vetted Edge-compatible
+# audio gateway. The Worker validates the request and never exposes its URL
+# or credentials to the browser.

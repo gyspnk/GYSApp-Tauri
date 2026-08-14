@@ -416,6 +416,22 @@ export interface SpeechVoice {
   local: boolean;
 }
 
+export const SpeechEnginePreferenceSchema = z.enum(["auto", "edge", "local"]);
+export type SpeechEnginePreference = z.infer<
+  typeof SpeechEnginePreferenceSchema
+>;
+export const EdgeTtsRequestSchema = z.object({
+  text: z.string().trim().min(1).max(8_000),
+  voice: z
+    .string()
+    .regex(/^[A-Za-z0-9-]{2,80}$/)
+    .default("id-ID-GadisNeural"),
+  rate: z.number().min(0.5).max(2).default(0.9),
+  pitch: z.number().min(0.5).max(2).default(1),
+  volume: z.number().min(0).max(1).default(1),
+});
+export type EdgeTtsRequest = z.infer<typeof EdgeTtsRequestSchema>;
+
 export interface SpeechProvider {
   readonly id: string;
   status(): Promise<{ available: boolean; offline: boolean; reason?: string }>;

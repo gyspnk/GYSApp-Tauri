@@ -188,6 +188,54 @@ describe("BFF public boundary", () => {
     expect(payload.sourceCommit).toBe("cbc7d386");
   });
 
+  it("proxies validated Edge speech audio through a protected endpoint", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    let seenBody = "";
+    globalThis.fetch = (async (input, init) => {
+      seenUrl = String(input);
+      seenBody = String(init?.body ?? "");
+      return new Response(new Uint8Array([73, 68, 51]), {
+        status: 200,
+        headers: { "content-type": "audio/mpeg", "content-length": "3" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/tts/edge",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            text: "Bacaan hari ini",
+            voice: "id-ID-GadisNeural",
+            rate: 0.9,
+            pitch: 1,
+            volume: 1,
+          }),
+        },
+        { EDGE_TTS_URL: "https://speech.example/edge" },
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("audio/mpeg");
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+        new Uint8Array([73, 68, 51]),
+      );
+      expect(seenUrl).toBe("https://speech.example/edge");
+      expect(seenBody).toContain("Bacaan hari ini");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("applies a configurable per-client rate limit", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],

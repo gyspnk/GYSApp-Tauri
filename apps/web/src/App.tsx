@@ -9,6 +9,7 @@ import {
   useState,
   useSyncExternalStore,
   type ErrorInfo,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import {
@@ -25,7 +26,13 @@ import { translate, type Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
+import {
+  installMidiQueueCoordinator,
+  playNextMidiPlaylistItem,
+  playPreviousMidiPlaylistItem,
+} from "./midi-queue.js";
 import { speechPlayer } from "./speech-player.js";
+import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { GlobalSearch } from "./global-search.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -360,6 +367,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
     speechPlayer.snapshot,
     speechPlayer.snapshot,
   );
+  const playlist = useSyncExternalStore(
+    subscribeMidiPlaylist,
+    getMidiPlaylist,
+    getMidiPlaylist,
+  );
   const speechActive =
     speechSnapshot.total > 0 && speechSnapshot.status !== "idle";
   const mediaTitle = speechActive
@@ -368,12 +380,63 @@ function MediaSurface({ locale }: { locale: Locale }) {
   const wakeLock = useRef<{ release: () => Promise<void> } | undefined>(
     undefined,
   );
+  const dragRef = useRef<
+    | {
+        pointerId: number;
+        startX: number;
+        startY: number;
+        originLeft: number;
+        originTop: number;
+      }
+    | undefined
+  >(undefined);
+  const [dragging, setDragging] = useState(false);
+  const [position, setPosition] = useState<
+    { left: number; top: number } | undefined
+  >(() => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("gys-media-position-v1") ?? "null",
+      ) as { left?: unknown; top?: unknown } | null;
+      return typeof stored?.left === "number" && typeof stored.top === "number"
+        ? { left: stored.left, top: stored.top }
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  });
   const [minimized, setMinimized] = useState(
     () => localStorage.getItem("gys-media-minimized") === "1",
   );
   useEffect(() => {
     localStorage.setItem("gys-media-minimized", minimized ? "1" : "0");
   }, [minimized]);
+  useEffect(() => {
+    if (!position) return;
+    localStorage.setItem("gys-media-position-v1", JSON.stringify(position));
+  }, [position]);
+  useEffect(() => {
+    const onResize = () => {
+      setPosition((current) => {
+        if (!current) return current;
+        const surface = document.querySelector<HTMLElement>(".media-surface");
+        const width = surface?.offsetWidth ?? 0;
+        const height = surface?.offsetHeight ?? 0;
+        return {
+          left: Math.max(
+            8,
+            Math.min(current.left, window.innerWidth - width - 8),
+          ),
+          top: Math.max(
+            8,
+            Math.min(current.top, window.innerHeight - height - 8),
+          ),
+        };
+      });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   useEffect(() => {
     if ((!snapshot.songId && !speechActive) || !("mediaSession" in navigator))
       return;
@@ -382,7 +445,12 @@ function MediaSurface({ locale }: { locale: Locale }) {
       artist: "Gereja Yesus Sejati",
       album: speechActive ? "Alkitab TB" : "Kidung Rohani",
     });
-    const handlers: Array<[MediaSessionAction, () => void | Promise<void>]> = [
+    const handlers: Array<
+      [
+        MediaSessionAction,
+        (details?: MediaSessionActionDetails) => void | Promise<void>,
+      ]
+    > = [
       [
         "play",
         () => {
@@ -426,10 +494,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
       ],
       [
         "seekto",
-        () =>
+        (details) =>
           speechActive
             ? speechPlayer.stop()
-            : midiPlayer.seek(snapshot.position),
+            : midiPlayer.seek(details?.seekTime ?? snapshot.position),
       ],
     ];
     for (const [action, handler] of handlers) {
@@ -505,12 +573,69 @@ function MediaSurface({ locale }: { locale: Locale }) {
       () => undefined,
     );
   };
+  const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originLeft: rect.left,
+      originTop: rect.top,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+  };
+  const moveDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
+    if (!surface) return;
+    const left = drag.originLeft + event.clientX - drag.startX;
+    const top = drag.originTop + event.clientY - drag.startY;
+    setPosition({
+      left: Math.max(
+        8,
+        Math.min(left, window.innerWidth - surface.offsetWidth - 8),
+      ),
+      top: Math.max(
+        8,
+        Math.min(top, window.innerHeight - surface.offsetHeight - 8),
+      ),
+    });
+  };
+  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    dragRef.current = undefined;
+    setDragging(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+  };
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}`}
+      className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}`}
+      style={
+        position
+          ? {
+              left: position.left,
+              top: position.top,
+              right: "auto",
+              bottom: "auto",
+            }
+          : undefined
+      }
       aria-label={translate(locale, "shell.media")}
     >
-      <div className="media-art">
+      <div
+        className="media-art media-drag-handle"
+        title="Geser pemutar"
+        aria-label="Geser pemutar media"
+        onPointerDown={beginDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
       <div className="media-main">
@@ -525,6 +650,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 : snapshot.backend === "fluidsynth"
                   ? `${translate(locale, "shell.media")} · ${snapshot.soundfont ?? "FluidSynth"}`
                   : translate(locale, "shell.media")}
+            {!speechActive && playlist.items.length > 0
+              ? ` · ${playlist.items.length} antrean`
+              : ""}
           </small>
           <strong>{mediaTitle}</strong>
           <span>
@@ -538,7 +666,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
           </span>
         </div>
         <label className="media-progress">
-          <span className="sr-only">Posisi MIDI</span>
+          <span className="sr-only">
+            {speechActive ? "Posisi bacaan" : "Posisi MIDI"}
+          </span>
           <input
             type="range"
             min="0"
@@ -553,12 +683,36 @@ function MediaSurface({ locale }: { locale: Locale }) {
             }
           />
         </label>
+        {!speechActive && !minimized && playlist.items.length > 0 && (
+          <div className="media-queue-controls" aria-label="Antrean MIDI">
+            <button
+              className="text-button"
+              type="button"
+              onClick={() =>
+                void playPreviousMidiPlaylistItem().catch(() => undefined)
+              }
+              aria-label="Lagu MIDI sebelumnya"
+            >
+              ‹ Sebelumnya
+            </button>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() =>
+                void playNextMidiPlaylistItem().catch(() => undefined)
+              }
+              aria-label="Lagu MIDI berikutnya"
+            >
+              Berikutnya ›
+            </button>
+          </div>
+        )}
         {!minimized && (
           <div className="media-adjustments">
             <label>
               <span>Vol</span>
               <input
-                aria-label="Volume MIDI"
+                aria-label={speechActive ? "Volume bacaan" : "Volume MIDI"}
                 type="range"
                 min="0"
                 max="1"
@@ -580,6 +734,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 max="220"
                 step="1"
                 value={snapshot.tempo}
+                disabled={speechActive}
                 onChange={(event) =>
                   void midiPlayer.setTempo(Number(event.target.value))
                 }
@@ -1031,6 +1186,7 @@ function HomePage({ locale }: { locale: Locale }) {
 function RoutedApp() {
   const settings = useAppSettings();
   const locale = settings.locale;
+  useEffect(() => installMidiQueueCoordinator(), []);
   return (
     <Routes>
       <Route element={<Shell {...settings} />}>

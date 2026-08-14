@@ -12,6 +12,7 @@ import {
   EgysProvidersSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
+  EdgeTtsRequestSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
@@ -36,7 +37,6 @@ const ReportSchema = z.object({
     .refine((value) => ["http:", "https:"].includes(new URL(value).protocol))
     .optional(),
 });
-
 export type BffConfig = {
   allowedOrigins: string[];
   chordManifest: ChordManifestV1;
@@ -49,6 +49,7 @@ export type BffBindings = {
   SAUH_SOURCE_URL?: string;
   SUARA_SOURCE_URL?: string;
   EGYS_API_BASE_URL?: string;
+  EDGE_TTS_URL?: string;
   LITERATURE_SOURCE_URL?: string;
   EGYS_UPSTREAM_COMMIT?: string;
 };
@@ -549,6 +550,85 @@ export function createApp(
     );
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json(manifest);
+  });
+
+  app.post("/api/v1/tts/edge", async (c) => {
+    c.header("cache-control", "no-store");
+    const configured = c.env?.EDGE_TTS_URL?.trim();
+    if (!configured)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Edge compatibility speech is not configured",
+      );
+    let endpoint: URL;
+    try {
+      endpoint = new URL(configured);
+    } catch {
+      return errorResponse(
+        c,
+        "INTERNAL_ERROR",
+        "Edge speech endpoint is invalid",
+      );
+    }
+    if (endpoint.protocol !== "https:")
+      return errorResponse(
+        c,
+        "FORBIDDEN",
+        "Edge speech endpoint must use HTTPS",
+      );
+    const parsed = EdgeTtsRequestSchema.safeParse(
+      await c.req.json().catch(() => undefined),
+    );
+    if (!parsed.success)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Edge speech request is invalid",
+      );
+    try {
+      const upstream = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          accept: "audio/mpeg",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(parsed.data),
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Edge speech is unavailable",
+        );
+      const contentType = upstream.headers.get("content-type") ?? "";
+      if (!contentType.startsWith("audio/"))
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Edge speech returned invalid media",
+        );
+      const contentLength = Number(upstream.headers.get("content-length") ?? 0);
+      if (contentLength > 10 * 1024 * 1024)
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Edge speech media is too large",
+        );
+      c.header("content-type", contentType);
+      if (contentLength > 0) c.header("content-length", String(contentLength));
+      return new Response(upstream.body, {
+        status: 200,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Edge speech is unavailable",
+      );
+    }
   });
 
   app.get("/api/v1/auth/providers", async (c) => {

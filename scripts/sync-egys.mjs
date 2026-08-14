@@ -51,17 +51,31 @@ async function localCheckout(current) {
   );
   const unique = [...new Set(candidates)];
   for (const candidate of unique) {
+    let remote;
     try {
-      const head = await git(["rev-parse", "HEAD"], candidate);
-      if (head === current) return candidate;
-      const remote = await git(["remote", "get-url", "origin"], candidate);
-      if (remote.includes(repo)) {
-        await git(["fetch", "--depth=1", "origin", current], candidate);
-        await git(["checkout", "--force", current], candidate);
-        return candidate;
-      }
+      remote = await git(["remote", "get-url", "origin"], candidate);
     } catch {
       // Ignore unrelated temporary directories.
+      continue;
+    }
+    if (!remote.includes(repo)) continue;
+    try {
+      // A matching checked-in SHA is not proof that this shallow checkout
+      // has actually fetched the latest remote state. Always refresh it so
+      // every pre-commit inspects the immutable upstream tip, even after an
+      // interrupted fetch or a moved remote ref.
+      await git(["fetch", "--depth=1", "origin", "HEAD"], candidate);
+      const head = await git(["rev-parse", "FETCH_HEAD"], candidate);
+      if (head !== current)
+        throw new Error(
+          `e-GYS HEAD changed during synchronization (${head} !== ${current})`,
+        );
+      await git(["fetch", "--depth=1", "origin", current], candidate);
+      await git(["checkout", "--force", current], candidate);
+      return candidate;
+    } catch (error) {
+      if (strict) throw error;
+      console.warn(`Unable to refresh e-GYS checkout ${candidate}; skipping.`);
     }
   }
   const destination = join(root, `.tmp-egys-${current.slice(0, 7)}`);
@@ -254,14 +268,6 @@ if (strict && lock.compatibility === "breaking") {
     "The checked-in e-GYS contract is marked breaking; adapt the integration before committing.",
   );
 }
-if (
-  lock.sourceCommit === current &&
-  (await exists(contractPath)) &&
-  !process.argv.includes("--refresh")
-) {
-  console.log(`e-GYS contract current=${current}; no synchronization needed.`);
-  process.exit(0);
-}
 const checkout = await localCheckout(current);
 const nextContract = await extractContract(checkout, current);
 const previousContract = process.argv.includes("--refresh")
@@ -280,6 +286,19 @@ if (diff.breaking.length) {
   for (const route of diff.breaking)
     console.error(`  removed ${route.method} ${route.path}`);
   if (strict) process.exitCode = 2;
+}
+const generated = (await exists(generatedPath))
+  ? await readFile(generatedPath, "utf8")
+  : "";
+const canReuseGenerated =
+  !process.argv.includes("--refresh") &&
+  lock.sourceCommit === current &&
+  lock.contractHash === contractHash &&
+  (await exists(contractPath)) &&
+  generated.includes(`"${contractHash}"`);
+if (write && canReuseGenerated && !process.exitCode) {
+  console.log("e-GYS contract is current; refreshed checkout only.");
+  process.exit(0);
 }
 if (!write || process.exitCode)
   process.exit(process.exitCode ?? (lock.sourceCommit === current ? 0 : 1));

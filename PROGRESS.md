@@ -18,7 +18,8 @@ service or platform artifact that cannot be exercised in this workspace.
   hymnal PDF database/download source with signed package fallback, local
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
   Web Audio fallback, and shell-level minimizable media surface with seek,
-  volume, mute, tempo, transpose, Media Session, and wake-lock controls.
+  volume, mute, tempo, transpose, Media Session, wake-lock, and persisted
+  pointer-drag positioning controls.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -29,20 +30,28 @@ service or platform artifact that cannot be exercised in this workspace.
   no WebView or client-side credential storage.
 - TB reader hardening: source markup is sanitized, search supports token/phrase/
   whole-word filters with local history, and the reader has persistent notes,
-  highlights, verse selection, split columns, chapter scrubber, and swipe
-  navigation. Bible read-aloud now uses the shared SpeechProvider/orchestrator,
-  queues verse ranges, exposes voice/rate controls, and shares the global media
-  surface so speech and MIDI never play audibly together.
+  highlights, verse selection, split columns with a draggable/keyboard-safe
+  divider, chapter scrubber, and swipe navigation. Bible read-aloud now uses
+  the shared SpeechProvider/orchestrator, prefers a configured Edge
+  compatibility gateway with an explicit local fallback, queues verse ranges,
+  exposes engine/voice/rate controls, and shares the global media surface so
+  speech and MIDI never play audibly together.
 - GYSChordWeb-style continuous PDF rendering now lazy-loads visible pages;
   canonical binary assets can use the allowlisted same-origin Worker proxy,
   then fall back to the immutable raw source without duplicate in-flight fetches.
+- MIDI queue persistence now follows the canonical playlist behavior: validated
+  add/remove/reorder, loop, shuffle, auto-next preference, import/export, and
+  backup-compatible local state are exposed from the Kidung and Lainnya flows.
 - Local-first e-GYS revision/route-contract synchronization, generated route
   metadata, breaking route removal detection, repository-managed pre-commit
-  and pre-push hooks, and documented workflow.
+  and pre-push hooks, and documented workflow. Every synchronization refreshes
+  the temporary checkout before inspecting Java sources, even when the
+  checked-in commit is unchanged.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
-  plus mobile visual baselines pass locally. Native `cargo check` is wired into
-  the pre-push gate.
+  plus mobile visual baselines pass locally. A browser media flow also opens
+  canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
+  same hymn detail route. Native `cargo check` is wired into the pre-push gate.
 
 ## Implemented / Needs Verification
 
@@ -53,6 +62,9 @@ service or platform artifact that cannot be exercised in this workspace.
   platform toolchains and signing material.
 - Full canonical-vs-rewrite MIDI performance parity, screen-reader audit, and
   visual baseline review require the target device/browser matrix.
+- Edge speech audio requires the protected `EDGE_TTS_URL` Worker binding; when
+  it is absent, the UI reports only detected system voices and does not claim
+  offline Edge availability.
 
 ## Next controlled work
 

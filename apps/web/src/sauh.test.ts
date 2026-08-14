@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { onlyTodaySauh, parseSauhPosts, stripHtml } from "./sauh.js";
+import {
+  onlyTodaySauh,
+  parseSauhPosts,
+  selectTodaySauh,
+  stripHtml,
+} from "./sauh.js";
 
 describe("Sauh feed normalization", () => {
   it("extracts the title, reference, verse and source from WordPress markup", () => {
@@ -59,5 +64,21 @@ describe("Sauh feed normalization", () => {
     expect(
       onlyTodaySauh(posts, new Date("2026-08-14T12:00:00.000Z"))[0]?.id,
     ).toBe("today");
+  });
+
+  it("uses the publisher's daily slug when UTC modification rolls over", () => {
+    const post = parseSauhPosts([
+      {
+        id: 1,
+        slug: "sbj260814",
+        date: "2026-08-13T17:00:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260814/",
+        title: { rendered: "Hari ini" },
+        content: { rendered: "<p>Renungan.</p>" },
+      },
+    ]);
+    expect(
+      selectTodaySauh(post, new Date("2026-08-14T01:00:00.000+08:00")),
+    ).toHaveLength(1);
   });
 });

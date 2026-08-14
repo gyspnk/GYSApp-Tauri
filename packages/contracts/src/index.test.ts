@@ -4,6 +4,7 @@ import {
   BiblePackManifestSchema,
   BibleReaderPackSchema,
   ChordDocumentV2Schema,
+  EdgeTtsRequestSchema,
   ErrorResponseSchema,
   EgysProvidersSchema,
   EgysWhatsAppLoginStartedSchema,
@@ -217,5 +218,20 @@ describe("public contracts", () => {
         provider: "egys",
       }).isMember,
     ).toBe(true);
+  });
+
+  it("validates bounded Edge speech requests", () => {
+    const request = EdgeTtsRequestSchema.parse({
+      text: "Firman untuk hari ini",
+      voice: "id-ID-GadisNeural",
+      rate: 0.9,
+      pitch: 1,
+      volume: 1,
+    });
+    expect(request.text).toContain("hari ini");
+    expect(
+      EdgeTtsRequestSchema.safeParse({ text: "x", voice: "not a voice" })
+        .success,
+    ).toBe(false);
   });
 });

@@ -21,6 +21,9 @@ jobs:
       # Set this repository variable to the deployed Worker origin. Keeping it
       # optional preserves a fully usable static/offline Pages preview.
       VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
+      # Optional direct gateway override for Edge-compatible speech. When it
+      # is empty, the web adapter derives /api/v1/tts/edge from the BFF base.
+      VITE_EDGE_TTS_URL: ${{ vars.VITE_EDGE_TTS_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

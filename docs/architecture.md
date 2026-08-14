@@ -26,15 +26,15 @@ flowchart TB
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.         |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                    |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                |
-| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, PDF and canonical music range proxies, cache headers, typed errors, and e-GYS cookie proxy. |
-| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                         |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                   |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                  |
+| Area                    | Responsibility                                                                                                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                    |
+| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                               |
+| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                           |
+| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, PDF/canonical music range proxies, typed Edge speech audio proxy, cache headers, typed errors, and e-GYS cookie proxy. |
+| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                                                    |
+| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                              |
+| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                             |
 
 ## Data and persistence flow
 

@@ -5,6 +5,7 @@ import type {
   SpeechProvider,
   SpeechVoice,
 } from "@gys/contracts";
+import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
 
 class BrowserKeyValueStore implements KeyValueStore {
   public async get<T>(key: string): Promise<T | undefined> {
@@ -185,9 +186,11 @@ export class BrowserSpeechProvider implements SpeechProvider {
 
 export function createBrowserPlatformServices(): PlatformServices {
   const speech = new BrowserSpeechProvider();
+  const edgeSpeech = new EdgeSpeechProvider();
   return {
     hasCapability(capability) {
-      if (capability === "speech") return "speechSynthesis" in window;
+      if (capability === "speech")
+        return "speechSynthesis" in window || isEdgeSpeechConfigured();
       if (capability === "share") return "share" in navigator;
       if (capability === "notifications") return "Notification" in window;
       if (capability === "wakeLock") return "wakeLock" in navigator;
@@ -196,7 +199,7 @@ export function createBrowserPlatformServices(): PlatformServices {
     },
     keyValue: new BrowserKeyValueStore(),
     blobs: new BrowserBlobStore(),
-    speech: [speech],
+    speech: [edgeSpeech, speech],
     openExternal: async (url) => {
       const parsed = new URL(url, window.location.href);
       if (!["http:", "https:"].includes(parsed.protocol))

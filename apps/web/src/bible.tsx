@@ -6,11 +6,13 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type FormEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TouchEvent,
 } from "react";
 import {
   BibleReaderPackSchema,
+  SpeechEnginePreferenceSchema,
   type BibleBook,
   type BibleReaderPack,
 } from "@gys/contracts";
@@ -260,6 +262,39 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return Number.isFinite(value) && value >= 42 && value <= 72 ? value : 58;
   });
   const touchStartX = useRef<number | undefined>(undefined);
+  const splitLayoutRef = useRef<HTMLDivElement | null>(null);
+  const splitDragging = useRef(false);
+
+  useEffect(() => {
+    const updateRatio = (event: PointerEvent) => {
+      if (!splitDragging.current || !splitLayoutRef.current) return;
+      const rect = splitLayoutRef.current.getBoundingClientRect();
+      if (rect.width <= 0) return;
+      const ratio = ((event.clientX - rect.left) / rect.width) * 100;
+      setSplitRatio(Math.max(42, Math.min(72, Math.round(ratio))));
+    };
+    const finishDrag = () => {
+      splitDragging.current = false;
+      document.body.classList.remove("is-resizing-bible");
+    };
+    window.addEventListener("pointermove", updateRatio);
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", finishDrag);
+    return () => {
+      window.removeEventListener("pointermove", updateRatio);
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", finishDrag);
+      finishDrag();
+    };
+  }, []);
+
+  const startSplitDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (window.innerWidth <= 720) return;
+    event.preventDefault();
+    splitDragging.current = true;
+    document.body.classList.add("is-resizing-bible");
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -322,9 +357,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     speechPlayer.snapshot,
   );
   const speechAvailable =
-    typeof window !== "undefined" &&
-    "speechSynthesis" in window &&
-    speechSnapshot.voices.length > 0;
+    typeof window !== "undefined" && speechSnapshot.available;
   useEffect(() => {
     setSpeaking(
       speechSnapshot.status === "loading" ||
@@ -377,8 +410,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
         ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 0);
   }, [chapterVerses, notes, selectedVerseId]);
-  useEffect(() => () => void speechPlayer.stop(), []);
-
   const navigateBy = (delta: number) => {
     if (!book) return;
     const target = findNextTarget(books, book, chapter, delta);
@@ -860,6 +891,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
               aria-label="Pengaturan bacaan suara"
             >
               <label>
+                <span>Mesin</span>
+                <select
+                  value={speechSnapshot.engine}
+                  onChange={(event) =>
+                    speechPlayer.setEngine(
+                      SpeechEnginePreferenceSchema.parse(event.target.value),
+                    )
+                  }
+                >
+                  <option value="auto">Edge → lokal</option>
+                  <option value="edge">Edge online</option>
+                  <option value="local">Suara perangkat</option>
+                </select>
+              </label>
+              <label>
                 <span>Suara</span>
                 <select
                   value={speechSnapshot.voiceId ?? ""}
@@ -905,7 +951,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
               <output>{splitRatio}%</output>
             </label>
           )}
-          <div className="bible-reader-layout" style={splitStyle}>
+          <div
+            className="bible-reader-layout"
+            ref={splitLayoutRef}
+            style={splitStyle}
+          >
             <ChapterPane
               book={book}
               chapter={chapter}
@@ -919,6 +969,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onTouchStart={onVerseTouchStart}
               onTouchEnd={onVerseTouchEnd}
             />
+            {splitView && (
+              <div
+                className="bible-split-divider"
+                role="separator"
+                aria-label="Atur lebar kolom bacaan"
+                aria-orientation="vertical"
+                aria-valuemin={42}
+                aria-valuemax={72}
+                aria-valuenow={splitRatio}
+                tabIndex={0}
+                onPointerDown={startSplitDrag}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowLeft")
+                    setSplitRatio((value) => Math.max(42, value - 2));
+                  if (event.key === "ArrowRight")
+                    setSplitRatio((value) => Math.min(72, value + 2));
+                }}
+              >
+                <span aria-hidden="true" />
+              </div>
+            )}
             {splitView && nextTarget && (
               <ChapterPane
                 book={nextTarget.book}

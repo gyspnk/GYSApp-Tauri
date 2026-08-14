@@ -64,6 +64,17 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await expect(page.locator(".result-item").first()).toBeVisible();
   await page.getByRole("button", { name: "Dua kolom" }).click();
   await expect(page.locator(".bible-pane")).toHaveCount(2);
+  const splitDivider = page.getByRole("separator", {
+    name: "Atur lebar kolom bacaan",
+  });
+  await splitDivider.focus();
+  await splitDivider.press("ArrowRight");
+  await expect(splitDivider).toHaveAttribute("aria-valuenow", "60");
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-bible-split-ratio-v1")),
+    )
+    .toBe("60");
   await page
     .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
     .first()
@@ -185,6 +196,26 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(readButton).toBeEnabled({ timeout: 5_000 });
   await readButton.click();
   await expect(page.locator(".media-surface")).toBeVisible();
+  const dragHandle = page.locator(".media-drag-handle");
+  const dragBox = await dragHandle.boundingBox();
+  if (!dragBox) throw new Error("Media drag handle is not measurable");
+  await page.mouse.move(
+    dragBox.x + dragBox.width / 2,
+    dragBox.y + dragBox.height / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    dragBox.x + dragBox.width / 2 + 24,
+    dragBox.y + dragBox.height / 2 + 12,
+  );
+  await page.mouse.up();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-media-position-v1")),
+    )
+    .not.toBeNull();
+  await page.getByRole("link", { name: "Beranda" }).click();
+  await expect(page.locator(".media-surface")).toBeVisible();
   await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
   await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
   await expect(
@@ -228,4 +259,25 @@ test("literature detail persists favorite and progress controls", async ({
     page.getByRole("heading", { name: "Terakhir dilihat" }),
   ).toBeVisible();
   await expect(page.locator(".literature-recent-item")).toHaveCount(1);
+});
+
+test("MIDI queue persists from a hymn detail into the utility surface", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(
+    page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
+  await page.getByRole("link", { name: "Lainnya" }).click();
+  await page.getByRole("button", { name: "Antrean MIDI" }).click();
+  await expect(page.locator(".playlist-list li")).toHaveCount(1);
+  await expect(
+    page.locator(".playlist-item-main", {
+      hasText: "Pujilah Allah Yang Maha Esa",
+    }),
+  ).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Antrean MIDI" }).click();
+  await expect(page.locator(".playlist-list li")).toHaveCount(1);
 });

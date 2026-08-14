@@ -96,6 +96,7 @@ class BrowserMidiPlayer {
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
   private readonly listeners = new Set<() => void>();
+  private readonly endedListeners = new Set<() => void>();
 
   // React's external-store contract requires a stable snapshot reference
   // until a patch actually changes the store.
@@ -103,6 +104,10 @@ class BrowserMidiPlayer {
   public subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  };
+  public subscribeEnded = (listener: () => void): (() => void) => {
+    this.endedListeners.add(listener);
+    return () => this.endedListeners.delete(listener);
   };
 
   public async load(
@@ -463,6 +468,7 @@ class BrowserMidiPlayer {
       this.bufferSource = undefined;
       this.clearTimer();
       this.patch({ status: "stopped", position: 0 });
+      for (const listener of this.endedListeners) listener();
     };
     source.start(0, safePosition);
   }
@@ -504,9 +510,10 @@ class BrowserMidiPlayer {
         this.state.position >= this.state.duration - 0.02 &&
         !this.bufferSource
       ) {
-        void this.stopAudio().then(() =>
-          this.patch({ status: "stopped", position: 0 }),
-        );
+        void this.stopAudio().then(() => {
+          this.patch({ status: "stopped", position: 0 });
+          for (const listener of this.endedListeners) listener();
+        });
       }
     }, 250);
   }

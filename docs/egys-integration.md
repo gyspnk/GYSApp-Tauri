@@ -38,17 +38,28 @@ wrangler secret put EGYS_API_BASE_URL --config apps/bff/wrangler.toml
 
 The value must be the e-GYS backend origin (for example `https://egys.example.org`), without `/api/v1`. Google/Apple client IDs and redirect configuration remain protected identity-provider settings; no client secret is committed to this repository.
 
+The optional Edge compatibility speech route follows the same boundary. Set a
+vetted HTTPS gateway that accepts the typed JSON payload (`text`, `voice`,
+`rate`, `pitch`, `volume`) and returns audio in `EDGE_TTS_URL`:
+
+```sh
+wrangler secret put EDGE_TTS_URL --config apps/bff/wrangler.toml
+```
+
+The browser uses `VITE_BFF_BASE_URL/api/v1/tts/edge` in `auto` mode and falls
+back to a detected local voice when the binding is absent or unavailable.
+
 When the secret is absent, the BFF returns a typed `UPSTREAM_UNAVAILABLE` response and the UI keeps the user in a safe signed-out state. This makes Pages preview builds deterministic while preserving the production integration boundary.
 
 ## Local upstream synchronization
 
 The checked-in revision and route contract are maintained by
 `scripts/sync-egys.mjs`. It first runs `git ls-remote` and compares the remote
-`HEAD` with `docs/discovery/egys-upstream.json`; an unchanged revision does not
-clone or fetch anything. When the revision moves, the script reuses a matching
-`.tmp-egys-*` checkout (or creates a shallow filtered checkout using the
-developer's existing Git credentials), extracts the versioned controller route
-inventory, hashes it, and writes the deterministic generated metadata in
+`HEAD` with `docs/discovery/egys-upstream.json`; every run refreshes a matching
+`.tmp-egys-*` checkout so a shallow checkout cannot silently drift. When the
+revision moves, the script reuses that checkout (or creates a shallow filtered
+checkout using the developer's existing Git credentials), extracts the versioned
+controller route inventory, hashes it, and writes the deterministic generated metadata in
 `apps/bff/src/egys-contract.ts`.
 
 The route contract is intentionally a reviewable safety boundary, not runtime

@@ -29,7 +29,14 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Playwright smoke coverage passes at desktop and 390px mobile widths, with
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
-  same visual QA was captured with the repository's Chromium runner.
+  same visual QA was captured with the repository's Chromium runner. The
+  current suite has 16 passing flows, including split-reader keyboard resize,
+  persistent/minimizable media, MIDI queue persistence, canonical chord fetch,
+  GYSApp-Fork PDF viewer/download, and MIDI loading.
+- The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
+  tested through the BFF, and selected from the reader as `auto` (Edge then
+  local), `edge`, or `local`. It remains unavailable until a protected
+  `EDGE_TTS_URL` gateway is supplied.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.

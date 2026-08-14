@@ -169,6 +169,25 @@ export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
   );
 }
 
+/**
+ * WordPress can expose a post's modified timestamp in UTC after the local
+ * calendar day has started. The daily slug is the publisher's canonical day
+ * key, so use it as a narrow fallback without ever showing an arbitrary stale
+ * reflection.
+ */
+export function selectTodaySauh(
+  posts: SauhPost[],
+  now = new Date(),
+): SauhPost[] {
+  const dated = onlyTodaySauh(posts, now);
+  if (dated.length) return dated;
+  const year = String(now.getFullYear()).slice(-2);
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const expected = `sbj${year}${month}${day}`;
+  return posts.filter((post) => post.id === expected);
+}
+
 async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 4_000);
@@ -204,7 +223,7 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
   for (const url of candidates) {
     try {
       const items = await request(url, signal);
-      const today = onlyTodaySauh(items);
+      const today = selectTodaySauh(items);
       if (today.length) return today;
     } catch (error) {
       if (signal?.aborted) throw error;

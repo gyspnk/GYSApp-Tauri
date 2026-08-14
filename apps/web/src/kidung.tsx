@@ -31,6 +31,12 @@ import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
+import {
+  addMidiPlaylistItem,
+  getMidiPlaylist,
+  selectMidiPlaylistItem,
+  subscribeMidiPlaylist,
+} from "./midi-playlist.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -290,6 +296,7 @@ function HymnDetail({
   >("idle");
   const [notice, setNotice] = useState("");
   const [favorite, setFavorite] = useState(false);
+  const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const touchStartX = useRef<number | undefined>(undefined);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
@@ -313,6 +320,10 @@ function HymnDetail({
     setFavorite(isFavorite("hymn", item.id));
     return subscribeFavorites(() => setFavorite(isFavorite("hymn", item.id)));
   }, [item]);
+  useEffect(
+    () => subscribeMidiPlaylist(() => setPlaylist(getMidiPlaylist())),
+    [],
+  );
   useEffect(
     () => () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -476,6 +487,10 @@ function HymnDetail({
         rawMidi: bytes,
         sourceHash: ref.sha256,
       });
+      const queueIndex = getMidiPlaylist().items.findIndex(
+        (entry) => entry.songId === item.id,
+      );
+      if (queueIndex >= 0) selectMidiPlaylistItem(queueIndex);
       setMidiStatus("ready");
       // Loading the binary/parser is independent from starting Web Audio.
       // Browsers may reject an AudioContext created after the network await;
@@ -571,6 +586,39 @@ function HymnDetail({
               : midiStatus === "ready"
                 ? "MIDI siap"
                 : "Putar MIDI"}
+          </button>
+          <button
+            type="button"
+            className="quiet-button"
+            aria-pressed={playlist.items.some(
+              (entry) => entry.songId === item.id,
+            )}
+            onClick={() => {
+              const added = addMidiPlaylistItem({
+                songId: item.id,
+                title: item.title,
+                ...(musicLock?.items.find(
+                  (asset) =>
+                    asset.kind === "midi" && asset.path === item.midiPath,
+                )?.sha256
+                  ? {
+                      sourceHash: musicLock.items.find(
+                        (asset) =>
+                          asset.kind === "midi" && asset.path === item.midiPath,
+                      )?.sha256,
+                    }
+                  : {}),
+              });
+              show(
+                added
+                  ? "Kidung ditambahkan ke antrean MIDI."
+                  : "Kidung sudah ada di antrean MIDI.",
+              );
+            }}
+          >
+            {playlist.items.some((entry) => entry.songId === item.id)
+              ? `Di antrean · ${playlist.items.length}`
+              : "Tambah antrean MIDI"}
           </button>
           <button
             type="button"

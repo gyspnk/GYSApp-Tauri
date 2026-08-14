@@ -11,6 +11,13 @@ function run(command, args) {
 
 run("node", ["scripts/sync-egys.mjs", "--write", "--strict"]);
 run("node", ["scripts/check-egys-upstream.mjs", "--write", "--strict"]);
+run("pnpm", [
+  "exec",
+  "prettier",
+  "--write",
+  "apps/bff/src/egys-contract.ts",
+  "docs/discovery/egys-api-contract.json",
+]);
 run("git", [
   "add",
   "--",
