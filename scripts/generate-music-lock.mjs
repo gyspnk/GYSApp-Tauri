@@ -48,7 +48,26 @@ const candidates = [
   ),
 ];
 for (const path of candidates) {
-  const bytes = await readFile(join(sourceRoot, "docs", path));
+  // Read immutable git blobs instead of the checkout. On Windows a global
+  // `core.autocrlf=true` can silently rewrite chord JSON line endings and
+  // produce hashes that never match raw.githubusercontent.com.
+  const bytes = (() => {
+    try {
+      if (!path.includes("/chord/"))
+        return readFile(join(sourceRoot, "docs", path));
+      execFileSync("git", ["-C", sourceRoot, "rev-parse", "--git-dir"], {
+        stdio: "ignore",
+      });
+      return execFileSync(
+        "git",
+        ["-C", sourceRoot, "show", `${sourceCommit}:docs/${path}`],
+        { maxBuffer: 256 * 1024 * 1024 },
+      );
+    } catch {
+      return readFile(join(sourceRoot, "docs", path));
+    }
+  })();
+  const resolvedBytes = bytes instanceof Promise ? await bytes : bytes;
   const kind = path.includes("/pdf/")
     ? "pdf"
     : path.includes("/midi/")
@@ -60,8 +79,8 @@ for (const path of candidates) {
     id: path,
     kind,
     path,
-    size: bytes.byteLength,
-    sha256: createHash("sha256").update(bytes).digest("hex"),
+    size: resolvedBytes.byteLength,
+    sha256: createHash("sha256").update(resolvedBytes).digest("hex"),
   });
 }
 

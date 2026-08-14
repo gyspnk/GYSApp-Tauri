@@ -53,4 +53,22 @@ describe("MidiLoader", () => {
       loader.load({ id: "bad", url: "/bad.mid", sourceHash: "a".repeat(64) }),
     ).rejects.toThrow("hash mismatch");
   });
+
+  it("deduplicates simultaneous requests for the same immutable source", async () => {
+    const bytes = midiBytes();
+    const sourceHash = await hash(bytes);
+    let calls = 0;
+    const loader = new MidiLoader(undefined, async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      return bytes;
+    });
+    const source = { id: "hymn-001", url: "/001.mid", sourceHash };
+    await Promise.all([
+      loader.load(source),
+      loader.load(source),
+      loader.load(source),
+    ]);
+    expect(calls).toBe(1);
+  });
 });

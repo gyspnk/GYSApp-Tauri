@@ -5,7 +5,7 @@ export function clampPdfZoom(value: number): number {
 export function nextPdfPage(
   page: number,
   total: number,
-  delta: -1 | 1,
+  delta: number,
 ): number {
   return Math.max(1, Math.min(total, page + delta));
 }

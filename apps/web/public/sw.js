@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v2";
+const CACHE = "gysapp-shell-v3";
 const PRECACHE = [
   "/GYSApp-Tauri/",
   "/GYSApp-Tauri/index.html",
@@ -7,6 +7,7 @@ const PRECACHE = [
   "/GYSApp-Tauri/offline/hymn-catalog.json",
   "/GYSApp-Tauri/offline/music-lock.json",
   "/GYSApp-Tauri/offline/faith.json",
+  "/GYSApp-Tauri/offline/sauh.json",
   "/GYSApp-Tauri/offline/soundfont/TimGM6mb.sf2",
 ];
 self.addEventListener("install", (event) => {

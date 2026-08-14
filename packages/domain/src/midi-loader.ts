@@ -7,6 +7,8 @@ export type MidiSource = {
   url: string;
   sourceHash: string;
   duration?: number;
+  /** Optional bytes supplied by an asset cache, avoiding a second network read. */
+  bytes?: Uint8Array;
 };
 
 export type MidiLoaderFetcher = (
@@ -24,6 +26,10 @@ async function digest(bytes: Uint8Array): Promise<string> {
 export class MidiLoader {
   private readonly rawByHash = new Map<string, Uint8Array>();
   private readonly parsedByHash = new Map<string, NormalizedMidi>();
+  private readonly inFlightByHash = new Map<
+    string,
+    Promise<{ song: MidiSong; midi: NormalizedMidi }>
+  >();
   private readonly parser: MidiParser;
 
   public constructor(
@@ -52,9 +58,24 @@ export class MidiLoader {
         },
         midi: cached,
       };
+    const inFlight = this.inFlightByHash.get(source.sourceHash);
+    if (inFlight) return inFlight;
+    const request = this.loadFresh(source, signal);
+    this.inFlightByHash.set(source.sourceHash, request);
+    try {
+      return await request;
+    } finally {
+      this.inFlightByHash.delete(source.sourceHash);
+    }
+  }
+
+  private async loadFresh(
+    source: MidiSource,
+    signal?: AbortSignal,
+  ): Promise<{ song: MidiSong; midi: NormalizedMidi }> {
     let raw = this.rawByHash.get(source.sourceHash);
     if (!raw) {
-      raw = await this.fetcher(source.url, signal);
+      raw = source.bytes?.slice() ?? (await this.fetcher(source.url, signal));
       const actual = await digest(raw);
       if (actual.toLowerCase() !== source.sourceHash.toLowerCase())
         throw new Error("MIDI source hash mismatch");

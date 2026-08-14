@@ -5,6 +5,7 @@ import {
   Suspense,
   useEffect,
   useState,
+  useSyncExternalStore,
   type ErrorInfo,
   type ReactNode,
 } from "react";
@@ -19,6 +20,8 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
+import { fetchSauh } from "./sauh.js";
+import { midiPlayer } from "./midi-player.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -275,10 +278,27 @@ function Header({
 }
 
 function MediaSurface({ locale }: { locale: Locale }) {
-  const [playing, setPlaying] = useState(false);
+  const snapshot = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+    midiPlayer.snapshot,
+  );
+  const [minimized, setMinimized] = useState(
+    () => localStorage.getItem("gys-media-minimized") === "1",
+  );
+  useEffect(() => {
+    localStorage.setItem("gys-media-minimized", minimized ? "1" : "0");
+  }, [minimized]);
+  if (!snapshot.songId || snapshot.status === "idle") return null;
+  const playing = snapshot.status === "playing";
+  const togglePlayback = () => {
+    void (playing ? midiPlayer.pause() : midiPlayer.play()).catch(
+      () => undefined,
+    );
+  };
   return (
     <aside
-      className="media-surface"
+      className={`media-surface${minimized ? " is-minimized" : ""}`}
       aria-label={translate(locale, "shell.media")}
     >
       <div className="media-art">
@@ -286,13 +306,16 @@ function MediaSurface({ locale }: { locale: Locale }) {
       </div>
       <div className="media-meta">
         <small>{translate(locale, "shell.media")}</small>
-        <strong>Kasih Setia-Mu</strong>
-        <span>Hymn 001 · C major</span>
+        <strong>{snapshot.title ?? snapshot.songId}</strong>
+        <span>
+          {formatDuration(snapshot.position)} /{" "}
+          {formatDuration(snapshot.duration)}
+        </span>
       </div>
       <button
         className="media-control"
         type="button"
-        onClick={() => setPlaying((value) => !value)}
+        onClick={togglePlayback}
         aria-label={
           playing
             ? translate(locale, "shell.pause")
@@ -301,8 +324,21 @@ function MediaSurface({ locale }: { locale: Locale }) {
       >
         <Icon name={playing ? "pause" : "play"} size={18} />
       </button>
+      <button
+        className="media-minimize"
+        type="button"
+        onClick={() => setMinimized((value) => !value)}
+        aria-label={minimized ? "Perbesar pemutar" : "Minimalkan pemutar"}
+      >
+        {minimized ? "↗" : "−"}
+      </button>
     </aside>
   );
+}
+
+function formatDuration(value: number): string {
+  const seconds = Math.max(0, Math.floor(value));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 function Shell({
@@ -360,11 +396,34 @@ function Shell({
 }
 
 function HomePage({ locale }: { locale: Locale }) {
+  const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>([]);
+  const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [selectedSauh, setSelectedSauh] = useState(0);
+  const loadSauh = () => {
+    setSauhStatus("loading");
+    void fetchSauh()
+      .then((items) => {
+        setSauh(items);
+        setSelectedSauh(0);
+        setSauhStatus("ready");
+      })
+      .catch(() => setSauhStatus("error"));
+  };
+  useEffect(loadSauh, []);
+  const selected = sauh[selectedSauh];
+  const today = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
   return (
     <div className="page home-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">{translate(locale, "home.today")}</p>
+          <p className="date-line">{today}</p>
           <h1>{translate(locale, "home.title")}</h1>
           <p className="intro-copy">{translate(locale, "home.subtitle")}</p>
         </div>
@@ -375,14 +434,49 @@ function HomePage({ locale }: { locale: Locale }) {
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">
           <div className="section-heading">
-            <span>{translate(locale, "home.dailyLabel")}</span>
-            <small>{translate(locale, "home.reference")}</small>
+            <span>{translate(locale, "home.dailyLabel")} · Sauh Bagi Jiwa</span>
+            <small>
+              {selected?.reference ?? translate(locale, "home.reference")}
+            </small>
           </div>
-          <blockquote>“{translate(locale, "home.dailyVerse")}”</blockquote>
+          {sauhStatus === "loading" && (
+            <p className="sauh-loading">Mengambil renungan Sauh Bagi Jiwa…</p>
+          )}
+          {sauhStatus === "error" && (
+            <div className="sauh-offline-state">
+              <strong>{translate(locale, "home.dailyVerse")}</strong>
+              <small>
+                Offline fallback · {translate(locale, "home.reference")}
+              </small>
+              <button className="quiet-button" type="button" onClick={loadSauh}>
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {selected && sauhStatus === "ready" && (
+            <>
+              <p className="sauh-title">{selected.title}</p>
+              <blockquote>“{selected.verse ?? selected.body}”</blockquote>
+              <small className="sauh-source">
+                Sumber langsung Sauh Bagi Jiwa ·{" "}
+                {new Date(selected.updatedAt).toLocaleDateString(locale)}
+              </small>
+            </>
+          )}
           <div className="verse-actions">
             <Link className="quiet-button" to="/bible">
               {translate(locale, "home.openBible")}
             </Link>
+            {selected && (
+              <a
+                className="quiet-button"
+                href={selected.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Buka Sauh
+              </a>
+            )}
             <Link
               className="quiet-button icon-only"
               to="/bible"
@@ -419,39 +513,22 @@ function HomePage({ locale }: { locale: Locale }) {
           </Link>
         </article>
       </section>
-      <section className="lower-grid">
-        <div>
-          <div className="section-title-row">
-            <h2>{translate(locale, "home.recent")}</h2>
-          </div>
-          <div className="recent-list">
-            <Link className="recent-item" to="/bible">
-              <Icon name="bible" />
-              <span>
-                <strong>Yohanes 3</strong>
-                <small>{translate(locale, "home.readToday")}</small>
-              </span>
-              <Icon name="arrow" size={16} />
-            </Link>
-            <Link className="recent-item" to="/kidung">
-              <Icon name="music" />
-              <span>
-                <strong>Kasih Setia-Mu</strong>
-                <small>{translate(locale, "home.songContinue")}</small>
-              </span>
-              <Icon name="arrow" size={16} />
-            </Link>
-          </div>
+      {sauh.length > 1 && (
+        <div className="sauh-adjust" aria-label="Sesuaikan sumber Sauh">
+          <label htmlFor="sauh-select">Sesuaikan renungan</label>
+          <select
+            id="sauh-select"
+            value={selectedSauh}
+            onChange={(event) => setSelectedSauh(Number(event.target.value))}
+          >
+            {sauh.map((item, index) => (
+              <option value={index} key={item.id}>
+                {item.title}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="sauh-note">
-          <div className="section-title-row">
-            <h2>{translate(locale, "home.sauh")}</h2>
-            <span className="tiny-mark">SAUH</span>
-          </div>
-          <p>“Tuhan adalah tempat perlindungan dan kekuatan kita.”</p>
-          <small>Renungan singkat · 4 min</small>
-        </div>
-      </section>
+      )}
     </div>
   );
 }

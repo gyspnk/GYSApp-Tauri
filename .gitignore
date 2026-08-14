@@ -14,6 +14,7 @@ docs/performance/raw/
 .tmp-gyschordweb-*/
 apps/web/test-results/
 apps/web/playwright-report/
+.playwright-mcp/
 apps/web/vite.config.js
 apps/web/vite.config.js.map
 apps/web/vite.config.d.ts

@@ -8,12 +8,16 @@ import {
 } from "react";
 import {
   UpstreamMusicLockSchema,
+  type ChordDocumentV2,
   type HymnCatalogEntry,
   type UpstreamMusicLock,
 } from "@gys/contracts";
 import { MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { createBrowserChordRepository } from "./chords.js";
+import { ChordViewer } from "./chord-viewer.js";
+import { downloadMusicAsset, loadMusicAsset } from "./music-assets.js";
+import { midiPlayer } from "./midi-player.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -61,10 +65,16 @@ export function KidungPage({ locale }: { locale: Locale }) {
   const [chordStatus, setChordStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const [chordDocument, setChordDocument] = useState<ChordDocumentV2>();
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [showPdf, setShowPdf] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string>();
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
+  const [pdfStatus, setPdfStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock | undefined>();
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
@@ -107,14 +117,29 @@ export function KidungPage({ locale }: { locale: Locale }) {
       .catch(() => setMusicLock(undefined));
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
+
   const items = catalogState.status === "ready" ? catalogState.items : [];
+  const uniqueItems = useMemo(() => {
+    const seen = new Set<string>();
+    return items.filter((item) => {
+      const identity = `${item.book}:${item.number}:${item.title.trim().toLocaleLowerCase()}`;
+      if (seen.has(identity)) return false;
+      seen.add(identity);
+      return true;
+    });
+  }, [items]);
   const books = useMemo(
-    () => [...new Set(items.map((item) => item.book))].sort(),
-    [items],
+    () => [...new Set(uniqueItems.map((item) => item.book))].sort(),
+    [uniqueItems],
   );
   const filtered = useMemo(() => {
     const normalized = deferredQuery.trim().toLocaleLowerCase();
-    return items
+    return uniqueItems
       .filter((item) => book === "all" || item.book === book)
       .filter(
         (item) =>
@@ -124,7 +149,7 @@ export function KidungPage({ locale }: { locale: Locale }) {
             .includes(normalized),
       )
       .sort((left, right) => left.number - right.number);
-  }, [book, deferredQuery, items]);
+  }, [book, deferredQuery, uniqueItems]);
   const selected =
     items.find((item) => item.id === selectedId) ?? filtered[0] ?? items[0];
   const renderedKey = keyAtOffset(KEYS.indexOf(key) + transpose);
@@ -132,6 +157,18 @@ export function KidungPage({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (selected && selected.id !== selectedId) setSelectedId(selected.id);
   }, [selected, selectedId]);
+
+  useEffect(() => {
+    setChordDocument(undefined);
+    setChordStatus("idle");
+    setShowPdf(false);
+    setPdfBytes(undefined);
+    setPdfStatus("idle");
+    setPdfUrl((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return undefined;
+    });
+  }, [selected?.id]);
 
   const showNotice = (message: string) => {
     setNotice(message);
@@ -141,7 +178,8 @@ export function KidungPage({ locale }: { locale: Locale }) {
     if (!selected) return;
     setChordStatus("loading");
     try {
-      await chordRepository.getChord(selected.id);
+      const document = await chordRepository.getChord(selected.id);
+      setChordDocument(document);
       setChordStatus("ready");
       showNotice("Chord diverifikasi dan siap dipakai.");
     } catch {
@@ -149,6 +187,36 @@ export function KidungPage({ locale }: { locale: Locale }) {
       showNotice(
         "Chord belum tersedia offline; sambungkan internet lalu coba lagi.",
       );
+    }
+  };
+  const loadPdf = async () => {
+    if (!selected || !musicLock) return;
+    const ref = musicLock.items.find(
+      (item) => item.kind === "pdf" && item.path === selected.pdfPath,
+    );
+    if (!ref) {
+      setPdfStatus("error");
+      showNotice("PDF belum ada di immutable lock untuk lagu ini.");
+      return;
+    }
+    setPdfStatus("loading");
+    try {
+      const bytes = await loadMusicAsset(ref);
+      const nextUrl = URL.createObjectURL(
+        new Blob([bytes.slice().buffer as ArrayBuffer], {
+          type: "application/pdf",
+        }),
+      );
+      setPdfBytes(bytes);
+      setPdfUrl((previous) => {
+        if (previous) URL.revokeObjectURL(previous);
+        return nextUrl;
+      });
+      setPdfStatus("ready");
+      setShowPdf(true);
+    } catch {
+      setPdfStatus("error");
+      showNotice("PDF gagal dimuat. Periksa koneksi atau coba pin ulang.");
     }
   };
   const loadMidi = async () => {
@@ -163,11 +231,15 @@ export function KidungPage({ locale }: { locale: Locale }) {
     }
     setMidiStatus("loading");
     try {
+      const bytes = await loadMusicAsset(ref);
       const loaded = await midiLoader.load({
         id: selected.id,
         url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock?.sourceCommit ?? "cbc7d386"}/docs/${ref.path}`,
         sourceHash: ref.sha256,
+        bytes,
       });
+      await midiPlayer.load(selected.id, selected.title, loaded.midi);
+      await midiPlayer.play();
       setMidiStatus("ready");
       showNotice(
         `MIDI tervalidasi · ${loaded.midi.events.length} event siap dijadwalkan.`,
@@ -248,7 +320,7 @@ export function KidungPage({ locale }: { locale: Locale }) {
               ))}
             </div>
             <small className="hymn-count">
-              {filtered.length} lagu ditemukan
+              {filtered.length} lagu ditemukan · duplikat disederhanakan
             </small>
           </aside>
 
@@ -288,11 +360,34 @@ export function KidungPage({ locale }: { locale: Locale }) {
                 <button
                   className="quiet-button"
                   type="button"
-                  onClick={() => setShowPdf((visible) => !visible)}
+                  onClick={() => {
+                    if (showPdf) setShowPdf(false);
+                    else void loadPdf();
+                  }}
                   aria-expanded={showPdf}
+                  disabled={pdfStatus === "loading"}
                 >
-                  {showPdf ? "Tutup PDF" : "Buka PDF"}
+                  {pdfStatus === "loading"
+                    ? "Memuat PDF…"
+                    : showPdf
+                      ? "Tutup PDF"
+                      : "Buka PDF"}
                 </button>
+                {pdfBytes && (
+                  <button
+                    className="quiet-button"
+                    type="button"
+                    onClick={() => {
+                      const ref = musicLock?.items.find(
+                        (item) =>
+                          item.kind === "pdf" && item.path === selected.pdfPath,
+                      );
+                      if (ref) downloadMusicAsset(ref, pdfBytes);
+                    }}
+                  >
+                    Unduh PDF
+                  </button>
+                )}
               </div>
             </div>
             <div className="song-controls" aria-label="Song controls">
@@ -351,6 +446,9 @@ export function KidungPage({ locale }: { locale: Locale }) {
                   ),
                 )}
             </article>
+            {chordDocument && (
+              <ChordViewer document={chordDocument} transpose={transpose} />
+            )}
             {showPdf && (
               <Suspense
                 fallback={
@@ -358,7 +456,9 @@ export function KidungPage({ locale }: { locale: Locale }) {
                 }
               >
                 <PdfReader
-                  src={`${import.meta.env.BASE_URL}${selected.pdfPath.replace(/^assets\//, "assets/")}`}
+                  src={pdfUrl ?? ""}
+                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
+                  title={selected.title}
                 />
               </Suspense>
             )}

@@ -5,12 +5,14 @@ import {
   ChordManifestV1Schema,
   ErrorResponseSchema,
   OnlineContentSchema,
+  AccountProfileSchema,
   type ChordManifestV1,
   type ErrorCode,
   type OnlineContent,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
+import { normalizeSauhPosts } from "./sauh.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -38,6 +40,8 @@ export type BffConfig = {
 
 export type BffBindings = {
   ALLOWED_ORIGINS?: string;
+  SAUH_SOURCE_URL?: string;
+  EGYS_API_BASE_URL?: string;
 };
 
 type BffVariables = {
@@ -91,6 +95,69 @@ function originList(c: AppContext, fallback: readonly string[]): string[] {
 function etagForContent(items: readonly OnlineContent[]): string {
   const version = items.map((item) => `${item.id}:${item.updatedAt}`).join("|");
   return `W/"content-${version.length}-${version.slice(0, 48)}"`;
+}
+
+function egysBase(c: AppContext): string | undefined {
+  const value = c.env?.EGYS_API_BASE_URL?.trim();
+  return value ? value.replace(/\/$/, "") : undefined;
+}
+
+function egysHeaders(c: AppContext, headers?: HeadersInit): Headers {
+  const next = new Headers(headers);
+  next.set("accept", "application/json");
+  const cookie = c.req.header("cookie");
+  const authorization = c.req.header("authorization");
+  if (cookie) next.set("cookie", cookie);
+  if (authorization) next.set("authorization", authorization);
+  next.set("x-request-id", requestId(c));
+  return next;
+}
+
+function forwardSetCookie(c: AppContext, upstream: Response): void {
+  const value = upstream.headers.get("set-cookie");
+  if (!value) return;
+  c.header(
+    "set-cookie",
+    value
+      .replace(/;\s*Domain=[^;]+/gi, "")
+      .replace(/;\s*Path=[^;]*/gi, "; Path=/"),
+  );
+}
+
+async function requestEgys(
+  c: AppContext,
+  path: string,
+  init: RequestInit = {},
+): Promise<Response | undefined> {
+  const base = egysBase(c);
+  if (!base) return undefined;
+  const url = `${base}/api/v1/${path.replace(/^\//, "")}`;
+  return fetch(url, { ...init, headers: egysHeaders(c, init.headers) });
+}
+
+async function proxyEgysJson(
+  c: AppContext,
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const upstream = await requestEgys(c, path, init);
+  if (!upstream)
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: "UPSTREAM_UNAVAILABLE",
+          message: "e-GYS is not configured for this deployment",
+          requestId: requestId(c),
+        },
+      }),
+      { status: 503, headers: { "content-type": "application/json" } },
+    );
+  forwardSetCookie(c, upstream);
+  const text = await upstream.text();
+  return new Response(text || "{}", {
+    status: upstream.status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 export function createApp(
@@ -203,12 +270,33 @@ export function createApp(
     return c.json({ items });
   });
 
-  app.get("/api/v1/content/sauh", (c) => {
-    const etag = `${catalogEtag}-sauh`;
+  app.get("/api/v1/content/sauh", async (c) => {
+    let items: unknown[] = content.filter((item) => item.kind === "sauh");
+    const sourceUrl = c.env?.SAUH_SOURCE_URL?.trim();
+    if (sourceUrl) {
+      try {
+        const url = new URL(sourceUrl);
+        url.searchParams.set("categories", "229");
+        url.searchParams.set("per_page", "6");
+        url.searchParams.set("orderby", "date");
+        url.searchParams.set("order", "desc");
+        url.searchParams.set("_embed", "wp:featuredmedia");
+        const upstream = await fetch(url, {
+          headers: { accept: "application/json" },
+        });
+        if (upstream.ok) items = normalizeSauhPosts(await upstream.json());
+      } catch (error) {
+        console.warn(
+          "Sauh upstream unavailable; using packaged fallback",
+          error,
+        );
+      }
+    }
+    const etag = `${catalogEtag}-sauh-${JSON.stringify(items).length}`;
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     c.header("etag", etag);
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
-    return c.json({ items: content.filter((item) => item.kind === "sauh") });
+    return c.json({ items });
   });
 
   app.get("/api/v1/chords/manifest", (c) => {
@@ -222,7 +310,20 @@ export function createApp(
     return c.json(manifest);
   });
 
-  app.post("/api/v1/auth/exchange/:provider", (c) => {
+  app.get("/api/v1/auth/providers", async (c) => {
+    c.header("cache-control", "public, max-age=300");
+    if (!egysBase(c)) return c.json({ providers: [] });
+    const upstream = await proxyEgysJson(c, "auth/providers");
+    return c.body(
+      await upstream.text(),
+      upstream.status as ContentfulStatusCode,
+      {
+        "content-type": "application/json",
+      },
+    );
+  });
+
+  app.post("/api/v1/auth/exchange/:provider", async (c) => {
     c.header("cache-control", "no-store");
     const provider = ProviderSchema.safeParse(c.req.param("provider"));
     if (!provider.success)
@@ -231,22 +332,45 @@ export function createApp(
         "VALIDATION_ERROR",
         "Unknown authentication provider",
       );
-    return errorResponse(
-      c,
-      "UPSTREAM_UNAVAILABLE",
-      `${provider.data} authentication is not configured in this environment`,
-    );
-  });
-
-  app.get("/api/v1/auth/session", (c) => {
-    c.header("cache-control", "no-store");
-    if (!c.req.header("authorization") && !c.req.header("cookie"))
-      return errorResponse(c, "UNAUTHORIZED", "No active session");
+    const parsed = z
+      .object({ idToken: z.string().min(1).max(20_000) })
+      .safeParse(await c.req.json().catch(() => undefined));
+    if (!parsed.success)
+      return errorResponse(c, "VALIDATION_ERROR", "idToken is required");
+    const upstream = await requestEgys(c, `auth/${provider.data}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ idToken: parsed.data.idToken }),
+    });
+    if (!upstream)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        `${provider.data} authentication is not configured in this environment`,
+      );
+    forwardSetCookie(c, upstream);
+    // e-GYS authenticates with an HttpOnly cookie. Never echo an upstream
+    // access token or provider payload to the browser.
+    if (!upstream.ok)
+      return errorResponse(c, "UNAUTHORIZED", "e-GYS authentication failed");
     return c.json({ authenticated: true });
   });
 
-  app.post("/api/v1/auth/logout", (c) => {
+  app.get("/api/v1/auth/session", async (c) => {
     c.header("cache-control", "no-store");
+    if (!c.req.header("authorization") && !c.req.header("cookie"))
+      return errorResponse(c, "UNAUTHORIZED", "No active session");
+    if (egysBase(c)) {
+      const upstream = await proxyEgysJson(c, "auth/me");
+      if (!upstream.ok)
+        return errorResponse(c, "UNAUTHORIZED", "No active e-GYS session");
+    }
+    return c.json({ authenticated: true });
+  });
+
+  app.post("/api/v1/auth/logout", async (c) => {
+    c.header("cache-control", "no-store");
+    if (egysBase(c)) await proxyEgysJson(c, "auth/signout", { method: "POST" });
     c.header(
       "set-cookie",
       "gys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
@@ -254,11 +378,33 @@ export function createApp(
     return c.body(null, 204);
   });
 
-  app.get("/api/v1/account/profile", (c) => {
+  app.get("/api/v1/account/profile", async (c) => {
     c.header("cache-control", "no-store");
     if (!c.req.header("authorization") && !c.req.header("cookie"))
       return errorResponse(c, "UNAUTHORIZED", "No active session");
-    return c.json({ profile: null });
+    if (!egysBase(c)) return c.json({ profile: null });
+    const upstream = await proxyEgysJson(c, "auth/me");
+    if (!upstream.ok)
+      return errorResponse(c, "UNAUTHORIZED", "No active session");
+    const raw = (await upstream.json().catch(() => undefined)) as
+      | {
+          accountId?: unknown;
+          fullName?: unknown;
+          email?: unknown;
+          language?: unknown;
+        }
+      | undefined;
+    const profile = AccountProfileSchema.parse({
+      id: String(raw?.accountId ?? "egys"),
+      displayName: String(raw?.fullName ?? "e-GYS"),
+      ...(typeof raw?.email === "string" && raw.email.includes("@")
+        ? { email: raw.email }
+        : {}),
+      provider: "egys",
+      locale:
+        raw?.language === "en" || raw?.language === "zh" ? raw.language : "id",
+    });
+    return c.json({ profile });
   });
 
   app.post("/api/v1/report", async (c) => {

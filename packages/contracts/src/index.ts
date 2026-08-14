@@ -169,6 +169,20 @@ export const OnlineContentSchema = z.object({
 });
 export type OnlineContent = z.infer<typeof OnlineContentSchema>;
 
+/** A normalized Sauh Bagi Jiwa entry sourced from the GYS WordPress feed. */
+export const SauhPostSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  reference: z.string().min(1).optional(),
+  verse: z.string().min(1).optional(),
+  body: z.string().min(1),
+  url: z.string().url(),
+  imageUrl: z.string().url().optional(),
+  updatedAt: z.string().datetime({ offset: true }),
+  source: z.literal("tjc.org"),
+});
+export type SauhPost = z.infer<typeof SauhPostSchema>;
+
 export const AccountProfileSchema = z.object({
   id: z.string().min(1),
   displayName: z.string().min(1),

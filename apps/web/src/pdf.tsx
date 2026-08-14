@@ -15,17 +15,24 @@ export { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 export function PdfReader({
   src,
   initialPage = 1,
+  downloadUrl,
+  title = "PDF reader",
 }: {
   src: string;
   initialPage?: number;
+  downloadUrl?: string;
+  title?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const secondaryCanvasRef = useRef<HTMLCanvasElement>(null);
   const [documentProxy, setDocumentProxy] = useState<PDFDocumentProxy | null>(
     null,
   );
   const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(0);
   const [zoom, setZoom] = useState(1);
+  const [fit, setFit] = useState(false);
+  const [layout, setLayout] = useState<"single" | "two" | "vertical">("single");
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
@@ -35,6 +42,10 @@ export function PdfReader({
     setDocumentProxy(null);
     setTotal(0);
     setStatus("loading");
+    if (!src) {
+      setStatus("error");
+      return () => undefined;
+    }
     const loadingTask = getDocument({ url: src });
     void loadingTask.promise
       .then((document) => {
@@ -55,21 +66,33 @@ export function PdfReader({
   useEffect(() => {
     if (!documentProxy || !canvasRef.current) return;
     let disposed = false;
-    let renderTask: ReturnType<PDFPageProxy["render"]> | undefined;
-    void documentProxy
-      .getPage(Math.max(1, Math.min(documentProxy.numPages, page)))
-      .then(async (pdfPage) => {
-        if (disposed || !canvasRef.current) return;
+    const renderTasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
+    const pageNumbers =
+      layout === "single"
+        ? [page]
+        : [page, page + 1].filter((value) => value <= documentProxy.numPages);
+    const canvases = [canvasRef.current, secondaryCanvasRef.current];
+    void Promise.all(
+      pageNumbers.map(async (pageNumber, index) => {
+        const canvas = canvases[index];
+        if (!canvas) return;
+        const pdfPage = await documentProxy.getPage(
+          Math.max(1, Math.min(documentProxy.numPages, pageNumber)),
+        );
+        if (disposed) return;
         const viewport = pdfPage.getViewport({ scale: zoom });
-        const canvas = canvasRef.current;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        renderTask = pdfPage.render({
+        const renderTask = pdfPage.render({
           canvas,
           canvasContext: canvas.getContext("2d")!,
           viewport,
         });
+        renderTasks.push(renderTask);
         await renderTask.promise;
+      }),
+    )
+      .then(() => {
         if (!disposed) setStatus("ready");
       })
       .catch(() => {
@@ -77,16 +100,21 @@ export function PdfReader({
       });
     return () => {
       disposed = true;
-      renderTask?.cancel();
+      for (const renderTask of renderTasks) renderTask.cancel();
+      if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
-  }, [documentProxy, page, zoom]);
+  }, [documentProxy, layout, page, zoom]);
 
   return (
-    <section className="pdf-reader" aria-label="PDF reader">
+    <section className="pdf-reader" aria-label={title}>
       <div className="pdf-toolbar">
         <button
           type="button"
-          onClick={() => setPage((value) => nextPdfPage(value, total, -1))}
+          onClick={() =>
+            setPage((value) =>
+              nextPdfPage(value, total, layout === "two" ? -2 : -1),
+            )
+          }
           disabled={page <= 1}
         >
           Previous
@@ -97,7 +125,11 @@ export function PdfReader({
         </span>
         <button
           type="button"
-          onClick={() => setPage((value) => nextPdfPage(value, total, 1))}
+          onClick={() =>
+            setPage((value) =>
+              nextPdfPage(value, total, layout === "two" ? 2 : 1),
+            )
+          }
           disabled={total === 0 || page >= total}
         >
           Next
@@ -115,13 +147,52 @@ export function PdfReader({
             }
           />
         </label>
+        <button type="button" onClick={() => setFit((value) => !value)}>
+          {fit ? "Ukuran asli" : "Sesuaikan"}
+        </button>
+        <div className="pdf-layout-toggle" role="group" aria-label="Layout PDF">
+          {(["single", "two", "vertical"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className={layout === value ? "is-active" : ""}
+              onClick={() => setLayout(value)}
+            >
+              {value === "single"
+                ? "1 halaman"
+                : value === "two"
+                  ? "2 halaman"
+                  : "Vertikal"}
+            </button>
+          ))}
+        </div>
+        {downloadUrl && (
+          <a
+            className="pdf-download"
+            href={downloadUrl}
+            download={`${title}.pdf`}
+          >
+            Unduh
+          </a>
+        )}
       </div>
       <div className="pdf-stage">
         {status === "loading" && <p>Loading local PDF…</p>}
         {status === "error" && (
           <p>PDF is unavailable offline. Pin it and try again.</p>
         )}
-        <canvas ref={canvasRef} aria-label={`PDF page ${page}`} />
+        <div className={`pdf-pages pdf-layout-${layout}`}>
+          <canvas
+            className={fit ? "is-fit" : ""}
+            ref={canvasRef}
+            aria-label={`PDF page ${page}`}
+          />
+          <canvas
+            className={fit ? "is-fit" : ""}
+            ref={secondaryCanvasRef}
+            aria-label={`PDF page ${page + 1}`}
+          />
+        </div>
       </div>
     </section>
   );

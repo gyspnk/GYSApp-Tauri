@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { translate, type Locale } from "./i18n.js";
+import { getEgysProfile, signOutEgys } from "./egys.js";
 
 type PackManifest = {
   version: number;
@@ -18,6 +19,8 @@ export function MorePage({ locale }: { locale: Locale }) {
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [report, setReport] = useState("");
   const [notice, setNotice] = useState("");
+  const [accountName, setAccountName] = useState<string>();
+  const [accountLoading, setAccountLoading] = useState(true);
 
   useEffect(() => {
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -27,6 +30,15 @@ export function MorePage({ locale }: { locale: Locale }) {
         if (response.ok) setManifest((await response.json()) as PackManifest);
       })
       .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void getEgysProfile(controller.signal)
+      .then((profile) => setAccountName(profile?.displayName))
+      .catch(() => undefined)
+      .finally(() => setAccountLoading(false));
+    return () => controller.abort();
   }, []);
 
   const show = (message: string) => {
@@ -130,15 +142,28 @@ export function MorePage({ locale }: { locale: Locale }) {
         <button
           className="more-card more-action"
           type="button"
-          onClick={() =>
-            show(
-              "Account provider disiapkan melalui BFF; tidak ada token di client.",
-            )
-          }
+          onClick={() => {
+            if (accountName) {
+              void signOutEgys().then(() => {
+                setAccountName(undefined);
+                show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
+              });
+            } else {
+              show(
+                "Login Google/Apple e-GYS dilakukan melalui Worker BFF terkonfigurasi; token tidak disimpan di client.",
+              );
+            }
+          }}
         >
           <span className="more-icon">◯</span>
-          <strong>Akun</strong>
-          <small>Google, Apple, atau e-GYS</small>
+          <strong>
+            {accountLoading ? "Memeriksa akun…" : (accountName ?? "Akun e-GYS")}
+          </strong>
+          <small>
+            {accountName
+              ? "Keluar dari sesi e-GYS"
+              : "Google, Apple, atau e-GYS"}
+          </small>
         </button>
         <button
           className="more-card more-action"

@@ -700,6 +700,16 @@ blockquote {
 .pdf-toolbar input {
   accent-color: var(--blue);
 }
+.pdf-layout-toggle {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pdf-layout-toggle button.is-active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
 .pdf-stage {
   min-height: 280px;
   display: grid;
@@ -716,6 +726,26 @@ blockquote {
   max-width: 100%;
   height: auto;
   box-shadow: 0 8px 26px rgba(31, 66, 112, 0.12);
+}
+.pdf-pages {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+}
+.pdf-pages.pdf-layout-vertical {
+  display: grid;
+  gap: 18px;
+}
+.pdf-pages.pdf-layout-vertical canvas {
+  justify-self: center;
+}
+.pdf-pages canvas:nth-child(2) {
+  display: none;
+}
+.pdf-pages.pdf-layout-two canvas:nth-child(2),
+.pdf-pages.pdf-layout-vertical canvas:nth-child(2) {
+  display: block;
 }
 
 .pack-badge {
@@ -1398,6 +1428,148 @@ blockquote {
   background: var(--blue-soft);
   cursor: pointer;
 }
+.media-minimize {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+.media-minimize:hover {
+  background: var(--surface-soft);
+  color: var(--blue);
+}
+.media-surface.is-minimized {
+  width: auto;
+  max-width: 150px;
+  grid-template-columns: 34px 34px 28px;
+  padding: 8px;
+}
+.media-surface.is-minimized .media-meta {
+  display: none;
+}
+.sauh-title {
+  margin: 28px 0 -20px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+}
+.sauh-source {
+  display: block;
+  margin: -9px 0 20px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.sauh-loading,
+.sauh-offline-state {
+  display: grid;
+  gap: 10px;
+  margin: 35px 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.sauh-offline-state strong {
+  color: var(--navy);
+  font-size: 20px;
+  line-height: 1.4;
+}
+.sauh-offline-state .quiet-button {
+  justify-self: start;
+}
+.sauh-adjust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sauh-adjust select {
+  min-height: 36px;
+  max-width: min(420px, 100%);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.chord-viewer {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+.chord-viewer-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: var(--navy);
+  font-size: 13px;
+}
+.chord-viewer-heading small,
+.chord-note {
+  color: var(--muted);
+  font-size: 11px;
+}
+.chord-verse {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.chord-verse-label {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.chord-line {
+  display: grid;
+  gap: 2px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chord-line-tokens,
+.chord-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chord-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line));
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+}
+.chord-note {
+  margin: 14px 0 0;
+}
+.pdf-download {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.pdf-stage canvas.is-fit {
+  width: min(100%, 900px);
+}
 @media (max-width: 959px) {
   .topbar {
     padding-inline: 28px;
@@ -1618,6 +1790,11 @@ blockquote {
     gap: 8px;
     padding: 7px;
   }
+  .media-surface.is-minimized {
+    width: auto;
+    max-width: 120px;
+    grid-template-columns: 30px 30px 28px;
+  }
   .media-art {
     width: 31px;
     height: 31px;
@@ -1632,6 +1809,10 @@ blockquote {
   }
   .media-control {
     width: 30px;
+    height: 30px;
+  }
+  .media-minimize {
+    width: 28px;
     height: 30px;
   }
 }

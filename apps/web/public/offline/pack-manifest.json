@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-14T03:34:25.018Z",
+  "generatedAt": "2026-08-14T05:25:19.602Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -20,13 +20,13 @@
       "id": "hymn-catalog",
       "path": "offline/hymn-catalog.json",
       "bytes": 489489,
-      "sha256": "7a8d4de83206e8c9f0475c4a91aebb3dbc9334a15da8680b5aba07c85bc02ee5"
+      "sha256": "108030a68dc95bfea7d907836238fa2101c1dc0ae20e24ee96587861844cc0ff"
     },
     {
       "id": "music-lock",
       "path": "offline/music-lock.json",
-      "bytes": 307595,
-      "sha256": "3e89bd61a9368ef19a586649382b529b682f4b87c0220d1961b8ef42523ac2d5"
+      "bytes": 307591,
+      "sha256": "6d251d7867895a3b91a244d9aa490361aecb71ed5aa54c442f563d4d187b036a"
     },
     {
       "id": "faith-topics",
