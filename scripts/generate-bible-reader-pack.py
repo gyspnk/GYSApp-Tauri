@@ -40,7 +40,7 @@ def main() -> None:
             )
         ]
 
-    OUTPUT.write_text(
+    payload = (
         json.dumps(
             {
                 "version": 1,
@@ -52,9 +52,11 @@ def main() -> None:
             ensure_ascii=False,
             separators=(",", ":"),
         )
-        + "\n",
-        encoding="utf-8",
+        + "\n"
     )
+    # Path.write_text translates newlines on Windows; write bytes explicitly so
+    # the generated digest is identical on Windows and Linux CI.
+    OUTPUT.write_bytes(payload.encode("utf-8"))
     print(f"Generated {len(books)} books and {len(verses)} verses: {OUTPUT}")
 
 
