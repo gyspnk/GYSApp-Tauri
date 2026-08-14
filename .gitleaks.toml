@@ -1,0 +1,3 @@
+[allowlist]
+description = "The legacy .gysbk compatibility decoder contains a documented, retired static key from the read-only functional source. It is import-only and cannot create new backups."
+paths = ['''packages/domain/src/backup\.ts''']
