@@ -24,7 +24,7 @@ const ContentKindSchema = z.enum([
   "sauh",
   "announcement",
 ]);
-const ProviderSchema = z.enum(["google", "apple", "egys"]);
+const ProviderSchema = z.enum(["google", "apple"]);
 const ReportSchema = z.object({
   category: z.string().min(1).max(80),
   message: z.string().min(1).max(2_000),
