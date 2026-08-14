@@ -13,6 +13,9 @@
   the offline-first baseline and fresher BFF data when available.
 - Kept Kidung’s canonical gyschordweb PDF/chord/MIDI boundaries, with a shared
   minimizable media surface and route-persistent activity.
+- Made the GYSAPP-Fork KR master PDF (immutable source commit) the primary
+  viewer/download source, with signed GYSApp-Data package fallback and PDF
+  signature validation.
 - Added local e-GYS upstream synchronization and generated API/OAuth contract
   snapshots. The verified authentication boundary is provider ID-token
   exchange with an HttpOnly session cookie; no unsupported callback route is
@@ -25,10 +28,18 @@
 - Added the local PDF.js reader flow for TJC literature through an allowlisted
   BFF PDF/range proxy, with page-aware resume and a deduplicated “Terakhir
   dilihat” shelf.
+- Added a continuous GYSChordWeb-style PDF mode with lazy per-page rendering,
+  keyboard focus, smooth page jumps, and bounded mobile memory use.
+- Added a same-origin canonical music proxy for MIDI/chord/PDF/soundfont bytes,
+  with immutable source-commit checks and raw-asset fallback to prevent binary
+  loads from being blocked by browser CORS/range behavior.
+- Expanded the TB reader with sanitized source text, token/phrase/whole-word
+  search, query history, chapter scrubber, swipe navigation, split reading,
+  persistent bookmarks, verse selection, highlights, notes, copy, and share.
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 104.3 KiB gzip main application chunk and 132.8
+- Preserved the bundle gate: 100.9 KiB gzip main application chunk and 135.7
   KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded.
 
 The release is not declared GA until protected e-GYS/OAuth secrets, native

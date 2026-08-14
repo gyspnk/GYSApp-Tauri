@@ -26,7 +26,9 @@ and `generate-bible-reader-pack.py` build the user-facing projections. CI runs
 
 The PDF detail path now consumes the clean-room generated
 `fork-hymnal-manifest.json` (KR master PDF page ranges) derived from the
-`GYSAPP-Fork` index. On the web it attempts the signed `GYSApp-Data` KR package
-with the same checksum/decode rules as the functional source, then falls back
-to the immutable `gyschordweb` per-song PDF when the package is unavailable.
-The viewer remains local PDF.js with page, layout, zoom, and download controls.
+`GYSAPP-Fork` index. On the web it fetches the matching KR master PDF from the
+same immutable `GYSAPP-Fork` commit first, caches it atomically, and validates
+the PDF signature. It then falls back to the signed `GYSApp-Data` KR package
+with the same checksum/decode rules as the functional source, and finally to
+the immutable `gyschordweb` per-song PDF when the package is unavailable. The
+viewer remains local PDF.js with page, layout, zoom, and download controls.

@@ -148,7 +148,20 @@ async function requestEgys(
   const base = egysBase(c);
   if (!base) return undefined;
   const url = `${base}/api/v1/${path.replace(/^\//, "")}`;
-  return fetch(url, { ...init, headers: egysHeaders(c, init.headers) });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  const abort = () => controller.abort();
+  c.req.raw.signal.addEventListener("abort", abort, { once: true });
+  try {
+    return await fetch(url, {
+      ...init,
+      headers: egysHeaders(c, init.headers),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+    c.req.raw.signal.removeEventListener("abort", abort);
+  }
 }
 
 async function proxyEgysJson(
@@ -405,6 +418,89 @@ export function createApp(
     }
   });
 
+  /**
+   * Same-origin binary proxy for canonical GYSChordWeb assets. Keeping the
+   * source commit and path constrained by the generated lock prevents the
+   * Worker from becoming an open proxy while making MIDI/chord/PDF fetches
+   * reliable on browsers that reject cross-origin range requests.
+   */
+  app.get("/api/v1/content/music", async (c) => {
+    const path = c.req.query("path");
+    const commit = c.req.query("commit") ?? manifest.sourceCommit;
+    if (!path || path.length > 512)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Music asset path is required",
+      );
+    if (commit !== manifest.sourceCommit)
+      return errorResponse(
+        c,
+        "FORBIDDEN",
+        "Music source commit is not allowlisted",
+      );
+    const allowlistedPath =
+      /^assets\/(?:midi|soundfont|pdf|chord)\/[^/]+\.(?:mid|midi|sf2|pdf|json)$/i.test(
+        path,
+      ) && !path.includes("..");
+    if (!allowlistedPath)
+      return errorResponse(c, "FORBIDDEN", "Music asset is not allowlisted");
+    const encodedPath = path
+      .replace(/^docs\//, "")
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+    const url = `https://raw.githubusercontent.com/gyspnk/gyschordweb/${encodeURIComponent(commit)}/docs/${encodedPath}`;
+    try {
+      const range = c.req.header("range");
+      const upstream = await fetch(url, {
+        headers: {
+          accept:
+            "application/octet-stream,application/json,application/pdf,*/*",
+          ...(range ? { range } : {}),
+        },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok && upstream.status !== 206)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Music asset unavailable",
+        );
+      const isPdf = /\.pdf$/i.test(path);
+      const isChord = /\.json$/i.test(path);
+      c.header(
+        "content-type",
+        isPdf
+          ? "application/pdf"
+          : isChord
+            ? "application/json"
+            : "application/octet-stream",
+      );
+      c.header("cache-control", "public, max-age=31536000, immutable");
+      c.header("cross-origin-resource-policy", "cross-origin");
+      for (const header of [
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "etag",
+      ]) {
+        const value = upstream.headers.get(header);
+        if (value) c.header(header, value);
+      }
+      return new Response(upstream.body, {
+        status: upstream.status,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Music asset unavailable",
+      );
+    }
+  });
+
   app.get("/api/v1/content/suara-sejati", async (c) => {
     try {
       const now = Date.now();
@@ -573,7 +669,7 @@ export function createApp(
     if (egysBase(c)) await proxyEgysJson(c, "auth/signout", { method: "POST" });
     c.header(
       "set-cookie",
-      "gys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+      "egys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
     );
     return c.body(null, 204);
   });

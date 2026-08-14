@@ -51,6 +51,32 @@ test("offline reader packs open without a network request", async ({
   ).toBeVisible();
 });
 
+test("Bible reader keeps search, split reading, and verse annotations local", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByLabel("Cari Alkitab").fill("begitu besar");
+  await page.getByLabel("Frasa tepat").check();
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  await expect(page.locator(".result-item").first()).toBeVisible();
+  await page.getByRole("button", { name: "Dua kolom" }).click();
+  await expect(page.locator(".bible-pane")).toHaveCount(2);
+  await page
+    .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
+    .first()
+    .click();
+  await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
+  await page
+    .getByLabel("Catatan pribadi")
+    .fill("Kasih Tuhan menjadi dasar pengharapan.");
+  await page.getByRole("button", { name: "Simpan catatan" }).click();
+  await page.getByRole("button", { name: "Sorot blue" }).click();
+  await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
+});
+
 test("home surfaces today's Sauh and canonical Suara Sejati feed", async ({
   page,
 }) => {

@@ -30,6 +30,15 @@ export function assetUrl(
   return `${RAW_ROOT}/${encodeURIComponent(lock.sourceCommit)}/docs/${path}`;
 }
 
+function bffAssetUrl(
+  ref: Pick<UpstreamMusicItem, "path">,
+  lock: UpstreamMusicLock,
+): string | undefined {
+  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+  if (!base) return undefined;
+  return `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(lock.sourceCommit)}&path=${encodeURIComponent(ref.path)}`;
+}
+
 export async function loadMusicLock(): Promise<UpstreamMusicLock> {
   lockPromise ??= fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
     cache: "force-cache",
@@ -114,8 +123,23 @@ export async function loadMusicAsset(
     } catch {
       // The checked-in pack contains only a small seed set; remote is expected.
     }
-    const remote = assetUrl(ref, await loadMusicLock());
-    return (await cachedResponse(remote, ref)) ?? networkResponse(remote, ref);
+    const lock = await loadMusicLock();
+    const candidates = [bffAssetUrl(ref, lock), assetUrl(ref, lock)].filter(
+      (value): value is string => Boolean(value),
+    );
+    let lastError: unknown;
+    for (const remote of candidates) {
+      try {
+        const cached = await cachedResponse(remote, ref);
+        if (cached) return cached;
+        return await networkResponse(remote, ref);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`Asset request failed for ${ref.id}`);
   })();
   inFlight.set(ref.sha256, request);
   try {

@@ -21,8 +21,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **99.2 KiB gzip**; the complete initial
-  JavaScript set is **127.9 KiB gzip**. PDF.js and its worker remain lazy
+- The initial web application chunk is **100.9 KiB gzip**; the complete initial
+  JavaScript set is **135.7 KiB gzip**. PDF.js and its worker remain lazy
   chunks, and the bundle gate fails if the initial application chunk exceeds
   250 KiB gzip.
 - Playwright smoke coverage passes at desktop and 390px mobile widths, with

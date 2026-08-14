@@ -90,17 +90,37 @@ export function createBrowserChordRepository(): ChordRepository {
         .split("/")
         .map((segment) => encodeURIComponent(segment))
         .join("/");
-      const response = await fetch(
+      const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+      const candidates = [
+        base
+          ? `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(ref.sourceCommit)}&path=${encodeURIComponent(ref.path)}`
+          : undefined,
         `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
-        signal ? { signal, cache: "force-cache" } : { cache: "force-cache" },
-      );
-      if (!response.ok)
-        throw new Error(`chord request failed: ${response.status}`);
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      return {
-        bytes,
-        document: JSON.parse(new TextDecoder().decode(bytes)) as unknown,
-      };
+      ].filter((value): value is string => Boolean(value));
+      let lastError: unknown;
+      for (const url of candidates) {
+        try {
+          const response = await fetch(
+            url,
+            signal
+              ? { signal, cache: "force-cache" }
+              : { cache: "force-cache" },
+          );
+          if (!response.ok)
+            throw new Error(`chord request failed: ${response.status}`);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          return {
+            bytes,
+            document: JSON.parse(new TextDecoder().decode(bytes)) as unknown,
+          };
+        } catch (error) {
+          if (signal?.aborted) throw error;
+          lastError = error;
+        }
+      }
+      throw lastError instanceof Error
+        ? lastError
+        : new Error("chord request failed");
     },
   };
   return new ChordRepository(

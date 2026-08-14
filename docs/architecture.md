@@ -26,15 +26,15 @@ flowchart TB
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                                 |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers. |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                            |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                        |
-| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, PDF range proxy, cache headers, typed errors, and e-GYS cookie proxy.               |
-| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                 |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                           |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                          |
+| Area                    | Responsibility                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.         |
+| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                    |
+| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                |
+| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, PDF and canonical music range proxies, cache headers, typed errors, and e-GYS cookie proxy. |
+| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                         |
+| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                   |
+| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                  |
 
 ## Data and persistence flow
 
@@ -71,6 +71,12 @@ Literature records keep a versioned page/scroll location. The catalog renders a
 deduplicated “Terakhir dilihat” shelf and validates a saved page against the
 current resource version before offering resume.
 
+The Bible reader uses the generated TB pack as a single source of truth. The
+browser strips the pack's layout markers before display, while search indexes a
+normalized copy in the repository boundary. Split columns, bookmarks,
+highlights, notes, and query history live in versioned local keys and remain
+available offline.
+
 ```mermaid
 stateDiagram-v2
   [*] --> Missing
@@ -91,3 +97,22 @@ revision/contract verification, formatting, lint, strict typecheck, unit and
 contract tests, production builds, bundle budget, and Playwright critical
 flows. GitHub Actions is a secondary verification layer; it is not the first
 place a developer should discover an upstream incompatibility.
+
+```mermaid
+sequenceDiagram
+  participant Reader as Kidung/PDF reader
+  participant Cache as Cache Storage
+  participant Worker as BFF music proxy
+  participant Raw as gyschordweb immutable commit
+  Reader->>Cache: get(source hash)
+  alt cached and verified
+    Cache-->>Reader: bytes
+  else missing or corrupt
+    Reader->>Worker: GET /api/v1/content/music?commit&path
+    Worker->>Raw: GET immutable path (+ Range)
+    Raw-->>Worker: binary response
+    Worker-->>Reader: CORS-safe binary response
+    Reader->>Reader: verify size + SHA-256
+    Reader->>Cache: atomic replace pointer
+  end
+```

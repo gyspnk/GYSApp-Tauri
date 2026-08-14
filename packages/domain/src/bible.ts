@@ -19,6 +19,22 @@ export type BibleRepositoryOptions = {
   references?: Readonly<Record<string, readonly BibleReference[]>>;
 };
 
+export type BibleSearchOptions = {
+  book?: string;
+  exactPhrase?: boolean;
+  wholeWord?: boolean;
+};
+
+/** Remove the small markup tokens used by the source TB reader pack. */
+export function sanitizeBibleText(value: string): string {
+  return value
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export class BibleRepository {
   private readonly pack: readonly BibleVerse[];
   private readonly byId = new Map<string, BibleVerse>();
@@ -88,17 +104,38 @@ export class BibleRepository {
     return [...(this.byChapter.get(`${book}:${chapter}`) ?? [])];
   }
 
-  public async search(query: string, book?: string): Promise<BibleVerse[]> {
+  public async search(
+    query: string,
+    options: BibleSearchOptions | string = {},
+  ): Promise<BibleVerse[]> {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return [];
+    const searchOptions: BibleSearchOptions =
+      typeof options === "string" ? { book: options } : options;
+    const terms = normalized.split(/\s+/).filter(Boolean);
     await new Promise<void>((resolve) => queueMicrotask(resolve));
     return this.pack.filter((verse) => {
-      if (book && verse.book !== book) return false;
+      if (searchOptions.book && verse.book !== searchOptions.book) return false;
       const searchable =
         this.normalizedText.get(verse.id) ??
-        `${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`.toLocaleLowerCase();
+        `${verse.book} ${verse.chapter}:${verse.verse} ${sanitizeBibleText(verse.text)}`.toLocaleLowerCase();
       this.normalizedText.set(verse.id, searchable);
-      return searchable.includes(normalized);
+      if (searchOptions.exactPhrase && !searchable.includes(normalized))
+        return false;
+      if (
+        !searchOptions.exactPhrase &&
+        !terms.every((term) => searchable.includes(term))
+      )
+        return false;
+      if (searchOptions.wholeWord) {
+        return terms.every((term) =>
+          new RegExp(
+            `(?:^|[^\\p{L}\\p{N}])${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[^\\p{L}\\p{N}])`,
+            "iu",
+          ).test(searchable),
+        );
+      }
+      return true;
     });
   }
 

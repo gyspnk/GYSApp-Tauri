@@ -59,6 +59,12 @@ const BACKUP_STORAGE_KEYS = [
   "gys-bible-chapter",
   "gys-bible-last-reading",
   "gys-bible-bookmarks",
+  "gys-bible-notes-v1",
+  "gys-bible-highlights-v1",
+  "gys-bible-search-history-v1",
+  "gys-bible-split-v1",
+  "gys-bible-split-ratio-v1",
+  "gys-daily-sauh-mode-v1",
   "gys-media-minimized",
   "gys-report-draft",
   "gys-reminder-time-v1",
@@ -329,6 +335,7 @@ export function MorePage({ locale }: { locale: Locale }) {
   };
 
   const signInWithProvider = async (provider: "google" | "apple") => {
+    setAuthBusy(true);
     show(
       `Buka ${provider === "google" ? "Google" : "Apple"} untuk menyelesaikan login e-GYS.`,
     );
@@ -419,6 +426,8 @@ export function MorePage({ locale }: { locale: Locale }) {
       show(
         "Login e-GYS belum dapat diselesaikan. Pastikan Worker dan client provider sudah dikonfigurasi.",
       );
+    } finally {
+      setAuthBusy(false);
     }
   };
 

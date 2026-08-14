@@ -14,9 +14,10 @@ service or platform artifact that cannot be exercised in this workspace.
   `Lanjutkan` home item.
 - Today's Sauh Bagi Jiwa and real Suara Sejati feed with validated static
   snapshots, online/BFF revalidation, image mapping, and offline recovery.
-- GYSChordWeb chord manifest/cache/integrity validation, GYSApp-Fork hymnal
-  PDF database fallback, local PDF.js worker, canonical MIDI loading, and
-  shell-level minimizable media surface.
+- GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
+  hymnal PDF database/download source with signed package fallback, local
+  PDF.js worker, canonical MIDI loading, and shell-level minimizable media
+  surface.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -25,6 +26,13 @@ service or platform artifact that cannot be exercised in this workspace.
   fallback because no cover is exposed by the upstream metadata.
 - Native e-GYS BFF/session/profile adapter with branch and membership mapping;
   no WebView or client-side credential storage.
+- TB reader hardening: source markup is sanitized, search supports token/phrase/
+  whole-word filters with local history, and the reader has persistent notes,
+  highlights, verse selection, split columns, chapter scrubber, and swipe
+  navigation.
+- GYSChordWeb-style continuous PDF rendering now lazy-loads visible pages;
+  canonical binary assets can use the allowlisted same-origin Worker proxy,
+  then fall back to the immutable raw source without duplicate in-flight fetches.
 - Local-first e-GYS revision/route-contract synchronization, generated route
   metadata, breaking route removal detection, repository-managed pre-commit
   and pre-push hooks, and documented workflow.

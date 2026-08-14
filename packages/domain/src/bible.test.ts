@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { BibleRepository, type BibleVerse } from "./bible.js";
+import {
+  BibleRepository,
+  sanitizeBibleText,
+  type BibleVerse,
+} from "./bible.js";
 
 const verses: BibleVerse[] = [
   {
@@ -74,5 +78,35 @@ describe("BibleRepository", () => {
     expect(repository.references("joh-3-16")).toEqual([
       { book: "Kejadian", chapter: 1, verse: 1 },
     ]);
+  });
+
+  it("supports tokenized, phrase, and whole-word search over sanitized text", async () => {
+    const repository = new BibleRepository([
+      ...verses,
+      {
+        id: "joh-3-18",
+        book: "Yohanes",
+        bookOrder: 43,
+        chapter: 3,
+        verse: 18,
+        text: "<pb/>Karena begitu besar kasih Allah.",
+      },
+    ]);
+    expect(
+      (await repository.search("besar Allah")).map((verse) => verse.id),
+    ).toEqual(["joh-3-16", "joh-3-18"]);
+    expect(
+      (await repository.search("begitu besar", { exactPhrase: true })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["joh-3-16", "joh-3-18"]);
+    expect(
+      (await repository.search("kasih", { wholeWord: true })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["joh-3-16", "joh-3-18"]);
+    expect(sanitizeBibleText("<pb/><f>ⓐ</f>Firman &amp; terang")).toBe(
+      "ⓐFirman & terang",
+    );
   });
 });

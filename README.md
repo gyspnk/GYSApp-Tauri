@@ -33,7 +33,7 @@ flowchart LR
   DOMAIN --> BFF[Hono BFF]
   BFF --> CONTENT[TJC + canonical music assets]
   BFF --> EGYS[e-GYS API]
-  EGYS -->|HttpOnly gys_session| BFF
+  EGYS -->|HttpOnly egys_session| BFF
 ```
 
 The UI never imports raw upstream source. `packages/contracts` validates every
@@ -91,8 +91,8 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 99.2 KiB gzip for the main
-application chunk and 127.9 KiB gzip for all initial JavaScript; PDF.js and its
+The current production baseline is approximately 100.9 KiB gzip for the main
+application chunk and 135.7 KiB gzip for all initial JavaScript; PDF.js and its
 worker stay lazy-loaded. Use `pnpm verify:bundle` to check the budget locally.
 
 The shell uses one responsive navigation surface across desktop, rail, and

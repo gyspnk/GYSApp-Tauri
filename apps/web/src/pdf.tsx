@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type TouchEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type TouchEvent,
+  type RefObject,
+} from "react";
 import {
   getDocument,
   GlobalWorkerOptions,
@@ -11,6 +17,115 @@ import { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 GlobalWorkerOptions.workerSrc = workerSrc;
 
 export { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
+
+/**
+ * Render one page in the long-scroll mode used by GYSChordWeb.
+ *
+ * Pages stay as lightweight placeholders until they are close to the
+ * viewport. This preserves the familiar continuous reader without decoding
+ * an entire hymnal into canvases (which is especially expensive on mobile).
+ */
+function VerticalPdfPage({
+  documentProxy,
+  pageNumber,
+  zoom,
+  fit,
+  stageRef,
+  onActive,
+}: {
+  documentProxy: PDFDocumentProxy;
+  pageNumber: number;
+  zoom: number;
+  fit: boolean;
+  stageRef: RefObject<HTMLDivElement | null>;
+  onActive: (page: number) => void;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [nearViewport, setNearViewport] = useState(pageNumber <= 2);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    pageNumber <= 2 ? "loading" : "idle",
+  );
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || typeof IntersectionObserver === "undefined") {
+      setNearViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true);
+          onActive(pageNumber);
+        }
+      },
+      { root: stageRef.current, rootMargin: "720px 0px", threshold: 0.01 },
+    );
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [onActive, pageNumber, stageRef]);
+
+  useEffect(() => {
+    if (!nearViewport || !canvasRef.current || !hostRef.current) return;
+    let disposed = false;
+    let renderTask: ReturnType<PDFPageProxy["render"]> | undefined;
+    setStatus("loading");
+    void documentProxy
+      .getPage(pageNumber)
+      .then((pdfPage) => {
+        if (disposed || !canvasRef.current || !hostRef.current) return;
+        const baseViewport = pdfPage.getViewport({ scale: 1 });
+        const availableWidth = Math.max(320, hostRef.current.clientWidth - 32);
+        const fitScale = availableWidth / baseViewport.width;
+        const scale = fit ? Math.min(zoom, fitScale) : zoom;
+        const viewport = pdfPage.getViewport({ scale: Math.max(0.35, scale) });
+        const canvas = canvasRef.current;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        renderTask = pdfPage.render({
+          canvas,
+          canvasContext: canvas.getContext("2d")!,
+          viewport,
+        });
+        return renderTask.promise;
+      })
+      .then(() => {
+        if (!disposed) setStatus("ready");
+      })
+      .catch(() => {
+        if (!disposed) setStatus("error");
+      });
+    return () => {
+      disposed = true;
+      renderTask?.cancel();
+      if (canvasRef.current) {
+        canvasRef.current.width = 0;
+        canvasRef.current.height = 0;
+      }
+    };
+  }, [documentProxy, fit, nearViewport, pageNumber, zoom]);
+
+  return (
+    <div
+      className={`pdf-vertical-page${status === "ready" ? " is-ready" : ""}`}
+      data-pdf-page={pageNumber}
+      ref={hostRef}
+      tabIndex={0}
+      aria-label={`PDF page ${pageNumber}`}
+      onFocus={() => onActive(pageNumber)}
+    >
+      <canvas ref={canvasRef} aria-hidden={status !== "ready"} />
+      {status !== "ready" && (
+        <span className="pdf-page-placeholder" aria-live="polite">
+          {status === "error"
+            ? "Halaman gagal dimuat"
+            : `Halaman ${pageNumber}`}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export function PdfReader({
   src,
@@ -48,6 +163,7 @@ export function PdfReader({
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  const verticalStageRef = useRef<HTMLDivElement>(null);
   const pinchStart = useRef<{ distance: number; zoom: number } | undefined>(
     undefined,
   );
@@ -131,6 +247,7 @@ export function PdfReader({
 
   useEffect(() => {
     if (!documentProxy || !canvasRef.current) return;
+    if (layout === "vertical") return;
     let disposed = false;
     const renderTasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
     const pageNumbers =
@@ -171,16 +288,22 @@ export function PdfReader({
     };
   }, [documentProxy, layout, page, zoom]);
 
+  const goToPage = (next: number) => {
+    const bounded = nextPdfPage(next, total, 0);
+    setPage(bounded);
+    if (layout !== "vertical") return;
+    const target = verticalStageRef.current?.querySelector<HTMLElement>(
+      `[data-pdf-page="${bounded}"]`,
+    );
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <section className="pdf-reader" aria-label={title}>
       <div className="pdf-toolbar">
         <button
           type="button"
-          onClick={() =>
-            setPage((value) =>
-              nextPdfPage(value, total, layout === "two" ? -2 : -1),
-            )
-          }
+          onClick={() => goToPage(page + (layout === "two" ? -2 : -1))}
           disabled={page <= 1}
         >
           Sebelumnya
@@ -191,11 +314,7 @@ export function PdfReader({
         </span>
         <button
           type="button"
-          onClick={() =>
-            setPage((value) =>
-              nextPdfPage(value, total, layout === "two" ? 2 : 1),
-            )
-          }
+          onClick={() => goToPage(page + (layout === "two" ? 2 : 1))}
           disabled={total === 0 || page >= total}
         >
           Berikutnya
@@ -254,18 +373,38 @@ export function PdfReader({
             PDF belum tersedia offline. Simpan dulu saat tersambung internet.
           </p>
         )}
-        <div className={`pdf-pages pdf-layout-${layout}`}>
-          <canvas
-            className={fit ? "is-fit" : ""}
-            ref={canvasRef}
-            aria-label={`PDF page ${page}`}
-          />
-          <canvas
-            className={fit ? "is-fit" : ""}
-            ref={secondaryCanvasRef}
-            aria-label={`PDF page ${page + 1}`}
-          />
-        </div>
+        {layout === "vertical" ? (
+          <div className="pdf-pages pdf-layout-vertical" ref={verticalStageRef}>
+            {Array.from({ length: total }, (_, index) => (
+              <VerticalPdfPage
+                key={index + 1}
+                documentProxy={documentProxy!}
+                pageNumber={index + 1}
+                zoom={zoom}
+                fit={fit}
+                stageRef={verticalStageRef}
+                onActive={(nextPage) => {
+                  setPage((current) =>
+                    current === nextPage ? current : nextPage,
+                  );
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={`pdf-pages pdf-layout-${layout}`}>
+            <canvas
+              className={fit ? "is-fit" : ""}
+              ref={canvasRef}
+              aria-label={`PDF page ${page}`}
+            />
+            <canvas
+              className={fit ? "is-fit" : ""}
+              ref={secondaryCanvasRef}
+              aria-label={`PDF page ${page + 1}`}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

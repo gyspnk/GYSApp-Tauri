@@ -19,11 +19,29 @@ function configuredBase(): string | undefined {
   return import.meta.env.VITE_BFF_BASE_URL?.trim();
 }
 
+async function request(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = 8_000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  const parent = init.signal;
+  const abort = () => controller.abort();
+  parent?.addEventListener("abort", abort, { once: true });
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timer);
+    parent?.removeEventListener("abort", abort);
+  }
+}
+
 export async function getEgysProfile(
   signal?: AbortSignal,
 ): Promise<AccountProfile | undefined> {
   if (!configuredBase()) return undefined;
-  const response = await fetch(apiUrl("/api/v1/account/profile"), {
+  const response = await request(apiUrl("/api/v1/account/profile"), {
     credentials: "include",
     ...(signal ? { signal } : {}),
     cache: "no-store",
@@ -36,7 +54,7 @@ export async function getEgysProfile(
 
 export async function getEgysUpstreamMeta(signal?: AbortSignal) {
   if (!configuredBase()) return undefined;
-  const response = await fetch(apiUrl("/api/v1/meta/egys"), {
+  const response = await request(apiUrl("/api/v1/meta/egys"), {
     ...(signal ? { signal } : {}),
     cache: "no-store",
   });
@@ -49,7 +67,7 @@ export async function getEgysProviders(
   signal?: AbortSignal,
 ): Promise<EgysProviders | undefined> {
   if (!configuredBase()) return undefined;
-  const response = await fetch(apiUrl("/api/v1/auth/providers"), {
+  const response = await request(apiUrl("/api/v1/auth/providers"), {
     credentials: "include",
     ...(signal ? { signal } : {}),
     cache: "no-store",
@@ -74,7 +92,7 @@ export async function exchangeEgysToken(
   idToken: string,
 ): Promise<void> {
   if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
-  const response = await fetch(apiUrl(`/api/v1/auth/exchange/${provider}`), {
+  const response = await request(apiUrl(`/api/v1/auth/exchange/${provider}`), {
     method: "POST",
     credentials: "include",
     headers: { "content-type": "application/json" },
@@ -85,7 +103,7 @@ export async function exchangeEgysToken(
 
 export async function startEgysWhatsAppLogin(signal?: AbortSignal) {
   if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
-  const response = await fetch(apiUrl("/api/v1/auth/whatsapp/start"), {
+  const response = await request(apiUrl("/api/v1/auth/whatsapp/start"), {
     method: "POST",
     credentials: "include",
     ...(signal ? { signal } : {}),
@@ -100,7 +118,7 @@ export async function getEgysWhatsAppState(
   signal?: AbortSignal,
 ) {
   if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
-  const response = await fetch(
+  const response = await request(
     apiUrl(`/api/v1/auth/whatsapp/state?token=${encodeURIComponent(token)}`),
     {
       credentials: "include",
@@ -115,7 +133,7 @@ export async function getEgysWhatsAppState(
 
 export async function signOutEgys(): Promise<void> {
   if (!configuredBase()) return;
-  await fetch(apiUrl("/api/v1/auth/logout"), {
+  await request(apiUrl("/api/v1/auth/logout"), {
     method: "POST",
     credentials: "include",
   });

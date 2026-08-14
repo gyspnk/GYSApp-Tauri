@@ -1,6 +1,6 @@
 # e-GYS account integration
 
-GYSApp never sends an e-GYS token directly to the browser storage. The web client calls the versioned GYS BFF routes and the Worker forwards the request to e-GYS with the upstream `gys_session` cookie.
+GYSApp never sends an e-GYS token directly to the browser storage. The web client calls the versioned GYS BFF routes and the Worker forwards the request to e-GYS with the upstream `egys_session` cookie (the upstream default; deployments may override the name).
 
 ## Verified upstream authentication boundary
 
@@ -9,7 +9,7 @@ The verified e-GYS revision in
 expose an authorization-code callback route. Its actual public contract is
 `GET /api/v1/auth/providers`, followed by `POST /api/v1/auth/{provider}` with a
 provider-issued `{ idToken }`. The e-GYS server verifies that token and issues
-an HttpOnly `gys_session` cookie; the browser never receives a session token in
+an HttpOnly `egys_session` cookie; the browser never receives a session token in
 the response body. Therefore GYSApp does not invent an OAuth callback or
 bundle a client secret. Google/Apple's official browser or native SDK is the
 authentication boundary, and the resulting ID token is exchanged through the
@@ -86,7 +86,7 @@ sequenceDiagram
   Browser-->>App: Provider ID token (or WhatsApp confirmation)
   App->>BFF: POST /api/v1/auth/exchange/:provider
   BFF->>EGYS: POST /api/v1/auth/:provider {idToken}
-  EGYS-->>BFF: HttpOnly gys_session cookie
+  EGYS-->>BFF: HttpOnly egys_session cookie
   BFF-->>App: Same-origin session response
   App->>BFF: GET /api/v1/account/profile
   BFF->>EGYS: GET /api/v1/auth/me + /api/v1/members/:personId

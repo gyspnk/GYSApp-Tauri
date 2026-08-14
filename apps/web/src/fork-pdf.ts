@@ -73,54 +73,101 @@ async function decompressGzip(decrypted: Uint8Array) {
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-async function loadMasterPdf() {
+function looksLikePdf(bytes: Uint8Array) {
+  return new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-";
+}
+
+async function readCached(
+  url: string,
+  validate: (bytes: Uint8Array) => boolean = () => true,
+) {
+  if (typeof caches === "undefined") return undefined;
+  const cached = await caches
+    .open(PACKAGE_CACHE)
+    .then((cache) => cache.match(url));
+  if (!cached) return undefined;
+  const bytes = new Uint8Array(await cached.arrayBuffer());
+  return validate(bytes) ? bytes : undefined;
+}
+
+async function fetchPdf(url: string) {
+  const cached = await readCached(url, looksLikePdf);
+  if (cached) return cached;
+  const response = await fetch(url, { cache: "force-cache" });
+  if (!response.ok)
+    throw new Error(`KR PDF request failed: ${response.status}`);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!looksLikePdf(bytes)) throw new Error("KR PDF signature mismatch");
+  if (typeof caches !== "undefined")
+    await caches.open(PACKAGE_CACHE).then((cache) =>
+      cache.put(
+        url,
+        new Response(bytes.slice().buffer as ArrayBuffer, {
+          headers: { "content-type": "application/pdf" },
+        }),
+      ),
+    );
+  return bytes;
+}
+
+async function loadDataPackage() {
+  const releaseResponse = await fetch(RELEASE_MANIFEST, {
+    cache: "no-cache",
+  });
+  if (!releaseResponse.ok)
+    throw new Error("GYSApp-Data PDF release unavailable");
+  const release = (await releaseResponse.json()) as {
+    packages?: Array<{
+      code?: string;
+      downloadUrl?: string;
+      sizeBytes?: number;
+      checksumSha256?: string;
+    }>;
+  };
+  const pkg = release.packages?.find((candidate) => candidate.code === "KR");
+  if (!pkg?.downloadUrl) throw new Error("KR PDF package unavailable");
+  const downloadUrl = pkg.downloadUrl;
+  let bytes: Uint8Array | undefined = await readCached(downloadUrl);
+  if (!bytes) {
+    const response = await fetch(downloadUrl, { cache: "force-cache" });
+    if (!response.ok)
+      throw new Error(`KR PDF package request failed: ${response.status}`);
+    bytes = new Uint8Array(await response.arrayBuffer());
+    if (typeof caches !== "undefined")
+      await caches.open(PACKAGE_CACHE).then((cache) =>
+        cache.put(
+          downloadUrl,
+          new Response(bytes!.slice().buffer as ArrayBuffer, {
+            headers: { "content-type": "application/octet-stream" },
+          }),
+        ),
+      );
+  }
+  if (pkg.sizeBytes && bytes.byteLength !== pkg.sizeBytes)
+    throw new Error("KR PDF package size mismatch");
+  if (
+    pkg.checksumSha256 &&
+    (await sha256(bytes)).toLowerCase() !== pkg.checksumSha256.toLowerCase()
+  )
+    throw new Error("KR PDF package integrity mismatch");
+  return decodePackage(bytes);
+}
+
+async function loadMasterPdf(manifest: HymnalPdfManifest) {
   packageRequest ??= (async () => {
-    const releaseResponse = await fetch(RELEASE_MANIFEST, {
-      cache: "no-cache",
-    });
-    if (!releaseResponse.ok)
-      throw new Error("GYSApp-Fork PDF release unavailable");
-    const release = (await releaseResponse.json()) as {
-      packages?: Array<{
-        code?: string;
-        downloadUrl?: string;
-        sizeBytes?: number;
-        checksumSha256?: string;
-      }>;
-    };
-    const pkg = release.packages?.find((candidate) => candidate.code === "KR");
-    if (!pkg?.downloadUrl) throw new Error("KR PDF package unavailable");
-    const downloadUrl = pkg.downloadUrl;
-    let bytes: Uint8Array | undefined;
-    if (typeof caches !== "undefined") {
-      const cached = await caches
-        .open(PACKAGE_CACHE)
-        .then((cache) => cache.match(downloadUrl));
-      if (cached) bytes = new Uint8Array(await cached.arrayBuffer());
+    const forkUrl = `https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/")}`;
+    try {
+      // The functional source is authoritative and immutable; use it first so
+      // the page map and the bytes can never drift apart.
+      return await fetchPdf(forkUrl);
+    } catch {
+      // GYSApp-Data is the signed distribution fallback for environments where
+      // the source repository does not serve large raw objects.
+      return loadDataPackage();
     }
-    if (!bytes) {
-      const response = await fetch(downloadUrl, { cache: "force-cache" });
-      if (!response.ok)
-        throw new Error(`KR PDF package request failed: ${response.status}`);
-      bytes = new Uint8Array(await response.arrayBuffer());
-      if (typeof caches !== "undefined")
-        await caches.open(PACKAGE_CACHE).then((cache) =>
-          cache.put(
-            downloadUrl,
-            new Response(bytes!.slice().buffer as ArrayBuffer, {
-              headers: { "content-type": "application/octet-stream" },
-            }),
-          ),
-        );
-    }
-    if (pkg.sizeBytes && bytes.byteLength !== pkg.sizeBytes)
-      throw new Error("KR PDF package size mismatch");
-    if (
-      pkg.checksumSha256 &&
-      (await sha256(bytes)).toLowerCase() !== pkg.checksumSha256.toLowerCase()
-    )
-      throw new Error("KR PDF package integrity mismatch");
-    return decodePackage(bytes);
   })();
   return packageRequest;
 }
@@ -130,7 +177,7 @@ export async function loadForkHymnalPdf(number: number) {
   const song = manifest.songs[String(number).padStart(3, "0")];
   if (!song) throw new Error("Song is not mapped in the fork PDF database");
   return {
-    bytes: await loadMasterPdf(),
+    bytes: await loadMasterPdf(manifest),
     initialPage: song.startPage,
     pageCount: song.pageCount,
     source: "GYSApp-Fork PDF database" as const,

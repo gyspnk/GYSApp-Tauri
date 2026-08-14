@@ -482,6 +482,11 @@ function HomePage({ locale }: { locale: Locale }) {
     "loading",
   );
   const [activity, setActivity] = useState<ActivityState>(() => getActivity());
+  const [dailyMode, setDailyMode] = useState<"verse" | "reflection">(() =>
+    localStorage.getItem("gys-daily-sauh-mode-v1") === "reflection"
+      ? "reflection"
+      : "verse",
+  );
   useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
   const continuePath =
     activity.hymn &&
@@ -518,6 +523,11 @@ function HomePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, []);
   const selected = sauh[0];
+  const dailyText = selected
+    ? dailyMode === "verse"
+      ? (selected.verse ?? selected.body)
+      : selected.body
+    : "";
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
@@ -570,7 +580,7 @@ function HomePage({ locale }: { locale: Locale }) {
                 />
               )}
               <p className="sauh-title">{selected.title}</p>
-              <blockquote>“{selected.verse ?? selected.body}”</blockquote>
+              <blockquote>“{dailyText}”</blockquote>
               <small className="sauh-source">
                 Sumber langsung Sauh Bagi Jiwa ·{" "}
                 {new Date(selected.updatedAt).toLocaleDateString(locale)}
@@ -587,6 +597,19 @@ function HomePage({ locale }: { locale: Locale }) {
               >
                 Buka Sauh
               </a>
+            )}
+            {selected && (
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => {
+                  const next = dailyMode === "verse" ? "reflection" : "verse";
+                  setDailyMode(next);
+                  localStorage.setItem("gys-daily-sauh-mode-v1", next);
+                }}
+              >
+                {dailyMode === "verse" ? "Baca renungan" : "Tampilkan ayat"}
+              </button>
             )}
           </div>
         </article>
