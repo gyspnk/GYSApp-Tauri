@@ -6,6 +6,11 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   page,
 }) => {
   test.setTimeout(90_000);
+  const missingMidiRequests: string[] = [];
+  page.on("response", (response) => {
+    if (response.status() === 404 && /\/assets\/midi\//.test(response.url()))
+      missingMidiRequests.push(response.url());
+  });
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
@@ -49,6 +54,7 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(
     page.getByRole("button", { name: "Perbesar pemutar" }),
   ).toBeVisible();
+  expect(missingMidiRequests).toEqual([]);
 });
 
 test("PDF failure exposes an actionable retry without leaving the hymn shell", async ({

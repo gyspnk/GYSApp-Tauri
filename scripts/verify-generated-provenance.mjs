@@ -38,6 +38,15 @@ if (
   assets.items.length < pack.items.length
 )
   throw new Error("asset manifest is invalid");
+if (
+  !assets.items.some(
+    (item) =>
+      item.source === "local" &&
+      item.kind === "pdf" &&
+      item.path === "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
+  )
+)
+  throw new Error("bundled music seed is missing from the asset manifest");
 for (const item of literature.items) {
   if (
     item.imageUrl &&

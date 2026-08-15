@@ -30,6 +30,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
   offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
   the first usable frame, independently and only when Save-Data/2G is not
   advertised; this keeps activation and first paint off the heavy-asset path.
+  Registration is progressive enhancement: reduced webview service-worker
+  objects are guarded and failures are recorded without taking down the shell.
+  The generated asset manifest now inventories bundled music seeds, so
+  remote-only MIDI/PDF assets skip known-missing Pages probes before using the
+  verified immutable source.
 - The offline pack manager now checks an optional `VITE_ASSET_MANIFEST_URL`,
   validates duplicate IDs/origins, diffs content identity, stages changed
   local assets through the verified Cache Storage transaction, swaps a
@@ -41,7 +46,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 34 passing flows, including split-reader keyboard resize,
+  current suite has 35 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue

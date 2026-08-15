@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Hardened production PWA registration for reduced webview/service-worker
+  implementations and made the generated asset manifest authoritative for
+  bundled music seeds, removing guaranteed Pages MIDI 404 probes before
+  canonical fallback loading.
 - Hardened the shared PDF reader lifecycle: loaded documents and virtualized
   page operator lists are cleaned up on route/song/retry transitions, and both
   hymn and Literature PDF failures keep an explicit in-shell `Coba lagi`

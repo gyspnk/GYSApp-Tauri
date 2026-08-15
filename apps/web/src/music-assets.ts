@@ -1,4 +1,5 @@
 import {
+  AssetManifestV1Schema,
   UpstreamMusicLockSchema,
   type UpstreamMusicItem,
   type UpstreamMusicLock,
@@ -8,6 +9,7 @@ import { recordDiagnostic } from "./diagnostics.js";
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 const CACHE_NAME = "gys-music-assets-v1";
 let lockPromise: Promise<UpstreamMusicLock> | undefined;
+let bundledMusicPathsPromise: Promise<Set<string>> | undefined;
 const inFlight = new Map<string, Promise<Uint8Array>>();
 const MAX_MEMORY_HINTS = 96;
 const recentlyUsed = new Map<string, number>();
@@ -55,6 +57,30 @@ function localUrl(ref: Pick<UpstreamMusicItem, "path">): string {
     ref.path.replace(/^\//, "").replace(/^docs\//, ""),
     window.location.origin + import.meta.env.BASE_URL,
   ).toString();
+}
+
+async function bundledMusicPaths(): Promise<Set<string>> {
+  bundledMusicPathsPromise ??= fetch(
+    `${import.meta.env.BASE_URL}offline/asset-manifest.json`,
+    { cache: "force-cache" },
+  )
+    .then(async (response) => {
+      if (!response.ok) throw new Error("Bundled asset manifest unavailable");
+      const manifest = AssetManifestV1Schema.parse(await response.json());
+      return new Set(
+        manifest.items
+          .filter(
+            (item) =>
+              item.source === "local" &&
+              (item.kind === "pdf" ||
+                item.kind === "midi" ||
+                item.kind === "chord"),
+          )
+          .map((item) => item.path),
+      );
+    })
+    .catch(() => new Set<string>());
+  return bundledMusicPathsPromise;
 }
 
 async function readAndVerify(
@@ -117,12 +143,17 @@ export async function loadMusicAsset(
   const existing = inFlight.get(ref.sha256);
   if (existing) return existing;
   const request = (async () => {
-    const local = localUrl(ref);
-    try {
-      const response = await fetch(local, { cache: "force-cache" });
-      if (response.ok) return await readAndVerify(response, ref);
-    } catch {
-      // The checked-in pack contains only a small seed set; remote is expected.
+    // Only probe files explicitly listed as bundled.  Remote-only assets must
+    // go straight to the immutable source/BFF instead of creating a known 404
+    // request on GitHub Pages for every hymn open.
+    if ((await bundledMusicPaths()).has(ref.path)) {
+      const local = localUrl(ref);
+      try {
+        const response = await fetch(local, { cache: "force-cache" });
+        if (response.ok) return await readAndVerify(response, ref);
+      } catch {
+        // A corrupt/missing seed falls through to the verified remote copy.
+      }
     }
     const lock = await loadMusicLock();
     const candidates = [bffAssetUrl(ref, lock), assetUrl(ref, lock)].filter(

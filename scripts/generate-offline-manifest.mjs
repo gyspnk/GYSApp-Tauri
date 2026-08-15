@@ -1,5 +1,11 @@
 import { createHash } from "node:crypto";
-import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
+import {
+  readFile,
+  writeFile,
+  mkdir,
+  copyFile,
+  readdir,
+} from "node:fs/promises";
 import { join } from "node:path";
 
 const files = [
@@ -87,6 +93,60 @@ const assetItems = items.map((item) => ({
   status: "available",
   lastUpdated: generatedAt,
 }));
+
+// Keep the packaged music seed discoverable by the runtime loader.  Without
+// this inventory every remote MIDI/PDF request first probes a guaranteed
+// missing `/assets/...` URL on Pages, creating noisy 404s and an avoidable
+// round trip before the immutable upstream fallback is used.
+const bundledMusicRoots = ["pdf", "midi", "chord"];
+const bundledMusicExtensions = /\.(?:pdf|mid|midi|json)$/i;
+async function collectBundledMusic(relativeDirectory) {
+  const absoluteDirectory = join(
+    "apps",
+    "web",
+    "public",
+    "assets",
+    relativeDirectory,
+  );
+  let entries;
+  try {
+    entries = await readdir(absoluteDirectory, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const result = [];
+  for (const entry of entries) {
+    const child = `${relativeDirectory}/${entry.name}`;
+    if (entry.isDirectory()) result.push(...(await collectBundledMusic(child)));
+    else if (entry.isFile() && bundledMusicExtensions.test(entry.name))
+      result.push(child);
+  }
+  return result;
+}
+for (const root of bundledMusicRoots) {
+  for (const relativePath of await collectBundledMusic(root)) {
+    const path = `assets/${relativePath}`;
+    const bytes = await readFile(join("apps", "web", "public", path));
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const kind = /\.pdf$/i.test(path)
+      ? "pdf"
+      : /\.json$/i.test(path)
+        ? "chord"
+        : "midi";
+    assetItems.push({
+      id: `music-seed:${path}`,
+      kind,
+      source: "local",
+      path,
+      version: sha256,
+      sha256,
+      bytes: bytes.byteLength,
+      status: "available",
+      lastUpdated: generatedAt,
+    });
+  }
+}
+
 const literature = JSON.parse(
   await readFile(
     join("apps", "web", "public", "offline", "literature.json"),
