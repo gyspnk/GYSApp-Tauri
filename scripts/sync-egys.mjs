@@ -318,11 +318,14 @@ if (strict && lock.compatibility === "breaking") {
 }
 const checkout = await localCheckout(current);
 const nextContract = await extractContract(checkout, current);
-const previousContract = process.argv.includes("--refresh")
-  ? undefined
-  : (await exists(contractPath))
-    ? JSON.parse(await readFile(contractPath, "utf8"))
-    : undefined;
+// `--refresh` forces a fresh checkout/contract extraction, but it must never
+// discard the checked-in baseline used for compatibility checks. A maintainer
+// may use refresh specifically when an upstream checkout is stale; treating
+// that run as a brand-new contract would silently turn removed routes into a
+// compatible update and violate the local sync safety boundary.
+const previousContract = (await exists(contractPath))
+  ? JSON.parse(await readFile(contractPath, "utf8"))
+  : undefined;
 const diff = compare(previousContract, nextContract);
 const contractHash = hash(stableContract(nextContract));
 console.log(

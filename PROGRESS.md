@@ -29,6 +29,10 @@ service or platform artifact that cannot be exercised in this workspace.
   that makes allowed popups look blocked, then severs `window.opener` before
   navigating to the external WhatsApp URL; both blocked and allowed paths are
   unit-tested.
+- e-GYS provenance is current at upstream commit `022158f`; the generated
+  contract includes the compatible branch detail/update and region routes.
+  Forced refreshes still diff against the checked-in contract, so removed
+  routes cannot be hidden by regeneration.
 - TB search now builds and queries its 31,172-verse normalized index in a lazy
   module worker. Stale searches are cancelled, worker startup has a bounded
   timeout, and SSR/older-browser startup failures fall back to the typed local

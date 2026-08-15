@@ -34,6 +34,10 @@
   runtime boundary and enablement property in the generated contract, while
   keeping request/response schemas source-owned until the runtime document is
   available; no guessed API shapes are introduced.
+- Refreshed the e-GYS route lock from upstream commit `022158f` and recorded
+  the compatible branch-detail/update and region routes. The refresh command
+  now keeps the prior contract as its breaking-change baseline, so forcing a
+  checkout can never bypass compatibility checks.
 - PDF reading progress is now keyed by the immutable fork/canonical resource
   version and the internal reader exposes a compact “Kembali ke halaman …”
   action after the user moves away from the saved location. Invalid saved pages

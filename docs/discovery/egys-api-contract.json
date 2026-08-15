@@ -1,7 +1,7 @@
 {
   "sourceRepo": "Gereja-Yesus-Sejati/egys",
-  "sourceCommit": "cdfc3d105dc85e7c5ee29bf998782daa0f88d45a",
-  "generatedAt": "2026-08-15T06:51:28.092Z",
+  "sourceCommit": "022158f4417c532b6acd18df5b556d8b5f77d229",
+  "generatedAt": "2026-08-15T23:00:12.478Z",
   "auth": {
     "mode": "provider-id-token-exchange",
     "providersPath": "/api/v1/auth/providers",
@@ -105,6 +105,18 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/branches/{id}",
+      "authentication": "session",
+      "source": "backend/src/main/java/id/gys/egys/core/branch/BranchController.java"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/branches/{id}",
+      "authentication": "session",
+      "source": "backend/src/main/java/id/gys/egys/core/branch/BranchController.java"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/families",
       "authentication": "session",
       "source": "backend/src/main/java/id/gys/egys/core/family/FamilyController.java"
@@ -195,6 +207,12 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/regions",
+      "authentication": "session",
+      "source": "backend/src/main/java/id/gys/egys/core/branch/RegionController.java"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/webhooks/whatsapp",
       "authentication": "public",
       "source": "backend/src/main/java/id/gys/egys/auth/whatsapp/WhatsAppWebhookController.java"
@@ -212,5 +230,5 @@
       "source": "backend/src/main/java/id/gys/egys/auth/whatsapp/BotWebhookController.java"
     }
   ],
-  "contractHash": "9e967c5e4a527b8ceef189fa6df8652e5ddf902bf7253aba0024a77d4cb0cf11"
+  "contractHash": "fb348b519ebd69713f1f56aee5853c4fe96238fb1ad26819f07ac4eead4aa096"
 }

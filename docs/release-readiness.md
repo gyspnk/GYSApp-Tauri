@@ -132,10 +132,12 @@ claim GA parity until the remaining reports and platform artifacts exist.
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;
   provider SDK/popup flows have explicit timeout and cancellation guards.
-  The generated upstream contract records the verified Springdoc runtime
-  document boundary (`/v3/api-docs`, Swagger UI path, and enablement property);
+  The generated upstream contract is current at commit `022158f` and records
+  the verified Springdoc runtime document boundary (`/v3/api-docs`, Swagger UI
+  path, and enablement property), plus the compatible branch/region routes;
   concrete request/response schemas remain source-owned until that runtime
-  document is available to the authenticated sync step.
+  document is available to the authenticated sync step. Forced contract
+  refreshes retain the previous snapshot for breaking-route detection.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then
   local), `edge`, or `local`. The optional voice catalog is also schema- and
