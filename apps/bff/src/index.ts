@@ -24,6 +24,7 @@ import { fetchLiteratureCatalog } from "./literature.js";
 import { fetchSuaraSejati } from "./suara.js";
 import { fetchArticle, htmlToText } from "./article.js";
 import { egysUpstreamCommit } from "./egys-provenance.js";
+import { egysOpenApiContract } from "./egys-contract.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -1096,6 +1097,7 @@ export function createApp(
     c.json({
       sourceRepo: "Gereja-Yesus-Sejati/egys",
       sourceCommit: c.env?.EGYS_UPSTREAM_COMMIT?.trim() || egysUpstreamCommit,
+      openApi: egysOpenApiContract,
     }),
   );
 

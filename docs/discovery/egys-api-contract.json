@@ -1,7 +1,7 @@
 {
   "sourceRepo": "Gereja-Yesus-Sejati/egys",
   "sourceCommit": "cdfc3d105dc85e7c5ee29bf998782daa0f88d45a",
-  "generatedAt": "2026-08-14T08:29:16.622Z",
+  "generatedAt": "2026-08-15T06:51:28.092Z",
   "auth": {
     "mode": "provider-id-token-exchange",
     "providersPath": "/api/v1/auth/providers",
@@ -9,6 +9,14 @@
     "requestBody": ["idToken"],
     "sessionCookie": "HttpOnly",
     "callbackRoutes": []
+  },
+  "openApi": {
+    "available": true,
+    "source": "runtime-generated",
+    "docsPath": "/v3/api-docs",
+    "uiPath": "/swagger-ui.html",
+    "enabledBy": "springdoc.api-docs.enabled",
+    "schemas": "generated-from-controllers"
   },
   "routes": [
     {
@@ -204,5 +212,5 @@
       "source": "backend/src/main/java/id/gys/egys/auth/whatsapp/BotWebhookController.java"
     }
   ],
-  "contractHash": "43c26f8ad2bff683a001821330cd1f0b2e80ab6b47089d324c878634d92f583e"
+  "contractHash": "9e967c5e4a527b8ceef189fa6df8652e5ddf902bf7253aba0024a77d4cb0cf11"
 }

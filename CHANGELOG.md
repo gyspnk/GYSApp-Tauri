@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- e-GYS synchronization now captures the verified upstream Springdoc/OpenAPI
+  runtime boundary and enablement property in the generated contract, while
+  keeping request/response schemas source-owned until the runtime document is
+  available; no guessed API shapes are introduced.
 - PDF reading progress is now keyed by the immutable fork/canonical resource
   version and the internal reader exposes a compact “Kembali ke halaman …”
   action after the user moves away from the saved location. Invalid saved pages

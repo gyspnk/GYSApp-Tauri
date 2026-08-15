@@ -74,9 +74,15 @@ The route contract is intentionally a reviewable safety boundary, not runtime
 code downloaded to a device. Removed method/path pairs are classified as
 breaking. `--strict` exits non-zero so the local pre-commit hook blocks the
 commit until the adapter and tests are updated. New routes are compatible by
-default and still appear in the reviewed snapshot. Request/response schemas
-remain owned by the upstream OpenAPI document and must be updated alongside
-the adapter when a schema change is detected.
+default and still appear in the reviewed snapshot. The generated snapshot
+also records whether the checked-out upstream exposes Springdoc metadata
+(`openApi.available`, `/v3/api-docs`, and the configured Swagger UI path). The
+document is generated at runtime from controllers and is disabled in
+production unless the upstream `springdoc.api-docs.enabled` property is
+enabled. Request/response schemas therefore remain owned by the upstream
+OpenAPI document and must be updated alongside the adapter when a schema
+change is detected; this repository never invents a schema from a route name
+alone.
 
 ```sh
 pnpm sync:egys                 # refresh the lock and generated route metadata

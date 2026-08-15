@@ -391,9 +391,20 @@ export const AccountProfileSchema = z.object({
 });
 export type AccountProfile = z.infer<typeof AccountProfileSchema>;
 
+export const EgysOpenApiMetaSchema = z.object({
+  available: z.boolean(),
+  source: z.enum(["runtime-generated", "not-present-in-upstream-checkout"]),
+  docsPath: z.string().startsWith("/"),
+  uiPath: z.string().startsWith("/"),
+  enabledBy: z.string().min(1),
+  schemas: z.literal("generated-from-controllers"),
+});
+export type EgysOpenApiMeta = z.infer<typeof EgysOpenApiMetaSchema>;
+
 export const EgysUpstreamMetaSchema = z.object({
   sourceRepo: z.literal("Gereja-Yesus-Sejati/egys"),
   sourceCommit: SourceCommitSchema.nullable(),
+  openApi: EgysOpenApiMetaSchema.optional(),
 });
 export type EgysUpstreamMeta = z.infer<typeof EgysUpstreamMetaSchema>;
 

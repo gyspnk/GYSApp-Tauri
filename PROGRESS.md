@@ -108,7 +108,10 @@ service or platform artifact that cannot be exercised in this workspace.
   metadata, breaking route removal detection, repository-managed pre-commit
   and pre-push hooks, and documented workflow. Every synchronization refreshes
   the temporary checkout before inspecting Java sources, even when the
-  checked-in commit is unchanged.
+  checked-in commit is unchanged. The derived contract also records the
+  upstream Springdoc/OpenAPI runtime boundary (`/v3/api-docs`, Swagger UI
+  path, enablement property, and controller-generated schema provenance)
+  without copying or inventing request/response shapes.
 - Tauri webviews now select a real native platform adapter: key-value records
   and verified chord/media blobs use app-data filesystem commands with
   path-safe keys, unique temporary files, atomic replacement, and typed
@@ -161,5 +164,7 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Add cover URL records to the versioned asset manifest when the source begins
   exposing a stable version/checksum for them.
-- Extend e-GYS contract extraction with OpenAPI request/response schemas when
-  the upstream API document is available in the authenticated checkout.
+- Extend e-GYS contract extraction with concrete OpenAPI request/response
+  schemas when the upstream runtime document is available in an authenticated
+  checkout; the current upstream checkout exposes the generator/configuration
+  but no checked-in JSON document.

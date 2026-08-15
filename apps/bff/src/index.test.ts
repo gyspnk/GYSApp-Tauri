@@ -233,6 +233,26 @@ describe("BFF public boundary", () => {
     expect(payload.sourceCommit).toBe("cbc7d386");
   });
 
+  it("exposes verified e-GYS OpenAPI provenance without proxying the document", async () => {
+    const app = createApp({
+      allowedOrigins: ["http://localhost:5173"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const response = await app.request("/api/v1/meta/egys");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      sourceRepo: "Gereja-Yesus-Sejati/egys",
+      openApi: {
+        available: true,
+        docsPath: "/v3/api-docs",
+        uiPath: "/swagger-ui.html",
+        enabledBy: "springdoc.api-docs.enabled",
+        schemas: "generated-from-controllers",
+      },
+    });
+  });
+
   it("proxies validated Edge speech audio through a protected endpoint", async () => {
     const originalFetch = globalThis.fetch;
     let seenUrl = "";
