@@ -30,6 +30,12 @@ claim GA parity until the remaining reports and platform artifacts exist.
   offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
   the first usable frame, independently and only when Save-Data/2G is not
   advertised; this keeps activation and first paint off the heavy-asset path.
+- The offline pack manager now checks an optional `VITE_ASSET_MANIFEST_URL`,
+  validates duplicate IDs/origins, diffs content identity, stages changed
+  local assets through the verified Cache Storage transaction, swaps a
+  persisted active-manifest pointer, and cleans removed entries after the
+  swap. Pages without the override intentionally use the bundled immutable
+  manifest.
 - Playwright smoke coverage passes at desktop, 320–1920px, 390px mobile, and
   landscape widths, with
   exactly one navigation surface and no horizontal overflow. In-app Browser

@@ -92,6 +92,14 @@ loaders verify bytes before activating a cache entry. PDF literature is fetched
 through `/api/v1/content/pdf` when a BFF is configured; the proxy allowlists
 only `https://tjc.org/*.pdf` and preserves HTTP range requests for PDF.js.
 
+The browser pack manager can check a configured `VITE_ASSET_MANIFEST_URL` (or
+the immutable Pages manifest when no override is present). It parses the
+versioned manifest, rejects duplicate IDs and untrusted origins, diffs content
+identity rather than generated timestamps, stages only changed local assets,
+validates every size/SHA-256 before the Cache Storage pointer changes, and
+persists the active manifest. Removed local entries are cleaned after the new
+pointer is active; a failed stage therefore leaves the previous pack usable.
+
 Literature records keep a versioned page/scroll location. The catalog renders a
 deduplicated “Terakhir dilihat” shelf and validates a saved page against the
 current resource version before offering resume.

@@ -71,6 +71,12 @@ service or platform artifact that cannot be exercised in this workspace.
 - Chord negative-cache misses now expire after the documented 14-day rollback
   retention window, and versioned asset downloads share one in-flight request
   while preserving cancellation for individual callers.
+- The offline pack manager now validates remote manifests at runtime, detects
+  changed/added/removed identities, stages only changed local assets through
+  the checksum/size-verified Cache Storage transaction, publishes a persisted
+  active-manifest pointer, and cleans removed entries after the pointer swap.
+  The More surface exposes a single update action plus a compact manual
+  version check, with retryable error state and no duplicate navigation menu.
 - e-GYS synchronization is enforced as local-only: the GitHub Actions sync
   workflow and upstream-fetch CI step were removed, and generated verification
   has a policy guard with regression tests for forbidden workflow access.

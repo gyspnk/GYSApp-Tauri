@@ -24,6 +24,9 @@ jobs:
       # Optional direct gateway override for Edge-compatible speech. When it
       # is empty, the web adapter derives /api/v1/tts/edge from the BFF base.
       VITE_EDGE_TTS_URL: ${{ vars.VITE_EDGE_TTS_URL }}
+      # Optional HTTPS manifest published independently from the Pages bundle;
+      # the app validates and stages changed local assets before activation.
+      VITE_ASSET_MANIFEST_URL: ${{ vars.VITE_ASSET_MANIFEST_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

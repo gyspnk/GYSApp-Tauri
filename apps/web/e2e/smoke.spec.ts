@@ -78,6 +78,27 @@ test("offline reader packs open without a network request", async ({
   ).toBeVisible();
 });
 
+test("offline pack manager keeps one update action and reports manifest status", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await expect(
+    page.getByRole("heading", { name: "Paket lokal", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /Verifikasi & simpan paket|Unduh .* pembaruan/,
+    }),
+  ).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Periksa versi" })).toHaveCount(
+    1,
+  );
+  await expect(page.locator(".pack-manager-actions button")).toHaveCount(2);
+  await expect(page.locator(".pack-manager-actions small")).toContainText(
+    /Manifest v1/,
+  );
+});
+
 test("Bible reader keeps search, split reading, and verse annotations local", async ({
   page,
 }) => {

@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import {
-  AssetManifestV1Schema,
-  type AccountProfile,
-  type AssetManifestV1,
-} from "@gys/contracts";
+import { type AccountProfile, type AssetManifestV1 } from "@gys/contracts";
 import {
   decryptBackupV2,
   encryptBackupV2,
   importLegacyGysbk,
 } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
-import { assetStore } from "./asset-store.js";
+import {
+  applyAssetManifestUpdate,
+  checkAssetManifest,
+  parseAssetManifest,
+  readActiveAssetManifest,
+  type AssetManifestDiff,
+} from "./asset-updater.js";
 import {
   exchangeEgysToken,
   getEgysProfile,
@@ -44,9 +46,24 @@ type PackManifest = {
   items: { id: string; path: string; bytes: number; sha256: string }[];
 };
 
+type AssetCheckState =
+  | { status: "idle" | "checking" | "current" | "error" }
+  | {
+      status: "update";
+      manifest: AssetManifestV1;
+      diff: AssetManifestDiff;
+      url: string;
+    };
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function localUpdateCount(diff: AssetManifestDiff): number {
+  return [...diff.added, ...diff.changed].filter(
+    (item) => item.source === "local",
+  ).length;
 }
 
 function waitFor(ms: number, signal: AbortSignal): Promise<void> {
@@ -70,6 +87,7 @@ const BACKUP_STORAGE_KEYS = [
   "gys-favorites-v1",
   "gys-literature-progress-v2",
   "gys-asset-index-v1",
+  "gys-active-asset-manifest-v1",
   "gys-bible-book",
   "gys-bible-chapter",
   "gys-bible-last-reading",
@@ -137,6 +155,9 @@ async function clearAppData() {
 export function MorePage({ locale }: { locale: Locale }) {
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
+  const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
+    status: "idle",
+  });
   const [packBusy, setPackBusy] = useState(false);
   const [packProgress, setPackProgress] = useState(0);
   const [report, setReport] = useState(
@@ -195,8 +216,10 @@ export function MorePage({ locale }: { locale: Locale }) {
   }, [reminderTime]);
 
   useEffect(() => {
+    const controller = new AbortController();
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
       cache: "force-cache",
+      signal: controller.signal,
     })
       .then(async (response) => {
         if (response.ok) setManifest((await response.json()) as PackManifest);
@@ -204,13 +227,44 @@ export function MorePage({ locale }: { locale: Locale }) {
       .catch(() => undefined);
     void fetch(`${import.meta.env.BASE_URL}offline/asset-manifest.json`, {
       cache: "force-cache",
+      signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) return;
-        const parsed = AssetManifestV1Schema.safeParse(await response.json());
-        if (parsed.success) setAssetManifest(parsed.data);
+        if (!response.ok)
+          throw new Error(`Asset manifest failed: ${response.status}`);
+        const packaged = parseAssetManifest(
+          await response.json(),
+          response.url,
+        );
+        const active = readActiveAssetManifest();
+        const baseline = active ?? packaged;
+        setAssetManifest(baseline);
+        try {
+          const checked = await checkAssetManifest(baseline, controller.signal);
+          if (checked.diff.hasUpdate) {
+            setAssetCheck({
+              status: "update",
+              manifest: checked.manifest,
+              diff: checked.diff,
+              url: checked.url,
+            });
+          } else {
+            setAssetCheck({ status: "current" });
+          }
+        } catch (error) {
+          if (!controller.signal.aborted) {
+            recordDiagnostic("warn", "assets.manifest.check", error);
+            setAssetCheck({ status: "error" });
+          }
+        }
       })
-      .catch(() => undefined);
+      .catch((error) => {
+        if (!controller.signal.aborted) {
+          recordDiagnostic("warn", "assets.manifest.load", error);
+          setAssetCheck({ status: "error" });
+        }
+      });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => () => whatsappAbort.current?.abort(), []);
@@ -366,18 +420,56 @@ export function MorePage({ locale }: { locale: Locale }) {
     );
   };
 
+  const checkOfflinePack = async () => {
+    if (!assetManifest || packBusy) return;
+    setAssetCheck({ status: "checking" });
+    const controller = new AbortController();
+    try {
+      const checked = await checkAssetManifest(
+        assetManifest,
+        controller.signal,
+      );
+      setAssetCheck(
+        checked.diff.hasUpdate
+          ? {
+              status: "update",
+              manifest: checked.manifest,
+              diff: checked.diff,
+              url: checked.url,
+            }
+          : { status: "current" },
+      );
+    } catch (error) {
+      recordDiagnostic("warn", "assets.manifest.check", error);
+      setAssetCheck({ status: "error" });
+      show("Versi paket belum dapat diperiksa. Coba lagi saat online.");
+    }
+  };
+
   const updateOfflinePack = async () => {
-    const items = assetManifest?.items.filter(
-      (item) => item.source === "local",
-    );
-    if (!manifest || !items?.length || packBusy) return;
+    const target =
+      assetCheck.status === "update" ? assetCheck.manifest : assetManifest;
+    if (!manifest || !target || packBusy) return;
     setPackBusy(true);
     setPackProgress(0);
     try {
-      await assetStore.installPack(items, undefined, (completed, total) =>
-        setPackProgress(Math.round((completed / total) * 100)),
+      const diff = await applyAssetManifestUpdate(assetManifest, target, {
+        forceAll: assetCheck.status !== "update",
+        ...(assetCheck.status === "update"
+          ? { sourceUrl: assetCheck.url }
+          : {}),
+        onProgress: (completed, total) =>
+          setPackProgress(Math.round((completed / total) * 100)),
+      });
+      setAssetManifest(target);
+      setAssetCheck({ status: "current" });
+      show(
+        diff.hasUpdate
+          ? localUpdateCount(diff) > 0
+            ? `Paket diperbarui: ${localUpdateCount(diff)} aset baru.`
+            : "Metadata paket diperbarui."
+          : "Paket offline berhasil diverifikasi dan disimpan.",
       );
-      show("Paket offline berhasil diverifikasi dan disimpan.");
     } catch (error) {
       recordDiagnostic("warn", "assets.pack", error);
       show(
@@ -609,13 +701,33 @@ export function MorePage({ locale }: { locale: Locale }) {
             >
               {packBusy
                 ? `Menyimpan ${packProgress}%…`
-                : "Verifikasi & simpan paket"}
+                : assetCheck.status === "update"
+                  ? localUpdateCount(assetCheck.diff) > 0
+                    ? `Unduh ${localUpdateCount(assetCheck.diff)} pembaruan`
+                    : "Perbarui metadata paket"
+                  : "Verifikasi & simpan paket"}
+            </button>
+            <button
+              className="text-button"
+              type="button"
+              disabled={
+                !assetManifest || packBusy || assetCheck.status === "checking"
+              }
+              onClick={() => void checkOfflinePack()}
+            >
+              {assetCheck.status === "checking"
+                ? "Memeriksa…"
+                : "Periksa versi"}
             </button>
             <small>
               Manifest v{manifest?.version ?? 1} ·{" "}
               {manifest
                 ? new Date(manifest.generatedAt).toLocaleDateString(locale)
                 : "memuat"}
+              {assetCheck.status === "update" &&
+                ` · ${localUpdateCount(assetCheck.diff)} aset tersedia`}
+              {assetCheck.status === "current" && " · terbaru"}
+              {assetCheck.status === "error" && " · belum diperiksa"}
             </small>
           </div>
         </article>

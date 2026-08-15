@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Offline pack updates now have a versioned manifest check/diff flow: changed
+  local assets are staged and SHA/size-verified before the active pointer is
+  swapped, removed entries are cleaned afterward, and the More screen keeps a
+  single update action with retryable status instead of adding another menu.
 - e-GYS synchronization now captures the verified upstream Springdoc/OpenAPI
   runtime boundary and enablement property in the generated contract, while
   keeping request/response schemas source-owned until the runtime document is
