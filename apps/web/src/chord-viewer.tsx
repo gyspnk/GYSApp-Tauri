@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 
@@ -79,6 +80,155 @@ export type ChordTextLine = {
   text: string;
   chords: Array<{ token: string; index: number }>;
 };
+
+export type ChordTextCharRect = {
+  index: number;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
+
+export type ChordVisualRow = {
+  /** Offset from the text line's top, in CSS pixels. */
+  top: number;
+  /** Relative left offset inside the text line (0..1). */
+  left: number;
+  /** Relative width inside the text line (0..1). */
+  width: number;
+  markers: Array<{ token: string; index: number; position: number }>;
+};
+
+type ChordTextLineRect = {
+  left: number;
+  width: number;
+  top?: number;
+};
+
+function clampUnit(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function roundedPosition(value: number): number {
+  return Math.round(clampUnit(value) * 10_000) / 10_000;
+}
+
+/**
+ * Keep chord markers attached to the visual line produced by browser wrapping.
+ *
+ * gyschordweb performs this mapping after measuring the rendered lyric text.
+ * The helper is deliberately DOM-free so the same behavior can be tested and
+ * the React presentation can rerun it from a ResizeObserver without touching
+ * the PDF/chord source data.
+ */
+export function groupChordMarkersByVisualRow(
+  text: string,
+  chords: Array<{ token: string; index: number }>,
+  charRects: ChordTextCharRect[],
+  lineRect: ChordTextLineRect,
+): ChordVisualRow[] {
+  if (chords.length === 0) return [];
+  const textLength = [...text].length;
+  const left = Number.isFinite(lineRect.left) ? lineRect.left : 0;
+  const width = Math.max(
+    1,
+    Number.isFinite(lineRect.width) ? lineRect.width : 1,
+  );
+  const top = Number.isFinite(lineRect.top) ? (lineRect.top ?? 0) : 0;
+  const validRects = charRects
+    .filter(
+      (rect) =>
+        Number.isInteger(rect.index) &&
+        rect.index >= 0 &&
+        rect.index < textLength &&
+        Number.isFinite(rect.left) &&
+        Number.isFinite(rect.right) &&
+        Number.isFinite(rect.top),
+    )
+    .sort((a, b) => a.index - b.index);
+
+  if (validRects.length === 0) {
+    return [
+      {
+        top: 0,
+        left: 0,
+        width: 1,
+        markers: chords.map((chord) => ({
+          token: chord.token,
+          index: chord.index,
+          position: roundedPosition(chord.index / Math.max(1, textLength - 1)),
+        })),
+      },
+    ];
+  }
+
+  const groups: Array<{ top: number; rects: ChordTextCharRect[] }> = [];
+  for (const rect of validRects) {
+    const group = groups.find(
+      (candidate) => Math.abs(candidate.top - rect.top) < 2,
+    );
+    if (group) group.rects.push(rect);
+    else groups.push({ top: rect.top, rects: [rect] });
+  }
+  groups.sort((a, b) => a.top - b.top);
+
+  const rows = groups.map((group) => {
+    const rowLeft = Math.min(...group.rects.map((rect) => rect.left));
+    const rowRight = Math.max(...group.rects.map((rect) => rect.right));
+    return {
+      top: group.top - top,
+      left: clampUnit((rowLeft - left) / width),
+      width: clampUnit(Math.max(1, rowRight - rowLeft) / width),
+      rowLeft,
+      rowWidth: Math.max(1, rowRight - rowLeft),
+      rects: group.rects,
+      markers: [] as ChordVisualRow["markers"],
+    };
+  });
+
+  const rectByIndex = new Map(validRects.map((rect) => [rect.index, rect]));
+  for (const chord of chords) {
+    const index = Math.max(0, Math.min(textLength, Math.trunc(chord.index)));
+    const direct = rectByIndex.get(index);
+    const fallback =
+      direct ??
+      rectByIndex.get(Math.max(0, Math.min(textLength - 1, index - 1))) ??
+      validRects[validRects.length - 1];
+    if (!fallback) continue;
+    const targetX = direct ? (direct.left + direct.right) / 2 : fallback.right;
+    let row = rows.find(
+      (candidate) => Math.abs(candidate.top - (fallback.top - top)) < 2,
+    );
+    if (!row)
+      row = rows.find(
+        (candidate) =>
+          targetX >= candidate.rowLeft - 1 &&
+          targetX <= candidate.rowLeft + candidate.rowWidth + 1,
+      );
+    if (!row) {
+      row = rows.reduce((closest, candidate) =>
+        Math.abs(candidate.rowLeft - targetX) <
+        Math.abs(closest.rowLeft - targetX)
+          ? candidate
+          : closest,
+      );
+    }
+    row.markers.push({
+      token: chord.token,
+      index: chord.index,
+      position: roundedPosition((targetX - row.rowLeft) / row.rowWidth),
+    });
+  }
+
+  return rows
+    .filter((row) => row.markers.length > 0)
+    .map(({ top: rowTop, left: rowLeft, width: rowWidth, markers }) => ({
+      top: Math.max(0, rowTop),
+      left: rowLeft,
+      width: Math.max(0.01, rowWidth),
+      markers,
+    }));
+}
 
 function normalizeText(value: string): string {
   return value
@@ -177,26 +327,98 @@ function ChordLine({
   transpose: number;
   accidental: "sharp" | "flat";
 }) {
+  const textRef = useRef<HTMLSpanElement>(null);
   const chars = [...line.text];
-  const byIndex = new Map<number, string[]>();
-  for (const chord of line.chords) {
-    const index = Math.max(0, Math.min(chars.length, chord.index));
-    const current = byIndex.get(index) ?? [];
-    current.push(transposeChord(chord.token, transpose, accidental));
-    byIndex.set(index, current);
-  }
+  const [visualRows, setVisualRows] = useState<ChordVisualRow[]>(() =>
+    groupChordMarkersByVisualRow(line.text, line.chords, [], {
+      left: 0,
+      width: 1,
+    }),
+  );
+
+  useLayoutEffect(() => {
+    const textElement = textRef.current;
+    if (!textElement) return;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const bounds = textElement.getBoundingClientRect();
+      const rects = Array.from(
+        textElement.querySelectorAll<HTMLElement>("[data-chord-char-index]"),
+      ).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          index: Number(element.dataset.chordCharIndex),
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+        } satisfies ChordTextCharRect;
+      });
+      setVisualRows(
+        groupChordMarkersByVisualRow(line.text, line.chords, rects, {
+          left: bounds.left,
+          width: bounds.width,
+          top: bounds.top,
+        }),
+      );
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame =
+        typeof window.requestAnimationFrame === "function"
+          ? window.requestAnimationFrame(measure)
+          : window.setTimeout(measure, 0);
+    };
+    schedule();
+    const observer =
+      typeof ResizeObserver === "function"
+        ? new ResizeObserver(schedule)
+        : undefined;
+    observer?.observe(textElement);
+    return () => {
+      observer?.disconnect();
+      if (frame) {
+        if (typeof window.cancelAnimationFrame === "function")
+          window.cancelAnimationFrame(frame);
+        else window.clearTimeout(frame);
+      }
+    };
+  }, [line.chords, line.text]);
+
   return (
     <span className="chord-rich-line">
-      {chars.map((character, index) => (
-        <span className="chord-aligned-cell" key={`${index}-${character}`}>
-          <small>{(byIndex.get(index) ?? []).join(" ")}</small>
-          <span>{character === " " ? " " : character}</span>
-        </span>
-      ))}
-      {(byIndex.get(chars.length) ?? []).map((chord) => (
-        <span className="chord-aligned-cell" key={`tail-${chord}`}>
-          <small>{chord}</small>
-          <span> </span>
+      <span className="chord-text-layer" ref={textRef}>
+        {chars.map((character, index) => (
+          <span
+            className="chord-text-char"
+            data-chord-char-index={index}
+            key={`${index}-${character}`}
+          >
+            {character === " " ? " " : character}
+          </span>
+        ))}
+      </span>
+      {visualRows.map((row, rowIndex) => (
+        <span
+          className="chord-visual-row"
+          key={`row-${rowIndex}`}
+          aria-hidden="true"
+          style={{
+            left: `${row.left * 100}%`,
+            top: `${row.top}px`,
+            width: `${row.width * 100}%`,
+          }}
+        >
+          {row.markers.map((marker) => (
+            <small
+              className="chord-visual-marker"
+              key={`${marker.index}-${marker.token}`}
+              style={{ left: `${marker.position * 100}%` }}
+            >
+              {transposeChord(marker.token, transpose, accidental)}
+            </small>
+          ))}
         </span>
       ))}
     </span>

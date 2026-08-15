@@ -3,6 +3,7 @@ import { ChordDocumentV2Schema } from "@gys/contracts";
 import {
   chordKeyIndex,
   chordKeyName,
+  groupChordMarkersByVisualRow,
   matchChordLinesToLyrics,
   transposeBetweenKeys,
   transposeChord,
@@ -45,5 +46,29 @@ describe("shared chord capability", () => {
     );
     expect(matched[0]?.chords[0]?.token).toBe("C");
     expect(matched[1]).toBeUndefined();
+  });
+
+  it("keeps relative chord markers attached to the visual line after text wraps", () => {
+    const rects = Array.from({ length: 10 }, (_, index) => ({
+      index,
+      left: (index % 5) * 10,
+      right: (index % 5) * 10 + 10,
+      top: index < 5 ? 0 : 20,
+      bottom: index < 5 ? 16 : 36,
+    }));
+
+    const rows = groupChordMarkersByVisualRow(
+      "ABCDEFGHIJ",
+      [
+        { token: "C", index: 1 },
+        { token: "G", index: 7 },
+      ],
+      rects,
+      { left: 0, width: 50 },
+    );
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0]?.markers).toEqual([{ token: "C", index: 1, position: 0.3 }]);
+    expect(rows[1]?.markers).toEqual([{ token: "G", index: 7, position: 0.5 }]);
   });
 });

@@ -2476,29 +2476,39 @@ body.is-resizing-bible {
 }
 .chord-capability,
 .chord-rich-line {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: end;
-  white-space: pre-wrap;
+  display: block;
+  position: relative;
+  padding-top: 1.35em;
   line-height: inherit;
 }
 .lyrics-sheet .chord-capability {
   max-width: 100%;
 }
-.chord-aligned-cell {
-  display: inline-flex;
-  min-width: 0.52em;
-  flex-direction: column;
-  align-items: flex-start;
-  vertical-align: bottom;
+.chord-text-layer {
+  display: block;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-.chord-aligned-cell small {
-  min-height: 1.35em;
+.chord-text-char {
+  white-space: pre-wrap;
+}
+.chord-visual-row {
+  position: absolute;
+  top: 0;
+  height: 1.35em;
+  pointer-events: none;
+}
+.chord-visual-marker {
+  position: absolute;
+  top: 0;
+  min-width: max-content;
   color: var(--blue);
-  font-size: 10px;
+  font-size: 0.56em;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
+  transform: translateX(-0.08em);
 }
 .pdf-download {
   display: inline-flex;

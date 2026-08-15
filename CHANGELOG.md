@@ -21,6 +21,10 @@
   chord/lyric lines, and key selection computes musical transpose from the
   verified source key instead of only changing a label. PDF/Text chord labels,
   MIDI transpose, and accidental presentation remain one shared state.
+- Text-mode chord presentation now follows the measured visual lyric rows like
+  the canonical gyschordweb viewer: wrapped lines keep their note-relative
+  markers, while chord labels remain a lightweight DOM overlay instead of a
+  per-character layout cell.
 - Added per-hymn text typography controls with bounded persisted font size and
   line height, a persisted horizontal PDF mode, and a responsive two-page guard
   that uses a single readable page below 720 px. The global MIDI session now

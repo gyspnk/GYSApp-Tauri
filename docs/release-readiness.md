@@ -73,8 +73,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Kidung typography controls are bounded and persisted per song; the PDF smoke
   covers the horizontal layout and the narrow-screen two-page guard. Text mode
   now measures long chord/lyric lines and applies a bounded 14 px auto-fit on
-  viewport changes while retaining the saved preference. Key selection is
-  verified as a shortest-path transpose from the canonical chord source key;
+  viewport changes while retaining the saved preference. Wrapped Text-mode
+  chord markers are additionally grouped from measured character rows and
+  rendered as a relative overlay, matching the canonical viewer's layout
+  behavior without per-character chord cells. Key selection is verified as a
+  shortest-path transpose from the canonical chord source key;
   the global MIDI surface exposes the source program plus all 128 General MIDI
   programs, persists media preferences, and Kidung transpose updates the same
   external MIDI session. PDF page progress is keyed by the immutable source

@@ -61,10 +61,13 @@ service or platform artifact that cannot be exercised in this workspace.
   program while persisting media preferences across sessions. Text mode now
   measures the rendered chord/lyric line and applies a bounded 14 px minimum
   auto-fit on viewport/orientation changes, without changing the user's saved
-  typography preference. Key selection is a real shortest-path transpose from
-  the canonical source key, so the displayed key and PDF/Text/MIDI state stay
-  synchronized. Identical Bible and hymn activity writes are debounced so
-  route remounts cannot create duplicate recent entries.
+  typography preference. Chord markers are measured against the actual wrapped
+  character rows and rendered as a relative DOM overlay, keeping note-relative
+  placement when a lyric line wraps instead of rebuilding a cell per character.
+  Key selection is a real shortest-path transpose from the canonical source
+  key, so the displayed key and PDF/Text/MIDI state stay synchronized.
+  Identical Bible and hymn activity writes are debounced so route remounts
+  cannot create duplicate recent entries.
 - Kidung catalog search now builds one normalized index per catalog revision and
   supports number/title prefix lookup, AND terms, quoted phrases, and collection
   filtering without re-normalizing all lyrics on each keystroke.
