@@ -17,6 +17,9 @@ service or platform artifact that cannot be exercised in this workspace.
   generated asset manifest inventories bundled PDF/MIDI/chord seeds, so
   remote-only hymn assets skip guaranteed Pages 404 probes before verified
   canonical loading.
+- PWA metadata now ships a square official-logo mark for both favicon and
+  install manifest; Pages-relative resolution is covered by runtime-health
+  coverage so browser console metadata warnings do not regress.
 - TB search now builds and queries its 31,172-verse normalized index in a lazy
   module worker. Stale searches are cancelled, worker startup has a bounded
   timeout, and SSR/older-browser startup failures fall back to the typed local
@@ -142,7 +145,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  35 passing flows, including the 320–1920px and landscape shell matrix plus
+  36 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -151,11 +154,12 @@ service or platform artifact that cannot be exercised in this workspace.
   navigation samples with median/p95 timing and module-duplication evidence.
   Production runtime-health coverage also asserts that PWA registration does
   not surface an uncaught error when the browser exposes a reduced service
-  worker registration.
+  worker registration, and that favicon/manifest metadata resolves without
+  browser warnings.
   Native `cargo check` is wired into
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
-  17 required offline/runtime assets (36,844,871 bytes in the current build).
+  18 required offline/runtime assets (36,845,594 bytes in the current build).
 - BFF source bindings now reject insecure e-GYS URLs and non-TJC content
   origins before any upstream request is made. Living documentation is checked
   by `pnpm verify:docs` in local hooks and CI, including the feature lifecycle

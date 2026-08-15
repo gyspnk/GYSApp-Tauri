@@ -23,6 +23,7 @@ const required = [
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
   "assets/gys-logo.png",
+  "assets/gys-mark.svg",
 ];
 
 try {

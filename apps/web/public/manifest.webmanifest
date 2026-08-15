@@ -7,9 +7,9 @@
   "theme_color": "#f7faff",
   "icons": [
     {
-      "src": "/GYSApp-Tauri/assets/gys-logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "assets/gys-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

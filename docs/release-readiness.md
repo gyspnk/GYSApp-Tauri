@@ -35,6 +35,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   The generated asset manifest now inventories bundled music seeds, so
   remote-only MIDI/PDF assets skip known-missing Pages probes before using the
   verified immutable source.
+  The favicon and PWA manifest use a square official-logo mark with
+  Pages-relative paths; runtime-health coverage checks the asset response and
+  rejects browser metadata warnings.
 - The offline pack manager now checks an optional `VITE_ASSET_MANIFEST_URL`,
   validates duplicate IDs/origins, diffs content identity, stages changed
   local assets through the verified Cache Storage transaction, swaps a
@@ -46,7 +49,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 35 passing flows, including split-reader keyboard resize,
+  current suite has 36 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue
@@ -71,8 +74,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   `@axe-core/playwright` dev dependency.
 - Kidung detail now has an automated presentation assertion: Lirik and PDF are
   the only viewer modes; Chord is a shared visibility capability and never a
-  third surface. The native boundary check passes with 17 required
-  offline/runtime assets totaling 36,844,871
+  third surface. The native boundary check passes with 18 required
+  offline/runtime assets totaling 36,845,594
   bytes in the current build; this is a packaging proof, not a signed
   installer artifact. The chord E2E additionally asserts that canonical
   note-aligned PDF layout rows and DOM overlay markers are rendered (not only

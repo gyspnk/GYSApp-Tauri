@@ -2,6 +2,9 @@
 
 ## Unreleased — GA hardening slice
 
+- Added a square official-logo mark for the favicon and PWA manifest. Browser
+  metadata now resolves under GitHub Pages base paths, declares the actual SVG
+  icon shape, and has a runtime regression check for 404s and manifest warnings.
 - Hardened production PWA registration for reduced webview/service-worker
   implementations and made the generated asset manifest authoritative for
   bundled music seeds, removing guaranteed Pages MIDI 404 probes before
@@ -173,7 +176,7 @@
   normalization of the upstream WhatsApp READY response.
 - Added a native packaging asset gate that fails when the Tauri frontend
   boundary omits any required Bible, hymn, soundfont, FluidSynth, or logo
-  asset; the current verified core is 36,844,871 bytes.
+  asset; the current verified core is 36,845,594 bytes.
 - Added a same-origin canonical music proxy for MIDI/chord/PDF/soundfont bytes,
   with immutable source-commit checks and raw-asset fallback to prevent binary
   loads from being blocked by browser CORS/range behavior.
