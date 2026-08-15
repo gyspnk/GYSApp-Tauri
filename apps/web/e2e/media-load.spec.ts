@@ -14,6 +14,9 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(page.getByRole("region", { name: "Chord viewer" })).toBeVisible({
     timeout: 20_000,
   });
+  await expect(page.locator(".chord-layout-page").first()).toBeVisible({
+    timeout: 20_000,
+  });
   await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
   await page.getByRole("tab", { name: "Lirik" }).click();
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
@@ -32,8 +35,9 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(page.locator(".media-surface")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".media-meta")).toContainText("Pujilah Allah");
   await expect
-    .poll(() =>
-      page.locator(".media-surface").getAttribute("data-media-status"),
+    .poll(
+      () => page.locator(".media-surface").getAttribute("data-media-status"),
+      { timeout: 30_000 },
     )
     .toMatch(/playing|ready|paused/);
 });

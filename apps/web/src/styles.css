@@ -2395,6 +2395,22 @@ body.is-resizing-bible {
   font-weight: 700;
   text-transform: uppercase;
 }
+.chord-layout-page {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  min-width: 0;
+}
+.chord-layout-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chord-layout-line .chord-aligned-cell {
+  min-width: 0.52em;
+}
 .chord-line {
   display: grid;
   gap: 2px;

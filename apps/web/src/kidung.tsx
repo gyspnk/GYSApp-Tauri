@@ -20,6 +20,7 @@ import { MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { createBrowserChordRepository } from "./chords.js";
 import { ChordViewer } from "./chord-viewer.js";
+import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import {
   downloadMusicAsset,
   loadMusicAsset,
@@ -289,6 +290,7 @@ function HymnDetail({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [chordDocument, setChordDocument] = useState<ChordDocumentV2>();
+  const [chordLayout, setChordLayout] = useState<ChordLayoutPage[]>([]);
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
@@ -425,10 +427,42 @@ function HymnDetail({
     setViewerMode("chord");
     writeHymnViewerMode(item.id, "chord");
     setChordStatus("loading");
+    setChordLayout([]);
     try {
-      setChordDocument(await chordRepository.getChord(item.id));
+      const nextDocument = await chordRepository.getChord(item.id);
+      let nextLayout: ChordLayoutPage[] = [];
+      if ("type" in nextDocument && nextDocument.type === "note-aligned") {
+        const pdfRef = musicLock?.items.find(
+          (candidate) =>
+            candidate.kind === "pdf" && candidate.path === item.pdfPath,
+        );
+        if (pdfRef) {
+          try {
+            // Reuse a canonical PDF already open in the reader; otherwise the
+            // verified asset loader shares one request and caches the bytes.
+            const canonicalPdf =
+              pdfSource === "canonical" && pdfBytes
+                ? pdfBytes
+                : await loadMusicAsset(pdfRef);
+            const { buildChordLayoutFromPdf } =
+              await import("./chord-layout-pdf.js");
+            nextLayout = await buildChordLayoutFromPdf(
+              canonicalPdf,
+              nextDocument.pages,
+            );
+          } catch {
+            // Chord JSON remains useful offline even when its optional PDF
+            // coordinate source is unavailable; the viewer renders a clear
+            // degraded note-index fallback below.
+            show("Chord tersedia; layout PDF akan dicoba lagi saat online.");
+          }
+        }
+      }
+      setChordDocument(nextDocument);
+      setChordLayout(nextLayout);
       setChordStatus("ready");
-      show("Chord diverifikasi dari sumber canonical.");
+      if (nextLayout.length > 0) show("Chord diverifikasi dari PDF canonical.");
+      else show("Chord diverifikasi dari sumber canonical.");
     } catch {
       setChordStatus("error");
       show("Chord belum tersedia offline; sambungkan internet lalu coba lagi.");
@@ -802,7 +836,11 @@ function HymnDetail({
           </div>
         )}
         {viewerMode === "chord" && chordDocument && (
-          <ChordViewer document={chordDocument} transpose={transpose} />
+          <ChordViewer
+            document={chordDocument}
+            layout={chordLayout}
+            transpose={transpose}
+          />
         )}
         {viewerMode === "pdf" && pdfStatus === "loading" && (
           <div className="loading-panel" role="status">

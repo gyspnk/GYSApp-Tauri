@@ -3,6 +3,10 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
+  // PDF.js and the FluidSynth worker are intentionally exercised in the same
+  // browser flow. Serial contexts keep the verification deterministic on
+  // memory-constrained CI runners without changing production concurrency.
+  workers: 1,
   use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure" },
   webServer: {
     // The app imports workspace packages from their generated `dist` entrypoints.

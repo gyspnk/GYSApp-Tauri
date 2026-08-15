@@ -1,4 +1,5 @@
 import type { NormalizedMidi } from "@gys/domain";
+import { MidiRenderCache, type RenderedPcm } from "./midi-render-cache.js";
 
 /**
  * The media player intentionally lives outside React.  A song can keep
@@ -92,6 +93,7 @@ class BrowserMidiPlayer {
   private soundfont: Uint8Array | undefined;
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
+  private readonly renderCache = new MidiRenderCache();
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
@@ -285,8 +287,22 @@ class BrowserMidiPlayer {
       throw new Error("Raw MIDI bytes are unavailable");
     const tempoRate =
       this.state.tempo / Math.max(30, this.current?.tempo ?? 100);
-    const key = `${this.sourceHash}:${this.state.tempo}:${this.state.transpose}:${this.audio.sampleRate}`;
+    const instrument = -1;
+    const key = `${this.sourceHash}:${SOUND_FONT_NAME}:${this.state.tempo}:${this.state.transpose}:${instrument}:${this.audio.sampleRate}`;
     if (this.rendered?.key === key) return this.rendered;
+    const cached = await this.renderCache.get(key);
+    if (cached) {
+      const buffer = this.audio.createBuffer(
+        2,
+        cached.left.length,
+        cached.sampleRate,
+      );
+      buffer.getChannelData(0).set(cached.left);
+      buffer.getChannelData(1).set(cached.right);
+      this.rendered = { key, buffer };
+      this.patch({ loadingProgress: 94 });
+      return this.rendered;
+    }
     const worker = await this.ensureWorker();
     await this.ensureSoundfont(worker);
     this.patch({ loadingProgress: 34 });
@@ -295,16 +311,22 @@ class BrowserMidiPlayer {
       midiBuffer: this.rawMidi.slice().buffer,
       sampleRate: this.audio.sampleRate,
       transpose: this.state.transpose,
-      instrument: -1,
+      instrument,
       tempoRate,
     });
     if (message.type !== "rendered" || !message.left || !message.right)
       throw new Error(message.error ?? "FluidSynth did not return audio");
     const sampleRate = message.sampleRate ?? this.audio.sampleRate;
     const length = Math.min(message.left.length, message.right.length);
+    const pcm: RenderedPcm = {
+      sampleRate,
+      left: message.left.slice(0, length),
+      right: message.right.slice(0, length),
+    };
     const buffer = this.audio.createBuffer(2, length, sampleRate);
-    buffer.getChannelData(0).set(message.left.subarray(0, length));
-    buffer.getChannelData(1).set(message.right.subarray(0, length));
+    buffer.getChannelData(0).set(pcm.left);
+    buffer.getChannelData(1).set(pcm.right);
+    await this.renderCache.put(key, pcm);
     this.rendered = { key, buffer };
     this.patch({ loadingProgress: 94 });
     return this.rendered;

@@ -66,6 +66,8 @@ export class ChordRepository {
   private fetchedAt = Number.NEGATIVE_INFINITY;
   private lastAttemptAt = Number.NEGATIVE_INFINITY;
   private inFlight: Promise<ChordManifestV1> | undefined;
+  /** A song may be opened by several surfaces at once; share one verified fetch. */
+  private readonly inFlightSongs = new Map<string, Promise<ChordDocumentV2>>();
   /** Missing songs are remembered per immutable source commit. */
   private readonly negative = new Set<string>();
 
@@ -123,6 +125,22 @@ export class ChordRepository {
   }
 
   public async revalidateSong(
+    songId: string,
+    signal?: AbortSignal,
+  ): Promise<ChordDocumentV2> {
+    const existing = this.inFlightSongs.get(songId);
+    if (existing) return existing;
+    const request = this.revalidateSongFresh(songId, signal);
+    this.inFlightSongs.set(songId, request);
+    try {
+      return await request;
+    } finally {
+      if (this.inFlightSongs.get(songId) === request)
+        this.inFlightSongs.delete(songId);
+    }
+  }
+
+  private async revalidateSongFresh(
     songId: string,
     signal?: AbortSignal,
   ): Promise<ChordDocumentV2> {

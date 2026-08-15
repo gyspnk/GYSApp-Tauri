@@ -33,6 +33,7 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
+import { withTimeout } from "./egys-auth.js";
 
 type PackManifest = {
   version: number;
@@ -385,15 +386,19 @@ export function MorePage({ locale }: { locale: Locale }) {
         ? "https://accounts.google.com/gsi/client"
         : "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
     try {
-      await new Promise<void>((resolve, reject) => {
-        if (document.querySelector(`script[src="${sdkUrl}"]`)) return resolve();
-        const script = document.createElement("script");
-        script.src = sdkUrl;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("SDK unavailable"));
-        document.head.appendChild(script);
-      });
+      await withTimeout(
+        new Promise<void>((resolve, reject) => {
+          if (document.querySelector(`script[src="${sdkUrl}"]`))
+            return resolve();
+          const script = document.createElement("script");
+          script.src = sdkUrl;
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("SDK unavailable"));
+          document.head.appendChild(script);
+        }),
+        12_000,
+      );
       if (provider === "google") {
         const clientId = providers?.google.clientId;
         const google = (
@@ -413,17 +418,20 @@ export function MorePage({ locale }: { locale: Locale }) {
         ).google;
         if (!clientId || !google?.accounts?.id)
           throw new Error("Google client unavailable");
-        await new Promise<void>((resolve, reject) => {
-          google.accounts?.id?.initialize({
-            client_id: clientId,
-            callback: (response) => {
-              void exchangeEgysToken("google", response.credential)
-                .then(() => resolve())
-                .catch(reject);
-            },
-          });
-          google.accounts?.id?.prompt();
-        });
+        await withTimeout(
+          new Promise<void>((resolve, reject) => {
+            google.accounts?.id?.initialize({
+              client_id: clientId,
+              callback: (response) => {
+                void exchangeEgysToken("google", response.credential)
+                  .then(() => resolve())
+                  .catch(reject);
+              },
+            });
+            google.accounts?.id?.prompt();
+          }),
+          60_000,
+        );
       } else {
         const apple = (
           window as Window & {
@@ -451,7 +459,7 @@ export function MorePage({ locale }: { locale: Locale }) {
           redirectURI: window.location.origin,
           usePopup: true,
         });
-        const result = await apple.auth.signIn();
+        const result = await withTimeout(apple.auth.signIn(), 60_000);
         const token = result.authorization?.id_token;
         if (!token) throw new Error("Apple token unavailable");
         await exchangeEgysToken("apple", token);

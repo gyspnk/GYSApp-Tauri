@@ -38,6 +38,12 @@ service or platform artifact that cannot be exercised in this workspace.
   detail now has an explicit
   mutually-exclusive `Lirik` / `Chord` / `PDF` viewer mode, remembers the
   last mode per song, and never renders lyrics beside a chord or PDF surface.
+  Note-aligned chord JSON is now mapped against verified canonical PDF text
+  coordinates (dominant notation font, multi-character note splitting, row
+  matching, and responsive lyric/chord cells) instead of being shown as an
+  unpositioned chip list. Simultaneous song opens share one verified chord
+  download, and rendered MIDI PCM uses a bounded 96 MB source/soundfont/
+  tempo/transpose/sample-rate cache.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -82,7 +88,9 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Live e-GYS OAuth/session/profile requires protected Worker configuration and
   a reachable production backend; preview builds intentionally show a safe
-  signed-out state when those secrets are absent.
+  signed-out state when those secrets are absent. Provider SDK loading and
+  Google/Apple prompts are bounded by cancellation/timeouts so a blocked popup
+  cannot leave the account surface stuck in a busy state.
 - Native Tauri packaging/signing and iOS/Android store artifacts require their
   platform toolchains and signing material.
 - Full canonical-vs-rewrite MIDI performance parity, screen-reader audit, and

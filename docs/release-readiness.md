@@ -44,10 +44,14 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Chord, and PDF tabs unmount the other viewer surfaces. The native boundary
   check passes with 17 required offline/runtime assets totaling 36,844,871
   bytes in the current build; this is a packaging proof, not a signed
-  installer artifact.
+  installer artifact. The chord E2E additionally asserts that canonical
+  note-aligned PDF layout rows are rendered (not only a flat chord list), and
+  domain/web tests cover simultaneous chord fetch deduplication and the 96 MB
+  MIDI render-cache contract.
 - e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
-  the upstream WhatsApp READY response without returning session credentials.
+  the upstream WhatsApp READY response without returning session credentials;
+  provider SDK/popup flows have explicit timeout and cancellation guards.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then
   local), `edge`, or `local`. The optional voice catalog is also schema- and

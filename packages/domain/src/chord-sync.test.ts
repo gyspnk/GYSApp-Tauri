@@ -62,6 +62,46 @@ describe("ChordRepository", () => {
     expect(calls).toBe(1);
   });
 
+  it("deduplicates simultaneous content requests for one song", async () => {
+    const contentBytes = bytesFor(document);
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      contentBytes as BufferSource,
+    );
+    const contentRef: ChordRef = {
+      ...ref,
+      size: contentBytes.byteLength,
+      sha256: [...new Uint8Array(digest)]
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join(""),
+    };
+    const contentManifest = { ...manifest, entries: [contentRef] };
+    let calls = 0;
+    const upstream: ChordUpstream = {
+      getManifest: async () => ({ manifest: contentManifest }),
+      fetchChord: async () => {
+        calls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        return { bytes: contentBytes, document };
+      },
+    };
+    const repository = new ChordRepository(
+      upstream,
+      new MemoryChordCache(),
+      () => 0,
+    );
+
+    const results = await Promise.all([
+      repository.getChord("hymn-001"),
+      repository.getChord("hymn-001"),
+      repository.getChord("hymn-001"),
+    ]);
+
+    expect(calls).toBe(1);
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual(document);
+  });
+
   it("keeps the manifest body on an ETag-only 304 response", async () => {
     let calls = 0;
     const upstream: ChordUpstream = {

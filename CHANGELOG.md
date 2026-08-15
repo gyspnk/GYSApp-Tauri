@@ -2,6 +2,20 @@
 
 ## Unreleased — GA hardening slice
 
+- Reproduced the canonical GYSChordWeb note-aligned PDF mapping in typed
+  TypeScript: dominant notation-font detection, multi-character note splitting,
+  lyric-row matching, relative chord positions, and responsive character cells
+  are covered by golden tests and a Playwright media flow. The chord surface
+  now uses this layout when the verified canonical song PDF is available and
+  keeps a readable note-index fallback when it is not.
+- Added per-song chord content in-flight deduplication and an in-memory MIDI
+  PCM render cache keyed by source hash, TimGM soundfont, tempo, transpose,
+  instrument, and sample rate with a 96 MB LRU cap. These prevent duplicate
+  network/render work while keeping the initial bundle lazy.
+- Added bounded/cancellable e-GYS provider SDK, Google prompt, and Apple popup
+  flows so external authentication cannot remain indefinitely in a loading
+  state; timeout/cancellation behavior is unit-tested.
+
 - Moved the 31,172-verse TB search index behind a lazy module worker with a
   four-second startup timeout, cancellation of stale queries, and a typed local
   fallback. Long verse lists now opt into content-visibility to keep scrolling
