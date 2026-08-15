@@ -7,6 +7,10 @@
   icon shape, and has a runtime regression check for 404s and manifest warnings.
   The shell cache is v9 so existing PWA clients cannot retain the old icon
   metadata after an update.
+- Fixed deep-route metadata resolution so `/kidung/:songId` and other direct
+  Pages links request the favicon and manifest from `/GYSApp-Tauri/` instead of
+  a route-relative `/kidung/` directory; the regression flow covers the real
+  hymn detail route.
 - Hardened production PWA registration for reduced webview/service-worker
   implementations and made the generated asset manifest authoritative for
   bundled music seeds, removing guaranteed Pages MIDI 404 probes before

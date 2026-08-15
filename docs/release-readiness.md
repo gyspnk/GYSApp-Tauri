@@ -40,6 +40,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Pages-relative paths; runtime-health coverage checks the asset response and
   rejects browser metadata warnings. The shell cache version is bumped with
   the metadata change so existing PWA clients receive the corrected manifest.
+  The links are emitted with Vite's base URL, so direct `/kidung/:songId`
+  navigation cannot fall back to route-relative `/kidung/assets` requests.
 - The WhatsApp auth handoff reserves its popup during the click gesture and
   removes the opener before external navigation, avoiding false blocked-popup
   errors while preserving the secure handoff boundary.
@@ -54,7 +56,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 36 passing flows, including split-reader keyboard resize,
+  current suite has 37 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue

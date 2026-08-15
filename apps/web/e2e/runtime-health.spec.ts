@@ -75,3 +75,41 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
   expect(await serviceWorkerResponse.text()).toContain("gysapp-shell-v9");
   expect(metadataWarnings).toEqual([]);
 });
+
+test("deep routes keep PWA metadata rooted at the Pages base path", async ({
+  page,
+}) => {
+  const metadataErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      (message.type() === "warning" || message.type() === "error") &&
+      /favicon|manifest|icon/i.test(message.text())
+    ) {
+      metadataErrors.push(message.text());
+    }
+  });
+
+  await page.goto("/GYSApp-Tauri/kidung/hymn-508", {
+    waitUntil: "networkidle",
+  });
+  await expect(
+    page.getByRole("heading", { name: "Sauh Jiwa Kita" }),
+  ).toBeVisible();
+
+  const iconHref = await page.locator('link[rel="icon"]').getAttribute("href");
+  expect(iconHref).toMatch(/^\/GYSApp-Tauri\/assets\/gys-mark\.svg$/);
+  expect(
+    (await page.request.get(new URL(iconHref!, page.url()).toString())).ok(),
+  ).toBe(true);
+
+  const manifestHref = await page
+    .locator('link[rel="manifest"]')
+    .getAttribute("href");
+  expect(manifestHref).toBe("/GYSApp-Tauri/manifest.webmanifest");
+  expect(
+    (
+      await page.request.get(new URL(manifestHref!, page.url()).toString())
+    ).ok(),
+  ).toBe(true);
+  expect(metadataErrors).toEqual([]);
+});

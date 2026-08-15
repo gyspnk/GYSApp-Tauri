@@ -22,7 +22,9 @@ service or platform artifact that cannot be exercised in this workspace.
   install manifest; Pages-relative resolution is covered by runtime-health
   coverage so browser console metadata warnings do not regress. The service
   worker cache version is bumped with the metadata change so existing clients
-  receive the corrected manifest instead of a stale cached copy.
+  receive the corrected manifest instead of a stale cached copy. Deep hymn
+  routes now use the same base-rooted metadata URLs and no longer emit route
+  relative `/kidung/assets` 404s.
 - e-GYS WhatsApp login now reserves the popup without the `noopener` feature
   that makes allowed popups look blocked, then severs `window.opener` before
   navigating to the external WhatsApp URL; both blocked and allowed paths are
@@ -152,7 +154,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  36 passing flows, including the 320–1920px and landscape shell matrix plus
+  37 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -162,7 +164,7 @@ service or platform artifact that cannot be exercised in this workspace.
   Production runtime-health coverage also asserts that PWA registration does
   not surface an uncaught error when the browser exposes a reduced service
   worker registration, and that favicon/manifest metadata resolves without
-  browser warnings.
+  browser warnings, with a direct hymn deep-link metadata regression check.
   Native `cargo check` is wired into
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
