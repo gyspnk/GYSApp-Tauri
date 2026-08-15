@@ -404,6 +404,39 @@ test("literature article primary action stays in the internal reader", async ({
   await expect(page).toHaveURL(/\/literatur\//);
 });
 
+test("literature article exposes an explicit jump to the saved scroll position", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  await page.locator(".literature-row").first().click();
+  await expect(page.locator('[data-testid="literature-detail"]')).toBeVisible();
+  await page.evaluate(() => {
+    const raw = JSON.parse(
+      window.localStorage.getItem("gys-literature-progress-v2") ?? "{}",
+    ) as Record<string, Record<string, unknown>>;
+    const first = Object.entries(raw)[0];
+    if (!first) throw new Error("literature progress was not initialized");
+    const [id, progress] = first;
+    raw[id] = {
+      ...progress,
+      percent: 55,
+      resourceVersion: "legacy",
+      location: { kind: "scroll", ratio: 0.55 },
+    };
+    window.localStorage.setItem(
+      "gys-literature-progress-v2",
+      JSON.stringify(raw),
+    );
+    window.dispatchEvent(new CustomEvent("gys-literature-progress-change"));
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "Lanjutkan membaca" }).click();
+  await expect(page.getByTestId("literature-article-reader")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Kembali ke posisi/ }),
+  ).toBeVisible();
+});
+
 test("MIDI queue persists from a hymn detail into the utility surface", async ({
   page,
 }) => {

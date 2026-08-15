@@ -6,6 +6,9 @@
   local assets are staged and SHA/size-verified before the active pointer is
   swapped, removed entries are cleaned afterward, and the More screen keeps a
   single update action with retryable status instead of adding another menu.
+- Literature article progress now exposes a direct jump back to the saved
+  scroll position; the action is no longer hidden inside the PDF-only control
+  group.
 - e-GYS synchronization now captures the verified upstream Springdoc/OpenAPI
   runtime boundary and enablement property in the generated contract, while
   keeping request/response schemas source-owned until the runtime document is

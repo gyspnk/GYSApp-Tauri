@@ -978,16 +978,16 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                   Buka offline
                 </button>
               )}
-              {item.format !== "pdf" && resumeScrollRatio !== undefined && (
-                <button
-                  className="quiet-button"
-                  type="button"
-                  onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
-                >
-                  Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
-                </button>
-              )}
             </>
+          )}
+          {item.format !== "pdf" && resumeScrollRatio !== undefined && (
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+            >
+              Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+            </button>
           )}
         </div>
         {readerError && (
