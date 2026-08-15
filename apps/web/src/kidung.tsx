@@ -339,6 +339,7 @@ function HymnDetail({
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
   const [pdfSource, setPdfSource] = useState<"fork" | "canonical">("fork");
+  const [pdfVersion, setPdfVersion] = useState<string>();
   const [pdfStatus, setPdfStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
@@ -650,15 +651,18 @@ function HymnDetail({
     setViewerMode("pdf");
     writeHymnViewerMode(item.id, "pdf");
     setPdfStatus("loading");
+    setPdfVersion(undefined);
     try {
       let bytes: Uint8Array;
       let initialPage = 1;
       let source: "fork" | "canonical" = "fork";
+      let sourceVersion = "fork";
       try {
         const forkPdf = await loadForkHymnalPdf(item.number);
         if (run !== pdfRun.current) return;
         bytes = forkPdf.bytes;
         initialPage = forkPdf.initialPage;
+        sourceVersion = forkPdf.sourceVersion;
       } catch {
         const ref = musicLock?.items.find(
           (candidate) =>
@@ -668,6 +672,7 @@ function HymnDetail({
         bytes = await loadMusicAsset(ref);
         if (run !== pdfRun.current) return;
         source = "canonical";
+        sourceVersion = ref.sha256;
       }
       const nextUrl = URL.createObjectURL(
         new Blob([bytes.slice().buffer as ArrayBuffer], {
@@ -677,6 +682,7 @@ function HymnDetail({
       setPdfBytes(bytes);
       setPdfInitialPage(initialPage);
       setPdfSource(source);
+      setPdfVersion(sourceVersion);
       setPdfUrl((previous) => {
         if (previous) URL.revokeObjectURL(previous);
         return nextUrl;
@@ -1141,7 +1147,7 @@ function HymnDetail({
               src={pdfUrl ?? ""}
               {...(pdfBytes ? { data: pdfBytes } : {})}
               initialPage={pdfInitialPage}
-              progressKey={item.id}
+              progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
               {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
               title={item.title}
               chordOverlays={pdfChordOverlays}

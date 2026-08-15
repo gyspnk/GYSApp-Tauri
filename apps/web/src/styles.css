@@ -960,6 +960,12 @@ blockquote {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.pdf-toolbar .pdf-resume {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-weight: 700;
+}
 .pdf-toolbar label {
   display: inline-flex;
   align-items: center;

@@ -67,6 +67,18 @@ function readPdfLayout(progressKey: string | undefined): PdfLayout {
   }
 }
 
+function readPdfPage(progressKey: string | undefined): number | undefined {
+  if (!progressKey || typeof window === "undefined") return undefined;
+  try {
+    const stored = Number(
+      window.localStorage.getItem(`gys-pdf-page:${progressKey}`),
+    );
+    return Number.isInteger(stored) && stored > 0 ? stored : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Render one page in the long-scroll mode used by GYSChordWeb.
  *
@@ -225,12 +237,11 @@ export function PdfReader({
     null,
   );
   const [page, setPage] = useState(() => {
-    if (!progressKey || typeof window === "undefined") return initialPage;
-    const stored = Number(
-      window.localStorage.getItem(`gys-pdf-page:${progressKey}`),
-    );
-    return Number.isInteger(stored) && stored > 0 ? stored : initialPage;
+    return readPdfPage(progressKey) ?? initialPage;
   });
+  const [resumePage, setResumePage] = useState<number | undefined>(() =>
+    readPdfPage(progressKey),
+  );
   const [total, setTotal] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [fit, setFit] = useState(false);
@@ -276,15 +287,18 @@ export function PdfReader({
 
   useEffect(() => {
     if (!progressKey) return;
-    const stored = Number(
-      window.localStorage.getItem(`gys-pdf-page:${progressKey}`),
-    );
-    setPage(Number.isInteger(stored) && stored > 0 ? stored : initialPage);
+    const saved = readPdfPage(progressKey);
+    setResumePage(saved);
+    setPage(saved ?? initialPage);
   }, [initialPage, progressKey]);
 
   useEffect(() => {
     if (!progressKey || !total) return;
-    window.localStorage.setItem(`gys-pdf-page:${progressKey}`, String(page));
+    try {
+      window.localStorage.setItem(`gys-pdf-page:${progressKey}`, String(page));
+    } catch {
+      // A private-mode/quota failure must not make the reader unusable.
+    }
   }, [page, progressKey, total]);
 
   useEffect(() => {
@@ -308,6 +322,11 @@ export function PdfReader({
         if (disposed) return;
         setTotal(document.numPages);
         setPage((current) => Math.max(1, Math.min(document.numPages, current)));
+        setResumePage((current) =>
+          current === undefined
+            ? current
+            : Math.max(1, Math.min(document.numPages, current)),
+        );
         setDocumentProxy(document);
         setStatus("ready");
       })
@@ -412,6 +431,12 @@ export function PdfReader({
       inline: effectiveLayout === "horizontal" ? "center" : "nearest",
     });
   };
+  const canResume =
+    total > 0 &&
+    resumePage !== undefined &&
+    resumePage !== page &&
+    resumePage >= 1 &&
+    resumePage <= total;
 
   return (
     <section className="pdf-reader" aria-label={title}>
@@ -427,6 +452,16 @@ export function PdfReader({
           Page {page}
           {total ? ` / ${total}` : ""}
         </span>
+        {canResume && (
+          <button
+            className="pdf-resume"
+            type="button"
+            data-pdf-resume="true"
+            onClick={() => goToPage(resumePage)}
+          >
+            Kembali ke halaman {resumePage}
+          </button>
+        )}
         {total > 0 && (
           <label className="pdf-page-jump">
             Ke halaman

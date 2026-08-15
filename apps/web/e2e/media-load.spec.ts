@@ -87,6 +87,25 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   );
   await page.getByRole("button", { name: "Buka PDF" }).click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+  await page
+    .locator(".pdf-toolbar")
+    .getByRole("button", { name: "Berikutnya" })
+    .click();
+  await page.reload();
+  await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+  await page
+    .locator(".pdf-toolbar")
+    .getByRole("button", { name: "Berikutnya" })
+    .click();
+  const resumeButton = page.locator('[data-pdf-resume="true"]');
+  await expect(resumeButton).toBeVisible();
+  const resumeLabel = await resumeButton.textContent();
+  const resumePage = resumeLabel?.match(/(\d+)$/)?.[1];
+  if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);
+  await resumeButton.click();
+  await expect(page.locator(".pdf-toolbar")).toContainText(
+    `Page ${resumePage}`,
+  );
   await page.getByRole("button", { name: "Mendatar" }).click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",

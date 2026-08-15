@@ -12,7 +12,7 @@ const KEY_BYTES = Uint8Array.from(
   (value) => value.charCodeAt(0),
 );
 let mapping: Promise<HymnalPdfManifest> | undefined;
-let packageRequest: Promise<Uint8Array> | undefined;
+const packageRequests = new Map<string, Promise<Uint8Array>>();
 
 async function sha256(bytes: Uint8Array) {
   const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
@@ -154,7 +154,10 @@ async function loadDataPackage() {
 }
 
 async function loadMasterPdf(manifest: HymnalPdfManifest) {
-  packageRequest ??= (async () => {
+  const cacheKey = `${manifest.sourceCommit}:${manifest.masterPath}`;
+  const existing = packageRequests.get(cacheKey);
+  if (existing) return existing;
+  const request = (async () => {
     const forkUrl = `https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
       .split("/")
       .map((segment) => encodeURIComponent(segment))
@@ -169,7 +172,14 @@ async function loadMasterPdf(manifest: HymnalPdfManifest) {
       return loadDataPackage();
     }
   })();
-  return packageRequest;
+  packageRequests.set(cacheKey, request);
+  try {
+    return await request;
+  } catch (error) {
+    if (packageRequests.get(cacheKey) === request)
+      packageRequests.delete(cacheKey);
+    throw error;
+  }
 }
 
 export async function loadForkHymnalPdf(number: number) {
@@ -180,6 +190,7 @@ export async function loadForkHymnalPdf(number: number) {
     bytes: await loadMasterPdf(manifest),
     initialPage: song.startPage,
     pageCount: song.pageCount,
+    sourceVersion: `${manifest.sourceCommit}:${manifest.masterPath}`,
     source: "GYSApp-Fork PDF database" as const,
   };
 }

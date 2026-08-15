@@ -111,7 +111,9 @@ from the canonical source key rather than changing a label only. PDF presentatio
 layouts; a two-page preference automatically falls back to a readable single
 page below 720 px. The MIDI surface exposes the 128 General MIDI programs plus
 the source-file program, and its volume, mute, tempo, transpose, and instrument
-preferences survive a new session.
+preferences survive a new session. PDF page progress is keyed by the immutable
+source version and the reader offers a return-to-saved-page action after
+navigation, while invalid saved pages are clamped safely.
 
 ```mermaid
 flowchart LR

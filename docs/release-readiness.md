@@ -71,7 +71,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   verified as a shortest-path transpose from the canonical chord source key;
   the global MIDI surface exposes the source program plus all 128 General MIDI
   programs, persists media preferences, and Kidung transpose updates the same
-  external MIDI session.
+  external MIDI session. PDF page progress is keyed by the immutable source
+  version, clamped when a document changes, and exposes a return-to-saved-page
+  action after navigation.
 - The Kidung catalog search index is built once per catalog revision and is
   covered by AND/quoted/prefix golden tests plus a Playwright reversed-term
   lookup. Vertical PDF mode evicts canvas render state outside its observer

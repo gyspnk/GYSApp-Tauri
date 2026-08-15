@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- PDF reading progress is now keyed by the immutable fork/canonical resource
+  version and the internal reader exposes a compact “Kembali ke halaman …”
+  action after the user moves away from the saved location. Invalid saved pages
+  are clamped to the current document instead of being reused blindly.
 - Text-mode Kidung now has a bounded responsive auto-fit measurement for long
   chord/lyric lines, and key selection computes musical transpose from the
   verified source key instead of only changing a label. PDF/Text chord labels,

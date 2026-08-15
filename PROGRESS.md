@@ -56,7 +56,8 @@ service or platform artifact that cannot be exercised in this workspace.
   source/soundfont/tempo/transpose/sample-rate cache.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
-  two-page guard, and MIDI exposes all 128 General MIDI programs plus the source
+  two-page guard, version-aware page progress with an explicit return-to-saved
+  page action, and MIDI exposes all 128 General MIDI programs plus the source
   program while persisting media preferences across sessions. Text mode now
   measures the rendered chord/lyric line and applies a bounded 14 px minimum
   auto-fit on viewport/orientation changes, without changing the user's saved
