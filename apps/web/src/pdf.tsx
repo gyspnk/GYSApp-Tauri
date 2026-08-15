@@ -14,6 +14,8 @@ import {
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import {
   clampPdfZoom,
+  cleanupPdfPage,
+  disposePdfDocument,
   isPdfLayout,
   nextPdfPage,
   pdfLayoutForViewport,
@@ -145,20 +147,24 @@ function VerticalPdfPage({
     if (!nearViewport || !canvasRef.current || !hostRef.current) return;
     let disposed = false;
     let renderTask: ReturnType<PDFPageProxy["render"]> | undefined;
+    let pdfPage: PDFPageProxy | undefined;
     setStatus("loading");
     void documentProxy
       .getPage(pageNumber)
-      .then((pdfPage) => {
+      .then((nextPage) => {
+        pdfPage = nextPage;
         if (disposed || !canvasRef.current || !hostRef.current) return;
-        const baseViewport = pdfPage.getViewport({ scale: 1 });
+        const baseViewport = nextPage.getViewport({ scale: 1 });
         const availableWidth = Math.max(320, hostRef.current.clientWidth - 32);
         const fitScale = availableWidth / baseViewport.width;
         const scale = fit ? Math.min(zoom, fitScale) : zoom;
-        const viewport = pdfPage.getViewport({ scale: Math.max(0.35, scale) });
+        const viewport = nextPage.getViewport({
+          scale: Math.max(0.35, scale),
+        });
         const canvas = canvasRef.current;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        renderTask = pdfPage.render({
+        renderTask = nextPage.render({
           canvas,
           canvasContext: canvas.getContext("2d")!,
           viewport,
@@ -175,6 +181,7 @@ function VerticalPdfPage({
     return () => {
       disposed = true;
       renderTask?.cancel();
+      cleanupPdfPage(pdfPage);
       if (canvasRef.current) {
         canvasRef.current.width = 0;
         canvasRef.current.height = 0;
@@ -236,6 +243,8 @@ export function PdfReader({
   const [documentProxy, setDocumentProxy] = useState<PDFDocumentProxy | null>(
     null,
   );
+  const documentRef = useRef<PDFDocumentProxy | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [page, setPage] = useState(() => {
     return readPdfPage(progressKey) ?? initialPage;
   });
@@ -307,19 +316,33 @@ export function PdfReader({
 
   useEffect(() => {
     let disposed = false;
+    const previousDocument = documentRef.current;
+    documentRef.current = null;
+    void disposePdfDocument(previousDocument);
     setDocumentProxy(null);
     setTotal(0);
     setStatus("loading");
+    const cleanup = () => {
+      disposed = true;
+      const loadedDocument = documentRef.current;
+      documentRef.current = null;
+      void disposePdfDocument(loadedDocument);
+      setDocumentProxy(null);
+    };
     if (!src && !data) {
       setStatus("error");
-      return () => undefined;
+      return cleanup;
     }
     const loadingTask = getDocument(
       data ? { data: data.slice() } : { url: src },
     );
     void loadingTask.promise
       .then((document) => {
-        if (disposed) return;
+        if (disposed) {
+          void disposePdfDocument(document);
+          return;
+        }
+        documentRef.current = document;
         setTotal(document.numPages);
         setPage((current) => Math.max(1, Math.min(document.numPages, current)));
         setResumePage((current) =>
@@ -335,11 +358,10 @@ export function PdfReader({
         if (!disposed) recordDiagnostic("error", "pdf.document", error);
       });
     return () => {
-      disposed = true;
-      void loadingTask.destroy();
-      setDocumentProxy(null);
+      void loadingTask.destroy().catch(() => undefined);
+      cleanup();
     };
-  }, [data, src]);
+  }, [data, loadAttempt, src]);
 
   const onStageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length !== 2) return;
@@ -437,6 +459,10 @@ export function PdfReader({
     resumePage !== page &&
     resumePage >= 1 &&
     resumePage <= total;
+  const retry = () => {
+    setStatus("loading");
+    setLoadAttempt((attempt) => attempt + 1);
+  };
 
   return (
     <section className="pdf-reader" aria-label={title}>
@@ -549,9 +575,19 @@ export function PdfReader({
       >
         {status === "loading" && <p>Memuat PDF lokal…</p>}
         {status === "error" && (
-          <p>
-            PDF belum tersedia offline. Simpan dulu saat tersambung internet.
-          </p>
+          <div className="pdf-error-state" role="alert">
+            <p>
+              PDF belum tersedia offline. Simpan dulu saat tersambung internet.
+            </p>
+            <button
+              className="quiet-button"
+              type="button"
+              data-pdf-retry="true"
+              onClick={retry}
+            >
+              Coba lagi
+            </button>
+          </div>
         )}
         {effectiveLayout === "vertical" || effectiveLayout === "horizontal" ? (
           <div

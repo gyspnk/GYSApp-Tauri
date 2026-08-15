@@ -94,7 +94,9 @@ service or platform artifact that cannot be exercised in this workspace.
   entries to source cover images; the remaining 18 have explicit source-backed
   fallback because no cover is exposed by the upstream metadata. Article
   readers now also expose an explicit jump back to a saved scroll position;
-  the action is available outside the PDF-only controls.
+  the action is available outside the PDF-only controls. Shared PDF document
+  and virtualized page resources are now cleaned up on route/song/retry
+  transitions, and Literature failures expose an in-shell retry button.
 - Native e-GYS BFF/session/profile adapter with branch and membership mapping;
   no WebView or client-side credential storage. Provider exchange and
   WhatsApp READY responses are schema-validated against the upstream
@@ -135,7 +137,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  33 passing flows, including the 320–1920px and landscape shell matrix plus
+  34 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the

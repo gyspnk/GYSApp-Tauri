@@ -991,9 +991,16 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           )}
         </div>
         {readerError && (
-          <p className="error-copy" role="alert">
-            {readerError}
-          </p>
+          <div className="error-copy literature-reader-error" role="alert">
+            <span>{readerError}</span>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => void openReader()}
+            >
+              Coba lagi
+            </button>
+          </div>
         )}
         <small className="literature-progress-note">
           {progress?.location?.kind === "page"

@@ -46,3 +46,31 @@ export function shouldRenderPdfPage(
     (isNearViewport || pageNumber <= Math.max(0, initialPages))
   );
 }
+
+/**
+ * PDF.js keeps page/operator resources alive until the document is cleaned up.
+ * Cleanup runs during route changes and can race with an in-flight load, so a
+ * second cleanup (or a worker shutdown error) must be harmless to the reader.
+ */
+export async function disposePdfDocument(
+  documentProxy: { cleanup: () => Promise<unknown> | void } | null | undefined,
+): Promise<void> {
+  if (!documentProxy) return;
+  try {
+    await documentProxy.cleanup();
+  } catch {
+    // PDF.js reports an already-cancelled worker as a destroy failure. The
+    // document is no longer usable, so cleanup remains successful for callers.
+  }
+}
+
+/** Release page-level operator lists before the document itself is destroyed. */
+export function cleanupPdfPage(
+  page: { cleanup?: () => boolean | void } | null | undefined,
+): void {
+  try {
+    page?.cleanup?.();
+  } catch {
+    // A page can already be detached when its IntersectionObserver exits.
+  }
+}

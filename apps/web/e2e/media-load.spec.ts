@@ -74,6 +74,39 @@ test("PDF failure exposes an actionable retry without leaving the hymn shell", a
   await expect(page.getByRole("button", { name: "Coba lagi" })).toBeVisible();
 });
 
+test("literature PDF failure exposes retry inside the application reader shell", async ({
+  page,
+}) => {
+  await page.route("**/*.{pdf,PDF}", (route) =>
+    route.fulfill({ status: 503, body: "literature PDF unavailable" }),
+  );
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(
+    page.getByRole("link", { name: /Kitab Markus/i }).first(),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  await page
+    .getByRole("link", { name: /Kitab Markus/i })
+    .first()
+    .click();
+  await expect(page.getByRole("heading", { name: "Kitab Markus" })).toBeVisible(
+    {
+      timeout: 15_000,
+    },
+  );
+  await page.getByRole("button", { name: "Baca di aplikasi" }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "PDF belum dapat dibuka",
+    {
+      timeout: 20_000,
+    },
+  );
+  await expect(
+    page.getByRole("alert").getByRole("button", { name: "Coba lagi" }),
+  ).toBeVisible();
+});
+
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
   page,
 }) => {

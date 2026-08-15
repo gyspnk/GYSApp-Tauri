@@ -41,7 +41,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 33 passing flows, including split-reader keyboard resize,
+  current suite has 34 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue
@@ -49,6 +49,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   GYSApp-Fork PDF viewer/download, and MIDI loading. The PDF smoke also waits
   for a non-zero rendered canvas and a real download link; the MIDI flow checks
   minimize/restore on the shared media surface.
+  Literature PDF failures now expose an in-shell `Coba lagi` action, and the
+  shared PDF reader cleans up loaded documents and virtualized page resources
+  when a route, song, or retry changes, preventing stale worker/page buffers
+  from accumulating during rapid navigation.
 - The release suite includes forced PDF and Sauh upstream failure flows that keep the
   user inside the hymn shell and exposes a `Coba lagi` recovery action. The
   Sauh flow proves that no fabricated Daily Verse is shown when the source is

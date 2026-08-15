@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { clampPdfZoom, nextPdfPage, shouldRenderPdfPage } from "./pdf-utils.js";
+import { describe, expect, it, vi } from "vitest";
+import {
+  clampPdfZoom,
+  disposePdfDocument,
+  nextPdfPage,
+  shouldRenderPdfPage,
+} from "./pdf-utils.js";
 
 describe("PDF reader controls", () => {
   it("clamps zoom to a readable range", () => {
@@ -19,5 +24,15 @@ describe("PDF reader controls", () => {
     expect(shouldRenderPdfPage(2, false)).toBe(true);
     expect(shouldRenderPdfPage(3, false)).toBe(false);
     expect(shouldRenderPdfPage(42, true)).toBe(true);
+  });
+
+  it("disposes a PDF document without turning cleanup failures into UI errors", async () => {
+    const cleanup = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValue(new Error("already destroyed"));
+
+    await expect(disposePdfDocument({ cleanup })).resolves.toBeUndefined();
+    expect(cleanup).toHaveBeenCalledOnce();
+    await expect(disposePdfDocument(undefined)).resolves.toBeUndefined();
   });
 });

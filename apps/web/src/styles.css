@@ -1018,6 +1018,16 @@ blockquote {
 .pdf-stage p {
   color: var(--muted);
 }
+.pdf-error-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
+}
+.pdf-error-state p {
+  margin: 0;
+}
 .pdf-stage canvas {
   max-width: 100%;
   height: auto;
@@ -3613,6 +3623,12 @@ body.is-resizing-bible {
 .error-copy {
   color: var(--danger, #a43b3b);
   font-size: 13px;
+}
+.literature-reader-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .account-provider-actions {
   display: flex;
