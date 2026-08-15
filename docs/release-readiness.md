@@ -49,8 +49,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   the upstream WhatsApp READY response without returning session credentials.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then
-  local), `edge`, or `local`. It remains unavailable until a protected
-  `EDGE_TTS_URL` gateway is supplied.
+  local), `edge`, or `local`. The optional voice catalog is also schema- and
+  HTTPS-validated; no static Edge voice list is shown when it is absent. It
+  remains unavailable until a protected `EDGE_TTS_URL` gateway is supplied.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.

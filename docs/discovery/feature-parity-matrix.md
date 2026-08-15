@@ -11,7 +11,7 @@ attached test evidence; `PLANNED` is not a claim of completion.
 | MIDI             | 128 GM programs, TimGM/GeneralUser, transport, playlist modes  | IN PROGRESS    |
 | PDF              | Local PDF.js worker, page/zoom/resume, text/PDF mode switch    | IN PROGRESS    |
 | Bible            | TB pack, reader, search, references, notes, split versions     | IN PROGRESS    |
-| TTS              | Edge compatibility provider with offline capability fallback   | PLANNED        |
+| TTS              | Edge compatibility provider with offline capability fallback   | IN PROGRESS    |
 | Iman             | Ten topics, multilingual search/copy/share/note                | IN PROGRESS    |
 | Backup           | Legacy `.gysbk` one-way import, new AES-GCM envelope           | IN PROGRESS    |
 | Account          | Normalized Google/Apple/e-GYS session/profile                  | PLANNED        |

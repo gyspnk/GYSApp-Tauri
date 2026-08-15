@@ -5,6 +5,7 @@ import {
   BibleReaderPackSchema,
   ChordDocumentV2Schema,
   EdgeTtsRequestSchema,
+  EdgeTtsVoicesResponseSchema,
   ErrorResponseSchema,
   EgysMeResponseSchema,
   EgysProvidersSchema,
@@ -276,6 +277,24 @@ describe("public contracts", () => {
     expect(
       EdgeTtsRequestSchema.safeParse({ text: "x", voice: "not a voice" })
         .success,
+    ).toBe(false);
+  });
+
+  it("accepts only gateway-advertised remote voices", () => {
+    const response = EdgeTtsVoicesResponseSchema.parse({
+      voices: [
+        {
+          id: "id-ID-GadisNeural",
+          name: "Gadis",
+          language: "id-ID",
+        },
+      ],
+    });
+    expect(response.voices[0]?.local).toBe(false);
+    expect(
+      EdgeTtsVoicesResponseSchema.safeParse({
+        voices: [{ id: "bad id", name: "Unknown", language: "id-ID" }],
+      }).success,
     ).toBe(false);
   });
 });

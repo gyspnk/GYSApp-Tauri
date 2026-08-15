@@ -83,13 +83,14 @@ class BrowserBlobStore implements AtomicBlobStore {
 export class BrowserSpeechProvider implements SpeechProvider {
   public readonly id = "browser-system";
   private active: SpeechSynthesisUtterance | undefined;
+  private activeCancel: ((error: Error) => void) | undefined;
 
   public async status(): Promise<{
     available: boolean;
     offline: boolean;
     reason?: string;
   }> {
-    if (!("speechSynthesis" in window))
+    if (typeof window === "undefined" || !("speechSynthesis" in window))
       return {
         available: false,
         offline: false,
@@ -114,17 +115,22 @@ export class BrowserSpeechProvider implements SpeechProvider {
     const current = read();
     if (current.length > 0) return current;
     return new Promise((resolve) => {
-      const onVoices = () => {
+      let settled = false;
+      let timer: number | undefined;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (timer !== undefined) window.clearTimeout(timer);
         window.speechSynthesis.removeEventListener("voiceschanged", onVoices);
         resolve(read());
+      };
+      const onVoices = () => {
+        finish();
       };
       window.speechSynthesis.addEventListener("voiceschanged", onVoices, {
         once: true,
       });
-      window.setTimeout(() => {
-        window.speechSynthesis.removeEventListener("voiceschanged", onVoices);
-        resolve(read());
-      }, 800);
+      timer = window.setTimeout(finish, 800);
     });
   }
 
@@ -138,7 +144,7 @@ export class BrowserSpeechProvider implements SpeechProvider {
     },
     signal?: AbortSignal,
   ): Promise<void> {
-    if (!(await this.status()).available)
+    if (typeof window === "undefined" || !(await this.status()).available)
       throw new Error("No browser voice is available");
     await this.stop();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -155,17 +161,33 @@ export class BrowserSpeechProvider implements SpeechProvider {
           .find((candidate) => candidate.voiceURI === voice.id) ?? null;
     this.active = utterance;
     await new Promise<void>((resolve, reject) => {
-      const abort = () => {
-        window.speechSynthesis.cancel();
-        reject(new DOMException("Speech cancelled", "AbortError"));
+      let settled = false;
+      const cleanup = () => {
+        signal?.removeEventListener("abort", abort);
+        if (this.activeCancel === cancel) this.activeCancel = undefined;
+        if (this.active === utterance) this.active = undefined;
       };
+      const cancel = (error: Error) => {
+        if (settled) return;
+        settled = true;
+        window.speechSynthesis.cancel();
+        cleanup();
+        reject(error);
+      };
+      const abort = () =>
+        cancel(new DOMException("Speech cancelled", "AbortError"));
+      this.activeCancel = cancel;
       signal?.addEventListener("abort", abort, { once: true });
       utterance.onend = () => {
-        signal?.removeEventListener("abort", abort);
+        if (settled) return;
+        settled = true;
+        cleanup();
         resolve();
       };
       utterance.onerror = () => {
-        signal?.removeEventListener("abort", abort);
+        if (settled) return;
+        settled = true;
+        cleanup();
         reject(new Error("Browser speech failed"));
       };
       window.speechSynthesis.speak(utterance);
@@ -179,8 +201,10 @@ export class BrowserSpeechProvider implements SpeechProvider {
     window.speechSynthesis.resume();
   }
   public async stop(): Promise<void> {
+    this.activeCancel?.(new DOMException("Speech cancelled", "AbortError"));
     window.speechSynthesis.cancel();
     this.active = undefined;
+    this.activeCancel = undefined;
   }
 }
 

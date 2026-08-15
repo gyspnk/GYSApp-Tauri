@@ -1,4 +1,9 @@
-import type { SpeechProvider, SpeechVoice } from "@gys/contracts";
+import {
+  EdgeTtsRequestSchema,
+  EdgeTtsVoicesResponseSchema,
+  type SpeechProvider,
+  type SpeechVoice,
+} from "@gys/contracts";
 
 /**
  * Edge compatibility speech is deliberately opt-in at the transport layer.
@@ -13,33 +18,21 @@ const configuredEndpoint =
   (import.meta.env.VITE_BFF_BASE_URL?.trim()
     ? `${import.meta.env.VITE_BFF_BASE_URL.trim().replace(/\/$/, "")}/api/v1/tts/edge`
     : "");
+const configuredVoicesEndpoint =
+  import.meta.env.VITE_EDGE_TTS_VOICES_URL?.trim() ||
+  (import.meta.env.VITE_BFF_BASE_URL?.trim()
+    ? `${import.meta.env.VITE_BFF_BASE_URL.trim().replace(/\/$/, "")}/api/v1/tts/edge/voices`
+    : "");
+const DEFAULT_EDGE_VOICE =
+  import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE?.trim() &&
+  /^[A-Za-z0-9-]{2,80}$/.test(
+    import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim(),
+  )
+    ? import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim()
+    : "id-ID-GadisNeural";
+const VOICE_CACHE_TTL_MS = 5 * 60_000;
 
-const voices: SpeechVoice[] = [
-  {
-    id: "id-ID-GadisNeural",
-    name: "Gadis (Edge)",
-    language: "id-ID",
-    local: false,
-  },
-  {
-    id: "id-ID-ArdiNeural",
-    name: "Ardi (Edge)",
-    language: "id-ID",
-    local: false,
-  },
-  {
-    id: "en-US-AvaNeural",
-    name: "Ava (Edge)",
-    language: "en-US",
-    local: false,
-  },
-  {
-    id: "zh-CN-XiaoxiaoNeural",
-    name: "Xiaoxiao (Edge)",
-    language: "zh-CN",
-    local: false,
-  },
-];
+type Health = "unknown" | "available" | "unavailable";
 
 function abortError(): Error {
   return new DOMException("Speech cancelled", "AbortError");
@@ -49,11 +42,20 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function remoteVoice(value: SpeechVoice): SpeechVoice {
+  return { ...value, local: false };
+}
+
 export class EdgeSpeechProvider implements SpeechProvider {
   public readonly id = "edge-compatibility";
   private active: HTMLAudioElement | undefined;
   private activeUrl: string | undefined;
   private activeCancel: ((error: Error) => void) | undefined;
+  private health: Health = "unknown";
+  private healthReason: string | undefined;
+  private advertisedVoices: SpeechVoice[] = [];
+  private voicesExpiresAt = 0;
+  private voicesRequest: Promise<SpeechVoice[]> | undefined;
 
   public async status(): Promise<{
     available: boolean;
@@ -66,12 +68,32 @@ export class EdgeSpeechProvider implements SpeechProvider {
         offline: false,
         reason: "Edge compatibility endpoint is not configured",
       };
+    if (this.health === "unavailable")
+      return {
+        available: false,
+        offline: false,
+        reason:
+          this.healthReason ?? "Edge compatibility endpoint is unavailable",
+      };
+    // The actual speech request is the health probe. Avoid an extra request on
+    // every route mount while still disabling Edge immediately after failure.
     return { available: true, offline: false };
   }
 
   public async voices(signal?: AbortSignal): Promise<SpeechVoice[]> {
-    if (signal?.aborted || !configuredEndpoint) return [];
-    return voices.map((voice) => ({ ...voice }));
+    if (signal?.aborted || !configuredEndpoint || !configuredVoicesEndpoint)
+      return this.advertisedVoices.map(remoteVoice);
+    if (this.voicesExpiresAt > Date.now())
+      return this.advertisedVoices.map(remoteVoice);
+    if (this.voicesRequest) return this.voicesRequest;
+
+    const request = this.fetchVoices(signal);
+    this.voicesRequest = request;
+    try {
+      return (await request).map(remoteVoice);
+    } finally {
+      if (this.voicesRequest === request) this.voicesRequest = undefined;
+    }
   }
 
   public async speak(
@@ -84,37 +106,50 @@ export class EdgeSpeechProvider implements SpeechProvider {
     },
     signal?: AbortSignal,
   ): Promise<void> {
-    if (!configuredEndpoint)
+    if (!configuredEndpoint) {
+      this.markUnavailable("Edge compatibility endpoint is not configured");
       throw new Error("Edge compatibility endpoint is not configured");
+    }
     if (signal?.aborted) throw abortError();
     await this.stop();
+    const voiceId = this.selectVoice(options.voiceId);
+    const parsed = EdgeTtsRequestSchema.parse({
+      text: text.slice(0, 8_000),
+      voice: voiceId,
+      rate: clamp(options.rate ?? 0.9, 0.5, 2),
+      pitch: clamp(options.pitch ?? 1, 0.5, 2),
+      volume: clamp(options.volume ?? 1, 0, 1),
+    });
     const requestInit: RequestInit = {
       method: "POST",
       headers: { accept: "audio/mpeg", "content-type": "application/json" },
-      body: JSON.stringify({
-        text: text.slice(0, 8_000),
-        voice:
-          options.voiceId &&
-          voices.some((voice) => voice.id === options.voiceId)
-            ? options.voiceId
-            : "id-ID-GadisNeural",
-        rate: clamp(options.rate ?? 0.9, 0.5, 2),
-        pitch: clamp(options.pitch ?? 1, 0.5, 2),
-        volume: clamp(options.volume ?? 1, 0, 1),
-      }),
+      body: JSON.stringify(parsed),
     };
     if (signal) requestInit.signal = signal;
-    const response = await fetch(configuredEndpoint, requestInit);
-    if (!response.ok)
+    let response: Response;
+    try {
+      response = await fetch(configuredEndpoint, requestInit);
+    } catch (error) {
+      if (signal?.aborted) throw abortError();
+      this.markUnavailable("Edge speech request failed");
+      throw error instanceof Error
+        ? error
+        : new Error("Edge speech request failed");
+    }
+    if (!response.ok) {
+      this.markUnavailable(`Edge speech failed (${response.status})`);
       throw new Error(`Edge speech failed (${response.status})`);
+    }
     const contentType = response.headers.get("content-type") ?? "";
-    if (!contentType.startsWith("audio/"))
+    if (!contentType.startsWith("audio/")) {
+      this.markUnavailable("Edge speech returned a non-audio response");
       throw new Error("Edge speech returned a non-audio response");
+    }
     const url = URL.createObjectURL(await response.blob());
     const audio = new Audio(url);
     audio.preload = "auto";
-    audio.volume = clamp(options.volume ?? 1, 0, 1);
-    audio.playbackRate = clamp(options.rate ?? 0.9, 0.5, 2);
+    audio.volume = clamp(parsed.volume, 0, 1);
+    audio.playbackRate = clamp(parsed.rate, 0.5, 2);
     this.active = audio;
     this.activeUrl = url;
 
@@ -133,6 +168,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
         if (settled) return;
         settled = true;
         cleanup();
+        this.markAvailable();
         resolve();
       };
       const fail = (error: Error) => {
@@ -141,6 +177,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
         audio.pause();
         audio.removeAttribute("src");
         cleanup();
+        if (error.name !== "AbortError") this.markUnavailable(error.message);
         reject(error);
       };
       const abort = () => fail(abortError());
@@ -176,6 +213,55 @@ export class EdgeSpeechProvider implements SpeechProvider {
     this.active = undefined;
     this.activeUrl = undefined;
     this.activeCancel = undefined;
+  }
+
+  private selectVoice(requested?: string): string {
+    if (!requested || !/^[A-Za-z0-9-]{2,80}$/.test(requested))
+      return DEFAULT_EDGE_VOICE;
+    if (
+      this.advertisedVoices.length > 0 &&
+      !this.advertisedVoices.some((voice) => voice.id === requested)
+    )
+      return DEFAULT_EDGE_VOICE;
+    return requested;
+  }
+
+  private async fetchVoices(signal?: AbortSignal): Promise<SpeechVoice[]> {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 2_500);
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    try {
+      const response = await fetch(configuredVoicesEndpoint, {
+        headers: { accept: "application/json" },
+        signal: controller.signal,
+        cache: "no-cache",
+      });
+      if (!response.ok) return [];
+      const payload: unknown = await response.json();
+      const parsed = EdgeTtsVoicesResponseSchema.safeParse(
+        Array.isArray(payload) ? { voices: payload } : payload,
+      );
+      if (!parsed.success) return [];
+      this.advertisedVoices = parsed.data.voices.map(remoteVoice);
+      this.voicesExpiresAt = Date.now() + VOICE_CACHE_TTL_MS;
+      return this.advertisedVoices;
+    } catch {
+      return [];
+    } finally {
+      window.clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+    }
+  }
+
+  private markAvailable(): void {
+    this.health = "available";
+    this.healthReason = undefined;
+  }
+
+  private markUnavailable(reason: string): void {
+    this.health = "unavailable";
+    this.healthReason = reason;
   }
 }
 

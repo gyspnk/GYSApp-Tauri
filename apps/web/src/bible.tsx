@@ -1101,6 +1101,34 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   }
                 />
               </label>
+              <label>
+                <span>Nada {speechSnapshot.pitch.toFixed(1)}×</span>
+                <input
+                  aria-label="Nada bacaan suara"
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={speechSnapshot.pitch}
+                  onChange={(event) =>
+                    speechPlayer.setPitch(Number(event.target.value))
+                  }
+                />
+              </label>
+              <label>
+                <span>Volume {Math.round(speechSnapshot.volume * 100)}%</span>
+                <input
+                  aria-label="Volume bacaan suara"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={speechSnapshot.volume}
+                  onChange={(event) =>
+                    speechPlayer.setVolume(Number(event.target.value))
+                  }
+                />
+              </label>
             </div>
           </div>
           {splitView && (

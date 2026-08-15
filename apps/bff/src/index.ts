@@ -15,6 +15,7 @@ import {
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
   EdgeTtsRequestSchema,
+  EdgeTtsVoicesResponseSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
@@ -53,6 +54,7 @@ export type BffBindings = {
   SUARA_SOURCE_URL?: string;
   EGYS_API_BASE_URL?: string;
   EDGE_TTS_URL?: string;
+  EDGE_TTS_VOICES_URL?: string;
   LITERATURE_SOURCE_URL?: string;
   EGYS_UPSTREAM_COMMIT?: string;
 };
@@ -625,6 +627,65 @@ export function createApp(
     );
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json(manifest);
+  });
+
+  app.get("/api/v1/tts/edge/voices", async (c) => {
+    c.header(
+      "cache-control",
+      "public, max-age=300, stale-while-revalidate=900",
+    );
+    const configured = c.env?.EDGE_TTS_VOICES_URL?.trim();
+    if (!configured)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Edge speech voice catalog is not configured",
+      );
+    let endpoint: URL;
+    try {
+      endpoint = new URL(configured);
+    } catch {
+      return errorResponse(
+        c,
+        "INTERNAL_ERROR",
+        "Edge speech voice catalog endpoint is invalid",
+      );
+    }
+    if (endpoint.protocol !== "https:")
+      return errorResponse(
+        c,
+        "FORBIDDEN",
+        "Edge speech voice catalog endpoint must use HTTPS",
+      );
+    try {
+      const upstream = await fetch(endpoint, {
+        headers: { accept: "application/json" },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Edge speech voice catalog is unavailable",
+        );
+      const body: unknown = await upstream.json().catch(() => undefined);
+      const parsed = EdgeTtsVoicesResponseSchema.safeParse(
+        Array.isArray(body) ? { voices: body } : body,
+      );
+      return parsed.success
+        ? c.json(parsed.data)
+        : errorResponse(
+            c,
+            "INTEGRITY_ERROR",
+            "Edge speech voice catalog is invalid",
+          );
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Edge speech voice catalog is unavailable",
+      );
+    }
   });
 
   app.post("/api/v1/tts/edge", async (c) => {

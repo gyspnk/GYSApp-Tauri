@@ -236,6 +236,73 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("normalizes a validated Edge voice catalog without exposing its URL", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    globalThis.fetch = (async (input) => {
+      seenUrl = String(input);
+      return new Response(
+        JSON.stringify([
+          { id: "id-ID-GadisNeural", name: "Gadis", language: "id-ID" },
+        ]),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/tts/edge/voices",
+        { headers: { Origin: "http://localhost:5173" } },
+        { EDGE_TTS_VOICES_URL: "https://speech.example/voices" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        voices: [
+          {
+            id: "id-ID-GadisNeural",
+            name: "Gadis",
+            language: "id-ID",
+            local: false,
+          },
+        ],
+      });
+      expect(seenUrl).toBe("https://speech.example/voices");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("rejects an invalid Edge voice catalog payload", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ voices: [{ id: "not valid" }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/tts/edge/voices",
+        { headers: { Origin: "http://localhost:5173" } },
+        { EDGE_TTS_VOICES_URL: "https://speech.example/voices" },
+      );
+      expect(response.status).toBe(502);
+      expect(
+        ((await response.json()) as { error: { code: string } }).error.code,
+      ).toBe("INTEGRITY_ERROR");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("applies a configurable per-client rate limit", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],

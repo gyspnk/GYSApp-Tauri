@@ -466,6 +466,23 @@ export interface SpeechVoice {
   local: boolean;
 }
 
+/**
+ * The Edge compatibility gateway may expose the voices it actually supports.
+ * Keeping this separate from browser voices prevents the UI from inventing
+ * options that the configured gateway does not serve.
+ */
+export const EdgeTtsVoiceSchema = z.object({
+  id: z.string().regex(/^[A-Za-z0-9-]{2,80}$/),
+  name: z.string().trim().min(1).max(120),
+  language: z.string().regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/),
+  local: z.literal(false).default(false),
+});
+export type EdgeTtsVoice = z.infer<typeof EdgeTtsVoiceSchema>;
+export const EdgeTtsVoicesResponseSchema = z.object({
+  voices: z.array(EdgeTtsVoiceSchema).max(128),
+});
+export type EdgeTtsVoicesResponse = z.infer<typeof EdgeTtsVoicesResponseSchema>;
+
 export const SpeechEnginePreferenceSchema = z.enum(["auto", "edge", "local"]);
 export type SpeechEnginePreference = z.infer<
   typeof SpeechEnginePreferenceSchema

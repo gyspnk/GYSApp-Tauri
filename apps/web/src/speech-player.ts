@@ -3,6 +3,10 @@ import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
 import { EdgeSpeechProvider } from "./edge-speech.js";
+import {
+  persistSpeechSettings,
+  readSpeechSettings,
+} from "./speech-settings.js";
 
 export type SpeechQueueItem = { id: string; text: string };
 export type { SpeechEnginePreference } from "@gys/contracts";
@@ -22,9 +26,6 @@ export type SpeechSnapshot = {
   error?: string | undefined;
 };
 
-const VOICE_KEY = "gys-speech-voice-v1";
-const RATE_KEY = "gys-speech-rate-v1";
-const ENGINE_KEY = "gys-speech-engine-v1";
 const initial: SpeechSnapshot = {
   status: "idle",
   currentIndex: -1,
@@ -71,13 +72,8 @@ class BrowserSpeechSession {
           (voice) => !edgeVoices.some((candidate) => candidate.id === voice.id),
         ),
       ];
-      const savedVoice = localStorage.getItem(VOICE_KEY) ?? undefined;
-      const savedRate = Number(localStorage.getItem(RATE_KEY));
-      const savedEngine = localStorage.getItem(ENGINE_KEY);
-      const engine: SpeechEnginePreference =
-        savedEngine === "edge" || savedEngine === "local"
-          ? savedEngine
-          : "auto";
+      const saved = readSpeechSettings(localStorage);
+      const engine: SpeechEnginePreference = saved.engine;
       this.patch({
         voices,
         available:
@@ -87,12 +83,12 @@ class BrowserSpeechSession {
               ? browserStatus.available
               : edgeStatus.available || browserStatus.available,
         engine,
-        ...(savedVoice && voices.some((voice) => voice.id === savedVoice)
-          ? { voiceId: savedVoice }
+        ...(saved.voiceId && voices.some((voice) => voice.id === saved.voiceId)
+          ? { voiceId: saved.voiceId }
           : {}),
-        ...(Number.isFinite(savedRate) && savedRate >= 0.5 && savedRate <= 2
-          ? { rate: savedRate }
-          : {}),
+        rate: saved.rate,
+        pitch: saved.pitch,
+        volume: saved.volume,
       });
     } catch {
       // A browser can expose speechSynthesis but never publish its voices.
@@ -119,11 +115,15 @@ class BrowserSpeechSession {
     const nextRate = clamp(options.rate ?? this.state.rate, 0.5, 2);
     const nextPitch = clamp(options.pitch ?? this.state.pitch, 0.5, 2);
     const nextVolume = clamp(options.volume ?? this.state.volume, 0, 1);
-    if (typeof localStorage !== "undefined") {
-      if (options.voiceId !== undefined)
-        localStorage.setItem(VOICE_KEY, options.voiceId);
-      localStorage.setItem(RATE_KEY, String(nextRate));
-    }
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      {
+        ...(options.voiceId !== undefined ? { voiceId: options.voiceId } : {}),
+        rate: nextRate,
+        pitch: nextPitch,
+        volume: nextVolume,
+      },
+    );
     this.abortController = new AbortController();
     this.patch({
       status: "loading",
@@ -191,27 +191,43 @@ class BrowserSpeechSession {
   }
 
   public setVoice(voiceId: string): void {
-    if (typeof localStorage !== "undefined")
-      localStorage.setItem(VOICE_KEY, voiceId);
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      { voiceId },
+    );
     this.patch({ voiceId });
   }
   public setEngine(engine: SpeechEnginePreference): void {
-    if (typeof localStorage !== "undefined")
-      localStorage.setItem(ENGINE_KEY, engine);
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      { engine },
+    );
     this.patch({ engine, available: false });
     void this.refreshAvailability(engine);
   }
   public setRate(rate: number): void {
     const next = clamp(rate, 0.5, 2);
-    if (typeof localStorage !== "undefined")
-      localStorage.setItem(RATE_KEY, String(next));
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      { rate: next },
+    );
     this.patch({ rate: next });
   }
   public setPitch(pitch: number): void {
-    this.patch({ pitch: clamp(pitch, 0.5, 2) });
+    const next = clamp(pitch, 0.5, 2);
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      { pitch: next },
+    );
+    this.patch({ pitch: next });
   }
   public setVolume(volume: number): void {
-    this.patch({ volume: clamp(volume, 0, 1) });
+    const next = clamp(volume, 0, 1);
+    persistSpeechSettings(
+      typeof localStorage !== "undefined" ? localStorage : undefined,
+      { volume: next },
+    );
+    this.patch({ volume: next });
   }
 
   private patch(next: Partial<SpeechSnapshot>): void {

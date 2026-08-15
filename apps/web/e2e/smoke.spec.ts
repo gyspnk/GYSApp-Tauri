@@ -253,6 +253,12 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(readButton).toBeEnabled({ timeout: 5_000 });
   await readButton.click();
   await expect(page.locator(".media-surface")).toBeVisible();
+  const pitch = page.getByLabel("Nada bacaan suara");
+  const volume = page.getByLabel("Volume bacaan suara");
+  await pitch.fill("1.4");
+  await volume.fill("0.65");
+  await expect(pitch).toHaveValue("1.4");
+  await expect(volume).toHaveValue("0.65");
   const dragHandle = page.locator(".media-drag-handle");
   const dragBox = await dragHandle.boundingBox();
   if (!dragBox) throw new Error("Media drag handle is not measurable");
@@ -278,6 +284,11 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(
     page.getByRole("button", { name: "Perbesar pemutar" }),
   ).toBeVisible();
+
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
+  await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
+  await expect(page.getByLabel("Volume bacaan suara")).toHaveValue("0.65");
 });
 
 test("global search indexes real offline content and navigates to a result", async ({

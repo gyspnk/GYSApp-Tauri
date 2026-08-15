@@ -2112,6 +2112,7 @@ body.is-resizing-bible {
   align-items: end;
   gap: 8px;
   margin-left: auto;
+  flex-wrap: wrap;
 }
 .speech-controls label {
   display: grid;
@@ -2133,6 +2134,7 @@ body.is-resizing-bible {
 }
 .speech-controls input {
   width: 90px;
+  min-width: 72px;
   accent-color: var(--blue);
 }
 .media-meta small,

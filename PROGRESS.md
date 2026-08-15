@@ -81,7 +81,9 @@ service or platform artifact that cannot be exercised in this workspace.
   visual baseline review require the target device/browser matrix.
 - Edge speech audio requires the protected `EDGE_TTS_URL` Worker binding; when
   it is absent, the UI reports only detected system voices and does not claim
-  offline Edge availability.
+  offline Edge availability. When the optional `EDGE_TTS_VOICES_URL` catalog is
+  absent, the Edge default remains usable but no unverified voice options are
+  displayed. Rate, pitch, and volume preferences persist locally.
 
 ## Next controlled work
 

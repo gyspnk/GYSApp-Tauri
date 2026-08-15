@@ -203,6 +203,7 @@ export function PdfReader({
         setTotal(document.numPages);
         setPage((current) => Math.max(1, Math.min(document.numPages, current)));
         setDocumentProxy(document);
+        setStatus("ready");
       })
       .catch(() => {
         if (!disposed) setStatus("error");

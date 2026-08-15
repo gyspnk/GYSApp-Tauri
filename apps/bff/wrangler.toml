@@ -12,3 +12,5 @@ LITERATURE_SOURCE_URL = "https://tjc.org/id/literatur/"
 # EDGE_TTS_URL is also protected and must point at a vetted Edge-compatible
 # audio gateway. The Worker validates the request and never exposes its URL
 # or credentials to the browser.
+# EDGE_TTS_VOICES_URL is optional. When set, it must point at a vetted JSON
+# voice catalog; without it the UI does not invent Edge voice options.

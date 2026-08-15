@@ -51,6 +51,11 @@ wrangler secret put EDGE_TTS_URL --config apps/bff/wrangler.toml
 
 The browser uses `VITE_BFF_BASE_URL/api/v1/tts/edge` in `auto` mode and falls
 back to a detected local voice when the binding is absent or unavailable.
+If the gateway exposes a voice catalog, publish its HTTPS URL as
+`EDGE_TTS_VOICES_URL`; the BFF validates it at
+`GET /api/v1/tts/edge/voices`. Without that optional catalog the reader keeps
+Edge available for its configured default voice but does not show invented
+voice choices. Rate, pitch, and volume are stored locally on the device.
 
 When the secret is absent, the BFF returns a typed `UPSTREAM_UNAVAILABLE` response and the UI keeps the user in a safe signed-out state. This makes Pages preview builds deterministic while preserving the production integration boundary.
 
