@@ -16,7 +16,8 @@ service or platform artifact that cannot be exercised in this workspace.
   objects and records registration failures without crashing the shell. The
   generated asset manifest inventories bundled PDF/MIDI/chord seeds, so
   remote-only hymn assets skip guaranteed Pages 404 probes before verified
-  canonical loading.
+  canonical loading. The registration guard also handles reduced adapters that
+  resolve the registration promise to `undefined`.
 - PWA metadata now ships a square official-logo mark for both favicon and
   install manifest; Pages-relative resolution is covered by runtime-health
   coverage so browser console metadata warnings do not regress. The service

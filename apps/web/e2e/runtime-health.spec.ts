@@ -6,7 +6,16 @@ test("production shell has no uncaught runtime error when PWA registration is re
   page,
 }) => {
   const pageErrors: string[] = [];
+  const registrationWarnings: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (message) => {
+    if (
+      message.type() === "warning" &&
+      /GYS service worker registration unavailable/i.test(message.text())
+    ) {
+      registrationWarnings.push(message.text());
+    }
+  });
 
   await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });
   await expect(
@@ -15,6 +24,7 @@ test("production shell has no uncaught runtime error when PWA registration is re
   await page.waitForTimeout(500);
 
   expect(pageErrors).toEqual([]);
+  expect(registrationWarnings).toEqual([]);
 });
 
 test("PWA metadata serves its favicon and a valid square mark without browser warnings", async ({

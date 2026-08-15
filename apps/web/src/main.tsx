@@ -36,7 +36,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
         // return a reduced registration object without the optional update
         // method.  A missing method must not become an uncaught production
         // error that masks the otherwise usable application shell.
-        if (typeof registration.update === "function")
+        if (typeof registration?.update === "function")
           await registration.update();
         const connection = (
           navigator as Navigator & {

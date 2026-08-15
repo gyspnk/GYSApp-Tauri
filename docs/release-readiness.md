@@ -31,7 +31,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   the first usable frame, independently and only when Save-Data/2G is not
   advertised; this keeps activation and first paint off the heavy-asset path.
   Registration is progressive enhancement: reduced webview service-worker
-  objects are guarded and failures are recorded without taking down the shell.
+  objects—including an undefined registration result—are guarded and failures
+  are recorded without taking down the shell.
   The generated asset manifest now inventories bundled music seeds, so
   remote-only MIDI/PDF assets skip known-missing Pages probes before using the
   verified immutable source.
