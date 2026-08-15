@@ -21,8 +21,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **83.8 KiB gzip**; the complete initial
-  JavaScript set is **162.2 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
+- The initial web application chunk is **81.0 KiB gzip**; the complete initial
+  JavaScript set is **164.6 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
