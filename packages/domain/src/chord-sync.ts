@@ -35,6 +35,7 @@ export interface ChordCache {
 
 const MANIFEST_TTL_MS = 6 * 60 * 60 * 1000;
 const MANIFEST_COOLDOWN_MS = 60 * 1000;
+const NEGATIVE_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
 export class ChordIntegrityError extends Error {
   public constructor(message: string) {
@@ -68,8 +69,8 @@ export class ChordRepository {
   private inFlight: Promise<ChordManifestV1> | undefined;
   /** A song may be opened by several surfaces at once; share one verified fetch. */
   private readonly inFlightSongs = new Map<string, Promise<ChordDocumentV2>>();
-  /** Missing songs are remembered per immutable source commit. */
-  private readonly negative = new Set<string>();
+  /** Missing songs are remembered per immutable source commit for rollback safety. */
+  private readonly negative = new Map<string, number>();
 
   public constructor(
     private readonly upstream: ChordUpstream,
@@ -146,11 +147,17 @@ export class ChordRepository {
   ): Promise<ChordDocumentV2> {
     const manifest = await this.refreshManifest(signal);
     const negativeKey = `${manifest.sourceCommit}:${songId}`;
-    if (this.negative.has(negativeKey))
+    const now = this.now();
+    for (const [key, recordedAt] of this.negative) {
+      if (now - recordedAt >= NEGATIVE_RETENTION_MS) this.negative.delete(key);
+    }
+    const recordedAt = this.negative.get(negativeKey);
+    if (recordedAt !== undefined && now - recordedAt < NEGATIVE_RETENTION_MS)
       throw new ChordNotAvailableError(songId);
+    this.negative.delete(negativeKey);
     const ref = manifest.entries.find((entry) => entry.songId === songId);
     if (!ref) {
-      this.negative.add(negativeKey);
+      this.negative.set(negativeKey, now);
       throw new ChordNotAvailableError(songId);
     }
     const cachedRef = this.cache.getRef?.(songId);

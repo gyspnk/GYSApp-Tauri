@@ -2,6 +2,16 @@
 
 ## Unreleased — GA hardening slice
 
+- Enforced the e-GYS local-only synchronization boundary: the scheduled
+  GitHub Actions sync workflow and CI upstream fetch were removed, and a
+  repository policy guard now fails verification if a workflow tries to clone,
+  fetch, or invoke the private upstream. Maintainers continue to use the
+  authenticated local pre-commit/pre-push hooks.
+- Expired missing-song chord negative-cache entries after the 14-day rollback
+  retention window, allowing a newly published song to recover without
+  restarting the app. Asset downloads now share one in-flight request per
+  versioned resource, including safe per-caller cancellation.
+
 - Replaced per-keystroke Kidung lyric rescans with a reusable normalized index:
   ordered number/title lookup, prefix matching, AND terms, quoted phrases, and
   collection filtering now remain responsive on small devices.
@@ -102,7 +112,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 155.0
+- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 155.2
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

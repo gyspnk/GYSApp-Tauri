@@ -95,7 +95,7 @@ The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
 The current production baseline is approximately 80.1 KiB gzip for the main
-application chunk and 155.0 KiB gzip for all initial JavaScript; PDF.js, its
+application chunk and 155.2 KiB gzip for all initial JavaScript; PDF.js, its
 worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
 and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
 check the budget locally.
@@ -117,10 +117,10 @@ Pushes to `main` and `codex/**` trigger GitHub Pages. Configure the repository's
 Pages source as **GitHub Actions**. The optional Worker workflow needs
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; set `EGYS_API_BASE_URL` and
 `EGYS_UPSTREAM_COMMIT` as protected Worker variables/secrets when the e-GYS
-backend is ready. If the e-GYS repository is private, set the optional
-`EGYS_UPSTREAM_TOKEN` repository secret so the scheduled provenance check can
-read its immutable `HEAD`; an unavailable upstream is retained as a warning,
-not fabricated as a new version. Without the protected deployment values, the web build still works
+backend is ready. The private e-GYS repository is intentionally never cloned
+or fetched by GitHub Actions: authenticated maintainers run the repository-
+managed local pre-commit/pre-push hooks, which refresh the ignored checkout and
+stage only derived contract metadata. Without the protected deployment values, the web build still works
 and shows an honest unavailable-session state instead of fabricating account
 data.
 

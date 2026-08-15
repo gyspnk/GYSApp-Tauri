@@ -177,8 +177,9 @@ revision/contract verification, formatting, lint, strict typecheck, unit and
 contract tests, production builds, bundle budget, and Playwright critical
 flows. It also runs `verify:native-assets` after the web build, which checks
 the Tauri `frontendDist` boundary and every default offline/runtime binary.
-GitHub Actions is a secondary verification layer; it is not the first
-place a developer should discover an upstream incompatibility.
+Only the local hooks access the private e-GYS upstream; GitHub Actions is a
+secondary verification layer for the already-reviewed generated contract and
+never clones or fetches the upstream repository.
 
 ```mermaid
 sequenceDiagram

@@ -22,7 +22,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
 - The initial web application chunk is **80.1 KiB gzip**; the complete initial
-  JavaScript set is **155.0 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
+  JavaScript set is **155.2 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
@@ -52,6 +52,12 @@ claim GA parity until the remaining reports and platform artifacts exist.
   covered by AND/quoted/prefix golden tests plus a Playwright reversed-term
   lookup. Vertical PDF mode evicts canvas render state outside its observer
   preload window; BFF Literature and Suara Sejati have concurrent-fetch tests.
+  Chord negative-cache misses expire after 14 days, and the browser asset store
+  deduplicates simultaneous versioned downloads.
+- The private e-GYS repository is local-only by policy: no GitHub Actions
+  workflow may clone, fetch, or invoke its upstream synchronization scripts.
+  `pnpm verify:generated` and the policy test fail on any forbidden workflow
+  access; only repository-managed local hooks perform authenticated sync.
 - Tauri's packaging CSP is checked by the native asset verifier and explicitly
   allows only the TJC and immutable gyschordweb origins required by verified
   content loading.

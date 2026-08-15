@@ -86,8 +86,10 @@ node scripts/sync-egys.mjs --strict --refresh  # force a local contract rebuild
 `pnpm install` configures the repository-managed `.githooks` path. The
 pre-commit hook performs strict e-GYS synchronization plus targeted contracts
 and domain tests; the pre-push hook repeats synchronization and runs the full
-format, type, test, build, bundle, and Playwright gates. Hooks never invoke
-`git commit` recursively and never copy upstream source into this repository.
+format, type, test, build, bundle, and Playwright gates. GitHub Actions never
+clones, fetches, or synchronizes the private upstream; its general CI only
+validates the already-reviewed generated contract. Hooks never invoke `git
+commit` recursively and never copy upstream source into this repository.
 
 ## Native API flow
 

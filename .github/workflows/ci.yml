@@ -23,9 +23,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node scripts/check-egys-upstream.mjs
-        env:
-          EGYS_UPSTREAM_TOKEN: ${{ secrets.EGYS_UPSTREAM_TOKEN }}
       - run: pnpm verify:generated
       - run: pnpm format:check
       - run: pnpm lint

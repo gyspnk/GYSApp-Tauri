@@ -182,4 +182,49 @@ describe("ChordRepository", () => {
     );
     expect(manifestCalls).toBe(1);
   });
+
+  it("expires a missing-song cache after the rollback retention window", async () => {
+    const contentBytes = bytesFor(document);
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      contentBytes as BufferSource,
+    );
+    const availableRef: ChordRef = {
+      ...ref,
+      songId: "hymn-404",
+      size: contentBytes.byteLength,
+      sha256: [...new Uint8Array(digest)]
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join(""),
+    };
+    const availableDocument = { ...document, songId: "hymn-404" };
+    let now = 0;
+    let manifestCalls = 0;
+    const upstream: ChordUpstream = {
+      getManifest: async () => {
+        manifestCalls += 1;
+        return manifestCalls === 1
+          ? { manifest: { ...manifest, entries: [] } }
+          : { manifest: { ...manifest, entries: [availableRef] } };
+      },
+      fetchChord: async () => ({
+        bytes: contentBytes,
+        document: availableDocument,
+      }),
+    };
+    const repository = new ChordRepository(
+      upstream,
+      new MemoryChordCache(),
+      () => now,
+    );
+
+    await expect(repository.revalidateSong("hymn-404")).rejects.toThrow(
+      "not available",
+    );
+    now = 14 * 24 * 60 * 60 * 1000 + 1;
+    await expect(repository.revalidateSong("hymn-404")).resolves.toEqual(
+      availableDocument,
+    );
+    expect(manifestCalls).toBe(2);
+  });
 });

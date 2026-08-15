@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { assertEgysLocalOnly } from "./verify-egys-local-only.mjs";
+
+await assertEgysLocalOnly(process.cwd());
 
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 const lock = await readJson(

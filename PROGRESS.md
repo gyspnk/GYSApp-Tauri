@@ -50,6 +50,12 @@ service or platform artifact that cannot be exercised in this workspace.
 - Kidung catalog search now builds one normalized index per catalog revision and
   supports number/title prefix lookup, AND terms, quoted phrases, and collection
   filtering without re-normalizing all lyrics on each keystroke.
+- Chord negative-cache misses now expire after the documented 14-day rollback
+  retention window, and versioned asset downloads share one in-flight request
+  while preserving cancellation for individual callers.
+- e-GYS synchronization is enforced as local-only: the GitHub Actions sync
+  workflow and upstream-fetch CI step were removed, and generated verification
+  has a policy guard with regression tests for forbidden workflow access.
 - Vertical PDF mode releases canvases and render tasks when pages leave its
   preload window, keeping long documents bounded in memory. The native Tauri
   CSP explicitly permits only the verified TJC and immutable gyschordweb asset

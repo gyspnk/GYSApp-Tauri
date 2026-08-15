@@ -17,6 +17,32 @@ function hasCacheStorage(): boolean {
   return typeof window !== "undefined" && "caches" in window;
 }
 
+function waitForSignal<T>(
+  promise: Promise<T>,
+  signal?: AbortSignal,
+): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted)
+    return Promise.reject(signal.reason ?? new Error("Asset download aborted"));
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => {
+      signal.removeEventListener("abort", abort);
+      reject(signal.reason ?? new Error("Asset download aborted"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", abort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
+    );
+  });
+}
+
 function readIndex(): Record<string, StoredAsset> {
   if (typeof window === "undefined") return {};
   try {
@@ -87,6 +113,8 @@ function cacheName(item: AssetManifestItem): string {
 }
 
 export class BrowserAssetStore {
+  private readonly inFlightDownloads = new Map<string, Promise<Uint8Array>>();
+
   public async get(item: AssetManifestItem): Promise<Uint8Array | undefined> {
     if (!hasCacheStorage()) return undefined;
     const url = assetUrl(item);
@@ -161,21 +189,30 @@ export class BrowserAssetStore {
     item: AssetManifestItem,
     signal?: AbortSignal,
   ): Promise<Uint8Array> {
-    const cached = await this.get(item);
-    if (cached) return cached;
-    const response = await fetch(assetUrl(item), {
-      cache: "no-store",
-      ...(signal ? { signal } : {}),
-    });
-    if (!response.ok)
-      throw new Error(`Asset request failed: ${response.status}`);
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    await this.put(
-      item,
-      bytes,
-      response.headers.get("content-type") ?? undefined,
-    );
-    return bytes;
+    const key = `${item.id}:${item.version}:${item.url ?? item.path}`;
+    const existing = this.inFlightDownloads.get(key);
+    if (existing) return waitForSignal(existing, signal);
+    const request = (async () => {
+      const cached = await this.get(item);
+      if (cached) return cached;
+      const response = await fetch(assetUrl(item), { cache: "no-store" });
+      if (!response.ok)
+        throw new Error(`Asset request failed: ${response.status}`);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      await this.put(
+        item,
+        bytes,
+        response.headers.get("content-type") ?? undefined,
+      );
+      return bytes;
+    })();
+    this.inFlightDownloads.set(key, request);
+    try {
+      return await waitForSignal(request, signal);
+    } finally {
+      if (this.inFlightDownloads.get(key) === request)
+        this.inFlightDownloads.delete(key);
+    }
   }
 
   /**
