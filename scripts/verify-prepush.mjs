@@ -12,6 +12,7 @@ function run(command, args) {
 run("node", ["scripts/sync-egys.mjs", "--strict"]);
 run("node", ["scripts/check-egys-upstream.mjs", "--strict"]);
 run("pnpm", ["format:check"]);
+run("pnpm", ["verify:docs"]);
 run("pnpm", ["lint"]);
 run("pnpm", ["typecheck"]);
 run("pnpm", ["native:check"]);

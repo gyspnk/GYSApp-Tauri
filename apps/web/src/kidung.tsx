@@ -828,6 +828,13 @@ function HymnDetail({
           <div className="error-panel" role="alert">
             <strong>Chord belum tersedia</strong>
             <span>Sambungkan internet lalu coba lagi.</span>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void loadChord()}
+            >
+              Coba lagi
+            </button>
           </div>
         )}
         {viewerMode === "chord" && chordDocument && (
@@ -846,6 +853,13 @@ function HymnDetail({
           <div className="error-panel" role="alert">
             <strong>PDF gagal dimuat</strong>
             <span>Periksa koneksi atau cache, lalu coba lagi.</span>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void loadPdf()}
+            >
+              Coba lagi
+            </button>
           </div>
         )}
         {viewerMode === "pdf" && pdfStatus === "ready" && (

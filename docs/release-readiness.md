@@ -35,12 +35,16 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 26 passing flows, including split-reader keyboard resize,
+  current suite has 28 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   MIDI queue
   persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
+- The release suite includes a forced PDF upstream failure flow that keeps the
+  user inside the hymn shell and exposes a `Coba lagi` recovery action. The
+  performance flow records first-contentful-paint/navigation timing and fails
+  on duplicate initial application-module requests.
 - Axe runs on the Home and Kidung surfaces with zero violations (including
   color contrast), and a mobile Bible keyboard smoke
   keeps a visible focus target after navigation. The light-theme muted token
@@ -72,6 +76,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
   path-safe keys and unique-temp-file atomic replacement; Rust tests cover
   traversal safety and replacement cleanup. Unsupported native capabilities
   report `false` instead of showing an unimplemented control.
+- BFF environment source bindings are HTTPS-only and TJC-origin allowlisted;
+  insecure e-GYS and non-TJC Sauh/Literature/Suara overrides are ignored, so
+  only the packaged Sauh snapshot or canonical TJC defaults remain eligible for
+  fetching. `pnpm verify:docs` enforces the living architecture/release
+  documentation map in local hooks, CI, and Pages builds.
 - The Windows native CI job now runs `cargo fmt --check`, `cargo check`,
   `cargo test`, and `cargo clippy --all-targets -- -D warnings`; native
   packaging remains separate from signed installer evidence.

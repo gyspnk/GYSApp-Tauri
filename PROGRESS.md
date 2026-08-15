@@ -103,13 +103,20 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  26 passing flows, including the 320–1920px and landscape shell matrix plus
+  28 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
-  same hymn detail route. Native `cargo check` is wired into the pre-push gate.
+  same hymn detail route; a forced upstream failure now proves the PDF mode
+  exposes an in-shell retry action, and the performance flow records initial
+  navigation/module-duplication evidence. Native `cargo check` is wired into
+  the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
   17 required offline/runtime assets (36,844,871 bytes in the current build).
+- BFF source bindings now reject insecure e-GYS URLs and non-TJC content
+  origins before any upstream request is made. Living documentation is checked
+  by `pnpm verify:docs` in local hooks and CI, including the feature lifecycle
+  Mermaid diagrams in the README and architecture guide.
 
 ## Implemented / Needs Verification
 

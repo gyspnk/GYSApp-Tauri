@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+- PDF and chord failure panels now keep recovery inside the hymn shell with an
+  explicit retry action. The release E2E suite covers the forced failure path
+  and the initial shell performance/module-duplication sanity gate.
+- BFF deployment bindings now reject insecure e-GYS URLs and non-TJC content
+  overrides, falling back only to packaged or canonical TJC sources; living
+  README/architecture diagrams are validated by a repository-managed
+  documentation gate in hooks and CI.
 - Native Tauri webviews now use an app-data key-value/blob bridge with
   path-safe keys, unique temporary files, atomic replacement, and allowlisted
   external URL handoff; browser builds keep their PWA adapter.

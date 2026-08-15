@@ -114,7 +114,33 @@ function etagForContent(items: readonly OnlineContent[]): string {
 
 function egysBase(c: AppContext): string | undefined {
   const value = c.env?.EGYS_API_BASE_URL?.trim();
-  return value ? value.replace(/\/$/, "") : undefined;
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    const localDevelopment =
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    if (url.protocol !== "https:" && !localDevelopment) return undefined;
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return undefined;
+  }
+}
+
+function allowlistedTjcSource(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  try {
+    const url = new URL(trimmed);
+    if (
+      url.protocol !== "https:" ||
+      !["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    )
+      return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function egysHeaders(c: AppContext, headers?: HeadersInit): Headers {
@@ -331,7 +357,7 @@ export function createApp(
       if (!literatureCache || literatureCache.expiresAt <= now) {
         literatureInflight ??= (async () => {
           const catalog = await fetchLiteratureCatalog(
-            c.env?.LITERATURE_SOURCE_URL?.trim() || undefined,
+            allowlistedTjcSource(c.env?.LITERATURE_SOURCE_URL),
           );
           const etag = `W/\"literature-${catalog.items.length}-${catalog.items[0]?.updatedAt ?? "empty"}\"`;
           const next = { catalog, etag, expiresAt: Date.now() + 5 * 60_000 };
@@ -363,7 +389,7 @@ export function createApp(
 
   app.get("/api/v1/content/sauh", async (c) => {
     let items: unknown[] = content.filter((item) => item.kind === "sauh");
-    const sourceUrl = c.env?.SAUH_SOURCE_URL?.trim();
+    const sourceUrl = allowlistedTjcSource(c.env?.SAUH_SOURCE_URL);
     if (sourceUrl) {
       try {
         const url = new URL(sourceUrl);
@@ -608,7 +634,7 @@ export function createApp(
       if (!suaraCache || suaraCache.expiresAt <= now) {
         suaraInflight ??= (async () => {
           const items = await fetchSuaraSejati(
-            c.env?.SUARA_SOURCE_URL?.trim() || undefined,
+            allowlistedTjcSource(c.env?.SUARA_SOURCE_URL),
           );
           const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
           const next = { items, etag, expiresAt: Date.now() + 5 * 60_000 };

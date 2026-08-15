@@ -26,6 +26,7 @@ run("git", [
   "apps/bff/src/egys-provenance.ts",
   "apps/bff/src/egys-contract.ts",
 ]);
+run("pnpm", ["verify:docs"]);
 const staged = execFileSync("git", ["diff", "--cached", "--name-only"], {
   encoding: "utf8",
 });

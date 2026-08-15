@@ -36,6 +36,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
+      - run: pnpm verify:docs
       - run: pnpm build
       - run: pnpm verify:bundle
       - uses: actions/upload-pages-artifact@v3

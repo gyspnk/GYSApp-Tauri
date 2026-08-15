@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./index.js";
 
 const manifest = {
@@ -10,6 +10,51 @@ const manifest = {
 };
 
 describe("BFF public boundary", () => {
+  it("does not fetch a non-TJC Sauh source binding", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn<typeof fetch>();
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/content/sauh",
+        { headers: { Origin: "https://good.example" } },
+        { SAUH_SOURCE_URL: "https://evil.example/wp-json/wp/v2/posts" },
+      );
+      expect(response.status).toBe(200);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("does not proxy an insecure e-GYS base URL", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn<typeof fetch>();
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/auth/providers",
+        { headers: { Origin: "https://good.example" } },
+        { EGYS_API_BASE_URL: "http://evil.example" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ providers: [] });
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("rejects an origin outside the allowlist", async () => {
     const app = createApp({
       allowedOrigins: ["https://good.example"],

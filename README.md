@@ -47,6 +47,39 @@ The e-GYS login boundary uses the provider's official browser/native SDK; after
 the ID-token exchange, profile and membership data are API-driven rather than
 rendered through a WebView.
 
+## Feature map
+
+```mermaid
+flowchart TB
+  SHELL["One responsive app shell"] --> HOME["Home / Sauh / Suara"]
+  SHELL --> BIBLE["TB reader + split/search/TTS"]
+  SHELL --> HYMNS["Kidung lyrics/chord/PDF/MIDI"]
+  SHELL --> LIT["Literature shelves + resume/PDF"]
+  SHELL --> MORE["Iman / account / settings / backup"]
+  BIBLE --> MEDIA["One global MediaController"]
+  HYMNS --> MEDIA
+  MEDIA --> FLOAT["Minimized, expanded, draggable surface"]
+  HYMNS --> MUSICCACHE["Immutable hash cache + preloading"]
+  LIT --> PDF["Local PDF.js + lazy pages"]
+  BIBLE --> WORKER["Lazy Bible search worker"]
+  SHELL --> CACHE["Verified core Cache Storage / app-data"]
+  CACHE --> OFFLINE["Offline core"]
+```
+
+```mermaid
+flowchart LR
+  RAW["Canonical upstream/API"] --> VALIDATE["Zod + size/hash + sanitizer"]
+  VALIDATE --> NORMALIZE["Normalized domain model"]
+  NORMALIZE --> PERSIST["Versioned persistence/cache"]
+  PERSIST --> UI["Internal route/viewer"]
+  UI --> PLAYER["Shared media state"]
+  AUTH["System browser OAuth"] --> BFF["Hono BFF + HttpOnly session"]
+  BFF --> PROFILE["Actual e-GYS profile/branch/membership"]
+```
+
+The detailed Literature, Kidung, Bible, persistent-media, e-GYS, cache, and
+packaged-asset diagrams live in [`docs/architecture.md`](./docs/architecture.md).
+
 ## Development
 
 ```bash
@@ -55,6 +88,7 @@ pnpm install
 pnpm test
 pnpm typecheck
 pnpm build
+pnpm verify:docs
 pnpm dev
 ```
 

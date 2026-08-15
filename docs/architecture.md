@@ -172,6 +172,125 @@ stateDiagram-v2
   ActiveOld --> Downloading: retry online
 ```
 
+## Feature lifecycle diagrams
+
+The diagrams below are the short operational map for the main user journeys.
+They describe the boundaries that must remain stable when a route or platform
+adapter is changed.
+
+### Persistent media
+
+```mermaid
+flowchart LR
+  SHELL["Application shell"] --> CONTROLLER["Global MediaController"]
+  CONTROLLER --> SESSION["One active MediaSession"]
+  SESSION --> TTS["Bible TTS"]
+  SESSION --> MIDI["Kidung MIDI"]
+  TTS --> EDGE["Edge compatibility provider"]
+  EDGE --> LOCAL["Browser/system or native local voice"]
+  MIDI --> ENGINE["Web Audio + local FluidSynth"]
+  SESSION --> SURFACE["Floating / expanded player"]
+  SURFACE --> POSITION["Persisted, clamped position"]
+  SURFACE --> SOURCE["Internal source route"]
+```
+
+Only the controller owns handoff: starting one audible session pauses the
+other, and the surface subscribes to a small external snapshot so playback
+ticks do not rerender the application shell.
+
+### Literature and PDF
+
+```mermaid
+flowchart LR
+  CATALOG["Real TJC catalog"] --> INDEX["Normalized catalog + shelves"]
+  INDEX --> DETAIL["Detail + favorite + progress"]
+  DETAIL --> READER["Internal PDF/article reader"]
+  READER --> LOCATION["Validated ReadingLocation"]
+  LOCATION --> RECENT["Terakhir dilihat / Resume"]
+  READER --> PDFJS["Local PDF.js worker"]
+  PDFJS --> PAGES["Lazy pages + bounded canvas cache"]
+  READER --> OFFLINE["Verified Cache Storage / native blob"]
+```
+
+Saved locations are keyed by resource version. A changed resource clamps or
+discards an invalid location instead of silently jumping to an unrelated page.
+
+### Kidung
+
+```mermaid
+flowchart LR
+  HYMNS["533-song catalog"] --> SEARCH["Indexed search"]
+  SEARCH --> DETAIL2["Hymn detail"]
+  DETAIL2 --> LYRICS["Lyrics mode"]
+  DETAIL2 --> CHORD["Chord JSON + PDF-aligned layout"]
+  DETAIL2 --> MIDI2["MIDI source + parser + transport"]
+  DETAIL2 --> PDF2["Fork hymnal PDF database"]
+  CHORD --> CACHE2["Hash-verified atomic chord cache"]
+  MIDI2 --> PRELOAD["Next/previous binary preload"]
+  PDF2 --> CACHE2
+  CACHE2 --> MODES["One mutually-exclusive active mode"]
+```
+
+The mode switch unmounts the inactive viewer; raw and parsed assets are shared
+by source hash so simultaneous opens do not create duplicate downloads.
+
+### Alkitab and voice
+
+```mermaid
+flowchart LR
+  PACK["TB reader pack"] --> READER2["Reader state"]
+  READER2 --> PRIMARY["Primary pane"]
+  READER2 <--> SPLIT["Optional split pane"]
+  READER2 --> QUICK["Title drag / chapter navigation"]
+  READER2 --> SEARCH2["Worker search + history"]
+  READER2 --> SPEECH["Verse-range speech queue"]
+  SPEECH --> EDGE2["Edge preferred"]
+  SPEECH --> FALLBACK["Local/system fallback"]
+  SPEECH --> MEDIA["Shared MediaController"]
+```
+
+### e-GYS authentication and local contract sync
+
+```mermaid
+sequenceDiagram
+  participant App as GYS App
+  participant Browser as System browser / provider SDK
+  participant BFF as Hono e-GYS boundary
+  participant API as e-GYS API
+  participant Hook as Local pre-commit hook
+  participant Checkout as Ignored e-GYS checkout
+
+  App->>Browser: provider login with state/PKCE boundary
+  Browser-->>App: ID token / callback result
+  App->>BFF: exchange provider token
+  BFF->>API: POST auth/{provider}
+  API-->>BFF: HttpOnly session cookie + expiry
+  BFF-->>App: normalized session/profile
+  Hook->>Checkout: clone/fetch latest authenticated revision
+  Hook->>Checkout: extract route/schema contract
+  Hook-->>Hook: diff + compatibility check + tests
+  Hook-->>App: stage derived metadata only
+```
+
+### Web cache, packaged assets, and release workflow
+
+```mermaid
+flowchart TB
+  FIRST["First load"] --> SHELL2["App shell + compact indexes"]
+  SHELL2 --> VERIFY["Manifest, schema, size, SHA-256"]
+  VERIFY --> CORE["Core Cache Storage / app-data"]
+  CORE --> READY["Usable offline core"]
+  READY --> OPTIONAL["Background MIDI/PDF/chord warming"]
+  PACKAGE["Native package"] --> BASELINE["Bundled TB/lyrics/TimGM baseline"]
+  BASELINE --> START["First launch"]
+  START --> POINTER["Versioned local pointer"]
+  POINTER --> UPDATE["Remote immutable version check"]
+  UPDATE -->|valid| REPLACE["Atomic replace"]
+  UPDATE -->|failed/offline| FALLBACK2["Keep bundled baseline"]
+  HOOKS["Local pre-commit + pre-push"] --> TESTS["Contract, build, asset, E2E, visual gates"]
+  TESTS --> PUBLISH["Pages preview / protected main promotion"]
+```
+
 ## Release gates
 
 Local `pnpm verify:prepush` runs the same primary gates used by CI: e-GYS

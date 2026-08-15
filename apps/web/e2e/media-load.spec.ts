@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.use({ serviceWorkers: "block" });
+
 test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async ({
   page,
 }) => {
@@ -40,4 +42,27 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
       { timeout: 30_000 },
     )
     .toMatch(/playing|ready|paused/);
+});
+
+test("PDF failure exposes an actionable retry without leaving the hymn shell", async ({
+  page,
+}) => {
+  await page.route("**/*.{pdf,PDF}", (route) =>
+    route.fulfill({ status: 503, body: "upstream unavailable" }),
+  );
+  await page.route("**/GYSApp-Data/**", (route) =>
+    route.fulfill({ status: 503, body: "fallback unavailable" }),
+  );
+  await page.route("**/assets/pdf/**", (route) =>
+    route.fulfill({ status: 503, body: "local seed unavailable" }),
+  );
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(
+    page.getByRole("heading", { name: /Pujilah Allah/ }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Buka PDF" }).click();
+  await expect(page.getByRole("alert")).toContainText("PDF gagal dimuat", {
+    timeout: 20_000,
+  });
+  await expect(page.getByRole("button", { name: "Coba lagi" })).toBeVisible();
 });
