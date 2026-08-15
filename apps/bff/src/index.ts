@@ -214,12 +214,26 @@ export function createApp(
         expiresAt: number;
       }
     | undefined;
+  let literatureInflight:
+    | Promise<{
+        catalog: Awaited<ReturnType<typeof fetchLiteratureCatalog>>;
+        etag: string;
+        expiresAt: number;
+      }>
+    | undefined;
   let suaraCache:
     | {
         items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
         etag: string;
         expiresAt: number;
       }
+    | undefined;
+  let suaraInflight:
+    | Promise<{
+        items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
+        etag: string;
+        expiresAt: number;
+      }>
     | undefined;
   const articleCache = new Map<
     string,
@@ -315,13 +329,22 @@ export function createApp(
     try {
       const now = Date.now();
       if (!literatureCache || literatureCache.expiresAt <= now) {
-        const catalog = await fetchLiteratureCatalog(
-          c.env?.LITERATURE_SOURCE_URL?.trim() || undefined,
-        );
-        const etag = `W/\"literature-${catalog.items.length}-${catalog.items[0]?.updatedAt ?? "empty"}\"`;
-        literatureCache = { catalog, etag, expiresAt: now + 5 * 60_000 };
+        literatureInflight ??= (async () => {
+          const catalog = await fetchLiteratureCatalog(
+            c.env?.LITERATURE_SOURCE_URL?.trim() || undefined,
+          );
+          const etag = `W/\"literature-${catalog.items.length}-${catalog.items[0]?.updatedAt ?? "empty"}\"`;
+          const next = { catalog, etag, expiresAt: Date.now() + 5 * 60_000 };
+          literatureCache = next;
+          return next;
+        })().finally(() => {
+          literatureInflight = undefined;
+        });
+        await literatureInflight;
       }
-      const { catalog, etag } = literatureCache;
+      const cached = literatureCache;
+      if (!cached) throw new Error("Literature cache was not populated");
+      const { catalog, etag } = cached;
       c.header("etag", etag);
       c.header(
         "cache-control",
@@ -583,13 +606,22 @@ export function createApp(
     try {
       const now = Date.now();
       if (!suaraCache || suaraCache.expiresAt <= now) {
-        const items = await fetchSuaraSejati(
-          c.env?.SUARA_SOURCE_URL?.trim() || undefined,
-        );
-        const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
-        suaraCache = { items, etag, expiresAt: now + 5 * 60_000 };
+        suaraInflight ??= (async () => {
+          const items = await fetchSuaraSejati(
+            c.env?.SUARA_SOURCE_URL?.trim() || undefined,
+          );
+          const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
+          const next = { items, etag, expiresAt: Date.now() + 5 * 60_000 };
+          suaraCache = next;
+          return next;
+        })().finally(() => {
+          suaraInflight = undefined;
+        });
+        await suaraInflight;
       }
-      const { items, etag } = suaraCache;
+      const cached = suaraCache;
+      if (!cached) throw new Error("Suara Sejati cache was not populated");
+      const { items, etag } = cached;
       c.header(
         "cache-control",
         "public, max-age=300, stale-while-revalidate=3600",

@@ -119,6 +119,14 @@ clamps a persisted drag position after viewport changes, and registers Media
 Session handlers against live refs so position updates do not recreate the
 handler set.
 
+The Kidung catalog builds a normalized search index once per loaded catalog
+revision. Queries use token/prefix AND matching and preserve quoted phrases;
+the UI never lower-cases the full lyric corpus on every keystroke. The vertical
+PDF reader uses the same bounded-resource principle: pages outside the
+IntersectionObserver preload window cancel their render task and release their
+canvas. BFF Literature and Suara Sejati cache boundaries share in-flight
+upstream requests, so concurrent shell mounts cannot create duplicate fetches.
+
 ```mermaid
 flowchart LR
   PACK[TB reader pack] --> CLIENT[BibleSearchClient]

@@ -166,6 +166,16 @@ function localDateKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
+/** Canonical Sauh is tried directly; the BFF remains a trusted CORS fallback. */
+export function sauhNetworkCandidates(bffBase?: string): string[] {
+  const proxy = bffBase?.trim()
+    ? `${bffBase.trim().replace(/\/$/, "")}/api/v1/content/sauh`
+    : undefined;
+  return [WORDPRESS_URL, proxy].filter((value): value is string =>
+    Boolean(value),
+  );
+}
+
 function waitFor<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
   if (!signal) return promise;
   if (signal.aborted)
@@ -247,11 +257,9 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
     inFlightToday?.dayKey === dayKey ? inFlightToday.promise : undefined;
   if (existing) return [...(await waitFor(existing, signal))];
   const shared = (async () => {
-    const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
-    const networkCandidates = [
-      bff ? `${bff.replace(/\/$/, "")}/api/v1/content/sauh` : undefined,
-      WORDPRESS_URL,
-    ].filter((value): value is string => Boolean(value));
+    const networkCandidates = sauhNetworkCandidates(
+      import.meta.env.VITE_BFF_BASE_URL,
+    );
     // Offline users should see the pinned daily snapshot immediately instead
     // of waiting for two network timeouts before the fallback is attempted.
     const candidates =

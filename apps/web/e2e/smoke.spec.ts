@@ -177,6 +177,20 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
   await expect(page.getByRole("tab", { name: "1" })).toBeVisible();
 });
 
+test("hymn search uses indexed AND matching instead of lyric rescans", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  await expect(
+    page.getByRole("heading", { name: "Kidung", exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Cari lagu").fill("Allah Pujilah 001");
+  await expect(
+    page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }),
+  ).toBeVisible();
+  await expect(page.locator(".pujian-list > li")).toHaveCount(1);
+});
+
 test("home keeps one continue item when Bible and hymn history coexist", async ({
   page,
 }) => {

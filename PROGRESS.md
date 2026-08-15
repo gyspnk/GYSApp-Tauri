@@ -26,6 +26,9 @@ service or platform artifact that cannot be exercised in this workspace.
   TJC article HTML is normalized by the BFF into a bounded, schema-validated
   plain-text reader; Pages previews without a Worker use the same constrained
   WordPress feed fallback, and no remote page is opened as the primary action.
+- Home/reader Sauh revalidation tries the canonical TJC WordPress endpoint
+  directly, then the optional BFF proxy, then the validated offline snapshot;
+  BFF Literature and Suara Sejati routes deduplicate concurrent upstream reads.
 - GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
   hymnal PDF database/download source with signed package fallback, local
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
@@ -44,6 +47,13 @@ service or platform artifact that cannot be exercised in this workspace.
   unpositioned chip list. Simultaneous song opens share one verified chord
   download, and rendered MIDI PCM uses a bounded 96 MB source/soundfont/
   tempo/transpose/sample-rate cache.
+- Kidung catalog search now builds one normalized index per catalog revision and
+  supports number/title prefix lookup, AND terms, quoted phrases, and collection
+  filtering without re-normalizing all lyrics on each keystroke.
+- Vertical PDF mode releases canvases and render tasks when pages leave its
+  preload window, keeping long documents bounded in memory. The native Tauri
+  CSP explicitly permits only the verified TJC and immutable gyschordweb asset
+  origins needed by the app.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via
@@ -78,7 +88,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  20 passing flows. A browser media flow also opens
+  21 passing flows. A browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
   same hymn detail route. Native `cargo check` is wired into the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the

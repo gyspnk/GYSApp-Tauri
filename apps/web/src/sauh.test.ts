@@ -3,10 +3,18 @@ import {
   onlyTodaySauh,
   parseSauhPosts,
   selectTodaySauh,
+  sauhNetworkCandidates,
   stripHtml,
 } from "./sauh.js";
 
 describe("Sauh feed normalization", () => {
+  it("tries the canonical Sauh endpoint before the optional BFF proxy", () => {
+    expect(sauhNetworkCandidates("https://worker.example")).toEqual([
+      "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia",
+      "https://worker.example/api/v1/content/sauh",
+    ]);
+  });
+
   it("extracts the title, reference, verse and source from WordPress markup", () => {
     const posts = parseSauhPosts([
       {

@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://*.workers.dev https://e.gys.or.id; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      "csp": "default-src 'self'; connect-src 'self' https://*.workers.dev https://e.gys.or.id https://tjc.org https://*.tjc.org https://raw.githubusercontent.com; img-src 'self' data: https://tjc.org https://*.tjc.org; media-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'"
     }
   },
   "bundle": {

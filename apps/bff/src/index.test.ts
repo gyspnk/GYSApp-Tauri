@@ -388,6 +388,45 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("shares a simultaneous literature upstream request", async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      return new Response(
+        '<table id="posts-table-1"><tr><td><a href="https://tjc.org/id/kesaksian/shared/">Shared</a></td></tr></table>',
+        { headers: { "content-type": "text/html" } },
+      );
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const [first, second] = await Promise.all([
+        app.request(
+          "/api/v1/content/literature",
+          {},
+          { LITERATURE_SOURCE_URL: "https://tjc.org/id/literature" },
+        ),
+        app.request(
+          "/api/v1/content/literature",
+          {},
+          { LITERATURE_SOURCE_URL: "https://tjc.org/id/literature" },
+        ),
+      ]);
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
+      // One primary page and one optional book page are fetched by the shared
+      // catalog request; the second concurrent route must not repeat either.
+      expect(calls).toBe(2);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves allowlisted articles as sanitized internal-reader documents", async () => {
     const originalFetch = globalThis.fetch;
     let calls = 0;
@@ -490,6 +529,49 @@ describe("BFF public boundary", () => {
         title: "Cahaya Kehidupan",
         imageUrl: "https://tjc.org/id/wp-content/uploads/cover.jpg",
       });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("shares a simultaneous Suara Sejati upstream request", async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      return Response.json([
+        {
+          id: 13,
+          slug: "shared-suara",
+          date: "2023-12-14T00:00:00.000Z",
+          link: "https://tjc.org/id/suarasejati/shared-suara/",
+          title: { rendered: "Shared Suara" },
+          excerpt: { rendered: "<p>Kesaksian bersama.</p>" },
+        },
+      ]);
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const [first, second] = await Promise.all([
+        app.request(
+          "/api/v1/content/suara-sejati",
+          {},
+          { SUARA_SOURCE_URL: "https://tjc.org/id/wp-json/suara" },
+        ),
+        app.request(
+          "/api/v1/content/suara-sejati",
+          {},
+          { SUARA_SOURCE_URL: "https://tjc.org/id/wp-json/suara" },
+        ),
+      ]);
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
+      expect(calls).toBe(1);
     } finally {
       globalThis.fetch = originalFetch;
     }

@@ -12,7 +12,7 @@ import {
   type PDFPageProxy,
 } from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
+import { clampPdfZoom, nextPdfPage, shouldRenderPdfPage } from "./pdf-utils.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -42,7 +42,9 @@ function VerticalPdfPage({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [nearViewport, setNearViewport] = useState(pageNumber <= 2);
+  const [nearViewport, setNearViewport] = useState(() =>
+    shouldRenderPdfPage(pageNumber, false),
+  );
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     pageNumber <= 2 ? "loading" : "idle",
   );
@@ -55,8 +57,10 @@ function VerticalPdfPage({
     }
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setNearViewport(true);
+        const isNearViewport = entries.some((entry) => entry.isIntersecting);
+        setNearViewport(isNearViewport);
+        setStatus((current) => (isNearViewport ? current : "idle"));
+        if (isNearViewport) {
           onActive(pageNumber);
         }
       },
@@ -115,7 +119,11 @@ function VerticalPdfPage({
       aria-label={`PDF page ${pageNumber}`}
       onFocus={() => onActive(pageNumber)}
     >
-      <canvas ref={canvasRef} aria-hidden={status !== "ready"} />
+      <canvas
+        ref={canvasRef}
+        aria-hidden={status !== "ready"}
+        data-pdf-rendered={status === "ready" ? "true" : "false"}
+      />
       {status !== "ready" && (
         <span className="pdf-page-placeholder" aria-live="polite">
           {status === "error"

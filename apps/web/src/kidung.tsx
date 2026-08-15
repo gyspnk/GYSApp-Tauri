@@ -32,6 +32,7 @@ import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
+import { buildHymnSearchIndex, searchHymns } from "./hymn-search.js";
 import {
   addMidiPlaylistItem,
   getMidiPlaylist,
@@ -163,24 +164,18 @@ function HymnCatalog({
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
   const deferredQuery = useDeferredValue(query);
-  const items = state.status === "ready" ? uniqueItems(state.items) : [];
+  const items = useMemo(
+    () => (state.status === "ready" ? uniqueItems(state.items) : []),
+    [state],
+  );
+  const searchIndex = useMemo(() => buildHymnSearchIndex(items), [items]);
   const books = useMemo(
     () => [...new Set(items.map((item) => item.book))].sort(),
     [items],
   );
   const filtered = useMemo(() => {
-    const q = deferredQuery.trim().toLocaleLowerCase();
-    return items
-      .filter(
-        (item) =>
-          (book === "all" || item.book === book) &&
-          (!q ||
-            `${item.number} ${item.title} ${item.lyrics}`
-              .toLocaleLowerCase()
-              .includes(q)),
-      )
-      .sort((a, b) => a.number - b.number);
-  }, [book, deferredQuery, items]);
+    return searchHymns(searchIndex, deferredQuery, book);
+  }, [book, deferredQuery, searchIndex]);
   return (
     <div className="page hymn-page">
       <section className="page-intro">

@@ -2,6 +2,17 @@
 
 ## Unreleased — GA hardening slice
 
+- Replaced per-keystroke Kidung lyric rescans with a reusable normalized index:
+  ordered number/title lookup, prefix matching, AND terms, quoted phrases, and
+  collection filtering now remain responsive on small devices.
+- Virtualized vertical PDF canvas lifecycles: pages outside the preload window
+  release their canvas and render task, while the first pages remain available
+  for a fast initial frame. BFF Literature and Suara Sejati caches now share
+  simultaneous upstream requests instead of issuing duplicate fetches.
+- Native CSP now explicitly allowlists the verified TJC and immutable
+  gyschordweb origins required by direct Sauh, chord, PDF, and MIDI loading;
+  the canonical Sauh endpoint is attempted before the optional BFF proxy.
+
 - Reproduced the canonical GYSChordWeb note-aligned PDF mapping in typed
   TypeScript: dominant notation-font detection, multi-character note splitting,
   lyric-row matching, relative chord positions, and responsive character cells
@@ -91,7 +102,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 154.6
+- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 155.0
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

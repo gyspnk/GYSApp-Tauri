@@ -32,6 +32,17 @@ try {
       `Tauri frontendDist must be ../../web/dist (found ${String(config?.build?.frontendDist)})`,
     );
   }
+  const csp = String(config?.app?.security?.csp ?? "");
+  for (const origin of [
+    "https://tjc.org",
+    "https://*.tjc.org",
+    "https://raw.githubusercontent.com",
+  ]) {
+    if (!csp.includes(origin))
+      throw new Error(
+        `Tauri CSP must allow verified upstream origin ${origin}`,
+      );
+  }
 } catch (error) {
   throw new Error(`Unable to validate Tauri packaging boundary: ${error}`);
 }

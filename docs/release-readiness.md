@@ -22,7 +22,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
 - The initial web application chunk is **80.1 KiB gzip**; the complete initial
-  JavaScript set is **154.6 KiB gzip** on commit `9a12cc9`. PDF.js, its worker, and the TB search
+  JavaScript set is **155.0 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
@@ -34,7 +34,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 20 passing flows, including split-reader keyboard resize,
+  current suite has 21 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   MIDI queue
@@ -48,6 +48,13 @@ claim GA parity until the remaining reports and platform artifacts exist.
   note-aligned PDF layout rows are rendered (not only a flat chord list), and
   domain/web tests cover simultaneous chord fetch deduplication and the 96 MB
   MIDI render-cache contract.
+- The Kidung catalog search index is built once per catalog revision and is
+  covered by AND/quoted/prefix golden tests plus a Playwright reversed-term
+  lookup. Vertical PDF mode evicts canvas render state outside its observer
+  preload window; BFF Literature and Suara Sejati have concurrent-fetch tests.
+- Tauri's packaging CSP is checked by the native asset verifier and explicitly
+  allows only the TJC and immutable gyschordweb origins required by verified
+  content loading.
 - e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;
