@@ -562,8 +562,8 @@ export function MorePage({ locale }: { locale: Locale }) {
             <span className="pack-badge">Siap</span>
           </div>
           <p>
-            Alkitab TB, metadata 533 lagu, dan TimGM tersedia tanpa koneksi.
-            PDF, MIDI, dan chord diambil saat dibutuhkan.
+            Alkitab TB, metadata kidung, dan TimGM tersedia tanpa koneksi. PDF,
+            MIDI, dan chord diambil saat dibutuhkan.
           </p>
           <div className="pack-stats">
             <span>
@@ -571,7 +571,7 @@ export function MorePage({ locale }: { locale: Locale }) {
               <small>terjemahan</small>
             </span>
             <span>
-              <strong>{manifest?.hymns ?? 533}</strong>
+              <strong>{manifest?.hymns ?? "—"}</strong>
               <small>lagu</small>
             </span>
             <span>

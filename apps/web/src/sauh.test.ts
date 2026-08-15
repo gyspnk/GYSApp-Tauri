@@ -8,6 +8,94 @@ import {
 } from "./sauh.js";
 
 describe("Sauh feed normalization", () => {
+  it("drops an upstream item without readable body instead of inventing content", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 77,
+        slug: "missing-body",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/missing-body",
+        title: { rendered: "Judul tanpa isi" },
+        content: { rendered: "<div></div>" },
+        excerpt: { rendered: "" },
+      },
+    ]);
+
+    expect(posts).toEqual([]);
+  });
+
+  it("drops an upstream item without a valid publication date", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 78,
+        slug: "missing-date",
+        link: "https://tjc.org/id/sauh/missing-date",
+        title: { rendered: "Tanpa tanggal" },
+        content: { rendered: "<p>Isi renungan.</p>" },
+      },
+      {
+        id: 79,
+        slug: "invalid-date",
+        date: "not-a-date",
+        link: "https://tjc.org/id/sauh/invalid-date",
+        title: { rendered: "Tanggal rusak" },
+        content: { rendered: "<p>Isi renungan.</p>" },
+      },
+    ]);
+
+    expect(posts).toEqual([]);
+  });
+
+  it("does not trust non-TJC links or images from a feed response", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 80,
+        slug: "foreign-source",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://evil.example/sauh/foreign-source",
+        title: { rendered: "Sumber asing" },
+        content: { rendered: "<p>Isi renungan.</p>" },
+        _embedded: {
+          "wp:featuredmedia": [
+            { source_url: "https://evil.example/image.jpg" },
+          ],
+        },
+      },
+      {
+        id: 81,
+        slug: "safe-source",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/safe-source",
+        title: { rendered: "Sumber aman" },
+        content: { rendered: "<p>Isi renungan.</p>" },
+        _embedded: {
+          "wp:featuredmedia": [
+            { source_url: "https://evil.example/image.jpg" },
+          ],
+        },
+      },
+    ]);
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]?.id).toBe("safe-source");
+    expect(posts[0]?.imageUrl).toBeUndefined();
+  });
+
+  it("sanitizes a string-form title before it reaches the home reader", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 82,
+        slug: "string-title",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/string-title",
+        title: "<b>Judul aman</b>",
+        content: { rendered: "<p>Isi renungan.</p>" },
+      },
+    ]);
+
+    expect(posts[0]?.title).toBe("Judul aman");
+  });
+
   it("tries the canonical Sauh endpoint before the optional BFF proxy", () => {
     expect(sauhNetworkCandidates("https://worker.example")).toEqual([
       "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia",

@@ -32,6 +32,19 @@ function localDateKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
+function isTjcUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Sauh is a daily reflection; never expose a stale multi-day feed to clients. */
 export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
   const today = localDateKey(now);
@@ -73,9 +86,18 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
           : "";
     const body = stripHtml(raw).slice(0, 1_200);
     const url = typeof post.link === "string" ? post.link : "";
-    if (!title || !body || !url) continue;
     const updatedAt =
       typeof post.modified === "string" ? post.modified : post.date;
+    const parsedUpdatedAt =
+      typeof updatedAt === "string" ? new Date(updatedAt) : undefined;
+    if (
+      !title ||
+      !body ||
+      !isTjcUrl(url) ||
+      !parsedUpdatedAt ||
+      Number.isNaN(parsedUpdatedAt.getTime())
+    )
+      continue;
     const parsed = SauhPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -86,10 +108,10 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       verse: quoteFrom(raw),
       body,
       url,
-      imageUrl: post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
-      updatedAt: new Date(
-        typeof updatedAt === "string" ? updatedAt : Date.now(),
-      ).toISOString(),
+      ...(isTjcUrl(post._embedded?.["wp:featuredmedia"]?.[0]?.source_url)
+        ? { imageUrl: post._embedded?.["wp:featuredmedia"]?.[0]?.source_url }
+        : {}),
+      updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org",
     });
     if (parsed.success) result.push(parsed.data);

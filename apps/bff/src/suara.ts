@@ -8,6 +8,19 @@ function stripHtml(value: string) {
   return htmlToText(value).replace(/\s+/g, " ").trim();
 }
 
+function isTjcUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchSuaraSejati(
   sourceUrl = SOURCE,
 ): Promise<SuaraSejatiPost[]> {
@@ -41,12 +54,18 @@ export async function fetchSuaraSejati(
         ? stripHtml(post.excerpt.rendered)
         : "";
     const url = typeof post.link === "string" ? post.link : "";
+    const parsedDate =
+      typeof post.date === "string" ? new Date(post.date) : undefined;
     const publishedAt =
-      typeof post.date === "string"
-        ? new Date(post.date).toISOString()
+      parsedDate && !Number.isNaN(parsedDate.getTime())
+        ? parsedDate.toISOString()
         : undefined;
-    if (!title || !excerpt || !url || !publishedAt) continue;
-    const imageUrl = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    if (!title || !excerpt || !isTjcUrl(url) || !publishedAt) continue;
+    const candidateImageUrl =
+      post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const imageUrl = isTjcUrl(candidateImageUrl)
+      ? candidateImageUrl
+      : undefined;
     const parsed = SuaraSejatiPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -55,9 +74,7 @@ export async function fetchSuaraSejati(
       title,
       excerpt,
       url,
-      ...(typeof imageUrl === "string" && imageUrl.startsWith("http")
-        ? { imageUrl }
-        : {}),
+      ...(imageUrl ? { imageUrl } : {}),
       publishedAt,
       source: "tjc.org",
     });

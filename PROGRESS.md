@@ -23,6 +23,9 @@ service or platform artifact that cannot be exercised in this workspace.
   snapshots, online/BFF revalidation, image mapping, and offline recovery.
   Home Daily Verse is sourced from the same Sauh item, while `/sauh`,
   `/suara`, and `/suara/:postId` keep the reader inside the application shell.
+  Upstream entries without a readable body, valid publication date, or trusted
+  TJC URL are discarded; foreign image URLs are never rendered, and an outage
+  shows an actionable unavailable state instead of fabricated devotional text.
   TJC article HTML is normalized by the BFF into a bounded, schema-validated
   plain-text reader; Pages previews without a Worker use the same constrained
   WordPress feed fallback, and no remote page is opened as the primary action.
@@ -103,13 +106,14 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  28 passing flows, including the 320–1920px and landscape shell matrix plus
+  29 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
   same hymn detail route; a forced upstream failure now proves the PDF mode
-  exposes an in-shell retry action, and the performance flow records initial
-  navigation/module-duplication evidence. Native `cargo check` is wired into
+  exposes an in-shell retry action, and the performance flow records five
+  navigation samples with median/p95 timing and module-duplication evidence.
+  Native `cargo check` is wired into
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
   17 required offline/runtime assets (36,844,871 bytes in the current build).

@@ -579,6 +579,63 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("filters non-TJC Suara links and thumbnails", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      Response.json([
+        {
+          id: 14,
+          slug: "foreign-suara",
+          date: "2023-12-15T00:00:00.000Z",
+          link: "https://evil.example/suara/foreign-suara",
+          title: { rendered: "Sumber asing" },
+          excerpt: { rendered: "<p>Kesaksian.</p>" },
+        },
+        {
+          id: 15,
+          slug: "safe-suara",
+          date: "2023-12-16T00:00:00.000Z",
+          link: "https://tjc.org/id/suarasejati/safe-suara/",
+          title: { rendered: "Sumber aman" },
+          excerpt: { rendered: "<p>Kesaksian.</p>" },
+          _embedded: {
+            "wp:featuredmedia": [
+              { source_url: "https://evil.example/image.jpg" },
+            ],
+          },
+        },
+        {
+          id: 16,
+          slug: "invalid-date-suara",
+          date: "not-a-date",
+          link: "https://tjc.org/id/suarasejati/invalid-date-suara/",
+          title: { rendered: "Tanggal rusak" },
+          excerpt: { rendered: "<p>Kesaksian.</p>" },
+        },
+      ])) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/content/suara-sejati",
+        {},
+        { SUARA_SOURCE_URL: "https://tjc.org/id/wp-json/suara" },
+      );
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        items: Array<{ id: string; imageUrl?: string }>;
+      };
+      expect(payload.items).toHaveLength(1);
+      expect(payload.items[0]).toMatchObject({ id: "safe-suara" });
+      expect(payload.items[0]?.imageUrl).toBeUndefined();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("shares a simultaneous Suara Sejati upstream request", async () => {
     const originalFetch = globalThis.fetch;
     let calls = 0;

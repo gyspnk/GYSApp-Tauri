@@ -1072,12 +1072,10 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {sauhStatus === "error" && (
             <div className="sauh-offline-state">
-              <strong>{translate(locale, "home.dailyVerse")}</strong>
-              <small>
-                Offline fallback · {translate(locale, "home.reference")}
-              </small>
+              <strong>{translate(locale, "home.sauhUnavailable")}</strong>
+              <small>{translate(locale, "home.sauhOfflineHint")}</small>
               <button className="quiet-button" type="button" onClick={loadSauh}>
-                Coba lagi
+                {translate(locale, "home.sauhRetry")}
               </button>
             </div>
           )}

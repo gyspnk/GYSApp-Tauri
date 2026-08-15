@@ -13,10 +13,28 @@ const CACHE_TTL_MS = 5 * 60_000;
 let feedCache: { expiresAt: number; items: SuaraSejatiPost[] } | undefined;
 let feedInFlight: Promise<SuaraSejatiPost[]> | undefined;
 
-function parse(value: unknown): SuaraSejatiPost[] {
+function isTjcUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
   if (value && typeof value === "object" && "items" in value) {
     const feed = SuaraSejatiFeedSchema.safeParse(value);
-    return feed.success ? feed.data.items : [];
+    if (!feed.success) return [];
+    return feed.data.items.flatMap((item) => {
+      if (!isTjcUrl(item.url)) return [];
+      const { imageUrl, ...rest } = item;
+      return [isTjcUrl(imageUrl) ? { ...rest, imageUrl } : rest];
+    });
   }
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -40,10 +58,19 @@ function parse(value: unknown): SuaraSejatiPost[] {
       typeof post.excerpt?.rendered === "string"
         ? stripHtml(post.excerpt.rendered)
         : "";
+    const parsedDate =
+      typeof post.date === "string" ? new Date(post.date) : undefined;
     const publishedAt =
-      typeof post.date === "string" ? new Date(post.date).toISOString() : "";
+      parsedDate && !Number.isNaN(parsedDate.getTime())
+        ? parsedDate.toISOString()
+        : "";
     const url = typeof post.link === "string" ? post.link : "";
-    const imageUrl = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const candidateImageUrl =
+      post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const imageUrl = isTjcUrl(candidateImageUrl)
+      ? candidateImageUrl
+      : undefined;
+    if (!isTjcUrl(url) || !publishedAt) return [];
     const result = SuaraSejatiPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -52,9 +79,7 @@ function parse(value: unknown): SuaraSejatiPost[] {
       title,
       excerpt,
       url,
-      ...(typeof imageUrl === "string" && imageUrl.startsWith("http")
-        ? { imageUrl }
-        : {}),
+      ...(imageUrl ? { imageUrl } : {}),
       publishedAt,
       source: "tjc.org",
     });
@@ -74,7 +99,7 @@ async function request(url: string, signal?: AbortSignal) {
     });
     if (!response.ok)
       throw new Error(`Suara Sejati request failed: ${response.status}`);
-    return parse(await response.json());
+    return parseSuaraSejati(await response.json());
   } finally {
     window.clearTimeout(timer);
     signal?.removeEventListener("abort", abort);

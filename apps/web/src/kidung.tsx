@@ -180,14 +180,20 @@ function HymnCatalog({
     <div className="page hymn-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">533 lagu · katalog canonical</p>
+          <p className="date-line">
+            {items.length > 0
+              ? `${items.length} lagu · katalog canonical`
+              : "Katalog canonical"}
+          </p>
           <h1>{translate(locale, "page.kidungTitle")}</h1>
           <p className="intro-copy">
             Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau
             iringan MIDI.
           </p>
         </div>
-        <span className="pack-badge">Offline · 533</span>
+        <span className="pack-badge">
+          {items.length > 0 ? `Offline · ${items.length}` : "Offline"}
+        </span>
       </section>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">

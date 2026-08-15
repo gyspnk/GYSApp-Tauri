@@ -2,6 +2,11 @@
 
 ## Unreleased — GA hardening slice
 
+- Hardened Sauh Bagi Jiwa and Suara Sejati normalization: missing/invalid dates
+  and unreadable entries are discarded, links/images are constrained to trusted
+  TJC origins, and the Home outage state no longer invents Daily Verse content.
+  The shell performance flow now samples five navigations and records median,
+  p95, and duplicate-module evidence.
 - PDF and chord failure panels now keep recovery inside the hymn shell with an
   explicit retry action. The release E2E suite covers the forced failure path
   and the initial shell performance/module-duplication sanity gate.
@@ -133,7 +138,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 156.3
+- Preserved the bundle gate: 80.2 KiB gzip main application chunk and 156.7
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

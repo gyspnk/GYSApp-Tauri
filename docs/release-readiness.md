@@ -21,8 +21,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **80.1 KiB gzip**; the complete initial
-  JavaScript set is **156.3 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
+- The initial web application chunk is **80.2 KiB gzip**; the complete initial
+  JavaScript set is **156.7 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
@@ -35,16 +35,18 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 28 passing flows, including split-reader keyboard resize,
+  current suite has 29 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   MIDI queue
   persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
-- The release suite includes a forced PDF upstream failure flow that keeps the
+- The release suite includes forced PDF and Sauh upstream failure flows that keep the
   user inside the hymn shell and exposes a `Coba lagi` recovery action. The
-  performance flow records first-contentful-paint/navigation timing and fails
-  on duplicate initial application-module requests.
+  Sauh flow proves that no fabricated Daily Verse is shown when the source is
+  unavailable. The performance flow records five first-contentful-paint/
+  navigation samples, reports median and p95 timing, and fails on duplicate
+  initial application-module requests.
 - Axe runs on the Home and Kidung surfaces with zero violations (including
   color contrast), and a mobile Bible keyboard smoke
   keeps a visible focus target after navigation. The light-theme muted token

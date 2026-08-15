@@ -83,6 +83,19 @@ function quoteFrom(value: string): string | undefined {
   );
 }
 
+function isTjcUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Convert the WordPress post shape used by the upstream into our stable contract. */
 export function parseSauhPosts(value: unknown): SauhPost[] {
   if (!Array.isArray(value)) {
@@ -122,11 +135,26 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
       typeof post.title === "object" && typeof post.title?.rendered === "string"
         ? stripHtml(post.title.rendered)
         : typeof post.title === "string"
-          ? post.title
+          ? stripHtml(post.title)
           : "";
-    const body = firstParagraph(rawBody) || "Renungan Sauh Bagi Jiwa.";
+    const body = firstParagraph(rawBody);
     const sourceUrl = typeof post.url === "string" ? post.url : post.link;
-    if (!title || typeof sourceUrl !== "string") continue;
+    const updatedAt =
+      typeof post.modified === "string"
+        ? post.modified
+        : typeof post.date === "string"
+          ? post.date
+          : undefined;
+    const parsedUpdatedAt =
+      typeof updatedAt === "string" ? new Date(updatedAt) : undefined;
+    if (
+      !title ||
+      !body ||
+      !isTjcUrl(sourceUrl) ||
+      !parsedUpdatedAt ||
+      Number.isNaN(parsedUpdatedAt.getTime())
+    )
+      continue;
     const reference =
       typeof post.reference === "string"
         ? post.reference
@@ -134,12 +162,6 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
     const verse =
       typeof post.verse === "string" ? post.verse : quoteFrom(rawBody);
     const embeddedImage = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const updatedAt =
-      typeof post.modified === "string"
-        ? post.modified
-        : typeof post.date === "string"
-          ? post.date
-          : new Date().toISOString();
     const candidate = {
       id:
         typeof post.slug === "string"
@@ -150,8 +172,8 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
       ...(verse ? { verse } : {}),
       body,
       url: sourceUrl,
-      ...(typeof embeddedImage === "string" ? { imageUrl: embeddedImage } : {}),
-      updatedAt: new Date(updatedAt).toISOString(),
+      ...(isTjcUrl(embeddedImage) ? { imageUrl: embeddedImage } : {}),
+      updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org" as const,
     };
     const result = SauhPostSchema.safeParse(candidate);

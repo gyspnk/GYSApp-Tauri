@@ -10,10 +10,11 @@ The first discovery numbers are provisional: viewer-ready ~2.15 s, first
 position ~1.14 s, seek ~0.42 s, heap ~167 MB, and GeneralUser ~29.2 MB. They
 must be repeated before a parity or GA claim.
 
-The release Playwright suite now records a browser navigation snapshot for the
-initial shell (DOMContentLoaded, first contentful paint when exposed, elapsed
-time, and initial module URL counts). It fails if the shell exceeds the local
-8 s usability budget or if the same initial application module is requested
-more than once. This is a rewrite sanity gate, not a substitute for the
+The release Playwright suite now records five browser navigation samples for
+the initial shell (DOMContentLoaded, first contentful paint when exposed,
+elapsed time, and initial module URL counts), then reports median and p95. It
+fails if the p95 shell time exceeds the local 8 s usability budget or if the
+same initial application module is requested more than once. This is a rewrite
+sanity gate, not a substitute for the
 canonical-vs-rewrite p50/p95 benchmark above; the official MIDI comparison
 still requires the same fixture, browser, soundfont, throttle, and hardware.
