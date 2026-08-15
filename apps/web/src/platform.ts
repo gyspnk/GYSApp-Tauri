@@ -6,22 +6,139 @@ import type {
   SpeechVoice,
 } from "@gys/contracts";
 import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
+import {
+  createTauriPlatformServices,
+  getTauriInvoke,
+} from "./native-platform.js";
+
+const PLATFORM_DB = "gysapp-platform-v1";
+const PLATFORM_STORE = "key-value";
 
 class BrowserKeyValueStore implements KeyValueStore {
-  public async get<T>(key: string): Promise<T | undefined> {
-    const raw = localStorage.getItem(key);
-    if (raw === null) return undefined;
+  private dbPromise: Promise<IDBDatabase | undefined> | undefined;
+
+  private openDatabase(): Promise<IDBDatabase | undefined> {
+    if (this.dbPromise) return this.dbPromise;
+    if (typeof indexedDB === "undefined") {
+      this.dbPromise = Promise.resolve(undefined);
+      return this.dbPromise;
+    }
+    this.dbPromise = new Promise((resolve) => {
+      let request: IDBOpenDBRequest;
+      try {
+        request = indexedDB.open(PLATFORM_DB, 1);
+      } catch {
+        resolve(undefined);
+        return;
+      }
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains(PLATFORM_STORE))
+          request.result.createObjectStore(PLATFORM_STORE);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(undefined);
+      request.onblocked = () => resolve(undefined);
+    });
+    return this.dbPromise;
+  }
+
+  private async run<T>(
+    mode: IDBTransactionMode,
+    action: (store: IDBObjectStore) => IDBRequest<T>,
+  ): Promise<T> {
+    const db = await this.openDatabase();
+    if (!db) throw new Error("IndexedDB is unavailable");
+    return new Promise<T>((resolve, reject) => {
+      let settled = false;
+      let result!: T;
+      let transaction: IDBTransaction;
+      try {
+        transaction = db.transaction(PLATFORM_STORE, mode);
+        const request = action(transaction.objectStore(PLATFORM_STORE));
+        request.onsuccess = () => {
+          result = request.result;
+        };
+        request.onerror = () => {
+          if (settled) return;
+          settled = true;
+          reject(request.error ?? new Error("IndexedDB request failed"));
+        };
+        transaction.oncomplete = () => {
+          if (settled) return;
+          settled = true;
+          resolve(result);
+        };
+        transaction.onerror = () => {
+          if (settled) return;
+          settled = true;
+          reject(
+            transaction.error ?? new Error("IndexedDB transaction failed"),
+          );
+        };
+        transaction.onabort = () => {
+          if (settled) return;
+          settled = true;
+          reject(new Error("IndexedDB transaction aborted"));
+        };
+      } catch (error) {
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      }
+    });
+  }
+
+  private fallbackGet<T>(key: string): T | undefined {
     try {
-      return JSON.parse(raw) as T;
+      const raw = localStorage.getItem(key);
+      return raw === null ? undefined : (JSON.parse(raw) as T);
     } catch {
       return undefined;
     }
   }
+
+  private fallbackSet<T>(key: string, value: T): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Storage quota/private mode must not crash the reader.
+    }
+  }
+
+  public async get<T>(key: string): Promise<T | undefined> {
+    try {
+      const encoded = await this.run<string | undefined>("readonly", (store) =>
+        store.get(key),
+      );
+      if (encoded === undefined) {
+        const legacy = this.fallbackGet<T>(key);
+        if (legacy !== undefined) void this.set(key, legacy);
+        return legacy;
+      }
+      return JSON.parse(encoded) as T;
+    } catch {
+      return this.fallbackGet<T>(key);
+    }
+  }
   public async set<T>(key: string, value: T): Promise<void> {
-    localStorage.setItem(key, JSON.stringify(value));
+    const encoded = JSON.stringify(value);
+    try {
+      await this.run("readwrite", (store) => store.put(encoded, key));
+    } catch {
+      this.fallbackSet(key, value);
+    }
   }
   public async remove(key: string): Promise<void> {
-    localStorage.removeItem(key);
+    try {
+      await this.run("readwrite", (store) => store.delete(key));
+    } catch {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Storage is optional in private/embedded contexts.
+      }
+    }
   }
 }
 
@@ -208,9 +325,14 @@ export class BrowserSpeechProvider implements SpeechProvider {
   }
 }
 
-export function createBrowserPlatformServices(): PlatformServices {
+function createSpeechProviders(): SpeechProvider[] {
   const speech = new BrowserSpeechProvider();
   const edgeSpeech = new EdgeSpeechProvider();
+  return [edgeSpeech, speech];
+}
+
+export function createBrowserPlatformServices(): PlatformServices {
+  const speech = createSpeechProviders();
   return {
     hasCapability(capability) {
       if (capability === "speech")
@@ -223,7 +345,7 @@ export function createBrowserPlatformServices(): PlatformServices {
     },
     keyValue: new BrowserKeyValueStore(),
     blobs: new BrowserBlobStore(),
-    speech: [edgeSpeech, speech],
+    speech,
     openExternal: async (url) => {
       const parsed = new URL(url, window.location.href);
       if (!["http:", "https:"].includes(parsed.protocol))
@@ -232,4 +354,15 @@ export function createBrowserPlatformServices(): PlatformServices {
     },
     now: () => Date.now(),
   };
+}
+
+/**
+ * Select the native app-data adapter when the page is running inside a Tauri
+ * webview. Browser/PWA builds keep the Indexed browser capability adapter.
+ */
+export function createPlatformServices(): PlatformServices {
+  const invoke = getTauriInvoke();
+  return invoke
+    ? createTauriPlatformServices(invoke, createSpeechProviders())
+    : createBrowserPlatformServices();
 }

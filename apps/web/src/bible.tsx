@@ -23,6 +23,7 @@ import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
 import { BibleSearchClient } from "./bible-search.js";
+import { useBibleSplitController } from "./bible-split.js";
 
 type PackState =
   | { status: "loading" }
@@ -42,18 +43,11 @@ const BOOKMARKS_KEY = "gys-bible-bookmarks";
 const NOTES_KEY = "gys-bible-notes-v1";
 const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
 const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
-const SPLIT_KEY = "gys-bible-split-v1";
-const SPLIT_RATIO_KEY = "gys-bible-split-ratio-v1";
 
 function readSavedNumber(key: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
   const saved = Number(localStorage.getItem(key));
   return Number.isInteger(saved) && saved > 0 ? saved : fallback;
-}
-
-function readBoolean(key: string, fallback: boolean): boolean {
-  if (typeof window === "undefined") return fallback;
-  return localStorage.getItem(key) === "1";
 }
 
 function readStringSet(key: string): Set<string> {
@@ -277,18 +271,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
   >();
-  const [splitView, setSplitView] = useState(() =>
-    readBoolean(SPLIT_KEY, false),
-  );
-  const [splitRatio, setSplitRatio] = useState(() => {
-    if (typeof window === "undefined") return 58;
-    const value = Number(localStorage.getItem(SPLIT_RATIO_KEY));
-    return Number.isFinite(value) && value >= 42 && value <= 72 ? value : 58;
-  });
+  const {
+    splitView,
+    setSplitView,
+    splitRatio,
+    setSplitRatio,
+    splitLayoutRef,
+    startSplitDrag,
+  } = useBibleSplitController();
   const touchStartX = useRef<number | undefined>(undefined);
   const searchAbortRef = useRef<AbortController | undefined>(undefined);
-  const splitLayoutRef = useRef<HTMLDivElement | null>(null);
-  const splitDragging = useRef(false);
   const quickNavRef = useRef<
     | {
         pointerId: number;
@@ -301,37 +293,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [quickNav, setQuickNav] = useState<
     { bookId: number; chapter: number } | undefined
   >();
-
-  useEffect(() => {
-    const updateRatio = (event: PointerEvent) => {
-      if (!splitDragging.current || !splitLayoutRef.current) return;
-      const rect = splitLayoutRef.current.getBoundingClientRect();
-      if (rect.width <= 0) return;
-      const ratio = ((event.clientX - rect.left) / rect.width) * 100;
-      setSplitRatio(Math.max(42, Math.min(72, Math.round(ratio))));
-    };
-    const finishDrag = () => {
-      splitDragging.current = false;
-      document.body.classList.remove("is-resizing-bible");
-    };
-    window.addEventListener("pointermove", updateRatio);
-    window.addEventListener("pointerup", finishDrag);
-    window.addEventListener("pointercancel", finishDrag);
-    return () => {
-      window.removeEventListener("pointermove", updateRatio);
-      window.removeEventListener("pointerup", finishDrag);
-      window.removeEventListener("pointercancel", finishDrag);
-      finishDrag();
-    };
-  }, []);
-
-  const startSplitDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (window.innerWidth <= 720) return;
-    event.preventDefault();
-    splitDragging.current = true;
-    document.body.classList.add("is-resizing-bible");
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
 
   const startQuickNav = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -527,12 +488,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   useEffect(() => {
     localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
   }, [highlights]);
-  useEffect(() => {
-    localStorage.setItem(SPLIT_KEY, splitView ? "1" : "0");
-  }, [splitView]);
-  useEffect(() => {
-    localStorage.setItem(SPLIT_RATIO_KEY, String(splitRatio));
-  }, [splitRatio]);
   useEffect(() => {
     if (!selectedVerseId) {
       setNoteDraft("");

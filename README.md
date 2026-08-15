@@ -95,7 +95,7 @@ The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
 The current production baseline is approximately 80.1 KiB gzip for the main
-application chunk and 155.2 KiB gzip for all initial JavaScript; PDF.js, its
+application chunk and 156.3 KiB gzip for all initial JavaScript; PDF.js, its
 worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
 and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
 check the budget locally.

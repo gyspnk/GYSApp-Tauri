@@ -6,7 +6,7 @@ import {
 import type { ChordRef, ChordManifestV1 } from "@gys/contracts";
 import { ChordManifestV1Schema } from "@gys/contracts";
 import { BrowserChordCache } from "./chord-cache.js";
-import { createBrowserPlatformServices } from "./platform.js";
+import { createPlatformServices } from "./platform.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 
@@ -125,6 +125,6 @@ export function createBrowserChordRepository(): ChordRepository {
   };
   return new ChordRepository(
     upstream,
-    new BrowserChordCache(createBrowserPlatformServices()),
+    new BrowserChordCache(createPlatformServices()),
   );
 }

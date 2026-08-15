@@ -2,6 +2,15 @@
 
 ## Unreleased — GA hardening slice
 
+- Native Tauri webviews now use an app-data key-value/blob bridge with
+  path-safe keys, unique temporary files, atomic replacement, and allowlisted
+  external URL handoff; browser builds keep their PWA adapter.
+- Bible split-pane state and pointer geometry now live in a dedicated tested
+  controller, keeping drag/persistence logic out of the reader component.
+- Fixed missing split-ratio storage being interpreted as `0%` (and collapsing
+  the pane to 42%), and added an ultra-narrow 320px header layout that keeps
+  actions inside the viewport.
+
 - Enforced the e-GYS local-only synchronization boundary: the scheduled
   GitHub Actions sync workflow and CI upstream fetch were removed, and a
   repository policy guard now fails verification if a workflow tries to clone,
@@ -112,7 +121,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 155.2
+- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 156.3
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

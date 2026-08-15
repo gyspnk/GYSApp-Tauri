@@ -91,10 +91,19 @@ service or platform artifact that cannot be exercised in this workspace.
   and pre-push hooks, and documented workflow. Every synchronization refreshes
   the temporary checkout before inspecting Java sources, even when the
   checked-in commit is unchanged.
+- Tauri webviews now select a real native platform adapter: key-value records
+  and verified chord/media blobs use app-data filesystem commands with
+  path-safe keys, unique temporary files, atomic replacement, and typed
+  base64 validation. Rust unit tests cover traversal-safe keys and replacement
+  cleanup; `cargo check`, `cargo test`, and clippy pass.
+- Bible split ratio now defaults safely when storage is empty (no accidental
+  42% pane), and the responsive E2E matrix covers 320/390/768/1024/1440/1920
+  plus landscape without horizontal overflow.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  21 passing flows. A browser media flow also opens
+  22 passing flows, including the 320–1920px and landscape shell matrix. A
+  browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
   same hymn detail route. Native `cargo check` is wired into the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the

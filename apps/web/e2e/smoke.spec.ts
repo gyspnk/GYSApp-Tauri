@@ -32,6 +32,33 @@ test("responsive shell keeps one navigation and no horizontal overflow", async (
   await expect(page.getByRole("link", { name: "Beranda" })).toBeVisible();
 });
 
+test("shell remains usable across the release viewport matrix", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(
+      page.getByRole("heading", { name: "Selamat datang kembali" }),
+    ).toBeVisible();
+    await expect(page.locator("nav.primary-nav")).toHaveCount(1);
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    await expect(page.locator(".nav-item").first()).toBeVisible();
+  }
+});
+
 test("offline reader packs open without a network request", async ({
   page,
 }) => {

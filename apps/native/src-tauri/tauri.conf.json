@@ -10,6 +10,7 @@
     "beforeBuildCommand": "pnpm --filter @gys/web build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "GYSApp",
@@ -21,6 +22,11 @@
     ],
     "security": {
       "csp": "default-src 'self'; connect-src 'self' https://*.workers.dev https://e.gys.or.id https://tjc.org https://*.tjc.org https://raw.githubusercontent.com; img-src 'self' data: https://tjc.org https://*.tjc.org; media-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": "https?://.*"
     }
   },
   "bundle": {

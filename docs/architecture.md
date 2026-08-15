@@ -110,7 +110,9 @@ worker builds and queries the normalized 31,172-verse index off the main thread.
 Worker startup is bounded and falls back to the same typed repository when a
 worker is unavailable; stale requests are cancelled so a slow query cannot
 overwrite a newer one. Split columns, bookmarks, highlights, notes, and query
-history live in versioned local keys and remain available offline.
+history live in versioned local keys and remain available offline. The split
+controller owns ratio clamping, pointer lifecycle, keyboard-safe persistence,
+and the mobile guard independently of the reader component.
 
 The global media surface subscribes to the external MIDI and speech stores,
 not React render ticks. It exposes the active source as an internal route (and
@@ -180,6 +182,17 @@ the Tauri `frontendDist` boundary and every default offline/runtime binary.
 Only the local hooks access the private e-GYS upstream; GitHub Actions is a
 secondary verification layer for the already-reviewed generated contract and
 never clones or fetches the upstream repository.
+
+## Native platform boundary
+
+Tauri exposes the shared `PlatformServices` key-value/blob boundary through
+typed invoke commands. Records and verified media blobs are written under the
+OS app-data directory with hex-encoded keys and unique temporary files before
+atomic replacement; malformed base64 or corrupt JSON is rejected at the
+boundary. The browser adapter remains the PWA fallback, while Tauri webviews
+select the native adapter through the global invoke bridge. External URL
+handoff is restricted to `http`/`https` and uses the allowlisted shell opener;
+the in-app PDF/chord/document readers never use this path.
 
 ```mermaid
 sequenceDiagram

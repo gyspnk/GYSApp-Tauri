@@ -2723,6 +2723,28 @@ body.is-resizing-bible {
   }
 }
 
+/* Keep the header composable on very narrow phones without shrinking the
+   primary action targets below their touch-safe size. Theme remains available
+   from Settings when its compact header control is hidden. */
+@media (max-width: 359px) {
+  .topbar {
+    padding-inline: 10px;
+  }
+  .brand-mark {
+    min-width: 98px;
+    width: 98px;
+  }
+  .brand-mark img {
+    width: 94px;
+  }
+  .topbar-actions {
+    gap: 4px;
+  }
+  .theme-select {
+    display: none;
+  }
+}
+
 @media (min-width: 600px) and (max-width: 959px) {
   .media-surface {
     right: 16px;
