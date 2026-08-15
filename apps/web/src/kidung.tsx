@@ -3,6 +3,7 @@ import {
   Suspense,
   useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -22,7 +23,10 @@ import { translate, type Locale } from "./i18n.js";
 import { createBrowserChordRepository } from "./chords.js";
 import {
   ChordCapability,
+  chordKeyIndex,
+  chordKeyName,
   matchChordLinesToLyrics,
+  transposeBetweenKeys,
   transposeChord,
 } from "./chord-viewer.js";
 import {
@@ -61,6 +65,7 @@ import {
   writeHymnTypography,
   type HymnTypography,
 } from "./hymn-preferences.js";
+import { autoFitFontSize } from "./hymn-autofit.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -71,41 +76,7 @@ type CatalogState =
   | { status: "loading" }
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
-const KEYS = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
-const FLAT_KEYS = [
-  "C",
-  "D♭",
-  "D",
-  "E♭",
-  "E",
-  "F",
-  "G♭",
-  "G",
-  "A♭",
-  "A",
-  "B♭",
-  "B",
-];
 const parsedLyricsCache = new Map<string, string[]>();
-
-function normalizeKeyName(value: string): string | undefined {
-  const normalized = value.trim().replace("♯", "#").replace("♭", "b");
-  const aliases: Record<string, string> = {
-    "C#": "C♯",
-    Db: "C♯",
-    "D#": "E♭",
-    Eb: "E♭",
-    "F#": "F♯",
-    Gb: "F♯",
-    "G#": "A♭",
-    Ab: "A♭",
-    "A#": "B♭",
-    Bb: "B♭",
-  };
-  return KEYS.includes(normalized)
-    ? normalized
-    : (aliases[normalized] ?? (KEYS.includes(value) ? value : undefined));
-}
 
 function getHymnVerses(item: HymnCatalogEntry | undefined): string[] {
   if (!item) return [];
@@ -338,7 +309,11 @@ function HymnDetail({
   const [transpose, setTranspose] = useState(
     () => midiPlayer.settingsSnapshot().transpose,
   );
-  const [key, setKey] = useState("C");
+  const [sourceKeyIndex, setSourceKeyIndex] = useState(0);
+  const [keyIndex, setKeyIndex] = useState(() => {
+    const initialTranspose = midiPlayer.settingsSnapshot().transpose;
+    return ((initialTranspose % 12) + 12) % 12;
+  });
   const [accidental, setAccidental] = useState<"sharp" | "flat">("sharp");
   const [typography, setTypography] = useState<HymnTypography>(() =>
     readHymnTypography(songId),
@@ -378,6 +353,10 @@ function HymnDetail({
   const pdfRun = useRef(0);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
+  const lyricsRef = useRef<HTMLElement>(null);
+  const [fitFontSize, setFitFontSize] = useState(
+    () => readHymnTypography(songId).fontSize,
+  );
   const midiSettings = useSyncExternalStore(
     midiPlayer.subscribeSettings,
     midiPlayer.settingsSnapshot,
@@ -400,12 +379,17 @@ function HymnDetail({
   }, [item, safeVerseIndex]);
   useEffect(() => {
     setTypography(readHymnTypography(songId));
+    setFitFontSize(readHymnTypography(songId).fontSize);
+    setSourceKeyIndex(0);
+    setKeyIndex(((midiPlayer.settingsSnapshot().transpose % 12) + 12) % 12);
     keyInitialized.current = false;
   }, [songId]);
   useEffect(() => {
-    if (midiSettings.transpose !== transpose)
+    if (midiSettings.transpose !== transpose) {
       setTranspose(midiSettings.transpose);
-  }, [midiSettings.transpose, transpose]);
+      setKeyIndex((((sourceKeyIndex + midiSettings.transpose) % 12) + 12) % 12);
+    }
+  }, [midiSettings.transpose, sourceKeyIndex, transpose]);
   useEffect(() => {
     if (!item) return;
     setFavorite(isFavorite("hymn", item.id));
@@ -461,6 +445,7 @@ function HymnDetail({
     if (chordsVisible && chordStatus === "idle") void loadChord();
   }, [item, chordStatus, chordsVisible, pdfStatus]);
   const lyricLines = (verses[safeVerseIndex] ?? "").split("\n");
+  const lyricText = lyricLines.join("\n");
   const chordLines = useMemo(
     () =>
       matchChordLinesToLyrics(
@@ -469,8 +454,67 @@ function HymnDetail({
         chordLayout,
         safeVerseIndex,
       ),
-    [chordDocument, chordLayout, safeVerseIndex, lyricLines.join("\n")],
+    [chordDocument, chordLayout, safeVerseIndex, lyricText],
   );
+  useLayoutEffect(() => {
+    if (viewerMode !== "lyrics") return;
+    const element = lyricsRef.current;
+    if (!element) return;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      // Measure against the user's preferred size first. The resulting
+      // bounded value is then applied by React, avoiding an oscillating
+      // resize loop when a chord marker wraps at a smaller size.
+      element.style.fontSize = `${typography.fontSize}px`;
+      const next = autoFitFontSize({
+        preferredFontSize: typography.fontSize,
+        availableWidth: element.clientWidth,
+        measuredWidth: element.scrollWidth,
+      });
+      element.style.fontSize = `${next}px`;
+      setFitFontSize((current) => (current === next ? current : next));
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame =
+        typeof window.requestAnimationFrame === "function"
+          ? window.requestAnimationFrame(measure)
+          : window.setTimeout(measure, 0);
+    };
+    schedule();
+    const observer =
+      typeof ResizeObserver === "function"
+        ? new ResizeObserver(schedule)
+        : undefined;
+    observer?.observe(element);
+    window.addEventListener("resize", schedule, { passive: true });
+    window.visualViewport?.addEventListener("resize", schedule, {
+      passive: true,
+    });
+    return () => {
+      if (frame) {
+        if (typeof window.cancelAnimationFrame === "function")
+          window.cancelAnimationFrame(frame);
+        else window.clearTimeout(frame);
+      }
+      observer?.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+    };
+  }, [
+    accidental,
+    chordDocument,
+    chordLayout,
+    chordsVisible,
+    fitFontSize,
+    lyricText,
+    safeVerseIndex,
+    transpose,
+    typography.fontSize,
+    typography.lineHeight,
+    viewerMode,
+  ]);
   const pdfChordOverlays = useMemo(() => {
     const offset = pdfSource === "fork" ? Math.max(0, pdfInitialPage - 1) : 0;
     return Object.fromEntries(
@@ -580,8 +624,11 @@ function HymnDetail({
       }
       setChordDocument(nextDocument);
       if (!keyInitialized.current && "key" in nextDocument) {
-        const sourceKey = normalizeKeyName(nextDocument.key);
-        if (sourceKey) setKey(sourceKey);
+        const nextSourceKey = chordKeyIndex(nextDocument.key);
+        if (nextSourceKey !== undefined) {
+          setSourceKeyIndex(nextSourceKey);
+          setKeyIndex((((nextSourceKey + transpose) % 12) + 12) % 12);
+        }
         keyInitialized.current = true;
       }
       setChordLayout(nextLayout);
@@ -707,10 +754,7 @@ function HymnDetail({
       show("MIDI belum dapat dimuat. Coba lagi saat online.");
     }
   };
-  const renderedKey = (accidental === "flat" ? FLAT_KEYS : KEYS)[
-    (((KEYS.indexOf(key) + transpose) % KEYS.length) + KEYS.length) %
-      KEYS.length
-  ];
+  const renderedKey = chordKeyName(keyIndex, accidental);
   const updateTypography = (patch: Partial<HymnTypography>) => {
     setTypography((current) =>
       writeHymnTypography(item.id, { ...current, ...patch }),
@@ -719,6 +763,7 @@ function HymnDetail({
   const updateTranspose = (next: number) => {
     const bounded = Math.max(-6, Math.min(6, next));
     setTranspose(bounded);
+    setKeyIndex((((sourceKeyIndex + bounded) % 12) + 12) % 12);
     void midiPlayer.setTranspose(bounded).catch(() => undefined);
   };
   return (
@@ -872,13 +917,16 @@ function HymnDetail({
         </div>
         <div className="song-controls">
           <Select
-            value={key}
+            value={keyIndex}
             onChange={(value) => {
-              setKey(value);
-              updateTranspose(0);
+              setKeyIndex(value);
+              updateTranspose(transposeBetweenKeys(sourceKeyIndex, value));
             }}
             label="Nada dasar"
-            options={KEYS.map((value) => ({ value, label: value }))}
+            options={Array.from({ length: 12 }, (_, value) => ({
+              value,
+              label: chordKeyName(value, accidental),
+            }))}
           />
           <Select
             value={accidental}
@@ -1019,11 +1067,13 @@ function HymnDetail({
           <article
             className="lyrics-sheet verse-enter"
             key={`${item.id}-${safeVerseIndex}`}
+            ref={lyricsRef}
             aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
             style={{
-              fontSize: `${typography.fontSize}px`,
+              fontSize: `${fitFontSize}px`,
               lineHeight: typography.lineHeight,
             }}
+            data-autofit-font-size={fitFontSize}
             onTouchStart={onVerseTouchStart}
             onTouchEnd={onVerseTouchEnd}
           >

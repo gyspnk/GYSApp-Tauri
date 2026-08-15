@@ -166,6 +166,27 @@ function dateLabel(value: string | undefined, locale: Locale) {
   }
 }
 
+function readDocumentScrollRatio(): number {
+  if (typeof window === "undefined" || typeof document === "undefined")
+    return 0;
+  const root = document.documentElement;
+  const max = Math.max(0, root.scrollHeight - window.innerHeight);
+  return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+}
+
+function scrollDocumentToRatio(
+  ratio: number,
+  behavior: ScrollBehavior = "smooth",
+) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  const root = document.documentElement;
+  const max = Math.max(0, root.scrollHeight - window.innerHeight);
+  window.scrollTo({
+    top: max * Math.min(1, Math.max(0, ratio)),
+    behavior,
+  });
+}
+
 function Cover({
   item,
   compact = false,
@@ -539,6 +560,8 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [articleBody, setArticleBody] = useState<string>();
+  const articleScrollTimer = useRef<number | undefined>(undefined);
+  const articleRestoreFrame = useRef<number | undefined>(undefined);
   const resourceVersion = item?.updatedAt ?? "unknown";
   const pdfSourceUrl =
     item?.format === "pdf" ? literaturePdfUrl(item.url) : undefined;
@@ -656,6 +679,51 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     [item, resourceVersion],
   );
 
+  useEffect(() => {
+    if (!articleOpen || articleStatus !== "ready" || !articleBody) return;
+    const saved = progressRef.current?.location;
+    if (
+      saved?.kind === "scroll" &&
+      isResumeLocationValid(
+        saved,
+        resourceVersion,
+        undefined,
+        progressRef.current?.resourceVersion,
+      )
+    ) {
+      articleRestoreFrame.current = window.requestAnimationFrame(() => {
+        articleRestoreFrame.current = undefined;
+        scrollDocumentToRatio(saved.ratio, "auto");
+      });
+    }
+    const saveScroll = () => {
+      if (articleScrollTimer.current !== undefined) return;
+      articleScrollTimer.current = window.setTimeout(() => {
+        articleScrollTimer.current = undefined;
+        const ratio = readDocumentScrollRatio();
+        updateProgress(ratio * 100, { kind: "scroll", ratio }, ratio >= 0.98);
+      }, 350);
+    };
+    window.addEventListener("scroll", saveScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", saveScroll);
+      if (articleScrollTimer.current !== undefined) {
+        window.clearTimeout(articleScrollTimer.current);
+        articleScrollTimer.current = undefined;
+      }
+      if (articleRestoreFrame.current !== undefined) {
+        window.cancelAnimationFrame(articleRestoreFrame.current);
+        articleRestoreFrame.current = undefined;
+      }
+    };
+  }, [
+    articleBody,
+    articleOpen,
+    articleStatus,
+    resourceVersion,
+    updateProgress,
+  ]);
+
   const onPageChange = useCallback(
     (page: number, totalPages: number) => {
       if (!item || totalPages < 1) return;
@@ -757,6 +825,16 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     )
       ? progress.location.page
       : 1;
+  const resumeScrollRatio =
+    progress?.location?.kind === "scroll" &&
+    isResumeLocationValid(
+      progress.location,
+      resourceVersion,
+      undefined,
+      progress.resourceVersion,
+    )
+      ? progress.location.ratio
+      : undefined;
 
   if (catalogState.status === "loading")
     return (
@@ -900,6 +978,15 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                   Buka offline
                 </button>
               )}
+              {item.format !== "pdf" && resumeScrollRatio !== undefined && (
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+                >
+                  Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+                </button>
+              )}
             </>
           )}
         </div>
@@ -951,6 +1038,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           className="literature-reader-panel"
           aria-label={`Membaca ${item.title}`}
           data-testid="literature-article-reader"
+          data-reading-location={
+            resumeScrollRatio === undefined
+              ? "start"
+              : `${Math.round(resumeScrollRatio * 100)}%`
+          }
         >
           <div className="section-title-row">
             <h2>{item.title}</h2>

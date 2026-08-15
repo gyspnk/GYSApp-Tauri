@@ -44,6 +44,37 @@ const NOTE_INDEX = new Map([
   ["Bb", 10],
 ]);
 
+/** Return the chromatic pitch class for a canonical or ASCII key spelling. */
+export function chordKeyIndex(value: string): number | undefined {
+  const normalized = value.trim().replace("♯", "#").replace("♭", "b");
+  return NOTE_INDEX.get(normalized);
+}
+
+/** Select a stable user-facing spelling without changing the pitch class. */
+export function chordKeyName(
+  index: number,
+  accidental: "sharp" | "flat" = "sharp",
+): string {
+  const notes = accidental === "flat" ? FLAT_NOTES : SHARP_NOTES;
+  return notes[((Math.trunc(index) % 12) + 12) % 12] ?? "C";
+}
+
+/**
+ * Compute the shortest chromatic transpose from source key to target key.
+ * The result stays inside the viewer's documented -6..+6 boundary.
+ */
+export function transposeBetweenKeys(
+  source: number | string,
+  target: number | string,
+): number {
+  const sourceIndex =
+    typeof source === "number" ? source : chordKeyIndex(source);
+  const targetIndex =
+    typeof target === "number" ? target : chordKeyIndex(target);
+  if (sourceIndex === undefined || targetIndex === undefined) return 0;
+  return ((((targetIndex - sourceIndex + 6) % 12) + 12) % 12) - 6;
+}
+
 export type ChordTextLine = {
   text: string;
   chords: Array<{ token: string; index: number }>;

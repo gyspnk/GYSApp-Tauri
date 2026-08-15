@@ -1808,6 +1808,7 @@ body.is-resizing-bible {
 }
 .lyrics-sheet {
   max-width: 700px;
+  overflow-wrap: anywhere;
   padding: 24px 10px 18px;
   color: var(--ink);
   font-family: Georgia, "Times New Roman", serif;
@@ -1816,6 +1817,7 @@ body.is-resizing-bible {
   touch-action: pan-y;
 }
 .lyrics-sheet p {
+  max-width: 100%;
   margin: 0;
 }
 .lyrics-break {

@@ -57,9 +57,13 @@ service or platform artifact that cannot be exercised in this workspace.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
   two-page guard, and MIDI exposes all 128 General MIDI programs plus the source
-  program while persisting media preferences across sessions. Identical Bible
-  and hymn activity writes are debounced so route remounts cannot create
-  duplicate recent entries.
+  program while persisting media preferences across sessions. Text mode now
+  measures the rendered chord/lyric line and applies a bounded 14 px minimum
+  auto-fit on viewport/orientation changes, without changing the user's saved
+  typography preference. Key selection is a real shortest-path transpose from
+  the canonical source key, so the displayed key and PDF/Text/MIDI state stay
+  synchronized. Identical Bible and hymn activity writes are debounced so
+  route remounts cannot create duplicate recent entries.
 - Kidung catalog search now builds one normalized index per catalog revision and
   supports number/title prefix lookup, AND terms, quoted phrases, and collection
   filtering without re-normalizing all lyrics on each keystroke.

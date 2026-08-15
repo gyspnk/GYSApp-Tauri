@@ -19,6 +19,9 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(page.locator(".chord-capability").first()).toBeVisible({
     timeout: 20_000,
   });
+  await page.getByRole("button", { name: "Nada dasar" }).click();
+  await page.getByRole("option", { name: "D", exact: true }).click();
+  await expect(page.locator(".transpose-control strong")).toHaveText("+2");
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
   await page.getByRole("button", { name: "Buka PDF" }).click();
   await expect(page.locator(".pdf-reader")).toBeVisible({
@@ -78,6 +81,10 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "Perbesar ukuran teks" }).click();
   await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");
+  await expect(page.locator(".lyrics-sheet")).toHaveAttribute(
+    "data-autofit-font-size",
+    "19",
+  );
   await page.getByRole("button", { name: "Buka PDF" }).click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Mendatar" }).click();

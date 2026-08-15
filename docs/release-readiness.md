@@ -22,7 +22,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
 - The initial web application chunk is **83.8 KiB gzip**; the complete initial
-  JavaScript set is **161.3 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
+  JavaScript set is **162.2 KiB gzip** in the latest local verification. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
@@ -65,10 +65,13 @@ claim GA parity until the remaining reports and platform artifacts exist.
   domain/web tests cover simultaneous chord fetch deduplication and the 96 MB
   MIDI render-cache contract.
 - Kidung typography controls are bounded and persisted per song; the PDF smoke
-  covers the horizontal layout and the narrow-screen two-page guard. The global
-  MIDI surface exposes the source program plus all 128 General MIDI programs,
-  persists media preferences, and Kidung transpose updates the same external
-  MIDI session.
+  covers the horizontal layout and the narrow-screen two-page guard. Text mode
+  now measures long chord/lyric lines and applies a bounded 14 px auto-fit on
+  viewport changes while retaining the saved preference. Key selection is
+  verified as a shortest-path transpose from the canonical chord source key;
+  the global MIDI surface exposes the source program plus all 128 General MIDI
+  programs, persists media preferences, and Kidung transpose updates the same
+  external MIDI session.
 - The Kidung catalog search index is built once per catalog revision and is
   covered by AND/quoted/prefix golden tests plus a Playwright reversed-term
   lookup. Vertical PDF mode evicts canvas render state outside its observer

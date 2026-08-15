@@ -1,12 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { ChordDocumentV2Schema } from "@gys/contracts";
-import { matchChordLinesToLyrics, transposeChord } from "./chord-viewer.js";
+import {
+  chordKeyIndex,
+  chordKeyName,
+  matchChordLinesToLyrics,
+  transposeBetweenKeys,
+  transposeChord,
+} from "./chord-viewer.js";
 
 describe("shared chord capability", () => {
   it("transposes roots and slash basses musically with accidental preference", () => {
     expect(transposeChord("C/G", 2)).toBe("D/A");
     expect(transposeChord("Bb/F", 1, "sharp")).toBe("B/F♯");
     expect(transposeChord("C", -1, "flat")).toBe("B");
+  });
+
+  it("treats key selection as a bounded transpose from the source key", () => {
+    expect(chordKeyIndex("E♭")).toBe(3);
+    expect(transposeBetweenKeys("G", "C")).toBe(5);
+    expect(transposeBetweenKeys("C", "F♯")).toBe(-6);
+    expect(chordKeyName(6, "flat")).toBe("G♭");
   });
 
   it("maps only the matching verse lines and never borrows another line", () => {

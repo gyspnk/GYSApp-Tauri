@@ -91,4 +91,23 @@ describe("literature reading progress", () => {
       ),
     ).toBe(true);
   });
+
+  it("keeps non-paginated scroll positions version-aware", () => {
+    expect(
+      isResumeLocationValid(
+        { kind: "scroll", ratio: 0.62 },
+        "new",
+        undefined,
+        "new",
+      ),
+    ).toBe(true);
+    expect(
+      isResumeLocationValid(
+        { kind: "scroll", ratio: 0.62 },
+        "new",
+        undefined,
+        "old",
+      ),
+    ).toBe(false);
+  });
 });

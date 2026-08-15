@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Text-mode Kidung now has a bounded responsive auto-fit measurement for long
+  chord/lyric lines, and key selection computes musical transpose from the
+  verified source key instead of only changing a label. PDF/Text chord labels,
+  MIDI transpose, and accidental presentation remain one shared state.
 - Added per-hymn text typography controls with bounded persisted font size and
   line height, a persisted horizontal PDF mode, and a responsive two-page guard
   that uses a single readable page below 720 px. The global MIDI session now
@@ -155,7 +159,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 83.8 KiB gzip main application chunk and 161.3
+- Preserved the bundle gate: 83.8 KiB gzip main application chunk and 162.2
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.
