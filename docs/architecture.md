@@ -105,7 +105,7 @@ deduplicated “Terakhir dilihat” shelf and validates a saved page against the
 current resource version before offering resume.
 
 The PWA service worker keeps its install path small and deterministic. Cache
-`gysapp-shell-v9` precaches the shell plus the compact offline indexes; after
+`gysapp-shell-v10` precaches the shell plus the compact offline indexes; after
 the first client is ready, the client sends `gys-cache-optional` to warm the
 TimGM soundfont and local MIDI/FluidSynth worker in the background. Optional
 warming is skipped when the browser advertises Save-Data or a 2G connection,

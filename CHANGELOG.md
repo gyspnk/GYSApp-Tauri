@@ -5,7 +5,7 @@
 - Added a square official-logo mark for the favicon and PWA manifest. Browser
   metadata now resolves under GitHub Pages base paths, declares the actual SVG
   icon shape, and has a runtime regression check for 404s and manifest warnings.
-  The shell cache is v9 so existing PWA clients cannot retain the old icon
+  The shell cache is v10 so existing PWA clients cannot retain the old icon
   metadata after an update.
 - Fixed deep-route metadata resolution so `/kidung/:songId` and other direct
   Pages links request the favicon and manifest from `/GYSApp-Tauri/` instead of
@@ -125,7 +125,7 @@
   restarting playback. The minimized surface keeps a compact title/progress
   summary, clamps persisted coordinates after viewport changes, and Media
   Session handlers no longer re-register on every position tick.
-- Reduced PWA activation work by splitting the service-worker v9 cache into a
+- Reduced PWA activation work by splitting the service-worker v10 cache into a
   compact shell/index precache and a background-only TimGM/FluidSynth/MIDI
   warm-up. Heavy assets are skipped on Save-Data/2G connections and no longer
   block the first usable frame.

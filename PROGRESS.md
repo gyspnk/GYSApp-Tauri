@@ -9,7 +9,7 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Clean-room MIT pnpm monorepo, typed contracts, responsive Quiet Sanctuary
   shell, local PWA assets, and GitHub Pages delivery.
-- PWA bootstrap is budgeted: service-worker v9 installs the shell and compact
+- PWA bootstrap is budgeted: service-worker v10 installs the shell and compact
   indexes first, then warms the heavy MIDI/FluidSynth binaries in the
   background with a Save-Data/2G guard.
 - Production PWA registration now tolerates reduced webview service-worker

@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v9";
+const CACHE = "gysapp-shell-v10";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const BASE = self.location.pathname.replace(/sw\.js$/, "");
 const withBase = (path) => `${BASE}${path}`;
