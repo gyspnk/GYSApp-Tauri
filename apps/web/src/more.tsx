@@ -35,7 +35,7 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
-import { withTimeout } from "./egys-auth.js";
+import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
 
 type PackManifest = {
@@ -592,7 +592,7 @@ export function MorePage({ locale }: { locale: Locale }) {
     setAuthBusy(true);
     // Reserve the popup during the click gesture; opening it after the
     // network round-trip is rejected by most popup blockers.
-    const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
+    const popup = reserveAuthPopup();
     try {
       const started = await startEgysWhatsAppLogin(controller.signal);
       if (!popup) {

@@ -12,6 +12,9 @@
   bundled music seeds, removing guaranteed Pages MIDI 404 probes before
   canonical fallback loading. Registration guards now also tolerate a reduced
   environment that resolves the registration promise to `undefined`.
+- Fixed the e-GYS WhatsApp handoff so popup reservation remains detectable in
+  browsers that return a null WindowProxy for `noopener`; the opener is
+  severed before the reserved window navigates to WhatsApp.
 - Hardened the shared PDF reader lifecycle: loaded documents and virtualized
   page operator lists are cleaned up on route/song/retry transitions, and both
   hymn and Literature PDF failures keep an explicit in-shell `Coba lagi`

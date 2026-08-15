@@ -23,6 +23,10 @@ service or platform artifact that cannot be exercised in this workspace.
   coverage so browser console metadata warnings do not regress. The service
   worker cache version is bumped with the metadata change so existing clients
   receive the corrected manifest instead of a stale cached copy.
+- e-GYS WhatsApp login now reserves the popup without the `noopener` feature
+  that makes allowed popups look blocked, then severs `window.opener` before
+  navigating to the external WhatsApp URL; both blocked and allowed paths are
+  unit-tested.
 - TB search now builds and queries its 31,172-verse normalized index in a lazy
   module worker. Stale searches are cancelled, worker startup has a bounded
   timeout, and SSR/older-browser startup failures fall back to the typed local

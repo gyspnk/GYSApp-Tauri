@@ -40,6 +40,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Pages-relative paths; runtime-health coverage checks the asset response and
   rejects browser metadata warnings. The shell cache version is bumped with
   the metadata change so existing PWA clients receive the corrected manifest.
+- The WhatsApp auth handoff reserves its popup during the click gesture and
+  removes the opener before external navigation, avoiding false blocked-popup
+  errors while preserving the secure handoff boundary.
 - The offline pack manager now checks an optional `VITE_ASSET_MANIFEST_URL`,
   validates duplicate IDs/origins, diffs content identity, stages changed
   local assets through the verified Cache Storage transaction, swaps a
