@@ -31,4 +31,9 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await page.getByRole("button", { name: "Putar MIDI" }).click();
   await expect(page.locator(".media-surface")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".media-meta")).toContainText("Pujilah Allah");
+  await expect
+    .poll(() =>
+      page.locator(".media-surface").getAttribute("data-media-status"),
+    )
+    .toMatch(/playing|ready|paused/);
 });

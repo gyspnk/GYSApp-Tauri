@@ -17,15 +17,12 @@ import {
   type BibleBook,
   type BibleReaderPack,
 } from "@gys/contracts";
-import {
-  BibleRepository,
-  sanitizeBibleText,
-  type BibleVerse,
-} from "@gys/domain";
+import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
+import { BibleSearchClient } from "./bible-search.js";
 
 type PackState =
   | { status: "loading" }
@@ -262,6 +259,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [wholeWord, setWholeWord] = useState(false);
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string>();
   const [searchHistory, setSearchHistory] = useState(readSearchHistory);
   const [bookmarks, setBookmarks] = useState<Set<string>>(() =>
     readStringSet(BOOKMARKS_KEY),
@@ -288,6 +286,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return Number.isFinite(value) && value >= 42 && value <= 72 ? value : 58;
   });
   const touchStartX = useRef<number | undefined>(undefined);
+  const searchAbortRef = useRef<AbortController | undefined>(undefined);
   const splitLayoutRef = useRef<HTMLDivElement | null>(null);
   const splitDragging = useRef(false);
   const quickNavRef = useRef<
@@ -385,12 +384,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, []);
 
-  const repository = useMemo(
+  const searchClient = useMemo(
     () =>
       packState.status === "ready"
-        ? new BibleRepository(packState.pack.verses)
+        ? new BibleSearchClient(packState.pack.verses)
         : undefined,
     [packState],
+  );
+  useEffect(
+    () => () => {
+      searchAbortRef.current?.abort();
+      searchClient?.dispose();
+    },
+    [searchClient],
   );
   const books = packState.status === "ready" ? packState.pack.books : [];
   const book =
@@ -553,17 +559,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
     requestedQuery = query,
   ) => {
     event?.preventDefault();
-    if (!repository || !requestedQuery.trim()) {
+    searchAbortRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    setSearchError(undefined);
+    if (!searchClient || !requestedQuery.trim()) {
       setSearchResults([]);
+      searchAbortRef.current = undefined;
       return;
     }
     setSearching(true);
     try {
-      const results = await repository.search(requestedQuery, {
-        ...(searchBook === "all" ? {} : { book: searchBook }),
-        exactPhrase,
-        wholeWord,
-      });
+      const results = await searchClient.search(
+        requestedQuery,
+        {
+          ...(searchBook === "all" ? {} : { book: searchBook }),
+          exactPhrase,
+          wholeWord,
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
       setSearchResults(results);
       setSearchHistory((current) => {
         const next = [
@@ -574,8 +590,18 @@ export function BiblePage({ locale }: { locale: Locale }) {
         localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(limited));
         return limited;
       });
+    } catch (error: unknown) {
+      if (!controller.signal.aborted)
+        setSearchError(
+          error instanceof Error
+            ? error.message
+            : "Pencarian Alkitab tidak tersedia.",
+        );
     } finally {
-      setSearching(false);
+      if (searchAbortRef.current === controller) {
+        searchAbortRef.current = undefined;
+        setSearching(false);
+      }
     }
   };
 
@@ -608,6 +634,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
         verses.map((verse) => ({
           id: verse.id,
           text: `${verse.verse}. ${cleanVerse(verse)}`,
+          context: {
+            path: `/bible#bible-verse-${encodeURIComponent(verse.id)}`,
+            label: `${book?.name ?? "Alkitab"} ${verse.chapter}:${verse.verse}`,
+          },
         })),
         options,
       )
@@ -890,6 +920,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
             Kata utuh
           </label>
         </div>
+        {searchError && (
+          <div className="inline-error" role="alert">
+            <span>{searchError}</span>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => void runSearch(undefined, query)}
+              disabled={searching || !query.trim()}
+            >
+              Coba lagi
+            </button>
+          </div>
+        )}
         {searchHistory.length > 0 && !query && (
           <div className="bible-search-history" aria-label="Pencarian terakhir">
             {searchHistory.map((entry) => (

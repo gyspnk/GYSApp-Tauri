@@ -253,6 +253,8 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(readButton).toBeEnabled({ timeout: 5_000 });
   await readButton.click();
   await expect(page.locator(".media-surface")).toBeVisible();
+  await page.locator(".media-context-link").click();
+  await expect(page).toHaveURL(/\/bible#bible-verse-/);
   const pitch = page.getByLabel("Nada bacaan suara");
   const volume = page.getByLabel("Volume bacaan suara");
   await pitch.fill("1.4");

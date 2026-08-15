@@ -20,6 +20,9 @@ native e-GYS session/profile adapter. Literature keeps a persistent “Terakhir
 dilihat” shelf with version-aware page resume, while the local PDF.js reader
 uses an allowlisted BFF range proxy when deployed. Kidung prefetches only the
 next/previous binary music assets and never eagerly downloads heavy PDFs.
+The TB reader runs its 31,172-verse search index in a lazy worker with a
+bounded startup fallback, and the global player keeps a compact minimized
+context link back to the active verse or hymn.
 Upstream-backed features keep checked-in, integrity-verified snapshots and a
 generated asset manifest so the app remains useful offline and can revalidate
 without downloading unchanged assets.
@@ -91,11 +94,11 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 79.8 KiB gzip for the main
-application chunk and 150.5 KiB gzip for all initial JavaScript; PDF.js and its
-worker stay lazy-loaded, while the FluidSynth worker and TimGM pack are
-same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to check the budget
-locally.
+The current production baseline is approximately 80.1 KiB gzip for the main
+application chunk and 153.2 KiB gzip for all initial JavaScript; PDF.js, its
+worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
+and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
+check the budget locally.
 
 The shell uses one responsive navigation surface across desktop, rail, and
 mobile breakpoints. Offline TB/hymn/faith packs remain local, while larger

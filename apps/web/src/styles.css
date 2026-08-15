@@ -1102,6 +1102,22 @@ blockquote {
   cursor: pointer;
   font-size: 11px;
 }
+.inline-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #b98132 42%, var(--line));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, #b98132 9%, var(--surface));
+  color: var(--ink);
+  font-size: 12px;
+  animation: soft-rise var(--motion-fast) var(--ease-out);
+}
+.inline-error .text-button {
+  flex: 0 0 auto;
+}
 .bible-search > label,
 .reader-toolbar label {
   color: var(--muted);
@@ -1391,6 +1407,8 @@ body.is-resizing-bible {
   gap: 12px;
   padding: 13px 0;
   border-top: 1px solid var(--line);
+  content-visibility: auto;
+  contain-intrinsic-size: 76px;
 }
 .verse-row.is-selected {
   border-radius: 8px;
@@ -2040,6 +2058,33 @@ body.is-resizing-bible {
   touch-action: none;
   user-select: none;
 }
+.media-mini-context {
+  display: none;
+  min-width: 0;
+  gap: 2px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.media-mini-context:not(:disabled):hover strong {
+  color: var(--blue);
+}
+.media-mini-context strong,
+.media-mini-context small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.media-mini-context strong {
+  font-size: 11px;
+}
+.media-mini-context small {
+  color: var(--muted);
+  font-size: 9px;
+}
 .media-surface.is-dragging {
   transition: none;
   transform: none;
@@ -2054,6 +2099,22 @@ body.is-resizing-bible {
   display: grid;
   gap: 7px;
   min-width: 0;
+}
+.media-context-link {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.media-context-link:hover strong {
+  color: var(--blue);
+}
+.media-context-link:focus-visible {
+  border-radius: 4px;
 }
 .media-progress {
   display: block;
@@ -2183,13 +2244,16 @@ body.is-resizing-bible {
   color: var(--blue);
 }
 .media-surface.is-minimized {
-  width: auto;
-  max-width: 150px;
-  grid-template-columns: 34px 34px 28px;
+  width: min(320px, calc(100vw - 40px));
+  max-width: 320px;
+  grid-template-columns: 34px minmax(0, 1fr) 34px 28px;
   padding: 8px;
 }
 .media-surface.is-minimized .media-main {
   display: none;
+}
+.media-surface.is-minimized .media-mini-context {
+  display: grid;
 }
 .sauh-title {
   margin: 28px 0 -20px;
@@ -2617,9 +2681,9 @@ body.is-resizing-bible {
     padding: 7px;
   }
   .media-surface.is-minimized {
-    width: auto;
-    max-width: 120px;
-    grid-template-columns: 30px 30px 28px;
+    width: min(290px, calc(100vw - 28px));
+    max-width: min(290px, calc(100vw - 28px));
+    grid-template-columns: 30px minmax(0, 1fr) 30px 28px;
   }
   .media-art {
     width: 31px;
@@ -3796,8 +3860,8 @@ body.is-resizing-bible {
   .media-surface {
     right: 12px;
     bottom: calc(74px + env(safe-area-inset-bottom));
-    width: min(420px, calc(100vw - 24px));
-    max-width: calc(100vw - 24px);
+    width: min(420px, calc(100vw - 40px));
+    max-width: calc(100vw - 40px);
     grid-template-columns: 31px minmax(0, 1fr) 30px 30px 30px 28px;
     gap: 6px;
     padding: 8px;
@@ -3808,6 +3872,9 @@ body.is-resizing-bible {
   .media-surface:not(.is-minimized) .media-main {
     gap: 4px;
   }
+  .media-surface:not(.is-minimized) .media-meta {
+    display: grid;
+  }
   .media-surface:not(.is-minimized) .media-meta small {
     display: block;
   }
@@ -3815,8 +3882,8 @@ body.is-resizing-bible {
     display: block;
   }
   .media-surface.is-minimized {
-    grid-template-columns: 30px 30px 28px;
-    max-width: 118px;
+    grid-template-columns: 30px minmax(0, 1fr) 30px 28px;
+    max-width: min(320px, calc(100vw - 40px));
   }
   .media-surface.is-minimized .media-main {
     display: none;

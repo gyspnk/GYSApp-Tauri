@@ -2,6 +2,15 @@
 
 ## Unreleased — GA hardening slice
 
+- Moved the 31,172-verse TB search index behind a lazy module worker with a
+  four-second startup timeout, cancellation of stale queries, and a typed local
+  fallback. Long verse lists now opt into content-visibility to keep scrolling
+  responsive on small devices.
+- Added a source-context action to the global media session, so a minimized or
+  expanded player can return to the active Bible verse or hymn without
+  restarting playback. The minimized surface keeps a compact title/progress
+  summary, clamps persisted coordinates after viewport changes, and Media
+  Session handlers no longer re-register on every position tick.
 - Reduced PWA activation work by splitting the service-worker v8 cache into a
   compact shell/index precache and a background-only TimGM/FluidSynth/MIDI
   warm-up. Heavy assets are skipped on Save-Data/2G connections and no longer
@@ -68,8 +77,9 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 79.8 KiB gzip main application chunk and 150.5
-  KiB gzip initial JavaScript; PDF.js and its worker remain lazy-loaded while
+- Preserved the bundle gate: 80.1 KiB gzip main application chunk and 153.2
+  KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
+  remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.
 
 The release is not declared GA until protected e-GYS/OAuth secrets, native

@@ -19,6 +19,7 @@ import {
   Outlet,
   Route,
   Routes,
+  useNavigate,
   useLocation,
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
@@ -372,6 +373,7 @@ function Header({
 }
 
 function MediaSurface({ locale }: { locale: Locale }) {
+  const navigate = useNavigate();
   const snapshot = useSyncExternalStore(
     midiPlayer.subscribe,
     midiPlayer.snapshot,
@@ -389,9 +391,21 @@ function MediaSurface({ locale }: { locale: Locale }) {
   );
   const speechActive =
     speechSnapshot.total > 0 && speechSnapshot.status !== "idle";
+  const latestMidiRef = useRef(snapshot);
+  const latestSpeechRef = useRef(speechSnapshot);
+  const latestSpeechActiveRef = useRef(speechActive);
+  latestMidiRef.current = snapshot;
+  latestSpeechRef.current = speechSnapshot;
+  latestSpeechActiveRef.current = speechActive;
   const mediaTitle = speechActive
-    ? `Alkitab · ayat ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
+    ? (speechSnapshot.context?.label ??
+      `Alkitab · ayat ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`)
     : (snapshot.title ?? snapshot.songId);
+  const mediaPath = speechActive
+    ? speechSnapshot.context?.path
+    : snapshot.songId
+      ? `/kidung/${encodeURIComponent(snapshot.songId)}`
+      : undefined;
   const wakeLock = useRef<{ release: () => Promise<void> } | undefined>(
     undefined,
   );
@@ -431,26 +445,31 @@ function MediaSurface({ locale }: { locale: Locale }) {
     localStorage.setItem("gys-media-position-v1", JSON.stringify(position));
   }, [position]);
   useEffect(() => {
-    const onResize = () => {
+    let frame = 0;
+    const clampPosition = () => {
       setPosition((current) => {
         if (!current) return current;
         const surface = document.querySelector<HTMLElement>(".media-surface");
-        const width = surface?.offsetWidth ?? 0;
-        const height = surface?.offsetHeight ?? 0;
+        const width = surface?.getBoundingClientRect().width ?? 0;
+        const height = surface?.getBoundingClientRect().height ?? 0;
+        const maxLeft = Math.max(8, window.innerWidth - width - 8);
+        const maxTop = Math.max(8, window.innerHeight - height - 8);
         return {
-          left: Math.max(
-            8,
-            Math.min(current.left, window.innerWidth - width - 8),
-          ),
-          top: Math.max(
-            8,
-            Math.min(current.top, window.innerHeight - height - 8),
-          ),
+          left: Math.max(8, Math.min(current.left, maxLeft)),
+          top: Math.max(8, Math.min(current.top, maxTop)),
         };
       });
     };
+    const onResize = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(clampPosition);
+    };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    onResize();
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
   useEffect(() => {
     if ((!snapshot.songId && !speechActive) || !("mediaSession" in navigator))
@@ -469,8 +488,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
       [
         "play",
         () => {
-          if (speechActive)
-            return speechSnapshot.status === "error"
+          const speech = latestSpeechRef.current;
+          if (latestSpeechActiveRef.current)
+            return speech.status === "error"
               ? speechPlayer.stop()
               : speechPlayer.resume();
           void speechPlayer.stop();
@@ -480,39 +500,43 @@ function MediaSurface({ locale }: { locale: Locale }) {
       [
         "pause",
         () =>
-          speechActive
+          latestSpeechActiveRef.current
             ? speechPlayer.pause()
             : midiPlayer.pause().catch(() => undefined),
       ],
       [
         "stop",
         () =>
-          speechActive
+          latestSpeechActiveRef.current
             ? speechPlayer.stop()
             : midiPlayer.stop().catch(() => undefined),
       ],
       [
         "seekbackward",
-        () =>
-          speechActive
+        () => {
+          const midi = latestMidiRef.current;
+          return latestSpeechActiveRef.current
             ? speechPlayer.stop()
-            : midiPlayer.seek(Math.max(0, snapshot.position - 10)),
+            : midiPlayer.seek(Math.max(0, midi.position - 10));
+        },
       ],
       [
         "seekforward",
-        () =>
-          speechActive
+        () => {
+          const midi = latestMidiRef.current;
+          return latestSpeechActiveRef.current
             ? speechPlayer.stop()
-            : midiPlayer.seek(
-                Math.min(snapshot.duration, snapshot.position + 10),
-              ),
+            : midiPlayer.seek(Math.min(midi.duration, midi.position + 10));
+        },
       ],
       [
         "seekto",
-        (details) =>
-          speechActive
+        (details) => {
+          const midi = latestMidiRef.current;
+          return latestSpeechActiveRef.current
             ? speechPlayer.stop()
-            : midiPlayer.seek(details?.seekTime ?? snapshot.position),
+            : midiPlayer.seek(details?.seekTime ?? midi.position);
+        },
       ],
     ];
     for (const [action, handler] of handlers) {
@@ -531,14 +555,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         }
       }
     };
-  }, [
-    mediaTitle,
-    snapshot.duration,
-    snapshot.position,
-    snapshot.songId,
-    snapshot.title,
-    speechActive,
-  ]);
+  }, [mediaTitle, speechActive]);
   useEffect(() => {
     const wake = navigator as Navigator & {
       wakeLock?: {
@@ -630,6 +647,12 @@ function MediaSurface({ locale }: { locale: Locale }) {
   return (
     <aside
       className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}`}
+      data-media-status={speechActive ? speechSnapshot.status : snapshot.status}
+      data-media-backend={
+        speechActive
+          ? (speechSnapshot.providerId ?? "speech")
+          : snapshot.backend
+      }
       style={
         position
           ? {
@@ -653,6 +676,22 @@ function MediaSurface({ locale }: { locale: Locale }) {
       >
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
+      {minimized && (
+        <button
+          className="media-mini-context"
+          type="button"
+          onClick={() => mediaPath && navigate(mediaPath)}
+          disabled={!mediaPath}
+          aria-label={`Buka ${mediaTitle ?? "sumber media"}`}
+        >
+          <strong>{mediaTitle ?? "Media GYS"}</strong>
+          <small>
+            {speechActive
+              ? `${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
+              : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
+          </small>
+        </button>
+      )}
       <div className="media-main">
         <div className="media-meta">
           <small>
@@ -669,7 +708,19 @@ function MediaSurface({ locale }: { locale: Locale }) {
               ? ` · ${playlist.items.length} antrean`
               : ""}
           </small>
-          <strong>{mediaTitle}</strong>
+          {mediaPath ? (
+            <button
+              className="media-context-link"
+              type="button"
+              onClick={() => navigate(mediaPath)}
+              title="Buka sumber media"
+              aria-label={`Buka ${mediaTitle ?? "sumber media"}`}
+            >
+              <strong>{mediaTitle}</strong>
+            </button>
+          ) : (
+            <strong>{mediaTitle}</strong>
+          )}
           <span>
             {speechActive
               ? speechSnapshot.status === "error"
@@ -804,7 +855,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
             onClick={() =>
               void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
             }
-            aria-label="Hentikan MIDI"
+            aria-label={speechActive ? "Hentikan bacaan" : "Hentikan MIDI"}
           >
             <Icon name="stop" size={16} />
           </button>

@@ -21,10 +21,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **79.8 KiB gzip**; the complete initial
-  JavaScript set is **150.5 KiB gzip**. PDF.js and its worker remain lazy
-  chunks, and the bundle gate fails if the initial application chunk exceeds
-  250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
+- The initial web application chunk is **80.1 KiB gzip**; the complete initial
+  JavaScript set is **153.2 KiB gzip**. PDF.js, its worker, and the TB search
+  worker remain lazy chunks, and the bundle gate fails if the initial
+  application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
 - The v8 service-worker install path precaches only the shell and compact
   offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
@@ -36,7 +36,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   same visual QA was captured with the repository's Chromium runner. The
   current suite has 20 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
-  Sauh/Suara/article readers, persistent/minimizable media, MIDI queue
+  Sauh/Suara/article readers, persistent/minimizable media with source return,
+  MIDI queue
   persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
 - Kidung detail now has an automated mutual-exclusion assertion: the Lirik,

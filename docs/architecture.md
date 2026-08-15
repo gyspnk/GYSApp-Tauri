@@ -105,10 +105,29 @@ and each optional asset is cached independently so one missing binary cannot
 invalidate the shell.
 
 The Bible reader uses the generated TB pack as a single source of truth. The
-browser strips the pack's layout markers before display, while search indexes a
-normalized copy in the repository boundary. Split columns, bookmarks,
-highlights, notes, and query history live in versioned local keys and remain
-available offline.
+browser strips the pack's layout markers before display, while a lazy module
+worker builds and queries the normalized 31,172-verse index off the main thread.
+Worker startup is bounded and falls back to the same typed repository when a
+worker is unavailable; stale requests are cancelled so a slow query cannot
+overwrite a newer one. Split columns, bookmarks, highlights, notes, and query
+history live in versioned local keys and remain available offline.
+
+The global media surface subscribes to the external MIDI and speech stores,
+not React render ticks. It exposes the active source as an internal route (and
+verse hash for Bible speech), keeps title/progress visible in minimized mode,
+clamps a persisted drag position after viewport changes, and registers Media
+Session handlers against live refs so position updates do not recreate the
+handler set.
+
+```mermaid
+flowchart LR
+  PACK[TB reader pack] --> CLIENT[BibleSearchClient]
+  CLIENT --> WORKER[Lazy search worker]
+  WORKER --> INDEX[Normalized verse index]
+  CLIENT --> FALLBACK[Typed repository fallback]
+  INDEX --> RESULTS[Search results]
+  RESULTS --> READER[Responsive Bible reader]
+```
 
 Kidung detail is a single viewer with three exclusive modes. The selected mode
 is persisted per hymn in a versioned, bounded preference key. Selecting Chord

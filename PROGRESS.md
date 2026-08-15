@@ -12,6 +12,10 @@ service or platform artifact that cannot be exercised in this workspace.
 - PWA bootstrap is budgeted: service-worker v8 installs the shell and compact
   indexes first, then warms the heavy MIDI/FluidSynth binaries in the
   background with a Save-Data/2G guard.
+- TB search now builds and queries its 31,172-verse normalized index in a lazy
+  module worker. Stale searches are cancelled, worker startup has a bounded
+  timeout, and SSR/older-browser startup failures fall back to the typed local
+  repository without leaving an infinite loading state.
 - TB Bible, multilingual faith list with contextual actions, 533-song hymn
   catalog, ordered search, persistent reading/activity state, and single
   `Lanjutkan` home item.
@@ -27,7 +31,11 @@ service or platform artifact that cannot be exercised in this workspace.
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
   Web Audio fallback, and shell-level minimizable media surface with seek,
   volume, mute, tempo, transpose, Media Session, wake-lock, and persisted
-  pointer-drag positioning controls. Hymn detail now has an explicit
+  pointer-drag positioning controls. The global player can return to the
+  active verse/hymn and keeps a compact title/progress summary while
+  minimized; persisted coordinates are clamped after viewport changes and
+  Media Session handlers no longer re-register on every position tick. Hymn
+  detail now has an explicit
   mutually-exclusive `Lirik` / `Chord` / `PDF` viewer mode, remembers the
   last mode per song, and never renders lyrics beside a chord or PDF surface.
 - Literature ebook shelf, category/filter/sort discovery, detail route,

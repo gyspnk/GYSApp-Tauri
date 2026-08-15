@@ -8,7 +8,12 @@ import {
   readSpeechSettings,
 } from "./speech-settings.js";
 
-export type SpeechQueueItem = { id: string; text: string };
+export type SpeechContext = { path: string; label: string };
+export type SpeechQueueItem = {
+  id: string;
+  text: string;
+  context?: SpeechContext;
+};
 export type { SpeechEnginePreference } from "@gys/contracts";
 export type SpeechSnapshot = {
   status: "idle" | "loading" | "speaking" | "paused" | "error";
@@ -23,6 +28,7 @@ export type SpeechSnapshot = {
   volume: number;
   available: boolean;
   engine: SpeechEnginePreference;
+  context: SpeechContext | undefined;
   error?: string | undefined;
 };
 
@@ -36,6 +42,7 @@ const initial: SpeechSnapshot = {
   volume: 1,
   available: false,
   engine: "auto",
+  context: undefined,
 };
 
 class BrowserSpeechSession {
@@ -140,7 +147,11 @@ class BrowserSpeechSession {
         const item = this.queue[index];
         if (!item) continue;
         if (this.abortController.signal.aborted) return;
-        this.patch({ status: "speaking", currentIndex: index });
+        this.patch({
+          status: "speaking",
+          currentIndex: index,
+          context: item.context,
+        });
         const speechOptions = {
           rate: this.state.rate,
           pitch: this.state.pitch,
@@ -187,6 +198,7 @@ class BrowserSpeechSession {
       status: "idle",
       currentIndex: -1,
       total: clearQueue ? 0 : this.state.total,
+      ...(clearQueue ? { context: undefined } : {}),
     });
   }
 
