@@ -9,7 +9,7 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Clean-room MIT pnpm monorepo, typed contracts, responsive Quiet Sanctuary
   shell, local PWA assets, and GitHub Pages delivery.
-- PWA bootstrap is budgeted: service-worker v8 installs the shell and compact
+- PWA bootstrap is budgeted: service-worker v9 installs the shell and compact
   indexes first, then warms the heavy MIDI/FluidSynth binaries in the
   background with a Save-Data/2G guard.
 - Production PWA registration now tolerates reduced webview service-worker
@@ -19,7 +19,9 @@ service or platform artifact that cannot be exercised in this workspace.
   canonical loading.
 - PWA metadata now ships a square official-logo mark for both favicon and
   install manifest; Pages-relative resolution is covered by runtime-health
-  coverage so browser console metadata warnings do not regress.
+  coverage so browser console metadata warnings do not regress. The service
+  worker cache version is bumped with the metadata change so existing clients
+  receive the corrected manifest instead of a stale cached copy.
 - TB search now builds and queries its 31,172-verse normalized index in a lazy
   module worker. Stale searches are cancelled, worker startup has a bounded
   timeout, and SSR/older-browser startup failures fall back to the typed local

@@ -58,5 +58,10 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
       }),
     ]),
   );
+  const serviceWorkerResponse = await page.request.get(
+    new URL("sw.js", page.url()).toString(),
+  );
+  expect(serviceWorkerResponse.ok()).toBe(true);
+  expect(await serviceWorkerResponse.text()).toContain("gysapp-shell-v9");
   expect(metadataWarnings).toEqual([]);
 });

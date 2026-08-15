@@ -26,7 +26,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
-- The v8 service-worker install path precaches only the shell and compact
+- The v9 service-worker install path precaches only the shell and compact
   offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
   the first usable frame, independently and only when Save-Data/2G is not
   advertised; this keeps activation and first paint off the heavy-asset path.
@@ -37,7 +37,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   verified immutable source.
   The favicon and PWA manifest use a square official-logo mark with
   Pages-relative paths; runtime-health coverage checks the asset response and
-  rejects browser metadata warnings.
+  rejects browser metadata warnings. The shell cache version is bumped with
+  the metadata change so existing PWA clients receive the corrected manifest.
 - The offline pack manager now checks an optional `VITE_ASSET_MANIFEST_URL`,
   validates duplicate IDs/origins, diffs content identity, stages changed
   local assets through the verified Cache Storage transaction, swaps a
