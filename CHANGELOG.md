@@ -10,6 +10,11 @@
 - Fixed missing split-ratio storage being interpreted as `0%` (and collapsing
   the pane to 42%), and added an ultra-narrow 320px header layout that keeps
   actions inside the viewport.
+- Added Axe accessibility coverage for Home/Kidung (including color contrast)
+  and keyboard-visible focus coverage for the mobile Bible reader; dark/light
+  muted tokens now meet the tested WCAG AA contrast threshold.
+- Expanded the Windows native CI gate to run Rust formatting, unit tests, and
+  clippy with warnings denied in addition to `cargo check`.
 
 - Enforced the e-GYS local-only synchronization boundary: the scheduled
   GitHub Actions sync workflow and CI upstream fetch were removed, and a

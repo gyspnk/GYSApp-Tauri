@@ -35,12 +35,17 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 22 passing flows, including split-reader keyboard resize,
+  current suite has 26 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   MIDI queue
   persistence, canonical chord fetch,
   GYSApp-Fork PDF viewer/download, and MIDI loading.
+- Axe runs on the Home and Kidung surfaces with zero violations (including
+  color contrast), and a mobile Bible keyboard smoke
+  keeps a visible focus target after navigation. The light-theme muted token
+  is 5.7:1 against white; the audit is kept in the release suite through the
+  `@axe-core/playwright` dev dependency.
 - Kidung detail now has an automated mutual-exclusion assertion: the Lirik,
   Chord, and PDF tabs unmount the other viewer surfaces. The native boundary
   check passes with 17 required offline/runtime assets totaling 36,844,871
@@ -67,6 +72,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   path-safe keys and unique-temp-file atomic replacement; Rust tests cover
   traversal safety and replacement cleanup. Unsupported native capabilities
   report `false` instead of showing an unimplemented control.
+- The Windows native CI job now runs `cargo fmt --check`, `cargo check`,
+  `cargo test`, and `cargo clippy --all-targets -- -D warnings`; native
+  packaging remains separate from signed installer evidence.
 - e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;

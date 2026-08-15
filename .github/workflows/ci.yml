@@ -71,3 +71,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
+      - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
+      - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
+      - run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets -- -D warnings

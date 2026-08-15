@@ -15,7 +15,8 @@
   --surface: #ffffff;
   --surface-soft: #f1f5fb;
   --ink: #13213d;
-  --muted: #6b7890;
+  /* 5.7:1 against white; keeps secondary copy quiet while meeting WCAG AA. */
+  --muted: #59677f;
   --line: #dce4ef;
   --line-strong: #c7d4e5;
   --blue: #2a65c7;
