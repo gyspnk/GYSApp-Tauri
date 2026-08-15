@@ -1,4 +1,5 @@
 import type { AssetManifestItem } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 
 type StoredAsset = {
   id: string;
@@ -287,6 +288,7 @@ export class BrowserAssetStore {
       );
     } catch (error) {
       // No active index entries are changed until all resources validate.
+      recordDiagnostic("error", "assets.install", error);
       throw error;
     }
   }

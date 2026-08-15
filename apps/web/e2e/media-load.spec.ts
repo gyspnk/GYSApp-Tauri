@@ -12,27 +12,22 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   ).toBeVisible({
     timeout: 15_000,
   });
-  await page.getByRole("button", { name: "Buka chord" }).click();
-  await expect(page.getByRole("region", { name: "Chord viewer" })).toBeVisible({
+  await page.getByRole("button", { name: "Tampilkan chord" }).click();
+  await expect(
+    page.getByRole("button", { name: "Sembunyikan chord" }),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".chord-capability").first()).toBeVisible({
     timeout: 20_000,
   });
-  await expect(page.locator(".chord-layout-page").first()).toBeVisible({
-    timeout: 20_000,
-  });
-  await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
-  await page.getByRole("tab", { name: "Lirik" }).click();
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Chord viewer" })).toHaveCount(
-    0,
-  );
   await page.getByRole("button", { name: "Buka PDF" }).click();
   await expect(page.locator(".pdf-reader")).toBeVisible({
     timeout: 30_000,
   });
   await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Chord viewer" })).toHaveCount(
-    0,
-  );
+  await expect(page.locator(".pdf-chord-layer").first()).toBeVisible({
+    timeout: 30_000,
+  });
   await page.getByRole("button", { name: "Putar MIDI" }).click();
   await expect(page.locator(".media-surface")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".media-meta")).toContainText("Pujilah Allah");
@@ -42,6 +37,11 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
       { timeout: 30_000 },
     )
     .toMatch(/playing|ready|paused/);
+  await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
+  await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Perbesar pemutar" }),
+  ).toBeVisible();
 });
 
 test("PDF failure exposes an actionable retry without leaving the hymn shell", async ({

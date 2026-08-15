@@ -3,6 +3,7 @@ import {
   type UpstreamMusicItem,
   type UpstreamMusicLock,
 } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 const CACHE_NAME = "gys-music-assets-v1";
@@ -137,9 +138,12 @@ export async function loadMusicAsset(
         lastError = error;
       }
     }
-    throw lastError instanceof Error
-      ? lastError
-      : new Error(`Asset request failed for ${ref.id}`);
+    const failure =
+      lastError instanceof Error
+        ? lastError
+        : new Error(`Asset request failed for ${ref.id}`);
+    recordDiagnostic("error", "music.asset", failure);
+    throw failure;
   })();
   inFlight.set(ref.sha256, request);
   try {

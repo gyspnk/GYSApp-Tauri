@@ -28,6 +28,7 @@ import {
   type LiteratureLocation,
   type LiteratureProgress,
 } from "./literature-progress.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 const LiteraturePdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -118,9 +119,12 @@ async function loadCatalog(signal: AbortSignal) {
       lastError = error;
     }
   }
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Literature catalog unavailable");
+  const failure =
+    lastError instanceof Error
+      ? lastError
+      : new Error("Literature catalog unavailable");
+  recordDiagnostic("error", "literature.catalog", failure);
+  throw failure;
 }
 
 type CatalogState =

@@ -139,23 +139,22 @@ flowchart LR
   RESULTS --> READER[Responsive Bible reader]
 ```
 
-Kidung detail is a single viewer with three exclusive modes. The selected mode
-is persisted per hymn in a versioned, bounded preference key. Selecting Chord
-or PDF starts the corresponding verified fetch and switches the surface only
-after the mode is selected; the Lyrics article is unmounted while either media
-viewer is active. This prevents duplicate lyrics/PDF and lyrics/chord layouts
-on small screens.
+Kidung detail is one viewer with two presentation modes: Lyrics and PDF. Chord
+is a capability layered on either presentation, so it is never a third route or
+an independent viewer. The selected presentation and chord visibility are
+persisted per hymn in separate versioned, bounded preference keys. A verified
+note-aligned v2 document is loaded once; its PDF text model is cached by
+`hymnId:resourceHash`, then reused for both the Text chord-line association and
+the DOM marker layer above PDF.js canvases. Transpose and accidental changes
+only update marker labels and do not rerender the PDF.
 
 ```mermaid
 stateDiagram-v2
   [*] --> Lyrics
-  Lyrics --> Chord: select chord
+  Lyrics --> Lyrics: show/hide shared chord layer
   Lyrics --> PDF: select PDF
-  Chord --> Lyrics: select lirik
-  Chord --> PDF: select PDF
-  PDF --> Lyrics: close/select lirik
-  PDF --> Chord: select chord
-  Chord --> Chord: verified cache/revalidate
+  PDF --> PDF: show/hide shared chord layer
+  PDF --> Lyrics: select lirik
   PDF --> PDF: verified cache/revalidate
 ```
 
@@ -221,18 +220,24 @@ discards an invalid location instead of silently jumping to an unrelated page.
 flowchart LR
   HYMNS["533-song catalog"] --> SEARCH["Indexed search"]
   SEARCH --> DETAIL2["Hymn detail"]
-  DETAIL2 --> LYRICS["Lyrics mode"]
-  DETAIL2 --> CHORD["Chord JSON + PDF-aligned layout"]
+  DETAIL2 --> PRESENTATION["Presentation state"]
+  PRESENTATION --> LYRICS["Text / Lyrics"]
+  PRESENTATION --> PDF2["PDF / score"]
+  DETAIL2 --> CHORD["Shared chord capability"]
   DETAIL2 --> MIDI2["MIDI source + parser + transport"]
-  DETAIL2 --> PDF2["Fork hymnal PDF database"]
+  PDF2 --> CANVAS["PDF.js canvas"]
+  CHORD --> NOTES["Note-aligned v2 + pageNotesCache"]
+  NOTES --> OVERLAY["PDF DOM marker overlay"]
+  NOTES --> TEXTMAP["Relative Text chord mapping"]
   CHORD --> CACHE2["Hash-verified atomic chord cache"]
   MIDI2 --> PRELOAD["Next/previous binary preload"]
-  PDF2 --> CACHE2
-  CACHE2 --> MODES["One mutually-exclusive active mode"]
+  PRESENTATION --> SHARED["transpose · key · accidental · MIDI"]
+  CACHE2 --> NOTES
 ```
 
-The mode switch unmounts the inactive viewer; raw and parsed assets are shared
-by source hash so simultaneous opens do not create duplicate downloads.
+The mode switch unmounts the inactive presentation; raw and parsed assets are
+shared by source hash so simultaneous opens do not create duplicate downloads.
+The same marker layer is hidden or shown without re-decoding the PDF.
 
 ### Alkitab and voice
 

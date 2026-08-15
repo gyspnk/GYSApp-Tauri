@@ -4,6 +4,7 @@ import {
   type SpeechProvider,
   type SpeechVoice,
 } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 
 /**
  * Edge compatibility speech is deliberately opt-in at the transport layer.
@@ -132,18 +133,25 @@ export class EdgeSpeechProvider implements SpeechProvider {
     } catch (error) {
       if (signal?.aborted) throw abortError();
       this.markUnavailable("Edge speech request failed");
-      throw error instanceof Error
-        ? error
-        : new Error("Edge speech request failed");
+      const failure =
+        error instanceof Error
+          ? error
+          : new Error("Edge speech request failed");
+      recordDiagnostic("error", "tts.edge.request", failure);
+      throw failure;
     }
     if (!response.ok) {
       this.markUnavailable(`Edge speech failed (${response.status})`);
-      throw new Error(`Edge speech failed (${response.status})`);
+      const failure = new Error(`Edge speech failed (${response.status})`);
+      recordDiagnostic("error", "tts.edge.response", failure);
+      throw failure;
     }
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.startsWith("audio/")) {
       this.markUnavailable("Edge speech returned a non-audio response");
-      throw new Error("Edge speech returned a non-audio response");
+      const failure = new Error("Edge speech returned a non-audio response");
+      recordDiagnostic("error", "tts.edge.response", failure);
+      throw failure;
     }
     const url = URL.createObjectURL(await response.blob());
     const audio = new Audio(url);

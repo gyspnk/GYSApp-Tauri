@@ -8,6 +8,7 @@ import {
   type AccountProfile,
   type EgysProviders,
 } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 
 function apiUrl(path: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
@@ -48,7 +49,11 @@ export async function getEgysProfile(
     cache: "no-store",
   });
   if (response.status === 401 || response.status === 404) return undefined;
-  if (!response.ok) throw new Error(`e-GYS profile failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(`e-GYS profile failed: ${response.status}`);
+    recordDiagnostic("error", "egys.profile", failure);
+    throw failure;
+  }
   const body = (await response.json()) as { profile?: unknown };
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
 }
@@ -59,8 +64,11 @@ export async function getEgysUpstreamMeta(signal?: AbortSignal) {
     ...(signal ? { signal } : {}),
     cache: "no-store",
   });
-  if (!response.ok)
-    throw new Error(`e-GYS metadata failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(`e-GYS metadata failed: ${response.status}`);
+    recordDiagnostic("error", "egys.metadata", failure);
+    throw failure;
+  }
   return EgysUpstreamMetaSchema.parse(await response.json());
 }
 
@@ -73,8 +81,11 @@ export async function getEgysProviders(
     ...(signal ? { signal } : {}),
     cache: "no-store",
   });
-  if (!response.ok)
-    throw new Error(`e-GYS providers failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(`e-GYS providers failed: ${response.status}`);
+    recordDiagnostic("error", "egys.providers", failure);
+    throw failure;
+  }
   const body: unknown = await response.json();
   const parsed = EgysProvidersSchema.safeParse(body);
   if (parsed.success) return parsed.data;
@@ -99,7 +110,11 @@ export async function exchangeEgysToken(
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ idToken }),
   });
-  if (!response.ok) throw new Error(`e-GYS sign-in failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(`e-GYS sign-in failed: ${response.status}`);
+    recordDiagnostic("error", "egys.sign-in", failure);
+    throw failure;
+  }
   return EgysSignInResponseSchema.parse(await response.json());
 }
 
@@ -110,8 +125,13 @@ export async function startEgysWhatsAppLogin(signal?: AbortSignal) {
     credentials: "include",
     ...(signal ? { signal } : {}),
   });
-  if (!response.ok)
-    throw new Error(`e-GYS WhatsApp sign-in failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(
+      `e-GYS WhatsApp sign-in failed: ${response.status}`,
+    );
+    recordDiagnostic("error", "egys.whatsapp.start", failure);
+    throw failure;
+  }
   return EgysWhatsAppLoginStartedSchema.parse(await response.json());
 }
 
@@ -128,8 +148,13 @@ export async function getEgysWhatsAppState(
       ...(signal ? { signal } : {}),
     },
   );
-  if (!response.ok)
-    throw new Error(`e-GYS WhatsApp state failed: ${response.status}`);
+  if (!response.ok) {
+    const failure = new Error(
+      `e-GYS WhatsApp state failed: ${response.status}`,
+    );
+    recordDiagnostic("error", "egys.whatsapp.state", failure);
+    throw failure;
+  }
   return EgysWhatsAppLoginStateSchema.parse(await response.json());
 }
 

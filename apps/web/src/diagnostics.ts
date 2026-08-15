@@ -16,7 +16,7 @@ function redact(value: string): string {
   return value
     .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, "Bearer [redacted]")
     .replace(
-      /(idToken|access_token|refresh_token|code|cookie)=?[^&\s]+/gi,
+      /(authorization|idToken|id_token|access_token|refresh_token|token|api[_-]?key|code|cookie)=?[^&\s]+/gi,
       "$1=[redacted]",
     )
     .replace(/\s+/g, " ")

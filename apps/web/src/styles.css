@@ -966,6 +966,14 @@ blockquote {
   gap: 8px;
   margin-left: auto;
 }
+.pdf-page-jump {
+  margin-left: 0 !important;
+}
+.pdf-page-jump input {
+  width: 64px;
+  min-height: 34px;
+  padding-inline: 8px;
+}
 .pdf-toolbar input {
   accent-color: var(--blue);
 }
@@ -997,6 +1005,32 @@ blockquote {
   height: auto;
   box-shadow: 0 8px 26px rgba(31, 66, 112, 0.12);
 }
+.pdf-page-frame {
+  position: relative;
+  display: grid;
+  place-items: start center;
+  max-width: 100%;
+}
+.pdf-chord-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.pdf-chord-marker {
+  position: absolute;
+  transform: translate(-50%, -115%);
+  padding: 2px 4px;
+  border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--blue);
+  font-size: clamp(9px, 1.2vw, 13px);
+  font-weight: 750;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(24 67 120 / 14%);
+}
 .pdf-pages {
   display: flex;
   justify-content: center;
@@ -1011,6 +1045,9 @@ blockquote {
 }
 .pdf-pages.pdf-layout-vertical canvas {
   justify-self: center;
+}
+.pdf-pages.pdf-layout-vertical .pdf-page-frame {
+  max-width: 100%;
 }
 .pdf-vertical-page {
   position: relative;
@@ -1044,11 +1081,11 @@ blockquote {
   color: var(--muted);
   font-size: 12px;
 }
-.pdf-pages canvas:nth-child(2) {
+.pdf-pages > .pdf-page-frame:nth-child(2) {
   display: none;
 }
-.pdf-pages.pdf-layout-two canvas:nth-child(2),
-.pdf-pages.pdf-layout-vertical canvas:nth-child(2) {
+.pdf-pages.pdf-layout-two > .pdf-page-frame:nth-child(2),
+.pdf-pages.pdf-layout-vertical > .pdf-page-frame:nth-child(2) {
   display: block;
 }
 
@@ -2365,72 +2402,23 @@ body.is-resizing-bible {
   font-size: 10px;
   font-style: normal;
 }
-.chord-viewer {
-  margin-top: 28px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-soft);
-}
-.chord-viewer-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-  color: var(--navy);
-  font-size: 13px;
-}
-.chord-viewer-heading small,
-.chord-note {
-  color: var(--muted);
-  font-size: 11px;
-}
-.chord-verse {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-}
-.chord-verse-label {
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.chord-layout-page {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-  min-width: 0;
-}
-.chord-layout-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.chord-layout-line .chord-aligned-cell {
-  min-width: 0.52em;
-}
-.chord-line {
-  display: grid;
-  gap: 2px;
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1.5;
-}
-.chord-line-tokens,
-.chord-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 .chord-aligned-line {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: end;
   white-space: pre-wrap;
   line-height: 1.55;
+}
+.chord-capability,
+.chord-rich-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: end;
+  white-space: pre-wrap;
+  line-height: inherit;
+}
+.lyrics-sheet .chord-capability {
+  max-width: 100%;
 }
 .chord-aligned-cell {
   display: inline-flex;
@@ -2446,21 +2434,6 @@ body.is-resizing-bible {
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
-}
-.chord-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 23px;
-  padding: 0 7px;
-  border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line));
-  border-radius: 5px;
-  background: var(--surface);
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 700;
-}
-.chord-note {
-  margin: 14px 0 0;
 }
 .pdf-download {
   display: inline-flex;
@@ -3147,7 +3120,7 @@ body.is-resizing-bible {
 @media (max-width: 599px) {
   .viewer-mode-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
   .viewer-mode-tab {

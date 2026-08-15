@@ -29,6 +29,9 @@ service or platform artifact that cannot be exercised in this workspace.
   TJC article HTML is normalized by the BFF into a bounded, schema-validated
   plain-text reader; Pages previews without a Worker use the same constrained
   WordPress feed fallback, and no remote page is opened as the primary action.
+  Daily selection prioritizes the publisher's canonical `sbjYYMMDD` slug over
+  unrelated posts edited on the same calendar day; no static verse fallback is
+  rendered when Sauh does not provide a reference.
 - Home/reader Sauh revalidation tries the canonical TJC WordPress endpoint
   directly, then the optional BFF proxy, then the validated offline snapshot;
   BFF Literature and Suara Sejati routes deduplicate concurrent upstream reads.
@@ -41,15 +44,16 @@ service or platform artifact that cannot be exercised in this workspace.
   active verse/hymn and keeps a compact title/progress summary while
   minimized; persisted coordinates are clamped after viewport changes and
   Media Session handlers no longer re-register on every position tick. Hymn
-  detail now has an explicit
-  mutually-exclusive `Lirik` / `Chord` / `PDF` viewer mode, remembers the
-  last mode per song, and never renders lyrics beside a chord or PDF surface.
-  Note-aligned chord JSON is now mapped against verified canonical PDF text
-  coordinates (dominant notation font, multi-character note splitting, row
-  matching, and responsive lyric/chord cells) instead of being shown as an
-  unpositioned chip list. Simultaneous song opens share one verified chord
-  download, and rendered MIDI PCM uses a bounded 96 MB source/soundfont/
-  tempo/transpose/sample-rate cache.
+  detail now has two presentation modes (`Lirik` / `PDF`) with a shared chord
+  capability, remembers presentation/chord visibility per song, and never
+  renders duplicate viewer surfaces. Note-aligned v2 chord JSON is mapped
+  against verified canonical PDF text coordinates (dominant notation font,
+  multi-character note splitting, row matching, and responsive lyric/chord
+  cells), rendered as a DOM overlay over PDF.js canvas, and reused for
+  Text-mode line association. Transpose and accidental changes update labels
+  without re-rendering the PDF. Simultaneous song opens share one verified
+  chord download, and rendered MIDI PCM uses a bounded 96 MB
+  source/soundfont/tempo/transpose/sample-rate cache.
 - Kidung catalog search now builds one normalized index per catalog revision and
   supports number/title prefix lookup, AND terms, quoted phrases, and collection
   filtering without re-normalizing all lyrics on each keystroke.
@@ -106,7 +110,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  29 passing flows, including the 320–1920px and landscape shell matrix plus
+  30 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -121,6 +125,9 @@ service or platform artifact that cannot be exercised in this workspace.
   origins before any upstream request is made. Living documentation is checked
   by `pnpm verify:docs` in local hooks and CI, including the feature lifecycle
   Mermaid diagrams in the README and architecture guide.
+- The browser diagnostic journal is bounded to 80 redacted events and receives
+  scoped failures from content, assets, PDF, TTS, MIDI, Bible, literature,
+  feedback, and e-GYS boundaries without persisting bearer or token values.
 
 ## Implemented / Needs Verification
 

@@ -5,6 +5,7 @@ import type { Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -35,25 +36,31 @@ export function SauhPage() {
     | { status: "error"; message: string }
   >({ status: "loading" });
 
-  const load = () => {
+  const load = (signal?: AbortSignal) => {
     setState({ status: "loading" });
-    void fetchSauh()
+    void fetchSauh(signal)
       .then(([post]) => {
+        if (signal?.aborted) return;
         if (!post) throw new Error("Sauh untuk hari ini belum tersedia");
         setState({ status: "ready", post });
       })
-      .catch((error: unknown) =>
+      .catch((error: unknown) => {
+        if (signal?.aborted) return;
         setState({
           status: "error",
           message:
             error instanceof Error
               ? error.message
               : "Sauh Bagi Jiwa belum tersedia",
-        }),
-      );
+        });
+      });
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, []);
 
   return (
     <div className="page online-content-page sauh-page" data-testid="sauh-page">
@@ -72,7 +79,7 @@ export function SauhPage() {
         <div className="error-panel" role="alert">
           <strong>Renungan hari ini belum tersedia.</strong>
           <span>{state.message}</span>
-          <button className="quiet-button" type="button" onClick={load}>
+          <button className="quiet-button" type="button" onClick={() => load()}>
             Coba lagi
           </button>
         </div>
@@ -113,13 +120,21 @@ export function SuaraPage() {
     | { status: "ready"; posts: SuaraSejatiPost[] }
     | { status: "error" }
   >({ status: "loading" });
-  const load = () => {
+  const load = (signal?: AbortSignal) => {
     setState({ status: "loading" });
-    void fetchSuara()
-      .then((posts) => setState({ status: "ready", posts }))
-      .catch(() => setState({ status: "error" }));
+    void fetchSuara(signal)
+      .then((posts) => {
+        if (!signal?.aborted) setState({ status: "ready", posts });
+      })
+      .catch(() => {
+        if (!signal?.aborted) setState({ status: "error" });
+      });
   };
-  useEffect(load, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, []);
   return (
     <div
       className="page online-content-page suara-page"
@@ -149,7 +164,7 @@ export function SuaraPage() {
         <div className="error-panel" role="alert">
           <strong>Suara Sejati belum tersedia.</strong>
           <span>Periksa koneksi lalu coba lagi.</span>
-          <button className="quiet-button" type="button" onClick={load}>
+          <button className="quiet-button" type="button" onClick={() => load()}>
             Coba lagi
           </button>
         </div>
@@ -208,6 +223,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
         setState({ status: "ready", post, body: article.body });
       } catch (error) {
         if (controller.signal.aborted) return;
+        recordDiagnostic("error", "content.article", error);
         setState({
           status: "error",
           post,
@@ -219,6 +235,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       }
     })().catch((error: unknown) => {
       if (controller.signal.aborted) return;
+      recordDiagnostic("error", "content.feed", error);
       setState({
         status: "error",
         message:

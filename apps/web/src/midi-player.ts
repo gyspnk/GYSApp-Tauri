@@ -1,5 +1,6 @@
 import type { NormalizedMidi } from "@gys/domain";
 import { MidiRenderCache, type RenderedPcm } from "./midi-render-cache.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 /**
  * The media player intentionally lives outside React.  A song can keep
@@ -173,6 +174,7 @@ class BrowserMidiPlayer {
         // A blocked WASM worker should not make an otherwise valid MIDI file
         // unusable.  Keep a clear compatibility backend and continue with the
         // small Web Audio renderer below.
+        recordDiagnostic("warn", "midi.fluidsynth", error);
         this.patch({
           backend: "oscillator",
           loadingProgress: 0,

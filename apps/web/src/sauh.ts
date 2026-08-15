@@ -1,4 +1,5 @@
 import { SauhPostSchema, type SauhPost } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 
 const STATIC_URL = `${import.meta.env.BASE_URL}offline/sauh.json`;
 const WORDPRESS_URL =
@@ -188,6 +189,13 @@ function localDateKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
+export function expectedSauhSlug(date = new Date()): string {
+  const year = String(date.getFullYear()).slice(-2);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `sbj${year}${month}${day}`;
+}
+
 /** Canonical Sauh is tried directly; the BFF remains a trusted CORS fallback. */
 export function sauhNetworkCandidates(bffBase?: string): string[] {
   const proxy = bffBase?.trim()
@@ -239,13 +247,13 @@ export function selectTodaySauh(
   posts: SauhPost[],
   now = new Date(),
 ): SauhPost[] {
+  // The publisher's date slug is authoritative. A post edited today must not
+  // displace today's reflection merely because its modified timestamp wins.
+  const canonical = posts.filter((post) => post.id === expectedSauhSlug(now));
+  if (canonical.length) return canonical;
   const dated = onlyTodaySauh(posts, now);
   if (dated.length) return dated;
-  const year = String(now.getFullYear()).slice(-2);
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const expected = `sbj${year}${month}${day}`;
-  return posts.filter((post) => post.id === expected);
+  return [];
 }
 
 async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
@@ -298,9 +306,12 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
         lastError = error;
       }
     }
-    throw lastError instanceof Error
-      ? lastError
-      : new Error("Sauh Bagi Jiwa is unavailable");
+    const failure =
+      lastError instanceof Error
+        ? lastError
+        : new Error("Sauh Bagi Jiwa is unavailable");
+    recordDiagnostic("error", "sauh.fetch", failure);
+    throw failure;
   })();
   const tracked = shared.then(
     (items) => {

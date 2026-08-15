@@ -48,12 +48,13 @@ function isTjcUrl(value: unknown): value is string {
 /** Sauh is a daily reflection; never expose a stale multi-day feed to clients. */
 export function onlyTodaySauh(posts: SauhPost[], now = new Date()): SauhPost[] {
   const today = localDateKey(now);
+  const canonical = posts.filter((post) => post.id === expectedSauhSlug(now));
+  if (canonical.length) return canonical;
   const dated = posts.filter(
     (post) => localDateKey(new Date(post.updatedAt)) === today,
   );
   if (dated.length) return dated;
-  const expected = `sbj${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
-  return posts.filter((post) => post.id === expected);
+  return [];
 }
 
 export function normalizeSauhPosts(value: unknown): SauhPost[] {

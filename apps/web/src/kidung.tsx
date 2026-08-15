@@ -19,8 +19,16 @@ import {
 import { MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { createBrowserChordRepository } from "./chords.js";
-import { ChordViewer } from "./chord-viewer.js";
-import type { ChordLayoutPage } from "./chord-layout-pdf.js";
+import {
+  ChordCapability,
+  matchChordLinesToLyrics,
+  transposeChord,
+} from "./chord-viewer.js";
+import {
+  buildChordPresentationFromPdf,
+  type ChordLayoutPage,
+} from "./chord-layout-pdf.js";
+import type { PdfChordOverlayMarker } from "./pdf.js";
 import {
   downloadMusicAsset,
   loadMusicAsset,
@@ -41,7 +49,9 @@ import {
 } from "./midi-playlist.js";
 import {
   readHymnViewerMode,
+  readHymnChordVisibility,
   type HymnViewerMode,
+  writeHymnChordVisibility,
   writeHymnViewerMode,
 } from "./hymn-view-mode.js";
 
@@ -55,6 +65,20 @@ type CatalogState =
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
 const KEYS = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const FLAT_KEYS = [
+  "C",
+  "D♭",
+  "D",
+  "E♭",
+  "E",
+  "F",
+  "G♭",
+  "G",
+  "A♭",
+  "A",
+  "B♭",
+  "B",
+];
 const parsedLyricsCache = new Map<string, string[]>();
 
 function getHymnVerses(item: HymnCatalogEntry | undefined): string[] {
@@ -287,11 +311,18 @@ function HymnDetail({
   });
   const [transpose, setTranspose] = useState(0);
   const [key, setKey] = useState("C");
+  const [accidental, setAccidental] = useState<"sharp" | "flat">("sharp");
   const [chordStatus, setChordStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [chordDocument, setChordDocument] = useState<ChordDocumentV2>();
   const [chordLayout, setChordLayout] = useState<ChordLayoutPage[]>([]);
+  const [chordOverlays, setChordOverlays] = useState<
+    Record<string, PdfChordOverlayMarker[]>
+  >({});
+  const [chordsVisible, setChordsVisible] = useState(() =>
+    readHymnChordVisibility(songId),
+  );
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
@@ -310,6 +341,9 @@ function HymnDetail({
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const touchStartX = useRef<number | undefined>(undefined);
   const autoLoadedSong = useRef<string | undefined>(undefined);
+  const chordRun = useRef(0);
+  const chordAbort = useRef<AbortController | undefined>(undefined);
+  const pdfRun = useRef(0);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const verses = getHymnVerses(item);
@@ -338,10 +372,17 @@ function HymnDetail({
   );
   useEffect(
     () => () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      chordRun.current += 1;
+      chordAbort.current?.abort();
+      pdfRun.current += 1;
     },
-    [pdfUrl],
+    [],
   );
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
   useEffect(() => {
     if (
       !item ||
@@ -371,9 +412,32 @@ function HymnDetail({
     if (!item || autoLoadedSong.current === item.id) return;
     autoLoadedSong.current = item.id;
     const saved = readHymnViewerMode(item.id);
-    if (saved === "chord" && chordStatus === "idle") void loadChord();
     if (saved === "pdf" && pdfStatus === "idle") void loadPdf();
-  }, [item, chordStatus, pdfStatus]);
+    if (chordsVisible && chordStatus === "idle") void loadChord();
+  }, [item, chordStatus, chordsVisible, pdfStatus]);
+  const lyricLines = (verses[safeVerseIndex] ?? "").split("\n");
+  const chordLines = useMemo(
+    () =>
+      matchChordLinesToLyrics(
+        lyricLines,
+        chordDocument,
+        chordLayout,
+        safeVerseIndex,
+      ),
+    [chordDocument, chordLayout, safeVerseIndex, lyricLines.join("\n")],
+  );
+  const pdfChordOverlays = useMemo(() => {
+    const offset = pdfSource === "fork" ? Math.max(0, pdfInitialPage - 1) : 0;
+    return Object.fromEntries(
+      Object.entries(chordOverlays).map(([page, markers]) => [
+        String(Number(page) + offset),
+        markers.map((marker) => ({
+          ...marker,
+          chord: transposeChord(marker.chord, transpose, accidental),
+        })),
+      ]),
+    );
+  }, [accidental, chordOverlays, pdfInitialPage, pdfSource, transpose]);
   if (state.status === "loading")
     return (
       <div className="page">
@@ -425,13 +489,21 @@ function HymnDetail({
     );
   };
   const loadChord = async () => {
-    setViewerMode("chord");
-    writeHymnViewerMode(item.id, "chord");
+    const run = ++chordRun.current;
+    chordAbort.current?.abort();
+    const controller = new AbortController();
+    chordAbort.current = controller;
     setChordStatus("loading");
     setChordLayout([]);
+    setChordOverlays({});
     try {
-      const nextDocument = await chordRepository.getChord(item.id);
+      const nextDocument = await chordRepository.getChord(
+        item.id,
+        controller.signal,
+      );
+      if (controller.signal.aborted || run !== chordRun.current) return;
       let nextLayout: ChordLayoutPage[] = [];
+      let nextOverlays: Record<string, PdfChordOverlayMarker[]> = {};
       if ("type" in nextDocument && nextDocument.type === "note-aligned") {
         const pdfRef = musicLock?.items.find(
           (candidate) =>
@@ -445,12 +517,14 @@ function HymnDetail({
               pdfSource === "canonical" && pdfBytes
                 ? pdfBytes
                 : await loadMusicAsset(pdfRef);
-            const { buildChordLayoutFromPdf } =
-              await import("./chord-layout-pdf.js");
-            nextLayout = await buildChordLayoutFromPdf(
+            const presentation = await buildChordPresentationFromPdf(
               canonicalPdf,
               nextDocument.pages,
+              `${item.id}:${pdfRef.sha256}`,
             );
+            if (controller.signal.aborted || run !== chordRun.current) return;
+            nextLayout = presentation.layout;
+            nextOverlays = presentation.overlays;
           } catch {
             // Chord JSON remains useful offline even when its optional PDF
             // coordinate source is unavailable; the viewer renders a clear
@@ -461,15 +535,21 @@ function HymnDetail({
       }
       setChordDocument(nextDocument);
       setChordLayout(nextLayout);
+      setChordOverlays(nextOverlays);
       setChordStatus("ready");
-      if (nextLayout.length > 0) show("Chord diverifikasi dari PDF canonical.");
+      if (nextLayout.length > 0 || Object.keys(nextOverlays).length > 0)
+        show("Chord diverifikasi dari PDF canonical.");
       else show("Chord diverifikasi dari sumber canonical.");
     } catch {
+      if (controller.signal.aborted || run !== chordRun.current) return;
       setChordStatus("error");
       show("Chord belum tersedia offline; sambungkan internet lalu coba lagi.");
+    } finally {
+      if (chordAbort.current === controller) chordAbort.current = undefined;
     }
   };
   const loadPdf = async () => {
+    const run = ++pdfRun.current;
     setViewerMode("pdf");
     writeHymnViewerMode(item.id, "pdf");
     setPdfStatus("loading");
@@ -479,6 +559,7 @@ function HymnDetail({
       let source: "fork" | "canonical" = "fork";
       try {
         const forkPdf = await loadForkHymnalPdf(item.number);
+        if (run !== pdfRun.current) return;
         bytes = forkPdf.bytes;
         initialPage = forkPdf.initialPage;
       } catch {
@@ -488,6 +569,7 @@ function HymnDetail({
         );
         if (!ref) throw new Error("PDF unavailable");
         bytes = await loadMusicAsset(ref);
+        if (run !== pdfRun.current) return;
         source = "canonical";
       }
       const nextUrl = URL.createObjectURL(
@@ -509,6 +591,7 @@ function HymnDetail({
           : "PDF canonical dibuka sebagai fallback.",
       );
     } catch {
+      if (run !== pdfRun.current) return;
       setPdfStatus("error");
       show("PDF gagal dimuat. Periksa koneksi atau cache.");
     }
@@ -516,8 +599,14 @@ function HymnDetail({
   const selectViewerMode = (mode: HymnViewerMode) => {
     writeHymnViewerMode(item.id, mode);
     setViewerMode(mode);
-    if (mode === "chord" && chordStatus !== "ready") void loadChord();
     if (mode === "pdf" && pdfStatus !== "ready") void loadPdf();
+  };
+  const toggleChords = () => {
+    const next = !chordsVisible;
+    setChordsVisible(next);
+    writeHymnChordVisibility(item.id, next);
+    if (next && chordStatus !== "ready" && chordStatus !== "loading")
+      void loadChord();
   };
   const loadMidi = async () => {
     if (!musicLock) {
@@ -568,11 +657,10 @@ function HymnDetail({
       show("MIDI belum dapat dimuat. Coba lagi saat online.");
     }
   };
-  const renderedKey =
-    KEYS[
-      (((KEYS.indexOf(key) + transpose) % KEYS.length) + KEYS.length) %
-        KEYS.length
-    ];
+  const renderedKey = (accidental === "flat" ? FLAT_KEYS : KEYS)[
+    (((KEYS.indexOf(key) + transpose) % KEYS.length) + KEYS.length) %
+      KEYS.length
+  ];
   return (
     <div className="page hymn-detail-page">
       <div className="detail-back">
@@ -618,14 +706,15 @@ function HymnDetail({
           <button
             type="button"
             className="quiet-button"
-            onClick={() => selectViewerMode("chord")}
+            onClick={toggleChords}
             disabled={chordStatus === "loading"}
+            aria-pressed={chordsVisible}
           >
             {chordStatus === "loading"
               ? "Memuat chord…"
-              : chordStatus === "ready"
-                ? "Chord siap"
-                : "Buka chord"}
+              : chordsVisible
+                ? "Sembunyikan chord"
+                : "Tampilkan chord"}
           </button>
           <button
             type="button"
@@ -731,6 +820,15 @@ function HymnDetail({
             label="Nada dasar"
             options={KEYS.map((value) => ({ value, label: value }))}
           />
+          <Select
+            value={accidental}
+            onChange={setAccidental}
+            label="Notasi chord"
+            options={[
+              { value: "sharp", label: "♯ Sharp" },
+              { value: "flat", label: "♭ Flat" },
+            ]}
+          />
           <div className="transpose-control">
             <span>Nada tampil · {renderedKey}</span>
             <div>
@@ -784,7 +882,6 @@ function HymnDetail({
           {(
             [
               ["lyrics", "Lirik"],
-              ["chord", "Chord"],
               ["pdf", "PDF"],
             ] as const
           ).map(([mode, label]) => (
@@ -799,16 +896,11 @@ function HymnDetail({
                   : "viewer-mode-tab"
               }
               onClick={() => selectViewerMode(mode)}
-              disabled={
-                (mode === "chord" && chordStatus === "loading") ||
-                (mode === "pdf" && pdfStatus === "loading")
-              }
+              disabled={mode === "pdf" && pdfStatus === "loading"}
             >
-              {mode === "chord" && chordStatus === "loading"
-                ? "Memuat chord…"
-                : mode === "pdf" && pdfStatus === "loading"
-                  ? "Memuat PDF…"
-                  : label}
+              {mode === "pdf" && pdfStatus === "loading"
+                ? "Memuat PDF…"
+                : label}
             </button>
           ))}
         </div>
@@ -820,17 +912,30 @@ function HymnDetail({
             onTouchStart={onVerseTouchStart}
             onTouchEnd={onVerseTouchEnd}
           >
-            {(verses[safeVerseIndex] ?? "").split("\n").map((line, index) => (
-              <p key={`${index}-${line}`}>{line || " "}</p>
-            ))}
+            {lyricLines.map((line, index) => {
+              const chordLine = chordsVisible ? chordLines[index] : undefined;
+              return (
+                <p key={`${index}-${line}`}>
+                  {chordLine && chordLine.chords.length > 0 ? (
+                    <ChordCapability
+                      lines={[chordLine]}
+                      transpose={transpose}
+                      accidental={accidental}
+                    />
+                  ) : (
+                    line || " "
+                  )}
+                </p>
+              );
+            })}
           </article>
         )}
-        {viewerMode === "chord" && chordStatus === "loading" && (
+        {chordsVisible && chordStatus === "loading" && (
           <div className="loading-panel" role="status">
             Chord sedang diverifikasi…
           </div>
         )}
-        {viewerMode === "chord" && chordStatus === "error" && (
+        {chordsVisible && chordStatus === "error" && (
           <div className="error-panel" role="alert">
             <strong>Chord belum tersedia</strong>
             <span>Sambungkan internet lalu coba lagi.</span>
@@ -842,13 +947,6 @@ function HymnDetail({
               Coba lagi
             </button>
           </div>
-        )}
-        {viewerMode === "chord" && chordDocument && (
-          <ChordViewer
-            document={chordDocument}
-            layout={chordLayout}
-            transpose={transpose}
-          />
         )}
         {viewerMode === "pdf" && pdfStatus === "loading" && (
           <div className="loading-panel" role="status">
@@ -881,6 +979,8 @@ function HymnDetail({
               progressKey={item.id}
               {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
               title={item.title}
+              chordOverlays={pdfChordOverlays}
+              chordsVisible={chordsVisible}
             />
           </Suspense>
         )}

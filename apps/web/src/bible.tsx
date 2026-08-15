@@ -24,6 +24,7 @@ import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
 import { BibleSearchClient } from "./bible-search.js";
 import { useBibleSplitController } from "./bible-split.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 type PackState =
   | { status: "loading" }
@@ -546,12 +547,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
         return limited;
       });
     } catch (error: unknown) {
-      if (!controller.signal.aborted)
+      if (!controller.signal.aborted) {
+        recordDiagnostic("error", "bible.search", error);
         setSearchError(
           error instanceof Error
             ? error.message
             : "Pencarian Alkitab tidak tersedia.",
         );
+      }
     } finally {
       if (searchAbortRef.current === controller) {
         searchAbortRef.current = undefined;

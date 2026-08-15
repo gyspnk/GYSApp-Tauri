@@ -59,4 +59,44 @@ test.describe("Quiet Sanctuary visual regression", () => {
       )
       .toBe(true);
   });
+
+  test("hymn PDF viewer renders a verified page and exposes a download", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await expect(
+      page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
+    ).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: "Buka PDF" }).click();
+    await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator(".pdf-download")).toHaveAttribute(
+      "download",
+      /Pujilah Allah/,
+    );
+    await expect
+      .poll(
+        () =>
+          page
+            .locator(".pdf-pages canvas")
+            .first()
+            .evaluate((canvas) => canvas.width),
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThan(0);
+    await expect
+      .poll(
+        () =>
+          page
+            .locator(".pdf-pages canvas")
+            .first()
+            .evaluate((canvas) => canvas.height),
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThan(0);
+    await expect(page.locator(".pdf-pages canvas").first()).toHaveAttribute(
+      "aria-label",
+      /PDF page \d+/,
+    );
+  });
 });

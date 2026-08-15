@@ -13,8 +13,40 @@ import {
 } from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { clampPdfZoom, nextPdfPage, shouldRenderPdfPage } from "./pdf-utils.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
+
+export type PdfChordOverlayMarker = {
+  noteIdx: number;
+  chord: string;
+  xPct: number;
+  yPct: number;
+};
+
+function PdfChordLayer({
+  markers,
+  visible,
+}: {
+  markers: PdfChordOverlayMarker[] | undefined;
+  visible: boolean;
+}) {
+  if (!visible || !markers?.length) return null;
+  return (
+    <div className="pdf-chord-layer" aria-label="Chord overlay">
+      {markers.map((marker) => (
+        <span
+          className="pdf-chord-marker"
+          key={`${marker.noteIdx}-${marker.xPct}-${marker.yPct}`}
+          style={{ left: `${marker.xPct}%`, top: `${marker.yPct}%` }}
+          data-note-index={marker.noteIdx}
+        >
+          {marker.chord}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 
@@ -32,6 +64,8 @@ function VerticalPdfPage({
   fit,
   stageRef,
   onActive,
+  chordMarkers,
+  chordsVisible,
 }: {
   documentProxy: PDFDocumentProxy;
   pageNumber: number;
@@ -39,6 +73,8 @@ function VerticalPdfPage({
   fit: boolean;
   stageRef: RefObject<HTMLDivElement | null>;
   onActive: (page: number) => void;
+  chordMarkers?: PdfChordOverlayMarker[];
+  chordsVisible: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -97,8 +133,9 @@ function VerticalPdfPage({
       .then(() => {
         if (!disposed) setStatus("ready");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!disposed) setStatus("error");
+        if (!disposed) recordDiagnostic("error", "pdf.page", error);
       });
     return () => {
       disposed = true;
@@ -119,11 +156,14 @@ function VerticalPdfPage({
       aria-label={`PDF page ${pageNumber}`}
       onFocus={() => onActive(pageNumber)}
     >
-      <canvas
-        ref={canvasRef}
-        aria-hidden={status !== "ready"}
-        data-pdf-rendered={status === "ready" ? "true" : "false"}
-      />
+      <div className="pdf-page-frame">
+        <canvas
+          ref={canvasRef}
+          aria-hidden={status !== "ready"}
+          data-pdf-rendered={status === "ready" ? "true" : "false"}
+        />
+        <PdfChordLayer markers={chordMarkers} visible={chordsVisible} />
+      </div>
       {status !== "ready" && (
         <span className="pdf-page-placeholder" aria-live="polite">
           {status === "error"
@@ -143,6 +183,8 @@ export function PdfReader({
   title = "PDF reader",
   progressKey,
   onPageChange,
+  chordOverlays,
+  chordsVisible = false,
 }: {
   src: string;
   data?: Uint8Array;
@@ -151,6 +193,8 @@ export function PdfReader({
   title?: string;
   progressKey?: string;
   onPageChange?: (page: number, totalPages: number) => void;
+  chordOverlays?: Record<string, PdfChordOverlayMarker[]>;
+  chordsVisible?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const secondaryCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -213,8 +257,9 @@ export function PdfReader({
         setDocumentProxy(document);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!disposed) setStatus("error");
+        if (!disposed) recordDiagnostic("error", "pdf.document", error);
       });
     return () => {
       disposed = true;
@@ -287,8 +332,9 @@ export function PdfReader({
       .then(() => {
         if (!disposed) setStatus("ready");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!disposed) setStatus("error");
+        if (!disposed) recordDiagnostic("error", "pdf.page", error);
       });
     return () => {
       disposed = true;
@@ -321,6 +367,25 @@ export function PdfReader({
           Page {page}
           {total ? ` / ${total}` : ""}
         </span>
+        {total > 0 && (
+          <label className="pdf-page-jump">
+            Ke halaman
+            <input
+              type="number"
+              min={1}
+              max={total}
+              value={page}
+              aria-label="Lompat ke halaman PDF"
+              onChange={(event) =>
+                setPage(nextPdfPage(Number(event.target.value) || 1, total, 0))
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter")
+                  goToPage(Number(event.currentTarget.value) || 1);
+              }}
+            />
+          </label>
+        )}
         <button
           type="button"
           onClick={() => goToPage(page + (layout === "two" ? 2 : 1))}
@@ -397,21 +462,37 @@ export function PdfReader({
                     current === nextPage ? current : nextPage,
                   );
                 }}
+                {...(chordOverlays?.[String(index + 1)]
+                  ? { chordMarkers: chordOverlays[String(index + 1)] }
+                  : {})}
+                chordsVisible={chordsVisible}
               />
             ))}
           </div>
         ) : (
           <div className={`pdf-pages pdf-layout-${layout}`}>
-            <canvas
-              className={fit ? "is-fit" : ""}
-              ref={canvasRef}
-              aria-label={`PDF page ${page}`}
-            />
-            <canvas
-              className={fit ? "is-fit" : ""}
-              ref={secondaryCanvasRef}
-              aria-label={`PDF page ${page + 1}`}
-            />
+            <div className="pdf-page-frame">
+              <canvas
+                className={fit ? "is-fit" : ""}
+                ref={canvasRef}
+                aria-label={`PDF page ${page}`}
+              />
+              <PdfChordLayer
+                markers={chordOverlays?.[String(page)]}
+                visible={chordsVisible}
+              />
+            </div>
+            <div className="pdf-page-frame">
+              <canvas
+                className={fit ? "is-fit" : ""}
+                ref={secondaryCanvasRef}
+                aria-label={`PDF page ${page + 1}`}
+              />
+              <PdfChordLayer
+                markers={chordOverlays?.[String(page + 1)]}
+                visible={chordsVisible}
+              />
+            </div>
           </div>
         )}
       </div>

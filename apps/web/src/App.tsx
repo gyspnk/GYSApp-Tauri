@@ -1016,16 +1016,23 @@ function HomePage({ locale }: { locale: Locale }) {
       : activity.bible
         ? { kind: "bible" as const, value: activity.bible }
         : undefined;
-  const loadSauh = () => {
+  const loadSauh = useCallback((signal?: AbortSignal) => {
     setSauhStatus("loading");
-    void fetchSauh()
+    void fetchSauh(signal)
       .then((items) => {
+        if (signal?.aborted) return;
         setSauh(items);
         setSauhStatus("ready");
       })
-      .catch(() => setSauhStatus("error"));
-  };
-  useEffect(loadSauh, []);
+      .catch(() => {
+        if (!signal?.aborted) setSauhStatus("error");
+      });
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadSauh(controller.signal);
+    return () => controller.abort();
+  }, [loadSauh]);
   useEffect(() => {
     const controller = new AbortController();
     void fetchSuara(controller.signal)
@@ -1064,7 +1071,7 @@ function HomePage({ locale }: { locale: Locale }) {
           <div className="section-heading">
             <span>{translate(locale, "home.dailyLabel")} · Sauh Bagi Jiwa</span>
             <small>
-              {selected?.reference ?? translate(locale, "home.reference")}
+              {selected?.reference ?? translate(locale, "home.sauhNoReference")}
             </small>
           </div>
           {sauhStatus === "loading" && (
@@ -1074,7 +1081,11 @@ function HomePage({ locale }: { locale: Locale }) {
             <div className="sauh-offline-state">
               <strong>{translate(locale, "home.sauhUnavailable")}</strong>
               <small>{translate(locale, "home.sauhOfflineHint")}</small>
-              <button className="quiet-button" type="button" onClick={loadSauh}>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => loadSauh()}
+              >
                 {translate(locale, "home.sauhRetry")}
               </button>
             </div>

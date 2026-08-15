@@ -80,6 +80,67 @@ flowchart LR
 The detailed Literature, Kidung, Bible, persistent-media, e-GYS, cache, and
 packaged-asset diagrams live in [`docs/architecture.md`](./docs/architecture.md).
 
+### Kidung viewer contract
+
+Kidung has one `Hymn` entity and two presentation modes. Chord is a shared
+capability, so the same verified note-aligned v2 source can be shown in Text or
+as a DOM overlay above the PDF canvas. A mode switch preserves transpose, key,
+accidental, MIDI, and the global media session.
+
+```mermaid
+flowchart TB
+  HYMN["Hymn domain"] --> RESOLVER["Resource resolver"]
+  RESOLVER --> LYRICS["Lyrics data"]
+  RESOLVER --> PDF["PDF resource"]
+  RESOLVER --> CHORD["Chord JSON v2"]
+  RESOLVER --> MIDI["MIDI resource"]
+  LYRICS --> STATE["Viewer state"]
+  PDF --> STATE
+  CHORD --> STATE
+  MIDI --> STATE
+  STATE --> PRESENTATION["Presentation: Text or PDF"]
+  STATE --> CAPABILITY["Chord: visible or hidden"]
+  STATE --> MUSIC["Shared transpose · key · accidental · instrument · tempo"]
+```
+
+```mermaid
+flowchart LR
+  PDF0["PDF resource"] --> PAGE["PDF.js page"] --> CANVAS["Canvas"]
+  PAGE --> CONTENT["PDF text content"] --> NOTES["Note extraction"]
+  NOTES --> CACHE["pageNotesCache (resource hash + page)"]
+  CACHE --> MARKERS["Note-aligned chord layer"] --> OVERLAY["DOM marker overlay"]
+  LYRICS0["Lyrics data"] --> ASSOC["Chord/lyric association"]
+  CACHE --> ASSOC
+  CHORD0["Chord JSON v2"] --> ASSOC
+  ASSOC --> RELATIVE["Relative chord position"] --> TEXT["Text presentation"]
+```
+
+```mermaid
+flowchart LR
+  REQUEST["Resource request"] --> KEY["Immutable version/hash key"] --> HIT{"Cache hit?"}
+  HIT -->|yes| REUSE["Reuse normalized result"]
+  HIT -->|no| LOAD["Load → parse → validate"] --> STORE["Atomic cache + pointer"]
+  LOAD -->|transient failure| RETRY["Retry later; do not poison cache"]
+```
+
+```mermaid
+flowchart LR
+  MIDI0["MIDI resource"] --> LOOKUP["Preload lookup: URL + transpose + instrument"]
+  LOOKUP --> WORKER["Worker / local synth engine"] --> AUDIO["One global audio session"]
+  NEXT["Next-song preload"] -. lower priority .-> LOOKUP
+  FOREGROUND["Selected song"] -->|priority| WORKER
+```
+
+```mermaid
+flowchart LR
+  COMMIT["git commit"] --> SYNC["Local authenticated e-GYS clone/fetch"]
+  SYNC --> DIFF["Contract diff + compatibility"] --> DERIVED["Generated derived metadata"]
+  DERIVED --> TEST["Targeted tests"] --> STAGE["Stage derived files only"]
+  APP["App"] --> BROWSER["System browser / provider SDK"] --> OAUTH["e-GYS auth"]
+  OAUTH --> CALLBACK["Callback or ID-token exchange"] --> BFF["BFF HttpOnly session"]
+  BFF --> API["Native e-GYS API profile"]
+```
+
 ## Development
 
 ```bash
@@ -128,8 +189,8 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 80.2 KiB gzip for the main
-application chunk and 156.7 KiB gzip for all initial JavaScript; PDF.js, its
+The current production baseline is approximately 82.8 KiB gzip for the main
+application chunk and 159.1 KiB gzip for all initial JavaScript; PDF.js, its
 worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
 and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
 check the budget locally.

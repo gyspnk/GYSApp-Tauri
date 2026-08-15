@@ -7,6 +7,7 @@ import {
   persistSpeechSettings,
   readSpeechSettings,
 } from "./speech-settings.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 export type SpeechContext = { path: string; label: string };
 export type SpeechQueueItem = {
@@ -97,8 +98,9 @@ class BrowserSpeechSession {
         pitch: saved.pitch,
         volume: saved.volume,
       });
-    } catch {
+    } catch (error) {
       // A browser can expose speechSynthesis but never publish its voices.
+      recordDiagnostic("warn", "tts.voices", error);
       this.patch({ voices: [] });
     }
   }
@@ -168,6 +170,7 @@ class BrowserSpeechSession {
       this.patch({ status: "idle", currentIndex: -1 });
     } catch (error) {
       if (this.abortController.signal.aborted) return;
+      recordDiagnostic("error", "tts.playback", error);
       this.patch({
         status: "error",
         error: error instanceof Error ? error.message : "Pembaca suara gagal",

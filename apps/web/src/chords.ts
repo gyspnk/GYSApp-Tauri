@@ -7,6 +7,7 @@ import type { ChordRef, ChordManifestV1 } from "@gys/contracts";
 import { ChordManifestV1Schema } from "@gys/contracts";
 import { BrowserChordCache } from "./chord-cache.js";
 import { createPlatformServices } from "./platform.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 
@@ -118,9 +119,12 @@ export function createBrowserChordRepository(): ChordRepository {
           lastError = error;
         }
       }
-      throw lastError instanceof Error
-        ? lastError
-        : new Error("chord request failed");
+      const failure =
+        lastError instanceof Error
+          ? lastError
+          : new Error("chord request failed");
+      recordDiagnostic("error", "chord.fetch", failure);
+      throw failure;
     },
   };
   return new ChordRepository(

@@ -89,6 +89,12 @@
 - Unified the Home “continue” surface so the same recent activity is not shown
   twice; Daily Verse now selects today’s Sauh Bagi Jiwa entry and keeps its
   source, verse, and image provenance.
+- Daily Sauh selection now prioritizes the publisher’s canonical date slug over
+  unrelated posts edited on the same day; the obsolete static Psalm fallback
+  was removed. Scoped diagnostics redact bearer/token/API-key values and cover
+  content, assets, PDF, TTS, MIDI, Bible, literature, feedback, and e-GYS
+  failures. PDF release smoke now verifies a rendered canvas and download link,
+  while MIDI smoke verifies minimize/restore.
 - Added real TJC literature catalog enrichment with 279 verified cover images,
   lazy/fallback cover rendering, detail routes, favorites, reading progress,
   PDF validation, and offline Cache Storage downloads.
@@ -117,9 +123,11 @@
   dilihat” shelf.
 - Added a continuous GYSChordWeb-style PDF mode with lazy per-page rendering,
   keyboard focus, smooth page jumps, and bounded mobile memory use.
-- Added a per-hymn, persisted Lirik/Chord/PDF mode selector so only one viewer
-  surface is mounted at a time; mode tabs are responsive, keyboard-visible,
-  and reduced-motion aware.
+- Reframed Kidung as two persisted presentation modes (Lirik/PDF) with a
+  shared chord capability. Note-aligned v2 markers now render as a DOM layer
+  over PDF.js canvases and as the same-source Text mapping; transpose and
+  sharp/flat changes update labels without decoding the PDF again. Mode tabs
+  remain responsive, keyboard-visible, and reduced-motion aware.
 - Hardened the e-GYS boundary with typed provider/session schemas, explicit
   provider-exchange tests, HttpOnly cookie forwarding assertions, and correct
   normalization of the upstream WhatsApp READY response.
@@ -138,7 +146,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 80.2 KiB gzip main application chunk and 156.7
+- Preserved the bundle gate: 82.8 KiB gzip main application chunk and 159.1
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

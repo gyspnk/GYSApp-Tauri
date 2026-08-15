@@ -34,6 +34,7 @@ import {
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { withTimeout } from "./egys-auth.js";
+import { recordDiagnostic } from "./diagnostics.js";
 
 type PackManifest = {
   version: number;
@@ -261,7 +262,8 @@ export function MorePage({ locale }: { locale: Locale }) {
       localStorage.removeItem("gys-report-draft");
       setReportStatus("idle");
       show("Laporan diterima. Terima kasih.");
-    } catch {
+    } catch (error) {
+      recordDiagnostic("warn", "feedback.submit", error);
       setReportStatus("error");
       show("Laporan disimpan sebagai draft; kirim kembali saat online.");
       localStorage.setItem("gys-report-draft", message);
@@ -285,7 +287,8 @@ export function MorePage({ locale }: { locale: Locale }) {
       setBackupPassword("");
       setBackupOpen(false);
       show("Backup terenkripsi berhasil diunduh.");
-    } catch {
+    } catch (error) {
+      recordDiagnostic("warn", "backup.export", error);
       show(
         "Backup gagal dibuat. Coba lagi di perangkat yang mendukung AES-GCM.",
       );
@@ -367,7 +370,8 @@ export function MorePage({ locale }: { locale: Locale }) {
         setPackProgress(Math.round((completed / total) * 100)),
       );
       show("Paket offline berhasil diverifikasi dan disimpan.");
-    } catch {
+    } catch (error) {
+      recordDiagnostic("warn", "assets.pack", error);
       show(
         "Paket offline gagal diperbarui. Periksa koneksi dan ruang penyimpanan.",
       );
@@ -471,7 +475,8 @@ export function MorePage({ locale }: { locale: Locale }) {
           ? `Selamat datang, ${profile.displayName}.`
           : "Login e-GYS berhasil.",
       );
-    } catch {
+    } catch (error) {
+      recordDiagnostic("error", "egys.login", error);
       show(
         "Login e-GYS belum dapat diselesaikan. Pastikan Worker dan client provider sudah dikonfigurasi.",
       );
@@ -527,7 +532,9 @@ export function MorePage({ locale }: { locale: Locale }) {
       }
       if (!controller.signal.aborted)
         show("Permintaan WhatsApp kedaluwarsa sebelum dikonfirmasi.");
-    } catch {
+    } catch (error) {
+      if (!controller.signal.aborted)
+        recordDiagnostic("error", "egys.whatsapp", error);
       if (!controller.signal.aborted)
         show(
           "Login WhatsApp e-GYS belum tersedia. Pastikan Worker terkonfigurasi.",

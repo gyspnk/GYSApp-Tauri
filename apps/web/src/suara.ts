@@ -3,6 +3,7 @@ import {
   SuaraSejatiPostSchema,
   type SuaraSejatiPost,
 } from "@gys/contracts";
+import { recordDiagnostic } from "./diagnostics.js";
 import { stripHtml } from "./sauh.js";
 
 const STATIC_URL = `${import.meta.env.BASE_URL}offline/suara-sejati.json`;
@@ -156,9 +157,12 @@ export async function fetchSuara(
         lastError = error;
       }
     }
-    throw lastError instanceof Error
-      ? lastError
-      : new Error("Suara Sejati is unavailable");
+    const failure =
+      lastError instanceof Error
+        ? lastError
+        : new Error("Suara Sejati is unavailable");
+    recordDiagnostic("error", "suara.fetch", failure);
+    throw failure;
   })();
   const tracked = shared.then(
     (items) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSauhPosts } from "./sauh.js";
+import { normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
 
 describe("BFF Sauh normalization", () => {
   it("drops items without a valid upstream date instead of making them current", () => {
@@ -57,5 +57,35 @@ describe("BFF Sauh normalization", () => {
     expect(posts).toHaveLength(1);
     expect(posts[0]?.id).toBe("safe-source");
     expect(posts[0]?.imageUrl).toBeUndefined();
+  });
+
+  it("prefers the publisher's daily slug over an unrelated post edited today", () => {
+    const posts = normalizeSauhPosts([
+      {
+        id: 1,
+        slug: "sbj260814",
+        date: "2026-08-13T17:00:00.000Z",
+        modified: "2026-08-13T17:00:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260814/",
+        title: { rendered: "Sauh hari ini" },
+        content: { rendered: "<p>Ayat hari ini.</p>" },
+      },
+      {
+        id: 2,
+        slug: "artikel-lama-diedit",
+        date: "2026-08-01T00:00:00.000Z",
+        modified: "2026-08-14T00:30:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/artikel-lama-diedit/",
+        title: { rendered: "Artikel lama" },
+        content: { rendered: "<p>Isi lama yang baru diedit.</p>" },
+      },
+    ]);
+
+    const selected = onlyTodaySauh(
+      posts,
+      new Date("2026-08-14T01:00:00.000+08:00"),
+    );
+    expect(selected).toHaveLength(1);
+    expect(selected[0]?.id).toBe("sbj260814");
   });
 });
