@@ -9,6 +9,7 @@ import {
   useState,
   useSyncExternalStore,
   type ErrorInfo,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
@@ -473,6 +474,30 @@ function MediaSurface({ locale }: { locale: Locale }) {
     };
   }, []);
   useEffect(() => {
+    // A minimized player is shorter than the expanded surface. Re-clamp after
+    // either state changes so a saved desktop position cannot put controls
+    // below the viewport on a phone or after an orientation change.
+    const frame = window.requestAnimationFrame(() => {
+      setPosition((current) => {
+        if (!current) return current;
+        const surface = document.querySelector<HTMLElement>(".media-surface");
+        const width = surface?.getBoundingClientRect().width ?? 0;
+        const height = surface?.getBoundingClientRect().height ?? 0;
+        return {
+          left: Math.max(
+            8,
+            Math.min(current.left, window.innerWidth - width - 8),
+          ),
+          top: Math.max(
+            8,
+            Math.min(current.top, window.innerHeight - height - 8),
+          ),
+        };
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [minimized, snapshot.songId, speechActive]);
+  useEffect(() => {
     if ((!snapshot.songId && !speechActive) || !("mediaSession" in navigator))
       return;
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -645,6 +670,27 @@ function MediaSurface({ locale }: { locale: Locale }) {
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   };
+  const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const directionByKey: Record<string, [number, number]> = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const direction = directionByKey[event.key];
+    if (!direction) return;
+    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
+    if (!surface) return;
+    event.preventDefault();
+    const step = event.shiftKey ? 48 : 16;
+    const rect = surface.getBoundingClientRect();
+    const left = (position?.left ?? rect.left) + direction[0] * step;
+    const top = (position?.top ?? rect.top) + direction[1] * step;
+    setPosition({
+      left: Math.max(8, Math.min(left, window.innerWidth - rect.width - 8)),
+      top: Math.max(8, Math.min(top, window.innerHeight - rect.height - 8)),
+    });
+  };
   return (
     <aside
       className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}`}
@@ -670,10 +716,14 @@ function MediaSurface({ locale }: { locale: Locale }) {
         className="media-art media-drag-handle"
         title="Geser pemutar"
         aria-label="Geser pemutar media"
+        role="button"
+        tabIndex={0}
+        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
         onPointerDown={beginDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
+        onKeyDown={moveByKeyboard}
       >
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>

@@ -2157,6 +2157,10 @@ body.is-resizing-bible {
   touch-action: none;
   user-select: none;
 }
+.media-drag-handle:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
 .media-mini-context {
   display: none;
   min-width: 0;

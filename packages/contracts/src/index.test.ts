@@ -130,6 +130,26 @@ describe("public contracts", () => {
     ).toBe("VALIDATION_ERROR");
   });
 
+  it("preserves current e-GYS operational capabilities", () => {
+    const profile = AccountProfileSchema.parse({
+      id: "u1",
+      displayName: "Grace",
+      permissions: {
+        viewMembers: true,
+        viewBranches: true,
+        viewEvents: true,
+        createEvents: false,
+        updateEvents: false,
+        archiveEvents: false,
+      },
+    });
+    expect(profile.permissions).toMatchObject({
+      viewBranches: true,
+      viewEvents: true,
+      archiveEvents: false,
+    });
+  });
+
   it("keeps hymn verses and upstream content sources explicit", () => {
     const hymn = HymnCatalogEntrySchema.parse({
       id: "hymn-001",

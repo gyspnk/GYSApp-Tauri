@@ -300,6 +300,31 @@ export function createApp(
       c.header("access-control-allow-credentials", "true");
       c.header("vary", "Origin");
     }
+    // Cookie-authenticated state changes must carry a browser origin (or an
+    // explicit same-site fetch signal). A cross-site HTML form can attach the
+    // HttpOnly e-GYS cookie but cannot forge these headers, so this closes the
+    // CSRF gap without exposing a token to JavaScript. Native adapters may
+    // identify themselves explicitly because they do not have Fetch Metadata.
+    const stateChanging = ["POST", "PUT", "PATCH", "DELETE"].includes(
+      c.req.method.toUpperCase(),
+    );
+    const hasCookie = Boolean(c.req.header("cookie"));
+    const fetchSite = c.req.header("sec-fetch-site")?.toLowerCase();
+    const nativeClient = c.req.header("x-gys-client") === "native";
+    const sameSiteFetch =
+      fetchSite === "same-origin" || fetchSite === "same-site";
+    if (
+      stateChanging &&
+      hasCookie &&
+      !origin &&
+      !sameSiteFetch &&
+      !nativeClient
+    )
+      return errorResponse(
+        c,
+        "FORBIDDEN",
+        "Cookie-authenticated state changes require a trusted origin",
+      );
     const key =
       c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
     const now = Date.now();
@@ -339,7 +364,7 @@ export function createApp(
     c.header("access-control-allow-methods", "GET,POST,OPTIONS");
     c.header(
       "access-control-allow-headers",
-      "content-type,authorization,x-request-id,range",
+      "content-type,authorization,x-request-id,range,x-gys-client",
     );
     c.header("access-control-max-age", "600");
     return c.body(null, 204);
@@ -1060,6 +1085,21 @@ export function createApp(
                 : {}),
               ...(typeof raw.can.deleteMembers === "boolean"
                 ? { deleteMembers: raw.can.deleteMembers }
+                : {}),
+              ...(typeof raw.can.viewBranches === "boolean"
+                ? { viewBranches: raw.can.viewBranches }
+                : {}),
+              ...(typeof raw.can.viewEvents === "boolean"
+                ? { viewEvents: raw.can.viewEvents }
+                : {}),
+              ...(typeof raw.can.createEvents === "boolean"
+                ? { createEvents: raw.can.createEvents }
+                : {}),
+              ...(typeof raw.can.updateEvents === "boolean"
+                ? { updateEvents: raw.can.updateEvents }
+                : {}),
+              ...(typeof raw.can.archiveEvents === "boolean"
+                ? { archiveEvents: raw.can.archiveEvents }
                 : {}),
             },
           }

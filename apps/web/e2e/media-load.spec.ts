@@ -54,6 +54,14 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(
     page.getByRole("button", { name: "Perbesar pemutar" }),
   ).toBeVisible();
+  const dragHandle = page.getByRole("button", { name: "Geser pemutar media" });
+  await dragHandle.focus();
+  const before = await dragHandle.boundingBox();
+  await dragHandle.press("ArrowLeft");
+  const after = await dragHandle.boundingBox();
+  expect(before).not.toBeNull();
+  expect(after).not.toBeNull();
+  expect(after!.x).toBeLessThan(before!.x);
   expect(missingMidiRequests).toEqual([]);
 });
 

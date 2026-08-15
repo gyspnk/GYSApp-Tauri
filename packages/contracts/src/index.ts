@@ -183,6 +183,13 @@ export const EgysMeResponseSchema = z.object({
       createMembers: z.boolean(),
       updateMembers: z.boolean(),
       deleteMembers: z.boolean(),
+      // Current e-GYS deployments also expose branch/event capabilities.
+      // Optional keeps the adapter compatible with older installations.
+      viewBranches: z.boolean().optional(),
+      viewEvents: z.boolean().optional(),
+      createEvents: z.boolean().optional(),
+      updateEvents: z.boolean().optional(),
+      archiveEvents: z.boolean().optional(),
     })
     .optional(),
   branchScope: z.string().min(1).nullable().optional(),
@@ -384,6 +391,11 @@ export const AccountProfileSchema = z.object({
       createMembers: z.boolean().optional(),
       updateMembers: z.boolean().optional(),
       deleteMembers: z.boolean().optional(),
+      viewBranches: z.boolean().optional(),
+      viewEvents: z.boolean().optional(),
+      createEvents: z.boolean().optional(),
+      updateEvents: z.boolean().optional(),
+      archiveEvents: z.boolean().optional(),
     })
     .optional(),
   provider: z.enum(["google", "apple", "egys"]).optional(),

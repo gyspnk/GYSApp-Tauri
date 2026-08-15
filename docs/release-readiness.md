@@ -143,6 +143,13 @@ claim GA parity until the remaining reports and platform artifacts exist.
   local), `edge`, or `local`. The optional voice catalog is also schema- and
   HTTPS-validated; no static Edge voice list is shown when it is absent. It
   remains unavailable until a protected `EDGE_TTS_URL` gateway is supplied.
+- Cookie-authenticated BFF mutations now reject requests without an allowlisted
+  `Origin` or same-site Fetch Metadata signal; the native adapter uses the
+  explicit `x-gys-client: native` marker and the policy has contract coverage.
+  The global media surface re-clamps after minimize/route changes and its drag
+  handle supports keyboard arrow movement with a visible focus ring. The
+  normalized e-GYS profile preserves branch and event capabilities exposed by
+  the current upstream contract, while older deployments remain compatible.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.

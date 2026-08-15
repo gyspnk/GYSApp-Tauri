@@ -180,6 +180,15 @@ service or platform artifact that cannot be exercised in this workspace.
 - The browser diagnostic journal is bounded to 80 redacted events and receives
   scoped failures from content, assets, PDF, TTS, MIDI, Bible, literature,
   feedback, and e-GYS boundaries without persisting bearer or token values.
+- BFF cookie-authenticated state changes now require an allowlisted `Origin` or
+  same-site Fetch Metadata signal (with an explicit native-client escape hatch),
+  and the global media handle is keyboard-movable with arrow keys and re-clamps
+  after minimize/expand transitions. Focus styling and E2E coverage keep the
+  drag affordance usable without a pointer.
+- The normalized e-GYS profile now preserves the current upstream operational
+  capabilities (`viewBranches`, event view/create/update/archive) alongside the
+  member permissions, while remaining compatible with older deployments that
+  omit those fields.
 
 ## Implemented / Needs Verification
 

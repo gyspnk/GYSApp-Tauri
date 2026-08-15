@@ -73,6 +73,50 @@ describe("BFF public boundary", () => {
     expect(response.headers.get("x-request-id")).toBe(payload.error.requestId);
   });
 
+  it("requires a trusted origin for cookie-authenticated state changes", async () => {
+    const app = createApp({
+      allowedOrigins: ["https://good.example"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const blocked = await app.request("/api/v1/auth/logout", {
+      method: "POST",
+      headers: { cookie: "egys_session=opaque" },
+    });
+    expect(blocked.status).toBe(403);
+    const blockedBody = (await blocked.json()) as {
+      error: { code: string };
+    };
+    expect(blockedBody.error.code).toBe("FORBIDDEN");
+
+    const sameSite = await app.request("/api/v1/auth/logout", {
+      method: "POST",
+      headers: {
+        cookie: "egys_session=opaque",
+        "sec-fetch-site": "same-origin",
+      },
+    });
+    expect(sameSite.status).toBe(204);
+
+    const allowed = await app.request("/api/v1/auth/logout", {
+      method: "POST",
+      headers: {
+        cookie: "egys_session=opaque",
+        Origin: "https://good.example",
+      },
+    });
+    expect(allowed.status).toBe(204);
+
+    const native = await app.request("/api/v1/auth/logout", {
+      method: "POST",
+      headers: {
+        cookie: "egys_session=opaque",
+        "x-gys-client": "native",
+      },
+    });
+    expect(native.status).toBe(204);
+  });
+
   it("serves catalog content with an allowed origin and cache headers", async () => {
     const app = createApp({
       allowedOrigins: ["https://good.example"],
@@ -716,6 +760,11 @@ describe("BFF public boundary", () => {
             createMembers: false,
             updateMembers: false,
             deleteMembers: false,
+            viewBranches: true,
+            viewEvents: true,
+            createEvents: false,
+            updateEvents: false,
+            archiveEvents: false,
           },
           language: "id",
         });
@@ -753,6 +802,13 @@ describe("BFF public boundary", () => {
           branchName: "Jakarta Selatan",
           memberStatus: "aktif",
           isMember: true,
+          permissions: {
+            viewBranches: true,
+            viewEvents: true,
+            createEvents: false,
+            updateEvents: false,
+            archiveEvents: false,
+          },
         },
       });
     } finally {
