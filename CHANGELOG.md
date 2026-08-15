@@ -2,6 +2,15 @@
 
 ## Unreleased — GA hardening slice
 
+- Added per-hymn text typography controls with bounded persisted font size and
+  line height, a persisted horizontal PDF mode, and a responsive two-page guard
+  that uses a single readable page below 720 px. The global MIDI session now
+  exposes source-program playback plus all 128 General MIDI instruments and
+  persists instrument/tempo/transpose/volume preferences; Kidung transpose is
+  synchronized with that session.
+- Debounced identical Bible/hymn activity writes to prevent duplicate “recent”
+  entries during route remounts and React Strict Mode effects.
+
 - Hardened Sauh Bagi Jiwa and Suara Sejati normalization: missing/invalid dates
   and unreadable entries are discarded, links/images are constrained to trusted
   TJC origins, and the Home outage state no longer invents Daily Verse content.
@@ -146,7 +155,7 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 82.8 KiB gzip main application chunk and 159.1
+- Preserved the bundle gate: 83.8 KiB gzip main application chunk and 161.3
   KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
   remain lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.

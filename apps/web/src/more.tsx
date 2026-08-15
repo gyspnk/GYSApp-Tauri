@@ -82,6 +82,8 @@ const BACKUP_STORAGE_KEYS = [
   "gys-daily-sauh-mode-v1",
   "gys-media-minimized",
   "gys-media-position-v1",
+  "gys-midi-preferences-v1",
+  "gys-hymn-typography-v1",
   "gys-speech-voice-v1",
   "gys-speech-rate-v1",
   "gys-speech-engine-v1",
@@ -89,11 +91,17 @@ const BACKUP_STORAGE_KEYS = [
   "gys-reminder-time-v1",
   "gys-chord-cache-index-v1",
   "gys-midi-playlist-v1",
+  "gys-hymn-view-mode-v1",
+  "gys-hymn-chord-visibility-v1",
 ];
 
 function collectBackupSettings() {
+  const dynamicKeys = Object.keys(localStorage).filter(
+    (key) =>
+      key.startsWith("gys-pdf-page:") || key.startsWith("gys-pdf-layout:"),
+  );
   return Object.fromEntries(
-    BACKUP_STORAGE_KEYS.flatMap((key) => {
+    [...BACKUP_STORAGE_KEYS, ...dynamicKeys].flatMap((key) => {
       const value = localStorage.getItem(key);
       return value === null ? [] : [[key, value]];
     }),

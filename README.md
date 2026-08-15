@@ -103,6 +103,14 @@ flowchart TB
   STATE --> MUSIC["Shared transpose · key · accidental · instrument · tempo"]
 ```
 
+The Text presentation exposes bounded per-hymn typography controls (16–28 px
+and 1.4–2.2 line height) and persists them without reloading the chord/PDF
+resource. PDF presentation keeps single, two-page, vertical, and horizontal
+layouts; a two-page preference automatically falls back to a readable single
+page below 720 px. The MIDI surface exposes the 128 General MIDI programs plus
+the source-file program, and its volume, mute, tempo, transpose, and instrument
+preferences survive a new session.
+
 ```mermaid
 flowchart LR
   PDF0["PDF resource"] --> PAGE["PDF.js page"] --> CANVAS["Canvas"]
@@ -125,7 +133,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  MIDI0["MIDI resource"] --> LOOKUP["Preload lookup: URL + transpose + instrument"]
+  MIDI0["MIDI resource"] --> LOOKUP["Preload lookup: URL + tempo + transpose + instrument"]
   LOOKUP --> WORKER["Worker / local synth engine"] --> AUDIO["One global audio session"]
   NEXT["Next-song preload"] -. lower priority .-> LOOKUP
   FOREGROUND["Selected song"] -->|priority| WORKER
@@ -189,8 +197,8 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 82.8 KiB gzip for the main
-application chunk and 159.1 KiB gzip for all initial JavaScript; PDF.js, its
+The current production baseline is approximately 83.8 KiB gzip for the main
+application chunk and 161.3 KiB gzip for all initial JavaScript; PDF.js, its
 worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
 and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
 check the budget locally.

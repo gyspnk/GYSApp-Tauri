@@ -37,6 +37,7 @@ import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { GlobalSearch } from "./global-search.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
 import {
   getActivity,
   subscribeActivity,
@@ -805,6 +806,26 @@ function MediaSurface({ locale }: { locale: Locale }) {
                   void midiPlayer.setTempo(Number(event.target.value))
                 }
               />
+            </label>
+            <label className="media-instrument-control">
+              <span>Instrumen</span>
+              <select
+                aria-label="Instrumen MIDI"
+                value={snapshot.instrument}
+                disabled={speechActive}
+                onChange={(event) =>
+                  void midiPlayer
+                    .setInstrument(Number(event.target.value))
+                    .catch(() => undefined)
+                }
+              >
+                <option value={-1}>{midiInstrumentLabel(-1)}</option>
+                {GM_INSTRUMENTS.map((name, program) => (
+                  <option key={program} value={program}>
+                    {String(program + 1).padStart(3, "0")} · {name}
+                  </option>
+                ))}
+              </select>
             </label>
             <div className="media-transpose">
               <span>

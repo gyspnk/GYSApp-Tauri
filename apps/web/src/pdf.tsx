@@ -12,7 +12,14 @@ import {
   type PDFPageProxy,
 } from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import { clampPdfZoom, nextPdfPage, shouldRenderPdfPage } from "./pdf-utils.js";
+import {
+  clampPdfZoom,
+  isPdfLayout,
+  nextPdfPage,
+  pdfLayoutForViewport,
+  shouldRenderPdfPage,
+  type PdfLayout,
+} from "./pdf-utils.js";
 import { recordDiagnostic } from "./diagnostics.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
@@ -50,6 +57,16 @@ function PdfChordLayer({
 
 export { clampPdfZoom, nextPdfPage } from "./pdf-utils.js";
 
+function readPdfLayout(progressKey: string | undefined): PdfLayout {
+  if (!progressKey || typeof window === "undefined") return "single";
+  try {
+    const stored = window.localStorage.getItem(`gys-pdf-layout:${progressKey}`);
+    return isPdfLayout(stored) ? stored : "single";
+  } catch {
+    return "single";
+  }
+}
+
 /**
  * Render one page in the long-scroll mode used by GYSChordWeb.
  *
@@ -66,6 +83,7 @@ function VerticalPdfPage({
   onActive,
   chordMarkers,
   chordsVisible,
+  horizontal = false,
 }: {
   documentProxy: PDFDocumentProxy;
   pageNumber: number;
@@ -75,6 +93,7 @@ function VerticalPdfPage({
   onActive: (page: number) => void;
   chordMarkers?: PdfChordOverlayMarker[];
   chordsVisible: boolean;
+  horizontal?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,7 +119,11 @@ function VerticalPdfPage({
           onActive(pageNumber);
         }
       },
-      { root: stageRef.current, rootMargin: "720px 0px", threshold: 0.01 },
+      {
+        root: stageRef.current,
+        rootMargin: "720px 720px",
+        threshold: 0.01,
+      },
     );
     observer.observe(host);
     return () => observer.disconnect();
@@ -145,11 +168,11 @@ function VerticalPdfPage({
         canvasRef.current.height = 0;
       }
     };
-  }, [documentProxy, fit, nearViewport, pageNumber, zoom]);
+  }, [documentProxy, fit, horizontal, nearViewport, pageNumber, zoom]);
 
   return (
     <div
-      className={`pdf-vertical-page${status === "ready" ? " is-ready" : ""}`}
+      className={`${horizontal ? "pdf-horizontal-page" : "pdf-vertical-page"}${status === "ready" ? " is-ready" : ""}`}
       data-pdf-page={pageNumber}
       ref={hostRef}
       tabIndex={0}
@@ -211,14 +234,45 @@ export function PdfReader({
   const [total, setTotal] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [fit, setFit] = useState(false);
-  const [layout, setLayout] = useState<"single" | "two" | "vertical">("single");
+  const [layout, setLayout] = useState<PdfLayout>(() =>
+    readPdfLayout(progressKey),
+  );
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === "undefined" ? 1024 : window.innerWidth,
+  );
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
   const verticalStageRef = useRef<HTMLDivElement>(null);
+  const hydratingLayout = useRef(true);
   const pinchStart = useRef<{ distance: number; zoom: number } | undefined>(
     undefined,
   );
+  const effectiveLayout = pdfLayoutForViewport(layout, viewportWidth);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    hydratingLayout.current = true;
+    setLayout(readPdfLayout(progressKey));
+  }, [progressKey]);
+
+  useEffect(() => {
+    if (!progressKey) return;
+    if (hydratingLayout.current) {
+      hydratingLayout.current = false;
+      return;
+    }
+    try {
+      window.localStorage.setItem(`gys-pdf-layout:${progressKey}`, layout);
+    } catch {
+      // A storage quota/private-mode failure should not block the reader.
+    }
+  }, [layout, progressKey]);
 
   useEffect(() => {
     if (!progressKey) return;
@@ -301,11 +355,12 @@ export function PdfReader({
 
   useEffect(() => {
     if (!documentProxy || !canvasRef.current) return;
-    if (layout === "vertical") return;
+    if (effectiveLayout === "vertical" || effectiveLayout === "horizontal")
+      return;
     let disposed = false;
     const renderTasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
     const pageNumbers =
-      layout === "single"
+      effectiveLayout === "single"
         ? [page]
         : [page, page + 1].filter((value) => value <= documentProxy.numPages);
     const canvases = [canvasRef.current, secondaryCanvasRef.current];
@@ -341,16 +396,21 @@ export function PdfReader({
       for (const renderTask of renderTasks) renderTask.cancel();
       if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
-  }, [documentProxy, layout, page, zoom]);
+  }, [documentProxy, effectiveLayout, page, zoom]);
 
   const goToPage = (next: number) => {
     const bounded = nextPdfPage(next, total, 0);
     setPage(bounded);
-    if (layout !== "vertical") return;
+    if (effectiveLayout !== "vertical" && effectiveLayout !== "horizontal")
+      return;
     const target = verticalStageRef.current?.querySelector<HTMLElement>(
       `[data-pdf-page="${bounded}"]`,
     );
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    target?.scrollIntoView({
+      behavior: "smooth",
+      block: effectiveLayout === "vertical" ? "start" : "nearest",
+      inline: effectiveLayout === "horizontal" ? "center" : "nearest",
+    });
   };
 
   return (
@@ -358,7 +418,7 @@ export function PdfReader({
       <div className="pdf-toolbar">
         <button
           type="button"
-          onClick={() => goToPage(page + (layout === "two" ? -2 : -1))}
+          onClick={() => goToPage(page + (effectiveLayout === "two" ? -2 : -1))}
           disabled={page <= 1}
         >
           Sebelumnya
@@ -388,7 +448,7 @@ export function PdfReader({
         )}
         <button
           type="button"
-          onClick={() => goToPage(page + (layout === "two" ? 2 : 1))}
+          onClick={() => goToPage(page + (effectiveLayout === "two" ? 2 : 1))}
           disabled={total === 0 || page >= total}
         >
           Berikutnya
@@ -410,21 +470,31 @@ export function PdfReader({
           {fit ? "Ukuran asli" : "Sesuaikan"}
         </button>
         <div className="pdf-layout-toggle" role="group" aria-label="Layout PDF">
-          {(["single", "two", "vertical"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={layout === value ? "is-active" : ""}
-              onClick={() => setLayout(value)}
-            >
-              {value === "single"
-                ? "1 halaman"
-                : value === "two"
-                  ? "2 halaman"
-                  : "Vertikal"}
-            </button>
-          ))}
+          {(["single", "two", "vertical", "horizontal"] as const).map(
+            (value) => (
+              <button
+                key={value}
+                type="button"
+                className={layout === value ? "is-active" : ""}
+                onClick={() => setLayout(value)}
+                aria-pressed={layout === value}
+              >
+                {value === "single"
+                  ? "1 halaman"
+                  : value === "two"
+                    ? "2 halaman"
+                    : value === "vertical"
+                      ? "Vertikal"
+                      : "Mendatar"}
+              </button>
+            ),
+          )}
         </div>
+        {layout === "two" && effectiveLayout === "single" && (
+          <small className="pdf-layout-note">
+            Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.
+          </small>
+        )}
         {downloadUrl && (
           <a
             className="pdf-download"
@@ -437,6 +507,7 @@ export function PdfReader({
       </div>
       <div
         className="pdf-stage"
+        data-pdf-layout={effectiveLayout}
         onTouchStart={onStageTouchStart}
         onTouchMove={onStageTouchMove}
         onTouchEnd={onStageTouchEnd}
@@ -447,8 +518,11 @@ export function PdfReader({
             PDF belum tersedia offline. Simpan dulu saat tersambung internet.
           </p>
         )}
-        {layout === "vertical" ? (
-          <div className="pdf-pages pdf-layout-vertical" ref={verticalStageRef}>
+        {effectiveLayout === "vertical" || effectiveLayout === "horizontal" ? (
+          <div
+            className={`pdf-pages pdf-layout-${effectiveLayout}`}
+            ref={verticalStageRef}
+          >
             {Array.from({ length: total }, (_, index) => (
               <VerticalPdfPage
                 key={index + 1}
@@ -466,11 +540,12 @@ export function PdfReader({
                   ? { chordMarkers: chordOverlays[String(index + 1)] }
                   : {})}
                 chordsVisible={chordsVisible}
+                horizontal={effectiveLayout === "horizontal"}
               />
             ))}
           </div>
         ) : (
-          <div className={`pdf-pages pdf-layout-${layout}`}>
+          <div className={`pdf-pages pdf-layout-${effectiveLayout}`}>
             <div className="pdf-page-frame">
               <canvas
                 className={fit ? "is-fit" : ""}

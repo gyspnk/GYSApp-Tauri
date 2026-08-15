@@ -37,6 +37,10 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
       { timeout: 30_000 },
     )
     .toMatch(/playing|ready|paused/);
+  await expect(page.getByLabel("Instrumen MIDI")).toHaveValue("-1");
+  await expect(page.getByLabel("Instrumen MIDI").locator("option")).toHaveCount(
+    129,
+  );
   await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
   await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
   await expect(
@@ -65,4 +69,26 @@ test("PDF failure exposes an actionable retry without leaving the hymn shell", a
     timeout: 20_000,
   });
   await expect(page.getByRole("button", { name: "Coba lagi" })).toBeVisible();
+});
+
+test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Perbesar ukuran teks" }).click();
+  await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");
+  await page.getByRole("button", { name: "Buka PDF" }).click();
+  await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Mendatar" }).click();
+  await expect(page.locator(".pdf-stage")).toHaveAttribute(
+    "data-pdf-layout",
+    "horizontal",
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "2 halaman" }).click();
+  await expect(page.locator(".pdf-stage")).toHaveAttribute(
+    "data-pdf-layout",
+    "single",
+  );
 });

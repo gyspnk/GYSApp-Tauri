@@ -20,11 +20,17 @@ export type WebMidiSnapshot = {
   muted: boolean;
   tempo: number;
   transpose: number;
+  /** -1 keeps each program embedded in the MIDI file; 0–127 selects GM. */
+  instrument: number;
   backend: "idle" | "fluidsynth" | "oscillator";
   soundfont?: string;
   loadingProgress: number;
   error?: string | undefined;
 };
+export type WebMidiSettings = Pick<
+  WebMidiSnapshot,
+  "tempo" | "transpose" | "instrument"
+>;
 
 type Note = {
   start: number;
@@ -59,14 +65,62 @@ type PendingRequest = {
   timer: number;
 };
 
+function readMidiPreferences(): {
+  volume?: number;
+  muted?: boolean;
+  tempo?: number;
+  transpose?: number;
+  instrument?: number;
+} {
+  if (typeof window === "undefined") return {};
+  try {
+    const value: unknown = JSON.parse(
+      window.localStorage.getItem("gys-midi-preferences-v1") ?? "null",
+    );
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    const candidate = value as Record<string, unknown>;
+    return {
+      ...(typeof candidate.volume === "number"
+        ? { volume: candidate.volume }
+        : {}),
+      ...(typeof candidate.muted === "boolean"
+        ? { muted: candidate.muted }
+        : {}),
+      ...(typeof candidate.tempo === "number"
+        ? { tempo: candidate.tempo }
+        : {}),
+      ...(typeof candidate.transpose === "number"
+        ? { transpose: candidate.transpose }
+        : {}),
+      ...(typeof candidate.instrument === "number"
+        ? { instrument: candidate.instrument }
+        : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
+const savedMidiPreferences = readMidiPreferences();
+
 const initial: WebMidiSnapshot = {
   status: "idle",
   duration: 0,
   position: 0,
-  volume: 0.7,
-  muted: false,
-  tempo: 100,
-  transpose: 0,
+  volume: Math.max(0, Math.min(1, savedMidiPreferences.volume ?? 0.7)),
+  muted: savedMidiPreferences.muted ?? false,
+  tempo: Math.max(
+    30,
+    Math.min(220, Math.round(savedMidiPreferences.tempo ?? 100)),
+  ),
+  transpose: Math.max(
+    -24,
+    Math.min(24, Math.trunc(savedMidiPreferences.transpose ?? 0)),
+  ),
+  instrument: Math.max(
+    -1,
+    Math.min(127, Math.trunc(savedMidiPreferences.instrument ?? -1)),
+  ),
   backend: "idle",
   loadingProgress: 0,
 };
@@ -98,7 +152,13 @@ class BrowserMidiPlayer {
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
+  private settings: WebMidiSettings = {
+    tempo: initial.tempo,
+    transpose: initial.transpose,
+    instrument: initial.instrument,
+  };
   private readonly listeners = new Set<() => void>();
+  private readonly settingsListeners = new Set<() => void>();
   private readonly endedListeners = new Set<() => void>();
 
   // React's external-store contract requires a stable snapshot reference
@@ -107,6 +167,12 @@ class BrowserMidiPlayer {
   public subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  };
+  /** Settings-only store; unlike subscribe(), it never fires for position ticks. */
+  public settingsSnapshot = (): WebMidiSettings => this.settings;
+  public subscribeSettings = (listener: () => void): (() => void) => {
+    this.settingsListeners.add(listener);
+    return () => this.settingsListeners.delete(listener);
   };
   public subscribeEnded = (listener: () => void): (() => void) => {
     this.endedListeners.add(listener);
@@ -120,6 +186,10 @@ class BrowserMidiPlayer {
     options: { rawMidi?: Uint8Array; sourceHash?: string } = {},
   ): Promise<void> {
     await this.stopAudio();
+    const tempo =
+      savedMidiPreferences.tempo === undefined && !this.state.songId
+        ? Math.round(midi.tempo)
+        : this.state.tempo;
     this.current = midi;
     this.rawMidi = options.rawMidi?.slice();
     this.sourceHash = options.sourceHash ?? "";
@@ -135,8 +205,8 @@ class BrowserMidiPlayer {
       title,
       duration,
       position: 0,
-      tempo: Math.round(midi.tempo),
-      transpose: 0,
+      tempo,
+      transpose: this.state.transpose,
       backend: "idle",
       loadingProgress: 0,
       error: undefined,
@@ -253,6 +323,19 @@ class BrowserMidiPlayer {
     if (wasPlaying) await this.play();
   }
 
+  public async setInstrument(instrument: number): Promise<void> {
+    const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
+    const wasPlaying = this.state.status === "playing";
+    if (wasPlaying) this.updatePositionFromClock();
+    await this.stopAudio();
+    this.rendered = undefined;
+    this.patch({
+      instrument: next,
+      status: wasPlaying ? "paused" : this.state.status,
+    });
+    if (wasPlaying) await this.play();
+  }
+
   public destroy(): void {
     void this.stopAudio();
     for (const pending of this.pending.values()) {
@@ -289,7 +372,7 @@ class BrowserMidiPlayer {
       throw new Error("Raw MIDI bytes are unavailable");
     const tempoRate =
       this.state.tempo / Math.max(30, this.current?.tempo ?? 100);
-    const instrument = -1;
+    const instrument = this.state.instrument;
     const key = `${this.sourceHash}:${SOUND_FONT_NAME}:${this.state.tempo}:${this.state.transpose}:${instrument}:${this.audio.sampleRate}`;
     if (this.rendered?.key === key) return this.rendered;
     const cached = await this.renderCache.get(key);
@@ -507,7 +590,9 @@ class BrowserMidiPlayer {
       if (end <= 0 || start > this.state.duration - position + 0.1) continue;
       const oscillator = this.audio.createOscillator();
       const gain = this.audio.createGain();
-      oscillator.type = waveformForProgram(note.program);
+      const program =
+        this.state.instrument >= 0 ? this.state.instrument : note.program;
+      oscillator.type = waveformForProgram(program);
       oscillator.frequency.value =
         440 * 2 ** ((note.note + this.state.transpose - 69) / 12);
       const startAt = now + Math.max(0, start);
@@ -580,7 +665,40 @@ class BrowserMidiPlayer {
   }
 
   private patch(next: Partial<WebMidiSnapshot>): void {
+    const settingsChanged =
+      "tempo" in next || "transpose" in next || "instrument" in next;
     this.state = { ...this.state, ...next };
+    if (settingsChanged) {
+      this.settings = {
+        tempo: this.state.tempo,
+        transpose: this.state.transpose,
+        instrument: this.state.instrument,
+      };
+      for (const listener of this.settingsListeners) listener();
+    }
+    if (
+      typeof window !== "undefined" &&
+      ("volume" in next ||
+        "muted" in next ||
+        "tempo" in next ||
+        "transpose" in next ||
+        "instrument" in next)
+    ) {
+      try {
+        window.localStorage.setItem(
+          "gys-midi-preferences-v1",
+          JSON.stringify({
+            volume: this.state.volume,
+            muted: this.state.muted,
+            tempo: this.state.tempo,
+            transpose: this.state.transpose,
+            instrument: this.state.instrument,
+          }),
+        );
+      } catch {
+        // Private browsing and quota failures must not block playback.
+      }
+    }
     for (const listener of this.listeners) listener();
   }
 }

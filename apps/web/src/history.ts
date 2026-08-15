@@ -61,6 +61,13 @@ function save(next: ActivityState) {
 }
 
 export function setBibleActivity(book: string, chapter: number) {
+  const previous = getActivity().bible;
+  if (
+    previous?.book === book &&
+    previous.chapter === chapter &&
+    Date.now() - Date.parse(previous.updatedAt) < 2_000
+  )
+    return;
   save({
     ...getActivity(),
     version: 1,
@@ -72,6 +79,13 @@ export function setHymnActivity(
   item: { id: string; title: string; number: number },
   verseIndex = 0,
 ) {
+  const previous = getActivity().hymn;
+  if (
+    previous?.id === item.id &&
+    previous.verseIndex === verseIndex &&
+    Date.now() - Date.parse(previous.updatedAt) < 2_000
+  )
+    return;
   save({
     ...getActivity(),
     version: 1,

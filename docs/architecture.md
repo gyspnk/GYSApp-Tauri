@@ -121,6 +121,10 @@ clamps a persisted drag position after viewport changes, and registers Media
 Session handlers against live refs so position updates do not recreate the
 handler set.
 
+Kidung subscribes only to the MIDI settings store (tempo/transpose/instrument),
+not the 4 Hz playback-position store. This keeps the reader shell stable while
+the floating surface updates its progress indicator.
+
 The Kidung catalog builds a normalized search index once per loaded catalog
 revision. Queries use token/prefix AND matching and preserve quoted phrases;
 the UI never lower-cases the full lyric corpus on every keystroke. The vertical
@@ -147,6 +151,14 @@ note-aligned v2 document is loaded once; its PDF text model is cached by
 `hymnId:resourceHash`, then reused for both the Text chord-line association and
 the DOM marker layer above PDF.js canvases. Transpose and accidental changes
 only update marker labels and do not rerender the PDF.
+
+The reader also stores bounded typography preferences per hymn. The PDF layout
+preference supports single, two-page, vertical, and horizontal scrolling; the
+effective layout downgrades a two-page spread to one page below 720 px so a
+phone never receives two unreadable canvases. The global MIDI session keeps the
+same transpose and exposes source-program playback or each of the 128 General
+MIDI programs; render-cache keys include tempo, transpose, instrument, source
+hash, soundfont, and sample rate.
 
 ```mermaid
 stateDiagram-v2

@@ -54,6 +54,12 @@ service or platform artifact that cannot be exercised in this workspace.
   without re-rendering the PDF. Simultaneous song opens share one verified
   chord download, and rendered MIDI PCM uses a bounded 96 MB
   source/soundfont/tempo/transpose/sample-rate cache.
+- Kidung text now has accessible per-hymn font-size and line-spacing controls;
+  PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
+  two-page guard, and MIDI exposes all 128 General MIDI programs plus the source
+  program while persisting media preferences across sessions. Identical Bible
+  and hymn activity writes are debounced so route remounts cannot create
+  duplicate recent entries.
 - Kidung catalog search now builds one normalized index per catalog revision and
   supports number/title prefix lookup, AND terms, quoted phrases, and collection
   filtering without re-normalizing all lyrics on each keystroke.
@@ -110,7 +116,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  30 passing flows, including the 320–1920px and landscape shell matrix plus
+  31 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the

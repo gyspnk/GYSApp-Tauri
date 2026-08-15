@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type TouchEvent,
 } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -54,6 +55,12 @@ import {
   writeHymnChordVisibility,
   writeHymnViewerMode,
 } from "./hymn-view-mode.js";
+import {
+  DEFAULT_HYMN_TYPOGRAPHY,
+  readHymnTypography,
+  writeHymnTypography,
+  type HymnTypography,
+} from "./hymn-preferences.js";
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -80,6 +87,25 @@ const FLAT_KEYS = [
   "B",
 ];
 const parsedLyricsCache = new Map<string, string[]>();
+
+function normalizeKeyName(value: string): string | undefined {
+  const normalized = value.trim().replace("♯", "#").replace("♭", "b");
+  const aliases: Record<string, string> = {
+    "C#": "C♯",
+    Db: "C♯",
+    "D#": "E♭",
+    Eb: "E♭",
+    "F#": "F♯",
+    Gb: "F♯",
+    "G#": "A♭",
+    Ab: "A♭",
+    "A#": "B♭",
+    Bb: "B♭",
+  };
+  return KEYS.includes(normalized)
+    ? normalized
+    : (aliases[normalized] ?? (KEYS.includes(value) ? value : undefined));
+}
 
 function getHymnVerses(item: HymnCatalogEntry | undefined): string[] {
   if (!item) return [];
@@ -309,9 +335,14 @@ function HymnDetail({
     const last = getActivity().hymn;
     return last?.id === songId ? Math.max(0, last.verseIndex) : 0;
   });
-  const [transpose, setTranspose] = useState(0);
+  const [transpose, setTranspose] = useState(
+    () => midiPlayer.settingsSnapshot().transpose,
+  );
   const [key, setKey] = useState("C");
   const [accidental, setAccidental] = useState<"sharp" | "flat">("sharp");
+  const [typography, setTypography] = useState<HymnTypography>(() =>
+    readHymnTypography(songId),
+  );
   const [chordStatus, setChordStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
@@ -341,11 +372,17 @@ function HymnDetail({
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const touchStartX = useRef<number | undefined>(undefined);
   const autoLoadedSong = useRef<string | undefined>(undefined);
+  const keyInitialized = useRef(false);
   const chordRun = useRef(0);
   const chordAbort = useRef<AbortController | undefined>(undefined);
   const pdfRun = useRef(0);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
+  const midiSettings = useSyncExternalStore(
+    midiPlayer.subscribeSettings,
+    midiPlayer.settingsSnapshot,
+    midiPlayer.settingsSnapshot,
+  );
   const verses = getHymnVerses(item);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   const sequence = state.status === "ready" ? uniqueItems(state.items) : [];
@@ -361,6 +398,14 @@ function HymnDetail({
         safeVerseIndex,
       );
   }, [item, safeVerseIndex]);
+  useEffect(() => {
+    setTypography(readHymnTypography(songId));
+    keyInitialized.current = false;
+  }, [songId]);
+  useEffect(() => {
+    if (midiSettings.transpose !== transpose)
+      setTranspose(midiSettings.transpose);
+  }, [midiSettings.transpose, transpose]);
   useEffect(() => {
     if (!item) return;
     setFavorite(isFavorite("hymn", item.id));
@@ -534,6 +579,11 @@ function HymnDetail({
         }
       }
       setChordDocument(nextDocument);
+      if (!keyInitialized.current && "key" in nextDocument) {
+        const sourceKey = normalizeKeyName(nextDocument.key);
+        if (sourceKey) setKey(sourceKey);
+        keyInitialized.current = true;
+      }
       setChordLayout(nextLayout);
       setChordOverlays(nextOverlays);
       setChordStatus("ready");
@@ -661,6 +711,16 @@ function HymnDetail({
     (((KEYS.indexOf(key) + transpose) % KEYS.length) + KEYS.length) %
       KEYS.length
   ];
+  const updateTypography = (patch: Partial<HymnTypography>) => {
+    setTypography((current) =>
+      writeHymnTypography(item.id, { ...current, ...patch }),
+    );
+  };
+  const updateTranspose = (next: number) => {
+    const bounded = Math.max(-6, Math.min(6, next));
+    setTranspose(bounded);
+    void midiPlayer.setTranspose(bounded).catch(() => undefined);
+  };
   return (
     <div className="page hymn-detail-page">
       <div className="detail-back">
@@ -815,7 +875,7 @@ function HymnDetail({
             value={key}
             onChange={(value) => {
               setKey(value);
-              setTranspose(0);
+              updateTranspose(0);
             }}
             label="Nada dasar"
             options={KEYS.map((value) => ({ value, label: value }))}
@@ -834,18 +894,69 @@ function HymnDetail({
             <div>
               <button
                 type="button"
-                onClick={() => setTranspose((value) => Math.max(-6, value - 1))}
+                onClick={() => updateTranspose(transpose - 1)}
+                aria-label="Turunkan transpose"
               >
                 −
               </button>
               <strong>{transpose > 0 ? `+${transpose}` : transpose}</strong>
               <button
                 type="button"
-                onClick={() => setTranspose((value) => Math.min(6, value + 1))}
+                onClick={() => updateTranspose(transpose + 1)}
+                aria-label="Naikkan transpose"
               >
                 +
               </button>
             </div>
+          </div>
+          <div className="reader-preferences" aria-label="Pengaturan teks">
+            <span>Teks</span>
+            <button
+              type="button"
+              onClick={() =>
+                updateTypography({ fontSize: typography.fontSize - 1 })
+              }
+              aria-label="Perkecil ukuran teks"
+            >
+              A−
+            </button>
+            <output aria-live="polite">
+              {Math.round(typography.fontSize)} px
+            </output>
+            <button
+              type="button"
+              onClick={() =>
+                updateTypography({ fontSize: typography.fontSize + 1 })
+              }
+              aria-label="Perbesar ukuran teks"
+            >
+              A+
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                updateTypography({ lineHeight: typography.lineHeight - 0.1 })
+              }
+              aria-label="Rapatkan jarak baris"
+            >
+              − Spasi
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                updateTypography({ lineHeight: typography.lineHeight + 0.1 })
+              }
+              aria-label="Lebarkan jarak baris"
+            >
+              + Spasi
+            </button>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => updateTypography(DEFAULT_HYMN_TYPOGRAPHY)}
+            >
+              Reset teks
+            </button>
           </div>
         </div>
         <div className="verse-switcher">
@@ -909,6 +1020,10 @@ function HymnDetail({
             className="lyrics-sheet verse-enter"
             key={`${item.id}-${safeVerseIndex}`}
             aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
+            style={{
+              fontSize: `${typography.fontSize}px`,
+              lineHeight: typography.lineHeight,
+            }}
             onTouchStart={onVerseTouchStart}
             onTouchEnd={onVerseTouchEnd}
           >
