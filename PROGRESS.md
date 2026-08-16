@@ -187,7 +187,7 @@ service or platform artifact that cannot be exercised in this workspace.
   Native `cargo check` is wired into
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
-  18 required offline/runtime assets (36,845,594 bytes in the current build).
+  18 required offline/runtime assets (36,845,746 bytes in the current build).
 - Feature-critical Kidung controls now use the shared id/en/zh message table,
   including search, viewer modes, chord/PDF/MIDI actions, queue controls,
   typography, and recovery states. Indonesian copy remains stable for the

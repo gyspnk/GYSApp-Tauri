@@ -94,7 +94,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Kidung detail now has an automated presentation assertion: Lirik and PDF are
   the only viewer modes; Chord is a shared visibility capability and never a
   third surface. The native boundary check passes with 18 required
-  offline/runtime assets totaling 36,845,594
+  offline/runtime assets totaling 36,845,746
   bytes in the current build; this is a packaging proof, not a signed
   installer artifact. The chord E2E additionally asserts that canonical
   note-aligned PDF layout rows and DOM overlay markers are rendered (not only
