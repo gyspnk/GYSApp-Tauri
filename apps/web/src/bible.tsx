@@ -621,7 +621,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
       const results = await searchClient.search(
         requestedQuery,
         {
-          ...(searchBook === "all" ? {} : { book: searchBook }),
+          ...(searchBook === "all" ||
+          searchBook === "old" ||
+          searchBook === "new"
+            ? {}
+            : { book: searchBook }),
+          ...(searchBook === "old" || searchBook === "new"
+            ? { testament: searchBook }
+            : {}),
           exactPhrase,
           wholeWord,
         },
@@ -991,6 +998,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
             label="Kitab"
             options={[
               { value: "all", label: "Semua kitab" },
+              { value: "old", label: "Perjanjian Lama (39)" },
+              { value: "new", label: "Perjanjian Baru (27)" },
               ...books.map((candidate) => ({
                 value: String(candidate.id),
                 label: candidate.name,

@@ -195,6 +195,47 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await page.getByRole("button", { name: "Sorot blue" }).click();
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
+test("Bible search narrows results to a testament", async ({ page }) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const searchBook = page.getByRole("button", { name: "Kitab" }).first();
+  await searchBook.click();
+  await page.getByRole("option", { name: "Perjanjian Lama (39)" }).click();
+  await page.getByLabel("Cari Alkitab").fill("Allah");
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  await expect(page.locator(".result-item").first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect
+    .poll(() =>
+      page
+        .locator(".result-item strong")
+        .allTextContents()
+        .then((texts) => ({
+          hasOldTestament: texts.some((text) => text.startsWith("Kejadian ")),
+          hasNewTestament: texts.some((text) => text.startsWith("Yohanes ")),
+        })),
+    )
+    .toEqual({ hasOldTestament: true, hasNewTestament: false });
+
+  await searchBook.click();
+  await page.getByRole("option", { name: "Perjanjian Baru (27)" }).click();
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  await expect
+    .poll(() =>
+      page
+        .locator(".result-item strong")
+        .allTextContents()
+        .then((texts) => ({
+          hasOldTestament: texts.some((text) => text.startsWith("Kejadian ")),
+          hasNewTestament: texts.some((text) => text.startsWith("Matius ")),
+        })),
+    )
+    .toEqual({ hasOldTestament: false, hasNewTestament: true });
+});
+
 test("Bible search matches book names from the offline pack", async ({
   page,
 }) => {

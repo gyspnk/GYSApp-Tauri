@@ -186,4 +186,55 @@ describe("BibleRepository", () => {
       "43:3:16",
     ]);
   });
+
+  it("filters by testament using the canonical book order", async () => {
+    const repository = new BibleRepository([
+      {
+        id: "1:1:1",
+        book: "1",
+        bookOrder: 1,
+        chapter: 1,
+        verse: 1,
+        text: "Pada mulanya Allah menciptakan langit dan bumi.",
+      },
+      {
+        id: "40:3:1",
+        book: "40",
+        bookOrder: 40,
+        chapter: 3,
+        verse: 1,
+        text: "Pada waktu itu tampillah Yohanes Pembaptis di padang gurun.",
+      },
+      {
+        id: "43:3:16",
+        book: "43",
+        bookOrder: 43,
+        chapter: 3,
+        verse: 16,
+        text: "Karena begitu besar kasih Allah akan dunia ini.",
+      },
+    ]);
+    expect(
+      (await repository.search("Allah", { testament: "old" })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["1:1:1"]);
+    expect(
+      (await repository.search("Allah", { testament: "new" })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["43:3:16"]);
+    // The testament bound excludes every book outside the canon split even
+    // when the query term appears in the text.
+    expect(
+      (await repository.search("Yohanes", { testament: "old" })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual([]);
+    expect(
+      (await repository.search("Yohanes", { testament: "new" })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["40:3:1"]);
+  });
 });

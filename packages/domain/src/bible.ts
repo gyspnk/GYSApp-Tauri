@@ -23,11 +23,16 @@ export type BibleRepositoryOptions = {
 
 export type BibleSearchOptions = {
   book?: string;
+  /** TB canon split: bookOrder <= 39 is the Old Testament. */
+  testament?: "old" | "new";
   exactPhrase?: boolean;
   wholeWord?: boolean;
 };
 
 const SKIPPED_HTML_TAGS = new Set(["script", "style", "svg", "template"]);
+
+/** TB has 39 Old Testament books; bookOrder 40+ is the New Testament. */
+export const OLD_TESTAMENT_BOOKS = 39;
 
 function decodeBibleEntity(value: string): string {
   const named: Record<string, string> = {
@@ -217,6 +222,16 @@ export class BibleRepository {
     await new Promise<void>((resolve) => queueMicrotask(resolve));
     const matches = this.pack.filter((verse) => {
       if (searchOptions.book && verse.book !== searchOptions.book) return false;
+      if (
+        searchOptions.testament === "old" &&
+        verse.bookOrder > OLD_TESTAMENT_BOOKS
+      )
+        return false;
+      if (
+        searchOptions.testament === "new" &&
+        verse.bookOrder <= OLD_TESTAMENT_BOOKS
+      )
+        return false;
       const bookName = this.bookNames[verse.book];
       const searchable =
         this.normalizedText.get(verse.id) ??

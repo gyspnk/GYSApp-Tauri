@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+- Bible search now supports testament narrowing: “Perjanjian Lama (39)” and
+  “Perjanjian Baru (27)” sit above the per-book choices in the Kitab
+  selector and map to a typed `testament` search option enforced by the
+  repository on canonical `bookOrder` (40+ = NT), shared by the worker and
+  main-thread fallback. Unit coverage proves both bounds, and a browser E2E
+  verifies OT search shows Kejadian but no NT book and vice versa.
 - The native persistence boundary now enforces payload caps: verified blobs
   are bounded at 128 MB and key-value/database records at 8 MB, mirroring
   the existing secret and file-dialog limits, so a corrupt or future

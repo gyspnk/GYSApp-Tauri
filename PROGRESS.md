@@ -7,6 +7,11 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- Bible search gained testament filtering: the Kitab selector offers
+  Perjanjian Lama/Baru ranges backed by a typed `testament` option in
+  `BibleSearchOptions`, enforced on the canonical 39-book OT split in the
+  repository (and therefore in the search worker). Unit and browser E2E
+  coverage prove each bound; the Playwright suite now runs 46 flows.
 - The native storage commands (`blob_put_atomic`, `key_value_set`,
   `database_set`) now reject oversized payloads at the Rust boundary (128 MB
   blobs, 8 MB key-value/database), closing the last uncapped write path in
