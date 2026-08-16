@@ -281,6 +281,96 @@ test("home keeps one continue item when Bible and hymn history coexist", async (
   await expect(page.locator(".continue-item")).toHaveCount(1);
 });
 
+test("device reset clears browser preferences, durable blobs, and app caches", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await page.evaluate(async () => {
+    localStorage.setItem("gys-reset-test-v1", "preference");
+    const cache = await caches.open("gysapp-reset-test-v1");
+    await cache.put(
+      "/GYSApp-Tauri/reset-test",
+      new Response("cached", { headers: { "content-type": "text/plain" } }),
+    );
+
+    const request = indexedDB.open("gysapp-platform-v1", 2);
+    await new Promise<void>((resolve, reject) => {
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains("key-value"))
+          db.createObjectStore("key-value");
+        if (!db.objectStoreNames.contains("blobs"))
+          db.createObjectStore("blobs");
+      };
+      request.onerror = () =>
+        reject(request.error ?? new Error("IDB open failed"));
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction(["key-value", "blobs"], "readwrite");
+        transaction
+          .objectStore("key-value")
+          .put("preference", "gys-reset-test-v1");
+        transaction
+          .objectStore("blobs")
+          .put(new Uint8Array([1, 2, 3]), "gys-reset-test-v1");
+        transaction.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        transaction.onerror = () =>
+          reject(transaction.error ?? new Error("IDB write failed"));
+      };
+    });
+  });
+
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.getByRole("button", { name: "Reset perangkat" }).click();
+  await expect(
+    page.getByText(/Preferensi dan cache GYS sudah direset/),
+  ).toBeVisible();
+  await expect
+    .poll(
+      () =>
+        page.evaluate(async () => {
+          const cachesLeft = (await caches.keys()).filter(
+            (name) =>
+              name.startsWith("gys-") ||
+              name.startsWith("gysapp-") ||
+              name.startsWith("gys-midi-"),
+          );
+          const request = indexedDB.open("gysapp-platform-v1", 2);
+          const counts = await new Promise<[number, number]>(
+            (resolve, reject) => {
+              request.onerror = () =>
+                reject(request.error ?? new Error("IDB open failed"));
+              request.onsuccess = () => {
+                const db = request.result;
+                const transaction = db.transaction(
+                  ["key-value", "blobs"],
+                  "readonly",
+                );
+                const keyValue = transaction.objectStore("key-value").count();
+                const blobs = transaction.objectStore("blobs").count();
+                transaction.oncomplete = () => {
+                  db.close();
+                  resolve([keyValue.result, blobs.result]);
+                };
+                transaction.onerror = () =>
+                  reject(transaction.error ?? new Error("IDB read failed"));
+              };
+            },
+          );
+          return {
+            local: localStorage.getItem("gys-reset-test-v1"),
+            cachesLeft,
+            counts,
+          };
+        }),
+      { timeout: 5_000 },
+    )
+    .toEqual({ local: null, cachesLeft: [], counts: [0, 0] });
+});
+
 test("the shared read-aloud surface can be minimized without losing the session", async ({
   page,
 }) => {

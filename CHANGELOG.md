@@ -12,8 +12,8 @@
 - Reset/cache maintenance now clears both durable IndexedDB stores and all
   GYS-owned service-worker caches in one explicit boundary; Tauri removes only
   its versioned key-value/blob directories. Existing app metadata is left
-  intact, and failures are recorded instead of being reported as a false
-  successful reset.
+  intact, and partial failures are recorded and surfaced instead of being
+  reported as a false successful reset.
 - Added low-cost loading-state motion and `content-visibility` boundaries for
   long hymn, faith, literature, and Suara lists; reduced-motion users still
   receive the static presentation.

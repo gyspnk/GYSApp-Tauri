@@ -140,16 +140,24 @@ function downloadBackup(envelope: unknown) {
 }
 
 async function clearAppData() {
-  for (const key of Object.keys(localStorage)) {
-    if (key.startsWith("gys-")) localStorage.removeItem(key);
+  let resetError: unknown;
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith("gys-")) localStorage.removeItem(key);
+    }
+  } catch (error) {
+    resetError = error;
+    recordDiagnostic("warn", "storage.reset.local", error);
   }
   try {
     await clearPlatformStorage();
   } catch (error) {
-    // A private browser or a native storage permission failure should not
-    // leave the reset action in a rejected promise with no user feedback.
+    // A private browser or a native storage permission failure must be
+    // surfaced to the action handler instead of being reported as success.
+    resetError ??= error;
     recordDiagnostic("warn", "storage.reset", error);
   }
+  if (resetError) throw resetError;
 }
 
 export function MorePage({ locale }: { locale: Locale }) {
@@ -869,11 +877,17 @@ export function MorePage({ locale }: { locale: Locale }) {
           className="more-card more-action"
           type="button"
           onClick={() => {
-            void clearAppData().then(() =>
-              show(
-                "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
-              ),
-            );
+            void clearAppData()
+              .then(() =>
+                show(
+                  "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
+                ),
+              )
+              .catch(() =>
+                show(
+                  "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                ),
+              );
           }}
         >
           <span className="more-icon">⌁</span>

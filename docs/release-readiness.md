@@ -137,8 +137,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - The reset/cache-maintenance path is now durable-store complete: browser
   IndexedDB blobs/key-values and GYS-owned service-worker caches are cleared
   together, while native reset removes only the app's versioned data
-  directories. This prevents stale PDF/chord/MIDI bytes from surviving a
-  user-requested reset without deleting unrelated app metadata.
+  directories. The browser release suite seeds and verifies all three stores,
+  and partial failures produce an actionable notice. This prevents stale
+  PDF/chord/MIDI bytes from surviving a user-requested reset without deleting
+  unrelated app metadata.
 - Tauri webviews now select the native app-data adapter through the global
   invoke bridge. Key-value records and verified chord/media blobs use
   path-safe keys and unique-temp-file atomic replacement; Rust tests cover

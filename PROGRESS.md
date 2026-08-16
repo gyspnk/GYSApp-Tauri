@@ -89,8 +89,9 @@ service or platform artifact that cannot be exercised in this workspace.
 - Reset and cache maintenance now reaches every durable app-owned store: the
   browser clears both IndexedDB object stores plus GYS service-worker caches,
   while Tauri removes only the versioned key-value/blob directories. The
-  reset boundary is unit-tested and reports diagnostics on restricted-storage
-  failures rather than claiming data was removed.
+  reset boundary is covered by a browser end-to-end test and reports
+  diagnostics/actionable feedback on restricted-storage failures rather than
+  claiming data was removed.
 - MIDI asynchronous work now carries a generation guard across song loads,
   FluidSynth worker startup/render, seek, stop, and instrument/tempo/transpose
   changes. A late worker result is ignored before it can replace the shared
