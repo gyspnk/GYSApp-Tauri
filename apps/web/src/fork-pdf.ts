@@ -6,6 +6,7 @@ import {
 const RELEASE_MANIFEST =
   "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json";
 const FALLBACK_MANIFEST = `${import.meta.env.BASE_URL}offline/fork-hymnal-manifest.json`;
+const BFF_BASE = import.meta.env.VITE_BFF_BASE_URL?.trim();
 const PACKAGE_CACHE = "gys-fork-pdf-v1";
 const KEY_BYTES = Uint8Array.from(
   atob("yrvxIa8zgtn6cxTLH/+BsLjx5SrgGRQN7IVhK0ufB1Y="),
@@ -77,6 +78,29 @@ function looksLikePdf(bytes: Uint8Array) {
   return new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-";
 }
 
+type PdfIntegrity = {
+  sizeBytes?: number;
+  sha256?: string;
+};
+
+async function validatePdfBytes(
+  bytes: Uint8Array,
+  expected: PdfIntegrity = {},
+): Promise<boolean> {
+  if (!looksLikePdf(bytes)) return false;
+  if (
+    expected.sizeBytes !== undefined &&
+    bytes.byteLength !== expected.sizeBytes
+  )
+    return false;
+  if (
+    expected.sha256 &&
+    (await sha256(bytes)).toLowerCase() !== expected.sha256.toLowerCase()
+  )
+    return false;
+  return true;
+}
+
 async function readCached(
   url: string,
   validate: (bytes: Uint8Array) => boolean = () => true,
@@ -90,14 +114,15 @@ async function readCached(
   return validate(bytes) ? bytes : undefined;
 }
 
-async function fetchPdf(url: string) {
+async function fetchPdf(url: string, expected: PdfIntegrity = {}) {
   const cached = await readCached(url, looksLikePdf);
-  if (cached) return cached;
+  if (cached && (await validatePdfBytes(cached, expected))) return cached;
   const response = await fetch(url, { cache: "force-cache" });
   if (!response.ok)
     throw new Error(`KR PDF request failed: ${response.status}`);
   const bytes = new Uint8Array(await response.arrayBuffer());
-  if (!looksLikePdf(bytes)) throw new Error("KR PDF signature mismatch");
+  if (!(await validatePdfBytes(bytes, expected)))
+    throw new Error("KR PDF integrity validation failed");
   if (typeof caches !== "undefined")
     await caches.open(PACKAGE_CACHE).then((cache) =>
       cache.put(
@@ -154,22 +179,49 @@ async function loadDataPackage() {
 }
 
 async function loadMasterPdf(manifest: HymnalPdfManifest) {
+  const integrity: PdfIntegrity = {
+    ...(manifest.sizeBytes !== undefined
+      ? { sizeBytes: manifest.sizeBytes }
+      : {}),
+    ...(manifest.sha256 ? { sha256: manifest.sha256 } : {}),
+  };
   const cacheKey = `${manifest.sourceCommit}:${manifest.masterPath}`;
   const existing = packageRequests.get(cacheKey);
   if (existing) return existing;
   const request = (async () => {
-    const forkUrl = `https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
+    const encodedRepo = manifest.sourceRepo
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+    const rawForkUrl = `https://raw.githubusercontent.com/${encodedRepo}/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
       .split("/")
       .map((segment) => encodeURIComponent(segment))
       .join("/")}`;
+    const bffForkUrl = BFF_BASE
+      ? `${BFF_BASE.replace(/\/$/, "")}/api/v1/content/fork-pdf?commit=${encodeURIComponent(manifest.sourceCommit)}&path=${encodeURIComponent(manifest.masterPath)}`
+      : undefined;
+    let lastError: unknown;
+    // Prefer the same-origin Worker when configured. It is still constrained
+    // by the immutable source commit/path; raw GitHub remains the direct
+    // source fallback for Pages previews and native shells.
+    for (const url of [bffForkUrl, rawForkUrl].filter(
+      (value): value is string => Boolean(value),
+    )) {
+      try {
+        return await fetchPdf(url, integrity);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    // GYSApp-Data is the signed distribution fallback for environments where
+    // neither source endpoint serves the immutable master blob.
     try {
-      // The functional source is authoritative and immutable; use it first so
-      // the page map and the bytes can never drift apart.
-      return await fetchPdf(forkUrl);
-    } catch {
-      // GYSApp-Data is the signed distribution fallback for environments where
-      // the source repository does not serve large raw objects.
-      return loadDataPackage();
+      const packaged = await loadDataPackage();
+      if (!(await validatePdfBytes(packaged, integrity)))
+        throw new Error("KR PDF package integrity validation failed");
+      return packaged;
+    } catch (error) {
+      throw lastError instanceof Error ? lastError : error;
     }
   })();
   packageRequests.set(cacheKey, request);
@@ -182,9 +234,20 @@ async function loadMasterPdf(manifest: HymnalPdfManifest) {
   }
 }
 
-export async function loadForkHymnalPdf(number: number) {
+export function forkManifestSongKey(value: number | string): string {
+  const normalized = String(value)
+    .trim()
+    .replace(/^hymn-/i, "");
+  const suffixed = normalized.match(/^(\d+)([a-z])$/i);
+  if (suffixed)
+    return `${suffixed[1]!.padStart(3, "0")}${suffixed[2]!.toUpperCase()}`;
+  if (/^\d+$/.test(normalized)) return normalized.padStart(3, "0");
+  return normalized.toUpperCase();
+}
+
+export async function loadForkHymnalPdf(numberOrKey: number | string) {
   const manifest = await loadMapping();
-  const song = manifest.songs[String(number).padStart(3, "0")];
+  const song = manifest.songs[forkManifestSongKey(numberOrKey)];
   if (!song) throw new Error("Song is not mapped in the fork PDF database");
   return {
     bytes: await loadMasterPdf(manifest),

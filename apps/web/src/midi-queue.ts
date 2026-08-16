@@ -5,7 +5,11 @@ import {
 } from "@gys/contracts";
 import { MidiLoader } from "@gys/domain";
 import { midiPlayer } from "./midi-player.js";
-import { loadMusicAsset, loadMusicLock } from "./music-assets.js";
+import {
+  findMusicAsset,
+  loadMusicAsset,
+  loadMusicLock,
+} from "./music-assets.js";
 import {
   getMidiPlaylist,
   nextMidiPlaylistItem,
@@ -49,10 +53,7 @@ async function loadItem(item: MidiPlaylistItem): Promise<void> {
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
   const lock = await loadMusicLock();
-  const ref = lock.items.find(
-    (candidate) =>
-      candidate.kind === "midi" && candidate.path === hymn.midiPath,
-  );
+  const ref = findMusicAsset(lock, "midi", hymn.midiPath);
   if (!ref) throw new Error(`MIDI ${hymn.title} tidak tersedia`);
   if (item.sourceHash && item.sourceHash !== ref.sha256)
     throw new Error("MIDI antrean sudah berubah; tambahkan ulang lagu ini");

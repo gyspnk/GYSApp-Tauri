@@ -1,16 +1,17 @@
 import type {
   AtomicBlobStore,
+  PlatformDeepLinks,
   PlatformDatabase,
+  PlatformFile,
+  PlatformFileDialogs,
+  PlatformLifecycle,
+  PlatformLifecycleEvent,
+  PlatformNotifications,
   PlatformServices,
+  SecretStore,
   SpeechProvider,
 } from "@gys/contracts";
-import {
-  BrowserDeepLinks,
-  BrowserLifecycle,
-  BrowserNotifications,
-  BrowserShare,
-  EphemeralSecretStore,
-} from "./platform-capabilities.js";
+import { BrowserLifecycle, BrowserShare } from "./platform-capabilities.js";
 
 /**
  * Narrow boundary around Tauri's global invoke bridge. Keeping this type local
@@ -122,6 +123,205 @@ class TauriDatabaseStore implements PlatformDatabase {
   }
 }
 
+class TauriSecretStore implements SecretStore {
+  public readonly persistent = true;
+
+  public constructor(private readonly invoke: TauriInvoke) {}
+
+  public async get(key: string): Promise<string | undefined> {
+    const value = await this.invoke("secret_get", { key });
+    if (value === null || value === undefined) return undefined;
+    if (typeof value !== "string")
+      throw nativeError("native secure storage returned an invalid value");
+    return value;
+  }
+
+  public async set(key: string, value: string): Promise<void> {
+    await this.invoke("secret_set", { key, value });
+  }
+
+  public async remove(key: string): Promise<void> {
+    await this.invoke("secret_remove", { key });
+  }
+}
+
+type NativeFilePayload = {
+  name: string;
+  mimeType: string;
+  bytes: string;
+};
+
+class TauriFileDialogs implements PlatformFileDialogs {
+  public constructor(private readonly invoke: TauriInvoke) {}
+
+  public async open(
+    options: {
+      accept?: readonly string[];
+      multiple?: boolean;
+      signal?: AbortSignal;
+    } = {},
+  ): Promise<PlatformFile[] | undefined> {
+    if (options.signal?.aborted)
+      throw new DOMException("File dialog cancelled", "AbortError");
+    const payload = await this.invoke("file_dialog_open", {
+      accept: options.accept,
+      multiple: options.multiple,
+    });
+    if (payload === null || payload === undefined) return undefined;
+    if (!Array.isArray(payload))
+      throw nativeError("file dialog response invalid");
+    const files: PlatformFile[] = [];
+    for (const item of payload) {
+      if (!item || typeof item !== "object")
+        throw nativeError("file dialog item invalid");
+      const file = item as Partial<NativeFilePayload>;
+      if (
+        typeof file.name !== "string" ||
+        typeof file.mimeType !== "string" ||
+        typeof file.bytes !== "string"
+      )
+        throw nativeError("file dialog item invalid");
+      files.push({
+        name: file.name,
+        mimeType: file.mimeType,
+        bytes: decodeBase64(file.bytes),
+      });
+    }
+    return files;
+  }
+
+  public async save(file: PlatformFile): Promise<void> {
+    await this.invoke("file_dialog_save", {
+      name: file.name,
+      mimeType: file.mimeType,
+      bytes: encodeBase64(file.bytes),
+    });
+  }
+}
+
+type TauriUnlisten = () => void;
+
+async function listenTauriEvent<T>(
+  event: string,
+  handler: (payload: T) => void,
+): Promise<TauriUnlisten> {
+  const module = await import("@tauri-apps/api/event");
+  const unlisten = await module.listen<T>(event, (message) =>
+    handler(message.payload),
+  );
+  return unlisten;
+}
+
+class TauriDeepLinks implements PlatformDeepLinks {
+  private latest: string | undefined;
+
+  public constructor(private readonly invoke: TauriInvoke) {
+    void this.invoke("deep_link_current")
+      .then((value) => {
+        if (Array.isArray(value) && typeof value[0] === "string")
+          this.latest = value[0];
+      })
+      .catch(() => undefined);
+  }
+
+  public current(): string | undefined {
+    return (
+      this.latest ??
+      (typeof window === "undefined" ? undefined : window.location.href)
+    );
+  }
+
+  public subscribe(listener: (url: string) => void): () => void {
+    let active = true;
+    let unlisten: TauriUnlisten | undefined;
+    void listenTauriEvent<string[]>("deep-link://new-url", (urls) => {
+      if (!active) return;
+      for (const url of urls) {
+        if (typeof url !== "string") continue;
+        this.latest = url;
+        listener(url);
+      }
+    })
+      .then((cleanup) => {
+        if (!active) cleanup();
+        else unlisten = cleanup;
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+      if (unlisten) unlisten();
+    };
+  }
+}
+
+class TauriLifecycle implements PlatformLifecycle {
+  private readonly fallback = new BrowserLifecycle();
+
+  public subscribe(
+    event: PlatformLifecycleEvent,
+    listener: () => void,
+  ): () => void {
+    const eventName =
+      event === "foreground"
+        ? "tauri://focus"
+        : event === "background"
+          ? "tauri://blur"
+          : "tauri://close-requested";
+    let active = true;
+    let unlisten: TauriUnlisten | undefined;
+    // Tauri emits focus/blur while the webview can emit visibility/pageshow
+    // for the same transition. Coalesce the two platform paths so a resume
+    // refresh (and its network work) happens once per lifecycle transition.
+    let lastDispatchAt = 0;
+    const emit = () => {
+      if (!active) return;
+      const now = Date.now();
+      if (now - lastDispatchAt < 250) return;
+      lastDispatchAt = now;
+      listener();
+    };
+    void listenTauriEvent<unknown>(eventName, () => {
+      emit();
+    })
+      .then((cleanup) => {
+        if (!active) cleanup();
+        else unlisten = cleanup;
+      })
+      .catch(() => undefined);
+    const fallbackCleanup = this.fallback.subscribe(event, emit);
+    return () => {
+      active = false;
+      fallbackCleanup();
+      if (unlisten) unlisten();
+    };
+  }
+}
+
+class TauriNotifications implements PlatformNotifications {
+  public async permission(): Promise<NotificationPermission | "unsupported"> {
+    try {
+      const module = await import("@tauri-apps/plugin-notification");
+      if (await module.isPermissionGranted()) return "granted";
+      const permission = await module.requestPermission();
+      return permission === "granted" ? "granted" : permission;
+    } catch {
+      return "unsupported";
+    }
+  }
+
+  public async show(title: string, options?: { body?: string; tag?: string }) {
+    const module = await import("@tauri-apps/plugin-notification");
+    const permission = await this.permission();
+    if (permission !== "granted")
+      throw nativeError("notification permission was not granted");
+    await module.sendNotification({
+      title,
+      ...(options?.body ? { body: options.body } : {}),
+      ...(options?.tag ? { group: options.tag } : {}),
+    });
+  }
+}
+
 class TauriBlobStore implements AtomicBlobStore {
   public constructor(private readonly invoke: TauriInvoke) {}
 
@@ -160,42 +360,35 @@ export function createTauriPlatformServices(
 ): PlatformServices {
   const keyValue = new TauriKeyValueStore(invoke);
   const database = new TauriDatabaseStore(invoke);
+  const notifications = new TauriNotifications();
   return {
     hasCapability(capability) {
       if (capability === "speech") return speech.length > 0;
       if (capability === "audio") return true;
       if (capability === "database") return true;
-      if (capability === "secureStorage") return false;
+      if (capability === "secureStorage") return true;
       if (capability === "share")
         return typeof navigator !== "undefined" && "share" in navigator;
-      if (capability === "notifications")
-        return typeof window !== "undefined" && "Notification" in window;
+      if (capability === "notifications") return true;
       if (capability === "mediaSession")
         return typeof navigator !== "undefined" && "mediaSession" in navigator;
       if (capability === "wakeLock")
         return typeof navigator !== "undefined" && "wakeLock" in navigator;
       if (capability === "lifecycle") return true;
-      // File dialogs and deep links require their platform-specific command
-      // adapters; reporting false is safer than claiming a plugin is wired.
+      if (capability === "fileDialog") return true;
+      if (capability === "deepLinks") return true;
       return false;
     },
     keyValue,
     database,
     blobs: new TauriBlobStore(invoke),
-    secrets: new EphemeralSecretStore(),
-    notifications: new BrowserNotifications(),
-    files: {
-      open: async () => {
-        throw nativeError("file dialogs are not configured");
-      },
-      save: async () => {
-        throw nativeError("file dialogs are not configured");
-      },
-    },
+    secrets: new TauriSecretStore(invoke),
+    notifications,
+    files: new TauriFileDialogs(invoke),
     share: new BrowserShare(),
     speech,
-    deepLinks: new BrowserDeepLinks(),
-    lifecycle: new BrowserLifecycle(),
+    deepLinks: new TauriDeepLinks(invoke),
+    lifecycle: new TauriLifecycle(),
     openExternal: async (url) => {
       let parsed: URL;
       try {

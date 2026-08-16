@@ -52,6 +52,47 @@ export async function loadMusicLock(): Promise<UpstreamMusicLock> {
   return lockPromise;
 }
 
+function normalizedAssetName(path: string): string {
+  return (
+    path
+      .replace(/^docs\//, "")
+      .split("/")
+      .pop()
+      ?.trim()
+      .toLocaleLowerCase()
+      .replace(/_\s+/g, "_")
+      .replace(/\s+/g, " ") ?? ""
+  );
+}
+
+/**
+ * Resolve generated hymn-catalog paths against the immutable gyschordweb lock.
+ * The two upstream generators differ only in filename whitespace for a number
+ * of PDFs/MIDI files (for example `051A_ Batu` vs `051A_Batu`). Falling back
+ * to the stable hymn number/suffix keeps binary loading deterministic without
+ * duplicating or editing either upstream snapshot.
+ */
+export function findMusicAsset(
+  lock: UpstreamMusicLock,
+  kind: UpstreamMusicItem["kind"],
+  path: string,
+): UpstreamMusicItem | undefined {
+  const candidates = lock.items.filter((item) => item.kind === kind);
+  const exact = candidates.find((item) => item.path === path);
+  if (exact) return exact;
+  const normalized = normalizedAssetName(path);
+  const byName = candidates.find(
+    (item) => normalizedAssetName(item.path) === normalized,
+  );
+  if (byName) return byName;
+  const key = normalized.match(/^(\d{3}[a-z]?)(?:_|\s)/i)?.[1];
+  if (!key) return undefined;
+  return candidates.find((item) => {
+    const candidate = normalizedAssetName(item.path);
+    return candidate.startsWith(`${key.toLocaleLowerCase()}_`);
+  });
+}
+
 function localUrl(ref: Pick<UpstreamMusicItem, "path">): string {
   return new URL(
     ref.path.replace(/^\//, "").replace(/^docs\//, ""),

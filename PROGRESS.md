@@ -75,7 +75,8 @@ service or platform artifact that cannot be exercised in this workspace.
   detail now has two presentation modes (`Lirik` / `PDF`) with a shared chord
   capability, remembers presentation/chord visibility per song, and never
   renders duplicate viewer surfaces. Note-aligned v2 chord JSON is mapped
-  against verified canonical PDF text coordinates (dominant notation font,
+  against the exact active PDF text coordinates (Fork KR master first, canonical
+  per-song fallback; dominant notation font,
   multi-character note splitting, row matching, and responsive lyric/chord
   cells), rendered as a DOM overlay over PDF.js canvas, and reused for
   Text-mode line association. Transpose and accidental changes update labels
@@ -183,8 +184,9 @@ service or platform artifact that cannot be exercised in this workspace.
 - The shared `PlatformServices` seam now models database, transient secret,
   notifications, file dialogs, sharing, deep links, and lifecycle in addition
   to key-value/blob/speech. Browser adapters execute the available APIs;
-  Tauri explicitly reports secure-secret/file-dialog/deep-link gaps instead of
-  pretending that browser storage is native-secure.
+  Tauri now bridges OS keyring, native dialogs/filesystem, notifications, and
+  deep-link registration through explicit plugins. Signed/device runtime checks
+  remain the GA evidence gate rather than being implied by a desktop compile.
 - Bible split ratio now defaults safely when storage is empty (no accidental
   42% pane), and the responsive E2E matrix covers 320/390/768/1024/1440/1920
   plus landscape without horizontal overflow.
@@ -205,7 +207,7 @@ service or platform artifact that cannot be exercised in this workspace.
   Native `cargo check` is wired into
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
-  18 required offline/runtime assets (36,845,746 bytes in the current build).
+  18 required offline/runtime assets (36,845,850 bytes in the current build).
 - Feature-critical Kidung controls now use the shared id/en/zh message table,
   including search, viewer modes, chord/PDF/MIDI actions, queue controls,
   typography, and recovery states. Indonesian copy remains stable for the
@@ -253,6 +255,6 @@ service or platform artifact that cannot be exercised in this workspace.
   schemas when the upstream runtime document is available in an authenticated
   checkout; the current upstream checkout exposes the generator/configuration
   but no checked-in JSON document.
-- Complete the native hardening milestone: SQLite-backed database commands,
-  Stronghold/OS credential storage, and native file-dialog/deep-link bridges
-  with Windows/Android/iOS contract evidence.
+- Complete native packaging/signing and device evidence: build/install smoke
+  tests for Windows, Android, and iOS, plus live keyring, notification,
+  file-dialog, lifecycle, and deep-link checks on each target.

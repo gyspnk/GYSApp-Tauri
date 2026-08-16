@@ -1,9 +1,15 @@
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use rusqlite::{params, Connection, OptionalExtension};
+use serde::{Deserialize, Serialize};
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::{AppHandle, Manager};
+use tauri_plugin_deep_link::DeepLinkExt;
+use tauri_plugin_dialog::{DialogExt, FileAccessMode, FilePath};
+use tauri_plugin_fs::{FsExt, OpenOptions};
+use tauri_plugin_keyring_store::KeyringExt;
 use tauri_plugin_shell::ShellExt;
 
 static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -25,6 +31,14 @@ fn platform_name() -> &'static str {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(
+            tauri_plugin_keyring_store::Builder::new()
+                .service("id.or.gys.app.credentials")
+                .build(),
+        )
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             platform_name,
@@ -38,10 +52,208 @@ pub fn run() {
             blob_put_atomic,
             blob_remove,
             platform_clear_data,
-            open_external
+            open_external,
+            secret_get,
+            secret_set,
+            secret_remove,
+            file_dialog_open,
+            file_dialog_save,
+            deep_link_current
         ])
         .run(tauri::generate_context!())
         .expect("error while running GYSApp native shell");
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct FileDialogOptions {
+    accept: Option<Vec<String>>,
+    multiple: Option<bool>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NativeFile {
+    name: String,
+    mime_type: String,
+    bytes: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NativeFileToSave {
+    name: String,
+    mime_type: String,
+    bytes: String,
+}
+
+fn secret_account(key: &str) -> Result<String, String> {
+    let trimmed = key.trim();
+    if trimmed.is_empty() || trimmed.len() > 200 || trimmed.chars().any(char::is_control) {
+        return Err("native secret key is invalid".to_owned());
+    }
+    Ok(format!("gysapp.{trimmed}"))
+}
+
+#[tauri::command]
+fn secret_get(app: AppHandle, key: String) -> Result<Option<String>, String> {
+    let account = secret_account(&key)?;
+    app.keyring()
+        .store
+        .get_password(&account)
+        .map_err(|_| "native secure storage read failed".to_owned())
+}
+
+#[tauri::command]
+fn secret_set(app: AppHandle, key: String, value: String) -> Result<(), String> {
+    let account = secret_account(&key)?;
+    if value.len() > 32_768 {
+        return Err("native secret value is too large".to_owned());
+    }
+    app.keyring()
+        .store
+        .set_password(&account, &value)
+        .map_err(|_| "native secure storage write failed".to_owned())
+}
+
+#[tauri::command]
+fn secret_remove(app: AppHandle, key: String) -> Result<(), String> {
+    let account = secret_account(&key)?;
+    app.keyring()
+        .store
+        .delete(&account)
+        .map_err(|_| "native secure storage remove failed".to_owned())
+}
+
+fn file_name(path: &FilePath) -> String {
+    path.as_path()
+        .and_then(Path::file_name)
+        .and_then(|value| value.to_str())
+        .map(str::to_owned)
+        .unwrap_or_else(|| "gysapp-file".to_owned())
+}
+
+fn build_file_dialog(
+    app: &AppHandle,
+    options: &FileDialogOptions,
+) -> tauri_plugin_dialog::FileDialogBuilder<tauri::Wry> {
+    let mut builder = app
+        .dialog()
+        .file()
+        .set_title("Pilih berkas GYSApp")
+        .set_file_access_mode(FileAccessMode::Copy);
+    if let Some(filters) = &options.accept {
+        for filter in filters {
+            let extension = filter
+                .trim()
+                .trim_start_matches('.')
+                .split('/')
+                .next_back()
+                .unwrap_or_default()
+                .trim_start_matches('*')
+                .trim_start_matches('.');
+            if !extension.is_empty() && extension.len() <= 32 {
+                builder = builder.add_filter(extension, &[extension]);
+            }
+        }
+    }
+    builder
+}
+
+#[tauri::command]
+async fn file_dialog_open(
+    app: AppHandle,
+    options: Option<FileDialogOptions>,
+) -> Result<Option<Vec<NativeFile>>, String> {
+    let options = options.unwrap_or_default();
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    let mut sender = Some(sender);
+    let builder = build_file_dialog(&app, &options);
+    if options.multiple.unwrap_or(false) {
+        builder.pick_files(move |paths| {
+            if let Some(sender) = sender.take() {
+                let _ = sender.send(paths);
+            }
+        });
+    } else {
+        builder.pick_file(move |path| {
+            if let Some(sender) = sender.take() {
+                let _ = sender.send(path.map(|value| vec![value]));
+            }
+        });
+    }
+    let Some(paths) = receiver
+        .await
+        .map_err(|_| "native file dialog was interrupted".to_owned())?
+    else {
+        return Ok(None);
+    };
+    let mut files = Vec::with_capacity(paths.len());
+    for path in paths {
+        let name = file_name(&path);
+        let bytes = app
+            .fs()
+            .read(path)
+            .map_err(|_| "native file could not be read".to_owned())?;
+        files.push(NativeFile {
+            name,
+            mime_type: "application/octet-stream".to_owned(),
+            bytes: BASE64.encode(bytes),
+        });
+    }
+    Ok(Some(files))
+}
+
+#[tauri::command]
+async fn file_dialog_save(app: AppHandle, file: NativeFileToSave) -> Result<(), String> {
+    let name = file.name.trim();
+    if name.is_empty()
+        || name.len() > 255
+        || name.chars().any(|value| {
+            value.is_control()
+                || matches!(value, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|')
+        })
+    {
+        return Err("native file name is invalid".to_owned());
+    }
+    let bytes = BASE64
+        .decode(file.bytes)
+        .map_err(|_| "native file payload is invalid".to_owned())?;
+    if bytes.len() > 64 * 1024 * 1024 {
+        return Err("native file payload is too large".to_owned());
+    }
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    app.dialog()
+        .file()
+        .set_file_name(name)
+        .save_file(move |path| {
+            let _ = sender.send(path);
+        });
+    let Some(path) = receiver
+        .await
+        .map_err(|_| "native save dialog was interrupted".to_owned())?
+    else {
+        return Ok(());
+    };
+    let mut open_options = OpenOptions::default();
+    open_options.write(true).create(true).truncate(true);
+    let mut output = app
+        .fs()
+        .open(path, open_options)
+        .map_err(|_| "native output file could not be opened".to_owned())?;
+    output
+        .write_all(&bytes)
+        .map_err(|_| "native output file could not be written".to_owned())?;
+    let _ = file.mime_type;
+    Ok(())
+}
+
+#[tauri::command]
+fn deep_link_current(app: AppHandle) -> Result<Option<Vec<String>>, String> {
+    app.deep_link()
+        .get_current()
+        .map_err(|_| "native deep-link state is unavailable".to_owned())
+        .map(|urls| urls.map(|values| values.into_iter().map(|url| url.to_string()).collect()))
 }
 
 fn app_data_dir(app: &AppHandle) -> Result<PathBuf, String> {

@@ -151,6 +151,9 @@ export const HymnalPdfManifestSchema = z.object({
   bookCode: z.literal("KR"),
   masterPath: z.string().min(1),
   pageCount: z.number().int().positive(),
+  /** Integrity metadata for the immutable master blob. Generated, never hand-edited. */
+  sizeBytes: z.number().int().positive().optional(),
+  sha256: Sha256Schema.optional(),
   songs: z.record(z.string(), HymnalPdfSongSchema),
 });
 export type HymnalPdfManifest = z.infer<typeof HymnalPdfManifestSchema>;

@@ -25,6 +25,7 @@ import { fetchSuaraSejati } from "./suara.js";
 import { fetchArticle, htmlToText } from "./article.js";
 import { egysUpstreamCommit } from "./egys-provenance.js";
 import { egysOpenApiContract } from "./egys-contract.js";
+import { forkPdfSource } from "./fork-pdf-source.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -41,6 +42,10 @@ const ReportSchema = z.object({
     .url()
     .refine((value) => ["http:", "https:"].includes(new URL(value).protocol))
     .optional(),
+});
+const ForkPdfQuerySchema = z.object({
+  commit: z.string().regex(/^[a-f0-9]{7,64}$/i),
+  path: z.string().min(1).max(512),
 });
 export type BffConfig = {
   allowedOrigins: string[];
@@ -654,6 +659,96 @@ export function createApp(
     }
   });
 
+  /**
+   * Same-origin proxy for the GYSApp-Fork KR master PDF. The browser-side
+   * reader uses the immutable fork manifest for page offsets; this route only
+   * serves that one allowlisted blob so a configured Worker can avoid raw
+   * GitHub CORS/range variability without becoming an open proxy.
+   */
+  app.get("/api/v1/content/fork-pdf", async (c) => {
+    const parsedQuery = ForkPdfQuerySchema.safeParse({
+      commit: c.req.query("commit"),
+      path: c.req.query("path"),
+    });
+    if (!parsedQuery.success)
+      return errorResponse(c, "VALIDATION_ERROR", "Fork PDF query is invalid");
+    const { commit, path } = parsedQuery.data;
+    if (
+      commit !== forkPdfSource.sourceCommit ||
+      path !== forkPdfSource.masterPath
+    )
+      return errorResponse(
+        c,
+        "FORBIDDEN",
+        "Fork PDF source is not allowlisted",
+      );
+    const encodedPath = forkPdfSource.masterPath
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+    const encodedRepo = forkPdfSource.sourceRepo
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+    const url = `https://raw.githubusercontent.com/${encodedRepo}/${encodeURIComponent(forkPdfSource.sourceCommit)}/${encodedPath}`;
+    try {
+      const range = c.req.header("range");
+      const upstream = await fetch(url, {
+        headers: {
+          accept: "application/pdf,application/octet-stream",
+          ...(range ? { range } : {}),
+        },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok && upstream.status !== 206)
+        return errorResponse(c, "UPSTREAM_UNAVAILABLE", "Fork PDF unavailable");
+      const contentType = upstream.headers.get("content-type") ?? "";
+      if (!contentType.toLowerCase().includes("pdf"))
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Fork PDF content type is invalid",
+        );
+      const partial = upstream.status === 206 || Boolean(range);
+      let body: ArrayBuffer | ReadableStream<Uint8Array> | null = upstream.body;
+      if (!partial) {
+        const bytes = await upstream.arrayBuffer();
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        const actualHash = Array.from(new Uint8Array(digest), (value) =>
+          value.toString(16).padStart(2, "0"),
+        ).join("");
+        if (
+          bytes.byteLength !== forkPdfSource.sizeBytes ||
+          actualHash !== forkPdfSource.sha256
+        )
+          return errorResponse(
+            c,
+            "INTEGRITY_ERROR",
+            "Fork PDF integrity check failed",
+          );
+        body = bytes;
+      }
+      c.header("content-type", "application/pdf");
+      c.header("cache-control", "public, max-age=31536000, immutable");
+      c.header("cross-origin-resource-policy", "cross-origin");
+      for (const header of [
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "etag",
+      ]) {
+        const value = upstream.headers.get(header);
+        if (value) c.header(header, value);
+      }
+      return new Response(body, {
+        status: upstream.status,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(c, "UPSTREAM_UNAVAILABLE", "Fork PDF unavailable");
+    }
+  });
+
   app.get("/api/v1/content/suara-sejati", async (c) => {
     try {
       const now = Date.now();
@@ -853,7 +948,12 @@ export function createApp(
 
   app.get("/api/v1/auth/providers", async (c) => {
     c.header("cache-control", "public, max-age=300");
-    if (!egysBase(c)) return c.json({ providers: [] });
+    if (!egysBase(c))
+      return c.json({
+        google: { enabled: false, clientId: null },
+        apple: { enabled: false, clientId: null },
+        whatsapp: false,
+      });
     const upstream = await proxyEgysJson(c, "auth/providers");
     if (!upstream.ok)
       return errorResponse(

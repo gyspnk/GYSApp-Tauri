@@ -49,6 +49,12 @@ importers:
       "@tanstack/react-query":
         specifier: 5.101.4
         version: 5.101.4(react@19.2.8)
+      "@tauri-apps/api":
+        specifier: 2.11.1
+        version: 2.11.1
+      "@tauri-apps/plugin-notification":
+        specifier: 2.3.3
+        version: 2.3.3
       pdfjs-dist:
         specifier: 6.2.108
         version: 6.2.108
@@ -1021,6 +1027,18 @@ packages:
       }
     peerDependencies:
       react: ^18 || ^19
+
+  "@tauri-apps/api@2.11.1":
+    resolution:
+      {
+        integrity: sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==,
+      }
+
+  "@tauri-apps/plugin-notification@2.3.3":
+    resolution:
+      {
+        integrity: sha512-Zw+ZH18RJb41G4NrfHgIuofJiymusqN+q8fGUIIV7vyCH+5sSn5coqRv/MWB9qETsUs97vmU045q7OyseCV3Qg==,
+      }
 
   "@types/chai@5.2.3":
     resolution:
@@ -2307,6 +2325,12 @@ snapshots:
     dependencies:
       "@tanstack/query-core": 5.101.4
       react: 19.2.8
+
+  "@tauri-apps/api@2.11.1": {}
+
+  "@tauri-apps/plugin-notification@2.3.3":
+    dependencies:
+      "@tauri-apps/api": 2.11.1
 
   "@types/chai@5.2.3":
     dependencies:

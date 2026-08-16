@@ -18,7 +18,9 @@ hymnal database, canonical GYSChordWeb chord/MIDI assets, real TJC literature
 and Suara Sejati feeds, today's Sauh Bagi Jiwa, encrypted backup/import, and a
 native e-GYS session/profile adapter. Literature keeps a persistent “Terakhir
 dilihat” shelf with version-aware page resume, while the local PDF.js reader
-uses an allowlisted BFF range proxy when deployed. Kidung prefetches only the
+uses an allowlisted BFF range proxy when deployed. The KR master is served
+through a commit/path-locked GYSApp-Fork proxy when available and falls back to
+the immutable raw source. Kidung prefetches only the
 next/previous binary music assets and never eagerly downloads heavy PDFs.
 The TB reader runs its 31,172-verse search index in a lazy worker with a
 bounded startup fallback, and the global player keeps a compact minimized

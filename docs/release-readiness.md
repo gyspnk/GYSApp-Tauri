@@ -46,6 +46,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   The generated asset manifest now inventories bundled music seeds, so
   remote-only MIDI/PDF assets skip known-missing Pages probes before using the
   verified immutable source.
+  When `VITE_BFF_BASE_URL` is configured, the KR master PDF uses the
+  same-origin `/api/v1/content/fork-pdf` range proxy locked to
+  `ThenGB/GYSApp-Fork@4f0d39b`; raw GitHub and the signed GYSApp-Data package
+  remain verified fallbacks.
   The favicon and PWA manifest use a square official-logo mark with
   Pages-relative paths; runtime-health coverage checks the asset response and
   rejects browser metadata warnings. The shell cache version is bumped with
@@ -104,7 +108,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Kidung detail now has an automated presentation assertion: Lirik and PDF are
   the only viewer modes; Chord is a shared visibility capability and never a
   third surface. The native boundary check passes with 18 required
-  offline/runtime assets totaling 36,845,746
+  offline/runtime assets totaling 36,845,850
   bytes in the current build; this is a packaging proof, not a signed
   installer artifact. The chord E2E additionally asserts that canonical
   note-aligned PDF layout rows and DOM overlay markers are rendered (not only
@@ -151,8 +155,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   report `false` instead of showing an unimplemented control.
 - The shared platform contract now also covers database, transient secrets,
   notifications, file dialogs, sharing, deep links, and lifecycle events.
-  Browser implementations are exercised by unit tests; native secure-secret,
-  SQLite, file-dialog, and deep-link bridges remain explicit GA blockers.
+  Browser implementations are exercised by unit tests; Tauri wires SQLite,
+  OS credential storage, native file dialogs/filesystem access, notifications,
+  lifecycle events, and deep-link registration. Runtime checks on signed
+  Windows/Android/iOS artifacts are still required for GA evidence.
 - BFF environment source bindings are HTTPS-only and TJC-origin allowlisted;
   insecure e-GYS and non-TJC Sauh/Literature/Suara overrides are ignored, so
   only the packaged Sauh snapshot or canonical TJC defaults remain eligible for

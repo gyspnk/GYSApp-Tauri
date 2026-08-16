@@ -16,6 +16,13 @@ const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
 const assets = await readJson("apps/web/public/offline/asset-manifest.json");
+const forkPdf = await readJson(
+  "apps/web/public/offline/fork-hymnal-manifest.json",
+);
+const forkPdfSource = await readFile("apps/bff/src/fork-pdf-source.ts", "utf8");
+const sourceField = (field, value) =>
+  forkPdfSource.includes(`${field}: ${value}`) ||
+  forkPdfSource.includes(`"${field}": ${value}`);
 
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
@@ -28,6 +35,26 @@ if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 140)
   throw new Error("chord manifest drifted from music lock");
 if (hymns.sourceCommit !== lock.sourceCommit || hymns.items.length !== 533)
   throw new Error("hymn catalog drifted from music lock");
+if (
+  forkPdf.sourceRepo !== "ThenGB/GYSAPP-Fork" ||
+  forkPdf.sourceCommit !== "4f0d39b" ||
+  forkPdf.masterPath !== "assets/data/pdf/kr/kr_master.pdf" ||
+  forkPdf.bookCode !== "KR" ||
+  forkPdf.pageCount !== 649 ||
+  forkPdf.sizeBytes !== 4770376 ||
+  forkPdf.sha256 !==
+    "5ea1d857cac8a8d52600052ef3a7b22214919ffaefe4f0f97c71d6f57f5f8805" ||
+  !forkPdf.songs ||
+  Object.keys(forkPdf.songs).length !== 533 ||
+  !sourceField("sourceCommit", '"4f0d39b"') ||
+  !sourceField("masterPath", '"assets/data/pdf/kr/kr_master.pdf"') ||
+  !sourceField("sizeBytes", "4770376") ||
+  !sourceField(
+    "sha256",
+    '"5ea1d857cac8a8d52600052ef3a7b22214919ffaefe4f0f97c71d6f57f5f8805"',
+  )
+)
+  throw new Error("GYSApp-Fork PDF provenance drifted");
 if (pack.hymns !== hymns.items.length)
   throw new Error("offline pack hymn count drifted");
 if (literature.source !== "tjc.org" || literature.items.length < 1)

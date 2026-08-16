@@ -25,6 +25,17 @@
     }
   },
   "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["gysapp"]
+      },
+      "mobile": [
+        {
+          "host": "gyspnk.github.io",
+          "pathPrefix": ["/GYSApp-Tauri/open"]
+        }
+      ]
+    },
     "shell": {
       "open": "https?://.*"
     }

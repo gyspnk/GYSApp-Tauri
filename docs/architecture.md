@@ -51,15 +51,15 @@ sequenceDiagram
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                           |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                                      |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                                  |
-| `apps/bff`              | Origin/CORS/cookie-CSRF/rate-limit boundary, upstream validation, PDF/canonical music range proxies, typed Edge speech audio proxy, cache headers, typed errors, and e-GYS cookie proxy. |
-| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                                                           |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                     |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                    |
+| Area                    | Responsibility                                                                                                                                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                                                                           |
+| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                                                                                      |
+| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                                                                                  |
+| `apps/bff`              | Origin/CORS/cookie-CSRF/rate-limit boundary, upstream validation, PDF/canonical music range proxies (including the immutable GYSApp-Fork KR master), typed Edge speech audio proxy, cache headers, typed errors, and e-GYS cookie proxy. |
+| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                                                                                                           |
+| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                                                                     |
+| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                                                                    |
 
 ## Platform capability boundary
 
@@ -68,12 +68,13 @@ the durable `database`, ordinary `keyValue`, atomic `blobs`, transient
 `secrets`, notifications, file dialogs, sharing, speech providers, deep-link
 subscriptions, lifecycle events, external links, and capability detection.
 The browser adapter uses IndexedDB/Cache Storage and real browser APIs where
-they exist. The Tauri adapter keeps verified data in native app-data and uses
-the same browser lifecycle/share/notification APIs inside the WebView, while
-file-dialog, deep-link, and secure-secret capabilities remain explicitly
-`false` until their native bridges are wired. No adapter claims a capability
-that it cannot execute, and the ephemeral secret boundary is never used for
-authentication tokens.
+they exist. The Tauri adapter keeps verified data in native app-data and now
+bridges file dialogs, deep links, notifications, and OS-backed secure secrets
+through Tauri commands/plugins. Capability flags describe the selected native
+adapter, while command results are still validated at the boundary and device
+contract tests remain part of the signed-artifact gate. No adapter claims a
+capability that it cannot execute, and the ephemeral secret boundary is never
+used for authentication tokens.
 
 ## Data and persistence flow
 
@@ -370,3 +371,11 @@ sequenceDiagram
     Reader->>Cache: atomic replace pointer
   end
 ```
+
+The KR hymn presentation follows the same path through
+`/api/v1/content/fork-pdf`, but its source is locked independently to
+`ThenGB/GYSApp-Fork@4f0d39b` and `assets/data/pdf/kr/kr_master.pdf`. The route
+accepts only that commit/path pair, preserves byte ranges, and is optional:
+Pages and native previews still fall back to the immutable raw source when the
+Worker is not configured. The page database in
+`offline/fork-hymnal-manifest.json` and the binary therefore cannot drift.

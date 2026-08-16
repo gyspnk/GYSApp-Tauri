@@ -33,6 +33,7 @@ import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import type { PdfChordOverlayMarker } from "./pdf.js";
 import {
   downloadMusicAsset,
+  findMusicAsset,
   loadMusicAsset,
   prefetchMusicAsset,
 } from "./music-assets.js";
@@ -441,9 +442,7 @@ function HymnDetail({
     );
     for (const candidate of candidates) {
       void chordRepository.getChord(candidate.id).catch(() => undefined);
-      const ref = musicLock.items.find(
-        (asset) => asset.kind === "midi" && asset.path === candidate.midiPath,
-      );
+      const ref = findMusicAsset(musicLock, "midi", candidate.midiPath);
       void prefetchMusicAsset(ref);
     }
   }, [chordRepository, item, musicLock, next, prev]);
@@ -525,18 +524,25 @@ function HymnDetail({
     typography.lineHeight,
     viewerMode,
   ]);
-  const pdfChordOverlays = useMemo(() => {
-    const offset = pdfSource === "fork" ? Math.max(0, pdfInitialPage - 1) : 0;
-    return Object.fromEntries(
-      Object.entries(chordOverlays).map(([page, markers]) => [
-        String(Number(page) + offset),
-        markers.map((marker) => ({
-          ...marker,
-          chord: transposeChord(marker.chord, transpose, accidental),
-        })),
-      ]),
-    );
-  }, [accidental, chordOverlays, pdfInitialPage, pdfSource, transpose]);
+  const pdfChordOverlays = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(chordOverlays).map(([page, markers]) => [
+          page,
+          markers.map((marker) => ({
+            ...marker,
+            chord: transposeChord(marker.chord, transpose, accidental),
+          })),
+        ]),
+      ),
+    [accidental, chordOverlays, transpose],
+  );
+  const musicMidiRef = musicLock
+    ? findMusicAsset(musicLock, "midi", item?.midiPath ?? "")
+    : undefined;
+  const musicPdfRef = musicLock
+    ? findMusicAsset(musicLock, "pdf", item?.pdfPath ?? "")
+    : undefined;
   if (state.status === "loading")
     return (
       <div className="page">
@@ -608,27 +614,42 @@ function HymnDetail({
       let nextLayout: ChordLayoutPage[] = [];
       let nextOverlays: Record<string, PdfChordOverlayMarker[]> = {};
       if ("type" in nextDocument && nextDocument.type === "note-aligned") {
-        const pdfRef = musicLock?.items.find(
-          (candidate) =>
-            candidate.kind === "pdf" && candidate.path === item.pdfPath,
-        );
+        const pdfRef = musicLock
+          ? findMusicAsset(musicLock, "pdf", item.pdfPath)
+          : undefined;
         if (pdfRef) {
           try {
             // Reuse a canonical PDF already open in the reader; otherwise the
             // verified asset loader shares one request and caches the bytes.
-            const canonicalPdf =
-              pdfSource === "canonical" && pdfBytes
-                ? pdfBytes
-                : await loadMusicAsset(pdfRef);
+            let layoutPdf: Uint8Array;
+            let layoutPages = nextDocument.pages;
+            let layoutResourceKey = `${item.id}:${pdfRef.sha256}`;
+            if (pdfSource === "fork") {
+              // Extract coordinates from the exact master PDF shown by the
+              // reader. Chord JSON pages are song-relative; the fork manifest
+              // maps them to absolute master pages.
+              const forkPdf = await loadForkHymnalPdf(item.id);
+              layoutPdf = forkPdf.bytes;
+              layoutResourceKey = `${item.id}:${forkPdf.sourceVersion}`;
+              const offset = Math.max(0, forkPdf.initialPage - 1);
+              layoutPages = Object.fromEntries(
+                Object.entries(nextDocument.pages).map(([page, entries]) => [
+                  String(Number(page) + offset),
+                  entries,
+                ]),
+              );
+            } else {
+              layoutPdf = pdfBytes ?? (await loadMusicAsset(pdfRef));
+            }
             // PDF.js and the coordinate mapper are only needed for a visible
             // note-aligned chord layer. Keep them outside the Kidung route's
             // first-load chunk so text-only readers do not pay the PDF cost.
             const { buildChordPresentationFromPdf } =
               await import("./chord-layout-pdf.js");
             const presentation = await buildChordPresentationFromPdf(
-              canonicalPdf,
-              nextDocument.pages,
-              `${item.id}:${pdfRef.sha256}`,
+              layoutPdf,
+              layoutPages,
+              layoutResourceKey,
             );
             if (controller.signal.aborted || run !== chordRun.current) return;
             nextLayout = presentation.layout;
@@ -678,16 +699,15 @@ function HymnDetail({
       let source: "fork" | "canonical" = "fork";
       let sourceVersion = "fork";
       try {
-        const forkPdf = await loadForkHymnalPdf(item.number);
+        const forkPdf = await loadForkHymnalPdf(item.id);
         if (run !== pdfRun.current) return;
         bytes = forkPdf.bytes;
         initialPage = forkPdf.initialPage;
         sourceVersion = forkPdf.sourceVersion;
       } catch {
-        const ref = musicLock?.items.find(
-          (candidate) =>
-            candidate.kind === "pdf" && candidate.path === item.pdfPath,
-        );
+        const ref = musicLock
+          ? findMusicAsset(musicLock, "pdf", item.pdfPath)
+          : undefined;
         if (!ref) throw new Error("PDF unavailable");
         bytes = await loadMusicAsset(ref);
         if (run !== pdfRun.current) return;
@@ -739,10 +759,7 @@ function HymnDetail({
       show("MIDI lock belum siap; coba lagi sebentar.");
       return;
     }
-    const ref = musicLock.items.find(
-      (candidate) =>
-        candidate.kind === "midi" && candidate.path === item.midiPath,
-    );
+    const ref = findMusicAsset(musicLock, "midi", item.midiPath);
     if (!ref) {
       setMidiStatus("error");
       show("MIDI belum tersedia pada lock asset.");
@@ -888,15 +905,9 @@ function HymnDetail({
               const added = addMidiPlaylistItem({
                 songId: item.id,
                 title: item.title,
-                ...(musicLock?.items.find(
-                  (asset) =>
-                    asset.kind === "midi" && asset.path === item.midiPath,
-                )?.sha256
+                ...(musicMidiRef?.sha256
                   ? {
-                      sourceHash: musicLock.items.find(
-                        (asset) =>
-                          asset.kind === "midi" && asset.path === item.midiPath,
-                      )?.sha256,
+                      sourceHash: musicMidiRef.sha256,
                     }
                   : {}),
               });
@@ -934,10 +945,7 @@ function HymnDetail({
               type="button"
               className="quiet-button"
               onClick={() => {
-                const ref = musicLock?.items.find(
-                  (candidate) =>
-                    candidate.kind === "pdf" && candidate.path === item.pdfPath,
-                );
+                const ref = musicPdfRef;
                 if (pdfSource === "canonical" && ref)
                   downloadMusicAsset(ref, pdfBytes);
                 if (pdfSource === "fork")

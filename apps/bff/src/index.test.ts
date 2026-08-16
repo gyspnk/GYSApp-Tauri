@@ -48,7 +48,11 @@ describe("BFF public boundary", () => {
         { EGYS_API_BASE_URL: "http://evil.example" },
       );
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ providers: [] });
+      expect(await response.json()).toEqual({
+        google: { enabled: false, clientId: null },
+        apple: { enabled: false, clientId: null },
+        whatsapp: false,
+      });
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       globalThis.fetch = originalFetch;
@@ -257,6 +261,70 @@ describe("BFF public boundary", () => {
       );
       expect(seenUrl).toContain("raw.githubusercontent.com/gyspnk/gyschordweb");
       expect(seenUrl).toContain("001_demo.mid");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("proxies only the immutable GYSApp-Fork master PDF", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    globalThis.fetch = (async (input) => {
+      seenUrl = String(input);
+      return new Response(new Uint8Array([37, 80, 68, 70, 45]), {
+        status: 206,
+        headers: {
+          "content-type": "application/pdf",
+          "content-range": "bytes 0-4/5",
+          "content-length": "5",
+        },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const denied = await app.request(
+        "/api/v1/content/fork-pdf?commit=4f0d39b&path=assets%2Fdata%2Fpdf%2Fkr%2Fother.pdf",
+        { headers: { Origin: "http://localhost:5173" } },
+      );
+      expect(denied.status).toBe(403);
+      const response = await app.request(
+        "/api/v1/content/fork-pdf?commit=4f0d39b&path=assets%2Fdata%2Fpdf%2Fkr%2Fkr_master.pdf",
+        { headers: { Origin: "http://localhost:5173", range: "bytes=0-4" } },
+      );
+      expect(response.status).toBe(206);
+      expect(response.headers.get("content-type")).toBe("application/pdf");
+      expect(response.headers.get("content-range")).toBe("bytes 0-4/5");
+      expect(seenUrl).toContain("raw.githubusercontent.com/ThenGB/GYSAPP-Fork");
+      expect(seenUrl).toContain("kr_master.pdf");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("rejects a full Fork PDF when the immutable size or hash drifts", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(new Uint8Array([37, 80, 68, 70, 45]), {
+        status: 200,
+        headers: { "content-type": "application/pdf" },
+      })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/content/fork-pdf?commit=4f0d39b&path=assets%2Fdata%2Fpdf%2Fkr%2Fkr_master.pdf",
+      );
+      expect(response.status).toBe(502);
+      expect(
+        ((await response.json()) as { error: { code: string } }).error.code,
+      ).toBe("INTEGRITY_ERROR");
     } finally {
       globalThis.fetch = originalFetch;
     }

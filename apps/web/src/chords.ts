@@ -41,15 +41,22 @@ async function fallbackManifest(): Promise<{ manifest: ChordManifestV1 }> {
       generatedAt: lock.generatedAt,
       entries: lock.items
         .filter((item) => item.kind === "chord")
-        .map((item) => ({
-          songId: `hymn-${(item.path.match(/\/(\d+)_/)?.[1] ?? "0").padStart(3, "0")}`,
-          path: item.path,
-          sourceCommit: lock.sourceCommit,
-          size: item.size,
-          sha256: item.sha256,
-        })),
+        .map((item) => {
+          return {
+            songId: chordSongIdFromPath(item.path),
+            path: item.path,
+            sourceCommit: lock.sourceCommit,
+            size: item.size,
+            sha256: item.sha256,
+          };
+        }),
     },
   };
+}
+
+export function chordSongIdFromPath(path: string): string {
+  const key = path.match(/\/(\d{3}[a-z]?)_/i)?.[1];
+  return `hymn-${key?.toUpperCase() ?? "000"}`;
 }
 
 export function createBrowserChordRepository(): ChordRepository {
