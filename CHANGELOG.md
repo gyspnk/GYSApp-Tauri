@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+- The native persistence boundary now enforces payload caps: verified blobs
+  are bounded at 128 MB and key-value/database records at 8 MB, mirroring
+  the existing secret and file-dialog limits, so a corrupt or future
+  frontend cannot grow app-data without limit through a single command.
+  `cargo fmt --check`, `cargo check`, `cargo test` (cap boundary cases
+  included), and clippy with `-D warnings` all pass.
 - The pre-commit gate now also runs `verify:generated` (music lock, chord
   manifest, hymn catalog, offline packs, literature covers, fork PDF
   provenance), matching the CI and pre-push gates, so a commit that drifts

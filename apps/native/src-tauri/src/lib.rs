@@ -14,6 +14,20 @@ use tauri_plugin_shell::ShellExt;
 
 static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
+/// Defense-in-depth bounds on the native persistence boundary. The web layer
+/// only writes verified, bounded assets, but a corrupt or future frontend
+/// must not be able to grow app-data without limit through one command.
+const BLOB_PAYLOAD_MAX_BYTES: usize = 128 * 1024 * 1024; // 128 MB (verified media)
+const KV_VALUE_MAX_BYTES: usize = 8 * 1024 * 1024; // 8 MB (preferences)
+const DATABASE_VALUE_MAX_BYTES: usize = 8 * 1024 * 1024; // 8 MB (records)
+
+fn enforce_cap(limit: usize, actual: usize, label: &str) -> Result<(), String> {
+    if actual > limit {
+        return Err(format!("native {label} value is too large"));
+    }
+    Ok(())
+}
+
 #[tauri::command]
 fn platform_name() -> &'static str {
     if cfg!(target_os = "windows") {
@@ -345,6 +359,7 @@ fn database_get(app: AppHandle, key: String) -> Result<Option<String>, String> {
 
 #[tauri::command]
 fn database_set(app: AppHandle, key: String, value: String) -> Result<(), String> {
+    enforce_cap(DATABASE_VALUE_MAX_BYTES, value.len(), "database")?;
     let mut connection = open_database(&app)?;
     let transaction = connection
         .transaction()
@@ -382,6 +397,7 @@ fn key_value_get(app: AppHandle, key: String) -> Result<Option<String>, String> 
 
 #[tauri::command]
 fn key_value_set(app: AppHandle, key: String, value: String) -> Result<(), String> {
+    enforce_cap(KV_VALUE_MAX_BYTES, value.len(), "key-value")?;
     let path = value_path(&app, &key)?;
     atomic_write(&path, value.as_bytes())
 }
@@ -411,6 +427,7 @@ fn blob_put_atomic(app: AppHandle, key: String, bytes: String) -> Result<(), Str
     let decoded = BASE64
         .decode(bytes)
         .map_err(|_| "native blob payload is invalid".to_owned())?;
+    enforce_cap(BLOB_PAYLOAD_MAX_BYTES, decoded.len(), "blob")?;
     let path = blob_path(&app, &key)?;
     atomic_write(&path, &decoded)
 }
@@ -464,9 +481,32 @@ fn open_external(app: AppHandle, url: String) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{atomic_write, safe_key};
+    use super::{
+        atomic_write, enforce_cap, safe_key, BLOB_PAYLOAD_MAX_BYTES, DATABASE_VALUE_MAX_BYTES,
+        KV_VALUE_MAX_BYTES,
+    };
     use std::fs;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn payload_caps_reject_oversized_values_and_accept_boundaries() {
+        assert!(enforce_cap(BLOB_PAYLOAD_MAX_BYTES, BLOB_PAYLOAD_MAX_BYTES, "blob").is_ok());
+        assert!(enforce_cap(BLOB_PAYLOAD_MAX_BYTES, BLOB_PAYLOAD_MAX_BYTES + 1, "blob").is_err());
+        assert!(enforce_cap(KV_VALUE_MAX_BYTES, 1, "key-value").is_ok());
+        assert!(enforce_cap(KV_VALUE_MAX_BYTES, KV_VALUE_MAX_BYTES + 1, "key-value").is_err());
+        assert!(enforce_cap(
+            DATABASE_VALUE_MAX_BYTES,
+            DATABASE_VALUE_MAX_BYTES,
+            "database"
+        )
+        .is_ok());
+        assert!(enforce_cap(
+            DATABASE_VALUE_MAX_BYTES,
+            DATABASE_VALUE_MAX_BYTES + 1,
+            "database"
+        )
+        .is_err());
+    }
 
     #[test]
     fn storage_keys_cannot_escape_the_app_data_directory() {

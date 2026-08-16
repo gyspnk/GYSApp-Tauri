@@ -7,6 +7,11 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- The native storage commands (`blob_put_atomic`, `key_value_set`,
+  `database_set`) now reject oversized payloads at the Rust boundary (128 MB
+  blobs, 8 MB key-value/database), closing the last uncapped write path in
+  the platform adapter. The cap helper has focused unit coverage and the
+  native gate (fmt/check/test/clippy) passes.
 - The Dasar Kepercayaan screen has a focused browser flow: list selection
   state, content search, and per-topic note persistence across a reload.
   The Playwright suite now runs 45 flows.
