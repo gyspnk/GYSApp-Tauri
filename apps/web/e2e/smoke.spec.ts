@@ -585,6 +585,21 @@ test("the shared read-aloud surface can be minimized without losing the session"
       page.evaluate(() => localStorage.getItem("gys-media-position-v1")),
     )
     .not.toBeNull();
+  // A saved position must be re-clamped when the viewport shrinks so the
+  // floating surface never leaves the visible area.
+  await page.setViewportSize({ width: 320, height: 480 });
+  await expect
+    .poll(async () => {
+      const box = await page.locator(".media-surface").boundingBox();
+      return box
+        ? box.x >= 0 &&
+            box.y >= 0 &&
+            box.x + box.width <= 320 &&
+            box.y + box.height <= 480
+        : false;
+    })
+    .toBe(true);
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole("link", { name: "Beranda" }).click();
   await expect(page.locator(".media-surface")).toBeVisible();
   await page.getByRole("button", { name: "Minimalkan pemutar" }).click();

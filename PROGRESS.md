@@ -46,7 +46,7 @@ service or platform artifact that cannot be exercised in this workspace.
   Chinese, and the flow has focused unit coverage plus a browser E2E that
   searches Yohanes 3:16, navigates into the shell reader, and verifies the
   deep-linked verse is selected. Full lint, strict typecheck, all unit
-  suites, the production build, and the 42-flow Playwright suite pass.
+  suites, the production build, and the 45-flow Playwright suite pass.
 - Clean-room MIT pnpm monorepo, typed contracts, responsive Quiet Sanctuary
   shell, local PWA assets, and GitHub Pages delivery.
 - The pinned Tauri 2.11 CLI is now part of the native workspace and the manual
@@ -161,7 +161,7 @@ service or platform artifact that cannot be exercised in this workspace.
   changes. A late worker result is ignored before it can replace the shared
   shell session; stale loads return a boolean so Kidung and playlist callers
   cannot start superseded audio. The guard has focused unit coverage and the
-  full 42-flow Playwright suite still passes after the change.
+  full 45-flow Playwright suite still passes after the change.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
   two-page guard, version-aware page progress with an explicit return-to-saved
@@ -259,7 +259,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  42 passing flows, including the 320–1920px and landscape shell matrix plus
+  45 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the

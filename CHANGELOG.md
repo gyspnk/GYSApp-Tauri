@@ -2,6 +2,9 @@
 
 ## Unreleased — GA hardening slice
 
+- The media E2E now also proves the floating player re-clamps inside the
+  viewport when the window shrinks, so a saved drag position can never push
+  the surface off-screen on a smaller device or rotation.
 - The browser suite now covers the Dasar Kepercayaan screen end to end: the
   vertical topic list keeps one active selection, search filters real pack
   content, and a personal note on a topic survives a full reload (notes are

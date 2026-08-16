@@ -29,7 +29,7 @@ const required = {
     "## Done & Verified",
     "## Implemented / Needs Verification",
     "## Next controlled work",
-    "42 passing flows",
+    "45 passing flows",
   ],
   "CHANGELOG.md": ["# Changelog", "## Unreleased — GA hardening slice"],
 };
