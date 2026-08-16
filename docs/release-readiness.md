@@ -137,6 +137,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   only the packaged Sauh snapshot or canonical TJC defaults remain eligible for
   fetching. `pnpm verify:docs` enforces the living architecture/release
   documentation map in local hooks, CI, and Pages builds.
+  The latest Pages artifact carries a source-backed `sbj260816` snapshot while
+  the direct browser request remains best-effort because the WordPress endpoint
+  does not currently emit `Access-Control-Allow-Origin`; a configured BFF
+  restores live revalidation without changing the reader contract.
 - The Windows native CI job now runs `cargo fmt --check`, `cargo check`,
   `cargo test`, and `cargo clippy --all-targets -- -D warnings`; native
   packaging remains separate from signed installer evidence.

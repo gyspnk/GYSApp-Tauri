@@ -56,6 +56,10 @@ service or platform artifact that cannot be exercised in this workspace.
 - Home/reader Sauh revalidation tries the canonical TJC WordPress endpoint
   directly, then the optional BFF proxy, then the validated offline snapshot;
   BFF Literature and Suara Sejati routes deduplicate concurrent upstream reads.
+  The packaged Sauh snapshot was refreshed from the canonical `sbj260816`
+  post (Hakim-Hakim 3:31) for the current Pages release, so a browser that
+  cannot satisfy TJC's CORS policy still shows a real source-backed daily
+  entry instead of fabricated text.
 - GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
   hymnal PDF database/download source with signed package fallback, local
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with

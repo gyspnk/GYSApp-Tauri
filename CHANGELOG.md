@@ -6,6 +6,9 @@
   Simplified Chinese, including viewer modes, chord/PDF/MIDI actions, queue,
   typography controls, and recovery states. Added golden conservative Text
   chord matching tests plus a rapid hymn/viewer E2E race flow.
+- Refreshed the packaged Sauh fallback from the canonical `sbj260816` post so
+  the Pages preview continues to show a real daily verse when direct browser
+  CORS is unavailable; direct and optional BFF revalidation remain first.
 
 - Guarded asynchronous MIDI load/render operations with a shared generation
   gate. Superseded worker/WASM results are discarded before they can replace
