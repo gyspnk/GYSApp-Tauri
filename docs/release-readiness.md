@@ -25,8 +25,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
 - The initial web application chunk is **85.1 KiB gzip**; the complete initial
-  JavaScript set is **173.1 KiB gzip** in the latest local verification for
-  commit `ec74630`. The
+  JavaScript set is **173.4 KiB gzip** in the latest local verification after
+  the Sauh/native-auth hardening slice. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
@@ -108,6 +108,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
   daily entry. The performance flow records five first-contentful-paint/
   navigation samples, reports median and p95 timing, and fails on duplicate
   initial application-module requests.
+  When direct TJC revalidation finishes after the snapshot has painted, a
+  typed Sauh subscription updates Home and the dedicated reader in place.
 - Axe runs on the Home and Kidung surfaces with zero violations (including
   color contrast), and a mobile Bible keyboard smoke
   keeps a visible focus target after navigation. The light-theme muted token
@@ -209,6 +211,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Cookie-authenticated BFF mutations now reject requests without an allowlisted
   `Origin` or same-site Fetch Metadata signal; the native adapter uses the
   explicit `x-gys-client: native` marker and the policy has contract coverage.
+  Tauri no longer injects browser Google/Apple SDK scripts under its strict CSP;
+  native provider controls expose the protected SDK/client-ID prerequisite,
+  while WhatsApp uses the system-browser handoff.
   The global media surface re-clamps after minimize/route changes and its drag
   handle supports keyboard arrow movement with a visible focus ring. The
   normalized e-GYS profile preserves branch and event capabilities exposed by

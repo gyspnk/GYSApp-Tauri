@@ -9,6 +9,7 @@ import {
   type EgysProviders,
 } from "@gys/contracts";
 import { recordDiagnostic } from "./diagnostics.js";
+import { isTauriShell } from "./native-platform.js";
 
 function apiUrl(path: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
@@ -31,8 +32,17 @@ async function request(
   const parent = init.signal;
   const abort = () => controller.abort();
   parent?.addEventListener("abort", abort, { once: true });
+  const headers = new Headers(init.headers);
+  // Tauri webviews do not always emit browser Fetch Metadata headers. The
+  // BFF accepts this explicit marker for native cookie-authenticated
+  // mutations, while the browser path remains protected by Origin checks.
+  if (isTauriShell()) headers.set("x-gys-client", "native");
   try {
-    return await fetch(input, { ...init, signal: controller.signal });
+    return await fetch(input, {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
   } finally {
     window.clearTimeout(timer);
     parent?.removeEventListener("abort", abort);

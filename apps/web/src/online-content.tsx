@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import type { Locale } from "./i18n.js";
-import { fetchSauh } from "./sauh.js";
+import { fetchSauh, subscribeSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -59,7 +59,14 @@ export function SauhPage() {
   useEffect(() => {
     const controller = new AbortController();
     load(controller.signal);
-    return () => controller.abort();
+    const unsubscribe = subscribeSauh((items) => {
+      const [post] = items;
+      if (post) setState({ status: "ready", post });
+    });
+    return () => {
+      controller.abort();
+      unsubscribe();
+    };
   }, []);
 
   return (

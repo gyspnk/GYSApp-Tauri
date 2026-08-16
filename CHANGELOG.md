@@ -16,7 +16,12 @@
   standalone route instead of duplicating content and requests on Home.
 - Made Sauh startup resilient to slow or CORS-blocked live revalidation: the
   verified current-day snapshot races the direct/BFF request and appears
-  immediately, while a successful live response updates the short-lived cache.
+  immediately, while a successful live response updates the short-lived cache
+  and publishes the fresh post to Home and the Sauh reader without a reload.
+- Hardened the native e-GYS boundary: native BFF calls identify themselves for
+  the existing CSRF policy, WhatsApp opens in the system browser, and the
+  Tauri CSP can no longer be bypassed by injecting browser Google/Apple SDKs;
+  those provider buttons now explain the protected native-SDK prerequisite.
 - Added a versioned IndexedDB binary store behind the browser platform
   boundary. Cache Storage remains fast for HTTP resources, while verified
   chord/PDF/media blobs are retained across reloads and restricted webviews.

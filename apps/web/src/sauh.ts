@@ -2,6 +2,7 @@ import { SauhPostSchema, type SauhPost } from "@gys/contracts";
 import { recordDiagnostic } from "./diagnostics.js";
 
 const STATIC_URL = `${import.meta.env.BASE_URL}offline/sauh.json`;
+const SAUH_UPDATE_EVENT = "gys-sauh-update";
 const WORDPRESS_URL =
   "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia";
 const CACHE_TTL_MS = 5 * 60_000;
@@ -9,6 +10,33 @@ const CACHE_TTL_MS = 5 * 60_000;
 let cachedToday:
   { dayKey: string; expiresAt: number; items: SauhPost[] } | undefined;
 let inFlightToday: { dayKey: string; promise: Promise<SauhPost[]> } | undefined;
+
+/**
+ * Let the verified snapshot paint immediately, then publish a live TJC
+ * response when revalidation finishes so readers do not need a route reload.
+ */
+export function subscribeSauh(
+  listener: (items: SauhPost[]) => void,
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const onUpdate = (event: Event) => {
+    const items = (event as CustomEvent<SauhPost[]>).detail;
+    if (Array.isArray(items)) listener([...items]);
+  };
+  window.addEventListener(SAUH_UPDATE_EVENT, onUpdate);
+  return () => window.removeEventListener(SAUH_UPDATE_EVENT, onUpdate);
+}
+
+function publishSauhUpdate(items: SauhPost[]) {
+  if (
+    typeof window === "undefined" ||
+    typeof window.dispatchEvent !== "function"
+  )
+    return;
+  window.dispatchEvent(
+    new CustomEvent<SauhPost[]>(SAUH_UPDATE_EVENT, { detail: [...items] }),
+  );
+}
 
 function decodeEntities(value: string): string {
   return value
@@ -367,6 +395,7 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
               expiresAt: Date.now() + CACHE_TTL_MS,
               items: [...result.items],
             };
+            publishSauhUpdate(result.items);
           }
         });
       }

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createTauriPlatformServices,
+  isTauriShell,
   type TauriInvoke,
 } from "./native-platform.js";
 
@@ -66,6 +67,15 @@ function createInvoke(): {
 }
 
 describe("Tauri platform adapter", () => {
+  it("detects only an actual Tauri invoke bridge", () => {
+    expect(isTauriShell({} as typeof globalThis)).toBe(false);
+    expect(
+      isTauriShell({
+        __TAURI_INTERNALS__: { invoke: async () => undefined },
+      } as unknown as typeof globalThis),
+    ).toBe(true);
+  });
+
   it("round-trips typed key-value data through native commands", async () => {
     const { invoke, calls } = createInvoke();
     const services = createTauriPlatformServices(invoke);

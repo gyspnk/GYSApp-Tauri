@@ -63,6 +63,9 @@ service or platform artifact that cannot be exercised in this workspace.
   post (Hakim-Hakim 3:31) for the current Pages release, so a browser that
   cannot satisfy TJC's CORS policy still shows a real source-backed daily
   entry instead of fabricated text.
+  When live revalidation finishes after the snapshot has painted, a typed
+  browser event updates Home and the dedicated Sauh reader in place, so fresh
+  direct-source content is visible without a route reload.
 - Home now uses Sauh as the sole Daily Verse source and keeps a single
   `Lanjutkan` surface. Suara Sejati remains available from its dedicated route
   without adding another Home shelf or network request to the first render.
@@ -164,7 +167,10 @@ service or platform artifact that cannot be exercised in this workspace.
   no WebView or client-side credential storage. Provider exchange and
   WhatsApp READY responses are schema-validated against the upstream
   ID-token/HttpOnly-cookie contract; upstream session identity is validated
-  before profile normalization.
+  before profile normalization. Native requests carry the explicit
+  `x-gys-client: native` CSRF-policy marker; WhatsApp opens through the system
+  browser, while Google/Apple buttons are guarded in Tauri until protected
+  native provider SDK/client-ID prerequisites are supplied.
 - TB reader hardening: source markup is sanitized, search supports token/phrase/
   whole-word filters with local history, and the reader has persistent notes,
   highlights, verse selection, split columns with a draggable/keyboard-safe

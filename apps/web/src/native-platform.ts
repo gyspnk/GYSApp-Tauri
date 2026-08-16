@@ -35,6 +35,11 @@ export function getTauriInvoke(
   return candidate.__TAURI_INTERNALS__?.invoke ?? candidate.__TAURI__?.invoke;
 }
 
+/** True only inside a Tauri webview; Pages/PWA browsers use browser APIs. */
+export function isTauriShell(value: typeof globalThis = globalThis): boolean {
+  return Boolean(getTauriInvoke(value));
+}
+
 function encodeBase64(bytes: Uint8Array): string {
   let binary = "";
   const chunkSize = 0x8000;

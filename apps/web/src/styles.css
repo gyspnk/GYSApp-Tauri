@@ -3553,7 +3553,13 @@ body.is-resizing-bible {
 .account-provider-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
   margin-top: 6px;
+}
+.account-provider-actions button:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  opacity: 0.62;
 }
 .account-profile-details {
   display: grid;

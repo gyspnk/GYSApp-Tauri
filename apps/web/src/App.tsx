@@ -25,7 +25,7 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
-import { fetchSauh } from "./sauh.js";
+import { fetchSauh, subscribeSauh } from "./sauh.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -1108,6 +1108,14 @@ function HomePage({ locale }: { locale: Locale }) {
       : "verse",
   );
   useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
+  useEffect(
+    () =>
+      subscribeSauh((items) => {
+        setSauh(items);
+        setSauhStatus(items.length > 0 ? "ready" : "error");
+      }),
+    [],
+  );
   const continueActivity =
     activity.hymn &&
     (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)

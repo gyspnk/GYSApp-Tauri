@@ -37,7 +37,8 @@ import {
 import { Select } from "./select.js";
 import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { clearPlatformStorage } from "./platform.js";
+import { clearPlatformStorage, createPlatformServices } from "./platform.js";
+import { isTauriShell } from "./native-platform.js";
 
 type PackManifest = {
   version: number;
@@ -161,6 +162,7 @@ async function clearAppData() {
 }
 
 export function MorePage({ locale }: { locale: Locale }) {
+  const nativeShell = isTauriShell();
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
@@ -489,6 +491,18 @@ export function MorePage({ locale }: { locale: Locale }) {
   };
 
   const signInWithProvider = async (provider: "google" | "apple") => {
+    if (nativeShell) {
+      // The verified e-GYS API accepts a provider-issued ID token; it does
+      // not expose an authorization-code callback. Never inject the browser
+      // SDK into a Tauri webview (its CSP intentionally blocks remote
+      // scripts). A future native Google/Apple SDK can call the same
+      // exchangeEgysToken boundary once its protected client IDs exist.
+      recordDiagnostic("info", "egys.native-provider-unavailable", provider);
+      show(
+        `${provider === "google" ? "Google" : "Apple"} membutuhkan SDK native resmi. Gunakan versi web atau siapkan client ID native.`,
+      );
+      return;
+    }
     setAuthBusy(true);
     show(
       `Buka ${provider === "google" ? "Google" : "Apple"} untuk menyelesaikan login e-GYS.`,
@@ -598,16 +612,18 @@ export function MorePage({ locale }: { locale: Locale }) {
     const controller = new AbortController();
     whatsappAbort.current = controller;
     setAuthBusy(true);
-    // Reserve the popup during the click gesture; opening it after the
-    // network round-trip is rejected by most popup blockers.
-    const popup = reserveAuthPopup();
+    // Reserve the popup during the click gesture on the web. Tauri opens the
+    // handoff in the system browser through the shell plugin instead of
+    // trying to create a WebView popup.
+    const popup = nativeShell ? undefined : reserveAuthPopup();
     try {
       const started = await startEgysWhatsAppLogin(controller.signal);
-      if (!popup) {
+      if (nativeShell) {
+        await createPlatformServices().openExternal(started.whatsappUrl);
+      } else if (!popup) {
         show("WhatsApp diblokir browser. Izinkan pop-up lalu coba lagi.");
         return;
-      }
-      popup.location.href = started.whatsappUrl;
+      } else popup.location.href = started.whatsappUrl;
       show(
         "Kirim pesan yang sudah disiapkan di WhatsApp; kami menunggu konfirmasi.",
       );
@@ -779,7 +795,7 @@ export function MorePage({ locale }: { locale: Locale }) {
           </strong>
           <small>
             {accountProfile
-              ? "Profil native e-GYS tersambung"
+              ? "Profil e-GYS tersambung"
               : providers?.google.enabled ||
                   providers?.apple.enabled ||
                   providers?.whatsapp
@@ -841,9 +857,21 @@ export function MorePage({ locale }: { locale: Locale }) {
               providers.apple.enabled ||
               providers.whatsapp) && (
               <span className="account-provider-actions">
+                {nativeShell && (
+                  <small className="account-sync-note">
+                    Google/Apple di shell native memerlukan SDK resmi; WhatsApp
+                    tetap dibuka di browser sistem.
+                  </small>
+                )}
                 <button
                   type="button"
                   className="text-button"
+                  disabled={nativeShell}
+                  title={
+                    nativeShell
+                      ? "SDK Google native perlu dikonfigurasi"
+                      : undefined
+                  }
                   onClick={() =>
                     providers.google.enabled &&
                     void signInWithProvider("google")
@@ -854,6 +882,12 @@ export function MorePage({ locale }: { locale: Locale }) {
                 <button
                   type="button"
                   className="text-button"
+                  disabled={nativeShell}
+                  title={
+                    nativeShell
+                      ? "SDK Apple native perlu dikonfigurasi"
+                      : undefined
+                  }
                   onClick={() =>
                     providers.apple.enabled && void signInWithProvider("apple")
                   }
