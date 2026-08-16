@@ -229,8 +229,11 @@ service or platform artifact that cannot be exercised in this workspace.
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
   18 required offline/runtime assets (36,845,850 bytes in the current build).
-  Commit `b51d4b5` is deployed to GitHub Pages; the next `ef11244` hardening
-  slice is queued for deployment after its full pre-push gate.
+  Commit `c571217` is deployed to GitHub Pages with HTTP 200, the 533-item
+  `gyschordweb@cbc7d386` catalog, the source-backed `sbj260816` Sauh snapshot,
+  and the Sauh/native-auth hardening bundle. Pages run `31935244669` and PR
+  gate `31935246940` passed, including the native cargo gate and 41 browser
+  flows.
 - Feature-critical Kidung controls now use the shared id/en/zh message table,
   including search, viewer modes, chord/PDF/MIDI actions, queue controls,
   typography, and recovery states. Indonesian copy remains stable for the

@@ -221,10 +221,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.
-  The previous hardening commit `b51d4b5` is confirmed live with HTTP 200, a
-  533-item hymn catalog locked to `gyschordweb@cbc7d386`, and the source-backed
-  `sbj260816` Sauh snapshot. The new `ef11244` slice is queued for the next
-  Pages deployment after its full pre-push gate.
+  Commit `c571217` is confirmed live with HTTP 200, a 533-item hymn catalog
+  locked to `gyschordweb@cbc7d386`, the source-backed `sbj260816` Sauh snapshot,
+  and the live Sauh/native-auth hardening bundle. Pages run `31935244669` and
+  PR gate `31935246940` both passed, including the native cargo gate and 41-flow
+  browser suite.
   The Pages environment permits `main` and the named preview branch; the
   protected `main` branch remains the production promotion gate.
 
