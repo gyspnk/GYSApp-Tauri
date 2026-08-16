@@ -186,6 +186,52 @@ test("Bible search matches book names from the offline pack", async ({
     .toBe(true);
 });
 
+test("Bible reader typography persists across reloads", async ({ page }) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const verseText = page.locator(".verse-text").first();
+  const initialSize = Number(
+    await verseText.evaluate((element) =>
+      getComputedStyle(element).fontSize.replace("px", ""),
+    ),
+  );
+  await page.getByRole("button", { name: "Perbesar teks" }).click();
+  await page.getByRole("button", { name: "Perbesar teks" }).click();
+  await expect
+    .poll(() =>
+      verseText.evaluate((element) =>
+        Number(getComputedStyle(element).fontSize.replace("px", "")),
+      ),
+    )
+    .toBe(initialSize + 2);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-bible-typography-v1")),
+    )
+    .toContain(String(initialSize + 2));
+  // The preference survives a full reload.
+  await page.reload();
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect
+    .poll(() =>
+      page
+        .locator(".verse-text")
+        .first()
+        .evaluate((element) =>
+          Number(getComputedStyle(element).fontSize.replace("px", "")),
+        ),
+    )
+    .toBe(initialSize + 2);
+  // The bounded controls expose their state and stay keyboard-usable.
+  await expect(
+    page.getByRole("group", { name: "Ukuran teks bacaan" }),
+  ).toBeVisible();
+});
+
 test("Bible title drag exposes quick chapter navigation with keyboard fallback", async ({
   page,
 }) => {

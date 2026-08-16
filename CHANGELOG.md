@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+- The TB reader now has persistent typography controls: compact A−/A+ buttons
+  in the Bible header step the verse font between 14–26 px (line height
+  1.4–2.2), applied through CSS variables to both split panes, bounded and
+  keyboard-accessible, with the preference surviving reloads. The
+  versioned storage is schema-validated with clamping and unit coverage, and
+  a browser E2E verifies the size change, the stored value, and the reload
+  persistence.
 - Bible search now understands book names. The offline TB pack indexes each
   verse with its book display name, so natural queries like “Yohanes” or
   “Yohanes kasih” match instead of silently returning nothing (the pack only

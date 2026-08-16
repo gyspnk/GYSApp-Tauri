@@ -7,6 +7,12 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- The TB reader gained persisted typography controls (A−/A+ in the Bible
+  header, 14–26 px font with 1.4–2.2 line height) applied as CSS variables
+  to both split panes. The versioned preference is clamped and
+  schema-validated with unit coverage, the controls are bounded and
+  keyboard-accessible, and a browser E2E proves the size change persists
+  across a full reload.
 - Bible search now indexes book display names alongside the numeric pack
   ids, so natural queries like “Yohanes” or “Yohanes kasih” return the book
   itself instead of nothing. Matches are ranked in three stable tiers —

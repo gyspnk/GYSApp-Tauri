@@ -31,6 +31,16 @@ import { speechPlayer } from "./speech-player.js";
 import { BibleSearchClient } from "./bible-search.js";
 import { useBibleSplitController } from "./bible-split.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import {
+  BIBLE_FONT_SIZE_MAX,
+  BIBLE_FONT_SIZE_MIN,
+  decreaseBibleFontSize,
+  increaseBibleFontSize,
+  readBibleTypography,
+  subscribeBibleTypography,
+  writeBibleTypography,
+  type BibleTypography,
+} from "./bible-typography.js";
 
 type PackState =
   | { status: "loading" }
@@ -328,6 +338,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [quickNav, setQuickNav] = useState<
     { bookId: number; chapter: number } | undefined
   >();
+  const [typography, setTypography] = useState<BibleTypography>(() =>
+    readBibleTypography(),
+  );
+  useEffect(
+    () => subscribeBibleTypography(() => setTypography(readBibleTypography())),
+    [],
+  );
 
   const startQuickNav = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -893,7 +910,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const splitStyle = {
     "--bible-split": `${splitRatio}%`,
-  } as CSSProperties & { "--bible-split": string };
+    "--bible-font-size": `${typography.fontSize}px`,
+    "--bible-line-height": `${typography.lineHeight}`,
+  } as CSSProperties & {
+    "--bible-split": string;
+    "--bible-font-size": string;
+    "--bible-line-height": string;
+  };
 
   return (
     <div className="page bible-page">
@@ -903,7 +926,45 @@ export function BiblePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "page.bibleTitle")}</h1>
           <p className="intro-copy">{translate(locale, "page.bibleBody")}</p>
         </div>
-        <span className="pack-badge">TB · 66 buku</span>
+
+        <div className="page-intro-actions">
+          <span className="pack-badge">TB · 66 buku</span>
+          <div
+            className="bible-typography-controls"
+            role="group"
+            aria-label="Ukuran teks bacaan"
+          >
+            <button
+              type="button"
+              onClick={() =>
+                setTypography((current) => {
+                  const next = decreaseBibleFontSize(current);
+                  writeBibleTypography(next);
+                  return next;
+                })
+              }
+              disabled={typography.fontSize <= BIBLE_FONT_SIZE_MIN}
+              aria-label="Perkecil teks"
+            >
+              A−
+            </button>
+            <output aria-live="polite">{typography.fontSize} px</output>
+            <button
+              type="button"
+              onClick={() =>
+                setTypography((current) => {
+                  const next = increaseBibleFontSize(current);
+                  writeBibleTypography(next);
+                  return next;
+                })
+              }
+              disabled={typography.fontSize >= BIBLE_FONT_SIZE_MAX}
+              aria-label="Perbesar teks"
+            >
+              A+
+            </button>
+          </div>
+        </div>
       </section>
 
       <form

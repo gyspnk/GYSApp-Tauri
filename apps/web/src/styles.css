@@ -1123,6 +1123,52 @@ blockquote {
   font-size: 11px;
   white-space: nowrap;
 }
+.page-intro-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bible-typography-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.bible-typography-controls button {
+  display: grid;
+  min-width: 34px;
+  min-height: 34px;
+  place-items: center;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+.bible-typography-controls button:hover,
+.bible-typography-controls button:focus-visible {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.bible-typography-controls button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.bible-typography-controls output {
+  min-width: 44px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
 .bible-search {
   display: grid;
   gap: 9px;
@@ -1518,8 +1564,8 @@ body.is-resizing-bible {
   text-align: left;
   cursor: pointer;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  line-height: 1.72;
+  font-size: var(--bible-font-size, 18px);
+  line-height: var(--bible-line-height, 1.72);
 }
 .verse-text:hover {
   color: var(--navy);
