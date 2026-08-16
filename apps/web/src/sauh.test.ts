@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   onlyTodaySauh,
   parseSauhPosts,
@@ -207,4 +207,54 @@ describe("Sauh feed normalization", () => {
     expect(selected).toHaveLength(1);
     expect(selected[0]?.id).toBe("sbj260814");
   });
+
+  it("shows the verified snapshot while live revalidation is slow", async () => {
+    vi.resetModules();
+    const snapshotId = `sbj${new Date().toISOString().slice(2, 10).replaceAll("-", "")}`;
+    const snapshot = {
+      items: [
+        {
+          id: snapshotId,
+          title: "Snapshot hari ini",
+          reference: "Yohanes 3:16",
+          verse: "Karena begitu besar kasih Allah akan dunia ini",
+          body: "Renungan yang sudah diverifikasi.",
+          url: `https://tjc.org/id/gerakan-baca-alkitab/${snapshotId}/`,
+          updatedAt: new Date().toISOString(),
+          source: "tjc.org",
+        },
+      ],
+    };
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/offline/sauh.json"))
+        return Promise.resolve(
+          new Response(JSON.stringify(snapshot), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        );
+      return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(new Error("live request timed out")),
+          { once: true },
+        );
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("navigator", { onLine: true });
+    vi.stubGlobal("window", {
+      setTimeout,
+      clearTimeout,
+      location: { pathname: "/" },
+    });
+    const { fetchSauh } = await import("./sauh.js");
+    const result = await fetchSauh();
+    expect(result[0]?.id).toBe(snapshotId);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/offline/sauh.json"),
+      expect.objectContaining({ cache: "no-cache" }),
+    );
+    vi.unstubAllGlobals();
+  }, 15_000);
 });

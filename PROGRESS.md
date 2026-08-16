@@ -29,7 +29,7 @@ service or platform artifact that cannot be exercised in this workspace.
   that makes allowed popups look blocked, then severs `window.opener` before
   navigating to the external WhatsApp URL; both blocked and allowed paths are
   unit-tested.
-- e-GYS provenance is current at upstream commit `7d46ad9`; the generated
+- e-GYS provenance is current at upstream commit `a7a25e8`; the generated
   contract includes the compatible branch detail/update and region routes.
   Forced refreshes still diff against the checked-in contract, so removed
   routes cannot be hidden by regeneration.
@@ -56,6 +56,9 @@ service or platform artifact that cannot be exercised in this workspace.
 - Home/reader Sauh revalidation tries the canonical TJC WordPress endpoint
   directly, then the optional BFF proxy, then the validated offline snapshot;
   BFF Literature and Suara Sejati routes deduplicate concurrent upstream reads.
+  The verified snapshot now races live revalidation instead of waiting for a
+  four-second CORS/timeout path, so Home remains usable immediately while a
+  successful live response refreshes the in-memory cache.
   The packaged Sauh snapshot was refreshed from the canonical `sbj260816`
   post (Hakim-Hakim 3:31) for the current Pages release, so a browser that
   cannot satisfy TJC's CORS policy still shows a real source-backed daily

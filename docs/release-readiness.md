@@ -102,7 +102,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - The release suite includes forced PDF and Sauh upstream failure flows that keep the
   user inside the hymn shell and exposes a `Coba lagi` recovery action. The
   Sauh flow proves that no fabricated Daily Verse is shown when the source is
-  unavailable. The performance flow records five first-contentful-paint/
+  unavailable. Home now races the verified current-day snapshot with live
+  revalidation, so a slow/CORS-blocked upstream cannot hide an otherwise valid
+  daily entry. The performance flow records five first-contentful-paint/
   navigation samples, reports median and p95 timing, and fails on duplicate
   initial application-module requests.
 - Axe runs on the Home and Kidung surfaces with zero violations (including
@@ -186,7 +188,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;
   provider SDK/popup flows have explicit timeout and cancellation guards.
-  The generated upstream contract is current at commit `7d46ad9` and records
+  The generated upstream contract is current at commit `a7a25e8` and records
   the verified Springdoc runtime document boundary (`/v3/api-docs`, Swagger UI
   path, and enablement property), plus the compatible branch/region routes;
   concrete request/response schemas remain source-owned until that runtime

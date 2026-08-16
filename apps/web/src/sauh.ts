@@ -256,6 +256,24 @@ export function selectTodaySauh(
   return [];
 }
 
+function parseNormalizedSauh(value: unknown): SauhPost[] {
+  const candidates =
+    Array.isArray(value) || !value || typeof value !== "object"
+      ? value
+      : (value as { items?: unknown }).items;
+  if (!Array.isArray(candidates)) return [];
+  const parsed: SauhPost[] = [];
+  for (const item of candidates) {
+    const result = SauhPostSchema.safeParse(item);
+    if (!result.success || !isTjcUrl(result.data.url)) continue;
+    if (result.data.imageUrl && !isTjcUrl(result.data.imageUrl)) continue;
+    parsed.push(result.data);
+  }
+  return parsed.sort((left, right) =>
+    right.updatedAt.localeCompare(left.updatedAt),
+  );
+}
+
 async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 4_000);
@@ -268,11 +286,41 @@ async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
     });
     if (!response.ok)
       throw new Error(`Sauh request failed: ${response.status}`);
-    return parseSauhPosts(await response.json());
+    const payload: unknown = await response.json();
+    // Pages/BFF snapshots already contain the normalized contract. The live
+    // WordPress endpoint still returns raw posts, so accept both shapes while
+    // applying the same URL/schema boundary to each.
+    const normalized = parseNormalizedSauh(payload);
+    return normalized.length > 0 ? normalized : parseSauhPosts(payload);
   } finally {
     window.clearTimeout(timer);
     signal?.removeEventListener("abort", abort);
   }
+}
+
+async function requestToday(url: string): Promise<SauhPost[]> {
+  const items = await request(url);
+  const today = selectTodaySauh(items);
+  if (today.length === 0)
+    throw new Error("Sauh source does not contain today's entry");
+  return today;
+}
+
+async function loadNetworkToday(): Promise<SauhPost[]> {
+  const networkCandidates = sauhNetworkCandidates(
+    import.meta.env.VITE_BFF_BASE_URL,
+  );
+  let lastError: unknown;
+  for (const url of networkCandidates) {
+    try {
+      return await requestToday(url);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Sauh Bagi Jiwa is unavailable");
 }
 
 export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
@@ -287,29 +335,51 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
     inFlightToday?.dayKey === dayKey ? inFlightToday.promise : undefined;
   if (existing) return [...(await waitFor(existing, signal))];
   const shared = (async () => {
-    const networkCandidates = sauhNetworkCandidates(
-      import.meta.env.VITE_BFF_BASE_URL,
-    );
-    // Offline users should see the pinned daily snapshot immediately instead
-    // of waiting for two network timeouts before the fallback is attempted.
-    const candidates =
-      typeof navigator !== "undefined" && !navigator.onLine
-        ? [STATIC_URL, ...networkCandidates]
-        : [...networkCandidates, STATIC_URL];
-    let lastError: unknown;
-    for (const url of candidates) {
-      try {
-        const items = await request(url);
-        const today = selectTodaySauh(items);
-        if (today.length) return today;
-      } catch (error) {
-        lastError = error;
-      }
+    const offline = typeof navigator !== "undefined" && !navigator.onLine;
+    if (offline) {
+      // Offline users should see the pinned snapshot immediately, without
+      // spending two network timeouts before the fallback is attempted.
+      return requestToday(STATIC_URL);
     }
-    const failure =
-      lastError instanceof Error
-        ? lastError
-        : new Error("Sauh Bagi Jiwa is unavailable");
+
+    // The local snapshot is a verified, source-backed baseline. Race it with
+    // live revalidation so a slow/CORS-blocked WordPress request never leaves
+    // Home blank for four seconds. When the snapshot wins, the live result
+    // still updates the in-memory cache for the next open.
+    const snapshot = requestToday(STATIC_URL).then(
+      (items) => ({ source: "snapshot" as const, items }),
+      () => undefined,
+    );
+    const network = loadNetworkToday().then(
+      (items) => ({ source: "network" as const, items }),
+      (error: unknown) => {
+        recordDiagnostic("warn", "sauh.revalidate", error);
+        return undefined;
+      },
+    );
+    const first = await Promise.race([snapshot, network]);
+    if (first) {
+      if (first.source === "snapshot") {
+        void network.then((result) => {
+          if (result?.source === "network") {
+            cachedToday = {
+              dayKey,
+              expiresAt: Date.now() + CACHE_TTL_MS,
+              items: [...result.items],
+            };
+          }
+        });
+      }
+      return first.items;
+    }
+
+    const [snapshotResult, networkResult] = await Promise.all([
+      snapshot,
+      network,
+    ]);
+    const fallback = networkResult ?? snapshotResult;
+    if (fallback) return fallback.items;
+    const failure = new Error("Sauh Bagi Jiwa is unavailable");
     recordDiagnostic("error", "sauh.fetch", failure);
     throw failure;
   })();

@@ -14,6 +14,9 @@
   Sauh Bagi Jiwa entry (with the existing verse/reflection switch), and the
   only resume/history surface is `Lanjutkan`. Suara Sejati remains a full
   standalone route instead of duplicating content and requests on Home.
+- Made Sauh startup resilient to slow or CORS-blocked live revalidation: the
+  verified current-day snapshot races the direct/BFF request and appears
+  immediately, while a successful live response updates the short-lived cache.
 - Added a versioned IndexedDB binary store behind the browser platform
   boundary. Cache Storage remains fast for HTTP resources, while verified
   chord/PDF/media blobs are retained across reloads and restricted webviews.
@@ -82,7 +85,7 @@
   runtime boundary and enablement property in the generated contract, while
   keeping request/response schemas source-owned until the runtime document is
   available; no guessed API shapes are introduced.
-- Refreshed the e-GYS route lock from upstream commit `7d46ad9` and recorded
+- Refreshed the e-GYS route lock from upstream commit `a7a25e8` and recorded
   the compatible branch-detail/update and region routes. The refresh command
   now keeps the prior contract as its breaking-change baseline, so forcing a
   checkout can never bypass compatibility checks.
