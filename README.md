@@ -243,6 +243,16 @@ stage only derived contract metadata. Without the protected deployment values, t
 and shows an honest unavailable-session state instead of fabricating account
 data.
 
+The native Windows packaging workflow is manual (`Native Windows installer`).
+It runs the same generated-contract and documentation gates before invoking the
+Tauri 2.11 CLI, and uploads the NSIS/MSI output together with a commit
+provenance file. Leave `signed=false` for an auditable unsigned installer; a
+release candidate must set `signed=true` and provide the protected
+`WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD` secrets. The
+workflow signs both NSIS and MSI packages with `signtool` and removes the PFX
+from the runner after upload.
+The signing material is never part of the repository or the Pages build.
+
 ## License
 
 MIT. Upstream provenance and asset licensing notes are documented in

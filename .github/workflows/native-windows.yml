@@ -1,0 +1,113 @@
+name: Native Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit, branch, or tag to package"
+        required: false
+        default: ""
+        type: string
+      signed:
+        description: "Sign the installer with the protected Windows certificate"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-windows-${{ inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: windows-latest
+    env:
+      # These are deliberately read only at release time. No certificate or
+      # private key is stored in the repository or in the Pages bundle.
+      WINDOWS_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      WINDOWS_TIMESTAMP_URL: ${{ secrets.WINDOWS_TIMESTAMP_URL }}
+      SIGNED_BUILD: ${{ inputs.signed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Reject a requested signed build without the certificate
+        if: ${{ inputs.signed && env.WINDOWS_CERTIFICATE_BASE64 == '' }}
+        shell: pwsh
+        run: |
+          throw "signed=true requires WINDOWS_CERTIFICATE_BASE64 and WINDOWS_CERTIFICATE_PASSWORD protected secrets"
+
+      - name: Prepare Windows certificate
+        if: ${{ inputs.signed }}
+        shell: pwsh
+        run: |
+          $certificatePath = Join-Path $env:RUNNER_TEMP "gysapp-signing.pfx"
+          [IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_BASE64))
+          "WINDOWS_CERTIFICATE_PATH=$certificatePath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify:generated
+      - run: pnpm verify:docs
+      - run: pnpm --filter @gys/native bundle:windows
+
+      - name: Sign Windows installer
+        if: ${{ inputs.signed }}
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName | Select-Object -Last 1
+          if (-not $signtool) { throw "signtool.exe was not found on the runner" }
+          $timestamp = if ($env:WINDOWS_TIMESTAMP_URL) { $env:WINDOWS_TIMESTAMP_URL } else { "https://timestamp.digicert.com" }
+          Get-ChildItem "apps/native/src-tauri/target/release/bundle/nsis/*.exe", "apps/native/src-tauri/target/release/bundle/msi/*.msi" | ForEach-Object {
+            & $signtool.FullName sign /fd SHA256 /f $env:WINDOWS_CERTIFICATE_PATH /p $env:WINDOWS_CERTIFICATE_PASSWORD /tr $timestamp /td SHA256 $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "signtool failed for $($_.Name)" }
+          }
+
+      - name: Write build provenance
+        shell: pwsh
+        run: |
+          $provenance = [ordered]@{
+            repository = "${{ github.repository }}"
+            commit = "${{ github.sha }}"
+            workflow = "${{ github.workflow }}"
+            run = "${{ github.run_id }}"
+            target = "x86_64-pc-windows-msvc"
+            signed = [bool]::Parse($env:SIGNED_BUILD)
+            generatedAt = (Get-Date).ToUniversalTime().ToString("o")
+          }
+          $provenance | ConvertTo-Json | Set-Content -Path apps/native/src-tauri/target/release/bundle/native-provenance.json -Encoding utf8
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: gysapp-windows-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            apps/native/src-tauri/target/release/bundle/nsis/*.exe
+            apps/native/src-tauri/target/release/bundle/msi/*.msi
+            apps/native/src-tauri/target/release/bundle/native-provenance.json
+
+      - name: Remove signing material
+        if: ${{ always() && inputs.signed }}
+        shell: pwsh
+        run: |
+          if ($env:WINDOWS_CERTIFICATE_PATH -and (Test-Path -LiteralPath $env:WINDOWS_CERTIFICATE_PATH)) {
+            Remove-Item -LiteralPath $env:WINDOWS_CERTIFICATE_PATH -Force
+          }

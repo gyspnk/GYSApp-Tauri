@@ -9,6 +9,11 @@ service or platform artifact that cannot be exercised in this workspace.
 
 - Clean-room MIT pnpm monorepo, typed contracts, responsive Quiet Sanctuary
   shell, local PWA assets, and GitHub Pages delivery.
+- The pinned Tauri 2.11 CLI is now part of the native workspace and the manual
+  Windows release workflow has been exercised locally end-to-end: a 16.9 MB
+  NSIS installer was produced after the web build, with an optional protected
+  PFX/signtool path for signed release artifacts. CI still keeps the native
+  compile gate separate from credential-dependent signing.
 - PWA bootstrap is budgeted: service-worker v10 installs the shell and compact
   indexes first, then warms the heavy MIDI/FluidSynth binaries in the
   background with a Save-Data/2G guard.

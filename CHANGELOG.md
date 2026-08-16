@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Added a reproducible manual Windows release workflow with the pinned Tauri
+  2.11 CLI. It builds the web shell, verifies generated provenance/docs, emits
+  NSIS/MSI installers plus commit provenance, and can sign both packages with a
+  protected PFX through `signtool` without ever committing certificate bytes.
 - Aligned the shared chord capability with gyschordweb's verse-label matcher
   and note-aligned intro/outro sentinels; added a pinned 140-file PDF position
   audit and provenance gate so canonical chord regressions fail before release.

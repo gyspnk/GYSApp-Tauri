@@ -185,8 +185,13 @@ claim GA parity until the remaining reports and platform artifacts exist.
   does not currently emit `Access-Control-Allow-Origin`; a configured BFF
   restores live revalidation without changing the reader contract.
 - The Windows native CI job now runs `cargo fmt --check`, `cargo check`,
-  `cargo test`, and `cargo clippy --all-targets -- -D warnings`; native
-  packaging remains separate from signed installer evidence.
+  `cargo test`, and `cargo clippy --all-targets -- -D warnings`. The manual
+  `Native Windows installer` workflow now runs the Tauri 2.11 CLI and uploads
+  reproducible NSIS/MSI output plus commit provenance; it rejects a requested
+  signed build unless protected Windows certificate secrets are present, then
+  signs both packages with `signtool` and removes the temporary PFX. Native
+  packaging remains separate from signed installer evidence until that workflow
+  is run with the release credentials.
 - e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;
@@ -221,10 +226,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.
-  Commit `c571217` is confirmed live with HTTP 200, a 533-item hymn catalog
+  Commit `2bfc6c5` is confirmed live with HTTP 200, a 533-item hymn catalog
   locked to `gyschordweb@cbc7d386`, the source-backed `sbj260816` Sauh snapshot,
-  and the live Sauh/native-auth hardening bundle. Pages run `31935244669` and
-  PR gate `31935246940` both passed, including the native cargo gate and 41-flow
+  and the live Sauh/native-auth hardening bundle. Pages run `31936149035` and
+  CI gate `31936151240` both passed, including the native cargo gate and 41-flow
   browser suite.
   The Pages environment permits `main` and the named preview branch; the
   protected `main` branch remains the production promotion gate.
