@@ -65,7 +65,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   same visual QA was captured with the repository's Chromium runner. The
   current suite has 40 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
-  Sauh/Suara/article readers, persistent/minimizable media with source return,
+  Sauh/Suara/article readers, a Home surface that derives Daily Verse directly
+  from the current Sauh entry and keeps exactly one Lanjutkan item,
+  persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue
   persistence, canonical chord fetch and PDF chord-overlay rendering,
   GYSApp-Fork PDF viewer/download, and MIDI loading. The PDF smoke also waits
@@ -92,6 +94,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   keeps a visible focus target after navigation. The light-theme muted token
   is 5.7:1 against white; the audit is kept in the release suite through the
   `@axe-core/playwright` dev dependency.
+- Long catalogue/list surfaces use browser `content-visibility` boundaries so
+  mobile scrolling does not eagerly lay out every hymn, faith topic, or
+  literature card. Loading panels use a restrained border pulse and the
+  global reduced-motion rule disables it for users who request less motion.
 - Kidung detail now has an automated presentation assertion: Lirik and PDF are
   the only viewer modes; Chord is a shared visibility capability and never a
   third surface. The native boundary check passes with 18 required
@@ -155,6 +161,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   concrete request/response schemas remain source-owned until that runtime
   document is available to the authenticated sync step. Forced contract
   refreshes retain the previous snapshot for breaking-route detection.
+  Browser key-value and binary chord caches share a versioned IndexedDB
+  database; Cache Storage remains the HTTP-facing layer, while IndexedDB keeps
+  verified blobs available after a reload or in a restricted webview.
 - The optional `POST /api/v1/tts/edge` boundary is schema-validated, HTTPS-only,
   tested through the BFF, and selected from the reader as `auto` (Edge then
   local), `edge`, or `local`. The optional voice catalog is also schema- and

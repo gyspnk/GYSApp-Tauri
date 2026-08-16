@@ -2,6 +2,17 @@
 
 ## Unreleased — GA hardening slice
 
+- Simplified Home to one calm flow: Daily Verse is fetched from the canonical
+  Sauh Bagi Jiwa entry (with the existing verse/reflection switch), and the
+  only resume/history surface is `Lanjutkan`. Suara Sejati remains a full
+  standalone route instead of duplicating content and requests on Home.
+- Added a versioned IndexedDB binary store behind the browser platform
+  boundary. Cache Storage remains fast for HTTP resources, while verified
+  chord/PDF/media blobs are retained across reloads and restricted webviews.
+- Added low-cost loading-state motion and `content-visibility` boundaries for
+  long hymn, faith, literature, and Suara lists; reduced-motion users still
+  receive the static presentation.
+
 - Expanded feature-critical Kidung localization to Indonesian, English, and
   Simplified Chinese, including viewer modes, chord/PDF/MIDI actions, queue,
   typography controls, and recovery states. Added golden conservative Text

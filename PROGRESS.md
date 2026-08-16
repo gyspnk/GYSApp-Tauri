@@ -60,6 +60,9 @@ service or platform artifact that cannot be exercised in this workspace.
   post (Hakim-Hakim 3:31) for the current Pages release, so a browser that
   cannot satisfy TJC's CORS policy still shows a real source-backed daily
   entry instead of fabricated text.
+- Home now uses Sauh as the sole Daily Verse source and keeps a single
+  `Lanjutkan` surface. Suara Sejati remains available from its dedicated route
+  without adding another Home shelf or network request to the first render.
 - GYSChordWeb chord manifest/cache/integrity validation, immutable GYSApp-Fork
   hymnal PDF database/download source with signed package fallback, local
   PDF.js worker, canonical MIDI loading, local FluidSynth/TimGM rendering with
@@ -79,6 +82,10 @@ service or platform artifact that cannot be exercised in this workspace.
   without re-rendering the PDF. Simultaneous song opens share one verified
   chord download, and rendered MIDI PCM uses a bounded 96 MB
   source/soundfont/tempo/transpose/sample-rate cache.
+- Browser binary platform blobs now persist in a versioned IndexedDB store and
+  are backfilled from Cache Storage when needed, so verified chord/document
+  data survives reloads even when an embedded webview cannot expose Cache
+  Storage reliably.
 - MIDI asynchronous work now carries a generation guard across song loads,
   FluidSynth worker startup/render, seek, stop, and instrument/tempo/transpose
   changes. A late worker result is ignored before it can replace the shared

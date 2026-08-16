@@ -197,14 +197,14 @@ test("Bible text selection exposes contextual copy/share/note actions", async ({
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
 });
 
-test("home surfaces today's Sauh and canonical Suara Sejati feed", async ({
+test("home uses Sauh for the daily verse and keeps one continue surface", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/");
-  await expect(page.getByRole("heading", { name: "Suara Sejati" })).toBeVisible(
-    { timeout: 15_000 },
-  );
+  await expect(page.locator(".continue-panel")).toHaveCount(1);
+  await expect(page.locator(".home-page .home-media-section")).toHaveCount(0);
   await expect(page.locator(".sauh-image")).toHaveCount(1);
+  await expect(page.getByText(/Sumber langsung Sauh Bagi Jiwa/)).toBeVisible();
 });
 
 test("online content opens inside the application shell", async ({ page }) => {
@@ -212,8 +212,8 @@ test("online content opens inside the application shell", async ({ page }) => {
   await page.getByRole("link", { name: "Baca Sauh" }).click();
   await expect(page).toHaveURL(/\/sauh$/);
   await expect(page.getByTestId("sauh-page")).toBeVisible();
-  await page.getByRole("link", { name: "Beranda" }).first().click();
-  await page.locator(".suara-item").first().click();
+  await page.goto("/GYSApp-Tauri/suara");
+  await page.locator(".suara-library-item").first().click();
   await expect(page).toHaveURL(/\/suara\//);
   await expect(page.getByTestId("suara-detail-page")).toBeVisible();
 });

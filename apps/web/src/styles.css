@@ -761,6 +761,8 @@ blockquote {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 96px;
   transition:
     transform var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -806,12 +808,6 @@ blockquote {
   font-style: normal;
 }
 
-.lower-grid {
-  display: grid;
-  grid-template-columns: 1fr 0.9fr;
-  gap: 24px;
-  padding-top: 46px;
-}
 .section-title-row {
   display: flex;
   justify-content: space-between;
@@ -830,40 +826,6 @@ blockquote {
   gap: 6px;
   color: var(--blue);
   font-size: 12px;
-}
-.recent-list {
-  border-top: 1px solid var(--line);
-}
-.recent-item {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) 16px;
-  align-items: center;
-  gap: 12px;
-  min-height: 57px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 13px;
-  transition:
-    color var(--motion-fast) var(--ease-out),
-    padding var(--motion-fast) var(--ease-out),
-    background var(--motion-fast) var(--ease-out);
-}
-.recent-item:hover {
-  color: var(--blue);
-  padding-left: 4px;
-  background: var(--surface-soft);
-}
-.recent-item span {
-  display: grid;
-  gap: 3px;
-}
-.recent-item strong {
-  color: var(--ink);
-  font-size: 13px;
-}
-.recent-item small {
-  color: var(--muted);
-  font-size: 11px;
 }
 .sauh-note {
   box-shadow: none;
@@ -1289,6 +1251,18 @@ blockquote {
   background: var(--surface);
   color: var(--muted);
   font-size: 13px;
+}
+.loading-panel {
+  animation: loading-pulse 1.8s ease-in-out infinite;
+}
+@keyframes loading-pulse {
+  0%,
+  100% {
+    border-color: var(--line);
+  }
+  50% {
+    border-color: color-mix(in srgb, var(--blue) 34%, var(--line));
+  }
 }
 .error-panel {
   border-color: color-mix(in srgb, #b98132 45%, var(--line));
@@ -2420,77 +2394,6 @@ body.is-resizing-bible {
 .sauh-offline-state .quiet-button {
   justify-self: start;
 }
-.home-media-section {
-  display: grid;
-  gap: 14px;
-  margin-top: 30px;
-  border-top: 1px solid var(--line);
-  padding-top: 20px;
-}
-.home-media-section h2 {
-  margin: 0;
-  font-size: clamp(21px, 2.5vw, 28px);
-}
-.suara-shelf {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-.suara-item {
-  display: grid;
-  grid-template-rows: 110px 1fr;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  transition:
-    transform var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out),
-    border-color var(--motion-fast) var(--ease-out);
-}
-.suara-item:hover {
-  border-color: var(--blue);
-  box-shadow: var(--shadow);
-  transform: translateY(-3px);
-}
-.suara-item img,
-.suara-thumbnail-fallback {
-  width: 100%;
-  height: 110px;
-  display: grid;
-  place-items: center;
-  object-fit: cover;
-  background: var(--navy);
-  color: var(--surface);
-  font-size: 30px;
-  font-weight: 700;
-}
-.suara-item > span:last-child {
-  display: grid;
-  gap: 6px;
-  padding: 12px;
-  min-width: 0;
-}
-.suara-item strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 14px;
-}
-.suara-item small {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
-}
-.suara-item em {
-  color: var(--blue);
-  font-size: 10px;
-  font-style: normal;
-}
 .chord-aligned-line {
   display: inline-flex;
   flex-wrap: wrap;
@@ -2629,8 +2532,7 @@ body.is-resizing-bible {
   .intro-copy {
     font-size: 14px;
   }
-  .home-grid,
-  .lower-grid {
+  .home-grid {
     grid-template-columns: 1fr;
     gap: 16px;
     padding-top: 22px;
@@ -3297,6 +3199,8 @@ body.is-resizing-bible {
 }
 .faith-rows > div {
   border-bottom: 1px solid var(--line);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 86px;
 }
 .faith-selection {
   display: grid;
@@ -3444,6 +3348,8 @@ body.is-resizing-bible {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 172px;
   transition:
     border-color var(--motion-fast) var(--ease-out),
     transform var(--motion-fast) var(--ease-out),
@@ -3995,17 +3901,6 @@ body.is-resizing-bible {
   .literature-recent-item {
     width: min(82vw, 320px);
     flex: 0 0 min(82vw, 320px);
-    scroll-snap-align: start;
-  }
-  .suara-shelf {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    padding-bottom: 4px;
-  }
-  .suara-item {
-    width: 238px;
-    flex: 0 0 238px;
     scroll-snap-align: start;
   }
 }

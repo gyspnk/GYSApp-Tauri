@@ -26,7 +26,6 @@ import {
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
 import { fetchSauh } from "./sauh.js";
-import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -1102,12 +1101,6 @@ function HomePage({ locale }: { locale: Locale }) {
   const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [suara, setSuara] = useState<Awaited<ReturnType<typeof fetchSuara>>>(
-    [],
-  );
-  const [suaraStatus, setSuaraStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
   const [activity, setActivity] = useState<ActivityState>(() => getActivity());
   const [dailyMode, setDailyMode] = useState<"verse" | "reflection">(() =>
     localStorage.getItem("gys-daily-sauh-mode-v1") === "reflection"
@@ -1139,18 +1132,6 @@ function HomePage({ locale }: { locale: Locale }) {
     loadSauh(controller.signal);
     return () => controller.abort();
   }, [loadSauh]);
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetchSuara(controller.signal)
-      .then((items) => {
-        setSuara(items);
-        setSuaraStatus("ready");
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setSuaraStatus("error");
-      });
-    return () => controller.abort();
-  }, []);
   const selected = sauh[0];
   const dailyText = selected
     ? dailyMode === "verse"
@@ -1291,62 +1272,6 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
           )}
         </article>
-      </section>
-      <section
-        className="home-media-section"
-        aria-labelledby="suara-sejati-title"
-      >
-        <div className="section-title-row">
-          <div>
-            <p className="date-line">Cerita dan kesaksian</p>
-            <h2 id="suara-sejati-title">Suara Sejati</h2>
-          </div>
-          <Link className="text-button" to="/suara">
-            Lihat semua
-          </Link>
-        </div>
-        {suaraStatus === "loading" && (
-          <div className="loading-panel" role="status">
-            Mengambil Suara Sejati…
-          </div>
-        )}
-        {suaraStatus === "error" && (
-          <div className="empty-state">
-            <strong>Suara Sejati belum tersedia.</strong>
-            <span>Coba lagi saat tersambung ke internet.</span>
-          </div>
-        )}
-        {suaraStatus === "ready" && (
-          <div className="suara-shelf">
-            {suara.slice(0, 4).map((post) => (
-              <Link
-                className="suara-item"
-                to={`/suara/${encodeURIComponent(post.id)}`}
-                key={post.id}
-              >
-                {post.imageUrl ? (
-                  <img
-                    src={post.imageUrl}
-                    alt={`Thumbnail ${post.title}`}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span className="suara-thumbnail-fallback" aria-hidden="true">
-                    SS
-                  </span>
-                )}
-                <span>
-                  <strong>{post.title}</strong>
-                  <small>{post.excerpt}</small>
-                  <em>
-                    {new Date(post.publishedAt).toLocaleDateString(locale)}
-                  </em>
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

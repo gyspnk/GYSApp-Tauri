@@ -13,33 +13,41 @@ import {
 
 const PLATFORM_DB = "gysapp-platform-v1";
 const PLATFORM_STORE = "key-value";
+const PLATFORM_BLOB_STORE = "blobs";
+const PLATFORM_DB_VERSION = 2;
+
+let platformDbPromise: Promise<IDBDatabase | undefined> | undefined;
+
+function openPlatformDatabase(): Promise<IDBDatabase | undefined> {
+  if (platformDbPromise) return platformDbPromise;
+  if (typeof indexedDB === "undefined") {
+    platformDbPromise = Promise.resolve(undefined);
+    return platformDbPromise;
+  }
+  platformDbPromise = new Promise((resolve) => {
+    let request: IDBOpenDBRequest;
+    try {
+      request = indexedDB.open(PLATFORM_DB, PLATFORM_DB_VERSION);
+    } catch {
+      resolve(undefined);
+      return;
+    }
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(PLATFORM_STORE))
+        request.result.createObjectStore(PLATFORM_STORE);
+      if (!request.result.objectStoreNames.contains(PLATFORM_BLOB_STORE))
+        request.result.createObjectStore(PLATFORM_BLOB_STORE);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(undefined);
+    request.onblocked = () => resolve(undefined);
+  });
+  return platformDbPromise;
+}
 
 class BrowserKeyValueStore implements KeyValueStore {
-  private dbPromise: Promise<IDBDatabase | undefined> | undefined;
-
   private openDatabase(): Promise<IDBDatabase | undefined> {
-    if (this.dbPromise) return this.dbPromise;
-    if (typeof indexedDB === "undefined") {
-      this.dbPromise = Promise.resolve(undefined);
-      return this.dbPromise;
-    }
-    this.dbPromise = new Promise((resolve) => {
-      let request: IDBOpenDBRequest;
-      try {
-        request = indexedDB.open(PLATFORM_DB, 1);
-      } catch {
-        resolve(undefined);
-        return;
-      }
-      request.onupgradeneeded = () => {
-        if (!request.result.objectStoreNames.contains(PLATFORM_STORE))
-          request.result.createObjectStore(PLATFORM_STORE);
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => resolve(undefined);
-      request.onblocked = () => resolve(undefined);
-    });
-    return this.dbPromise;
+    return openPlatformDatabase();
   }
 
   private async run<T>(
@@ -145,7 +153,70 @@ class BrowserKeyValueStore implements KeyValueStore {
 class BrowserBlobStore implements AtomicBlobStore {
   private readonly fallback = new Map<string, Uint8Array>();
 
+  private async run<T>(
+    mode: IDBTransactionMode,
+    action: (store: IDBObjectStore) => IDBRequest<T>,
+  ): Promise<T> {
+    const db = await openPlatformDatabase();
+    if (!db) throw new Error("IndexedDB is unavailable");
+    return new Promise<T>((resolve, reject) => {
+      let settled = false;
+      let result!: T;
+      let transaction: IDBTransaction;
+      try {
+        transaction = db.transaction(PLATFORM_BLOB_STORE, mode);
+        const request = action(transaction.objectStore(PLATFORM_BLOB_STORE));
+        request.onsuccess = () => {
+          result = request.result;
+        };
+        request.onerror = () => {
+          if (settled) return;
+          settled = true;
+          reject(request.error ?? new Error("IndexedDB blob request failed"));
+        };
+        transaction.oncomplete = () => {
+          if (settled) return;
+          settled = true;
+          resolve(result);
+        };
+        transaction.onerror = () => {
+          if (settled) return;
+          settled = true;
+          reject(
+            transaction.error ?? new Error("IndexedDB blob transaction failed"),
+          );
+        };
+        transaction.onabort = () => {
+          if (settled) return;
+          settled = true;
+          reject(new Error("IndexedDB blob transaction aborted"));
+        };
+      } catch (error) {
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      }
+    });
+  }
+
+  private async persistentGet(key: string): Promise<Uint8Array | undefined> {
+    const value = await this.run<Uint8Array | ArrayBuffer | undefined>(
+      "readonly",
+      (store) => store.get(key),
+    );
+    if (value instanceof Uint8Array) return value.slice();
+    if (value instanceof ArrayBuffer) return new Uint8Array(value.slice(0));
+    return undefined;
+  }
+
   public async get(key: string): Promise<Uint8Array | undefined> {
+    try {
+      const persistent = await this.persistentGet(key);
+      if (persistent) return persistent;
+    } catch {
+      // IndexedDB is optional in private mode and restricted webviews.
+    }
     if ("caches" in globalThis) {
       try {
         const response = await caches
@@ -155,7 +226,17 @@ class BrowserBlobStore implements AtomicBlobStore {
               new Request(`/__gysapp_blob__/${encodeURIComponent(key)}`),
             ),
           );
-        if (response) return new Uint8Array(await response.arrayBuffer());
+        if (response) {
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          // Cache Storage is a useful HTTP-facing layer; backfill the durable
+          // store so a later Cache Storage eviction does not lose the blob.
+          try {
+            await this.run("readwrite", (store) => store.put(bytes, key));
+          } catch {
+            // The in-memory fallback below still makes this request usable.
+          }
+          return bytes;
+        }
       } catch {
         // Cache Storage is unavailable in some Tauri/webview contexts.
       }
@@ -165,6 +246,13 @@ class BrowserBlobStore implements AtomicBlobStore {
 
   public async putAtomic(key: string, bytes: Uint8Array): Promise<void> {
     const copy = bytes.slice();
+    try {
+      // IndexedDB transactions commit the pointer/value atomically and survive
+      // reloads even when Cache Storage is disabled by an embedded webview.
+      await this.run("readwrite", (store) => store.put(copy, key));
+    } catch {
+      // Continue with Cache Storage and the in-memory compatibility fallback.
+    }
     if ("caches" in globalThis) {
       try {
         const cache = await caches.open("gysapp-blobs");
@@ -181,6 +269,11 @@ class BrowserBlobStore implements AtomicBlobStore {
 
   public async remove(key: string): Promise<void> {
     this.fallback.delete(key);
+    try {
+      await this.run("readwrite", (store) => store.delete(key));
+    } catch {
+      // IndexedDB is optional; Cache Storage cleanup below remains best effort.
+    }
     if ("caches" in globalThis) {
       try {
         await caches
