@@ -2,7 +2,7 @@ export type Locale = "id" | "en" | "zh";
 
 type MessageValues = Record<string, string | number>;
 
-const messages: Record<Locale, Record<string, string>> = {
+export const messages: Record<Locale, Record<string, string>> = {
   id: {
     "home.title": "Selamat datang kembali",
     "home.subtitle": "Ruang tenang untuk membaca, menyanyi, dan bertumbuh.",
@@ -175,7 +175,7 @@ const messages: Record<Locale, Record<string, string>> = {
  * Indonesian intentionally mirrors the existing UI copy: changing language
  * never changes the accessible names used by the offline-first flows.
  */
-const featureMessages: Record<Locale, Record<string, string>> = {
+export const featureMessages: Record<Locale, Record<string, string>> = {
   id: {
     "kidung.catalogCanonical": "Katalog canonical",
     "kidung.catalogOffline": "Offline",

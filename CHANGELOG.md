@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+- Added a permanent i18n completeness guard: a unit suite scans every source
+  file for literal `translate(locale, …)` calls plus the curated dynamic
+  keys (navigation table, shell online/offline ternary) and asserts that all
+  148 keys exist with the same key set in Indonesian, English, and
+  Simplified Chinese, resolve without falling back to another language, and
+  that no table key is left unused. The manual audit confirmed the tables
+  were already complete; the test now prevents future drift.
 - The media E2E now also proves the floating player re-clamps inside the
   viewport when the window shrinks, so a saved drag position can never push
   the surface off-screen on a smaller device or rotation.
