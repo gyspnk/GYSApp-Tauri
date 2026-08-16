@@ -3,7 +3,7 @@ import type {
   AtomicBlobStore,
   ChordDocumentV2,
   ChordRef,
-  KeyValueStore,
+  PlatformDatabase,
   PlatformServices,
 } from "@gys/contracts";
 import { BrowserChordCache } from "./chord-cache.js";
@@ -11,7 +11,8 @@ import { BrowserChordCache } from "./chord-cache.js";
 function platform(): PlatformServices {
   const values = new Map<string, unknown>();
   const blobs = new Map<string, Uint8Array>();
-  const keyValue: KeyValueStore = {
+  const keyValue: PlatformDatabase = {
+    engine: "memory",
     async get<T>(key: string) {
       return values.get(key) as T | undefined;
     },
@@ -36,8 +37,44 @@ function platform(): PlatformServices {
   return {
     hasCapability: () => false,
     keyValue,
+    database: keyValue,
     blobs: blobStore,
+    secrets: {
+      persistent: false,
+      async get() {
+        return undefined;
+      },
+      async set() {
+        return undefined;
+      },
+      async remove() {
+        return undefined;
+      },
+    },
+    notifications: {
+      async permission() {
+        return "unsupported" as const;
+      },
+      async show() {
+        throw new Error("notifications unavailable");
+      },
+    },
+    files: {
+      async open() {
+        throw new Error("file dialogs unavailable");
+      },
+      async save() {
+        throw new Error("file dialogs unavailable");
+      },
+    },
+    share: {
+      async share() {
+        throw new Error("sharing unavailable");
+      },
+    },
     speech: [],
+    deepLinks: { current: () => undefined, subscribe: () => () => undefined },
+    lifecycle: { subscribe: () => () => undefined },
     openExternal: async () => undefined,
     now: () => 0,
   };

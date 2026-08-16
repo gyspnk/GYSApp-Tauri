@@ -8,6 +8,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # A branch push and its pull_request event target the same source. Share a
+  # group so the expensive native/e2e jobs do not run twice, while a newer
+  # commit still supersedes an older verification run.
+  group: ci-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest

@@ -17,6 +17,9 @@
 - Added low-cost loading-state motion and `content-visibility` boundaries for
   long hymn, faith, literature, and Suara lists; reduced-motion users still
   receive the static presentation.
+- CI now coalesces the push and pull-request events for the same source branch
+  and cancels superseded runs, so the expensive native and browser gates do
+  not duplicate work during normal PR delivery.
 
 - Expanded feature-critical Kidung localization to Indonesian, English, and
   Simplified Chinese, including viewer modes, chord/PDF/MIDI actions, queue,
@@ -240,9 +243,10 @@
 - Added chord-token alignment, negative-cache protection, sanitized Sauh and
   Suara snapshots, visual regression coverage, and real Cargo checks for the
   native package.
-- Preserved the bundle gate: 81.0 KiB gzip main application chunk and 164.6
-  KiB gzip initial JavaScript; the Bible search worker, PDF.js, and its worker
-  remain lazy-loaded while
+- Preserved the bundle gate: 84.7 KiB gzip main application chunk and 168.4
+  KiB gzip initial JavaScript after the durable reset boundary and release E2E
+  coverage were added; the Bible search worker, PDF.js, and its worker remain
+  lazy-loaded while
   FluidSynth/WASM and TimGM stay same-origin on-demand assets.
 
 The release is not declared GA until protected e-GYS/OAuth secrets, native

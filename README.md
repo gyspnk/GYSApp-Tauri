@@ -201,8 +201,8 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 81.0 KiB gzip for the main
-application chunk and 164.6 KiB gzip for all initial JavaScript; PDF.js, its
+The current production baseline is approximately 84.7 KiB gzip for the main
+application chunk and 168.4 KiB gzip for all initial JavaScript; PDF.js, its
 worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
 and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
 check the budget locally.
@@ -220,7 +220,7 @@ assets, validates them, atomically swaps the active pointer, and retains the
 last known-good pack if any download fails. Without the variable, Pages uses
 its immutable bundled manifest and still supports local verification/repair.
 
-The PWA service worker follows the same budget: the v8 core cache installs only
+The PWA service worker follows the same budget: the v10 core cache installs only
 the shell and small verified offline indexes. TimGM/FluidSynth and the MIDI
 worker are warmed in the background after the shell is ready (and skipped on
 Save-Data/2G connections), so activation never blocks the first usable frame.

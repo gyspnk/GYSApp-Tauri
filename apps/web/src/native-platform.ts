@@ -1,9 +1,16 @@
 import type {
   AtomicBlobStore,
-  KeyValueStore,
+  PlatformDatabase,
   PlatformServices,
   SpeechProvider,
 } from "@gys/contracts";
+import {
+  BrowserDeepLinks,
+  BrowserLifecycle,
+  BrowserNotifications,
+  BrowserShare,
+  EphemeralSecretStore,
+} from "./platform-capabilities.js";
 
 /**
  * Narrow boundary around Tauri's global invoke bridge. Keeping this type local
@@ -50,7 +57,9 @@ function nativeError(message: string): Error {
   return new Error(`Native platform: ${message}`);
 }
 
-class TauriKeyValueStore implements KeyValueStore {
+class TauriKeyValueStore implements PlatformDatabase {
+  public readonly engine = "native-app-data" as const;
+
   public constructor(private readonly invoke: TauriInvoke) {}
 
   public async get<T>(key: string): Promise<T | undefined> {
@@ -74,6 +83,42 @@ class TauriKeyValueStore implements KeyValueStore {
 
   public async remove(key: string): Promise<void> {
     await this.invoke("key_value_remove", { key });
+  }
+}
+
+/**
+ * SQLite-backed native database. Preferences intentionally stay on the small
+ * key/value file adapter above, while repositories that need a durable query
+ * boundary use these commands. Keeping the two stores separate makes the
+ * migration path explicit and prevents a future database reset from silently
+ * changing preference semantics.
+ */
+class TauriDatabaseStore implements PlatformDatabase {
+  public readonly engine = "native-app-data" as const;
+
+  public constructor(private readonly invoke: TauriInvoke) {}
+
+  public async get<T>(key: string): Promise<T | undefined> {
+    const value = await this.invoke("database_get", { key });
+    if (value === null || value === undefined) return undefined;
+    if (typeof value !== "string")
+      throw nativeError("database response was not text");
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      throw nativeError(`database value for ${key} is corrupted`);
+    }
+  }
+
+  public async set<T>(key: string, value: T): Promise<void> {
+    const encoded = JSON.stringify(value);
+    if (encoded === undefined)
+      throw nativeError(`database value for ${key} cannot be serialized`);
+    await this.invoke("database_set", { key, value: encoded });
+  }
+
+  public async remove(key: string): Promise<void> {
+    await this.invoke("database_remove", { key });
   }
 }
 
@@ -113,10 +158,14 @@ export function createTauriPlatformServices(
   invoke: TauriInvoke,
   speech: SpeechProvider[] = [],
 ): PlatformServices {
+  const keyValue = new TauriKeyValueStore(invoke);
+  const database = new TauriDatabaseStore(invoke);
   return {
     hasCapability(capability) {
       if (capability === "speech") return speech.length > 0;
       if (capability === "audio") return true;
+      if (capability === "database") return true;
+      if (capability === "secureStorage") return false;
       if (capability === "share")
         return typeof navigator !== "undefined" && "share" in navigator;
       if (capability === "notifications")
@@ -125,13 +174,28 @@ export function createTauriPlatformServices(
         return typeof navigator !== "undefined" && "mediaSession" in navigator;
       if (capability === "wakeLock")
         return typeof navigator !== "undefined" && "wakeLock" in navigator;
+      if (capability === "lifecycle") return true;
       // File dialogs and deep links require their platform-specific command
       // adapters; reporting false is safer than claiming a plugin is wired.
       return false;
     },
-    keyValue: new TauriKeyValueStore(invoke),
+    keyValue,
+    database,
     blobs: new TauriBlobStore(invoke),
+    secrets: new EphemeralSecretStore(),
+    notifications: new BrowserNotifications(),
+    files: {
+      open: async () => {
+        throw nativeError("file dialogs are not configured");
+      },
+      save: async () => {
+        throw nativeError("file dialogs are not configured");
+      },
+    },
+    share: new BrowserShare(),
     speech,
+    deepLinks: new BrowserDeepLinks(),
+    lifecycle: new BrowserLifecycle(),
     openExternal: async (url) => {
       let parsed: URL;
       try {

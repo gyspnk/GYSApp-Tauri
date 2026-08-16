@@ -97,7 +97,7 @@ service or platform artifact that cannot be exercised in this workspace.
   changes. A late worker result is ignored before it can replace the shared
   shell session; stale loads return a boolean so Kidung and playlist callers
   cannot start superseded audio. The guard has focused unit coverage and the
-  full 40-flow Playwright suite still passes after the change.
+  full 41-flow Playwright suite still passes after the change.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
   two-page guard, version-aware page progress with an explicit return-to-saved
@@ -180,13 +180,18 @@ service or platform artifact that cannot be exercised in this workspace.
   base64 validation. Rust unit tests cover traversal-safe keys and replacement
   cleanup; `cargo fmt --check`, `cargo check`, `cargo test`, and clippy pass,
   and the Windows CI job now runs the same native gate.
+- The shared `PlatformServices` seam now models database, transient secret,
+  notifications, file dialogs, sharing, deep links, and lifecycle in addition
+  to key-value/blob/speech. Browser adapters execute the available APIs;
+  Tauri explicitly reports secure-secret/file-dialog/deep-link gaps instead of
+  pretending that browser storage is native-secure.
 - Bible split ratio now defaults safely when storage is empty (no accidental
   42% pane), and the responsive E2E matrix covers 320/390/768/1024/1440/1920
   plus landscape without horizontal overflow.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  40 passing flows, including the 320–1920px and landscape shell matrix plus
+  41 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -248,3 +253,6 @@ service or platform artifact that cannot be exercised in this workspace.
   schemas when the upstream runtime document is available in an authenticated
   checkout; the current upstream checkout exposes the generator/configuration
   but no checked-in JSON document.
+- Complete the native hardening milestone: SQLite-backed database commands,
+  Stronghold/OS credential storage, and native file-dialog/deep-link bridges
+  with Windows/Android/iOS contract evidence.

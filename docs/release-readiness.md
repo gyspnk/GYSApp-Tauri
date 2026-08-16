@@ -21,8 +21,11 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **84.1 KiB gzip**; the complete initial
-  JavaScript set is **167.6 KiB gzip** in the latest local verification. The
+- CI uses one concurrency group per source branch so a push plus its pull
+  request do not duplicate the native and browser release gates; newer source
+  commits cancel older verification runs.
+- The initial web application chunk is **84.7 KiB gzip**; the complete initial
+  JavaScript set is **168.4 KiB gzip** in the latest local verification. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
@@ -63,7 +66,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 40 passing flows, including split-reader keyboard resize,
+  current suite has 41 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, a Home surface that derives Daily Verse directly
   from the current Sauh entry and keeps exactly one Lanjutkan item,
@@ -146,6 +149,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   path-safe keys and unique-temp-file atomic replacement; Rust tests cover
   traversal safety and replacement cleanup. Unsupported native capabilities
   report `false` instead of showing an unimplemented control.
+- The shared platform contract now also covers database, transient secrets,
+  notifications, file dialogs, sharing, deep links, and lifecycle events.
+  Browser implementations are exercised by unit tests; native secure-secret,
+  SQLite, file-dialog, and deep-link bridges remain explicit GA blockers.
 - BFF environment source bindings are HTTPS-only and TJC-origin allowlisted;
   insecure e-GYS and non-TJC Sauh/Literature/Suara overrides are ignored, so
   only the packaged Sauh snapshot or canonical TJC defaults remain eligible for

@@ -9,6 +9,7 @@ function createInvoke(): {
   calls: Array<{ command: string; args: Record<string, unknown> | undefined }>;
 } {
   const values = new Map<string, string>();
+  const databaseValues = new Map<string, string>();
   const blobs = new Map<string, string>();
   const calls: Array<{
     command: string;
@@ -24,6 +25,14 @@ function createInvoke(): {
         return null;
       case "key_value_remove":
         values.delete(String(args?.key));
+        return null;
+      case "database_get":
+        return databaseValues.get(String(args?.key)) ?? null;
+      case "database_set":
+        databaseValues.set(String(args?.key), String(args?.value));
+        return null;
+      case "database_remove":
+        databaseValues.delete(String(args?.key));
         return null;
       case "blob_get":
         return blobs.get(String(args?.key)) ?? null;
@@ -86,12 +95,35 @@ describe("Tauri platform adapter", () => {
     ]);
   });
 
+  it("uses the native SQLite database command boundary separately from preferences", async () => {
+    const { invoke, calls } = createInvoke();
+    const services = createTauriPlatformServices(invoke);
+
+    await services.database.set("catalog", { version: 1, items: 3 });
+    await expect(
+      services.database.get<{ version: number }>("catalog"),
+    ).resolves.toEqual({ version: 1, items: 3 });
+    await services.database.remove("catalog");
+    await expect(services.database.get("catalog")).resolves.toBeUndefined();
+
+    expect(calls.map(({ command }) => command)).toEqual([
+      "database_set",
+      "database_get",
+      "database_remove",
+      "database_get",
+    ]);
+  });
+
   it("does not advertise browser-only capabilities as native storage guarantees", () => {
     const { invoke } = createInvoke();
     const services = createTauriPlatformServices(invoke);
 
     expect(services.hasCapability("fileDialog")).toBe(false);
     expect(services.hasCapability("deepLinks")).toBe(false);
+    expect(services.hasCapability("database")).toBe(true);
+    expect(services.hasCapability("secureStorage")).toBe(false);
+    expect(services.hasCapability("lifecycle")).toBe(true);
+    expect(services.database.engine).toBe("native-app-data");
     expect(services.hasCapability("audio")).toBe(true);
     expect(services.hasCapability("speech")).toBe(false);
   });

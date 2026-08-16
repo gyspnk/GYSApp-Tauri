@@ -61,6 +61,20 @@ sequenceDiagram
 | `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                     |
 | `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                    |
 
+## Platform capability boundary
+
+`PlatformServices` is the only feature-facing platform seam. It now exposes
+the durable `database`, ordinary `keyValue`, atomic `blobs`, transient
+`secrets`, notifications, file dialogs, sharing, speech providers, deep-link
+subscriptions, lifecycle events, external links, and capability detection.
+The browser adapter uses IndexedDB/Cache Storage and real browser APIs where
+they exist. The Tauri adapter keeps verified data in native app-data and uses
+the same browser lifecycle/share/notification APIs inside the WebView, while
+file-dialog, deep-link, and secure-secret capabilities remain explicitly
+`false` until their native bridges are wired. No adapter claims a capability
+that it cannot execute, and the ephemeral secret boundary is never used for
+authentication tokens.
+
 ## Data and persistence flow
 
 ```mermaid

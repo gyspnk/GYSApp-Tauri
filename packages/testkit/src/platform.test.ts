@@ -4,6 +4,10 @@ import { createMemoryPlatform } from "./platform.js";
 describe("PlatformServices contract fixture", () => {
   it("provides isolated key-value and atomic blob storage", async () => {
     const services = createMemoryPlatform();
+    expect(services.database.engine).toBe("memory");
+    await services.secrets.set("ephemeral", "value");
+    expect(await services.secrets.get("ephemeral")).toBe("value");
+    expect(services.secrets.persistent).toBe(false);
     await services.keyValue.set("locale", "id");
     expect(await services.keyValue.get<string>("locale")).toBe("id");
     await services.blobs.putAtomic("pack", new Uint8Array([1, 2, 3]));

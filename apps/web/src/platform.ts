@@ -1,6 +1,7 @@
 import type {
   AtomicBlobStore,
   KeyValueStore,
+  PlatformDatabase,
   PlatformServices,
   SpeechProvider,
   SpeechVoice,
@@ -10,6 +11,14 @@ import {
   createTauriPlatformServices,
   getTauriInvoke,
 } from "./native-platform.js";
+import {
+  BrowserDeepLinks,
+  BrowserFileDialogs,
+  BrowserLifecycle,
+  BrowserNotifications,
+  BrowserShare,
+  EphemeralSecretStore,
+} from "./platform-capabilities.js";
 
 const PLATFORM_DB = "gysapp-platform-v1";
 const PLATFORM_STORE = "key-value";
@@ -127,7 +136,9 @@ export async function clearPlatformStorage(): Promise<void> {
   await clearBrowserPlatformStorage();
 }
 
-class BrowserKeyValueStore implements KeyValueStore {
+class BrowserKeyValueStore implements PlatformDatabase {
+  public readonly engine = "indexeddb" as const;
+
   private openDatabase(): Promise<IDBDatabase | undefined> {
     return openPlatformDatabase();
   }
@@ -508,19 +519,40 @@ function createSpeechProviders(): SpeechProvider[] {
 
 export function createBrowserPlatformServices(): PlatformServices {
   const speech = createSpeechProviders();
+  const database = new BrowserKeyValueStore();
   return {
     hasCapability(capability) {
       if (capability === "speech")
-        return "speechSynthesis" in window || isEdgeSpeechConfigured();
-      if (capability === "share") return "share" in navigator;
-      if (capability === "notifications") return "Notification" in window;
-      if (capability === "wakeLock") return "wakeLock" in navigator;
-      if (capability === "mediaSession") return "mediaSession" in navigator;
+        return (
+          (typeof window !== "undefined" && "speechSynthesis" in window) ||
+          isEdgeSpeechConfigured()
+        );
+      if (capability === "database") return true;
+      if (capability === "secureStorage") return false;
+      if (capability === "share")
+        return typeof navigator !== "undefined" && "share" in navigator;
+      if (capability === "notifications")
+        return typeof window !== "undefined" && "Notification" in window;
+      if (capability === "wakeLock")
+        return typeof navigator !== "undefined" && "wakeLock" in navigator;
+      if (capability === "mediaSession")
+        return typeof navigator !== "undefined" && "mediaSession" in navigator;
+      if (capability === "fileDialog")
+        return typeof window !== "undefined" && "HTMLInputElement" in window;
+      if (capability === "deepLinks" || capability === "lifecycle")
+        return typeof window !== "undefined";
       return true;
     },
-    keyValue: new BrowserKeyValueStore(),
+    keyValue: database,
+    database,
     blobs: new BrowserBlobStore(),
+    secrets: new EphemeralSecretStore(),
+    notifications: new BrowserNotifications(),
+    files: new BrowserFileDialogs(),
+    share: new BrowserShare(),
     speech,
+    deepLinks: new BrowserDeepLinks(),
+    lifecycle: new BrowserLifecycle(),
     openExternal: async (url) => {
       const parsed = new URL(url, window.location.href);
       if (!["http:", "https:"].includes(parsed.protocol))

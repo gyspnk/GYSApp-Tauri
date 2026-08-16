@@ -17,6 +17,8 @@ describe("browser platform binary boundary", () => {
     );
     await services.blobs.remove("chord/demo");
     await expect(services.blobs.get("chord/demo")).resolves.toBeUndefined();
+    expect(services.database.engine).toBe("indexeddb");
+    expect(services.secrets.persistent).toBe(false);
   });
 
   it("exposes a safe reset boundary even when IndexedDB and Cache Storage are unavailable", async () => {

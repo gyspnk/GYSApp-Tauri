@@ -1,10 +1,17 @@
 import type {
   AtomicBlobStore,
-  KeyValueStore,
+  PlatformDatabase,
+  PlatformDeepLinks,
+  PlatformFileDialogs,
+  PlatformLifecycle,
+  PlatformNotifications,
+  PlatformShare,
   PlatformServices,
+  SecretStore,
 } from "@gys/contracts";
 
-class MemoryKeyValueStore implements KeyValueStore {
+class MemoryKeyValueStore implements PlatformDatabase {
+  public readonly engine = "memory" as const;
   private readonly values = new Map<string, unknown>();
   public async get<T>(key: string): Promise<T | undefined> {
     return this.values.get(key) as T | undefined;
@@ -16,6 +23,49 @@ class MemoryKeyValueStore implements KeyValueStore {
     this.values.delete(key);
   }
 }
+
+class MemorySecretStore implements SecretStore {
+  public readonly persistent = false;
+  private readonly values = new Map<string, string>();
+  public async get(key: string): Promise<string | undefined> {
+    return this.values.get(key);
+  }
+  public async set(key: string, value: string): Promise<void> {
+    this.values.set(key, value);
+  }
+  public async remove(key: string): Promise<void> {
+    this.values.delete(key);
+  }
+}
+
+const unsupportedNotifications: PlatformNotifications = {
+  async permission() {
+    return "unsupported";
+  },
+  async show() {
+    throw new Error("Notifications are unavailable in the memory fixture");
+  },
+};
+const unsupportedFiles: PlatformFileDialogs = {
+  async open() {
+    throw new Error("File dialogs are unavailable in the memory fixture");
+  },
+  async save() {
+    throw new Error("File dialogs are unavailable in the memory fixture");
+  },
+};
+const unsupportedShare: PlatformShare = {
+  async share() {
+    throw new Error("Sharing is unavailable in the memory fixture");
+  },
+};
+const memoryDeepLinks: PlatformDeepLinks = {
+  current: () => undefined,
+  subscribe: () => () => undefined,
+};
+const memoryLifecycle: PlatformLifecycle = {
+  subscribe: () => () => undefined,
+};
 
 class MemoryBlobStore implements AtomicBlobStore {
   private readonly values = new Map<string, Uint8Array>();
@@ -36,10 +86,17 @@ export function createMemoryPlatform(): PlatformServices {
   const blobs = new MemoryBlobStore();
   return {
     hasCapability: (capability) =>
-      capability === "audio" || capability === "deepLinks",
+      capability === "audio" || capability === "database",
     keyValue,
+    database: keyValue,
     blobs,
+    secrets: new MemorySecretStore(),
+    notifications: unsupportedNotifications,
+    files: unsupportedFiles,
+    share: unsupportedShare,
     speech: [],
+    deepLinks: memoryDeepLinks,
+    lifecycle: memoryLifecycle,
     openExternal: async () => undefined,
     now: () => Date.now(),
   };

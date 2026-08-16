@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use rusqlite::{params, Connection, OptionalExtension};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -30,6 +31,9 @@ pub fn run() {
             key_value_get,
             key_value_set,
             key_value_remove,
+            database_get,
+            database_set,
+            database_remove,
             blob_get,
             blob_put_atomic,
             blob_remove,
@@ -89,6 +93,69 @@ fn blob_path(app: &AppHandle, key: &str) -> Result<PathBuf, String> {
     Ok(app_data_dir(app)?
         .join("blobs")
         .join(format!("{}.bin", safe_key(key))))
+}
+
+fn database_path(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(app_data_dir(app)?.join("gysapp.sqlite3"))
+}
+
+fn open_database(app: &AppHandle) -> Result<Connection, String> {
+    let path = database_path(app)?;
+    if let Some(parent) = path.parent() {
+        ensure_directory(parent)?;
+    }
+    let connection =
+        Connection::open(path).map_err(|_| "native database cannot be opened".to_owned())?;
+    connection
+        .execute_batch(
+            "PRAGMA journal_mode = WAL;
+             CREATE TABLE IF NOT EXISTS platform_kv (
+               key TEXT PRIMARY KEY NOT NULL,
+               value TEXT NOT NULL
+             );",
+        )
+        .map_err(|_| "native database schema cannot be initialized".to_owned())?;
+    Ok(connection)
+}
+
+#[tauri::command]
+fn database_get(app: AppHandle, key: String) -> Result<Option<String>, String> {
+    let connection = open_database(&app)?;
+    connection
+        .query_row(
+            "SELECT value FROM platform_kv WHERE key = ?1",
+            params![key],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|_| "native database read failed".to_owned())
+}
+
+#[tauri::command]
+fn database_set(app: AppHandle, key: String, value: String) -> Result<(), String> {
+    let mut connection = open_database(&app)?;
+    let transaction = connection
+        .transaction()
+        .map_err(|_| "native database transaction failed".to_owned())?;
+    transaction
+        .execute(
+            "INSERT INTO platform_kv (key, value) VALUES (?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            params![key, value],
+        )
+        .map_err(|_| "native database write failed".to_owned())?;
+    transaction
+        .commit()
+        .map_err(|_| "native database commit failed".to_owned())
+}
+
+#[tauri::command]
+fn database_remove(app: AppHandle, key: String) -> Result<(), String> {
+    let connection = open_database(&app)?;
+    connection
+        .execute("DELETE FROM platform_kv WHERE key = ?1", params![key])
+        .map(|_| ())
+        .map_err(|_| "native database remove failed".to_owned())
 }
 
 #[tauri::command]
@@ -155,6 +222,14 @@ fn platform_clear_data(app: AppHandle) -> Result<(), String> {
     for directory in ["key-value", "blobs"] {
         let path = root.join(directory);
         match fs::remove_dir_all(path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(_) => return Err("native app-data reset failed".to_owned()),
+        }
+    }
+    for suffix in ["", "-wal", "-shm"] {
+        let path = root.join(format!("gysapp.sqlite3{suffix}"));
+        match fs::remove_file(path) {
             Ok(()) => {}
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
             Err(_) => return Err("native app-data reset failed".to_owned()),

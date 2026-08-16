@@ -465,10 +465,13 @@ export type Capability =
   | "audio"
   | "mediaSession"
   | "wakeLock"
+  | "database"
+  | "secureStorage"
   | "fileDialog"
   | "share"
   | "notifications"
-  | "deepLinks";
+  | "deepLinks"
+  | "lifecycle";
 
 export interface KeyValueStore {
   get<T>(key: string): Promise<T | undefined>;
@@ -480,6 +483,60 @@ export interface AtomicBlobStore {
   get(key: string): Promise<Uint8Array | undefined>;
   putAtomic(key: string, bytes: Uint8Array): Promise<void>;
   remove(key: string): Promise<void>;
+}
+
+/** Structured persistence boundary used by repositories that outgrow simple
+ * preferences. The implementation may use IndexedDB in a browser or a
+ * native app-data database adapter; callers never depend on the engine. */
+export interface PlatformDatabase extends KeyValueStore {
+  readonly engine: "indexeddb" | "native-app-data" | "memory";
+}
+
+/** Secrets are intentionally separate from ordinary preferences and blobs. */
+export interface SecretStore {
+  readonly persistent: boolean;
+  get(key: string): Promise<string | undefined>;
+  set(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
+export interface PlatformNotificationOptions {
+  body?: string;
+  tag?: string;
+}
+
+export interface PlatformNotifications {
+  permission(): Promise<NotificationPermission | "unsupported">;
+  show(title: string, options?: PlatformNotificationOptions): Promise<void>;
+}
+
+export interface PlatformFile {
+  name: string;
+  mimeType: string;
+  bytes: Uint8Array;
+}
+
+export interface PlatformFileDialogs {
+  open(options?: {
+    accept?: readonly string[];
+    multiple?: boolean;
+    signal?: AbortSignal;
+  }): Promise<PlatformFile[] | undefined>;
+  save(file: PlatformFile): Promise<void>;
+}
+
+export interface PlatformShare {
+  share(data: { title?: string; text?: string; url?: string }): Promise<void>;
+}
+
+export interface PlatformDeepLinks {
+  current(): string | undefined;
+  subscribe(listener: (url: string) => void): () => void;
+}
+
+export type PlatformLifecycleEvent = "foreground" | "background" | "beforeExit";
+export interface PlatformLifecycle {
+  subscribe(event: PlatformLifecycleEvent, listener: () => void): () => void;
 }
 
 export interface SpeechVoice {
@@ -544,8 +601,15 @@ export interface SpeechProvider {
 export interface PlatformServices {
   hasCapability(capability: Capability): boolean;
   keyValue: KeyValueStore;
+  database: PlatformDatabase;
   blobs: AtomicBlobStore;
+  secrets: SecretStore;
+  notifications: PlatformNotifications;
+  files: PlatformFileDialogs;
+  share: PlatformShare;
   speech: SpeechProvider[];
+  deepLinks: PlatformDeepLinks;
+  lifecycle: PlatformLifecycle;
   openExternal(url: string): Promise<void>;
   now(): number;
 }
