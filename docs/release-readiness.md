@@ -24,8 +24,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - CI uses one concurrency group per source branch so a push plus its pull
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
-- The initial web application chunk is **84.9 KiB gzip**; the complete initial
-  JavaScript set is **172.8 KiB gzip** in the latest local verification. The
+- The initial web application chunk is **85.1 KiB gzip**; the complete initial
+  JavaScript set is **173.1 KiB gzip** in the latest local verification for
+  commit `ec74630`. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
@@ -215,6 +216,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - GitHub Pages now builds the complete workspace, verifies generated
   provenance, enforces the bundle budget, and is live at
   https://gyspnk.github.io/GYSApp-Tauri/ from the protected preview branch.
+  Commit `ec74630` is confirmed live with HTTP 200, a 533-item hymn catalog
+  locked to `gyschordweb@cbc7d386`, and the source-backed `sbj260816` Sauh
+  snapshot. CI run `31933679329` passed verify, E2E, native, and secret-scan;
+  Pages run `31933676326` passed build and deploy.
   The Pages environment permits `main` and the named preview branch; the
   protected `main` branch remains the production promotion gate.
 
