@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+- The pre-push quality gate now also verifies generated-data provenance
+  (`verify:generated`: music lock, chord manifest, hymn catalog, offline
+  assets, literature covers) and re-runs the deterministic 144-file chord
+  position audit in a no-write check mode that compares the fresh mapping
+  against the committed report, so data-integrity drift blocks the push
+  before anything reaches the remote.
 - The TB reader now has persistent typography controls: compact A−/A+ buttons
   in the Bible header step the verse font between 14–26 px (line height
   1.4–2.2), applied through CSS variables to both split panes, bounded and

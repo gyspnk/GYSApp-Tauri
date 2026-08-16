@@ -7,6 +7,12 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- The pre-push gate now runs `verify:generated` (lock/manifest/catalog
+  provenance) and the chord position audit in `--check` mode: the full
+  144-file deterministic mapping is recomputed against the immutable
+  gyschordweb checkout and compared to the committed report ignoring only
+  its generation timestamp, so any orphan/invalid mapping or drifted audit
+  blocks the push without dirtying the tree.
 - The TB reader gained persisted typography controls (A−/A+ in the Bible
   header, 14–26 px font with 1.4–2.2 line height) applied as CSS variables
   to both split panes. The versioned preference is clamped and

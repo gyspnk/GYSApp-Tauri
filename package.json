@@ -28,6 +28,7 @@
     "generate:literature": "node scripts/generate-literature-snapshot.mjs",
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs",
     "audit:chords": "node scripts/audit-chord-layout.mjs --source-root .tmp-gyschordweb-a3d1ea7 --strict",
+    "audit:chords:check": "node scripts/audit-chord-layout.mjs --source-root .tmp-gyschordweb-a3d1ea7 --strict --check",
     "sync:egys": "node scripts/sync-egys.mjs --write --strict",
     "verify:precommit": "node scripts/verify-precommit.mjs",
     "verify:prepush": "node scripts/verify-prepush.mjs",

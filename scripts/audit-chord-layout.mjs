@@ -13,11 +13,16 @@ function parseArgs(argv) {
     musicLock: "apps/web/public/offline/music-lock.json",
     out: "docs/discovery/chord-position-audit.json",
     strict: false,
+    check: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === "--strict") {
       options.strict = true;
+      continue;
+    }
+    if (argument === "--check") {
+      options.check = true;
       continue;
     }
     const [key, inline] = argument.split("=", 2);
@@ -408,12 +413,26 @@ const report = {
   totals,
   files,
 };
-await writeFile(outPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-console.log(
-  `Chord position audit written to ${relative(root, outPath)}: ${
-    totals.mappedEntries
-  } mapped, ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid entries.`,
-);
+if (options.check) {
+  const previous = JSON.parse(await readFile(outPath, "utf8"));
+  const { generatedAt: _previousGeneratedAt, ...previousReport } = previous;
+  const { generatedAt: _generatedAt, ...currentReport } = report;
+  if (JSON.stringify(previousReport) !== JSON.stringify(currentReport)) {
+    throw new Error(
+      `chord position audit drifted from committed report: ${relative(root, outPath)}`,
+    );
+  }
+  console.log(
+    `Chord position audit matches committed report (${totals.mappedEntries} mapped, ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid).`,
+  );
+} else {
+  await writeFile(outPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  console.log(
+    `Chord position audit written to ${relative(root, outPath)}: ${
+      totals.mappedEntries
+    } mapped, ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid entries.`,
+  );
+}
 if (options.strict && (totals.orphanEntries > 0 || totals.invalidEntries > 0)) {
   throw new Error(
     `strict chord audit failed: ${totals.orphanEntries} orphan and ${totals.invalidEntries} invalid entries`,
