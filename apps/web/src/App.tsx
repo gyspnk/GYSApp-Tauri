@@ -800,28 +800,63 @@ function MediaSurface({ locale }: { locale: Locale }) {
             }
           />
         </label>
-        {!speechActive && !minimized && playlist.items.length > 0 && (
-          <div className="media-queue-controls" aria-label="Antrean MIDI">
-            <button
-              className="text-button"
-              type="button"
-              onClick={() =>
-                void playPreviousMidiPlaylistItem().catch(() => undefined)
-              }
-              aria-label="Lagu MIDI sebelumnya"
-            >
-              ‹ Sebelumnya
-            </button>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() =>
-                void playNextMidiPlaylistItem().catch(() => undefined)
-              }
-              aria-label="Lagu MIDI berikutnya"
-            >
-              Berikutnya ›
-            </button>
+        {!minimized && (speechActive || playlist.items.length > 0) && (
+          <div
+            className="media-queue-controls"
+            aria-label={speechActive ? "Navigasi bacaan" : "Antrean MIDI"}
+          >
+            {speechActive ? (
+              <>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() =>
+                    void speechPlayer.previous().catch(() => undefined)
+                  }
+                  aria-label="Ayat sebelumnya"
+                  disabled={speechSnapshot.currentIndex <= 0}
+                >
+                  ‹ Ayat sebelumnya
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() =>
+                    void speechPlayer.next().catch(() => undefined)
+                  }
+                  aria-label="Ayat berikutnya"
+                  disabled={
+                    speechSnapshot.currentIndex < 0 ||
+                    speechSnapshot.currentIndex >= speechSnapshot.total - 1
+                  }
+                >
+                  Ayat berikutnya ›
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() =>
+                    void playPreviousMidiPlaylistItem().catch(() => undefined)
+                  }
+                  aria-label="Lagu MIDI sebelumnya"
+                >
+                  ‹ Sebelumnya
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() =>
+                    void playNextMidiPlaylistItem().catch(() => undefined)
+                  }
+                  aria-label="Lagu MIDI berikutnya"
+                >
+                  Berikutnya ›
+                </button>
+              </>
+            )}
           </div>
         )}
         {!minimized && (

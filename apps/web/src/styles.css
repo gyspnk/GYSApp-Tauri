@@ -1520,6 +1520,16 @@ body.is-resizing-bible {
 .verse-row.is-highlight-green {
   background: color-mix(in srgb, #5a9e73 14%, transparent);
 }
+.verse-row.is-speaking {
+  border-color: color-mix(in srgb, var(--blue) 62%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 74%, transparent);
+  box-shadow: inset 3px 0 0 var(--blue);
+  scroll-margin-block: 18px;
+}
+.verse-row.is-speaking .verse-number {
+  color: var(--blue);
+  font-weight: 800;
+}
 .verse-text {
   display: block;
   width: 100%;

@@ -100,6 +100,21 @@ function cleanVerse(verse: BibleVerse): string {
   return sanitizeBibleText(verse.text);
 }
 
+function speechVerseId(
+  context: { path: string } | undefined,
+): string | undefined {
+  const marker = "#bible-verse-";
+  const hashIndex = context?.path.indexOf(marker) ?? -1;
+  if (hashIndex < 0) return undefined;
+  const encoded = context?.path.slice(hashIndex + marker.length);
+  if (!encoded) return undefined;
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return undefined;
+  }
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -150,6 +165,7 @@ function ChapterPane({
   bookmarks,
   highlights,
   selectedVerseId,
+  speakingVerseId,
   searchQuery,
   secondary = false,
   onSelect,
@@ -165,6 +181,7 @@ function ChapterPane({
   bookmarks: Set<string>;
   highlights: Record<string, string>;
   selectedVerseId?: string | undefined;
+  speakingVerseId?: string | undefined;
   searchQuery: string;
   secondary?: boolean;
   onSelect: (verse: BibleVerse) => void;
@@ -206,14 +223,14 @@ function ChapterPane({
       >
         {verses.map((verse) => {
           const selected = selectedVerseId === verse.id;
+          const speaking = speakingVerseId === verse.id;
           const highlight = highlights[verse.id];
           return (
             <article
-              className={`verse-row${selected ? " is-selected" : ""}${
-                highlight ? ` is-highlight-${highlight}` : ""
-              }`}
+              className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlight ? ` is-highlight-${highlight}` : ""}`}
               id={`bible-verse-${verse.id}`}
               key={verse.id}
+              aria-current={speaking ? "true" : undefined}
             >
               <button
                 className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
@@ -232,6 +249,11 @@ function ChapterPane({
               >
                 <HighlightedText text={cleanVerse(verse)} query={searchQuery} />
               </button>
+              {speaking && (
+                <span className="sr-only" role="status">
+                  Sedang dibacakan: ayat {verse.verse}
+                </span>
+              )}
             </article>
           );
         })}
@@ -455,6 +477,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const speechAvailable =
     typeof window !== "undefined" && speechSnapshot.available;
+  const speakingVerseId = useMemo(
+    () =>
+      speechSnapshot.status === "speaking" || speechSnapshot.status === "paused"
+        ? speechVerseId(speechSnapshot.context)
+        : undefined,
+    [speechSnapshot.context, speechSnapshot.status],
+  );
   useEffect(() => {
     setSpeaking(
       speechSnapshot.status === "loading" ||
@@ -501,6 +530,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
         ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 0);
   }, [chapterVerses, notes, selectedVerseId]);
+  useEffect(() => {
+    if (!speakingVerseId || !window.location.pathname.endsWith("/bible"))
+      return;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .getElementById(`bible-verse-${speakingVerseId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [speakingVerseId]);
   const navigateBy = (delta: number) => {
     if (!book) return;
     const target = findNextTarget(books, book, chapter, delta);
@@ -1157,6 +1196,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               bookmarks={bookmarks}
               highlights={highlights}
               selectedVerseId={selectedVerseId}
+              speakingVerseId={speakingVerseId}
               searchQuery={query}
               onSelect={selectVerse}
               onBookmark={toggleBookmark}
@@ -1194,6 +1234,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 bookmarks={bookmarks}
                 highlights={highlights}
                 selectedVerseId={selectedVerseId}
+                speakingVerseId={speakingVerseId}
                 searchQuery={query}
                 secondary
                 onSelect={selectVerse}

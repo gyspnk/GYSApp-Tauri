@@ -143,6 +143,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   local), `edge`, or `local`. The optional voice catalog is also schema- and
   HTTPS-validated; no static Edge voice list is shown when it is absent. It
   remains unavailable until a protected `EDGE_TTS_URL` gateway is supplied.
+  While a verse range is playing, the reader marks and scrolls the active verse
+  and the expanded global media surface exposes previous/next verse controls;
+  the behavior is covered by the shared read-aloud Playwright flow.
 - Cookie-authenticated BFF mutations now reject requests without an allowlisted
   `Origin` or same-site Fetch Metadata signal; the native adapter uses the
   explicit `x-gys-client: native` marker and the policy has contract coverage.

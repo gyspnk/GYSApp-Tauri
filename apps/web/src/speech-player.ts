@@ -55,6 +55,7 @@ class BrowserSpeechSession {
   ]);
   private queue: SpeechQueueItem[] = [];
   private abortController: AbortController | undefined;
+  private playbackGeneration = 0;
   private state: SpeechSnapshot = { ...initial };
   private readonly listeners = new Set<() => void>();
 
@@ -133,7 +134,6 @@ class BrowserSpeechSession {
         volume: nextVolume,
       },
     );
-    this.abortController = new AbortController();
     this.patch({
       status: "loading",
       currentIndex: 0,
@@ -144,11 +144,44 @@ class BrowserSpeechSession {
       ...(options.voiceId !== undefined ? { voiceId: options.voiceId } : {}),
       error: undefined,
     });
+    await this.playQueue(0);
+  }
+
+  public async previous(): Promise<void> {
+    await this.jump(-1);
+  }
+
+  public async next(): Promise<void> {
+    await this.jump(1);
+  }
+
+  private async jump(delta: -1 | 1): Promise<void> {
+    if (!this.queue.length || this.state.currentIndex < 0) return;
+    const target = Math.max(
+      0,
+      Math.min(this.queue.length - 1, this.state.currentIndex + delta),
+    );
+    if (target === this.state.currentIndex) return;
+    await this.stop(false);
+    this.patch({
+      status: "loading",
+      currentIndex: target,
+      total: this.queue.length,
+      error: undefined,
+    });
+    await this.playQueue(target);
+  }
+
+  private async playQueue(startIndex: number): Promise<void> {
+    const generation = ++this.playbackGeneration;
+    const controller = new AbortController();
+    this.abortController = controller;
     try {
-      for (let index = 0; index < this.queue.length; index += 1) {
+      for (let index = startIndex; index < this.queue.length; index += 1) {
         const item = this.queue[index];
         if (!item) continue;
-        if (this.abortController.signal.aborted) return;
+        if (controller.signal.aborted || generation !== this.playbackGeneration)
+          return;
         this.patch({
           status: "speaking",
           currentIndex: index,
@@ -163,20 +196,24 @@ class BrowserSpeechSession {
         const result = await this.orchestrator.speak(
           item.text,
           speechOptions,
-          this.abortController.signal,
+          controller.signal,
         );
+        if (controller.signal.aborted || generation !== this.playbackGeneration)
+          return;
         this.patch({ providerId: result.providerId, offline: result.offline });
       }
-      this.patch({ status: "idle", currentIndex: -1 });
+      if (generation === this.playbackGeneration)
+        this.patch({ status: "idle", currentIndex: -1 });
     } catch (error) {
-      if (this.abortController.signal.aborted) return;
+      if (controller.signal.aborted || generation !== this.playbackGeneration)
+        return;
       recordDiagnostic("error", "tts.playback", error);
       this.patch({
         status: "error",
         error: error instanceof Error ? error.message : "Pembaca suara gagal",
       });
     } finally {
-      this.abortController = undefined;
+      if (this.abortController === controller) this.abortController = undefined;
     }
   }
 
@@ -193,6 +230,7 @@ class BrowserSpeechSession {
   }
 
   public async stop(clearQueue = true): Promise<void> {
+    this.playbackGeneration += 1;
     this.abortController?.abort();
     this.abortController = undefined;
     await this.orchestrator.stop();

@@ -130,8 +130,10 @@ service or platform artifact that cannot be exercised in this workspace.
   chapter scrubber, and swipe navigation. Bible read-aloud now uses
   the shared SpeechProvider/orchestrator, prefers a configured Edge
   compatibility gateway with an explicit local fallback, queues verse ranges,
-  exposes engine/voice/rate controls, and shares the global media surface so
-  speech and MIDI never play audibly together.
+  exposes engine/voice/rate controls, highlights and scrolls the verse currently
+  being spoken, provides previous/next verse navigation from the expanded
+  global media surface, and shares that surface so speech and MIDI never play
+  audibly together.
 - GYSChordWeb-style continuous PDF rendering now lazy-loads visible pages;
   canonical binary assets can use the allowlisted same-origin Worker proxy,
   then fall back to the immutable raw source without duplicate in-flight fetches.
