@@ -23,7 +23,9 @@ through a commit/path-locked GYSApp-Fork proxy when available and falls back to
 the immutable raw source. Kidung prefetches only the
 next/previous binary music assets and never eagerly downloads heavy PDFs.
 The TB reader runs its 31,172-verse search index in a lazy worker with a
-bounded startup fallback, and the cross-space search (⌘K) covers Alkitab,
+bounded startup fallback; queries match book display names as well as verse
+text (book-name hits rank first), and the cross-space search (⌘K) covers
+Alkitab,
 Kidung, Literatur, Iman, Sauh, and Suara Sejati: Bible verse results
 deep-link into the internal reader through a validated
 `/bible?book/chapter/verse` route. The global player keeps a compact

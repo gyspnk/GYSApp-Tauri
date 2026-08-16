@@ -5,7 +5,7 @@ import {
 } from "@gys/domain";
 
 type WorkerRequest =
-  | { type: "init"; verses: BibleVerse[] }
+  | { type: "init"; verses: BibleVerse[]; bookNames?: Record<string, string> }
   | {
       type: "search";
       id: number;
@@ -65,8 +65,9 @@ export class BibleSearchClient {
   public constructor(
     verses: readonly BibleVerse[],
     workerFactory: BibleSearchWorkerFactory = createDefaultWorker,
+    bookNames?: Readonly<Record<string, string>>,
   ) {
-    this.fallback = new BibleRepository(verses);
+    this.fallback = new BibleRepository(verses, bookNames ? { bookNames } : {});
     this.ready = new Promise<void>((resolve) => {
       this.resolveReady = resolve;
     });
@@ -83,7 +84,11 @@ export class BibleSearchClient {
       this.worker = workerFactory();
       this.worker.onmessage = (event) => this.handleMessage(event.data);
       this.worker.onerror = () => this.failWorker();
-      this.worker.postMessage({ type: "init", verses: [...verses] });
+      this.worker.postMessage({
+        type: "init",
+        verses: [...verses],
+        ...(bookNames ? { bookNames: { ...bookNames } } : {}),
+      });
       this.readyTimer = setTimeout(() => this.failWorker(), 4_000);
     } catch {
       this.failWorker();

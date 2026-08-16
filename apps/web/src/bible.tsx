@@ -21,6 +21,7 @@ import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import {
+  bibleBookNames,
   parseBibleDeepLink,
   resolveBibleDeepLink,
 } from "./global-bible-search.js";
@@ -402,7 +403,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const searchClient = useMemo(
     () =>
       packState.status === "ready"
-        ? new BibleSearchClient(packState.pack.verses)
+        ? new BibleSearchClient(
+            packState.pack.verses,
+            undefined,
+            bibleBookNames(packState.pack),
+          )
         : undefined,
     [packState],
   );

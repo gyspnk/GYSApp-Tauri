@@ -65,6 +65,51 @@ describe("BibleSearchClient", () => {
     client.dispose();
   });
 
+  it("forwards the book-name map into the worker index", async () => {
+    const received: unknown[] = [];
+    const capturingWorker = (): BibleSearchWorker => {
+      let cancelled = new Set<number>();
+      const worker: BibleSearchWorker = {
+        onmessage: null,
+        onerror: null,
+        postMessage(message) {
+          received.push(message);
+          if (message.type === "init") {
+            setTimeout(
+              () =>
+                worker.onmessage?.({ data: { type: "ready" } } as MessageEvent),
+              0,
+            );
+            return;
+          }
+          if (message.type === "cancel") {
+            cancelled.add(message.id);
+            return;
+          }
+          setTimeout(() => {
+            if (cancelled.delete(message.id)) return;
+            worker.onmessage?.({
+              data: { type: "result", id: message.id, verses: [] },
+            } as MessageEvent);
+          }, 0);
+        },
+        terminate: vi.fn(),
+      };
+      return worker;
+    };
+    const client = new BibleSearchClient(verses, capturingWorker, {
+      "1": "Kejadian",
+      "43": "Yohanes",
+    });
+    await client.search("Yohanes");
+    expect(received[0]).toEqual({
+      type: "init",
+      verses,
+      bookNames: { "1": "Kejadian", "43": "Yohanes" },
+    });
+    client.dispose();
+  });
+
   it("cancels stale searches without surfacing an error to the reader", async () => {
     const client = new BibleSearchClient(verses, fakeWorker);
     const controller = new AbortController();

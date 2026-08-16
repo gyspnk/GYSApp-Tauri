@@ -20,6 +20,7 @@ import {
 import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
+  bibleBookNames,
   bibleVerseEntries,
   loadBiblePack,
   type BibleSearchEntry,
@@ -279,7 +280,8 @@ export function GlobalSearch({
           const pack = await loadBiblePack();
           if (cancelled || sequence !== bibleSequenceRef.current) return;
           const client =
-            bibleClientRef.current ?? new BibleSearchClient(pack.verses);
+            bibleClientRef.current ??
+            new BibleSearchClient(pack.verses, undefined, bibleBookNames(pack));
           bibleClientRef.current = client;
           const verses = await client.search(normalized);
           if (cancelled || sequence !== bibleSequenceRef.current) return;

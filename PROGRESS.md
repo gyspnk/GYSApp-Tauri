@@ -7,6 +7,18 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- Bible search now indexes book display names alongside the numeric pack
+  ids, so natural queries like “Yohanes” or “Yohanes kasih” return the book
+  itself instead of nothing. Matches are ranked in three stable tiers —
+  book-name hits, reference hits, then plain text hits — so a book whose
+  name matches the query appears ahead of verses in earlier books that only
+  mention the word (Matius 3:1 “Yohanes Pembaptis”), and canonical book
+  order is preserved inside each tier. The worker init message carries the
+  name map, and both the Bible page and the cross-space search use the same
+  client, so the fix applies everywhere. `pnpm audit` reports zero known
+  vulnerabilities. Focused unit tests cover name/AND/whole-word/numeric-id
+  queries plus ranking, and a browser E2E proves the book of Yohanes
+  outranks Matius text mentions.
 - The cross-space search (⌘K) now includes the offline TB Bible. The
   31,172-verse pack is loaded on demand and searched through the same
   lazy worker-backed client as the Bible screen, with a stale-result guard

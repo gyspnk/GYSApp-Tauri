@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { BibleReaderPack } from "@gys/contracts";
 import {
   bibleBookName,
+  bibleBookNames,
   bibleVerseEntries,
   bibleVerseHref,
   parseBibleDeepLink,
@@ -57,6 +58,15 @@ describe("bibleBookName", () => {
   });
   it("falls back to the raw id for unknown books", () => {
     expect(bibleBookName(PACK, "99")).toBe("99");
+  });
+});
+
+describe("bibleBookNames", () => {
+  it("maps every numeric book id to its display name", () => {
+    expect(bibleBookNames(PACK)).toEqual({
+      "1": "Kejadian",
+      "43": "Yohanes",
+    });
   });
 });
 

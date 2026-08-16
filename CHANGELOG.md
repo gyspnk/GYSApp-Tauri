@@ -2,6 +2,17 @@
 
 ## Unreleased — GA hardening slice
 
+- Bible search now understands book names. The offline TB pack indexes each
+  verse with its book display name, so natural queries like “Yohanes” or
+  “Yohanes kasih” match instead of silently returning nothing (the pack only
+  stores numeric book ids). Results are ranked so the book whose name matches
+  the query surfaces before verses that merely mention the word in their
+  text, with reference hits between the two; ordering stays canonical inside
+  each tier. The worker protocol carries the book-name map at init, and the
+  Bible page and the cross-space search share the same behavior. Unit
+  coverage proves name/AND/whole-word/numeric-id queries plus ranking, and a
+  browser E2E verifies the book of Yohanes appears ahead of text mentions
+  like Matius 3:1.
 - Global search now covers the Alkitab: the offline TB reader pack is loaded
   on demand and queried through the same lazy worker-backed index as the
   Bible screen, with stale-result protection and a retryable pack failure.

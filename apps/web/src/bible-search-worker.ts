@@ -5,7 +5,7 @@ import {
 } from "@gys/domain";
 
 type WorkerRequest =
-  | { type: "init"; verses: BibleVerse[] }
+  | { type: "init"; verses: BibleVerse[]; bookNames?: Record<string, string> }
   | {
       type: "search";
       id: number;
@@ -35,7 +35,10 @@ function send(message: WorkerResponse): void {
 worker.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const message = event.data;
   if (message.type === "init") {
-    repository = new BibleRepository(message.verses);
+    repository = new BibleRepository(
+      message.verses,
+      message.bookNames ? { bookNames: message.bookNames } : {},
+    );
     cancelled.clear();
     send({ type: "ready" });
     return;

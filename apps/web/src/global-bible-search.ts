@@ -29,6 +29,13 @@ export function loadBiblePack(): Promise<BibleReaderPack> {
   return biblePackPromise;
 }
 
+/** Map numeric TB book ids to display names for the search index. */
+export function bibleBookNames(pack: BibleReaderPack): Record<string, string> {
+  const names: Record<string, string> = {};
+  for (const book of pack.books) names[String(book.id)] = book.name;
+  return names;
+}
+
 /** Resolve a numeric TB book id to its display name. */
 export function bibleBookName(
   pack: BibleReaderPack,

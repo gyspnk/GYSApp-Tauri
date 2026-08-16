@@ -150,6 +150,41 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await page.getByRole("button", { name: "Sorot blue" }).click();
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
+test("Bible search matches book names from the offline pack", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  // A bare book name must surface verses from that book even though other
+  // books also mention the name in their verse text (Matius 3:1 begins with
+  // "Yohanes Pembaptis"); the book-name index entry is what makes the book of
+  // Yohanes itself appear.
+  await page.getByLabel("Cari Alkitab").fill("Yohanes");
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  const results = page.locator(".result-item");
+  await expect(results.first()).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(() =>
+      page
+        .locator(".result-item strong")
+        .allTextContents()
+        .then((texts) => texts.some((text) => text.startsWith("Yohanes "))),
+    )
+    .toBe(true);
+  // AND matching combines the book name with verse text.
+  await page.getByLabel("Cari Alkitab").fill("Yohanes kasih");
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  await expect
+    .poll(() =>
+      page
+        .locator(".result-item strong")
+        .allTextContents()
+        .then((texts) => texts.some((text) => text.startsWith("Yohanes "))),
+    )
+    .toBe(true);
+});
 
 test("Bible title drag exposes quick chapter navigation with keyboard fallback", async ({
   page,

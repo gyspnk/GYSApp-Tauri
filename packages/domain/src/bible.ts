@@ -17,6 +17,8 @@ export type BiblePericope = {
 export type BibleRepositoryOptions = {
   pericopes?: readonly BiblePericope[];
   references?: Readonly<Record<string, readonly BibleReference[]>>;
+  /** Numeric TB book id → display name, so natural book-name queries match. */
+  bookNames?: Readonly<Record<string, string>>;
 };
 
 export type BibleSearchOptions = {
@@ -143,6 +145,7 @@ export class BibleRepository {
   private readonly referencesById: Readonly<
     Record<string, readonly BibleReference[]>
   >;
+  private readonly bookNames: Readonly<Record<string, string>>;
   private readonly readingHistory: BibleReference[] = [];
   private last: BibleReference | undefined;
 
@@ -165,6 +168,7 @@ export class BibleRepository {
     }
     this.pericopes = options.pericopes ?? [];
     this.referencesById = options.references ?? {};
+    this.bookNames = options.bookNames ?? {};
   }
 
   public books(): { book: string; bookOrder: number; chapters: number[] }[] {
@@ -211,12 +215,13 @@ export class BibleRepository {
     const { terms, phrases } = parseSearchQuery(query);
     if (!terms.length && !phrases.length) return [];
     await new Promise<void>((resolve) => queueMicrotask(resolve));
-    return this.pack.filter((verse) => {
+    const matches = this.pack.filter((verse) => {
       if (searchOptions.book && verse.book !== searchOptions.book) return false;
+      const bookName = this.bookNames[verse.book];
       const searchable =
         this.normalizedText.get(verse.id) ??
         normalizeSearchText(
-          `${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`,
+          `${bookName ?? verse.book} ${verse.book} ${verse.chapter}:${verse.verse} ${verse.text}`,
         );
       this.normalizedText.set(verse.id, searchable);
       if (
@@ -242,6 +247,22 @@ export class BibleRepository {
       }
       return true;
     });
+    // Rank matches so a book whose name matches a query term surfaces before
+    // verses that merely mention the word in their text, and reference hits
+    // rank above plain text hits. The sort is stable, so canonical book order
+    // is preserved inside each tier.
+    return matches
+      .map((verse) => ({ verse, tier: this.searchTier(verse, terms) }))
+      .sort((left, right) => left.tier - right.tier)
+      .map(({ verse }) => verse);
+  }
+
+  private searchTier(verse: BibleVerse, terms: readonly string[]): number {
+    const name = normalizeSearchText(this.bookNames[verse.book] ?? verse.book);
+    if (terms.some((term) => name.includes(term))) return 0;
+    const reference = normalizeSearchText(verse.chapter + ":" + verse.verse);
+    if (terms.some((term) => reference.includes(term))) return 1;
+    return 2;
   }
 
   public async setLastReading(reference: BibleReference): Promise<void> {
