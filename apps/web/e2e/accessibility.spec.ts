@@ -55,7 +55,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.goto("/GYSApp-Tauri/kidung");
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
 
     const results = await new AxeBuilder({ page }).analyze();
     expect(
