@@ -2,16 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main, "codex/**"]
+    # Feature branches are verified by the pull_request event. Running both
+    # events for the same SHA creates a cancelled duplicate check that can
+    # incorrectly block an otherwise green PR.
+    branches: [main]
   pull_request:
 
 permissions:
   contents: read
 
 concurrency:
-  # A branch push and its pull_request event target the same source. Normalize
-  # both events to repo + branch so the expensive native/e2e jobs do not run
-  # twice, while a newer commit still supersedes an older verification run.
+  # A newer commit supersedes an older verification run while the PR event
+  # remains the single source of truth for feature branches.
   group: ci-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
