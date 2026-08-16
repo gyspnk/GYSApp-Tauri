@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- The pre-commit gate now also runs `verify:generated` (music lock, chord
+  manifest, hymn catalog, offline packs, literature covers, fork PDF
+  provenance), matching the CI and pre-push gates, so a commit that drifts
+  generated data is blocked at the earliest point instead of at push time.
 - Added a permanent i18n completeness guard: a unit suite scans every source
   file for literal `translate(locale, …)` calls plus the curated dynamic
   keys (navigation table, shell online/offline ternary) and asserts that all
