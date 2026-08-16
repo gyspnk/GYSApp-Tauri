@@ -75,6 +75,12 @@ service or platform artifact that cannot be exercised in this workspace.
   without re-rendering the PDF. Simultaneous song opens share one verified
   chord download, and rendered MIDI PCM uses a bounded 96 MB
   source/soundfont/tempo/transpose/sample-rate cache.
+- MIDI asynchronous work now carries a generation guard across song loads,
+  FluidSynth worker startup/render, seek, stop, and instrument/tempo/transpose
+  changes. A late worker result is ignored before it can replace the shared
+  shell session; stale loads return a boolean so Kidung and playlist callers
+  cannot start superseded audio. The guard has focused unit coverage and the
+  full 38-flow Playwright suite still passes after the change.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
   two-page guard, version-aware page progress with an explicit return-to-saved
@@ -163,7 +169,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  37 passing flows, including the 320–1920px and landscape shell matrix plus
+  38 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the

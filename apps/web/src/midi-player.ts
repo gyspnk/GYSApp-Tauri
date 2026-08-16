@@ -65,6 +65,36 @@ type PendingRequest = {
   timer: number;
 };
 
+/**
+ * Invalidates asynchronous MIDI work whenever the selected song or a render
+ * setting changes. The worker cannot always cancel a render already in WASM,
+ * so callers use this gate to ignore a late result before it can touch the
+ * shared audio session.
+ */
+export class MidiOperationGate {
+  private generation = 0;
+
+  public next(): number {
+    this.generation += 1;
+    return this.generation;
+  }
+
+  public isCurrent(generation: number): boolean {
+    return generation === this.generation;
+  }
+}
+
+class StaleMidiOperation extends Error {
+  public constructor() {
+    super("MIDI operation was superseded");
+    this.name = "StaleMidiOperation";
+  }
+}
+
+function throwIfStale(gate: MidiOperationGate, generation: number): void {
+  if (!gate.isCurrent(generation)) throw new StaleMidiOperation();
+}
+
 function readMidiPreferences(): {
   volume?: number;
   muted?: boolean;
@@ -149,6 +179,7 @@ class BrowserMidiPlayer {
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
   private readonly renderCache = new MidiRenderCache();
+  private readonly operationGate = new MidiOperationGate();
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
@@ -184,8 +215,10 @@ class BrowserMidiPlayer {
     title: string,
     midi: NormalizedMidi,
     options: { rawMidi?: Uint8Array; sourceHash?: string } = {},
-  ): Promise<void> {
+  ): Promise<boolean> {
+    const generation = this.operationGate.next();
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return false;
     const tempo =
       savedMidiPreferences.tempo === undefined && !this.state.songId
         ? Math.round(midi.tempo)
@@ -211,13 +244,16 @@ class BrowserMidiPlayer {
       loadingProgress: 0,
       error: undefined,
     });
+    return true;
   }
 
   public async play(): Promise<void> {
     if (!this.current || !this.state.songId)
       throw new Error("MIDI is not loaded");
+    const generation = this.operationGate.next();
     const audio = this.ensureAudio();
     await audio.resume();
+    if (!this.operationGate.isCurrent(generation)) return;
     const position = Math.min(this.state.position, this.state.duration);
 
     if (this.rawMidi && typeof Worker !== "undefined") {
@@ -228,7 +264,8 @@ class BrowserMidiPlayer {
           loadingProgress: 8,
           error: undefined,
         });
-        const rendered = await this.ensureRendered();
+        const rendered = await this.ensureRendered(generation);
+        throwIfStale(this.operationGate, generation);
         this.startBuffer(rendered.buffer, position);
         this.patch({
           status: "playing",
@@ -241,6 +278,7 @@ class BrowserMidiPlayer {
         this.startTimer();
         return;
       } catch (error) {
+        if (error instanceof StaleMidiOperation) return;
         // A blocked WASM worker should not make an otherwise valid MIDI file
         // unusable.  Keep a clear compatibility backend and continue with the
         // small Web Audio renderer below.
@@ -255,6 +293,7 @@ class BrowserMidiPlayer {
     }
 
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
     this.positionAtStart = position;
     this.startedAt = audio.currentTime;
     this.scheduleOscillator(position);
@@ -264,21 +303,25 @@ class BrowserMidiPlayer {
 
   public async pause(): Promise<void> {
     if (this.state.status !== "playing") return;
+    this.operationGate.next();
     this.updatePositionFromClock();
     await this.stopAudio();
     this.patch({ status: "paused" });
   }
 
   public async stop(): Promise<void> {
+    this.operationGate.next();
     await this.stopAudio();
     if (this.state.songId) this.patch({ status: "stopped", position: 0 });
   }
 
   public async seek(position: number): Promise<void> {
+    const generation = this.operationGate.next();
     const next = Math.max(0, Math.min(this.state.duration, position));
     const playing = this.state.status === "playing";
     if (playing) this.updatePositionFromClock();
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
     this.patch({
       position: next,
       status: playing ? "paused" : this.state.status,
@@ -300,8 +343,10 @@ class BrowserMidiPlayer {
   public async setTempo(tempo: number): Promise<void> {
     const next = Math.max(30, Math.min(220, Math.round(tempo)));
     const wasPlaying = this.state.status === "playing";
+    const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       tempo: next,
@@ -313,8 +358,10 @@ class BrowserMidiPlayer {
   public async setTranspose(transpose: number): Promise<void> {
     const next = Math.max(-24, Math.min(24, Math.trunc(transpose)));
     const wasPlaying = this.state.status === "playing";
+    const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       transpose: next,
@@ -326,8 +373,10 @@ class BrowserMidiPlayer {
   public async setInstrument(instrument: number): Promise<void> {
     const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
     const wasPlaying = this.state.status === "playing";
+    const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       instrument: next,
@@ -337,6 +386,7 @@ class BrowserMidiPlayer {
   }
 
   public destroy(): void {
+    this.operationGate.next();
     void this.stopAudio();
     for (const pending of this.pending.values()) {
       window.clearTimeout(pending.timer);
@@ -367,15 +417,22 @@ class BrowserMidiPlayer {
     return this.audio;
   }
 
-  private async ensureRendered(): Promise<RenderedSong> {
+  private async ensureRendered(generation: number): Promise<RenderedSong> {
     if (!this.rawMidi || !this.audio)
       throw new Error("Raw MIDI bytes are unavailable");
-    const tempoRate =
-      this.state.tempo / Math.max(30, this.current?.tempo ?? 100);
+    const rawMidi = this.rawMidi.slice();
+    const sourceHash = this.sourceHash;
+    const currentTempo = this.current?.tempo ?? 100;
+    const tempo = this.state.tempo;
+    const transpose = this.state.transpose;
     const instrument = this.state.instrument;
-    const key = `${this.sourceHash}:${SOUND_FONT_NAME}:${this.state.tempo}:${this.state.transpose}:${instrument}:${this.audio.sampleRate}`;
+    const audioSampleRate = this.audio.sampleRate;
+    throwIfStale(this.operationGate, generation);
+    const tempoRate = tempo / Math.max(30, currentTempo);
+    const key = `${sourceHash}:${SOUND_FONT_NAME}:${tempo}:${transpose}:${instrument}:${audioSampleRate}`;
     if (this.rendered?.key === key) return this.rendered;
     const cached = await this.renderCache.get(key);
+    throwIfStale(this.operationGate, generation);
     if (cached) {
       const buffer = this.audio.createBuffer(
         2,
@@ -389,19 +446,22 @@ class BrowserMidiPlayer {
       return this.rendered;
     }
     const worker = await this.ensureWorker();
+    throwIfStale(this.operationGate, generation);
     await this.ensureSoundfont(worker);
+    throwIfStale(this.operationGate, generation);
     this.patch({ loadingProgress: 34 });
     const message = await this.request(worker, {
       type: "render",
-      midiBuffer: this.rawMidi.slice().buffer,
-      sampleRate: this.audio.sampleRate,
-      transpose: this.state.transpose,
+      midiBuffer: rawMidi.buffer,
+      sampleRate: audioSampleRate,
+      transpose,
       instrument,
       tempoRate,
     });
+    throwIfStale(this.operationGate, generation);
     if (message.type !== "rendered" || !message.left || !message.right)
       throw new Error(message.error ?? "FluidSynth did not return audio");
-    const sampleRate = message.sampleRate ?? this.audio.sampleRate;
+    const sampleRate = message.sampleRate ?? audioSampleRate;
     const length = Math.min(message.left.length, message.right.length);
     const pcm: RenderedPcm = {
       sampleRate,
@@ -412,6 +472,7 @@ class BrowserMidiPlayer {
     buffer.getChannelData(0).set(pcm.left);
     buffer.getChannelData(1).set(pcm.right);
     await this.renderCache.put(key, pcm);
+    throwIfStale(this.operationGate, generation);
     this.rendered = { key, buffer };
     this.patch({ loadingProgress: 94 });
     return this.rendered;

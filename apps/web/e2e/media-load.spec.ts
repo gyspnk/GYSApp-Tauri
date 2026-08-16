@@ -2,6 +2,30 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", async ({
+  page,
+}) => {
+  const pdfRuntimeRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/pdf\.worker|pdf\.mjs/i.test(request.url()))
+      pdfRuntimeRequests.push(request.url());
+  });
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(
+    page.getByRole("heading", { name: /Pujilah Allah/ }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(250);
+  expect(pdfRuntimeRequests).toEqual([]);
+
+  await page.getByRole("button", { name: "Tampilkan chord" }).click();
+  await expect(
+    page.getByRole("button", { name: "Sembunyikan chord" }),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect
+    .poll(() => pdfRuntimeRequests.length, { timeout: 20_000 })
+    .toBeGreaterThan(0);
+});
+
 test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async ({
   page,
 }) => {

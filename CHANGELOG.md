@@ -2,6 +2,16 @@
 
 ## Unreleased — GA hardening slice
 
+- Guarded asynchronous MIDI load/render operations with a shared generation
+  gate. Superseded worker/WASM results are discarded before they can replace
+  the shell-level player, including during rapid song, seek, stop, tempo,
+  transpose, or instrument changes. The Kidung caller and queue now honor
+  stale-load results, and a focused unit suite covers the operation contract.
+- Lazy-loaded the chord-to-PDF coordinate mapper so normal text-first Kidung
+  navigation does not download PDF.js until chord verification or the PDF
+  reader is actually requested. The route chunk and initial JavaScript budget
+  remain below the release gate while canonical chord/PDF behavior is intact.
+
 - Added a square official-logo mark for the favicon and PWA manifest. Browser
   metadata now resolves under GitHub Pages base paths, declares the actual SVG
   icon shape, and has a runtime regression check for 404s and manifest warnings.

@@ -29,10 +29,7 @@ import {
   transposeBetweenKeys,
   transposeChord,
 } from "./chord-viewer.js";
-import {
-  buildChordPresentationFromPdf,
-  type ChordLayoutPage,
-} from "./chord-layout-pdf.js";
+import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import type { PdfChordOverlayMarker } from "./pdf.js";
 import {
   downloadMusicAsset,
@@ -607,6 +604,11 @@ function HymnDetail({
               pdfSource === "canonical" && pdfBytes
                 ? pdfBytes
                 : await loadMusicAsset(pdfRef);
+            // PDF.js and the coordinate mapper are only needed for a visible
+            // note-aligned chord layer. Keep them outside the Kidung route's
+            // first-load chunk so text-only readers do not pay the PDF cost.
+            const { buildChordPresentationFromPdf } =
+              await import("./chord-layout-pdf.js");
             const presentation = await buildChordPresentationFromPdf(
               canonicalPdf,
               nextDocument.pages,
@@ -735,10 +737,16 @@ function HymnDetail({
         sourceHash: ref.sha256,
         bytes,
       });
-      await midiPlayer.load(item.id, item.title, loaded.midi, {
-        rawMidi: bytes,
-        sourceHash: ref.sha256,
-      });
+      const loadedIntoPlayer = await midiPlayer.load(
+        item.id,
+        item.title,
+        loaded.midi,
+        {
+          rawMidi: bytes,
+          sourceHash: ref.sha256,
+        },
+      );
+      if (!loadedIntoPlayer) return;
       const queueIndex = getMidiPlaylist().items.findIndex(
         (entry) => entry.songId === item.id,
       );

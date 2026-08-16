@@ -65,10 +65,16 @@ async function loadItem(item: MidiPlaylistItem): Promise<void> {
     bytes,
   });
   await speechPlayer.stop();
-  await midiPlayer.load(hymn.id, hymn.title, parsed.midi, {
-    rawMidi: bytes,
-    sourceHash: ref.sha256,
-  });
+  const loadedIntoPlayer = await midiPlayer.load(
+    hymn.id,
+    hymn.title,
+    parsed.midi,
+    {
+      rawMidi: bytes,
+      sourceHash: ref.sha256,
+    },
+  );
+  if (!loadedIntoPlayer) return;
   await midiPlayer.play();
 }
 
