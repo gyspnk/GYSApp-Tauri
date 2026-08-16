@@ -19,7 +19,7 @@ service or platform artifact that cannot be exercised in this workspace.
   native gate (fmt/check/test/clippy) passes.
 - The Dasar Kepercayaan screen has a focused browser flow: list selection
   state, content search, and per-topic note persistence across a reload.
-  The Playwright suite now runs 45 flows.
+  The Playwright suite now runs 46 flows.
 - The pre-push gate now runs `verify:generated` (lock/manifest/catalog
   provenance) and the chord position audit in `--check` mode: the full
   144-file deterministic mapping is recomputed against the immutable
@@ -269,7 +269,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  45 passing flows, including the 320–1920px and landscape shell matrix plus
+  46 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
