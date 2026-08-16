@@ -24,8 +24,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - CI uses one concurrency group per source branch so a push plus its pull
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
-- The initial web application chunk is **84.7 KiB gzip**; the complete initial
-  JavaScript set is **168.4 KiB gzip** in the latest local verification. The
+- The initial web application chunk is **84.9 KiB gzip**; the complete initial
+  JavaScript set is **171.8 KiB gzip** in the latest local verification. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
