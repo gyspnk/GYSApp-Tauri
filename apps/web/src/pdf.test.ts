@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   clampPdfZoom,
+  cleanupPdfPage,
   disposePdfDocument,
   nextPdfPage,
   shouldRenderPdfPage,
@@ -34,5 +35,14 @@ describe("PDF reader controls", () => {
     await expect(disposePdfDocument({ cleanup })).resolves.toBeUndefined();
     expect(cleanup).toHaveBeenCalledOnce();
     await expect(disposePdfDocument(undefined)).resolves.toBeUndefined();
+  });
+
+  it("cleans up a page safely when a stale render resolves after navigation", () => {
+    const cleanup = vi.fn<() => boolean>().mockImplementation(() => {
+      throw new Error("page already detached");
+    });
+
+    expect(() => cleanupPdfPage({ cleanup })).not.toThrow();
+    expect(cleanup).toHaveBeenCalledOnce();
   });
 });

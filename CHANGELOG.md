@@ -23,6 +23,9 @@
   page operator lists are cleaned up on route/song/retry transitions, and both
   hymn and Literature PDF failures keep an explicit in-shell `Coba lagi`
   action. Added browser coverage for the Literature failure path.
+- Added stale PDF.js page cleanup for promises that resolve after navigation or
+  unmount, and bounded the verified TJC cover/media service-worker cache to 96
+  entries so long browsing sessions do not grow local storage without limit.
 - Offline pack updates now have a versioned manifest check/diff flow: changed
   local assets are staged and SHA/size-verified before the active pointer is
   swapped, removed entries are cleaned afterward, and the More screen keeps a

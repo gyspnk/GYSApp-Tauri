@@ -35,6 +35,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Registration is progressive enhancement: reduced webview service-worker
   objects—including an undefined registration result—are guarded and failures
   are recorded without taking down the shell.
+  Cross-origin TJC cover/media responses are restricted to the verified TJC
+  image origin and pruned to a 96-entry bounded cache on activation and use,
+  so normal browsing cannot grow PWA storage without limit; pinned downloads
+  continue through the versioned asset manager.
   The generated asset manifest now inventories bundled music seeds, so
   remote-only MIDI/PDF assets skip known-missing Pages probes before using the
   verified immutable source.

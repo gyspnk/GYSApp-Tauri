@@ -1,5 +1,9 @@
 const CACHE = "gysapp-shell-v10";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
+// Covers are useful offline, but the service worker must not turn a long
+// browsing session into an unbounded disk cache. The verified asset manager
+// remains the source for pinned downloads.
+const MAX_REMOTE_MEDIA_ENTRIES = 96;
 const BASE = self.location.pathname.replace(/sw\.js$/, "");
 const withBase = (path) => `${BASE}${path}`;
 const CORE = [
@@ -39,6 +43,15 @@ async function cacheOptional() {
   );
 }
 
+async function pruneRemoteMediaCache(cache) {
+  const keys = await cache.keys();
+  const stale = keys.slice(
+    0,
+    Math.max(0, keys.length - MAX_REMOTE_MEDIA_ENTRIES),
+  );
+  await Promise.allSettled(stale.map((request) => cache.delete(request)));
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then(async (cache) => {
@@ -64,6 +77,11 @@ self.addEventListener("activate", (event) => {
             .map((key) => caches.delete(key)),
         ),
       )
+      .then(() =>
+        caches
+          .open(REMOTE_MEDIA_CACHE)
+          .then((cache) => pruneRemoteMediaCache(cache)),
+      )
       .then(() => self.clients.claim()),
   );
 });
@@ -85,15 +103,18 @@ self.addEventListener("fetch", (event) => {
     if (!isTjcMedia) return;
     event.respondWith(
       caches.open(REMOTE_MEDIA_CACHE).then((cache) =>
-        cache.match(event.request).then(
-          (cached) =>
-            cached ??
-            fetch(event.request).then((response) => {
-              if (response.ok || response.type === "opaque")
-                void cache.put(event.request, response.clone());
-              return response;
-            }),
-        ),
+        cache.match(event.request).then(async (cached) => {
+          if (cached) {
+            await pruneRemoteMediaCache(cache);
+            return cached;
+          }
+          const response = await fetch(event.request);
+          if (response.ok || response.type === "opaque") {
+            await cache.put(event.request, response.clone());
+            await pruneRemoteMediaCache(cache);
+          }
+          return response;
+        }),
       ),
     );
     return;

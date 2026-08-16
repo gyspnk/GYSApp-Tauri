@@ -108,6 +108,9 @@ service or platform artifact that cannot be exercised in this workspace.
   preload window, keeping long documents bounded in memory. The native Tauri
   CSP explicitly permits only the verified TJC and immutable gyschordweb asset
   origins needed by the app.
+- The PWA service worker now bounds verified TJC cover/media storage to 96
+  entries and prunes the oldest responses on activation and access, keeping
+  offline browsing useful without unbounded disk growth.
 - Literature ebook shelf, category/filter/sort discovery, detail route,
   local favorites, versioned page/scroll progress, deduplicated “Terakhir
   dilihat” resume shelf, PDF.js in-app reader, verified PDF offline cache via

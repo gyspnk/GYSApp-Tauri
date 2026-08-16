@@ -153,7 +153,13 @@ function VerticalPdfPage({
       .getPage(pageNumber)
       .then((nextPage) => {
         pdfPage = nextPage;
-        if (disposed || !canvasRef.current || !hostRef.current) return;
+        if (disposed || !canvasRef.current || !hostRef.current) {
+          // getPage() can resolve after the effect cleanup ran. Release the
+          // page immediately in that race instead of retaining its operator
+          // list until the whole PDF document is destroyed.
+          cleanupPdfPage(nextPage);
+          return;
+        }
         const baseViewport = nextPage.getViewport({ scale: 1 });
         const availableWidth = Math.max(320, hostRef.current.clientWidth - 32);
         const fitScale = availableWidth / baseViewport.width;
@@ -400,6 +406,7 @@ export function PdfReader({
       return;
     let disposed = false;
     const renderTasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
+    const pdfPages: PDFPageProxy[] = [];
     const pageNumbers =
       effectiveLayout === "single"
         ? [page]
@@ -412,7 +419,11 @@ export function PdfReader({
         const pdfPage = await documentProxy.getPage(
           Math.max(1, Math.min(documentProxy.numPages, pageNumber)),
         );
-        if (disposed) return;
+        if (disposed) {
+          cleanupPdfPage(pdfPage);
+          return;
+        }
+        pdfPages.push(pdfPage);
         const viewport = pdfPage.getViewport({ scale: zoom });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
@@ -435,6 +446,7 @@ export function PdfReader({
     return () => {
       disposed = true;
       for (const renderTask of renderTasks) renderTask.cancel();
+      for (const pdfPage of pdfPages) cleanupPdfPage(pdfPage);
       if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
   }, [documentProxy, effectiveLayout, page, zoom]);
