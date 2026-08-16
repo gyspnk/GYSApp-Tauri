@@ -21,13 +21,13 @@ Preview slice reviewable and deployable:
   explicit Web Audio compatibility backend), and the minimized shell player
   exposes seek/volume/mute/tempo/transpose, Media Session, and wake-lock
   controls. MIDI transport, render cache, and playlist state machines remain
-  covered by domain tests; the BFF serves a generated 140-entry chord manifest
+  covered by domain tests; the BFF serves a generated 144-entry chord manifest
   with sanitization and typed report input;
 - Hono Worker route skeleton with origin/CORS/CSRF posture, CSP, rate limiting,
   ETags/cache headers, schema validation, structured errors, auth/profile/report
   boundaries;
 - Tauri 2.11 native shell that passes Windows `cargo check`;
-- generated 533-item hymn catalog, 1,208-entry immutable music lock, TB/TimGM
+- generated 533-item hymn catalog, 1,212-entry immutable music lock, TB/TimGM
   offline binaries, and Playwright smoke coverage.
 
 The feature-parity matrix remains explicit about the next Beta work: real

@@ -85,14 +85,14 @@ const document: ChordDocumentV2 = {
   songId: "hymn-001",
   title: "Pujilah Allah Yang Maha Esa",
   key: "C",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   sourcePath: "assets/chord/001.json",
   verses: [],
 };
 const ref: ChordRef = {
   songId: "hymn-001",
   path: "assets/chord/001.json",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   size: 100,
   sha256: "a".repeat(64),
 };

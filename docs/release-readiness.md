@@ -91,7 +91,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   conservative unmatched-line behavior; a rapid hymn/viewer Playwright flow
   proves the latest route cannot inherit a stale PDF surface.
   The immutable gyschordweb chord source has now been audited against its
-  canonical PDFs: all 140 files and 3191 note-aligned entries resolve to a
+  canonical PDFs: all 144 files and 3291 note-aligned entries resolve to a
   verified PDF note/lyric row, with zero orphan or invalid entries. The report
   is committed at `docs/discovery/chord-position-audit.json` and the generated
   provenance gate rejects a changed lock until the audit is regenerated from

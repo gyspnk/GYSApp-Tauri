@@ -8,7 +8,7 @@ Hono BFF, and Tauri native shell.
 
 The rewrite starts from an empty history. Functional discovery is sourced from
 `ThenGB/GYSAPP-Fork@4f0d39b`; canonical music and assets are sourced from
-`gyspnk/gyschordweb@cbc7d386`. Both upstreams are read-only. Discovery evidence,
+`gyspnk/gyschordweb@a3d1ea7`. Both upstreams are read-only. Discovery evidence,
 provenance, and architectural decisions live in [`docs/`](./docs).
 
 The current Preview/Beta implementation provides typed contracts, a testable

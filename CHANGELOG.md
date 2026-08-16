@@ -2,6 +2,14 @@
 
 ## Unreleased — GA hardening slice
 
+- Advanced the canonical music/chord source from `gyschordweb@cbc7d386` to
+  `gyschordweb@a3d1ea7`, adding the note-aligned chord documents for hymns 356,
+  366, 395, and 432. The immutable music lock grew to 1,212 entries and the BFF
+  chord manifest to 144 references; the deterministic PDF position audit now
+  covers all 144 files / 3,291 entries with zero orphan or invalid mappings,
+  and every derived manifest, provenance gate, and living document was
+  regenerated and re-verified.
+
 - Added a reproducible manual Windows release workflow with the pinned Tauri
   2.11 CLI. It builds the web shell, verifies generated provenance/docs, emits
   NSIS/MSI installers plus commit provenance, and can sign both packages with a

@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-16T06:35:49.790Z",
+  "generatedAt": "2026-08-16T13:49:52.536Z",
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "cbc7d386",
+  "sourceCommit": "a3d1ea7",
   "lockPath": "packages/contracts/generated/chord-manifest.json",
   "musicLockPath": "apps/web/public/offline/music-lock.json",
-  "chordCount": 140,
+  "chordCount": 144,
   "totals": {
-    "pdfPages": 158,
-    "auditedPages": 158,
-    "chordEntries": 3191,
-    "mappedEntries": 3191,
+    "pdfPages": 163,
+    "auditedPages": 163,
+    "chordEntries": 3291,
+    "mappedEntries": 3291,
     "orphanEntries": 0,
     "sentinelEntries": 2,
     "invalidEntries": 0
@@ -5528,6 +5528,79 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-356",
+      "chordPath": "assets/chord/356_Imanlah Kemenangan.chord.json",
+      "chordBytes": 2165,
+      "chordSha256": "2bcf382db9e4725f96677f0c216297fb15fdcab4057be25fb495b333237dc6d5",
+      "pdfPath": "assets/pdf/356_Imanlah Kemenangan.pdf",
+      "pdfBytes": 24321,
+      "pdfSha256": "c5f3ca1da0d7d78d1f743be6d83a91675fa0b1c8477deb8b98a8703bc7dd5645",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 388,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G#",
+              "position": 0.1079
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D#",
+              "position": 0.3953
+            },
+            {
+              "noteIdx": 13,
+              "chord": "A#m",
+              "position": 0.6828
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 188,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 10,
+          "mappedEntries": 10,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0073
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A#m",
+              "position": 0.2859
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#",
+              "position": 0.557
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 33,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-358",
       "chordPath": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
       "chordBytes": 1828,
@@ -5568,6 +5641,51 @@
         }
       ],
       "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-366",
+      "chordPath": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
+      "chordBytes": 1768,
+      "chordSha256": "94c746042874a3c24285e49b15a725ebd34596814fa7a42e010db616d848d72b",
+      "pdfPath": "assets/pdf/366_Berimanlah Kepada Tuhan.pdf",
+      "pdfBytes": 13388,
+      "pdfSha256": "2cfac25cc047bd8641dd28dcccc32ea199d004b1d51d05519a952765b1511fa5",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 354,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0426
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3056
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#",
+              "position": 0.4336
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -5866,6 +5984,51 @@
         }
       ],
       "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-395",
+      "chordPath": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
+      "chordBytes": 1065,
+      "chordSha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585",
+      "pdfPath": "assets/pdf/395_Di Tempat yang Lebih Tinggi.pdf",
+      "pdfBytes": 10971,
+      "pdfSha256": "92b00a36faa473cd284c3341fcc6e1207dc61fb8d772df08e5f9500248e9f592",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 312,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "F",
+              "position": 0.1947
+            },
+            {
+              "noteIdx": 8,
+              "chord": "A#",
+              "position": 0.4607
+            },
+            {
+              "noteIdx": 13,
+              "chord": "F",
+              "position": 0.7267
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -6175,6 +6338,51 @@
         }
       ],
       "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-432",
+      "chordPath": "assets/chord/432_Pengertian Yang Mendalam.chord.json",
+      "chordBytes": 1579,
+      "chordSha256": "f06fabe179b6f4de5324a997d5269d629a3c89f7a33fcb1f40487c9bee713432",
+      "pdfPath": "assets/pdf/432_Pengertian Yang Mendalam.pdf",
+      "pdfBytes": 13074,
+      "pdfSha256": "b0ecc5bdcd973c6c266580bfc0f8e643862d3228bd5ab90526a91317672846be",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 20,
+          "lyricRows": 14,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A#",
+              "position": 0
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F",
+              "position": 0.2224
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F#dim",
+              "position": 0.362
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0

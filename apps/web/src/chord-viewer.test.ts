@@ -29,7 +29,7 @@ describe("shared chord capability", () => {
       songId: "hymn-001",
       title: "Test",
       key: "C",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       sourcePath: "assets/chord/test.json",
       verses: [
         {
@@ -54,7 +54,7 @@ describe("shared chord capability", () => {
       songId: "hymn-002",
       title: "One to one",
       key: "G",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       sourcePath: "assets/chord/test.json",
       verses: [
         {
@@ -87,7 +87,7 @@ describe("shared chord capability", () => {
       songId: "hymn-003",
       title: "Conservative matching",
       key: "C",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       sourcePath: "assets/chord/test.json",
       verses: [
         {
@@ -116,7 +116,7 @@ describe("shared chord capability", () => {
       songId: "hymn-004",
       title: "Canonical labels",
       key: "C",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       sourcePath: "assets/chord/test.json",
       verses: [
         {

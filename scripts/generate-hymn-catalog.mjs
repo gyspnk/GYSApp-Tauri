@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
 const sourceRoot = process.env.GYSCHORDWEB_SNAPSHOT;
-const sourceCommit = process.env.GYSCHORDWEB_COMMIT ?? "cbc7d386";
+const sourceCommit = process.env.GYSCHORDWEB_COMMIT ?? "a3d1ea7";
 if (!sourceRoot)
   throw new Error(
     "Set GYSCHORDWEB_SNAPSHOT to an immutable gyschordweb snapshot.",

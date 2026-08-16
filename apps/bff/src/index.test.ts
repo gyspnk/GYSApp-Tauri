@@ -4,7 +4,7 @@ import { createApp } from "./index.js";
 const manifest = {
   version: 1 as const,
   sourceRepo: "gyspnk/gyschordweb",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   generatedAt: "2026-08-14T00:00:00.000Z",
   entries: [],
 };
@@ -247,12 +247,12 @@ describe("BFF public boundary", () => {
         content: [],
       });
       const denied = await app.request(
-        `/api/v1/content/music?commit=cbc7d386&path=${encodeURIComponent("https://evil.example/file.mid")}`,
+        `/api/v1/content/music?commit=a3d1ea7&path=${encodeURIComponent("https://evil.example/file.mid")}`,
         { headers: { Origin: "http://localhost:5173" } },
       );
       expect(denied.status).toBe(403);
       const response = await app.request(
-        `/api/v1/content/music?commit=cbc7d386&path=${encodeURIComponent("assets/midi/001_demo.mid")}`,
+        `/api/v1/content/music?commit=a3d1ea7&path=${encodeURIComponent("assets/midi/001_demo.mid")}`,
         { headers: { Origin: "http://localhost:5173", range: "bytes=0-3" } },
       );
       expect(response.status).toBe(200);
@@ -340,9 +340,9 @@ describe("BFF public boundary", () => {
       headers: { Origin: "http://localhost:5173" },
     });
     expect(response.status).toBe(200);
-    expect(response.headers.get("etag")).toContain("cbc7d386");
+    expect(response.headers.get("etag")).toContain("a3d1ea7");
     const payload = (await response.json()) as { sourceCommit: string };
-    expect(payload.sourceCommit).toBe("cbc7d386");
+    expect(payload.sourceCommit).toBe("a3d1ea7");
   });
 
   it("exposes verified e-GYS OpenAPI provenance without proxying the document", async () => {

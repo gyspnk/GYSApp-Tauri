@@ -261,6 +261,18 @@ service or platform artifact that cannot be exercised in this workspace.
   member permissions, while remaining compatible with older deployments that
   omit those fields.
 
+## Done & Verified
+
+- The canonical music/chord source is now pinned at `gyschordweb@a3d1ea7`,
+  adding note-aligned chord documents for hymns 356, 366, 395, and 432. The
+  immutable music lock grew to 1,212 entries (from 1,208) and the BFF chord
+  manifest to 144 references (from 140); the deterministic PDF position audit
+  covers all 144 files / 3,291 entries with zero orphan or invalid mappings.
+  Every derived manifest (lock, chord manifest, hymn catalog, offline pack,
+  asset manifest, position audit) was regenerated from the immutable snapshot,
+  all provenance gates were updated, and lint, typecheck, and the full unit
+  suite pass.
+
 ## Implemented / Needs Verification
 
 - Live e-GYS OAuth/session/profile requires protected Worker configuration and

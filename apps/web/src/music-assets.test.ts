@@ -5,7 +5,7 @@ describe("music asset path resolution", () => {
   it("resolves upstream filename whitespace and suffixed hymn keys", () => {
     const lock = {
       sourceRepo: "gyspnk/gyschordweb",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       generatedAt: "2026-08-14T00:00:00.000Z",
       items: [
         {

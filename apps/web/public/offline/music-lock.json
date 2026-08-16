@@ -1,7 +1,7 @@
 {
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "cbc7d386",
-  "generatedAt": "2026-08-14T05:13:15.245Z",
+  "sourceCommit": "a3d1ea7",
+  "generatedAt": "2026-08-16T13:54:48.918Z",
   "items": [
     {
       "id": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -8271,11 +8271,25 @@
       "sha256": "6f30150324880b0ff0d8bf5ea2a66cb84101e518059ef0f4e4468db4dfe281ee"
     },
     {
+      "id": "assets/chord/356_Imanlah Kemenangan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/356_Imanlah Kemenangan.chord.json",
+      "size": 2165,
+      "sha256": "2bcf382db9e4725f96677f0c216297fb15fdcab4057be25fb495b333237dc6d5"
+    },
+    {
       "id": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
       "kind": "chord",
       "path": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
       "size": 1828,
       "sha256": "ef22c12ffc0d200ffce0513f0c0343db75cd666c0da7239cfb1fce1fc8b04bac"
+    },
+    {
+      "id": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
+      "size": 1768,
+      "sha256": "94c746042874a3c24285e49b15a725ebd34596814fa7a42e010db616d848d72b"
     },
     {
       "id": "assets/chord/368_Ku Tahu Siapa Pegang Hari Esok.chord.json",
@@ -8320,6 +8334,13 @@
       "sha256": "d54a735913897b639dcb90f2d8d320787c2a7afcc69a3404ac6d9d7bfa58e9c5"
     },
     {
+      "id": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
+      "size": 1065,
+      "sha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585"
+    },
+    {
       "id": "assets/chord/405_Berdoakah Engkau_.chord.json",
       "kind": "chord",
       "path": "assets/chord/405_Berdoakah Engkau_.chord.json",
@@ -8353,6 +8374,13 @@
       "path": "assets/chord/422_Beritakan KasihNya.chord.json",
       "size": 1398,
       "sha256": "4265e45a09029a5080b77c4a29a070bdb083a63319fccb14a668286e1624fa9a"
+    },
+    {
+      "id": "assets/chord/432_Pengertian Yang Mendalam.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/432_Pengertian Yang Mendalam.chord.json",
+      "size": 1579,
+      "sha256": "f06fabe179b6f4de5324a997d5269d629a3c89f7a33fcb1f40487c9bee713432"
     },
     {
       "id": "assets/chord/433_Damai Nan Ajaib.chord.json",

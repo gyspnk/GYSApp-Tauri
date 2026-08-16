@@ -13,14 +13,14 @@ import {
 const ref: ChordRef = {
   songId: "hymn-001",
   path: "assets/chords/001.json",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   size: 83,
   sha256: "a".repeat(64),
 };
 const manifest: ChordManifestV1 = {
   version: 1,
   sourceRepo: "gyspnk/gyschordweb",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   generatedAt: "2026-08-14T00:00:00.000Z",
   entries: [ref],
 };
@@ -29,7 +29,7 @@ const document: ChordDocumentV2 = {
   songId: "hymn-001",
   title: "Kasih Setia-Mu",
   key: "C",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   sourcePath: ref.path,
   verses: [],
 };
@@ -109,7 +109,7 @@ describe("ChordRepository", () => {
         calls += 1;
         return etag
           ? { notModified: true, etag }
-          : { manifest, etag: 'W/"cbc7d386"' };
+          : { manifest, etag: 'W/"a3d1ea7"' };
       },
       fetchChord: async () => ({ bytes: bytesFor(document), document }),
     };

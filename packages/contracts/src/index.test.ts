@@ -24,7 +24,7 @@ describe("public contracts", () => {
   it("accepts an immutable upstream music lock with hashed items", () => {
     const result = UpstreamMusicLockSchema.safeParse({
       sourceRepo: "gyspnk/gyschordweb",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       generatedAt: "2026-08-14T00:00:00.000Z",
       items: [
         {
@@ -43,7 +43,7 @@ describe("public contracts", () => {
   it("rejects a lock item with a non-sha256 digest", () => {
     const result = UpstreamMusicLockSchema.safeParse({
       sourceRepo: "gyspnk/gyschordweb",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       generatedAt: "2026-08-14T00:00:00.000Z",
       items: [{ id: "x", kind: "pdf", path: "x.pdf", size: 1, sha256: "bad" }],
     });
@@ -57,7 +57,7 @@ describe("public contracts", () => {
       songId: "hymn-001",
       title: "Kasih Setia-Mu",
       key: "C",
-      sourceCommit: "cbc7d386",
+      sourceCommit: "a3d1ea7",
       sourcePath: "assets/chords/001.json",
       verses: [
         {

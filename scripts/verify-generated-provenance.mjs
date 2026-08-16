@@ -25,14 +25,11 @@ const sourceField = (field, value) =>
   forkPdfSource.includes(`${field}: ${value}`) ||
   forkPdfSource.includes(`"${field}": ${value}`);
 
-if (
-  lock.sourceRepo !== "gyspnk/gyschordweb" ||
-  lock.sourceCommit !== "cbc7d386"
-)
+if (lock.sourceRepo !== "gyspnk/gyschordweb" || lock.sourceCommit !== "a3d1ea7")
   throw new Error("music lock provenance drifted");
-if (lock.items.length !== 1208)
-  throw new Error(`expected 1208 music entries, got ${lock.items.length}`);
-if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 140)
+if (lock.items.length !== 1212)
+  throw new Error(`expected 1212 music entries, got ${lock.items.length}`);
+if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 144)
   throw new Error("chord manifest drifted from music lock");
 if (
   chordAudit.version !== 1 ||

@@ -10,7 +10,7 @@ import {
 const ref: ChordRef = {
   songId: "hymn-001",
   path: "assets/chords/001.json",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   size: 10,
   sha256: "a".repeat(64),
 };
@@ -20,7 +20,7 @@ const document: ChordDocumentV2 = {
   songId: "hymn-001",
   title: "Kasih Setia-Mu",
   key: "C",
-  sourceCommit: "cbc7d386",
+  sourceCommit: "a3d1ea7",
   sourcePath: ref.path,
   verses: [],
 };
