@@ -86,6 +86,11 @@ service or platform artifact that cannot be exercised in this workspace.
   are backfilled from Cache Storage when needed, so verified chord/document
   data survives reloads even when an embedded webview cannot expose Cache
   Storage reliably.
+- Reset and cache maintenance now reaches every durable app-owned store: the
+  browser clears both IndexedDB object stores plus GYS service-worker caches,
+  while Tauri removes only the versioned key-value/blob directories. The
+  reset boundary is unit-tested and reports diagnostics on restricted-storage
+  failures rather than claiming data was removed.
 - MIDI asynchronous work now carries a generation guard across song loads,
   FluidSynth worker startup/render, seek, stop, and instrument/tempo/transpose
   changes. A late worker result is ignored before it can replace the shared

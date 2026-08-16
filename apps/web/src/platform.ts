@@ -45,6 +45,88 @@ function openPlatformDatabase(): Promise<IDBDatabase | undefined> {
   return platformDbPromise;
 }
 
+/**
+ * Clear the browser-owned durable stores used by the application.
+ *
+ * The reset action is deliberately explicit instead of deleting the whole
+ * IndexedDB database: a connection may be open in another component and a
+ * blocked `deleteDatabase()` would make the UI claim success while leaving
+ * verified PDF/chord/MIDI bytes behind. Clearing both object stores in one
+ * transaction gives reset a deterministic, recoverable boundary.
+ */
+export async function clearBrowserPlatformStorage(): Promise<void> {
+  const db = await openPlatformDatabase();
+  let resetError: unknown;
+  if (db) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        try {
+          const transaction = db.transaction(
+            [PLATFORM_STORE, PLATFORM_BLOB_STORE],
+            "readwrite",
+          );
+          transaction.objectStore(PLATFORM_STORE).clear();
+          transaction.objectStore(PLATFORM_BLOB_STORE).clear();
+          transaction.oncomplete = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+          };
+          transaction.onerror = () => {
+            if (settled) return;
+            settled = true;
+            reject(transaction.error ?? new Error("IndexedDB reset failed"));
+          };
+          transaction.onabort = () => {
+            if (settled) return;
+            settled = true;
+            reject(new Error("IndexedDB reset was aborted"));
+          };
+        } catch (error) {
+          if (settled) return;
+          settled = true;
+          reject(error);
+        }
+      });
+    } catch (error) {
+      resetError = error;
+    }
+  }
+
+  try {
+    if ("caches" in globalThis) {
+      const names = await caches.keys();
+      await Promise.all(
+        names
+          .filter(
+            (name) =>
+              name.startsWith("gys-") ||
+              name.startsWith("gysapp-") ||
+              name.startsWith("gys-midi-"),
+          )
+          .map((name) => caches.delete(name)),
+      );
+    }
+  } catch (error) {
+    resetError ??= error;
+  }
+
+  if (resetError) {
+    throw resetError;
+  }
+}
+
+/** Reset the same app-data boundary on PWA and Tauri builds. */
+export async function clearPlatformStorage(): Promise<void> {
+  const invoke = getTauriInvoke();
+  if (invoke) {
+    await invoke("platform_clear_data");
+    return;
+  }
+  await clearBrowserPlatformStorage();
+}
+
 class BrowserKeyValueStore implements KeyValueStore {
   private openDatabase(): Promise<IDBDatabase | undefined> {
     return openPlatformDatabase();

@@ -33,6 +33,7 @@ pub fn run() {
             blob_get,
             blob_put_atomic,
             blob_remove,
+            platform_clear_data,
             open_external
         ])
         .run(tauri::generate_context!())
@@ -143,6 +144,23 @@ fn blob_remove(app: AppHandle, key: String) -> Result<(), String> {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(_) => Err("native blob remove failed".to_owned()),
     }
+}
+
+/// Reset only GYS-owned preferences and verified binary blobs. The parent
+/// app-data directory may contain future platform metadata, so remove the two
+/// versioned stores rather than recursively deleting the whole directory.
+#[tauri::command]
+fn platform_clear_data(app: AppHandle) -> Result<(), String> {
+    let root = app_data_dir(&app)?;
+    for directory in ["key-value", "blobs"] {
+        let path = root.join(directory);
+        match fs::remove_dir_all(path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(_) => return Err("native app-data reset failed".to_owned()),
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]

@@ -37,6 +37,7 @@ import {
 import { Select } from "./select.js";
 import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { clearPlatformStorage } from "./platform.js";
 
 type PackManifest = {
   version: number;
@@ -142,13 +143,12 @@ async function clearAppData() {
   for (const key of Object.keys(localStorage)) {
     if (key.startsWith("gys-")) localStorage.removeItem(key);
   }
-  if ("caches" in window) {
-    const names = await caches.keys();
-    await Promise.all(
-      names
-        .filter((name) => name.startsWith("gys-"))
-        .map((name) => caches.delete(name)),
-    );
+  try {
+    await clearPlatformStorage();
+  } catch (error) {
+    // A private browser or a native storage permission failure should not
+    // leave the reset action in a rejected promise with no user feedback.
+    recordDiagnostic("warn", "storage.reset", error);
   }
 }
 

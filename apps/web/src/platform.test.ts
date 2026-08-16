@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createBrowserPlatformServices } from "./platform.js";
+import {
+  clearBrowserPlatformStorage,
+  createBrowserPlatformServices,
+} from "./platform.js";
 
 describe("browser platform binary boundary", () => {
   it("keeps an atomic blob independent from the caller's mutable buffer", async () => {
@@ -14,5 +17,9 @@ describe("browser platform binary boundary", () => {
     );
     await services.blobs.remove("chord/demo");
     await expect(services.blobs.get("chord/demo")).resolves.toBeUndefined();
+  });
+
+  it("exposes a safe reset boundary even when IndexedDB and Cache Storage are unavailable", async () => {
+    await expect(clearBrowserPlatformStorage()).resolves.toBeUndefined();
   });
 });
