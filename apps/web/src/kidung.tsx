@@ -362,6 +362,7 @@ function HymnDetail({
   const chordRun = useRef(0);
   const chordAbort = useRef<AbortController | undefined>(undefined);
   const pdfRun = useRef(0);
+  const preloadRun = useRef(0);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const lyricsRef = useRef<HTMLElement>(null);
@@ -415,6 +416,7 @@ function HymnDetail({
       chordRun.current += 1;
       chordAbort.current?.abort();
       pdfRun.current += 1;
+      preloadRun.current += 1;
     },
     [],
   );
@@ -437,15 +439,49 @@ function HymnDetail({
       }
     ).connection;
     if (connection?.saveData || connection?.effectiveType === "2g") return;
+    const run = ++preloadRun.current;
     const candidates = [prev, next].filter(
       (candidate): candidate is HymnCatalogEntry => Boolean(candidate),
     );
     for (const candidate of candidates) {
       void chordRepository.getChord(candidate.id).catch(() => undefined);
       const ref = findMusicAsset(musicLock, "midi", candidate.midiPath);
-      void prefetchMusicAsset(ref);
+      if (!ref) continue;
+      if (candidate.id !== next?.id) {
+        void prefetchMusicAsset(ref);
+        continue;
+      }
+      // The next song gets the complete warm path: binary -> parser -> PCM.
+      // MidiLoader and loadMusicAsset both deduplicate by immutable hash, so
+      // this never creates a second network request when the user taps play.
+      void (async () => {
+        try {
+          const bytes = await loadMusicAsset(ref);
+          if (run !== preloadRun.current) return;
+          const loaded = await midiLoader.load({
+            id: candidate.id,
+            url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`,
+            sourceHash: ref.sha256,
+            bytes,
+          });
+          if (run !== preloadRun.current) return;
+          await midiPlayer.preload({
+            songId: candidate.id,
+            title: candidate.title,
+            midi: loaded.midi,
+            rawMidi: bytes,
+            sourceHash: ref.sha256,
+          });
+        } catch {
+          // Neighbor warm-up is an opportunistic optimisation. The foreground
+          // load still reports the actionable error if the user selects it.
+        }
+      })();
     }
-  }, [chordRepository, item, musicLock, next, prev]);
+    return () => {
+      if (preloadRun.current === run) preloadRun.current += 1;
+    };
+  }, [chordRepository, item, midiLoader, musicLock, next, prev]);
   useEffect(() => {
     if (!item || autoLoadedSong.current === item.id) return;
     autoLoadedSong.current = item.id;

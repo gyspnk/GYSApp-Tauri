@@ -159,6 +159,111 @@ const SOUND_FONT_NAME = "TimGM6mb (offline)";
 const SOUND_FONT_CACHE = "gys-midi-soundfont-v1";
 const SOUND_FONT_PATH = "offline/soundfont/TimGM6mb.sf2";
 
+export type MidiPreloadRequest = {
+  songId: string;
+  title?: string;
+  midi: NormalizedMidi;
+  rawMidi: Uint8Array;
+  sourceHash: string;
+  /** Target playback tempo. Defaults to the current player setting. */
+  tempo?: number;
+  /** Shared transpose setting. Defaults to the current player setting. */
+  transpose?: number;
+  /** GM program override, or -1 to keep embedded programs. */
+  instrument?: number;
+};
+
+export type MidiPreloadStats = {
+  queued: number;
+  inFlight: number;
+};
+
+/**
+ * The render key is deliberately public so diagnostics and tests can prove
+ * that a PCM buffer can never be reused across incompatible settings.
+ */
+export function midiRenderKey(
+  sourceHash: string,
+  tempo: number,
+  transpose: number,
+  instrument: number,
+  sampleRate = 44_100,
+): string {
+  return `${sourceHash}:${SOUND_FONT_NAME}:${tempo}:${transpose}:${instrument}:${sampleRate}`;
+}
+
+type PreloadRecord = {
+  run: () => Promise<boolean>;
+  resolve: (value: boolean) => void;
+};
+
+/** A small serial queue used to keep WASM rendering predictable on mobile. */
+export class MidiPreloadQueue {
+  private readonly queued = new Map<string, PreloadRecord>();
+  private readonly promises = new Map<string, Promise<boolean>>();
+  private running = 0;
+  private draining = false;
+  private readonly concurrency: number;
+
+  public constructor(concurrency = 1) {
+    this.concurrency = Math.max(1, Math.trunc(concurrency));
+  }
+
+  public enqueue(key: string, run: () => Promise<boolean>): Promise<boolean> {
+    const existing = this.promises.get(key);
+    if (existing) return existing;
+    let resolvePromise: (value: boolean) => void = () => undefined;
+    const promise = new Promise<boolean>((resolve) => {
+      resolvePromise = resolve;
+    });
+    this.promises.set(key, promise);
+    this.queued.set(key, { run, resolve: resolvePromise });
+    void this.drain();
+    return promise;
+  }
+
+  /** Drops work that has not reached the worker yet. Active work is shared. */
+  public clear(): void {
+    for (const [key, record] of this.queued) {
+      record.resolve(false);
+      this.promises.delete(key);
+    }
+    this.queued.clear();
+  }
+
+  public stats(): MidiPreloadStats {
+    return { queued: this.queued.size, inFlight: this.running };
+  }
+
+  private async drain(): Promise<void> {
+    if (this.draining) return;
+    this.draining = true;
+    try {
+      while (this.running < this.concurrency && this.queued.size > 0) {
+        const next = this.queued.entries().next().value as
+          [string, PreloadRecord] | undefined;
+        if (!next) break;
+        const [key, record] = next;
+        this.queued.delete(key);
+        this.running += 1;
+        void record
+          .run()
+          .then(
+            (value) => record.resolve(value),
+            () => record.resolve(false),
+          )
+          .finally(() => {
+            this.running -= 1;
+            this.promises.delete(key);
+            void this.drain();
+          });
+      }
+    } finally {
+      this.draining = false;
+    }
+  }
+}
+
 class BrowserMidiPlayer {
   private current: NormalizedMidi | undefined;
   private rawMidi: Uint8Array | undefined;
@@ -179,6 +284,9 @@ class BrowserMidiPlayer {
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
   private readonly renderCache = new MidiRenderCache();
+  private readonly renderInFlight = new Map<string, Promise<RenderedPcm>>();
+  private readonly preloadQueue = new MidiPreloadQueue();
+  private preloadGeneration = 0;
   private readonly operationGate = new MidiOperationGate();
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
@@ -216,6 +324,7 @@ class BrowserMidiPlayer {
     midi: NormalizedMidi,
     options: { rawMidi?: Uint8Array; sourceHash?: string } = {},
   ): Promise<boolean> {
+    this.cancelPreloads();
     const generation = this.operationGate.next();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
@@ -343,6 +452,7 @@ class BrowserMidiPlayer {
   public async setTempo(tempo: number): Promise<void> {
     const next = Math.max(30, Math.min(220, Math.round(tempo)));
     const wasPlaying = this.state.status === "playing";
+    this.cancelPreloads();
     const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
@@ -358,6 +468,7 @@ class BrowserMidiPlayer {
   public async setTranspose(transpose: number): Promise<void> {
     const next = Math.max(-24, Math.min(24, Math.trunc(transpose)));
     const wasPlaying = this.state.status === "playing";
+    this.cancelPreloads();
     const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
@@ -373,6 +484,7 @@ class BrowserMidiPlayer {
   public async setInstrument(instrument: number): Promise<void> {
     const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
     const wasPlaying = this.state.status === "playing";
+    this.cancelPreloads();
     const generation = this.operationGate.next();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
@@ -386,6 +498,7 @@ class BrowserMidiPlayer {
   }
 
   public destroy(): void {
+    this.cancelPreloads();
     this.operationGate.next();
     void this.stopAudio();
     for (const pending of this.pending.values()) {
@@ -398,6 +511,76 @@ class BrowserMidiPlayer {
     this.workerReady = undefined;
     void this.audio?.close();
     this.audio = undefined;
+  }
+
+  /**
+   * Render a neighbouring song into the bounded PCM cache without changing
+   * the current song, position, or React-facing player snapshot. The request
+   * is serialised because two FluidSynth renders at once are substantially
+   * more expensive on phones and can trigger memory pressure.
+   */
+  public async preload(request: MidiPreloadRequest): Promise<boolean> {
+    if (
+      typeof window === "undefined" ||
+      typeof Worker === "undefined" ||
+      !request.sourceHash ||
+      request.rawMidi.byteLength === 0
+    )
+      return false;
+    const tempo = clampTempo(request.tempo ?? this.state.tempo);
+    const transpose = clampTranspose(request.transpose ?? this.state.transpose);
+    const instrument = clampInstrument(
+      request.instrument ?? this.state.instrument,
+    );
+    const sampleRate = this.audio?.sampleRate ?? 44_100;
+    const key = midiRenderKey(
+      request.sourceHash,
+      tempo,
+      transpose,
+      instrument,
+      sampleRate,
+    );
+    if (await this.renderCache.get(key)) return true;
+    const generation = this.preloadGeneration;
+    return this.preloadQueue.enqueue(key, async () => {
+      if (generation !== this.preloadGeneration) return false;
+      try {
+        await this.renderPcm({
+          rawMidi: request.rawMidi,
+          sourceHash: request.sourceHash,
+          sourceTempo: request.midi.tempo,
+          tempo,
+          transpose,
+          instrument,
+          sampleRate,
+          announceProgress: false,
+        });
+        return true;
+      } catch (error) {
+        const context = [request.songId, request.title]
+          .filter(Boolean)
+          .join(" · ");
+        recordDiagnostic(
+          "info",
+          "midi.preload",
+          new Error(
+            `${context || "neighbour"}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          ),
+        );
+        return false;
+      }
+    });
+  }
+
+  public preloadStats(): MidiPreloadStats {
+    return this.preloadQueue.stats();
+  }
+
+  private cancelPreloads(): void {
+    this.preloadGeneration += 1;
+    this.preloadQueue.clear();
   }
 
   private ensureAudio(): AudioContext {
@@ -428,54 +611,90 @@ class BrowserMidiPlayer {
     const instrument = this.state.instrument;
     const audioSampleRate = this.audio.sampleRate;
     throwIfStale(this.operationGate, generation);
-    const tempoRate = tempo / Math.max(30, currentTempo);
-    const key = `${sourceHash}:${SOUND_FONT_NAME}:${tempo}:${transpose}:${instrument}:${audioSampleRate}`;
-    if (this.rendered?.key === key) return this.rendered;
-    const cached = await this.renderCache.get(key);
-    throwIfStale(this.operationGate, generation);
-    if (cached) {
-      const buffer = this.audio.createBuffer(
-        2,
-        cached.left.length,
-        cached.sampleRate,
-      );
-      buffer.getChannelData(0).set(cached.left);
-      buffer.getChannelData(1).set(cached.right);
-      this.rendered = { key, buffer };
-      this.patch({ loadingProgress: 94 });
-      return this.rendered;
-    }
-    const worker = await this.ensureWorker();
-    throwIfStale(this.operationGate, generation);
-    await this.ensureSoundfont(worker);
-    throwIfStale(this.operationGate, generation);
-    this.patch({ loadingProgress: 34 });
-    const message = await this.request(worker, {
-      type: "render",
-      midiBuffer: rawMidi.buffer,
-      sampleRate: audioSampleRate,
+    const key = midiRenderKey(
+      sourceHash,
+      tempo,
       transpose,
       instrument,
-      tempoRate,
+      audioSampleRate,
+    );
+    if (this.rendered?.key === key) return this.rendered;
+    this.patch({ loadingProgress: 34 });
+    const pcm = await this.renderPcm({
+      rawMidi,
+      sourceHash,
+      sourceTempo: currentTempo,
+      tempo,
+      transpose,
+      instrument,
+      sampleRate: audioSampleRate,
+      announceProgress: true,
     });
     throwIfStale(this.operationGate, generation);
-    if (message.type !== "rendered" || !message.left || !message.right)
-      throw new Error(message.error ?? "FluidSynth did not return audio");
-    const sampleRate = message.sampleRate ?? audioSampleRate;
-    const length = Math.min(message.left.length, message.right.length);
-    const pcm: RenderedPcm = {
-      sampleRate,
-      left: message.left.slice(0, length),
-      right: message.right.slice(0, length),
-    };
-    const buffer = this.audio.createBuffer(2, length, sampleRate);
+    const buffer = this.audio.createBuffer(2, pcm.left.length, pcm.sampleRate);
     buffer.getChannelData(0).set(pcm.left);
     buffer.getChannelData(1).set(pcm.right);
-    await this.renderCache.put(key, pcm);
-    throwIfStale(this.operationGate, generation);
     this.rendered = { key, buffer };
     this.patch({ loadingProgress: 94 });
     return this.rendered;
+  }
+
+  private async renderPcm(options: {
+    rawMidi: Uint8Array;
+    sourceHash: string;
+    sourceTempo: number;
+    tempo: number;
+    transpose: number;
+    instrument: number;
+    sampleRate: number;
+    announceProgress: boolean;
+  }): Promise<RenderedPcm> {
+    const key = midiRenderKey(
+      options.sourceHash,
+      options.tempo,
+      options.transpose,
+      options.instrument,
+      options.sampleRate,
+    );
+    const cached = await this.renderCache.get(key);
+    if (cached) return cached;
+    const existing = this.renderInFlight.get(key);
+    if (existing) return existing;
+    const request = (async () => {
+      const secondCheck = await this.renderCache.get(key);
+      if (secondCheck) return secondCheck;
+      const worker = await this.ensureWorker();
+      await this.ensureSoundfont(worker, options.announceProgress);
+      if (options.announceProgress) this.patch({ loadingProgress: 34 });
+      const tempoRate = options.tempo / Math.max(30, options.sourceTempo);
+      const message = await this.request(worker, {
+        type: "render",
+        // The worker owns this copy; never transfer the caller's cache bytes.
+        midiBuffer: options.rawMidi.slice().buffer,
+        sampleRate: options.sampleRate,
+        transpose: options.transpose,
+        instrument: options.instrument,
+        tempoRate,
+      });
+      if (message.type !== "rendered" || !message.left || !message.right)
+        throw new Error(message.error ?? "FluidSynth did not return audio");
+      const sampleRate = message.sampleRate ?? options.sampleRate;
+      const length = Math.min(message.left.length, message.right.length);
+      const pcm: RenderedPcm = {
+        sampleRate,
+        left: message.left.slice(0, length),
+        right: message.right.slice(0, length),
+      };
+      await this.renderCache.put(key, pcm);
+      return pcm;
+    })();
+    this.renderInFlight.set(key, request);
+    try {
+      return await request;
+    } finally {
+      if (this.renderInFlight.get(key) === request)
+        this.renderInFlight.delete(key);
+    }
   }
 
   private async ensureWorker(): Promise<Worker> {
@@ -545,7 +764,10 @@ class BrowserMidiPlayer {
     return this.worker;
   }
 
-  private async ensureSoundfont(worker: Worker): Promise<void> {
+  private async ensureSoundfont(
+    worker: Worker,
+    announceProgress = true,
+  ): Promise<void> {
     if (this.soundfontRequest && this.soundfontWorker === worker)
       return this.soundfontRequest;
     this.soundfontWorker = worker;
@@ -582,7 +804,8 @@ class BrowserMidiPlayer {
         if (this.soundfont.byteLength < 1_000_000)
           throw new Error("TimGM SoundFont is incomplete");
       }
-      this.patch({ loadingProgress: 18, soundfont: SOUND_FONT_NAME });
+      if (announceProgress)
+        this.patch({ loadingProgress: 18, soundfont: SOUND_FONT_NAME });
       await this.request(worker, {
         type: "loadSoundFont",
         buffer: this.soundfont.slice().buffer,
@@ -762,6 +985,18 @@ class BrowserMidiPlayer {
     }
     for (const listener of this.listeners) listener();
   }
+}
+
+function clampTempo(value: number): number {
+  return Math.max(30, Math.min(220, Math.round(value)));
+}
+
+function clampTranspose(value: number): number {
+  return Math.max(-24, Math.min(24, Math.trunc(value)));
+}
+
+function clampInstrument(value: number): number {
+  return Math.max(-1, Math.min(127, Math.trunc(value)));
 }
 
 function buildNotes(midi: NormalizedMidi): Note[] {

@@ -82,7 +82,11 @@ service or platform artifact that cannot be exercised in this workspace.
   Text-mode line association. Transpose and accidental changes update labels
   without re-rendering the PDF. Simultaneous song opens share one verified
   chord download, and rendered MIDI PCM uses a bounded 96 MB
-  source/soundfont/tempo/transpose/sample-rate cache.
+  source/soundfont/tempo/transpose/sample-rate cache. The next hymn now warms
+  the complete binary → parser → FluidSynth PCM path through a serial,
+  hash-keyed preload queue; foreground loads cancel queued neighbours while
+  active renders remain safely shareable, so navigation cannot duplicate WASM
+  work or replace the current session.
 - Browser binary platform blobs now persist in a versioned IndexedDB store and
   are backfilled from Cache Storage when needed, so verified chord/document
   data survives reloads even when an embedded webview cannot expose Cache
