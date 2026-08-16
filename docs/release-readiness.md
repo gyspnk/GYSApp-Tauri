@@ -121,7 +121,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   bytes in the current build; this is a packaging proof, not a signed
   installer artifact. The chord E2E additionally asserts that canonical
   note-aligned PDF layout rows and DOM overlay markers are rendered (not only
-  a flat chord list), and
+  a flat chord list), and PDF/chord opening shares one immutable Fork-or-
+  canonical resource request so fallback cannot mix page geometry between the
+  visible reader and note extraction; the
   domain/web tests cover simultaneous chord fetch deduplication and the 96 MB
   MIDI render-cache contract.
 - Kidung typography controls are bounded and persisted per song; the PDF smoke
@@ -184,7 +186,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   flow. The public BFF validates the upstream `SignInResponse` and normalizes
   the upstream WhatsApp READY response without returning session credentials;
   provider SDK/popup flows have explicit timeout and cancellation guards.
-  The generated upstream contract is current at commit `022158f` and records
+  The generated upstream contract is current at commit `7d46ad9` and records
   the verified Springdoc runtime document boundary (`/v3/api-docs`, Swagger UI
   path, and enablement property), plus the compatible branch/region routes;
   concrete request/response schemas remain source-owned until that runtime

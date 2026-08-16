@@ -5,6 +5,10 @@
 - Aligned the shared chord capability with gyschordweb's verse-label matcher
   and note-aligned intro/outro sentinels; added a pinned 140-file PDF position
   audit and provenance gate so canonical chord regressions fail before release.
+- Kidung PDF and chord layout now share one immutable source request per hymn,
+  preventing Fork/canonical fallback races from applying coordinates from a
+  different PDF than the reader displays; media E2E asserts no duplicate KR
+  master download.
 
 - Simplified Home to one calm flow: Daily Verse is fetched from the canonical
   Sauh Bagi Jiwa entry (with the existing verse/reflection switch), and the
@@ -78,7 +82,7 @@
   runtime boundary and enablement property in the generated contract, while
   keeping request/response schemas source-owned until the runtime document is
   available; no guessed API shapes are introduced.
-- Refreshed the e-GYS route lock from upstream commit `022158f` and recorded
+- Refreshed the e-GYS route lock from upstream commit `7d46ad9` and recorded
   the compatible branch-detail/update and region routes. The refresh command
   now keeps the prior contract as its breaking-change baseline, so forcing a
   checkout can never bypass compatibility checks.

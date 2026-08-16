@@ -9,6 +9,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      # Secrets are deliberately checked at runtime. A public repository must
+      # keep the Worker workflow callable without turning a missing protected
+      # credential into a misleading failed release.
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,7 +25,12 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @gys/bff exec wrangler deploy
+      - name: Deploy Worker
+        if: ${{ env.CF_API_TOKEN != '' && env.CF_ACCOUNT_ID != '' }}
+        run: pnpm --filter @gys/bff exec wrangler deploy
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CF_ACCOUNT_ID }}
+      - name: Record protected prerequisite
+        if: ${{ env.CF_API_TOKEN == '' || env.CF_ACCOUNT_ID == '' }}
+        run: 'echo "Cloudflare Worker deploy skipped: protected credentials are not configured."'

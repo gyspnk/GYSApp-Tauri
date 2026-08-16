@@ -1,7 +1,7 @@
 {
   "sourceRepo": "Gereja-Yesus-Sejati/egys",
-  "sourceCommit": "022158f4417c532b6acd18df5b556d8b5f77d229",
-  "generatedAt": "2026-08-15T23:00:12.478Z",
+  "sourceCommit": "a7a25e8c752b5d5cdc566beb44c60f51075f7267",
+  "generatedAt": "2026-08-16T07:07:11.366Z",
   "auth": {
     "mode": "provider-id-token-exchange",
     "providersPath": "/api/v1/auth/providers",
@@ -230,5 +230,5 @@
       "source": "backend/src/main/java/id/gys/egys/auth/whatsapp/BotWebhookController.java"
     }
   ],
-  "contractHash": "fb348b519ebd69713f1f56aee5853c4fe96238fb1ad26819f07ac4eead4aa096"
+  "contractHash": "f166f74f0d09933a3f752d76b9e151c2551804651f72c1995703c4844865f872"
 }

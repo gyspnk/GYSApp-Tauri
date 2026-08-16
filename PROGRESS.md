@@ -29,7 +29,7 @@ service or platform artifact that cannot be exercised in this workspace.
   that makes allowed popups look blocked, then severs `window.opener` before
   navigating to the external WhatsApp URL; both blocked and allowed paths are
   unit-tested.
-- e-GYS provenance is current at upstream commit `022158f`; the generated
+- e-GYS provenance is current at upstream commit `7d46ad9`; the generated
   contract includes the compatible branch detail/update and region routes.
   Forced refreshes still diff against the checked-in contract, so removed
   routes cannot be hidden by regeneration.
@@ -90,6 +90,11 @@ service or platform artifact that cannot be exercised in this workspace.
 - Canonical gyschordweb note-aligned chord files now accept the documented
   intro/outro sentinels (`-1`/`99999`), and the deterministic PDF audit covers
   all 140 files / 3191 entries with zero orphan or invalid mappings.
+- Kidung now resolves the Fork-master/canonical PDF through one immutable
+  in-flight promise per hymn. The visible reader and note-aligned chord
+  extraction therefore share the same bytes, source version, and page
+  geometry even when the Fork source falls back; the media E2E proves one KR
+  master request for a chord-then-PDF open.
 - Browser binary platform blobs now persist in a versioned IndexedDB store and
   are backfilled from Cache Storage when needed, so verified chord/document
   data survives reloads even when an embedded webview cannot expose Cache

@@ -74,6 +74,12 @@ type CatalogState =
   | { status: "loading" }
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
+type HymnPdfAsset = {
+  bytes: Uint8Array;
+  initialPage: number;
+  source: "fork" | "canonical";
+  sourceVersion: string;
+};
 const parsedLyricsCache = new Map<string, string[]>();
 
 function getHymnVerses(item: HymnCatalogEntry | undefined): string[] {
@@ -362,6 +368,7 @@ function HymnDetail({
   const chordRun = useRef(0);
   const chordAbort = useRef<AbortController | undefined>(undefined);
   const pdfRun = useRef(0);
+  const pdfAssetPromise = useRef<Promise<HymnPdfAsset> | undefined>(undefined);
   const preloadRun = useRef(0);
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
@@ -633,6 +640,46 @@ function HymnDetail({
       ),
     );
   };
+  /**
+   * Resolve the exact PDF resource used by every presentation in this hymn.
+   * Chord extraction and the visible PDF used to race independently: a Fork
+   * failure could leave the chord layer mapped to the master while the reader
+   * had already fallen back to the canonical per-song PDF. Sharing this
+   * immutable request makes the resource/version boundary explicit and keeps
+   * both modes on the same page geometry.
+   */
+  const loadPdfAsset = (): Promise<HymnPdfAsset> => {
+    const existing = pdfAssetPromise.current;
+    if (existing) return existing;
+    const request = (async () => {
+      let forkError: unknown;
+      try {
+        const forkPdf = await loadForkHymnalPdf(item.id);
+        return {
+          bytes: forkPdf.bytes,
+          initialPage: forkPdf.initialPage,
+          source: "fork" as const,
+          sourceVersion: forkPdf.sourceVersion,
+        } satisfies HymnPdfAsset;
+      } catch (error) {
+        forkError = error;
+      }
+      if (!musicPdfRef) throw forkError ?? new Error("PDF unavailable");
+      const bytes = await loadMusicAsset(musicPdfRef);
+      return {
+        bytes,
+        initialPage: 1,
+        source: "canonical" as const,
+        sourceVersion: musicPdfRef.sha256,
+      } satisfies HymnPdfAsset;
+    })();
+    pdfAssetPromise.current = request;
+    void request.catch(() => {
+      if (pdfAssetPromise.current === request)
+        pdfAssetPromise.current = undefined;
+    });
+    return request;
+  };
   const loadChord = async () => {
     const run = ++chordRun.current;
     chordAbort.current?.abort();
@@ -650,52 +697,41 @@ function HymnDetail({
       let nextLayout: ChordLayoutPage[] = [];
       let nextOverlays: Record<string, PdfChordOverlayMarker[]> = {};
       if ("type" in nextDocument && nextDocument.type === "note-aligned") {
-        const pdfRef = musicLock
-          ? findMusicAsset(musicLock, "pdf", item.pdfPath)
-          : undefined;
-        if (pdfRef) {
-          try {
-            // Reuse a canonical PDF already open in the reader; otherwise the
-            // verified asset loader shares one request and caches the bytes.
-            let layoutPdf: Uint8Array;
-            let layoutPages = nextDocument.pages;
-            let layoutResourceKey = `${item.id}:${pdfRef.sha256}`;
-            if (pdfSource === "fork") {
-              // Extract coordinates from the exact master PDF shown by the
-              // reader. Chord JSON pages are song-relative; the fork manifest
-              // maps them to absolute master pages.
-              const forkPdf = await loadForkHymnalPdf(item.id);
-              layoutPdf = forkPdf.bytes;
-              layoutResourceKey = `${item.id}:${forkPdf.sourceVersion}`;
-              const offset = Math.max(0, forkPdf.initialPage - 1);
-              layoutPages = Object.fromEntries(
-                Object.entries(nextDocument.pages).map(([page, entries]) => [
-                  String(Number(page) + offset),
-                  entries,
-                ]),
-              );
-            } else {
-              layoutPdf = pdfBytes ?? (await loadMusicAsset(pdfRef));
-            }
-            // PDF.js and the coordinate mapper are only needed for a visible
-            // note-aligned chord layer. Keep them outside the Kidung route's
-            // first-load chunk so text-only readers do not pay the PDF cost.
-            const { buildChordPresentationFromPdf } =
-              await import("./chord-layout-pdf.js");
-            const presentation = await buildChordPresentationFromPdf(
-              layoutPdf,
-              layoutPages,
-              layoutResourceKey,
+        try {
+          // Reuse the exact PDF resource shown by the reader; the shared
+          // immutable request also deduplicates the first PDF/chord open.
+          const pdfAsset = await loadPdfAsset();
+          let layoutPages = nextDocument.pages;
+          const layoutResourceKey = `${item.id}:${pdfAsset.sourceVersion}`;
+          if (pdfAsset.source === "fork") {
+            // Chord JSON pages are song-relative; the fork manifest maps them
+            // to absolute pages in the shared KR master PDF.
+            const offset = Math.max(0, pdfAsset.initialPage - 1);
+            layoutPages = Object.fromEntries(
+              Object.entries(nextDocument.pages).map(([page, entries]) => [
+                String(Number(page) + offset),
+                entries,
+              ]),
             );
-            if (controller.signal.aborted || run !== chordRun.current) return;
-            nextLayout = presentation.layout;
-            nextOverlays = presentation.overlays;
-          } catch {
-            // Chord JSON remains useful offline even when its optional PDF
-            // coordinate source is unavailable; the viewer renders a clear
-            // degraded note-index fallback below.
-            show(translate(locale, "kidung.chordLayoutRetry"));
           }
+          // PDF.js and the coordinate mapper are only needed for a visible
+          // note-aligned chord layer. Keep them outside the Kidung route's
+          // first-load chunk so text-only readers do not pay the PDF cost.
+          const { buildChordPresentationFromPdf } =
+            await import("./chord-layout-pdf.js");
+          const presentation = await buildChordPresentationFromPdf(
+            pdfAsset.bytes,
+            layoutPages,
+            layoutResourceKey,
+          );
+          if (controller.signal.aborted || run !== chordRun.current) return;
+          nextLayout = presentation.layout;
+          nextOverlays = presentation.overlays;
+        } catch {
+          // Chord JSON remains useful offline even when its optional PDF
+          // coordinate source is unavailable; the viewer renders a clear
+          // degraded note-index fallback below.
+          show(translate(locale, "kidung.chordLayoutRetry"));
         }
       }
       setChordDocument(nextDocument);
@@ -730,42 +766,24 @@ function HymnDetail({
     setPdfStatus("loading");
     setPdfVersion(undefined);
     try {
-      let bytes: Uint8Array;
-      let initialPage = 1;
-      let source: "fork" | "canonical" = "fork";
-      let sourceVersion = "fork";
-      try {
-        const forkPdf = await loadForkHymnalPdf(item.id);
-        if (run !== pdfRun.current) return;
-        bytes = forkPdf.bytes;
-        initialPage = forkPdf.initialPage;
-        sourceVersion = forkPdf.sourceVersion;
-      } catch {
-        const ref = musicLock
-          ? findMusicAsset(musicLock, "pdf", item.pdfPath)
-          : undefined;
-        if (!ref) throw new Error("PDF unavailable");
-        bytes = await loadMusicAsset(ref);
-        if (run !== pdfRun.current) return;
-        source = "canonical";
-        sourceVersion = ref.sha256;
-      }
+      const asset = await loadPdfAsset();
+      if (run !== pdfRun.current) return;
       const nextUrl = URL.createObjectURL(
-        new Blob([bytes.slice().buffer as ArrayBuffer], {
+        new Blob([asset.bytes.slice().buffer as ArrayBuffer], {
           type: "application/pdf",
         }),
       );
-      setPdfBytes(bytes);
-      setPdfInitialPage(initialPage);
-      setPdfSource(source);
-      setPdfVersion(sourceVersion);
+      setPdfBytes(asset.bytes);
+      setPdfInitialPage(asset.initialPage);
+      setPdfSource(asset.source);
+      setPdfVersion(asset.sourceVersion);
       setPdfUrl((previous) => {
         if (previous) URL.revokeObjectURL(previous);
         return nextUrl;
       });
       setPdfStatus("ready");
       show(
-        source === "fork"
+        asset.source === "fork"
           ? translate(locale, "kidung.pdfForkOpened")
           : translate(locale, "kidung.pdfCanonicalFallback"),
       );

@@ -31,6 +31,11 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
 }) => {
   test.setTimeout(90_000);
   const missingMidiRequests: string[] = [];
+  const forkPdfRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/kr_master\.pdf/i.test(request.url()))
+      forkPdfRequests.push(request.url());
+  });
   page.on("response", (response) => {
     if (response.status() === 404 && /\/assets\/midi\//.test(response.url()))
       missingMidiRequests.push(response.url());
@@ -60,6 +65,9 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(page.locator(".pdf-chord-layer").first()).toBeVisible({
     timeout: 30_000,
   });
+  // Chord extraction and the visible reader share one immutable PDF request;
+  // the second presentation cannot download the master again.
+  expect(forkPdfRequests).toHaveLength(1);
   await page.getByRole("button", { name: "Putar MIDI" }).click();
   await expect(page.locator(".media-surface")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".media-meta")).toContainText("Pujilah Allah");
