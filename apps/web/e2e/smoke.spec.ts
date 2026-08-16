@@ -93,6 +93,51 @@ test("offline reader packs open without a network request", async ({
   ).toBeVisible();
 });
 
+test("faith topics search, select, and persist a personal note", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(
+    page.getByRole("heading", { name: "Iman", exact: true }),
+  ).toBeVisible();
+  const rows = page.locator(".faith-row-heading");
+  await expect(rows.first()).toBeVisible({ timeout: 15_000 });
+  const initialCount = await rows.count();
+  expect(initialCount).toBeGreaterThan(0);
+
+  // The vertical list keeps one active selection at a time.
+  await rows.nth(1).click();
+  await expect(rows.nth(1)).toHaveAttribute("aria-pressed", "true");
+  await expect(rows.first()).toHaveAttribute("aria-pressed", "false");
+
+  // Search filters the list using real content.
+  await page.getByLabel("Cari pokok iman").fill("Allah");
+  await expect
+    .poll(async () => page.locator(".faith-row-heading").count())
+    .toBeLessThan(initialCount);
+
+  // A note on the selected topic persists across reloads.
+  await page.getByLabel("Cari pokok iman").fill("");
+  await page
+    .getByLabel("Catatan pribadi")
+    .fill("Renungan dari pokok dasar kepercayaan.");
+  await page.getByRole("button", { name: "Simpan catatan" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "disimpan" }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Iman", exact: true }),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  // The note is keyed per topic, so reopen the same topic after the reload.
+  await page.locator(".faith-row-heading").nth(1).click();
+  await expect(page.getByLabel("Catatan pribadi")).toHaveValue(
+    "Renungan dari pokok dasar kepercayaan.",
+  );
+});
+
 test("offline pack manager keeps one update action and reports manifest status", async ({
   page,
 }) => {

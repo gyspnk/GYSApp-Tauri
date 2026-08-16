@@ -7,6 +7,9 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- The Dasar Kepercayaan screen has a focused browser flow: list selection
+  state, content search, and per-topic note persistence across a reload.
+  The Playwright suite now runs 45 flows.
 - The pre-push gate now runs `verify:generated` (lock/manifest/catalog
   provenance) and the chord position audit in `--check` mode: the full
   144-file deterministic mapping is recomputed against the immutable

@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- The browser suite now covers the Dasar Kepercayaan screen end to end: the
+  vertical topic list keeps one active selection, search filters real pack
+  content, and a personal note on a topic survives a full reload (notes are
+  keyed per topic).
 - The pre-push quality gate now also verifies generated-data provenance
   (`verify:generated`: music lock, chord manifest, hymn catalog, offline
   assets, literature covers) and re-runs the deterministic 144-file chord
