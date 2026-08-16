@@ -189,3 +189,27 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     "single",
   );
 });
+
+test("rapid hymn/viewer changes keep the latest route and do not leak stale PDF state", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(
+    page.getByRole("heading", { name: /Pujilah Allah/ }),
+  ).toBeVisible({ timeout: 15_000 });
+
+  // Start two heavyweight, cancellable paths and immediately change the
+  // entity. The keyed detail boundary plus run guards must leave the second
+  // hymn in a text-first state rather than displaying hymn-001's late PDF.
+  await page.getByRole("button", { name: "Tampilkan chord" }).click();
+  await page.getByRole("button", { name: "Buka PDF" }).click();
+  await page.getByRole("button", { name: "Berikutnya" }).click();
+
+  await expect(page).toHaveURL(/\/kidung\/hymn-002$/);
+  await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".pdf-reader")).toHaveCount(0);
+  await expect(page.locator(".hymn-detail-page h1")).not.toHaveText(
+    "Pujilah Allah",
+  );
+});

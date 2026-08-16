@@ -21,9 +21,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
-- The initial web application chunk is **81.3 KiB gzip**; the complete initial
-  JavaScript set is **164.4 KiB gzip** in the latest local verification. The
-  latest five-sample shell benchmark measured a **74.0 ms median / 202.6 ms
+- The initial web application chunk is **84.1 KiB gzip**; the complete initial
+  JavaScript set is **167.6 KiB gzip** in the latest local verification. The
+  latest five-sample shell benchmark measured a **95.0 ms median / 239.6 ms
   p95** navigation response. PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
@@ -62,7 +62,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 38 passing flows, including split-reader keyboard resize,
+  current suite has 40 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, persistent/minimizable media with source return,
   explicit article scroll-resume navigation, MIDI queue
@@ -73,6 +73,9 @@ claim GA parity until the remaining reports and platform artifacts exist.
   MIDI worker/render operations are generation-guarded, so rapid song/settings
   changes cannot let a late FluidSynth result replace the current session; the
   focused gate tests run with the same web unit suite.
+  Golden chord tests cover punctuation-normalized one-to-one Text mapping and
+  conservative unmatched-line behavior; a rapid hymn/viewer Playwright flow
+  proves the latest route cannot inherit a stale PDF surface.
   Literature PDF failures now expose an in-shell `Coba lagi` action, and the
   shared PDF reader cleans up loaded documents and virtualized page resources
   when a route, song, or retry changes, preventing stale worker/page buffers

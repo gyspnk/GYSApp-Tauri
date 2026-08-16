@@ -48,6 +48,68 @@ describe("shared chord capability", () => {
     expect(matched[1]).toBeUndefined();
   });
 
+  it("normalizes punctuation while keeping each canonical line one-to-one", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      songId: "hymn-002",
+      title: "One to one",
+      key: "G",
+      sourceCommit: "cbc7d386",
+      sourcePath: "assets/chord/test.json",
+      verses: [
+        {
+          label: "1",
+          lines: [
+            { text: "Ku bersyukur!", chords: [{ token: "G", index: 0 }] },
+            { text: "Ku bersyukur", chords: [{ token: "C", index: 3 }] },
+          ],
+        },
+      ],
+    });
+
+    const matched = matchChordLinesToLyrics(
+      ["Ku bersyukur!", "Ku bersyukur", "Baris baru"],
+      document,
+      [],
+      0,
+    );
+
+    expect(matched.map((line) => line?.chords[0]?.token)).toEqual([
+      "G",
+      "C",
+      undefined,
+    ]);
+  });
+
+  it("does not attach a short partial candidate to an unrelated lyric line", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      songId: "hymn-003",
+      title: "Conservative matching",
+      key: "C",
+      sourceCommit: "cbc7d386",
+      sourcePath: "assets/chord/test.json",
+      verses: [
+        {
+          label: "1",
+          lines: [
+            { text: "Damai sejahtera", chords: [{ token: "C", index: 0 }] },
+          ],
+        },
+      ],
+    });
+
+    const matched = matchChordLinesToLyrics(
+      ["Damai", "Damai di rumah-Mu"],
+      document,
+      [],
+      0,
+    );
+
+    expect(matched[0]).toBeUndefined();
+    expect(matched[1]).toBeUndefined();
+  });
+
   it("keeps relative chord markers attached to the visual line after text wraps", () => {
     const rects = Array.from({ length: 10 }, (_, index) => ({
       index,

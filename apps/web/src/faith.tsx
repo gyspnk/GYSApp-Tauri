@@ -86,10 +86,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
       if (navigator.share) await navigator.share({ title, text });
       else {
         await navigator.clipboard?.writeText(text);
-        flash("Pokok iman disalin untuk dibagikan.");
+        flash(translate(locale, "faith.shareDone"));
       }
     } catch {
-      flash("Berbagi dibatalkan.");
+      flash(translate(locale, "faith.shareCancelled"));
     }
   };
   const copySection = async () => {
@@ -97,14 +97,14 @@ export function FaithPage({ locale }: { locale: Locale }) {
     await navigator.clipboard?.writeText(
       `${group?.title ?? "Iman"} ${active.number}\n${active.text}`,
     );
-    flash("Bagian pokok iman disalin.");
+    flash(translate(locale, "faith.copyDone"));
   };
 
   return (
     <div className="page faith-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">10 topics · offline pack</p>
+          <p className="date-line">{translate(locale, "faith.packLabel")}</p>
           <h1>{translate(locale, "page.imanTitle")}</h1>
           <p className="intro-copy">{translate(locale, "page.imanBody")}</p>
         </div>
@@ -112,30 +112,34 @@ export function FaithPage({ locale }: { locale: Locale }) {
       </section>
       {!pack && (
         <div className="loading-panel" role="status">
-          Membuka pokok iman offline…
+          {translate(locale, "faith.loading")}
         </div>
       )}
       {pack && !group && (
         <div className="error-panel" role="alert">
-          Pokok iman belum tersedia.
+          {translate(locale, "faith.unavailable")}
         </div>
       )}
       {group && active && (
         <section className="faith-stack" aria-label={group.title}>
           <div className="faith-stack-toolbar">
-            <label htmlFor="faith-query">Cari pokok iman</label>
+            <label htmlFor="faith-query">
+              {translate(locale, "faith.search")}
+            </label>
             <input
               id="faith-query"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Nomor atau kata…"
+              placeholder={translate(locale, "faith.searchPlaceholder")}
             />
-            <span>{filtered.length} pokok</span>
+            <span>
+              {translate(locale, "faith.count", { count: filtered.length })}
+            </span>
           </div>
           <div
             className="faith-rows"
             role="list"
-            aria-label="Daftar dasar kepercayaan"
+            aria-label={translate(locale, "faith.list")}
           >
             {filtered.map((item) => {
               const isActive = item.number === active.number;
@@ -159,38 +163,42 @@ export function FaithPage({ locale }: { locale: Locale }) {
           </div>
           <section
             className="faith-selection"
-            aria-label={`Pokok ${active.number}`}
+            aria-label={translate(locale, "faith.topic", {
+              number: active.number,
+            })}
           >
             <div className="faith-selection-toolbar">
-              <span>Pokok {active.number}</span>
+              <span>
+                {translate(locale, "faith.topic", { number: active.number })}
+              </span>
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => void copySection()}
               >
-                Salin bagian
+                {translate(locale, "faith.copySection")}
               </button>
               <button className="quiet-button" type="button" onClick={share}>
-                Salin / bagikan
+                {translate(locale, "faith.copyShare")}
               </button>
               <button
                 className="primary-button"
                 type="button"
                 onClick={() => {
                   localStorage.setItem(`gys-faith-note-${active.number}`, note);
-                  flash("Catatan disimpan di perangkat ini.");
+                  flash(translate(locale, "faith.noteSaved"));
                 }}
               >
-                Simpan catatan
+                {translate(locale, "faith.saveNote")}
               </button>
             </div>
             <p className="faith-copy">{active.text}</p>
             <label className="faith-note">
-              <span>Catatan pribadi</span>
+              <span>{translate(locale, "faith.note")}</span>
               <textarea
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="Tambahkan refleksi…"
+                placeholder={translate(locale, "faith.notePlaceholder")}
                 rows={3}
               />
             </label>

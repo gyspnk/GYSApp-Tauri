@@ -17,7 +17,7 @@ import {
   type SauhPost,
   type SuaraSejatiFeed,
 } from "@gys/contracts";
-import type { Locale } from "./i18n.js";
+import { translate, type Locale } from "./i18n.js";
 
 type SearchKind = "hymn" | "literature" | "faith" | "sauh" | "suara";
 type SearchEntry = {
@@ -283,54 +283,59 @@ export function GlobalSearch({
       >
         <div className="global-search-heading">
           <div>
-            <p className="date-line">Pencarian lintas ruang</p>
-            <h2 id="global-search-title">Temukan sesuatu</h2>
+            <p className="date-line">{translate(locale, "search.eyebrow")}</p>
+            <h2 id="global-search-title">
+              {translate(locale, "search.title")}
+            </h2>
           </div>
           <button className="text-button" type="button" onClick={onClose}>
-            Tutup <kbd>Esc</kbd>
+            {translate(locale, "search.close")} <kbd>Esc</kbd>
           </button>
         </div>
         <form onSubmit={submit} role="search" className="global-search-form">
           <label htmlFor="global-search-input">
-            Cari Kidung, Literatur, Iman, atau media
+            {translate(locale, "search.label")}
           </label>
           <input
             ref={inputRef}
             id="global-search-input"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Ketik minimal 2 karakter…"
+            placeholder={translate(locale, "search.placeholder")}
             autoComplete="off"
           />
         </form>
         {status === "loading" && (
           <p className="global-search-status" role="status">
-            Menyiapkan indeks lokal…
+            {translate(locale, "search.loading")}
           </p>
         )}
         {status === "error" && (
           <p className="global-search-status is-error" role="alert">
-            Indeks belum tersedia. Coba muat ulang aplikasi.
+            {translate(locale, "search.error")}
           </p>
         )}
         {status === "ready" && deferredQuery.trim().length < 2 && (
           <p className="global-search-status">
-            Cari di {entries.length.toLocaleString(locale)} judul dan pokok
-            konten.
+            {translate(locale, "search.ready", {
+              count: entries.length.toLocaleString(locale),
+            })}
           </p>
         )}
         {status === "ready" &&
           deferredQuery.trim().length >= 2 &&
           !results.length && (
             <p className="global-search-status">
-              Tidak ada hasil untuk “{deferredQuery.trim()}”.
+              {translate(locale, "search.empty", {
+                query: deferredQuery.trim(),
+              })}
             </p>
           )}
         {results.length > 0 && (
           <div
             className="global-search-results"
             role="listbox"
-            aria-label="Hasil pencarian"
+            aria-label={translate(locale, "search.results")}
           >
             {results.map((entry) => (
               <button

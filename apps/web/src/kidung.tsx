@@ -200,27 +200,28 @@ function HymnCatalog({
         <div>
           <p className="date-line">
             {items.length > 0
-              ? `${items.length} lagu · katalog canonical`
-              : "Katalog canonical"}
+              ? `${items.length} lagu · ${translate(locale, "kidung.catalogCanonical")}`
+              : translate(locale, "kidung.catalogCanonical")}
           </p>
           <h1>{translate(locale, "page.kidungTitle")}</h1>
           <p className="intro-copy">
-            Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau
-            iringan MIDI.
+            {translate(locale, "kidung.catalogIntro")}
           </p>
         </div>
         <span className="pack-badge">
-          {items.length > 0 ? `Offline · ${items.length}` : "Offline"}
+          {items.length > 0
+            ? `${translate(locale, "kidung.catalogOffline")} · ${items.length}`
+            : translate(locale, "kidung.catalogOffline")}
         </span>
       </section>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          Membuka katalog kidung offline…
+          {translate(locale, "kidung.catalogLoading")}
         </div>
       )}
       {state.status === "error" && (
         <div className="error-panel" role="alert">
-          <strong>Katalog kidung belum tersedia</strong>
+          <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
           <span>{state.message}</span>
         </div>
       )}
@@ -228,29 +229,38 @@ function HymnCatalog({
         <section className="hymn-catalog-shell">
           <div className="catalog-toolbar">
             <label className="search-field">
-              <span>Cari lagu</span>
+              <span>{translate(locale, "kidung.search")}</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Nomor atau judul…"
+                placeholder={translate(locale, "kidung.searchPlaceholder")}
               />
             </label>
             <Select
               value={book}
               onChange={setBook}
-              label="Koleksi"
+              label={translate(locale, "kidung.collection")}
               options={[
-                { value: "all", label: "Semua koleksi" },
+                {
+                  value: "all",
+                  label: translate(locale, "kidung.allCollections"),
+                },
                 ...books.map((value) => ({ value, label: value })),
               ]}
             />
           </div>
           <div className="catalog-heading">
             <div>
-              <p className="date-line">GysChordWeb · daftar pujian</p>
-              <h2>{filtered.length} lagu tersedia</h2>
+              <p className="date-line">
+                {translate(locale, "kidung.catalogHeading")}
+              </p>
+              <h2>
+                {translate(locale, "kidung.available", {
+                  count: filtered.length,
+                })}
+              </h2>
             </div>
-            <small>Ketuk baris untuk membuka detail</small>
+            <small>{translate(locale, "kidung.catalogHint")}</small>
           </div>
           <ol className="pujian-list">
             {filtered.map((item) => (
@@ -267,7 +277,9 @@ function HymnCatalog({
                     <strong>{item.title}</strong>
                     <small>
                       {item.book} · {item.verses.length} bait · PDF{" "}
-                      {item.pdfPath ? "tersedia" : "—"}
+                      {item.pdfPath
+                        ? translate(locale, "kidung.pdfAvailable")
+                        : "—"}
                     </small>
                   </span>
                   <span className="pujian-arrow" aria-hidden="true">
@@ -529,7 +541,7 @@ function HymnDetail({
     return (
       <div className="page">
         <div className="loading-panel" role="status">
-          Membuka pujian…
+          {translate(locale, "kidung.catalogLoading")}
         </div>
       </div>
     );
@@ -537,9 +549,9 @@ function HymnDetail({
     return (
       <div className="page">
         <div className="error-panel" role="alert">
-          <strong>Pujian tidak ditemukan</strong>
+          <strong>{translate(locale, "kidung.notFound")}</strong>
           <Link className="quiet-button" to="/kidung">
-            Kembali ke daftar
+            {translate(locale, "kidung.back")}
           </Link>
         </div>
       </div>
@@ -556,7 +568,11 @@ function HymnDetail({
       title: item.title,
     });
     setFavorite(next);
-    show(next ? "Kidung disimpan sebagai favorit." : "Favorit dihapus.");
+    show(
+      next
+        ? translate(locale, "kidung.favoriteSaved")
+        : translate(locale, "kidung.favoriteRemoved"),
+    );
   };
   const onVerseTouchStart = (event: TouchEvent<HTMLElement>) => {
     if (event.touches.length === 1)
@@ -621,7 +637,7 @@ function HymnDetail({
             // Chord JSON remains useful offline even when its optional PDF
             // coordinate source is unavailable; the viewer renders a clear
             // degraded note-index fallback below.
-            show("Chord tersedia; layout PDF akan dicoba lagi saat online.");
+            show(translate(locale, "kidung.chordLayoutRetry"));
           }
         }
       }
@@ -638,12 +654,14 @@ function HymnDetail({
       setChordOverlays(nextOverlays);
       setChordStatus("ready");
       if (nextLayout.length > 0 || Object.keys(nextOverlays).length > 0)
-        show("Chord diverifikasi dari PDF canonical.");
-      else show("Chord diverifikasi dari sumber canonical.");
+        show(translate(locale, "kidung.chordPdfVerified"));
+      else show(translate(locale, "kidung.chordSourceVerified"));
     } catch {
       if (controller.signal.aborted || run !== chordRun.current) return;
       setChordStatus("error");
-      show("Chord belum tersedia offline; sambungkan internet lalu coba lagi.");
+      show(
+        `${translate(locale, "kidung.chordUnavailable")}; ${translate(locale, "kidung.connectRetry")}`,
+      );
     } finally {
       if (chordAbort.current === controller) chordAbort.current = undefined;
     }
@@ -692,13 +710,15 @@ function HymnDetail({
       setPdfStatus("ready");
       show(
         source === "fork"
-          ? "PDF Kidung Rohani dibuka dari database GYSApp-Fork."
-          : "PDF canonical dibuka sebagai fallback.",
+          ? translate(locale, "kidung.pdfForkOpened")
+          : translate(locale, "kidung.pdfCanonicalFallback"),
       );
     } catch {
       if (run !== pdfRun.current) return;
       setPdfStatus("error");
-      show("PDF gagal dimuat. Periksa koneksi atau cache.");
+      show(
+        `${translate(locale, "kidung.pdfFailed")}. ${translate(locale, "kidung.pdfRetry")}`,
+      );
     }
   };
   const selectViewerMode = (mode: HymnViewerMode) => {
@@ -759,13 +779,13 @@ function HymnDetail({
       try {
         await speechPlayer.stop();
         await midiPlayer.play();
-        show("MIDI sedang diputar; pemutar dapat diminimalkan.");
+        show(translate(locale, "kidung.midiPlaying"));
       } catch {
-        show("MIDI siap; tekan Putar pada pemutar untuk mengaktifkan suara.");
+        show(translate(locale, "kidung.midiReadyHint"));
       }
     } catch {
       setMidiStatus("error");
-      show("MIDI belum dapat dimuat. Coba lagi saat online.");
+      show(translate(locale, "kidung.midiUnavailable"));
     }
   };
   const renderedKey = chordKeyName(keyIndex, accidental);
@@ -784,7 +804,7 @@ function HymnDetail({
     <div className="page hymn-detail-page">
       <div className="detail-back">
         <Link className="text-button" to="/kidung">
-          ← Semua kidung
+          {translate(locale, "kidung.back")}
         </Link>
         <span>
           {numberLabel(item.number)} · {item.book}
@@ -793,12 +813,13 @@ function HymnDetail({
       <section className="detail-hero">
         <div>
           <p className="date-line">
-            Kidung Rohani · {numberLabel(item.number)}
+            {translate(locale, "kidung.canonicalNumber", {
+              number: numberLabel(item.number),
+            })}
           </p>
           <h1>{item.title}</h1>
           <p className="intro-copy">
-            Lirik per bait dari katalog GYSChordWeb. Pilih mode baca sesuai
-            kebutuhan.
+            {translate(locale, "kidung.detailIntro")}
           </p>
         </div>
         <div className="detail-neighbors">
@@ -808,7 +829,7 @@ function HymnDetail({
             disabled={!prev}
             onClick={() => prev && navigate(`/kidung/${prev.id}`)}
           >
-            Sebelumnya
+            {translate(locale, "kidung.previous")}
           </button>
           <button
             type="button"
@@ -816,7 +837,7 @@ function HymnDetail({
             disabled={!next}
             onClick={() => next && navigate(`/kidung/${next.id}`)}
           >
-            Berikutnya
+            {translate(locale, "kidung.next")}
           </button>
         </div>
       </section>
@@ -830,10 +851,10 @@ function HymnDetail({
             aria-pressed={chordsVisible}
           >
             {chordStatus === "loading"
-              ? "Memuat chord…"
+              ? translate(locale, "kidung.loadingChord")
               : chordsVisible
-                ? "Sembunyikan chord"
-                : "Tampilkan chord"}
+                ? translate(locale, "kidung.hideChord")
+                : translate(locale, "kidung.showChord")}
           </button>
           <button
             type="button"
@@ -841,7 +862,9 @@ function HymnDetail({
             onClick={toggle}
             aria-pressed={favorite}
           >
-            {favorite ? "★ Favorit" : "☆ Simpan favorit"}
+            {favorite
+              ? translate(locale, "kidung.favorite")
+              : translate(locale, "kidung.saveFavorite")}
           </button>
           <button
             type="button"
@@ -850,10 +873,10 @@ function HymnDetail({
             disabled={midiStatus === "loading"}
           >
             {midiStatus === "loading"
-              ? "Memuat MIDI…"
+              ? translate(locale, "kidung.loadingMidi")
               : midiStatus === "ready"
-                ? "MIDI siap"
-                : "Putar MIDI"}
+                ? translate(locale, "kidung.midiReady")
+                : translate(locale, "kidung.playMidi")}
           </button>
           <button
             type="button"
@@ -879,14 +902,16 @@ function HymnDetail({
               });
               show(
                 added
-                  ? "Kidung ditambahkan ke antrean MIDI."
-                  : "Kidung sudah ada di antrean MIDI.",
+                  ? translate(locale, "kidung.queueAdded")
+                  : translate(locale, "kidung.queueExists"),
               );
             }}
           >
             {playlist.items.some((entry) => entry.songId === item.id)
-              ? `Di antrean · ${playlist.items.length}`
-              : "Tambah antrean MIDI"}
+              ? translate(locale, "kidung.queueCount", {
+                  count: playlist.items.length,
+                })
+              : translate(locale, "kidung.queueAdd")}
           </button>
           <button
             type="button"
@@ -899,10 +924,10 @@ function HymnDetail({
             disabled={pdfStatus === "loading"}
           >
             {pdfStatus === "loading"
-              ? "Memuat PDF…"
+              ? translate(locale, "kidung.loadingPdf")
               : viewerMode === "pdf"
-                ? "Tutup PDF"
-                : "Buka PDF"}
+                ? translate(locale, "kidung.closePdf")
+                : translate(locale, "kidung.openPdf")}
           </button>
           {pdfBytes && (
             <button
@@ -925,7 +950,7 @@ function HymnDetail({
                   );
               }}
             >
-              Unduh PDF
+              {translate(locale, "kidung.downloadPdf")}
             </button>
           )}
         </div>
@@ -936,7 +961,7 @@ function HymnDetail({
               setKeyIndex(value);
               updateTranspose(transposeBetweenKeys(sourceKeyIndex, value));
             }}
-            label="Nada dasar"
+            label={translate(locale, "kidung.key")}
             options={Array.from({ length: 12 }, (_, value) => ({
               value,
               label: chordKeyName(value, accidental),
@@ -945,10 +970,10 @@ function HymnDetail({
           <Select
             value={accidental}
             onChange={setAccidental}
-            label="Notasi chord"
+            label={translate(locale, "kidung.notation")}
             options={[
-              { value: "sharp", label: "♯ Sharp" },
-              { value: "flat", label: "♭ Flat" },
+              { value: "sharp", label: translate(locale, "kidung.sharp") },
+              { value: "flat", label: translate(locale, "kidung.flat") },
             ]}
           />
           <div className="transpose-control">
@@ -957,7 +982,7 @@ function HymnDetail({
               <button
                 type="button"
                 onClick={() => updateTranspose(transpose - 1)}
-                aria-label="Turunkan transpose"
+                aria-label={translate(locale, "kidung.transposeDown")}
               >
                 −
               </button>
@@ -965,20 +990,23 @@ function HymnDetail({
               <button
                 type="button"
                 onClick={() => updateTranspose(transpose + 1)}
-                aria-label="Naikkan transpose"
+                aria-label={translate(locale, "kidung.transposeUp")}
               >
                 +
               </button>
             </div>
           </div>
-          <div className="reader-preferences" aria-label="Pengaturan teks">
-            <span>Teks</span>
+          <div
+            className="reader-preferences"
+            aria-label={translate(locale, "kidung.textSettings")}
+          >
+            <span>{translate(locale, "kidung.text")}</span>
             <button
               type="button"
               onClick={() =>
                 updateTypography({ fontSize: typography.fontSize - 1 })
               }
-              aria-label="Perkecil ukuran teks"
+              aria-label={translate(locale, "kidung.decreaseText")}
             >
               A−
             </button>
@@ -990,7 +1018,7 @@ function HymnDetail({
               onClick={() =>
                 updateTypography({ fontSize: typography.fontSize + 1 })
               }
-              aria-label="Perbesar ukuran teks"
+              aria-label={translate(locale, "kidung.increaseText")}
             >
               A+
             </button>
@@ -999,7 +1027,7 @@ function HymnDetail({
               onClick={() =>
                 updateTypography({ lineHeight: typography.lineHeight - 0.1 })
               }
-              aria-label="Rapatkan jarak baris"
+              aria-label={translate(locale, "kidung.decreaseSpacing")}
             >
               − Spasi
             </button>
@@ -1008,7 +1036,7 @@ function HymnDetail({
               onClick={() =>
                 updateTypography({ lineHeight: typography.lineHeight + 0.1 })
               }
-              aria-label="Lebarkan jarak baris"
+              aria-label={translate(locale, "kidung.increaseSpacing")}
             >
               + Spasi
             </button>
@@ -1017,12 +1045,12 @@ function HymnDetail({
               className="text-button"
               onClick={() => updateTypography(DEFAULT_HYMN_TYPOGRAPHY)}
             >
-              Reset teks
+              {translate(locale, "kidung.resetText")}
             </button>
           </div>
         </div>
         <div className="verse-switcher">
-          <span>Bait</span>
+          <span>{translate(locale, "kidung.verse")}</span>
           <div className="verse-tabs" role="tablist">
             {verses.map((_, index) => (
               <button
@@ -1040,21 +1068,23 @@ function HymnDetail({
           <Select
             value={safeVerseIndex}
             onChange={setVerseIndex}
-            label="Pilih bait"
+            label={translate(locale, "kidung.chooseVerse")}
             options={verses.map((_, index) => ({
               value: index,
-              label: `Bait ${index + 1}`,
+              label: translate(locale, "kidung.verseOption", {
+                number: index + 1,
+              }),
             }))}
           />
         </div>
         <div
           className="viewer-mode-tabs"
           role="tablist"
-          aria-label="Mode tampilan kidung"
+          aria-label={translate(locale, "kidung.viewerMode")}
         >
           {(
             [
-              ["lyrics", "Lirik"],
+              ["lyrics", translate(locale, "kidung.lyrics")],
               ["pdf", "PDF"],
             ] as const
           ).map(([mode, label]) => (
@@ -1072,7 +1102,7 @@ function HymnDetail({
               disabled={mode === "pdf" && pdfStatus === "loading"}
             >
               {mode === "pdf" && pdfStatus === "loading"
-                ? "Memuat PDF…"
+                ? translate(locale, "kidung.loadingPdf")
                 : label}
             </button>
           ))}
@@ -1111,13 +1141,13 @@ function HymnDetail({
         )}
         {chordsVisible && chordStatus === "loading" && (
           <div className="loading-panel" role="status">
-            Chord sedang diverifikasi…
+            {translate(locale, "kidung.chordVerifying")}
           </div>
         )}
         {chordsVisible && chordStatus === "error" && (
           <div className="error-panel" role="alert">
-            <strong>Chord belum tersedia</strong>
-            <span>Sambungkan internet lalu coba lagi.</span>
+            <strong>{translate(locale, "kidung.chordUnavailable")}</strong>
+            <span>{translate(locale, "kidung.connectRetry")}</span>
             <button
               className="secondary-button"
               type="button"
@@ -1129,13 +1159,13 @@ function HymnDetail({
         )}
         {viewerMode === "pdf" && pdfStatus === "loading" && (
           <div className="loading-panel" role="status">
-            PDF reader sedang dibuka…
+            {translate(locale, "kidung.pdfOpening")}
           </div>
         )}
         {viewerMode === "pdf" && pdfStatus === "error" && (
           <div className="error-panel" role="alert">
-            <strong>PDF gagal dimuat</strong>
-            <span>Periksa koneksi atau cache, lalu coba lagi.</span>
+            <strong>{translate(locale, "kidung.pdfFailed")}</strong>
+            <span>{translate(locale, "kidung.pdfRetry")}</span>
             <button
               className="secondary-button"
               type="button"
@@ -1148,7 +1178,9 @@ function HymnDetail({
         {viewerMode === "pdf" && pdfStatus === "ready" && (
           <Suspense
             fallback={
-              <div className="loading-panel">PDF reader sedang dibuka…</div>
+              <div className="loading-panel">
+                {translate(locale, "kidung.pdfOpening")}
+              </div>
             }
           >
             <PdfReader

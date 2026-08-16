@@ -2,6 +2,11 @@
 
 ## Unreleased — GA hardening slice
 
+- Expanded feature-critical Kidung localization to Indonesian, English, and
+  Simplified Chinese, including viewer modes, chord/PDF/MIDI actions, queue,
+  typography controls, and recovery states. Added golden conservative Text
+  chord matching tests plus a rapid hymn/viewer E2E race flow.
+
 - Guarded asynchronous MIDI load/render operations with a shared generation
   gate. Superseded worker/WASM results are discarded before they can replace
   the shell-level player, including during rapid song, seek, stop, tempo,

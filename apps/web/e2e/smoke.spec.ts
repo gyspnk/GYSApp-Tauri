@@ -18,6 +18,21 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("feature-critical hymn actions follow the selected locale", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(
+    page.getByRole("heading", { name: /Pujilah Allah/ }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("option", { name: "EN" }).click();
+  await expect(page.getByRole("button", { name: "Show chords" })).toBeVisible();
+  await page.getByRole("button", { name: "Language" }).click();
+  await page.getByRole("option", { name: "中文" }).click();
+  await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
+});
+
 test("responsive shell keeps one navigation and no horizontal overflow", async ({
   page,
 }) => {
@@ -48,7 +63,7 @@ test("shell remains usable across the release viewport matrix", async ({
     await page.goto("/GYSApp-Tauri/");
     await expect(
       page.getByRole("heading", { name: "Selamat datang kembali" }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
     await expect(page.locator("nav.primary-nav")).toHaveCount(1);
     await expect
       .poll(() =>

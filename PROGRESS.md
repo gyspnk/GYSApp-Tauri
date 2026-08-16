@@ -80,7 +80,7 @@ service or platform artifact that cannot be exercised in this workspace.
   changes. A late worker result is ignored before it can replace the shared
   shell session; stale loads return a boolean so Kidung and playlist callers
   cannot start superseded audio. The guard has focused unit coverage and the
-  full 38-flow Playwright suite still passes after the change.
+  full 40-flow Playwright suite still passes after the change.
 - Kidung text now has accessible per-hymn font-size and line-spacing controls;
   PDF has persisted single/two/vertical/horizontal layouts with a narrow-screen
   two-page guard, version-aware page progress with an explicit return-to-saved
@@ -169,7 +169,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  38 passing flows, including the 320–1920px and landscape shell matrix plus
+  40 passing flows, including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -184,6 +184,11 @@ service or platform artifact that cannot be exercised in this workspace.
   the pre-push gate.
   `pnpm verify:native-assets` proves the Tauri frontend boundary includes the
   18 required offline/runtime assets (36,845,594 bytes in the current build).
+- Feature-critical Kidung controls now use the shared id/en/zh message table,
+  including search, viewer modes, chord/PDF/MIDI actions, queue controls,
+  typography, and recovery states. Indonesian copy remains stable for the
+  existing accessibility contract while English and Simplified Chinese no
+  longer fall back to Indonesian on the primary hymn flow.
 - BFF source bindings now reject insecure e-GYS URLs and non-TJC content
   origins before any upstream request is made. Living documentation is checked
   by `pnpm verify:docs` in local hooks and CI, including the feature lifecycle
