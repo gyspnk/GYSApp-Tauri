@@ -238,6 +238,37 @@ function normalizeText(value: string): string {
     .trim();
 }
 
+/**
+ * PDF and catalog lyrics often prefix a line with a verse/refrain label. The
+ * canonical viewer removes that label before matching so the same chorded
+ * PDF row can be reused by a differently formatted lyrics pack.
+ */
+function stripVerseLabel(value: string): string {
+  return value.replace(
+    /^\s*(?:reff?|refrain|chorus|ulangan|[(（]?[0-9]+[)）]?[.\s]*)+/i,
+    "",
+  );
+}
+
+function chordLineScore(target: string, candidate: string): number {
+  if (!target || !candidate) return 0;
+  if (candidate === target) return 1;
+  if (candidate.includes(target) || target.includes(candidate)) {
+    const ratio =
+      Math.min(candidate.length, target.length) /
+      Math.max(candidate.length, target.length);
+    return 0.85 * ratio;
+  }
+  let prefix = 0;
+  while (
+    prefix < candidate.length &&
+    prefix < target.length &&
+    candidate[prefix] === target[prefix]
+  )
+    prefix += 1;
+  return prefix / Math.max(candidate.length, target.length);
+}
+
 function transposeRoot(
   root: string,
   offset: number,
@@ -292,27 +323,20 @@ export function matchChordLinesToLyrics(
         );
   const used = new Set<number>();
   return lyricLines.map((line) => {
-    const target = normalizeText(line);
+    const target = normalizeText(stripVerseLabel(line));
     if (!target) return undefined;
     let bestIndex = -1;
     let bestScore = 0;
     candidates.forEach((candidate, index) => {
       if (used.has(index)) return;
-      const source = normalizeText(candidate.text);
-      if (!source) return;
-      const score =
-        source === target
-          ? 1
-          : source.includes(target) || target.includes(source)
-            ? Math.min(source.length, target.length) /
-              Math.max(source.length, target.length)
-            : 0;
+      const source = normalizeText(stripVerseLabel(candidate.text));
+      const score = chordLineScore(target, source);
       if (score > bestScore) {
         bestScore = score;
         bestIndex = index;
       }
     });
-    if (bestIndex < 0 || bestScore < 0.55) return undefined;
+    if (bestIndex < 0 || bestScore < 0.6) return undefined;
     used.add(bestIndex);
     return candidates[bestIndex];
   });

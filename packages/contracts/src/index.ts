@@ -76,7 +76,11 @@ const NoteAlignedChordDocumentV2Schema = z.object({
     z.string(),
     z.array(
       z.object({
-        noteIdx: z.number().int().nonnegative(),
+        // Canonical gyschordweb reserves -1 for an intro/before-first-note
+        // marker and 99999 for an outro marker. Ordinary note indexes remain
+        // non-negative and are range-checked against the verified PDF at
+        // render time.
+        noteIdx: z.number().int().min(-1),
         chord: z.string().min(1),
       }),
     ),

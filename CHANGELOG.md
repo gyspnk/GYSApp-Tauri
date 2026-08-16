@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Aligned the shared chord capability with gyschordweb's verse-label matcher
+  and note-aligned intro/outro sentinels; added a pinned 140-file PDF position
+  audit and provenance gate so canonical chord regressions fail before release.
+
 - Simplified Home to one calm flow: Daily Verse is fetched from the canonical
   Sauh Bagi Jiwa entry (with the existing verse/reflection switch), and the
   only resume/history surface is `Lanjutkan`. Suara Sejati remains a full

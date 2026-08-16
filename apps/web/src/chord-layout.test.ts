@@ -3,6 +3,9 @@ import {
   buildChordedLines,
   extractLyricLines,
   extractPageNotes,
+  NOTE_IDX_AFTER,
+  NOTE_IDX_BEFORE,
+  resolveChordMarker,
   type PdfTextItem,
 } from "./chord-layout.js";
 
@@ -82,5 +85,17 @@ describe("canonical PDF chord layout", () => {
 
     expect(result.notes).toHaveLength(2);
     expect(lyrics.map((line) => line.text)).toEqual(["A"]);
+  });
+
+  it("resolves canonical intro and outro chord sentinels", () => {
+    const notes = extractPageNotes(
+      [item("1", 20, 90, 8), item("2", 60, 90, 8)],
+      100,
+      120,
+    ).notes;
+
+    expect(resolveChordMarker(notes, NOTE_IDX_BEFORE)?.xPct).toBeCloseTo(21.5);
+    expect(resolveChordMarker(notes, NOTE_IDX_AFTER)?.xPct).toBeCloseTo(66.5);
+    expect(resolveChordMarker(notes, 999_998)).toBeDefined();
   });
 });

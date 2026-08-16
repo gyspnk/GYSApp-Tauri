@@ -574,6 +574,13 @@ class BrowserMidiPlayer {
     });
   }
 
+  /** Warm several neighbours while retaining one shared serial render queue. */
+  public preloadMultiple(
+    requests: readonly MidiPreloadRequest[],
+  ): Promise<boolean[]> {
+    return Promise.all(requests.map((request) => this.preload(request)));
+  }
+
   public preloadStats(): MidiPreloadStats {
     return this.preloadQueue.stats();
   }

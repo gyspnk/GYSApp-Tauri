@@ -12,6 +12,7 @@ const lock = await readJson(
 const chord = await readJson(
   "packages/contracts/generated/chord-manifest.json",
 );
+const chordAudit = await readJson("docs/discovery/chord-position-audit.json");
 const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
@@ -33,6 +34,35 @@ if (lock.items.length !== 1208)
   throw new Error(`expected 1208 music entries, got ${lock.items.length}`);
 if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 140)
   throw new Error("chord manifest drifted from music lock");
+if (
+  chordAudit.version !== 1 ||
+  chordAudit.sourceRepo !== lock.sourceRepo ||
+  chordAudit.sourceCommit !== lock.sourceCommit ||
+  chordAudit.musicLockPath !== "apps/web/public/offline/music-lock.json" ||
+  chordAudit.chordCount !== chord.entries.length ||
+  chordAudit.totals?.orphanEntries !== 0 ||
+  chordAudit.totals?.invalidEntries !== 0 ||
+  !Array.isArray(chordAudit.files) ||
+  chordAudit.files.length !== chord.entries.length
+)
+  throw new Error("chord position audit is missing or drifted");
+const chordAuditBySong = new Map(
+  chordAudit.files.map((file) => [file.songId, file]),
+);
+for (const entry of chord.entries) {
+  const audit = chordAuditBySong.get(entry.songId);
+  if (
+    !audit ||
+    audit.chordPath !== entry.path ||
+    audit.chordBytes !== entry.size ||
+    audit.chordSha256 !== entry.sha256 ||
+    audit.invalidEntries !== 0 ||
+    audit.orphanEntries !== 0 ||
+    audit.mappedEntries + audit.orphanEntries + audit.invalidEntries !==
+      audit.pageResults.reduce((total, page) => total + page.chordEntries, 0)
+  )
+    throw new Error(`chord position audit drift: ${entry.songId}`);
+}
 if (hymns.sourceCommit !== lock.sourceCommit || hymns.items.length !== 533)
   throw new Error("hymn catalog drifted from music lock");
 if (

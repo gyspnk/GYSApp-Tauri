@@ -42,6 +42,10 @@ export type ChordLayoutEntry = {
   chord: string;
 };
 
+/** Reserved by gyschordweb for chords before the first or after the last note. */
+export const NOTE_IDX_BEFORE = -1;
+export const NOTE_IDX_AFTER = 99_999;
+
 export type ChordedLine = {
   text: string;
   chords: Array<{ chord: string; pos: number }>;
@@ -53,6 +57,24 @@ export type PageNotes = {
   pageHeight: number;
   noteRows: PdfNoteRow[];
 };
+
+export function resolveChordMarker(
+  notes: PdfNote[],
+  noteIdx: number,
+): PdfNote | undefined {
+  if (notes.length === 0) return undefined;
+  if (noteIdx === NOTE_IDX_BEFORE) {
+    const first = notes[0];
+    return first
+      ? { ...first, xPct: Math.max(1, first.xPct - 2.5) }
+      : undefined;
+  }
+  if (noteIdx === NOTE_IDX_AFTER || noteIdx > NOTE_IDX_AFTER) {
+    const last = notes.at(-1);
+    return last ? { ...last, xPct: Math.min(99, last.xPct + 2.5) } : undefined;
+  }
+  return notes[noteIdx];
+}
 
 const NOTE_TEXT = /^[0-7.\s]+$/;
 const SINGLE_NOTE = /^[0-7.]$/;
@@ -77,12 +99,15 @@ export function extractPageNotes(
   pageWidth: number,
   pageHeight: number,
 ): PageNotes {
-  const dominant = dominantFontSize(items);
+  const normalizedItems = items
+    .map((item) => ({ ...item, str: item.str.trim() }))
+    .filter((item) => item.str.length > 0);
+  const dominant = dominantFontSize(normalizedItems);
   if (dominant === undefined)
     return { notes: [], pageWidth, pageHeight, noteRows: [] };
 
   const noteItems: PdfTextItem[] = [];
-  for (const item of items.filter(
+  for (const item of normalizedItems.filter(
     (candidate) =>
       NOTE_TEXT.test(candidate.str) &&
       Math.abs(candidate.fontSize - dominant) < 1.5,

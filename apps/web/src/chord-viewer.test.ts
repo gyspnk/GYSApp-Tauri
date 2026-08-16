@@ -110,6 +110,42 @@ describe("shared chord capability", () => {
     expect(matched[1]).toBeUndefined();
   });
 
+  it("matches canonical verse labels and conservative common-prefix lines", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      songId: "hymn-004",
+      title: "Canonical labels",
+      key: "C",
+      sourceCommit: "cbc7d386",
+      sourcePath: "assets/chord/test.json",
+      verses: [
+        {
+          label: "Reff",
+          lines: [
+            {
+              text: "Reff: Tuhan pimpin kami",
+              chords: [{ token: "F", index: 0 }],
+            },
+            { text: "Bersama melayani", chords: [{ token: "C", index: 0 }] },
+          ],
+        },
+      ],
+    });
+
+    const matched = matchChordLinesToLyrics(
+      ["Reff Tuhan pimpin kami", "Bersama melayani hari", "Tidak terkait"],
+      document,
+      [],
+      0,
+    );
+
+    expect(matched.map((line) => line?.chords[0]?.token)).toEqual([
+      "F",
+      "C",
+      undefined,
+    ]);
+  });
+
   it("keeps relative chord markers attached to the visual line after text wraps", () => {
     const rects = Array.from({ length: 10 }, (_, index) => ({
       index,

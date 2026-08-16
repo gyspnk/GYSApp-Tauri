@@ -27,6 +27,7 @@
     "generate:hymn-catalog": "node scripts/generate-hymn-catalog.mjs",
     "generate:literature": "node scripts/generate-literature-snapshot.mjs",
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs",
+    "audit:chords": "node scripts/audit-chord-layout.mjs --source-root .tmp-gyschordweb-cbc7d386 --strict",
     "sync:egys": "node scripts/sync-egys.mjs --write --strict",
     "verify:precommit": "node scripts/verify-precommit.mjs",
     "verify:prepush": "node scripts/verify-prepush.mjs",

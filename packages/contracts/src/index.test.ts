@@ -82,6 +82,20 @@ describe("public contracts", () => {
     expect(parsed.version).toBe(2);
   });
 
+  it("accepts canonical intro and outro note sentinels", () => {
+    const parsed = ChordDocumentV2Schema.parse({
+      version: 2,
+      type: "note-aligned",
+      pages: {
+        "1": [
+          { noteIdx: -1, chord: "C" },
+          { noteIdx: 99999, chord: "G" },
+        ],
+      },
+    });
+    expect(parsed).toMatchObject({ version: 2, type: "note-aligned" });
+  });
+
   it("validates the generated TB pack manifest", () => {
     const parsed = BiblePackManifestSchema.parse({
       version: "1",

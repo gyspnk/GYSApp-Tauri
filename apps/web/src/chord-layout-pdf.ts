@@ -8,6 +8,7 @@ import {
   buildChordedLines,
   extractLyricLines,
   extractPageNotes,
+  resolveChordMarker,
   type ChordedLine,
   type ChordLayoutEntry,
   type PdfTextItem,
@@ -80,7 +81,10 @@ function textItems(page: PDFPageProxy): Promise<PdfTextItem[]> {
         return [];
       return [
         {
-          str: raw.str,
+          // The canonical viewer trims PDF.js text items before detecting
+          // notation. Keeping the same boundary avoids shifting note slots
+          // when a font embeds surrounding whitespace.
+          str: raw.str.trim(),
           x,
           y,
           width,
@@ -157,7 +161,7 @@ export async function buildChordPresentationFromPdf(
       if (notes.notes.length === 0) continue;
       const markers: ChordOverlayMarker[] = [];
       for (const entry of entries) {
-        const note = notes.notes[entry.noteIdx];
+        const note = resolveChordMarker(notes.notes, entry.noteIdx);
         if (!note) continue;
         markers.push({
           page: pageNumber,

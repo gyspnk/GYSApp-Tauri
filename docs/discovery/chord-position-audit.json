@@ -1,0 +1,6824 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-16T06:35:49.790Z",
+  "sourceRepo": "gyspnk/gyschordweb",
+  "sourceCommit": "cbc7d386",
+  "lockPath": "packages/contracts/generated/chord-manifest.json",
+  "musicLockPath": "apps/web/public/offline/music-lock.json",
+  "chordCount": 140,
+  "totals": {
+    "pdfPages": 158,
+    "auditedPages": 158,
+    "chordEntries": 3191,
+    "mappedEntries": 3191,
+    "orphanEntries": 0,
+    "sentinelEntries": 2,
+    "invalidEntries": 0
+  },
+  "files": [
+    {
+      "songId": "hymn-001",
+      "chordPath": "assets/chord/001_Pujilah Allah Yang Maha Esa.chord.json",
+      "chordBytes": 1435,
+      "chordSha256": "af73bbe941833964e7b250bfe4b6f2014f42295000495343d4f3043ba5dd0028",
+      "pdfPath": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
+      "pdfBytes": 13540,
+      "pdfSha256": "44c545e4bba6ab9aa63a533697cc81663be47b2ffac59ffe8da1f184f65cf887",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 267,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C",
+              "position": 0.0157
+            },
+            {
+              "noteIdx": 2,
+              "chord": "Am",
+              "position": 0.1426
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G",
+              "position": 0.2933
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-002",
+      "chordPath": "assets/chord/002_Pujilah Allah Yang Mahakudus.chord.json",
+      "chordBytes": 627,
+      "chordSha256": "aa8fce17767f33e0f626c6b0d26ec141dd8f3af2c85a1e1d6ff36a3ac3591b76",
+      "pdfPath": "assets/pdf/002_Pujilah Allah Yang Mahakudus.pdf",
+      "pdfBytes": 12719,
+      "pdfSha256": "6ca77740b2234d550312cb8d89b4968d648c18ef7b64bcd87ffd5534e289e86e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 145,
+          "notationRows": 8,
+          "lyricRows": 13,
+          "chordEntries": 9,
+          "mappedEntries": 9,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0424
+            },
+            {
+              "noteIdx": 9,
+              "chord": "F#",
+              "position": 0.5469
+            },
+            {
+              "noteIdx": 14,
+              "chord": "B",
+              "position": 0.8175
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 9,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-003",
+      "chordPath": "assets/chord/003_Pujilah Allah Yang Benar.chord.json",
+      "chordBytes": 572,
+      "chordSha256": "32cc4542f286b91022ba59c0831a3c8146e13c358a61ad683d6dc908e80d3072",
+      "pdfPath": "assets/pdf/003_Pujilah Allah Yang Benar.pdf",
+      "pdfBytes": 7021,
+      "pdfSha256": "cb991f91d05db59c74a4217519eb955feff2b17920524124fb0a4d5b055993cb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 136,
+          "notationRows": 8,
+          "lyricRows": 11,
+          "chordEntries": 8,
+          "mappedEntries": 8,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "D#",
+              "position": 0.2079
+            },
+            {
+              "noteIdx": 8,
+              "chord": "Cm",
+              "position": 0.4905
+            },
+            {
+              "noteIdx": 13,
+              "chord": "Gm",
+              "position": 0.773
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 8,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-004",
+      "chordPath": "assets/chord/004_Pujilah Bapa Yang di Surga.chord.json",
+      "chordBytes": 812,
+      "chordSha256": "60c8fb6af600cf4ec1ab3c2e93097b70623218154d10cee1fa754415d9de5e26",
+      "pdfPath": "assets/pdf/004_Pujilah Bapa Yang di Surga.pdf",
+      "pdfBytes": 9751,
+      "pdfSha256": "77db9bd76770575910c4d1a5528d2d5d57e27a708ebfb0d093a38861e37dcf00",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 147,
+          "notationRows": 8,
+          "lyricRows": 17,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.1134
+            },
+            {
+              "noteIdx": 6,
+              "chord": "B",
+              "position": 0.4114
+            },
+            {
+              "noteIdx": 11,
+              "chord": "E",
+              "position": 0.6796
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 12,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-005",
+      "chordPath": "assets/chord/005_Segala Sesuatu Memuji Allah.chord.json",
+      "chordBytes": 1560,
+      "chordSha256": "e5b89854986f33e90b754f9c4382ac34bc39eb6581c5c1f98e7edd5f4e485a5d",
+      "pdfPath": "assets/pdf/005_Segala Sesuatu Memuji Allah.pdf",
+      "pdfBytes": 16605,
+      "pdfSha256": "3f41cc3c07fb2806683bcf0446f99c550bb0933971e766d9570a4842ada6e890",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 273,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "D",
+              "position": 0.1638
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A",
+              "position": 0.2733
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Bm",
+              "position": 0.4141
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-006",
+      "chordPath": "assets/chord/006_Pujilah Ciptaan-Nya.chord.json",
+      "chordBytes": 2023,
+      "chordSha256": "5cfa4a81aea5e80efc8de3b496b7dd9f0b048e1490ea0a40bcc6cf688de50d6c",
+      "pdfPath": "assets/pdf/006_Pujilah Ciptaan-Nya.pdf",
+      "pdfBytes": 22608,
+      "pdfSha256": "0cc4e69c71a821bf90e06ddd3c33bd1fe0a14f261cde744de34dee20829cc79c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 516,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 31,
+          "mappedEntries": 31,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F#",
+              "position": 0.0685
+            },
+            {
+              "noteIdx": 5,
+              "chord": "C#",
+              "position": 0.1743
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#m",
+              "position": 0.2889
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 31,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-007",
+      "chordPath": "assets/chord/007_Segala Sesuatu Memuji Tuhan.chord.json",
+      "chordBytes": 1438,
+      "chordSha256": "225b0dd6d26040449476ace338c9bbb1d66d2b00d333ef2199a50ae7f51520d0",
+      "pdfPath": "assets/pdf/007_Segala Sesuatu Memuji Tuhan.pdf",
+      "pdfBytes": 12574,
+      "pdfSha256": "d0050416345971ea21f4cf725bece83e20be1f93292542ab99d1476e0e01ecc6",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 277,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0438
+            },
+            {
+              "noteIdx": 4,
+              "chord": "B",
+              "position": 0.3013
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C#m",
+              "position": 0.5588
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-008",
+      "chordPath": "assets/chord/008_Pujilah Allah.chord.json",
+      "chordBytes": 947,
+      "chordSha256": "f8359b5fb800a913cbba245dfc071ee71cfb852c9650a1118422361e3c117c0b",
+      "pdfPath": "assets/pdf/008_Pujilah Allah.pdf",
+      "pdfBytes": 17133,
+      "pdfSha256": "0322f0f8e96733d28357695be38875c16806e964911450f12dc6f1b381fe00be",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 180,
+          "notationRows": 8,
+          "lyricRows": 9,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.0982
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#m",
+              "position": 0.2389
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F#",
+              "position": 0.3865
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-009",
+      "chordPath": "assets/chord/009_Bersorak Bagi Tuhan.chord.json",
+      "chordBytes": 935,
+      "chordSha256": "dab9eb65248d2b39f77dff27988f21dd766eb44948d11a40c41e1b84113845c5",
+      "pdfPath": "assets/pdf/009_Bersorak Bagi Tuhan.pdf",
+      "pdfBytes": 15929,
+      "pdfSha256": "e0964e9e01e4261ac14c702ed0c523924b9a13e831472e38fc69b98d3cfc970b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 132,
+          "notationRows": 8,
+          "lyricRows": 10,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.1159
+            },
+            {
+              "noteIdx": 3,
+              "chord": "B",
+              "position": 0.2321
+            },
+            {
+              "noteIdx": 5,
+              "chord": "A",
+              "position": 0.3628
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-010",
+      "chordPath": "assets/chord/010_Muliakanlah Yesus.chord.json",
+      "chordBytes": 1002,
+      "chordSha256": "459175b0acb2d8dbe825098aadbf5eaf56cdb6b7bd8e468dd7208e12205918ce",
+      "pdfPath": "assets/pdf/010_Muliakanlah Yesus.pdf",
+      "pdfBytes": 9862,
+      "pdfSha256": "fc7294dd18113b9ddf31b740efaef8e8a045296bd7af95e4f8f7c72b5d540375",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 176,
+          "notationRows": 12,
+          "lyricRows": 13,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.062
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Dm",
+              "position": 0.3999
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A#",
+              "position": 0.5689
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-011",
+      "chordPath": "assets/chord/011_Gembira di Dalam Tuhan.chord.json",
+      "chordBytes": 823,
+      "chordSha256": "0dc1ed474bd8be5438e08d80e99e2781eb9d85a6f1876303dea915aaece0163e",
+      "pdfPath": "assets/pdf/011_Gembira di Dalam Tuhan.pdf",
+      "pdfBytes": 13547,
+      "pdfSha256": "d74d44edf568cc88fda7eb1b39fb8716dcd3603918be0c0b46af74624374e7bb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 217,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C",
+              "position": 0.2099
+            },
+            {
+              "noteIdx": 10,
+              "chord": "Em",
+              "position": 0.8119
+            },
+            {
+              "noteIdx": 57,
+              "chord": "Dm",
+              "position": 0.2087
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 12,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-012",
+      "chordPath": "assets/chord/012_Mulia Nama Yesus.chord.json",
+      "chordBytes": 1691,
+      "chordSha256": "424106f99693948134752be84de145b7957a7999f41206816ec34d04318c24d6",
+      "pdfPath": "assets/pdf/012_Mulia Nama Yesus.pdf",
+      "pdfBytes": 16560,
+      "pdfSha256": "e776ae00325d5388eff22af67e922265cb08f1f2fd1dfc3552c60c06eeca25f9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 294,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "E",
+              "position": 0.1319
+            },
+            {
+              "noteIdx": 7,
+              "chord": "A",
+              "position": 0.3546
+            },
+            {
+              "noteIdx": 14,
+              "chord": "E",
+              "position": 0.612
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-013",
+      "chordPath": "assets/chord/013_Tiada yang Seperti Yesus.chord.json",
+      "chordBytes": 1561,
+      "chordSha256": "d3d6bd5aca7b920193c5d02950ee39ca89678ee9f27d8246a171409b6ee21f63",
+      "pdfPath": "assets/pdf/013_Tiada yang Seperti Yesus.pdf",
+      "pdfBytes": 12638,
+      "pdfSha256": "9d337cdd06171a431906ca8ec87de66b982fe3b9a5532bf83749a2740572b616",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 336,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0362
+            },
+            {
+              "noteIdx": 4,
+              "chord": "C#m",
+              "position": 0.2043
+            },
+            {
+              "noteIdx": 8,
+              "chord": "A",
+              "position": 0.387
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-014",
+      "chordPath": "assets/chord/014_Kristus Maharaja.chord.json",
+      "chordBytes": 1388,
+      "chordSha256": "ace7d6201c0dc8110d9e76341d2345ce2a769f331449ec47b3333acd4d3b4c02",
+      "pdfPath": "assets/pdf/014_Kristus Maharaja.pdf",
+      "pdfBytes": 18707,
+      "pdfSha256": "590747907ce491b818329adeabb1f5bcfef4b5e28aec7ada2d4d28d7f8ba3669",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 303,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D#",
+              "position": 0.1171
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#",
+              "position": 0.2582
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D#",
+              "position": 0.4307
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-015",
+      "chordPath": "assets/chord/015_Pujilah Yesus.chord.json",
+      "chordBytes": 1130,
+      "chordSha256": "e74167f23d5a2ac19b526c81aed1c739f1b986954243af76862e28c7d80f007e",
+      "pdfPath": "assets/pdf/015_Pujilah Yesus.pdf",
+      "pdfBytes": 11742,
+      "pdfSha256": "369bde2baf04b871adf7ec9c24b80dfbfbf5f799195f7256c2c50b357cf36f6c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 197,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 17,
+          "mappedEntries": 17,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.1604
+            },
+            {
+              "noteIdx": 4,
+              "chord": "C#m",
+              "position": 0.4338
+            },
+            {
+              "noteIdx": 7,
+              "chord": "B",
+              "position": 0.6992
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 17,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-016",
+      "chordPath": "assets/chord/016_Sembahlah Tuhan Langit dan Bumi.chord.json",
+      "chordBytes": 1497,
+      "chordSha256": "9db64a9500eb7cdfa40d5524bad22f6b80fb49eb80a62009c8812eca42a74cb6",
+      "pdfPath": "assets/pdf/016_Sembahlah Tuhan Langit dan Bumi.pdf",
+      "pdfBytes": 12719,
+      "pdfSha256": "9113b2dad8236ccd4fbce4a4b294123b13fab74fd0718e2488a264c955de4885",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 237,
+          "notationRows": 12,
+          "lyricRows": 16,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.1284
+            },
+            {
+              "noteIdx": 3,
+              "chord": "C#m",
+              "position": 0.2571
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F#m",
+              "position": 0.41
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-017",
+      "chordPath": "assets/chord/017_Pujilah Kasih Tuhan.chord.json",
+      "chordBytes": 1578,
+      "chordSha256": "29ffdf2166c5bc2c874b2a59f401f80d95621d1f11234f1aa35271337f6327d0",
+      "pdfPath": "assets/pdf/017_Pujilah Kasih Tuhan.pdf",
+      "pdfBytes": 10476,
+      "pdfSha256": "d18d95f3e49f6c7616a033634df3a97b4620c01df7811baa24bf61c4134c8b04",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 338,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G#",
+              "position": 0.1163
+            },
+            {
+              "noteIdx": 4,
+              "chord": "D#",
+              "position": 0.2562
+            },
+            {
+              "noteIdx": 8,
+              "chord": "G#",
+              "position": 0.4972
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-018",
+      "chordPath": "assets/chord/018_Pujilah Anugerah Tuhan.chord.json",
+      "chordBytes": 1460,
+      "chordSha256": "ca17a8cd15f3d2a609d4a436a3a2d4341048ab30e7a5e812d77c7a7fbd3d1995",
+      "pdfPath": "assets/pdf/018_Pujilah Anugerah Tuhan.pdf",
+      "pdfBytes": 13924,
+      "pdfSha256": "3b752d8ff64bf5ca56800ce73cb7d8a83f3290116d5a8a09bb8c82fe758c0c4e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 322,
+          "notationRows": 16,
+          "lyricRows": 18,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0441
+            },
+            {
+              "noteIdx": 10,
+              "chord": "A#m",
+              "position": 0.5773
+            },
+            {
+              "noteIdx": 16,
+              "chord": "D#",
+              "position": 0.8809
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-019",
+      "chordPath": "assets/chord/019_Hosana.chord.json",
+      "chordBytes": 2156,
+      "chordSha256": "01783c6e7cd6d17e24bb4f537fc98ec70faefb31e566a36dceb0db95dfde5760",
+      "pdfPath": "assets/pdf/019_Hosana.pdf",
+      "pdfBytes": 21766,
+      "pdfSha256": "14c8c147daa60cc47e8724d2ae1915975b45549b510c058d9c2dc7d392391e33",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 282,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0168
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#m",
+              "position": 0.5891
+            },
+            {
+              "noteIdx": 13,
+              "chord": "F#",
+              "position": 0.8111
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 143,
+          "notationRows": 8,
+          "lyricRows": 6,
+          "chordEntries": 11,
+          "mappedEntries": 11,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0168
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#m",
+              "position": 0.5891
+            },
+            {
+              "noteIdx": 13,
+              "chord": "F#",
+              "position": 0.8111
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 33,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-020",
+      "chordPath": "assets/chord/020_Pujilah Tuhan Sang Raja.chord.json",
+      "chordBytes": 1311,
+      "chordSha256": "0daa6eff920668598ae39b2b3f9bea22bcafe0276656d9823339736439b18837",
+      "pdfPath": "assets/pdf/020_Pujilah Tuhan Sang Raja.pdf",
+      "pdfBytes": 16321,
+      "pdfSha256": "511a383be9d342e25a597ddca64d0e869be80ca073dd99e3cfa4f22be70fada4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 312,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G",
+              "position": 0.1011
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D",
+              "position": 0.4408
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G",
+              "position": 0.5998
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-021",
+      "chordPath": "assets/chord/021_Yesus Terelok.chord.json",
+      "chordBytes": 1266,
+      "chordSha256": "13a4f07f2511beb81501f96676d2f9f136f2ccde43ede526b400049c826c57f0",
+      "pdfPath": "assets/pdf/021_Yesus Terelok.pdf",
+      "pdfBytes": 14130,
+      "pdfSha256": "94c9603c00550b517af98a0718a08fe21012bd08cf48bfe22364789ba6a175ad",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 244,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0152
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.2698
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C#",
+              "position": 0.3932
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 19,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-022",
+      "chordPath": "assets/chord/022_Pujilah Alkitab.chord.json",
+      "chordBytes": 948,
+      "chordSha256": "9684eefd3011512950780ffe9885593832544d48a494ede4807c9da385c3a4cb",
+      "pdfPath": "assets/pdf/022_Pujilah Alkitab.pdf",
+      "pdfBytes": 9558,
+      "pdfSha256": "f54cd5325f2a9ffa4a32dac081a7c0329350facb14c08120c12b980661ba147e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 197,
+          "notationRows": 12,
+          "lyricRows": 19,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0154
+            },
+            {
+              "noteIdx": 5,
+              "chord": "D#",
+              "position": 0.3909
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C#",
+              "position": 0.6022
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-023",
+      "chordPath": "assets/chord/023_Firman Tuhan Sungguh Indah.chord.json",
+      "chordBytes": 951,
+      "chordSha256": "a261122495e0ab1069c0649ed1ad58a2db59abba0384df1c44456fe0b0b0dd21",
+      "pdfPath": "assets/pdf/023_Firman Tuhan Sungguh Indah.pdf",
+      "pdfBytes": 7924,
+      "pdfSha256": "4ca3f5c97f9851dd5f8789d9ad0c2690b03d86adc90d12d6badf9efa485e32e4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 192,
+          "notationRows": 8,
+          "lyricRows": 14,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0162
+            },
+            {
+              "noteIdx": 4,
+              "chord": "C#",
+              "position": 0.2374
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3111
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-024",
+      "chordPath": "assets/chord/024_Firman Kehidupan.chord.json",
+      "chordBytes": 1945,
+      "chordSha256": "b05beaedfb4a5db1332cf5b6d6c9bcd625b9937c49497f547f6b0c99a153b3ef",
+      "pdfPath": "assets/pdf/024_Firman Kehidupan.pdf",
+      "pdfBytes": 18696,
+      "pdfSha256": "695a63c28fdf823d197215fa7d52082c2a351f446e3dafee66d7e876e1b0e3f9",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 288,
+          "notationRows": 12,
+          "lyricRows": 14,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C",
+              "position": 0.0174
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Dm",
+              "position": 0.344
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G",
+              "position": 0.6353
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 192,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "Dm",
+              "position": 0.0263
+            },
+            {
+              "noteIdx": 3,
+              "chord": "G",
+              "position": 0.1891
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C",
+              "position": 0.343
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 30,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-025",
+      "chordPath": "assets/chord/025_Firman Allah Murni.chord.json",
+      "chordBytes": 1578,
+      "chordSha256": "1d4f21a104b49c634c37542c2d2e95b3cc34aaa205dc0fd2f69698b265a4defd",
+      "pdfPath": "assets/pdf/025_Firman Allah Murni.pdf",
+      "pdfBytes": 10919,
+      "pdfSha256": "4056f2aec8d21cf78b1dfbaecb8b1de51a4643c5ed794d7b6a00a4a0859779ea",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 279,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0569
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#",
+              "position": 0.3421
+            },
+            {
+              "noteIdx": 6,
+              "chord": "D#",
+              "position": 0.4724
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-026",
+      "chordPath": "assets/chord/026_Tuhan! Berfirmanlah Padaku.chord.json",
+      "chordBytes": 889,
+      "chordSha256": "864243805a4803c8f1197dad73bbffff2e015723e6ba644fa36899af519ddcb5",
+      "pdfPath": "assets/pdf/026_Tuhan! Berfirmanlah Padaku.pdf",
+      "pdfBytes": 7613,
+      "pdfSha256": "c0d43cda7740e4d1f6090cefc0469cee3cbfe06bf150bd814c2a938e1250b9dd",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 144,
+          "notationRows": 8,
+          "lyricRows": 10,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0081
+            },
+            {
+              "noteIdx": 3,
+              "chord": "D#",
+              "position": 0.1866
+            },
+            {
+              "noteIdx": 5,
+              "chord": "G#",
+              "position": 0.3481
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 13,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-027",
+      "chordPath": "assets/chord/027_Yesus Cintaku.chord.json",
+      "chordBytes": 1709,
+      "chordSha256": "fed5396cd6c4eadac2f28265ac750923e80cbb01611955f2f6c9ec5b717c602c",
+      "pdfPath": "assets/pdf/027_Yesus Cintaku.pdf",
+      "pdfBytes": 12792,
+      "pdfSha256": "ab6fdc72942bbe752592114def6bba2f8c9dbb68a5781f0f53128d93206e351f",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0156
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.2916
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.4177
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-028",
+      "chordPath": "assets/chord/028_Yesus Pengasih.chord.json",
+      "chordBytes": 1079,
+      "chordSha256": "88dea92d9db082e4cec58252661bff86b7ec2f6a8dc0a5bcdb38649fb2aa2b9b",
+      "pdfPath": "assets/pdf/028_Yesus Pengasih.pdf",
+      "pdfBytes": 13647,
+      "pdfSha256": "d541e017ef851db7ccc0adff6649bda9625c9a63a9658c388ad51664ef8c0b8a",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 264,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0568
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#m",
+              "position": 0.3658
+            },
+            {
+              "noteIdx": 8,
+              "chord": "G#",
+              "position": 0.6749
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-029",
+      "chordPath": "assets/chord/029_Tuhan Mencari Domba yang Hilang.chord.json",
+      "chordBytes": 1658,
+      "chordSha256": "8cca2082a97c00d9f2400ce0436cfe410aac2d1ad6b1c6a32d08d2b4da9e4096",
+      "pdfPath": "assets/pdf/029_Tuhan Mencari Domba yang Hilang.pdf",
+      "pdfBytes": 17583,
+      "pdfSha256": "7e493200bffa0903abe52ee65db4b5360b112464396b1b07b99c00c52633112e",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 296,
+          "notationRows": 12,
+          "lyricRows": 20,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.1172
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#m",
+              "position": 0.2344
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3751
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 48,
+          "notationRows": 4,
+          "lyricRows": 5,
+          "chordEntries": 4,
+          "mappedEntries": 4,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.2056
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#m",
+              "position": 0.4114
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.6995
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-030",
+      "chordPath": "assets/chord/030_Kasih Tuhan Mencariku.chord.json",
+      "chordBytes": 2224,
+      "chordSha256": "63c34defbab1a82c06023d4103f4df0253b61ffe6b9864fe22a84a10fdedab12",
+      "pdfPath": "assets/pdf/030_Kasih Tuhan Mencariku.pdf",
+      "pdfBytes": 20308,
+      "pdfSha256": "cd1fd5ed1df36cb4cc399321ab6d96d6ff518b48fa09ddb826bf3f08b73a8fe4",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 316,
+          "notationRows": 12,
+          "lyricRows": 16,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.1295
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.4212
+            },
+            {
+              "noteIdx": 13,
+              "chord": "D#m",
+              "position": 0.6886
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 240,
+          "notationRows": 12,
+          "lyricRows": 4,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0071
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.2805
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#m",
+              "position": 0.57
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 34,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-031",
+      "chordPath": "assets/chord/031_Semuanya Demiku.chord.json",
+      "chordBytes": 1577,
+      "chordSha256": "cf952172ed76da5b13a062c1d43a64cc415750fde951043f4896d64902c62061",
+      "pdfPath": "assets/pdf/031_Semuanya Demiku.pdf",
+      "pdfBytes": 14348,
+      "pdfSha256": "f1714552651e5ded0db1202a4fe8cb5c6e783d20a4ca86a9c0f8770801369df5",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 416,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0431
+            },
+            {
+              "noteIdx": 7,
+              "chord": "E",
+              "position": 0.3095
+            },
+            {
+              "noteIdx": 14,
+              "chord": "B",
+              "position": 0.5615
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-033",
+      "chordPath": "assets/chord/033_Ke Yerusalem Baru.chord.json",
+      "chordBytes": 1769,
+      "chordSha256": "3a803e4bd58e47534ef9416c9247d299efa9238f37f468a982ed294aba858a43",
+      "pdfPath": "assets/pdf/033_Ke Yerusalem Baru.pdf",
+      "pdfBytes": 17300,
+      "pdfSha256": "c3f6c043a38d3936c48a1e72ad03561a0c60765edbba28a7bd97d28be58d8684",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 407,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0359
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Cm",
+              "position": 0.1735
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Gm",
+              "position": 0.2742
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-036",
+      "chordPath": "assets/chord/036_Suara Pengharapan.chord.json",
+      "chordBytes": 2401,
+      "chordSha256": "596da989a6b56060835994db6c229df465840ea1736b09bf0133d6bbe12bc61f",
+      "pdfPath": "assets/pdf/036_Suara Pengharapan.pdf",
+      "pdfBytes": 16168,
+      "pdfSha256": "98bdf74d5f57022ad6c26859a53f7a4f63cb659d78b4d1a2284a008f5ec4aef4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 423,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 37,
+          "mappedEntries": 37,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0412
+            },
+            {
+              "noteIdx": 4,
+              "chord": "C#",
+              "position": 0.2157
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3736
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 37,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-054",
+      "chordPath": "assets/chord/054_Bebas Dari Gelap Menuju Terang.chord.json",
+      "chordBytes": 1882,
+      "chordSha256": "e2afe304748e0bde3479a1c3ad701ee4846d24589f98d751c97a4722f95409df",
+      "pdfPath": "assets/pdf/054_Bebas Dari Gelap Menuju Terang.pdf",
+      "pdfBytes": 13240,
+      "pdfSha256": "9a7eab8d3d780b3b1d8edb863d969c78a0366982d5c53b4c40ac96138b05294e",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 203,
+          "notationRows": 12,
+          "lyricRows": 14,
+          "chordEntries": 17,
+          "mappedEntries": 17,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A#",
+              "position": 0.054
+            },
+            {
+              "noteIdx": 2,
+              "chord": "Gm",
+              "position": 0.1781
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Cm",
+              "position": 0.3179
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 140,
+          "notationRows": 8,
+          "lyricRows": 6,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A#",
+              "position": 0.0436
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F",
+              "position": 0.2931
+            },
+            {
+              "noteIdx": 9,
+              "chord": "A#",
+              "position": 0.4913
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 29,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-059",
+      "chordPath": "assets/chord/059_Mohon Pimpinan Tuhan.chord.json",
+      "chordBytes": 1830,
+      "chordSha256": "114345ce1010606ac659e48bb18dfee5f61d0958bb559129e37499bd966d70ef",
+      "pdfPath": "assets/pdf/059_Mohon Pimpinan Tuhan.pdf",
+      "pdfBytes": 16775,
+      "pdfSha256": "769fc91263283b89606603a42e02c323115ba29d54f3773f06bd7794f8ee861b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 295,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0436
+            },
+            {
+              "noteIdx": 3,
+              "chord": "A#m",
+              "position": 0.1825
+            },
+            {
+              "noteIdx": 5,
+              "chord": "G#",
+              "position": 0.2995
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-067",
+      "chordPath": "assets/chord/067_Tuhan Tuntunlah Aku.chord.json",
+      "chordBytes": 1001,
+      "chordSha256": "231399717b0698ff194051e1a728f802705bfd4e688f463e887e285cb599a5fa",
+      "pdfPath": "assets/pdf/067_Tuhan Tuntunlah Aku.pdf",
+      "pdfBytes": 10828,
+      "pdfSha256": "33e267814eebe7698e6241ff79b11c02dd0f26ced39ebc028e239ed6479f64fa",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 212,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0.0641
+            },
+            {
+              "noteIdx": 3,
+              "chord": "D",
+              "position": 0.3505
+            },
+            {
+              "noteIdx": 7,
+              "chord": "E",
+              "position": 0.6831
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-084",
+      "chordPath": "assets/chord/084_Menyambut Rajaku.chord.json",
+      "chordBytes": 1962,
+      "chordSha256": "914459608edee4c449a952c6cac733fa4c3366f3c16517ce8b7564b535bb1b15",
+      "pdfPath": "assets/pdf/084_Menyambut Rajaku.pdf",
+      "pdfBytes": 19076,
+      "pdfSha256": "6006912b118b8953cc23bd5bf5853518de5f4f3e387afcfad6d48b99837aa946",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 223,
+          "notationRows": 12,
+          "lyricRows": 12,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F#",
+              "position": 0.1123
+            },
+            {
+              "noteIdx": 5,
+              "chord": "B",
+              "position": 0.3539
+            },
+            {
+              "noteIdx": 11,
+              "chord": "F#",
+              "position": 0.6921
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 223,
+          "notationRows": 12,
+          "lyricRows": 3,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1224
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G#",
+              "position": 0.7151
+            },
+            {
+              "noteIdx": 16,
+              "chord": "C#",
+              "position": 0.9621
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 30,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-085",
+      "chordPath": "assets/chord/085_Tuhan Segera Datang.chord.json",
+      "chordBytes": 1590,
+      "chordSha256": "8164ca191416afbaf58efc660c700cdc610577f640cf8f8e22bc1e27a049b262",
+      "pdfPath": "assets/pdf/085_Tuhan Segera Datang.pdf",
+      "pdfBytes": 14948,
+      "pdfSha256": "f139ff07bac31c1d5f12398f5894472104aabdd6ceae9b1c36619358799964e9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 392,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1241
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F#",
+              "position": 0.2334
+            },
+            {
+              "noteIdx": 11,
+              "chord": "C#",
+              "position": 0.4467
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-089",
+      "chordPath": "assets/chord/089_AnugerahNya Berlimpah.chord.json",
+      "chordBytes": 1566,
+      "chordSha256": "4367ae05b7abeaf316aa2b6052fb4e3f3c29e41fa67062986021ce2bf903c99d",
+      "pdfPath": "assets/pdf/089_AnugerahNya Berlimpah.pdf",
+      "pdfBytes": 18265,
+      "pdfSha256": "7aad9db5e5fe42456ee7276f2daf12b03ac125ea0caf9daee966edaf9a06f2a1",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 390,
+          "notationRows": 17,
+          "lyricRows": 16,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0421
+            },
+            {
+              "noteIdx": 3,
+              "chord": "B",
+              "position": 0.1955
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.3744
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-090",
+      "chordPath": "assets/chord/090_Hitunglah BerkatNya.chord.json",
+      "chordBytes": 1399,
+      "chordSha256": "70fdece436fd433186c58896b6f7b9f5adc740b765615f4fd9ba72bef6c80b2c",
+      "pdfPath": "assets/pdf/090_Hitunglah BerkatNya.pdf",
+      "pdfBytes": 14327,
+      "pdfSha256": "4bcd36fefa2654b45b968d06a6e1308005af8dec2ae4447b6415a6b8ac122528",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 396,
+          "notationRows": 16,
+          "lyricRows": 18,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0346
+            },
+            {
+              "noteIdx": 8,
+              "chord": "D#m",
+              "position": 0.3402
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G#",
+              "position": 0.5417
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-091",
+      "chordPath": "assets/chord/091_Tuhan Pimpin Jalanku.chord.json",
+      "chordBytes": 2281,
+      "chordSha256": "b0df0bd40bfd8dc7d23ab792ae66f35d15e62251874f4671be4c7114b916d36f",
+      "pdfPath": "assets/pdf/091_Tuhan Pimpin Jalanku.pdf",
+      "pdfBytes": 17679,
+      "pdfSha256": "77c06059ba0fd5d8bbb7b50ed38a5e231211034dc6fdd9276179d43c1b2f2552",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 278,
+          "notationRows": 12,
+          "lyricRows": 13,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G#",
+              "position": 0.144
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Fm",
+              "position": 0.2806
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C#",
+              "position": 0.4325
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 278,
+          "notationRows": 12,
+          "lyricRows": 6,
+          "chordEntries": 17,
+          "mappedEntries": 17,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G#",
+              "position": 0.1291
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Fm",
+              "position": 0.2665
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C#",
+              "position": 0.4191
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 35,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-101",
+      "chordPath": "assets/chord/101_Hanya Cinta Yesus.chord.json",
+      "chordBytes": 1063,
+      "chordSha256": "f05505929278eabb3e2abe6a8c4db18ea2fdbaa4548cca933459f54e7b3c50c8",
+      "pdfPath": "assets/pdf/101_Hanya Cinta Yesus.pdf",
+      "pdfBytes": 9626,
+      "pdfSha256": "eaeac0302fce4cd3700494c0681910cdb3575d08452b56af952c6cc66c03b772",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 348,
+          "notationRows": 16,
+          "lyricRows": 22,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "C",
+              "position": 0.1973
+            },
+            {
+              "noteIdx": 9,
+              "chord": "Am",
+              "position": 0.4741
+            },
+            {
+              "noteIdx": 14,
+              "chord": "C7",
+              "position": 0.7193
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-103",
+      "chordPath": "assets/chord/103_Lebih Baik Ada Yesus.chord.json",
+      "chordBytes": 1690,
+      "chordSha256": "f4105afac7318f63e0e4bcb203f08134f399c527c0e612de65a2ca243ff9548e",
+      "pdfPath": "assets/pdf/103_Lebih Baik Ada Yesus.pdf",
+      "pdfBytes": 16786,
+      "pdfSha256": "3d28d942022787979aa0f6c99359e10e0a9c6a701615d9f2e62421950946684f",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 441,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A",
+              "position": 0.0871
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D",
+              "position": 0.3668
+            },
+            {
+              "noteIdx": 12,
+              "chord": "A",
+              "position": 0.4698
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-122",
+      "chordPath": "assets/chord/122_Saling Mengasihi.chord.json",
+      "chordBytes": 1005,
+      "chordSha256": "557abeb6a3dcb9027472d9b5a4374159637c62f9a0b092a8ff7f832137080529",
+      "pdfPath": "assets/pdf/122_Saling Mengasihi.pdf",
+      "pdfBytes": 12827,
+      "pdfSha256": "2d5d26215c22d79aed161580d559699c493e0f8f7e3ba3f56e4081eedf103c6b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 156,
+          "notationRows": 8,
+          "lyricRows": 13,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 1,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": -1,
+              "chord": "D",
+              "position": 0
+            },
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.1252
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.2981
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 1,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-126",
+      "chordPath": "assets/chord/126_Mengasihi Sesama Saudara.chord.json",
+      "chordBytes": 1434,
+      "chordSha256": "6c89e261433dfe74bdbd4f90842e1b96683e4585cdf80f9b5d1bd7ce01b9a806",
+      "pdfPath": "assets/pdf/126_Mengasihi Sesama Saudara.pdf",
+      "pdfBytes": 14486,
+      "pdfSha256": "77ae9d55f62a198a9eaa6106a244330c027eb84f2301b926d88a35d68a1238d6",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 294,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "D",
+              "position": 0.1491
+            },
+            {
+              "noteIdx": 8,
+              "chord": "Em",
+              "position": 0.4167
+            },
+            {
+              "noteIdx": 10,
+              "chord": "A",
+              "position": 0.5269
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-129",
+      "chordPath": "assets/chord/129_Peringati Hari Kudus.chord.json",
+      "chordBytes": 1247,
+      "chordSha256": "87d1738fbb580d161f517d011d1c11bd5afa65f68c39ca72eeef40d088e9bb67",
+      "pdfPath": "assets/pdf/129_Peringati Hari Kudus.pdf",
+      "pdfBytes": 9249,
+      "pdfSha256": "18afc93f47f3a005231fb712a6f6f1446e3b0fc581216a7e8bf1a516b6a86e07",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 173,
+          "notationRows": 12,
+          "lyricRows": 16,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0449
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C",
+              "position": 0.3317
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F",
+              "position": 0.4449
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 19,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-130",
+      "chordPath": "assets/chord/130_Sabat Kudus.chord.json",
+      "chordBytes": 1015,
+      "chordSha256": "de9fe74a7c987a57e71b1d37989af88c9cd9496e0570ba71dfcccd5afd9e69bc",
+      "pdfPath": "assets/pdf/130_Sabat Kudus.pdf",
+      "pdfBytes": 16592,
+      "pdfSha256": "0f26c563a85c6adf839533ce5c140c65b458663cd725cd91746abcf08f4fc6eb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 252,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F#",
+              "position": 0.0456
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C#",
+              "position": 0.3911
+            },
+            {
+              "noteIdx": 9,
+              "chord": "F#",
+              "position": 0.514
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-131",
+      "chordPath": "assets/chord/131_Girang Berhari Sabat.chord.json",
+      "chordBytes": 1570,
+      "chordSha256": "13dcd0ba05749bbb8f9f0749038d9e1f31e2b33a2d6ac170c6b6e11bbd9043e9",
+      "pdfPath": "assets/pdf/131_Girang Berhari Sabat.pdf",
+      "pdfBytes": 12520,
+      "pdfSha256": "268fed7e8d68c56c1f1e8978daafb2b4e50a1e8384da4d28a16cb38766e9eb4e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 485,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "E",
+              "position": 0.1573
+            },
+            {
+              "noteIdx": 7,
+              "chord": "B",
+              "position": 0.3
+            },
+            {
+              "noteIdx": 11,
+              "chord": "E",
+              "position": 0.4653
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-133",
+      "chordPath": "assets/chord/133_Yesus Takkan Berubah.chord.json",
+      "chordBytes": 2754,
+      "chordSha256": "a6a91e1a1892d3c0286d439469de56262310b0e71d06adcc37fe42937212975f",
+      "pdfPath": "assets/pdf/133_Yesus Takkan Berubah.pdf",
+      "pdfBytes": 31919,
+      "pdfSha256": "0a4834ea94300714458938279482f26c208975a024fde41aa57ce07f3e258aeb",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G",
+              "position": 0.051
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Em",
+              "position": 0.3774
+            },
+            {
+              "noteIdx": 12,
+              "chord": "C",
+              "position": 0.678
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 4,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G",
+              "position": 0.0164
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C",
+              "position": 0.3491
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G",
+              "position": 0.6554
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 43,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-134",
+      "chordPath": "assets/chord/134_Pandanglah Tuhan.chord.json",
+      "chordBytes": 1332,
+      "chordSha256": "dd80bce3bb42f60af565509a3328d25d5a1d4fab763a1937e34a9267c1b4e46d",
+      "pdfPath": "assets/pdf/134_Pandanglah Tuhan.pdf",
+      "pdfBytes": 15256,
+      "pdfSha256": "a1cd506e08af36adba7eec2be4c85b0ac9f062973ed37abeb5ff85bdaf50901b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 410,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D#",
+              "position": 0.0817
+            },
+            {
+              "noteIdx": 9,
+              "chord": "Cm",
+              "position": 0.3645
+            },
+            {
+              "noteIdx": 14,
+              "chord": "Fm",
+              "position": 0.5655
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-137",
+      "chordPath": "assets/chord/137_Yesus Sahabatku.chord.json",
+      "chordBytes": 1526,
+      "chordSha256": "75059673838a8cbd9dcb23aa46258ab920ddaae2e033441ccfa84ccf978b2822",
+      "pdfPath": "assets/pdf/137_Yesus Sahabatku.pdf",
+      "pdfBytes": 19493,
+      "pdfSha256": "55b832674dec63dad697c679139c7a4db9c30724111363f1f3953d433beed765",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 412,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1049
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#",
+              "position": 0.3931
+            },
+            {
+              "noteIdx": 14,
+              "chord": "C#",
+              "position": 0.5477
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-138",
+      "chordPath": "assets/chord/138_Bila Menolak Almasih.chord.json",
+      "chordBytes": 1834,
+      "chordSha256": "a91960ad142d6042fe58f35f50309d1cda3446de8578017dae71530c89e8b59e",
+      "pdfPath": "assets/pdf/138_Bila Menolak Almasih.pdf",
+      "pdfBytes": 11394,
+      "pdfSha256": "165207fec718d9bc6d525b4cb6d0fd8472fc372202146414675a365f6c7bfba3",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 236,
+          "notationRows": 16,
+          "lyricRows": 23,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.211
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A#m",
+              "position": 0.4798
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#m",
+              "position": 0.7486
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-145",
+      "chordPath": "assets/chord/145_Bersandar Pada Yesus.chord.json",
+      "chordBytes": 1936,
+      "chordSha256": "061d0d06b7a079cfa363281e724b66e140e642a4a6eb85c0103197dc911cca86",
+      "pdfPath": "assets/pdf/145_Bersandar Pada Yesus.pdf",
+      "pdfBytes": 12263,
+      "pdfSha256": "f71369338d8b66f0b3c7807aa7a3b44fe50fb4c8405245bab8e107f62b8fabc9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 30,
+          "mappedEntries": 30,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D",
+              "position": 0.0456
+            },
+            {
+              "noteIdx": 3,
+              "chord": "G",
+              "position": 0.1606
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A",
+              "position": 0.3064
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 30,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-146",
+      "chordPath": "assets/chord/146_Sandar Tuhan Setiap Waktu.chord.json",
+      "chordBytes": 1064,
+      "chordSha256": "3eb1da586c7e9f1ae1b0b37c7d785176769daa62e1a6ceae83470a65dab7de0e",
+      "pdfPath": "assets/pdf/146_Sandar Tuhan Setiap Waktu.pdf",
+      "pdfBytes": 11076,
+      "pdfSha256": "d08b9dd08ec41d2296b91e1384a992d5a69d7cefd742162ebc5c96dfe7598289",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 242,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F",
+              "position": 0.1412
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Dm",
+              "position": 0.4646
+            },
+            {
+              "noteIdx": 9,
+              "chord": "A#",
+              "position": 0.6618
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-149",
+      "chordPath": "assets/chord/149_Tenteram di Bawah Lengan Tuhan.chord.json",
+      "chordBytes": 1578,
+      "chordSha256": "efe72283ba1c08638f6b9512541aab918dd89126a3393328a59835a5641bc470",
+      "pdfPath": "assets/pdf/149_Tenteram di Bawah Lengan Tuhan.pdf",
+      "pdfBytes": 10100,
+      "pdfSha256": "d7f81b179d13d591a97a8c4a3735d5338592616ea1fd9b1a499245fce9fd3601",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 348,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0442
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3115
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#",
+              "position": 0.5789
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-155",
+      "chordPath": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
+      "chordBytes": 1430,
+      "chordSha256": "e0d8f67e0cc10983c6d6e4b8285d66a7dc5fc93a1484c0496976813713347f2d",
+      "pdfPath": "assets/pdf/155_Tuhan Selalu Menjagaku.pdf",
+      "pdfBytes": 20846,
+      "pdfSha256": "78a9e1422d446f175cd043e871774cdbcb41ce785e2e2bba072283f1dc92cd8b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 265,
+          "notationRows": 10,
+          "lyricRows": 16,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "A",
+              "position": 0.1822
+            },
+            {
+              "noteIdx": 10,
+              "chord": "Bm",
+              "position": 0.4593
+            },
+            {
+              "noteIdx": 16,
+              "chord": "E",
+              "position": 0.7022
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-158",
+      "chordPath": "assets/chord/158_Berjalan di Jalan Tuhan.chord.json",
+      "chordBytes": 1399,
+      "chordSha256": "9688460131393f2efb15b6c1e6ad8a4032f827d189ce07e88414d740c8362045",
+      "pdfPath": "assets/pdf/158_Berjalan di Jalan Tuhan.pdf",
+      "pdfBytes": 11241,
+      "pdfSha256": "039b2fb18afe696841f2132328f165404ebc90fbe7b29c10dec107785bf86bc6",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 405,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G#",
+              "position": 0.1349
+            },
+            {
+              "noteIdx": 16,
+              "chord": "Cm",
+              "position": 0.8425
+            },
+            {
+              "noteIdx": 19,
+              "chord": "A#m",
+              "position": 0.9705
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-161",
+      "chordPath": "assets/chord/161_Di Bawah Naungan Tuhan.chord.json",
+      "chordBytes": 1006,
+      "chordSha256": "27d1817e50f71efc7bde69c46bcfac463d52c80d794c01ae90823c47d7227a88",
+      "pdfPath": "assets/pdf/161_Di Bawah Naungan Tuhan.pdf",
+      "pdfBytes": 12158,
+      "pdfSha256": "bb3d7fdf5f1a174441cd4477b436e6b41e43fb4c82557e5f1d592df201fcf213",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 222,
+          "notationRows": 8,
+          "lyricRows": 10,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F",
+              "position": 0.1137
+            },
+            {
+              "noteIdx": 8,
+              "chord": "A#",
+              "position": 0.3635
+            },
+            {
+              "noteIdx": 11,
+              "chord": "F",
+              "position": 0.4706
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-165",
+      "chordPath": "assets/chord/165_Yesus Memeluk Aku.chord.json",
+      "chordBytes": 1640,
+      "chordSha256": "374f2717e3f602d6c74bb9c6702e1d8e7d50efbe7a6c88baf96f4b0b382ea8ab",
+      "pdfPath": "assets/pdf/165_Yesus Memeluk Aku.pdf",
+      "pdfBytes": 20004,
+      "pdfSha256": "b77eb3c4207a48ab35c41439e3b061b19687dd700b66a27ee9bd528dd8fad15a",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 243,
+          "notationRows": 12,
+          "lyricRows": 13,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0422
+            },
+            {
+              "noteIdx": 15,
+              "chord": "G#m",
+              "position": 0.8168
+            },
+            {
+              "noteIdx": 17,
+              "chord": "F#m",
+              "position": 0.9631
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 243,
+          "notationRows": 12,
+          "lyricRows": 5,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0453
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.3958
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#",
+              "position": 0.6265
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-179",
+      "chordPath": "assets/chord/179_Bersiap Masuk Surga.chord.json",
+      "chordBytes": 1499,
+      "chordSha256": "4c4628e8413cb1f9599a2bedff9a9b6c0ea47d842258d38783064b44fbb8c369",
+      "pdfPath": "assets/pdf/179_Bersiap Masuk Surga.pdf",
+      "pdfBytes": 12199,
+      "pdfSha256": "d274e6ab5fc9569530e9d497c072aafc8c1bd66e001ab557dbea8ca6e911e6ff",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 354,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C",
+              "position": 0.0403
+            },
+            {
+              "noteIdx": 2,
+              "chord": "G",
+              "position": 0.1381
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C",
+              "position": 0.4071
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-200",
+      "chordPath": "assets/chord/200_Merindukan Rumah di Surga.chord.json",
+      "chordBytes": 1498,
+      "chordSha256": "435b4e212b3ca9df6410141ecf549e3c32a52271d6798a426d97d366fa646a3f",
+      "pdfPath": "assets/pdf/200_Merindukan Rumah di Surga.pdf",
+      "pdfBytes": 18068,
+      "pdfSha256": "6f5795a5039a724eb9843854bef544f0570f0bb71f8f404e89e0e477803440b5",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 348,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G",
+              "position": 0.1157
+            },
+            {
+              "noteIdx": 4,
+              "chord": "C",
+              "position": 0.2569
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G",
+              "position": 0.4147
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-201",
+      "chordPath": "assets/chord/201_Kemuliaan Kekal.chord.json",
+      "chordBytes": 1703,
+      "chordSha256": "9b43c87c16110799d24d3802d6fca7014ef53e29c69ce981f2a77a9116fb47e6",
+      "pdfPath": "assets/pdf/201_Kemuliaan Kekal.pdf",
+      "pdfBytes": 20473,
+      "pdfSha256": "24526b4ab69837a38da9e1b7d87f5cd0080fd9ab0a9d0d1b66e56a99fc2c5f53",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F#",
+              "position": 0.0364
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C#",
+              "position": 0.3158
+            },
+            {
+              "noteIdx": 9,
+              "chord": "F#",
+              "position": 0.4482
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-202",
+      "chordPath": "assets/chord/202_Surga Tempat Bahagia.chord.json",
+      "chordBytes": 1515,
+      "chordSha256": "c95c5dcd935c17fc6507925adc5cbec61362dd722823ef7d2b65cfe40a451cbc",
+      "pdfPath": "assets/pdf/202_Surga Tempat Bahagia.pdf",
+      "pdfBytes": 22418,
+      "pdfSha256": "b4b1eca53b05e917f5885d7296977ab8f6f7cb9c8363bbf6d4b4b734cfe556fd",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 305,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1361
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F#",
+              "position": 0.3987
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.5123
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-203",
+      "chordPath": "assets/chord/203_Bunga Bakung.chord.json",
+      "chordBytes": 3158,
+      "chordSha256": "ae83d68273b6fc2ddad849bab42ff3c52e6936905d4f7c4e761fac9440f41556",
+      "pdfPath": "assets/pdf/203_Bunga Bakung.pdf",
+      "pdfBytes": 18730,
+      "pdfSha256": "6f5e101b24d3ae305115d2f056525bc4f590514a204c0403e82c6570669ebca3",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 576,
+          "notationRows": 12,
+          "lyricRows": 13,
+          "chordEntries": 49,
+          "mappedEntries": 49,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0371
+            },
+            {
+              "noteIdx": 3,
+              "chord": "Bdim",
+              "position": 0.0981
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C#",
+              "position": 0.171
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 49,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-204",
+      "chordPath": "assets/chord/204_Berpengharapan Karena Iman.chord.json",
+      "chordBytes": 1063,
+      "chordSha256": "9615bebfe6be3f53bb1fd4ea539e3bb980dee4a12aae33ca6f631864ee52d2f5",
+      "pdfPath": "assets/pdf/204_Berpengharapan Karena Iman.pdf",
+      "pdfBytes": 20558,
+      "pdfSha256": "c13f6230e50f82ba84c35a35d7ed67d3b30345c278ba2f5baf3522c7fffbb42d",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C",
+              "position": 0.107
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F",
+              "position": 0.4065
+            },
+            {
+              "noteIdx": 13,
+              "chord": "G",
+              "position": 0.6676
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-205",
+      "chordPath": "assets/chord/205_Di Dalam Kristus Pasti Bangkit.chord.json",
+      "chordBytes": 2055,
+      "chordSha256": "da41b938a6486b271631800afcb2bc4448d433913923c02876b051b863a57b6f",
+      "pdfPath": "assets/pdf/205_Di Dalam Kristus Pasti Bangkit.pdf",
+      "pdfBytes": 18755,
+      "pdfSha256": "e104fe701d375d8fc24880cd42981d9ae5d05868110bc1e6c7c9e7acbabf5379",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 302,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 32,
+          "mappedEntries": 32,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D",
+              "position": 0.046
+            },
+            {
+              "noteIdx": 3,
+              "chord": "Bm",
+              "position": 0.1778
+            },
+            {
+              "noteIdx": 5,
+              "chord": "G",
+              "position": 0.3173
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 32,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-206",
+      "chordPath": "assets/chord/206_Aku Pasti Berjumpa Dengan Tuhan.chord.json",
+      "chordBytes": 1492,
+      "chordSha256": "a9c8a882880180d3dd0640bf2073a3ebb24b235fd1e908b5334a170c1e2503f2",
+      "pdfPath": "assets/pdf/206_Aku Pasti Berjumpa Dengan Tuhan.pdf",
+      "pdfBytes": 15254,
+      "pdfSha256": "830f8510257b993cb84c7558a3e41e3c4c63757537ec8c43ec3f1adbed675426",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 327,
+          "notationRows": 16,
+          "lyricRows": 18,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "D",
+              "position": 0.2232
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A",
+              "position": 0.3499
+            },
+            {
+              "noteIdx": 8,
+              "chord": "D",
+              "position": 0.4767
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-207",
+      "chordPath": "assets/chord/207_Merindukan Kedatangan Tuhan.chord.json",
+      "chordBytes": 1586,
+      "chordSha256": "e8b4eccbe5ca73d722fc846c44d92a57ad44543b5315f84cfa1f6fa9729f39df",
+      "pdfPath": "assets/pdf/207_Merindukan Kedatangan Tuhan.pdf",
+      "pdfBytes": 26629,
+      "pdfSha256": "da992525e2872aebee217400d9abee3b26178a1d59f790cec2b3ece74e1ab6f6",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 396,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G#",
+              "position": 0.0998
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C#",
+              "position": 0.3717
+            },
+            {
+              "noteIdx": 10,
+              "chord": "G#",
+              "position": 0.4712
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-208",
+      "chordPath": "assets/chord/208_Umat Kudus Diangkat.chord.json",
+      "chordBytes": 1474,
+      "chordSha256": "e09acc00396ec2985f8210f36e1055a591c569e764dbdf6c824dfca06a6bedc9",
+      "pdfPath": "assets/pdf/208_Umat Kudus Diangkat.pdf",
+      "pdfBytes": 16358,
+      "pdfSha256": "383d65865392470611c4757bdcfea692ba3eadf12bd7e84874c0aa5bad824e90",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 320,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "F#",
+              "position": 0.1965
+            },
+            {
+              "noteIdx": 15,
+              "chord": "B",
+              "position": 0.7322
+            },
+            {
+              "noteIdx": 21,
+              "chord": "F#",
+              "position": 0.9843
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 256,
+          "notationRows": 8,
+          "lyricRows": 4,
+          "chordEntries": 9,
+          "mappedEntries": 9,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "F#",
+              "position": 0.1022
+            },
+            {
+              "noteIdx": 17,
+              "chord": "G#m",
+              "position": 0.6019
+            },
+            {
+              "noteIdx": 25,
+              "chord": "C#",
+              "position": 0.8517
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-209",
+      "chordPath": "assets/chord/209_Aku Akan Melihat Tuhan.chord.json",
+      "chordBytes": 1687,
+      "chordSha256": "066c20f986eb756839f2520365db54bbf08d1ccdb1458f32e3e9222a93f457f5",
+      "pdfPath": "assets/pdf/209_Aku Akan Melihat Tuhan.pdf",
+      "pdfBytes": 17538,
+      "pdfSha256": "3b225848312977e31c6d29cfc7646a119ee3eff8a38752ef5ba6e0ad44efdafd",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 348,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G",
+              "position": 0.0476
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D",
+              "position": 0.4085
+            },
+            {
+              "noteIdx": 12,
+              "chord": "Am",
+              "position": 0.6171
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-210",
+      "chordPath": "assets/chord/210_Di Kala Hidup Ini Berakhir.chord.json",
+      "chordBytes": 1592,
+      "chordSha256": "b329edebc28613247e4f97b97decad41b29dc2e910918374a088b9ed4a480481",
+      "pdfPath": "assets/pdf/210_Di Kala Hidup Ini Berakhir.pdf",
+      "pdfBytes": 12566,
+      "pdfSha256": "fd677d7d7ae1ad34f07d283a16d4ac2b80d37f0b05fa0728fe0d030bfa60ce17",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 397,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G#",
+              "position": 0.1248
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.3975
+            },
+            {
+              "noteIdx": 13,
+              "chord": "G#",
+              "position": 0.5449
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-211",
+      "chordPath": "assets/chord/211_Allah Mengawasi.chord.json",
+      "chordBytes": 1267,
+      "chordSha256": "74903066363ca4cf11e132914b6fbf16eb49f394a5338addcf4fcf5fad1bbe97",
+      "pdfPath": "assets/pdf/211_Allah Mengawasi.pdf",
+      "pdfBytes": 9881,
+      "pdfSha256": "6f6b0b88be57485be91254a3ad277559620a9ce799da7f2814e3af2b7ff4da28",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 244,
+          "notationRows": 12,
+          "lyricRows": 17,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0357
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.2135
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C#",
+              "position": 0.3171
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 19,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-212",
+      "chordPath": "assets/chord/212_Bersinar Bagi Tuhan.chord.json",
+      "chordBytes": 816,
+      "chordSha256": "116981f9785fe29da8142bdd02b12939807c55b68a3397111881aecf86d91a66",
+      "pdfPath": "assets/pdf/212_Bersinar Bagi Tuhan.pdf",
+      "pdfBytes": 8889,
+      "pdfSha256": "75fe512cd6d9377acbac742dfc93f3f4b502802a351bfd465679006095c99d5a",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 184,
+          "notationRows": 8,
+          "lyricRows": 10,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0361
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C",
+              "position": 0.3435
+            },
+            {
+              "noteIdx": 11,
+              "chord": "Gm",
+              "position": 0.5338
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 12,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-213",
+      "chordPath": "assets/chord/213_Walau Sedikit Namun Berarti.chord.json",
+      "chordBytes": 881,
+      "chordSha256": "fd2fda666ff93cffa4ae66cb892d0bc6da45d2ceb89034e24a4c2ac1b24e4566",
+      "pdfPath": "assets/pdf/213_Walau Sedikit Namun Berarti.pdf",
+      "pdfBytes": 13770,
+      "pdfSha256": "17c735b8be14929caa224d5705cc82b80b95df5c6ba5001d0e21c56508f5d37e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 240,
+          "notationRows": 12,
+          "lyricRows": 16,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C",
+              "position": 0.0445
+            },
+            {
+              "noteIdx": 9,
+              "chord": "Am",
+              "position": 0.4789
+            },
+            {
+              "noteIdx": 12,
+              "chord": "C",
+              "position": 0.6508
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 13,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-214",
+      "chordPath": "assets/chord/214_Delapan Kebahagiaan.chord.json",
+      "chordBytes": 1374,
+      "chordSha256": "42dba98ed7a39ed928c3771d50e7b2b629c59a9a49a95db83c80339ae6364470",
+      "pdfPath": "assets/pdf/214_Delapan Kebahagiaan.pdf",
+      "pdfBytes": 10289,
+      "pdfSha256": "bc20c64f1a003706873c534d63b28c5184410dfce1a797ad32750787aab7b6af",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 300,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F",
+              "position": 0.1294
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C",
+              "position": 0.4218
+            },
+            {
+              "noteIdx": 11,
+              "chord": "Gm",
+              "position": 0.7061
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-215",
+      "chordPath": "assets/chord/215_Akhlak Gereja Benar.chord.json",
+      "chordBytes": 935,
+      "chordSha256": "7555d1fc607c0c5ed9a8b474ab9a96bcb55c951283774227a154f19c0e6778fb",
+      "pdfPath": "assets/pdf/215_Akhlak Gereja Benar.pdf",
+      "pdfBytes": 10191,
+      "pdfSha256": "4c1bf41ed72b22904ee9dd0fa6ae6abc2b429ec1b028106a75682bb87353b28e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 209,
+          "notationRows": 12,
+          "lyricRows": 17,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.041
+            },
+            {
+              "noteIdx": 3,
+              "chord": "C",
+              "position": 0.2238
+            },
+            {
+              "noteIdx": 6,
+              "chord": "F",
+              "position": 0.4065
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-216",
+      "chordPath": "assets/chord/216_Budi Pekerti Umat Suci.chord.json",
+      "chordBytes": 1003,
+      "chordSha256": "f5ae2aa8797526ae316f3847d77026f8dd61ec789e9598eb105b6307f8d295fd",
+      "pdfPath": "assets/pdf/216_Budi Pekerti Umat Suci.pdf",
+      "pdfBytes": 11203,
+      "pdfSha256": "c2f01e0689f9a595a58120797ff80f06dd9c2822b3f9692d5b357d0dcf2e2986",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 322,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "E",
+              "position": 0.1935
+            },
+            {
+              "noteIdx": 8,
+              "chord": "B",
+              "position": 0.4418
+            },
+            {
+              "noteIdx": 18,
+              "chord": "E",
+              "position": 0.9383
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-217",
+      "chordPath": "assets/chord/217_Melakukan Firman Tuhan.chord.json",
+      "chordBytes": 1265,
+      "chordSha256": "499ed5edb75b0843bbaf6b0e27666889bcbe15cb78f28e8abf69f3bf99f1bc10",
+      "pdfPath": "assets/pdf/217_Melakukan Firman Tuhan.pdf",
+      "pdfBytes": 10480,
+      "pdfSha256": "3b27c8ba5875c853706b3992b6ad57ca9fb79612b42fdf14e7fd54c41cad4c57",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 260,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1916
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.4557
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#",
+              "position": 0.7199
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 19,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-218",
+      "chordPath": "assets/chord/218_Buah Roh Kudus.chord.json",
+      "chordBytes": 1575,
+      "chordSha256": "c2922ecf8af16895f3229dffef019aa73c06b19b2924df5e7ff449b9b6b7f49e",
+      "pdfPath": "assets/pdf/218_Buah Roh Kudus.pdf",
+      "pdfBytes": 12718,
+      "pdfSha256": "3521529a1a0830e2ca5c6b9e461d4edf0d6b336e5f7e88631152ff8d809fad98",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 268,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F#",
+              "position": 0.0401
+            },
+            {
+              "noteIdx": 4,
+              "chord": "D#m",
+              "position": 0.3003
+            },
+            {
+              "noteIdx": 9,
+              "chord": "B",
+              "position": 0.5767
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-219",
+      "chordPath": "assets/chord/219_Di mana Saja Bersinar.chord.json",
+      "chordBytes": 1513,
+      "chordSha256": "7a8c2ee8840b96773ea64d216ebc217f02b13d3143936b5b7c76402486a65487",
+      "pdfPath": "assets/pdf/219_Di mana Saja Bersinar.pdf",
+      "pdfBytes": 12126,
+      "pdfSha256": "36c2af310f2483ab6ff320ec132af0bcadbf61c969ba25a1dc690b42d3630818",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 392,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "B",
+              "position": 0.1332
+            },
+            {
+              "noteIdx": 10,
+              "chord": "C#m",
+              "position": 0.4741
+            },
+            {
+              "noteIdx": 15,
+              "chord": "F#",
+              "position": 0.7039
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-220",
+      "chordPath": "assets/chord/220_Api Pengujian.chord.json",
+      "chordBytes": 1450,
+      "chordSha256": "7227b349511eaf59de43d6aa025219c4d7fe082e1165eaff51612aaa2d499594",
+      "pdfPath": "assets/pdf/220_Api Pengujian.pdf",
+      "pdfBytes": 15243,
+      "pdfSha256": "c944811e12a41e78d7a05f455ff50fe6ec3b55ecc222ed7528b63dc2d5b738bb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 317,
+          "notationRows": 15,
+          "lyricRows": 21,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D#",
+              "position": 0.0978
+            },
+            {
+              "noteIdx": 5,
+              "chord": "A#",
+              "position": 0.2717
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#",
+              "position": 0.4456
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-221",
+      "chordPath": "assets/chord/221_Taklukkan Keinginan Daging.chord.json",
+      "chordBytes": 1071,
+      "chordSha256": "88b53c58014256f12a897fd88798d0a562ffacc0009e3c65b56db1460c065883",
+      "pdfPath": "assets/pdf/221_Taklukkan Keinginan Daging.pdf",
+      "pdfBytes": 13559,
+      "pdfSha256": "f8e3f54b0d147507c3d703e6af71e67126d6abc9b39d48fb50b88aff72bac7ff",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 163,
+          "notationRows": 8,
+          "lyricRows": 13,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0355
+            },
+            {
+              "noteIdx": 5,
+              "chord": "C#",
+              "position": 0.2944
+            },
+            {
+              "noteIdx": 9,
+              "chord": "G#",
+              "position": 0.4381
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-222",
+      "chordPath": "assets/chord/222_Berbahagialah Yang Suci Hatinya.chord.json",
+      "chordBytes": 630,
+      "chordSha256": "888b4e2e5e395055414d6381c30ae4a20a0b5890c09f83e656856b6de8f407d8",
+      "pdfPath": "assets/pdf/222_Berbahagialah Yang Suci Hatinya.pdf",
+      "pdfBytes": 10760,
+      "pdfSha256": "66412d029e91b29f30973ab0d10b625bd232a28faadd19693241fed52cadd229",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 128,
+          "notationRows": 8,
+          "lyricRows": 13,
+          "chordEntries": 9,
+          "mappedEntries": 9,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.1411
+            },
+            {
+              "noteIdx": 5,
+              "chord": "C#m",
+              "position": 0.4251
+            },
+            {
+              "noteIdx": 9,
+              "chord": "F#m",
+              "position": 0.6914
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 9,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-223",
+      "chordPath": "assets/chord/223_Kidung Umat Pilihan.chord.json",
+      "chordBytes": 1998,
+      "chordSha256": "be63630c8c78db4601b8e2e4d7fe78f69a023f38eda9592093fd6a4168c6a52e",
+      "pdfPath": "assets/pdf/223_Kidung Umat Pilihan.pdf",
+      "pdfBytes": 17971,
+      "pdfSha256": "303ed90a5a08b8029857c810b6fe1e8c2fd1cb5e842f679d8360cb568b15b396",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 402,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 31,
+          "mappedEntries": 31,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0.0355
+            },
+            {
+              "noteIdx": 8,
+              "chord": "D",
+              "position": 0.3435
+            },
+            {
+              "noteIdx": 12,
+              "chord": "A",
+              "position": 0.4939
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 31,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-224",
+      "chordPath": "assets/chord/224_Mohon Tuhan Selidiki.chord.json",
+      "chordBytes": 1635,
+      "chordSha256": "5ae30f7df114959b80657fcf7afacdceecbd450f78edf14e95302fcb41ec1c1f",
+      "pdfPath": "assets/pdf/224_Mohon Tuhan Selidiki.pdf",
+      "pdfBytes": 13201,
+      "pdfSha256": "81f613e2fc5bfd82574eeada438f565be465adb984f0a37b97f73f04d567aaa4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 25,
+          "mappedEntries": 25,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.052
+            },
+            {
+              "noteIdx": 3,
+              "chord": "Am",
+              "position": 0.2005
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.3576
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-225",
+      "chordPath": "assets/chord/225_Turut Roh Kudus.chord.json",
+      "chordBytes": 1500,
+      "chordSha256": "e180c756e96d6a6d7506780ee671506d886f5c7bb715173e34e42c5cb5e6a44e",
+      "pdfPath": "assets/pdf/225_Turut Roh Kudus.pdf",
+      "pdfBytes": 12161,
+      "pdfSha256": "8708be42750cc80f23fcf689e8515256e7c85dc66f59e9a1a629282de30ebc95",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 360,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G",
+              "position": 0.0369
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Bm",
+              "position": 0.1931
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C",
+              "position": 0.3048
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-226",
+      "chordPath": "assets/chord/226_Jadilah Kehendak Tuhan.chord.json",
+      "chordBytes": 1437,
+      "chordSha256": "1a2d20bcc8831cdbde224a7e1bebbb64a775e3f8f0a87c2ba3fb1207f76160d0",
+      "pdfPath": "assets/pdf/226_Jadilah Kehendak Tuhan.pdf",
+      "pdfBytes": 16120,
+      "pdfSha256": "7a9fe3a320cbdea1787f51a24bd834261ac50fd24e9a4fe2daec6b93dfecceef",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 275,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F",
+              "position": 0.1017
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C",
+              "position": 0.357
+            },
+            {
+              "noteIdx": 11,
+              "chord": "Gm",
+              "position": 0.6123
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-227",
+      "chordPath": "assets/chord/227_Berbahagialah Yang Mendengar PerintahNya.chord.json",
+      "chordBytes": 1009,
+      "chordSha256": "16b309cd60dcddb2f3e61a8b8d5ed228e25c0fff2c30f4a4ac80c2621fad6d78",
+      "pdfPath": "assets/pdf/227_Berbahagialah Yang Mendengar PerintahNya.pdf",
+      "pdfBytes": 11310,
+      "pdfSha256": "a0f4d6ffe8b317e5c87c05b1de693df6e83432b343ddc77d00724d61438e2b8c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 225,
+          "notationRows": 8,
+          "lyricRows": 14,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "E",
+              "position": 0.1318
+            },
+            {
+              "noteIdx": 6,
+              "chord": "F#m",
+              "position": 0.272
+            },
+            {
+              "noteIdx": 10,
+              "chord": "A",
+              "position": 0.4121
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-228",
+      "chordPath": "assets/chord/228_Berbahagialah Yang Turut PerintahNya.chord.json",
+      "chordBytes": 1583,
+      "chordSha256": "cc4ee44fd76190eaf31d9e4951c458dea6ae715ddc716fa5e17ff63a202a7c14",
+      "pdfPath": "assets/pdf/228_Berbahagialah Yang Turut PerintahNya.pdf",
+      "pdfBytes": 11697,
+      "pdfSha256": "ced9c0e30360c076a175a38ba380088af548681ae821f04361f73172c3d519e4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 352,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.041
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3981
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.4895
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-229",
+      "chordPath": "assets/chord/229_Sepuluh Perintah Allah.chord.json",
+      "chordBytes": 1293,
+      "chordSha256": "e7d3a532386999f082c4c6203faaa570fd33552dd2ad3193f79814fc88594a43",
+      "pdfPath": "assets/pdf/229_Sepuluh Perintah Allah.pdf",
+      "pdfBytes": 9689,
+      "pdfSha256": "62a1dc4ad3fbd95557b3762bd2ec1739ac8835f19f24ff077ebbeb16907bdade",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 135,
+          "notationRows": 8,
+          "lyricRows": 12,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C",
+              "position": 0.0381
+            },
+            {
+              "noteIdx": 1,
+              "chord": "G",
+              "position": 0.0921
+            },
+            {
+              "noteIdx": 2,
+              "chord": "F",
+              "position": 0.1693
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-230",
+      "chordPath": "assets/chord/230_Berbahagialah Orang yang Benar.chord.json",
+      "chordBytes": 1006,
+      "chordSha256": "8551923623bcae42cfb3b90419fb4abc37051577d1b2888d281da56ca466fea4",
+      "pdfPath": "assets/pdf/230_Berbahagialah Orang yang Benar.pdf",
+      "pdfBytes": 11584,
+      "pdfSha256": "f45da9c0ab34f02840bcfa9af51be1b45e41952a3bf2b02f13e56d14e9bb37e8",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 192,
+          "notationRows": 8,
+          "lyricRows": 11,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0396
+            },
+            {
+              "noteIdx": 3,
+              "chord": "G#m",
+              "position": 0.1598
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.312
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-231",
+      "chordPath": "assets/chord/231_Jadilah Seperti Kehendak-Mu.chord.json",
+      "chordBytes": 1436,
+      "chordSha256": "2165a9ac3e0a3102ab5dbb4a99bd8d6659cdc2038576e668c84f8edc6b4976db",
+      "pdfPath": "assets/pdf/231_Jadilah Seperti Kehendak-Mu.pdf",
+      "pdfBytes": 16677,
+      "pdfSha256": "34edd966ea96a05a7f65721d94e5306d491cd3de0b836ea7b0acf68544026161",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 320,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0.045
+            },
+            {
+              "noteIdx": 5,
+              "chord": "E",
+              "position": 0.3023
+            },
+            {
+              "noteIdx": 11,
+              "chord": "A",
+              "position": 0.5746
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-232",
+      "chordPath": "assets/chord/232_Seperti Yesus.chord.json",
+      "chordBytes": 1757,
+      "chordSha256": "5ae41523e75717057225a26eed6983167b0ca07df9067495b9cff322ef2c06c9",
+      "pdfPath": "assets/pdf/232_Seperti Yesus.pdf",
+      "pdfBytes": 11304,
+      "pdfSha256": "e249f6bcabf893fb3842ae1c19309d4f7e17ea2752359ae3f11002af845e11ed",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A",
+              "position": 0.1012
+            },
+            {
+              "noteIdx": 4,
+              "chord": "D",
+              "position": 0.242
+            },
+            {
+              "noteIdx": 7,
+              "chord": "A",
+              "position": 0.3985
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-233",
+      "chordPath": "assets/chord/233_Milik Yesus.chord.json",
+      "chordBytes": 751,
+      "chordSha256": "e253b41ff1cb91c475610af3aa7339b1aa8581391f5861d2d268dbd2c329d8ac",
+      "pdfPath": "assets/pdf/233_Milik Yesus.pdf",
+      "pdfBytes": 7820,
+      "pdfSha256": "185fc3d195d8dc39f60e850108744bc6a57dfde5c0f5422df543a7c5b7105dd0",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 132,
+          "notationRows": 8,
+          "lyricRows": 17,
+          "chordEntries": 11,
+          "mappedEntries": 11,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0535
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A",
+              "position": 0.3605
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F#m",
+              "position": 0.6585
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 11,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-234",
+      "chordPath": "assets/chord/234_Ingin Lebih Dekat Tuhan.chord.json",
+      "chordBytes": 1703,
+      "chordSha256": "5216795fb7b2ab762bb356ad0fb3d162adff6faaccdb78416c60521a75f6e0c1",
+      "pdfPath": "assets/pdf/234_Ingin Lebih Dekat Tuhan.pdf",
+      "pdfBytes": 17618,
+      "pdfSha256": "95a4a9a1e9bc3f01146e4df8028d1c825c003a835bfb100516b9d55e8b83cb0b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.051
+            },
+            {
+              "noteIdx": 3,
+              "chord": "Gm",
+              "position": 0.1798
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3515
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-235",
+      "chordPath": "assets/chord/235_Tuhan dan Aku Satu Tubuh.chord.json",
+      "chordBytes": 1756,
+      "chordSha256": "3e7d53b5c6d155200a1d46eff4c65a26b33e2dd8a0e7f7b5998acd9c54c49596",
+      "pdfPath": "assets/pdf/235_Tuhan dan Aku Satu Tubuh.pdf",
+      "pdfBytes": 11130,
+      "pdfSha256": "823e97564562aafb3ee94b1cbc18e1373c8eaddad817a45e48deee58d81f7a6a",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 264,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0499
+            },
+            {
+              "noteIdx": 4,
+              "chord": "F#",
+              "position": 0.345
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#m",
+              "position": 0.4715
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-236",
+      "chordPath": "assets/chord/236_Aku Milik Yesus.chord.json",
+      "chordBytes": 1772,
+      "chordSha256": "0de272023089325bebc4a4624d1c2b94402d0e286e67fe2ea5782ec3840e8203",
+      "pdfPath": "assets/pdf/236_Aku Milik Yesus.pdf",
+      "pdfBytes": 21155,
+      "pdfSha256": "f8f7cd8b986170d426596907085df1fbfcfb27d4437112c2176e587c3d518381",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 580,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "G#",
+              "position": 0.1693
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.2992
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G#",
+              "position": 0.4315
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-237",
+      "chordPath": "assets/chord/237_Sejak Yesus di Hatiku.chord.json",
+      "chordBytes": 1506,
+      "chordSha256": "b650adc7c1683162ec103f69b779a185ea11bb39ac0d1e2cbb51cc92307532b4",
+      "pdfPath": "assets/pdf/237_Sejak Yesus di Hatiku.pdf",
+      "pdfBytes": 18217,
+      "pdfSha256": "4280308b224fd8227330c0224a9076d64759935abbd38582262548fb80e9017b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 393,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "D",
+              "position": 0.1429
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Bm",
+              "position": 0.2786
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F#m",
+              "position": 0.4295
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-238",
+      "chordPath": "assets/chord/238_Yesus, Tinggallah di Hatiku.chord.json",
+      "chordBytes": 1681,
+      "chordSha256": "f94fd10f4733ea9f1606f91cd9f9ef625c04381885e11b552d9533ad8cbe6c96",
+      "pdfPath": "assets/pdf/238_Yesus, Tinggallah di Hatiku.pdf",
+      "pdfBytes": 17639,
+      "pdfSha256": "255d85685f292eb79d636c495c28e0189af02d27138e8794f7f3388699abf662",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 331,
+          "notationRows": 16,
+          "lyricRows": 18,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C",
+              "position": 0.1543
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G",
+              "position": 0.4187
+            },
+            {
+              "noteIdx": 11,
+              "chord": "C",
+              "position": 0.5233
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-239",
+      "chordPath": "assets/chord/239_Tuhan, Tinggallah Bersamaku.chord.json",
+      "chordBytes": 1634,
+      "chordSha256": "7cc240243098b5bc0667edb61537afaa17bb6bd720108dbc29f1b86a9c5e02f2",
+      "pdfPath": "assets/pdf/239_Tuhan, Tinggallah Bersamaku.pdf",
+      "pdfBytes": 8762,
+      "pdfSha256": "69bbf46a8450a44d6b92c283d47ee4c4f2fcc59c25ba51cb2329c07dbd812b74",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 257,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 25,
+          "mappedEntries": 25,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.061
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#m",
+              "position": 0.3585
+            },
+            {
+              "noteIdx": 6,
+              "chord": "D#m",
+              "position": 0.4723
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-240",
+      "chordPath": "assets/chord/240_Girang Bersama Tuhan.chord.json",
+      "chordBytes": 1754,
+      "chordSha256": "ff71148f0cfe80891d518433b3cb224fbdb7e73eaf2ed05c095a718a872f9572",
+      "pdfPath": "assets/pdf/240_Girang Bersama Tuhan.pdf",
+      "pdfBytes": 10816,
+      "pdfSha256": "1f1f00e089103d4977ce9605409c20f2bc18e0030928fff98071a02729a67176",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 416,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0373
+            },
+            {
+              "noteIdx": 8,
+              "chord": "A#",
+              "position": 0.3246
+            },
+            {
+              "noteIdx": 12,
+              "chord": "F",
+              "position": 0.4607
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-241",
+      "chordPath": "assets/chord/241_Raja Jiwaku.chord.json",
+      "chordBytes": 952,
+      "chordSha256": "8fbee6c2f0b125e9152dd109ff8a3682fc8d0672fbe875ad16a85887959422ee",
+      "pdfPath": "assets/pdf/241_Raja Jiwaku.pdf",
+      "pdfBytes": 10934,
+      "pdfSha256": "a8561d3a49ea60daac2f21598257ac9d1ae6aeb32e5c2e6ef3ed4ac57000dbdb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 231,
+          "notationRows": 8,
+          "lyricRows": 11,
+          "chordEntries": 14,
+          "mappedEntries": 14,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "G#",
+              "position": 0.0919
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Cm",
+              "position": 0.2576
+            },
+            {
+              "noteIdx": 11,
+              "chord": "D#",
+              "position": 0.4241
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 14,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-242",
+      "chordPath": "assets/chord/242_Tuhan Menanti di Luar Pintu.chord.json",
+      "chordBytes": 1511,
+      "chordSha256": "96680731f1fda1e684dad0425987f4f1bd1d50c2183732d6a3f2a361f4c4c30b",
+      "pdfPath": "assets/pdf/242_Tuhan Menanti di Luar Pintu.pdf",
+      "pdfBytes": 14249,
+      "pdfSha256": "fe62d5d6180cf6b88c112d3a69a701a80e908c50eba754625115289369230c3e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 314,
+          "notationRows": 16,
+          "lyricRows": 19,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F#",
+              "position": 0.186
+            },
+            {
+              "noteIdx": 4,
+              "chord": "B",
+              "position": 0.3033
+            },
+            {
+              "noteIdx": 6,
+              "chord": "F#",
+              "position": 0.4374
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-243",
+      "chordPath": "assets/chord/243_Dekatkanlah Aku PadaMu.chord.json",
+      "chordBytes": 1814,
+      "chordSha256": "606eb9a6dcaf6abc1df383339b187b2d28da9b02ece8dd9ebdcc95765b80f244",
+      "pdfPath": "assets/pdf/243_Dekatkanlah Aku PadaMu.pdf",
+      "pdfBytes": 11988,
+      "pdfSha256": "fa1f6fb90d14c7e711ef77c9751c002ca8c8caa0ec919be1ed3867025a049377",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 364,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "D",
+              "position": 0.1646
+            },
+            {
+              "noteIdx": 5,
+              "chord": "A",
+              "position": 0.2697
+            },
+            {
+              "noteIdx": 9,
+              "chord": "F#",
+              "position": 0.4422
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-244",
+      "chordPath": "assets/chord/244_Tuhan, Aku Mau Seperti-Mu.chord.json",
+      "chordBytes": 1455,
+      "chordSha256": "d8f090556830cb789fb6219337708c48209d48a4dc398e4bff81409356597c0a",
+      "pdfPath": "assets/pdf/244_Tuhan, Aku Mau Seperti-Mu.pdf",
+      "pdfBytes": 20212,
+      "pdfSha256": "85802d58044a25f36805ca5d3b17f7e9705b18964cbfcc6b1317bd906508c5a9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 576,
+          "notationRows": 16,
+          "lyricRows": 10,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "F#",
+              "position": 0.1798
+            },
+            {
+              "noteIdx": 9,
+              "chord": "B",
+              "position": 0.3061
+            },
+            {
+              "noteIdx": 12,
+              "chord": "F#",
+              "position": 0.4459
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-245",
+      "chordPath": "assets/chord/245_Tinggal Bersama Tuhan.chord.json",
+      "chordBytes": 1014,
+      "chordSha256": "49fcbb7dee0effc835a8c810a7ee324bae347c6d3c4870495a5c1919fdd50f9f",
+      "pdfPath": "assets/pdf/245_Tinggal Bersama Tuhan.pdf",
+      "pdfBytes": 13812,
+      "pdfSha256": "675f93f031f8efb4ebe71491a99a2b0e4ca9e6a9011fdea9dfd5cb6800e628d3",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 214,
+          "notationRows": 8,
+          "lyricRows": 14,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0369
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.1787
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#",
+              "position": 0.4608
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-246",
+      "chordPath": "assets/chord/246_Memohon Roh Kudus.chord.json",
+      "chordBytes": 870,
+      "chordSha256": "9e3905caa2ba49a93c6547d62f70df7d50c5cffee49af803e22c8f273edde951",
+      "pdfPath": "assets/pdf/246_Memohon Roh Kudus.pdf",
+      "pdfBytes": 15826,
+      "pdfSha256": "fa69cb61ad2772884d2ee9b71bb6f326c2882bd5fad0eb918a6271a6cb38f1c0",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 155,
+          "notationRows": 8,
+          "lyricRows": 15,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D",
+              "position": 0.1215
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G",
+              "position": 0.2662
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D",
+              "position": 0.4415
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 13,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-247",
+      "chordPath": "assets/chord/247_Kuasa Roh Kudus.chord.json",
+      "chordBytes": 1819,
+      "chordSha256": "a01acd5a0c3ddcd5add69cad36706e593a3fee084841884e5debb010ab04cdd9",
+      "pdfPath": "assets/pdf/247_Kuasa Roh Kudus.pdf",
+      "pdfBytes": 23388,
+      "pdfSha256": "5666c25bf645819c020afd3d7569485cec4997bf036698bd686f5b67ac161d05",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 236,
+          "notationRows": 12,
+          "lyricRows": 17,
+          "chordEntries": 17,
+          "mappedEntries": 17,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "C",
+              "position": 0.1424
+            },
+            {
+              "noteIdx": 9,
+              "chord": "Am",
+              "position": 0.4477
+            },
+            {
+              "noteIdx": 13,
+              "chord": "F",
+              "position": 0.706
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 220,
+          "notationRows": 8,
+          "lyricRows": 4,
+          "chordEntries": 11,
+          "mappedEntries": 11,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C",
+              "position": 0.0602
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F",
+              "position": 0.3168
+            },
+            {
+              "noteIdx": 11,
+              "chord": "C",
+              "position": 0.4471
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-248",
+      "chordPath": "assets/chord/248_Mohon Roh Kudus.chord.json",
+      "chordBytes": 1011,
+      "chordSha256": "242097c58e20839559ca2e82542f353fe14bbb201d97449b4cdc909657fba343",
+      "pdfPath": "assets/pdf/248_Mohon Roh Kudus.pdf",
+      "pdfBytes": 9216,
+      "pdfSha256": "1927fff11f7afe7274d6d6e576a2e0b20dfd24159006f9d701401b76f33ec82d",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 236,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A#",
+              "position": 0.1497
+            },
+            {
+              "noteIdx": 8,
+              "chord": "Gm",
+              "position": 0.7259
+            },
+            {
+              "noteIdx": 54,
+              "chord": "A#",
+              "position": 0.202
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-249",
+      "chordPath": "assets/chord/249_Roh Kudus Baptis Semua.chord.json",
+      "chordBytes": 1832,
+      "chordSha256": "a3e919f1d97e1035069ba4301e64364b6e5acb8416a0877bed1f42b7e98416d5",
+      "pdfPath": "assets/pdf/249_Roh Kudus Baptis Semua.pdf",
+      "pdfBytes": 9525,
+      "pdfSha256": "d5c74b8f64962563eb187d2201b79718d54b65abf43a9bf8bc7b158693f1ff7a",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 288,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1735
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.3
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C#",
+              "position": 0.4344
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-250",
+      "chordPath": "assets/chord/250_Mendapat Kekuatan Baru.chord.json",
+      "chordBytes": 884,
+      "chordSha256": "90331e7cde482f06777604954ba43591b85a5615aba3079fc0cd0e0e41d51d55",
+      "pdfPath": "assets/pdf/250_Mendapat Kekuatan Baru.pdf",
+      "pdfBytes": 9231,
+      "pdfSha256": "0297f101db0f8c28e77e92d8ce578d0c9c41a6545f1e0e6aacb2b75938647cda",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 147,
+          "notationRows": 8,
+          "lyricRows": 13,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F#",
+              "position": 0.1268
+            },
+            {
+              "noteIdx": 6,
+              "chord": "B",
+              "position": 0.4131
+            },
+            {
+              "noteIdx": 11,
+              "chord": "F#",
+              "position": 0.6995
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 13,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-259",
+      "chordPath": "assets/chord/259_Tekun Berdoa.chord.json",
+      "chordBytes": 1757,
+      "chordSha256": "2bcb4d122ad72383ae8066579c3697ae77970f17ee7145ffb568ec6c0d919346",
+      "pdfPath": "assets/pdf/259_Tekun Berdoa.pdf",
+      "pdfBytes": 17237,
+      "pdfSha256": "aa89bcafee572daccf136b1c4defe8cd72fd1e15847a9fcc45c8447798faab38",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A",
+              "position": 0.1036
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D",
+              "position": 0.3488
+            },
+            {
+              "noteIdx": 13,
+              "chord": "A",
+              "position": 0.594
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-262",
+      "chordPath": "assets/chord/262_Bersekutu Dalam Roh Dengan Tuhan.chord.json",
+      "chordBytes": 1499,
+      "chordSha256": "1a1fc06efb7afd8f380c393bc1f6a082850e3e322dc90adde088e0b190b6f024",
+      "pdfPath": "assets/pdf/262_Bersekutu Dalam Roh Dengan Tuhan.pdf",
+      "pdfBytes": 16621,
+      "pdfSha256": "20d54cf3ada0b21fc1ed777c203b58a28e864eb09956f37f0c99a2294cdced6b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 386,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A",
+              "position": 0.1337
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D",
+              "position": 0.4045
+            },
+            {
+              "noteIdx": 13,
+              "chord": "A",
+              "position": 0.6912
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-330",
+      "chordPath": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
+      "chordBytes": 1446,
+      "chordSha256": "981869266953b513ab08ebcee0d545b6f028f230f7102341652ec616f80a988d",
+      "pdfPath": "assets/pdf/330_Damai, Anugerah Tuhan.pdf",
+      "pdfBytes": 16848,
+      "pdfSha256": "ea5875e59a394c451d8b18c2534907db5e22fffb5240aa6415411db76c54406e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 417,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 22,
+          "mappedEntries": 22,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.071
+            },
+            {
+              "noteIdx": 8,
+              "chord": "B",
+              "position": 0.3402
+            },
+            {
+              "noteIdx": 14,
+              "chord": "F#m",
+              "position": 0.5584
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-332",
+      "chordPath": "assets/chord/332_Kasih Allah.chord.json",
+      "chordBytes": 1711,
+      "chordSha256": "6f30150324880b0ff0d8bf5ea2a66cb84101e518059ef0f4e4468db4dfe281ee",
+      "pdfPath": "assets/pdf/332_Kasih Allah.pdf",
+      "pdfBytes": 17345,
+      "pdfSha256": "2d675212ff93d8774bc9187c4139e8a5d049df4142a56c13bd7b5fc177734ebd",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 360,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 17,
+          "mappedEntries": 17,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 4,
+              "chord": "B",
+              "position": 0.2144
+            },
+            {
+              "noteIdx": 10,
+              "chord": "D#m",
+              "position": 0.4652
+            },
+            {
+              "noteIdx": 16,
+              "chord": "F#",
+              "position": 0.7229
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 168,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 9,
+          "mappedEntries": 9,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 4,
+              "chord": "E",
+              "position": 0.214
+            },
+            {
+              "noteIdx": 10,
+              "chord": "B",
+              "position": 0.5094
+            },
+            {
+              "noteIdx": 16,
+              "chord": "F#",
+              "position": 0.812
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-358",
+      "chordPath": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
+      "chordBytes": 1828,
+      "chordSha256": "ef22c12ffc0d200ffce0513f0c0343db75cd666c0da7239cfb1fce1fc8b04bac",
+      "pdfPath": "assets/pdf/358_Roh Kudus, Penuhilah Aku.pdf",
+      "pdfBytes": 15147,
+      "pdfSha256": "4a5bdd1d79e4a740b66f76cf0ae5fd374d4badd43adf48e1cebf248e44c662ef",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 481,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "B",
+              "position": 0.0407
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C#m",
+              "position": 0.1908
+            },
+            {
+              "noteIdx": 13,
+              "chord": "F#",
+              "position": 0.3575
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-368",
+      "chordPath": "assets/chord/368_Ku Tahu Siapa Pegang Hari Esok.chord.json",
+      "chordBytes": 1766,
+      "chordSha256": "98f7326d0fc853b4703cbd6be22aa6e7677607a256824ede88d5520771f9b9f4",
+      "pdfPath": "assets/pdf/368_Ku Tahu Siapa Pegang Hari Esok.pdf",
+      "pdfBytes": 31834,
+      "pdfSha256": "7cf9442bb8596816b9eb891ac001149f7706bf2b37c5b2ea2d98729fa57ee00d",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 512,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "A",
+              "position": 0.1173
+            },
+            {
+              "noteIdx": 18,
+              "chord": "D",
+              "position": 0.6962
+            },
+            {
+              "noteIdx": 26,
+              "chord": "A",
+              "position": 0.9857
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 256,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 11,
+          "mappedEntries": 11,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "D",
+              "position": 0.1032
+            },
+            {
+              "noteIdx": 10,
+              "chord": "A",
+              "position": 0.3978
+            },
+            {
+              "noteIdx": 18,
+              "chord": "F#m",
+              "position": 0.6923
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-370",
+      "chordPath": "assets/chord/370_Bila Tuhan Beserta Kita.chord.json",
+      "chordBytes": 1878,
+      "chordSha256": "69478d0a1b432c1a23ace80be7051d376914f0c8354d765293eddd79ddc187d3",
+      "pdfPath": "assets/pdf/370_Bila Tuhan Beserta Kita.pdf",
+      "pdfBytes": 14230,
+      "pdfSha256": "daa5f09d4e163c268b13e887d8028d6690ab58b4f73437c60b456e13407f980c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 374,
+          "notationRows": 17,
+          "lyricRows": 15,
+          "chordEntries": 29,
+          "mappedEntries": 29,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D",
+              "position": 0.1079
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Bm",
+              "position": 0.2632
+            },
+            {
+              "noteIdx": 8,
+              "chord": "G",
+              "position": 0.403
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 29,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-373",
+      "chordPath": "assets/chord/373_Percayalah.chord.json",
+      "chordBytes": 1878,
+      "chordSha256": "4c637eebc53b9da7ac63521db173597a008de40b216df093d73183ad05168580",
+      "pdfPath": "assets/pdf/373_Percayalah.pdf",
+      "pdfBytes": 8741,
+      "pdfSha256": "431c2a1c1817862948d948a4c98b6f183fb77665cdb2351db032cc24e362d0db",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 440,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 29,
+          "mappedEntries": 29,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "A",
+              "position": 0.0773
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F#m",
+              "position": 0.2109
+            },
+            {
+              "noteIdx": 9,
+              "chord": "E",
+              "position": 0.3445
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 29,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-377",
+      "chordPath": "assets/chord/377_Tuhan Kau Mengingatku.chord.json",
+      "chordBytes": 1252,
+      "chordSha256": "c55bb0b8abcdc4c34d39d20fe609bc24f0726443bc55160bcb49aa70a6f384a2",
+      "pdfPath": "assets/pdf/377_Tuhan Kau Mengingatku.pdf",
+      "pdfBytes": 10986,
+      "pdfSha256": "7b9aa97a1509807943f8bbbe474b09bbf9e1a1ea9609cebcd0c1bd2dd8b7a6d4",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 253,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 19,
+          "mappedEntries": 19,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.0877
+            },
+            {
+              "noteIdx": 6,
+              "chord": "B",
+              "position": 0.3678
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#m",
+              "position": 0.5963
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 19,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-393",
+      "chordPath": "assets/chord/393_Terima Kasih, Tuhan.chord.json",
+      "chordBytes": 1714,
+      "chordSha256": "bf1223aa1764c4fd355f42664000700f342df80f9d87121260dfd7145d430607",
+      "pdfPath": "assets/pdf/393_Terima Kasih, Tuhan.pdf",
+      "pdfBytes": 11080,
+      "pdfSha256": "c6d085d78d9d4a0c409e9d10bad8c8c66dffdfddfb57279e2677bd7d38dde6d1",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 384,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F#",
+              "position": 0.0073
+            },
+            {
+              "noteIdx": 6,
+              "chord": "C#",
+              "position": 0.3338
+            },
+            {
+              "noteIdx": 12,
+              "chord": "G#m",
+              "position": 0.6517
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-394",
+      "chordPath": "assets/chord/394_Terima Kasih Pada Tuhan.chord.json",
+      "chordBytes": 1317,
+      "chordSha256": "d54a735913897b639dcb90f2d8d320787c2a7afcc69a3404ac6d9d7bfa58e9c5",
+      "pdfPath": "assets/pdf/394_Terima Kasih Pada Tuhan.pdf",
+      "pdfBytes": 11267,
+      "pdfSha256": "0d3e78ca51f6d039921c327007719f2e3b71b9a213f189fec45d9e49c4ccf7f5",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 320,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "E",
+              "position": 0.1714
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F#m",
+              "position": 0.4458
+            },
+            {
+              "noteIdx": 13,
+              "chord": "B",
+              "position": 0.7124
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-405",
+      "chordPath": "assets/chord/405_Berdoakah Engkau_.chord.json",
+      "chordBytes": 1830,
+      "chordSha256": "dcd9971b992223154d827a8a44aa9cc4f3bb3a5bfffd6eb48be53fe2ccf4d26f",
+      "pdfPath": "assets/pdf/405_Berdoakah Engkau_.pdf",
+      "pdfBytes": 14139,
+      "pdfSha256": "bd03afd89fce3663d20882c6dc0ede6f42ede77b4d833d7059b4de8989417474",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 204,
+          "notationRows": 12,
+          "lyricRows": 16,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.0157
+            },
+            {
+              "noteIdx": 3,
+              "chord": "E",
+              "position": 0.1734
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D#m",
+              "position": 0.4223
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 168,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 13,
+          "mappedEntries": 13,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "B",
+              "position": 0.014
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#m",
+              "position": 0.3775
+            },
+            {
+              "noteIdx": 9,
+              "chord": "D#m",
+              "position": 0.4664
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-411",
+      "chordPath": "assets/chord/411_Taman Doa Nan indah.chord.json",
+      "chordBytes": 1518,
+      "chordSha256": "656d916bc9bb04d209fba53f54c7c173b0dfc3cb562546a48ef3cd4714eb7bdf",
+      "pdfPath": "assets/pdf/411_Taman Doa Nan indah.pdf",
+      "pdfBytes": 16920,
+      "pdfSha256": "563598b32956c819401bafc2a0dd4af57bbbe7ca18610afcb8a00d532409a558",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 428,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F#",
+              "position": 0.1084
+            },
+            {
+              "noteIdx": 6,
+              "chord": "B",
+              "position": 0.2753
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#",
+              "position": 0.4506
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-412",
+      "chordPath": "assets/chord/412_Indahnya Saat Berdoa.chord.json",
+      "chordBytes": 1584,
+      "chordSha256": "fdaa56884f689381b3223e4b5167c98259c4a444ef8d20e2d153ba233a4e477f",
+      "pdfPath": "assets/pdf/412_Indahnya Saat Berdoa.pdf",
+      "pdfBytes": 17332,
+      "pdfSha256": "0a9a354e58336f58b64714d2679061d8668c314e71b71d78c86c0a71b2c79c8b",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 238,
+          "notationRows": 16,
+          "lyricRows": 20,
+          "chordEntries": 16,
+          "mappedEntries": 16,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F#",
+              "position": 0.1583
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A#m",
+              "position": 0.4634
+            },
+            {
+              "noteIdx": 10,
+              "chord": "B",
+              "position": 0.7456
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 119,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 8,
+          "mappedEntries": 8,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F#",
+              "position": 0.1707
+            },
+            {
+              "noteIdx": 5,
+              "chord": "A#m",
+              "position": 0.4393
+            },
+            {
+              "noteIdx": 9,
+              "chord": "B",
+              "position": 0.7242
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-416",
+      "chordPath": "assets/chord/416_Kau Sanggupkah Tanya Yesus_.chord.json",
+      "chordBytes": 2061,
+      "chordSha256": "836b383535c787640ee671393d91290d8ac9b002f36e5a5882dec8ea3321b119",
+      "pdfPath": "assets/pdf/416_Kau Sanggupkah Tanya Yesus_.pdf",
+      "pdfBytes": 10395,
+      "pdfSha256": "c17d14a8488bfc9f39708689dcf1f04a685dd1fd3dd661c567afd38bd9fd08be",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 292,
+          "notationRows": 16,
+          "lyricRows": 10,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G",
+              "position": 0.1897
+            },
+            {
+              "noteIdx": 7,
+              "chord": "C",
+              "position": 0.4476
+            },
+            {
+              "noteIdx": 12,
+              "chord": "Am",
+              "position": 0.7056
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 128,
+          "notationRows": 8,
+          "lyricRows": 2,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "Em",
+              "position": 0.0259
+            },
+            {
+              "noteIdx": 2,
+              "chord": "B",
+              "position": 0.1599
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Em",
+              "position": 0.3833
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 32,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-422",
+      "chordPath": "assets/chord/422_Beritakan KasihNya.chord.json",
+      "chordBytes": 1398,
+      "chordSha256": "4265e45a09029a5080b77c4a29a070bdb083a63319fccb14a668286e1624fa9a",
+      "pdfPath": "assets/pdf/422_Beritakan KasihNya.pdf",
+      "pdfBytes": 15950,
+      "pdfSha256": "4cbebdd2f474753d69e618ad9a7ea6c9290217f94be59d621bbb548fc82c5b6c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 360,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#",
+              "position": 0.1391
+            },
+            {
+              "noteIdx": 7,
+              "chord": "Fm",
+              "position": 0.4086
+            },
+            {
+              "noteIdx": 11,
+              "chord": "F#",
+              "position": 0.6037
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-433",
+      "chordPath": "assets/chord/433_Damai Nan Ajaib.chord.json",
+      "chordBytes": 1761,
+      "chordSha256": "ceca65512acf6b5a9d45c62d74e64867ea67f64f2c5eb59cface512be9723cc7",
+      "pdfPath": "assets/pdf/433_Damai Nan Ajaib.pdf",
+      "pdfBytes": 17772,
+      "pdfSha256": "035bd9905f3b819d608d8bfc74f2284339a4266b825816dfa49b0595cc5ac4b9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 464,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "E",
+              "position": 0.1054
+            },
+            {
+              "noteIdx": 10,
+              "chord": "A",
+              "position": 0.4015
+            },
+            {
+              "noteIdx": 13,
+              "chord": "E",
+              "position": 0.5236
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-434",
+      "chordPath": "assets/chord/434_Di Suatu Negeri Yang Mulia.chord.json",
+      "chordBytes": 1707,
+      "chordSha256": "2e5cbed5f21adc8fc80cb12d01dbd079ff06e4c56f12365e2cea4a8520126ee2",
+      "pdfPath": "assets/pdf/434_Di Suatu Negeri Yang Mulia.pdf",
+      "pdfBytes": 21274,
+      "pdfSha256": "c4b8f784a454130a8a31e6b35031bbff3e545476edbbfb99105ff7ec18a335ee",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 460,
+          "notationRows": 20,
+          "lyricRows": 15,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 3,
+              "chord": "F#",
+              "position": 0.1519
+            },
+            {
+              "noteIdx": 9,
+              "chord": "B",
+              "position": 0.432
+            },
+            {
+              "noteIdx": 11,
+              "chord": "F#",
+              "position": 0.5441
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-435",
+      "chordPath": "assets/chord/435_Dia Mengampuni Semua Dosaku.chord.json",
+      "chordBytes": 2225,
+      "chordSha256": "38577d902e69bdcd92f94512867e50b36f1c981be045cdf7383133f9b4c64873",
+      "pdfPath": "assets/pdf/435_Dia Mengampuni Semua Dosaku.pdf",
+      "pdfBytes": 18054,
+      "pdfSha256": "936577934919a3754aa1ec7c18513a72cd2e4c39b58a2d0ac823db3c7c1b2ec9",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 513,
+          "notationRows": 16,
+          "lyricRows": 9,
+          "chordEntries": 34,
+          "mappedEntries": 34,
+          "orphanEntries": 0,
+          "sentinelEntries": 1,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": -1,
+              "chord": "C#7",
+              "position": 0
+            },
+            {
+              "noteIdx": 3,
+              "chord": "F#",
+              "position": 0.1315
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F#maj7",
+              "position": 0.2506
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 34,
+      "orphanEntries": 0,
+      "sentinelEntries": 1,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-443",
+      "chordPath": "assets/chord/443_Iman Umat-Umat Kudus.chord.json",
+      "chordBytes": 1371,
+      "chordSha256": "f8393287f00b09dc84b09b68247286961a8ff71c6d7ac9e3938c32f25f18df08",
+      "pdfPath": "assets/pdf/443_Iman Umat-Umat Kudus.pdf",
+      "pdfBytes": 11464,
+      "pdfSha256": "f366eca7f4bd944097146ae382e6bc9166803f3f78f868edb0b6478a7bc5750f",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 288,
+          "notationRows": 12,
+          "lyricRows": 13,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G",
+              "position": 0.0058
+            },
+            {
+              "noteIdx": 6,
+              "chord": "D",
+              "position": 0.2999
+            },
+            {
+              "noteIdx": 9,
+              "chord": "G",
+              "position": 0.4469
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-450",
+      "chordPath": "assets/chord/450_Serukanlah Perang.chord.json",
+      "chordBytes": 1625,
+      "chordSha256": "4b69be42249adfd8c1f92bd0f61beaef69b3e8c67ca4f65c7c44c268685d8540",
+      "pdfPath": "assets/pdf/450_Serukanlah Perang.pdf",
+      "pdfBytes": 10202,
+      "pdfSha256": "5c639b0c22e1d84032b127a35af29fc8ace448e25b785d4f4b364b5f66c58f59",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 370,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 25,
+          "mappedEntries": 25,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "E",
+              "position": 0.0485
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A",
+              "position": 0.3153
+            },
+            {
+              "noteIdx": 8,
+              "chord": "E",
+              "position": 0.4136
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-452",
+      "chordPath": "assets/chord/452_Jadilah Visiku.chord.json",
+      "chordBytes": 1185,
+      "chordSha256": "8733159ee4879b51b117c7ea603d51e13ee2aaf0fa978ff14233155bc3113387",
+      "pdfPath": "assets/pdf/452_Jadilah Visiku.pdf",
+      "pdfBytes": 13352,
+      "pdfSha256": "a35efa057da82f9279f8c684bdb0f38b118d859f656be65ae419fab9f7e18dbb",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 196,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D",
+              "position": 0.0179
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Bm",
+              "position": 0.3745
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G",
+              "position": 0.6762
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 18,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-454",
+      "chordPath": "assets/chord/454_Oh Datanglah, Imanuel.chord.json",
+      "chordBytes": 1346,
+      "chordSha256": "2b7056cf07eddf37bc9d5ce4982cdb1ee44a10b533fbcdc1d65df2ed433d51b5",
+      "pdfPath": "assets/pdf/454_Oh Datanglah, Imanuel.pdf",
+      "pdfBytes": 13533,
+      "pdfSha256": "6b4d6c06b71417f901caf1977cedead9b5689bc5e317325a8dedafc913f81f58",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 304,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 20,
+          "mappedEntries": 20,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#m",
+              "position": 0.0795
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F#m",
+              "position": 0.263
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#m",
+              "position": 0.4465
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 20,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-468",
+      "chordPath": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
+      "chordBytes": 1522,
+      "chordSha256": "ec7f9eb7b59037398025af659ff9ba82ec80d4e3f2aa8f589085e4275dc1b6d2",
+      "pdfPath": "assets/pdf/468_Kristus Hidup di Dalam Ku.pdf",
+      "pdfBytes": 14782,
+      "pdfSha256": "14c5a6b21c13fbb2642f88b29f126b404b38f5245d70c0a8bd7b7af3602e2d4c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 385,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.0873
+            },
+            {
+              "noteIdx": 4,
+              "chord": "A#m",
+              "position": 0.2185
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F#",
+              "position": 0.3672
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-483",
+      "chordPath": "assets/chord/483_Hanya Satu Rencana.chord.json",
+      "chordBytes": 2205,
+      "chordSha256": "e493ca630d5fe5dc6ec8345a2f514f16d2656e9f815403d713c3d44baa911e40",
+      "pdfPath": "assets/pdf/483_Hanya Satu Rencana.pdf",
+      "pdfBytes": 17211,
+      "pdfSha256": "492e28c26010681eeed98da529eb64acb018c3cf02e31c80ea7a0cd6efbcc0db",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 296,
+          "notationRows": 12,
+          "lyricRows": 19,
+          "chordEntries": 34,
+          "mappedEntries": 34,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D#",
+              "position": 0.0754
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Gm",
+              "position": 0.2263
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3856
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 34,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-516",
+      "chordPath": "assets/chord/516_Aku Bertekad.chord.json",
+      "chordBytes": 1390,
+      "chordSha256": "94726f2c3ebc4dedc78785cd4e86302e94ba7a9236a64524c63a9bff4aa445ce",
+      "pdfPath": "assets/pdf/516_Aku Bertekad.pdf",
+      "pdfBytes": 11433,
+      "pdfSha256": "e5e1d023f887e3ea42fe713f4fc551b3cd33c152749f0270b03d2e69ef8e262c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 318,
+          "notationRows": 16,
+          "lyricRows": 19,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0451
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3542
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#",
+              "position": 0.6634
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-520",
+      "chordPath": "assets/chord/520_Menabur Dengan Air Mata.chord.json",
+      "chordBytes": 1955,
+      "chordSha256": "3e85106f1390513a597f02abdb00816367021151966d09db80fd5814488b58a0",
+      "pdfPath": "assets/pdf/520_Menabur Dengan Air Mata.pdf",
+      "pdfBytes": 22059,
+      "pdfSha256": "186bb4c284f70fcd2d0d585a316bebaec3910f451266516a94785407bf3ccc38",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 240,
+          "notationRows": 16,
+          "lyricRows": 18,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "E",
+              "position": 0.1862
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A",
+              "position": 0.4798
+            },
+            {
+              "noteIdx": 10,
+              "chord": "G#",
+              "position": 0.7733
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 220,
+          "notationRows": 16,
+          "lyricRows": 4,
+          "chordEntries": 15,
+          "mappedEntries": 15,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "F#m",
+              "position": 0.1962
+            },
+            {
+              "noteIdx": 5,
+              "chord": "B",
+              "position": 0.4653
+            },
+            {
+              "noteIdx": 8,
+              "chord": "E",
+              "position": 0.7254
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 30,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-521",
+      "chordPath": "assets/chord/521_Akulah DombaNya.chord.json",
+      "chordBytes": 1193,
+      "chordSha256": "111c165db36fed0a68f2e8e16e659a8e0bf7892c10beed558873bb039d699701",
+      "pdfPath": "assets/pdf/521_Akulah DombaNya.pdf",
+      "pdfBytes": 11340,
+      "pdfSha256": "38866fb059bbe2d6592b4e1b9640754fc7cf0327052f6a1433d20c041c76c383",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 284,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C",
+              "position": 0.104
+            },
+            {
+              "noteIdx": 9,
+              "chord": "Dm",
+              "position": 0.4034
+            },
+            {
+              "noteIdx": 14,
+              "chord": "G",
+              "position": 0.6053
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 18,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-528",
+      "chordPath": "assets/chord/528_Dia Segalanya Bagiku.chord.json",
+      "chordBytes": 3269,
+      "chordSha256": "ab44d55955a463fbb0097873f8f6359c9612f9701ecb24ef6858175eca04dbd7",
+      "pdfPath": "assets/pdf/528_Dia Segalanya Bagiku.pdf",
+      "pdfBytes": 20207,
+      "pdfSha256": "a5f9c390e0e5e799e8f8d83cdaf2df2eb3c52904d07d00661dacc2e88763640f",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 360,
+          "notationRows": 16,
+          "lyricRows": 8,
+          "chordEntries": 28,
+          "mappedEntries": 28,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0
+            },
+            {
+              "noteIdx": 3,
+              "chord": "Fm",
+              "position": 0.1063
+            },
+            {
+              "noteIdx": 7,
+              "chord": "Bm",
+              "position": 0.3061
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 446,
+          "notationRows": 20,
+          "lyricRows": 5,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D",
+              "position": 0
+            },
+            {
+              "noteIdx": 12,
+              "chord": "C#m",
+              "position": 0.5165
+            },
+            {
+              "noteIdx": 96,
+              "chord": "Bm",
+              "position": 0
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 51,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    }
+  ]
+}

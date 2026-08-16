@@ -25,7 +25,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
 - The initial web application chunk is **84.9 KiB gzip**; the complete initial
-  JavaScript set is **172.6 KiB gzip** in the latest local verification. The
+  JavaScript set is **172.8 KiB gzip** in the latest local verification. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
@@ -89,6 +89,12 @@ claim GA parity until the remaining reports and platform artifacts exist.
   Golden chord tests cover punctuation-normalized one-to-one Text mapping and
   conservative unmatched-line behavior; a rapid hymn/viewer Playwright flow
   proves the latest route cannot inherit a stale PDF surface.
+  The immutable gyschordweb chord source has now been audited against its
+  canonical PDFs: all 140 files and 3191 note-aligned entries resolve to a
+  verified PDF note/lyric row, with zero orphan or invalid entries. The report
+  is committed at `docs/discovery/chord-position-audit.json` and the generated
+  provenance gate rejects a changed lock until the audit is regenerated from
+  the pinned checkout (`pnpm audit:chords`).
   Literature PDF failures now expose an in-shell `Coba lagi` action, and the
   shared PDF reader cleans up loaded documents and virtualized page resources
   when a route, song, or retry changes, preventing stale worker/page buffers

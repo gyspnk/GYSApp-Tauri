@@ -87,6 +87,9 @@ service or platform artifact that cannot be exercised in this workspace.
   hash-keyed preload queue; foreground loads cancel queued neighbours while
   active renders remain safely shareable, so navigation cannot duplicate WASM
   work or replace the current session.
+- Canonical gyschordweb note-aligned chord files now accept the documented
+  intro/outro sentinels (`-1`/`99999`), and the deterministic PDF audit covers
+  all 140 files / 3191 entries with zero orphan or invalid mappings.
 - Browser binary platform blobs now persist in a versioned IndexedDB store and
   are backfilled from Cache Storage when needed, so verified chord/document
   data survives reloads even when an embedded webview cannot expose Cache
