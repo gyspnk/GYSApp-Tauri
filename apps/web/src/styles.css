@@ -381,6 +381,10 @@ a:focus-visible {
   background: #f0e9f8;
   color: #76539d;
 }
+.search-result-mark.is-bible {
+  background: #e5eef7;
+  color: #35608c;
+}
 
 .workspace {
   display: grid;

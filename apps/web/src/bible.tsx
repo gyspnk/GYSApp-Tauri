@@ -18,7 +18,12 @@ import {
   type BibleReaderPack,
 } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
+import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
+import {
+  parseBibleDeepLink,
+  resolveBibleDeepLink,
+} from "./global-bible-search.js";
 import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
@@ -263,7 +268,13 @@ function ChapterPane({
 }
 
 export function BiblePage({ locale }: { locale: Locale }) {
+  const [searchParams] = useSearchParams();
   const [packState, setPackState] = useState<PackState>({ status: "loading" });
+  const deepLink = useMemo(
+    () => parseBibleDeepLink(searchParams),
+    [searchParams],
+  );
+  const lastAppliedDeepLinkRef = useRef<string | undefined>(undefined);
   const [selectedBook, setSelectedBook] = useState(() =>
     readSavedNumber(BOOK_KEY, 43),
   );
@@ -341,6 +352,26 @@ export function BiblePage({ locale }: { locale: Locale }) {
       setSelectedChapter((value) => Math.min(book.chapters, value + 1));
     }
   };
+
+  // A cross-space search result can deep-link straight to a verse. The
+  // reference is applied only after the offline pack validates it, so an
+  // invalid or stale link falls back to the saved reading position instead
+  // of leaving the reader on a missing chapter. Re-applying the same
+  // reference is a no-op, so revisiting the route does not fight the user's
+  // manual navigation.
+  useEffect(() => {
+    if (!deepLink || packState.status !== "ready") return;
+    const key = `${deepLink.book}:${deepLink.chapter}:${deepLink.verse}`;
+    if (lastAppliedDeepLinkRef.current === key) return;
+    const resolved = resolveBibleDeepLink(packState.pack, deepLink);
+    if (!resolved) return;
+    lastAppliedDeepLinkRef.current = key;
+    setSelectedBook(resolved.bookId);
+    setSelectedChapter(resolved.chapter);
+    setSelectedVerseId(
+      `${resolved.bookId}:${resolved.chapter}:${resolved.verse}`,
+    );
+  }, [deepLink, packState]);
 
   useEffect(() => {
     const controller = new AbortController();

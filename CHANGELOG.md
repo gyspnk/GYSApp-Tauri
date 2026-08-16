@@ -2,6 +2,16 @@
 
 ## Unreleased — GA hardening slice
 
+- Global search now covers the Alkitab: the offline TB reader pack is loaded
+  on demand and queried through the same lazy worker-backed index as the
+  Bible screen, with stale-result protection and a retryable pack failure.
+  Verse results carry sanitized snippets and open the internal reader via a
+  validated `/bible?book/chapter/verse` deep link; out-of-range references
+  fall back to the saved reading position instead of a missing chapter. The
+  search surface label now names all six spaces in Indonesian, English, and
+  Simplified Chinese, with unit coverage for entry building, deep-link
+  parsing/resolution, and a browser E2E proving the Yohanes 3:16 result
+  navigates into the shell and selects the verse.
 - Advanced the canonical music/chord source from `gyschordweb@cbc7d386` to
   `gyschordweb@a3d1ea7`, adding the note-aligned chord documents for hymns 356,
   366, 395, and 432. The immutable music lock grew to 1,212 entries and the BFF

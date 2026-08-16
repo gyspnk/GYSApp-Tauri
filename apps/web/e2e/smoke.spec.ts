@@ -482,7 +482,7 @@ test("global search indexes real offline content and navigates to a result", asy
     page.getByRole("dialog", { name: "Temukan sesuatu" }),
   ).toBeVisible();
   await page
-    .getByLabel("Cari Kidung, Literatur, Iman, atau media")
+    .getByLabel("Cari Alkitab, Kidung, Literatur, Iman, atau media")
     .fill("Pujilah Allah Yang Maha Esa");
   await expect(
     page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }).first(),
@@ -492,6 +492,33 @@ test("global search indexes real offline content and navigates to a result", asy
     .first()
     .click();
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+});
+
+test("global search finds Bible verses and deep-links into the internal reader", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("button", { name: /Cari di seluruh aplikasi/ }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Temukan sesuatu" }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Cari Alkitab, Kidung, Literatur, Iman, atau media")
+    .fill("begitu besar kasih Allah akan dunia ini");
+  const bibleResult = page
+    .getByRole("button", { name: /Yohanes 3:16/ })
+    .first();
+  await expect(bibleResult).toBeVisible({ timeout: 15_000 });
+  await bibleResult.click();
+  await expect(page).toHaveURL(/\/bible\?book=43&chapter=3&verse=16$/);
+  await expect(
+    page.getByRole("heading", { name: "Yohanes 3" }).first(),
+  ).toBeVisible({ timeout: 15_000 });
+  const verseButton = page
+    .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
+    .first();
+  await expect(verseButton).toBeVisible();
+  await expect(verseButton).toHaveAttribute("aria-pressed", "true");
 });
 
 test("literature detail persists favorite and progress controls", async ({

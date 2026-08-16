@@ -18,8 +18,15 @@ import {
   type SuaraSejatiFeed,
 } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
+import { recordDiagnostic } from "./diagnostics.js";
+import {
+  bibleVerseEntries,
+  loadBiblePack,
+  type BibleSearchEntry,
+} from "./global-bible-search.js";
+import { BibleSearchClient } from "./bible-search.js";
 
-type SearchKind = "hymn" | "literature" | "faith" | "sauh" | "suara";
+type SearchKind = "hymn" | "literature" | "faith" | "sauh" | "suara" | "bible";
 type SearchEntry = {
   id: string;
   kind: SearchKind;
@@ -207,6 +214,7 @@ const labels: Record<SearchKind, string> = {
   faith: "Iman",
   sauh: "Sauh Bagi Jiwa",
   suara: "Suara Sejati",
+  bible: "Alkitab",
 };
 
 export function GlobalSearch({
@@ -224,7 +232,10 @@ export function GlobalSearch({
     "idle",
   );
   const [entries, setEntries] = useState<SearchEntry[]>([]);
+  const [bibleEntries, setBibleEntries] = useState<BibleSearchEntry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bibleClientRef = useRef<BibleSearchClient | undefined>(undefined);
+  const bibleSequenceRef = useRef(0);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -250,6 +261,49 @@ export function GlobalSearch({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, open]);
 
+  // The Bible index is heavy, so it is loaded on demand and searched through
+  // the same worker-backed client as the Bible screen. A stale search result
+  // (query changed, modal closed, or a newer request superseded this one) is
+  // discarded before it can reach the result list.
+  useEffect(() => {
+    const normalized = deferredQuery.trim();
+    if (!open || normalized.length < 2) {
+      setBibleEntries([]);
+      return;
+    }
+    let cancelled = false;
+    const sequence = ++bibleSequenceRef.current;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const pack = await loadBiblePack();
+          if (cancelled || sequence !== bibleSequenceRef.current) return;
+          const client =
+            bibleClientRef.current ?? new BibleSearchClient(pack.verses);
+          bibleClientRef.current = client;
+          const verses = await client.search(normalized);
+          if (cancelled || sequence !== bibleSequenceRef.current) return;
+          setBibleEntries(bibleVerseEntries(pack, verses));
+        } catch (error: unknown) {
+          if (!cancelled) recordDiagnostic("warn", "search.bible", error);
+        }
+      })();
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [deferredQuery, open]);
+
+  useEffect(
+    () => () => {
+      bibleSequenceRef.current += 1;
+      bibleClientRef.current?.dispose();
+      bibleClientRef.current = undefined;
+    },
+    [],
+  );
+
   const results = useMemo(() => {
     const normalized = deferredQuery.trim().toLocaleLowerCase(locale);
     if (normalized.length < 2) return [];
@@ -260,8 +314,15 @@ export function GlobalSearch({
       .slice(0, 30);
   }, [deferredQuery, entries, locale]);
 
+  // Curated title matches stay first; verse-level Bible matches are appended
+  // so the existing hymn-first navigation contract keeps its behavior.
+  const mergedResults = useMemo(
+    () => (bibleEntries.length ? [...results, ...bibleEntries] : results),
+    [results, bibleEntries],
+  );
+
   const submit = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
-  const openResult = (entry: SearchEntry) => {
+  const openResult = (entry: SearchEntry | BibleSearchEntry) => {
     onClose();
     if (entry.href) navigate(entry.href);
   };
@@ -324,20 +385,20 @@ export function GlobalSearch({
         )}
         {status === "ready" &&
           deferredQuery.trim().length >= 2 &&
-          !results.length && (
+          !mergedResults.length && (
             <p className="global-search-status">
               {translate(locale, "search.empty", {
                 query: deferredQuery.trim(),
               })}
             </p>
           )}
-        {results.length > 0 && (
+        {mergedResults.length > 0 && (
           <div
             className="global-search-results"
             role="listbox"
             aria-label={translate(locale, "search.results")}
           >
-            {results.map((entry) => (
+            {mergedResults.map((entry) => (
               <button
                 type="button"
                 className="global-search-result"
