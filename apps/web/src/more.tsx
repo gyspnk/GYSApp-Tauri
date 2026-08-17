@@ -38,7 +38,11 @@ import { Select } from "./select.js";
 import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage, createPlatformServices } from "./platform.js";
-import { isTauriShell } from "./native-platform.js";
+import {
+  isTauriShell,
+  openNativeEgysLogin,
+  subscribeNativeEgysLogin,
+} from "./native-platform.js";
 import type { ShellTheme } from "./settings.js";
 
 type PackManifest = {
@@ -301,6 +305,11 @@ export function MorePage({
   );
 
   useEffect(() => {
+    if (nativeShell) {
+      setProviders(undefined);
+      setEgysUnavailable(false);
+      return;
+    }
     const controller = new AbortController();
     void getEgysProviders(controller.signal)
       .then((value) => {
@@ -315,7 +324,35 @@ export function MorePage({
         }
       });
     return () => controller.abort();
-  }, []);
+  }, [nativeShell]);
+
+  useEffect(() => {
+    if (!nativeShell) return;
+    return subscribeNativeEgysLogin(() => {
+      const controller = new AbortController();
+      setAuthBusy(true);
+      void getEgysProfile(controller.signal)
+        .then((profile) => {
+          setAccountProfile(profile);
+          setEgysUnavailable(false);
+          show(
+            profile
+              ? `Selamat datang, ${profile.displayName}.`
+              : "Login e-GYS berhasil, tetapi profil belum tersedia.",
+          );
+        })
+        .catch((error: unknown) => {
+          recordDiagnostic("error", "egys.native-login.profile", error);
+          show(
+            "Login e-GYS selesai, tetapi profil belum dapat dibaca. Coba muat ulang.",
+          );
+        })
+        .finally(() => {
+          controller.abort();
+          setAuthBusy(false);
+        });
+    });
+  }, [nativeShell]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -523,17 +560,23 @@ export function MorePage({
     }
   };
 
+  const openNativeEgysLoginFlow = async () => {
+    setAuthBusy(true);
+    try {
+      await openNativeEgysLogin();
+      show("Halaman login resmi e-GYS sudah dibuka.");
+    } catch (error) {
+      recordDiagnostic("error", "egys.native-login.open", error);
+      show("Halaman login e-GYS belum dapat dibuka. Coba lagi.");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
   const signInWithProvider = async (provider: "google" | "apple") => {
     if (nativeShell) {
-      // The verified e-GYS API accepts a provider-issued ID token; it does
-      // not expose an authorization-code callback. Never inject the browser
-      // SDK into a Tauri webview (its CSP intentionally blocks remote
-      // scripts). A future native Google/Apple SDK can call the same
-      // exchangeEgysToken boundary once its protected client IDs exist.
-      recordDiagnostic("info", "egys.native-provider-unavailable", provider);
-      show(
-        `${provider === "google" ? "Google" : "Apple"} membutuhkan SDK native resmi. Gunakan versi web atau siapkan client ID native.`,
-      );
+      recordDiagnostic("info", "egys.native-provider-page", provider);
+      await openNativeEgysLoginFlow();
       return;
     }
     setAuthBusy(true);
@@ -642,6 +685,10 @@ export function MorePage({
   };
 
   const signInWithWhatsApp = async () => {
+    if (nativeShell) {
+      await openNativeEgysLoginFlow();
+      return;
+    }
     whatsappAbort.current?.abort();
     const controller = new AbortController();
     whatsappAbort.current = controller;
@@ -872,7 +919,7 @@ export function MorePage({
               </div>
             ) : (
               <div className="egys-login-box">
-                {egysUnavailable && (
+                {!nativeShell && egysUnavailable && (
                   <div className="account-sync-note" role="status">
                     Layanan akun e-GYS belum terdeteksi. Pastikan BFF dan
                     koneksi upstream sudah dikonfigurasi, lalu muat ulang.
@@ -884,55 +931,65 @@ export function MorePage({
                   terpadu.
                 </p>
                 <div className="egys-login-actions">
-                  {providers?.whatsapp && (
-                    <button
-                      type="button"
-                      className="primary-button egys-wa-btn"
-                      onClick={() => void signInWithWhatsApp()}
-                    >
-                      <span className="btn-icon">💬</span> Masuk dengan WhatsApp
-                    </button>
-                  )}
-                  <div className="egys-secondary-logins">
-                    {providers?.google.enabled && providers.google.clientId && (
+                  {nativeShell ? (
+                    <>
                       <button
                         type="button"
-                        className="quiet-button"
-                        disabled={nativeShell}
-                        title={
-                          nativeShell
-                            ? "Gunakan login WhatsApp di aplikasi native"
-                            : undefined
-                        }
-                        onClick={() => void signInWithProvider("google")}
+                        className="primary-button egys-wa-btn"
+                        onClick={() => void openNativeEgysLoginFlow()}
                       >
-                        Google
+                        <span className="btn-icon">🔐</span> Buka login resmi
+                        e-GYS
                       </button>
-                    )}
-                    {providers?.apple.enabled && providers.apple.clientId && (
-                      <button
-                        type="button"
-                        className="quiet-button"
-                        disabled={nativeShell}
-                        title={
-                          nativeShell
-                            ? "Gunakan login WhatsApp di aplikasi native"
-                            : undefined
-                        }
-                        onClick={() => void signInWithProvider("apple")}
-                      >
-                        Apple
-                      </button>
-                    )}
-                  </div>
-                  {!providers?.whatsapp &&
-                    !providers?.google.clientId &&
-                    !providers?.apple.clientId && (
                       <small className="account-sync-note">
-                        Belum ada metode login e-GYS yang aktif di lingkungan
-                        ini.
+                        Google, Apple, dan WhatsApp OTP diproses langsung di
+                        halaman resmi e-GYS.
                       </small>
-                    )}
+                    </>
+                  ) : (
+                    <>
+                      {providers?.whatsapp && (
+                        <button
+                          type="button"
+                          className="primary-button egys-wa-btn"
+                          onClick={() => void signInWithWhatsApp()}
+                        >
+                          <span className="btn-icon">💬</span> Masuk dengan
+                          WhatsApp
+                        </button>
+                      )}
+                      <div className="egys-secondary-logins">
+                        {providers?.google.enabled &&
+                          providers.google.clientId && (
+                            <button
+                              type="button"
+                              className="quiet-button"
+                              onClick={() => void signInWithProvider("google")}
+                            >
+                              Google
+                            </button>
+                          )}
+                        {providers?.apple.enabled &&
+                          providers.apple.clientId && (
+                            <button
+                              type="button"
+                              className="quiet-button"
+                              onClick={() => void signInWithProvider("apple")}
+                            >
+                              Apple
+                            </button>
+                          )}
+                      </div>
+                      {!providers?.whatsapp &&
+                        !providers?.google.clientId &&
+                        !providers?.apple.clientId && (
+                          <small className="account-sync-note">
+                            Belum ada metode login e-GYS yang aktif di
+                            lingkungan ini.
+                          </small>
+                        )}
+                    </>
+                  )}
                 </div>
                 {egysMeta && (
                   <small className="account-sync-note">

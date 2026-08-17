@@ -25,6 +25,10 @@ jobs:
   package:
     runs-on: windows-latest
     env:
+      # The native bundle is not served from the BFF origin. Keep the public
+      # Worker URL in a repository variable so the v1 profile adapter can
+      # complete the live e-GYS login after the native window returns.
+      VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
       # These are deliberately read only at release time. No certificate or
       # private key is stored in the repository or in the Pages bundle.
       WINDOWS_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}

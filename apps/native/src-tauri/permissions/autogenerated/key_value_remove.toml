@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-key-value-remove"
+description = "Enables the key_value_remove command without any pre-configured scope."
+commands.allow = ["key_value_remove"]
+
+[[permission]]
+identifier = "deny-key-value-remove"
+description = "Denies the key_value_remove command without any pre-configured scope."
+commands.deny = ["key_value_remove"]

@@ -258,7 +258,10 @@ release candidate must set `signed=true` and provide the protected
 `WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD` secrets. The
 workflow signs both NSIS and MSI packages with `signtool` and removes the PFX
 from the runner after upload.
-The signing material is never part of the repository or the Pages build.
+The signing material is never part of the repository or the Pages build. Set
+the public `VITE_BFF_BASE_URL` repository variable as well; the native bundle
+needs it to read the live e-GYS v1 profile through the BFF after the official
+login window completes.
 
 ## License
 

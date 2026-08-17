@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "egys-login-remote",
+  "description": "Allows only the live e-GYS login page to return a validated session result to its dedicated login window.",
+  "windows": ["egys-login"],
+  "remote": {
+    "urls": ["https://e.gys.or.id/*"]
+  },
+  "permissions": ["core:default", "allow-egys-login-message"]
+}

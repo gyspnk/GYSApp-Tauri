@@ -5,7 +5,8 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use tauri::{AppHandle, Manager};
+use tauri::webview::{NewWindowResponse, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_dialog::{DialogExt, FileAccessMode, FilePath};
 use tauri_plugin_fs::{FsExt, OpenOptions};
@@ -20,6 +21,126 @@ static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const BLOB_PAYLOAD_MAX_BYTES: usize = 128 * 1024 * 1024; // 128 MB (verified media)
 const KV_VALUE_MAX_BYTES: usize = 8 * 1024 * 1024; // 8 MB (preferences)
 const DATABASE_VALUE_MAX_BYTES: usize = 8 * 1024 * 1024; // 8 MB (records)
+const EGYS_LOGIN_WINDOW_LABEL: &str = "egys-login";
+const EGYS_LOGIN_TOKEN_KEY: &str = "egys-live-v1-token";
+const EGYS_LOGIN_BRIDGE_SCRIPT: &str = r#"
+(() => {
+  const install = () => {
+    const internals = window.__TAURI_INTERNALS__;
+    const invoke =
+      internals?.invoke?.bind(internals) ??
+      window.__TAURI__?.core?.invoke?.bind(window.__TAURI__.core);
+    if (!invoke) {
+      window.setTimeout(install, 25);
+      return;
+    }
+    const setStatus = (message, tone = 'info') => {
+      const render = () => {
+        let node = document.querySelector('#gys-native-login-status');
+        if (!node) {
+          node = document.createElement('div');
+          node.id = 'gys-native-login-status';
+          node.setAttribute('role', 'status');
+          node.style.cssText = 'margin:12px 0 0;padding:10px 12px;border-radius:8px;background:#f2f4f7;color:#344054;font:13px/1.45 system-ui,sans-serif;text-align:center;';
+          const anchor = document.querySelector('.login-form .card-body') || document.body;
+          anchor.appendChild(node);
+        }
+        node.textContent = message;
+        node.style.color = tone === 'error' ? '#b42318' : '#344054';
+        node.style.background = tone === 'error' ? '#fef3f2' : '#f2f4f7';
+      };
+      if (document.body) render();
+      else document.addEventListener('DOMContentLoaded', render, { once: true });
+    };
+    const sendToNative = (data) => {
+      const command = data?.cmd;
+      if (command === 'googlelogin') setStatus('Memuat login Google...');
+      if (command === 'whatsappopen') setStatus('Membuka WhatsApp...');
+      if (command === 'applelogged' || command === 'googlelogged' || command === 'whatsapplogged')
+        setStatus('Memverifikasi login e-GYS...');
+      return invoke('egys_login_message', { message: data }).catch(() => {
+        setStatus('Login belum dapat diteruskan ke aplikasi.', 'error');
+        return null;
+      });
+    };
+    window.__gysEgysSetStatus = setStatus;
+    window.flutter_inappwebview = {
+      callHandler(name, data) {
+        if (name !== 'mobile') return Promise.resolve(null);
+        return sendToNative(data);
+      },
+    };
+    if (!window.__gysEgysAppleBridgeInstalled) {
+      window.__gysEgysAppleBridgeInstalled = true;
+      document.addEventListener('AppleIDSignInOnSuccess', (event) => {
+        event.stopImmediatePropagation();
+        setStatus('Memverifikasi akun Apple...');
+        const authorization = event.detail?.authorization;
+        if (!authorization?.code || !authorization?.id_token) return;
+        fetch('/auth/apple/callback', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            ismobile: 1,
+            code: authorization.code,
+            id_token: authorization.id_token,
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result?.token)
+              sendToNative({ cmd: 'applelogged', token: result.token });
+            else setStatus('Apple belum mengembalikan sesi login.', 'error');
+          })
+          .catch(() => setStatus('Login Apple belum dapat diverifikasi.', 'error'));
+      }, true);
+    }
+    document.addEventListener('click', (event) => {
+      const element = event.target instanceof Element ? event.target : null;
+      const externalLink = element?.closest('a[target="_blank"]');
+      const href = externalLink?.getAttribute('href');
+      if (href) {
+        try {
+          const url = new URL(href, window.location.href);
+          if (url.protocol === 'https:' &&
+              (url.hostname === 'api.whatsapp.com' ||
+                url.hostname === 'wa.me' ||
+                url.hostname === 'web.whatsapp.com')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            void sendToNative({ cmd: 'whatsappopen', url: url.href });
+            return;
+          }
+        } catch (_) {
+          setStatus('Tautan WhatsApp tidak valid.', 'error');
+          return;
+        }
+      }
+      if (element?.closest('#button-whatsapp-login'))
+        setStatus('Menyiapkan permintaan login WhatsApp...');
+      if (element?.closest('#appleid-signin')) setStatus('Membuka login Apple...');
+    }, true);
+    const dispatchReady = () => {
+      if (window.__gysEgysPlatformReadyDispatched) return;
+      window.__gysEgysPlatformReadyDispatched = true;
+      window.dispatchEvent(new Event('flutterInAppWebViewPlatformReady'));
+      window.setTimeout(() => {
+        const mobile = document.querySelector('#mobile-google-signin');
+        const google = document.querySelector('.g_id_signin');
+        if (mobile && google) {
+          mobile.style.setProperty('display', 'none', 'important');
+          google.style.setProperty('display', 'block', 'important');
+        }
+      }, 50);
+    };
+    if (document.readyState === 'loading')
+      document.addEventListener('DOMContentLoaded', () => setTimeout(dispatchReady, 0), { once: true });
+    else setTimeout(dispatchReady, 0);
+  };
+  install();
+})();
+"#;
 
 fn enforce_cap(limit: usize, actual: usize, label: &str) -> Result<(), String> {
     if actual > limit {
@@ -67,6 +188,8 @@ pub fn run() {
             blob_remove,
             platform_clear_data,
             open_external,
+            open_egys_login,
+            egys_login_message,
             secret_get,
             secret_set,
             secret_remove,
@@ -137,6 +260,162 @@ fn secret_remove(app: AppHandle, key: String) -> Result<(), String> {
         .store
         .delete(&account)
         .map_err(|_| "native secure storage remove failed".to_owned())
+}
+
+fn egys_login_url(theme: Option<&str>) -> String {
+    let theme = match theme.map(str::trim) {
+        Some("dark") => "dark",
+        Some("light") => "light",
+        Some("amoled") => "amoled",
+        Some("sepia") => "sepia",
+        Some("system") => "system",
+        _ => "light",
+    };
+    format!("https://e.gys.or.id/login?theme={theme}")
+}
+
+fn is_allowed_egys_navigation(url: &url::Url) -> bool {
+    if url.scheme() != "https" {
+        return false;
+    }
+    matches!(
+        url.host_str(),
+        Some("e.gys.or.id")
+            | Some("accounts.google.com")
+            | Some("appleid.apple.com")
+            | Some("appleid.cdn-apple.com")
+    )
+}
+
+fn is_allowed_egys_external_link(url: &url::Url) -> bool {
+    url.scheme() == "https"
+        && matches!(
+            url.host_str(),
+            Some("api.whatsapp.com") | Some("wa.me") | Some("web.whatsapp.com")
+        )
+}
+
+fn validate_egys_login_message(message: &serde_json::Value) -> Result<String, String> {
+    let command = message
+        .get("cmd")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default();
+    if !matches!(command, "googlelogged" | "applelogged" | "whatsapplogged") {
+        return Err("native e-GYS login message is not a session result".to_owned());
+    }
+    let token = message
+        .get("token")
+        .and_then(serde_json::Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty() && value.len() <= 32_768)
+        .ok_or_else(|| "native e-GYS login token is invalid".to_owned())?;
+    Ok(token.to_owned())
+}
+
+#[tauri::command]
+async fn open_egys_login(app: AppHandle, theme: Option<String>) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window(EGYS_LOGIN_WINDOW_LABEL) {
+        window
+            .set_focus()
+            .map_err(|_| "e-GYS login window could not be focused".to_owned())?;
+        return Ok(());
+    }
+
+    let app_for_links = app.clone();
+    let login_url = egys_login_url(theme.as_deref());
+    let url = login_url
+        .parse()
+        .map_err(|_| "e-GYS login URL is invalid".to_owned())?;
+    WebviewWindowBuilder::new(&app, EGYS_LOGIN_WINDOW_LABEL, WebviewUrl::External(url))
+        .title("Login e-GYS")
+        .inner_size(480.0, 760.0)
+        .min_inner_size(360.0, 560.0)
+        .initialization_script(EGYS_LOGIN_BRIDGE_SCRIPT)
+        .on_navigation(is_allowed_egys_navigation)
+        .on_new_window(move |url, _| {
+            if is_allowed_egys_external_link(&url) {
+                #[allow(deprecated)]
+                let result = app_for_links.shell().open(url.as_str(), None);
+                if let Some(login) = app_for_links.get_webview_window(EGYS_LOGIN_WINDOW_LABEL) {
+                    let status = if result.is_ok() {
+                        "WhatsApp sudah dibuka. Kembali ke jendela ini setelah kode diterima."
+                    } else {
+                        "WhatsApp belum dapat dibuka. Coba lagi atau buka tautan secara manual."
+                    };
+                    if let Ok(status_json) = serde_json::to_string(status) {
+                        let _ = login.eval(format!("window.__gysEgysSetStatus?.({status_json})"));
+                    }
+                }
+                NewWindowResponse::Deny
+            } else if is_allowed_egys_navigation(&url) {
+                NewWindowResponse::Allow
+            } else {
+                NewWindowResponse::Deny
+            }
+        })
+        .build()
+        .map(|_| ())
+        .map_err(|_| "e-GYS login window could not be opened".to_owned())
+}
+
+#[tauri::command]
+fn egys_login_message(
+    app: AppHandle,
+    window: tauri::WebviewWindow,
+    message: serde_json::Value,
+) -> Result<(), String> {
+    let current_url = window
+        .url()
+        .map_err(|_| "e-GYS login origin could not be verified".to_owned())?;
+    if current_url.scheme() != "https" || current_url.host_str() != Some("e.gys.or.id") {
+        return Err("e-GYS login message came from an untrusted origin".to_owned());
+    }
+
+    let command = message
+        .get("cmd")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default();
+    if command == "googlelogin" {
+        window
+            .eval(
+                "document.querySelector('#mobile-google-signin')?.style.setProperty('display','none','important'); document.querySelector('.g_id_signin')?.style.setProperty('display','block','important');",
+            )
+            .map_err(|_| "Google login control could not be shown".to_owned())?;
+        return Ok(());
+    }
+
+    if command == "whatsappopen" {
+        let raw_url = message
+            .get("url")
+            .and_then(serde_json::Value::as_str)
+            .map(str::trim)
+            .filter(|value| !value.is_empty() && value.len() <= 4096)
+            .ok_or_else(|| "WhatsApp login URL is invalid".to_owned())?;
+        let url =
+            url::Url::parse(raw_url).map_err(|_| "WhatsApp login URL is invalid".to_owned())?;
+        if !is_allowed_egys_external_link(&url) {
+            return Err("WhatsApp login URL is not allowed".to_owned());
+        }
+        #[allow(deprecated)]
+        app.shell()
+            .open(url.as_str(), None)
+            .map_err(|_| "WhatsApp could not be opened".to_owned())?;
+        window
+            .eval("window.__gysEgysSetStatus?.('WhatsApp sudah dibuka. Kembali ke jendela ini setelah kode diterima.')")
+            .map_err(|_| "WhatsApp login status could not be shown".to_owned())?;
+        return Ok(());
+    }
+
+    let token = validate_egys_login_message(&message)?;
+    secret_set(app.clone(), EGYS_LOGIN_TOKEN_KEY.to_owned(), token)?;
+    app.emit(
+        "egys-login-message",
+        serde_json::json!({ "cmd": command, "authenticated": true }),
+    )
+    .map_err(|_| "e-GYS login result could not be delivered".to_owned())?;
+    window
+        .close()
+        .map_err(|_| "e-GYS login window could not be closed".to_owned())
 }
 
 fn file_name(path: &FilePath) -> String {
@@ -482,9 +761,11 @@ fn open_external(app: AppHandle, url: String) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        atomic_write, enforce_cap, safe_key, BLOB_PAYLOAD_MAX_BYTES, DATABASE_VALUE_MAX_BYTES,
+        atomic_write, egys_login_url, enforce_cap, is_allowed_egys_external_link, safe_key,
+        validate_egys_login_message, BLOB_PAYLOAD_MAX_BYTES, DATABASE_VALUE_MAX_BYTES,
         KV_VALUE_MAX_BYTES,
     };
+    use serde_json::json;
     use std::fs;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -540,5 +821,53 @@ mod tests {
                     .is_some_and(|name| name.starts_with("value.tmp-"))
             }));
         fs::remove_dir_all(directory).expect("test directory cleanup");
+    }
+
+    #[test]
+    fn native_login_bridge_accepts_only_e_gys_session_messages() {
+        assert_eq!(
+            validate_egys_login_message(&json!({
+                "cmd": "googlelogged",
+                "token": "live-v1-token"
+            }))
+            .expect("valid login message"),
+            "live-v1-token"
+        );
+        assert!(validate_egys_login_message(&json!({
+            "cmd": "googlelogged",
+            "token": ""
+        }))
+        .is_err());
+        assert!(validate_egys_login_message(&json!({
+            "cmd": "javascript",
+            "token": "secret"
+        }))
+        .is_err());
+    }
+
+    #[test]
+    fn native_login_url_is_fixed_to_the_live_e_gys_origin() {
+        assert_eq!(
+            egys_login_url(Some("dark")),
+            "https://e.gys.or.id/login?theme=dark"
+        );
+        assert_eq!(
+            egys_login_url(Some("https://evil.example/")),
+            "https://e.gys.or.id/login?theme=light"
+        );
+    }
+
+    #[test]
+    fn native_login_can_open_only_whatsapp_handoff_hosts() {
+        assert!(is_allowed_egys_external_link(
+            &url::Url::parse("https://api.whatsapp.com/send?phone=1").expect("valid URL")
+        ));
+        assert!(is_allowed_egys_external_link(
+            &url::Url::parse("https://wa.me/123").expect("valid URL")
+        ));
+        assert!(!is_allowed_egys_external_link(
+            &url::Url::parse("https://evil.example/?next=https://api.whatsapp.com")
+                .expect("valid URL")
+        ));
     }
 }

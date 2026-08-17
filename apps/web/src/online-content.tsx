@@ -92,7 +92,9 @@ export function SauhPage() {
         </div>
       )}
       {state.status === "ready" && (
-        <article className="online-article-card">
+        <article
+          className={`online-article-card sauh-article${state.post.imageUrl ? " has-image" : ""}`}
+        >
           {state.post.imageUrl && (
             <img
               className="online-article-image"

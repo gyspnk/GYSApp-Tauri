@@ -1,8 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// GitHub Pages serves the app below `/GYSApp-Tauri/`, while a Tauri bundle
+// serves the same dist directory from its WebView root. Tauri exposes the
+// target to hook commands through `TAURI_ENV_PLATFORM`; using that signal
+// avoids shipping Pages-prefixed asset URLs inside the native executable.
+const isTauriBuild = Boolean(process.env.TAURI_ENV_PLATFORM);
+
 export default defineConfig({
-  base: process.env.NODE_ENV === "production" ? "/GYSApp-Tauri/" : "/",
+  base:
+    process.env.NODE_ENV === "production" && !isTauriBuild
+      ? "/GYSApp-Tauri/"
+      : "/",
   plugins: [react()],
   build: {
     target: "es2022",

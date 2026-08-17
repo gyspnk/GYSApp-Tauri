@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-deep-link-current"
+description = "Enables the deep_link_current command without any pre-configured scope."
+commands.allow = ["deep_link_current"]
+
+[[permission]]
+identifier = "deny-deep-link-current"
+description = "Denies the deep_link_current command without any pre-configured scope."
+commands.deny = ["deep_link_current"]

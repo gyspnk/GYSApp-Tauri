@@ -27,6 +27,7 @@ import { fetchArticle, htmlToText } from "./article.js";
 import { egysUpstreamCommit } from "./egys-provenance.js";
 import { egysOpenApiContract } from "./egys-contract.js";
 import { forkPdfSource } from "./fork-pdf-source.js";
+import { normalizeEgysV1Profile } from "./egys-v1.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -1099,122 +1100,141 @@ export function createApp(
       return errorResponse(c, "UNAUTHORIZED", "No active session");
     if (!egysBase(c)) return c.json({ profile: null });
     const upstream = await proxyEgysJson(c, "auth/me");
-    if (!upstream.ok)
-      return errorResponse(c, "UNAUTHORIZED", "No active session");
-    const parsedIdentity = EgysMeResponseSchema.safeParse(
-      await upstream.json().catch(() => undefined),
-    );
-    if (!parsedIdentity.success)
-      return errorResponse(
-        c,
-        "INTEGRITY_ERROR",
-        "e-GYS session response is invalid",
+    if (upstream.ok) {
+      const parsedIdentity = EgysMeResponseSchema.safeParse(
+        await upstream.json().catch(() => undefined),
       );
-    const raw = parsedIdentity.data;
-    let member:
-      | {
-          fullName?: unknown;
-          membershipNo?: unknown;
-          history?: Array<{
-            branchCode?: unknown;
-            branchName?: unknown;
-            memberStatus?: unknown;
-            status?: unknown;
-            current?: unknown;
-          }>;
-        }
-      | undefined;
-    if (raw.personId) {
-      try {
-        const memberResponse = await requestEgys(
+      if (!parsedIdentity.success)
+        return errorResponse(
           c,
-          `members/${encodeURIComponent(raw.personId)}`,
+          "INTEGRITY_ERROR",
+          "e-GYS session response is invalid",
         );
-        if (memberResponse?.ok) {
-          const candidate: unknown = await memberResponse
-            .json()
-            .catch(() => undefined);
-          if (
-            candidate &&
-            typeof candidate === "object" &&
-            "history" in candidate
-          )
-            member = candidate as typeof member;
-        }
-      } catch {
-        // Identity remains useful even when member detail is outside this account's scope.
-      }
-    }
-    const currentMembership =
-      member?.history?.find((entry) => entry.current) ?? member?.history?.[0];
-    const memberStatus =
-      typeof currentMembership?.memberStatus === "string"
-        ? currentMembership.memberStatus
-        : typeof currentMembership?.status === "string"
-          ? currentMembership.status
-          : undefined;
-    const branchName =
-      typeof currentMembership?.branchName === "string"
-        ? currentMembership.branchName
-        : typeof raw.branchScope === "string"
-          ? raw.branchScope
-          : undefined;
-    const profile = AccountProfileSchema.parse({
-      id: raw.accountId,
-      personId: raw.personId,
-      displayName: raw.fullName ?? "e-GYS",
-      ...(raw.email ? { email: raw.email } : {}),
-      ...(typeof currentMembership?.branchCode === "string"
-        ? { branchCode: currentMembership.branchCode }
-        : raw.homeBranchId
-          ? { branchCode: raw.homeBranchId }
-          : {}),
-      ...(branchName ? { branchName } : {}),
-      ...(typeof member?.membershipNo === "string"
-        ? { membershipNo: member.membershipNo }
-        : {}),
-      ...(memberStatus
-        ? { memberStatus, isMember: true }
-        : member
-          ? { isMember: true }
-          : {}),
-      ...(raw.can
-        ? {
-            permissions: {
-              ...(typeof raw.can.viewMembers === "boolean"
-                ? { viewMembers: raw.can.viewMembers }
-                : {}),
-              ...(typeof raw.can.createMembers === "boolean"
-                ? { createMembers: raw.can.createMembers }
-                : {}),
-              ...(typeof raw.can.updateMembers === "boolean"
-                ? { updateMembers: raw.can.updateMembers }
-                : {}),
-              ...(typeof raw.can.deleteMembers === "boolean"
-                ? { deleteMembers: raw.can.deleteMembers }
-                : {}),
-              ...(typeof raw.can.viewBranches === "boolean"
-                ? { viewBranches: raw.can.viewBranches }
-                : {}),
-              ...(typeof raw.can.viewEvents === "boolean"
-                ? { viewEvents: raw.can.viewEvents }
-                : {}),
-              ...(typeof raw.can.createEvents === "boolean"
-                ? { createEvents: raw.can.createEvents }
-                : {}),
-              ...(typeof raw.can.updateEvents === "boolean"
-                ? { updateEvents: raw.can.updateEvents }
-                : {}),
-              ...(typeof raw.can.archiveEvents === "boolean"
-                ? { archiveEvents: raw.can.archiveEvents }
-                : {}),
-            },
+      const raw = parsedIdentity.data;
+      let member:
+        | {
+            fullName?: unknown;
+            membershipNo?: unknown;
+            history?: Array<{
+              branchCode?: unknown;
+              branchName?: unknown;
+              memberStatus?: unknown;
+              status?: unknown;
+              current?: unknown;
+            }>;
           }
-        : {}),
-      provider: "egys",
-      locale: raw.language === "en" ? "en" : "id",
-    });
-    return c.json({ profile });
+        | undefined;
+      if (raw.personId) {
+        try {
+          const memberResponse = await requestEgys(
+            c,
+            `members/${encodeURIComponent(raw.personId)}`,
+          );
+          if (memberResponse?.ok) {
+            const candidate: unknown = await memberResponse
+              .json()
+              .catch(() => undefined);
+            if (
+              candidate &&
+              typeof candidate === "object" &&
+              "history" in candidate
+            )
+              member = candidate as typeof member;
+          }
+        } catch {
+          // Identity remains useful even when member detail is outside this account's scope.
+        }
+      }
+      const currentMembership =
+        member?.history?.find((entry) => entry.current) ?? member?.history?.[0];
+      const memberStatus =
+        typeof currentMembership?.memberStatus === "string"
+          ? currentMembership.memberStatus
+          : typeof currentMembership?.status === "string"
+            ? currentMembership.status
+            : undefined;
+      const branchName =
+        typeof currentMembership?.branchName === "string"
+          ? currentMembership.branchName
+          : typeof raw.branchScope === "string"
+            ? raw.branchScope
+            : undefined;
+      const profile = AccountProfileSchema.parse({
+        id: raw.accountId,
+        personId: raw.personId,
+        displayName: raw.fullName ?? "e-GYS",
+        ...(raw.email ? { email: raw.email } : {}),
+        ...(typeof currentMembership?.branchCode === "string"
+          ? { branchCode: currentMembership.branchCode }
+          : raw.homeBranchId
+            ? { branchCode: raw.homeBranchId }
+            : {}),
+        ...(branchName ? { branchName } : {}),
+        ...(typeof member?.membershipNo === "string"
+          ? { membershipNo: member.membershipNo }
+          : {}),
+        ...(memberStatus
+          ? { memberStatus, isMember: true }
+          : member
+            ? { isMember: true }
+            : {}),
+        ...(raw.can
+          ? {
+              permissions: {
+                ...(typeof raw.can.viewMembers === "boolean"
+                  ? { viewMembers: raw.can.viewMembers }
+                  : {}),
+                ...(typeof raw.can.createMembers === "boolean"
+                  ? { createMembers: raw.can.createMembers }
+                  : {}),
+                ...(typeof raw.can.updateMembers === "boolean"
+                  ? { updateMembers: raw.can.updateMembers }
+                  : {}),
+                ...(typeof raw.can.deleteMembers === "boolean"
+                  ? { deleteMembers: raw.can.deleteMembers }
+                  : {}),
+                ...(typeof raw.can.viewBranches === "boolean"
+                  ? { viewBranches: raw.can.viewBranches }
+                  : {}),
+                ...(typeof raw.can.viewEvents === "boolean"
+                  ? { viewEvents: raw.can.viewEvents }
+                  : {}),
+                ...(typeof raw.can.createEvents === "boolean"
+                  ? { createEvents: raw.can.createEvents }
+                  : {}),
+                ...(typeof raw.can.updateEvents === "boolean"
+                  ? { updateEvents: raw.can.updateEvents }
+                  : {}),
+                ...(typeof raw.can.archiveEvents === "boolean"
+                  ? { archiveEvents: raw.can.archiveEvents }
+                  : {}),
+              },
+            }
+          : {}),
+        provider: "egys",
+        locale: raw.language === "en" ? "en" : "id",
+      });
+      return c.json({ profile });
+    }
+
+    if (upstream.status !== 404)
+      return errorResponse(c, "UNAUTHORIZED", "No active session");
+
+    // Live production e-GYS is still v1. Its authenticated profile endpoint is
+    // `/api/v1/users/profile`, while the newer deployment uses `auth/me`.
+    const legacy = await proxyEgysJson(c, "users/profile");
+    if (!legacy.ok)
+      return errorResponse(c, "UNAUTHORIZED", "No active session");
+    const profile = normalizeEgysV1Profile(
+      await legacy.json().catch(() => undefined),
+    );
+    return profile
+      ? c.json({ profile })
+      : errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "e-GYS v1 profile response is invalid",
+        );
   });
 
   app.post("/api/v1/report", async (c) => {

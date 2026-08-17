@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-database-set"
+description = "Enables the database_set command without any pre-configured scope."
+commands.allow = ["database_set"]
+
+[[permission]]
+identifier = "deny-database-set"
+description = "Denies the database_set command without any pre-configured scope."
+commands.deny = ["database_set"]

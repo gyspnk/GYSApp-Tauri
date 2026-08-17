@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-key-value-get"
+description = "Enables the key_value_get command without any pre-configured scope."
+commands.allow = ["key_value_get"]
+
+[[permission]]
+identifier = "deny-key-value-get"
+description = "Denies the key_value_get command without any pre-configured scope."
+commands.deny = ["key_value_get"]

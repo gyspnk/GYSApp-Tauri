@@ -544,6 +544,81 @@ a:focus-visible {
   padding-bottom: 30px;
   border-bottom: 1px solid var(--line);
 }
+.bible-page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 14px 24px;
+  margin-bottom: 22px;
+  padding: 15px 18px 17px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 94%, var(--blue-soft));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--navy) 5%, transparent);
+}
+.bible-page-heading {
+  min-width: 0;
+}
+.bible-page-heading .date-line {
+  margin-bottom: 5px;
+  font-size: 10px;
+}
+.bible-page-heading h1 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+}
+.bible-page-header .page-intro-actions {
+  justify-content: flex-end;
+}
+.bible-page-header .bible-search {
+  grid-column: 1 / -1;
+  max-width: none;
+  margin-top: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.hymn-page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 24px;
+  margin-bottom: 22px;
+  padding: 15px 18px 17px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 94%, var(--blue-soft));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--navy) 5%, transparent);
+}
+.hymn-page-heading {
+  min-width: 0;
+}
+.hymn-page-heading .date-line {
+  margin-bottom: 5px;
+  font-size: 10px;
+}
+.hymn-page-heading h1 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+}
+.hymn-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.hymn-page-header .hymn-catalog-controls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 230px);
+  align-items: end;
+  gap: 12px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.hymn-page-header .hymn-catalog-controls .control-select {
+  min-width: 0;
+}
 .date-line {
   color: var(--blue);
   font-size: 12px;
@@ -766,7 +841,9 @@ blockquote {
 }
 
 .online-content-page {
-  max-width: 920px;
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
 }
@@ -782,10 +859,49 @@ blockquote {
   background: var(--surface);
   box-shadow: var(--shadow);
 }
+.sauh-page .online-article-card {
+  width: 100%;
+  max-width: none;
+}
+.sauh-article.has-image {
+  grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.22fr);
+  align-items: start;
+}
+.sauh-article.has-image > .online-article-image {
+  grid-column: 1;
+  grid-row: 1 / span 5;
+  width: 100%;
+  max-height: none;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+}
+.sauh-article.has-image > .date-line,
+.sauh-article.has-image > h1,
+.sauh-article.has-image > .online-article-reference,
+.sauh-article.has-image > blockquote,
+.sauh-article.has-image > .online-article-body,
+.sauh-article.has-image > .detail-actions {
+  grid-column: 2;
+}
+.sauh-article:not(.has-image) > * {
+  grid-column: 1 / -1;
+}
+.sauh-article .online-article-body,
+.sauh-article blockquote {
+  min-width: 0;
+}
+.sauh-article .online-article-body p,
+.sauh-article blockquote {
+  overflow-wrap: anywhere;
+}
 
 .online-article-card h1 {
   max-width: 18ch;
   margin: 0;
+}
+.sauh-article h1 {
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.08;
 }
 
 .online-article-image {
@@ -1492,13 +1608,16 @@ body.is-resizing-bible {
   border-bottom: 1px solid var(--line);
 }
 .reader-toolbar {
-  position: relative;
+  position: sticky;
+  top: 78px;
   z-index: var(--z-toolbar);
   display: flex;
   align-items: end;
   gap: 11px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(14px);
   flex-wrap: wrap;
   transition:
     transform var(--motion-normal) var(--ease-out),
@@ -1554,6 +1673,43 @@ body.is-resizing-bible {
   min-height: 38px;
   padding-inline: 12px;
   font-size: 12px;
+}
+.reader-toolbar-title {
+  display: grid;
+  flex: 0 1 148px;
+  min-width: 120px;
+  gap: 2px;
+  align-self: stretch;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  user-select: none;
+}
+.reader-toolbar-title:hover,
+.reader-toolbar-title:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface-soft);
+}
+.reader-toolbar-title > span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.reader-toolbar-title strong {
+  overflow: hidden;
+  color: var(--navy);
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reader-toolbar-title small {
+  color: var(--muted);
+  font-size: 10px;
 }
 .reader-heading {
   display: flex;
@@ -1923,6 +2079,79 @@ body.is-resizing-bible {
   color: var(--blue);
 }
 
+.selected-verse-toolbar {
+  position: fixed;
+  left: calc(50% + 128px);
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: var(--z-toolbar);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(920px, calc(100vw - 32px));
+  padding: 10px 12px 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line-strong));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 96%, var(--blue-soft));
+  box-shadow: var(--shadow-lift);
+  transform: translateX(-50%);
+  animation: quick-nav-in var(--motion-fast) var(--ease-out);
+}
+.selected-verse-context {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.selected-verse-context strong {
+  color: var(--navy);
+  font-size: 12px;
+}
+.selected-verse-context span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.selected-verse-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+.selected-verse-actions .quiet-button {
+  min-height: 36px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+.selected-verse-highlights {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 4px;
+}
+.selected-verse-close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 20px;
+}
+.selected-verse-close:hover,
+.selected-verse-close:focus-visible {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
 @keyframes quick-nav-in {
   from {
     opacity: 0;
@@ -1957,6 +2186,7 @@ body.is-resizing-bible {
   border-top: 1px solid var(--line);
   content-visibility: auto;
   contain-intrinsic-size: 76px;
+  scroll-margin-block: 180px 40px;
 }
 .verse-row.is-selected {
   border-radius: 8px;
@@ -3151,6 +3381,9 @@ body.is-resizing-bible {
   .main-content {
     padding-inline: 38px;
   }
+  .selected-verse-toolbar {
+    left: calc(50% + 40px);
+  }
 }
 
 @media (max-width: 599px) {
@@ -3201,6 +3434,30 @@ body.is-resizing-bible {
   .main-content {
     padding: 32px 20px 150px;
   }
+  .bible-page-header {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .bible-page-header .page-intro-actions {
+    justify-content: space-between;
+  }
+  .bible-page-header .bible-search {
+    padding-top: 12px;
+  }
+  .hymn-page-header {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .hymn-page-actions {
+    justify-content: space-between;
+  }
+  .hymn-catalog-controls {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 12px;
+  }
   .page-intro {
     display: block;
     padding-bottom: 28px;
@@ -3247,7 +3504,12 @@ body.is-resizing-bible {
     padding-inline: 13px;
   }
   .reader-toolbar {
+    top: 66px;
     align-items: stretch;
+  }
+  .reader-toolbar-title {
+    flex: 1 1 100%;
+    min-height: 44px;
   }
   .reader-toolbar label {
     flex: 1 1 0;
@@ -3270,6 +3532,30 @@ body.is-resizing-bible {
   }
   .verse-row p {
     font-size: 17px;
+  }
+  .verse-row {
+    scroll-margin-block: 260px 100px;
+  }
+  .selected-verse-toolbar {
+    left: 12px;
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: auto;
+    transform: none;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 9px 10px;
+  }
+  .selected-verse-context span {
+    -webkit-line-clamp: 1;
+  }
+  .selected-verse-actions {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .selected-verse-actions .quiet-button {
+    flex: 0 0 auto;
   }
   .hymn-layout {
     grid-template-columns: 1fr;
@@ -4581,6 +4867,23 @@ body.is-resizing-bible {
 }
 
 @media (max-width: 720px) {
+  .sauh-article.has-image {
+    grid-template-columns: 1fr;
+  }
+  .sauh-article.has-image > .online-article-image,
+  .sauh-article.has-image > .date-line,
+  .sauh-article.has-image > h1,
+  .sauh-article.has-image > .online-article-reference,
+  .sauh-article.has-image > blockquote,
+  .sauh-article.has-image > .online-article-body,
+  .sauh-article.has-image > .detail-actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .sauh-article.has-image > .online-article-image {
+    aspect-ratio: 16 / 9;
+    max-height: 320px;
+  }
   .bible-reader.is-split .bible-reader-layout {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -2,6 +2,31 @@
 
 GYSApp never sends an e-GYS token directly to the browser storage. The web client calls the versioned GYS BFF routes and the Worker forwards the request to e-GYS with the upstream `egys_session` cookie (the upstream default; deployments may override the name).
 
+## Current live production compatibility
+
+The live host `https://e.gys.or.id` currently exposes the e-GYS v1 login
+surface, while the checked-in e-GYS repository documents v2. The native shell
+therefore keeps the two contracts separate:
+
+- the Tauri account action opens the official live `/login` page in an isolated
+  native WebView;
+- Google, Apple, and WhatsApp OTP are handled by the live e-GYS page and its
+  own endpoints (`/auth/*` and `/login/*`); GYSApp never collects a password;
+- the native bridge accepts only a successful provider message from the
+  allowlisted `e.gys.or.id` origin, stores the opaque v1 token in the OS
+  keyring, and emits only an authenticated signal to the main window; the web
+  client reads it only at the BFF request boundary and never puts it in
+  localStorage or diagnostics;
+- the BFF forwards that bearer session to live
+  `GET /api/v1/users/profile` and normalizes the legacy response into the
+  GYSApp account profile shape.
+
+This compatibility path is intentionally native-only. Browser builds continue
+to use the versioned v2 BFF exchange until a deployed e-GYS v2 origin is
+available. `EGYS_API_BASE_URL` must still be configured on the BFF as
+`https://e.gys.or.id` for native profile detection against the current live
+service.
+
 ## Verified upstream authentication boundary
 
 The verified e-GYS revision in
@@ -15,10 +40,13 @@ bundle a client secret. Google/Apple's official browser or native SDK is the
 authentication boundary, and the resulting ID token is exchanged through the
 same BFF endpoint. WhatsApp uses the documented start/poll flow.
 
-When a native provider SDK is available, the Tauri shell must use its secure
-system-browser/auth-session implementation and hand only the resulting ID
-token to the API client. It must not embed the e-GYS login page in a WebView.
-The current web implementation loads the official provider SDK only after the
+When a native provider SDK is available for a deployed v2 service, the Tauri
+shell must use its secure system-browser/auth-session implementation and hand
+only the resulting ID token to the API client. For the current live v1
+deployment, the explicit compatibility exception is the isolated official
+e-GYS login WebView described above; it is origin-allowlisted, has no app
+password form, and does not include the token in the bridge event. The browser
+implementation still loads the official provider SDK only after the
 user explicitly chooses a provider; protected native client IDs and Worker
 configuration remain deployment prerequisites.
 
@@ -27,7 +55,10 @@ configuration remain deployment prerequisites.
 1. The identity provider SDK obtains a short-lived Google or Apple `idToken` in the client.
 2. The client posts `{ "idToken": "…" }` to `/api/v1/auth/exchange/google` or `/api/v1/auth/exchange/apple`.
 3. The Worker forwards the token to e-GYS `/api/v1/auth/{provider}`, validates the typed `SignInResponse`, and rewrites the upstream `Set-Cookie` domain to the BFF origin.
-4. `/api/v1/account/profile` and `/api/v1/auth/session` forward the HttpOnly cookie to e-GYS `/api/v1/auth/me`.
+4. On v2, `/api/v1/account/profile` and `/api/v1/auth/session` forward the
+   HttpOnly cookie to e-GYS `/api/v1/auth/me`. On the live native v1 path,
+   `/api/v1/account/profile` forwards the keyring-backed bearer token to
+   e-GYS `/api/v1/users/profile` and applies the legacy adapter.
 5. Logout forwards to `/api/v1/auth/signout` and clears the local cookie. The
    WhatsApp poll endpoint returns the same `SignInResponse` when it reaches
    `READY`; the BFF consumes that response, forwards its HttpOnly cookie, and

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-egys-login-message"
+description = "Enables the egys_login_message command without any pre-configured scope."
+commands.allow = ["egys_login_message"]
+
+[[permission]]
+identifier = "deny-egys-login-message"
+description = "Denies the egys_login_message command without any pre-configured scope."
+commands.deny = ["egys_login_message"]

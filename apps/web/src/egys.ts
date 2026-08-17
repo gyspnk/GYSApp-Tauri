@@ -9,7 +9,11 @@ import {
   type EgysProviders,
 } from "@gys/contracts";
 import { recordDiagnostic } from "./diagnostics.js";
-import { isTauriShell } from "./native-platform.js";
+import {
+  getNativeEgysToken,
+  isTauriShell,
+  removeNativeEgysToken,
+} from "./native-platform.js";
 
 function apiUrl(path: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
@@ -33,6 +37,14 @@ async function request(
   // BFF accepts this explicit marker for native cookie-authenticated
   // mutations, while the browser path remains protected by Origin checks.
   if (isTauriShell()) headers.set("x-gys-client", "native");
+  if (isTauriShell() && !headers.has("authorization")) {
+    try {
+      const token = await getNativeEgysToken();
+      if (token) headers.set("authorization", `Bearer ${token}`);
+    } catch (error) {
+      recordDiagnostic("warn", "egys.native-token.read", error);
+    }
+  }
   try {
     return await fetch(input, {
       ...init,
@@ -159,8 +171,12 @@ export async function getEgysWhatsAppState(
 }
 
 export async function signOutEgys(): Promise<void> {
-  await request(apiUrl("/api/v1/auth/logout"), {
-    method: "POST",
-    credentials: "include",
-  });
+  try {
+    await request(apiUrl("/api/v1/auth/logout"), {
+      method: "POST",
+      credentials: "include",
+    });
+  } finally {
+    if (isTauriShell()) await removeNativeEgysToken();
+  }
 }
