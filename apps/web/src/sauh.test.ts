@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  firstParagraph,
   onlyTodaySauh,
   parseSauhPosts,
+  selectOfflineSauh,
   selectTodaySauh,
   sauhNetworkCandidates,
   stripHtml,
@@ -123,6 +125,29 @@ describe("Sauh feed normalization", () => {
     expect(posts[0]?.source).toBe("tjc.org");
   });
 
+  it("keeps the complete reflection body while exposing a compact excerpt helper", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 3,
+        slug: "multi-paragraph",
+        date: "2026-08-14T00:00:00+00:00",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/multi-paragraph/",
+        title: { rendered: "Renungan lengkap" },
+        content: {
+          rendered:
+            "<p>Paragraf pembuka untuk kartu ringkas.</p><p>Paragraf kedua harus tetap tersedia di viewer.</p>",
+        },
+      },
+    ]);
+
+    expect(posts[0]?.body).toBe(
+      "Paragraf pembuka untuk kartu ringkas.\nParagraf kedua harus tetap tersedia di viewer.",
+    );
+    expect(firstParagraph(posts[0]?.body ?? "")).toBe(
+      "Paragraf pembuka untuk kartu ringkas.",
+    );
+  });
+
   it("strips markup without losing paragraph boundaries", () => {
     expect(stripHtml("<p>Satu</p><p>Dua &amp; tiga</p>")).toBe(
       "Satu\nDua & tiga",
@@ -160,6 +185,23 @@ describe("Sauh feed normalization", () => {
     expect(
       onlyTodaySauh(posts, new Date("2026-08-14T12:00:00.000Z"))[0]?.id,
     ).toBe("today");
+  });
+
+  it("keeps the newest verified snapshot readable when offline data lags one day", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 1,
+        slug: "sbj260816",
+        date: "2026-08-16T00:00:00.000Z",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260816/",
+        title: { rendered: "Snapshot terakhir" },
+        content: { rendered: "<p>Renungan tersimpan.</p>" },
+      },
+    ]);
+
+    expect(
+      selectOfflineSauh(posts, new Date("2026-08-17T08:00:00+07:00"))[0]?.id,
+    ).toBe("sbj260816");
   });
 
   it("uses the publisher's daily slug when UTC modification rolls over", () => {

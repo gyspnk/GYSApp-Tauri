@@ -17,7 +17,8 @@ import {
   cleanupPdfPage,
   disposePdfDocument,
   isPdfLayout,
-  nextPdfPage,
+  pdfDocumentSourceOptions,
+  pdfPageWindow,
   pdfLayoutForViewport,
   shouldRenderPdfPage,
   type PdfLayout,
@@ -229,6 +230,7 @@ export function PdfReader({
   src,
   data,
   initialPage = 1,
+  pageRange,
   downloadUrl,
   title = "PDF reader",
   progressKey,
@@ -239,6 +241,7 @@ export function PdfReader({
   src: string;
   data?: Uint8Array;
   initialPage?: number;
+  pageRange?: { start: number; count: number };
   downloadUrl?: string;
   title?: string;
   progressKey?: string;
@@ -260,8 +263,11 @@ export function PdfReader({
     readPdfPage(progressKey),
   );
   const [total, setTotal] = useState(0);
+  const [pageStart, setPageStart] = useState(() =>
+    Math.max(1, pageRange?.start ?? 1),
+  );
   const [zoom, setZoom] = useState(1);
-  const [fit, setFit] = useState(false);
+  const [fit, setFit] = useState(true);
   const [layout, setLayout] = useState<PdfLayout>(() =>
     readPdfLayout(progressKey),
   );
@@ -338,6 +344,7 @@ export function PdfReader({
     void disposePdfDocument(previousDocument);
     setDocumentProxy(null);
     setTotal(0);
+    setPageStart(Math.max(1, pageRange?.start ?? 1));
     setStatus("loading");
     const cleanup = () => {
       disposed = true;
@@ -350,22 +357,28 @@ export function PdfReader({
       setStatus("error");
       return cleanup;
     }
-    const loadingTask = getDocument(
-      data ? { data: data.slice() } : { url: src },
-    );
+    const loadingTask = getDocument(pdfDocumentSourceOptions(src, data));
     void loadingTask.promise
       .then((document) => {
         if (disposed) {
           void disposePdfDocument(document);
           return;
         }
+        const pageWindow = pdfPageWindow(
+          pageRange?.start ?? 1,
+          pageRange?.count,
+          document.numPages,
+        );
         documentRef.current = document;
-        setTotal(document.numPages);
-        setPage((current) => Math.max(1, Math.min(document.numPages, current)));
+        setPageStart(pageWindow.start);
+        setTotal(pageWindow.total);
+        setPage((current) =>
+          Math.max(pageWindow.start, Math.min(pageWindow.end, current)),
+        );
         setResumePage((current) =>
           current === undefined
             ? current
-            : Math.max(1, Math.min(document.numPages, current)),
+            : Math.max(pageWindow.start, Math.min(pageWindow.end, current)),
         );
         setDocumentProxy(document);
         setStatus("ready");
@@ -378,7 +391,7 @@ export function PdfReader({
       void loadingTask.destroy().catch(() => undefined);
       cleanup();
     };
-  }, [data, loadAttempt, src]);
+  }, [data, loadAttempt, pageRange?.count, pageRange?.start, src]);
 
   const onStageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     restoreToolbar();
@@ -463,10 +476,10 @@ export function PdfReader({
         Math.abs(deltaX) > Math.abs(deltaY) * 1.5 &&
         elapsed < 500
       ) {
-        if (deltaX < 0 && (total === 0 || page < total)) {
+        if (deltaX < 0 && (total === 0 || page < pageStart + total - 1)) {
           hapticTick("light");
           goToPage(page + (effectiveLayout === "two" ? 2 : 1));
-        } else if (deltaX > 0 && page > 1) {
+        } else if (deltaX > 0 && page > pageStart) {
           hapticTick("light");
           goToPage(page + (effectiveLayout === "two" ? -2 : -1));
         }
@@ -485,21 +498,29 @@ export function PdfReader({
     const pageNumbers =
       effectiveLayout === "single"
         ? [page]
-        : [page, page + 1].filter((value) => value <= documentProxy.numPages);
+        : [page, page + 1].filter((value) => value <= pageStart + total - 1);
     const canvases = [canvasRef.current, secondaryCanvasRef.current];
     void Promise.all(
       pageNumbers.map(async (pageNumber, index) => {
         const canvas = canvases[index];
         if (!canvas) return;
         const pdfPage = await documentProxy.getPage(
-          Math.max(1, Math.min(documentProxy.numPages, pageNumber)),
+          Math.max(pageStart, Math.min(pageStart + total - 1, pageNumber)),
         );
         if (disposed) {
           cleanupPdfPage(pdfPage);
           return;
         }
         pdfPages.push(pdfPage);
-        const viewport = pdfPage.getViewport({ scale: zoom });
+        const baseViewport = pdfPage.getViewport({ scale: 1 });
+        const availableWidth = Math.max(
+          320,
+          (canvas.parentElement?.clientWidth ?? window.innerWidth) - 32,
+        );
+        const fitScale = availableWidth / baseViewport.width;
+        const viewport = pdfPage.getViewport({
+          scale: fit ? Math.min(zoom, fitScale) : zoom,
+        });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         const renderTask = pdfPage.render({
@@ -524,10 +545,13 @@ export function PdfReader({
       for (const pdfPage of pdfPages) cleanupPdfPage(pdfPage);
       if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
-  }, [documentProxy, effectiveLayout, page, zoom]);
+  }, [documentProxy, effectiveLayout, fit, page, pageStart, total, zoom]);
 
   const goToPage = (next: number) => {
-    const bounded = nextPdfPage(next, total, 0);
+    const bounded = Math.max(
+      pageStart,
+      Math.min(pageStart + Math.max(0, total - 1), Math.trunc(next)),
+    );
     setPage(bounded);
     if (effectiveLayout !== "vertical" && effectiveLayout !== "horizontal")
       return;
@@ -544,8 +568,8 @@ export function PdfReader({
     total > 0 &&
     resumePage !== undefined &&
     resumePage !== page &&
-    resumePage >= 1 &&
-    resumePage <= total;
+    resumePage >= pageStart &&
+    resumePage <= pageStart + total - 1;
   const retry = () => {
     setStatus("loading");
     setLoadAttempt((attempt) => attempt + 1);
@@ -557,12 +581,12 @@ export function PdfReader({
         <button
           type="button"
           onClick={() => goToPage(page + (effectiveLayout === "two" ? -2 : -1))}
-          disabled={page <= 1}
+          disabled={page <= pageStart}
         >
           Sebelumnya
         </button>
         <span>
-          Page {page}
+          Page {pageStart > 1 ? page - pageStart + 1 : page}
           {total ? ` / ${total}` : ""}
         </span>
         {canResume && (
@@ -580,12 +604,20 @@ export function PdfReader({
             Ke halaman
             <input
               type="number"
-              min={1}
-              max={total}
+              min={pageStart}
+              max={pageStart + Math.max(0, total - 1)}
               value={page}
               aria-label="Lompat ke halaman PDF"
               onChange={(event) =>
-                setPage(nextPdfPage(Number(event.target.value) || 1, total, 0))
+                setPage(
+                  Math.max(
+                    pageStart,
+                    Math.min(
+                      pageStart + Math.max(0, total - 1),
+                      Number(event.target.value) || pageStart,
+                    ),
+                  ),
+                )
               }
               onKeyDown={(event) => {
                 if (event.key === "Enter")
@@ -597,7 +629,7 @@ export function PdfReader({
         <button
           type="button"
           onClick={() => goToPage(page + (effectiveLayout === "two" ? 2 : 1))}
-          disabled={total === 0 || page >= total}
+          disabled={total === 0 || page >= pageStart + total - 1}
         >
           Berikutnya
         </button>
@@ -665,7 +697,8 @@ export function PdfReader({
         {status === "error" && (
           <div className="pdf-error-state" role="alert">
             <p>
-              PDF belum tersedia offline. Simpan dulu saat tersambung internet.
+              PDF gagal dimuat. PDF belum tersedia offline; simpan dulu saat
+              tersambung internet.
             </p>
             <button
               className="quiet-button"
@@ -682,26 +715,29 @@ export function PdfReader({
             className={`pdf-pages pdf-layout-${effectiveLayout}`}
             ref={verticalStageRef}
           >
-            {Array.from({ length: total }, (_, index) => (
-              <VerticalPdfPage
-                key={index + 1}
-                documentProxy={documentProxy!}
-                pageNumber={index + 1}
-                zoom={zoom}
-                fit={fit}
-                stageRef={verticalStageRef}
-                onActive={(nextPage) => {
-                  setPage((current) =>
-                    current === nextPage ? current : nextPage,
-                  );
-                }}
-                {...(chordOverlays?.[String(index + 1)]
-                  ? { chordMarkers: chordOverlays[String(index + 1)] }
-                  : {})}
-                chordsVisible={chordsVisible}
-                horizontal={effectiveLayout === "horizontal"}
-              />
-            ))}
+            {Array.from({ length: total }, (_, index) => {
+              const pageNumber = pageStart + index;
+              return (
+                <VerticalPdfPage
+                  key={pageNumber}
+                  documentProxy={documentProxy!}
+                  pageNumber={pageNumber}
+                  zoom={zoom}
+                  fit={fit}
+                  stageRef={verticalStageRef}
+                  onActive={(nextPage) => {
+                    setPage((current) =>
+                      current === nextPage ? current : nextPage,
+                    );
+                  }}
+                  {...(chordOverlays?.[String(pageNumber)]
+                    ? { chordMarkers: chordOverlays[String(pageNumber)] }
+                    : {})}
+                  chordsVisible={chordsVisible}
+                  horizontal={effectiveLayout === "horizontal"}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className={`pdf-pages pdf-layout-${effectiveLayout}`}>

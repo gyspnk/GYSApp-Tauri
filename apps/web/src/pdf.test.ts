@@ -4,6 +4,8 @@ import {
   cleanupPdfPage,
   disposePdfDocument,
   nextPdfPage,
+  pdfDocumentSourceOptions,
+  pdfPageWindow,
   shouldRenderPdfPage,
 } from "./pdf-utils.js";
 
@@ -25,6 +27,35 @@ describe("PDF reader controls", () => {
     expect(shouldRenderPdfPage(2, false)).toBe(true);
     expect(shouldRenderPdfPage(3, false)).toBe(false);
     expect(shouldRenderPdfPage(42, true)).toBe(true);
+  });
+
+  it("configures URL-backed documents for range loading without changing byte-backed fallback", () => {
+    const urlOptions = pdfDocumentSourceOptions("https://cdn.example/kr.pdf");
+    expect(urlOptions).toMatchObject({
+      url: "https://cdn.example/kr.pdf",
+      rangeChunkSize: 64 * 1024,
+      disableAutoFetch: true,
+      disableStream: true,
+    });
+
+    const bytes = new Uint8Array([1, 2, 3]);
+    const dataOptions = pdfDocumentSourceOptions("ignored", bytes);
+    expect(dataOptions).toEqual({ data: bytes });
+    if (!("data" in dataOptions)) throw new Error("Expected byte source");
+    expect(dataOptions.data).not.toBe(bytes);
+  });
+
+  it("limits a shared master PDF to the mapped hymn page window", () => {
+    expect(pdfPageWindow(158, 2, 649)).toEqual({
+      start: 158,
+      end: 159,
+      total: 2,
+    });
+    expect(pdfPageWindow(1, undefined, 3)).toEqual({
+      start: 1,
+      end: 3,
+      total: 3,
+    });
   });
 
   it("disposes a PDF document without turning cleanup failures into UI errors", async () => {

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import type { Locale } from "./i18n.js";
-import { fetchSauh, subscribeSauh } from "./sauh.js";
+import { fetchSauh, selectTodaySauh, subscribeSauh } from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -11,7 +11,7 @@ function Paragraphs({ text }: { text: string }) {
   return (
     <div className="online-article-body">
       {text
-        .split(/\n{2,}/)
+        .split(/\n+/)
         .map((paragraph) => paragraph.trim())
         .filter(Boolean)
         .map((paragraph, index) => (
@@ -36,7 +36,7 @@ export function SauhPage() {
     | { status: "error"; message: string }
   >({ status: "loading" });
 
-  const load = (signal?: AbortSignal) => {
+  const load = useCallback((signal?: AbortSignal) => {
     setState({ status: "loading" });
     void fetchSauh(signal)
       .then(([post]) => {
@@ -54,20 +54,20 @@ export function SauhPage() {
               : "Sauh Bagi Jiwa belum tersedia",
         });
       });
-  };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     load(controller.signal);
     const unsubscribe = subscribeSauh((items) => {
-      const [post] = items;
+      const [post] = selectTodaySauh(items);
       if (post) setState({ status: "ready", post });
     });
     return () => {
       controller.abort();
       unsubscribe();
     };
-  }, []);
+  }, [load]);
 
   return (
     <div className="page online-content-page sauh-page" data-testid="sauh-page">

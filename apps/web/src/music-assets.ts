@@ -33,6 +33,15 @@ export function assetUrl(
   return `${RAW_ROOT}/${encodeURIComponent(lock.sourceCommit)}/docs/${path}`;
 }
 
+export async function resolveMusicAssetUrl(
+  ref: Pick<UpstreamMusicItem, "path" | "sha256">,
+  lock?: UpstreamMusicLock,
+): Promise<string> {
+  if ((await bundledMusicPaths()).has(ref.path)) return localUrl(ref);
+  const resolvedLock = lock ?? (await loadMusicLock());
+  return bffAssetUrl(ref, resolvedLock) ?? assetUrl(ref, resolvedLock);
+}
+
 function bffAssetUrl(
   ref: Pick<UpstreamMusicItem, "path">,
   lock: UpstreamMusicLock,

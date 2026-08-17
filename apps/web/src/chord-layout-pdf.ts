@@ -13,6 +13,7 @@ import {
   type ChordLayoutEntry,
   type PdfTextItem,
 } from "./chord-layout.js";
+import { pdfDocumentSourceOptions } from "./pdf-utils.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -101,12 +102,12 @@ function textItems(page: PDFPageProxy): Promise<PdfTextItem[]> {
  * is requested; no PDF bytes are persisted by this helper.
  */
 export async function buildChordLayoutFromPdf(
-  data: Uint8Array,
+  source: Uint8Array | string,
   pages: Record<string, ChordLayoutEntry[]>,
   resourceKey?: string,
 ): Promise<ChordLayoutPage[]> {
   const presentation = await buildChordPresentationFromPdf(
-    data,
+    source,
     pages,
     resourceKey,
   );
@@ -119,11 +120,15 @@ export async function buildChordLayoutFromPdf(
  * - the PDF presentation uses note coordinates for a DOM overlay.
  */
 export async function buildChordPresentationFromPdf(
-  data: Uint8Array,
+  source: Uint8Array | string,
   pages: Record<string, ChordLayoutEntry[]>,
   resourceKey?: string,
 ): Promise<ChordPresentationLayout> {
-  const task = getDocument({ data: data.slice() });
+  const task = getDocument(
+    typeof source === "string"
+      ? pdfDocumentSourceOptions(source)
+      : pdfDocumentSourceOptions("", source),
+  );
   const document = await task.promise;
   try {
     const output: ChordLayoutPage[] = [];
@@ -187,10 +192,10 @@ export async function buildChordPresentationFromPdf(
 }
 
 export async function buildChordOverlayFromPdf(
-  data: Uint8Array,
+  source: Uint8Array | string,
   pages: Record<string, ChordLayoutEntry[]>,
   resourceKey?: string,
 ): Promise<Record<string, ChordOverlayMarker[]>> {
-  return (await buildChordPresentationFromPdf(data, pages, resourceKey))
+  return (await buildChordPresentationFromPdf(source, pages, resourceKey))
     .overlays;
 }

@@ -25,7 +25,8 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
-import { fetchSauh, subscribeSauh } from "./sauh.js";
+import { fetchSauh, firstParagraph, subscribeSauh } from "./sauh.js";
+import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -1096,7 +1097,13 @@ function Shell({
 
 function HomePage({ locale }: { locale: Locale }) {
   const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>([]);
+  const [suara, setSuara] = useState<Awaited<ReturnType<typeof fetchSuara>>>(
+    [],
+  );
   const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [suaraStatus, setSuaraStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
   const [activity, setActivity] = useState<ActivityState>(() => getActivity());
@@ -1138,11 +1145,28 @@ function HomePage({ locale }: { locale: Locale }) {
     loadSauh(controller.signal);
     return () => controller.abort();
   }, [loadSauh]);
+  const loadSuara = useCallback((signal?: AbortSignal) => {
+    setSuaraStatus("loading");
+    void fetchSuara(signal)
+      .then((items) => {
+        if (signal?.aborted) return;
+        setSuara(items);
+        setSuaraStatus(items.length > 0 ? "ready" : "error");
+      })
+      .catch(() => {
+        if (!signal?.aborted) setSuaraStatus("error");
+      });
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadSuara(controller.signal);
+    return () => controller.abort();
+  }, [loadSuara]);
   const selected = sauh[0];
   const dailyText = selected
     ? dailyMode === "verse"
       ? (selected.verse ?? selected.body)
-      : selected.body
+      : firstParagraph(selected.body)
     : "";
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
@@ -1278,6 +1302,66 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
           )}
         </article>
+      </section>
+      <section
+        className="home-media-section"
+        aria-labelledby="home-suara-heading"
+      >
+        <div className="section-title-row">
+          <div>
+            <p className="date-line">Kesaksian</p>
+            <h2 id="home-suara-heading">Suara Sejati</h2>
+          </div>
+          <Link className="text-button" to="/suara">
+            Lihat semua →
+          </Link>
+        </div>
+        {suaraStatus === "loading" && (
+          <div className="loading-panel" role="status">
+            Mengambil Suara Sejati…
+          </div>
+        )}
+        {suaraStatus === "error" && (
+          <div className="error-panel" role="alert">
+            <strong>Suara Sejati belum tersedia.</strong>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => loadSuara()}
+            >
+              Coba lagi
+            </button>
+          </div>
+        )}
+        {suaraStatus === "ready" && (
+          <div className="home-suara-shelf">
+            {suara.slice(0, 4).map((post) => (
+              <Link
+                className="suara-library-item"
+                key={post.id}
+                to={`/suara/${encodeURIComponent(post.id)}`}
+              >
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span className="suara-thumbnail-fallback" aria-hidden="true">
+                    SS
+                  </span>
+                )}
+                <span>
+                  <strong>{post.title}</strong>
+                  <small>{post.excerpt}</small>
+                  <em>{new Date(post.publishedAt).toLocaleDateString()}</em>
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

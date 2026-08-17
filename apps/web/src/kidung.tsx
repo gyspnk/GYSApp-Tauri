@@ -37,6 +37,7 @@ import {
   findMusicAsset,
   loadMusicAsset,
   prefetchMusicAsset,
+  resolveMusicAssetUrl,
 } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
 import { speechPlayer } from "./speech-player.js";
@@ -78,8 +79,10 @@ type CatalogState =
   | { status: "ready"; items: HymnCatalogEntry[] }
   | { status: "error"; message: string };
 type HymnPdfAsset = {
-  bytes: Uint8Array;
+  src: string;
+  bytes?: Uint8Array;
   initialPage: number;
+  pageCount?: number;
   source: "fork" | "canonical";
   sourceVersion: string;
 };
@@ -358,6 +361,7 @@ function HymnDetail({
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
+  const [pdfPageCount, setPdfPageCount] = useState<number>();
   const [pdfSource, setPdfSource] = useState<"fork" | "canonical">("fork");
   const [pdfVersion, setPdfVersion] = useState<string>();
   const [pdfStatus, setPdfStatus] = useState<
@@ -388,6 +392,11 @@ function HymnDetail({
     midiPlayer.subscribeSettings,
     midiPlayer.settingsSnapshot,
     midiPlayer.settingsSnapshot,
+  );
+  const midiState = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+    midiPlayer.snapshot,
   );
   const verses = getHymnVerses(item);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
@@ -706,8 +715,9 @@ function HymnDetail({
       try {
         const forkPdf = await loadForkHymnalPdf(item.id);
         return {
-          bytes: forkPdf.bytes,
+          src: forkPdf.src,
           initialPage: forkPdf.initialPage,
+          pageCount: forkPdf.pageCount,
           source: "fork" as const,
           sourceVersion: forkPdf.sourceVersion,
         } satisfies HymnPdfAsset;
@@ -715,9 +725,9 @@ function HymnDetail({
         forkError = error;
       }
       if (!musicPdfRef) throw forkError ?? new Error("PDF unavailable");
-      const bytes = await loadMusicAsset(musicPdfRef);
+      const src = await resolveMusicAssetUrl(musicPdfRef, musicLock);
       return {
-        bytes,
+        src,
         initialPage: 1,
         source: "canonical" as const,
         sourceVersion: musicPdfRef.sha256,
@@ -770,7 +780,7 @@ function HymnDetail({
           const { buildChordPresentationFromPdf } =
             await import("./chord-layout-pdf.js");
           const presentation = await buildChordPresentationFromPdf(
-            pdfAsset.bytes,
+            pdfAsset.src,
             layoutPages,
             layoutResourceKey,
           );
@@ -821,13 +831,10 @@ function HymnDetail({
     try {
       const asset = await loadPdfAsset();
       if (run !== pdfRun.current) return;
-      const nextUrl = URL.createObjectURL(
-        new Blob([asset.bytes.slice().buffer as ArrayBuffer], {
-          type: "application/pdf",
-        }),
-      );
+      const nextUrl = asset.src;
       setPdfBytes(asset.bytes);
       setPdfInitialPage(asset.initialPage);
+      setPdfPageCount(asset.pageCount);
       setPdfSource(asset.source);
       setPdfVersion(asset.sourceVersion);
       setPdfUrl((previous) => {
@@ -861,6 +868,31 @@ function HymnDetail({
       void loadChord();
   };
   const loadMidi = async () => {
+    if (midiState.songId === item.id) {
+      if (midiState.status === "playing") {
+        await speechPlayer.stop();
+        await midiPlayer.pause();
+        setMidiStatus("ready");
+        show(translate(locale, "kidung.midiReadyHint"));
+        return;
+      }
+      if (
+        midiState.status === "paused" ||
+        midiState.status === "ready" ||
+        midiState.status === "stopped"
+      ) {
+        try {
+          await speechPlayer.stop();
+          await midiPlayer.play();
+          setMidiStatus("ready");
+          show(translate(locale, "kidung.midiPlaying"));
+        } catch {
+          setMidiStatus("error");
+          show(translate(locale, "kidung.midiUnavailable"));
+        }
+        return;
+      }
+    }
     if (!musicLock) {
       setMidiStatus("error");
       show("MIDI lock belum siap; coba lagi sebentar.");
@@ -897,16 +929,9 @@ function HymnDetail({
       if (queueIndex >= 0) selectMidiPlaylistItem(queueIndex);
       setMidiStatus("ready");
       // Loading the binary/parser is independent from starting Web Audio.
-      // Browsers may reject an AudioContext created after the network await;
-      // the shared floating player remains ready so the next user gesture can
-      // start playback without losing the successfully loaded MIDI.
-      try {
-        await speechPlayer.stop();
-        await midiPlayer.play();
-        show(translate(locale, "kidung.midiPlaying"));
-      } catch {
-        show(translate(locale, "kidung.midiReadyHint"));
-      }
+      // Match gyschordweb: the first activation prepares the song and the
+      // next activation is the explicit play gesture.
+      show(translate(locale, "kidung.midiReadyHint"));
     } catch {
       setMidiStatus("error");
       show(translate(locale, "kidung.midiUnavailable"));
@@ -977,42 +1002,63 @@ function HymnDetail({
         >
           <button
             type="button"
-            className="quiet-button"
+            className="quiet-button hymn-action"
             onClick={toggleChords}
             disabled={chordStatus === "loading"}
             aria-pressed={chordsVisible}
           >
-            {chordStatus === "loading"
-              ? translate(locale, "kidung.loadingChord")
-              : chordsVisible
-                ? translate(locale, "kidung.hideChord")
-                : translate(locale, "kidung.showChord")}
+            <span className="hymn-action-icon" aria-hidden="true">
+              ♫
+            </span>
+            <span className="hymn-action-label">
+              {chordStatus === "loading"
+                ? translate(locale, "kidung.loadingChord")
+                : chordsVisible
+                  ? translate(locale, "kidung.hideChord")
+                  : translate(locale, "kidung.showChord")}
+            </span>
           </button>
           <button
             type="button"
-            className="quiet-button"
+            className="quiet-button hymn-action"
             onClick={toggle}
             aria-pressed={favorite}
           >
-            {favorite
-              ? translate(locale, "kidung.favorite")
-              : translate(locale, "kidung.saveFavorite")}
+            <span className="hymn-action-icon" aria-hidden="true">
+              {favorite ? "★" : "☆"}
+            </span>
+            <span className="hymn-action-label">
+              {favorite
+                ? translate(locale, "kidung.favorite")
+                : translate(locale, "kidung.saveFavorite")}
+            </span>
           </button>
           <button
             type="button"
-            className="primary-button"
+            className="primary-button hymn-action"
             onClick={() => void loadMidi()}
-            disabled={midiStatus === "loading"}
+            disabled={
+              midiStatus === "loading" || midiState.status === "loading"
+            }
           >
-            {midiStatus === "loading"
-              ? translate(locale, "kidung.loadingMidi")
-              : midiStatus === "ready"
-                ? translate(locale, "kidung.midiReady")
-                : translate(locale, "kidung.playMidi")}
+            <span className="hymn-action-icon" aria-hidden="true">
+              {midiState.songId === item.id && midiState.status === "playing"
+                ? "❚❚"
+                : "▶"}
+            </span>
+            <span className="hymn-action-label">
+              {midiState.songId === item.id && midiState.status === "playing"
+                ? translate(locale, "kidung.pauseMidi")
+                : midiStatus === "loading"
+                  ? translate(locale, "kidung.loadingMidi")
+                  : midiStatus === "ready"
+                    ? translate(locale, "kidung.midiReady")
+                    : translate(locale, "kidung.playMidi")}
+            </span>
           </button>
           <button
             type="button"
-            className="quiet-button"
+            className="quiet-button hymn-action"
             aria-pressed={playlist.items.some(
               (entry) => entry.songId === item.id,
             )}
@@ -1033,15 +1079,20 @@ function HymnDetail({
               );
             }}
           >
-            {playlist.items.some((entry) => entry.songId === item.id)
-              ? translate(locale, "kidung.queueCount", {
-                  count: playlist.items.length,
-                })
-              : translate(locale, "kidung.queueAdd")}
+            <span className="hymn-action-icon" aria-hidden="true">
+              ≡
+            </span>
+            <span className="hymn-action-label">
+              {playlist.items.some((entry) => entry.songId === item.id)
+                ? translate(locale, "kidung.queueCount", {
+                    count: playlist.items.length,
+                  })
+                : translate(locale, "kidung.queueAdd")}
+            </span>
           </button>
           <button
             type="button"
-            className="quiet-button"
+            className="quiet-button hymn-action"
             onClick={() =>
               viewerMode === "pdf"
                 ? selectViewerMode("lyrics")
@@ -1049,16 +1100,21 @@ function HymnDetail({
             }
             disabled={pdfStatus === "loading"}
           >
-            {pdfStatus === "loading"
-              ? translate(locale, "kidung.loadingPdf")
-              : viewerMode === "pdf"
-                ? translate(locale, "kidung.closePdf")
-                : translate(locale, "kidung.openPdf")}
+            <span className="hymn-action-icon" aria-hidden="true">
+              ▧
+            </span>
+            <span className="hymn-action-label">
+              {pdfStatus === "loading"
+                ? translate(locale, "kidung.loadingPdf")
+                : viewerMode === "pdf"
+                  ? translate(locale, "kidung.closePdf")
+                  : translate(locale, "kidung.openPdf")}
+            </span>
           </button>
           {pdfBytes && (
             <button
               type="button"
-              className="quiet-button"
+              className="quiet-button hymn-action"
               onClick={() => {
                 const ref = musicPdfRef;
                 if (pdfSource === "canonical" && ref)
@@ -1073,7 +1129,12 @@ function HymnDetail({
                   );
               }}
             >
-              {translate(locale, "kidung.downloadPdf")}
+              <span className="hymn-action-icon" aria-hidden="true">
+                ↓
+              </span>
+              <span className="hymn-action-label">
+                {translate(locale, "kidung.downloadPdf")}
+              </span>
             </button>
           )}
         </div>
@@ -1310,6 +1371,14 @@ function HymnDetail({
               src={pdfUrl ?? ""}
               {...(pdfBytes ? { data: pdfBytes } : {})}
               initialPage={pdfInitialPage}
+              {...(pdfSource === "fork" && pdfPageCount
+                ? {
+                    pageRange: {
+                      start: pdfInitialPage,
+                      count: pdfPageCount,
+                    },
+                  }
+                : {})}
               progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
               {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
               title={item.title}

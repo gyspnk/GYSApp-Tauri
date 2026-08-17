@@ -85,7 +85,10 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
         : typeof post.excerpt?.rendered === "string"
           ? post.excerpt.rendered
           : "";
-    const body = stripHtml(raw).slice(0, 1_200);
+    // Keep the full readable article for the Sauh viewer. The home card uses
+    // its own first-paragraph excerpt, so truncating here silently broke the
+    // detail route while pretending the upstream response was complete.
+    const body = stripHtml(raw).slice(0, 20_000);
     const url = typeof post.link === "string" ? post.link : "";
     const updatedAt =
       typeof post.modified === "string" ? post.modified : post.date;

@@ -59,6 +59,28 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("does not claim an authenticated session when e-GYS is not configured", async () => {
+    const app = createApp({
+      allowedOrigins: ["https://good.example"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const response = await app.request(
+      "/api/v1/auth/session",
+      {
+        headers: {
+          Origin: "https://good.example",
+          cookie: "egys_session=opaque",
+        },
+      },
+      {},
+    );
+
+    expect(response.status).toBe(503);
+    const payload = (await response.json()) as { error: { code: string } };
+    expect(payload.error.code).toBe("UPSTREAM_UNAVAILABLE");
+  });
+
   it("rejects an origin outside the allowlist", async () => {
     const app = createApp({
       allowedOrigins: ["https://good.example"],

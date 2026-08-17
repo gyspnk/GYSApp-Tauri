@@ -59,6 +59,26 @@ describe("BFF Sauh normalization", () => {
     expect(posts[0]?.imageUrl).toBeUndefined();
   });
 
+  it("keeps the complete readable reflection body for the viewer", () => {
+    const posts = normalizeSauhPosts([
+      {
+        id: 4,
+        slug: "complete-body",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/complete-body/",
+        title: { rendered: "Renungan lengkap" },
+        content: {
+          rendered:
+            "<p>Bagian pembuka.</p><p>Bagian lanjutan yang tidak boleh hilang dari viewer.</p>",
+        },
+      },
+    ]);
+
+    expect(posts[0]?.body).toBe(
+      "Bagian pembuka.\nBagian lanjutan yang tidak boleh hilang dari viewer.",
+    );
+  });
+
   it("prefers the publisher's daily slug over an unrelated post edited today", () => {
     const posts = normalizeSauhPosts([
       {

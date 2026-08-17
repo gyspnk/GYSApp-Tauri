@@ -1,6 +1,6 @@
 import {
   AccountProfileSchema,
-  EgysSignInResponseSchema,
+  EgysAuthExchangeResponseSchema,
   EgysProvidersSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
@@ -16,10 +16,6 @@ function apiUrl(path: string): string {
   return base
     ? `${base.replace(/\/$/, "")}${path}`
     : `${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`;
-}
-
-function configuredBase(): string | undefined {
-  return import.meta.env.VITE_BFF_BASE_URL?.trim();
 }
 
 async function request(
@@ -52,7 +48,6 @@ async function request(
 export async function getEgysProfile(
   signal?: AbortSignal,
 ): Promise<AccountProfile | undefined> {
-  if (!configuredBase()) return undefined;
   const response = await request(apiUrl("/api/v1/account/profile"), {
     credentials: "include",
     ...(signal ? { signal } : {}),
@@ -69,7 +64,6 @@ export async function getEgysProfile(
 }
 
 export async function getEgysUpstreamMeta(signal?: AbortSignal) {
-  if (!configuredBase()) return undefined;
   const response = await request(apiUrl("/api/v1/meta/egys"), {
     ...(signal ? { signal } : {}),
     cache: "no-store",
@@ -85,7 +79,6 @@ export async function getEgysUpstreamMeta(signal?: AbortSignal) {
 export async function getEgysProviders(
   signal?: AbortSignal,
 ): Promise<EgysProviders | undefined> {
-  if (!configuredBase()) return undefined;
   const response = await request(apiUrl("/api/v1/auth/providers"), {
     credentials: "include",
     ...(signal ? { signal } : {}),
@@ -112,8 +105,7 @@ export async function getEgysProviders(
 export async function exchangeEgysToken(
   provider: "google" | "apple",
   idToken: string,
-): Promise<{ accountId: string; expiresAt: string }> {
-  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
+): Promise<{ authenticated: true; expiresAt: string }> {
   const response = await request(apiUrl(`/api/v1/auth/exchange/${provider}`), {
     method: "POST",
     credentials: "include",
@@ -125,11 +117,10 @@ export async function exchangeEgysToken(
     recordDiagnostic("error", "egys.sign-in", failure);
     throw failure;
   }
-  return EgysSignInResponseSchema.parse(await response.json());
+  return EgysAuthExchangeResponseSchema.parse(await response.json());
 }
 
 export async function startEgysWhatsAppLogin(signal?: AbortSignal) {
-  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
   const response = await request(apiUrl("/api/v1/auth/whatsapp/start"), {
     method: "POST",
     credentials: "include",
@@ -149,7 +140,6 @@ export async function getEgysWhatsAppState(
   token: string,
   signal?: AbortSignal,
 ) {
-  if (!configuredBase()) throw new Error("e-GYS BFF is not configured");
   const response = await request(
     apiUrl(`/api/v1/auth/whatsapp/state?token=${encodeURIComponent(token)}`),
     {
@@ -169,7 +159,6 @@ export async function getEgysWhatsAppState(
 }
 
 export async function signOutEgys(): Promise<void> {
-  if (!configuredBase()) return;
   await request(apiUrl("/api/v1/auth/logout"), {
     method: "POST",
     credentials: "include",

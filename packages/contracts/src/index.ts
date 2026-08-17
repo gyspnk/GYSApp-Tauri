@@ -179,6 +179,14 @@ export const EgysSignInResponseSchema = z.object({
   expiresAt: z.string().datetime({ offset: true }),
 });
 export type EgysSignInResponse = z.infer<typeof EgysSignInResponseSchema>;
+/** Public BFF response after the HttpOnly e-GYS session cookie is set. */
+export const EgysAuthExchangeResponseSchema = z.object({
+  authenticated: z.literal(true),
+  expiresAt: z.string().datetime({ offset: true }),
+});
+export type EgysAuthExchangeResponse = z.infer<
+  typeof EgysAuthExchangeResponseSchema
+>;
 export const EgysMeResponseSchema = z.object({
   accountId: z.string().min(1),
   personId: z.string().min(1),

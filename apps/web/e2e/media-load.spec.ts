@@ -156,7 +156,7 @@ test("literature PDF failure exposes retry inside the application reader shell",
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
   page,
 }) => {
-  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "Perbesar ukuran teks" }).click();
   await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");
@@ -174,7 +174,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await page
     .locator(".pdf-toolbar")
-    .getByRole("button", { name: "Berikutnya" })
+    .getByRole("button", { name: "Sebelumnya" })
     .click();
   const resumeButton = page.locator('[data-pdf-resume="true"]');
   await expect(resumeButton).toBeVisible();
@@ -182,9 +182,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   const resumePage = resumeLabel?.match(/(\d+)$/)?.[1];
   if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);
   await resumeButton.click();
-  await expect(page.locator(".pdf-toolbar")).toContainText(
-    `Page ${resumePage}`,
-  );
+  await expect(page.locator(".pdf-toolbar")).toContainText("Page 2 / 2");
   await page.getByRole("button", { name: "Mendatar" }).click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",

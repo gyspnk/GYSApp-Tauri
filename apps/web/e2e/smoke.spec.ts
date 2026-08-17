@@ -33,6 +33,37 @@ test("feature-critical hymn actions follow the selected locale", async ({
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
 });
 
+test("compact section headings stay smaller than page and catalog titles", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/literatur");
+  const sectionHeading = page
+    .locator(".literature-featured .section-title-row h2")
+    .first();
+  await expect(sectionHeading).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(() =>
+      sectionHeading.evaluate((node) => getComputedStyle(node).fontSize),
+    )
+    .toBe("14px");
+
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await expect
+    .poll(() =>
+      sectionHeading.evaluate((node) => getComputedStyle(node).fontSize),
+    )
+    .toBe("14px");
+  await expect
+    .poll(() =>
+      page
+        .locator(".page-intro h1")
+        .first()
+        .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
+    )
+    .toBeGreaterThan(14);
+});
+
 test("responsive shell keeps one navigation and no horizontal overflow", async ({
   page,
 }) => {
@@ -397,7 +428,10 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
 }) => {
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".continue-panel")).toHaveCount(1);
-  await expect(page.locator(".home-page .home-media-section")).toHaveCount(0);
+  await expect(page.locator(".home-page .home-media-section")).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: "Suara Sejati" }),
+  ).toBeVisible();
   await expect(page.locator(".sauh-image")).toHaveCount(1);
   await expect(page.getByText(/Sumber langsung Sauh Bagi Jiwa/)).toBeVisible();
 });

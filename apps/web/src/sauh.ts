@@ -91,9 +91,9 @@ export function stripHtml(value: string): string {
     .trim();
 }
 
-function firstParagraph(value: string): string {
+export function firstParagraph(value: string): string {
   const text = stripHtml(value);
-  return text.split(/\n{2,}/)[0]?.trim() || text.slice(0, 440);
+  return text.split(/\n+/)[0]?.trim() || text.slice(0, 440);
 }
 
 function referenceFrom(value: string): string | undefined {
@@ -166,7 +166,7 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
         : typeof post.title === "string"
           ? stripHtml(post.title)
           : "";
-    const body = firstParagraph(rawBody);
+    const body = stripHtml(rawBody).slice(0, 20_000);
     const sourceUrl = typeof post.url === "string" ? post.url : post.link;
     const updatedAt =
       typeof post.modified === "string"
@@ -284,6 +284,19 @@ export function selectTodaySauh(
   return [];
 }
 
+/**
+ * Offline snapshots can lag the publisher by a day between releases. Prefer
+ * today's entry, but keep the newest verified snapshot readable instead of
+ * turning an otherwise usable offline library into a blank error screen.
+ */
+export function selectOfflineSauh(
+  posts: SauhPost[],
+  now = new Date(),
+): SauhPost[] {
+  const today = selectTodaySauh(posts, now);
+  return today.length ? today : posts.slice(0, 1);
+}
+
 function parseNormalizedSauh(value: unknown): SauhPost[] {
   const candidates =
     Array.isArray(value) || !value || typeof value !== "object"
@@ -369,8 +382,13 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
     const offline = typeof navigator !== "undefined" && !navigator.onLine;
     if (offline) {
       // Offline users should see the pinned snapshot immediately, without
-      // spending two network timeouts before the fallback is attempted.
-      return requestToday(STATIC_URL);
+      // spending two network timeouts before the fallback is attempted. A
+      // stale but verified snapshot is a deliberate degraded mode; an empty
+      // or malformed snapshot still produces the actionable error state.
+      const snapshot = await request(STATIC_URL);
+      const selected = selectOfflineSauh(snapshot);
+      if (selected.length) return selected;
+      throw new Error("Sauh snapshot is empty");
     }
 
     // The local snapshot is a verified, source-backed baseline. Race it with

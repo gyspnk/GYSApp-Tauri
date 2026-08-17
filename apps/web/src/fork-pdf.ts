@@ -189,24 +189,11 @@ async function loadMasterPdf(manifest: HymnalPdfManifest) {
   const existing = packageRequests.get(cacheKey);
   if (existing) return existing;
   const request = (async () => {
-    const encodedRepo = manifest.sourceRepo
-      .split("/")
-      .map((segment) => encodeURIComponent(segment))
-      .join("/");
-    const rawForkUrl = `https://raw.githubusercontent.com/${encodedRepo}/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
-      .split("/")
-      .map((segment) => encodeURIComponent(segment))
-      .join("/")}`;
-    const bffForkUrl = BFF_BASE
-      ? `${BFF_BASE.replace(/\/$/, "")}/api/v1/content/fork-pdf?commit=${encodeURIComponent(manifest.sourceCommit)}&path=${encodeURIComponent(manifest.masterPath)}`
-      : undefined;
     let lastError: unknown;
     // Prefer the same-origin Worker when configured. It is still constrained
     // by the immutable source commit/path; raw GitHub remains the direct
     // source fallback for Pages previews and native shells.
-    for (const url of [bffForkUrl, rawForkUrl].filter(
-      (value): value is string => Boolean(value),
-    )) {
+    for (const url of forkPdfSourceUrls(manifest)) {
       try {
         return await fetchPdf(url, integrity);
       } catch (error) {
@@ -234,6 +221,30 @@ async function loadMasterPdf(manifest: HymnalPdfManifest) {
   }
 }
 
+export function forkPdfSourceUrls(
+  manifest: {
+    sourceRepo: string;
+    sourceCommit: string;
+    masterPath: string;
+  },
+  bffBase = BFF_BASE,
+): string[] {
+  const encodedRepo = manifest.sourceRepo
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+  const rawForkUrl = `https://raw.githubusercontent.com/${encodedRepo}/${encodeURIComponent(manifest.sourceCommit)}/${manifest.masterPath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/")}`;
+  const bffForkUrl = bffBase?.trim()
+    ? `${bffBase.trim().replace(/\/$/, "")}/api/v1/content/fork-pdf?commit=${encodeURIComponent(manifest.sourceCommit)}&path=${encodeURIComponent(manifest.masterPath)}`
+    : undefined;
+  return [bffForkUrl, rawForkUrl].filter((value): value is string =>
+    Boolean(value),
+  );
+}
+
 export function forkManifestSongKey(value: number | string): string {
   const normalized = String(value)
     .trim()
@@ -246,6 +257,22 @@ export function forkManifestSongKey(value: number | string): string {
 }
 
 export async function loadForkHymnalPdf(numberOrKey: number | string) {
+  const manifest = await loadMapping();
+  const song = manifest.songs[forkManifestSongKey(numberOrKey)];
+  if (!song) throw new Error("Song is not mapped in the fork PDF database");
+  const src = forkPdfSourceUrls(manifest)[0];
+  if (!src) throw new Error("Fork PDF source is unavailable");
+  return {
+    src,
+    initialPage: song.startPage,
+    pageCount: song.pageCount,
+    sourceVersion: `${manifest.sourceCommit}:${manifest.masterPath}`,
+    source: "GYSApp-Fork PDF database" as const,
+  };
+}
+
+/** Full bytes are reserved for verified chord geometry or explicit download. */
+export async function loadForkHymnalPdfBytes(numberOrKey: number | string) {
   const manifest = await loadMapping();
   const song = manifest.songs[forkManifestSongKey(numberOrKey)];
   if (!song) throw new Error("Song is not mapped in the fork PDF database");

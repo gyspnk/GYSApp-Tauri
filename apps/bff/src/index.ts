@@ -6,6 +6,7 @@ import {
   ErrorResponseSchema,
   OnlineContentSchema,
   AccountProfileSchema,
+  EgysAuthExchangeResponseSchema,
   type ChordManifestV1,
   type ErrorCode,
   type OnlineContent,
@@ -1058,21 +1059,27 @@ export function createApp(
         "INTEGRITY_ERROR",
         "e-GYS authentication response is invalid",
       );
-    return c.json({
-      authenticated: true,
-      expiresAt: body.data.expiresAt,
-    });
+    return c.json(
+      EgysAuthExchangeResponseSchema.parse({
+        authenticated: true,
+        expiresAt: body.data.expiresAt,
+      }),
+    );
   });
 
   app.get("/api/v1/auth/session", async (c) => {
     c.header("cache-control", "no-store");
     if (!c.req.header("authorization") && !c.req.header("cookie"))
       return errorResponse(c, "UNAUTHORIZED", "No active session");
-    if (egysBase(c)) {
-      const upstream = await proxyEgysJson(c, "auth/me");
-      if (!upstream.ok)
-        return errorResponse(c, "UNAUTHORIZED", "No active e-GYS session");
-    }
+    if (!egysBase(c))
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS session verification is not configured",
+      );
+    const upstream = await proxyEgysJson(c, "auth/me");
+    if (!upstream.ok)
+      return errorResponse(c, "UNAUTHORIZED", "No active e-GYS session");
     return c.json({ authenticated: true });
   });
 

@@ -2,6 +2,48 @@ export function clampPdfZoom(value: number): number {
   return Math.max(0.5, Math.min(3, Math.round(value * 100) / 100));
 }
 
+export type PdfDocumentSourceOptions =
+  | { data: Uint8Array }
+  | {
+      url: string;
+      rangeChunkSize: number;
+      disableAutoFetch: true;
+      disableStream: true;
+    };
+
+/**
+ * Keep PDF.js on its HTTP range path for remote documents. A byte-backed
+ * source remains available for verified offline/chord-layout fallbacks, but
+ * opening a normal viewer must not eagerly copy the entire master PDF.
+ */
+export function pdfDocumentSourceOptions(
+  src: string,
+  data?: Uint8Array,
+): PdfDocumentSourceOptions {
+  if (data) return { data: data.slice() };
+  return {
+    url: src,
+    rangeChunkSize: 64 * 1024,
+    disableAutoFetch: true,
+    disableStream: true,
+  };
+}
+
+export function pdfPageWindow(
+  startPage: number,
+  pageCount: number | undefined,
+  documentPages: number,
+): { start: number; end: number; total: number } {
+  const start = Math.max(1, Math.min(documentPages, Math.trunc(startPage)));
+  const end = Math.min(
+    documentPages,
+    pageCount === undefined
+      ? documentPages
+      : start + Math.max(1, Math.trunc(pageCount)) - 1,
+  );
+  return { start, end, total: Math.max(0, end - start + 1) };
+}
+
 export type PdfLayout = "single" | "two" | "vertical" | "horizontal";
 
 export function isPdfLayout(value: unknown): value is PdfLayout {

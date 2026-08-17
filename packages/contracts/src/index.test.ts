@@ -9,6 +9,7 @@ import {
   ErrorResponseSchema,
   EgysMeResponseSchema,
   EgysProvidersSchema,
+  EgysAuthExchangeResponseSchema,
   EgysSignInResponseSchema,
   EgysWhatsAppLoginStartedSchema,
   EgysWhatsAppLoginStateSchema,
@@ -231,6 +232,12 @@ describe("public contracts", () => {
         expiresAt: "2026-08-14T00:00:00.000Z",
       }).accountId,
     ).toBe("account-1");
+    expect(
+      EgysAuthExchangeResponseSchema.parse({
+        authenticated: true,
+        expiresAt: "2026-08-14T00:00:00.000Z",
+      }).authenticated,
+    ).toBe(true);
     expect(
       EgysWhatsAppLoginStateSchema.parse({
         accountId: "account-1",

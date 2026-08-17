@@ -191,6 +191,7 @@ export function MorePage({
   const [notice, setNotice] = useState("");
   const [accountProfile, setAccountProfile] = useState<AccountProfile>();
   const [accountLoading, setAccountLoading] = useState(true);
+  const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
   const whatsappAbort = useRef<AbortController | undefined>(undefined);
   const [providers, setProviders] =
@@ -302,8 +303,17 @@ export function MorePage({
   useEffect(() => {
     const controller = new AbortController();
     void getEgysProviders(controller.signal)
-      .then(setProviders)
-      .catch(() => setProviders(undefined));
+      .then((value) => {
+        setProviders(value);
+        setEgysUnavailable(false);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          recordDiagnostic("warn", "egys.providers", error);
+          setProviders(undefined);
+          setEgysUnavailable(true);
+        }
+      });
     return () => controller.abort();
   }, []);
 
@@ -318,8 +328,16 @@ export function MorePage({
   useEffect(() => {
     const controller = new AbortController();
     void getEgysProfile(controller.signal)
-      .then(setAccountProfile)
-      .catch(() => undefined)
+      .then((profile) => {
+        setAccountProfile(profile);
+        if (profile) setEgysUnavailable(false);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          recordDiagnostic("warn", "egys.profile.detect", error);
+          setEgysUnavailable(true);
+        }
+      })
       .finally(() => setAccountLoading(false));
     return () => controller.abort();
   }, []);
@@ -607,6 +625,7 @@ export function MorePage({
       }
       const profile = await getEgysProfile();
       setAccountProfile(profile);
+      setEgysUnavailable(false);
       show(
         profile
           ? `Selamat datang, ${profile.displayName}.`
@@ -631,6 +650,9 @@ export function MorePage({
     // handoff in the system browser through the shell plugin instead of
     // trying to create a WebView popup.
     const popup = nativeShell ? undefined : reserveAuthPopup();
+    const closePopup = () => {
+      if (popup && !popup.closed) popup.close();
+    };
     try {
       const started = await startEgysWhatsAppLogin(controller.signal);
       if (nativeShell) {
@@ -640,19 +662,28 @@ export function MorePage({
         return;
       } else popup.location.href = started.whatsappUrl;
       show(
-        "Kirim pesan yang sudah disiapkan di WhatsApp; kami menunggu konfirmasi.",
+        `Kirim pesan di WhatsApp; kode ${started.referenceCode} sedang menunggu konfirmasi.`,
       );
       const expiresAt = Date.parse(started.expiresAt);
       while (!controller.signal.aborted && Date.now() < expiresAt) {
         await waitFor(2_000, controller.signal);
         if (controller.signal.aborted) return;
-        const state = await getEgysWhatsAppState(
-          started.pollToken,
-          controller.signal,
-        );
+        let state;
+        try {
+          state = await getEgysWhatsAppState(
+            started.pollToken,
+            controller.signal,
+          );
+        } catch (error) {
+          if (controller.signal.aborted) return;
+          recordDiagnostic("warn", "egys.whatsapp.poll", error);
+          show("Belum ada konfirmasi; mencoba memeriksa lagi…");
+          continue;
+        }
         if (state.state === "READY") {
           const profile = await getEgysProfile(controller.signal);
           setAccountProfile(profile);
+          setEgysUnavailable(false);
           show(
             profile
               ? `Selamat datang, ${profile.displayName}.`
@@ -679,6 +710,7 @@ export function MorePage({
           "Login WhatsApp e-GYS belum tersedia. Pastikan Worker terkonfigurasi.",
         );
     } finally {
+      closePopup();
       if (!controller.signal.aborted) setAuthBusy(false);
     }
   };
@@ -765,7 +797,11 @@ export function MorePage({
               <span
                 className={`pack-badge${accountProfile ? " is-verified" : ""}`}
               >
-                {accountProfile ? "Terhubung" : "Tamu"}
+                {accountProfile
+                  ? "Terhubung"
+                  : egysUnavailable
+                    ? "Tidak tersedia"
+                    : "Tamu"}
               </span>
             </div>
 
@@ -836,53 +872,67 @@ export function MorePage({
               </div>
             ) : (
               <div className="egys-login-box">
+                {egysUnavailable && (
+                  <div className="account-sync-note" role="status">
+                    Layanan akun e-GYS belum terdeteksi. Pastikan BFF dan
+                    koneksi upstream sudah dikonfigurasi, lalu muat ulang.
+                  </div>
+                )}
                 <p className="egys-login-desc">
                   Masuk dengan akun e-GYS Anda untuk menyinkronkan profil
                   jemaat, cabang, dan mengakses warta jemaat resmi secara
                   terpadu.
                 </p>
                 <div className="egys-login-actions">
-                  <button
-                    type="button"
-                    className="primary-button egys-wa-btn"
-                    onClick={() => void signInWithWhatsApp()}
-                  >
-                    <span className="btn-icon">💬</span> Masuk dengan WhatsApp
-                  </button>
+                  {providers?.whatsapp && (
+                    <button
+                      type="button"
+                      className="primary-button egys-wa-btn"
+                      onClick={() => void signInWithWhatsApp()}
+                    >
+                      <span className="btn-icon">💬</span> Masuk dengan WhatsApp
+                    </button>
+                  )}
                   <div className="egys-secondary-logins">
-                    <button
-                      type="button"
-                      className="quiet-button"
-                      disabled={nativeShell}
-                      title={
-                        nativeShell
-                          ? "Gunakan login WhatsApp di aplikasi native"
-                          : undefined
-                      }
-                      onClick={() =>
-                        providers?.google.enabled &&
-                        void signInWithProvider("google")
-                      }
-                    >
-                      Google
-                    </button>
-                    <button
-                      type="button"
-                      className="quiet-button"
-                      disabled={nativeShell}
-                      title={
-                        nativeShell
-                          ? "Gunakan login WhatsApp di aplikasi native"
-                          : undefined
-                      }
-                      onClick={() =>
-                        providers?.apple.enabled &&
-                        void signInWithProvider("apple")
-                      }
-                    >
-                      Apple
-                    </button>
+                    {providers?.google.enabled && providers.google.clientId && (
+                      <button
+                        type="button"
+                        className="quiet-button"
+                        disabled={nativeShell}
+                        title={
+                          nativeShell
+                            ? "Gunakan login WhatsApp di aplikasi native"
+                            : undefined
+                        }
+                        onClick={() => void signInWithProvider("google")}
+                      >
+                        Google
+                      </button>
+                    )}
+                    {providers?.apple.enabled && providers.apple.clientId && (
+                      <button
+                        type="button"
+                        className="quiet-button"
+                        disabled={nativeShell}
+                        title={
+                          nativeShell
+                            ? "Gunakan login WhatsApp di aplikasi native"
+                            : undefined
+                        }
+                        onClick={() => void signInWithProvider("apple")}
+                      >
+                        Apple
+                      </button>
+                    )}
                   </div>
+                  {!providers?.whatsapp &&
+                    !providers?.google.clientId &&
+                    !providers?.apple.clientId && (
+                      <small className="account-sync-note">
+                        Belum ada metode login e-GYS yang aktif di lingkungan
+                        ini.
+                      </small>
+                    )}
                 </div>
                 {egysMeta && (
                   <small className="account-sync-note">
