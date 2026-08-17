@@ -148,7 +148,10 @@ export async function fetchAssetManifest(
 ): Promise<AssetManifestV1> {
   const url = assetManifestUrl(overrideUrl);
   const response = await fetch(url, {
-    cache: "no-store",
+    // Conditional revalidation keeps freshness guarantees while a manifest
+    // endpoint that sends validators (ETag/Last-Modified) costs a 304 instead
+    // of a full download on every check.
+    cache: "no-cache",
     ...(signal ? { signal } : {}),
   });
   if (!response.ok)

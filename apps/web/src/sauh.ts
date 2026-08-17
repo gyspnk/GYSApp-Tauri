@@ -310,7 +310,10 @@ async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      cache: "no-cache",
+      // Serve from the HTTP cache inside the BFF freshness window (max-age
+      // 60s + stale-while-revalidate) so repeat visits cost zero requests;
+      // failures still fall back to the packaged snapshot.
+      cache: "default",
     });
     if (!response.ok)
       throw new Error(`Sauh request failed: ${response.status}`);

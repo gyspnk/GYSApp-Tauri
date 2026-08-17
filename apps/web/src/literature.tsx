@@ -77,7 +77,12 @@ async function loadCatalog(signal: AbortSignal) {
   let lastError: unknown;
   for (const url of candidates) {
     try {
-      const response = await fetch(url, { signal, cache: "no-cache" });
+      const response = await fetch(url, {
+        signal,
+        // BFF literature serves max-age=300 + stale-while-revalidate; reuse
+        // the HTTP cache inside the freshness window (zero revalidation).
+        cache: "default",
+      });
       if (!response.ok)
         throw new Error(`Literature request failed: ${response.status}`);
       const catalog = LiteratureCatalogSchema.parse(await response.json());

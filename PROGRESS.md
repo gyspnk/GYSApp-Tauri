@@ -269,7 +269,7 @@ service or platform artifact that cannot be exercised in this workspace.
 - Formatting, lint, strict typecheck, unit/contract tests, production build,
   bundle budget, generated provenance, Playwright smoke coverage, and desktop
   plus mobile visual baselines pass locally. The current Playwright suite has
-  46 passing flows, including the 320–1920px and landscape shell matrix plus
+  46 passing flows (including the 320–1920px and landscape shell matrix plus
   Axe light/dark zero-violation checks and keyboard focus coverage. A
   browser media flow also opens
   canonical chord JSON, the fork hymnal PDF reader/download, and MIDI from the
@@ -339,11 +339,22 @@ service or platform artifact that cannot be exercised in this workspace.
   signing).
 - Full canonical-vs-rewrite MIDI performance parity, screen-reader audit, and
   visual baseline review require the target device/browser matrix.
-- Edge speech audio requires the protected `EDGE_TTS_URL` Worker binding; when
-  it is absent, the UI reports only detected system voices and does not claim
-  offline Edge availability. When the optional `EDGE_TTS_VOICES_URL` catalog is
-  absent, the Edge default remains usable but no unverified voice options are
-  displayed. Rate, pitch, and volume preferences persist locally.
+- No-key natural speech (the "Edge/natural preferred" chain) is configured in
+  auto mode: the platform's cloud/natural voices (speechSynthesis voices with
+  `localService=false`, e.g. Microsoft/Google online voices) rank above
+  bundled local voices for both the voice list and default selection, so
+  speech starts on a natural voice with zero requests from the app and local
+  voices remain the automatic fallback. A vetted compatible Edge endpoint
+  (protected `EDGE_TTS_URL`/voice catalog bindings) still upgrades the same
+  provider chain, but is no longer a prerequisite for natural speech. Rate,
+  pitch, and volume preferences persist locally.
+- Network frugality: BFF content routes already use short max-age +
+  stale-while-revalidate with ETag/304; the web now reuses that HTTP cache
+  (cache: "default") for the Sauh, Suara Sejati, and Literature candidates so
+  repeat visits inside the freshness window cost zero requests, while failures
+  still fall back to the packaged snapshots. Asset-manifest checks switch from
+  a full re-download (`no-store`) to conditional revalidation (`no-cache`),
+  and offline packs/music remain local with no per-use requests.
 
 ## Next controlled work
 

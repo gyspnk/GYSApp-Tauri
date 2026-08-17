@@ -383,6 +383,30 @@ class BrowserBlobStore implements AtomicBlobStore {
   }
 }
 
+/**
+ * No-key natural speech preference. Cloud/natural voices (localService=false,
+ * e.g. Microsoft/Google online voices exposed by the platform) rank above
+ * bundled local voices, so speech starts on a natural engine without any
+ * network request from the app. Local voices remain as automatic fallback.
+ */
+export function naturalFirstVoices(
+  voices: readonly SpeechVoice[],
+): SpeechVoice[] {
+  const naturals: SpeechVoice[] = [];
+  const locals: SpeechVoice[] = [];
+  for (const voice of voices) (voice.local ? locals : naturals).push(voice);
+  return [...naturals, ...locals];
+}
+
+export function selectNaturalPreferredVoice(
+  voices: readonly SpeechVoice[],
+  language?: string,
+): SpeechVoice | undefined {
+  const naturals = voices.filter((voice) => !voice.local);
+  const byLanguage = naturals.find((voice) => voice.language === language);
+  return byLanguage ?? naturals[0] ?? voices[0];
+}
+
 export class BrowserSpeechProvider implements SpeechProvider {
   public readonly id = "browser-system";
   private active: SpeechSynthesisUtterance | undefined;
@@ -409,12 +433,14 @@ export class BrowserSpeechProvider implements SpeechProvider {
   public async voices(): Promise<SpeechVoice[]> {
     if (!("speechSynthesis" in window)) return [];
     const read = (): SpeechVoice[] =>
-      window.speechSynthesis.getVoices().map((voice) => ({
-        id: voice.voiceURI,
-        name: voice.name,
-        language: voice.lang,
-        local: voice.localService,
-      }));
+      naturalFirstVoices(
+        window.speechSynthesis.getVoices().map((voice) => ({
+          id: voice.voiceURI,
+          name: voice.name,
+          language: voice.lang,
+          local: voice.localService,
+        })),
+      );
     const current = read();
     if (current.length > 0) return current;
     return new Promise((resolve) => {
@@ -454,9 +480,10 @@ export class BrowserSpeechProvider implements SpeechProvider {
     utterance.rate = options.rate ?? 1;
     utterance.pitch = options.pitch ?? 1;
     utterance.volume = options.volume ?? 1;
-    const voice = (await this.voices()).find(
-      (candidate) => candidate.id === options.voiceId,
-    );
+    const voices = await this.voices();
+    const voice = options.voiceId
+      ? voices.find((candidate) => candidate.id === options.voiceId)
+      : selectNaturalPreferredVoice(voices, utterance.lang);
     if (voice)
       utterance.voice =
         window.speechSynthesis

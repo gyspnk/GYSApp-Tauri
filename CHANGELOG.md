@@ -28,6 +28,15 @@
 - The media E2E now also proves the floating player re-clamps inside the
   viewport when the window shrinks, so a saved drag position can never push
   the surface off-screen on a smaller device or rotation.
+- No-key natural speech: in auto mode the platform's cloud/natural
+  speechSynthesis voices (localService=false) are preferred over bundled
+  local voices for listing and default selection, giving the "Edge/Natural
+  preferred" chain without any app request; local voices remain the automatic
+  fallback and an optional vetted Edge endpoint still upgrades the same chain.
+- Network frugality: the web reuses the BFF HTTP cache (max-age +
+  stale-while-revalidate, ETag/304) for Sauh, Suara Sejati, and Literature
+  candidates so repeat visits inside the freshness window issue no requests;
+  asset-manifest checks now revalidate conditionally instead of re-downloading.
 - The browser suite now covers the Dasar Kepercayaan screen end to end: the
   vertical topic list keeps one active selection, search filters real pack
   content, and a personal note on a topic survives a full reload (notes are

@@ -253,7 +253,7 @@ describe("Sauh feed normalization", () => {
     expect(result[0]?.id).toBe(snapshotId);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/offline/sauh.json"),
-      expect.objectContaining({ cache: "no-cache" }),
+      expect.objectContaining({ cache: "default" }),
     );
     vi.unstubAllGlobals();
   }, 15_000);

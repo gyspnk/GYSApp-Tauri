@@ -95,7 +95,9 @@ async function request(url: string, signal?: AbortSignal) {
   signal?.addEventListener("abort", abort, { once: true });
   try {
     const response = await fetch(url, {
-      cache: "no-cache",
+      // BFF serves max-age=300 + stale-while-revalidate: reuse the HTTP cache
+      // inside the freshness window instead of revalidating on every open.
+      cache: "default",
       signal: controller.signal,
     });
     if (!response.ok)
