@@ -683,329 +683,449 @@ export function MorePage({ locale }: { locale: Locale }) {
     }
   };
 
+  const [activeSection, setActiveSection] = useState<
+    "all" | "account" | "appearance" | "data" | "help"
+  >("all");
+
   return (
     <div className="page more-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">Perangkat · koleksi & bantuan</p>
+          <p className="date-line">Pengaturan & Akun</p>
           <h1>{translate(locale, "page.moreTitle")}</h1>
           <p className="intro-copy">{translate(locale, "page.moreBody")}</p>
         </div>
-        <span className="pack-badge">Offline-first</span>
+        <span className="pack-badge">Offline-ready</span>
       </section>
+
+      <div
+        className="more-category-bar"
+        role="tablist"
+        aria-label="Kategori Pengaturan"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "all"}
+          className={`more-cat-btn${activeSection === "all" ? " is-active" : ""}`}
+          onClick={() => setActiveSection("all")}
+        >
+          Semua
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "account"}
+          className={`more-cat-btn${activeSection === "account" ? " is-active" : ""}`}
+          onClick={() => setActiveSection("account")}
+        >
+          Akun e-GYS
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "appearance"}
+          className={`more-cat-btn${activeSection === "appearance" ? " is-active" : ""}`}
+          onClick={() => setActiveSection("appearance")}
+        >
+          Tampilan & Bahasa
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "data"}
+          className={`more-cat-btn${activeSection === "data" ? " is-active" : ""}`}
+          onClick={() => setActiveSection("data")}
+        >
+          Data & Offline
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === "help"}
+          className={`more-cat-btn${activeSection === "help" ? " is-active" : ""}`}
+          onClick={() => setActiveSection("help")}
+        >
+          Bantuan
+        </button>
+      </div>
+
       <section className="more-grid">
-        <article className="more-card theme-card">
-          <span className="more-icon">☼</span>
-          <strong>{translate(locale, "shell.theme")}</strong>
-          <small>
-            {theme === "amoled"
-              ? translate(locale, "theme.amoled")
-              : theme === "sepia"
-                ? translate(locale, "theme.sepia")
-                : theme === "dark"
-                  ? translate(locale, "theme.dark")
-                  : theme === "light"
-                    ? translate(locale, "theme.light")
-                    : translate(locale, "theme.system")}
-          </small>
-          <div className="theme-card-actions" style={{ marginTop: "12px" }}>
-            <Select
-              value={theme}
-              onChange={(value) =>
-                changeTheme(
-                  value as "system" | "light" | "dark" | "amoled" | "sepia",
-                )
-              }
-              label={translate(locale, "shell.theme")}
-              options={[
-                { value: "system", label: translate(locale, "theme.system") },
-                { value: "light", label: translate(locale, "theme.light") },
-                { value: "dark", label: translate(locale, "theme.dark") },
-                { value: "amoled", label: translate(locale, "theme.amoled") },
-                { value: "sepia", label: translate(locale, "theme.sepia") },
-              ]}
-            />
-          </div>
-        </article>
-        <Link className="more-card more-action" to="/literatur">
-          <span className="more-icon">▤</span>
-          <strong>Literatur</strong>
-          <small>Jelajahi kesaksian, warta, panduan, dan PDF resmi</small>
-        </Link>
-        <article className="more-card more-card-wide">
-          <div className="more-card-heading">
-            <div>
-              <p className="date-line">Offline-first</p>
-              <h2>Paket lokal</h2>
-            </div>
-            <span className="pack-badge">Siap</span>
-          </div>
-          <p>
-            Alkitab TB, metadata kidung, dan TimGM tersedia tanpa koneksi. PDF,
-            MIDI, dan chord diambil saat dibutuhkan.
-          </p>
-          <div className="pack-stats">
-            <span>
-              <strong>{manifest?.bible ?? "TB"}</strong>
-              <small>terjemahan</small>
-            </span>
-            <span>
-              <strong>{manifest?.hymns ?? "—"}</strong>
-              <small>lagu</small>
-            </span>
-            <span>
-              <strong>
-                {manifest
-                  ? formatBytes(
-                      manifest.items.reduce((sum, item) => sum + item.bytes, 0),
-                    )
-                  : "—"}
-              </strong>
-              <small>paket inti</small>
-            </span>
-          </div>
-          <div className="pack-manager-actions">
-            <button
-              className="quiet-button"
-              type="button"
-              disabled={!manifest || packBusy}
-              onClick={() => void updateOfflinePack()}
-            >
-              {packBusy
-                ? `Menyimpan ${packProgress}%…`
-                : assetCheck.status === "update"
-                  ? localUpdateCount(assetCheck.diff) > 0
-                    ? `Unduh ${localUpdateCount(assetCheck.diff)} pembaruan`
-                    : "Perbarui metadata paket"
-                  : "Verifikasi & simpan paket"}
-            </button>
-            <button
-              className="text-button"
-              type="button"
-              disabled={
-                !assetManifest || packBusy || assetCheck.status === "checking"
-              }
-              onClick={() => void checkOfflinePack()}
-            >
-              {assetCheck.status === "checking"
-                ? "Memeriksa…"
-                : "Periksa versi"}
-            </button>
-            <small>
-              Manifest v{manifest?.version ?? 1} ·{" "}
-              {manifest
-                ? new Date(manifest.generatedAt).toLocaleDateString(locale)
-                : "memuat"}
-              {assetCheck.status === "update" &&
-                ` · ${localUpdateCount(assetCheck.diff)} aset tersedia`}
-              {assetCheck.status === "current" && " · terbaru"}
-              {assetCheck.status === "error" && " · belum diperiksa"}
-            </small>
-          </div>
-        </article>
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setBackupOpen((open) => !open)}
-        >
-          <span className="more-icon">↥</span>
-          <strong>Backup & import</strong>
-          <small>Ekspor AES-GCM atau impor .gysbk lama</small>
-        </button>
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setReminderOpen((open) => !open)}
-        >
-          <span className="more-icon">◷</span>
-          <strong>Pengingat</strong>
-          <small>Atur waktu baca dan renungan</small>
-        </button>
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}${playlist.loop === "off" ? "" : ` · ulang ${playlist.loop}`}`
-              : "Simpan lagu, urutkan, dan atur putar berikutnya"}
-          </small>
-        </button>
-        <article className="more-card account-card">
-          <span className="more-icon">◯</span>
-          <strong>
-            {accountLoading || authBusy
-              ? "Memeriksa akun…"
-              : (accountProfile?.displayName ?? "Akun e-GYS")}
-          </strong>
-          <small>
-            {accountProfile
-              ? "Profil e-GYS tersambung"
-              : providers?.google.enabled ||
-                  providers?.apple.enabled ||
-                  providers?.whatsapp
-                ? "Pilih provider untuk masuk"
-                : "Google, Apple, atau e-GYS"}
-          </small>
-          {egysMeta && (
-            <small className="account-sync-note">
-              Kontrak e-GYS tersinkron ·{" "}
-              {egysMeta.sourceCommit?.slice(0, 7) ?? "menunggu"}
-            </small>
-          )}
-          {accountProfile ? (
-            <>
-              <dl className="account-profile-details">
-                <div>
-                  <dt>Status</dt>
-                  <dd>
-                    {accountProfile.isMember === true
-                      ? `Jemaat${accountProfile.memberStatus ? ` · ${accountProfile.memberStatus}` : ""}`
-                      : accountProfile.isMember === false
-                        ? "Bukan jemaat"
-                        : "Belum terverifikasi"}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Cabang</dt>
-                  <dd>{accountProfile.branchName ?? "Belum tersedia"}</dd>
-                </div>
-                {accountProfile.membershipNo && (
-                  <div>
-                    <dt>No. jemaat</dt>
-                    <dd>{accountProfile.membershipNo}</dd>
-                  </div>
-                )}
-                {accountProfile.email && (
-                  <div>
-                    <dt>Email</dt>
-                    <dd>{accountProfile.email}</dd>
-                  </div>
-                )}
-              </dl>
-              <button
-                type="button"
-                className="text-button account-signout"
-                onClick={() => {
-                  void signOutEgys().then(() => {
-                    setAccountProfile(undefined);
-                    show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
-                  });
-                }}
+        {(activeSection === "all" || activeSection === "account") && (
+          <article className="more-card more-card-wide account-card egys-card">
+            <div className="more-card-heading">
+              <div>
+                <p className="date-line">Profil e-GYS Resmi</p>
+                <h2>
+                  {accountProfile
+                    ? (accountProfile.displayName ?? "Akun Jemaat")
+                    : "Akun e-GYS"}
+                </h2>
+              </div>
+              <span
+                className={`pack-badge${accountProfile ? " is-verified" : ""}`}
               >
-                Keluar
-              </button>
-            </>
-          ) : (
-            providers &&
-            (providers.google.enabled ||
-              providers.apple.enabled ||
-              providers.whatsapp) && (
-              <span className="account-provider-actions">
-                {nativeShell && (
-                  <small className="account-sync-note">
-                    Google/Apple di shell native memerlukan SDK resmi; WhatsApp
-                    tetap dibuka di browser sistem.
-                  </small>
-                )}
-                <button
-                  type="button"
-                  className="text-button"
-                  disabled={nativeShell}
-                  title={
-                    nativeShell
-                      ? "SDK Google native perlu dikonfigurasi"
-                      : undefined
-                  }
-                  onClick={() =>
-                    providers.google.enabled &&
-                    void signInWithProvider("google")
-                  }
-                >
-                  Google
-                </button>
-                <button
-                  type="button"
-                  className="text-button"
-                  disabled={nativeShell}
-                  title={
-                    nativeShell
-                      ? "SDK Apple native perlu dikonfigurasi"
-                      : undefined
-                  }
-                  onClick={() =>
-                    providers.apple.enabled && void signInWithProvider("apple")
-                  }
-                >
-                  Apple
-                </button>
-                {providers.whatsapp && (
+                {accountProfile ? "Terhubung" : "Tamu"}
+              </span>
+            </div>
+
+            {accountLoading || authBusy ? (
+              <div className="account-loading-box" role="status">
+                <p>Memeriksa status akun e-GYS…</p>
+              </div>
+            ) : accountProfile ? (
+              <div className="egys-member-badge">
+                <div className="member-badge-header">
+                  <span className="member-church-title">
+                    Gereja Yesus Sejati
+                  </span>
+                  <span className="member-status-pill">
+                    {accountProfile.isMember === true
+                      ? "Jemaat Resmi ✓"
+                      : "Anggota Terdaftar"}
+                  </span>
+                </div>
+                <div className="member-badge-body">
+                  <div className="member-info-row">
+                    <span className="info-label">Nama Lengkap</span>
+                    <strong className="info-value member-name">
+                      {accountProfile.displayName}
+                    </strong>
+                  </div>
+                  <div className="member-info-grid">
+                    <div>
+                      <span className="info-label">Cabang Gereja</span>
+                      <strong className="info-value">
+                        {accountProfile.branchName ?? "Pusat"}
+                      </strong>
+                    </div>
+                    {accountProfile.membershipNo && (
+                      <div>
+                        <span className="info-label">No. Anggota</span>
+                        <strong className="info-value">
+                          {accountProfile.membershipNo}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
+                  {accountProfile.email && (
+                    <div className="member-info-row">
+                      <span className="info-label">Email</span>
+                      <span className="info-value-text">
+                        {accountProfile.email}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="member-badge-actions">
                   <button
                     type="button"
-                    className="text-button"
+                    className="quiet-button account-signout"
+                    onClick={() => {
+                      void signOutEgys().then(() => {
+                        setAccountProfile(undefined);
+                        show(
+                          "Sesi e-GYS sudah dikeluarkan dari perangkat ini.",
+                        );
+                      });
+                    }}
+                  >
+                    Keluar dari Akun Ini
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="egys-login-box">
+                <p className="egys-login-desc">
+                  Masuk dengan akun e-GYS Anda untuk menyinkronkan profil
+                  jemaat, cabang, dan mengakses warta jemaat resmi secara
+                  terpadu.
+                </p>
+                <div className="egys-login-actions">
+                  <button
+                    type="button"
+                    className="primary-button egys-wa-btn"
                     onClick={() => void signInWithWhatsApp()}
                   >
-                    WhatsApp
+                    <span className="btn-icon">💬</span> Masuk dengan WhatsApp
                   </button>
+                  <div className="egys-secondary-logins">
+                    <button
+                      type="button"
+                      className="quiet-button"
+                      disabled={nativeShell}
+                      title={
+                        nativeShell
+                          ? "Gunakan login WhatsApp di aplikasi native"
+                          : undefined
+                      }
+                      onClick={() =>
+                        providers?.google.enabled &&
+                        void signInWithProvider("google")
+                      }
+                    >
+                      Google
+                    </button>
+                    <button
+                      type="button"
+                      className="quiet-button"
+                      disabled={nativeShell}
+                      title={
+                        nativeShell
+                          ? "Gunakan login WhatsApp di aplikasi native"
+                          : undefined
+                      }
+                      onClick={() =>
+                        providers?.apple.enabled &&
+                        void signInWithProvider("apple")
+                      }
+                    >
+                      Apple
+                    </button>
+                  </div>
+                </div>
+                {egysMeta && (
+                  <small className="account-sync-note">
+                    Kontrak API e-GYS tersinkronisasi (SHA:{" "}
+                    {egysMeta.sourceCommit?.slice(0, 7) ?? "latest"})
+                  </small>
                 )}
-              </span>
-            )
-          )}
-        </article>
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => {
-            void clearAppData()
-              .then(() =>
-                show(
-                  "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
-                ),
-              )
-              .catch(() =>
-                show(
-                  "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                ),
-              );
-          }}
-        >
-          <span className="more-icon">⌁</span>
-          <strong>Reset perangkat</strong>
-          <small>Hapus preferensi dan cache aplikasi</small>
-        </button>
-        <form className="more-card report-card" onSubmit={submitReport}>
-          <div className="more-card-heading">
-            <div>
-              <p className="date-line">Feedback</p>
-              <h2>Laporkan masalah</h2>
+              </div>
+            )}
+          </article>
+        )}
+
+        {(activeSection === "all" || activeSection === "appearance") && (
+          <article className="more-card more-card-wide appearance-card">
+            <div className="more-card-heading">
+              <div>
+                <p className="date-line">Kenyamanan Visual</p>
+                <h2>Tampilan & Bahasa</h2>
+              </div>
             </div>
-          </div>
-          <textarea
-            value={report}
-            maxLength={2_000}
-            onChange={(event) => {
-              setReport(event.target.value);
-              if (reportStatus === "error") setReportStatus("idle");
-            }}
-            rows={3}
-            placeholder="Apa yang perlu kami perbaiki?"
-          />
-          <button
-            className="primary-button"
-            type="submit"
-            disabled={!report.trim() || reportStatus === "sending"}
-          >
-            {reportStatus === "sending" ? "Mengirim…" : "Kirim laporan"}
-          </button>
-          <small className="form-status" aria-live="polite">
-            {reportStatus === "error"
-              ? "Draft tersimpan di perangkat."
-              : `${report.length}/2.000 karakter`}
-          </small>
-        </form>
+
+            <div className="appearance-section">
+              <label className="section-subtitle">Tema Layar</label>
+              <div
+                className="theme-pill-grid"
+                role="radiogroup"
+                aria-label="Pilih Tema"
+              >
+                {[
+                  { key: "light", icon: "☼", label: "Terang" },
+                  { key: "dark", icon: "☾", label: "Gelap" },
+                  { key: "amoled", icon: "■", label: "AMOLED" },
+                  { key: "sepia", icon: "☕", label: "Sepia" },
+                  { key: "system", icon: "◐", label: "Otomatis" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={theme === item.key}
+                    className={`theme-pill-btn${theme === item.key ? " is-active" : ""}`}
+                    onClick={() => changeTheme(item.key as typeof theme)}
+                  >
+                    <span className="pill-icon">{item.icon}</span>
+                    <span className="pill-label">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="appearance-section" style={{ marginTop: "20px" }}>
+              <label className="section-subtitle">Bahasa Aplikasi</label>
+              <div className="lang-pill-grid">
+                <Select
+                  value={locale}
+                  onChange={(val) => {
+                    const next = val as Locale;
+                    localStorage.setItem("gys-locale", next);
+                    window.location.reload();
+                  }}
+                  label="Pilih Bahasa"
+                  options={[
+                    { value: "id", label: "🇮🇩 Bahasa Indonesia (Utama)" },
+                    { value: "en", label: "🇬🇧 English" },
+                    { value: "zh", label: "🇨🇳 简体中文" },
+                  ]}
+                />
+              </div>
+            </div>
+          </article>
+        )}
+
+        {(activeSection === "all" || activeSection === "data") && (
+          <>
+            <article className="more-card more-card-wide">
+              <div className="more-card-heading">
+                <div>
+                  <p className="date-line">Penyimpanan Offline</p>
+                  <h2>Paket lokal</h2>
+                </div>
+                <span className="pack-badge">Siap</span>
+              </div>
+              <p>
+                Alkitab TB, metadata kidung, dan SoundFont tersedia tanpa
+                koneksi. PDF dan partitur diunduh sesuai kebutuhan.
+              </p>
+              <div className="pack-stats">
+                <span>
+                  <strong>{manifest?.bible ?? "TB"}</strong>
+                  <small>terjemahan</small>
+                </span>
+                <span>
+                  <strong>{manifest?.hymns ?? "—"}</strong>
+                  <small>lagu</small>
+                </span>
+                <span>
+                  <strong>
+                    {manifest
+                      ? formatBytes(
+                          manifest.items.reduce(
+                            (sum, item) => sum + item.bytes,
+                            0,
+                          ),
+                        )
+                      : "—"}
+                  </strong>
+                  <small>paket inti</small>
+                </span>
+              </div>
+              <div className="pack-manager-actions">
+                <button
+                  className="quiet-button"
+                  type="button"
+                  disabled={!manifest || packBusy}
+                  onClick={() => void updateOfflinePack()}
+                >
+                  {packBusy
+                    ? `Menyimpan ${packProgress}%…`
+                    : assetCheck.status === "update"
+                      ? localUpdateCount(assetCheck.diff) > 0
+                        ? `Unduh ${localUpdateCount(assetCheck.diff)} pembaruan`
+                        : "Perbarui metadata paket"
+                      : "Verifikasi & simpan paket"}
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  disabled={
+                    !assetManifest ||
+                    packBusy ||
+                    assetCheck.status === "checking"
+                  }
+                  onClick={() => void checkOfflinePack()}
+                >
+                  {assetCheck.status === "checking"
+                    ? "Memeriksa…"
+                    : "Periksa versi"}
+                </button>
+                <small>
+                  Manifest v{manifest?.version ?? 1} ·{" "}
+                  {manifest
+                    ? new Date(manifest.generatedAt).toLocaleDateString(locale)
+                    : "memuat"}
+                  {assetCheck.status === "update" &&
+                    ` · ${localUpdateCount(assetCheck.diff)} pembaruan tersedia`}
+                  {assetCheck.status === "current" && " · terbaru"}
+                  {assetCheck.status === "error" && " · belum diperiksa"}
+                </small>
+              </div>
+            </article>
+
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setPlaylistOpen((open) => !open)}
+            >
+              <span className="more-icon">♫</span>
+              <strong>Antrean MIDI</strong>
+              <small>
+                {playlist.items.length
+                  ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
+                  : "Daftar lagu untuk kebaktian atau latihan"}
+              </small>
+            </button>
+
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setBackupOpen((open) => !open)}
+            >
+              <span className="more-icon">↥</span>
+              <strong>Backup & import</strong>
+              <small>Simpan atau pulihkan data catatan & riwayat</small>
+            </button>
+
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => {
+                void clearAppData()
+                  .then(() =>
+                    show(
+                      "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
+                    ),
+                  )
+                  .catch(() =>
+                    show(
+                      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                    ),
+                  );
+              }}
+            >
+              <span className="more-icon">⌁</span>
+              <strong>Reset perangkat</strong>
+              <small>Bersihkan cache dan mulai ulang preferensi</small>
+            </button>
+          </>
+        )}
+
+        {(activeSection === "all" || activeSection === "help") && (
+          <>
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setReminderOpen((open) => !open)}
+            >
+              <span className="more-icon">◷</span>
+              <strong>Pengingat</strong>
+              <small>Atur waktu teduh membaca firman harian</small>
+            </button>
+
+            <form className="more-card report-card" onSubmit={submitReport}>
+              <div className="more-card-heading">
+                <div>
+                  <p className="date-line">Bantuan & Masukan</p>
+                  <h2>Laporkan masalah</h2>
+                </div>
+              </div>
+              <textarea
+                value={report}
+                maxLength={2_000}
+                onChange={(event) => {
+                  setReport(event.target.value);
+                  if (reportStatus === "error") setReportStatus("idle");
+                }}
+                rows={3}
+                placeholder="Tuliskan kendala atau saran perbaikan di sini…"
+              />
+              <button
+                className="primary-button"
+                type="submit"
+                disabled={!report.trim() || reportStatus === "sending"}
+              >
+                {reportStatus === "sending" ? "Mengirim…" : "Kirim laporan"}
+              </button>
+              <small className="form-status" aria-live="polite">
+                {reportStatus === "error"
+                  ? "Draft tersimpan di perangkat."
+                  : `${report.length}/2.000 karakter`}
+              </small>
+            </form>
+          </>
+        )}
       </section>
       {backupOpen && (
         <section className="utility-panel" aria-label="Backup dan import">

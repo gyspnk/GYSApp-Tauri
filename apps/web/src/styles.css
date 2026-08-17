@@ -2417,23 +2417,226 @@ body.is-resizing-bible {
   font-size: 13px;
   line-height: 1.5;
 }
+.more-category-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 14px;
+  margin-top: 18px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.more-category-bar::-webkit-scrollbar {
+  display: none;
+}
+.more-cat-btn {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.more-cat-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.more-cat-btn.is-active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
 .more-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 30px;
+  margin-top: 16px;
 }
 .more-card {
   min-width: 0;
   padding: 23px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow);
 }
 .more-card-wide,
-.report-card {
+.report-card,
+.account-card,
+.appearance-card {
   grid-column: span 2;
+}
+
+/* e-GYS Member Badge & Card Styles */
+.egys-card {
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--line));
+  background: linear-gradient(
+    175deg,
+    var(--surface) 0%,
+    color-mix(in srgb, var(--gold) 5%, var(--surface)) 100%
+  );
+}
+.egys-member-badge {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--gold) 60%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 8%, var(--surface));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+.member-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--gold) 40%, var(--line));
+}
+.member-church-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.member-status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: #2e7d32;
+  color: #ffffff;
+}
+.member-info-row {
+  margin-bottom: 12px;
+}
+.member-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.info-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.info-value {
+  display: block;
+  font-size: 14px;
+  color: var(--ink);
+}
+.member-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.info-value-text {
+  font-size: 13px;
+  color: var(--ink);
+}
+.member-badge-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 25%, var(--line));
+}
+.account-signout {
+  color: #c62828;
+}
+
+/* e-GYS Login Box */
+.egys-login-box {
+  margin-top: 12px;
+}
+.egys-login-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.egys-login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.egys-wa-btn {
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 700;
+  background: #25d366;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(37, 211, 102, 0.28);
+}
+.egys-wa-btn:hover {
+  background: #1ebc59;
+}
+.egys-secondary-logins {
+  display: flex;
+  gap: 10px;
+}
+.egys-secondary-logins button {
+  flex: 1;
+  min-height: 44px;
+}
+
+/* Appearance Pills Grid */
+.appearance-section .section-subtitle {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.theme-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+.theme-pill-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.theme-pill-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.theme-pill-btn.is-active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.theme-pill-btn .pill-icon {
+  font-size: 16px;
+}
+.theme-pill-btn .pill-label {
+  font-size: 11px;
+  font-weight: 600;
 }
 .more-card-heading {
   display: flex;
@@ -4217,7 +4420,10 @@ body.is-resizing-bible {
     display: none;
   }
   .topbar-select {
-    min-width: 48px;
+    min-width: 44px;
+  }
+  .topbar-select.theme-select {
+    display: none;
   }
   .catalog-heading,
   .section-title-row,
