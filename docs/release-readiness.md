@@ -21,12 +21,18 @@ claim GA parity until the remaining reports and platform artifacts exist.
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.
+- The current hardening pass validates versioned shell settings and legacy
+  migration, honest `503` behavior for the unconfigured report sink, complete
+  native/web reset coverage, serialized chord-cache loading, canonical chord
+  source-key inference, Bible retry/empty states, and accessible names on the
+  tablet navigation/report form. Reports remain local until a durable report
+  sink is provisioned.
 - CI uses one concurrency group per source branch so a push plus its pull
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
-- The initial web application chunk is **85.1 KiB gzip**; the complete initial
-  JavaScript set is **173.4 KiB gzip** in the latest local verification after
-  the Sauh/native-auth hardening slice. The
+- The initial web application chunk is **90.1 KiB gzip**; the complete initial
+  JavaScript set is **180.7 KiB gzip** in the latest local verification after
+  the current hardening slice. The
   latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
@@ -71,7 +77,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   exactly one navigation surface and no horizontal overflow. In-app Browser
   could not reach the local Windows preview (`ERR_CONNECTION_REFUSED`), so the
   same visual QA was captured with the repository's Chromium runner. The
-  current suite has 46 passing flows, including split-reader keyboard resize,
+  current suite has 51 passing flows, including split-reader keyboard resize,
   Bible title-drag chapter navigation, contextual selection actions, internal
   Sauh/Suara/article readers, a Home surface that derives Daily Verse directly
   from the current Sauh entry and keeps exactly one Lanjutkan item,

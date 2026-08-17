@@ -1224,12 +1224,14 @@ export function createApp(
     );
     if (!parsed.success)
       return errorResponse(c, "VALIDATION_ERROR", "Report payload is invalid");
-    return c.json(
-      {
-        accepted: true,
-        report: { ...parsed.data, message: safeText(parsed.data.message) },
-      },
-      202,
+    // There is no durable report sink in the current deployment contract.
+    // Never acknowledge a report that would otherwise disappear when this
+    // request ends; the web client keeps the user's sanitized draft on any
+    // non-2xx response and can retry after a sink is configured.
+    return errorResponse(
+      c,
+      "UPSTREAM_UNAVAILABLE",
+      "Report submission is not configured",
     );
   });
 

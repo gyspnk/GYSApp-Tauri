@@ -25,6 +25,7 @@ import {
   ChordCapability,
   chordKeyIndex,
   chordKeyName,
+  inferChordDocumentKey,
   matchChordLinesToLyrics,
   transposeBetweenKeys,
   transposeChord,
@@ -327,6 +328,7 @@ function HymnDetail({
   const [transpose, setTranspose] = useState(
     () => midiPlayer.settingsSnapshot().transpose,
   );
+  const transposeRef = useRef(transpose);
   const [sourceKeyIndex, setSourceKeyIndex] = useState(0);
   const [keyIndex, setKeyIndex] = useState(() => {
     const initialTranspose = midiPlayer.settingsSnapshot().transpose;
@@ -410,7 +412,11 @@ function HymnDetail({
     keyInitialized.current = false;
   }, [songId]);
   useEffect(() => {
+    transposeRef.current = transpose;
+  }, [transpose]);
+  useEffect(() => {
     if (midiSettings.transpose !== transpose) {
+      transposeRef.current = midiSettings.transpose;
       setTranspose(midiSettings.transpose);
       setKeyIndex((((sourceKeyIndex + midiSettings.transpose) % 12) + 12) % 12);
     }
@@ -779,11 +785,14 @@ function HymnDetail({
         }
       }
       setChordDocument(nextDocument);
-      if (!keyInitialized.current && "key" in nextDocument) {
-        const nextSourceKey = chordKeyIndex(nextDocument.key);
+      const sourceKey = inferChordDocumentKey(nextDocument);
+      if (!keyInitialized.current && sourceKey) {
+        const nextSourceKey = chordKeyIndex(sourceKey);
         if (nextSourceKey !== undefined) {
           setSourceKeyIndex(nextSourceKey);
-          setKeyIndex((((nextSourceKey + transpose) % 12) + 12) % 12);
+          setKeyIndex(
+            (((nextSourceKey + transposeRef.current) % 12) + 12) % 12,
+          );
         }
         keyInitialized.current = true;
       }
@@ -911,6 +920,7 @@ function HymnDetail({
   };
   const updateTranspose = (next: number) => {
     const bounded = Math.max(-6, Math.min(6, next));
+    transposeRef.current = bounded;
     setTranspose(bounded);
     setKeyIndex((((sourceKeyIndex + bounded) % 12) + 12) % 12);
     void midiPlayer.setTranspose(bounded).catch(() => undefined);

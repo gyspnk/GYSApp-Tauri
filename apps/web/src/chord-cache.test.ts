@@ -109,4 +109,48 @@ describe("BrowserChordCache", () => {
     expect(await restored.stats()).toMatchObject({ entries: 1, pinned: 1 });
     expect(restored.getRef(document.songId)?.sha256).toBe(ref.sha256);
   });
+
+  it("shares the in-flight index load with concurrent reads", async () => {
+    const services = platform();
+    const key = `chord/${encodeURIComponent(document.songId)}/${ref.sha256}`;
+    await services.blobs.putAtomic(
+      key,
+      new TextEncoder().encode(JSON.stringify(document)),
+    );
+    await services.keyValue.set("gys-chord-cache-index-v1", {
+      [document.songId]: {
+        ref,
+        key,
+        bytes: ref.size,
+        pinned: false,
+        lastAccess: 1,
+      },
+    });
+
+    let releaseLoad!: () => void;
+    const loading = new Promise<void>((resolve) => {
+      releaseLoad = resolve;
+    });
+    let loadStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      loadStarted = resolve;
+    });
+    const originalGet = services.keyValue.get.bind(services.keyValue);
+    services.keyValue.get = async <T>(indexKey: string) => {
+      if (indexKey === "gys-chord-cache-index-v1") {
+        loadStarted();
+        await loading;
+      }
+      return originalGet<T>(indexKey);
+    };
+
+    const cache = new BrowserChordCache(services);
+    const first = cache.get(document.songId);
+    await started;
+    const second = cache.get(document.songId);
+
+    releaseLoad();
+    await expect(first).resolves.toEqual(document);
+    await expect(second).resolves.toEqual(document);
+  });
 });

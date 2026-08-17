@@ -45,6 +45,12 @@ import {
 } from "./history.js";
 import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
+import { getShellSettingsStorage } from "./platform.js";
+import {
+  readShellSettings,
+  writeShellSettings,
+  type ShellTheme,
+} from "./settings.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -84,7 +90,7 @@ const SuaraPage = lazy(() =>
   })),
 );
 
-type Theme = "light" | "dark" | "system" | "amoled" | "sepia";
+type Theme = ShellTheme;
 type IconName =
   | Destination["icon"]
   | "sun"
@@ -253,21 +259,27 @@ const Icon = memo(function Icon({
 });
 
 function useAppSettings() {
-  const [locale, setLocale] = useState<Locale>(
-    () => (localStorage.getItem("gys-locale") as Locale | null) ?? "id",
-  );
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("gys-theme") as Theme | null) ?? "light",
-  );
+  const storage = getShellSettingsStorage();
+  const [settings, setSettings] = useState(() => readShellSettings(storage));
   useEffect(() => {
-    localStorage.setItem("gys-locale", locale);
-    document.documentElement.lang = locale;
-  }, [locale]);
+    writeShellSettings(settings, storage);
+    document.documentElement.lang = settings.locale;
+  }, [settings, storage]);
   useEffect(() => {
-    localStorage.setItem("gys-theme", theme);
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-  return { locale, setLocale, theme, setTheme };
+    document.documentElement.dataset.theme = settings.theme;
+  }, [settings.theme]);
+  const setLocale = useCallback((locale: Locale) => {
+    setSettings((current) => ({ ...current, locale }));
+  }, []);
+  const setTheme = useCallback((theme: Theme) => {
+    setSettings((current) => ({ ...current, theme }));
+  }, []);
+  return {
+    locale: settings.locale,
+    setLocale,
+    theme: settings.theme,
+    setTheme,
+  };
 }
 
 function Navigation({ locale }: { locale: Locale }) {
@@ -284,6 +296,7 @@ function Navigation({ locale }: { locale: Locale }) {
           className={({ isActive }) =>
             `nav-item${isActive ? " is-active" : ""}`
           }
+          aria-label={translate(locale, destination.labelKey)}
         >
           <Icon name={destination.icon} />
           <span className="nav-copy">
@@ -1297,7 +1310,17 @@ function RoutedApp() {
           path="/literatur/:itemId"
           element={<LiteratureDetailPage locale={locale} />}
         />
-        <Route path="/lainnya" element={<MorePage locale={locale} />} />
+        <Route
+          path="/lainnya"
+          element={
+            <MorePage
+              locale={locale}
+              theme={settings.theme}
+              setLocale={settings.setLocale}
+              setTheme={settings.setTheme}
+            />
+          }
+        />
         <Route path="*" element={<HomePage locale={locale} />} />
       </Route>
     </Routes>

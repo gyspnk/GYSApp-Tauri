@@ -4,6 +4,7 @@ import {
   chordKeyIndex,
   chordKeyName,
   groupChordMarkersByVisualRow,
+  inferChordDocumentKey,
   matchChordLinesToLyrics,
   transposeBetweenKeys,
   transposeChord,
@@ -21,6 +22,39 @@ describe("shared chord capability", () => {
     expect(transposeBetweenKeys("G", "C")).toBe(5);
     expect(transposeBetweenKeys("C", "F♯")).toBe(-6);
     expect(chordKeyName(6, "flat")).toBe("G♭");
+  });
+
+  it("mirrors gyschordweb family-root resolution for note-aligned documents", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      type: "note-aligned",
+      pages: {
+        "2": [{ noteIdx: 0, chord: "A" }],
+        "1": [
+          { noteIdx: -1, chord: "C" },
+          { noteIdx: 2, chord: "E" },
+          { noteIdx: 5, chord: "C" },
+        ],
+      },
+    });
+
+    expect(inferChordDocumentKey(document)).toBe("C");
+  });
+
+  it("prefers a repeated resolving last root over the frequency fallback", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      type: "note-aligned",
+      pages: {
+        "1": [
+          { noteIdx: 0, chord: "1" },
+          { noteIdx: 2, chord: "G" },
+          { noteIdx: 4, chord: "G" },
+        ],
+      },
+    });
+
+    expect(inferChordDocumentKey(document)).toBe("G");
   });
 
   it("maps only the matching verse lines and never borrows another line", () => {

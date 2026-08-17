@@ -502,7 +502,7 @@ describe("BFF public boundary", () => {
     expect(payload.error.code).toBe("RATE_LIMITED");
   });
 
-  it("rejects non-http report URLs and accepts sanitized text", async () => {
+  it("rejects invalid report URLs and fails closed when no report sink exists", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],
       chordManifest: manifest,
@@ -521,7 +521,7 @@ describe("BFF public boundary", () => {
       }),
     });
     expect(invalid.status).toBe(400);
-    const valid = await app.request("/api/v1/report", {
+    const unavailable = await app.request("/api/v1/report", {
       method: "POST",
       headers: {
         Origin: "http://localhost:5173",
@@ -533,8 +533,12 @@ describe("BFF public boundary", () => {
         url: "https://example.com/page",
       }),
     });
-    expect(valid.status).toBe(202);
-    expect(JSON.stringify(await valid.json())).not.toContain("<b>");
+    expect(unavailable.status).toBe(503);
+    const payload = (await unavailable.json()) as {
+      error: { code: string; message: string };
+    };
+    expect(payload.error.code).toBe("UPSTREAM_UNAVAILABLE");
+    expect(payload.error.message).toContain("not configured");
   });
 
   it("normalizes the live literature page and caches it", async () => {

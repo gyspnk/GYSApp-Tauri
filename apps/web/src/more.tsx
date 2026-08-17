@@ -39,6 +39,7 @@ import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage, createPlatformServices } from "./platform.js";
 import { isTauriShell } from "./native-platform.js";
+import type { ShellTheme } from "./settings.js";
 
 type PackManifest = {
   version: number;
@@ -85,6 +86,7 @@ function waitFor(ms: number, signal: AbortSignal): Promise<void> {
 const BACKUP_STORAGE_KEYS = [
   "gys-locale",
   "gys-theme",
+  "gys-shell-settings-v1",
   "gys-activity-v1",
   "gys-favorites-v1",
   "gys-literature-progress-v2",
@@ -161,7 +163,17 @@ async function clearAppData() {
   if (resetError) throw resetError;
 }
 
-export function MorePage({ locale }: { locale: Locale }) {
+export function MorePage({
+  locale,
+  theme,
+  setLocale,
+  setTheme,
+}: {
+  locale: Locale;
+  theme: ShellTheme;
+  setLocale: (value: Locale) => void;
+  setTheme: (value: ShellTheme) => void;
+}) {
   const nativeShell = isTauriShell();
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
@@ -195,20 +207,8 @@ export function MorePage({ locale }: { locale: Locale }) {
   const [reminderTime, setReminderTime] = useState(
     () => localStorage.getItem("gys-reminder-time-v1") ?? "",
   );
-  const [theme, setThemeState] = useState<
-    "system" | "light" | "dark" | "amoled" | "sepia"
-  >(
-    () =>
-      (localStorage.getItem("gys-theme") as
-        "system" | "light" | "dark" | "amoled" | "sepia" | null) ?? "light",
-  );
-
-  const changeTheme = (
-    next: "system" | "light" | "dark" | "amoled" | "sepia",
-  ) => {
-    setThemeState(next);
-    localStorage.setItem("gys-theme", next);
-    document.documentElement.dataset.theme = next;
+  const changeTheme = (next: ShellTheme) => {
+    setTheme(next);
   };
 
   useEffect(() => {
@@ -940,8 +940,7 @@ export function MorePage({ locale }: { locale: Locale }) {
                   value={locale}
                   onChange={(val) => {
                     const next = val as Locale;
-                    localStorage.setItem("gys-locale", next);
-                    window.location.reload();
+                    setLocale(next);
                   }}
                   label="Pilih Bahasa"
                   options={[
@@ -1101,7 +1100,11 @@ export function MorePage({ locale }: { locale: Locale }) {
                   <h2>Laporkan masalah</h2>
                 </div>
               </div>
+              <label className="sr-only" htmlFor="report-message">
+                {translate(locale, "more.reportMessage")}
+              </label>
               <textarea
+                id="report-message"
                 value={report}
                 maxLength={2_000}
                 onChange={(event) => {

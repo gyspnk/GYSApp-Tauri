@@ -51,6 +51,68 @@ export function chordKeyIndex(value: string): number | undefined {
   return NOTE_INDEX.get(normalized);
 }
 
+type ParsedChordRoot = { family: string; root: string };
+
+const NUMBERED_CHORD_ROOTS: Record<string, string> = {
+  "1": "C",
+  "2": "D",
+  "3": "E",
+  "4": "F",
+  "5": "G",
+  "6": "A",
+  "7": "B",
+};
+
+function parseChordRoot(value: string): ParsedChordRoot | undefined {
+  const match = value.trim().match(/^([A-Ga-g1-7])([#♯b♭]?)(min|m(?!aj))?/);
+  if (!match) return undefined;
+  const root = `${NUMBERED_CHORD_ROOTS[match[1]!] ?? match[1]!.toUpperCase()}${(
+    match[2] ?? ""
+  )
+    .replace("♯", "#")
+    .replace("♭", "b")}`;
+  if (chordKeyIndex(root) === undefined) return undefined;
+  return { root, family: `${root}${match[3] ? "m" : ""}` };
+}
+
+/**
+ * Canonical gyschordweb note-aligned documents omit an explicit key. Mirror
+ * its family-chord resolver: first/last roots establish a tonic when they
+ * agree; otherwise a repeated resolving last root wins, then frequency.
+ */
+export function inferChordDocumentKey(
+  document: ChordDocumentV2,
+): string | undefined {
+  if ("key" in document) return document.key;
+  const pages = Object.entries(document.pages).sort(
+    ([left], [right]) => Number(left) - Number(right),
+  );
+  const roots = pages.flatMap(([, entries]) =>
+    [...entries]
+      .sort((left, right) => left.noteIdx - right.noteIdx)
+      .map((entry) => parseChordRoot(entry.chord))
+      .filter((entry): entry is ParsedChordRoot => entry !== undefined),
+  );
+  if (roots.length === 0) return undefined;
+
+  const first = roots[0]!;
+  const last = roots.at(-1)!;
+  if (first.family === last.family) return first.root;
+
+  const counts = new Map<string, number>();
+  let mostFrequent = first;
+  let max = 0;
+  for (const entry of roots) {
+    const count = (counts.get(entry.family) ?? 0) + 1;
+    counts.set(entry.family, count);
+    if (count > max) {
+      max = count;
+      mostFrequent = entry;
+    }
+  }
+  return (counts.get(last.family) ?? 0) > 1 ? last.root : mostFrequent.root;
+}
+
 /** Select a stable user-facing spelling without changing the pitch class. */
 export function chordKeyName(
   index: number,

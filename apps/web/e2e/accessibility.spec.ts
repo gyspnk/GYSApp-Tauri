@@ -63,4 +63,27 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       JSON.stringify(results.violations, null, 2),
     ).toEqual([]);
   });
+
+  test("report form exposes an accessible message field", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/GYSApp-Tauri/lainnya");
+    await expect(
+      page.getByRole("heading", { name: "Lainnya", exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole("textbox", { name: "Pesan laporan" }),
+    ).toBeVisible();
+  });
+
+  test("tablet navigation keeps accessible names when copy is collapsed", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 720, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/GYSApp-Tauri/");
+    await expect(
+      page.getByRole("link", { name: "Beranda", exact: true }),
+    ).toBeVisible();
+  });
 });

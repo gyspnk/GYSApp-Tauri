@@ -264,7 +264,7 @@ export class MidiPreloadQueue {
   }
 }
 
-class BrowserMidiPlayer {
+export class BrowserMidiPlayer {
   private current: NormalizedMidi | undefined;
   private rawMidi: Uint8Array | undefined;
   private sourceHash = "";
@@ -280,6 +280,7 @@ class BrowserMidiPlayer {
   private rendered: RenderedSong | undefined;
   private worker: Worker | undefined;
   private workerReady: Promise<void> | undefined;
+  private workerReadyReject: ((reason?: unknown) => void) | undefined;
   private soundfont: Uint8Array | undefined;
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
@@ -508,6 +509,8 @@ class BrowserMidiPlayer {
     this.pending.clear();
     this.worker?.terminate();
     this.worker = undefined;
+    this.workerReadyReject?.(new Error("MIDI player destroyed"));
+    this.workerReadyReject = undefined;
     this.workerReady = undefined;
     void this.audio?.close();
     this.audio = undefined;
@@ -739,23 +742,32 @@ class BrowserMidiPlayer {
           }
         },
       );
-      this.worker.addEventListener("error", () => {
+      const worker = this.worker;
+      worker.addEventListener("error", () => {
+        if (this.worker !== worker) return;
+        this.worker = undefined;
+        this.workerReadyReject?.(new Error("MIDI worker crashed"));
+        this.workerReadyReject = undefined;
         this.workerReady = undefined;
         this.soundfontWorker = undefined;
         this.soundfontRequest = undefined;
         for (const pending of this.pending.values())
           pending.reject(new Error("MIDI worker crashed"));
         this.pending.clear();
+        worker.terminate();
       });
     }
     this.workerReady ??= new Promise<void>((resolve, reject) => {
+      this.workerReadyReject = reject;
       const timer = window.setTimeout(() => {
+        this.workerReadyReject = undefined;
         this.workerReady = undefined;
         reject(new Error("MIDI worker startup timed out"));
       }, 30_000);
       const onReady = (event: MessageEvent<WorkerMessage>) => {
         if (event.data.type !== "ready") return;
         window.clearTimeout(timer);
+        this.workerReadyReject = undefined;
         this.worker?.removeEventListener("message", onReady as EventListener);
         resolve();
       };
@@ -765,6 +777,7 @@ class BrowserMidiPlayer {
     try {
       await this.workerReady;
     } catch (error) {
+      this.workerReadyReject = undefined;
       this.workerReady = undefined;
       throw error;
     }

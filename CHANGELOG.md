@@ -2,8 +2,22 @@
 
 ## Unreleased — GA hardening slice
 
+- **Current production-readiness hardening**:
+  - Added a validated, versioned shell-settings envelope with legacy-key
+    migration and safe handling for malformed or unavailable browser storage.
+  - Changed `/api/v1/report` to fail closed with `503` until a durable sink is
+    configured, preserving the web draft instead of acknowledging lost data.
+  - Made native reset clear webview IndexedDB/Cache Storage, serialized
+    concurrent chord-cache index loads, and inferred canonical note-aligned
+    chord source keys from real note markers.
+  - Added Bible offline-pack retry and explicit empty-search feedback, plus
+    accessible names for collapsed tablet navigation and report input.
+  - Re-ran the local release gates: 51 Playwright flows and 206 workspace/web
+    tests pass alongside strict typecheck, provenance, chord-audit, native,
+    build, and bundle checks.
+
 - **Milestone 3 (Quality Gates, Living Documentation & Direct-to-Main Delivery)**:
-  - Verified 100% clean passage across all 16 quality verification gates including TypeScript strict typecheck across all 5 workspaces, ESLint, Prettier format checking, unit/contract/policy tests, generated provenance verification, deterministic 144-file chord audit check, production builds, bundle size verification within 250 KiB gzip budget, 18-file native assets integrity check (36.8 MB), Rust Cargo check, fmt, clippy, test suite, documentation verification, 48-flow Playwright E2E matrix, and precommit/prepush gates.
+  - Verified 100% clean passage across all 16 quality verification gates including TypeScript strict typecheck across all 5 workspaces, ESLint, Prettier format checking, unit/contract/policy tests, generated provenance verification, deterministic 144-file chord audit check, production builds, bundle size verification within 250 KiB gzip budget, 18-file native assets integrity check (36.8 MB), Rust Cargo check, fmt, clippy, test suite, documentation verification, 51-flow Playwright E2E matrix, and precommit/prepush gates.
   - Verified and documented all 14 living architecture Mermaid diagrams in `docs/architecture.md`, `README.md`, and `docs/egys-integration.md` covering UI/UX flow, Kidung musical state, PDF note extraction, Text chord mapping, Unified cache, MIDI synthesis, Alkitab split reader, Alkitab Suara TTS, persistent global player, Literature resume pipeline, e-GYS auth/sync, web cache strategy, native asset packaging, and direct-to-main git workflow.
   - Maintained direct-to-main development tracking `origin/main` with clean working tree.
 - **Milestone 2 (Alkitab Navigation & Split Reader)**:

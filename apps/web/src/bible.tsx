@@ -320,6 +320,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [exactPhrase, setExactPhrase] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
+  const [searchedQuery, setSearchedQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string>();
   const [searchHistory, setSearchHistory] = useState(readSearchHistory);
@@ -356,6 +357,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const isSyncingRef = useRef(false);
 
   const [pickerModalOpen, setPickerModalOpen] = useState(false);
+  const [packAttempt, setPackAttempt] = useState(0);
   const [quickNavDrag, setQuickNavDrag] = useState<
     QuickNavDragState | undefined
   >(undefined);
@@ -505,7 +507,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           });
       });
     return () => controller.abort();
-  }, []);
+  }, [packAttempt]);
 
   const searchClient = useMemo(
     () =>
@@ -790,6 +792,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSearchError(undefined);
     if (!searchClient || !requestedQuery.trim()) {
       setSearchResults([]);
+      setSearchedQuery("");
       searchAbortRef.current = undefined;
       return;
     }
@@ -813,6 +816,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       );
       if (controller.signal.aborted) return;
       setSearchResults(results);
+      setSearchedQuery(requestedQuery.trim());
       setSearchHistory((current) => {
         const next = [
           requestedQuery.trim(),
@@ -1242,7 +1246,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
             <button
               className="text-button"
               type="button"
-              onClick={() => setSearchResults([])}
+              onClick={() => {
+                setSearchResults([]);
+                setSearchedQuery("");
+              }}
             >
               {translate(locale, "bible.closeResults")}
             </button>
@@ -1258,6 +1265,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   setSelectedChapter(result.chapter);
                   setSelectedVerseId(result.id);
                   setSearchResults([]);
+                  setSearchedQuery("");
                 }}
               >
                 <strong>
@@ -1274,6 +1282,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
         </section>
       )}
+      {searchedQuery &&
+        !searching &&
+        !searchError &&
+        searchResults.length === 0 &&
+        searchedQuery === query.trim() && (
+          <div className="empty-panel" role="status">
+            {translate(locale, "bible.noResults")}
+          </div>
+        )}
 
       {packState.status === "loading" && (
         <div className="loading-panel" role="status">
@@ -1284,6 +1301,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "bible.offlineError")}</strong>
           <span>{packState.message}</span>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => {
+              setPackState({ status: "loading" });
+              setPackAttempt((attempt) => attempt + 1);
+            }}
+          >
+            {translate(locale, "bible.retry")}
+          </button>
         </div>
       )}
 

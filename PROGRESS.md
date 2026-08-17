@@ -7,6 +7,25 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- **Current production-readiness hardening tranche (2026-08-17)**:
+  - Shell preferences now use a validated `gys-shell-settings-v1` envelope,
+    migrate the legacy locale/theme keys, and tolerate malformed or unavailable
+    browser storage without crashing the shell.
+  - The BFF report endpoint now fails closed with `503` when no durable report
+    sink is configured; the web draft remains local instead of displaying a
+    false acceptance message. Native reset also clears the webview's
+    browser-managed IndexedDB and Cache Storage after the Tauri app-data reset.
+  - Browser chord-cache index loading is serialized across concurrent reads,
+    and canonical note-aligned chord documents infer their source key with the
+    gyschordweb family resolver instead of defaulting every song to C.
+  - The Bible reader has a retryable offline-pack error and an explicit
+    no-results state. Tablet navigation and the report textarea expose stable
+    accessible names.
+  - The complete local release gate was rerun after these changes: 51/51
+    Playwright flows, 206 web/workspace tests, strict typecheck, formatting,
+    generated provenance, the 144-file/3,291-entry chord audit, native checks,
+    production build, and the 180.7 KiB initial-JS gzip budget passed.
+
 - **Milestone 3 — Comprehensive Quality Gates, Living Documentation & Direct-to-Main Delivery**:
   - Full-Spectrum 16-Gate Quality Verification: Confirmed 100% clean passage (exit code 0) of every single gate:
     1. `pnpm typecheck` (all 5 workspaces: contracts, domain, testkit, bff, web)
@@ -22,7 +41,7 @@ service or platform artifact that cannot be exercised in this workspace.
     11. `pnpm --filter @gys/native lint` (Cargo fmt --check & Cargo clippy with -D warnings)
     12. `pnpm --filter @gys/native test` (Rust native unit tests for storage caps, path safety, and platform commands)
     13. `pnpm verify:docs` (living documentation and Mermaid diagrams verification)
-    14. `pnpm --filter @gys/web test:e2e` (all 48 Playwright E2E flows across 320px–1920px, landscape, and Axe a11y)
+    14. `pnpm --filter @gys/web test:e2e` (all 51 Playwright E2E flows across 320px–1920px, landscape, and Axe a11y)
     15. `pnpm verify:precommit` (pre-commit quality gate)
     16. `pnpm verify:prepush` (pre-push quality gate)
   - 14 Living Architecture Diagrams (ORIGINAL_REQUEST.md §R11): Verified and expanded in `docs/architecture.md`, `README.md`, and `docs/egys-integration.md` covering all 14 required workflows:

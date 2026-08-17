@@ -1,9 +1,29 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  BrowserMidiPlayer,
   MidiOperationGate,
   MidiPreloadQueue,
   midiRenderKey,
 } from "./midi-player.js";
+
+class FakeWorker extends EventTarget {
+  public terminated = false;
+
+  public postMessage(message: unknown): void {
+    if ((message as { type?: string }).type === "init") {
+      queueMicrotask(() => {
+        if (!this.terminated)
+          this.dispatchEvent(
+            new MessageEvent("message", { data: { type: "ready" } }),
+          );
+      });
+    }
+  }
+
+  public terminate(): void {
+    this.terminated = true;
+  }
+}
 
 describe("MIDI operation generation", () => {
   it("invalidates late work when a newer operation starts", () => {
@@ -21,6 +41,37 @@ describe("MIDI operation generation", () => {
 
     expect(gate.isCurrent(generation)).toBe(true);
     expect(gate.isCurrent(generation + 1)).toBe(false);
+  });
+});
+
+describe("MIDI worker lifecycle", () => {
+  it("discards and terminates a crashed worker before the next render", async () => {
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("window", {
+      location: { href: "http://localhost/" },
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+    });
+    try {
+      const player = new BrowserMidiPlayer();
+      const internal = player as unknown as {
+        ensureWorker: () => Promise<Worker>;
+        worker?: FakeWorker;
+      };
+      const pending = internal.ensureWorker();
+      const first = internal.worker!;
+      first.dispatchEvent(new Event("error"));
+
+      await expect(pending).rejects.toThrow("MIDI worker crashed");
+      expect(internal.worker).toBeUndefined();
+      expect((first as unknown as FakeWorker).terminated).toBe(true);
+
+      const second = await internal.ensureWorker();
+      expect(second).not.toBe(first);
+      player.destroy();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

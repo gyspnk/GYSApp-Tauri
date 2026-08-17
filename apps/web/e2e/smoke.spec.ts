@@ -93,6 +93,34 @@ test("offline reader packs open without a network request", async ({
   ).toBeVisible();
 });
 
+test.describe("offline Bible recovery", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("Bible reader retries a transient offline-pack failure", async ({
+    page,
+  }) => {
+    let attempts = 0;
+    await page.route("**/offline/bible/tb-reader.json", async (route) => {
+      attempts += 1;
+      if (attempts === 1) {
+        await route.fulfill({ status: 503, body: "temporarily unavailable" });
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(page.getByRole("alert")).toContainText(
+      "Paket Alkitab belum tersedia",
+    );
+    await page.getByRole("button", { name: "Coba lagi" }).click();
+    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+      timeout: 15_000,
+    });
+    expect(attempts).toBeGreaterThanOrEqual(2);
+  });
+});
+
 test("faith topics search, select, and persist a personal note", async ({
   page,
 }) => {

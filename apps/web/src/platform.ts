@@ -19,11 +19,22 @@ import {
   BrowserShare,
   EphemeralSecretStore,
 } from "./platform-capabilities.js";
+import type { ShellStorage } from "./settings.js";
 
 const PLATFORM_DB = "gysapp-platform-v1";
 const PLATFORM_STORE = "key-value";
 const PLATFORM_BLOB_STORE = "blobs";
 const PLATFORM_DB_VERSION = 2;
+
+/** Browser-backed shell preferences exposed through the platform boundary. */
+export function getShellSettingsStorage(): ShellStorage | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
 
 let platformDbPromise: Promise<IDBDatabase | undefined> | undefined;
 
@@ -131,6 +142,10 @@ export async function clearPlatformStorage(): Promise<void> {
   const invoke = getTauriInvoke();
   if (invoke) {
     await invoke("platform_clear_data");
+    // Tauri's app-data command cannot reach browser-managed IndexedDB and
+    // Cache Storage inside the webview. Clear both boundaries so reset does
+    // not leave verified PDF/chord/MIDI bytes behind in the embedded browser.
+    await clearBrowserPlatformStorage();
     return;
   }
   await clearBrowserPlatformStorage();

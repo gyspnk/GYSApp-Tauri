@@ -20,22 +20,31 @@ const MAX_BYTES = 25 * 1024 * 1024;
 export class BrowserChordCache implements ChordCache {
   private index = new Map<string, Entry>();
   private loaded = false;
+  private loadPromise: Promise<void> | undefined;
   private sequence = 0;
 
   public constructor(private readonly platform: PlatformServices) {}
 
   private async ensureLoaded(): Promise<void> {
     if (this.loaded) return;
-    this.loaded = true;
-    const stored =
-      await this.platform.keyValue.get<Record<string, Entry>>(INDEX_KEY);
-    if (!stored) return;
-    for (const [songId, entry] of Object.entries(stored))
-      this.index.set(songId, entry);
-    this.sequence = Math.max(
-      0,
-      ...[...this.index.values()].map((entry) => entry.lastAccess),
-    );
+    if (!this.loadPromise) {
+      this.loadPromise = (async () => {
+        const stored =
+          await this.platform.keyValue.get<Record<string, Entry>>(INDEX_KEY);
+        if (stored) {
+          for (const [songId, entry] of Object.entries(stored))
+            this.index.set(songId, entry);
+          this.sequence = Math.max(
+            0,
+            ...[...this.index.values()].map((entry) => entry.lastAccess),
+          );
+        }
+        this.loaded = true;
+      })().finally(() => {
+        this.loadPromise = undefined;
+      });
+    }
+    await this.loadPromise;
   }
 
   private async persist(): Promise<void> {
