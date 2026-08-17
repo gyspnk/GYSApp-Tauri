@@ -328,8 +328,15 @@ service or platform artifact that cannot be exercised in this workspace.
   signed-out state when those secrets are absent. Provider SDK loading and
   Google/Apple prompts are bounded by cancellation/timeouts so a blocked popup
   cannot leave the account surface stuck in a busy state.
-- Native Tauri packaging/signing and iOS/Android store artifacts require their
-  platform toolchains and signing material.
+- Native Tauri packaging: an Android debug APK (arm64-v8a, debug-signed with
+  the local debug keystore, package `id.or.gys.app`, minSdk 24 / targetSdk 36,
+  186 MB with offline web assets and the Rust library) now builds and verifies
+  locally via apksigner (`pnpm --filter @gys/native bundle:android`). Local
+  Windows builds need `apps/native/node_modules/.bin` on PATH so the Gradle
+  rust tasks can resolve the Tauri CLI (pnpm 11 does not resolve it from inside
+  `src-tauri/`). Windows signed NSIS and iOS artifacts still require their
+  platform toolchains and signing material (PFX, Android upload key, Apple
+  signing).
 - Full canonical-vs-rewrite MIDI performance parity, screen-reader audit, and
   visual baseline review require the target device/browser matrix.
 - Edge speech audio requires the protected `EDGE_TTS_URL` Worker binding; when
@@ -346,6 +353,7 @@ service or platform artifact that cannot be exercised in this workspace.
   schemas when the upstream runtime document is available in an authenticated
   checkout; the current upstream checkout exposes the generator/configuration
   but no checked-in JSON document.
-- Complete native packaging/signing and device evidence: build/install smoke
-  tests for Windows, Android, and iOS, plus live keyring, notification,
+- Complete native packaging/signing and device evidence: install/runtime smoke
+  tests on a connected Android device or emulator (APK build step now verified
+  locally), Windows signed NSIS, iOS, plus live keyring, notification,
   file-dialog, lifecycle, and deep-link checks on each target.

@@ -10,7 +10,7 @@ name = "gysapp_native_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.4.1" }
+tauri-build = { version = "2.4.1", features = [] }
 
 [dependencies]
 tauri = { version = "2.11.4", features = [] }
