@@ -10,9 +10,11 @@ import {
 
 export const SPLIT_KEY = "gys-bible-split-v1";
 export const SPLIT_RATIO_KEY = "gys-bible-split-ratio-v1";
+export const SPLIT_SYNC_SCROLL_KEY = "gys-bible-split-sync-scroll-v1";
 export const MIN_SPLIT_RATIO = 42;
 export const MAX_SPLIT_RATIO = 72;
 export const DEFAULT_SPLIT_RATIO = 58;
+export const DEFAULT_SYNC_SCROLL = true;
 
 export function clampSplitRatio(
   value: number,
@@ -61,6 +63,45 @@ export function readStoredSplitRatio(
   return clampSplitRatio(value);
 }
 
+export function readStoredSyncScroll(
+  storage: Pick<Storage, "getItem"> | undefined,
+  fallback = DEFAULT_SYNC_SCROLL,
+): boolean {
+  const raw = storage?.getItem(SPLIT_SYNC_SCROLL_KEY);
+  if (raw === null || raw === undefined) return fallback;
+  return raw === "1" || raw === "true";
+}
+
+export function calculateProportionalScroll(
+  sourceScrollTop: number,
+  sourceScrollHeight: number,
+  sourceClientHeight: number,
+  targetScrollHeight: number,
+  targetClientHeight: number,
+): number {
+  const maxSource = Math.max(0, sourceScrollHeight - sourceClientHeight);
+  const maxTarget = Math.max(0, targetScrollHeight - targetClientHeight);
+  if (maxSource <= 0 || maxTarget <= 0) return 0;
+  const progress = Math.max(0, Math.min(1, sourceScrollTop / maxSource));
+  return Math.round(progress * maxTarget);
+}
+
+export function calculateVerseAnchorScroll(
+  primaryVerseIndex: number,
+  primaryTotalVerses: number,
+  secondaryTotalVerses: number,
+): number {
+  if (primaryTotalVerses <= 0 || secondaryTotalVerses <= 0) return 1;
+  const ratio = Math.max(
+    0,
+    Math.min(1, (primaryVerseIndex - 1) / Math.max(1, primaryTotalVerses - 1)),
+  );
+  return Math.min(
+    secondaryTotalVerses,
+    Math.max(1, Math.round(1 + ratio * (secondaryTotalVerses - 1))),
+  );
+}
+
 export type BibleSplitController = {
   splitView: boolean;
   setSplitView: Dispatch<SetStateAction<boolean>>;
@@ -68,18 +109,23 @@ export type BibleSplitController = {
   setSplitRatio: Dispatch<SetStateAction<number>>;
   splitLayoutRef: React.RefObject<HTMLDivElement | null>;
   startSplitDrag: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  syncScroll: boolean;
+  setSyncScroll: Dispatch<SetStateAction<boolean>>;
+  toggleSyncScroll: () => void;
 };
 
 /**
- * Owns the Bible split-pane state, persistence, pointer drag lifecycle, and
- * responsive guard. The reader component only consumes the controller so its
- * verse/search logic cannot accidentally leak into the divider implementation.
+ * Owns the Bible split-pane state, persistence, pointer drag lifecycle,
+ * synchronized scrolling mode, and responsive guard.
  */
 export function useBibleSplitController(): BibleSplitController {
   const storage = browserStorage();
   const [splitView, setSplitView] = useState(() => readEnabled(storage));
   const [splitRatioState, setSplitRatioState] = useState(() =>
     readStoredSplitRatio(storage),
+  );
+  const [syncScroll, setSyncScroll] = useState(() =>
+    readStoredSyncScroll(storage),
   );
   const splitLayoutRef = useRef<HTMLDivElement | null>(null);
   const splitDragging = useRef(false);
@@ -96,6 +142,10 @@ export function useBibleSplitController(): BibleSplitController {
     [],
   );
 
+  const toggleSyncScroll = useCallback(() => {
+    setSyncScroll((current) => !current);
+  }, []);
+
   useEffect(() => {
     storage?.setItem(SPLIT_KEY, splitView ? "1" : "0");
   }, [splitView, storage]);
@@ -103,6 +153,10 @@ export function useBibleSplitController(): BibleSplitController {
   useEffect(() => {
     storage?.setItem(SPLIT_RATIO_KEY, String(splitRatioState));
   }, [splitRatioState, storage]);
+
+  useEffect(() => {
+    storage?.setItem(SPLIT_SYNC_SCROLL_KEY, syncScroll ? "1" : "0");
+  }, [syncScroll, storage]);
 
   useEffect(() => {
     const updateRatio = (event: PointerEvent) => {
@@ -143,5 +197,8 @@ export function useBibleSplitController(): BibleSplitController {
     setSplitRatio,
     splitLayoutRef,
     startSplitDrag,
+    syncScroll,
+    setSyncScroll,
+    toggleSyncScroll,
   };
 }

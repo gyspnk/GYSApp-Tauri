@@ -2,6 +2,24 @@
 
 ## Unreleased — GA hardening slice
 
+- **Milestone 3 (Quality Gates, Living Documentation & Direct-to-Main Delivery)**:
+  - Verified 100% clean passage across all 16 quality verification gates including TypeScript strict typecheck across all 5 workspaces, ESLint, Prettier format checking, unit/contract/policy tests, generated provenance verification, deterministic 144-file chord audit check, production builds, bundle size verification within 250 KiB gzip budget, 18-file native assets integrity check (36.8 MB), Rust Cargo check, fmt, clippy, test suite, documentation verification, 48-flow Playwright E2E matrix, and precommit/prepush gates.
+  - Verified and documented all 14 living architecture Mermaid diagrams in `docs/architecture.md`, `README.md`, and `docs/egys-integration.md` covering UI/UX flow, Kidung musical state, PDF note extraction, Text chord mapping, Unified cache, MIDI synthesis, Alkitab split reader, Alkitab Suara TTS, persistent global player, Literature resume pipeline, e-GYS auth/sync, web cache strategy, native asset packaging, and direct-to-main git workflow.
+  - Maintained direct-to-main development tracking `origin/main` with clean working tree.
+- **Milestone 2 (Alkitab Navigation & Split Reader)**:
+  - Added AndroidBible-aligned `SplitManager` multi-pane Bible reader engine with draggable, keyboard-safe divider, persisted ratio, orientation adaptation, 50/50 haptic snap, and synchronized vs independent scrolling modes (`bible-split.ts`, `bible-split.test.ts`).
+  - Added `BibleQuickNav` rapid touch-and-drag navigation overlay across Kitab → Pasal → Ayat with haptic tick feedback, alongside single-tap standard book/chapter picker (`bible-quick-nav.tsx`, `bible-quick-nav.test.ts`).
+  - Hardened Bible search with lazy worker index, book name matches, 3-tier ranking (Book-name hits → Reference hits → Text mentions), canonical testament filtering (PL 39 / PB 27), and cross-space search deep linking (`/bible?book=…&chapter=…&verse=…`).
+  - Decoupled `VoiceEngine` TTS orchestrator with natural cloud/Edge preferred voice, local/system speech fallback, markup sanitization, verse chunking, active verse highlight, auto-scroll, and media session sync.
+  - Added 100+ iteration high-stress navigation and split test suite (`bible-m2-stress.test.ts`).
+- **Milestone 1 (Mobile Worship & UI Hardening)**:
+  - Added automatic screen wake-lock (`useWakeLock`, `wake-lock.ts`, `wake-lock.test.ts`) during active Kidung viewing, Alkitab reading, and media playback to prevent display sleep during church service.
+  - Added contextual toolbar auto-hide (`useToolbarAutoHide`, `use-toolbar-auto-hide.ts`, `use-toolbar-auto-hide.test.ts`) on reading scroll-down with smooth restore on tap or scroll-up.
+  - Added mobile haptic feedback ticks (`useHaptics`, `haptics.ts`, `haptics.test.ts`) on touch milestones (50/50 split snap, quick goto drag snaps, bookmark toggle).
+  - Added audio headphone/output disconnect guard (`useHeadphoneGuard`, `headphone-guard.ts`, `headphone-guard.test.ts`) auto-pausing playback on unplug to prevent sanctuary disruption.
+  - Added Pure AMOLED Dark theme (`#000000` true black) and Warm Sepia reader theme with system dynamic font scaling.
+  - Enforced strict z-index stratification (`Content (0) → Navigation (10) → Persistent Media (20) → Contextual Toolbar (30) → Popovers/Sheets (40) → Modals/Dialogs (50)`), debounced form controls, and complete plain-text entity stripping.
+  - Added high-stress verification suites (`m1-stress.test.ts`, `verify-m1-stress.test.mjs`).
 - Bible search now supports testament narrowing: “Perjanjian Lama (39)” and
   “Perjanjian Baru (27)” sit above the per-book choices in the Kitab
   selector and map to a typed `testament` search option enforced by the

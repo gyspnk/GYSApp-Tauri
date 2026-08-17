@@ -30,6 +30,11 @@ const DYNAMIC_KEYS = [
   "home.today",
   "page.kidungBody",
   "bible.bookmark",
+  "theme.system",
+  "theme.light",
+  "theme.dark",
+  "theme.amoled",
+  "theme.sepia",
 ];
 
 // Raw source scan without node types: Vite resolves the module list at build

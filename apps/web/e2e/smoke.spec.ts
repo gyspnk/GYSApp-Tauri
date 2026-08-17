@@ -784,3 +784,86 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
 });
+
+test("Bible title tap opens standard book/chapter/verse picker dialog and navigates", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const handle = page.getByRole("button", {
+    name: "Geser judul untuk berpindah pasal",
+  });
+  // Single click / tap without dragging opens picker dialog
+  await handle.click();
+  const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await expect(dialog).toBeVisible();
+
+  // Filter book by name and select
+  await page.getByPlaceholder("Cari nama kitab…").fill("Matius");
+  await page.getByRole("button", { name: "Matius", exact: true }).click();
+
+  // Select Chapter 5
+  await page.getByRole("button", { name: "5", exact: true }).click();
+
+  // Select Verse 3 (Beatitudes)
+  await page.getByRole("button", { name: "3", exact: true }).click();
+
+  // Modal dialog closes and reader navigates to Matius 5 with verse 3 selected
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole("heading", { name: /Matius 5/ })).toBeVisible();
+  await expect(page.locator(".verse-row.is-selected")).toContainText(
+    "Berbahagialah orang yang miskin di hadapan Allah",
+  );
+});
+
+test("Bible split reader supports synchronized scrolling mode and persists preference", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // Enable split view
+  await page.getByRole("button", { name: "Dua kolom" }).click();
+  await expect(page.locator(".bible-pane")).toHaveCount(2);
+
+  // Sync scroll toggle is visible and active by default
+  const syncToggle = page.getByRole("button", { name: "Gulir: Sinkron" });
+  await expect(syncToggle).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        localStorage.getItem("gys-bible-split-sync-scroll-v1"),
+      ),
+    )
+    .toBe("1");
+
+  // Toggle sync scroll off (Independent scrolling)
+  await syncToggle.click();
+  await expect(
+    page.getByRole("button", { name: "Gulir: Mandiri" }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        localStorage.getItem("gys-bible-split-sync-scroll-v1"),
+      ),
+    )
+    .toBe("0");
+
+  // Toggle sync scroll back on
+  await page.getByRole("button", { name: "Gulir: Mandiri" }).click();
+  await expect(
+    page.getByRole("button", { name: "Gulir: Sinkron" }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        localStorage.getItem("gys-bible-split-sync-scroll-v1"),
+      ),
+    )
+    .toBe("1");
+});

@@ -50,6 +50,8 @@ import {
   selectMidiPlaylistItem,
   subscribeMidiPlaylist,
 } from "./midi-playlist.js";
+import { hapticTick } from "./haptics.js";
+import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 import {
   readHymnViewerMode,
   readHymnChordVisibility,
@@ -362,7 +364,11 @@ function HymnDetail({
   const [notice, setNotice] = useState("");
   const [favorite, setFavorite] = useState(false);
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
+    null,
+  );
   const touchStartX = useRef<number | undefined>(undefined);
+  const { toolbarVisible, restoreToolbar } = useReadingToolbarAutoHide();
   const autoLoadedSong = useRef<string | undefined>(undefined);
   const keyInitialized = useRef(false);
   const chordRun = useRef(0);
@@ -611,6 +617,7 @@ function HymnDetail({
   };
   const toggle = () => {
     if (!item) return;
+    hapticTick("medium");
     const next = toggleFavorite({
       kind: "hymn",
       id: item.id,
@@ -623,6 +630,43 @@ function HymnDetail({
         : translate(locale, "kidung.favoriteRemoved"),
     );
   };
+
+  const onTouchStart = (event: TouchEvent) => {
+    restoreToolbar();
+    if (event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+    };
+  };
+
+  const onTouchEnd = (event: TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    const elapsed = Date.now() - touchStartRef.current.time;
+    touchStartRef.current = null;
+
+    if (
+      Math.abs(deltaX) > 50 &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.5 &&
+      elapsed < 600
+    ) {
+      if (deltaX < 0 && next) {
+        hapticTick("light");
+        navigate(`/kidung/${next.id}`);
+      } else if (deltaX > 0 && prev) {
+        hapticTick("light");
+        navigate(`/kidung/${prev.id}`);
+      }
+    }
+  };
+
   const onVerseTouchStart = (event: TouchEvent<HTMLElement>) => {
     if (event.touches.length === 1)
       touchStartX.current = event.touches[0]?.clientX;
@@ -912,8 +956,15 @@ function HymnDetail({
           </button>
         </div>
       </section>
-      <section className="hymn-detail-surface">
-        <div className="detail-actions">
+      <section
+        className="hymn-detail-surface"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onClick={restoreToolbar}
+      >
+        <div
+          className={`detail-actions${toolbarVisible ? "" : " is-collapsed"}`}
+        >
           <button
             type="button"
             className="quiet-button"

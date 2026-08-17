@@ -29,7 +29,10 @@ import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
 import { BibleSearchClient } from "./bible-search.js";
-import { useBibleSplitController } from "./bible-split.js";
+import {
+  calculateProportionalScroll,
+  useBibleSplitController,
+} from "./bible-split.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
   BIBLE_FONT_SIZE_MAX,
@@ -41,6 +44,17 @@ import {
   writeBibleTypography,
   type BibleTypography,
 } from "./bible-typography.js";
+import { hapticTick } from "./haptics.js";
+import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
+import {
+  BiblePickerModal,
+  BibleQuickNavOverlay,
+  resolveDragColumn,
+  scrubBookIndex,
+  scrubChapterNumber,
+  scrubVerseNumber,
+  type QuickNavDragState,
+} from "./bible-quick-nav.js";
 
 type PackState =
   | { status: "loading" }
@@ -184,12 +198,15 @@ function ChapterPane({
   speakingVerseId,
   searchQuery,
   secondary = false,
+  scrollRef,
+  onScroll,
   onSelect,
   onBookmark,
   onTouchStart,
   onTouchEnd,
   onQuickNavPointerDown,
   onQuickNavKeyDown,
+  onHeadingClick,
 }: {
   book: BibleBook;
   chapter: number;
@@ -200,12 +217,15 @@ function ChapterPane({
   speakingVerseId?: string | undefined;
   searchQuery: string;
   secondary?: boolean;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  onScroll?: () => void;
   onSelect: (verse: BibleVerse) => void;
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
   onQuickNavPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onQuickNavKeyDown?: (event: ReactKeyboardEvent<HTMLDivElement>) => void;
+  onHeadingClick?: () => void;
 }) {
   return (
     <section
@@ -215,6 +235,7 @@ function ChapterPane({
       <div
         className={`reader-heading${onQuickNavPointerDown ? " quick-nav-handle" : ""}`}
         onPointerDown={onQuickNavPointerDown}
+        onClick={onHeadingClick}
         onKeyDown={onQuickNavKeyDown}
         role={onQuickNavPointerDown ? "button" : undefined}
         tabIndex={onQuickNavPointerDown ? 0 : undefined}
@@ -234,6 +255,8 @@ function ChapterPane({
       </div>
       <div
         className="verse-list"
+        ref={scrollRef}
+        onScroll={onScroll}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -313,6 +336,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { toolbarVisible, restoreToolbar } = useReadingToolbarAutoHide();
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
   >();
@@ -323,21 +347,36 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSplitRatio,
     splitLayoutRef,
     startSplitDrag,
+    syncScroll,
+    setSyncScroll,
+    toggleSyncScroll,
   } = useBibleSplitController();
+  const primaryScrollRef = useRef<HTMLDivElement | null>(null);
+  const secondaryScrollRef = useRef<HTMLDivElement | null>(null);
+  const isSyncingRef = useRef(false);
+
+  const [pickerModalOpen, setPickerModalOpen] = useState(false);
+  const [quickNavDrag, setQuickNavDrag] = useState<
+    QuickNavDragState | undefined
+  >(undefined);
   const touchStartX = useRef<number | undefined>(undefined);
   const searchAbortRef = useRef<AbortController | undefined>(undefined);
   const quickNavRef = useRef<
     | {
         pointerId: number;
+        startX: number;
         startY: number;
-        startChapter: number;
-        bookId: number;
+        startTime: number;
+        hasDragged: boolean;
+        initialBookIndex: number;
+        initialChapter: number;
+        initialVerse: number;
+        currentBookId: number;
+        currentChapter: number;
+        currentVerse: number;
       }
     | undefined
   >(undefined);
-  const [quickNav, setQuickNav] = useState<
-    { bookId: number; chapter: number } | undefined
-  >();
   const [typography, setTypography] = useState<BibleTypography>(() =>
     readBibleTypography(),
   );
@@ -351,24 +390,75 @@ export function BiblePage({ locale }: { locale: Locale }) {
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const bookId = book?.id ?? selectedBook;
+    const bookIdx = Math.max(
+      0,
+      books.findIndex((b) => b.id === bookId),
+    );
     quickNavRef.current = {
       pointerId: event.pointerId,
+      startX: event.clientX,
       startY: event.clientY,
-      startChapter: chapter,
-      bookId,
+      startTime: Date.now(),
+      hasDragged: false,
+      initialBookIndex: bookIdx,
+      initialChapter: chapter,
+      initialVerse: 1,
+      currentBookId: bookId,
+      currentChapter: chapter,
+      currentVerse: 1,
     };
-    setQuickNav({ bookId, chapter });
   };
 
   const quickNavKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (!book) return;
-    if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setPickerModalOpen(true);
+    } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
       event.preventDefault();
       setSelectedChapter((value) => Math.max(1, value - 1));
     } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
       event.preventDefault();
       setSelectedChapter((value) => Math.min(book.chapters, value + 1));
     }
+  };
+
+  const onPrimaryScroll = () => {
+    if (!splitView || !syncScroll || isSyncingRef.current) return;
+    const primary = primaryScrollRef.current;
+    const secondary = secondaryScrollRef.current;
+    if (!primary || !secondary) return;
+    isSyncingRef.current = true;
+    const targetTop = calculateProportionalScroll(
+      primary.scrollTop,
+      primary.scrollHeight,
+      primary.clientHeight,
+      secondary.scrollHeight,
+      secondary.clientHeight,
+    );
+    secondary.scrollTop = targetTop;
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false;
+    });
+  };
+
+  const onSecondaryScroll = () => {
+    if (!splitView || !syncScroll || isSyncingRef.current) return;
+    const primary = primaryScrollRef.current;
+    const secondary = secondaryScrollRef.current;
+    if (!primary || !secondary) return;
+    isSyncingRef.current = true;
+    const targetTop = calculateProportionalScroll(
+      secondary.scrollTop,
+      secondary.scrollHeight,
+      secondary.clientHeight,
+      primary.scrollHeight,
+      primary.clientHeight,
+    );
+    primary.scrollTop = targetTop;
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false;
+    });
   };
 
   // A cross-space search result can deep-link straight to a verse. The
@@ -443,24 +533,111 @@ export function BiblePage({ locale }: { locale: Locale }) {
     const move = (event: PointerEvent) => {
       const active = quickNavRef.current;
       if (!active || active.pointerId !== event.pointerId) return;
-      const targetBook = books.find(
-        (candidate) => candidate.id === active.bookId,
-      );
-      if (!targetBook) return;
+      const dx = event.clientX - active.startX;
+      const dy = event.clientY - active.startY;
+
+      if (!active.hasDragged && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+        active.hasDragged = true;
+      }
+
+      if (!active.hasDragged) return;
+
       event.preventDefault();
-      const delta = Math.round((active.startY - event.clientY) / 48);
-      const nextChapter = Math.max(
-        1,
-        Math.min(targetBook.chapters, active.startChapter + delta),
-      );
+      const col = resolveDragColumn(event.clientX, window.innerWidth);
+      let nextBookId = active.currentBookId;
+      let nextChapter = active.currentChapter;
+      let nextVerse = active.currentVerse;
+
+      if (col === "book") {
+        const targetIdx = scrubBookIndex(
+          active.initialBookIndex,
+          dy,
+          books.length,
+          24,
+        );
+        const targetBook = books[targetIdx] ?? books[0];
+        if (targetBook) {
+          nextBookId = targetBook.id;
+          nextChapter = Math.min(active.initialChapter, targetBook.chapters);
+          nextVerse = 1;
+        }
+      } else if (col === "chapter") {
+        const currentB =
+          books.find((b) => b.id === active.currentBookId) ?? book;
+        if (currentB) {
+          nextChapter = scrubChapterNumber(
+            active.initialChapter,
+            dy,
+            currentB.chapters,
+            48,
+          );
+          nextVerse = 1;
+        }
+      } else if (col === "verse") {
+        const currentB =
+          books.find((b) => b.id === active.currentBookId) ?? book;
+        const totalV =
+          packState.status === "ready"
+            ? packState.pack.verses.filter(
+                (v) =>
+                  v.book === String(currentB?.id) && v.chapter === nextChapter,
+              ).length
+            : 30;
+        nextVerse = scrubVerseNumber(active.initialVerse, dy, totalV || 30, 28);
+      }
+
+      if (
+        nextBookId !== active.currentBookId ||
+        nextChapter !== active.currentChapter ||
+        nextVerse !== active.currentVerse
+      ) {
+        hapticTick("light");
+        active.currentBookId = nextBookId;
+        active.currentChapter = nextChapter;
+        active.currentVerse = nextVerse;
+      }
+
+      const currentBookObj = books.find((b) => b.id === nextBookId) ?? book;
+      const totalVersesCount =
+        packState.status === "ready"
+          ? packState.pack.verses.filter(
+              (v) => v.book === String(nextBookId) && v.chapter === nextChapter,
+            ).length
+          : 30;
+
+      setSelectedBook(nextBookId);
       setSelectedChapter(nextChapter);
-      setQuickNav({ bookId: active.bookId, chapter: nextChapter });
+
+      setQuickNavDrag({
+        activeColumn: col,
+        bookId: nextBookId,
+        chapter: nextChapter,
+        verse: nextVerse,
+        bookName: currentBookObj?.name ?? "Alkitab",
+        totalChapters: currentBookObj?.chapters ?? 1,
+        totalVerses: totalVersesCount || 30,
+      });
     };
+
     const end = (event: PointerEvent) => {
-      if (quickNavRef.current?.pointerId !== event.pointerId) return;
-      quickNavRef.current = undefined;
-      window.setTimeout(() => setQuickNav(undefined), 120);
+      const active = quickNavRef.current;
+      if (!active || active.pointerId !== event.pointerId) return;
+
+      if (active.hasDragged) {
+        if (active.currentVerse > 1) {
+          setSelectedVerseId(
+            `${active.currentBookId}:${active.currentChapter}:${active.currentVerse}`,
+          );
+        }
+        quickNavRef.current = undefined;
+        window.setTimeout(() => setQuickNavDrag(undefined), 120);
+      } else {
+        quickNavRef.current = undefined;
+        setQuickNavDrag(undefined);
+        setPickerModalOpen(true);
+      }
     };
+
     window.addEventListener("pointermove", move, { passive: false });
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
@@ -469,7 +646,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", end);
     };
-  }, [books]);
+  }, [book, books, packState]);
   const chapterVerses = useMemo(() => {
     if (packState.status !== "ready" || !book) return [];
     return packState.pack.verses.filter(
@@ -663,6 +840,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const toggleBookmark = (id: string) => {
+    hapticTick("medium");
     setBookmarks((current) => {
       const next = new Set(current);
       if (next.has(id)) next.delete(id);
@@ -1113,15 +1291,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
         <section
           className={`bible-reader${splitView ? " is-split" : ""}`}
           aria-label={translate(locale, "page.bibleTitle")}
+          onClick={restoreToolbar}
         >
-          {quickNav && (
-            <div className="quick-nav-floater" role="status" aria-live="polite">
-              <strong>{book.name}</strong>
-              <span>Pasal {quickNav.chapter}</span>
-              <small>Lepaskan untuk membuka</small>
-            </div>
+          {quickNavDrag && (
+            <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />
           )}
-          <div className="reader-toolbar">
+          <div
+            className={`reader-toolbar${toolbarVisible ? "" : " is-collapsed"}`}
+          >
             <Select
               value={book.id}
               onChange={(value) => {
@@ -1165,6 +1342,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
             >
               {splitView ? "Satu kolom" : "Dua kolom"}
             </button>
+            {splitView && (
+              <button
+                className={`quiet-button${syncScroll ? " is-active" : ""}`}
+                type="button"
+                onClick={toggleSyncScroll}
+                aria-pressed={syncScroll}
+              >
+                {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
+              </button>
+            )}
             <button
               className="quiet-button"
               type="button"
@@ -1278,17 +1465,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
             </div>
           </div>
           {splitView && (
-            <label className="split-ratio-control">
-              <span>Lebar bacaan</span>
-              <input
-                type="range"
-                min="42"
-                max="72"
-                value={splitRatio}
-                onChange={(event) => setSplitRatio(Number(event.target.value))}
-              />
-              <output>{splitRatio}%</output>
-            </label>
+            <div className="split-controls-row">
+              <label className="split-ratio-control">
+                <span>Lebar bacaan</span>
+                <input
+                  type="range"
+                  min="42"
+                  max="72"
+                  value={splitRatio}
+                  onChange={(event) =>
+                    setSplitRatio(Number(event.target.value))
+                  }
+                />
+                <output>{splitRatio}%</output>
+              </label>
+              <label className="split-sync-toggle">
+                <input
+                  type="checkbox"
+                  checked={syncScroll}
+                  onChange={(event) => setSyncScroll(event.target.checked)}
+                />
+                <span>Gulir serentak</span>
+              </label>
+            </div>
           )}
           <div
             className="bible-reader-layout"
@@ -1304,12 +1503,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
               selectedVerseId={selectedVerseId}
               speakingVerseId={speakingVerseId}
               searchQuery={query}
+              scrollRef={primaryScrollRef}
+              onScroll={onPrimaryScroll}
               onSelect={selectVerse}
               onBookmark={toggleBookmark}
               onTouchStart={onVerseTouchStart}
               onTouchEnd={onVerseTouchEnd}
               onQuickNavPointerDown={startQuickNav}
               onQuickNavKeyDown={quickNavKeyDown}
+              onHeadingClick={() => {
+                if (!quickNavRef.current?.hasDragged) {
+                  setPickerModalOpen(true);
+                }
+              }}
             />
             {splitView && (
               <div
@@ -1343,6 +1549,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 speakingVerseId={speakingVerseId}
                 searchQuery={query}
                 secondary
+                scrollRef={secondaryScrollRef}
+                onScroll={onSecondaryScroll}
                 onSelect={selectVerse}
                 onBookmark={toggleBookmark}
               />
@@ -1377,6 +1585,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
         </section>
       )}
       {packState.status === "ready" && renderSidePanel()}
+      {packState.status === "ready" && book && (
+        <BiblePickerModal
+          open={pickerModalOpen}
+          onClose={() => setPickerModalOpen(false)}
+          books={books}
+          currentBookId={book.id}
+          currentChapter={chapter}
+          currentVerse={selectedVerse?.verse}
+          allVerses={packState.pack.verses}
+          onSelect={(target) => {
+            setSelectedBook(target.bookId);
+            setSelectedChapter(target.chapter);
+            if (target.verse) {
+              setSelectedVerseId(
+                `${target.bookId}:${target.chapter}:${target.verse}`,
+              );
+            } else {
+              setSelectedVerseId(undefined);
+            }
+          }}
+          locale={locale}
+        />
+      )}
       {selectionToolbar && (
         <div
           className="selection-toolbar"

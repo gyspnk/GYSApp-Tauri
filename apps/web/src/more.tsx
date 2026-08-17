@@ -195,6 +195,21 @@ export function MorePage({ locale }: { locale: Locale }) {
   const [reminderTime, setReminderTime] = useState(
     () => localStorage.getItem("gys-reminder-time-v1") ?? "",
   );
+  const [theme, setThemeState] = useState<
+    "system" | "light" | "dark" | "amoled" | "sepia"
+  >(
+    () =>
+      (localStorage.getItem("gys-theme") as
+        "system" | "light" | "dark" | "amoled" | "sepia" | null) ?? "light",
+  );
+
+  const changeTheme = (
+    next: "system" | "light" | "dark" | "amoled" | "sepia",
+  ) => {
+    setThemeState(next);
+    localStorage.setItem("gys-theme", next);
+    document.documentElement.dataset.theme = next;
+  };
 
   useEffect(() => {
     if (!reminderTime) return;
@@ -679,6 +694,39 @@ export function MorePage({ locale }: { locale: Locale }) {
         <span className="pack-badge">Offline-first</span>
       </section>
       <section className="more-grid">
+        <article className="more-card theme-card">
+          <span className="more-icon">☼</span>
+          <strong>{translate(locale, "shell.theme")}</strong>
+          <small>
+            {theme === "amoled"
+              ? translate(locale, "theme.amoled")
+              : theme === "sepia"
+                ? translate(locale, "theme.sepia")
+                : theme === "dark"
+                  ? translate(locale, "theme.dark")
+                  : theme === "light"
+                    ? translate(locale, "theme.light")
+                    : translate(locale, "theme.system")}
+          </small>
+          <div className="theme-card-actions" style={{ marginTop: "12px" }}>
+            <Select
+              value={theme}
+              onChange={(value) =>
+                changeTheme(
+                  value as "system" | "light" | "dark" | "amoled" | "sepia",
+                )
+              }
+              label={translate(locale, "shell.theme")}
+              options={[
+                { value: "system", label: translate(locale, "theme.system") },
+                { value: "light", label: translate(locale, "theme.light") },
+                { value: "dark", label: translate(locale, "theme.dark") },
+                { value: "amoled", label: translate(locale, "theme.amoled") },
+                { value: "sepia", label: translate(locale, "theme.sepia") },
+              ]}
+            />
+          </div>
+        </article>
         <Link className="more-card more-action" to="/literatur">
           <span className="more-icon">▤</span>
           <strong>Literatur</strong>

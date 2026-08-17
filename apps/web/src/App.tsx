@@ -43,6 +43,8 @@ import {
   subscribeActivity,
   type ActivityState,
 } from "./history.js";
+import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
+import { useScreenWakeLock } from "./wake-lock.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -82,7 +84,7 @@ const SuaraPage = lazy(() =>
   })),
 );
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark" | "system" | "amoled" | "sepia";
 type IconName =
   | Destination["icon"]
   | "sun"
@@ -359,6 +361,8 @@ function Header({
             { value: "system", label: "◐" },
             { value: "light", label: "☼" },
             { value: "dark", label: "☾" },
+            { value: "amoled", label: "■" },
+            { value: "sepia", label: "☕" },
           ]}
         />
         <Link
@@ -407,9 +411,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
     : snapshot.songId
       ? `/kidung/${encodeURIComponent(snapshot.songId)}`
       : undefined;
-  const wakeLock = useRef<{ release: () => Promise<void> } | undefined>(
-    undefined,
-  );
   const dragRef = useRef<
     | {
         pointerId: number;
@@ -581,34 +582,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
     };
   }, [mediaTitle, speechActive]);
-  useEffect(() => {
-    const wake = navigator as Navigator & {
-      wakeLock?: {
-        request: (type: "screen") => Promise<{ release: () => Promise<void> }>;
-      };
-    };
-    const audible = speechActive
-      ? speechSnapshot.status === "speaking"
-      : snapshot.status === "playing";
-    if (!wake.wakeLock || !audible) {
-      const active = wakeLock.current;
-      wakeLock.current = undefined;
-      if (active) void active.release().catch(() => undefined);
-      return;
-    }
-    let cancelled = false;
-    void wake.wakeLock
-      .request("screen")
-      .then((sentinel) => {
-        if (cancelled) return sentinel.release();
-        wakeLock.current = sentinel;
-        return undefined;
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [snapshot.status, speechActive, speechSnapshot.status]);
   if ((!snapshot.songId || snapshot.status === "idle") && !speechActive)
     return null;
   const playing = speechActive
@@ -1026,6 +999,18 @@ function Shell({
   const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const midiSnapshot = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+  );
+  const speechSnapshot = useSyncExternalStore(
+    speechPlayer.subscribe,
+    speechPlayer.snapshot,
+  );
+  const isAudioPlaying =
+    midiSnapshot.status === "playing" || speechSnapshot.status === "speaking";
+  useScreenWakeLock(location.pathname, isAudioPlaying);
+
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   useEffect(() => {
@@ -1289,6 +1274,7 @@ function RoutedApp() {
   const settings = useAppSettings();
   const locale = settings.locale;
   useEffect(() => installMidiQueueCoordinator(), []);
+  useEffect(() => installHeadphoneDisconnectGuard(), []);
   return (
     <Routes>
       <Route element={<Shell {...settings} />}>

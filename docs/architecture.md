@@ -208,127 +208,235 @@ stateDiagram-v2
 
 ## Feature lifecycle diagrams
 
-The diagrams below are the short operational map for the main user journeys.
-They describe the boundaries that must remain stable when a route or platform
-adapter is changed.
+The 14 diagrams below form the complete operational architecture and lifecycle map for GYS App, corresponding to specifications R1 through R14. They define the structural boundaries that remain stable across routes, platform adapters, and deployment targets.
+
+### 1. Content-First UI & Contextual Toolbar Flow
+
+```mermaid
+flowchart TB
+  SCROLL["Scroll / Touch Interaction in Reader"] --> DETECT["useToolbarAutoHide Hook"]
+  DETECT -->|Scroll Down| HIDE["Compact / Auto-Hide Top Toolbar"]
+  DETECT -->|Scroll Up / Tap| RESTORE["Smoothly Restore Toolbar"]
+  SHELL["Stratified UI Layout"] --> L0["Content Layer (z-index: 0)"]
+  SHELL --> L10["Navigation Layer (z-index: 10)"]
+  SHELL --> L20["Persistent Media Layer (z-index: 20)"]
+  SHELL --> L30["Contextual Toolbar Layer (z-index: 30)"]
+  SHELL --> L40["Popovers / Bottom Sheets (z-index: 40)"]
+  SHELL --> L50["Modals / Dialogs (z-index: 50)"]
+  READER["Active Reader Viewport"] --> WAKE["useWakeLock (Screen Lock)"]
+  WAKE -->|Enter Reader| ACQUIRE["navigator.wakeLock.request('screen')"]
+  WAKE -->|Leave Reader / Pause| RELEASE["wakeLock.release()"]
+  THUMB["Mobile Thumb Zone (Lower 40%)"] --> ACTIONS["Search, Bookmark, Font Controls, Audio, Chords"]
+```
+
+### 2. Kidung Rohani Domain & Musical State Diagram
+
+### Kidung
+
+```mermaid
+stateDiagram-v2
+  [*] --> HymnDomainModel: Hymn ID, Title, Lyrics, PDF, Chords, MIDI
+  state HymnDomainModel {
+    [*] --> PresentationMode
+    PresentationMode --> LyricsMode: Select Text/Lirik
+    PresentationMode --> PDFMode: Select PDF/Not Angka
+    LyricsMode --> PDFMode: Switch Mode (Shared State Retained)
+    PDFMode --> LyricsMode: Switch Mode (Shared State Retained)
+  }
+  state SharedMusicalState {
+    TransposeOffset: ±Semitone Shift (Shortest Path)
+    KeyCalculation: Canonical Source Key -> Target Key
+    AccidentalMode: Sharp (#) or Flat (b)
+    ChordVisibility: Visible or Hidden (Shared across modes)
+    MIDIPreferences: Tempo, Program (0-127), Volume, Mute
+  }
+  HymnDomainModel --> SharedMusicalState
+  SharedMusicalState --> GlobalMediaSession: Synchronized Audio Transport
+```
+
+### 3. PDF Note Extraction & DOM Chord Overlay Pipeline
+
+```mermaid
+flowchart LR
+  PDFDOC["PDF Document (Fork KR Master / Canonical)"] --> PDFJS["PDF.js Render"]
+  PDFJS --> CANVAS["Canvas Surface"]
+  PDFJS --> TEXTCONTENT["PDF Text Content"]
+  TEXTCONTENT --> EXTRACT["Dominant Notation Font & Note Extraction"]
+  EXTRACT --> CACHE["pageNotesCache (resourceHash + page)"]
+  CHORDJSON["Note-Aligned v2 Chords (Sentinels -1, 99999)"] --> MAPPER["Coordinate & Index Mapper"]
+  CACHE --> MAPPER
+  TRANSPOSE["Shortest-Path Transpose & Accidental Mode"] --> MAPPER
+  MAPPER --> OVERLAY["DOM Marker Overlay Layer (Zero Canvas Re-render)"]
+  OVERLAY --> CANVAS
+```
+
+### 4. Text Mode Note-Row ↔ Lyric-Line Chord Association
+
+```mermaid
+flowchart LR
+  LYRICS["Structured Lyrics Corpus (Verses, Chorus, Lines)"] --> ASSOC["Positional Association Engine"]
+  CHORDDATA["Note-Aligned v2 Chord JSON"] --> ASSOC
+  NOTEMAP["PDF Note-Row Geometry"] --> ASSOC
+  ASSOC --> WRAP["Measured Visual Lyric Rows & Character Wrapping"]
+  WRAP --> AUTOFIT["Responsive Auto-Fit Scaling (Min 14 px)"]
+  AUTOFIT --> TYPO["Per-Hymn Typography (Font 16–28 px, Line Height 1.4–2.2)"]
+  TYPO --> DOM["Relative DOM Chord Marker Overlay"]
+```
+
+### 5. Unified Cache & Preload Resolution Flow
+
+```mermaid
+flowchart TD
+  REQ["Resource Request (Hymn, Bible, Literature, Devotional)"] --> KEY["Immutable Hash / Version Key"]
+  KEY --> CHECK{"Local Cache Hit?"}
+  CHECK -->|Yes| HIT["Read from IndexedDB / Cache Storage"]
+  HIT --> RETURN["Instant Normalized Model Return"]
+  CHECK -->|No| FETCH["Fetch Remote / Upstream Asset"]
+  FETCH --> VALIDATE{"Validate Zod Schema, Size & SHA-256"}
+  VALIDATE -->|Valid| ATOMIC["Atomic Cache Write & Pointer Swap"]
+  ATOMIC --> RETURN
+  VALIDATE -->|Network Error| TRANSIENT["Retryable Error (Never Poison Cache)"]
+  VALIDATE -->|Missing Resource| NEGATIVE["14-Day TTL Negative Cache Entry"]
+```
+
+### 6. MIDI Synthesis & Preload Queue Pipeline
+
+```mermaid
+flowchart LR
+  MIDI["Canonical MIDI File"] --> SYNTH["Local FluidSynth WASM / TimGM SoundFont"]
+  SYNTH --> PCMCACHE["Bounded 96 MB PCM Audio Cache"]
+  PCMCACHE --> GEN{"Shared Generation Token Guard"}
+  GEN -->|Active Generation| AUDIO["One Global Web Audio Context"]
+  GEN -->|Stale / Superseded| DISCARD["Discard Obsolete WASM Render"]
+  QUEUE["Serial Preload Queue (Prev/Next Hymn)"] -. Background .-> SYNTH
+  FOREGROUND["User Selects Song / Seeks / Changes Tempo"] -->|Cancel Preload| GEN
+```
+
+### 7. Alkitab Split Reader & Navigation State
+
+### Alkitab and voice
+
+```mermaid
+flowchart TB
+  TBBIBLE["TB 31,172-Verse Pack"] --> SEARCHWORKER["Lazy Search Worker (PL 39 / PB 27, 3-Tier Ranking)"]
+  TBBIBLE --> SPLIT["SplitManager Controller"]
+  SPLIT --> PANE1["Primary Reading Pane (Persistent Font & Offset)"]
+  SPLIT --> DIVIDER["Draggable Divider (50/50 Haptic Snap & Persistence)"]
+  SPLIT --> PANE2["Secondary Reading Pane (Independent / Sync Scroll)"]
+  NAV["Quick Title Drag Navigation"] --> PICKER["Direct Rapid Overlay (Kitab -> Pasal -> Ayat)"]
+  SEARCHWORKER --> DEEPLINK["Direct Verse Route (/bible?book=&chapter=&verse=)"]
+  DEEPLINK --> PANE1
+```
+
+### 8. Alkitab Suara (TTS) VoiceEngine Flow
+
+```mermaid
+flowchart LR
+  VERSES["Spoken Verses Queue"] --> SANITIZE["Sanitize Markup, Footnotes & Tokens"]
+  SANITIZE --> VOICEENGINE["VoiceEngine Orchestrator"]
+  VOICEENGINE --> PREFERRED["Online / Edge Natural TTS (Preferred)"]
+  VOICEENGINE --> FALLBACK["Local / System Web Speech Fallback"]
+  VOICEENGINE --> TRANSPORT["Audio Transport & Playback Stream"]
+  TRANSPORT --> HIGHLIGHT["Synchronized Verse Highlight & Auto-Scroll"]
+  TRANSPORT --> HEADPHONE["Headphone Disconnect Guard (Auto-Pause)"]
+  TRANSPORT --> ARBITRATION["Global Audio Focus (MIDI ↔ TTS Arbitration)"]
+```
+
+### 9. Persistent Global Media Controller & Floating Player
 
 ### Persistent media
 
 ```mermaid
-flowchart LR
-  SHELL["Application shell"] --> CONTROLLER["Global MediaController"]
-  CONTROLLER --> SESSION["One active MediaSession"]
-  SESSION --> TTS["Bible TTS"]
-  SESSION --> MIDI["Kidung MIDI"]
-  TTS --> EDGE["Edge compatibility provider"]
-  EDGE --> LOCAL["Browser/system or native local voice"]
-  MIDI --> ENGINE["Web Audio + local FluidSynth"]
-  SESSION --> SURFACE["Floating / expanded player"]
-  SURFACE --> POSITION["Persisted, clamped position"]
-  SURFACE --> SOURCE["Internal source route"]
+flowchart TB
+  SESSION["Active Media Session (TTS / MIDI)"] --> CONTROLLER["GlobalMediaController (SPA-wide)"]
+  CONTROLLER --> ROUTE["Persists Across All SPA Route Transitions"]
+  CONTROLLER --> FLOAT["Minimized Floating Player Surface"]
+  FLOAT --> DRAG["Pointer Drag & Keyboard Arrow Navigation"]
+  FLOAT --> CLAMP["Viewport Boundary Clamping & Safe-Area Padding"]
+  FLOAT --> AVOID["Bottom Nav & Form Collision Avoidance"]
+  FLOAT --> BACK["Context Tap -> Navigate to Active Verse / Song"]
+  CONTROLLER --> MAX["Maximized Player Sheet (Full Controls)"]
+  CONTROLLER --> MEDIASESSION["Media Session API (Lock Screen & Notification)"]
 ```
 
-Only the controller owns handoff: starting one audible session pauses the
-other, and the surface subscribes to a small external snapshot so playback
-ticks do not rerender the application shell.
+### 10. Literature ReadingLocation & Resume Pipeline
 
 ### Literature and PDF
 
 ```mermaid
 flowchart LR
-  CATALOG["Real TJC catalog"] --> INDEX["Normalized catalog + shelves"]
-  INDEX --> DETAIL["Detail + favorite + progress"]
-  DETAIL --> READER["Internal PDF/article reader"]
-  READER --> LOCATION["Validated ReadingLocation"]
-  LOCATION --> RECENT["Terakhir dilihat / Resume"]
-  READER --> PDFJS["Local PDF.js worker"]
-  PDFJS --> PAGES["Lazy pages + bounded canvas cache"]
-  READER --> OFFLINE["Verified Cache Storage / native blob"]
+  CATALOG["TJC Literature Catalog (279 Covered + 18 Fallback)"] --> SHELF["Shelves, Categories & Search"]
+  SHELF --> VIEWER["In-App PDF.js / Article Document Viewer"]
+  VIEWER --> LOC["Debounced ReadingLocation (Page, Scroll, Progress %, Version)"]
+  LOC --> PERSIST["Versioned Persistence in Storage"]
+  PERSIST --> RECENT["Deduplicated 'Terakhir Dilihat' Shelf"]
+  RECENT --> RESUME["'Lanjutkan Membaca' & 'Kembali ke Posisi Terakhir' CTA"]
 ```
 
-Saved locations are keyed by resource version. A changed resource clamps or
-discards an invalid location instead of silently jumping to an unrelated page.
-
-### Kidung
-
-```mermaid
-flowchart LR
-  HYMNS["533-song catalog"] --> SEARCH["Indexed search"]
-  SEARCH --> DETAIL2["Hymn detail"]
-  DETAIL2 --> PRESENTATION["Presentation state"]
-  PRESENTATION --> LYRICS["Text / Lyrics"]
-  PRESENTATION --> PDF2["PDF / score"]
-  DETAIL2 --> CHORD["Shared chord capability"]
-  DETAIL2 --> MIDI2["MIDI source + parser + transport"]
-  PDF2 --> CANVAS["PDF.js canvas"]
-  CHORD --> NOTES["Note-aligned v2 + pageNotesCache"]
-  NOTES --> OVERLAY["PDF DOM marker overlay"]
-  NOTES --> TEXTMAP["Relative Text chord mapping"]
-  CHORD --> CACHE2["Hash-verified atomic chord cache"]
-  MIDI2 --> PRELOAD["Next/previous binary preload"]
-  PRESENTATION --> SHARED["transpose · key · accidental · MIDI"]
-  CACHE2 --> NOTES
-```
-
-The mode switch unmounts the inactive presentation; raw and parsed assets are
-shared by source hash so simultaneous opens do not create duplicate downloads.
-The same marker layer is hidden or shown without re-decoding the PDF.
-
-### Alkitab and voice
-
-```mermaid
-flowchart LR
-  PACK["TB reader pack"] --> READER2["Reader state"]
-  READER2 --> PRIMARY["Primary pane"]
-  READER2 <--> SPLIT["Optional split pane"]
-  READER2 --> QUICK["Title drag / chapter navigation"]
-  READER2 --> SEARCH2["Worker search + history"]
-  READER2 --> SPEECH["Verse-range speech queue"]
-  SPEECH --> EDGE2["Edge preferred"]
-  SPEECH --> FALLBACK["Local/system fallback"]
-  SPEECH --> MEDIA["Shared MediaController"]
-```
+### 11. e-GYS Web Auth → Native API & Local Sync Flow
 
 ### e-GYS authentication and local contract sync
 
 ```mermaid
 sequenceDiagram
-  participant App as GYS App
-  participant Browser as System browser / provider SDK
-  participant BFF as Hono e-GYS boundary
-  participant API as e-GYS API
-  participant Hook as Local pre-commit hook
-  participant Checkout as Ignored e-GYS checkout
+  autonumber
+  participant User as App User
+  participant Provider as Official Provider SDK (Google/Apple/WA)
+  participant BFF as Hono BFF Boundary
+  participant EGYS as e-GYS Native API
+  participant Hook as Local Pre-Commit Hook (sync-egys.mjs)
 
-  App->>Browser: provider login with state/PKCE boundary
-  Browser-->>App: ID token / callback result
-  App->>BFF: exchange provider token
-  BFF->>API: POST auth/{provider}
-  API-->>BFF: HttpOnly session cookie + expiry
-  BFF-->>App: normalized session/profile
-  Hook->>Checkout: clone/fetch latest authenticated revision
-  Hook->>Checkout: extract route/schema contract
-  Hook-->>Hook: diff + compatibility check + tests
-  Hook-->>App: stage derived metadata only
+  User->>Provider: Authenticate via SDK / System Browser
+  Provider-->>BFF: Provider ID-Token / WhatsApp Poll
+  BFF->>EGYS: POST /api/v1/auth/{provider}
+  EGYS-->>BFF: Upstream HttpOnly egys_session Cookie
+  BFF-->>User: Normalized Session & Same-Origin Cookie
+  User->>BFF: Request Profile / Branch / Membership
+  BFF->>EGYS: Forward egys_session to API Endpoints
+  EGYS-->>User: Real Validated Domain Data
+  Note over Hook: Developer Local Sync Workflow
+  Hook->>Hook: git ls-remote HEAD check & shallow clone .tmp-egys-*
+  Hook->>Hook: Extract Springdoc/OpenAPI route contract & diff
+  Hook-->>User: Stage derived egys-contract.ts only (zero upstream code committed)
 ```
+
+### 12. Web Cache & Service Worker Strategy
 
 ### Web cache, packaged assets, and release workflow
 
 ```mermaid
-flowchart TB
-  FIRST["First load"] --> SHELL2["App shell + compact indexes"]
-  SHELL2 --> VERIFY["Manifest, schema, size, SHA-256"]
-  VERIFY --> CORE["Core Cache Storage / app-data"]
-  CORE --> READY["Usable offline core"]
-  READY --> OPTIONAL["Background MIDI/PDF/chord warming"]
-  PACKAGE["Native package"] --> BASELINE["Bundled TB/lyrics/TimGM baseline"]
-  BASELINE --> START["First launch"]
-  START --> POINTER["Versioned local pointer"]
-  POINTER --> UPDATE["Remote immutable version check"]
-  UPDATE -->|valid| REPLACE["Atomic replace"]
-  UPDATE -->|failed/offline| FALLBACK2["Keep bundled baseline"]
-  HOOKS["Local pre-commit + pre-push"] --> TESTS["Contract, build, asset, E2E, visual gates"]
-  TESTS --> PUBLISH["Pages preview / protected main promotion"]
+flowchart TD
+  SW["Service Worker v10 Install"] --> CORE["Precache Shell & Compact Offline Indexes"]
+  CORE --> ACTIVATE["Activate & First Usable Paint"]
+  ACTIVATE --> CHECKNET{"Save-Data or 2G Connection?"}
+  CHECKNET -->|No| WARM["Background Warm-up: TimGM SoundFont & FluidSynth WASM"]
+  CHECKNET -->|Yes| SKIP["Skip Heavy Preloads to Preserve Bandwidth"]
+  ACTIVATE --> TJCCACHE["Bounded TJC Media Cache (96 entries LRU)"]
+  ACTIVATE --> MANIFEST["Versioned Offline Manifest & Atomic Pointer Swap"]
+```
+
+### 13. Packaged Native Asset Strategy
+
+```mermaid
+flowchart LR
+  TAURI["Tauri Native Package (NSIS/MSI/APK)"] --> ASSETS["18 Bundled Runtime Assets (36.8 MB)"]
+  ASSETS --> SEEDS["TB Bible, Hymn Catalog, Lyrics, SoundFonts, FluidSynth"]
+  TAURI --> BRIDGE["PlatformServices Native Bridge (Rust Command Layer)"]
+  BRIDGE --> CAPS["Payload Caps: 128 MB Blobs, 8 MB Key-Value/DB"]
+  BRIDGE --> APPDATA["OS App-Data Directory Storage"]
+  APPDATA --> ATOMIC["Path-Safe Hex Keys & Unique Temp File Replacement"]
+```
+
+### 14. Direct-to-Main Git Workflow
+
+```mermaid
+flowchart LR
+  DEV["Direct-to-Main Development on 'main'"] --> PRECOMMIT["pnpm verify:precommit"]
+  PRECOMMIT --> HOOK1["Sync e-GYS, Lint, Typecheck, Contract Tests, Verify Generated"]
+  HOOK1 --> PREPUSH["pnpm verify:prepush"]
+  PREPUSH --> HOOK2["Full Test Matrix, Policy Tests, Chord Audit, Build, Budgets, Native, E2E"]
+  HOOK2 --> PUSH["Fast-Forward Push directly to origin/main"]
+  PUSH --> CI["CI Secondary Verification"]
 ```
 
 ## Release gates

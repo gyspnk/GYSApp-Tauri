@@ -2,3 +2,6 @@ apps/web/public/offline/bible/tb-reader.json
 .playwright-mcp/
 .githooks/
 apps/web/public/vendor/
+.agents/
+ORIGINAL_REQUEST.md
+

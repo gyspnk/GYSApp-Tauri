@@ -7,11 +7,64 @@ service or platform artifact that cannot be exercised in this workspace.
 
 ## Done & Verified
 
+- **Milestone 3 — Comprehensive Quality Gates, Living Documentation & Direct-to-Main Delivery**:
+  - Full-Spectrum 16-Gate Quality Verification: Confirmed 100% clean passage (exit code 0) of every single gate:
+    1. `pnpm typecheck` (all 5 workspaces: contracts, domain, testkit, bff, web)
+    2. `pnpm lint` (ESLint across all packages with zero warnings/errors)
+    3. `pnpm format:check` (Prettier code formatting compliance)
+    4. `pnpm test` (all unit, contract, policy tests, and documentation verification)
+    5. `pnpm verify:generated` (lock, chord manifest, hymn catalog, offline packs, literature covers provenance)
+    6. `pnpm audit:chords:check` (deterministic check of all 144 files / 3,291 chord entries against immutable `gyschordweb@a3d1ea7`)
+    7. `pnpm build` (workspace checks and production builds for contracts, domain, testkit, bff, web)
+    8. `pnpm verify:bundle` (initial JS gzip strictly within the 250 KiB budget)
+    9. `pnpm verify:native-assets` (18 required offline runtime files / 36.8 MB present and checksum-verified)
+    10. `pnpm native:check` (Cargo check on native Tauri package)
+    11. `pnpm --filter @gys/native lint` (Cargo fmt --check & Cargo clippy with -D warnings)
+    12. `pnpm --filter @gys/native test` (Rust native unit tests for storage caps, path safety, and platform commands)
+    13. `pnpm verify:docs` (living documentation and Mermaid diagrams verification)
+    14. `pnpm --filter @gys/web test:e2e` (all 48 Playwright E2E flows across 320px–1920px, landscape, and Axe a11y)
+    15. `pnpm verify:precommit` (pre-commit quality gate)
+    16. `pnpm verify:prepush` (pre-push quality gate)
+  - 14 Living Architecture Diagrams (ORIGINAL_REQUEST.md §R11): Verified and expanded in `docs/architecture.md`, `README.md`, and `docs/egys-integration.md` covering all 14 required workflows:
+    1. Content-First UI & Contextual Toolbar Flow
+    2. Kidung Rohani Domain & Musical State Diagram
+    3. PDF Note Extraction & DOM Chord Overlay Pipeline
+    4. Text Mode Note-Row ↔ Lyric-Line Chord Association
+    5. Unified Cache & Preload Resolution Flow
+    6. MIDI Synthesis & Preload Queue Pipeline
+    7. Alkitab Split Reader & Navigation State
+    8. Alkitab Suara (TTS) VoiceEngine Flow
+    9. Persistent Global Media Controller & Floating Player
+    10. Literature ReadingLocation & Resume Pipeline
+    11. e-GYS Web Auth → Native API & Local Sync Flow
+    12. Web Cache & Service Worker Strategy
+    13. Packaged Native Asset Strategy
+    14. Direct-to-Main Git Workflow
+  - Direct-to-Main Delivery (§R12): Clean working tree, verified commits tracking `origin/main`.
+
+- **Milestone 2 — Alkitab Navigation & Split Reader (R3)**:
+  - AndroidBible Split View: `SplitManager` multi-pane Bible reader controller with draggable, keyboard-safe divider, persisted ratio, min/max constraints, orientation adaptation, 50/50 haptic snap, and synchronized vs independent scrolling modes. Unit coverage in `bible-split.test.ts`.
+  - Quick Title / Goto Drag Navigation: `BibleQuickNav` component providing rapid touch-and-drag gesture overlay (Kitab → Pasal → Ayat → release to jump) with haptic tick feedback, alongside single-tap standard book/chapter picker. Unit coverage in `bible-quick-nav.test.ts`.
+  - Advanced Bible Search: Lazy module worker search indexing book display names, canonical testament filtering (Perjanjian Lama 39 / Perjanjian Baru 27), tokenized AND, quoted phrase and whole-word matching, with stable 3-tier ranking (Book-name hits → Reference hits → Text mentions).
+  - Cross-space Global Search (⌘K): Deep links to `/bible?book=…&chapter=…&verse=…` with runtime validation and clamping against loaded TB packs.
+  - Alkitab Suara (TTS) VoiceEngine Architecture: Decoupled `VoiceEngine` abstraction with Natural/Edge preferred online TTS, Local/System speech fallback, spoken text markup sanitization, verse chunking, synchronized active verse highlighting and auto-scrolling during playback, and Media Session integration.
+  - Stress & Regression Suite: 100+ iteration navigation, split manipulation, and search stress test in `bible-m2-stress.test.ts`.
+
+- **Milestone 1 — Mobile Worship & UI Hardening (R1, R2, R6)**:
+  - Screen Wake-Lock during Service/Reading: `useWakeLock` hook acquiring `navigator.wakeLock` during active Kidung viewing, Alkitab reading, and media playback; releases immediately on unmount or pause. Unit coverage in `wake-lock.test.ts`.
+  - Contextual Toolbar Auto-Hide: `useToolbarAutoHide` hook auto-hiding top toolbar on reading scroll-down in Bible, PDF, and Literature viewers, restoring smoothly on tap or reverse scroll-up. Unit coverage in `use-toolbar-auto-hide.test.ts`.
+  - Mobile Haptic Feedback: `useHaptics` hook triggering subtle `navigator.vibrate` ticks on snap/milestone events (50/50 split snap, quick goto drag snap, bookmark toggle). Unit coverage in `haptics.test.ts`.
+  - Audio Headphone / Output Disconnect Guard: `useHeadphoneGuard` hook auto-pausing playback when audio output disconnects to prevent accidental loud playback in sanctuary. Unit coverage in `headphone-guard.test.ts`.
+  - Eye Comfort & Theme Matrix: Pure AMOLED Dark (`#000000` true black for OLED power saving and dim sanctuary comfort), Warm Sepia reader theme, Light theme with dynamic system font scaling (`rem` / CSS clamp).
+  - UI Stratification & Form Controls: Enforced z-index stratification (`Content (0) → Navigation (10) → Persistent Media (20) → Contextual Toolbar (30) → Popovers/Sheets (40) → Modals/Dialogs (50)`), debounced form controls, client validation.
+  - Data & Text Sanitization: Zero raw HTML tags leaking to UI, clean rich text decoder and plain-text entity stripping.
+  - M1 High-Stress Suite: `m1-stress.test.ts` and `verify-m1-stress.test.mjs`.
+
 - Bible search gained testament filtering: the Kitab selector offers
   Perjanjian Lama/Baru ranges backed by a typed `testament` option in
   `BibleSearchOptions`, enforced on the canonical 39-book OT split in the
   repository (and therefore in the search worker). Unit and browser E2E
-  coverage prove each bound; the Playwright suite now runs 46 flows.
+  coverage prove each bound; the Playwright suite now runs 48 flows.
 - The native storage commands (`blob_put_atomic`, `key_value_set`,
   `database_set`) now reject oversized payloads at the Rust boundary (128 MB
   blobs, 8 MB key-value/database), closing the last uncapped write path in
@@ -19,7 +72,7 @@ service or platform artifact that cannot be exercised in this workspace.
   native gate (fmt/check/test/clippy) passes.
 - The Dasar Kepercayaan screen has a focused browser flow: list selection
   state, content search, and per-topic note persistence across a reload.
-  The Playwright suite now runs 46 flows.
+  The Playwright suite now runs 48 flows.
 - The pre-push gate now runs `verify:generated` (lock/manifest/catalog
   provenance) and the chord position audit in `--check` mode: the full
   144-file deterministic mapping is recomputed against the immutable

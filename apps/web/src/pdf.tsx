@@ -23,6 +23,8 @@ import {
   type PdfLayout,
 } from "./pdf-utils.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { hapticTick } from "./haptics.js";
+import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -274,6 +276,15 @@ export function PdfReader({
   const pinchStart = useRef<{ distance: number; zoom: number } | undefined>(
     undefined,
   );
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(
+    null,
+  );
+  const touchStartSingle = useRef<{
+    x: number;
+    y: number;
+    time: number;
+  } | null>(null);
+  const { toolbarVisible, restoreToolbar } = useReadingToolbarAutoHide();
   const effectiveLayout = pdfLayoutForViewport(layout, viewportWidth);
 
   useEffect(() => {
@@ -370,16 +381,28 @@ export function PdfReader({
   }, [data, loadAttempt, src]);
 
   const onStageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length !== 2) return;
-    const [first, second] = [event.touches[0], event.touches[1]];
-    if (!first || !second) return;
-    pinchStart.current = {
-      distance: Math.hypot(
-        second.clientX - first.clientX,
-        second.clientY - first.clientY,
-      ),
-      zoom,
-    };
+    restoreToolbar();
+    if (event.touches.length === 2) {
+      touchStartSingle.current = null;
+      const [first, second] = [event.touches[0], event.touches[1]];
+      if (!first || !second) return;
+      pinchStart.current = {
+        distance: Math.hypot(
+          second.clientX - first.clientX,
+          second.clientY - first.clientY,
+        ),
+        zoom,
+      };
+    } else if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      if (touch) {
+        touchStartSingle.current = {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now(),
+        };
+      }
+    }
   };
   const onStageTouchMove = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length !== 2 || !pinchStart.current) return;
@@ -396,8 +419,60 @@ export function PdfReader({
       ),
     );
   };
-  const onStageTouchEnd = () => {
+  const onStageTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
     pinchStart.current = undefined;
+    if (touchStartSingle.current && event.changedTouches.length === 1) {
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      const deltaX = touch.clientX - touchStartSingle.current.x;
+      const deltaY = touch.clientY - touchStartSingle.current.y;
+      const elapsed = Date.now() - touchStartSingle.current.time;
+      const movedDist = Math.hypot(deltaX, deltaY);
+
+      if (movedDist < 15 && elapsed < 350) {
+        const now = Date.now();
+        const lastTap = lastTapRef.current;
+        if (
+          lastTap &&
+          now - lastTap.time < 350 &&
+          Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
+        ) {
+          hapticTick("light");
+          lastTapRef.current = null;
+          if (zoom > 1.1 || !fit) {
+            setZoom(1);
+            setFit(true);
+          } else {
+            setZoom(1.8);
+            setFit(false);
+          }
+          touchStartSingle.current = null;
+          return;
+        } else {
+          lastTapRef.current = {
+            time: now,
+            x: touch.clientX,
+            y: touch.clientY,
+          };
+        }
+      }
+
+      if (
+        (effectiveLayout === "single" || effectiveLayout === "two") &&
+        Math.abs(deltaX) > 50 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.5 &&
+        elapsed < 500
+      ) {
+        if (deltaX < 0 && (total === 0 || page < total)) {
+          hapticTick("light");
+          goToPage(page + (effectiveLayout === "two" ? 2 : 1));
+        } else if (deltaX > 0 && page > 1) {
+          hapticTick("light");
+          goToPage(page + (effectiveLayout === "two" ? -2 : -1));
+        }
+      }
+      touchStartSingle.current = null;
+    }
   };
 
   useEffect(() => {
@@ -478,7 +553,7 @@ export function PdfReader({
 
   return (
     <section className="pdf-reader" aria-label={title}>
-      <div className="pdf-toolbar">
+      <div className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}>
         <button
           type="button"
           onClick={() => goToPage(page + (effectiveLayout === "two" ? -2 : -1))}
@@ -584,6 +659,7 @@ export function PdfReader({
         onTouchStart={onStageTouchStart}
         onTouchMove={onStageTouchMove}
         onTouchEnd={onStageTouchEnd}
+        onClick={restoreToolbar}
       >
         {status === "loading" && <p>Memuat PDF lokal…</p>}
         {status === "error" && (
