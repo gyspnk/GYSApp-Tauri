@@ -236,7 +236,7 @@ Save-Data/2G connections), so activation never blocks the first usable frame.
 
 ## Deployment prerequisites
 
-Pushes to `main` and `codex/**` trigger GitHub Pages. Configure the repository's
+Pushes to `main` trigger GitHub Pages. Configure the repository's
 Pages source as **GitHub Actions**. The optional Worker workflow needs
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; set `EGYS_API_BASE_URL` and
 `EGYS_UPSTREAM_COMMIT` as protected Worker variables/secrets when the e-GYS
