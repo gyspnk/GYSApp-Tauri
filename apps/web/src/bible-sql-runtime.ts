@@ -7,9 +7,23 @@ type SqlQueryResult = {
   values: unknown[][];
 };
 
+/** Resolve Vite's test-only `/@fs/` URL into a real absolute filesystem path. */
+export function resolveSqlWasmUrl(
+  value: string,
+  mode = import.meta.env.MODE,
+): string {
+  if (mode !== "test") return value;
+  const decoded = decodeURIComponent(value);
+  const prefix = decoded.match(/^[/\\]?@fs[/\\](.*)$/);
+  if (!prefix?.[1]) return decoded;
+  const path = prefix[1];
+  // Vite prefixes both POSIX and Windows absolute paths with `/@fs/`.
+  // Re-add the POSIX root slash, but leave a Windows drive path unchanged.
+  return /^[A-Za-z]:[/\\]/.test(path) ? path : `/${path}`;
+}
+
 function sqlWasmUrl(): string {
-  if (import.meta.env.MODE !== "test") return wasmUrl;
-  return decodeURIComponent(wasmUrl).replace(/^[/\\]@fs[/\\]/, "");
+  return resolveSqlWasmUrl(wasmUrl);
 }
 
 function firstResult(
