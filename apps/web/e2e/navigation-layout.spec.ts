@@ -69,6 +69,38 @@ test.describe("responsive reader navigation", () => {
     ).toBeVisible();
   });
 
+  test("mobile hymn text mode folds secondary actions and reader settings", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await expect(
+      page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
+    ).toBeVisible({ timeout: 15_000 });
+
+    await expect(
+      page.locator(".hymn-detail-page .detail-actions .hymn-action"),
+    ).toHaveCount(3);
+    await expect(page.locator(".hymn-more-actions")).toBeVisible();
+    await expect(
+      page.locator(".hymn-more-actions .hymn-more-actions-panel"),
+    ).toBeHidden();
+    await expect(page.locator(".hymn-reader-settings")).toBeVisible();
+    await expect(
+      page.locator(".hymn-reader-settings .song-controls"),
+    ).toBeHidden();
+
+    const modeTop = await page
+      .locator(".viewer-mode-tabs")
+      .evaluate((element) => element.getBoundingClientRect().top);
+    const lyricsTop = await page
+      .locator(".lyrics-sheet")
+      .evaluate((element) => element.getBoundingClientRect().top);
+    expect(modeTop).toBeLessThan(lyricsTop);
+    expect(lyricsTop).toBeLessThan(760);
+    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+  });
+
   test("Kidung local navigation keeps playlist and settings in the same space", async ({
     page,
   }) => {

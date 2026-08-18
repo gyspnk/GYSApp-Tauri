@@ -64,33 +64,38 @@ export function createBrowserChordRepository(): ChordRepository {
     async getManifest(etag, signal) {
       const endpoint = bffUrl("/api/v1/chords/manifest");
       if (!endpoint) return fallbackManifest();
-      const response = await fetch(
-        endpoint,
-        signal
-          ? {
-              signal,
-              ...(etag ? { headers: { "if-none-match": etag } } : {}),
-            }
-          : etag
-            ? { headers: { "if-none-match": etag } }
-            : {},
-      );
-      if (response.status === 304 && etag)
+      try {
+        const response = await fetch(
+          endpoint,
+          signal
+            ? {
+                signal,
+                ...(etag ? { headers: { "if-none-match": etag } } : {}),
+              }
+            : etag
+              ? { headers: { "if-none-match": etag } }
+              : {},
+        );
+        if (response.status === 304 && etag)
+          return {
+            notModified: true,
+            etag,
+          };
+        if (
+          !response.ok ||
+          !response.headers.get("content-type")?.includes("json")
+        ) {
+          return fallbackManifest();
+        }
+        const nextEtag = response.headers.get("etag");
         return {
-          notModified: true,
-          etag,
+          manifest: ChordManifestV1Schema.parse(await response.json()),
+          ...(nextEtag ? { etag: nextEtag } : {}),
         };
-      if (
-        !response.ok ||
-        !response.headers.get("content-type")?.includes("json")
-      ) {
+      } catch (error) {
+        if (signal?.aborted) throw error;
         return fallbackManifest();
       }
-      const nextEtag = response.headers.get("etag");
-      return {
-        manifest: ChordManifestV1Schema.parse(await response.json()),
-        ...(nextEtag ? { etag: nextEtag } : {}),
-      };
     },
     async fetchChord(ref: ChordRef, signal): Promise<ChordFetchResult> {
       const encodedPath = ref.path

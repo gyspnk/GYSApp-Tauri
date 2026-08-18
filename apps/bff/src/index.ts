@@ -705,7 +705,10 @@ export function createApp(
       if (!upstream.ok && upstream.status !== 206)
         return errorResponse(c, "UPSTREAM_UNAVAILABLE", "Fork PDF unavailable");
       const contentType = upstream.headers.get("content-type") ?? "";
-      if (!contentType.toLowerCase().includes("pdf"))
+      if (
+        !contentType.toLowerCase().includes("pdf") &&
+        !contentType.toLowerCase().includes("octet-stream")
+      )
         return errorResponse(
           c,
           "INTEGRITY_ERROR",

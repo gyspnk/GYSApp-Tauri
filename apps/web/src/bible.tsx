@@ -57,6 +57,7 @@ import {
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
 import { loadBibleReaderPack } from "./bible-distributed.js";
+import { Icon } from "./icons.js";
 
 type PackState =
   | { status: "loading" }
@@ -1106,7 +1107,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </p>
           <h1>{translate(locale, "page.bibleTitle")}</h1>
         </div>
-        <div className="page-intro-actions">
+        <div className="page-intro-actions reader-selectors">
           <span className="pack-badge">
             {packState.status === "ready"
               ? `${packState.pack.translation} · ${books.length} buku`
@@ -1414,34 +1415,48 @@ export function BiblePage({ locale }: { locale: Locale }) {
             </div>
             <div className="reader-action-group">
               <button
-                className="quiet-button"
+                className="quiet-button reader-control reader-control-icon"
                 type="button"
                 onClick={() => setSplitView((value) => !value)}
                 aria-pressed={splitView}
+                aria-label={
+                  splitView ? "Tampilkan satu kolom" : "Tampilkan dua kolom"
+                }
+                title={splitView ? "Satu kolom" : "Dua kolom"}
               >
-                {splitView ? "Satu kolom" : "Dua kolom"}
+                <Icon name="columns" size={17} />
+                <span className="control-copy">
+                  {splitView ? "Satu kolom" : "Dua kolom"}
+                </span>
               </button>
               {splitView && (
                 <button
-                  className={`quiet-button${syncScroll ? " is-active" : ""}`}
+                  className={`quiet-button reader-control reader-control-sync${syncScroll ? " is-active" : ""}`}
                   type="button"
                   onClick={toggleSyncScroll}
                   aria-pressed={syncScroll}
+                  aria-label={syncScroll ? "Gulir sinkron" : "Gulir mandiri"}
+                  title={syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
                 >
                   {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
                 </button>
               )}
               <button
-                className="quiet-button"
+                className="quiet-button reader-control reader-control-icon"
                 type="button"
                 onClick={() => void copyChapter()}
+                aria-label={copied ? "Ayat tersalin" : "Salin pasal"}
+                title={copied ? "Ayat tersalin" : "Salin pasal"}
               >
-                {copied
-                  ? translate(locale, "bible.copied")
-                  : translate(locale, "bible.copy")}
+                <Icon name="copy" size={17} />
+                <span className="control-copy">
+                  {copied
+                    ? translate(locale, "bible.copied")
+                    : translate(locale, "bible.copy")}
+                </span>
               </button>
               <button
-                className="quiet-button"
+                className="quiet-button reader-control reader-control-icon"
                 type="button"
                 onClick={() => {
                   if (speechSnapshot.status === "speaking") {
@@ -1454,22 +1469,63 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   } else speakChapter();
                 }}
                 disabled={!speechAvailable}
+                aria-label={
+                  speechSnapshot.status === "paused"
+                    ? "Lanjutkan bacaan"
+                    : speechSnapshot.status === "speaking"
+                      ? "Jeda bacaan"
+                      : speaking
+                        ? translate(locale, "bible.stopReading")
+                        : translate(locale, "bible.readAloud")
+                }
+                title={
+                  speechSnapshot.status === "paused"
+                    ? "Lanjutkan bacaan"
+                    : speechSnapshot.status === "speaking"
+                      ? "Jeda bacaan"
+                      : speaking
+                        ? translate(locale, "bible.stopReading")
+                        : translate(locale, "bible.readAloud")
+                }
               >
-                {speechSnapshot.status === "paused"
-                  ? "Lanjutkan bacaan"
-                  : speechSnapshot.status === "speaking"
-                    ? "Jeda bacaan"
-                    : speaking
-                      ? translate(locale, "bible.stopReading")
-                      : translate(locale, "bible.readAloud")}
+                <Icon
+                  name={
+                    speechSnapshot.status === "speaking"
+                      ? "pause"
+                      : speechSnapshot.status === "paused"
+                        ? "play"
+                        : speaking
+                          ? "stop"
+                          : "play"
+                  }
+                  size={17}
+                />
+                <span className="control-copy">
+                  {speechSnapshot.status === "paused"
+                    ? "Lanjutkan bacaan"
+                    : speechSnapshot.status === "speaking"
+                      ? "Jeda bacaan"
+                      : speaking
+                        ? translate(locale, "bible.stopReading")
+                        : translate(locale, "bible.readAloud")}
+                </span>
               </button>
               <button
-                className="quiet-button speech-settings-toggle"
+                className="quiet-button reader-control reader-control-icon speech-settings-toggle"
                 type="button"
                 aria-expanded={speechControlsOpen}
                 onClick={() => setSpeechControlsOpen((current) => !current)}
+                aria-label={
+                  speechControlsOpen
+                    ? "Tutup pengaturan suara"
+                    : "Pengaturan suara"
+                }
+                title={speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
               >
-                {speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
+                <Icon name="settings" size={17} />
+                <span className="control-copy">
+                  {speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
+                </span>
               </button>
             </div>
             <div

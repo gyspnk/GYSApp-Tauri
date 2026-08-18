@@ -245,6 +245,29 @@ export function forkPdfSourceUrls(
   );
 }
 
+export async function resolveForkPdfSource(
+  sources: readonly string[],
+  fetcher: typeof fetch = fetch,
+): Promise<string> {
+  for (const source of sources) {
+    try {
+      const response = await fetcher(source, {
+        cache: "force-cache",
+        headers: {
+          accept: "application/pdf,application/octet-stream",
+          range: "bytes=0-4",
+        },
+      });
+      if (!response.ok && response.status !== 206) continue;
+      if (looksLikePdf(new Uint8Array(await response.arrayBuffer())))
+        return source;
+    } catch {
+      // Continue to the next immutable source.
+    }
+  }
+  throw new Error("Fork PDF source is unavailable");
+}
+
 export function forkManifestSongKey(value: number | string): string {
   const normalized = String(value)
     .trim()
@@ -260,8 +283,7 @@ export async function loadForkHymnalPdf(numberOrKey: number | string) {
   const manifest = await loadMapping();
   const song = manifest.songs[forkManifestSongKey(numberOrKey)];
   if (!song) throw new Error("Song is not mapped in the fork PDF database");
-  const src = forkPdfSourceUrls(manifest)[0];
-  if (!src) throw new Error("Fork PDF source is unavailable");
+  const src = await resolveForkPdfSource(forkPdfSourceUrls(manifest));
   return {
     src,
     initialPage: song.startPage,

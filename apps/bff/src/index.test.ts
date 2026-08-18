@@ -327,6 +327,34 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("accepts an octet-stream content type from the immutable Fork PDF source", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(new Uint8Array([37, 80, 68, 70, 45]), {
+        status: 206,
+        headers: {
+          "content-type": "application/octet-stream",
+          "content-range": "bytes 0-4/5",
+          "content-length": "5",
+        },
+      })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/content/fork-pdf?commit=4f0d39b&path=assets%2Fdata%2Fpdf%2Fkr%2Fkr_master.pdf",
+        { headers: { Origin: "http://localhost:5173", range: "bytes=0-4" } },
+      );
+      expect(response.status).toBe(206);
+      expect(response.headers.get("content-type")).toBe("application/pdf");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("rejects a full Fork PDF when the immutable size or hash drifts", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>

@@ -35,6 +35,7 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
+import { Icon } from "./icons.js";
 import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage, createPlatformServices } from "./platform.js";
@@ -161,11 +162,16 @@ function DistributedAssetPanel({
                 ) : asset.state === "installed" || asset.state === "update" ? (
                   <>
                     <button
-                      className="quiet-button"
+                      className="quiet-button asset-action-button"
                       type="button"
                       onClick={() => onInstall(asset.code)}
+                      aria-label={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
+                      title={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
                     >
-                      {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+                      <Icon name="download" size={17} />
+                      <span className="asset-action-copy">
+                        {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+                      </span>
                     </button>
                     <button
                       className="text-button"
@@ -177,11 +183,14 @@ function DistributedAssetPanel({
                   </>
                 ) : asset.state === "available" ? (
                   <button
-                    className="primary-button"
+                    className="primary-button asset-action-button"
                     type="button"
                     onClick={() => onInstall(asset.code)}
+                    aria-label={`Unduh ${asset.title}`}
+                    title={`Unduh ${asset.title}`}
                   >
-                    Unduh
+                    <Icon name="download" size={17} />
+                    <span className="asset-action-copy">Unduh</span>
                   </button>
                 ) : (
                   <span className="account-sync-note">Tidak tersedia</span>
@@ -1254,6 +1263,8 @@ export function MorePage({
                     aria-checked={theme === item.key}
                     className={`theme-pill-btn${theme === item.key ? " is-active" : ""}`}
                     onClick={() => changeTheme(item.key as typeof theme)}
+                    aria-label={item.label}
+                    title={item.label}
                   >
                     <span className="pill-icon">{item.icon}</span>
                     <span className="pill-label">{item.label}</span>

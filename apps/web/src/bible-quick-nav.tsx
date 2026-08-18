@@ -143,7 +143,13 @@ export function BibleQuickNavOverlay({
         <small>Lepaskan untuk membuka</small>
       </div>
 
-      <div className="quick-nav-columns-container">
+      <div
+        className="quick-nav-columns-container"
+        style={{
+          width: "min(640px, 100%)",
+          height: "min(340px, calc(100vh - 180px))",
+        }}
+      >
         {/* Kolom 1: Kitab */}
         <div
           className={`quick-nav-column is-book${dragState.activeColumn === "book" ? " is-active-column" : ""}`}
@@ -330,6 +336,7 @@ export function BiblePickerModal({
     >
       <div
         className="bible-picker-modal"
+        style={{ width: "min(640px, 100%)" }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="bible-picker-title"
