@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v10";
+const CACHE = "gysapp-shell-v11";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 // Covers are useful offline, but the service worker must not turn a long
 // browsing session into an unbounded disk cache. The verified asset manager
@@ -89,6 +89,16 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "gys-cache-optional")
     event.waitUntil(cacheOptional());
 });
+
+async function fetchAndCacheShell(request) {
+  const response = await fetch(request, { cache: "no-cache" });
+  if (response.ok) {
+    const copy = response.clone();
+    void caches.open(CACHE).then((cache) => cache.put(request, copy));
+  }
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const requestUrl = new URL(event.request.url);
@@ -119,6 +129,19 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
+  const isNavigation =
+    event.request.mode === "navigate" ||
+    requestUrl.pathname.endsWith("/index.html");
+  if (isNavigation) {
+    event.respondWith(
+      fetchAndCacheShell(event.request).catch(() =>
+        caches.match(withBase("index.html")),
+      ),
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(
       (cached) =>

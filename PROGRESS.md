@@ -136,9 +136,10 @@ service or platform artifact that cannot be exercised in this workspace.
   NSIS installer was produced after the web build, with an optional protected
   PFX/signtool path for signed release artifacts. CI still keeps the native
   compile gate separate from credential-dependent signing.
-- PWA bootstrap is budgeted: service-worker v10 installs the shell and compact
+- PWA bootstrap is budgeted: service-worker v11 installs the shell and compact
   indexes first, then warms the heavy MIDI/FluidSynth binaries in the
-  background with a Save-Data/2G guard.
+  background with a Save-Data/2G guard; navigations refresh the shell from the
+  network and fall back to the cached HTML only when offline.
 - Production PWA registration now tolerates reduced webview service-worker
   objects and records registration failures without crashing the shell. The
   generated asset manifest inventories bundled PDF/MIDI/chord seeds, so

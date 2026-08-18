@@ -39,10 +39,13 @@ claim GA parity until the remaining reports and platform artifacts exist.
   worker remain lazy chunks, and the bundle gate fails if the initial
   application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
   same-origin on-demand/PWA assets rather than inflating the initial chunk.
-- The v10 service-worker install path precaches only the shell and compact
+- The v11 service-worker install path precaches only the shell and compact
   offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
   the first usable frame, independently and only when Save-Data/2G is not
   advertised; this keeps activation and first paint off the heavy-asset path.
+  HTML navigations use a network-first refresh so a successful Pages deploy is
+  visible to existing PWA clients instead of being hidden by an old shell
+  cache.
   Registration is progressive enhancement: reduced webview service-worker
   objects—including an undefined registration result—are guarded and failures
   are recorded without taking down the shell.
