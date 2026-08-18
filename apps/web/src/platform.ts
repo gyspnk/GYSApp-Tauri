@@ -25,6 +25,7 @@ const PLATFORM_DB = "gysapp-platform-v1";
 const PLATFORM_STORE = "key-value";
 const PLATFORM_BLOB_STORE = "blobs";
 const PLATFORM_DB_VERSION = 2;
+const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 
 /** Browser-backed shell preferences exposed through the platform boundary. */
 export function getShellSettingsStorage(): ShellStorage | undefined {
@@ -37,6 +38,52 @@ export function getShellSettingsStorage(): ShellStorage | undefined {
 }
 
 let platformDbPromise: Promise<IDBDatabase | undefined> | undefined;
+
+function isAppCache(name: string): boolean {
+  return APP_CACHE_PREFIXES.some((prefix) => name.startsWith(prefix));
+}
+
+async function requestServiceWorkerCacheReset(): Promise<void> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator))
+    return;
+  if (typeof MessageChannel === "undefined") return;
+
+  let registration: ServiceWorkerRegistration | undefined;
+  let worker: ServiceWorker | null | undefined;
+  try {
+    registration = await navigator.serviceWorker.ready;
+    worker = registration.active;
+  } catch {
+    return;
+  }
+  if (!worker) return;
+
+  await new Promise<void>((resolve) => {
+    const channel = new MessageChannel();
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      globalThis.clearTimeout(timeout);
+      channel.port1.close();
+      resolve();
+    };
+    const timeout = globalThis.setTimeout(finish, 2_000);
+    channel.port1.onmessage = finish;
+    try {
+      worker.postMessage({ type: "gys-clear-cache" }, [channel.port2]);
+    } catch {
+      finish();
+    }
+  });
+  if (typeof registration.unregister === "function") {
+    try {
+      await registration.unregister();
+    } catch {
+      // Cache Storage is still cleared by the page-side fallback below.
+    }
+  }
+}
 
 function openPlatformDatabase(): Promise<IDBDatabase | undefined> {
   if (platformDbPromise) return platformDbPromise;
@@ -115,17 +162,11 @@ export async function clearBrowserPlatformStorage(): Promise<void> {
   }
 
   try {
+    await requestServiceWorkerCacheReset();
     if ("caches" in globalThis) {
       const names = await caches.keys();
       await Promise.all(
-        names
-          .filter(
-            (name) =>
-              name.startsWith("gys-") ||
-              name.startsWith("gysapp-") ||
-              name.startsWith("gys-midi-"),
-          )
-          .map((name) => caches.delete(name)),
+        names.filter(isAppCache).map((name) => caches.delete(name)),
       );
     }
   } catch (error) {

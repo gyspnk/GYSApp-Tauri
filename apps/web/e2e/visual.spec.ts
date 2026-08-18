@@ -27,6 +27,9 @@ test.describe("Quiet Sanctuary visual regression", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible();
+    await expect(page.locator(".hymn-catalog-shell")).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.locator(".hymn-page")).toHaveScreenshot(
       "kidung-desktop.png",
       {
@@ -45,6 +48,9 @@ test.describe("Quiet Sanctuary visual regression", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible();
+    await expect(page.locator(".hymn-catalog-shell")).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.locator(".hymn-page")).toHaveScreenshot(
       "kidung-mobile.png",
       {

@@ -1,5 +1,8 @@
 const CACHE = "gysapp-shell-v11";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
+const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
+const pendingCacheWrites = new Set();
+let cacheWritesPaused = false;
 // Covers are useful offline, but the service worker must not turn a long
 // browsing session into an unbounded disk cache. The verified asset manager
 // remains the source for pinned downloads.
@@ -32,13 +35,54 @@ const OPTIONAL = [
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
 ].map(withBase);
 
+function isAppCache(name) {
+  return APP_CACHE_PREFIXES.some((prefix) => name.startsWith(prefix));
+}
+
+function trackCacheWrite(task) {
+  const tracked = Promise.resolve(task).finally(() =>
+    pendingCacheWrites.delete(tracked),
+  );
+  pendingCacheWrites.add(tracked);
+  return tracked;
+}
+
+function putCached(cache, request, response) {
+  if (cacheWritesPaused) return Promise.resolve();
+  return trackCacheWrite(cache.put(request, response));
+}
+
+function putNamedCached(cacheName, request, response) {
+  if (cacheWritesPaused) return Promise.resolve();
+  return trackCacheWrite(
+    caches.open(cacheName).then((cache) => cache.put(request, response)),
+  );
+}
+
+async function waitForCacheWrites() {
+  while (pendingCacheWrites.size) {
+    await Promise.allSettled([...pendingCacheWrites]);
+  }
+}
+
+async function clearApplicationCaches() {
+  cacheWritesPaused = true;
+  await waitForCacheWrites();
+  const names = await caches.keys();
+  await Promise.all(
+    names.filter(isAppCache).map((name) => caches.delete(name)),
+  );
+  await waitForCacheWrites();
+}
+
 async function cacheOptional() {
+  if (cacheWritesPaused) return;
   const cache = await caches.open(CACHE);
   await Promise.allSettled(
     OPTIONAL.map(async (url) => {
       if (await cache.match(url)) return;
       const response = await fetch(url, { cache: "no-cache" });
-      if (response.ok) await cache.put(url, response.clone());
+      if (response.ok) await putCached(cache, url, response.clone());
     }),
   );
 }
@@ -59,7 +103,7 @@ self.addEventListener("install", (event) => {
       await Promise.allSettled(
         CORE.map(async (url) => {
           const response = await fetch(url, { cache: "no-cache" });
-          if (response.ok) await cache.put(url, response.clone());
+          if (response.ok) await putCached(cache, url, response.clone());
         }),
       );
     }),
@@ -88,13 +132,22 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "gys-cache-optional")
     event.waitUntil(cacheOptional());
+  if (event.data?.type === "gys-clear-cache") {
+    const reply = event.ports?.[0];
+    event.waitUntil(
+      clearApplicationCaches().finally(() =>
+        reply?.postMessage({ type: "gys-clear-cache-done" }),
+      ),
+    );
+  }
 });
 
-async function fetchAndCacheShell(request) {
+async function fetchAndCacheShell(request, waitUntil) {
   const response = await fetch(request, { cache: "no-cache" });
   if (response.ok) {
     const copy = response.clone();
-    void caches.open(CACHE).then((cache) => cache.put(request, copy));
+    const write = putNamedCached(CACHE, request, copy);
+    waitUntil?.(write.catch(() => undefined));
   }
   return response;
 }
@@ -111,6 +164,7 @@ self.addEventListener("fetch", (event) => {
       requestUrl.hostname === "tjc.org" &&
       /\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(requestUrl.pathname);
     if (!isTjcMedia) return;
+    if (cacheWritesPaused) return;
     event.respondWith(
       caches.open(REMOTE_MEDIA_CACHE).then((cache) =>
         cache.match(event.request).then(async (cached) => {
@@ -120,7 +174,7 @@ self.addEventListener("fetch", (event) => {
           }
           const response = await fetch(event.request);
           if (response.ok || response.type === "opaque") {
-            await cache.put(event.request, response.clone());
+            await putCached(cache, event.request, response.clone());
             await pruneRemoteMediaCache(cache);
           }
           return response;
@@ -135,7 +189,7 @@ self.addEventListener("fetch", (event) => {
     requestUrl.pathname.endsWith("/index.html");
   if (isNavigation) {
     event.respondWith(
-      fetchAndCacheShell(event.request).catch(() =>
+      fetchAndCacheShell(event.request, event.waitUntil).catch(() =>
         caches.match(withBase("index.html")),
       ),
     );
@@ -150,9 +204,9 @@ self.addEventListener("fetch", (event) => {
           .then((response) => {
             if (!response.ok) return response;
             const copy = response.clone();
-            void caches
-              .open(CACHE)
-              .then((cache) => cache.put(event.request, copy));
+            void putNamedCached(CACHE, event.request, copy).catch(
+              () => undefined,
+            );
             return response;
           })
           .catch(() => caches.match(withBase("index.html"))),

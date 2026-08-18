@@ -57,4 +57,43 @@ describe("browser platform binary boundary", () => {
       else vi.stubGlobal("__TAURI__", originalTauri);
     }
   });
+
+  it("asks the active service worker to drain cache writes before reset", async () => {
+    const originalCaches = (globalThis as { caches?: unknown }).caches;
+    const originalNavigator = (globalThis as { navigator?: unknown }).navigator;
+    const messages: unknown[] = [];
+    const deleted: string[] = [];
+    vi.stubGlobal("navigator", {
+      serviceWorker: {
+        ready: Promise.resolve({
+          active: {
+            postMessage(message: unknown, ports?: MessagePort[]) {
+              messages.push(message);
+              ports?.[0]?.postMessage({ type: "gys-clear-cache-done" });
+            },
+          },
+        }),
+      },
+    });
+    vi.stubGlobal("caches", {
+      keys: async () => ["gysapp-shell-v11", "unrelated-cache"],
+      delete: async (name: string) => {
+        deleted.push(name);
+        return true;
+      },
+    });
+
+    try {
+      await clearBrowserPlatformStorage();
+      expect(messages).toEqual([{ type: "gys-clear-cache" }]);
+      expect(deleted).toEqual(["gysapp-shell-v11"]);
+    } finally {
+      if (originalCaches === undefined)
+        delete (globalThis as { caches?: unknown }).caches;
+      else vi.stubGlobal("caches", originalCaches);
+      if (originalNavigator === undefined)
+        delete (globalThis as { navigator?: unknown }).navigator;
+      else vi.stubGlobal("navigator", originalNavigator);
+    }
+  });
 });
