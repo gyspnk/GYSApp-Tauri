@@ -8,7 +8,9 @@ import { stripHtml } from "./sauh.js";
 
 const STATIC_URL = `${import.meta.env.BASE_URL}offline/suara-sejati.json`;
 const API_URL =
-  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia";
+  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=100&orderby=date&order=desc&_embed=wp:featuredmedia";
+const PAGE_SIZE = 100;
+const MAX_PAGES = 100;
 const CACHE_TTL_MS = 5 * 60_000;
 
 let feedCache: { expiresAt: number; items: SuaraSejatiPost[] } | undefined;
@@ -88,7 +90,24 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
   });
 }
 
-async function request(url: string, signal?: AbortSignal) {
+function isWordPressFeed(url: string): boolean {
+  try {
+    return new URL(url, window.location.href).pathname.includes(
+      "/wp-json/wp/v2/posts",
+    );
+  } catch {
+    return false;
+  }
+}
+
+function pageUrl(url: string, page: number): string {
+  const next = new URL(url, window.location.href);
+  next.searchParams.set("page", String(page));
+  next.searchParams.set("per_page", String(PAGE_SIZE));
+  return next.toString();
+}
+
+async function requestPage(url: string, signal?: AbortSignal) {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 4_000);
   const abort = () => controller.abort();
@@ -102,11 +121,50 @@ async function request(url: string, signal?: AbortSignal) {
     });
     if (!response.ok)
       throw new Error(`Suara Sejati request failed: ${response.status}`);
-    return parseSuaraSejati(await response.json());
+    return {
+      value: await response.json(),
+      totalPages: Number(response.headers.get("x-wp-totalpages")),
+    };
   } finally {
     window.clearTimeout(timer);
     signal?.removeEventListener("abort", abort);
   }
+}
+
+async function request(url: string, signal?: AbortSignal) {
+  if (!isWordPressFeed(url))
+    return parseSuaraSejati((await requestPage(url, signal)).value);
+
+  const first = await requestPage(pageUrl(url, 1), signal);
+  const items = parseSuaraSejati(first.value);
+  const sourceCount = Array.isArray(first.value) ? first.value.length : 0;
+  const hasPageHeader =
+    Number.isInteger(first.totalPages) && first.totalPages > 0;
+  let totalPages = hasPageHeader
+    ? first.totalPages
+    : sourceCount < PAGE_SIZE
+      ? 1
+      : 2;
+  if (totalPages > MAX_PAGES)
+    throw new Error("Suara Sejati source returned too many pages");
+  const allItems = [...items];
+  for (let page = 2; page <= totalPages; page += 1) {
+    const next = await requestPage(pageUrl(url, page), signal);
+    allItems.push(...parseSuaraSejati(next.value));
+    if (hasPageHeader) continue;
+    const nextPageHeader =
+      Number.isInteger(next.totalPages) && next.totalPages > 0;
+    if (nextPageHeader) {
+      if (next.totalPages > MAX_PAGES)
+        throw new Error("Suara Sejati source returned too many pages");
+      totalPages = next.totalPages;
+    } else if (!Array.isArray(next.value) || next.value.length < PAGE_SIZE) {
+      break;
+    } else {
+      totalPages = page + 1;
+    }
+  }
+  return allItems;
 }
 
 function waitFor<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {

@@ -13,6 +13,39 @@ export type LiteratureProgress = {
   completed?: boolean;
 };
 
+// ponytail: undated upstream items keep one stable version; invalidate them
+// when the catalog starts supplying a real source date.
+export const UNDATED_LITERATURE_RESOURCE_VERSION = "1970-01-01T00:00:00.000Z";
+
+export function literatureResourceVersion(publishedAt?: string): string {
+  return publishedAt ?? UNDATED_LITERATURE_RESOURCE_VERSION;
+}
+
+export function isLiteratureProgressCompatible(
+  progress: Pick<LiteratureProgress, "resourceVersion"> | undefined,
+  item: { publishedAt?: string | undefined },
+): boolean {
+  return Boolean(
+    progress &&
+    (!item.publishedAt ||
+      progress.resourceVersion ===
+        literatureResourceVersion(item.publishedAt) ||
+      progress.resourceVersion === "legacy"),
+  );
+}
+
+export function literaturePagePercent(
+  page: number,
+  totalPages: number,
+): number {
+  if (!Number.isFinite(page) || !Number.isFinite(totalPages) || page <= 0)
+    return 0;
+  return Math.min(
+    100,
+    Math.max(1, Math.round((page / Math.max(1, totalPages)) * 100)),
+  );
+}
+
 export const LITERATURE_PROGRESS_KEY = "gys-literature-progress-v2";
 const LEGACY_PROGRESS_KEY = "gys-literature-progress-v1";
 const CHANGE_EVENT = "gys-literature-progress-change";
@@ -113,6 +146,31 @@ export function saveLiteratureProgress(
   const next = readLiteratureProgress();
   next[id] = progress;
   localStorage.setItem(LITERATURE_PROGRESS_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
+}
+
+export function removeLiteratureProgress(id: string): void {
+  if (typeof window === "undefined") return;
+  const current = readMapFrom(LITERATURE_PROGRESS_KEY);
+  const legacy = readMapFrom(LEGACY_PROGRESS_KEY);
+  const hadCurrent = Object.hasOwn(current, id);
+  const hadLegacy = Object.hasOwn(legacy, id);
+  if (!hadCurrent && !hadLegacy) return;
+
+  if (hadCurrent) {
+    delete current[id];
+    localStorage.setItem(LITERATURE_PROGRESS_KEY, JSON.stringify(current));
+  }
+  if (hadLegacy) {
+    delete legacy[id];
+    localStorage.setItem(LEGACY_PROGRESS_KEY, JSON.stringify(legacy));
+  }
+
+  const pagePrefix = `gys-pdf-page:literature:${id}:`;
+  for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(pagePrefix)) localStorage.removeItem(key);
+  }
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 

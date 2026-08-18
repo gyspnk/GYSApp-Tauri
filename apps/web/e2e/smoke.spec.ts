@@ -259,7 +259,9 @@ test("Bible search narrows results to a testament", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
-  const searchBook = page.getByRole("button", { name: "Kitab" }).first();
+  const searchBook = page.locator(
+    ".bible-search-options .control-select-trigger",
+  );
   await searchBook.click();
   await page.getByRole("option", { name: "Perjanjian Lama (39)" }).click();
   await page.getByLabel("Cari Alkitab").fill("Allah");
@@ -910,6 +912,21 @@ test("literature detail persists favorite and progress controls", async ({
     page.getByRole("heading", { name: "Terakhir dilihat" }),
   ).toBeVisible();
   await expect(page.locator(".literature-recent-item")).toHaveCount(1);
+});
+
+test("literature history removes one selected reading", async ({ page }) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  await page.locator(".literature-row").first().click();
+  await expect(page.locator('[data-testid="literature-detail"]')).toBeVisible();
+  await page.getByRole("button", { name: "Tandai dibuka" }).click();
+  await page.goto("/GYSApp-Tauri/literatur");
+  const recent = page.locator(".literature-recent-item").first();
+  await expect(recent).toBeVisible();
+  await recent.getByRole("button", { name: /Hapus/ }).click();
+  await expect(page.locator(".literature-recent-item")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Terakhir dilihat" }),
+  ).toHaveCount(0);
 });
 
 test("literature article primary action stays in the internal reader", async ({

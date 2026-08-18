@@ -8,6 +8,7 @@ import { htmlToText } from "./article.js";
 
 const SOURCE = "https://tjc.org/id/literatur/";
 const BOOK_SOURCE = "https://tjc.org/id/literatur/buku/";
+const UNDATED_RESOURCE_VERSION = "1970-01-01T00:00:00.000Z";
 const sections: Array<[LiteratureCategory, string]> = [
   ["kesaksian", "posts-table-1"],
   ["warta", "posts-table-2"],
@@ -65,7 +66,7 @@ function itemFrom(
     url,
     format: formatFor(url, title),
     ...(publishedAt ? { publishedAt } : {}),
-    updatedAt: publishedAt ?? generatedAt,
+    updatedAt: publishedAt ?? UNDATED_RESOURCE_VERSION,
     source: "tjc.org",
   };
 }

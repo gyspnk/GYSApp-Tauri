@@ -100,6 +100,9 @@ type IconName =
   | "play"
   | "pause"
   | "stop"
+  | "skipPrevious"
+  | "skipNext"
+  | "chevronDown"
   | "volume"
   | "volumeOff"
   | "arrow"
@@ -200,6 +203,19 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <rect x="6" y="6" width="12" height="12" rx="1.5" />
     </>
   ),
+  skipPrevious: (
+    <>
+      <path d="M6 5v14" />
+      <path d="m18 6-8 6 8 6z" />
+    </>
+  ),
+  skipNext: (
+    <>
+      <path d="M18 5v14" />
+      <path d="m6 6 8 6-8 6z" />
+    </>
+  ),
+  chevronDown: <path d="m6 9 6 6 6-6" />,
   volume: (
     <>
       <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
@@ -298,6 +314,8 @@ function Navigation({ locale }: { locale: Locale }) {
             `nav-item${isActive ? " is-active" : ""}`
           }
           aria-label={translate(locale, destination.labelKey)}
+          title={translate(locale, destination.labelKey)}
+          data-nav-label={translate(locale, destination.labelKey)}
         >
           <Icon name={destination.icon} />
           <span className="nav-copy">
@@ -317,6 +335,8 @@ function Header({
   setTheme,
   online,
   onOpenSearch,
+  pathname,
+  onFocusPageSearch,
 }: {
   locale: Locale;
   setLocale: (value: Locale) => void;
@@ -324,7 +344,87 @@ function Header({
   setTheme: (value: Theme) => void;
   online: boolean;
   onOpenSearch: () => void;
+  pathname: string;
+  onFocusPageSearch: () => void;
 }) {
+  const isBibleRoute = pathname === "/bible";
+  const isKidungRoute =
+    pathname === "/kidung" || pathname.startsWith("/kidung/");
+  const isReaderRoute = isBibleRoute || isKidungRoute;
+
+  if (isReaderRoute) {
+    return (
+      <header className="topbar is-reader-context">
+        <div className="reader-context-bar">
+          <Link
+            className="reader-context-home"
+            to="/"
+            aria-label="Kembali"
+            title="Kembali"
+          >
+            <Icon name="home" size={18} />
+          </Link>
+          <div className="reader-context-title">
+            <span>{isBibleRoute ? "Bacaan" : "Kidung Rohani"}</span>
+            <strong>{isBibleRoute ? "Alkitab" : "Kidung"}</strong>
+          </div>
+          <div className="reader-context-actions">
+            {isKidungRoute && pathname !== "/kidung" ? (
+              <Link
+                className="reader-context-button"
+                to="/kidung"
+                aria-label="Buka daftar kidung"
+              >
+                Daftar
+              </Link>
+            ) : null}
+            {isBibleRoute || pathname === "/kidung" ? (
+              <button
+                className="reader-context-button"
+                type="button"
+                onClick={onFocusPageSearch}
+                aria-label={
+                  isBibleRoute
+                    ? "Buka pencarian ayat di Alkitab"
+                    : "Buka pencarian lagu"
+                }
+              >
+                <Icon name="search" size={16} />
+                <span>{isBibleRoute ? "Cari ayat" : "Cari lagu"}</span>
+              </button>
+            ) : null}
+          </div>
+          <div className="reader-context-settings">
+            <Select
+              value={locale}
+              onChange={setLocale}
+              className="topbar-select reader-context-select"
+              label={translate(locale, "shell.language")}
+              options={[
+                { value: "id", label: "ID" },
+                { value: "en", label: "EN" },
+                { value: "zh", label: "中文" },
+              ]}
+            />
+            <Select
+              value={theme}
+              onChange={setTheme}
+              className="topbar-select reader-context-select theme-select"
+              label={translate(locale, "shell.theme")}
+              options={[
+                { value: "system", label: "◐" },
+                { value: "light", label: "☼" },
+                { value: "dark", label: "☾" },
+                { value: "amoled", label: "■" },
+                { value: "sepia", label: "☕" },
+              ]}
+            />
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="topbar">
       <Link
@@ -393,6 +493,7 @@ function Header({
 
 function MediaSurface({ locale }: { locale: Locale }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const snapshot = useSyncExternalStore(
     midiPlayer.subscribe,
     midiPlayer.snapshot,
@@ -410,6 +511,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
   );
   const speechActive =
     speechSnapshot.total > 0 && speechSnapshot.status !== "idle";
+  const isKidungMedia =
+    !speechActive && location.pathname.startsWith("/kidung");
   const latestMidiRef = useRef(snapshot);
   const latestSpeechRef = useRef(speechSnapshot);
   const latestSpeechActiveRef = useRef(speechActive);
@@ -453,6 +556,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
   const [minimized, setMinimized] = useState(
     () => localStorage.getItem("gys-media-minimized") === "1",
   );
+  useEffect(() => {
+    const syncPreference = () =>
+      setMinimized(localStorage.getItem("gys-media-minimized") === "1");
+    window.addEventListener("gys-media-preference-change", syncPreference);
+    return () =>
+      window.removeEventListener("gys-media-preference-change", syncPreference);
+  }, []);
   useEffect(() => {
     localStorage.setItem("gys-media-minimized", minimized ? "1" : "0");
   }, [minimized]);
@@ -601,6 +711,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
   const playing = speechActive
     ? speechSnapshot.status === "speaking"
     : snapshot.status === "playing";
+  const currentPlaylistIndex = playlist.items.findIndex(
+    (item) => item.songId === snapshot.songId,
+  );
+  const canPlayPrevious = currentPlaylistIndex > 0;
+  const canPlayNext =
+    currentPlaylistIndex >= 0 &&
+    currentPlaylistIndex < playlist.items.length - 1;
   const togglePlayback = () => {
     if (speechActive) {
       const action =
@@ -679,7 +796,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
   };
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}`}
+      className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}${isKidungMedia ? " is-kidung-media" : ""}`}
       data-media-status={speechActive ? speechSnapshot.status : snapshot.status}
       data-media-backend={
         speechActive
@@ -698,6 +815,18 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
       aria-label={translate(locale, "shell.media")}
     >
+      {isKidungMedia && !minimized && (
+        <button
+          className="media-collapse-toggle"
+          type="button"
+          onClick={() => setMinimized(true)}
+          aria-expanded="true"
+          aria-label="Minimalkan pemutar"
+        >
+          <span className="media-collapse-grip" aria-hidden="true" />
+          <Icon name="chevronDown" size={15} />
+        </button>
+      )}
       <div
         className="media-art media-drag-handle"
         title="Geser pemutar"
@@ -732,19 +861,32 @@ function MediaSurface({ locale }: { locale: Locale }) {
       <div className="media-main">
         <div className="media-meta">
           <small>
-            {speechActive
-              ? speechSnapshot.offline
-                ? "Bacaan offline"
-                : "Bacaan Alkitab"
-              : snapshot.status === "loading"
-                ? `Memuat MIDI ${snapshot.loadingProgress}%`
-                : snapshot.backend === "fluidsynth"
-                  ? `${translate(locale, "shell.media")} · ${snapshot.soundfont ?? "FluidSynth"}`
-                  : translate(locale, "shell.media")}
+            {isKidungMedia
+              ? "MIDI QUEUE"
+              : speechActive
+                ? speechSnapshot.offline
+                  ? "Bacaan offline"
+                  : "Bacaan Alkitab"
+                : snapshot.status === "loading"
+                  ? `Memuat MIDI ${snapshot.loadingProgress}%`
+                  : snapshot.backend === "fluidsynth"
+                    ? `${translate(locale, "shell.media")} · ${snapshot.soundfont ?? "FluidSynth"}`
+                    : translate(locale, "shell.media")}
             {!speechActive && playlist.items.length > 0
               ? ` · ${playlist.items.length} antrean`
               : ""}
           </small>
+          {isKidungMedia && (
+            <button
+              className="media-queue-link"
+              type="button"
+              onClick={() => navigate("/kidung?section=playlist")}
+              aria-label="Antrean MIDI"
+            >
+              Antrean MIDI
+              {playlist.items.length ? ` · ${playlist.items.length}` : ""}
+            </button>
+          )}
           {mediaPath ? (
             <button
               className="media-context-link"
@@ -786,65 +928,67 @@ function MediaSurface({ locale }: { locale: Locale }) {
             }
           />
         </label>
-        {!minimized && (speechActive || playlist.items.length > 0) && (
-          <div
-            className="media-queue-controls"
-            aria-label={speechActive ? "Navigasi bacaan" : "Antrean MIDI"}
-          >
-            {speechActive ? (
-              <>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    void speechPlayer.previous().catch(() => undefined)
-                  }
-                  aria-label="Ayat sebelumnya"
-                  disabled={speechSnapshot.currentIndex <= 0}
-                >
-                  ‹ Ayat sebelumnya
-                </button>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    void speechPlayer.next().catch(() => undefined)
-                  }
-                  aria-label="Ayat berikutnya"
-                  disabled={
-                    speechSnapshot.currentIndex < 0 ||
-                    speechSnapshot.currentIndex >= speechSnapshot.total - 1
-                  }
-                >
-                  Ayat berikutnya ›
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    void playPreviousMidiPlaylistItem().catch(() => undefined)
-                  }
-                  aria-label="Lagu MIDI sebelumnya"
-                >
-                  ‹ Sebelumnya
-                </button>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    void playNextMidiPlaylistItem().catch(() => undefined)
-                  }
-                  aria-label="Lagu MIDI berikutnya"
-                >
-                  Berikutnya ›
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        {!minimized &&
+          !isKidungMedia &&
+          (speechActive || playlist.items.length > 0) && (
+            <div
+              className="media-queue-controls"
+              aria-label={speechActive ? "Navigasi bacaan" : "Antrean MIDI"}
+            >
+              {speechActive ? (
+                <>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      void speechPlayer.previous().catch(() => undefined)
+                    }
+                    aria-label="Ayat sebelumnya"
+                    disabled={speechSnapshot.currentIndex <= 0}
+                  >
+                    ‹ Ayat sebelumnya
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      void speechPlayer.next().catch(() => undefined)
+                    }
+                    aria-label="Ayat berikutnya"
+                    disabled={
+                      speechSnapshot.currentIndex < 0 ||
+                      speechSnapshot.currentIndex >= speechSnapshot.total - 1
+                    }
+                  >
+                    Ayat berikutnya ›
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      void playPreviousMidiPlaylistItem().catch(() => undefined)
+                    }
+                    aria-label="Lagu MIDI sebelumnya"
+                  >
+                    ‹ Sebelumnya
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      void playNextMidiPlaylistItem().catch(() => undefined)
+                    }
+                    aria-label="Lagu MIDI berikutnya"
+                  >
+                    Berikutnya ›
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         {!minimized && (
           <div className="media-adjustments">
             <label>
@@ -927,22 +1071,61 @@ function MediaSurface({ locale }: { locale: Locale }) {
           </div>
         )}
       </div>
-      <button
-        className="media-control"
-        type="button"
-        onClick={togglePlayback}
-        aria-label={
-          playing
-            ? translate(locale, "shell.pause")
-            : translate(locale, "shell.play")
-        }
-      >
-        <Icon name={playing ? "pause" : "play"} size={18} />
-      </button>
+      {isKidungMedia && !minimized ? (
+        <div className="media-transport-controls" aria-label="Kontrol MIDI">
+          <button
+            className="media-control media-secondary-control media-previous-control"
+            type="button"
+            onClick={() =>
+              void playPreviousMidiPlaylistItem().catch(() => undefined)
+            }
+            aria-label="Lagu MIDI sebelumnya"
+            disabled={!canPlayPrevious}
+          >
+            <Icon name="skipPrevious" size={17} />
+          </button>
+          <button
+            className="media-control media-primary-control"
+            type="button"
+            onClick={togglePlayback}
+            aria-label={
+              playing
+                ? translate(locale, "shell.pause")
+                : translate(locale, "shell.play")
+            }
+          >
+            <Icon name={playing ? "pause" : "play"} size={18} />
+          </button>
+          <button
+            className="media-control media-secondary-control media-next-control"
+            type="button"
+            onClick={() =>
+              void playNextMidiPlaylistItem().catch(() => undefined)
+            }
+            aria-label="Lagu MIDI berikutnya"
+            disabled={!canPlayNext}
+          >
+            <Icon name="skipNext" size={17} />
+          </button>
+        </div>
+      ) : (
+        <button
+          className="media-control"
+          type="button"
+          onClick={togglePlayback}
+          aria-label={
+            playing
+              ? translate(locale, "shell.pause")
+              : translate(locale, "shell.play")
+          }
+        >
+          <Icon name={playing ? "pause" : "play"} size={18} />
+        </button>
+      )}
       {!minimized && (
         <>
           <button
-            className="media-control media-secondary-control"
+            className="media-control media-secondary-control media-stop-control"
             type="button"
             onClick={() =>
               void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
@@ -952,7 +1135,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
             <Icon name="stop" size={16} />
           </button>
           <button
-            className="media-control media-secondary-control"
+            className="media-control media-secondary-control media-mute-control"
             type="button"
             onClick={() =>
               speechActive
@@ -1013,6 +1196,10 @@ function Shell({
   const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const isReaderRoute =
+    location.pathname === "/bible" ||
+    location.pathname === "/kidung" ||
+    location.pathname.startsWith("/kidung/");
   const midiSnapshot = useSyncExternalStore(
     midiPlayer.subscribe,
     midiPlayer.snapshot,
@@ -1027,6 +1214,16 @@ function Shell({
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
+  const focusPageSearch = useCallback(() => {
+    const selector =
+      location.pathname === "/bible"
+        ? "#bible-query"
+        : ".hymn-page .hymn-catalog-controls input";
+    const input = document.querySelector<HTMLInputElement>(selector);
+    if (!input) return;
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    input.focus({ preventScroll: true });
+  }, [location.pathname]);
   useEffect(() => {
     const on = () => setOnline(true);
     const off = () => setOnline(false);
@@ -1057,13 +1254,15 @@ function Shell({
     return () => window.removeEventListener("keydown", onShortcut);
   }, []);
   return (
-    <div className="app-frame">
+    <div className={`app-frame${isReaderRoute ? " is-reader-route" : ""}`}>
       <a className="skip-link" href="#main-content">
         Lewati ke konten utama
       </a>
       <Header
         {...{ locale, setLocale, theme, setTheme, online }}
         onOpenSearch={openSearch}
+        pathname={location.pathname}
+        onFocusPageSearch={focusPageSearch}
       />
       <div className="workspace">
         <aside className="navigation-shell">
@@ -1076,7 +1275,10 @@ function Shell({
           </div>
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>
-          <div className="route-view" key={location.pathname}>
+          <div
+            className="route-view"
+            key={`${location.pathname}${location.search}`}
+          >
             <Suspense
               fallback={
                 <div className="loading-panel route-loading" role="status">
@@ -1084,7 +1286,14 @@ function Shell({
                 </div>
               }
             >
-              <Outlet context={{ locale }} />
+              <Outlet
+                context={{
+                  locale,
+                  theme,
+                  setLocale,
+                  setTheme,
+                }}
+              />
             </Suspense>
           </div>
         </main>

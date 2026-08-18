@@ -591,6 +591,35 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("keeps undated literature versions stable across catalog refreshes", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        '<table id="posts-table-1"><tr><td><a href="https://tjc.org/id/files/demo.pdf">Demo PDF</a></td></tr></table>',
+        { headers: { "content-type": "text/html" } },
+      )) as typeof fetch;
+    try {
+      const readVersion = async () => {
+        const app = createApp({
+          allowedOrigins: ["http://localhost:5173"],
+          chordManifest: manifest,
+          content: [],
+        });
+        const response = await app.request("/api/v1/content/literature");
+        const payload = (await response.json()) as {
+          items: Array<{ updatedAt: string }>;
+        };
+        return payload.items[0]?.updatedAt;
+      };
+      const first = await readVersion();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      const second = await readVersion();
+      expect(first).toBe(second);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("shares a simultaneous literature upstream request", async () => {
     const originalFetch = globalThis.fetch;
     let calls = 0;

@@ -94,6 +94,7 @@ export type ChordDocumentV2 = z.infer<typeof ChordDocumentV2Schema>;
 
 export const HymnCatalogEntrySchema = z.object({
   id: z.string().min(1),
+  assetCode: z.string().min(1).optional(),
   book: z.enum([
     "rohani",
     "kidung-jemaat",
@@ -108,6 +109,8 @@ export const HymnCatalogEntrySchema = z.object({
   lyrics: z.string().min(1),
   midiPath: z.string().min(1),
   pdfPath: z.string().min(1),
+  pdfPage: z.number().int().positive().optional(),
+  pdfPages: z.number().int().positive().optional(),
   chordRef: ChordRefSchema.optional(),
 });
 export type HymnCatalogEntry = z.infer<typeof HymnCatalogEntrySchema>;
@@ -257,7 +260,7 @@ export type MidiPlaylist = z.infer<typeof MidiPlaylistSchema>;
 
 export const BiblePackManifestSchema = z.object({
   version: z.string().min(1),
-  translation: z.literal("TB"),
+  translation: z.string().min(1),
   generatedAt: z.string().datetime({ offset: true }),
   sha256: Sha256Schema,
   bytes: z.number().int().nonnegative(),
@@ -281,7 +284,7 @@ export const BibleVerseSchema = z.object({
 });
 export const BibleReaderPackSchema = z.object({
   version: z.literal(1),
-  translation: z.literal("TB"),
+  translation: z.string().min(1),
   source: z.string().min(1),
   books: z.array(BibleBookSchema).min(1),
   verses: z.array(BibleVerseSchema).min(1),
@@ -388,6 +391,66 @@ export const AssetManifestV1Schema = z.object({
 export type AssetKind = z.infer<typeof AssetKindSchema>;
 export type AssetManifestItem = z.infer<typeof AssetManifestItemSchema>;
 export type AssetManifestV1 = z.infer<typeof AssetManifestV1Schema>;
+
+export const DistributedAssetKindSchema = z.enum([
+  "bible",
+  "hymnal",
+  "soundfont",
+]);
+export const DistributedAssetTrackSchema = z.enum([
+  "bibles",
+  "hymnals",
+  "soundfont",
+]);
+export const DistributedAssetPackageSchema = z.object({
+  code: z.string().min(1),
+  version: z.string().min(1),
+  fileName: z.string().min(1),
+  downloadUrl: z.string().url(),
+  installFileName: z.string().min(1),
+  sizeBytes: z.number().int().positive(),
+  checksumSha256: Sha256Schema,
+});
+export const DistributedAssetTrackManifestSchema = z.object({
+  track: DistributedAssetTrackSchema,
+  releaseTag: z.string().min(1),
+  publishedAt: z.string().datetime({ offset: true }),
+  packages: z.array(DistributedAssetPackageSchema),
+});
+export const DistributedAssetCatalogItemSchema = z.object({
+  kind: DistributedAssetKindSchema,
+  code: z.string().min(1),
+  title: z.string().min(1),
+  track: DistributedAssetTrackSchema,
+  bundledByDefault: z.boolean(),
+  version: z.string().min(1),
+  releaseTag: z.string().min(1),
+  fileName: z.string().min(1),
+  downloadUrl: z.string().url(),
+  installFileName: z.string().min(1),
+  sizeBytes: z.number().int().positive(),
+  checksumSha256: Sha256Schema,
+});
+export const DistributedAssetCatalogSchema = z.object({
+  version: z.literal(1),
+  generatedAt: z.string().datetime({ offset: true }),
+  sourceRepo: z.literal("ThenGB/GYSApp-Data"),
+  items: z.array(DistributedAssetCatalogItemSchema),
+});
+export type DistributedAssetKind = z.infer<typeof DistributedAssetKindSchema>;
+export type DistributedAssetTrack = z.infer<typeof DistributedAssetTrackSchema>;
+export type DistributedAssetPackage = z.infer<
+  typeof DistributedAssetPackageSchema
+>;
+export type DistributedAssetTrackManifest = z.infer<
+  typeof DistributedAssetTrackManifestSchema
+>;
+export type DistributedAssetCatalogItem = z.infer<
+  typeof DistributedAssetCatalogItemSchema
+>;
+export type DistributedAssetCatalog = z.infer<
+  typeof DistributedAssetCatalogSchema
+>;
 
 export const AccountProfileSchema = z.object({
   id: z.string().min(1),

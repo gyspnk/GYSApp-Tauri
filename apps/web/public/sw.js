@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v11";
+const CACHE = "gysapp-shell-v12";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
@@ -16,6 +16,8 @@ const CORE = [
   "offline/bible/tb-reader.json",
   "offline/bible/manifest.json",
   "offline/hymn-catalog.json",
+  "offline/distributed-hymn-catalog.json",
+  "offline/distributed-assets.json",
   "offline/music-lock.json",
   "offline/faith.json",
   "offline/sauh.json",

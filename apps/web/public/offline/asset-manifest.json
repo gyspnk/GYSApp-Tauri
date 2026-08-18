@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-16T13:55:06.800Z",
+  "generatedAt": "2026-08-18T05:19:20.638Z",
   "items": [
     {
       "id": "bible-tb",
@@ -11,7 +11,7 @@
       "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
       "bytes": 21340160,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "bible-tb-reader",
@@ -22,7 +22,7 @@
       "sha256": "e5ebc8fc2351dde57029c02337ff7ccd912df3fe9165ef59c5eacb314db23421",
       "bytes": 7317700,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "hymn-catalog",
@@ -33,7 +33,29 @@
       "sha256": "51b86cc84b6ce7921b96fec29687490cfff531f51facb8f02c0ba2c18f175b28",
       "bytes": 868855,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
+    },
+    {
+      "id": "distributed-hymn-catalog",
+      "kind": "hymn-catalog",
+      "source": "local",
+      "path": "offline/distributed-hymn-catalog.json",
+      "version": "d23bb26cca08e8562ee23c977bfd436ae331bf60d785da5d98d5ae1e0336e597",
+      "sha256": "d23bb26cca08e8562ee23c977bfd436ae331bf60d785da5d98d5ae1e0336e597",
+      "bytes": 2514430,
+      "status": "available",
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
+    },
+    {
+      "id": "distributed-asset-catalog",
+      "kind": "pack",
+      "source": "local",
+      "path": "offline/distributed-assets.json",
+      "version": "b7d79e87cc0ee9abf5474163b20520f78f5ed91b19ba8880f37e457dadeeb550",
+      "sha256": "b7d79e87cc0ee9abf5474163b20520f78f5ed91b19ba8880f37e457dadeeb550",
+      "bytes": 5482,
+      "status": "available",
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "music-lock",
@@ -44,7 +66,7 @@
       "sha256": "446270643489c563fd7d8de89841be7b46d2f30b9d8445a03eb43dd5c63a3adc",
       "bytes": 308690,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "faith-topics",
@@ -55,7 +77,7 @@
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
       "bytes": 8311,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "sauh-feed",
@@ -66,7 +88,7 @@
       "sha256": "406c38a8fd813c3c8987991ca22778d1e1b798244341f932da6f0799a30fcde8",
       "bytes": 802,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "literature-catalog",
@@ -77,18 +99,18 @@
       "sha256": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490",
       "bytes": 150389,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "suara-sejati",
       "kind": "pack",
       "source": "local",
       "path": "offline/suara-sejati.json",
-      "version": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b",
-      "sha256": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b",
-      "bytes": 3342,
+      "version": "13427480ec2c743314dd884347fa950640b971c6ab002656c70fb44c5f169a3a",
+      "sha256": "13427480ec2c743314dd884347fa950640b971c6ab002656c70fb44c5f169a3a",
+      "bytes": 99375,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "fork-hymnal-map",
@@ -99,7 +121,7 @@
       "sha256": "df14db981bf30bb6481e3f6ed0aff6cc185a0c0642a539b55a718bf015ea88b5",
       "bytes": 60815,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "soundfont-timgm",
@@ -110,7 +132,7 @@
       "sha256": "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1",
       "bytes": 5994284,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "music-seed:assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -121,7 +143,7 @@
       "sha256": "44c545e4bba6ab9aa63a533697cc81663be47b2ffac59ffe8da1f184f65cf887",
       "bytes": 13540,
       "status": "available",
-      "lastUpdated": "2026-08-16T13:55:06.800Z"
+      "lastUpdated": "2026-08-18T05:19:20.638Z"
     },
     {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",
@@ -394,10 +416,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftiang-kayu-2F",
-      "kind": "cover",
-      "version": "2021-08-24T00:00:00.000Z",
-      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "id": "suara-thumbnail:111-tiang-kayu",
+      "kind": "thumbnail",
+      "version": "2023-06-20T17:00:42.000Z",
+      "lastUpdated": "2023-06-20T17:00:42.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tiang_Kayu.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/Tiang_Kayu.jpg",
@@ -654,10 +676,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkebajikan-dan-kemurahan-mengikuti-aku-seumur-hidupku-2F",
-      "kind": "cover",
-      "version": "2020-10-27T00:00:00.000Z",
-      "lastUpdated": "2020-10-27T00:00:00.000Z",
+      "id": "suara-thumbnail:67-rutinitas-atau-kebutuhan",
+      "kind": "thumbnail",
+      "version": "2023-04-06T17:00:15.000Z",
+      "lastUpdated": "2023-04-06T17:00:15.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray4.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/10/pray4.jpg",
@@ -674,10 +696,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmasa-bergejolak-percaya-dalam-kebenaran-2F",
-      "kind": "cover",
-      "version": "2020-10-20T00:00:00.000Z",
-      "lastUpdated": "2020-10-20T00:00:00.000Z",
+      "id": "suara-thumbnail:19-penjala-manusia",
+      "kind": "thumbnail",
+      "version": "2022-10-04T17:00:35.000Z",
+      "lastUpdated": "2022-10-04T17:00:35.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/fishg.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/fishg.jpg",
@@ -724,10 +746,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkasih-allah-memanggil-2F",
-      "kind": "cover",
-      "version": "2020-10-02T00:00:00.000Z",
-      "lastUpdated": "2020-10-02T00:00:00.000Z",
+      "id": "suara-thumbnail:69-tidak-akan-kekurangan",
+      "kind": "thumbnail",
+      "version": "2023-01-24T17:00:12.000Z",
+      "lastUpdated": "2023-01-24T17:00:12.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/familyss.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/09/familyss.jpg",
@@ -774,10 +796,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-benar-yang-maha-tahu-2F",
-      "kind": "cover",
-      "version": "2020-09-15T00:00:00.000Z",
-      "lastUpdated": "2020-09-15T00:00:00.000Z",
+      "id": "suara-thumbnail:66-asam-lambung",
+      "kind": "thumbnail",
+      "version": "2023-02-28T17:00:46.000Z",
+      "lastUpdated": "2023-02-28T17:00:46.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick-1.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick-1.jpg",
@@ -844,10 +866,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpengalaman-saya-ketika-sakit-2F",
-      "kind": "cover",
-      "version": "2020-08-21T00:00:00.000Z",
-      "lastUpdated": "2020-08-21T00:00:00.000Z",
+      "id": "suara-thumbnail:79-tidak-dibatasi-pandemi",
+      "kind": "thumbnail",
+      "version": "2023-03-02T17:00:52.000Z",
+      "lastUpdated": "2023-03-02T17:00:52.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/sick.jpg",
@@ -974,10 +996,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menjaga-rumah-kami-2F",
-      "kind": "cover",
-      "version": "2020-07-07T00:00:00.000Z",
-      "lastUpdated": "2020-07-07T00:00:00.000Z",
+      "id": "suara-thumbnail:50-hotel-dan-tiket-1",
+      "kind": "thumbnail",
+      "version": "2023-01-10T17:00:48.000Z",
+      "lastUpdated": "2023-01-10T17:00:48.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/home.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/06/home.jpg",
@@ -1224,20 +1246,20 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjangan-melupakan-doa-2F",
-      "kind": "cover",
-      "version": "2020-02-14T00:00:00.000Z",
-      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "id": "suara-thumbnail:51-khasiat-saling-mendoakan",
+      "kind": "thumbnail",
+      "version": "2023-01-17T17:00:41.000Z",
+      "lastUpdated": "2023-01-17T17:00:41.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/pray.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/02/pray.jpg",
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbudak-uang-2-2F",
-      "kind": "cover",
-      "version": "2020-01-06T00:00:00.000Z",
-      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "id": "suara-thumbnail:56-ikhtiar-di-masa-pandemi",
+      "kind": "thumbnail",
+      "version": "2022-11-22T17:00:08.000Z",
+      "lastUpdated": "2022-11-22T17:00:08.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/money-1.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/01/money-1.jpg",
@@ -1274,10 +1296,10 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fterlindung-dari-bahaya-kebakaran-2-2F",
-      "kind": "cover",
-      "version": "2019-12-12T00:00:00.000Z",
-      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "id": "suara-thumbnail:46-bengkel-motor",
+      "kind": "thumbnail",
+      "version": "2022-11-15T17:00:15.000Z",
+      "lastUpdated": "2022-11-15T17:00:15.000Z",
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/fire-1.jpg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2019/12/fire-1.jpg",
@@ -2971,6 +2993,1066 @@
       "source": "remote",
       "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/patung.jpeg",
       "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/patung.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:128-menemukan-kantor-ideal",
+      "kind": "thumbnail",
+      "version": "2023-11-14T17:00:10.000Z",
+      "lastUpdated": "2023-11-14T17:00:10.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/pilihan.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/pilihan.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:124-hanya-satu-nama",
+      "kind": "thumbnail",
+      "version": "2023-11-07T17:00:19.000Z",
+      "lastUpdated": "2023-11-07T17:00:19.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/pexels-anna-shvets-3845126-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/pexels-anna-shvets-3845126-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:113-saat-masih-diizinkan-melihat",
+      "kind": "thumbnail",
+      "version": "2023-10-31T17:00:27.000Z",
+      "lastUpdated": "2023-10-31T17:00:27.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/asian-woman-entrepreneur-businesswoman-shuts-her-eyes-with-hands-stands-blindfolded-against-white-st_1258-167880.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/asian-woman-entrepreneur-businesswoman-shuts-her-eyes-with-hands-stands-blindfolded-against-white-st_1258-167880.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:136-w-luka-tanda-kasih",
+      "kind": "thumbnail",
+      "version": "2023-09-14T17:00:11.000Z",
+      "lastUpdated": "2023-09-14T17:00:11.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/4-Sept.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/4-Sept.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:149-di-luar-kendali-manusia",
+      "kind": "thumbnail",
+      "version": "2023-10-24T17:00:42.000Z",
+      "lastUpdated": "2023-10-24T17:00:42.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/07/30.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/07/30.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:151-topik-17-tahun",
+      "kind": "thumbnail",
+      "version": "2023-10-17T17:00:53.000Z",
+      "lastUpdated": "2023-10-17T17:00:53.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/5-Sept.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/5-Sept.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:78-w-tanpa-penyesalan",
+      "kind": "thumbnail",
+      "version": "2023-07-11T17:00:50.000Z",
+      "lastUpdated": "2023-07-11T17:00:50.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/17.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/17.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:144-renungan-hidup-mama-mertual",
+      "kind": "thumbnail",
+      "version": "2023-10-10T17:00:45.000Z",
+      "lastUpdated": "2023-10-10T17:00:45.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/26.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/26.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:94-w-lahir-tumbuh-anugerah",
+      "kind": "thumbnail",
+      "version": "2023-07-18T17:00:35.000Z",
+      "lastUpdated": "2023-07-18T17:00:35.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/Cara-agar-anak-cepat-bicara-lancar.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/Cara-agar-anak-cepat-bicara-lancar.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:101-menembus-kemacetan",
+      "kind": "thumbnail",
+      "version": "2023-10-03T17:00:50.000Z",
+      "lastUpdated": "2023-10-03T17:00:50.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/jalan-lurus.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/jalan-lurus.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:143-w-walau-sukar-tetap-mekar",
+      "kind": "thumbnail",
+      "version": "2023-09-28T17:00:10.000Z",
+      "lastUpdated": "2023-09-28T17:00:10.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/bunga-rumput.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/bunga-rumput.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:141-w-tiga-jawaban-tuhan",
+      "kind": "thumbnail",
+      "version": "2023-09-26T17:00:34.000Z",
+      "lastUpdated": "2023-09-26T17:00:34.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/23.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/23.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:138-w-bapa",
+      "kind": "thumbnail",
+      "version": "2023-09-21T17:00:09.000Z",
+      "lastUpdated": "2023-09-21T17:00:09.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/penyebab-umur-muda-tapi-usia-tubuh-tampak-lebih-tua-hmz.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/penyebab-umur-muda-tapi-usia-tubuh-tampak-lebih-tua-hmz.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:135-w-doa-di-kala-membara-2",
+      "kind": "thumbnail",
+      "version": "2023-09-19T17:00:37.000Z",
+      "lastUpdated": "2023-09-19T17:00:37.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/17.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/17.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:109-w-titik-balik",
+      "kind": "thumbnail",
+      "version": "2023-09-12T17:00:35.000Z",
+      "lastUpdated": "2023-09-12T17:00:35.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/19.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/19.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:75-p-berjalan-bersama-indah",
+      "kind": "thumbnail",
+      "version": "2023-09-05T17:00:15.000Z",
+      "lastUpdated": "2023-09-05T17:00:15.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/19-sept.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/09/19-sept.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:91-w-tidak-selalu-mudah",
+      "kind": "thumbnail",
+      "version": "2023-07-06T17:00:58.000Z",
+      "lastUpdated": "2023-07-06T17:00:58.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/28.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/28.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:146-bangkit-dari-kematian",
+      "kind": "thumbnail",
+      "version": "2023-08-29T17:00:13.000Z",
+      "lastUpdated": "2023-08-29T17:00:13.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/13.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/13.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:145-sepuluh-potong-kue-pie",
+      "kind": "thumbnail",
+      "version": "2023-08-22T17:00:56.000Z",
+      "lastUpdated": "2023-08-22T17:00:56.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/renungan_20_06_21_01.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/renungan_20_06_21_01.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:76-w-jodoh-versi-istri",
+      "kind": "thumbnail",
+      "version": "2023-02-16T17:00:29.000Z",
+      "lastUpdated": "2023-02-16T17:00:29.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/8-langkah-menyiapkan-dana-pernikahan-dalam-satu-tahun_m_.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/8-langkah-menyiapkan-dana-pernikahan-dalam-satu-tahun_m_.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:89-w-tentram-dalam-doa",
+      "kind": "thumbnail",
+      "version": "2023-06-01T17:00:12.000Z",
+      "lastUpdated": "2023-06-01T17:00:12.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/24.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/24.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:130-dibentuk-untuk-bersandar-padanya",
+      "kind": "thumbnail",
+      "version": "2023-08-10T17:00:23.000Z",
+      "lastUpdated": "2023-08-10T17:00:23.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/57327-ilustrasi-pria-menutup-wajah-pixabaymalgorzatatomczak.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/57327-ilustrasi-pria-menutup-wajah-pixabaymalgorzatatomczak.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:129-pilih-kesal-atau-bersyukur",
+      "kind": "thumbnail",
+      "version": "2023-08-08T17:00:26.000Z",
+      "lastUpdated": "2023-08-08T17:00:26.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/lawan-arus-pemotor-tewas-tertabrak-tronton-jKSBW8tdYZ.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/lawan-arus-pemotor-tewas-tertabrak-tronton-jKSBW8tdYZ.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:118-dari-cianjur-menjadi-pelayan",
+      "kind": "thumbnail",
+      "version": "2023-08-03T17:00:36.000Z",
+      "lastUpdated": "2023-08-03T17:00:36.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/07/26.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/07/26.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:110-jalan-yang-berputar",
+      "kind": "thumbnail",
+      "version": "2023-08-01T17:00:48.000Z",
+      "lastUpdated": "2023-08-01T17:00:48.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/14.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/14.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:126-p-lupa-umur",
+      "kind": "thumbnail",
+      "version": "2023-07-27T17:00:11.000Z",
+      "lastUpdated": "2023-07-27T17:00:11.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/3-Mei.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/3-Mei.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:120-p-anakku-belajar-mandiri",
+      "kind": "thumbnail",
+      "version": "2023-07-25T17:00:12.000Z",
+      "lastUpdated": "2023-07-25T17:00:12.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/meluk-ibu.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/06/meluk-ibu.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:104-w-diselamatkan-dari-kecelakaan-maut",
+      "kind": "thumbnail",
+      "version": "2023-07-20T17:00:36.000Z",
+      "lastUpdated": "2023-07-20T17:00:36.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/d526.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/d526.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:73-w-melampaui-harapan",
+      "kind": "thumbnail",
+      "version": "2023-07-04T17:00:26.000Z",
+      "lastUpdated": "2023-07-04T17:00:26.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/5-Mei.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/5-Mei.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:119-yerikho-dan-ai",
+      "kind": "thumbnail",
+      "version": "2023-06-29T17:00:38.000Z",
+      "lastUpdated": "2023-06-29T17:00:38.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/ilustrasi-tembok-yerikho-yang-diruntuhkan-yosua-dan-bangsa-israel-121.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/04/ilustrasi-tembok-yerikho-yang-diruntuhkan-yosua-dan-bangsa-israel-121.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:117-dari-bandung-menepis-mendung",
+      "kind": "thumbnail",
+      "version": "2023-06-27T17:00:11.000Z",
+      "lastUpdated": "2023-06-27T17:00:11.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/18.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/18.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:114-lima-roti-dua-ikan",
+      "kind": "thumbnail",
+      "version": "2023-06-22T17:00:13.000Z",
+      "lastUpdated": "2023-06-22T17:00:13.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/15.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/15.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:100-w-lindungilah-anak-anak-ini",
+      "kind": "thumbnail",
+      "version": "2023-06-15T17:00:34.000Z",
+      "lastUpdated": "2023-06-15T17:00:34.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/16.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/05/16.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:86-tuhan-menyediakan",
+      "kind": "thumbnail",
+      "version": "2023-03-16T17:00:55.000Z",
+      "lastUpdated": "2023-03-16T17:00:55.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/10.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/10.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:84-semua-ada-saatnya",
+      "kind": "thumbnail",
+      "version": "2023-03-21T17:00:59.000Z",
+      "lastUpdated": "2023-03-21T17:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/12.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/12.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:122-dari-semanggi-ke-pasar-senen",
+      "kind": "thumbnail",
+      "version": "2023-05-25T17:00:14.000Z",
+      "lastUpdated": "2023-05-25T17:00:14.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/31.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/31.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:121-bukan-harapan-kosong",
+      "kind": "thumbnail",
+      "version": "2023-05-23T17:00:05.000Z",
+      "lastUpdated": "2023-05-23T17:00:05.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/30.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/30.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:107-tanpa-test-lagi",
+      "kind": "thumbnail",
+      "version": "2023-05-18T17:00:04.000Z",
+      "lastUpdated": "2023-05-18T17:00:04.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/19.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/19.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:103-menemukan-gereja-sejati",
+      "kind": "thumbnail",
+      "version": "2023-05-16T17:00:25.000Z",
+      "lastUpdated": "2023-05-16T17:00:25.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/04/pengetahuan-rohani.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/04/pengetahuan-rohani.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:99-paduan-suara-piano",
+      "kind": "thumbnail",
+      "version": "2023-05-11T17:00:46.000Z",
+      "lastUpdated": "2023-05-11T17:00:46.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2016/04/ccimage-7049283841_c191574d51_o.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2016/04/ccimage-7049283841_c191574d51_o.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:98-apa-balasanmu-untukku",
+      "kind": "thumbnail",
+      "version": "2023-05-09T17:00:24.000Z",
+      "lastUpdated": "2023-05-09T17:00:24.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/question-mark-1872634_1920.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/03/question-mark-1872634_1920.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:97-goncangan-iman",
+      "kind": "thumbnail",
+      "version": "2023-05-04T17:00:45.000Z",
+      "lastUpdated": "2023-05-04T17:00:45.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/17.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/17.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:83-tuhan-menggerakkan",
+      "kind": "thumbnail",
+      "version": "2023-04-27T17:00:20.000Z",
+      "lastUpdated": "2023-04-27T17:00:20.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/image.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/02/image.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:72-aku-tulang-rusuk-siapa",
+      "kind": "thumbnail",
+      "version": "2023-04-11T17:00:58.000Z",
+      "lastUpdated": "2023-04-11T17:00:58.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/22.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/22.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:62-penutup-itu-akhirnya-dibuka",
+      "kind": "thumbnail",
+      "version": "2023-04-04T17:00:59.000Z",
+      "lastUpdated": "2023-04-04T17:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Bible-Light-Rays.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Bible-Light-Rays.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:95-melayani-dalam-gelap-dan-sunyi",
+      "kind": "thumbnail",
+      "version": "2023-03-30T17:00:59.000Z",
+      "lastUpdated": "2023-03-30T17:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/ING_42323_04572.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/ING_42323_04572.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:88-taat-tanpa-pengecualian",
+      "kind": "thumbnail",
+      "version": "2023-03-28T17:00:00.000Z",
+      "lastUpdated": "2023-03-28T17:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/taat-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/08/taat-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:82-hanya-sejauh-doa",
+      "kind": "thumbnail",
+      "version": "2023-03-14T17:00:14.000Z",
+      "lastUpdated": "2023-03-14T17:00:14.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/23.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2023/03/23.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:70-takkan-pernah-sendiri",
+      "kind": "thumbnail",
+      "version": "2023-03-07T17:00:15.000Z",
+      "lastUpdated": "2023-03-07T17:00:15.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/12/26.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/12/26.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:60-gerbang-surga",
+      "kind": "thumbnail",
+      "version": "2023-02-09T17:00:42.000Z",
+      "lastUpdated": "2023-02-09T17:00:42.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/ccimage-29528496670_5d4dda194d_o-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/05/ccimage-29528496670_5d4dda194d_o-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:57-belajar-lebih-sabar",
+      "kind": "thumbnail",
+      "version": "2023-02-07T17:00:14.000Z",
+      "lastUpdated": "2023-02-07T17:00:14.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/ING_18993_00394.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/ING_18993_00394.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:55-berakar-untuk-bertahan",
+      "kind": "thumbnail",
+      "version": "2023-02-02T17:00:27.000Z",
+      "lastUpdated": "2023-02-02T17:00:27.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/ccimage-21907379856_1f01199a87_o-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/12/ccimage-21907379856_1f01199a87_o-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:44-penantian-panjang",
+      "kind": "thumbnail",
+      "version": "2022-10-20T17:00:29.000Z",
+      "lastUpdated": "2022-10-20T17:00:29.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/19.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/19.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:47-suspek-maligna",
+      "kind": "thumbnail",
+      "version": "2023-01-05T17:00:19.000Z",
+      "lastUpdated": "2023-01-05T17:00:19.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/12/29.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/12/29.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:59-bukan-karena-pasangan",
+      "kind": "thumbnail",
+      "version": "2022-11-29T17:00:52.000Z",
+      "lastUpdated": "2022-11-29T17:00:52.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/1.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/1.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:41-melewati-covid19-bersama-tuhan",
+      "kind": "thumbnail",
+      "version": "2022-12-27T17:00:35.000Z",
+      "lastUpdated": "2022-12-27T17:00:35.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/16-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/16-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:64-tidak-selalu-ada-esok",
+      "kind": "thumbnail",
+      "version": "2022-12-22T17:00:52.000Z",
+      "lastUpdated": "2022-12-22T17:00:52.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/yesus-dibaptis.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/yesus-dibaptis.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:61-sepasang-pusaka",
+      "kind": "thumbnail",
+      "version": "2022-12-20T17:00:51.000Z",
+      "lastUpdated": "2022-12-20T17:00:51.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/28.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/28.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:45-jangan-khawatir-kejarlah-tuhan-1",
+      "kind": "thumbnail",
+      "version": "2022-12-13T17:00:39.000Z",
+      "lastUpdated": "2022-12-13T17:00:39.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/28.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/28.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:39-tiga-bayangan-hitam-disingkirkan-1",
+      "kind": "thumbnail",
+      "version": "2022-12-06T17:00:49.000Z",
+      "lastUpdated": "2022-12-06T17:00:49.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/24.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/24.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:63-taat",
+      "kind": "thumbnail",
+      "version": "2022-12-01T17:00:28.000Z",
+      "lastUpdated": "2022-12-01T17:00:28.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/images-2020-11-17T084008.166-736961.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/images-2020-11-17T084008.166-736961.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:58-jembatan-sehelai-rambut",
+      "kind": "thumbnail",
+      "version": "2022-11-24T17:00:40.000Z",
+      "lastUpdated": "2022-11-24T17:00:40.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/stockvault-path-in-nature124348.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/stockvault-path-in-nature124348.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:53-tuhan-cukupkan",
+      "kind": "thumbnail",
+      "version": "2022-11-17T17:00:38.000Z",
+      "lastUpdated": "2022-11-17T17:00:38.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/12.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/12.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:40-saat-harus-memilih",
+      "kind": "thumbnail",
+      "version": "2022-11-10T17:00:02.000Z",
+      "lastUpdated": "2022-11-10T17:00:02.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/26-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/09/26-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:37-melayani",
+      "kind": "thumbnail",
+      "version": "2022-11-08T17:00:01.000Z",
+      "lastUpdated": "2022-11-08T17:00:01.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/nelayan.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/10/nelayan.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:35-rindu-rumahnya",
+      "kind": "thumbnail",
+      "version": "2022-11-03T17:00:59.000Z",
+      "lastUpdated": "2022-11-03T17:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Old-Church-Cross.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Old-Church-Cross.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:32-seruan-dalam-kepanikan",
+      "kind": "thumbnail",
+      "version": "2022-11-01T17:00:16.000Z",
+      "lastUpdated": "2022-11-01T17:00:16.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Cardinal-in-the-Snow.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2017/01/Cardinal-in-the-Snow.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:49-krisis-air",
+      "kind": "thumbnail",
+      "version": "2022-10-27T17:00:43.000Z",
+      "lastUpdated": "2022-10-27T17:00:43.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/03/ccimage-28098780272_d598d3d52d_o-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/03/ccimage-28098780272_d598d3d52d_o-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:48-bertahan-melewati-badai",
+      "kind": "thumbnail",
+      "version": "2022-10-25T17:00:27.000Z",
+      "lastUpdated": "2022-10-25T17:00:27.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/ccimage-26976055608_c68d011cc3_o-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2020/05/ccimage-26976055608_c68d011cc3_o-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:38-roh-jahat-diusir",
+      "kind": "thumbnail",
+      "version": "2022-10-18T17:00:38.000Z",
+      "lastUpdated": "2022-10-18T17:00:38.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/WS113-4.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/WS113-4.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:27-roh-yang-lain",
+      "kind": "thumbnail",
+      "version": "2022-10-13T17:00:10.000Z",
+      "lastUpdated": "2022-10-13T17:00:10.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/burung-terjebak.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/burung-terjebak.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:24-dia-ingatkan-sebelum-terlambat",
+      "kind": "thumbnail",
+      "version": "2022-10-11T17:00:40.000Z",
+      "lastUpdated": "2022-10-11T17:00:40.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ws-112-7.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ws-112-7.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:43-aku-cuma-punya-yesus-1",
+      "kind": "thumbnail",
+      "version": "2022-09-27T17:00:28.000Z",
+      "lastUpdated": "2022-09-27T17:00:28.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/jangan-lupakan-kematian-kristus.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/jangan-lupakan-kematian-kristus.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:36-upah-dari-melayaninya",
+      "kind": "thumbnail",
+      "version": "2022-09-22T17:00:24.000Z",
+      "lastUpdated": "2022-09-22T17:00:24.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/jalan-lurus.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/jalan-lurus.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:34-tubuh-kecil-dengan-tangisan-keras",
+      "kind": "thumbnail",
+      "version": "2022-09-20T17:00:32.000Z",
+      "lastUpdated": "2022-09-20T17:00:32.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/kandungan.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/kandungan.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:33-dalam-pemeliharaannya",
+      "kind": "thumbnail",
+      "version": "2022-09-15T17:00:11.000Z",
+      "lastUpdated": "2022-09-15T17:00:11.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ilustrasi-yesus-memberi-kelegaan-12121212121.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/ilustrasi-yesus-memberi-kelegaan-12121212121.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:31-penyampai-pesan",
+      "kind": "thumbnail",
+      "version": "2022-09-13T17:00:27.000Z",
+      "lastUpdated": "2022-09-13T17:00:27.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/hands-of-God-Jesus-500x275-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/08/hands-of-God-Jesus-500x275-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:30-mencari-asa-di-masa-pandemi",
+      "kind": "thumbnail",
+      "version": "2022-09-08T17:00:54.000Z",
+      "lastUpdated": "2022-09-08T17:00:54.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/07/yonathan-dan-daud.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/07/yonathan-dan-daud.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:29-benjolan-di-ketiak",
+      "kind": "thumbnail",
+      "version": "2022-09-06T17:00:46.000Z",
+      "lastUpdated": "2022-09-06T17:00:46.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/buah.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/buah.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:hadiah-terbesar-di-masa-pandemi",
+      "kind": "thumbnail",
+      "version": "2022-09-01T17:00:41.000Z",
+      "lastUpdated": "2022-09-01T17:00:41.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ccimage-g5300df88f564dc87335a1e0a4a2aaaf3bdc155e47582895553c99617b715f2ff365dec2fbe27812e7d199b3c57cd0e26-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ccimage-g5300df88f564dc87335a1e0a4a2aaaf3bdc155e47582895553c99617b715f2ff365dec2fbe27812e7d199b3c57cd0e26-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:saat-tiga-anak-sakit",
+      "kind": "thumbnail",
+      "version": "2022-08-30T17:00:54.000Z",
+      "lastUpdated": "2022-08-30T17:00:54.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/menegur.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/menegur.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:batok-kepala-manusia",
+      "kind": "thumbnail",
+      "version": "2022-08-25T17:00:17.000Z",
+      "lastUpdated": "2022-08-25T17:00:17.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/bab-11.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/bab-11.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:keturunan-ilahi",
+      "kind": "thumbnail",
+      "version": "2022-08-23T17:00:10.000Z",
+      "lastUpdated": "2022-08-23T17:00:10.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/07/father-son.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/07/father-son.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:jantung-bocor-disembuhkan",
+      "kind": "thumbnail",
+      "version": "2022-08-18T17:00:00.000Z",
+      "lastUpdated": "2022-08-18T17:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/ccimage-gd9858797d2e190720b981657bd29289b8a7a033a1ab32d1a77231e77ba892a2ff5745f7bc37aa9bd317872025226d262-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/ccimage-gd9858797d2e190720b981657bd29289b8a7a033a1ab32d1a77231e77ba892a2ff5745f7bc37aa9bd317872025226d262-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:kesaksian-yang-hidup",
+      "kind": "thumbnail",
+      "version": "2022-08-16T17:00:32.000Z",
+      "lastUpdated": "2022-08-16T17:00:32.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/noah2-584x372-1.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/11/noah2-584x372-1.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:domba-keseratus-1",
+      "kind": "thumbnail",
+      "version": "2022-08-09T17:00:25.000Z",
+      "lastUpdated": "2022-08-09T17:00:25.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/gembala-yg-baik.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/06/gembala-yg-baik.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:titik-balik-2",
+      "kind": "thumbnail",
+      "version": "2022-08-04T17:00:31.000Z",
+      "lastUpdated": "2022-08-04T17:00:31.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/bab-2.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/12/bab-2.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:lutut-yang-dikuatkan",
+      "kind": "thumbnail",
+      "version": "2022-08-02T17:00:21.000Z",
+      "lastUpdated": "2022-08-02T17:00:21.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/tidak-menolong.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/tidak-menolong.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:tuhan-memimpin-jalan-hidupku",
+      "kind": "thumbnail",
+      "version": "2022-07-26T17:00:59.000Z",
+      "lastUpdated": "2022-07-26T17:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/melangkah.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/melangkah.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:gunakan-kesempatan-yang-tuhan-berikan",
+      "kind": "thumbnail",
+      "version": "2022-07-21T17:00:24.000Z",
+      "lastUpdated": "2022-07-21T17:00:24.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ccimage-gd0b5c9ef11fdcf30ce1c34e16543a888f1f4a7b47120ab50a69d56135778b2be10c123edb9c5681122f3fff17bd120d9-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ccimage-gd0b5c9ef11fdcf30ce1c34e16543a888f1f4a7b47120ab50a69d56135778b2be10c123edb9c5681122f3fff17bd120d9-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:janganlah-mengandalkan-kekuatan-sendiri",
+      "kind": "thumbnail",
+      "version": "2022-07-19T17:00:16.000Z",
+      "lastUpdated": "2022-07-19T17:00:16.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/ccimage-gf38b95116511041f254262606b3d20f13238f277519800af6829d53afd9ed5cac219ffb200b03f12a24788fb4cd0c9e4-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/ccimage-gf38b95116511041f254262606b3d20f13238f277519800af6829d53afd9ed5cac219ffb200b03f12a24788fb4cd0c9e4-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:carilah-dahulu-kerajaan-kebenaran",
+      "kind": "thumbnail",
+      "version": "2022-07-12T17:00:57.000Z",
+      "lastUpdated": "2022-07-12T17:00:57.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/maxresdefault.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/maxresdefault.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:berkat-dibalik-kesusahan",
+      "kind": "thumbnail",
+      "version": "2022-07-07T17:00:03.000Z",
+      "lastUpdated": "2022-07-07T17:00:03.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/gold.jpeg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/gold.jpeg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:panggilannya-yang-tak-terduga",
+      "kind": "thumbnail",
+      "version": "2022-07-05T17:00:49.000Z",
+      "lastUpdated": "2022-07-05T17:00:49.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/ccimage-g4e45489402b406418c9865a4c07563001daff0614066a0c8e59e839a1a0dab2e1f638fd67e6ecc97f7d0bcb9ca6ef241-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/ccimage-g4e45489402b406418c9865a4c07563001daff0614066a0c8e59e839a1a0dab2e1f638fd67e6ecc97f7d0bcb9ca6ef241-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:tujuan-sakit-yang-diderita",
+      "kind": "thumbnail",
+      "version": "2022-06-28T17:00:09.000Z",
+      "lastUpdated": "2022-06-28T17:00:09.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ccimage-4885882921_b759cdf070_o-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/01/ccimage-4885882921_b759cdf070_o-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:pimpinan-tuhan-melanjutkan-studi",
+      "kind": "thumbnail",
+      "version": "2022-06-21T17:00:36.000Z",
+      "lastUpdated": "2022-06-21T17:00:36.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/artikel5.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/artikel5.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:bimbingan-tuhan-saat-kuliah-di-luar-kota",
+      "kind": "thumbnail",
+      "version": "2022-06-16T17:00:58.000Z",
+      "lastUpdated": "2022-06-16T17:00:58.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/abram-dipanggil.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/abram-dipanggil.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:panggilan-tuhan",
+      "kind": "thumbnail",
+      "version": "2022-06-14T17:00:50.000Z",
+      "lastUpdated": "2022-06-14T17:00:50.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/pray3.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/pray3.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:teladan-gereja-eropa",
+      "kind": "thumbnail",
+      "version": "2022-06-07T17:00:31.000Z",
+      "lastUpdated": "2022-06-07T17:00:31.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/3933423438.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/04/3933423438.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:dibalik-kematian-1",
+      "kind": "thumbnail",
+      "version": "2022-05-31T17:00:35.000Z",
+      "lastUpdated": "2022-05-31T17:00:35.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/091696900_1556346153-iStock-927775738.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/02/091696900_1556346153-iStock-927775738.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:persekutuan-mahasiswa",
+      "kind": "thumbnail",
+      "version": "2022-05-26T17:00:50.000Z",
+      "lastUpdated": "2022-05-26T17:00:50.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/talenta.png",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/03/talenta.png",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:seketika-sembuh",
+      "kind": "thumbnail",
+      "version": "2022-05-24T17:00:57.000Z",
+      "lastUpdated": "2022-05-24T17:00:57.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/pelaku-firman.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2022/05/pelaku-firman.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:tersesat-dalam-idealisme-duniawi",
+      "kind": "thumbnail",
+      "version": "2021-11-07T07:03:04.000Z",
+      "lastUpdated": "2021-11-07T07:03:04.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/beban.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/06/beban.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:langkah-langkah-indah",
+      "kind": "thumbnail",
+      "version": "2021-11-07T09:17:48.000Z",
+      "lastUpdated": "2021-11-07T09:17:48.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ccimage-g1f5b9c28dcb544bb420adb1c5399ccdd8f29cb35d2647676817d4a396530438a9325b34c03dcaecdfce0196a8769087a-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/10/ccimage-g1f5b9c28dcb544bb420adb1c5399ccdd8f29cb35d2647676817d4a396530438a9325b34c03dcaecdfce0196a8769087a-scaled.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:mimpi-yg-menakjubkan",
+      "kind": "thumbnail",
+      "version": "2021-11-07T09:09:37.000Z",
+      "lastUpdated": "2021-11-07T09:09:37.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/ccimage-gcc13cfda9f4faabccfd227d3f61d7941ecb996f69bda826e9c8de6018e72a04a300f8e8217f26f199d336f4fa56b39e8.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/ccimage-gcc13cfda9f4faabccfd227d3f61d7941ecb996f69bda826e9c8de6018e72a04a300f8e8217f26f199d336f4fa56b39e8.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "suara-thumbnail:terlindung-dari-bahaya-kebakaran",
+      "kind": "thumbnail",
+      "version": "2021-11-07T08:45:19.000Z",
+      "lastUpdated": "2021-11-07T08:45:19.000Z",
+      "source": "remote",
+      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/ccimage-g0200581dd2aa2f50370631299d2fd67a802be382b79e01cd09929a2dea4cf7edcd2b7e990ec5ae99da77da0108ecff5a-scaled.jpg",
+      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2021/08/ccimage-g0200581dd2aa2f50370631299d2fd67a802be382b79e01cd09929a2dea4cf7edcd2b7e990ec5ae99da77da0108ecff5a-scaled.jpg",
       "status": "remote"
     }
   ]

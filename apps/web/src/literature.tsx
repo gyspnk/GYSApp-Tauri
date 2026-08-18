@@ -21,8 +21,12 @@ import { assetStore } from "./asset-store.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import {
   getRecentLiteratureIds,
+  isLiteratureProgressCompatible,
   isResumeLocationValid,
+  literaturePagePercent,
+  literatureResourceVersion,
   readLiteratureProgress,
+  removeLiteratureProgress,
   saveLiteratureProgress,
   subscribeLiteratureProgress,
   type LiteratureLocation,
@@ -311,7 +315,12 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
   const progressMap = useMemo(
     () =>
       readLiteratureProgress(
-        new Map(items.map((item) => [item.id, item.updatedAt])),
+        new Map(
+          items.map((item) => [
+            item.id,
+            literatureResourceVersion(item.publishedAt),
+          ]),
+        ),
       ),
     [items, progressRevision],
   );
@@ -322,11 +331,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         .filter((item): item is LiteratureItem => Boolean(item))
         .filter((item) => {
           const entry = progressMap[item.id];
-          return Boolean(
-            entry &&
-            (entry.resourceVersion === item.updatedAt ||
-              entry.resourceVersion === "legacy"),
-          );
+          return isLiteratureProgressCompatible(entry, item);
         }),
     [items, progressMap],
   );
@@ -400,30 +405,41 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               const entry = progressMap[item.id];
               const percent = entry?.percent ?? 0;
               return (
-                <Link
-                  className="literature-recent-item"
-                  to={`/literatur/${encodeURIComponent(item.id)}`}
-                  key={item.id}
-                >
-                  <Cover item={item} compact />
-                  <span>
-                    <strong>{item.title}</strong>
-                    <small>
-                      {percent > 0 ? `${percent}% selesai` : "Belum dimulai"} ·{" "}
-                      {entry?.lastOpenedAt
-                        ? new Date(entry.lastOpenedAt).toLocaleDateString(
-                            locale,
-                          )
-                        : "baru dibuka"}
-                    </small>
-                    <progress
-                      value={percent}
-                      max={100}
-                      aria-label={`Kemajuan ${item.title}`}
-                    />
-                  </span>
-                  <span aria-hidden="true">›</span>
-                </Link>
+                <div className="literature-recent-item" key={item.id}>
+                  <Link
+                    className="literature-recent-link"
+                    to={`/literatur/${encodeURIComponent(item.id)}`}
+                  >
+                    <Cover item={item} compact />
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>
+                        {percent > 0 ? `${percent}% selesai` : "Belum dimulai"}{" "}
+                        ·{" "}
+                        {entry?.lastOpenedAt
+                          ? new Date(entry.lastOpenedAt).toLocaleDateString(
+                              locale,
+                            )
+                          : "baru dibuka"}
+                      </small>
+                      <progress
+                        value={percent}
+                        max={100}
+                        aria-label={`Kemajuan ${item.title}`}
+                      />
+                    </span>
+                    <span aria-hidden="true">›</span>
+                  </Link>
+                  <button
+                    className="literature-recent-remove"
+                    type="button"
+                    aria-label={`Hapus ${item.title} dari terakhir dilihat`}
+                    title="Hapus dari terakhir dilihat"
+                    onClick={() => removeLiteratureProgress(item.id)}
+                  >
+                    ×
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -567,7 +583,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [articleBody, setArticleBody] = useState<string>();
   const articleScrollTimer = useRef<number | undefined>(undefined);
   const articleRestoreFrame = useRef<number | undefined>(undefined);
-  const resourceVersion = item?.updatedAt ?? "unknown";
+  const resourceVersion = literatureResourceVersion(item?.publishedAt);
   const pdfSourceUrl =
     item?.format === "pdf" ? literaturePdfUrl(item.url) : undefined;
   const pdfAsset = useMemo(
@@ -592,12 +608,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     const existing = readLiteratureProgress(
       new Map([[item.id, resourceVersion]]),
     )[item.id];
-    const validExisting =
-      existing &&
-      (existing.resourceVersion === resourceVersion ||
-        existing.resourceVersion === "legacy")
-        ? existing
-        : undefined;
+    const validExisting = isLiteratureProgressCompatible(existing, item)
+      ? existing
+      : undefined;
     const opened: LiteratureProgress = {
       version: 2,
       percent: validExisting?.percent ?? 0,
@@ -643,6 +656,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       if (next) {
         progressRef.current = next;
         setProgress(next);
+      } else {
+        progressRef.current = undefined;
+        setProgress(undefined);
       }
     });
   }, [item, resourceVersion]);
@@ -732,7 +748,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const onPageChange = useCallback(
     (page: number, totalPages: number) => {
       if (!item || totalPages < 1) return;
-      const percent = (page / totalPages) * 100;
+      const percent = literaturePagePercent(page, totalPages);
       updateProgress(
         percent,
         { kind: "page", page, totalPages },

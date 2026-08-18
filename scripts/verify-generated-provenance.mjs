@@ -17,6 +17,12 @@ const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
 const assets = await readJson("apps/web/public/offline/asset-manifest.json");
+const distributedAssets = await readJson(
+  "apps/web/public/offline/distributed-assets.json",
+);
+const distributedHymns = await readJson(
+  "apps/web/public/offline/distributed-hymn-catalog.json",
+);
 const forkPdf = await readJson(
   "apps/web/public/offline/fork-hymnal-manifest.json",
 );
@@ -84,6 +90,33 @@ if (
   throw new Error("GYSApp-Fork PDF provenance drifted");
 if (pack.hymns !== hymns.items.length)
   throw new Error("offline pack hymn count drifted");
+if (
+  distributedHymns.version !== 1 ||
+  distributedHymns.sourceRepo !== "ThenGB/GYSAPP-Fork" ||
+  distributedHymns.sourceCommit !== "4f0d39b" ||
+  !Array.isArray(distributedHymns.catalogs) ||
+  distributedHymns.catalogs.reduce(
+    (total, catalog) =>
+      total + (Array.isArray(catalog.items) ? catalog.items.length : 0),
+    0,
+  ) !== 1344
+)
+  throw new Error("distributed hymn catalog provenance drifted");
+if (
+  distributedAssets.version !== 1 ||
+  distributedAssets.sourceRepo !== "ThenGB/GYSApp-Data" ||
+  !Array.isArray(distributedAssets.items) ||
+  !["b_kjv", "b_cuv", "HYMNE", "MDR", "ASM-I", "ASM-M", "ASM-P"].every((code) =>
+    distributedAssets.items.some(
+      (item) =>
+        item.code === code &&
+        item.downloadUrl?.startsWith(
+          "https://github.com/ThenGB/GYSApp-Data/releases/download/",
+        ),
+    ),
+  )
+)
+  throw new Error("distributed asset catalog is incomplete or untrusted");
 if (literature.source !== "tjc.org" || literature.items.length < 1)
   throw new Error("literature snapshot is invalid");
 if (

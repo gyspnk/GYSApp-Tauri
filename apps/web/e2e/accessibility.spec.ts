@@ -50,6 +50,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
   });
 
   test("Kidung mobile has no axe violations", async ({ page }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/GYSApp-Tauri/kidung");

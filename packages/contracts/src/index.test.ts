@@ -3,6 +3,7 @@ import {
   AccountProfileSchema,
   BiblePackManifestSchema,
   BibleReaderPackSchema,
+  DistributedAssetCatalogSchema,
   ChordDocumentV2Schema,
   EdgeTtsRequestSchema,
   EdgeTtsVoicesResponseSchema,
@@ -107,6 +108,63 @@ describe("public contracts", () => {
       books: 66,
     });
     expect(parsed.translation).toBe("TB");
+  });
+
+  it("accepts a distributed Bible translation code", () => {
+    const manifest = BiblePackManifestSchema.safeParse({
+      version: "1",
+      translation: "KJV",
+      generatedAt: "2026-08-14T00:00:00.000Z",
+      sha256: "b".repeat(64),
+      bytes: 1_935_399,
+      books: 66,
+    });
+    const reader = BibleReaderPackSchema.safeParse({
+      version: 1,
+      translation: "KJV",
+      source: "ThenGB/GYSApp-Data@bibles-2026.05.21",
+      books: [{ id: 1, short: "Gen", name: "Genesis", chapters: 50 }],
+      verses: [
+        {
+          id: "1:1:1",
+          book: "1",
+          bookOrder: 1,
+          chapter: 1,
+          verse: 1,
+          text: "In the beginning",
+        },
+      ],
+    });
+
+    expect(manifest.success).toBe(true);
+    expect(reader.success).toBe(true);
+  });
+
+  it("validates the GYSApp-Data distributed asset catalog", () => {
+    const parsed = DistributedAssetCatalogSchema.parse({
+      version: 1,
+      generatedAt: "2026-08-18T00:00:00.000Z",
+      sourceRepo: "ThenGB/GYSApp-Data",
+      items: [
+        {
+          kind: "bible",
+          code: "b_kjv",
+          title: "King James Version",
+          track: "bibles",
+          bundledByDefault: false,
+          version: "2026.05.21",
+          releaseTag: "bibles-2026.05.21",
+          fileName: "b_kjv.gyspkg",
+          downloadUrl:
+            "https://github.com/ThenGB/GYSApp-Data/releases/download/bibles-2026.05.21/b_kjv.gyspkg",
+          installFileName: "b_kjv.db",
+          sizeBytes: 1_935_399,
+          checksumSha256: "c".repeat(64),
+        },
+      ],
+    });
+
+    expect(parsed.items[0]?.code).toBe("b_kjv");
   });
 
   it("validates the browser TB reader projection", () => {

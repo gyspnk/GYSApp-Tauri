@@ -76,7 +76,7 @@ describe("browser platform binary boundary", () => {
       },
     });
     vi.stubGlobal("caches", {
-      keys: async () => ["gysapp-shell-v11", "unrelated-cache"],
+      keys: async () => ["gysapp-shell-v12", "unrelated-cache"],
       delete: async (name: string) => {
         deleted.push(name);
         return true;
@@ -86,7 +86,7 @@ describe("browser platform binary boundary", () => {
     try {
       await clearBrowserPlatformStorage();
       expect(messages).toEqual([{ type: "gys-clear-cache" }]);
-      expect(deleted).toEqual(["gysapp-shell-v11"]);
+      expect(deleted).toEqual(["gysapp-shell-v12"]);
     } finally {
       if (originalCaches === undefined)
         delete (globalThis as { caches?: unknown }).caches;

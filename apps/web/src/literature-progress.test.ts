@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  isLiteratureProgressCompatible,
   getRecentLiteratureIds,
   isResumeLocationValid,
+  literaturePagePercent,
+  literatureResourceVersion,
   normalizeLiteratureProgress,
   readLiteratureProgress,
+  removeLiteratureProgress,
   saveLiteratureProgress,
 } from "./literature-progress.js";
 
@@ -13,6 +17,10 @@ describe("literature reading progress", () => {
     const storage = {
       clear: () => values.clear(),
       getItem: (key: string) => values.get(key) ?? null,
+      key: (index: number) => [...values.keys()][index] ?? null,
+      get length() {
+        return values.size;
+      },
       setItem: (key: string, value: string) => values.set(key, value),
       removeItem: (key: string) => values.delete(key),
     };
@@ -107,6 +115,51 @@ describe("literature reading progress", () => {
         "new",
         undefined,
         "old",
+      ),
+    ).toBe(false);
+  });
+
+  it("removes one history entry and its saved PDF resume page", () => {
+    const progress = normalizeLiteratureProgress(
+      {
+        percent: 42,
+        updatedAt: "2026-08-14T00:00:00.000Z",
+        lastOpenedAt: "2026-08-14T00:01:00.000Z",
+        resourceVersion: "v2",
+        location: { kind: "page", page: 42, totalPages: 100 },
+      },
+      "v2",
+    );
+    if (!progress) throw new Error("fixture should normalize");
+    saveLiteratureProgress("book", progress);
+    localStorage.setItem("gys-pdf-page:literature:book:v2", "42");
+
+    removeLiteratureProgress("book");
+
+    expect(getRecentLiteratureIds()).toEqual([]);
+    expect(localStorage.getItem("gys-pdf-page:literature:book:v2")).toBeNull();
+  });
+
+  it("shows visible progress on the first PDF page and completes on the last", () => {
+    expect(literaturePagePercent(1, 324)).toBe(1);
+    expect(literaturePagePercent(10, 324)).toBe(3);
+    expect(literaturePagePercent(324, 324)).toBe(100);
+  });
+
+  it("keeps undated catalog entries compatible with older progress versions", () => {
+    expect(literatureResourceVersion(undefined)).toBe(
+      "1970-01-01T00:00:00.000Z",
+    );
+    expect(
+      isLiteratureProgressCompatible(
+        { resourceVersion: "2026-08-18T00:00:00.000Z" },
+        {},
+      ),
+    ).toBe(true);
+    expect(
+      isLiteratureProgressCompatible(
+        { resourceVersion: "old" },
+        { publishedAt: "2026-08-18T00:00:00.000Z" },
       ),
     ).toBe(false);
   });

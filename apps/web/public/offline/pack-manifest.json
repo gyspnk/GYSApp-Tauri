@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-16T13:55:06.800Z",
+  "generatedAt": "2026-08-18T05:19:20.638Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -21,6 +21,18 @@
       "path": "offline/hymn-catalog.json",
       "bytes": 868855,
       "sha256": "51b86cc84b6ce7921b96fec29687490cfff531f51facb8f02c0ba2c18f175b28"
+    },
+    {
+      "id": "distributed-hymn-catalog",
+      "path": "offline/distributed-hymn-catalog.json",
+      "bytes": 2514430,
+      "sha256": "d23bb26cca08e8562ee23c977bfd436ae331bf60d785da5d98d5ae1e0336e597"
+    },
+    {
+      "id": "distributed-asset-catalog",
+      "path": "offline/distributed-assets.json",
+      "bytes": 5482,
+      "sha256": "b7d79e87cc0ee9abf5474163b20520f78f5ed91b19ba8880f37e457dadeeb550"
     },
     {
       "id": "music-lock",
@@ -49,8 +61,8 @@
     {
       "id": "suara-sejati",
       "path": "offline/suara-sejati.json",
-      "bytes": 3342,
-      "sha256": "e049d9e4630b6dff95449297931729866ebf6fed452daf9379a72c39eeaf8c6b"
+      "bytes": 99375,
+      "sha256": "13427480ec2c743314dd884347fa950640b971c6ab002656c70fb44c5f169a3a"
     },
     {
       "id": "fork-hymnal-map",

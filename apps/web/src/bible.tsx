@@ -19,7 +19,7 @@ import {
   type BibleReaderPack,
 } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import {
   bibleBookNames,
@@ -52,6 +52,11 @@ import {
   scrubChapterNumber,
   type QuickNavDragState,
 } from "./bible-quick-nav.js";
+import {
+  getDistributedAssetManager,
+  type ManagedDistributedAsset,
+} from "./distributed-asset-manager.js";
+import { loadBibleReaderPack } from "./bible-distributed.js";
 
 type PackState =
   | { status: "loading" }
@@ -71,11 +76,17 @@ const BOOKMARKS_KEY = "gys-bible-bookmarks";
 const NOTES_KEY = "gys-bible-notes-v1";
 const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
 const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
+const VERSION_KEY = "gys-bible-version-v1";
 
 function readSavedNumber(key: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
   const saved = Number(localStorage.getItem(key));
   return Number.isInteger(saved) && saved > 0 ? saved : fallback;
+}
+
+function readSavedVersion(): string {
+  if (typeof window === "undefined") return "b_tb";
+  return localStorage.getItem(VERSION_KEY) ?? "b_tb";
 }
 
 function readStringSet(key: string): Set<string> {
@@ -189,6 +200,7 @@ function ChapterPane({
   book,
   chapter,
   verses,
+  translation,
   bookmarks,
   highlights,
   selectedVerseId,
@@ -205,6 +217,7 @@ function ChapterPane({
   book: BibleBook;
   chapter: number;
   verses: BibleVerse[];
+  translation: string;
   bookmarks: Set<string>;
   highlights: Record<string, string>;
   selectedVerseId?: string | undefined;
@@ -225,7 +238,7 @@ function ChapterPane({
     >
       <div className="reader-heading">
         <div>
-          <p className="date-line">Terjemahan Baru</p>
+          <p className="date-line">{translation}</p>
           <h2>
             {book.name} {chapter}
           </h2>
@@ -283,6 +296,10 @@ function ChapterPane({
 export function BiblePage({ locale }: { locale: Locale }) {
   const [searchParams] = useSearchParams();
   const [packState, setPackState] = useState<PackState>({ status: "loading" });
+  const [selectedVersionCode, setSelectedVersionCode] =
+    useState(readSavedVersion);
+  const [bibleAssets, setBibleAssets] = useState<ManagedDistributedAsset[]>([]);
+  const [assetCatalogReady, setAssetCatalogReady] = useState(false);
   const deepLink = useMemo(
     () => parseBibleDeepLink(searchParams),
     [searchParams],
@@ -298,6 +315,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [searchBook, setSearchBook] = useState("all");
   const [exactPhrase, setExactPhrase] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
+  const [searchFiltersOpen, setSearchFiltersOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 600,
+  );
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [searchedQuery, setSearchedQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -315,6 +335,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectedVerseId, setSelectedVerseId] = useState<string>();
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
+  const [speechControlsOpen, setSpeechControlsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
@@ -359,10 +380,42 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [typography, setTypography] = useState<BibleTypography>(() =>
     readBibleTypography(),
   );
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 600px)");
+    const syncSearchFilters = () => setSearchFiltersOpen(mediaQuery.matches);
+    syncSearchFilters();
+    mediaQuery.addEventListener("change", syncSearchFilters);
+    return () => mediaQuery.removeEventListener("change", syncSearchFilters);
+  }, []);
   useEffect(
     () => subscribeBibleTypography(() => setTypography(readBibleTypography())),
     [],
   );
+  useEffect(() => {
+    let active = true;
+    const manager = getDistributedAssetManager();
+    const refresh = async () => {
+      try {
+        const statuses = await manager.loadStatuses();
+        if (active) {
+          setBibleAssets(statuses.filter((asset) => asset.kind === "bible"));
+          setAssetCatalogReady(true);
+        }
+      } catch {
+        if (active) setAssetCatalogReady(true);
+      }
+    };
+    void refresh();
+    const onAssetsChanged = () => void refresh();
+    window.addEventListener("gys-distributed-assets-change", onAssetsChanged);
+    return () => {
+      active = false;
+      window.removeEventListener(
+        "gys-distributed-assets-change",
+        onAssetsChanged,
+      );
+    };
+  }, []);
 
   const startQuickNav = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -457,16 +510,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    void fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
-      signal: controller.signal,
-      cache: "force-cache",
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Offline TB reader pack unavailable");
-        const json: unknown = await response.json();
-        const parsed = BibleReaderPackSchema.safeParse(json);
-        if (!parsed.success) throw new Error("TB reader pack is invalid");
-        setPackState({ status: "ready", pack: parsed.data });
+    setPackState({ status: "loading" });
+    const request =
+      selectedVersionCode === "b_tb"
+        ? fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
+            signal: controller.signal,
+            cache: "force-cache",
+          }).then(async (response) => {
+            if (!response.ok)
+              throw new Error("Offline TB reader pack unavailable");
+            const json: unknown = await response.json();
+            const parsed = BibleReaderPackSchema.safeParse(json);
+            if (!parsed.success) throw new Error("TB reader pack is invalid");
+            return parsed.data;
+          })
+        : loadBibleReaderPack(
+            selectedVersionCode,
+            getDistributedAssetManager().getStore(),
+          );
+    void request
+      .then((pack) => {
+        if (!controller.signal.aborted) setPackState({ status: "ready", pack });
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted)
@@ -479,7 +543,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           });
       });
     return () => controller.abort();
-  }, [packAttempt]);
+  }, [packAttempt, selectedVersionCode]);
 
   const searchClient = useMemo(
     () =>
@@ -500,6 +564,25 @@ export function BiblePage({ locale }: { locale: Locale }) {
     [searchClient],
   );
   const books = packState.status === "ready" ? packState.pack.books : [];
+  const bibleVersionOptions = [
+    { value: "b_tb", label: "Terjemahan Baru" },
+    ...bibleAssets
+      .filter(
+        (asset) =>
+          asset.code !== "b_tb" &&
+          (asset.state === "installed" || asset.state === "update"),
+      )
+      .map((asset) => ({ value: asset.code, label: asset.title })),
+  ];
+  useEffect(() => {
+    if (!assetCatalogReady || selectedVersionCode === "b_tb") return;
+    if (
+      bibleVersionOptions.some((option) => option.value === selectedVersionCode)
+    )
+      return;
+    setSelectedVersionCode("b_tb");
+    localStorage.setItem(VERSION_KEY, "b_tb");
+  }, [assetCatalogReady, bibleVersionOptions, selectedVersionCode]);
   const book =
     books.find((candidate) => candidate.id === selectedBook) ?? books[0];
   const chapter = Math.min(selectedChapter, book?.chapters ?? selectedChapter);
@@ -888,7 +971,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
     if (navigator.share) {
       await navigator
         .share({
-          title: "Alkitab Terjemahan Baru",
+          title:
+            `Alkitab ${packState.status === "ready" ? packState.pack.translation : ""}`.trim(),
           text: selectionToolbar.text,
         })
         .catch(() => undefined);
@@ -1015,11 +1099,36 @@ export function BiblePage({ locale }: { locale: Locale }) {
     <div className="page bible-page">
       <header className="bible-page-header">
         <div className="bible-page-heading">
-          <p className="date-line">TB · offline reader</p>
+          <p className="date-line">
+            {packState.status === "ready"
+              ? `${packState.pack.translation} · offline reader`
+              : "Alkitab · offline reader"}
+          </p>
           <h1>{translate(locale, "page.bibleTitle")}</h1>
         </div>
         <div className="page-intro-actions">
-          <span className="pack-badge">TB · 66 buku</span>
+          <span className="pack-badge">
+            {packState.status === "ready"
+              ? `${packState.pack.translation} · ${books.length} buku`
+              : "Alkitab"}
+          </span>
+          <Select
+            value={selectedVersionCode}
+            onChange={(value) => {
+              setSelectedVersionCode(value);
+              localStorage.setItem(VERSION_KEY, value);
+              setSearchResults([]);
+              setSearchedQuery("");
+              setSelectedVerseId(undefined);
+            }}
+            label="Versi"
+            options={bibleVersionOptions}
+          />
+          {assetCatalogReady && bibleVersionOptions.length === 1 && (
+            <Link className="text-button" to="/lainnya?section=data">
+              Unduh versi lain
+            </Link>
+          )}
           <div
             className="bible-typography-controls"
             role="group"
@@ -1080,38 +1189,48 @@ export function BiblePage({ locale }: { locale: Locale }) {
               {searching ? "…" : translate(locale, "bible.searchAction")}
             </button>
           </div>
-          <div className="bible-search-options">
-            <Select
-              value={searchBook}
-              onChange={setSearchBook}
-              label="Kitab"
-              options={[
-                { value: "all", label: "Semua kitab" },
-                { value: "old", label: "Perjanjian Lama (39)" },
-                { value: "new", label: "Perjanjian Baru (27)" },
-                ...books.map((candidate) => ({
-                  value: String(candidate.id),
-                  label: candidate.name,
-                })),
-              ]}
-            />
-            <label className="check-option">
-              <input
-                type="checkbox"
-                checked={exactPhrase}
-                onChange={(event) => setExactPhrase(event.target.checked)}
-              />{" "}
-              Frasa tepat
-            </label>
-            <label className="check-option">
-              <input
-                type="checkbox"
-                checked={wholeWord}
-                onChange={(event) => setWholeWord(event.target.checked)}
-              />{" "}
-              Kata utuh
-            </label>
-          </div>
+          <details
+            className="bible-search-options-disclosure"
+            open={
+              searchFiltersOpen ||
+              (typeof window !== "undefined" && window.innerWidth >= 600)
+            }
+            onToggle={(event) => setSearchFiltersOpen(event.currentTarget.open)}
+          >
+            <summary>Filter pencarian</summary>
+            <div className="bible-search-options">
+              <Select
+                value={searchBook}
+                onChange={setSearchBook}
+                label="Kitab"
+                options={[
+                  { value: "all", label: "Semua kitab" },
+                  { value: "old", label: "Perjanjian Lama (39)" },
+                  { value: "new", label: "Perjanjian Baru (27)" },
+                  ...books.map((candidate) => ({
+                    value: String(candidate.id),
+                    label: candidate.name,
+                  })),
+                ]}
+              />
+              <label className="check-option">
+                <input
+                  type="checkbox"
+                  checked={exactPhrase}
+                  onChange={(event) => setExactPhrase(event.target.checked)}
+                />{" "}
+                Frasa tepat
+              </label>
+              <label className="check-option">
+                <input
+                  type="checkbox"
+                  checked={wholeWord}
+                  onChange={(event) => setWholeWord(event.target.checked)}
+                />{" "}
+                Kata utuh
+              </label>
+            </div>
+          </details>
           {searchError && (
             <div className="inline-error" role="alert">
               <span>{searchError}</span>
@@ -1234,111 +1353,127 @@ export function BiblePage({ locale }: { locale: Locale }) {
             <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />
           )}
           <div className="reader-toolbar">
-            <div
-              className="reader-toolbar-title quick-nav-handle"
-              onPointerDown={startQuickNav}
-              onClick={() => {
-                if (suppressQuickNavClickRef.current) return;
-                setPickerModalOpen(true);
-              }}
-              onKeyDown={quickNavKeyDown}
-              role="button"
-              tabIndex={0}
-              aria-label="Geser judul untuk berpindah pasal"
-            >
-              <span>Geser untuk navigasi</span>
-              <strong>
-                {book.name} {chapter}
-              </strong>
-              <small>{chapterVerses.length} ayat</small>
-            </div>
-            <Select
-              value={book.id}
-              onChange={(value) => {
-                setSelectedBook(value);
-                setSelectedChapter(1);
-              }}
-              label={translate(locale, "bible.book")}
-              options={books.map((option) => ({
-                value: option.id,
-                label: option.name,
-              }))}
-            />
-            <Select
-              value={chapter}
-              onChange={setSelectedChapter}
-              label={translate(locale, "bible.chapter")}
-              options={Array.from({ length: book.chapters }, (_, index) => ({
-                value: index + 1,
-                label: String(index + 1),
-              }))}
-            />
-            <label className="chapter-scrubber">
-              <span>Pasal cepat</span>
-              <input
-                type="range"
-                min="1"
-                max={book.chapters}
-                value={chapter}
-                onChange={(event) =>
-                  setSelectedChapter(Number(event.target.value))
-                }
-              />
-              <output>{chapter}</output>
-            </label>
-            <span className="reader-spacer" />
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => setSplitView((value) => !value)}
-              aria-pressed={splitView}
-            >
-              {splitView ? "Satu kolom" : "Dua kolom"}
-            </button>
-            {splitView && (
-              <button
-                className={`quiet-button${syncScroll ? " is-active" : ""}`}
-                type="button"
-                onClick={toggleSyncScroll}
-                aria-pressed={syncScroll}
+            <div className="reader-navigation-group">
+              <div
+                className="reader-toolbar-title quick-nav-handle"
+                onPointerDown={startQuickNav}
+                onClick={() => {
+                  if (suppressQuickNavClickRef.current) return;
+                  setPickerModalOpen(true);
+                }}
+                onKeyDown={quickNavKeyDown}
+                role="button"
+                tabIndex={0}
+                aria-label="Geser judul untuk berpindah pasal"
               >
-                {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
+                <span>Geser untuk navigasi</span>
+                <strong>
+                  {book.name} {chapter}
+                </strong>
+                <small>{chapterVerses.length} ayat</small>
+              </div>
+              <div className="reader-selectors">
+                <Select
+                  value={book.id}
+                  onChange={(value) => {
+                    setSelectedBook(value);
+                    setSelectedChapter(1);
+                  }}
+                  label={translate(locale, "bible.book")}
+                  options={books.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                  }))}
+                />
+                <Select
+                  value={chapter}
+                  onChange={setSelectedChapter}
+                  label={translate(locale, "bible.chapter")}
+                  options={Array.from(
+                    { length: book.chapters },
+                    (_, index) => ({
+                      value: index + 1,
+                      label: String(index + 1),
+                    }),
+                  )}
+                />
+              </div>
+              <label className="chapter-scrubber">
+                <span>Pasal cepat</span>
+                <input
+                  type="range"
+                  min="1"
+                  max={book.chapters}
+                  value={chapter}
+                  onChange={(event) =>
+                    setSelectedChapter(Number(event.target.value))
+                  }
+                />
+                <output>{chapter}</output>
+              </label>
+            </div>
+            <div className="reader-action-group">
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => setSplitView((value) => !value)}
+                aria-pressed={splitView}
+              >
+                {splitView ? "Satu kolom" : "Dua kolom"}
               </button>
-            )}
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void copyChapter()}
-            >
-              {copied
-                ? translate(locale, "bible.copied")
-                : translate(locale, "bible.copy")}
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => {
-                if (speechSnapshot.status === "speaking") {
-                  void speechPlayer.pause();
-                } else if (speechSnapshot.status === "paused") {
-                  void speechPlayer.resume();
-                } else if (speaking) {
-                  void speechPlayer.stop();
-                  setSpeaking(false);
-                } else speakChapter();
-              }}
-              disabled={!speechAvailable}
-            >
-              {speechSnapshot.status === "paused"
-                ? "Lanjutkan bacaan"
-                : speechSnapshot.status === "speaking"
-                  ? "Jeda bacaan"
-                  : speaking
-                    ? translate(locale, "bible.stopReading")
-                    : translate(locale, "bible.readAloud")}
-            </button>
+              {splitView && (
+                <button
+                  className={`quiet-button${syncScroll ? " is-active" : ""}`}
+                  type="button"
+                  onClick={toggleSyncScroll}
+                  aria-pressed={syncScroll}
+                >
+                  {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
+                </button>
+              )}
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void copyChapter()}
+              >
+                {copied
+                  ? translate(locale, "bible.copied")
+                  : translate(locale, "bible.copy")}
+              </button>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => {
+                  if (speechSnapshot.status === "speaking") {
+                    void speechPlayer.pause();
+                  } else if (speechSnapshot.status === "paused") {
+                    void speechPlayer.resume();
+                  } else if (speaking) {
+                    void speechPlayer.stop();
+                    setSpeaking(false);
+                  } else speakChapter();
+                }}
+                disabled={!speechAvailable}
+              >
+                {speechSnapshot.status === "paused"
+                  ? "Lanjutkan bacaan"
+                  : speechSnapshot.status === "speaking"
+                    ? "Jeda bacaan"
+                    : speaking
+                      ? translate(locale, "bible.stopReading")
+                      : translate(locale, "bible.readAloud")}
+              </button>
+              <button
+                className="quiet-button speech-settings-toggle"
+                type="button"
+                aria-expanded={speechControlsOpen}
+                onClick={() => setSpeechControlsOpen((current) => !current)}
+              >
+                {speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
+              </button>
+            </div>
             <div
-              className="speech-controls"
+              className={`speech-controls${speechControlsOpen ? " is-open" : ""}`}
               aria-label="Pengaturan bacaan suara"
             >
               <label>
@@ -1451,6 +1586,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               book={book}
               chapter={chapter}
               verses={chapterVerses}
+              translation={packState.pack.translation}
               bookmarks={bookmarks}
               highlights={highlights}
               selectedVerseId={selectedVerseId}
@@ -1489,6 +1625,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 book={nextTarget.book}
                 chapter={nextTarget.chapter}
                 verses={nextVerses}
+                translation={packState.pack.translation}
                 bookmarks={bookmarks}
                 highlights={highlights}
                 selectedVerseId={selectedVerseId}
@@ -1503,7 +1640,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
             )}
             {splitView && !nextTarget && (
               <div className="bible-pane-secondary bible-side-empty">
-                Ini adalah bacaan terakhir dalam paket TB.
+                Ini adalah bacaan terakhir dalam paket{" "}
+                {packState.pack.translation}.
               </div>
             )}
           </div>

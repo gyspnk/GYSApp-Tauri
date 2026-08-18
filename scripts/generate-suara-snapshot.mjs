@@ -1,5 +1,7 @@
 const source =
-  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia";
+  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=100&orderby=date&order=desc&_embed=wp:featuredmedia";
+const pageSize = 100;
+const maxPages = 100;
 const strip = (value) =>
   value
     .replace(
@@ -14,47 +16,64 @@ const strip = (value) =>
     .replace(/&#8230;|&hellip;/gi, "…")
     .replace(/\s+/g, " ")
     .trim();
-const response = await fetch(source, {
-  headers: { accept: "application/json" },
+const sourceUrl = new URL(source);
+const posts = [];
+let page = 1;
+let totalPages = 1;
+while (page <= totalPages) {
+  sourceUrl.searchParams.set("page", String(page));
+  sourceUrl.searchParams.set("per_page", String(pageSize));
+  const response = await fetch(sourceUrl, {
+    headers: { accept: "application/json" },
+  });
+  if (!response.ok)
+    throw new Error(`Suara Sejati source returned ${response.status}`);
+  const pagePosts = await response.json();
+  if (!Array.isArray(pagePosts))
+    throw new Error("Suara Sejati source returned an invalid page");
+  posts.push(...pagePosts);
+  const headerPages = Number(response.headers.get("x-wp-totalpages"));
+  if (Number.isInteger(headerPages) && headerPages > 0) {
+    if (headerPages > maxPages)
+      throw new Error("Suara Sejati source returned too many pages");
+    totalPages = headerPages;
+  } else {
+    totalPages = pagePosts.length < pageSize ? page : page + 1;
+  }
+  if (pagePosts.length === 0) break;
+  page += 1;
+}
+const items = posts.flatMap((post) => {
+  const title =
+    typeof post?.title?.rendered === "string" ? strip(post.title.rendered) : "";
+  const excerpt =
+    typeof post?.excerpt?.rendered === "string"
+      ? strip(post.excerpt.rendered)
+      : "";
+  const publishedAt =
+    typeof post?.date === "string"
+      ? new Date(post.date).toISOString()
+      : undefined;
+  const url = typeof post?.link === "string" ? post.link : "";
+  const imageUrl = post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  if (!title || !excerpt || !url || !publishedAt) return [];
+  return [
+    {
+      id:
+        typeof post?.slug === "string"
+          ? post.slug
+          : `suara-${post?.id ?? "item"}`,
+      title,
+      excerpt,
+      url,
+      ...(typeof imageUrl === "string" && imageUrl.startsWith("http")
+        ? { imageUrl }
+        : {}),
+      publishedAt,
+      source: "tjc.org",
+    },
+  ];
 });
-if (!response.ok)
-  throw new Error(`Suara Sejati source returned ${response.status}`);
-const posts = await response.json();
-const items = Array.isArray(posts)
-  ? posts.flatMap((post) => {
-      const title =
-        typeof post?.title?.rendered === "string"
-          ? strip(post.title.rendered)
-          : "";
-      const excerpt =
-        typeof post?.excerpt?.rendered === "string"
-          ? strip(post.excerpt.rendered)
-          : "";
-      const publishedAt =
-        typeof post?.date === "string"
-          ? new Date(post.date).toISOString()
-          : undefined;
-      const url = typeof post?.link === "string" ? post.link : "";
-      const imageUrl = post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-      if (!title || !excerpt || !url || !publishedAt) return [];
-      return [
-        {
-          id:
-            typeof post?.slug === "string"
-              ? post.slug
-              : `suara-${post?.id ?? "item"}`,
-          title,
-          excerpt,
-          url,
-          ...(typeof imageUrl === "string" && imageUrl.startsWith("http")
-            ? { imageUrl }
-            : {}),
-          publishedAt,
-          source: "tjc.org",
-        },
-      ];
-    })
-  : [];
 const catalog = {
   source: "tjc.org",
   generatedAt: new Date().toISOString(),

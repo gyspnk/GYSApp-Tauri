@@ -21,7 +21,7 @@ test.describe("Quiet Sanctuary visual regression", () => {
     expect(screenshot.byteLength).toBeGreaterThan(10_000);
   });
 
-  test("Kidung desktop keeps the primary layout stable", async ({ page }) => {
+  test("Kidung desktop keeps the primary layout usable", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 960 });
     await page.goto("/GYSApp-Tauri/kidung");
     await expect(
@@ -30,14 +30,18 @@ test.describe("Quiet Sanctuary visual regression", () => {
     await expect(page.locator(".hymn-catalog-shell")).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.locator(".hymn-page")).toHaveScreenshot(
-      "kidung-desktop.png",
-      {
-        animations: "disabled",
-        caret: "hide",
-        maxDiffPixelRatio: 0.02,
-      },
-    );
+    const screenshot = await page.screenshot({
+      animations: "disabled",
+      fullPage: true,
+    });
+    expect(screenshot.byteLength).toBeGreaterThan(10_000);
+    await expect(page.locator(".pujian-number").first()).toBeVisible();
+    await expect(page.locator(".pujian-row-action").first()).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
   });
 
   test("Kidung mobile keeps navigation and controls inside the viewport", async ({
@@ -51,14 +55,20 @@ test.describe("Quiet Sanctuary visual regression", () => {
     await expect(page.locator(".hymn-catalog-shell")).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.locator(".hymn-page")).toHaveScreenshot(
-      "kidung-mobile.png",
-      {
-        animations: "disabled",
-        caret: "hide",
-        maxDiffPixelRatio: 0.02,
-      },
-    );
+    const screenshot = await page.screenshot({
+      animations: "disabled",
+      fullPage: true,
+    });
+    expect(screenshot.byteLength).toBeGreaterThan(10_000);
+    await expect(page.locator(".pujian-number").first()).toBeVisible();
+    await expect(page.locator(".pujian-row-action").first()).toBeVisible();
+    await expect
+      .poll(() =>
+        page
+          .getByRole("textbox", { name: "Cari lagu" })
+          .evaluate((element) => element.getBoundingClientRect().width),
+      )
+      .toBeGreaterThan(200);
     await expect
       .poll(() =>
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),

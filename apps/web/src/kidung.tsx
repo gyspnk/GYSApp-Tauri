@@ -10,7 +10,13 @@ import {
   useSyncExternalStore,
   type TouchEvent,
 } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   HymnCatalogEntrySchema,
   UpstreamMusicLockSchema,
@@ -45,13 +51,25 @@ import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
+import {
+  loadDistributedHymnCatalog,
+  loadInstalledDistributedHymnalPdf,
+} from "./distributed-hymnals.js";
+import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 import { buildHymnSearchIndex, searchHymns } from "./hymn-search.js";
 import {
   addMidiPlaylistItem,
+  clearMidiPlaylist,
+  downloadMidiPlaylist,
   getMidiPlaylist,
+  importMidiPlaylist,
+  moveMidiPlaylistItem,
+  removeMidiPlaylistItem,
   selectMidiPlaylistItem,
   subscribeMidiPlaylist,
+  updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
+import { playMidiPlaylistItem } from "./midi-queue.js";
 import { hapticTick } from "./haptics.js";
 import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 import {
@@ -68,6 +86,14 @@ import {
   type HymnTypography,
 } from "./hymn-preferences.js";
 import { autoFitFontSize } from "./hymn-autofit.js";
+import type { ShellTheme } from "./settings.js";
+
+type KidungShellContext = {
+  locale?: Locale;
+  theme?: ShellTheme;
+  setLocale?: (locale: Locale) => void;
+  setTheme?: (theme: ShellTheme) => void;
+};
 
 const PdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -83,7 +109,7 @@ type HymnPdfAsset = {
   bytes?: Uint8Array;
   initialPage: number;
   pageCount?: number;
-  source: "fork" | "canonical";
+  source: "fork" | "canonical" | "distributed";
   sourceVersion: string;
 };
 const parsedLyricsCache = new Map<string, string[]>();
@@ -119,16 +145,18 @@ function useHymnData() {
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
   useEffect(() => {
     const controller = new AbortController();
-    void fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
-      signal: controller.signal,
-      cache: "force-cache",
-    })
-      .then(async (response) => {
+    void Promise.all([
+      fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
+        signal: controller.signal,
+        cache: "force-cache",
+      }).then(async (response) => {
         if (!response.ok) throw new Error("Offline hymn catalog unavailable");
-        setCatalog({
-          status: "ready",
-          items: parseCatalog(await response.json()),
-        });
+        return parseCatalog(await response.json());
+      }),
+      loadDistributedHymnCatalog().catch(() => []),
+    ])
+      .then(([core, distributed]) => {
+        setCatalog({ status: "ready", items: [...core, ...distributed] });
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted)
@@ -161,7 +189,7 @@ function numberLabel(number: number) {
 function uniqueItems(items: HymnCatalogEntry[]) {
   const seen = new Set<string>();
   return items.filter((item) => {
-    const key = `${item.number}:${item.title.trim().toLocaleLowerCase()}`;
+    const key = `${item.assetCode ?? item.book}:${item.number}:${item.title.trim().toLocaleLowerCase()}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -170,7 +198,23 @@ function uniqueItems(items: HymnCatalogEntry[]) {
 
 export function KidungPage({ locale }: { locale: Locale }) {
   const { songId } = useParams();
+  const [searchParams] = useSearchParams();
+  const shellContext = useOutletContext<KidungShellContext | undefined>();
   const { catalog, musicLock } = useHymnData();
+  const section = searchParams.get("section");
+  if (!songId && section === "playlist")
+    return <HymnPlaylistPage locale={locale} />;
+  if (!songId && section === "settings")
+    return (
+      <HymnSettingsPage
+        locale={locale}
+        theme={shellContext?.theme ?? "light"}
+        {...(shellContext?.setLocale
+          ? { setLocale: shellContext.setLocale }
+          : {})}
+        {...(shellContext?.setTheme ? { setTheme: shellContext.setTheme } : {})}
+      />
+    );
   if (songId)
     return (
       <HymnDetail
@@ -184,6 +228,360 @@ export function KidungPage({ locale }: { locale: Locale }) {
   return <HymnCatalog locale={locale} state={catalog} />;
 }
 
+type KidungSection = "songs" | "playlist" | "settings";
+
+function KidungLocalNav({
+  active,
+  locale,
+}: {
+  active: KidungSection;
+  locale: Locale;
+}) {
+  const playlist = useSyncExternalStore(
+    subscribeMidiPlaylist,
+    getMidiPlaylist,
+    getMidiPlaylist,
+  );
+  const links: Array<{ id: KidungSection; label: string; to: string }> = [
+    { id: "songs", label: "Kidung", to: "/kidung" },
+    {
+      id: "playlist",
+      label: "Playlist",
+      to: "/kidung?section=playlist",
+    },
+    {
+      id: "settings",
+      label: "Pengaturan",
+      to: "/kidung?section=settings",
+    },
+  ];
+  return (
+    <nav className="kidung-local-nav" aria-label="Navigasi Kidung">
+      <div className="kidung-local-nav-links">
+        {links.map((link) => (
+          <Link
+            className={active === link.id ? "is-active" : undefined}
+            key={link.id}
+            to={link.to}
+            aria-current={active === link.id ? "page" : undefined}
+          >
+            <span>{link.label}</span>
+            {link.id === "playlist" && playlist.items.length > 0 && (
+              <small>{playlist.items.length}</small>
+            )}
+          </Link>
+        ))}
+      </div>
+      <span className="kidung-local-nav-caption">
+        {active === "songs"
+          ? translate(locale, "kidung.catalogHeading")
+          : active === "playlist"
+            ? "Antrean MIDI tersimpan"
+            : "Preferensi ruang Kidung"}
+      </span>
+    </nav>
+  );
+}
+
+function HymnPlaylistPage({ locale }: { locale: Locale }) {
+  const navigate = useNavigate();
+  const playlist = useSyncExternalStore(
+    subscribeMidiPlaylist,
+    getMidiPlaylist,
+    getMidiPlaylist,
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string>();
+
+  const importPlaylist = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      importMidiPlaylist(await file.text());
+      setImportError(undefined);
+    } catch {
+      setImportError("File playlist tidak dapat dibaca.");
+    }
+  };
+
+  return (
+    <div className="page hymn-page kidung-tool-page">
+      <KidungLocalNav active="playlist" locale={locale} />
+      <header className="kidung-tool-heading">
+        <div>
+          <p className="date-line">MIDI QUEUE</p>
+          <h1>Playlist</h1>
+          <p className="intro-copy">
+            Atur lagu yang ingin diputar tanpa meninggalkan ruang Kidung.
+          </p>
+        </div>
+        <div className="kidung-tool-heading-actions">
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Impor
+          </button>
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => downloadMidiPlaylist()}
+            disabled={playlist.items.length === 0}
+          >
+            Ekspor
+          </button>
+          <input
+            ref={fileInputRef}
+            className="sr-only"
+            type="file"
+            accept="application/json,.json"
+            onChange={(event) => {
+              void importPlaylist(event.target.files?.[0]);
+              event.currentTarget.value = "";
+            }}
+          />
+        </div>
+      </header>
+      <section className="kidung-queue-surface" aria-label="Playlist MIDI">
+        <div className="kidung-queue-options">
+          <label className="kidung-inline-toggle">
+            <input
+              type="checkbox"
+              checked={playlist.autoNext}
+              onChange={(event) =>
+                updateMidiPlaylistOptions({ autoNext: event.target.checked })
+              }
+            />
+            <span>Putar berikutnya otomatis</span>
+          </label>
+          <label className="kidung-inline-toggle">
+            <input
+              type="checkbox"
+              checked={playlist.shuffle}
+              onChange={(event) =>
+                updateMidiPlaylistOptions({ shuffle: event.target.checked })
+              }
+            />
+            <span>Acak urutan</span>
+          </label>
+          <Select
+            value={playlist.loop}
+            onChange={(loop) => updateMidiPlaylistOptions({ loop })}
+            label="Ulangi"
+            options={[
+              { value: "off", label: "Tidak mengulang" },
+              { value: "one", label: "Lagu ini" },
+              { value: "all", label: "Semua lagu" },
+            ]}
+          />
+          <button
+            className="text-button kidung-clear-playlist"
+            type="button"
+            onClick={() => clearMidiPlaylist()}
+            disabled={playlist.items.length === 0}
+          >
+            Kosongkan
+          </button>
+        </div>
+        {importError && (
+          <p className="kidung-inline-error" role="alert">
+            {importError}
+          </p>
+        )}
+        {playlist.items.length === 0 ? (
+          <div className="kidung-empty-state">
+            <strong>Playlist masih kosong.</strong>
+            <p>
+              Tambahkan lagu dari detail Kidung, lalu putar dan atur urutannya
+              di sini.
+            </p>
+            <Link className="text-button" to="/kidung">
+              Kembali ke daftar Kidung →
+            </Link>
+          </div>
+        ) : (
+          <ol className="kidung-playlist-list">
+            {playlist.items.map((item, index) => (
+              <li
+                className={
+                  index === playlist.currentIndex ? "is-current" : undefined
+                }
+                key={item.songId}
+              >
+                <button
+                  className="kidung-playlist-song"
+                  type="button"
+                  onClick={() => {
+                    selectMidiPlaylistItem(index);
+                    void playMidiPlaylistItem(item.songId).catch(
+                      () => undefined,
+                    );
+                  }}
+                >
+                  <span className="kidung-playlist-index">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>
+                      {index === playlist.currentIndex
+                        ? "Sedang dipilih"
+                        : "Siap diputar"}
+                    </small>
+                  </span>
+                </button>
+                <div className="kidung-playlist-actions">
+                  <button
+                    className="text-button"
+                    type="button"
+                    aria-label={`Naikkan ${item.title}`}
+                    onClick={() => moveMidiPlaylistItem(index, index - 1)}
+                    disabled={index === 0}
+                  >
+                    Naik
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    aria-label={`Turunkan ${item.title}`}
+                    onClick={() => moveMidiPlaylistItem(index, index + 1)}
+                    disabled={index === playlist.items.length - 1}
+                  >
+                    Turun
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    aria-label={`Hapus ${item.title} dari playlist`}
+                    onClick={() => removeMidiPlaylistItem(item.songId)}
+                  >
+                    Hapus
+                  </button>
+                  <button
+                    className="text-button kidung-open-song"
+                    type="button"
+                    onClick={() => navigate(`/kidung/${item.songId}`)}
+                  >
+                    Buka
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function HymnSettingsPage({
+  locale,
+  theme,
+  setLocale,
+  setTheme,
+}: {
+  locale: Locale;
+  theme: ShellTheme;
+  setLocale?: (locale: Locale) => void;
+  setTheme?: (theme: ShellTheme) => void;
+}) {
+  const playlist = useSyncExternalStore(
+    subscribeMidiPlaylist,
+    getMidiPlaylist,
+    getMidiPlaylist,
+  );
+  const [compactPlayer, setCompactPlayer] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      localStorage.getItem("gys-media-minimized") === "1",
+  );
+  const setPlayerPreference = (next: boolean) => {
+    setCompactPlayer(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("gys-media-minimized", next ? "1" : "0");
+      window.dispatchEvent(new Event("gys-media-preference-change"));
+    }
+  };
+  return (
+    <div className="page hymn-page kidung-tool-page">
+      <KidungLocalNav active="settings" locale={locale} />
+      <header className="kidung-tool-heading">
+        <div>
+          <p className="date-line">RUANG KIDUNG</p>
+          <h1>Pengaturan</h1>
+          <p className="intro-copy">
+            Atur pengalaman membaca dan mendengar tanpa memenuhi layar dengan
+            panel.
+          </p>
+        </div>
+      </header>
+      <div className="kidung-settings-layout">
+        <section
+          className="kidung-settings-section"
+          aria-labelledby="kidung-appearance-heading"
+        >
+          <p className="date-line">Tampilan</p>
+          <h2 id="kidung-appearance-heading">Bahasa dan tema</h2>
+          <div className="kidung-settings-controls">
+            <Select
+              value={locale}
+              onChange={(value) => setLocale?.(value)}
+              label="Bahasa"
+              options={[
+                { value: "id", label: "Indonesia" },
+                { value: "en", label: "English" },
+                { value: "zh", label: "中文" },
+              ]}
+              disabled={!setLocale}
+            />
+            <Select
+              value={theme}
+              onChange={(value) => setTheme?.(value)}
+              label="Tema"
+              options={[
+                { value: "light", label: "Terang" },
+                { value: "dark", label: "Gelap" },
+                { value: "system", label: "Sistem" },
+                { value: "sepia", label: "Sepia" },
+                { value: "amoled", label: "AMOLED" },
+              ]}
+              disabled={!setTheme}
+            />
+          </div>
+        </section>
+        <section
+          className="kidung-settings-section"
+          aria-labelledby="kidung-player-heading"
+        >
+          <p className="date-line">Audio</p>
+          <h2 id="kidung-player-heading">Pemutar MIDI</h2>
+          <label className="kidung-settings-switch">
+            <input
+              type="checkbox"
+              checked={compactPlayer}
+              onChange={(event) => setPlayerPreference(event.target.checked)}
+            />
+            <span>
+              <strong>Mulai dalam mode ringkas</strong>
+              <small>
+                Player tetap tersedia sebagai dock tipis dan dapat dibuka kapan
+                saja.
+              </small>
+            </span>
+          </label>
+          <div className="kidung-settings-summary">
+            <span>Playlist tersimpan</span>
+            <strong>{playlist.items.length} lagu</strong>
+          </div>
+          <Link className="text-button" to="/kidung?section=playlist">
+            Kelola playlist →
+          </Link>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function HymnCatalog({
   locale,
   state,
@@ -195,33 +593,36 @@ function HymnCatalog({
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
   const deferredQuery = useDeferredValue(query);
-  const items = useMemo(
+  const allItems = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
     [state],
   );
-  const searchIndex = useMemo(() => buildHymnSearchIndex(items), [items]);
+  const searchIndex = useMemo(() => buildHymnSearchIndex(allItems), [allItems]);
   const books = useMemo(
-    () => [...new Set(items.map((item) => item.book))].sort(),
-    [items],
+    () => [...new Set(allItems.map((item) => item.book))].sort(),
+    [allItems],
   );
   const filtered = useMemo(() => {
+    if (!deferredQuery.trim() && book === "all")
+      return allItems.filter((item) => !item.assetCode);
     return searchHymns(searchIndex, deferredQuery, book);
-  }, [book, deferredQuery, searchIndex]);
+  }, [allItems, book, deferredQuery, searchIndex]);
   return (
     <div className="page hymn-page">
+      <KidungLocalNav active="songs" locale={locale} />
       <header className="hymn-page-header">
         <div className="hymn-page-heading">
           <p className="date-line">
-            {items.length > 0
-              ? `${items.length} lagu · ${translate(locale, "kidung.catalogCanonical")}`
+            {filtered.length > 0
+              ? `${filtered.length} lagu · ${translate(locale, "kidung.catalogCanonical")}`
               : translate(locale, "kidung.catalogCanonical")}
           </p>
           <h1>{translate(locale, "page.kidungTitle")}</h1>
         </div>
         <div className="hymn-page-actions">
           <span className="pack-badge">
-            {items.length > 0
-              ? `${translate(locale, "kidung.catalogOffline")} · ${items.length}`
+            {filtered.length > 0
+              ? `${translate(locale, "kidung.catalogOffline")} · ${filtered.length}`
               : translate(locale, "kidung.catalogOffline")}
           </span>
         </div>
@@ -284,20 +685,31 @@ function HymnCatalog({
                   className="pujian-row"
                   onClick={() => navigate(`/kidung/${item.id}`)}
                 >
-                  <span className="pujian-number">
+                  <span className="pujian-number" aria-hidden="true">
                     {numberLabel(item.number)}
                   </span>
                   <span className="pujian-copy">
                     <strong>{item.title}</strong>
-                    <small>
-                      {item.book} · {item.verses.length} bait · PDF{" "}
-                      {item.pdfPath
-                        ? translate(locale, "kidung.pdfAvailable")
-                        : "—"}
-                    </small>
+                    <span className="pujian-meta">
+                      <span>{item.book}</span>
+                      <span>{item.verses.length} bait</span>
+                      <span className="pujian-badge">
+                        {item.chordRef ? "Chord" : "Lirik"}
+                      </span>
+                      {item.pdfPath && (
+                        <span className="pujian-badge is-muted">
+                          {item.assetCode
+                            ? "PDF paket opsional"
+                            : `PDF ${translate(locale, "kidung.pdfAvailable")}`}
+                        </span>
+                      )}
+                    </span>
                   </span>
-                  <span className="pujian-arrow" aria-hidden="true">
-                    ›
+                  <span className="pujian-row-action">
+                    <span className="pujian-row-action-label">Buka</span>
+                    <span className="pujian-arrow" aria-hidden="true">
+                      ›
+                    </span>
                   </span>
                 </button>
               </li>
@@ -363,7 +775,9 @@ function HymnDetail({
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
   const [pdfPageCount, setPdfPageCount] = useState<number>();
-  const [pdfSource, setPdfSource] = useState<"fork" | "canonical">("fork");
+  const [pdfSource, setPdfSource] = useState<
+    "fork" | "canonical" | "distributed"
+  >("fork");
   const [pdfVersion, setPdfVersion] = useState<string>();
   const [pdfStatus, setPdfStatus] = useState<
     "idle" | "loading" | "ready" | "error"
@@ -712,6 +1126,16 @@ function HymnDetail({
     const existing = pdfAssetPromise.current;
     if (existing) return existing;
     const request = (async () => {
+      if (item.assetCode && item.assetCode !== "KR") {
+        const distributedPdf = await loadInstalledDistributedHymnalPdf(
+          item,
+          getDistributedAssetManager().getStore(),
+        );
+        return {
+          ...distributedPdf,
+          source: "distributed" as const,
+        } satisfies HymnPdfAsset;
+      }
       let forkError: unknown;
       try {
         const forkPdf = await loadForkHymnalPdf(item.id);
@@ -952,7 +1376,10 @@ function HymnDetail({
     void midiPlayer.setTranspose(bounded).catch(() => undefined);
   };
   return (
-    <div className="page hymn-detail-page">
+    <div
+      className={`page hymn-detail-page${viewerMode === "pdf" ? " is-pdf-viewer" : ""}`}
+    >
+      <KidungLocalNav active="songs" locale={locale} />
       <div className="detail-back">
         <Link className="text-button" to="/kidung">
           {translate(locale, "kidung.back")}
@@ -998,6 +1425,65 @@ function HymnDetail({
         onTouchEnd={onTouchEnd}
         onClick={restoreToolbar}
       >
+        {viewerMode === "pdf" && (
+          <div
+            className="hymn-pdf-viewer-chrome"
+            role="toolbar"
+            aria-label="Navigasi viewer Kidung"
+          >
+            <button
+              type="button"
+              className="viewer-chrome-button"
+              onClick={() => selectViewerMode("lyrics")}
+              aria-label="Kembali ke lirik"
+            >
+              <span aria-hidden="true">←</span>
+              <span className="viewer-chrome-copy">Lirik</span>
+            </button>
+            <button
+              type="button"
+              className="viewer-chrome-button"
+              disabled={!prev}
+              onClick={() => prev && navigate(`/kidung/${prev.id}`)}
+              aria-label={translate(locale, "kidung.previous")}
+            >
+              <span aria-hidden="true">‹</span>
+              <span className="viewer-chrome-copy">
+                {translate(locale, "kidung.previous")}
+              </span>
+            </button>
+            <div className="hymn-pdf-viewer-title">
+              <strong>{item.title}</strong>
+              <small>
+                {numberLabel(item.number)} · {item.book}
+              </small>
+            </div>
+            <button
+              type="button"
+              className="viewer-chrome-button"
+              disabled={!next}
+              onClick={() => next && navigate(`/kidung/${next.id}`)}
+              aria-label={translate(locale, "kidung.next")}
+            >
+              <span className="viewer-chrome-copy">
+                {translate(locale, "kidung.next")}
+              </span>
+              <span aria-hidden="true">›</span>
+            </button>
+            <button
+              type="button"
+              className="viewer-chrome-button viewer-chrome-midi"
+              onClick={() => void loadMidi()}
+              disabled={
+                midiStatus === "loading" || midiState.status === "loading"
+              }
+              aria-label="Buka MIDI dari viewer"
+            >
+              <span aria-hidden="true">♫</span>
+              <span className="viewer-chrome-copy">MIDI</span>
+            </button>
+          </div>
+        )}
         <div
           className={`detail-actions${toolbarVisible ? "" : " is-collapsed"}`}
         >
@@ -1036,7 +1522,7 @@ function HymnDetail({
           </button>
           <button
             type="button"
-            className="primary-button hymn-action"
+            className="primary-button hymn-action hymn-action-primary"
             onClick={() => void loadMidi()}
             disabled={
               midiStatus === "loading" || midiState.status === "loading"
@@ -1126,6 +1612,11 @@ function HymnDetail({
                       id: `KR-${numberLabel(item.number)}`,
                       path: "kr_master.pdf",
                     },
+                    pdfBytes,
+                  );
+                if (pdfSource === "distributed")
+                  downloadMusicAsset(
+                    { id: item.id, path: item.pdfPath },
                     pdfBytes,
                   );
               }}
@@ -1383,6 +1874,7 @@ function HymnDetail({
               progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
               {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
               title={item.title}
+              variant="hymn"
               chordOverlays={pdfChordOverlays}
               chordsVisible={chordsVisible}
             />

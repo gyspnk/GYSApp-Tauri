@@ -237,6 +237,7 @@ export function PdfReader({
   onPageChange,
   chordOverlays,
   chordsVisible = false,
+  variant = "default",
 }: {
   src: string;
   data?: Uint8Array;
@@ -248,6 +249,7 @@ export function PdfReader({
   onPageChange?: (page: number, totalPages: number) => void;
   chordOverlays?: Record<string, PdfChordOverlayMarker[]>;
   chordsVisible?: boolean;
+  variant?: "default" | "hymn";
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const secondaryCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -266,8 +268,9 @@ export function PdfReader({
   const [pageStart, setPageStart] = useState(() =>
     Math.max(1, pageRange?.start ?? 1),
   );
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(variant === "hymn" ? 1.35 : 1);
   const [fit, setFit] = useState(true);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [layout, setLayout] = useState<PdfLayout>(() =>
     readPdfLayout(progressKey),
   );
@@ -576,114 +579,139 @@ export function PdfReader({
   };
 
   return (
-    <section className="pdf-reader" aria-label={title}>
+    <section
+      className={`pdf-reader${variant === "hymn" ? " pdf-reader-hymn" : ""}`}
+      aria-label={title}
+    >
       <div className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}>
-        <button
-          type="button"
-          onClick={() => goToPage(page + (effectiveLayout === "two" ? -2 : -1))}
-          disabled={page <= pageStart}
-        >
-          Sebelumnya
-        </button>
-        <span>
-          Page {pageStart > 1 ? page - pageStart + 1 : page}
-          {total ? ` / ${total}` : ""}
-        </span>
-        {canResume && (
+        <div className="pdf-page-navigation">
           <button
-            className="pdf-resume"
             type="button"
-            data-pdf-resume="true"
-            onClick={() => goToPage(resumePage)}
+            onClick={() =>
+              goToPage(page + (effectiveLayout === "two" ? -2 : -1))
+            }
+            disabled={page <= pageStart}
           >
-            Kembali ke halaman {resumePage}
+            Sebelumnya
+          </button>
+          <span>
+            Page {pageStart > 1 ? page - pageStart + 1 : page}
+            {total ? ` / ${total}` : ""}
+          </span>
+          {canResume && (
+            <button
+              className="pdf-resume"
+              type="button"
+              data-pdf-resume="true"
+              onClick={() => goToPage(resumePage)}
+            >
+              Kembali ke halaman {resumePage}
+            </button>
+          )}
+          {total > 1 && (
+            <label className="pdf-page-jump">
+              Ke halaman
+              <input
+                type="number"
+                min={pageStart}
+                max={pageStart + Math.max(0, total - 1)}
+                value={page}
+                aria-label="Lompat ke halaman PDF"
+                onChange={(event) =>
+                  setPage(
+                    Math.max(
+                      pageStart,
+                      Math.min(
+                        pageStart + Math.max(0, total - 1),
+                        Number(event.target.value) || pageStart,
+                      ),
+                    ),
+                  )
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter")
+                    goToPage(Number(event.currentTarget.value) || 1);
+                }}
+              />
+            </label>
+          )}
+          <button
+            type="button"
+            onClick={() => goToPage(page + (effectiveLayout === "two" ? 2 : 1))}
+            disabled={total === 0 || page >= pageStart + total - 1}
+          >
+            Berikutnya
+          </button>
+        </div>
+        {variant === "hymn" && (
+          <button
+            className="pdf-advanced-toggle"
+            type="button"
+            aria-expanded={advancedOpen}
+            onClick={() => setAdvancedOpen((value) => !value)}
+          >
+            {advancedOpen ? "Tutup alat PDF" : "Pengaturan PDF"}
           </button>
         )}
-        {total > 0 && (
-          <label className="pdf-page-jump">
-            Ke halaman
+        <div
+          className={`pdf-advanced-controls${advancedOpen ? " is-open" : ""}`}
+        >
+          <label>
+            Zoom{" "}
             <input
-              type="number"
-              min={pageStart}
-              max={pageStart + Math.max(0, total - 1)}
-              value={page}
-              aria-label="Lompat ke halaman PDF"
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.1"
+              value={zoom}
               onChange={(event) =>
-                setPage(
-                  Math.max(
-                    pageStart,
-                    Math.min(
-                      pageStart + Math.max(0, total - 1),
-                      Number(event.target.value) || pageStart,
-                    ),
-                  ),
-                )
+                setZoom(clampPdfZoom(Number(event.target.value)))
               }
-              onKeyDown={(event) => {
-                if (event.key === "Enter")
-                  goToPage(Number(event.currentTarget.value) || 1);
-              }}
             />
           </label>
-        )}
-        <button
-          type="button"
-          onClick={() => goToPage(page + (effectiveLayout === "two" ? 2 : 1))}
-          disabled={total === 0 || page >= pageStart + total - 1}
-        >
-          Berikutnya
-        </button>
-        <label>
-          Zoom{" "}
-          <input
-            type="range"
-            min="0.5"
-            max="3"
-            step="0.1"
-            value={zoom}
-            onChange={(event) =>
-              setZoom(clampPdfZoom(Number(event.target.value)))
-            }
-          />
-        </label>
-        <button type="button" onClick={() => setFit((value) => !value)}>
-          {fit ? "Ukuran asli" : "Sesuaikan"}
-        </button>
-        <div className="pdf-layout-toggle" role="group" aria-label="Layout PDF">
-          {(["single", "two", "vertical", "horizontal"] as const).map(
-            (value) => (
-              <button
-                key={value}
-                type="button"
-                className={layout === value ? "is-active" : ""}
-                onClick={() => setLayout(value)}
-                aria-pressed={layout === value}
-              >
-                {value === "single"
-                  ? "1 halaman"
-                  : value === "two"
-                    ? "2 halaman"
-                    : value === "vertical"
-                      ? "Vertikal"
-                      : "Mendatar"}
-              </button>
-            ),
+          <button type="button" onClick={() => setFit((value) => !value)}>
+            {fit ? "Ukuran asli" : "Sesuaikan"}
+          </button>
+          <div
+            className="pdf-layout-toggle"
+            role="group"
+            aria-label="Layout PDF"
+          >
+            {(["single", "two", "vertical", "horizontal"] as const).map(
+              (value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={layout === value ? "is-active" : ""}
+                  onClick={() => setLayout(value)}
+                  aria-pressed={layout === value}
+                >
+                  {value === "single"
+                    ? "1 halaman"
+                    : value === "two"
+                      ? "2 halaman"
+                      : value === "vertical"
+                        ? "Vertikal"
+                        : "Mendatar"}
+                </button>
+              ),
+            )}
+          </div>
+          {layout === "two" && effectiveLayout === "single" && (
+            <small className="pdf-layout-note">
+              Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.
+            </small>
+          )}
+          {downloadUrl && (
+            <a
+              className="pdf-download"
+              href={downloadUrl}
+              download={`${title}.pdf`}
+            >
+              Unduh
+            </a>
           )}
         </div>
-        {layout === "two" && effectiveLayout === "single" && (
-          <small className="pdf-layout-note">
-            Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.
-          </small>
-        )}
-        {downloadUrl && (
-          <a
-            className="pdf-download"
-            href={downloadUrl}
-            download={`${title}.pdf`}
-          >
-            Unduh
-          </a>
-        )}
       </div>
       <div
         className="pdf-stage"

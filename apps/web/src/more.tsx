@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { type AccountProfile, type AssetManifestV1 } from "@gys/contracts";
 import {
   decryptBackupV2,
@@ -44,6 +44,10 @@ import {
   subscribeNativeEgysLogin,
 } from "./native-platform.js";
 import type { ShellTheme } from "./settings.js";
+import {
+  getDistributedAssetManager,
+  type ManagedDistributedAsset,
+} from "./distributed-asset-manager.js";
 
 type PackManifest = {
   version: number;
@@ -65,6 +69,135 @@ type AssetCheckState =
 function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function distributedAssetStateLabel(asset: ManagedDistributedAsset): string {
+  switch (asset.state) {
+    case "bundled":
+      return "Termasuk paket inti";
+    case "available":
+      return "Belum diunduh";
+    case "installed":
+      return `Tersimpan · v${asset.installedVersion ?? asset.item?.version ?? "?"}`;
+    case "update":
+      return `Pembaruan tersedia · v${asset.item?.version ?? "?"}`;
+    case "unavailable":
+      return "Belum tersedia";
+  }
+}
+
+function DistributedAssetPanel({
+  assets,
+  busyCode,
+  progress,
+  error,
+  loading,
+  onInstall,
+  onRemove,
+}: {
+  assets: ManagedDistributedAsset[];
+  busyCode?: string;
+  progress?: { received: number; total: number };
+  error?: string;
+  loading?: boolean;
+  onInstall: (code: string) => void;
+  onRemove: (code: string) => void;
+}) {
+  return (
+    <article className="more-card more-card-wide distributed-assets-card">
+      <div className="more-card-heading">
+        <div>
+          <p className="date-line">Paket tambahan</p>
+          <h2>Manajemen Aset</h2>
+        </div>
+        <span className="pack-badge">Unduh sesuai kebutuhan</span>
+      </div>
+      <p>
+        Versi Alkitab, kidung, dan SoundFont tambahan tidak ikut cache awal.
+        Unduh saat diperlukan; aset terverifikasi dan tersimpan offline setelah
+        selesai.
+      </p>
+      <div className="distributed-assets-list">
+        {loading && (
+          <small className="account-sync-note">Memuat katalog aset…</small>
+        )}
+        {!loading && assets.length === 0 && (
+          <small className="account-sync-note">
+            Belum ada aset tambahan yang tersedia.
+          </small>
+        )}
+        {assets.map((asset) => {
+          const busy = busyCode === asset.code;
+          const percent =
+            busy && progress?.total
+              ? Math.min(
+                  100,
+                  Math.round((progress.received / progress.total) * 100),
+                )
+              : 0;
+          return (
+            <div className="distributed-asset-row" key={asset.code}>
+              <div className="distributed-asset-copy">
+                <strong>{asset.title}</strong>
+                <small>
+                  {distributedAssetStateLabel(asset)}
+                  {asset.sizeBytes ? ` · ${formatBytes(asset.sizeBytes)}` : ""}
+                </small>
+                {busy && (
+                  <progress
+                    value={percent}
+                    max={100}
+                    aria-label={`Mengunduh ${asset.title}`}
+                  />
+                )}
+              </div>
+              <div className="distributed-asset-actions">
+                {busy ? (
+                  <span className="account-sync-note">
+                    Mengunduh {percent}%…
+                  </span>
+                ) : asset.state === "bundled" ? (
+                  <span className="pack-badge is-verified">Siap offline</span>
+                ) : asset.state === "installed" || asset.state === "update" ? (
+                  <>
+                    <button
+                      className="quiet-button"
+                      type="button"
+                      onClick={() => onInstall(asset.code)}
+                    >
+                      {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+                    </button>
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => onRemove(asset.code)}
+                    >
+                      Hapus
+                    </button>
+                  </>
+                ) : asset.state === "available" ? (
+                  <button
+                    className="primary-button"
+                    type="button"
+                    onClick={() => onInstall(asset.code)}
+                  >
+                    Unduh
+                  </button>
+                ) : (
+                  <span className="account-sync-note">Tidak tersedia</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {error && (
+        <div className="inline-error" role="alert">
+          {error}
+        </div>
+      )}
+    </article>
+  );
 }
 
 function localUpdateCount(diff: AssetManifestDiff): number {
@@ -98,6 +231,7 @@ const BACKUP_STORAGE_KEYS = [
   "gys-active-asset-manifest-v1",
   "gys-bible-book",
   "gys-bible-chapter",
+  "gys-bible-version-v1",
   "gys-bible-last-reading",
   "gys-bible-bookmarks",
   "gys-bible-notes-v1",
@@ -178,6 +312,7 @@ export function MorePage({
   setLocale: (value: Locale) => void;
   setTheme: (value: ShellTheme) => void;
 }) {
+  const [searchParams] = useSearchParams();
   const nativeShell = isTauriShell();
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
@@ -209,6 +344,17 @@ export function MorePage({
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const [playlistFile, setPlaylistFile] = useState<File>();
+  const [distributedAssets, setDistributedAssets] = useState<
+    ManagedDistributedAsset[]
+  >([]);
+  const [distributedAssetsLoading, setDistributedAssetsLoading] =
+    useState(true);
+  const [distributedBusyCode, setDistributedBusyCode] = useState<string>();
+  const [distributedProgress, setDistributedProgress] = useState<{
+    received: number;
+    total: number;
+  }>();
+  const [distributedError, setDistributedError] = useState<string>();
   const [reminderTime, setReminderTime] = useState(
     () => localStorage.getItem("gys-reminder-time-v1") ?? "",
   );
@@ -303,6 +449,37 @@ export function MorePage({
     () => subscribeMidiPlaylist(() => setPlaylist(getMidiPlaylist())),
     [],
   );
+
+  useEffect(() => {
+    let active = true;
+    const manager = getDistributedAssetManager();
+    const refresh = async () => {
+      try {
+        const next = await manager.refresh();
+        if (active) {
+          setDistributedAssets(next);
+          setDistributedAssetsLoading(false);
+          setDistributedError(undefined);
+        }
+      } catch (error) {
+        if (active) {
+          recordDiagnostic("warn", "assets.distributed.catalog", error);
+          setDistributedAssetsLoading(false);
+          setDistributedError("Katalog aset tambahan belum dapat dimuat.");
+        }
+      }
+    };
+    void refresh();
+    const onAssetsChanged = () => void refresh();
+    window.addEventListener("gys-distributed-assets-change", onAssetsChanged);
+    return () => {
+      active = false;
+      window.removeEventListener(
+        "gys-distributed-assets-change",
+        onAssetsChanged,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (nativeShell) {
@@ -560,6 +737,51 @@ export function MorePage({
     }
   };
 
+  const installDistributedAsset = async (code: string) => {
+    if (distributedBusyCode) return;
+    setDistributedBusyCode(code);
+    setDistributedProgress(undefined);
+    setDistributedError(undefined);
+    try {
+      const manager = getDistributedAssetManager();
+      await manager.install(code, {
+        onProgress: (received, total) =>
+          setDistributedProgress({ received, total }),
+      });
+      setDistributedAssets(await manager.loadStatuses());
+      show("Aset berhasil diunduh dan disimpan offline.");
+    } catch (error) {
+      recordDiagnostic("warn", "assets.distributed.install", error);
+      setDistributedError(
+        error instanceof Error
+          ? error.message
+          : "Aset gagal diunduh. Coba lagi saat online.",
+      );
+    } finally {
+      setDistributedBusyCode(undefined);
+      setDistributedProgress(undefined);
+    }
+  };
+
+  const removeDistributedAsset = async (code: string) => {
+    if (
+      distributedBusyCode ||
+      !window.confirm("Hapus aset offline ini dari perangkat?")
+    )
+      return;
+    try {
+      const manager = getDistributedAssetManager();
+      await manager.remove(code);
+      setDistributedAssets(await manager.loadStatuses());
+      show("Aset dihapus dari penyimpanan offline.");
+    } catch (error) {
+      recordDiagnostic("warn", "assets.distributed.remove", error);
+      setDistributedError(
+        error instanceof Error ? error.message : "Aset gagal dihapus.",
+      );
+    }
+  };
+
   const openNativeEgysLoginFlow = async () => {
     setAuthBusy(true);
     try {
@@ -764,7 +986,7 @@ export function MorePage({
 
   const [activeSection, setActiveSection] = useState<
     "all" | "account" | "appearance" | "data" | "help"
-  >("all");
+  >(() => (searchParams.get("section") === "data" ? "data" : "all"));
 
   return (
     <div className="page more-page">
@@ -1072,8 +1294,8 @@ export function MorePage({
                 <span className="pack-badge">Siap</span>
               </div>
               <p>
-                Alkitab TB, metadata kidung, dan SoundFont tersedia tanpa
-                koneksi. PDF dan partitur diunduh sesuai kebutuhan.
+                Alkitab TB dan metadata inti tersedia tanpa koneksi. Versi
+                tambahan, PDF, partitur, dan SoundFont diunduh sesuai kebutuhan.
               </p>
               <div className="pack-stats">
                 <span>
@@ -1139,6 +1361,20 @@ export function MorePage({
                 </small>
               </div>
             </article>
+
+            <DistributedAssetPanel
+              assets={distributedAssets}
+              loading={distributedAssetsLoading}
+              {...(distributedBusyCode
+                ? { busyCode: distributedBusyCode }
+                : {})}
+              {...(distributedProgress
+                ? { progress: distributedProgress }
+                : {})}
+              {...(distributedError ? { error: distributedError } : {})}
+              onInstall={(code) => void installDistributedAsset(code)}
+              onRemove={(code) => void removeDistributedAsset(code)}
+            />
 
             <button
               className="more-card more-action"

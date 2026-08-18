@@ -68,9 +68,14 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   // Chord extraction and the visible reader share one immutable PDF request;
   // the second presentation cannot download the master again.
   expect(forkPdfRequests).toHaveLength(1);
-  await page.getByRole("button", { name: "Putar MIDI" }).click();
+  await page.getByRole("button", { name: "Buka MIDI dari viewer" }).click();
   await expect(page.locator(".media-surface")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".media-meta")).toContainText("Pujilah Allah");
+  await expect(page.locator(".media-collapse-toggle")).toBeVisible();
+  await page.locator(".media-collapse-toggle").click();
+  await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
+  await page.getByRole("button", { name: "Perbesar pemutar" }).click();
+  await expect(page.locator(".media-transport-controls")).toBeVisible();
   await expect
     .poll(
       () => page.locator(".media-surface").getAttribute("data-media-status"),
@@ -81,7 +86,7 @@ test("canonical chord, fork PDF, and MIDI assets open from hymn detail", async (
   await expect(page.getByLabel("Instrumen MIDI").locator("option")).toHaveCount(
     129,
   );
-  await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
+  await page.locator(".media-surface .media-minimize").click();
   await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Perbesar pemutar" }),
@@ -153,6 +158,45 @@ test("literature PDF failure exposes retry inside the application reader shell",
   ).toBeVisible();
 });
 
+test("literature PDF stays inline, jumps pages, and resumes the last page", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.route("**/*.{pdf,PDF}", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response });
+  });
+  await page.goto("/GYSApp-Tauri/literatur");
+  await page
+    .getByRole("link", { name: /Kitab Markus/i })
+    .first()
+    .click();
+  await expect(page.getByRole("heading", { name: "Kitab Markus" })).toBeVisible(
+    { timeout: 15_000 },
+  );
+  await page.getByRole("button", { name: "Baca di aplikasi" }).click();
+  await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 324");
+
+  await page
+    .getByRole("spinbutton", { name: "Lompat ke halaman PDF" })
+    .fill("10");
+  await expect(page.locator(".pdf-toolbar")).toContainText("Page 10 / 324");
+  await expect(
+    page.getByRole("progressbar", { name: /Kemajuan membaca/ }),
+  ).toHaveAttribute("value", "3");
+  await expect(page).toHaveURL(/\/literatur\//);
+
+  await page.getByRole("button", { name: "Tutup" }).click();
+  await expect(page.locator(".pdf-reader")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Lanjutkan dari halaman 10" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Lanjutkan dari halaman 10" }).click();
+  await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".pdf-toolbar")).toContainText("Page 10 / 324");
+});
+
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
   page,
 }) => {
@@ -189,6 +233,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     "horizontal",
   );
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Pengaturan PDF" }).click();
   await page.getByRole("button", { name: "2 halaman" }).click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",

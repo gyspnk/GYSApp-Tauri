@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 
 const source = "https://tjc.org/id/literatur/";
+const undatedResourceVersion = "1970-01-01T00:00:00.000Z";
 const pages = [
   ["kesaksian", source, "posts-table-1"],
   ["warta", source, "posts-table-2"],
@@ -198,7 +199,7 @@ for (const [category, url, marker] of pages) {
       url: href,
       format: formatFor(href, title),
       ...(candidate.date ? { publishedAt: candidate.date } : {}),
-      updatedAt: candidate.date ?? generatedAt,
+      updatedAt: candidate.date ?? undatedResourceVersion,
       source: "tjc.org",
     });
   }

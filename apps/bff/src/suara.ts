@@ -2,7 +2,9 @@ import { SuaraSejatiPostSchema, type SuaraSejatiPost } from "@gys/contracts";
 import { htmlToText } from "./article.js";
 
 const SOURCE =
-  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia";
+  "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=100&orderby=date&order=desc&_embed=wp:featuredmedia";
+const PAGE_SIZE = 100;
+const MAX_PAGES = 100;
 
 function stripHtml(value: string) {
   return htmlToText(value).replace(/\s+/g, " ").trim();
@@ -24,15 +26,39 @@ function isTjcUrl(value: unknown): value is string {
 export async function fetchSuaraSejati(
   sourceUrl = SOURCE,
 ): Promise<SuaraSejatiPost[]> {
-  const response = await fetch(sourceUrl, {
-    headers: { accept: "application/json" },
-  });
-  if (!response.ok)
-    throw new Error(`Suara Sejati source returned ${response.status}`);
-  const value: unknown = await response.json();
-  if (!Array.isArray(value)) return [];
+  const source = new URL(sourceUrl);
+  source.searchParams.set("per_page", String(PAGE_SIZE));
+  const sourcePosts: unknown[] = [];
+  let page = 1;
+  let totalPages = 1;
+  while (page <= totalPages) {
+    source.searchParams.set("page", String(page));
+    const response = await fetch(source.toString(), {
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok)
+      throw new Error(`Suara Sejati source returned ${response.status}`);
+    const value: unknown = await response.json();
+    if (!Array.isArray(value)) {
+      if (page === 1) return [];
+      throw new Error("Suara Sejati source returned an invalid page");
+    }
+    sourcePosts.push(...value);
+    const headerPages = Number(response.headers.get("x-wp-totalpages"));
+    if (Number.isInteger(headerPages) && headerPages > 0) {
+      if (headerPages > MAX_PAGES)
+        throw new Error("Suara Sejati source returned too many pages");
+      totalPages = headerPages;
+    } else {
+      totalPages = value.length < PAGE_SIZE ? page : page + 1;
+    }
+    if (value.length === 0) break;
+    page += 1;
+  }
+
   const posts: SuaraSejatiPost[] = [];
-  for (const item of value) {
+  const seen = new Set<string>();
+  for (const item of sourcePosts) {
     if (!item || typeof item !== "object") continue;
     const post = item as {
       id?: unknown;
@@ -78,7 +104,10 @@ export async function fetchSuaraSejati(
       publishedAt,
       source: "tjc.org",
     });
-    if (parsed.success) posts.push(parsed.data);
+    if (parsed.success && !seen.has(parsed.data.id)) {
+      seen.add(parsed.data.id);
+      posts.push(parsed.data);
+    }
   }
   return posts.sort((left, right) =>
     right.publishedAt.localeCompare(left.publishedAt),
