@@ -1126,8 +1126,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
             options={bibleVersionOptions}
           />
           {assetCatalogReady && bibleVersionOptions.length === 1 && (
-            <Link className="text-button" to="/lainnya?section=data">
-              Unduh versi lain
+            <Link
+              className="text-button reader-version-link"
+              to="/lainnya?section=data"
+              aria-label="Unduh versi Alkitab lain"
+              title="Unduh versi Alkitab lain"
+            >
+              <Icon name="download" size={16} />
+              <span className="reader-version-copy">Unduh versi lain</span>
             </Link>
           )}
           <div
@@ -1183,11 +1189,20 @@ export function BiblePage({ locale }: { locale: Locale }) {
               placeholder={translate(locale, "bible.searchPlaceholder")}
             />
             <button
-              className="primary-button"
+              className="primary-button search-action-button"
               type="submit"
               disabled={searching}
+              aria-label={
+                searching ? "Mencari" : translate(locale, "bible.searchAction")
+              }
+              title={
+                searching ? "Mencari" : translate(locale, "bible.searchAction")
+              }
             >
-              {searching ? "…" : translate(locale, "bible.searchAction")}
+              <Icon name="search" size={16} />
+              <span className="search-action-copy">
+                {searching ? "…" : translate(locale, "bible.searchAction")}
+              </span>
             </button>
           </div>
           <details
@@ -1703,23 +1718,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
           <div className="reader-pagination">
             <button
-              className="quiet-button"
+              className="quiet-button pagination-button"
               type="button"
               onClick={() => navigateBy(-1)}
               disabled={!findNextTarget(books, book, chapter, -1)}
+              aria-label="Pasal sebelumnya"
+              title="Pasal sebelumnya"
             >
-              ← Sebelumnya
+              <Icon name="chevronLeft" size={17} />
+              <span className="pagination-copy">Sebelumnya</span>
             </button>
             <span>
               {book.name} {chapter}
             </span>
             <button
-              className="quiet-button"
+              className="quiet-button pagination-button"
               type="button"
               onClick={() => navigateBy(1)}
               disabled={!nextTarget}
+              aria-label="Pasal berikutnya"
+              title="Pasal berikutnya"
             >
-              Berikutnya →
+              <span className="pagination-copy">Berikutnya</span>
+              <Icon name="chevronRight" size={17} />
             </button>
           </div>
         </section>

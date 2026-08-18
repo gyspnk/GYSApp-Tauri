@@ -7013,3 +7013,209 @@ body.is-resizing-bible {
     padding: 16px;
   }
 }
+
+/* Icon-first utility controls stay compact at every breakpoint. Text remains
+   in the DOM for accessible names and returns through the title tooltip. */
+.search-trigger {
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+.reader-context-button.reader-context-icon-only {
+  width: 40px;
+  min-width: 40px;
+  padding-inline: 0;
+  gap: 0;
+}
+.reader-version-link,
+.search-action-button {
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 0;
+  gap: 0;
+  justify-content: center;
+}
+.reader-version-copy,
+.search-action-copy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.app-frame.is-reader-route .reader-action-group {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.app-frame.is-reader-route .reader-action-group .reader-control-sync {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding-inline: 8px;
+  font-size: 11px;
+}
+.reader-action-group .reader-control-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 0;
+  gap: 0;
+  justify-content: center;
+}
+.hymn-detail-page .detail-neighbors .detail-neighbor-button {
+  flex: 0 0 40px;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 0;
+  gap: 0;
+  justify-content: center;
+}
+.hymn-detail-page .detail-actions .hymn-action {
+  font-size: 12px;
+}
+.distributed-asset-actions .asset-action-button {
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 0;
+  gap: 0;
+  justify-content: center;
+}
+.media-queue-controls .media-queue-button {
+  width: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+.reader-pagination .pagination-button,
+.faith-selection-toolbar .faith-compact-action {
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 0;
+  gap: 0;
+  justify-content: center;
+}
+.search-trigger-copy,
+.reader-context-copy,
+.reader-action-group .reader-control-icon .control-copy,
+.hymn-detail-page .detail-neighbors .control-copy,
+.distributed-asset-actions .asset-action-button .asset-action-copy,
+.media-queue-button .control-copy,
+.reader-pagination .pagination-copy,
+.faith-compact-action .faith-action-copy,
+.theme-pill-btn .pill-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.theme-pill-grid {
+  grid-template-columns: repeat(5, 56px);
+  gap: 6px;
+  justify-content: start;
+}
+.bible-page-heading .date-line,
+.hymn-page-heading .date-line,
+.reader-heading .date-line,
+.hymn-heading .date-line,
+.more-card-heading .date-line {
+  font-size: 11px;
+}
+.search-trigger kbd {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.control-select-trigger {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+h1 {
+  font-size: clamp(28px, 2.6vw, 36px);
+  line-height: 1.1;
+}
+.home-media-section .section-title-row h2 {
+  font-size: clamp(20px, 2vw, 26px);
+}
+.faith-copy {
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.65;
+}
+.control-select-label,
+.section-subtitle,
+.pack-badge,
+.date-line {
+  font-size: 11px;
+}
+.reader-context-title span,
+.reader-toolbar-title > span,
+.reader-toolbar-title small,
+.kidung-local-nav-caption,
+.pack-stats small,
+.pack-manager-actions > small,
+.speech-controls label,
+.speech-controls label > span,
+.speech-controls output,
+.account-sync-note {
+  font-size: 11px !important;
+}
+
+@media (max-width: 599px) {
+  .search-trigger {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .reader-version-link,
+  .search-action-button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .app-frame.is-reader-route .reader-action-group {
+    width: 100%;
+    margin-left: 0;
+  }
+  .more-category-bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 8px;
+  }
+  h1 {
+    font-size: clamp(27px, 7vw, 32px);
+  }
+  .navigation-shell .nav-copy strong {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 600px) {
+  .quiet-button,
+  .primary-button {
+    min-height: 40px;
+  }
+}

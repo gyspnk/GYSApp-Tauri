@@ -223,16 +223,18 @@ function Header({
           <div className="reader-context-actions">
             {isKidungRoute && pathname !== "/kidung" ? (
               <Link
-                className="reader-context-button"
+                className="reader-context-button reader-context-icon-only"
                 to="/kidung"
                 aria-label="Buka daftar kidung"
+                title="Daftar kidung"
               >
-                Daftar
+                <Icon name="playlist" size={16} />
+                <span className="reader-context-copy">Daftar</span>
               </Link>
             ) : null}
             {isBibleRoute || pathname === "/kidung" ? (
               <button
-                className="reader-context-button"
+                className="reader-context-button reader-context-icon-only"
                 type="button"
                 onClick={onFocusPageSearch}
                 aria-label={
@@ -240,9 +242,12 @@ function Header({
                     ? "Buka pencarian ayat di Alkitab"
                     : "Buka pencarian lagu"
                 }
+                title={isBibleRoute ? "Cari ayat" : "Cari lagu"}
               >
                 <Icon name="search" size={16} />
-                <span>{isBibleRoute ? "Cari ayat" : "Cari lagu"}</span>
+                <span className="reader-context-copy">
+                  {isBibleRoute ? "Cari ayat" : "Cari lagu"}
+                </span>
               </button>
             ) : null}
           </div>
@@ -295,9 +300,10 @@ function Header({
           type="button"
           onClick={onOpenSearch}
           aria-label="Cari di seluruh aplikasi"
+          title="Cari di seluruh aplikasi"
         >
           <Icon name="search" size={18} />
-          <span>Cari</span>
+          <span className="search-trigger-copy">Cari</span>
           <kbd>⌘K</kbd>
         </button>
         <span
@@ -790,52 +796,60 @@ function MediaSurface({ locale }: { locale: Locale }) {
               {speechActive ? (
                 <>
                   <button
-                    className="text-button"
+                    className="text-button media-queue-button"
                     type="button"
                     onClick={() =>
                       void speechPlayer.previous().catch(() => undefined)
                     }
                     aria-label="Ayat sebelumnya"
+                    title="Ayat sebelumnya"
                     disabled={speechSnapshot.currentIndex <= 0}
                   >
-                    ‹ Ayat sebelumnya
+                    <Icon name="skipPrevious" size={15} />
+                    <span className="control-copy">Ayat sebelumnya</span>
                   </button>
                   <button
-                    className="text-button"
+                    className="text-button media-queue-button"
                     type="button"
                     onClick={() =>
                       void speechPlayer.next().catch(() => undefined)
                     }
                     aria-label="Ayat berikutnya"
+                    title="Ayat berikutnya"
                     disabled={
                       speechSnapshot.currentIndex < 0 ||
                       speechSnapshot.currentIndex >= speechSnapshot.total - 1
                     }
                   >
-                    Ayat berikutnya ›
+                    <span className="control-copy">Ayat berikutnya</span>
+                    <Icon name="skipNext" size={15} />
                   </button>
                 </>
               ) : (
                 <>
                   <button
-                    className="text-button"
+                    className="text-button media-queue-button"
                     type="button"
                     onClick={() =>
                       void playPreviousMidiPlaylistItem().catch(() => undefined)
                     }
                     aria-label="Lagu MIDI sebelumnya"
+                    title="Lagu MIDI sebelumnya"
                   >
-                    ‹ Sebelumnya
+                    <Icon name="skipPrevious" size={15} />
+                    <span className="control-copy">Sebelumnya</span>
                   </button>
                   <button
-                    className="text-button"
+                    className="text-button media-queue-button"
                     type="button"
                     onClick={() =>
                       void playNextMidiPlaylistItem().catch(() => undefined)
                     }
                     aria-label="Lagu MIDI berikutnya"
+                    title="Lagu MIDI berikutnya"
                   >
-                    Berikutnya ›
+                    <span className="control-copy">Berikutnya</span>
+                    <Icon name="skipNext" size={15} />
                   </button>
                 </>
               )}

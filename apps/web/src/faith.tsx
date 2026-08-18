@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
+import { Icon } from "./icons.js";
 
 type FaithItem = { number: string; text: string };
 type FaithGroup = { language: string; title: string; content: FaithItem[] };
@@ -172,24 +173,41 @@ export function FaithPage({ locale }: { locale: Locale }) {
                 {translate(locale, "faith.topic", { number: active.number })}
               </span>
               <button
-                className="quiet-button"
+                className="quiet-button faith-action-button faith-compact-action"
                 type="button"
                 onClick={() => void copySection()}
+                aria-label={translate(locale, "faith.copySection")}
+                title={translate(locale, "faith.copySection")}
               >
-                {translate(locale, "faith.copySection")}
-              </button>
-              <button className="quiet-button" type="button" onClick={share}>
-                {translate(locale, "faith.copyShare")}
+                <Icon name="copy" size={16} />
+                <span className="faith-action-copy">
+                  {translate(locale, "faith.copySection")}
+                </span>
               </button>
               <button
-                className="primary-button"
+                className="quiet-button faith-action-button faith-compact-action"
+                type="button"
+                onClick={share}
+                aria-label={translate(locale, "faith.copyShare")}
+                title={translate(locale, "faith.copyShare")}
+              >
+                <Icon name="share" size={16} />
+                <span className="faith-action-copy">
+                  {translate(locale, "faith.copyShare")}
+                </span>
+              </button>
+              <button
+                className="primary-button faith-action-button"
                 type="button"
                 onClick={() => {
                   localStorage.setItem(`gys-faith-note-${active.number}`, note);
                   flash(translate(locale, "faith.noteSaved"));
                 }}
+                aria-label={translate(locale, "faith.saveNote")}
+                title={translate(locale, "faith.saveNote")}
               >
-                {translate(locale, "faith.saveNote")}
+                <Icon name="book" size={16} />
+                <span>{translate(locale, "faith.saveNote")}</span>
               </button>
             </div>
             <p className="faith-copy">{active.text}</p>

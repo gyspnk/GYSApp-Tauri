@@ -29,7 +29,8 @@ export type IconName =
   | "download"
   | "file"
   | "heart"
-  | "playlist";
+  | "playlist"
+  | "share";
 
 const ICON_PATHS: Record<IconName, ReactNode> = {
   home: (
@@ -171,6 +172,14 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M4 6h11M4 11h11M4 16h7" />
       <path d="m17 14 4 2.5-4 2.5z" />
+    </>
+  ),
+  share: (
+    <>
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" />
     </>
   ),
 };
