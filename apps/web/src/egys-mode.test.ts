@@ -22,7 +22,7 @@ describe("e-GYS runtime mode", () => {
   });
 
   it("publishes the mode for truthful browser-only UI copy", () => {
-    const root = document.createElement("html");
+    const root = { dataset: {} } as HTMLElement;
     applyEgysRuntimeMetadata(root);
     expect(root.dataset.egysAuthMode).toBe("v1-native");
   });
