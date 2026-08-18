@@ -13,6 +13,17 @@ describe("SQLite WASM resolver", () => {
     );
   });
 
+  it("also accepts Vite's prefix when it is emitted without a leading slash", () => {
+    expect(
+      resolveSqlWasmUrl(
+        "@fs/home/runner/work/GYSApp-Tauri/node_modules/sql.js/dist/sql-wasm.wasm",
+        "test",
+      ),
+    ).toBe(
+      "/home/runner/work/GYSApp-Tauri/node_modules/sql.js/dist/sql-wasm.wasm",
+    );
+  });
+
   it("keeps Windows drive paths valid after stripping the Vite /@fs prefix", () => {
     expect(
       resolveSqlWasmUrl(
