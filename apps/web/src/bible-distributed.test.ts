@@ -2,10 +2,11 @@ import initSqlJs from "sql.js";
 import wasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import { describe, expect, it } from "vitest";
 import { loadBibleReaderPack } from "./bible-distributed.js";
+import { resolveSqlWasmUrl } from "./bible-sql-runtime.js";
 
 async function fixtureDatabase(): Promise<Uint8Array> {
   const SQL = await initSqlJs({
-    locateFile: () => decodeURIComponent(wasmUrl).replace(/^[/\\]@fs[/\\]/, ""),
+    locateFile: () => resolveSqlWasmUrl(wasmUrl, "test"),
   });
   const database = new SQL.Database();
   database.run(
