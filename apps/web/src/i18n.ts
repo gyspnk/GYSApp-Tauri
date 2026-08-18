@@ -40,8 +40,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "shell.pause": "Jeda",
     "shell.play": "Putar",
     "page.bibleTitle": "Alkitab",
-    "page.bibleBody":
-      "Buka bacaan terakhir atau cari ayat di seluruh Alkitab TB.",
     "page.kidungTitle": "Kidung",
     "page.kidungBody":
       "Temukan lirik, chord, PDF, dan iringan MIDI dalam satu ruang.",
@@ -104,7 +102,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "shell.pause": "Pause",
     "shell.play": "Play",
     "page.bibleTitle": "Bible",
-    "page.bibleBody": "Open your last reading or search the full TB Bible.",
     "page.kidungTitle": "Hymns",
     "page.kidungBody":
       "Find lyrics, chords, PDFs, and MIDI accompaniment in one place.",
@@ -167,7 +164,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "shell.pause": "暂停",
     "shell.play": "播放",
     "page.bibleTitle": "圣经",
-    "page.bibleBody": "打开上次阅读，或搜索完整的 TB 圣经。",
     "page.kidungTitle": "诗歌",
     "page.kidungBody": "在一个空间中查找歌词、和弦、PDF 和 MIDI 伴奏。",
     "page.imanTitle": "信仰",
@@ -203,8 +199,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
   id: {
     "kidung.catalogCanonical": "Katalog canonical",
     "kidung.catalogOffline": "Offline",
-    "kidung.catalogIntro":
-      "Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau iringan MIDI.",
     "kidung.catalogLoading": "Membuka katalog kidung offline…",
     "kidung.catalogUnavailable": "Katalog kidung belum tersedia",
     "kidung.search": "Cari lagu",
@@ -307,8 +301,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
   en: {
     "kidung.catalogCanonical": "Canonical catalog",
     "kidung.catalogOffline": "Offline",
-    "kidung.catalogIntro":
-      "Choose a hymn to open verse lyrics, chords, PDF, or MIDI accompaniment.",
     "kidung.catalogLoading": "Opening the offline hymn catalog…",
     "kidung.catalogUnavailable": "The hymn catalog is unavailable",
     "kidung.search": "Search hymns",
@@ -411,7 +403,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
   zh: {
     "kidung.catalogCanonical": "规范诗歌目录",
     "kidung.catalogOffline": "离线",
-    "kidung.catalogIntro": "选择诗歌，打开分节歌词、和弦、PDF 或 MIDI 伴奏。",
     "kidung.catalogLoading": "正在打开离线诗歌目录…",
     "kidung.catalogUnavailable": "诗歌目录暂不可用",
     "kidung.search": "搜索诗歌",

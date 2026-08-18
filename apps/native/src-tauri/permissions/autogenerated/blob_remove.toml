@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-blob-remove"
+description = "Enables the blob_remove command without any pre-configured scope."
+commands.allow = ["blob_remove"]
+
+[[permission]]
+identifier = "deny-blob-remove"
+description = "Denies the blob_remove command without any pre-configured scope."
+commands.deny = ["blob_remove"]

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createTauriPlatformServices,
+  getNativeEgysToken,
+  openNativeEgysLogin,
+  removeNativeEgysToken,
+  setNativeEgysToken,
   isTauriShell,
   type TauriInvoke,
 } from "./native-platform.js";
@@ -57,6 +61,8 @@ function createInvoke(): {
           blobs.delete(String(args?.key));
           return null;
         case "open_external":
+          return null;
+        case "open_egys_login":
           return null;
         default:
           throw new Error(`Unexpected native command: ${command}`);
@@ -176,6 +182,24 @@ describe("Tauri platform adapter", () => {
         .filter((command) => command !== "deep_link_current"),
     ).toEqual(["secret_set", "secret_get", "secret_remove", "secret_get"]);
     expect(services.secrets.persistent).toBe(true);
+  });
+
+  it("opens the official e-GYS login window and keeps its v1 token in secure storage", async () => {
+    const { invoke, calls } = createInvoke();
+
+    await expect(openNativeEgysLogin(invoke)).resolves.toBeUndefined();
+    await setNativeEgysToken(invoke, "live-v1-token");
+    await expect(getNativeEgysToken(invoke)).resolves.toBe("live-v1-token");
+    await removeNativeEgysToken(invoke);
+    await expect(getNativeEgysToken(invoke)).resolves.toBeUndefined();
+
+    expect(calls.map(({ command }) => command)).toEqual([
+      "open_egys_login",
+      "secret_set",
+      "secret_get",
+      "secret_remove",
+      "secret_get",
+    ]);
   });
 
   it("uses native file dialog commands for import/export", async () => {

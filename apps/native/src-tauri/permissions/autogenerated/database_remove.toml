@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-database-remove"
+description = "Enables the database_remove command without any pre-configured scope."
+commands.allow = ["database_remove"]
+
+[[permission]]
+identifier = "deny-database-remove"
+description = "Denies the database_remove command without any pre-configured scope."
+commands.deny = ["database_remove"]

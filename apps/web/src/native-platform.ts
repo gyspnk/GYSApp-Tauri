@@ -23,6 +23,13 @@ export type TauriInvoke = (
   args?: Record<string, unknown>,
 ) => Promise<unknown>;
 
+export const NATIVE_EGYS_TOKEN_KEY = "egys-live-v1-token";
+
+export type NativeEgysLoginMessage = {
+  cmd: "googlelogged" | "applelogged" | "whatsapplogged";
+  authenticated: true;
+};
+
 type TauriGlobal = {
   __TAURI_INTERNALS__?: { invoke?: TauriInvoke };
   __TAURI__?: { invoke?: TauriInvoke };
@@ -206,7 +213,7 @@ class TauriFileDialogs implements PlatformFileDialogs {
 
 type TauriUnlisten = () => void;
 
-async function listenTauriEvent<T>(
+export async function listenTauriEvent<T>(
   event: string,
   handler: (payload: T) => void,
 ): Promise<TauriUnlisten> {
@@ -215,6 +222,79 @@ async function listenTauriEvent<T>(
     handler(message.payload),
   );
   return unlisten;
+}
+
+function requiredInvoke(invoke?: TauriInvoke): TauriInvoke {
+  if (!invoke) throw nativeError("Tauri invoke bridge is unavailable");
+  return invoke;
+}
+
+export async function openNativeEgysLogin(
+  invoke: TauriInvoke | undefined = getTauriInvoke(),
+): Promise<void> {
+  await requiredInvoke(invoke)("open_egys_login");
+}
+
+export async function getNativeEgysToken(
+  invoke: TauriInvoke | undefined = getTauriInvoke(),
+): Promise<string | undefined> {
+  const value = await requiredInvoke(invoke)("secret_get", {
+    key: NATIVE_EGYS_TOKEN_KEY,
+  });
+  if (value === null || value === undefined) return undefined;
+  if (typeof value !== "string" || value.trim().length === 0)
+    throw nativeError("e-GYS token response was invalid");
+  return value;
+}
+
+export async function setNativeEgysToken(
+  invoke: TauriInvoke | undefined,
+  token: string,
+): Promise<void> {
+  const value = token.trim();
+  if (!value || value.length > 32_768)
+    throw nativeError("e-GYS token is invalid");
+  await requiredInvoke(invoke)("secret_set", {
+    key: NATIVE_EGYS_TOKEN_KEY,
+    value,
+  });
+}
+
+export async function removeNativeEgysToken(
+  invoke: TauriInvoke | undefined = getTauriInvoke(),
+): Promise<void> {
+  await requiredInvoke(invoke)("secret_remove", {
+    key: NATIVE_EGYS_TOKEN_KEY,
+  });
+}
+
+export function subscribeNativeEgysLogin(
+  listener: (message: NativeEgysLoginMessage) => void,
+): () => void {
+  if (!getTauriInvoke()) return () => undefined;
+  let active = true;
+  let unlisten: TauriUnlisten | undefined;
+  void listenTauriEvent<unknown>("egys-login-message", (payload) => {
+    if (!active || !payload || typeof payload !== "object") return;
+    const candidate = payload as Partial<NativeEgysLoginMessage>;
+    if (
+      candidate.authenticated !== true ||
+      !["googlelogged", "applelogged", "whatsapplogged"].includes(
+        String(candidate.cmd),
+      )
+    )
+      return;
+    listener(candidate as NativeEgysLoginMessage);
+  })
+    .then((cleanup) => {
+      if (!active) cleanup();
+      else unlisten = cleanup;
+    })
+    .catch(() => undefined);
+  return () => {
+    active = false;
+    unlisten?.();
+  };
 }
 
 class TauriDeepLinks implements PlatformDeepLinks {

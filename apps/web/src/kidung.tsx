@@ -209,38 +209,24 @@ function HymnCatalog({
   }, [book, deferredQuery, searchIndex]);
   return (
     <div className="page hymn-page">
-      <section className="page-intro">
-        <div>
+      <header className="hymn-page-header">
+        <div className="hymn-page-heading">
           <p className="date-line">
             {items.length > 0
               ? `${items.length} lagu · ${translate(locale, "kidung.catalogCanonical")}`
               : translate(locale, "kidung.catalogCanonical")}
           </p>
           <h1>{translate(locale, "page.kidungTitle")}</h1>
-          <p className="intro-copy">
-            {translate(locale, "kidung.catalogIntro")}
-          </p>
         </div>
-        <span className="pack-badge">
-          {items.length > 0
-            ? `${translate(locale, "kidung.catalogOffline")} · ${items.length}`
-            : translate(locale, "kidung.catalogOffline")}
-        </span>
-      </section>
-      {state.status === "loading" && (
-        <div className="loading-panel" role="status">
-          {translate(locale, "kidung.catalogLoading")}
+        <div className="hymn-page-actions">
+          <span className="pack-badge">
+            {items.length > 0
+              ? `${translate(locale, "kidung.catalogOffline")} · ${items.length}`
+              : translate(locale, "kidung.catalogOffline")}
+          </span>
         </div>
-      )}
-      {state.status === "error" && (
-        <div className="error-panel" role="alert">
-          <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
-          <span>{state.message}</span>
-        </div>
-      )}
-      {state.status === "ready" && (
-        <section className="hymn-catalog-shell">
-          <div className="catalog-toolbar">
+        {state.status === "ready" && (
+          <div className="catalog-toolbar hymn-catalog-controls">
             <label className="search-field">
               <span>{translate(locale, "kidung.search")}</span>
               <input
@@ -262,6 +248,21 @@ function HymnCatalog({
               ]}
             />
           </div>
+        )}
+      </header>
+      {state.status === "loading" && (
+        <div className="loading-panel" role="status">
+          {translate(locale, "kidung.catalogLoading")}
+        </div>
+      )}
+      {state.status === "error" && (
+        <div className="error-panel" role="alert">
+          <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
+          <span>{state.message}</span>
+        </div>
+      )}
+      {state.status === "ready" && (
+        <section className="hymn-catalog-shell">
           <div className="catalog-heading">
             <div>
               <p className="date-line">

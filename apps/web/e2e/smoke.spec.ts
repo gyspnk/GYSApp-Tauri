@@ -384,9 +384,7 @@ test("Bible title drag exposes quick chapter navigation with keyboard fallback",
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
-  const handle = page.getByRole("button", {
-    name: "Geser judul untuk berpindah pasal",
-  });
+  const handle = page.locator(".reader-toolbar .quick-nav-handle");
   const box = await handle.boundingBox();
   if (!box) throw new Error("Bible quick navigation handle is not measurable");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -423,6 +421,56 @@ test("Bible text selection exposes contextual copy/share/note actions", async ({
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
 });
 
+test("selected Bible verse exposes a floating bottom action toolbar", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page
+    .getByRole("button", { name: /Adalah seorang Farisi yang bernama/ })
+    .click();
+
+  const toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
+  await expect(toolbar).toBeVisible();
+  await expect(toolbar).toHaveCSS("position", "fixed");
+  await expect(toolbar).toContainText("Yohanes 3:1");
+});
+
+test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(
+    page.getByRole("heading", { name: "Alkitab", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".bible-search")).toBeVisible();
+  await expect(page.locator(".reader-toolbar .quick-nav-handle")).toBeVisible();
+  await expect(
+    page.getByText(
+      "Buka bacaan terakhir atau cari ayat di seluruh Alkitab TB.",
+    ),
+  ).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+
+  await page
+    .getByRole("button", { name: /Adalah seorang Farisi yang bernama/ })
+    .dispatchEvent("click");
+  const toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
+  await expect(toolbar).toBeVisible();
+  const bounds = await toolbar.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds?.x).toBeGreaterThanOrEqual(0);
+  expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(390);
+  expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(844);
+});
+
 test("home uses Sauh for the daily verse and keeps one continue surface", async ({
   page,
 }) => {
@@ -445,6 +493,64 @@ test("online content opens inside the application shell", async ({ page }) => {
   await page.locator(".suara-library-item").first().click();
   await expect(page).toHaveURL(/\/suara\//);
   await expect(page.getByTestId("suara-detail-page")).toBeVisible();
+});
+
+test("Sauh article adapts from split desktop layout to a single mobile column", async ({
+  page,
+}) => {
+  const fixture = {
+    id: "sbj260817",
+    title: "Orang Biasa yang Luar Biasa",
+    reference: "Hakim-Hakim 3:31",
+    verse:
+      "Sesudah dia, bangkitlah Samgar bin Anat; ia menewaskan orang Filistin.",
+    body: "Di dalam Alkitab, kita belajar untuk bangkit dan memakai apa yang ada di tangan kita. https://tjc.org/id/wp-content/uploads/sites/43/2026/08/sbj260817.mp3",
+    url: "https://tjc.org/id/gerakan-baca-alkitab/sbj260817/",
+    imageUrl: "https://tjc.org/id/wp-content/uploads/sites/43/2026/08/sauh.png",
+    updatedAt: new Date().toISOString(),
+    source: "tjc.org",
+  };
+  const payload = JSON.stringify({ items: [fixture] });
+  await page.route("**/offline/sauh.json", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: payload,
+    }),
+  );
+  await page.route("**/wp-json/wp/v2/posts**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([fixture]),
+    }),
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/sauh");
+  await expect(page.locator(".sauh-article")).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+  const mobileColumns = await page
+    .locator(".sauh-article")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+  expect(mobileColumns.split(" ")).toHaveLength(1);
+
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.reload();
+  await expect(page.locator(".sauh-article")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+  const desktopColumns = await page
+    .locator(".sauh-article")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+  expect(desktopColumns.split(" ").length).toBeGreaterThanOrEqual(2);
 });
 
 test("literature behaves as a searchable ebook shelf and hymn opens by detail route", async ({
@@ -481,6 +587,30 @@ test("hymn search uses indexed AND matching instead of lyric rescans", async ({
     page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }),
   ).toBeVisible();
   await expect(page.locator(".pujian-list > li")).toHaveCount(1);
+});
+
+test("hymn catalog keeps search and collection controls in its header", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/kidung");
+  await expect(
+    page.getByRole("heading", { name: "Kidung", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  const header = page.locator(".hymn-page-header");
+  await expect(header).toBeVisible();
+  await expect(header.getByLabel("Cari lagu")).toBeVisible();
+  await expect(header.getByRole("button", { name: "Koleksi" })).toBeVisible();
+  await expect(
+    page.getByText(
+      "Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau iringan MIDI.",
+    ),
+  ).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
 });
 
 test("home keeps one continue item when Bible and hymn history coexist", async ({

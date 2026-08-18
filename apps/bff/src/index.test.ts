@@ -910,6 +910,66 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("falls back to the live e-GYS v1 profile endpoint for native bearer sessions", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/auth/me"))
+        return new Response('{"error":true}', { status: 404 });
+      if (url.endsWith("/api/v1/users/profile")) {
+        expect(new Headers(init?.headers).get("authorization")).toBe(
+          "Bearer live-v1-token",
+        );
+        return Response.json({
+          data: [
+            {
+              id: 42,
+              email: "jemaat@example.com",
+              name: "Jemaat Live",
+              branchname: "Jakarta Selatan",
+              member_type: "Jemaat",
+              status: "ACTIVE",
+            },
+          ],
+          token: "must-not-leak",
+        });
+      }
+      return new Response("not mocked", { status: 500 });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/account/profile",
+        {
+          headers: {
+            authorization: "Bearer live-v1-token",
+            "x-gys-client": "native",
+          },
+        },
+        { EGYS_API_BASE_URL: "https://e.gys.or.id" },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        profile: {
+          id: "42",
+          displayName: "Jemaat Live",
+          email: "jemaat@example.com",
+          branchName: "Jakarta Selatan",
+          memberStatus: "Jemaat",
+          isMember: true,
+          provider: "egys",
+          locale: "id",
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("proxies and validates the e-GYS WhatsApp login flow", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input) => {

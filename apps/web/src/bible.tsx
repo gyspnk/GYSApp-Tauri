@@ -11,6 +11,7 @@ import {
   type ReactNode,
   type TouchEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   BibleReaderPackSchema,
   SpeechEnginePreferenceSchema,
@@ -45,14 +46,10 @@ import {
   type BibleTypography,
 } from "./bible-typography.js";
 import { hapticTick } from "./haptics.js";
-import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 import {
   BiblePickerModal,
   BibleQuickNavOverlay,
-  resolveDragColumn,
-  scrubBookIndex,
   scrubChapterNumber,
-  scrubVerseNumber,
   type QuickNavDragState,
 } from "./bible-quick-nav.js";
 
@@ -204,9 +201,6 @@ function ChapterPane({
   onBookmark,
   onTouchStart,
   onTouchEnd,
-  onQuickNavPointerDown,
-  onQuickNavKeyDown,
-  onHeadingClick,
 }: {
   book: BibleBook;
   chapter: number;
@@ -223,28 +217,13 @@ function ChapterPane({
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
-  onQuickNavPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
-  onQuickNavKeyDown?: (event: ReactKeyboardEvent<HTMLDivElement>) => void;
-  onHeadingClick?: () => void;
 }) {
   return (
     <section
       className={`bible-pane${secondary ? " bible-pane-secondary" : ""}`}
       aria-label={`${book.name} ${chapter}`}
     >
-      <div
-        className={`reader-heading${onQuickNavPointerDown ? " quick-nav-handle" : ""}`}
-        onPointerDown={onQuickNavPointerDown}
-        onClick={onHeadingClick}
-        onKeyDown={onQuickNavKeyDown}
-        role={onQuickNavPointerDown ? "button" : undefined}
-        tabIndex={onQuickNavPointerDown ? 0 : undefined}
-        aria-label={
-          onQuickNavPointerDown
-            ? "Geser judul untuk berpindah pasal"
-            : undefined
-        }
-      >
+      <div className="reader-heading">
         <div>
           <p className="date-line">Terjemahan Baru</p>
           <h2>
@@ -337,7 +316,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { toolbarVisible, restoreToolbar } = useReadingToolbarAutoHide();
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
   >();
@@ -370,15 +348,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
         startY: number;
         startTime: number;
         hasDragged: boolean;
-        initialBookIndex: number;
         initialChapter: number;
-        initialVerse: number;
         currentBookId: number;
         currentChapter: number;
         currentVerse: number;
       }
     | undefined
   >(undefined);
+  const suppressQuickNavClickRef = useRef(false);
   const [typography, setTypography] = useState<BibleTypography>(() =>
     readBibleTypography(),
   );
@@ -391,20 +368,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    suppressQuickNavClickRef.current = false;
     const bookId = book?.id ?? selectedBook;
-    const bookIdx = Math.max(
-      0,
-      books.findIndex((b) => b.id === bookId),
-    );
     quickNavRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       startTime: Date.now(),
       hasDragged: false,
-      initialBookIndex: bookIdx,
       initialChapter: chapter,
-      initialVerse: 1,
       currentBookId: bookId,
       currentChapter: chapter,
       currentVerse: 1,
@@ -545,47 +517,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
       if (!active.hasDragged) return;
 
       event.preventDefault();
-      const col = resolveDragColumn(event.clientX, window.innerWidth);
       let nextBookId = active.currentBookId;
       let nextChapter = active.currentChapter;
       let nextVerse = active.currentVerse;
 
-      if (col === "book") {
-        const targetIdx = scrubBookIndex(
-          active.initialBookIndex,
+      const currentB =
+        books.find((candidate) => candidate.id === active.currentBookId) ??
+        book;
+      if (currentB) {
+        nextChapter = scrubChapterNumber(
+          active.initialChapter,
           dy,
-          books.length,
-          24,
+          currentB.chapters,
+          48,
         );
-        const targetBook = books[targetIdx] ?? books[0];
-        if (targetBook) {
-          nextBookId = targetBook.id;
-          nextChapter = Math.min(active.initialChapter, targetBook.chapters);
-          nextVerse = 1;
-        }
-      } else if (col === "chapter") {
-        const currentB =
-          books.find((b) => b.id === active.currentBookId) ?? book;
-        if (currentB) {
-          nextChapter = scrubChapterNumber(
-            active.initialChapter,
-            dy,
-            currentB.chapters,
-            48,
-          );
-          nextVerse = 1;
-        }
-      } else if (col === "verse") {
-        const currentB =
-          books.find((b) => b.id === active.currentBookId) ?? book;
-        const totalV =
-          packState.status === "ready"
-            ? packState.pack.verses.filter(
-                (v) =>
-                  v.book === String(currentB?.id) && v.chapter === nextChapter,
-              ).length
-            : 30;
-        nextVerse = scrubVerseNumber(active.initialVerse, dy, totalV || 30, 28);
+        nextVerse = 1;
       }
 
       if (
@@ -611,7 +557,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       setSelectedChapter(nextChapter);
 
       setQuickNavDrag({
-        activeColumn: col,
+        activeColumn: "chapter",
         bookId: nextBookId,
         chapter: nextChapter,
         verse: nextVerse,
@@ -626,6 +572,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       if (!active || active.pointerId !== event.pointerId) return;
 
       if (active.hasDragged) {
+        suppressQuickNavClickRef.current = true;
         if (active.currentVerse > 1) {
           setSelectedVerseId(
             `${active.currentBookId}:${active.currentChapter}:${active.currentVerse}`,
@@ -633,6 +580,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
         }
         quickNavRef.current = undefined;
         window.setTimeout(() => setQuickNavDrag(undefined), 120);
+        window.setTimeout(() => {
+          suppressQuickNavClickRef.current = false;
+        }, 0);
       } else {
         quickNavRef.current = undefined;
         setQuickNavDrag(undefined);
@@ -965,6 +915,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
     });
   };
 
+  const focusSelectedVerseNote = () => {
+    const note = document.querySelector<HTMLTextAreaElement>(
+      ".bible-note-field textarea",
+    );
+    note?.scrollIntoView({ behavior: "smooth", block: "center" });
+    note?.focus();
+  };
+
   const onVerseTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length === 1)
       touchStartX.current = event.touches[0]?.clientX;
@@ -993,60 +951,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
             {book?.name} {chapter}:{selectedVerse.verse}
           </strong>
           <p>{cleanVerse(selectedVerse)}</p>
-          <div className="selection-actions">
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void copySelected()}
-            >
-              Salin
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void shareSelected()}
-            >
-              Bagikan
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              disabled={!speechAvailable}
-              onClick={() => speakVerses([selectedVerse])}
-            >
-              Baca ayat
-            </button>
-          </div>
-          <div className="highlight-actions" aria-label="Warna sorotan">
-            {(["yellow", "blue", "green"] as const).map((color) => (
-              <button
-                className={`highlight-dot is-${color}${highlights[selectedVerse.id] === color ? " is-active" : ""}`}
-                key={color}
-                type="button"
-                aria-label={`Sorot ${color}`}
-                aria-pressed={highlights[selectedVerse.id] === color}
-                onClick={() =>
-                  setHighlights((current) => ({
-                    ...current,
-                    [selectedVerse.id]: color,
-                  }))
-                }
-              />
-            ))}
-            <button
-              className="text-button"
-              type="button"
-              onClick={() =>
-                setHighlights((current) => {
-                  const next = { ...current };
-                  delete next[selectedVerse.id];
-                  return next;
-                })
-              }
-            >
-              Hapus sorotan
-            </button>
-          </div>
           <label className="bible-note-field">
             <span>Catatan pribadi</span>
             <textarea
@@ -1109,13 +1013,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page bible-page">
-      <section className="page-intro">
-        <div>
+      <header className="bible-page-header">
+        <div className="bible-page-heading">
           <p className="date-line">TB · offline reader</p>
           <h1>{translate(locale, "page.bibleTitle")}</h1>
-          <p className="intro-copy">{translate(locale, "page.bibleBody")}</p>
         </div>
-
         <div className="page-intro-actions">
           <span className="pack-badge">TB · 66 buku</span>
           <div
@@ -1154,87 +1056,96 @@ export function BiblePage({ locale }: { locale: Locale }) {
             </button>
           </div>
         </div>
-      </section>
 
-      <form
-        className="bible-search"
-        onSubmit={(event) => void runSearch(event)}
-        role="search"
-      >
-        <label htmlFor="bible-query">{translate(locale, "bible.search")}</label>
-        <div className="search-row">
-          <input
-            id="bible-query"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={translate(locale, "bible.searchPlaceholder")}
-          />
-          <button className="primary-button" type="submit" disabled={searching}>
-            {searching ? "…" : translate(locale, "bible.searchAction")}
-          </button>
-        </div>
-        <div className="bible-search-options">
-          <Select
-            value={searchBook}
-            onChange={setSearchBook}
-            label="Kitab"
-            options={[
-              { value: "all", label: "Semua kitab" },
-              { value: "old", label: "Perjanjian Lama (39)" },
-              { value: "new", label: "Perjanjian Baru (27)" },
-              ...books.map((candidate) => ({
-                value: String(candidate.id),
-                label: candidate.name,
-              })),
-            ]}
-          />
-          <label className="check-option">
-            <input
-              type="checkbox"
-              checked={exactPhrase}
-              onChange={(event) => setExactPhrase(event.target.checked)}
-            />{" "}
-            Frasa tepat
+        <form
+          className="bible-search"
+          onSubmit={(event) => void runSearch(event)}
+          role="search"
+        >
+          <label htmlFor="bible-query">
+            {translate(locale, "bible.search")}
           </label>
-          <label className="check-option">
+          <div className="search-row">
             <input
-              type="checkbox"
-              checked={wholeWord}
-              onChange={(event) => setWholeWord(event.target.checked)}
-            />{" "}
-            Kata utuh
-          </label>
-        </div>
-        {searchError && (
-          <div className="inline-error" role="alert">
-            <span>{searchError}</span>
+              id="bible-query"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={translate(locale, "bible.searchPlaceholder")}
+            />
             <button
-              className="text-button"
-              type="button"
-              onClick={() => void runSearch(undefined, query)}
-              disabled={searching || !query.trim()}
+              className="primary-button"
+              type="submit"
+              disabled={searching}
             >
-              Coba lagi
+              {searching ? "…" : translate(locale, "bible.searchAction")}
             </button>
           </div>
-        )}
-        {searchHistory.length > 0 && !query && (
-          <div className="bible-search-history" aria-label="Pencarian terakhir">
-            {searchHistory.map((entry) => (
-              <button
-                key={entry}
-                type="button"
-                onClick={() => {
-                  setQuery(entry);
-                  void runSearch(undefined, entry);
-                }}
-              >
-                {entry}
-              </button>
-            ))}
+          <div className="bible-search-options">
+            <Select
+              value={searchBook}
+              onChange={setSearchBook}
+              label="Kitab"
+              options={[
+                { value: "all", label: "Semua kitab" },
+                { value: "old", label: "Perjanjian Lama (39)" },
+                { value: "new", label: "Perjanjian Baru (27)" },
+                ...books.map((candidate) => ({
+                  value: String(candidate.id),
+                  label: candidate.name,
+                })),
+              ]}
+            />
+            <label className="check-option">
+              <input
+                type="checkbox"
+                checked={exactPhrase}
+                onChange={(event) => setExactPhrase(event.target.checked)}
+              />{" "}
+              Frasa tepat
+            </label>
+            <label className="check-option">
+              <input
+                type="checkbox"
+                checked={wholeWord}
+                onChange={(event) => setWholeWord(event.target.checked)}
+              />{" "}
+              Kata utuh
+            </label>
           </div>
-        )}
-      </form>
+          {searchError && (
+            <div className="inline-error" role="alert">
+              <span>{searchError}</span>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => void runSearch(undefined, query)}
+                disabled={searching || !query.trim()}
+              >
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {searchHistory.length > 0 && !query && (
+            <div
+              className="bible-search-history"
+              aria-label="Pencarian terakhir"
+            >
+              {searchHistory.map((entry) => (
+                <button
+                  key={entry}
+                  type="button"
+                  onClick={() => {
+                    setQuery(entry);
+                    void runSearch(undefined, entry);
+                  }}
+                >
+                  {entry}
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
+      </header>
 
       {searchResults.length > 0 && (
         <section
@@ -1318,14 +1229,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
         <section
           className={`bible-reader${splitView ? " is-split" : ""}`}
           aria-label={translate(locale, "page.bibleTitle")}
-          onClick={restoreToolbar}
         >
           {quickNavDrag && (
             <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />
           )}
-          <div
-            className={`reader-toolbar${toolbarVisible ? "" : " is-collapsed"}`}
-          >
+          <div className="reader-toolbar">
+            <div
+              className="reader-toolbar-title quick-nav-handle"
+              onPointerDown={startQuickNav}
+              onClick={() => {
+                if (suppressQuickNavClickRef.current) return;
+                setPickerModalOpen(true);
+              }}
+              onKeyDown={quickNavKeyDown}
+              role="button"
+              tabIndex={0}
+              aria-label="Geser judul untuk berpindah pasal"
+            >
+              <span>Geser untuk navigasi</span>
+              <strong>
+                {book.name} {chapter}
+              </strong>
+              <small>{chapterVerses.length} ayat</small>
+            </div>
             <Select
               value={book.id}
               onChange={(value) => {
@@ -1536,13 +1462,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onBookmark={toggleBookmark}
               onTouchStart={onVerseTouchStart}
               onTouchEnd={onVerseTouchEnd}
-              onQuickNavPointerDown={startQuickNav}
-              onQuickNavKeyDown={quickNavKeyDown}
-              onHeadingClick={() => {
-                if (!quickNavRef.current?.hasDragged) {
-                  setPickerModalOpen(true);
-                }
-              }}
             />
             {splitView && (
               <div
@@ -1635,6 +1554,83 @@ export function BiblePage({ locale }: { locale: Locale }) {
           locale={locale}
         />
       )}
+      {selectedVerse &&
+        book &&
+        createPortal(
+          <div
+            className="selected-verse-toolbar"
+            data-testid="selected-verse-toolbar"
+            role="toolbar"
+            aria-label="Aksi ayat terpilih"
+          >
+            <div className="selected-verse-context">
+              <strong>
+                {book.name} {chapter}:{selectedVerse.verse}
+              </strong>
+              <span>{cleanVerse(selectedVerse)}</span>
+            </div>
+            <div className="selected-verse-actions">
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void copySelected()}
+              >
+                Salin
+              </button>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => void shareSelected()}
+              >
+                Bagikan
+              </button>
+              <button
+                className="quiet-button"
+                type="button"
+                disabled={!speechAvailable}
+                onClick={() => speakVerses([selectedVerse])}
+              >
+                Baca ayat
+              </button>
+              <div
+                className="selected-verse-highlights"
+                aria-label="Warna sorotan"
+              >
+                {(["yellow", "blue", "green"] as const).map((color) => (
+                  <button
+                    className={`highlight-dot is-${color}${highlights[selectedVerse.id] === color ? " is-active" : ""}`}
+                    key={color}
+                    type="button"
+                    aria-label={`Sorot ${color}`}
+                    aria-pressed={highlights[selectedVerse.id] === color}
+                    onClick={() =>
+                      setHighlights((current) => ({
+                        ...current,
+                        [selectedVerse.id]: color,
+                      }))
+                    }
+                  />
+                ))}
+              </div>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={focusSelectedVerseNote}
+              >
+                Catatan
+              </button>
+              <button
+                className="selected-verse-close"
+                type="button"
+                aria-label="Tutup ayat terpilih"
+                onClick={() => setSelectedVerseId(undefined)}
+              >
+                ×
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
       {selectionToolbar && (
         <div
           className="selection-toolbar"

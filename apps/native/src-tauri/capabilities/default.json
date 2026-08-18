@@ -9,6 +9,26 @@
     "deep-link:default",
     "fs:default",
     "notification:default",
-    "shell:default"
+    "shell:default",
+    "allow-platform-name",
+    "allow-key-value-get",
+    "allow-key-value-set",
+    "allow-key-value-remove",
+    "allow-database-get",
+    "allow-database-set",
+    "allow-database-remove",
+    "allow-blob-get",
+    "allow-blob-put-atomic",
+    "allow-blob-remove",
+    "allow-platform-clear-data",
+    "allow-open-external",
+    "allow-open-egys-login",
+    "allow-egys-login-message",
+    "allow-secret-get",
+    "allow-secret-set",
+    "allow-secret-remove",
+    "allow-file-dialog-open",
+    "allow-file-dialog-save",
+    "allow-deep-link-current"
   ]
 }

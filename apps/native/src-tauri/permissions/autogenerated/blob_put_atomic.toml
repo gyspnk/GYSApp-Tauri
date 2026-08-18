@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-blob-put-atomic"
+description = "Enables the blob_put_atomic command without any pre-configured scope."
+commands.allow = ["blob_put_atomic"]
+
+[[permission]]
+identifier = "deny-blob-put-atomic"
+description = "Denies the blob_put_atomic command without any pre-configured scope."
+commands.deny = ["blob_put_atomic"]
