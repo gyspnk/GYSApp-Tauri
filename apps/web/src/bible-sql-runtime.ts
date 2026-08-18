@@ -14,7 +14,7 @@ export function resolveSqlWasmUrl(
 ): string {
   if (mode !== "test") return value;
   const decoded = decodeURIComponent(value);
-  const prefix = decoded.match(/^[/\\]@fs[/\\](.*)$/);
+  const prefix = decoded.match(/^[/\\]?@fs[/\\](.*)$/);
   if (!prefix?.[1]) return decoded;
   const path = prefix[1];
   // Vite prefixes both POSIX and Windows absolute paths with `/@fs/`.
