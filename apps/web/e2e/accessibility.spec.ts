@@ -68,7 +68,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
   test("report form exposes an accessible message field", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/GYSApp-Tauri/lainnya");
+    await page.goto("/GYSApp-Tauri/lainnya?section=help");
     await expect(
       page.getByRole("heading", { name: "Lainnya", exact: true }),
     ).toBeVisible({ timeout: 15_000 });

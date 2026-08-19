@@ -71,7 +71,15 @@
       "downloadUrl": "https://github.com/ThenGB/GYSApp-Data/releases/download/hymnals-2026.05.21/hymne.gyspkg",
       "installFileName": "hymne_master.pdf",
       "sizeBytes": 4949095,
-      "checksumSha256": "eda566d946d5fe0ad1eff34cba991d518ff573253ce53f796edeb92cafa9fb27"
+      "checksumSha256": "eda566d946d5fe0ad1eff34cba991d518ff573253ce53f796edeb92cafa9fb27",
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/hymne_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+        "sizeBytes": 740939,
+        "checksumSha256": "bc89b27b1fac68f584161c3f5e91e416bf4580106a05efc6dc96a14140e0fba3"
+      }
     },
     {
       "kind": "hymnal",
@@ -85,7 +93,15 @@
       "downloadUrl": "https://github.com/ThenGB/GYSApp-Data/releases/download/hymnals-2026.05.21/mdr.gyspkg",
       "installFileName": "mdr_master.pdf",
       "sizeBytes": 8765975,
-      "checksumSha256": "9ebb3c0d76005f157d10d688e6b3dff33cb56dc54167164c5aa3ad4215100310"
+      "checksumSha256": "9ebb3c0d76005f157d10d688e6b3dff33cb56dc54167164c5aa3ad4215100310",
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/mdr_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
+        "sizeBytes": 636392,
+        "checksumSha256": "8b0d298bb5900c0ea9cfe2e4d53b47a1088a9e322e4b38ffe7b4542c5e7d4dfa"
+      }
     },
     {
       "kind": "hymnal",
@@ -99,7 +115,15 @@
       "downloadUrl": "https://github.com/ThenGB/GYSApp-Data/releases/download/hymnals-2026.05.21/asm_i.gyspkg",
       "installFileName": "asm_i_master.pdf",
       "sizeBytes": 457687,
-      "checksumSha256": "1b15a01cecdf7dfb03c5ba88d15303cd6598e7d27ed2b2d7d859a10f08b0ce28"
+      "checksumSha256": "1b15a01cecdf7dfb03c5ba88d15303cd6598e7d27ed2b2d7d859a10f08b0ce28",
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_i_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
+        "sizeBytes": 45562,
+        "checksumSha256": "d3d9d4e865c7f3465fc75766b0ee048865b427d43e5042984a647c863763fa0e"
+      }
     },
     {
       "kind": "hymnal",
@@ -113,7 +137,15 @@
       "downloadUrl": "https://github.com/ThenGB/GYSApp-Data/releases/download/hymnals-2026.05.21/asm_m.gyspkg",
       "installFileName": "asm_m_master.pdf",
       "sizeBytes": 240087,
-      "checksumSha256": "b89c03f73d4ad3e7f9612ad2fc14069ebf41aae59bfcb135c0f92c169fa43d52"
+      "checksumSha256": "b89c03f73d4ad3e7f9612ad2fc14069ebf41aae59bfcb135c0f92c169fa43d52",
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_m_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
+        "sizeBytes": 56106,
+        "checksumSha256": "d058e51bcb0c720729322effaf0d989893bfc37a4bfbb4c6b7a531bac3fa1917"
+      }
     },
     {
       "kind": "hymnal",
@@ -127,7 +159,15 @@
       "downloadUrl": "https://github.com/ThenGB/GYSApp-Data/releases/download/hymnals-2026.05.21/asm_p.gyspkg",
       "installFileName": "asm_p_master.pdf",
       "sizeBytes": 477239,
-      "checksumSha256": "27d7863608021cf4577e13ad8474199f4f8c22899a0294607ff35b637348fc93"
+      "checksumSha256": "27d7863608021cf4577e13ad8474199f4f8c22899a0294607ff35b637348fc93",
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_p_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
+        "sizeBytes": 54893,
+        "checksumSha256": "1470f8af2d6a28074454b587319adcaaf6ad95c0b0d0a0690d4d747e9b855c8c"
+      }
     },
     {
       "kind": "soundfont",

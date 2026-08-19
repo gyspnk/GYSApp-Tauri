@@ -200,7 +200,7 @@ test("faith topics search, select, and persist a personal note", async ({
 test("offline pack manager keeps one update action and reports manifest status", async ({
   page,
 }) => {
-  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya?section=data");
   await expect(
     page.getByRole("heading", { name: "Paket lokal", exact: true }),
   ).toBeVisible();
@@ -684,7 +684,7 @@ test("device reset clears browser preferences, durable blobs, and app caches", a
     });
   });
 
-  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya?section=data");
   await page.getByRole("button", { name: "Reset perangkat" }).click();
   await expect(
     page.getByText(/Preferensi dan cache GYS sudah direset/),
@@ -980,8 +980,10 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   await expect(
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 15_000 });
+  await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
   await page.getByRole("link", { name: "Lainnya" }).click();
+  await page.getByRole("button", { name: "Data & Offline" }).click();
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
   await expect(
@@ -1040,7 +1042,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
   await expect(page.locator(".bible-pane")).toHaveCount(2);
 
   // Sync scroll toggle is visible and active by default
-  const syncToggle = page.getByRole("button", { name: "Gulir: Sinkron" });
+  const syncToggle = page.getByRole("button", { name: "Gulir sinkron" });
   await expect(syncToggle).toBeVisible();
   await expect
     .poll(() =>
@@ -1053,7 +1055,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
   // Toggle sync scroll off (Independent scrolling)
   await syncToggle.click();
   await expect(
-    page.getByRole("button", { name: "Gulir: Mandiri" }),
+    page.getByRole("button", { name: "Gulir mandiri" }),
   ).toBeVisible();
   await expect
     .poll(() =>
@@ -1064,9 +1066,9 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
     .toBe("0");
 
   // Toggle sync scroll back on
-  await page.getByRole("button", { name: "Gulir: Mandiri" }).click();
+  await page.getByRole("button", { name: "Gulir mandiri" }).click();
   await expect(
-    page.getByRole("button", { name: "Gulir: Sinkron" }),
+    page.getByRole("button", { name: "Gulir sinkron" }),
   ).toBeVisible();
   await expect
     .poll(() =>

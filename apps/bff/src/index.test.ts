@@ -10,6 +10,161 @@ const manifest = {
 };
 
 describe("BFF public boundary", () => {
+  it("streams an allowlisted distributed package selected from its trusted manifest", async () => {
+    const originalFetch = globalThis.fetch;
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            track: "bibles",
+            releaseTag: "bibles-2026.05.21",
+            publishedAt: "2026-05-21T06:43:39.809Z",
+            packages: [
+              {
+                code: "b_kjv",
+                version: "2026.05.21",
+                fileName: "b_kjv.gyspkg",
+                downloadUrl:
+                  "https://github.com/ThenGB/GYSApp-Data/releases/download/bibles-2026.05.21/b_kjv.gyspkg",
+                installFileName: "b_kjv.db",
+                sizeBytes: bytes.byteLength,
+                checksumSha256:
+                  "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a",
+              },
+            ],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(bytes, {
+          status: 200,
+          headers: {
+            "content-type": "application/octet-stream",
+            "content-length": String(bytes.byteLength),
+          },
+        }),
+      );
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/assets/distributed/b_kjv", {
+        headers: { Origin: "https://good.example" },
+      });
+
+      expect(response.status).toBe(200);
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
+      expect(response.headers.get("content-length")).toBe("4");
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("rejects an unknown distributed asset without fetching upstream", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn<typeof fetch>();
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/assets/distributed/not-allowed",
+        { headers: { Origin: "https://good.example" } },
+      );
+
+      expect(response.status).toBe(404);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("cuts off a chunked distributed package larger than its manifest", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json({
+          track: "bibles",
+          releaseTag: "bibles-2026.05.21",
+          publishedAt: "2026-05-21T06:43:39.809Z",
+          packages: [
+            {
+              code: "b_kjv",
+              version: "2026.05.21",
+              fileName: "b_kjv.gyspkg",
+              downloadUrl:
+                "https://github.com/ThenGB/GYSApp-Data/releases/download/bibles-2026.05.21/b_kjv.gyspkg",
+              installFileName: "b_kjv.db",
+              sizeBytes: 4,
+              checksumSha256: "a".repeat(64),
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3, 4, 5]), { status: 200 }),
+      );
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/assets/distributed/b_kjv", {
+        headers: { Origin: "https://good.example" },
+      });
+
+      await expect(response.arrayBuffer()).rejects.toThrow(
+        "Distributed asset exceeds manifest size",
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("streams only the pinned metadata index for an optional hymnal", async () => {
+    const originalFetch = globalThis.fetch;
+    const bytes = new TextEncoder().encode("[]");
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(bytes, {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/assets/distributed/HYMNE/index",
+        { headers: { Origin: "https://good.example" } },
+      );
+
+      expect(response.status).toBe(200);
+      expect(new TextDecoder().decode(await response.arrayBuffer())).toBe("[]");
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("does not fetch a non-TJC Sauh source binding", async () => {
     const originalFetch = globalThis.fetch;
     const fetchMock = vi.fn<typeof fetch>();
@@ -32,7 +187,7 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("does not proxy an insecure e-GYS base URL", async () => {
+  it("does not expose the draft e-GYS v2 provider route", async () => {
     const originalFetch = globalThis.fetch;
     const fetchMock = vi.fn<typeof fetch>();
     globalThis.fetch = fetchMock;
@@ -47,38 +202,11 @@ describe("BFF public boundary", () => {
         { headers: { Origin: "https://good.example" } },
         { EGYS_API_BASE_URL: "http://evil.example" },
       );
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({
-        google: { enabled: false, clientId: null },
-        apple: { enabled: false, clientId: null },
-        whatsapp: false,
-      });
+      expect(response.status).toBe(404);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       globalThis.fetch = originalFetch;
     }
-  });
-
-  it("does not claim an authenticated session when e-GYS is not configured", async () => {
-    const app = createApp({
-      allowedOrigins: ["https://good.example"],
-      chordManifest: manifest,
-      content: [],
-    });
-    const response = await app.request(
-      "/api/v1/auth/session",
-      {
-        headers: {
-          Origin: "https://good.example",
-          cookie: "egys_session=opaque",
-        },
-      },
-      {},
-    );
-
-    expect(response.status).toBe(503);
-    const payload = (await response.json()) as { error: { code: string } };
-    expect(payload.error.code).toBe("UPSTREAM_UNAVAILABLE");
   });
 
   it("rejects an origin outside the allowlist", async () => {
@@ -894,85 +1022,10 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("normalizes e-GYS identity with branch and membership tracking", async () => {
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = (async (input) => {
-      const url = String(input);
-      if (url.endsWith("/api/v1/auth/me"))
-        return Response.json({
-          accountId: "account-1",
-          personId: "person-1",
-          fullName: "Jemaat GYS",
-          email: "jemaat@example.com",
-          branchScope: "Jakarta Selatan",
-          homeBranchId: "branch-1",
-          can: {
-            viewMembers: true,
-            createMembers: false,
-            updateMembers: false,
-            deleteMembers: false,
-            viewBranches: true,
-            viewEvents: true,
-            createEvents: false,
-            updateEvents: false,
-            archiveEvents: false,
-          },
-          language: "id",
-        });
-      if (url.endsWith("/api/v1/members/person-1"))
-        return Response.json({
-          id: "person-1",
-          fullName: "Jemaat GYS",
-          history: [
-            {
-              branchCode: "JKT-SEL",
-              branchName: "Jakarta Selatan",
-              memberStatus: "aktif",
-              current: true,
-            },
-          ],
-        });
-      return new Response("not mocked", { status: 500 });
-    }) as typeof fetch;
-    try {
-      const app = createApp({
-        allowedOrigins: ["http://localhost:5173"],
-        chordManifest: manifest,
-        content: [],
-      });
-      const response = await app.request(
-        "/api/v1/account/profile",
-        { headers: { cookie: "EGYS_SESSION=test" } },
-        { EGYS_API_BASE_URL: "https://egys.example" },
-      );
-      expect(response.status).toBe(200);
-      expect(await response.json()).toMatchObject({
-        profile: {
-          displayName: "Jemaat GYS",
-          branchCode: "JKT-SEL",
-          branchName: "Jakarta Selatan",
-          memberStatus: "aktif",
-          isMember: true,
-          permissions: {
-            viewBranches: true,
-            viewEvents: true,
-            createEvents: false,
-            updateEvents: false,
-            archiveEvents: false,
-          },
-        },
-      });
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-  });
-
-  it("falls back to the live e-GYS v1 profile endpoint for native bearer sessions", async () => {
+  it("normalizes the live e-GYS v1 profile for native bearer sessions", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input, init) => {
       const url = String(input);
-      if (url.endsWith("/api/v1/auth/me"))
-        return new Response('{"error":true}', { status: 404 });
       if (url.endsWith("/api/v1/users/profile")) {
         expect(new Headers(init?.headers).get("authorization")).toBe(
           "Bearer live-v1-token",
@@ -1027,178 +1080,20 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("proxies and validates the e-GYS WhatsApp login flow", async () => {
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = (async (input) => {
-      const url = String(input);
-      if (url.endsWith("/api/v1/auth/providers"))
-        return Response.json({
-          google: { enabled: false, clientId: null },
-          apple: { enabled: false, clientId: null },
-          whatsapp: true,
-        });
-      if (url.endsWith("/api/v1/auth/whatsapp/start"))
-        return Response.json({
-          pollToken: "poll-token",
-          referenceCode: "GYS-1234",
-          whatsappUrl: "https://api.whatsapp.com/send?phone=1",
-          expiresAt: "2026-08-14T00:00:00.000Z",
-        });
-      if (url.includes("/api/v1/auth/whatsapp/state"))
-        return Response.json({ state: "WAITING" });
-      return new Response("not mocked", { status: 500 });
-    }) as typeof fetch;
-    try {
-      const app = createApp({
-        allowedOrigins: ["http://localhost:5173"],
-        chordManifest: manifest,
-        content: [],
-      });
-      const env = { EGYS_API_BASE_URL: "https://egys.example" };
-      const providers = await app.request("/api/v1/auth/providers", {}, env);
-      expect(providers.status).toBe(200);
-      expect(((await providers.json()) as { whatsapp: boolean }).whatsapp).toBe(
-        true,
-      );
-      const started = await app.request(
-        "/api/v1/auth/whatsapp/start",
-        { method: "POST" },
-        env,
-      );
-      expect(started.status).toBe(200);
-      expect(
-        ((await started.json()) as { referenceCode: string }).referenceCode,
-      ).toBe("GYS-1234");
-      const state = await app.request(
-        "/api/v1/auth/whatsapp/state?token=poll-token",
-        {},
-        env,
-      );
-      expect(state.status).toBe(200);
-      expect(((await state.json()) as { state: string }).state).toBe("WAITING");
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-  });
+  it("does not expose draft e-GYS v2 login routes", async () => {
+    const app = createApp({
+      allowedOrigins: ["http://localhost:5173"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const requests = [
+      app.request("/api/v1/auth/whatsapp/start", { method: "POST" }),
+      app.request("/api/v1/auth/whatsapp/state?token=poll-token"),
+      app.request("/api/v1/auth/exchange/google", { method: "POST" }),
+    ];
 
-  it("exchanges a provider ID token without exposing it to the browser", async () => {
-    const originalFetch = globalThis.fetch;
-    let seenBody = "";
-    globalThis.fetch = (async (input, init) => {
-      expect(String(input)).toBe("https://egys.example/api/v1/auth/google");
-      seenBody = String(init?.body ?? "");
-      return Response.json(
-        {
-          accountId: "account-1",
-          expiresAt: "2026-08-15T12:00:00+07:00",
-        },
-        {
-          headers: {
-            "set-cookie":
-              "egys_session=opaque; Domain=egys.example; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Lax",
-          },
-        },
-      );
-    }) as typeof fetch;
-    try {
-      const app = createApp({
-        allowedOrigins: ["http://localhost:5173"],
-        chordManifest: manifest,
-        content: [],
-      });
-      const response = await app.request(
-        "/api/v1/auth/exchange/google",
-        {
-          method: "POST",
-          headers: {
-            Origin: "http://localhost:5173",
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ idToken: "provider-secret" }),
-        },
-        { EGYS_API_BASE_URL: "https://egys.example" },
-      );
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({
-        authenticated: true,
-        expiresAt: "2026-08-15T12:00:00+07:00",
-      });
-      expect(seenBody).toBe(JSON.stringify({ idToken: "provider-secret" }));
-      const cookie = response.headers.get("set-cookie") ?? "";
-      expect(cookie).toContain("egys_session=opaque");
-      expect(cookie).toContain("Path=/");
-      expect(cookie).not.toContain("Domain=");
-      expect(cookie).not.toContain("provider-secret");
-
-      const invalidProvider = await app.request(
-        "/api/v1/auth/exchange/github",
-        {
-          method: "POST",
-          headers: {
-            Origin: "http://localhost:5173",
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ idToken: "provider-secret" }),
-        },
-        { EGYS_API_BASE_URL: "https://egys.example" },
-      );
-      expect(invalidProvider.status).toBe(400);
-      expect(
-        ((await invalidProvider.json()) as { error: { code: string } }).error
-          .code,
-      ).toBe("VALIDATION_ERROR");
-
-      const invalidBody = await app.request(
-        "/api/v1/auth/exchange/google",
-        {
-          method: "POST",
-          headers: {
-            Origin: "http://localhost:5173",
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({}),
-        },
-        { EGYS_API_BASE_URL: "https://egys.example" },
-      );
-      expect(invalidBody.status).toBe(400);
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-  });
-
-  it("normalizes the READY WhatsApp response and forwards its session cookie", async () => {
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = (async () =>
-      Response.json(
-        {
-          accountId: "account-1",
-          expiresAt: "2026-08-15T12:00:00+07:00",
-        },
-        {
-          headers: {
-            "set-cookie":
-              "egys_session=opaque; Domain=egys.example; Path=/; HttpOnly; Secure; SameSite=Lax",
-          },
-        },
-      )) as typeof fetch;
-    try {
-      const app = createApp({
-        allowedOrigins: ["http://localhost:5173"],
-        chordManifest: manifest,
-        content: [],
-      });
-      const response = await app.request(
-        "/api/v1/auth/whatsapp/state?token=poll-token",
-        { headers: { Origin: "http://localhost:5173" } },
-        { EGYS_API_BASE_URL: "https://egys.example" },
-      );
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ state: "READY" });
-      expect(response.headers.get("set-cookie")).toContain(
-        "egys_session=opaque",
-      );
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
+    await expect(
+      Promise.all(requests).then((items) => items.map((item) => item.status)),
+    ).resolves.toEqual([404, 404, 404]);
   });
 });

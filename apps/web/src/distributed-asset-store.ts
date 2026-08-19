@@ -19,6 +19,9 @@ export type InstalledDistributedAssetRecord = DistributedAssetRecordInput & {
   cacheKey: string;
   payloadBytes: number;
   installedAt: string;
+  metadataCacheKey?: string;
+  metadataBytes?: number;
+  metadataChecksumSha256?: string;
 };
 
 type DistributedAssetCache = {
@@ -67,9 +70,21 @@ function cacheKey(record: DistributedAssetRecordInput): string {
   return `https://gysapp.local/distributed-assets/${encodeURIComponent(record.code)}/${encodeURIComponent(record.version)}`;
 }
 
+function metadataCacheKey(record: DistributedAssetRecordInput): string {
+  return `${cacheKey(record)}/catalog`;
+}
+
 function isRecord(value: unknown): value is InstalledDistributedAssetRecord {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const record = value as Partial<InstalledDistributedAssetRecord>;
+  const metadataValid =
+    record.metadataCacheKey === undefined &&
+    record.metadataBytes === undefined &&
+    record.metadataChecksumSha256 === undefined
+      ? true
+      : typeof record.metadataCacheKey === "string" &&
+        typeof record.metadataBytes === "number" &&
+        typeof record.metadataChecksumSha256 === "string";
   return (
     typeof record.code === "string" &&
     typeof record.kind === "string" &&
@@ -81,7 +96,8 @@ function isRecord(value: unknown): value is InstalledDistributedAssetRecord {
     typeof record.cacheName === "string" &&
     typeof record.cacheKey === "string" &&
     typeof record.payloadBytes === "number" &&
-    typeof record.installedAt === "string"
+    typeof record.installedAt === "string" &&
+    metadataValid
   );
 }
 
@@ -141,9 +157,33 @@ export class DistributedAssetStore {
     return bytes;
   }
 
+  public async getMetadataBytes(code: string): Promise<Uint8Array | undefined> {
+    const record = await this.getRecord(code);
+    if (!record?.metadataCacheKey || record.metadataBytes === undefined)
+      return undefined;
+    const response = await this.cacheStorage
+      .open(record.cacheName)
+      .then((cache) => cache.match(record.metadataCacheKey!));
+    if (!response) return undefined;
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return bytes.byteLength === record.metadataBytes ? bytes : undefined;
+  }
+
+  public async hasCachedPayload(code: string): Promise<boolean> {
+    const record = await this.getRecord(code);
+    if (!record) return false;
+    const cache = await this.cacheStorage.open(record.cacheName);
+    if (!(await cache.match(record.cacheKey))) return false;
+    return (
+      !record.metadataCacheKey ||
+      Boolean(await cache.match(record.metadataCacheKey))
+    );
+  }
+
   public async put(
     input: DistributedAssetRecordInput,
     bytes: Uint8Array,
+    metadata?: { bytes: Uint8Array; checksumSha256: string },
   ): Promise<void> {
     const installedAt = this.now();
     const next: InstalledDistributedAssetRecord = {
@@ -152,14 +192,34 @@ export class DistributedAssetStore {
       cacheKey: cacheKey(input),
       payloadBytes: bytes.byteLength,
       installedAt,
+      ...(metadata
+        ? {
+            metadataCacheKey: metadataCacheKey(input),
+            metadataBytes: metadata.bytes.byteLength,
+            metadataChecksumSha256: metadata.checksumSha256,
+          }
+        : {}),
     };
     const cache = await this.cacheStorage.open(next.cacheName);
-    await cache.put(
-      next.cacheKey,
-      new Response(bytes.slice().buffer as ArrayBuffer, {
-        headers: { "content-type": "application/octet-stream" },
-      }),
-    );
+    try {
+      await cache.put(
+        next.cacheKey,
+        new Response(bytes.slice().buffer as ArrayBuffer, {
+          headers: { "content-type": "application/octet-stream" },
+        }),
+      );
+      if (metadata && next.metadataCacheKey) {
+        await cache.put(
+          next.metadataCacheKey,
+          new Response(metadata.bytes.slice().buffer as ArrayBuffer, {
+            headers: { "content-type": "application/json" },
+          }),
+        );
+      }
+    } catch (error) {
+      await this.cacheStorage.delete(next.cacheName);
+      throw error;
+    }
 
     const registry = this.readRegistry();
     const previous = registry[next.code];
@@ -180,9 +240,9 @@ export class DistributedAssetStore {
     const registry = this.readRegistry();
     const previous = registry[code];
     if (!previous) return;
-    await this.cacheStorage.delete(previous.cacheName);
     delete registry[code];
     this.writeRegistry(registry);
+    await this.cacheStorage.delete(previous.cacheName);
   }
 
   public async clear(): Promise<void> {

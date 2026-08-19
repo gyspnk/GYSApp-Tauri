@@ -24,7 +24,12 @@ import {
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
-import { fetchSauh, firstParagraph, subscribeSauh } from "./sauh.js";
+import {
+  fetchSauh,
+  firstParagraph,
+  selectTodaySauh,
+  subscribeSauh,
+} from "./sauh.js";
 import { fetchSuara } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import {
@@ -1241,7 +1246,6 @@ function HomePage({ locale }: { locale: Locale }) {
         <div>
           <p className="date-line">{today}</p>
           <h1>{translate(locale, "home.title")}</h1>
-          <p className="intro-copy">{translate(locale, "home.subtitle")}</p>
         </div>
       </section>
       <section className="home-grid" aria-label="Daily overview">
@@ -1282,8 +1286,10 @@ function HomePage({ locale }: { locale: Locale }) {
               <p className="sauh-title">{selected.title}</p>
               <blockquote>“{dailyText}”</blockquote>
               <small className="sauh-source">
-                Sumber langsung Sauh Bagi Jiwa ·{" "}
-                {new Date(selected.updatedAt).toLocaleDateString(locale)}
+                {selectTodaySauh([selected]).length
+                  ? "Sumber langsung Sauh Bagi Jiwa"
+                  : "Konten tersimpan Sauh Bagi Jiwa"}{" "}
+                · {new Date(selected.updatedAt).toLocaleDateString(locale)}
               </small>
             </>
           )}

@@ -3,7 +3,7 @@
 The rewrite is intentionally milestone-driven:
 
 - **Preview:** typed contracts, domain ports, BFF boundary, Quiet Sanctuary
-  shell, offline TB/lyrics/faith/TimGM pack, reader and hymn browser, and
+  shell, offline TB/KR/lyrics/faith pack, reader and hymn browser, and
   Windows Tauri compile check.
 - **Beta:** chord cache/SWR, MIDI parity, PDF reader, Bible reader/search, TTS
   provider fallback, real audio backends, pericopes, and platform contract
@@ -37,12 +37,12 @@ claim GA parity until the remaining reports and platform artifacts exist.
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
-  application chunk exceeds 250 KiB gzip. FluidSynth/WASM and the 6 MB TimGM soundfont are served as
-  same-origin on-demand/PWA assets rather than inflating the initial chunk.
-- The v11 service-worker install path precaches only the shell and compact
-  offline indexes. The soundfont and MIDI/FluidSynth binaries are warmed after
-  the first usable frame, independently and only when Save-Data/2G is not
-  advertised; this keeps activation and first paint off the heavy-asset path.
+  application chunk exceeds 250 KiB gzip. FluidSynth remains lazy, while the
+  GeneralUser-GS SoundFont is an explicit verified download and is absent from
+  the initial web and native packages.
+- The v15 service-worker install path precaches only the shell and compact
+  offline indexes. Distributed assets are installed explicitly through Asset
+  Management; this keeps activation and first paint off the heavy-asset path.
   HTML navigations use a network-first refresh so a successful Pages deploy is
   visible to existing PWA clients instead of being hidden by an old shell
   cache.
@@ -201,10 +201,10 @@ claim GA parity until the remaining reports and platform artifacts exist.
   signs both packages with `signtool` and removes the temporary PFX. Native
   packaging remains separate from signed installer evidence until that workflow
   is run with the release credentials.
-- e-GYS provider exchange is tested as an ID-token-in / HttpOnly-cookie-out
-  flow. The public BFF validates the upstream `SignInResponse` and normalizes
-  the upstream WhatsApp READY response without returning session credentials;
-  provider SDK/popup flows have explicit timeout and cancellation guards.
+- e-GYS uses only the live v1 compatibility boundary: Tauri owns the
+  origin-allowlisted login WebView and OS-keyring token, while web/PWA exposes
+  only the official login link. Draft v2 provider SDK, exchange, and WhatsApp
+  polling routes are absent from the runtime and covered by negative tests.
   The generated upstream contract is current at commit `a7a25e8` and records
   the verified Springdoc runtime document boundary (`/v3/api-docs`, Swagger UI
   path, and enablement property), plus the compatible branch/region routes;
@@ -225,9 +225,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - Cookie-authenticated BFF mutations now reject requests without an allowlisted
   `Origin` or same-site Fetch Metadata signal; the native adapter uses the
   explicit `x-gys-client: native` marker and the policy has contract coverage.
-  Tauri no longer injects browser Google/Apple SDK scripts under its strict CSP;
-  native provider controls expose the protected SDK/client-ID prerequisite,
-  while WhatsApp uses the system-browser handoff.
+  Tauri does not inject browser Google/Apple SDK scripts under its strict CSP.
   The global media surface re-clamps after minimize/route changes and its drag
   handle supports keyboard arrow movement with a visible focus ring. The
   normalized e-GYS profile preserves branch and event capabilities exposed by

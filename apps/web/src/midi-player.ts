@@ -1,6 +1,7 @@
 import type { NormalizedMidi } from "@gys/domain";
 import { MidiRenderCache, type RenderedPcm } from "./midi-render-cache.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 
 /**
  * The media player intentionally lives outside React.  A song can keep
@@ -155,9 +156,9 @@ const initial: WebMidiSnapshot = {
   loadingProgress: 0,
 };
 
-const SOUND_FONT_NAME = "TimGM6mb (offline)";
-const SOUND_FONT_CACHE = "gys-midi-soundfont-v1";
-const SOUND_FONT_PATH = "offline/soundfont/TimGM6mb.sf2";
+const SOUND_FONT_CODE = "GeneralUser-GS";
+const SOUND_FONT_NAME = "GeneralUser-GS (terpasang)";
+type SoundfontLoader = () => Promise<Uint8Array | undefined>;
 
 export type MidiPreloadRequest = {
   songId: string;
@@ -300,6 +301,11 @@ export class BrowserMidiPlayer {
   private readonly listeners = new Set<() => void>();
   private readonly settingsListeners = new Set<() => void>();
   private readonly endedListeners = new Set<() => void>();
+
+  public constructor(
+    private readonly loadSoundfont: SoundfontLoader = () =>
+      getDistributedAssetManager().getStore().getBytes(SOUND_FONT_CODE),
+  ) {}
 
   // React's external-store contract requires a stable snapshot reference
   // until a patch actually changes the store.
@@ -793,36 +799,13 @@ export class BrowserMidiPlayer {
     this.soundfontWorker = worker;
     this.soundfontRequest = (async () => {
       if (!this.soundfont) {
-        const url = new URL(
-          SOUND_FONT_PATH,
-          new URL(import.meta.env.BASE_URL, window.location.href),
-        );
-        const cached =
-          "caches" in window
-            ? await caches
-                .open(SOUND_FONT_CACHE)
-                .then((cache) => cache.match(url))
-            : undefined;
-        if (cached) {
-          this.soundfont = new Uint8Array(await cached.arrayBuffer());
-        } else {
-          const response = await fetch(url, { cache: "force-cache" });
-          if (!response.ok)
-            throw new Error(`SoundFont request failed: ${response.status}`);
-          this.soundfont = new Uint8Array(await response.arrayBuffer());
-          if ("caches" in window) {
-            await caches
-              .open(SOUND_FONT_CACHE)
-              .then((cache) =>
-                cache.put(
-                  url,
-                  new Response(this.soundfont!.slice().buffer as ArrayBuffer),
-                ),
-              );
-          }
-        }
+        this.soundfont = await this.loadSoundfont();
+        if (!this.soundfont)
+          throw new Error(
+            "GeneralUser-GS SoundFont belum terpasang. Unduh melalui Manajemen Aset.",
+          );
         if (this.soundfont.byteLength < 1_000_000)
-          throw new Error("TimGM SoundFont is incomplete");
+          throw new Error("GeneralUser-GS SoundFont is incomplete");
       }
       if (announceProgress)
         this.patch({ loadingProgress: 18, soundfont: SOUND_FONT_NAME });

@@ -45,6 +45,17 @@ describe("MIDI operation generation", () => {
 });
 
 describe("MIDI worker lifecycle", () => {
+  it("requires an installed distributed SoundFont", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    const internal = player as unknown as {
+      ensureSoundfont: (worker: Worker) => Promise<void>;
+    };
+
+    await expect(
+      internal.ensureSoundfont(new FakeWorker() as unknown as Worker),
+    ).rejects.toThrow("GeneralUser-GS");
+  });
+
   it("discards and terminates a crashed worker before the next render", async () => {
     vi.stubGlobal("Worker", FakeWorker);
     vi.stubGlobal("window", {

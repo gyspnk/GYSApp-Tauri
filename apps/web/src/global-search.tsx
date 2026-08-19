@@ -26,6 +26,8 @@ import {
   type BibleSearchEntry,
 } from "./global-bible-search.js";
 import { BibleSearchClient } from "./bible-search.js";
+import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
+import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 
 type SearchKind = "hymn" | "literature" | "faith" | "sauh" | "suara" | "bible";
 type SearchEntry = {
@@ -141,6 +143,11 @@ async function loadSearchIndex(): Promise<SearchEntry[]> {
           return parsed.success ? [parsed.data] : [];
         })
       : [];
+  hymns.push(
+    ...(await loadInstalledDistributedHymnCatalog(
+      getDistributedAssetManager().getStore(),
+    ).catch(() => [])),
+  );
   const literature =
     literatureResult.status === "fulfilled"
       ? LiteratureCatalogSchema.parse(literatureResult.value)
@@ -251,6 +258,26 @@ export function GlobalSearch({
       .catch(() => setStatus("error"));
     const timer = window.setTimeout(() => inputRef.current?.focus(), 40);
     return () => window.clearTimeout(timer);
+  }, [open]);
+
+  useEffect(() => {
+    const onAssetsChanged = () => {
+      indexPromise = undefined;
+      if (!open) return;
+      setStatus("loading");
+      void ensureIndex()
+        .then((value) => {
+          setEntries(value);
+          setStatus("ready");
+        })
+        .catch(() => setStatus("error"));
+    };
+    window.addEventListener("gys-distributed-assets-change", onAssetsChanged);
+    return () =>
+      window.removeEventListener(
+        "gys-distributed-assets-change",
+        onAssetsChanged,
+      );
   }, [open]);
 
   useEffect(() => {

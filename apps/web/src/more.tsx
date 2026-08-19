@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { type AccountProfile, type AssetManifestV1 } from "@gys/contracts";
 import {
@@ -14,15 +14,7 @@ import {
   readActiveAssetManifest,
   type AssetManifestDiff,
 } from "./asset-updater.js";
-import {
-  exchangeEgysToken,
-  getEgysProfile,
-  getEgysProviders,
-  getEgysUpstreamMeta,
-  getEgysWhatsAppState,
-  signOutEgys,
-  startEgysWhatsAppLogin,
-} from "./egys.js";
+import { getEgysProfile, signOutEgys } from "./egys.js";
 import {
   clearMidiPlaylist,
   downloadMidiPlaylist,
@@ -36,9 +28,8 @@ import {
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { Icon } from "./icons.js";
-import { reserveAuthPopup, withTimeout } from "./egys-auth.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { clearPlatformStorage, createPlatformServices } from "./platform.js";
+import { clearPlatformStorage } from "./platform.js";
 import {
   isTauriShell,
   openNativeEgysLogin,
@@ -47,6 +38,7 @@ import {
 import type { ShellTheme } from "./settings.js";
 import {
   getDistributedAssetManager,
+  distributedDownloadsConfigured,
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
 
@@ -93,6 +85,7 @@ function DistributedAssetPanel({
   progress,
   error,
   loading,
+  downloadAvailable,
   onInstall,
   onRemove,
 }: {
@@ -101,6 +94,7 @@ function DistributedAssetPanel({
   progress?: { received: number; total: number };
   error?: string;
   loading?: boolean;
+  downloadAvailable: boolean;
   onInstall: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
@@ -118,6 +112,12 @@ function DistributedAssetPanel({
         Unduh saat diperlukan; aset terverifikasi dan tersimpan offline setelah
         selesai.
       </p>
+      {!downloadAvailable && (
+        <div className="inline-error" role="status">
+          Layanan unduhan belum dikonfigurasi. Aset inti tetap dapat digunakan
+          offline.
+        </div>
+      )}
       <div className="distributed-assets-list">
         {loading && (
           <small className="account-sync-note">Memuat katalog aset…</small>
@@ -164,6 +164,7 @@ function DistributedAssetPanel({
                     <button
                       className="quiet-button asset-action-button"
                       type="button"
+                      disabled={!downloadAvailable}
                       onClick={() => onInstall(asset.code)}
                       aria-label={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
                       title={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
@@ -185,6 +186,7 @@ function DistributedAssetPanel({
                   <button
                     className="primary-button asset-action-button"
                     type="button"
+                    disabled={!downloadAvailable}
                     onClick={() => onInstall(asset.code)}
                     aria-label={`Unduh ${asset.title}`}
                     title={`Unduh ${asset.title}`}
@@ -213,20 +215,6 @@ function localUpdateCount(diff: AssetManifestDiff): number {
   return [...diff.added, ...diff.changed].filter(
     (item) => item.source === "local",
   ).length;
-}
-
-function waitFor(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve) => {
-    const timer = window.setTimeout(resolve, ms);
-    signal.addEventListener(
-      "abort",
-      () => {
-        window.clearTimeout(timer);
-        resolve();
-      },
-      { once: true },
-    );
-  });
 }
 
 const BACKUP_STORAGE_KEYS = [
@@ -321,7 +309,7 @@ export function MorePage({
   setLocale: (value: Locale) => void;
   setTheme: (value: ShellTheme) => void;
 }) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const nativeShell = isTauriShell();
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
@@ -341,11 +329,6 @@ export function MorePage({
   const [accountLoading, setAccountLoading] = useState(true);
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
-  const whatsappAbort = useRef<AbortController | undefined>(undefined);
-  const [providers, setProviders] =
-    useState<Awaited<ReturnType<typeof getEgysProviders>>>();
-  const [egysMeta, setEgysMeta] =
-    useState<Awaited<ReturnType<typeof getEgysUpstreamMeta>>>();
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<File>();
@@ -452,8 +435,6 @@ export function MorePage({
     return () => controller.abort();
   }, []);
 
-  useEffect(() => () => whatsappAbort.current?.abort(), []);
-
   useEffect(
     () => subscribeMidiPlaylist(() => setPlaylist(getMidiPlaylist())),
     [],
@@ -491,28 +472,6 @@ export function MorePage({
   }, []);
 
   useEffect(() => {
-    if (nativeShell) {
-      setProviders(undefined);
-      setEgysUnavailable(false);
-      return;
-    }
-    const controller = new AbortController();
-    void getEgysProviders(controller.signal)
-      .then((value) => {
-        setProviders(value);
-        setEgysUnavailable(false);
-      })
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted) {
-          recordDiagnostic("warn", "egys.providers", error);
-          setProviders(undefined);
-          setEgysUnavailable(true);
-        }
-      });
-    return () => controller.abort();
-  }, [nativeShell]);
-
-  useEffect(() => {
     if (!nativeShell) return;
     return subscribeNativeEgysLogin(() => {
       const controller = new AbortController();
@@ -541,14 +500,10 @@ export function MorePage({
   }, [nativeShell]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    void getEgysUpstreamMeta(controller.signal)
-      .then(setEgysMeta)
-      .catch(() => setEgysMeta(undefined));
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
+    if (!nativeShell) {
+      setAccountLoading(false);
+      return;
+    }
     const controller = new AbortController();
     void getEgysProfile(controller.signal)
       .then((profile) => {
@@ -563,7 +518,7 @@ export function MorePage({
       })
       .finally(() => setAccountLoading(false));
     return () => controller.abort();
-  }, []);
+  }, [nativeShell]);
 
   const show = (message: string) => {
     setNotice(message);
@@ -804,264 +759,72 @@ export function MorePage({
     }
   };
 
-  const signInWithProvider = async (provider: "google" | "apple") => {
-    if (nativeShell) {
-      recordDiagnostic("info", "egys.native-provider-page", provider);
-      await openNativeEgysLoginFlow();
-      return;
-    }
-    setAuthBusy(true);
-    show(
-      `Buka ${provider === "google" ? "Google" : "Apple"} untuk menyelesaikan login e-GYS.`,
-    );
-    const sdkUrl =
-      provider === "google"
-        ? "https://accounts.google.com/gsi/client"
-        : "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
-    try {
-      await withTimeout(
-        new Promise<void>((resolve, reject) => {
-          if (document.querySelector(`script[src="${sdkUrl}"]`))
-            return resolve();
-          const script = document.createElement("script");
-          script.src = sdkUrl;
-          script.async = true;
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error("SDK unavailable"));
-          document.head.appendChild(script);
-        }),
-        12_000,
-      );
-      if (provider === "google") {
-        const clientId = providers?.google.clientId;
-        const google = (
-          window as Window & {
-            google?: {
-              accounts?: {
-                id?: {
-                  initialize: (config: {
-                    client_id: string;
-                    callback: (response: { credential: string }) => void;
-                  }) => void;
-                  prompt: () => void;
-                };
-              };
-            };
-          }
-        ).google;
-        if (!clientId || !google?.accounts?.id)
-          throw new Error("Google client unavailable");
-        await withTimeout(
-          new Promise<void>((resolve, reject) => {
-            google.accounts?.id?.initialize({
-              client_id: clientId,
-              callback: (response) => {
-                void exchangeEgysToken("google", response.credential)
-                  .then(() => resolve())
-                  .catch(reject);
-              },
-            });
-            google.accounts?.id?.prompt();
-          }),
-          60_000,
-        );
-      } else {
-        const apple = (
-          window as Window & {
-            AppleID?: {
-              auth?: {
-                init: (config: {
-                  clientId: string;
-                  scope: string;
-                  redirectURI: string;
-                  usePopup: boolean;
-                }) => void;
-                signIn: () => Promise<{
-                  authorization?: { id_token?: string };
-                }>;
-              };
-            };
-          }
-        ).AppleID;
-        const clientId = providers?.apple.clientId;
-        if (!clientId || !apple?.auth)
-          throw new Error("Apple client unavailable");
-        apple.auth.init({
-          clientId,
-          scope: "name email",
-          redirectURI: window.location.origin,
-          usePopup: true,
-        });
-        const result = await withTimeout(apple.auth.signIn(), 60_000);
-        const token = result.authorization?.id_token;
-        if (!token) throw new Error("Apple token unavailable");
-        await exchangeEgysToken("apple", token);
-      }
-      const profile = await getEgysProfile();
-      setAccountProfile(profile);
-      setEgysUnavailable(false);
-      show(
-        profile
-          ? `Selamat datang, ${profile.displayName}.`
-          : "Login e-GYS berhasil.",
-      );
-    } catch (error) {
-      recordDiagnostic("error", "egys.login", error);
-      show(
-        "Login e-GYS belum dapat diselesaikan. Pastikan Worker dan client provider sudah dikonfigurasi.",
-      );
-    } finally {
-      setAuthBusy(false);
-    }
-  };
-
-  const signInWithWhatsApp = async () => {
-    if (nativeShell) {
-      await openNativeEgysLoginFlow();
-      return;
-    }
-    whatsappAbort.current?.abort();
-    const controller = new AbortController();
-    whatsappAbort.current = controller;
-    setAuthBusy(true);
-    // Reserve the popup during the click gesture on the web. Tauri opens the
-    // handoff in the system browser through the shell plugin instead of
-    // trying to create a WebView popup.
-    const popup = nativeShell ? undefined : reserveAuthPopup();
-    const closePopup = () => {
-      if (popup && !popup.closed) popup.close();
-    };
-    try {
-      const started = await startEgysWhatsAppLogin(controller.signal);
-      if (nativeShell) {
-        await createPlatformServices().openExternal(started.whatsappUrl);
-      } else if (!popup) {
-        show("WhatsApp diblokir browser. Izinkan pop-up lalu coba lagi.");
-        return;
-      } else popup.location.href = started.whatsappUrl;
-      show(
-        `Kirim pesan di WhatsApp; kode ${started.referenceCode} sedang menunggu konfirmasi.`,
-      );
-      const expiresAt = Date.parse(started.expiresAt);
-      while (!controller.signal.aborted && Date.now() < expiresAt) {
-        await waitFor(2_000, controller.signal);
-        if (controller.signal.aborted) return;
-        let state;
-        try {
-          state = await getEgysWhatsAppState(
-            started.pollToken,
-            controller.signal,
-          );
-        } catch (error) {
-          if (controller.signal.aborted) return;
-          recordDiagnostic("warn", "egys.whatsapp.poll", error);
-          show("Belum ada konfirmasi; mencoba memeriksa lagi…");
-          continue;
-        }
-        if (state.state === "READY") {
-          const profile = await getEgysProfile(controller.signal);
-          setAccountProfile(profile);
-          setEgysUnavailable(false);
-          show(
-            profile
-              ? `Selamat datang, ${profile.displayName}.`
-              : "Login WhatsApp e-GYS berhasil.",
-          );
-          return;
-        }
-        if (state.state === "UNKNOWN_SENDER") {
-          show("Nomor WhatsApp belum terdaftar di e-GYS.");
-          return;
-        }
-        if (state.state === "EXPIRED") {
-          show("Permintaan WhatsApp sudah kedaluwarsa. Mulai lagi bila perlu.");
-          return;
-        }
-      }
-      if (!controller.signal.aborted)
-        show("Permintaan WhatsApp kedaluwarsa sebelum dikonfirmasi.");
-    } catch (error) {
-      if (!controller.signal.aborted)
-        recordDiagnostic("error", "egys.whatsapp", error);
-      if (!controller.signal.aborted)
-        show(
-          "Login WhatsApp e-GYS belum tersedia. Pastikan Worker terkonfigurasi.",
-        );
-    } finally {
-      closePopup();
-      if (!controller.signal.aborted) setAuthBusy(false);
-    }
-  };
-
-  const [activeSection, setActiveSection] = useState<
-    "all" | "account" | "appearance" | "data" | "help"
-  >(() => (searchParams.get("section") === "data" ? "data" : "all"));
+  const requestedSection = searchParams.get("section");
+  const activeSection = (
+    ["account", "appearance", "data", "help"] as const
+  ).includes(requestedSection as "account" | "appearance" | "data" | "help")
+    ? (requestedSection as "account" | "appearance" | "data" | "help")
+    : "account";
+  const selectSection = (section: typeof activeSection) =>
+    setSearchParams({ section });
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>('.more-category-bar [aria-current="page"]')
+        ?.scrollIntoView({ block: "nearest", inline: "center" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeSection]);
 
   return (
     <div className="page more-page">
       <section className="page-intro">
         <div>
-          <p className="date-line">Pengaturan & Akun</p>
           <h1>{translate(locale, "page.moreTitle")}</h1>
-          <p className="intro-copy">{translate(locale, "page.moreBody")}</p>
         </div>
-        <span className="pack-badge">Offline-ready</span>
       </section>
 
       <div
         className="more-category-bar"
-        role="tablist"
+        role="navigation"
         aria-label="Kategori Pengaturan"
       >
         <button
           type="button"
-          role="tab"
-          aria-selected={activeSection === "all"}
-          className={`more-cat-btn${activeSection === "all" ? " is-active" : ""}`}
-          onClick={() => setActiveSection("all")}
-        >
-          Semua
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeSection === "account"}
+          aria-current={activeSection === "account" ? "page" : undefined}
           className={`more-cat-btn${activeSection === "account" ? " is-active" : ""}`}
-          onClick={() => setActiveSection("account")}
+          onClick={() => selectSection("account")}
         >
           Akun e-GYS
         </button>
         <button
           type="button"
-          role="tab"
-          aria-selected={activeSection === "appearance"}
+          aria-current={activeSection === "appearance" ? "page" : undefined}
           className={`more-cat-btn${activeSection === "appearance" ? " is-active" : ""}`}
-          onClick={() => setActiveSection("appearance")}
+          onClick={() => selectSection("appearance")}
         >
           Tampilan & Bahasa
         </button>
         <button
           type="button"
-          role="tab"
-          aria-selected={activeSection === "data"}
+          aria-current={activeSection === "data" ? "page" : undefined}
           className={`more-cat-btn${activeSection === "data" ? " is-active" : ""}`}
-          onClick={() => setActiveSection("data")}
+          onClick={() => selectSection("data")}
         >
           Data & Offline
         </button>
         <button
           type="button"
-          role="tab"
-          aria-selected={activeSection === "help"}
+          aria-current={activeSection === "help" ? "page" : undefined}
           className={`more-cat-btn${activeSection === "help" ? " is-active" : ""}`}
-          onClick={() => setActiveSection("help")}
+          onClick={() => selectSection("help")}
         >
           Bantuan
         </button>
       </div>
 
       <section className="more-grid">
-        {(activeSection === "all" || activeSection === "account") && (
+        {activeSection === "account" && (
           <article className="more-card more-card-wide account-card egys-card">
             <div className="more-card-heading">
               <div>
@@ -1077,9 +840,11 @@ export function MorePage({
               >
                 {accountProfile
                   ? "Terhubung"
-                  : egysUnavailable
+                  : nativeShell && egysUnavailable
                     ? "Tidak tersedia"
-                    : "Tamu"}
+                    : nativeShell
+                      ? "Tamu"
+                      : "Login resmi"}
               </span>
             </div>
 
@@ -1150,16 +915,10 @@ export function MorePage({
               </div>
             ) : (
               <div className="egys-login-box">
-                {!nativeShell && egysUnavailable && (
-                  <div className="account-sync-note" role="status">
-                    Layanan akun e-GYS belum terdeteksi. Pastikan BFF dan
-                    koneksi upstream sudah dikonfigurasi, lalu muat ulang.
-                  </div>
-                )}
                 <p className="egys-login-desc">
-                  Masuk dengan akun e-GYS Anda untuk menyinkronkan profil
-                  jemaat, cabang, dan mengakses warta jemaat resmi secara
-                  terpadu.
+                  {nativeShell
+                    ? "Masuk melalui halaman resmi e-GYS untuk menghubungkan profil jemaat ke aplikasi ini."
+                    : "Login e-GYS v1 dibuka di halaman resmi. Sinkronisasi profil tersedia di aplikasi GYS yang terpasang."}
                 </p>
                 <div className="egys-login-actions">
                   {nativeShell ? (
@@ -1178,62 +937,25 @@ export function MorePage({
                       </small>
                     </>
                   ) : (
-                    <>
-                      {providers?.whatsapp && (
-                        <button
-                          type="button"
-                          className="primary-button egys-wa-btn"
-                          onClick={() => void signInWithWhatsApp()}
-                        >
-                          <span className="btn-icon">💬</span> Masuk dengan
-                          WhatsApp
-                        </button>
-                      )}
-                      <div className="egys-secondary-logins">
-                        {providers?.google.enabled &&
-                          providers.google.clientId && (
-                            <button
-                              type="button"
-                              className="quiet-button"
-                              onClick={() => void signInWithProvider("google")}
-                            >
-                              Google
-                            </button>
-                          )}
-                        {providers?.apple.enabled &&
-                          providers.apple.clientId && (
-                            <button
-                              type="button"
-                              className="quiet-button"
-                              onClick={() => void signInWithProvider("apple")}
-                            >
-                              Apple
-                            </button>
-                          )}
-                      </div>
-                      {!providers?.whatsapp &&
-                        !providers?.google.clientId &&
-                        !providers?.apple.clientId && (
-                          <small className="account-sync-note">
-                            Belum ada metode login e-GYS yang aktif di
-                            lingkungan ini.
-                          </small>
-                        )}
-                    </>
+                    <a
+                      className="primary-button egys-wa-btn"
+                      href={`https://e.gys.or.id/login?theme=${theme}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <span className="btn-icon" aria-hidden="true">
+                        🔐
+                      </span>
+                      Buka login e-GYS resmi
+                    </a>
                   )}
                 </div>
-                {egysMeta && (
-                  <small className="account-sync-note">
-                    Kontrak API e-GYS tersinkronisasi (SHA:{" "}
-                    {egysMeta.sourceCommit?.slice(0, 7) ?? "latest"})
-                  </small>
-                )}
               </div>
             )}
           </article>
         )}
 
-        {(activeSection === "all" || activeSection === "appearance") && (
+        {activeSection === "appearance" && (
           <article className="more-card more-card-wide appearance-card">
             <div className="more-card-heading">
               <div>
@@ -1294,7 +1016,7 @@ export function MorePage({
           </article>
         )}
 
-        {(activeSection === "all" || activeSection === "data") && (
+        {activeSection === "data" && (
           <>
             <article className="more-card more-card-wide">
               <div className="more-card-heading">
@@ -1376,6 +1098,7 @@ export function MorePage({
             <DistributedAssetPanel
               assets={distributedAssets}
               loading={distributedAssetsLoading}
+              downloadAvailable={distributedDownloadsConfigured()}
               {...(distributedBusyCode
                 ? { busyCode: distributedBusyCode }
                 : {})}
@@ -1435,7 +1158,7 @@ export function MorePage({
           </>
         )}
 
-        {(activeSection === "all" || activeSection === "help") && (
+        {activeSection === "help" && (
           <>
             <button
               className="more-card more-action"

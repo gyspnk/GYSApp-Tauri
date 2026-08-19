@@ -165,82 +165,6 @@ export const HymnalPdfManifestSchema = z.object({
 });
 export type HymnalPdfManifest = z.infer<typeof HymnalPdfManifestSchema>;
 
-export const EgysProviderInfoSchema = z.object({
-  enabled: z.boolean(),
-  clientId: z.string().min(1).nullish(),
-});
-export const EgysProvidersSchema = z.object({
-  google: EgysProviderInfoSchema,
-  apple: EgysProviderInfoSchema,
-  whatsapp: z.boolean(),
-});
-export type EgysProviders = z.infer<typeof EgysProvidersSchema>;
-/** Response returned after e-GYS accepts a provider ID token. The session
- * itself is carried only by the HttpOnly cookie. */
-export const EgysSignInResponseSchema = z.object({
-  accountId: z.string().min(1),
-  expiresAt: z.string().datetime({ offset: true }),
-});
-export type EgysSignInResponse = z.infer<typeof EgysSignInResponseSchema>;
-/** Public BFF response after the HttpOnly e-GYS session cookie is set. */
-export const EgysAuthExchangeResponseSchema = z.object({
-  authenticated: z.literal(true),
-  expiresAt: z.string().datetime({ offset: true }),
-});
-export type EgysAuthExchangeResponse = z.infer<
-  typeof EgysAuthExchangeResponseSchema
->;
-export const EgysMeResponseSchema = z.object({
-  accountId: z.string().min(1),
-  personId: z.string().min(1),
-  fullName: z.string().min(1).nullable().optional(),
-  email: z.string().email().nullable().optional(),
-  can: z
-    .object({
-      viewMembers: z.boolean(),
-      createMembers: z.boolean(),
-      updateMembers: z.boolean(),
-      deleteMembers: z.boolean(),
-      // Current e-GYS deployments also expose branch/event capabilities.
-      // Optional keeps the adapter compatible with older installations.
-      viewBranches: z.boolean().optional(),
-      viewEvents: z.boolean().optional(),
-      createEvents: z.boolean().optional(),
-      updateEvents: z.boolean().optional(),
-      archiveEvents: z.boolean().optional(),
-    })
-    .optional(),
-  branchScope: z.string().min(1).nullable().optional(),
-  homeBranchId: z.string().min(1).nullable().optional(),
-  language: z.enum(["id", "en", "ms"]).nullable().optional(),
-});
-export type EgysMeResponse = z.infer<typeof EgysMeResponseSchema>;
-export const EgysWhatsAppLoginStartedSchema = z.object({
-  pollToken: z.string().min(1),
-  referenceCode: z.string().min(1),
-  whatsappUrl: z.string().url(),
-  expiresAt: z.string().datetime({ offset: true }),
-});
-export type EgysWhatsAppLoginStarted = z.infer<
-  typeof EgysWhatsAppLoginStartedSchema
->;
-export const EgysWhatsAppLoginStateSchema = z
-  .union([
-    z.object({
-      state: z.enum(["WAITING", "READY", "UNKNOWN_SENDER", "EXPIRED"]),
-    }),
-    // The upstream returns SignInResponse (and sets the cookie) when a poll
-    // transitions to READY. Normalize that response at the public boundary
-    // so the browser never needs account/session details from the body.
-    EgysSignInResponseSchema,
-  ])
-  .transform((value) =>
-    "state" in value ? value : { state: "READY" as const },
-  );
-export type EgysWhatsAppLoginState = z.infer<
-  typeof EgysWhatsAppLoginStateSchema
->;
-
 export const MidiPlaylistItemSchema = z.object({
   songId: z.string().min(1),
   title: z.string().min(1),
@@ -417,6 +341,14 @@ export const DistributedAssetTrackManifestSchema = z.object({
   publishedAt: z.string().datetime({ offset: true }),
   packages: z.array(DistributedAssetPackageSchema),
 });
+export const DistributedAssetMetadataSchema = z.object({
+  sourceRepo: z.literal("ThenGB/GYSAPP-Fork"),
+  sourceCommit: SourceCommitSchema,
+  path: z.string().min(1),
+  downloadUrl: z.string().url(),
+  sizeBytes: z.number().int().positive(),
+  checksumSha256: Sha256Schema,
+});
 export const DistributedAssetCatalogItemSchema = z.object({
   kind: DistributedAssetKindSchema,
   code: z.string().min(1),
@@ -430,6 +362,7 @@ export const DistributedAssetCatalogItemSchema = z.object({
   installFileName: z.string().min(1),
   sizeBytes: z.number().int().positive(),
   checksumSha256: Sha256Schema,
+  metadata: DistributedAssetMetadataSchema.optional(),
 });
 export const DistributedAssetCatalogSchema = z.object({
   version: z.literal(1),
@@ -447,6 +380,9 @@ export type DistributedAssetTrackManifest = z.infer<
 >;
 export type DistributedAssetCatalogItem = z.infer<
   typeof DistributedAssetCatalogItemSchema
+>;
+export type DistributedAssetMetadata = z.infer<
+  typeof DistributedAssetMetadataSchema
 >;
 export type DistributedAssetCatalog = z.infer<
   typeof DistributedAssetCatalogSchema

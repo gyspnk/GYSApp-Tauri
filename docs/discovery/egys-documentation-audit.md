@@ -41,6 +41,8 @@ Therefore the live v1 endpoints such as `/login/whatsapp-login-request`, OTP con
 
 ## Consequence for GYSApp-Tauri
 
-The current BFF contract is conceptually aligned with eGYS v2: provider ID-token exchange, `/auth/providers`, `/auth/me`, HttpOnly session behavior, explicit `not_registered`, and separate WhatsApp `pollToken`/`referenceCode`. The remaining production question is not “which v1 login endpoint should the app call?” but “which deployed eGYS v2 base URL and provider configuration are available?”
-
-Before claiming production login works, verify the deployed v2 service exposes the contract above and has the production Google client ID, Apple decision/configuration, and WhatsApp webhook path configured. If production still serves only v1, use an explicitly isolated compatibility adapter; do not silently combine v1 callbacks with v2 session assumptions.
+The v2 contract above is retained only as pinned discovery evidence. Runtime
+authentication deliberately does not expose its provider, exchange, or
+WhatsApp polling routes. Tauri uses the isolated live-v1 WebView/keyring bridge;
+web/PWA opens the official v1 login page without receiving a token. A future v2
+migration requires a new explicit decision and production-service verification.

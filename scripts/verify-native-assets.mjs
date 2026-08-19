@@ -18,7 +18,6 @@ const required = [
   "offline/bible/manifest.json",
   "offline/bible/tb-reader.json",
   "offline/bible/b_tb.db",
-  "offline/soundfont/TimGM6mb.sf2",
   "vendor/midi-render-worker.js",
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",

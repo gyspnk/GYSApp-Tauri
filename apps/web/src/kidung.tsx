@@ -53,7 +53,7 @@ import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { getActivity, setHymnActivity } from "./history.js";
 import { loadForkHymnalPdf } from "./fork-pdf.js";
 import {
-  loadDistributedHymnCatalog,
+  loadInstalledDistributedHymnCatalog,
   loadInstalledDistributedHymnalPdf,
 } from "./distributed-hymnals.js";
 import { getDistributedAssetManager } from "./distributed-asset-manager.js";
@@ -146,30 +146,42 @@ function useHymnData() {
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
   useEffect(() => {
     const controller = new AbortController();
-    void Promise.all([
-      fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
-        signal: controller.signal,
-        cache: "force-cache",
-      }).then(async (response) => {
-        if (!response.ok) throw new Error("Offline hymn catalog unavailable");
-        return parseCatalog(await response.json());
-      }),
-      loadDistributedHymnCatalog().catch(() => []),
-    ])
-      .then(([core, distributed]) => {
-        setCatalog({ status: "ready", items: [...core, ...distributed] });
-      })
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted)
-          setCatalog({
-            status: "error",
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unable to load hymn catalog",
-          });
-      });
-    return () => controller.abort();
+    const load = () =>
+      Promise.all([
+        fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
+          signal: controller.signal,
+          cache: "force-cache",
+        }).then(async (response) => {
+          if (!response.ok) throw new Error("Offline hymn catalog unavailable");
+          return parseCatalog(await response.json());
+        }),
+        loadInstalledDistributedHymnCatalog(
+          getDistributedAssetManager().getStore(),
+        ).catch(() => []),
+      ])
+        .then(([core, distributed]) => {
+          setCatalog({ status: "ready", items: [...core, ...distributed] });
+        })
+        .catch((error: unknown) => {
+          if (!controller.signal.aborted)
+            setCatalog({
+              status: "error",
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to load hymn catalog",
+            });
+        });
+    void load();
+    const onAssetsChanged = () => void load();
+    window.addEventListener("gys-distributed-assets-change", onAssetsChanged);
+    return () => {
+      controller.abort();
+      window.removeEventListener(
+        "gys-distributed-assets-change",
+        onAssetsChanged,
+      );
+    };
   }, []);
   useEffect(() => {
     void fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
@@ -620,13 +632,6 @@ function HymnCatalog({
           </p>
           <h1>{translate(locale, "page.kidungTitle")}</h1>
         </div>
-        <div className="hymn-page-actions">
-          <span className="pack-badge">
-            {filtered.length > 0
-              ? `${translate(locale, "kidung.catalogOffline")} · ${filtered.length}`
-              : translate(locale, "kidung.catalogOffline")}
-          </span>
-        </div>
         {state.status === "ready" && (
           <div className="catalog-toolbar hymn-catalog-controls">
             <label className="search-field">
@@ -665,19 +670,6 @@ function HymnCatalog({
       )}
       {state.status === "ready" && (
         <section className="hymn-catalog-shell">
-          <div className="catalog-heading">
-            <div>
-              <p className="date-line">
-                {translate(locale, "kidung.catalogHeading")}
-              </p>
-              <h2>
-                {translate(locale, "kidung.available", {
-                  count: filtered.length,
-                })}
-              </h2>
-            </div>
-            <small>{translate(locale, "kidung.catalogHint")}</small>
-          </div>
           <ol className="pujian-list">
             {filtered.map((item) => (
               <li key={item.id}>
@@ -769,6 +761,7 @@ function HymnDetail({
   const [midiStatus, setMidiStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const [soundfontInstalled, setSoundfontInstalled] = useState(false);
   const [viewerMode, setViewerMode] = useState<HymnViewerMode>(() =>
     readHymnViewerMode(songId),
   );
@@ -814,6 +807,7 @@ function HymnDetail({
     midiPlayer.snapshot,
     midiPlayer.snapshot,
   );
+  const midiAvailable = !item?.assetCode && soundfontInstalled;
   const verses = getHymnVerses(item);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   const sequence = state.status === "ready" ? uniqueItems(state.items) : [];
@@ -822,6 +816,21 @@ function HymnDetail({
     : -1;
   const prev = index > 0 ? sequence[index - 1] : undefined;
   const next = index >= 0 ? sequence[index + 1] : undefined;
+  useEffect(() => {
+    let active = true;
+    const refresh = () => {
+      void getDistributedAssetManager()
+        .getStore()
+        .hasCachedPayload("GeneralUser-GS")
+        .then((installed) => active && setSoundfontInstalled(installed));
+    };
+    refresh();
+    window.addEventListener("gys-distributed-assets-change", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("gys-distributed-assets-change", refresh);
+    };
+  }, []);
   useEffect(() => {
     if (item)
       setHymnActivity(
@@ -1487,87 +1496,94 @@ function HymnDetail({
                 <Icon name="chevronRight" size={18} />
               </span>
             </button>
-            <button
-              type="button"
-              className="viewer-chrome-button viewer-chrome-midi"
-              onClick={() => void loadMidi()}
-              disabled={
-                midiStatus === "loading" || midiState.status === "loading"
-              }
-              aria-label="Buka MIDI dari viewer"
-            >
-              <span aria-hidden="true">
-                <Icon name="music" size={18} />
-              </span>
-              <span className="viewer-chrome-copy">MIDI</span>
-            </button>
+            {midiAvailable && (
+              <button
+                type="button"
+                className="viewer-chrome-button viewer-chrome-midi"
+                onClick={() => void loadMidi()}
+                disabled={
+                  midiStatus === "loading" || midiState.status === "loading"
+                }
+                aria-label="Buka MIDI dari viewer"
+              >
+                <span aria-hidden="true">
+                  <Icon name="music" size={18} />
+                </span>
+                <span className="viewer-chrome-copy">MIDI</span>
+              </button>
+            )}
           </div>
         )}
         <div
           className={`detail-actions${toolbarVisible ? "" : " is-collapsed"}`}
         >
-          <button
-            type="button"
-            className="quiet-button hymn-action"
-            onClick={toggleChords}
-            disabled={chordStatus === "loading"}
-            aria-pressed={chordsVisible}
-            aria-label={
-              chordStatus === "loading"
-                ? translate(locale, "kidung.loadingChord")
-                : chordsVisible
-                  ? translate(locale, "kidung.hideChord")
-                  : translate(locale, "kidung.showChord")
-            }
-          >
-            <span className="hymn-action-icon" aria-hidden="true">
-              <Icon name="music" size={17} />
-            </span>
-            <span className="hymn-action-label">
-              {chordStatus === "loading"
-                ? translate(locale, "kidung.loadingChord")
-                : chordsVisible
-                  ? translate(locale, "kidung.hideChord")
-                  : translate(locale, "kidung.showChord")}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="primary-button hymn-action hymn-action-primary"
-            onClick={() => void loadMidi()}
-            disabled={
-              midiStatus === "loading" || midiState.status === "loading"
-            }
-            aria-label={
-              midiState.songId === item.id && midiState.status === "playing"
-                ? translate(locale, "kidung.pauseMidi")
-                : midiStatus === "loading"
-                  ? translate(locale, "kidung.loadingMidi")
-                  : midiStatus === "ready"
-                    ? translate(locale, "kidung.midiReady")
-                    : translate(locale, "kidung.playMidi")
-            }
-          >
-            <span className="hymn-action-icon" aria-hidden="true">
-              <Icon
-                name={
-                  midiState.songId === item.id && midiState.status === "playing"
-                    ? "pause"
-                    : "play"
-                }
-                size={17}
-              />
-            </span>
-            <span className="hymn-action-label">
-              {midiState.songId === item.id && midiState.status === "playing"
-                ? translate(locale, "kidung.pauseMidi")
-                : midiStatus === "loading"
-                  ? translate(locale, "kidung.loadingMidi")
-                  : midiStatus === "ready"
-                    ? translate(locale, "kidung.midiReady")
-                    : translate(locale, "kidung.playMidi")}
-            </span>
-          </button>
+          {!item.assetCode && (
+            <button
+              type="button"
+              className="quiet-button hymn-action"
+              onClick={toggleChords}
+              disabled={chordStatus === "loading"}
+              aria-pressed={chordsVisible}
+              aria-label={
+                chordStatus === "loading"
+                  ? translate(locale, "kidung.loadingChord")
+                  : chordsVisible
+                    ? translate(locale, "kidung.hideChord")
+                    : translate(locale, "kidung.showChord")
+              }
+            >
+              <span className="hymn-action-icon" aria-hidden="true">
+                <Icon name="music" size={17} />
+              </span>
+              <span className="hymn-action-label">
+                {chordStatus === "loading"
+                  ? translate(locale, "kidung.loadingChord")
+                  : chordsVisible
+                    ? translate(locale, "kidung.hideChord")
+                    : translate(locale, "kidung.showChord")}
+              </span>
+            </button>
+          )}
+          {midiAvailable && (
+            <button
+              type="button"
+              className="primary-button hymn-action hymn-action-primary"
+              onClick={() => void loadMidi()}
+              disabled={
+                midiStatus === "loading" || midiState.status === "loading"
+              }
+              aria-label={
+                midiState.songId === item.id && midiState.status === "playing"
+                  ? translate(locale, "kidung.pauseMidi")
+                  : midiStatus === "loading"
+                    ? translate(locale, "kidung.loadingMidi")
+                    : midiStatus === "ready"
+                      ? translate(locale, "kidung.midiReady")
+                      : translate(locale, "kidung.playMidi")
+              }
+            >
+              <span className="hymn-action-icon" aria-hidden="true">
+                <Icon
+                  name={
+                    midiState.songId === item.id &&
+                    midiState.status === "playing"
+                      ? "pause"
+                      : "play"
+                  }
+                  size={17}
+                />
+              </span>
+              <span className="hymn-action-label">
+                {midiState.songId === item.id && midiState.status === "playing"
+                  ? translate(locale, "kidung.pauseMidi")
+                  : midiStatus === "loading"
+                    ? translate(locale, "kidung.loadingMidi")
+                    : midiStatus === "ready"
+                      ? translate(locale, "kidung.midiReady")
+                      : translate(locale, "kidung.playMidi")}
+              </span>
+            </button>
+          )}
           <button
             type="button"
             className="quiet-button hymn-action"
@@ -1615,40 +1631,42 @@ function HymnDetail({
                   : translate(locale, "kidung.saveFavorite")}
               </span>
             </button>
-            <button
-              type="button"
-              className="quiet-button hymn-action"
-              aria-pressed={playlist.items.some(
-                (entry) => entry.songId === item.id,
-              )}
-              onClick={() => {
-                const added = addMidiPlaylistItem({
-                  songId: item.id,
-                  title: item.title,
-                  ...(musicMidiRef?.sha256
-                    ? {
-                        sourceHash: musicMidiRef.sha256,
-                      }
-                    : {}),
-                });
-                show(
-                  added
-                    ? translate(locale, "kidung.queueAdded")
-                    : translate(locale, "kidung.queueExists"),
-                );
-              }}
-            >
-              <span className="hymn-action-icon" aria-hidden="true">
-                <Icon name="playlist" size={17} />
-              </span>
-              <span className="hymn-action-label">
-                {playlist.items.some((entry) => entry.songId === item.id)
-                  ? translate(locale, "kidung.queueCount", {
-                      count: playlist.items.length,
-                    })
-                  : translate(locale, "kidung.queueAdd")}
-              </span>
-            </button>
+            {!item.assetCode && (
+              <button
+                type="button"
+                className="quiet-button hymn-action"
+                aria-pressed={playlist.items.some(
+                  (entry) => entry.songId === item.id,
+                )}
+                onClick={() => {
+                  const added = addMidiPlaylistItem({
+                    songId: item.id,
+                    title: item.title,
+                    ...(musicMidiRef?.sha256
+                      ? {
+                          sourceHash: musicMidiRef.sha256,
+                        }
+                      : {}),
+                  });
+                  show(
+                    added
+                      ? translate(locale, "kidung.queueAdded")
+                      : translate(locale, "kidung.queueExists"),
+                  );
+                }}
+              >
+                <span className="hymn-action-icon" aria-hidden="true">
+                  <Icon name="playlist" size={17} />
+                </span>
+                <span className="hymn-action-label">
+                  {playlist.items.some((entry) => entry.songId === item.id)
+                    ? translate(locale, "kidung.queueCount", {
+                        count: playlist.items.length,
+                      })
+                    : translate(locale, "kidung.queueAdd")}
+                </span>
+              </button>
+            )}
             {pdfBytes && (
               <button
                 type="button"

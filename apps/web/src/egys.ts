@@ -1,13 +1,4 @@
-import {
-  AccountProfileSchema,
-  EgysAuthExchangeResponseSchema,
-  EgysProvidersSchema,
-  EgysWhatsAppLoginStartedSchema,
-  EgysWhatsAppLoginStateSchema,
-  EgysUpstreamMetaSchema,
-  type AccountProfile,
-  type EgysProviders,
-} from "@gys/contracts";
+import { AccountProfileSchema, type AccountProfile } from "@gys/contracts";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
   getNativeEgysToken,
@@ -73,101 +64,6 @@ export async function getEgysProfile(
   }
   const body = (await response.json()) as { profile?: unknown };
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
-}
-
-export async function getEgysUpstreamMeta(signal?: AbortSignal) {
-  const response = await request(apiUrl("/api/v1/meta/egys"), {
-    ...(signal ? { signal } : {}),
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    const failure = new Error(`e-GYS metadata failed: ${response.status}`);
-    recordDiagnostic("error", "egys.metadata", failure);
-    throw failure;
-  }
-  return EgysUpstreamMetaSchema.parse(await response.json());
-}
-
-export async function getEgysProviders(
-  signal?: AbortSignal,
-): Promise<EgysProviders | undefined> {
-  const response = await request(apiUrl("/api/v1/auth/providers"), {
-    credentials: "include",
-    ...(signal ? { signal } : {}),
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    const failure = new Error(`e-GYS providers failed: ${response.status}`);
-    recordDiagnostic("error", "egys.providers", failure);
-    throw failure;
-  }
-  const body: unknown = await response.json();
-  const parsed = EgysProvidersSchema.safeParse(body);
-  if (parsed.success) return parsed.data;
-  const legacy = (body as { providers?: unknown })?.providers;
-  return Array.isArray(legacy)
-    ? EgysProvidersSchema.parse({
-        google: { enabled: legacy.includes("google") },
-        apple: { enabled: legacy.includes("apple") },
-        whatsapp: false,
-      })
-    : undefined;
-}
-
-export async function exchangeEgysToken(
-  provider: "google" | "apple",
-  idToken: string,
-): Promise<{ authenticated: true; expiresAt: string }> {
-  const response = await request(apiUrl(`/api/v1/auth/exchange/${provider}`), {
-    method: "POST",
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ idToken }),
-  });
-  if (!response.ok) {
-    const failure = new Error(`e-GYS sign-in failed: ${response.status}`);
-    recordDiagnostic("error", "egys.sign-in", failure);
-    throw failure;
-  }
-  return EgysAuthExchangeResponseSchema.parse(await response.json());
-}
-
-export async function startEgysWhatsAppLogin(signal?: AbortSignal) {
-  const response = await request(apiUrl("/api/v1/auth/whatsapp/start"), {
-    method: "POST",
-    credentials: "include",
-    ...(signal ? { signal } : {}),
-  });
-  if (!response.ok) {
-    const failure = new Error(
-      `e-GYS WhatsApp sign-in failed: ${response.status}`,
-    );
-    recordDiagnostic("error", "egys.whatsapp.start", failure);
-    throw failure;
-  }
-  return EgysWhatsAppLoginStartedSchema.parse(await response.json());
-}
-
-export async function getEgysWhatsAppState(
-  token: string,
-  signal?: AbortSignal,
-) {
-  const response = await request(
-    apiUrl(`/api/v1/auth/whatsapp/state?token=${encodeURIComponent(token)}`),
-    {
-      credentials: "include",
-      cache: "no-store",
-      ...(signal ? { signal } : {}),
-    },
-  );
-  if (!response.ok) {
-    const failure = new Error(
-      `e-GYS WhatsApp state failed: ${response.status}`,
-    );
-    recordDiagnostic("error", "egys.whatsapp.state", failure);
-    throw failure;
-  }
-  return EgysWhatsAppLoginStateSchema.parse(await response.json());
 }
 
 export async function signOutEgys(): Promise<void> {

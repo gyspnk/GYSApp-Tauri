@@ -16,6 +16,7 @@ import {
   DistributedAssetStore,
   type InstalledDistributedAssetRecord,
 } from "./distributed-asset-store.js";
+import { normalizeDistributedHymnIndex } from "./distributed-hymnals.js";
 
 export type DistributedAssetState =
   "bundled" | "available" | "installed" | "update" | "unavailable";
@@ -42,7 +43,14 @@ export type DistributedAssetManagerOptions = {
   initialCatalogLoader?: () => Promise<DistributedAssetCatalog>;
   store?: DistributedAssetStore;
   fetcher?: typeof fetch;
+  downloadBaseUrl?: string;
 };
+
+export function distributedDownloadsConfigured(
+  baseUrl: string | undefined = import.meta.env.VITE_BFF_BASE_URL,
+): boolean {
+  return Boolean(baseUrl?.trim());
+}
 
 async function readResponseBytes(
   response: Response,
@@ -62,6 +70,10 @@ async function readResponseBytes(
       const next = await reader.read();
       if (next.done) break;
       if (!next.value) continue;
+      if (received + next.value.byteLength > total) {
+        await reader.cancel();
+        throw new Error("Distributed package exceeds its declared size");
+      }
       chunks.push(next.value);
       received += next.value.byteLength;
       onProgress?.(received, total);
@@ -83,6 +95,8 @@ export class DistributedAssetManager {
   private readonly initialCatalogLoader: () => Promise<DistributedAssetCatalog>;
   private readonly store: DistributedAssetStore;
   private readonly fetcher: typeof fetch;
+  private readonly downloadBaseUrl?: string;
+  private readonly directDownloads: boolean;
   private catalog?: DistributedAssetCatalog;
   private readonly inFlight = new Map<string, Promise<void>>();
 
@@ -100,7 +114,12 @@ export class DistributedAssetManager {
       options.catalogLoader ??
       (() => loadBundledDistributedAssetCatalog());
     this.store = options.store ?? new DistributedAssetStore();
-    this.fetcher = options.fetcher ?? fetch;
+    this.directDownloads = Boolean(options.fetcher);
+    this.fetcher = options.fetcher ?? ((...args) => globalThis.fetch(...args));
+    const configuredBase =
+      options.downloadBaseUrl ?? import.meta.env.VITE_BFF_BASE_URL;
+    this.downloadBaseUrl =
+      configuredBase?.trim().replace(/\/$/, "") || undefined;
   }
 
   public async refresh(): Promise<ManagedDistributedAsset[]> {
@@ -112,9 +131,14 @@ export class DistributedAssetManager {
     const catalog =
       this.catalog ?? (this.catalog = await this.initialCatalogLoader());
     const items = new Map(catalog.items.map((item) => [item.code, item]));
-    const records = new Map(
-      (await this.store.listRecords()).map((record) => [record.code, record]),
-    );
+    const records = new Map<string, InstalledDistributedAssetRecord>();
+    for (const record of await this.store.listRecords()) {
+      if (await this.store.hasCachedPayload(record.code)) {
+        records.set(record.code, record);
+      } else {
+        await this.store.remove(record.code);
+      }
+    }
     return DISTRIBUTED_ASSET_DEFINITIONS.map((definition) => {
       const item = items.get(definition.code);
       const record = records.get(definition.code);
@@ -159,8 +183,15 @@ export class DistributedAssetManager {
       throw new Error(`Distributed asset is bundled: ${code}`);
     }
     options.onProgress?.(0, item.sizeBytes);
+    const downloadUrl = this.directDownloads
+      ? item.downloadUrl
+      : this.downloadBaseUrl
+        ? `${this.downloadBaseUrl}/api/v1/assets/distributed/${encodeURIComponent(item.code)}`
+        : undefined;
+    if (!downloadUrl)
+      throw new Error("Distributed download service is not configured");
     const response = await this.fetcher(
-      item.downloadUrl,
+      downloadUrl,
       options.signal
         ? { cache: "no-store", signal: options.signal }
         : { cache: "no-store" },
@@ -174,6 +205,33 @@ export class DistributedAssetManager {
       options.onProgress,
     );
     await verifyDistributedPackage(item, packageBytes);
+    let metadataBytes: Uint8Array | undefined;
+    if (item.metadata) {
+      const metadataUrl = this.directDownloads
+        ? item.metadata.downloadUrl
+        : `${this.downloadBaseUrl}/api/v1/assets/distributed/${encodeURIComponent(item.code)}/index`;
+      const metadataResponse = await this.fetcher(metadataUrl, {
+        cache: "no-store",
+        ...(options.signal ? { signal: options.signal } : {}),
+      });
+      if (!metadataResponse.ok)
+        throw new Error(
+          `Distributed metadata request failed: ${metadataResponse.status}`,
+        );
+      metadataBytes = new Uint8Array(await metadataResponse.arrayBuffer());
+      await verifyDistributedPackage(
+        {
+          code: `${item.code}:metadata`,
+          sizeBytes: item.metadata.sizeBytes,
+          checksumSha256: item.metadata.checksumSha256,
+        },
+        metadataBytes,
+      );
+      normalizeDistributedHymnIndex(
+        item.code,
+        JSON.parse(new TextDecoder().decode(metadataBytes)),
+      );
+    }
     const payload = await decodeDistributedPackage(packageBytes);
     await this.store.put(
       {
@@ -186,6 +244,12 @@ export class DistributedAssetManager {
         packageChecksumSha256: item.checksumSha256,
       },
       payload,
+      metadataBytes && item.metadata
+        ? {
+            bytes: metadataBytes,
+            checksumSha256: item.metadata.checksumSha256,
+          }
+        : undefined,
     );
     this.notifyChanged();
     options.onProgress?.(item.sizeBytes, item.sizeBytes);

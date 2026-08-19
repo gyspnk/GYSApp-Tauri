@@ -66,7 +66,7 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action-primary"),
-    ).toBeVisible();
+    ).toHaveCount(0);
   });
 
   test("mobile hymn text mode folds secondary actions and reader settings", async ({
@@ -80,7 +80,7 @@ test.describe("responsive reader navigation", () => {
 
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action"),
-    ).toHaveCount(3);
+    ).toHaveCount(2);
     await expect(page.locator(".hymn-more-actions")).toBeVisible();
     await expect(
       page.locator(".hymn-more-actions .hymn-more-actions-panel"),
@@ -125,7 +125,7 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
-  test("Kidung MIDI dock exposes compact and expanded transport states", async ({
+  test("Kidung hides MIDI transport until its SoundFont is installed", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -133,16 +133,10 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
-    await expect(page.locator(".media-surface")).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.locator(".media-collapse-toggle")).toBeVisible();
-    await expect(page.locator(".media-adjustments")).toBeVisible();
-    await page.locator(".media-collapse-toggle").click();
-    await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
-    await page.getByRole("button", { name: "Perbesar pemutar" }).click();
-    await expect(page.locator(".media-transport-controls")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Putar MIDI", exact: true }),
+    ).toHaveCount(0);
+    await expect(page.locator(".media-surface")).toHaveCount(0);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
@@ -193,7 +187,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".pdf-advanced-controls.is-open")).toBeVisible();
   });
 
-  test("Bible mobile toolbar preserves the chapter scrubber and speech disclosure", async ({
+  test("Bible mobile toolbar keeps secondary controls compact", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -205,12 +199,8 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".brand-mark")).toHaveCount(0);
 
     const scrubber = page.locator(".chapter-scrubber input");
-    await expect(scrubber).toBeVisible();
-    await expect
-      .poll(() =>
-        scrubber.evaluate((element) => element.getBoundingClientRect().width),
-      )
-      .toBeGreaterThan(100);
+    await expect(scrubber).toBeHidden();
+    await expect(page.locator(".bible-reader article").first()).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     const bibleQuery = page.locator("#bible-query");
@@ -226,7 +216,6 @@ test.describe("responsive reader navigation", () => {
       name: /pengaturan suara/i,
     });
     await expect(speechToggle).toBeVisible();
-    await speechToggle.click();
-    await expect(page.locator(".speech-controls.is-open")).toBeVisible();
+    await expect(speechToggle).toHaveAttribute("aria-expanded", "false");
   });
 });

@@ -6,17 +6,12 @@ import {
   ErrorResponseSchema,
   OnlineContentSchema,
   AccountProfileSchema,
-  EgysAuthExchangeResponseSchema,
   type ChordManifestV1,
   type ErrorCode,
   type OnlineContent,
-  EgysMeResponseSchema,
-  EgysProvidersSchema,
-  EgysSignInResponseSchema,
-  EgysWhatsAppLoginStartedSchema,
-  EgysWhatsAppLoginStateSchema,
   EdgeTtsRequestSchema,
   EdgeTtsVoicesResponseSchema,
+  DistributedAssetTrackManifestSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
@@ -35,7 +30,6 @@ const ContentKindSchema = z.enum([
   "sauh",
   "announcement",
 ]);
-const ProviderSchema = z.enum(["google", "apple"]);
 const ReportSchema = z.object({
   category: z.string().min(1).max(80),
   message: z.string().min(1).max(2_000),
@@ -49,6 +43,81 @@ const ForkPdfQuerySchema = z.object({
   commit: z.string().regex(/^[a-f0-9]{7,64}$/i),
   path: z.string().min(1).max(512),
 });
+const DISTRIBUTED_MANIFESTS = {
+  b_kjv:
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/bibles-manifest.json",
+  b_cuv:
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/bibles-manifest.json",
+  HYMNE:
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+  MDR: "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+  "ASM-I":
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+  "ASM-M":
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+  "ASM-P":
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+  "GeneralUser-GS":
+    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/soundfont-manifest.json",
+} as const;
+const DISTRIBUTED_HYMN_INDEXES = {
+  HYMNE: {
+    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+    sizeBytes: 740939,
+  },
+  MDR: {
+    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
+    sizeBytes: 636392,
+  },
+  "ASM-I": {
+    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
+    sizeBytes: 45562,
+  },
+  "ASM-M": {
+    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
+    sizeBytes: 56106,
+  },
+  "ASM-P": {
+    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
+    sizeBytes: 54893,
+  },
+} as const;
+
+function trustedDistributedPackageUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "github.com" &&
+      /^\/ThenGB\/GYSApp-Data\/releases\/download\/[^/]+\/[^/]+$/.test(
+        url.pathname,
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
+function limitStream(
+  body: ReadableStream<Uint8Array>,
+  maxBytes: number,
+): ReadableStream<Uint8Array> {
+  let received = 0;
+  return body.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        received += chunk.byteLength;
+        if (received > maxBytes) {
+          controller.error(
+            new Error("Distributed asset exceeds manifest size"),
+          );
+          return;
+        }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
+}
 export type BffConfig = {
   allowedOrigins: string[];
   chordManifest: ChordManifestV1;
@@ -382,6 +451,110 @@ export function createApp(
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     if (c.req.header("if-none-match") === catalogEtag) return c.body(null, 304);
     return c.json({ items: content });
+  });
+
+  app.get("/api/v1/assets/distributed/:code", async (c) => {
+    const code = c.req.param("code") as keyof typeof DISTRIBUTED_MANIFESTS;
+    const manifestUrl = DISTRIBUTED_MANIFESTS[code];
+    if (!manifestUrl)
+      return errorResponse(c, "NOT_FOUND", "Distributed asset is unknown");
+    try {
+      const manifestResponse = await fetch(manifestUrl, {
+        headers: { accept: "application/json" },
+        signal: c.req.raw.signal,
+      });
+      if (!manifestResponse.ok)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Distributed asset manifest is unavailable",
+        );
+      const manifest = DistributedAssetTrackManifestSchema.parse(
+        await manifestResponse.json(),
+      );
+      const item = manifest.packages.find(
+        (candidate) => candidate.code === code,
+      );
+      if (!item || !trustedDistributedPackageUrl(item.downloadUrl))
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Distributed asset manifest is invalid",
+        );
+      const upstream = await fetch(item.downloadUrl, {
+        headers: { accept: "application/octet-stream" },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok || !upstream.body)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Distributed asset is unavailable",
+        );
+      const contentLength = upstream.headers.get("content-length");
+      if (contentLength && Number(contentLength) !== item.sizeBytes)
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Distributed asset size is invalid",
+        );
+      c.header("content-type", "application/octet-stream");
+      c.header("content-length", String(item.sizeBytes));
+      c.header("cache-control", "private, no-store");
+      c.header(
+        "content-disposition",
+        `attachment; filename="${item.fileName}"`,
+      );
+      return new Response(limitStream(upstream.body, item.sizeBytes), {
+        status: 200,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Distributed asset is unavailable",
+      );
+    }
+  });
+
+  app.get("/api/v1/assets/distributed/:code/index", async (c) => {
+    const code = c.req.param("code") as keyof typeof DISTRIBUTED_HYMN_INDEXES;
+    const index = DISTRIBUTED_HYMN_INDEXES[code];
+    if (!index)
+      return errorResponse(c, "NOT_FOUND", "Distributed hymn index is unknown");
+    try {
+      const upstream = await fetch(index.url, {
+        headers: { accept: "application/json" },
+        signal: c.req.raw.signal,
+      });
+      if (!upstream.ok || !upstream.body)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Distributed hymn index is unavailable",
+        );
+      const contentLength = upstream.headers.get("content-length");
+      if (contentLength && Number(contentLength) !== index.sizeBytes)
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Distributed hymn index size is invalid",
+        );
+      c.header("content-type", "application/json; charset=utf-8");
+      c.header("content-length", String(index.sizeBytes));
+      c.header("cache-control", "public, max-age=31536000, immutable");
+      return new Response(upstream.body, {
+        status: 200,
+        headers: c.res.headers,
+      });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Distributed hymn index is unavailable",
+      );
+    }
   });
 
   app.get("/api/v1/content/literature", async (c) => {
@@ -951,145 +1124,8 @@ export function createApp(
     }
   });
 
-  app.get("/api/v1/auth/providers", async (c) => {
-    c.header("cache-control", "public, max-age=300");
-    if (!egysBase(c))
-      return c.json({
-        google: { enabled: false, clientId: null },
-        apple: { enabled: false, clientId: null },
-        whatsapp: false,
-      });
-    const upstream = await proxyEgysJson(c, "auth/providers");
-    if (!upstream.ok)
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "e-GYS providers unavailable",
-      );
-    const parsed = EgysProvidersSchema.safeParse(
-      await upstream.json().catch(() => undefined),
-    );
-    return parsed.success
-      ? c.json(parsed.data)
-      : errorResponse(
-          c,
-          "INTEGRITY_ERROR",
-          "e-GYS provider response is invalid",
-        );
-  });
-
-  app.post("/api/v1/auth/whatsapp/start", async (c) => {
-    c.header("cache-control", "no-store");
-    const upstream = await proxyEgysJson(c, "auth/whatsapp/start", {
-      method: "POST",
-    });
-    if (!upstream.ok)
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "e-GYS WhatsApp sign-in is unavailable",
-      );
-    const parsed = EgysWhatsAppLoginStartedSchema.safeParse(
-      await upstream.json().catch(() => undefined),
-    );
-    return parsed.success
-      ? c.json(parsed.data)
-      : errorResponse(
-          c,
-          "INTEGRITY_ERROR",
-          "e-GYS WhatsApp response is invalid",
-        );
-  });
-
-  app.get("/api/v1/auth/whatsapp/state", async (c) => {
-    c.header("cache-control", "no-store");
-    const token = c.req.query("token");
-    if (!token || token.length > 512)
-      return errorResponse(c, "VALIDATION_ERROR", "poll token is required");
-    const upstream = await proxyEgysJson(
-      c,
-      `auth/whatsapp/state?token=${encodeURIComponent(token)}`,
-    );
-    if (!upstream.ok)
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "e-GYS WhatsApp state is unavailable",
-      );
-    const parsed = EgysWhatsAppLoginStateSchema.safeParse(
-      await upstream.json().catch(() => undefined),
-    );
-    return parsed.success
-      ? c.json(parsed.data)
-      : errorResponse(c, "INTEGRITY_ERROR", "e-GYS WhatsApp state is invalid");
-  });
-
-  app.post("/api/v1/auth/exchange/:provider", async (c) => {
-    c.header("cache-control", "no-store");
-    const provider = ProviderSchema.safeParse(c.req.param("provider"));
-    if (!provider.success)
-      return errorResponse(
-        c,
-        "VALIDATION_ERROR",
-        "Unknown authentication provider",
-      );
-    const parsed = z
-      .object({ idToken: z.string().min(1).max(20_000) })
-      .safeParse(await c.req.json().catch(() => undefined));
-    if (!parsed.success)
-      return errorResponse(c, "VALIDATION_ERROR", "idToken is required");
-    const upstream = await requestEgys(c, `auth/${provider.data}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ idToken: parsed.data.idToken }),
-    });
-    if (!upstream)
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        `${provider.data} authentication is not configured in this environment`,
-      );
-    forwardSetCookie(c, upstream);
-    // e-GYS authenticates with an HttpOnly cookie. Never echo an upstream
-    // access token or provider payload to the browser.
-    if (!upstream.ok)
-      return errorResponse(c, "UNAUTHORIZED", "e-GYS authentication failed");
-    const body = EgysSignInResponseSchema.safeParse(
-      await upstream.json().catch(() => undefined),
-    );
-    if (!body.success)
-      return errorResponse(
-        c,
-        "INTEGRITY_ERROR",
-        "e-GYS authentication response is invalid",
-      );
-    return c.json(
-      EgysAuthExchangeResponseSchema.parse({
-        authenticated: true,
-        expiresAt: body.data.expiresAt,
-      }),
-    );
-  });
-
-  app.get("/api/v1/auth/session", async (c) => {
-    c.header("cache-control", "no-store");
-    if (!c.req.header("authorization") && !c.req.header("cookie"))
-      return errorResponse(c, "UNAUTHORIZED", "No active session");
-    if (!egysBase(c))
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "e-GYS session verification is not configured",
-      );
-    const upstream = await proxyEgysJson(c, "auth/me");
-    if (!upstream.ok)
-      return errorResponse(c, "UNAUTHORIZED", "No active e-GYS session");
-    return c.json({ authenticated: true });
-  });
-
   app.post("/api/v1/auth/logout", async (c) => {
     c.header("cache-control", "no-store");
-    if (egysBase(c)) await proxyEgysJson(c, "auth/signout", { method: "POST" });
     c.header(
       "set-cookie",
       "egys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
@@ -1102,129 +1138,6 @@ export function createApp(
     if (!c.req.header("authorization") && !c.req.header("cookie"))
       return errorResponse(c, "UNAUTHORIZED", "No active session");
     if (!egysBase(c)) return c.json({ profile: null });
-    const upstream = await proxyEgysJson(c, "auth/me");
-    if (upstream.ok) {
-      const parsedIdentity = EgysMeResponseSchema.safeParse(
-        await upstream.json().catch(() => undefined),
-      );
-      if (!parsedIdentity.success)
-        return errorResponse(
-          c,
-          "INTEGRITY_ERROR",
-          "e-GYS session response is invalid",
-        );
-      const raw = parsedIdentity.data;
-      let member:
-        | {
-            fullName?: unknown;
-            membershipNo?: unknown;
-            history?: Array<{
-              branchCode?: unknown;
-              branchName?: unknown;
-              memberStatus?: unknown;
-              status?: unknown;
-              current?: unknown;
-            }>;
-          }
-        | undefined;
-      if (raw.personId) {
-        try {
-          const memberResponse = await requestEgys(
-            c,
-            `members/${encodeURIComponent(raw.personId)}`,
-          );
-          if (memberResponse?.ok) {
-            const candidate: unknown = await memberResponse
-              .json()
-              .catch(() => undefined);
-            if (
-              candidate &&
-              typeof candidate === "object" &&
-              "history" in candidate
-            )
-              member = candidate as typeof member;
-          }
-        } catch {
-          // Identity remains useful even when member detail is outside this account's scope.
-        }
-      }
-      const currentMembership =
-        member?.history?.find((entry) => entry.current) ?? member?.history?.[0];
-      const memberStatus =
-        typeof currentMembership?.memberStatus === "string"
-          ? currentMembership.memberStatus
-          : typeof currentMembership?.status === "string"
-            ? currentMembership.status
-            : undefined;
-      const branchName =
-        typeof currentMembership?.branchName === "string"
-          ? currentMembership.branchName
-          : typeof raw.branchScope === "string"
-            ? raw.branchScope
-            : undefined;
-      const profile = AccountProfileSchema.parse({
-        id: raw.accountId,
-        personId: raw.personId,
-        displayName: raw.fullName ?? "e-GYS",
-        ...(raw.email ? { email: raw.email } : {}),
-        ...(typeof currentMembership?.branchCode === "string"
-          ? { branchCode: currentMembership.branchCode }
-          : raw.homeBranchId
-            ? { branchCode: raw.homeBranchId }
-            : {}),
-        ...(branchName ? { branchName } : {}),
-        ...(typeof member?.membershipNo === "string"
-          ? { membershipNo: member.membershipNo }
-          : {}),
-        ...(memberStatus
-          ? { memberStatus, isMember: true }
-          : member
-            ? { isMember: true }
-            : {}),
-        ...(raw.can
-          ? {
-              permissions: {
-                ...(typeof raw.can.viewMembers === "boolean"
-                  ? { viewMembers: raw.can.viewMembers }
-                  : {}),
-                ...(typeof raw.can.createMembers === "boolean"
-                  ? { createMembers: raw.can.createMembers }
-                  : {}),
-                ...(typeof raw.can.updateMembers === "boolean"
-                  ? { updateMembers: raw.can.updateMembers }
-                  : {}),
-                ...(typeof raw.can.deleteMembers === "boolean"
-                  ? { deleteMembers: raw.can.deleteMembers }
-                  : {}),
-                ...(typeof raw.can.viewBranches === "boolean"
-                  ? { viewBranches: raw.can.viewBranches }
-                  : {}),
-                ...(typeof raw.can.viewEvents === "boolean"
-                  ? { viewEvents: raw.can.viewEvents }
-                  : {}),
-                ...(typeof raw.can.createEvents === "boolean"
-                  ? { createEvents: raw.can.createEvents }
-                  : {}),
-                ...(typeof raw.can.updateEvents === "boolean"
-                  ? { updateEvents: raw.can.updateEvents }
-                  : {}),
-                ...(typeof raw.can.archiveEvents === "boolean"
-                  ? { archiveEvents: raw.can.archiveEvents }
-                  : {}),
-              },
-            }
-          : {}),
-        provider: "egys",
-        locale: raw.language === "en" ? "en" : "id",
-      });
-      return c.json({ profile });
-    }
-
-    if (upstream.status !== 404)
-      return errorResponse(c, "UNAUTHORIZED", "No active session");
-
-    // Live production e-GYS is still v1. Its authenticated profile endpoint is
-    // `/api/v1/users/profile`, while the newer deployment uses `auth/me`.
     const legacy = await proxyEgysJson(c, "users/profile");
     if (!legacy.ok)
       return errorResponse(c, "UNAUTHORIZED", "No active session");

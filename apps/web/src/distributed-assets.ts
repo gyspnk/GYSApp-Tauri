@@ -47,25 +47,80 @@ export const DISTRIBUTED_ASSET_DEFINITIONS = [
     kind: "hymnal",
     title: "Hymne (English Version)",
     bundledByDefault: false,
+    metadata: {
+      sourceRepo: "ThenGB/GYSAPP-Fork",
+      sourceCommit: "4f0d39b",
+      path: "assets/data/index/hymne_index.json",
+      downloadUrl:
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+      sizeBytes: 740939,
+      checksumSha256:
+        "bc89b27b1fac68f584161c3f5e91e416bf4580106a05efc6dc96a14140e0fba3",
+    },
   },
-  { code: "MDR", kind: "hymnal", title: "Mandarin", bundledByDefault: false },
+  {
+    code: "MDR",
+    kind: "hymnal",
+    title: "Mandarin",
+    bundledByDefault: false,
+    metadata: {
+      sourceRepo: "ThenGB/GYSAPP-Fork",
+      sourceCommit: "4f0d39b",
+      path: "assets/data/index/mdr_index.json",
+      downloadUrl:
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
+      sizeBytes: 636392,
+      checksumSha256:
+        "8b0d298bb5900c0ea9cfe2e4d53b47a1088a9e322e4b38ffe7b4542c5e7d4dfa",
+    },
+  },
   {
     code: "ASM-I",
     kind: "hymnal",
     title: "Aku Senang Menyanyi I",
     bundledByDefault: false,
+    metadata: {
+      sourceRepo: "ThenGB/GYSAPP-Fork",
+      sourceCommit: "4f0d39b",
+      path: "assets/data/index/asm_i_index.json",
+      downloadUrl:
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
+      sizeBytes: 45562,
+      checksumSha256:
+        "d3d9d4e865c7f3465fc75766b0ee048865b427d43e5042984a647c863763fa0e",
+    },
   },
   {
     code: "ASM-M",
     kind: "hymnal",
     title: "Aku Senang Menyanyi M",
     bundledByDefault: false,
+    metadata: {
+      sourceRepo: "ThenGB/GYSAPP-Fork",
+      sourceCommit: "4f0d39b",
+      path: "assets/data/index/asm_m_index.json",
+      downloadUrl:
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
+      sizeBytes: 56106,
+      checksumSha256:
+        "d058e51bcb0c720729322effaf0d989893bfc37a4bfbb4c6b7a531bac3fa1917",
+    },
   },
   {
     code: "ASM-P",
     kind: "hymnal",
     title: "Aku Senang Menyanyi P",
     bundledByDefault: false,
+    metadata: {
+      sourceRepo: "ThenGB/GYSAPP-Fork",
+      sourceCommit: "4f0d39b",
+      path: "assets/data/index/asm_p_index.json",
+      downloadUrl:
+        "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
+      sizeBytes: 54893,
+      checksumSha256:
+        "1470f8af2d6a28074454b587319adcaaf6ad95c0b0d0a0690d4d747e9b855c8c",
+    },
   },
   {
     code: "GeneralUser-GS",
@@ -78,6 +133,14 @@ export const DISTRIBUTED_ASSET_DEFINITIONS = [
   kind: DistributedAssetKind;
   title: string;
   bundledByDefault: boolean;
+  metadata?: {
+    sourceRepo: "ThenGB/GYSAPP-Fork";
+    sourceCommit: string;
+    path: string;
+    downloadUrl: string;
+    sizeBytes: number;
+    checksumSha256: string;
+  };
 }>;
 
 const definitionByCode = new Map<
@@ -162,6 +225,9 @@ function normalizeManifestItem(
     installFileName: pkg.installFileName,
     sizeBytes: pkg.sizeBytes,
     checksumSha256: pkg.checksumSha256.toLowerCase(),
+    ...("metadata" in definition && definition.metadata
+      ? { metadata: definition.metadata }
+      : {}),
   };
 }
 

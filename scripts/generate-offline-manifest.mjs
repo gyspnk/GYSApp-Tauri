@@ -12,7 +12,6 @@ const files = [
   ["bible-tb", "offline/bible/b_tb.db"],
   ["bible-tb-reader", "offline/bible/tb-reader.json"],
   ["hymn-catalog", "offline/hymn-catalog.json"],
-  ["distributed-hymn-catalog", "offline/distributed-hymn-catalog.json"],
   ["distributed-asset-catalog", "offline/distributed-assets.json"],
   ["music-lock", "offline/music-lock.json"],
   ["faith-topics", "offline/faith.json"],
@@ -20,7 +19,6 @@ const files = [
   ["literature-catalog", "offline/literature.json"],
   ["suara-sejati", "offline/suara-sejati.json"],
   ["fork-hymnal-map", "offline/fork-hymnal-manifest.json"],
-  ["soundfont-timgm", "offline/soundfont/TimGM6mb.sf2"],
 ];
 await mkdir(join("apps", "web", "public", "offline"), { recursive: true });
 await copyFile(
@@ -76,7 +74,6 @@ const localKind = new Map([
   ["bible-tb", "bible"],
   ["bible-tb-reader", "bible"],
   ["hymn-catalog", "hymn-catalog"],
-  ["distributed-hymn-catalog", "hymn-catalog"],
   ["distributed-asset-catalog", "pack"],
   ["music-lock", "pack"],
   ["faith-topics", "pack"],
@@ -84,7 +81,6 @@ const localKind = new Map([
   ["literature-catalog", "pack"],
   ["suara-sejati", "pack"],
   ["fork-hymnal-map", "pack"],
-  ["soundfont-timgm", "soundfont"],
 ]);
 const assetItems = items.map((item) => ({
   id: item.id,

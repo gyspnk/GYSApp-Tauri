@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v12";
+const CACHE = "gysapp-shell-v15";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
@@ -16,7 +16,6 @@ const CORE = [
   "offline/bible/tb-reader.json",
   "offline/bible/manifest.json",
   "offline/hymn-catalog.json",
-  "offline/distributed-hymn-catalog.json",
   "offline/distributed-assets.json",
   "offline/music-lock.json",
   "offline/faith.json",
@@ -27,11 +26,9 @@ const CORE = [
   "offline/pack-manifest.json",
   "offline/fork-hymnal-manifest.json",
 ].map(withBase);
-// Heavy audio/WASM remains available offline, but is intentionally warmed in
-// the background after the shell is ready so first paint and SW activation are
-// not held hostage by a 6 MB soundfont or multi-megabyte synthesizer runtime.
+// The synthesizer runtime is warmed after the shell is ready. SoundFonts remain
+// explicit verified downloads managed outside the service-worker core.
 const OPTIONAL = [
-  "offline/soundfont/TimGM6mb.sf2",
   "vendor/midi-render-worker.js",
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
@@ -108,6 +105,21 @@ self.addEventListener("install", (event) => {
           if (response.ok) await putCached(cache, url, response.clone());
         }),
       );
+      const indexResponse = await fetch(withBase("index.html"), {
+        cache: "no-cache",
+      });
+      if (indexResponse.ok) {
+        const html = await indexResponse.text();
+        const assets = [
+          ...html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g),
+        ].map((match) => new URL(match[1], self.location.origin).href);
+        await Promise.allSettled(
+          assets.map(async (url) => {
+            const response = await fetch(url, { cache: "no-cache" });
+            if (response.ok) await putCached(cache, url, response.clone());
+          }),
+        );
+      }
     }),
   );
   self.skipWaiting();
@@ -206,8 +218,8 @@ self.addEventListener("fetch", (event) => {
           .then((response) => {
             if (!response.ok) return response;
             const copy = response.clone();
-            void putNamedCached(CACHE, event.request, copy).catch(
-              () => undefined,
+            event.waitUntil(
+              putNamedCached(CACHE, event.request, copy).catch(() => undefined),
             );
             return response;
           })

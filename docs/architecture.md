@@ -51,15 +51,15 @@ sequenceDiagram
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                                                                           |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                                                                                      |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                                                                                  |
-| `apps/bff`              | Origin/CORS/cookie-CSRF/rate-limit boundary, upstream validation, PDF/canonical music range proxies (including the immutable GYSApp-Fork KR master), typed Edge speech audio proxy, cache headers, typed errors, and e-GYS cookie proxy. |
-| `apps/native/src-tauri` | Tauri shell boundary and platform command registration; provider authentication belongs in a secure system-browser/native SDK.                                                                                                           |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                                                                     |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                                                                    |
+| Area                    | Responsibility                                                                                                                                                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                                                 |
+| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                                                            |
+| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                                                        |
+| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, streamed distributed-asset and PDF/canonical music proxies, typed Edge speech proxy, cache headers, typed errors, and the e-GYS v1 profile adapter. |
+| `apps/native/src-tauri` | Tauri shell boundary, platform commands, the allowlisted e-GYS v1 login WebView, OS-keyring token storage, and its validated bridge.                                                                           |
+| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                                           |
+| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                                          |
 
 ## Platform capability boundary
 
@@ -120,12 +120,10 @@ deduplicated “Terakhir dilihat” shelf and validates a saved page against the
 current resource version before offering resume.
 
 The PWA service worker keeps its install path small and deterministic. Cache
-`gysapp-shell-v12` precaches the shell plus the compact offline indexes; after
-the first client is ready, the client sends `gys-cache-optional` to warm the
-TimGM soundfont and local MIDI/FluidSynth worker in the background. Optional
-warming is skipped when the browser advertises Save-Data or a 2G connection,
-and each optional asset is cached independently so one missing binary cannot
-invalidate the shell. HTML navigations use a network-first refresh and fall
+`gysapp-shell-v15` precaches the shell plus the compact core offline indexes.
+SoundFonts and other distributed packages are installed only through Asset
+Management, verified, and kept outside the initial shell. HTML navigations use
+a network-first refresh and fall
 back to the cached `index.html` only when the network is unavailable, so
 existing clients observe new Pages deployments.
 
@@ -305,7 +303,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  MIDI["Canonical MIDI File"] --> SYNTH["Local FluidSynth WASM / TimGM SoundFont"]
+  MIDI["Canonical MIDI File"] --> SYNTH["Local FluidSynth WASM / Installed GeneralUser-GS"]
   SYNTH --> PCMCACHE["Bounded 96 MB PCM Audio Cache"]
   PCMCACHE --> GEN{"Shared Generation Token Guard"}
   GEN -->|Active Generation| AUDIO["One Global Web Audio Context"]
@@ -375,7 +373,7 @@ flowchart LR
   RECENT --> RESUME["'Lanjutkan Membaca' & 'Kembali ke Posisi Terakhir' CTA"]
 ```
 
-### 11. e-GYS Web Auth → Native API & Local Sync Flow
+### 11. e-GYS v1 native login and local audit sync
 
 ### e-GYS authentication and local contract sync
 
@@ -383,18 +381,16 @@ flowchart LR
 sequenceDiagram
   autonumber
   participant User as App User
-  participant Provider as Official Provider SDK (Google/Apple/WA)
+  participant Login as Official e.gys.or.id v1 WebView
   participant BFF as Hono BFF Boundary
   participant EGYS as e-GYS Native API
   participant Hook as Local Pre-Commit Hook (sync-egys.mjs)
 
-  User->>Provider: Authenticate via SDK / System Browser
-  Provider-->>BFF: Provider ID-Token / WhatsApp Poll
-  BFF->>EGYS: POST /api/v1/auth/{provider}
-  EGYS-->>BFF: Upstream HttpOnly egys_session Cookie
-  BFF-->>User: Normalized Session & Same-Origin Cookie
-  User->>BFF: Request Profile / Branch / Membership
-  BFF->>EGYS: Forward egys_session to API Endpoints
+  User->>Login: Authenticate on official v1 page
+  Login-->>User: Allowlisted bridge command + opaque token
+  User->>User: Store token in OS keyring
+  User->>BFF: Request profile with native bearer boundary
+  BFF->>EGYS: GET /api/v1/users/profile
   EGYS-->>User: Real Validated Domain Data
   Note over Hook: Developer Local Sync Workflow
   Hook->>Hook: git ls-remote HEAD check & shallow clone .tmp-egys-*
@@ -408,11 +404,9 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  SW["Service Worker v10 Install"] --> CORE["Precache Shell & Compact Offline Indexes"]
+  SW["Service Worker v15 Install"] --> CORE["Precache Shell & Compact Core Indexes"]
   CORE --> ACTIVATE["Activate & First Usable Paint"]
-  ACTIVATE --> CHECKNET{"Save-Data or 2G Connection?"}
-  CHECKNET -->|No| WARM["Background Warm-up: TimGM SoundFont & FluidSynth WASM"]
-  CHECKNET -->|Yes| SKIP["Skip Heavy Preloads to Preserve Bandwidth"]
+  ACTIVATE --> OPTIONAL["Optional Packages Installed Explicitly via Asset Management"]
   ACTIVATE --> TJCCACHE["Bounded TJC Media Cache (96 entries LRU)"]
   ACTIVATE --> MANIFEST["Versioned Offline Manifest & Atomic Pointer Swap"]
 ```
@@ -421,8 +415,8 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  TAURI["Tauri Native Package (NSIS/MSI/APK)"] --> ASSETS["18 Bundled Runtime Assets (36.8 MB)"]
-  ASSETS --> SEEDS["TB Bible, Hymn Catalog, Lyrics, SoundFonts, FluidSynth"]
+  TAURI["Tauri Native Package (NSIS/MSI/APK)"] --> ASSETS["17 Bundled Runtime Assets (29.6 MiB)"]
+  ASSETS --> SEEDS["TB Bible, KR Hymn Catalog/PDF, Lyrics, FluidSynth Runtime"]
   TAURI --> BRIDGE["PlatformServices Native Bridge (Rust Command Layer)"]
   BRIDGE --> CAPS["Payload Caps: 128 MB Blobs, 8 MB Key-Value/DB"]
   BRIDGE --> APPDATA["OS App-Data Directory Storage"]

@@ -62,6 +62,24 @@ describe("DistributedAssetStore", () => {
     });
   });
 
+  it("stores an optional verified catalog beside the payload", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const registry = memoryStorage();
+    const store = new DistributedAssetStore({ cacheStorage, registry });
+    const catalog = new TextEncoder().encode('[{"number":1}]');
+
+    await store.put(input, new Uint8Array([1, 2, 3]), {
+      bytes: catalog,
+      checksumSha256: "b".repeat(64),
+    });
+
+    expect(await store.getMetadataBytes("b_kjv")).toEqual(catalog);
+    expect(await store.getRecord("b_kjv")).toMatchObject({
+      metadataBytes: catalog.byteLength,
+      metadataChecksumSha256: "b".repeat(64),
+    });
+  });
+
   it("removes only the selected asset", async () => {
     const cacheStorage = memoryCacheStorage();
     const registry = memoryStorage();
@@ -75,6 +93,30 @@ describe("DistributedAssetStore", () => {
     await store.remove("b_kjv");
     expect(await store.getBytes("b_kjv")).toBeUndefined();
     expect(await store.getBytes("b_cuv")).toEqual(new Uint8Array([2]));
+  });
+
+  it("does not report a registry entry whose cache was evicted", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const registry = memoryStorage();
+    const store = new DistributedAssetStore({ cacheStorage, registry });
+    await store.put(input, new Uint8Array([1]));
+    const record = await store.getRecord("b_kjv");
+    await cacheStorage.delete(record!.cacheName);
+
+    await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
+  });
+
+  it("keeps the cache when removing the registry pointer fails", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const registry = memoryStorage();
+    const store = new DistributedAssetStore({ cacheStorage, registry });
+    await store.put(input, new Uint8Array([1]));
+    registry.setItem = () => {
+      throw new Error("quota");
+    };
+
+    await expect(store.remove("b_kjv")).rejects.toThrow("quota");
+    await expect(store.getBytes("b_kjv")).resolves.toEqual(new Uint8Array([1]));
   });
 
   it("keeps the previous record when the new registry pointer cannot be saved", async () => {

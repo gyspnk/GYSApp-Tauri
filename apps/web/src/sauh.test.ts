@@ -299,4 +299,41 @@ describe("Sauh feed normalization", () => {
     );
     vi.unstubAllGlobals();
   }, 15_000);
+
+  it("shows the newest verified snapshot when the online snapshot is not from today", async () => {
+    vi.resetModules();
+    const snapshot = {
+      items: [
+        {
+          id: "sbj200101",
+          title: "Snapshot tersimpan",
+          reference: "Mazmur 46:2",
+          verse: "Allah itu bagi kita tempat perlindungan",
+          body: "Renungan yang sudah diverifikasi.",
+          url: "https://tjc.org/id/gerakan-baca-alkitab/sbj200101/",
+          updatedAt: "2020-01-01T00:00:00.000Z",
+          source: "tjc.org",
+        },
+      ],
+    };
+    vi.stubGlobal("fetch", (input: RequestInfo | URL) =>
+      Promise.resolve(
+        String(input).includes("/offline/sauh.json")
+          ? new Response(JSON.stringify(snapshot), { status: 200 })
+          : new Response("unavailable", { status: 503 }),
+      ),
+    );
+    vi.stubGlobal("navigator", { onLine: true });
+    vi.stubGlobal("window", {
+      setTimeout,
+      clearTimeout,
+      location: { pathname: "/" },
+    });
+    const { fetchSauh } = await import("./sauh.js");
+
+    await expect(fetchSauh()).resolves.toMatchObject([
+      { id: "sbj200101", title: "Snapshot tersimpan" },
+    ]);
+    vi.unstubAllGlobals();
+  });
 });

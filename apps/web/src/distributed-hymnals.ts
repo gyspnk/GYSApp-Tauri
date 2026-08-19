@@ -1,49 +1,83 @@
 import { HymnCatalogEntrySchema, type HymnCatalogEntry } from "@gys/contracts";
 import type { DistributedAssetStore } from "./distributed-asset-store.js";
 
-export const DISTRIBUTED_HYMN_CATALOG_URL = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/offline/distributed-hymn-catalog.json`;
+const HYMNAL_CONFIG = {
+  HYMNE: { book: "english", folder: "hymne" },
+  MDR: { book: "mandarin", folder: "mdr" },
+  "ASM-I": { book: "anak", folder: "asm_i" },
+  "ASM-M": { book: "anak", folder: "asm_m" },
+  "ASM-P": { book: "anak", folder: "asm_p" },
+} as const;
 
-type DistributedHymnCatalog = {
-  version: 1;
-  sourceRepo: string;
-  sourceCommit: string;
-  generatedAt: string;
-  catalogs: Array<{ code: string; title: string; items: unknown[] }>;
-};
-
-let catalogPromise: Promise<HymnCatalogEntry[]> | undefined;
-
-function parseCatalog(value: unknown): HymnCatalogEntry[] {
-  if (!value || typeof value !== "object")
-    throw new Error("Distributed hymn catalog is invalid");
-  const raw = value as Partial<DistributedHymnCatalog>;
-  if (raw.version !== 1 || !Array.isArray(raw.catalogs)) {
-    throw new Error("Distributed hymn catalog is invalid");
-  }
-  return raw.catalogs.flatMap((catalog) =>
-    Array.isArray(catalog.items)
-      ? catalog.items.map((item) => HymnCatalogEntrySchema.parse(item))
-      : [],
-  );
+export function normalizeDistributedHymnIndex(
+  code: string,
+  value: unknown,
+): HymnCatalogEntry[] {
+  const config = HYMNAL_CONFIG[code as keyof typeof HYMNAL_CONFIG];
+  if (!config || !Array.isArray(value))
+    throw new Error(`Invalid ${code} hymn index`);
+  return value.map((entry) => {
+    if (!entry || typeof entry !== "object")
+      throw new Error(`Invalid ${code} hymn`);
+    const song = entry as Record<string, unknown>;
+    const number = Number.parseInt(String(song.number), 10);
+    const verses = Array.isArray(song.verses)
+      ? song.verses
+          .map(String)
+          .map((verse) => verse.trim())
+          .filter(Boolean)
+      : [];
+    if (
+      !Number.isInteger(number) ||
+      number <= 0 ||
+      typeof song.title !== "string" ||
+      !song.title.trim() ||
+      verses.length === 0 ||
+      typeof song.pdfFile !== "string"
+    )
+      throw new Error(`Invalid ${code} hymn ${String(song.number ?? "")}`);
+    const midiFile =
+      typeof song.midiFile === "string" && song.midiFile.trim()
+        ? song.midiFile.replace(/^midi\//, "")
+        : `${config.folder}/${String(number).padStart(3, "0")}.mid`;
+    return HymnCatalogEntrySchema.parse({
+      id: `${code.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${String(number).padStart(3, "0")}`,
+      assetCode: code,
+      book: config.book,
+      number,
+      title: song.title.trim(),
+      verses,
+      lyrics: verses.join("\n\n"),
+      midiPath: `assets/midi/${midiFile}`,
+      pdfPath: `assets/data/${song.pdfFile}`,
+      ...(Number.isInteger(song.page) && Number(song.page) > 0
+        ? { pdfPage: Number(song.page) }
+        : {}),
+      ...(Number.isInteger(song.pages) && Number(song.pages) > 0
+        ? { pdfPages: Number(song.pages) }
+        : {}),
+    });
+  });
 }
 
-export async function loadDistributedHymnCatalog(
-  fetcher: typeof fetch = fetch,
+export async function loadInstalledDistributedHymnCatalog(
+  store: DistributedAssetStore,
 ): Promise<HymnCatalogEntry[]> {
-  catalogPromise ??= fetcher(DISTRIBUTED_HYMN_CATALOG_URL, {
-    cache: "force-cache",
-    headers: { accept: "application/json" },
-  }).then(async (response) => {
-    if (!response.ok)
-      throw new Error(`Distributed hymn catalog failed: ${response.status}`);
-    return parseCatalog(await response.json());
-  });
-  try {
-    return await catalogPromise;
-  } catch (error) {
-    catalogPromise = undefined;
-    throw error;
-  }
+  const records = await store.listRecords();
+  const installed = records.filter(
+    (record) => record.kind === "hymnal" && record.metadataCacheKey,
+  );
+  const catalogs = await Promise.all(
+    installed.map(async (record) => {
+      const bytes = await store.getMetadataBytes(record.code);
+      if (!bytes) return [];
+      return normalizeDistributedHymnIndex(
+        record.code,
+        JSON.parse(new TextDecoder().decode(bytes)),
+      );
+    }),
+  );
+  return catalogs.flat();
 }
 
 export function distributedHymnPdfCode(

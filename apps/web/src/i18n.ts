@@ -5,7 +5,6 @@ type MessageValues = Record<string, string | number>;
 export const messages: Record<Locale, Record<string, string>> = {
   id: {
     "home.title": "Selamat datang kembali",
-    "home.subtitle": "Ruang tenang untuk membaca, menyanyi, dan bertumbuh.",
     "home.today": "Jumat, 14 Agustus 2026",
     "home.dailyLabel": "Firman untuk hari ini",
     "home.sauhNoReference": "Referensi belum tercantum di Sauh",
@@ -46,7 +45,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "page.imanTitle": "Iman",
     "page.imanBody": "Sepuluh pokok iman dalam bahasa yang Anda pilih.",
     "page.moreTitle": "Lainnya",
-    "page.moreBody": "Koleksi, pengaturan, backup, dan bantuan.",
     "more.reportMessage": "Pesan laporan",
     "bible.search": "Cari Alkitab",
     "bible.searchPlaceholder": "Kata, kitab, atau referensi…",
@@ -67,7 +65,6 @@ export const messages: Record<Locale, Record<string, string>> = {
   },
   en: {
     "home.title": "Welcome back",
-    "home.subtitle": "A quiet space to read, sing, and grow.",
     "home.today": "Friday, August 14, 2026",
     "home.dailyLabel": "Word for today",
     "home.sauhNoReference": "Reference not listed by Sauh",
@@ -108,7 +105,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "page.imanTitle": "Faith",
     "page.imanBody": "Ten statements of faith in the language you choose.",
     "page.moreTitle": "More",
-    "page.moreBody": "Collections, settings, backup, and help.",
     "more.reportMessage": "Report message",
     "bible.search": "Search Bible",
     "bible.searchPlaceholder": "Word, book, or reference…",
@@ -129,7 +125,6 @@ export const messages: Record<Locale, Record<string, string>> = {
   },
   zh: {
     "home.title": "欢迎回来",
-    "home.subtitle": "一个安静的空间，让我们阅读、歌唱并成长。",
     "home.today": "2026年8月14日，星期五",
     "home.dailyLabel": "今日经文",
     "home.sauhNoReference": "Sauh 未提供经文出处",
@@ -169,7 +164,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "page.imanTitle": "信仰",
     "page.imanBody": "以你选择的语言阅读十条信仰要点。",
     "page.moreTitle": "更多",
-    "page.moreBody": "收藏、设置、备份与帮助。",
     "more.reportMessage": "报告内容",
     "bible.search": "搜索圣经",
     "bible.searchPlaceholder": "关键词、书卷或经文…",
@@ -198,7 +192,6 @@ export const messages: Record<Locale, Record<string, string>> = {
 export const featureMessages: Record<Locale, Record<string, string>> = {
   id: {
     "kidung.catalogCanonical": "Katalog canonical",
-    "kidung.catalogOffline": "Offline",
     "kidung.catalogLoading": "Membuka katalog kidung offline…",
     "kidung.catalogUnavailable": "Katalog kidung belum tersedia",
     "kidung.search": "Cari lagu",
@@ -206,8 +199,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.collection": "Koleksi",
     "kidung.allCollections": "Semua koleksi",
     "kidung.catalogHeading": "GysChordWeb · daftar pujian",
-    "kidung.catalogHint": "Ketuk baris untuk membuka detail",
-    "kidung.available": "{count} lagu tersedia",
     "kidung.pdfAvailable": "tersedia",
     "kidung.back": "← Semua kidung",
     "kidung.canonicalNumber": "Kidung Rohani · {number}",
@@ -300,7 +291,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
   },
   en: {
     "kidung.catalogCanonical": "Canonical catalog",
-    "kidung.catalogOffline": "Offline",
     "kidung.catalogLoading": "Opening the offline hymn catalog…",
     "kidung.catalogUnavailable": "The hymn catalog is unavailable",
     "kidung.search": "Search hymns",
@@ -308,8 +298,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.collection": "Collection",
     "kidung.allCollections": "All collections",
     "kidung.catalogHeading": "GysChordWeb · hymn list",
-    "kidung.catalogHint": "Select a row to open details",
-    "kidung.available": "{count} hymns available",
     "kidung.pdfAvailable": "available",
     "kidung.back": "← All hymns",
     "kidung.canonicalNumber": "Sacred Hymn · {number}",
@@ -402,7 +390,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
   },
   zh: {
     "kidung.catalogCanonical": "规范诗歌目录",
-    "kidung.catalogOffline": "离线",
     "kidung.catalogLoading": "正在打开离线诗歌目录…",
     "kidung.catalogUnavailable": "诗歌目录暂不可用",
     "kidung.search": "搜索诗歌",
@@ -410,8 +397,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.collection": "合集",
     "kidung.allCollections": "全部合集",
     "kidung.catalogHeading": "GysChordWeb · 诗歌列表",
-    "kidung.catalogHint": "点击一行打开详情",
-    "kidung.available": "共有 {count} 首诗歌",
     "kidung.pdfAvailable": "可用",
     "kidung.back": "← 全部诗歌",
     "kidung.canonicalNumber": "圣诗 · {number}",

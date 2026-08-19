@@ -8,12 +8,6 @@ import {
   EdgeTtsRequestSchema,
   EdgeTtsVoicesResponseSchema,
   ErrorResponseSchema,
-  EgysMeResponseSchema,
-  EgysProvidersSchema,
-  EgysAuthExchangeResponseSchema,
-  EgysSignInResponseSchema,
-  EgysWhatsAppLoginStartedSchema,
-  EgysWhatsAppLoginStateSchema,
   HymnCatalogEntrySchema,
   HymnalPdfManifestSchema,
   LiteratureCatalogSchema,
@@ -160,11 +154,21 @@ describe("public contracts", () => {
           installFileName: "b_kjv.db",
           sizeBytes: 1_935_399,
           checksumSha256: "c".repeat(64),
+          metadata: {
+            sourceRepo: "ThenGB/GYSAPP-Fork",
+            sourceCommit: "4f0d39b",
+            path: "assets/data/index/hymne_index.json",
+            downloadUrl:
+              "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+            sizeBytes: 740_939,
+            checksumSha256: "d".repeat(64),
+          },
         },
       ],
     });
 
     expect(parsed.items[0]?.code).toBe("b_kjv");
+    expect(parsed.items[0]?.metadata?.sourceCommit).toBe("4f0d39b");
   });
 
   it("validates the browser TB reader projection", () => {
@@ -254,14 +258,7 @@ describe("public contracts", () => {
     ).toHaveLength(1);
   });
 
-  it("matches e-GYS provider and fork PDF database contracts", () => {
-    expect(
-      EgysProvidersSchema.parse({
-        google: { enabled: true, clientId: "google-client" },
-        apple: { enabled: false },
-        whatsapp: false,
-      }).google.enabled,
-    ).toBe(true);
+  it("matches the fork PDF database contract", () => {
     expect(
       HymnalPdfManifestSchema.parse({
         sourceRepo: "ThenGB/GYSAPP-Fork",
@@ -273,52 +270,6 @@ describe("public contracts", () => {
         songs: { "001": { startPage: 5, pageCount: 1, source: "001.pdf" } },
       }).songs["001"]?.startPage,
     ).toBe(5);
-    expect(
-      EgysWhatsAppLoginStartedSchema.parse({
-        pollToken: "poll-token",
-        referenceCode: "GYS-1234",
-        whatsappUrl: "https://api.whatsapp.com/send?phone=1",
-        expiresAt: "2026-08-14T00:00:00.000Z",
-      }).referenceCode,
-    ).toBe("GYS-1234");
-    expect(EgysWhatsAppLoginStateSchema.parse({ state: "WAITING" }).state).toBe(
-      "WAITING",
-    );
-    expect(
-      EgysSignInResponseSchema.parse({
-        accountId: "account-1",
-        expiresAt: "2026-08-14T00:00:00.000Z",
-      }).accountId,
-    ).toBe("account-1");
-    expect(
-      EgysAuthExchangeResponseSchema.parse({
-        authenticated: true,
-        expiresAt: "2026-08-14T00:00:00.000Z",
-      }).authenticated,
-    ).toBe(true);
-    expect(
-      EgysWhatsAppLoginStateSchema.parse({
-        accountId: "account-1",
-        expiresAt: "2026-08-14T00:00:00.000Z",
-      }).state,
-    ).toBe("READY");
-    expect(
-      EgysMeResponseSchema.parse({
-        accountId: "account-1",
-        personId: "person-1",
-        fullName: "Jemaat",
-        email: "jemaat@example.com",
-        can: {
-          viewMembers: true,
-          createMembers: false,
-          updateMembers: false,
-          deleteMembers: false,
-        },
-        branchScope: "Jakarta Selatan",
-        homeBranchId: "branch-1",
-        language: "id",
-      }).homeBranchId,
-    ).toBe("branch-1");
   });
 
   it("keeps media provenance and native e-GYS profile fields typed", () => {

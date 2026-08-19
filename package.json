@@ -25,7 +25,7 @@
     "generate:chord-manifest": "node scripts/generate-chord-manifest.mjs",
     "generate:fork-pdf-manifest": "node scripts/generate-fork-pdf-manifest.mjs",
     "generate:hymn-catalog": "node scripts/generate-hymn-catalog.mjs",
-    "generate:distributed-assets": "node scripts/generate-distributed-assets.mjs && node scripts/generate-distributed-hymn-catalog.mjs",
+    "generate:distributed-assets": "node scripts/generate-distributed-assets.mjs",
     "generate:literature": "node scripts/generate-literature-snapshot.mjs",
     "generate:offline-manifest": "node scripts/generate-offline-manifest.mjs",
     "audit:chords": "node scripts/audit-chord-layout.mjs --source-root .tmp-gyschordweb-a3d1ea7 --strict",

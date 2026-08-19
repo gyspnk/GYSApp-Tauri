@@ -1,11 +1,19 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { assertEgysLocalOnly } from "./verify-egys-local-only.mjs";
 
 await assertEgysLocalOnly(process.cwd());
 
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
+const listFiles = async (root) => {
+  if (!existsSync(root)) return [];
+  const entries = await readdir(root, { recursive: true, withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => join(entry.parentPath, entry.name));
+};
 const lock = await readJson(
   "packages/contracts/generated/upstream-music-lock.json",
 );
@@ -19,9 +27,6 @@ const literature = await readJson("apps/web/public/offline/literature.json");
 const assets = await readJson("apps/web/public/offline/asset-manifest.json");
 const distributedAssets = await readJson(
   "apps/web/public/offline/distributed-assets.json",
-);
-const distributedHymns = await readJson(
-  "apps/web/public/offline/distributed-hymn-catalog.json",
 );
 const forkPdf = await readJson(
   "apps/web/public/offline/fork-hymnal-manifest.json",
@@ -91,17 +96,15 @@ if (
 if (pack.hymns !== hymns.items.length)
   throw new Error("offline pack hymn count drifted");
 if (
-  distributedHymns.version !== 1 ||
-  distributedHymns.sourceRepo !== "ThenGB/GYSAPP-Fork" ||
-  distributedHymns.sourceCommit !== "4f0d39b" ||
-  !Array.isArray(distributedHymns.catalogs) ||
-  distributedHymns.catalogs.reduce(
-    (total, catalog) =>
-      total + (Array.isArray(catalog.items) ? catalog.items.length : 0),
-    0,
-  ) !== 1344
+  pack.items.some((item) => /\.(?:gyspkg|sf2)$/i.test(item.path)) ||
+  existsSync("apps/web/public/offline/distributed-hymn-catalog.json") ||
+  (await listFiles("apps/web/dist")).some(
+    (path) =>
+      /\.(?:gyspkg|sf2)$/i.test(path) ||
+      path.endsWith("distributed-hymn-catalog.json"),
+  )
 )
-  throw new Error("distributed hymn catalog provenance drifted");
+  throw new Error("optional distributed assets leaked into the initial pack");
 if (
   distributedAssets.version !== 1 ||
   distributedAssets.sourceRepo !== "ThenGB/GYSApp-Data" ||
@@ -112,7 +115,10 @@ if (
         item.code === code &&
         item.downloadUrl?.startsWith(
           "https://github.com/ThenGB/GYSApp-Data/releases/download/",
-        ),
+        ) &&
+        (item.kind !== "hymnal" ||
+          (item.metadata?.sourceRepo === "ThenGB/GYSAPP-Fork" &&
+            item.metadata?.sourceCommit === "4f0d39b")),
     ),
   )
 )

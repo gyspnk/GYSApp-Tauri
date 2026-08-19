@@ -395,8 +395,13 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
     // live revalidation so a slow/CORS-blocked WordPress request never leaves
     // Home blank for four seconds. When the snapshot wins, the live result
     // still updates the in-memory cache for the next open.
-    const snapshot = requestToday(STATIC_URL).then(
-      (items) => ({ source: "snapshot" as const, items }),
+    const snapshot = request(STATIC_URL).then(
+      (items) => {
+        const selected = selectOfflineSauh(items);
+        return selected.length
+          ? { source: "snapshot" as const, items: selected }
+          : undefined;
+      },
       () => undefined,
     );
     const network = loadNetworkToday().then(

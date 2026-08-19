@@ -1100,19 +1100,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
     <div className="page bible-page">
       <header className="bible-page-header">
         <div className="bible-page-heading">
-          <p className="date-line">
-            {packState.status === "ready"
-              ? `${packState.pack.translation} · offline reader`
-              : "Alkitab · offline reader"}
-          </p>
           <h1>{translate(locale, "page.bibleTitle")}</h1>
         </div>
         <div className="page-intro-actions reader-selectors">
-          <span className="pack-badge">
-            {packState.status === "ready"
-              ? `${packState.pack.translation} · ${books.length} buku`
-              : "Alkitab"}
-          </span>
           <Select
             value={selectedVersionCode}
             onChange={(value) => {
