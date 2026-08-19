@@ -173,10 +173,14 @@ export class DistributedAssetStore {
     const record = await this.getRecord(code);
     if (!record) return false;
     const cache = await this.cacheStorage.open(record.cacheName);
-    if (!(await cache.match(record.cacheKey))) return false;
-    return (
-      !record.metadataCacheKey ||
-      Boolean(await cache.match(record.metadataCacheKey))
+    const payload = await cache.match(record.cacheKey);
+    if (!payload || !(await responseHasSize(payload, record.payloadBytes)))
+      return false;
+    if (!record.metadataCacheKey || record.metadataBytes === undefined)
+      return true;
+    const metadata = await cache.match(record.metadataCacheKey);
+    return Boolean(
+      metadata && (await responseHasSize(metadata, record.metadataBytes)),
     );
   }
 
@@ -205,14 +209,20 @@ export class DistributedAssetStore {
       await cache.put(
         next.cacheKey,
         new Response(bytes.slice().buffer as ArrayBuffer, {
-          headers: { "content-type": "application/octet-stream" },
+          headers: {
+            "content-length": String(bytes.byteLength),
+            "content-type": "application/octet-stream",
+          },
         }),
       );
       if (metadata && next.metadataCacheKey) {
         await cache.put(
           next.metadataCacheKey,
           new Response(metadata.bytes.slice().buffer as ArrayBuffer, {
-            headers: { "content-type": "application/json" },
+            headers: {
+              "content-length": String(metadata.bytes.byteLength),
+              "content-type": "application/json",
+            },
           }),
         );
       }
@@ -252,4 +262,16 @@ export class DistributedAssetStore {
     );
     this.registry.removeItem(REGISTRY_KEY);
   }
+}
+
+async function responseHasSize(
+  response: Response,
+  expected: number,
+): Promise<boolean> {
+  const value = response.headers.get("content-length");
+  if (value !== null) {
+    const header = Number(value);
+    if (Number.isFinite(header) && header >= 0) return header === expected;
+  }
+  return (await response.clone().blob()).size === expected;
 }

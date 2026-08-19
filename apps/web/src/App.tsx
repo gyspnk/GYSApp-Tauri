@@ -30,7 +30,7 @@ import {
   selectTodaySauh,
   subscribeSauh,
 } from "./sauh.js";
-import { fetchSuara } from "./suara.js";
+import { fetchSuara, fetchSuaraSnapshot } from "./suara.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -40,7 +40,6 @@ import {
 import { speechPlayer } from "./speech-player.js";
 import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 import { Select } from "./select.js";
-import { GlobalSearch } from "./global-search.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
 import {
@@ -93,6 +92,11 @@ const SuaraDetailPage = lazy(() =>
 const SuaraPage = lazy(() =>
   import("./online-content.js").then(({ SuaraPage: Page }) => ({
     default: Page,
+  })),
+);
+const GlobalSearch = lazy(() =>
+  import("./global-search.js").then(({ GlobalSearch: Search }) => ({
+    default: Search,
   })),
 );
 
@@ -795,7 +799,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
               {speechActive ? (
                 <>
                   <button
-                    className="text-button"
+                    className="media-control"
                     type="button"
                     onClick={() =>
                       void speechPlayer.previous().catch(() => undefined)
@@ -803,10 +807,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
                     aria-label="Ayat sebelumnya"
                     disabled={speechSnapshot.currentIndex <= 0}
                   >
-                    ‹ Ayat sebelumnya
+                    <Icon name="skipPrevious" size={17} />
                   </button>
                   <button
-                    className="text-button"
+                    className="media-control"
                     type="button"
                     onClick={() =>
                       void speechPlayer.next().catch(() => undefined)
@@ -817,30 +821,30 @@ function MediaSurface({ locale }: { locale: Locale }) {
                       speechSnapshot.currentIndex >= speechSnapshot.total - 1
                     }
                   >
-                    Ayat berikutnya ›
+                    <Icon name="skipNext" size={17} />
                   </button>
                 </>
               ) : (
                 <>
                   <button
-                    className="text-button"
+                    className="media-control"
                     type="button"
                     onClick={() =>
                       void playPreviousMidiPlaylistItem().catch(() => undefined)
                     }
                     aria-label="Lagu MIDI sebelumnya"
                   >
-                    ‹ Sebelumnya
+                    <Icon name="skipPrevious" size={17} />
                   </button>
                   <button
-                    className="text-button"
+                    className="media-control"
                     type="button"
                     onClick={() =>
                       void playNextMidiPlaylistItem().catch(() => undefined)
                     }
                     aria-label="Lagu MIDI berikutnya"
                   >
-                    Berikutnya ›
+                    <Icon name="skipNext" size={17} />
                   </button>
                 </>
               )}
@@ -1092,6 +1096,50 @@ function Shell({
     };
   }, []);
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const animateControl = (target: EventTarget | null) => {
+      if (reducedMotion.matches || !(target instanceof Element)) return;
+      const control = target.closest<HTMLElement>(
+        'button, summary, a[href], [role="button"]',
+      );
+      if (
+        !control ||
+        control.matches(":disabled, [aria-disabled='true']") ||
+        !control.animate
+      )
+        return;
+      control.animate(
+        [
+          { scale: "1", filter: "brightness(1)" },
+          { scale: "0.96", filter: "brightness(0.97)" },
+          { scale: "1", filter: "brightness(1)" },
+        ],
+        { duration: 190, easing: "cubic-bezier(.2,.8,.2,1)" },
+      );
+      control
+        .querySelector("svg")
+        ?.animate(
+          [
+            { transform: "rotate(0deg) scale(1)" },
+            { transform: "rotate(-5deg) scale(0.9)" },
+            { transform: "rotate(0deg) scale(1)" },
+          ],
+          { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" },
+        );
+    };
+    const onPointerDown = (event: PointerEvent) => animateControl(event.target);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ")
+        animateControl(event.target);
+    };
+    document.addEventListener("pointerdown", onPointerDown, { passive: true });
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+  useEffect(() => {
     const onShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
@@ -1156,7 +1204,11 @@ function Shell({
         </main>
       </div>
       <MediaSurface locale={locale} />
-      <GlobalSearch locale={locale} open={searchOpen} onClose={closeSearch} />
+      {searchOpen ? (
+        <Suspense fallback={null}>
+          <GlobalSearch locale={locale} open onClose={closeSearch} />
+        </Suspense>
+      ) : null}
     </div>
   );
 }
@@ -1213,15 +1265,28 @@ function HomePage({ locale }: { locale: Locale }) {
   }, [loadSauh]);
   const loadSuara = useCallback((signal?: AbortSignal) => {
     setSuaraStatus("loading");
-    void fetchSuara(signal)
-      .then((items) => {
+    void (async () => {
+      let displayedSnapshot = false;
+      try {
+        const snapshot = await fetchSuaraSnapshot(signal);
+        if (signal?.aborted) return;
+        if (snapshot.length) {
+          displayedSnapshot = true;
+          setSuara(snapshot);
+          setSuaraStatus("ready");
+        }
+      } catch {
+        // Live content below remains the recovery path when the snapshot fails.
+      }
+      try {
+        const items = await fetchSuara(signal);
         if (signal?.aborted) return;
         setSuara(items);
         setSuaraStatus(items.length > 0 ? "ready" : "error");
-      })
-      .catch(() => {
-        if (!signal?.aborted) setSuaraStatus("error");
-      });
+      } catch {
+        if (!signal?.aborted && !displayedSnapshot) setSuaraStatus("error");
+      }
+    })();
   }, []);
   useEffect(() => {
     const controller = new AbortController();
@@ -1251,7 +1316,7 @@ function HomePage({ locale }: { locale: Locale }) {
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">
           <div className="section-heading">
-            <span>{translate(locale, "home.dailyLabel")} · Sauh Bagi Jiwa</span>
+            <span>Sauh hari ini</span>
             <small>
               {selected?.reference ?? translate(locale, "home.sauhNoReference")}
             </small>
@@ -1285,12 +1350,12 @@ function HomePage({ locale }: { locale: Locale }) {
               )}
               <p className="sauh-title">{selected.title}</p>
               <blockquote>“{dailyText}”</blockquote>
-              <small className="sauh-source">
-                {selectTodaySauh([selected]).length
-                  ? "Sumber langsung Sauh Bagi Jiwa"
-                  : "Konten tersimpan Sauh Bagi Jiwa"}{" "}
-                · {new Date(selected.updatedAt).toLocaleDateString(locale)}
-              </small>
+              {!selectTodaySauh([selected]).length && (
+                <small className="sauh-source">
+                  Konten tersimpan ·{" "}
+                  {new Date(selected.updatedAt).toLocaleDateString(locale)}
+                </small>
+              )}
             </>
           )}
           <div className="verse-actions">
@@ -1317,11 +1382,6 @@ function HomePage({ locale }: { locale: Locale }) {
         <article className="continue-panel">
           <div className="section-heading">
             <span>{translate(locale, "home.continue")}</span>
-            <small>
-              {continueActivity
-                ? "Tersimpan di perangkat ini"
-                : "Mulai dari salah satu ruang"}
-            </small>
           </div>
           {continueActivity?.kind === "bible" && (
             <Link className="continue-item" to="/bible">
@@ -1369,66 +1429,69 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
           )}
         </article>
-      </section>
-      <section
-        className="home-media-section"
-        aria-labelledby="home-suara-heading"
-      >
-        <div className="section-title-row">
-          <div>
-            <p className="date-line">Kesaksian</p>
-            <h2 id="home-suara-heading">Suara Sejati</h2>
+        <section
+          className="home-media-section"
+          aria-labelledby="home-suara-heading"
+        >
+          <div className="section-title-row">
+            <div>
+              <p className="date-line">Kesaksian</p>
+              <h2 id="home-suara-heading">Suara Sejati</h2>
+            </div>
+            <Link className="text-button" to="/suara">
+              Lihat semua →
+            </Link>
           </div>
-          <Link className="text-button" to="/suara">
-            Lihat semua →
-          </Link>
-        </div>
-        {suaraStatus === "loading" && (
-          <div className="loading-panel" role="status">
-            Mengambil Suara Sejati…
-          </div>
-        )}
-        {suaraStatus === "error" && (
-          <div className="error-panel" role="alert">
-            <strong>Suara Sejati belum tersedia.</strong>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => loadSuara()}
-            >
-              Coba lagi
-            </button>
-          </div>
-        )}
-        {suaraStatus === "ready" && (
-          <div className="home-suara-shelf">
-            {suara.slice(0, 4).map((post) => (
-              <Link
-                className="suara-library-item"
-                key={post.id}
-                to={`/suara/${encodeURIComponent(post.id)}`}
+          {suaraStatus === "loading" && (
+            <div className="loading-panel" role="status">
+              Mengambil Suara Sejati…
+            </div>
+          )}
+          {suaraStatus === "error" && (
+            <div className="error-panel" role="alert">
+              <strong>Suara Sejati belum tersedia.</strong>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => loadSuara()}
               >
-                {post.imageUrl ? (
-                  <img
-                    src={post.imageUrl}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span className="suara-thumbnail-fallback" aria-hidden="true">
-                    SS
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {suaraStatus === "ready" && (
+            <div className="home-suara-shelf">
+              {suara.slice(0, 4).map((post) => (
+                <Link
+                  className="suara-library-item"
+                  key={post.id}
+                  to={`/suara/${encodeURIComponent(post.id)}`}
+                >
+                  {post.imageUrl ? (
+                    <img
+                      src={post.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span
+                      className="suara-thumbnail-fallback"
+                      aria-hidden="true"
+                    >
+                      SS
+                    </span>
+                  )}
+                  <span>
+                    <strong>{post.title}</strong>
+                    <small>{post.excerpt}</small>
+                    <em>{new Date(post.publishedAt).toLocaleDateString()}</em>
                   </span>
-                )}
-                <span>
-                  <strong>{post.title}</strong>
-                  <small>{post.excerpt}</small>
-                  <em>{new Date(post.publishedAt).toLocaleDateString()}</em>
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </section>
     </div>
   );

@@ -49,7 +49,7 @@ test("Sauh shows a verified saved snapshot before slow live revalidation", async
   await expect(
     page.getByText("Renungan tersimpan", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(/Konten tersimpan Sauh Bagi Jiwa/)).toBeVisible();
+  await expect(page.getByText(/Konten tersimpan/)).toBeVisible();
   await expect(
     page.getByText("Renungan hari ini", { exact: true }),
   ).toBeVisible({

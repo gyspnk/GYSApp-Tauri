@@ -93,7 +93,7 @@ for (const surface of surfaces) {
       await expect(page.locator("h1")).toHaveCount(1);
       await expect(
         page.getByRole("navigation", { name: "Navigasi utama" }),
-      ).toHaveCount(1);
+      ).toHaveCount(surface.name === "reader" ? 0 : 1);
       if (viewport.width <= 390) {
         const undersizedTargets = await page
           .locator(
@@ -112,17 +112,17 @@ for (const surface of surfaces) {
             }),
           );
         expect(undersizedTargets).toEqual([]);
-        await expect
-          .poll(() =>
-            page
-              .locator(surface.fold)
-              .first()
-              .evaluate(
-                (element) => element.getBoundingClientRect().top < innerHeight,
-              ),
-          )
-          .toBe(true);
       }
+      await expect
+        .poll(() =>
+          page
+            .locator(surface.fold)
+            .first()
+            .evaluate(
+              (element) => element.getBoundingClientRect().top < innerHeight,
+            ),
+        )
+        .toBe(true);
 
       await expect(page).toHaveScreenshot(
         `${surface.name}-${viewport.name}.png`,
@@ -138,7 +138,7 @@ for (const surface of surfaces) {
                 ]
               : [],
           maskColor: "#e8edf4",
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.005,
         },
       );
     });

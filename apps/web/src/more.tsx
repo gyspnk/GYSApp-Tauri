@@ -102,16 +102,9 @@ function DistributedAssetPanel({
     <article className="more-card more-card-wide distributed-assets-card">
       <div className="more-card-heading">
         <div>
-          <p className="date-line">Paket tambahan</p>
           <h2>Manajemen Aset</h2>
         </div>
-        <span className="pack-badge">Unduh sesuai kebutuhan</span>
       </div>
-      <p>
-        Versi Alkitab, kidung, dan SoundFont tambahan tidak ikut cache awal.
-        Unduh saat diperlukan; aset terverifikasi dan tersimpan offline setelah
-        selesai.
-      </p>
       {!downloadAvailable && (
         <div className="inline-error" role="status">
           Layanan unduhan belum dikonfigurasi. Aset inti tetap dapat digunakan
@@ -828,24 +821,23 @@ export function MorePage({
           <article className="more-card more-card-wide account-card egys-card">
             <div className="more-card-heading">
               <div>
-                <p className="date-line">Profil e-GYS Resmi</p>
                 <h2>
                   {accountProfile
                     ? (accountProfile.displayName ?? "Akun Jemaat")
                     : "Akun e-GYS"}
                 </h2>
               </div>
-              <span
-                className={`pack-badge${accountProfile ? " is-verified" : ""}`}
-              >
-                {accountProfile
-                  ? "Terhubung"
-                  : nativeShell && egysUnavailable
-                    ? "Tidak tersedia"
-                    : nativeShell
-                      ? "Tamu"
-                      : "Login resmi"}
-              </span>
+              {accountProfile || nativeShell ? (
+                <span
+                  className={`pack-badge${accountProfile ? " is-verified" : ""}`}
+                >
+                  {accountProfile
+                    ? "Terhubung"
+                    : egysUnavailable
+                      ? "Tidak tersedia"
+                      : "Tamu"}
+                </span>
+              ) : null}
             </div>
 
             {accountLoading || authBusy ? (
@@ -917,19 +909,19 @@ export function MorePage({
               <div className="egys-login-box">
                 <p className="egys-login-desc">
                   {nativeShell
-                    ? "Masuk melalui halaman resmi e-GYS untuk menghubungkan profil jemaat ke aplikasi ini."
-                    : "Login e-GYS v1 dibuka di halaman resmi. Sinkronisasi profil tersedia di aplikasi GYS yang terpasang."}
+                    ? "Masuk melalui halaman resmi e-GYS."
+                    : "Login resmi; sinkronisasi profil tersedia di aplikasi terpasang."}
                 </p>
                 <div className="egys-login-actions">
                   {nativeShell ? (
                     <>
                       <button
                         type="button"
-                        className="primary-button egys-wa-btn"
+                        className="primary-button egys-login-button"
                         onClick={() => void openNativeEgysLoginFlow()}
                       >
-                        <span className="btn-icon">🔐</span> Buka login resmi
-                        e-GYS
+                        <Icon name="person" size={16} />
+                        <span>Buka login e-GYS resmi</span>
                       </button>
                       <small className="account-sync-note">
                         Google, Apple, dan WhatsApp OTP diproses langsung di
@@ -938,15 +930,13 @@ export function MorePage({
                     </>
                   ) : (
                     <a
-                      className="primary-button egys-wa-btn"
+                      className="primary-button egys-login-button"
                       href={`https://e.gys.or.id/login?theme=${theme}`}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <span className="btn-icon" aria-hidden="true">
-                        🔐
-                      </span>
-                      Buka login e-GYS resmi
+                      <Icon name="person" size={16} />
+                      <span>Buka login e-GYS resmi</span>
                     </a>
                   )}
                 </div>
@@ -959,7 +949,6 @@ export function MorePage({
           <article className="more-card more-card-wide appearance-card">
             <div className="more-card-heading">
               <div>
-                <p className="date-line">Kenyamanan Visual</p>
                 <h2>Tampilan & Bahasa</h2>
               </div>
             </div>
@@ -995,7 +984,7 @@ export function MorePage({
               </div>
             </div>
 
-            <div className="appearance-section" style={{ marginTop: "20px" }}>
+            <div className="appearance-section">
               <label className="section-subtitle">Bahasa Aplikasi</label>
               <div className="lang-pill-grid">
                 <Select
@@ -1021,7 +1010,6 @@ export function MorePage({
             <article className="more-card more-card-wide">
               <div className="more-card-heading">
                 <div>
-                  <p className="date-line">Penyimpanan Offline</p>
                   <h2>Paket lokal</h2>
                 </div>
                 <span className="pack-badge">Siap</span>
@@ -1173,7 +1161,6 @@ export function MorePage({
             <form className="more-card report-card" onSubmit={submitReport}>
               <div className="more-card-heading">
                 <div>
-                  <p className="date-line">Bantuan & Masukan</p>
                   <h2>Laporkan masalah</h2>
                 </div>
               </div>

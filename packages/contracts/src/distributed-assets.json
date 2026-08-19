@@ -1,0 +1,119 @@
+{
+  "manifestUrls": {
+    "bibles": "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/bibles-manifest.json",
+    "hymnals": "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+    "soundfont": "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/soundfont-manifest.json"
+  },
+  "definitions": [
+    {
+      "code": "b_tb",
+      "kind": "bible",
+      "track": "bibles",
+      "title": "Terjemahan Baru",
+      "bundledByDefault": true
+    },
+    {
+      "code": "b_kjv",
+      "kind": "bible",
+      "track": "bibles",
+      "title": "King James Version",
+      "bundledByDefault": false
+    },
+    {
+      "code": "b_cuv",
+      "kind": "bible",
+      "track": "bibles",
+      "title": "Chinese Union Version",
+      "bundledByDefault": false
+    },
+    {
+      "code": "KR",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Kidung Rohani",
+      "bundledByDefault": true
+    },
+    {
+      "code": "HYMNE",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Hymne (English Version)",
+      "bundledByDefault": false,
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/hymne_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
+        "sizeBytes": 740939,
+        "checksumSha256": "bc89b27b1fac68f584161c3f5e91e416bf4580106a05efc6dc96a14140e0fba3"
+      }
+    },
+    {
+      "code": "MDR",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Mandarin",
+      "bundledByDefault": false,
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/mdr_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
+        "sizeBytes": 636392,
+        "checksumSha256": "8b0d298bb5900c0ea9cfe2e4d53b47a1088a9e322e4b38ffe7b4542c5e7d4dfa"
+      }
+    },
+    {
+      "code": "ASM-I",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Aku Senang Menyanyi I",
+      "bundledByDefault": false,
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_i_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
+        "sizeBytes": 45562,
+        "checksumSha256": "d3d9d4e865c7f3465fc75766b0ee048865b427d43e5042984a647c863763fa0e"
+      }
+    },
+    {
+      "code": "ASM-M",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Aku Senang Menyanyi M",
+      "bundledByDefault": false,
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_m_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
+        "sizeBytes": 56106,
+        "checksumSha256": "d058e51bcb0c720729322effaf0d989893bfc37a4bfbb4c6b7a531bac3fa1917"
+      }
+    },
+    {
+      "code": "ASM-P",
+      "kind": "hymnal",
+      "track": "hymnals",
+      "title": "Aku Senang Menyanyi P",
+      "bundledByDefault": false,
+      "metadata": {
+        "sourceRepo": "ThenGB/GYSAPP-Fork",
+        "sourceCommit": "4f0d39b",
+        "path": "assets/data/index/asm_p_index.json",
+        "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
+        "sizeBytes": 54893,
+        "checksumSha256": "1470f8af2d6a28074454b587319adcaaf6ad95c0b0d0a0690d4d747e9b855c8c"
+      }
+    },
+    {
+      "code": "GeneralUser-GS",
+      "kind": "soundfont",
+      "track": "soundfont",
+      "title": "GeneralUser-GS SoundFont",
+      "bundledByDefault": false
+    }
+  ]
+}

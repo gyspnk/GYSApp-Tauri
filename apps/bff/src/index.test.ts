@@ -911,8 +911,14 @@ describe("BFF public boundary", () => {
       const response = await app.request("/api/v1/content/suara-sejati");
       expect(response.status).toBe(200);
       const payload = (await response.json()) as {
+        source: string;
+        generatedAt: string;
         items: Array<{ title: string; imageUrl?: string }>;
       };
+      expect(payload.source).toBe("tjc.org");
+      expect(new Date(payload.generatedAt).toISOString()).toBe(
+        payload.generatedAt,
+      );
       expect(payload.items[0]).toMatchObject({
         title: "Cahaya Kehidupan",
         imageUrl: "https://tjc.org/id/wp-content/uploads/cover.jpg",

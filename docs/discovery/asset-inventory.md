@@ -8,10 +8,12 @@ checkout and are copied only through an explicit, provenance-preserving asset
 sync step.
 
 The fresh-install pack includes TB Bible data plus its browser reader index,
-533 hymn metadata/lyrics, ten faith topics, and TimGM. PDFs, MIDI, chord files,
-and GeneralUser are on-demand or pinned. The web MIDI path vendors only the
+the KR/core hymn catalog, and ten faith topics. Optional hymn catalogs, PDFs,
+MIDI, chord files, TimGM, and GeneralUser are not part of initial packing.
+GeneralUser is installed through Asset Management. The web MIDI path vendors only the
 small js-synthesizer runtime plus FluidSynth glue under
 `apps/web/public/vendor/js-synthesizer/`; the worker is lazy until the first
 play gesture, and the corresponding MIT/FluidSynth license texts ship beside
 the files. This keeps the initial JavaScript chunk small while making the
-playback engine same-origin and usable after the PWA shell has been installed.
+playback engine same-origin; playback becomes available after its SoundFont is
+installed.

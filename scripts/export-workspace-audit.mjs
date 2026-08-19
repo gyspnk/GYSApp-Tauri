@@ -50,7 +50,6 @@ execFileSync(
     "tsconfig.base.json",
     "tsconfig.json",
     "README.md",
-    "PROGRESS.md",
     "SECURITY.md",
   ],
   { cwd: repositoryRoot, stdio: "inherit" },

@@ -79,4 +79,12 @@ test("initial shell stays responsive and does not duplicate application modules"
     expect(metrics.moduleCount).toBeGreaterThan(0);
     expect(metrics.duplicateModules).toEqual([]);
   }
+
+  const searchChunk = page.waitForResponse(
+    (response) => /\/global-search-[^/]+\.js$/.test(response.url()),
+    { timeout: 8_000 },
+  );
+  await page.getByRole("button", { name: "Cari di seluruh aplikasi" }).click();
+  await searchChunk;
+  await expect(page.getByRole("dialog")).toBeVisible();
 });

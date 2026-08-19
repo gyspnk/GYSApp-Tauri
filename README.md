@@ -20,8 +20,8 @@ native e-GYS session/profile adapter. Literature keeps a persistent “Terakhir
 dilihat” shelf with version-aware page resume, while the local PDF.js reader
 uses an allowlisted BFF range proxy when deployed. The KR master is served
 through a commit/path-locked GYSApp-Fork proxy when available and falls back to
-the immutable raw source. Kidung prefetches only the
-next/previous binary music assets and never eagerly downloads heavy PDFs.
+the immutable raw source. Kidung preloads the adjacent MIDI tracks with the
+active tempo, transpose, and instrument and never eagerly downloads heavy PDFs.
 The TB reader runs its 31,172-verse search index in a lazy worker with a
 bounded startup fallback; queries match book display names and testament ranges (Perjanjian
 Lama/Baru) as well as verse text (book-name hits rank first), persisted
@@ -44,17 +44,17 @@ flowchart LR
   DOMAIN --> LOCAL[Versioned local persistence]
   DOMAIN --> BFF[Hono BFF]
   BFF --> CONTENT[TJC + canonical music assets]
-  BFF --> EGYS[e-GYS API]
-  EGYS -->|HttpOnly egys_session| BFF
+  BFF --> EGYS[e-GYS v1 profile API]
+  TAURI[Tauri v1 login WebView] --> EGYS
 ```
 
 The UI never imports raw upstream source. `packages/contracts` validates every
 boundary, `packages/domain` owns reusable reader/cache/media behavior, the BFF
 handles origin/security/cookie concerns, and `scripts/sync-egys.mjs` produces
 only reviewed derived contract metadata from an ignored local e-GYS checkout.
-The e-GYS login boundary uses the provider's official browser/native SDK; after
-the ID-token exchange, profile and membership data are API-driven rather than
-rendered through a WebView.
+The web/PWA opens the official e-GYS v1 login page without receiving a token.
+Only Tauri hosts the allowlisted v1 login WebView, stores its bridge token in
+the OS keyring, and requests profile or membership data through the BFF.
 
 ## Feature map
 
@@ -82,8 +82,9 @@ flowchart LR
   NORMALIZE --> PERSIST["Versioned persistence/cache"]
   PERSIST --> UI["Internal route/viewer"]
   UI --> PLAYER["Shared media state"]
-  AUTH["System browser OAuth"] --> BFF["Hono BFF + HttpOnly session"]
-  BFF --> PROFILE["Actual e-GYS profile/branch/membership"]
+  WEB["Web/PWA"] --> LOGIN["Official e-GYS v1 login page"]
+  NATIVE["Tauri allowlisted WebView"] --> KEYRING["OS keyring"] --> BFF["Hono BFF"]
+  BFF --> PROFILE["e-GYS v1 profile/branch/membership"]
 ```
 
 The detailed Literature, Kidung, Bible, persistent-media, e-GYS, cache, and
@@ -93,8 +94,10 @@ packaged-asset diagrams live in [`docs/architecture.md`](./docs/architecture.md)
 
 Kidung has one `Hymn` entity and two presentation modes. Chord is a shared
 capability, so the same verified note-aligned v2 source can be shown in Text or
-as a DOM overlay above the PDF canvas. A mode switch preserves transpose, key,
-accidental, MIDI, and the global media session.
+as a DOM overlay above the PDF canvas. The focused Text viewer keeps the title,
+chord/PDF/settings actions, lyrics, and song/verse navigation within one viewport.
+Switching presentation preserves transpose, key, accidental, MIDI, and the
+global media session.
 
 ```mermaid
 flowchart TB
@@ -148,7 +151,7 @@ flowchart LR
 flowchart LR
   MIDI0["MIDI resource"] --> LOOKUP["Preload lookup: URL + tempo + transpose + instrument"]
   LOOKUP --> WORKER["Worker / local synth engine"] --> AUDIO["One global audio session"]
-  NEXT["Next-song preload"] -. lower priority .-> LOOKUP
+  ADJACENT["Previous/next preload"] -. lower priority .-> LOOKUP
   FOREGROUND["Selected song"] -->|priority| WORKER
 ```
 
@@ -157,9 +160,9 @@ flowchart LR
   COMMIT["git commit"] --> SYNC["Local authenticated e-GYS clone/fetch"]
   SYNC --> DIFF["Contract diff + compatibility"] --> DERIVED["Generated derived metadata"]
   DERIVED --> TEST["Targeted tests"] --> STAGE["Stage derived files only"]
-  APP["App"] --> BROWSER["System browser / provider SDK"] --> OAUTH["e-GYS auth"]
-  OAUTH --> CALLBACK["Callback or ID-token exchange"] --> BFF["BFF HttpOnly session"]
-  BFF --> API["Native e-GYS API profile"]
+  WEB["Web/PWA"] --> LOGIN["Official e-GYS v1 login page"]
+  APP["Tauri"] --> WEBVIEW["Allowlisted v1 login WebView"] --> BRIDGE["Validated login bridge"]
+  BRIDGE --> KEYRING["OS keyring"] --> BFF["BFF profile request"] --> API["e-GYS v1 API"]
 ```
 
 ## Development
@@ -195,14 +198,12 @@ hook flow.
   contract snapshots, and discovery evidence.
 - [`docs/release-readiness.md`](./docs/release-readiness.md) — Preview/Beta/GA
   evidence ledger and protected deployment prerequisites.
-- [`PROGRESS.md`](./PROGRESS.md) — honest implementation and verification
-  status.
 - [`CHANGELOG.md`](./CHANGELOG.md) — user-visible changes in the current
   hardening slice.
 
 Node 24 and pnpm 11 are used in CI. PDF.js, fonts, and application code are
-bundled locally; Google/Apple sign-in SDKs are loaded only after the user
-chooses a provider and are never required for browsing. e-GYS and BFF
+bundled locally. The web/PWA opens the official e-GYS v1 login page; the
+installed Tauri application owns the native v1 session bridge. e-GYS and BFF
 credentials remain deployment secrets.
 
 ## Delivery and performance
@@ -210,11 +211,9 @@ credentials remain deployment secrets.
 The web app is configured for a GitHub Pages project deployment at
 `/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
 generated provenance, runs the bundle budget, and publishes the static PWA.
-The current production baseline is approximately 84.9 KiB gzip for the main
-application chunk and 172.8 KiB gzip for all initial JavaScript; PDF.js, its
-worker, and the TB search worker stay lazy-loaded, while the FluidSynth worker
-and TimGM pack are same-origin on-demand/PWA assets. Use `pnpm verify:bundle` to
-check the budget locally.
+PDF.js, its worker, the TB search worker, and FluidSynth stay lazy-loaded.
+GeneralUser-GS is installed separately through Asset Management. Use
+`pnpm verify:bundle` to enforce the checked bundle budget.
 
 The shell uses one responsive navigation surface across desktop, rail, and
 mobile breakpoints. Offline TB/hymn/faith packs remain local, while larger
@@ -229,10 +228,8 @@ assets, validates them, atomically swaps the active pointer, and retains the
 last known-good pack if any download fails. Without the variable, Pages uses
 its immutable bundled manifest and still supports local verification/repair.
 
-The PWA service worker follows the same budget: the v10 core cache installs only
-the shell and small verified offline indexes. TimGM/FluidSynth and the MIDI
-worker are warmed in the background after the shell is ready (and skipped on
-Save-Data/2G connections), so activation never blocks the first usable frame.
+The PWA service worker installs only the shell and small verified offline
+indexes. It does not warm a SoundFont or MIDI payload in the background.
 
 ## Deployment prerequisites
 

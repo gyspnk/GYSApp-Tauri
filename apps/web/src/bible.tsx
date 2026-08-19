@@ -337,6 +337,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [speechControlsOpen, setSpeechControlsOpen] = useState(false);
+  const [readerActionsOpen, setReaderActionsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
@@ -743,6 +744,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const speechAvailable =
     typeof window !== "undefined" && speechSnapshot.available;
+  const availableSpeechVoices = speechSnapshot.voices.filter((voice) =>
+    speechSnapshot.engine === "edge" ? !voice.local : voice.local,
+  );
   const speakingVerseId = useMemo(
     () =>
       speechSnapshot.status === "speaking" || speechSnapshot.status === "paused"
@@ -1098,67 +1102,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page bible-page">
-      <header className="bible-page-header">
-        <div className="bible-page-heading">
-          <h1>{translate(locale, "page.bibleTitle")}</h1>
-        </div>
-        <div className="page-intro-actions reader-selectors">
-          <Select
-            value={selectedVersionCode}
-            onChange={(value) => {
-              setSelectedVersionCode(value);
-              localStorage.setItem(VERSION_KEY, value);
-              setSearchResults([]);
-              setSearchedQuery("");
-              setSelectedVerseId(undefined);
-            }}
-            label="Versi"
-            options={bibleVersionOptions}
-          />
-          {assetCatalogReady && bibleVersionOptions.length === 1 && (
-            <Link className="text-button" to="/lainnya?section=data">
-              Unduh versi lain
-            </Link>
-          )}
-          <div
-            className="bible-typography-controls"
-            role="group"
-            aria-label="Ukuran teks bacaan"
-          >
-            <button
-              type="button"
-              onClick={() =>
-                setTypography((current) => {
-                  const next = decreaseBibleFontSize(current);
-                  writeBibleTypography(next);
-                  return next;
-                })
-              }
-              disabled={typography.fontSize <= BIBLE_FONT_SIZE_MIN}
-              aria-label="Perkecil teks"
-            >
-              A−
-            </button>
-            <output aria-live="polite">{typography.fontSize} px</output>
-            <button
-              type="button"
-              onClick={() =>
-                setTypography((current) => {
-                  const next = increaseBibleFontSize(current);
-                  writeBibleTypography(next);
-                  return next;
-                })
-              }
-              disabled={typography.fontSize >= BIBLE_FONT_SIZE_MAX}
-              aria-label="Perbesar teks"
-            >
-              A+
-            </button>
-          </div>
-        </div>
-
+      <header
+        className={`bible-page-header${query || searchResults.length ? " is-search-active" : ""}`}
+      >
+        <h1 className="sr-only">{translate(locale, "page.bibleTitle")}</h1>
         <form
-          className="bible-search"
+          className={`bible-search${query || searchResults.length ? " is-active" : ""}`}
           onSubmit={(event) => void runSearch(event)}
           role="search"
         >
@@ -1365,6 +1314,18 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </div>
               <div className="reader-selectors">
                 <Select
+                  value={selectedVersionCode}
+                  onChange={(value) => {
+                    setSelectedVersionCode(value);
+                    localStorage.setItem(VERSION_KEY, value);
+                    setSearchResults([]);
+                    setSearchedQuery("");
+                    setSelectedVerseId(undefined);
+                  }}
+                  label="Versi"
+                  options={bibleVersionOptions}
+                />
+                <Select
                   value={book.id}
                   onChange={(value) => {
                     setSelectedBook(value);
@@ -1389,6 +1350,41 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   )}
                 />
               </div>
+              <div
+                className="bible-typography-controls"
+                role="group"
+                aria-label="Ukuran teks bacaan"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTypography((current) => {
+                      const next = decreaseBibleFontSize(current);
+                      writeBibleTypography(next);
+                      return next;
+                    })
+                  }
+                  disabled={typography.fontSize <= BIBLE_FONT_SIZE_MIN}
+                  aria-label="Perkecil teks"
+                >
+                  A−
+                </button>
+                <output aria-live="polite">{typography.fontSize}</output>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTypography((current) => {
+                      const next = increaseBibleFontSize(current);
+                      writeBibleTypography(next);
+                      return next;
+                    })
+                  }
+                  disabled={typography.fontSize >= BIBLE_FONT_SIZE_MAX}
+                  aria-label="Perbesar teks"
+                >
+                  A+
+                </button>
+              </div>
               <label className="chapter-scrubber">
                 <span>Pasal cepat</span>
                 <input
@@ -1403,9 +1399,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 <output>{chapter}</output>
               </label>
             </div>
-            <div className="reader-action-group">
+            <div
+              className={`reader-action-group${readerActionsOpen ? " is-open" : ""}`}
+            >
+              {assetCatalogReady && bibleVersionOptions.length === 1 && (
+                <Link
+                  className="quiet-button reader-control reader-control-icon reader-secondary-action"
+                  to="/lainnya?section=data"
+                  aria-label="Unduh versi Alkitab lain"
+                  title="Unduh versi lain"
+                >
+                  <Icon name="download" size={17} />
+                </Link>
+              )}
               <button
-                className="quiet-button reader-control reader-control-icon"
+                className="quiet-button reader-control reader-control-icon reader-secondary-action"
                 type="button"
                 onClick={() => setSplitView((value) => !value)}
                 aria-pressed={splitView}
@@ -1421,18 +1429,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </button>
               {splitView && (
                 <button
-                  className={`quiet-button reader-control reader-control-sync${syncScroll ? " is-active" : ""}`}
+                  className={`quiet-button reader-control reader-control-sync reader-secondary-action${syncScroll ? " is-active" : ""}`}
                   type="button"
                   onClick={toggleSyncScroll}
                   aria-pressed={syncScroll}
                   aria-label={syncScroll ? "Gulir sinkron" : "Gulir mandiri"}
                   title={syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
                 >
-                  {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
+                  <Icon name="arrow" size={17} />
+                  <span className="sr-only">
+                    {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
+                  </span>
                 </button>
               )}
               <button
-                className="quiet-button reader-control reader-control-icon"
+                className="quiet-button reader-control reader-control-icon reader-secondary-action"
                 type="button"
                 onClick={() => void copyChapter()}
                 aria-label={copied ? "Ayat tersalin" : "Salin pasal"}
@@ -1501,7 +1512,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 </span>
               </button>
               <button
-                className="quiet-button reader-control reader-control-icon speech-settings-toggle"
+                className="quiet-button reader-control reader-control-icon speech-settings-toggle reader-secondary-action"
                 type="button"
                 aria-expanded={speechControlsOpen}
                 onClick={() => setSpeechControlsOpen((current) => !current)}
@@ -1516,6 +1527,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 <span className="control-copy">
                   {speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
                 </span>
+              </button>
+              <button
+                className="quiet-button reader-control reader-control-icon reader-overflow-toggle"
+                type="button"
+                aria-expanded={readerActionsOpen}
+                aria-label={
+                  readerActionsOpen ? "Ringkas kontrol" : "Tampilkan kontrol"
+                }
+                title={readerActionsOpen ? "Ringkas kontrol" : "Kontrol lain"}
+                onClick={() => setReaderActionsOpen((current) => !current)}
+              >
+                <Icon
+                  name={readerActionsOpen ? "chevronDown" : "more"}
+                  size={17}
+                />
               </button>
             </div>
             <div
@@ -1532,22 +1558,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     )
                   }
                 >
-                  <option value="auto">Edge → lokal</option>
-                  <option value="edge">Edge online</option>
-                  <option value="local">Suara perangkat</option>
+                  <option value="edge">Edge TTS</option>
+                  <option value="local">TTS lokal</option>
                 </select>
               </label>
               <label>
                 <span>Suara</span>
                 <select
-                  value={speechSnapshot.voiceId ?? ""}
+                  value={
+                    availableSpeechVoices.some(
+                      (voice) => voice.id === speechSnapshot.voiceId,
+                    )
+                      ? speechSnapshot.voiceId
+                      : ""
+                  }
                   onChange={(event) =>
                     speechPlayer.setVoice(event.target.value)
                   }
-                  disabled={speechSnapshot.voices.length === 0}
+                  disabled={availableSpeechVoices.length === 0}
                 >
                   <option value="">Otomatis</option>
-                  {speechSnapshot.voices.map((voice) => (
+                  {availableSpeechVoices.map((voice) => (
                     <option value={voice.id} key={voice.id}>
                       {voice.name} · {voice.language}
                       {voice.local ? " · lokal" : ""}

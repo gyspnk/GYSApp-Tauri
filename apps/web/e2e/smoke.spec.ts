@@ -21,15 +21,18 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
 test("feature-critical hymn actions follow the selected locale", async ({
   page,
 }) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("option", { name: "EN" }).click();
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
   await expect(page.getByRole("button", { name: "Show chords" })).toBeVisible();
+  await page.goto("/GYSApp-Tauri/kidung");
   await page.getByRole("button", { name: "Language" }).click();
   await page.getByRole("option", { name: "中文" }).click();
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
 });
 
@@ -259,6 +262,9 @@ test("Bible search narrows results to a testament", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
   const searchBook = page.locator(
     ".bible-search-options .control-select-trigger",
   );
@@ -482,8 +488,11 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
   await expect(
     page.getByRole("heading", { name: "Suara Sejati" }),
   ).toBeVisible();
+  await expect(page.locator(".verse-panel .section-heading")).toContainText(
+    "Sauh hari ini",
+  );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
-  await expect(page.getByText(/Sumber langsung Sauh Bagi Jiwa/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Baca Sauh" })).toBeVisible();
 });
 
 test("online content opens inside the application shell", async ({ page }) => {
@@ -574,7 +583,7 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
     .getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ })
     .click();
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
-  await expect(page.getByRole("tab", { name: "1" })).toBeVisible();
+  await expect(page.getByText("Bait 1 dari 3", { exact: true })).toBeVisible();
 });
 
 test("hymn search uses indexed AND matching instead of lyric rescans", async ({
@@ -736,6 +745,7 @@ test("the shared read-aloud surface can be minimized without losing the session"
   page,
 }) => {
   await page.addInitScript(() => {
+    localStorage.setItem("gys-speech-engine-v1", "local");
     const voice = {
       voiceURI: "gys-test-id",
       name: "GYS test voice",
@@ -796,6 +806,7 @@ test("the shared read-aloud surface can be minimized without losing the session"
     .not.toBe(firstSpokenVerse);
   await page.locator(".media-context-link").click();
   await expect(page).toHaveURL(/\/bible#bible-verse-/);
+  await page.getByRole("button", { name: "Pengaturan suara" }).click();
   const pitch = page.getByLabel("Nada bacaan suara");
   const volume = page.getByLabel("Volume bacaan suara");
   await pitch.fill("1.4");
@@ -982,8 +993,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   ).toBeVisible({ timeout: 15_000 });
   await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
-  await page.getByRole("link", { name: "Lainnya" }).click();
-  await page.getByRole("button", { name: "Data & Offline" }).click();
+  await page.goto("/GYSApp-Tauri/lainnya?section=data");
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
   await expect(

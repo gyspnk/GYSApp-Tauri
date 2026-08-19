@@ -19,6 +19,10 @@ function storage(seed: Record<string, string> = {}) {
 }
 
 describe("speech settings persistence", () => {
+  it("uses the full default volume when storage is empty", () => {
+    expect(readSpeechSettings(storage()).volume).toBe(1);
+  });
+
   it("uses safe defaults and rejects invalid persisted values", () => {
     const store = storage({
       "gys-speech-rate-v1": "3",
@@ -46,5 +50,14 @@ describe("speech settings persistence", () => {
       volume: 0.65,
       engine: "edge",
     });
+  });
+
+  it("migrates the old automatic engine to Edge while preserving local mode", () => {
+    expect(
+      readSpeechSettings(storage({ "gys-speech-engine-v1": "auto" })).engine,
+    ).toBe("edge");
+    expect(
+      readSpeechSettings(storage({ "gys-speech-engine-v1": "local" })).engine,
+    ).toBe("local");
   });
 });

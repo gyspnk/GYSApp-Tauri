@@ -30,10 +30,8 @@ claim GA parity until the remaining reports and platform artifacts exist.
 - CI uses one concurrency group per source branch so a push plus its pull
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.
-- The initial web application chunk is **90.1 KiB gzip**; the complete initial
-  JavaScript set is **180.7 KiB gzip** in the latest local verification after
-  the current hardening slice. The
-  latest five-sample shell benchmark records a sub-250 ms p95 navigation
+- The checked bundle gate caps the initial application chunk at 250 KiB gzip.
+  The latest five-sample shell benchmark records a sub-250 ms p95 navigation
   response in CI (the five samples are retained in the run log and vary by
   runner). PDF.js, its worker, and the TB search
   worker remain lazy chunks, and the bundle gate fails if the initial
@@ -53,7 +51,7 @@ claim GA parity until the remaining reports and platform artifacts exist.
   image origin and pruned to a 96-entry bounded cache on activation and use,
   so normal browsing cannot grow PWA storage without limit; pinned downloads
   continue through the versioned asset manager.
-  The generated asset manifest now inventories bundled music seeds, so
+  The generated music lock inventories source metadata, so
   remote-only MIDI/PDF assets skip known-missing Pages probes before using the
   verified immutable source.
   When `VITE_BFF_BASE_URL` is configured, the KR master PDF uses the

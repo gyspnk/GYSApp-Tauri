@@ -1,4 +1,5 @@
 import { z } from "zod";
+import distributedAssets from "./distributed-assets.json" with { type: "json" };
 
 export const Sha256Schema = z
   .string()
@@ -370,6 +371,20 @@ export const DistributedAssetCatalogSchema = z.object({
   sourceRepo: z.literal("ThenGB/GYSApp-Data"),
   items: z.array(DistributedAssetCatalogItemSchema),
 });
+export const DistributedAssetDefinitionSchema = z.object({
+  code: z.string().min(1),
+  kind: DistributedAssetKindSchema,
+  track: DistributedAssetTrackSchema,
+  title: z.string().min(1),
+  bundledByDefault: z.boolean(),
+  metadata: DistributedAssetMetadataSchema.optional(),
+});
+export const DistributedAssetConfigSchema = z.object({
+  manifestUrls: z.record(DistributedAssetTrackSchema, z.string().url()),
+  definitions: z.array(DistributedAssetDefinitionSchema),
+});
+export const DISTRIBUTED_ASSET_CONFIG =
+  DistributedAssetConfigSchema.parse(distributedAssets);
 export type DistributedAssetKind = z.infer<typeof DistributedAssetKindSchema>;
 export type DistributedAssetTrack = z.infer<typeof DistributedAssetTrackSchema>;
 export type DistributedAssetPackage = z.infer<
@@ -386,6 +401,9 @@ export type DistributedAssetMetadata = z.infer<
 >;
 export type DistributedAssetCatalog = z.infer<
   typeof DistributedAssetCatalogSchema
+>;
+export type DistributedAssetDefinition = z.infer<
+  typeof DistributedAssetDefinitionSchema
 >;
 
 export const AccountProfileSchema = z.object({

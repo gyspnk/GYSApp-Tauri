@@ -167,6 +167,12 @@ async function request(url: string, signal?: AbortSignal) {
   return allItems;
 }
 
+export async function fetchSuaraSnapshot(
+  signal?: AbortSignal,
+): Promise<SuaraSejatiPost[]> {
+  return request(STATIC_URL, signal);
+}
+
 function waitFor<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
   if (!signal) return promise;
   if (signal.aborted)

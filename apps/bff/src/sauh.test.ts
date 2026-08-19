@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
+import { expectedSauhSlug, normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
 
 describe("BFF Sauh normalization", () => {
+  it("uses the publisher's Jakarta date across the UTC day boundary", () => {
+    expect(expectedSauhSlug(new Date("2026-08-18T18:00:00.000Z"))).toBe(
+      "sbj260819",
+    );
+  });
+
   it("drops items without a valid upstream date instead of making them current", () => {
     const posts = normalizeSauhPosts([
       {

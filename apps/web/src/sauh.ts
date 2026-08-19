@@ -213,23 +213,32 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
   );
 }
 
+function publisherDateParts(value: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
 function localDateKey(value: Date) {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  const { year, month, day } = publisherDateParts(value);
+  return `${year}-${month}-${day}`;
 }
 
 export function expectedSauhSlug(date = new Date()): string {
-  const year = String(date.getFullYear()).slice(-2);
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `sbj${year}${month}${day}`;
+  const { year, month, day } = publisherDateParts(date);
+  return `sbj${year?.slice(-2)}${month}${day}`;
 }
 
-/** Canonical Sauh is tried directly; the BFF remains a trusted CORS fallback. */
+/** Prefer the same-origin BFF; direct WordPress remains the no-config fallback. */
 export function sauhNetworkCandidates(bffBase?: string): string[] {
   const proxy = bffBase?.trim()
     ? `${bffBase.trim().replace(/\/$/, "")}/api/v1/content/sauh`
     : undefined;
-  return [WORDPRESS_URL, proxy].filter((value): value is string =>
+  return [proxy, WORDPRESS_URL].filter((value): value is string =>
     Boolean(value),
   );
 }

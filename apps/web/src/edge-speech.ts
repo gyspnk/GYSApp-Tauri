@@ -33,8 +33,6 @@ const DEFAULT_EDGE_VOICE =
     : "id-ID-GadisNeural";
 const VOICE_CACHE_TTL_MS = 5 * 60_000;
 
-type Health = "unknown" | "available" | "unavailable";
-
 function abortError(): Error {
   return new DOMException("Speech cancelled", "AbortError");
 }
@@ -52,8 +50,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
   private active: HTMLAudioElement | undefined;
   private activeUrl: string | undefined;
   private activeCancel: ((error: Error) => void) | undefined;
-  private health: Health = "unknown";
-  private healthReason: string | undefined;
   private advertisedVoices: SpeechVoice[] = [];
   private voicesExpiresAt = 0;
   private voicesRequest: Promise<SpeechVoice[]> | undefined;
@@ -69,15 +65,8 @@ export class EdgeSpeechProvider implements SpeechProvider {
         offline: false,
         reason: "Edge compatibility endpoint is not configured",
       };
-    if (this.health === "unavailable")
-      return {
-        available: false,
-        offline: false,
-        reason:
-          this.healthReason ?? "Edge compatibility endpoint is unavailable",
-      };
-    // The actual speech request is the health probe. Avoid an extra request on
-    // every route mount while still disabling Edge immediately after failure.
+    // The actual speech request is the health probe. A transient upstream
+    // failure must not permanently disable the retry control for this session.
     return { available: true, offline: false };
   }
 
@@ -108,7 +97,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
     signal?: AbortSignal,
   ): Promise<void> {
     if (!configuredEndpoint) {
-      this.markUnavailable("Edge compatibility endpoint is not configured");
       throw new Error("Edge compatibility endpoint is not configured");
     }
     if (signal?.aborted) throw abortError();
@@ -132,7 +120,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
       response = await fetch(configuredEndpoint, requestInit);
     } catch (error) {
       if (signal?.aborted) throw abortError();
-      this.markUnavailable("Edge speech request failed");
       const failure =
         error instanceof Error
           ? error
@@ -141,14 +128,12 @@ export class EdgeSpeechProvider implements SpeechProvider {
       throw failure;
     }
     if (!response.ok) {
-      this.markUnavailable(`Edge speech failed (${response.status})`);
       const failure = new Error(`Edge speech failed (${response.status})`);
       recordDiagnostic("error", "tts.edge.response", failure);
       throw failure;
     }
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.startsWith("audio/")) {
-      this.markUnavailable("Edge speech returned a non-audio response");
       const failure = new Error("Edge speech returned a non-audio response");
       recordDiagnostic("error", "tts.edge.response", failure);
       throw failure;
@@ -176,7 +161,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
         if (settled) return;
         settled = true;
         cleanup();
-        this.markAvailable();
         resolve();
       };
       const fail = (error: Error) => {
@@ -185,7 +169,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
         audio.pause();
         audio.removeAttribute("src");
         cleanup();
-        if (error.name !== "AbortError") this.markUnavailable(error.message);
         reject(error);
       };
       const abort = () => fail(abortError());
@@ -260,16 +243,6 @@ export class EdgeSpeechProvider implements SpeechProvider {
       window.clearTimeout(timer);
       signal?.removeEventListener("abort", abort);
     }
-  }
-
-  private markAvailable(): void {
-    this.health = "available";
-    this.healthReason = undefined;
-  }
-
-  private markUnavailable(reason: string): void {
-    this.health = "unavailable";
-    this.healthReason = reason;
   }
 }
 

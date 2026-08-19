@@ -16,9 +16,7 @@ test("web account uses only the official e-GYS v1 login link", async ({
     /^https:\/\/e\.gys\.or\.id\/login\?theme=/,
   );
   await expect(
-    page.getByText(
-      /sinkronisasi profil tersedia di aplikasi GYS yang terpasang/i,
-    ),
+    page.getByText(/sinkronisasi profil tersedia di aplikasi terpasang/i),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Manajemen Aset" }),

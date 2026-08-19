@@ -27,6 +27,9 @@ flowchart TB
 Online devotional content follows the same shell and cache boundary as
 offline readers. Home selects the current Sauh record once; the route-level
 Sauh and Suara screens reuse that record instead of opening duplicate tabs.
+Home paints the verified Sauh and Suara snapshots before live revalidation;
+the Suara BFF response is always a validated `SuaraSejatiFeed` envelope with a
+stable `generatedAt` for its cached body.
 When a Suara item is selected, only the allowlisted TJC article endpoint is
 fetched through the BFF. The worker strips executable/embedded markup, limits
 the body, validates `OnlineArticle`, and returns a reader document. The source
@@ -155,6 +158,9 @@ PDF reader uses the same bounded-resource principle: pages outside the
 IntersectionObserver preload window cancel their render task and release their
 canvas. BFF Literature and Suara Sejati cache boundaries share in-flight
 upstream requests, so concurrent shell mounts cannot create duplicate fetches.
+Global search and its Bible worker dependencies are imported only after the
+search dialog opens. The bundle gate derives its initial graph from the entry
+HTML instead of counting lazy route chunks as startup work.
 
 ```mermaid
 flowchart LR
@@ -174,6 +180,11 @@ note-aligned v2 document is loaded once; its PDF text model is cached by
 `hymnId:resourceHash`, then reused for both the Text chord-line association and
 the DOM marker layer above PDF.js canvases. Transpose and accidental changes
 only update marker labels and do not rerender the PDF.
+
+Text presentation is a focused `100dvh` reader: the application shell is hidden,
+the lyrics own the remaining scroll area, and compact top/bottom controls expose
+presentation, active SoundFont/instrument, tempo, song, and verse navigation.
+Both adjacent MIDI tracks preload against those active playback settings.
 
 The reader also stores bounded typography preferences per hymn. The PDF layout
 preference supports single, two-page, vertical, and horizontal scrolling; the

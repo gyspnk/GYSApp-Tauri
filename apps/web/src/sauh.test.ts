@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   firstParagraph,
+  expectedSauhSlug,
   onlyTodaySauh,
   parseSauhPosts,
   selectOfflineSauh,
@@ -10,6 +11,12 @@ import {
 } from "./sauh.js";
 
 describe("Sauh feed normalization", () => {
+  it("uses the publisher's Jakarta date across the UTC day boundary", () => {
+    expect(expectedSauhSlug(new Date("2026-08-18T18:00:00.000Z"))).toBe(
+      "sbj260819",
+    );
+  });
+
   it("drops an upstream item without readable body instead of inventing content", () => {
     const posts = parseSauhPosts([
       {
@@ -98,10 +105,10 @@ describe("Sauh feed normalization", () => {
     expect(posts[0]?.title).toBe("Judul aman");
   });
 
-  it("tries the canonical Sauh endpoint before the optional BFF proxy", () => {
+  it("tries the configured BFF before the CORS-prone canonical endpoint", () => {
     expect(sauhNetworkCandidates("https://worker.example")).toEqual([
-      "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia",
       "https://worker.example/api/v1/content/sauh",
+      "https://tjc.org/id/wp-json/wp/v2/posts?categories=229&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia",
     ]);
   });
 

@@ -25,12 +25,6 @@ const required = {
     "Axe runs on the Home and Kidung surfaces",
     "GitHub Pages now builds",
   ],
-  "PROGRESS.md": [
-    "## Done & Verified",
-    "## Implemented / Needs Verification",
-    "## Next controlled work",
-    "46 passing flows",
-  ],
   "CHANGELOG.md": ["# Changelog", "## Unreleased — GA hardening slice"],
 };
 

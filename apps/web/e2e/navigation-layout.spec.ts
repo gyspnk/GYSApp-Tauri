@@ -8,7 +8,78 @@ async function hasNoHorizontalOverflow(page: Page) {
   );
 }
 
+async function touchSwipe(page: Page, fromX = 300, toX = 210) {
+  await page.locator(".lyrics-sheet").evaluate(
+    (element, points) => {
+      const event = (type: string, x: number) =>
+        element.dispatchEvent(
+          new PointerEvent(type, {
+            bubbles: true,
+            pointerId: 1,
+            pointerType: "touch",
+            isPrimary: true,
+            buttons: type === "pointerup" ? 0 : 1,
+            clientX: x,
+            clientY: 420,
+          }),
+        );
+      event("pointerdown", points.fromX);
+      event("pointermove", points.toX);
+      event("pointerup", points.toX);
+    },
+    { fromX, toX },
+  );
+}
+
 test.describe("responsive reader navigation", () => {
+  test("dashboard uses an adaptive compact scale without wasting desktop space", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator(".home-grid")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".verse-actions > *")).toHaveCount(2);
+    const phone = await page.evaluate(() => {
+      const actions = [...document.querySelectorAll(".verse-actions > *")];
+      return {
+        heading: Number.parseFloat(
+          getComputedStyle(document.querySelector(".home-page h1")!).fontSize,
+        ),
+        actionTops: actions.map(
+          (element) => element.getBoundingClientRect().top,
+        ),
+        mediaTop: document
+          .querySelector(".home-media-section")!
+          .getBoundingClientRect().top,
+      };
+    });
+    expect(phone.heading).toBeLessThanOrEqual(23);
+    expect(Math.abs(phone.actionTops[0]! - phone.actionTops[1]!)).toBeLessThan(
+      1,
+    );
+    expect(phone.mediaTop).toBeLessThan(720);
+    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const desktop = await page.evaluate(() => ({
+      heading: Number.parseFloat(
+        getComputedStyle(document.querySelector(".home-page h1")!).fontSize,
+      ),
+      continueHeight: document
+        .querySelector(".continue-panel")!
+        .getBoundingClientRect().height,
+      verseRight: document
+        .querySelector(".verse-panel")!
+        .getBoundingClientRect().right,
+      mediaLeft: document
+        .querySelector(".home-media-section")!
+        .getBoundingClientRect().left,
+    }));
+    expect(desktop.heading).toBeLessThanOrEqual(34);
+    expect(desktop.continueHeight).toBeLessThan(180);
+    expect(desktop.mediaLeft).toBeGreaterThan(desktop.verseRight);
+  });
+
   test("Kidung catalog keeps search and collection controls usable on mobile", async ({
     page,
   }) => {
@@ -38,7 +109,7 @@ test.describe("responsive reader navigation", () => {
     ).toBeVisible();
   });
 
-  test("compact navigation exposes destination names and hymn actions stay labeled", async ({
+  test("focused hymn reader keeps navigation and actions accessible", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -46,23 +117,16 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator(".reader-context-bar")).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Buka daftar kidung" }),
-    ).toBeVisible();
-
-    const navLabels = await page
-      .locator("nav.primary-nav .nav-item")
-      .evaluateAll((items) =>
-        items.map((item) => item.getAttribute("title")).filter(Boolean),
-      );
-    expect(navLabels.length).toBe(5);
+    await expect(page.locator(".reader-context-bar")).toBeHidden();
+    await expect(page.locator(".app-frame .topbar")).toBeHidden();
+    await expect(page.locator(".app-frame .navigation-shell")).toBeHidden();
+    await expect(page.locator(".hymn-text-toolbar")).toBeVisible();
 
     await page.setViewportSize({ width: 390, height: 844 });
-    const actionLabels = page.locator(
-      ".hymn-detail-page .detail-actions .hymn-action-label",
-    );
-    await expect(actionLabels.first()).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Tampilkan chord" }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Buka PDF" })).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action-primary"),
@@ -90,15 +154,102 @@ test.describe("responsive reader navigation", () => {
       page.locator(".hymn-reader-settings .song-controls"),
     ).toBeHidden();
 
-    const modeTop = await page
-      .locator(".viewer-mode-tabs")
-      .evaluate((element) => element.getBoundingClientRect().top);
-    const lyricsTop = await page
-      .locator(".lyrics-sheet")
-      .evaluate((element) => element.getBoundingClientRect().top);
-    expect(modeTop).toBeLessThan(lyricsTop);
-    expect(lyricsTop).toBeLessThan(760);
+    await expect(page.locator(".hymn-text-toolbar")).toBeVisible();
+    await expect(page.locator(".lyrics-sheet")).toBeVisible();
+    await expect(page.locator(".hymn-text-footer")).toBeVisible();
+    const geometry = await page.evaluate(() => {
+      const sheet = document.querySelector(".lyrics-sheet")!;
+      const footer = document.querySelector(".hymn-text-footer")!;
+      return {
+        sheet: sheet.getBoundingClientRect().toJSON(),
+        footer: footer.getBoundingClientRect().toJSON(),
+        bodyHeight: document.body.scrollHeight,
+      };
+    });
+    expect(geometry.sheet.top).toBeLessThan(180);
+    expect(geometry.sheet.height).toBeGreaterThan(400);
+    expect(geometry.sheet.bottom).toBeLessThanOrEqual(geometry.footer.top + 1);
+    expect(geometry.footer.bottom).toBeLessThanOrEqual(844);
+    expect(geometry.bodyHeight).toBeLessThanOrEqual(844);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+  });
+
+  test("hymn swipe changes one verse at a time and crosses songs at the boundary", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await expect(page.getByText("Bait 1 dari 3", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await touchSwipe(page);
+    await expect(
+      page.getByText("Bait 2 dari 3", { exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/hymn-001$/);
+    await touchSwipe(page);
+    await expect(
+      page.getByText("Bait 3 dari 3", { exact: true }),
+    ).toBeVisible();
+    await touchSwipe(page);
+    await expect(page).toHaveURL(/hymn-002$/);
+  });
+
+  test("hymn pinch zoom is smooth and persists its text size", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    const lyrics = page.locator(".lyrics-sheet");
+    await expect(lyrics).toBeVisible({ timeout: 15_000 });
+    const initialSize = await lyrics.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+
+    await lyrics.evaluate((element) => {
+      const fire = (type: string, pointerId: number, clientX: number) =>
+        element.dispatchEvent(
+          new PointerEvent(type, {
+            bubbles: true,
+            pointerId,
+            pointerType: "touch",
+            isPrimary: pointerId === 1,
+            buttons: type === "pointerup" ? 0 : 1,
+            clientX,
+            clientY: 420,
+          }),
+        );
+      fire("pointerdown", 1, 120);
+      fire("pointerdown", 2, 220);
+      fire("pointermove", 2, 280);
+      fire("pointerup", 2, 280);
+      fire("pointerup", 1, 120);
+    });
+
+    await expect
+      .poll(() =>
+        lyrics.evaluate((element) =>
+          Number.parseFloat(getComputedStyle(element).fontSize),
+        ),
+      )
+      .toBeGreaterThan(initialSize);
+    const persistedSize = await page.evaluate(() => {
+      const saved = localStorage.getItem("gys-hymn-typography-v1");
+      return saved
+        ? JSON.parse(saved).songs?.["hymn-001"]?.fontSize
+        : undefined;
+    });
+    expect(persistedSize).toBeGreaterThan(initialSize);
+    await page.reload();
+    await expect(lyrics).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(() =>
+        lyrics.evaluate((element) =>
+          Number.parseFloat(getComputedStyle(element).fontSize),
+        ),
+      )
+      .toBeGreaterThan(initialSize);
   });
 
   test("Kidung local navigation keeps playlist and settings in the same space", async ({
@@ -137,6 +288,53 @@ test.describe("responsive reader navigation", () => {
       page.getByRole("button", { name: "Putar MIDI", exact: true }),
     ).toHaveCount(0);
     await expect(page.locator(".media-surface")).toHaveCount(0);
+    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+  });
+
+  test("text reader exposes the active SoundFont and instrument before playback", async ({
+    page,
+  }) => {
+    await page.goto("/GYSApp-Tauri/");
+    await page.evaluate(async () => {
+      const cacheName = "gys-distributed-v1-GeneralUser-GS-e2e";
+      const cacheKey =
+        "https://gysapp.local/distributed-assets/GeneralUser-GS/e2e";
+      const cache = await caches.open(cacheName);
+      await cache.put(cacheKey, new Response(new Uint8Array(1_000_000)));
+      localStorage.setItem(
+        "gys-distributed-assets-v1",
+        JSON.stringify({
+          "GeneralUser-GS": {
+            code: "GeneralUser-GS",
+            kind: "soundfont",
+            version: "e2e",
+            releaseTag: "e2e",
+            installFileName: "GeneralUser-GS.sf2",
+            packageSizeBytes: 1_000_000,
+            packageChecksumSha256: "e2e",
+            cacheName,
+            cacheKey,
+            payloadBytes: 1_000_000,
+            installedAt: "2026-08-19T00:00:00.000Z",
+          },
+        }),
+      );
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await expect(
+      page.getByRole("button", { name: "Putar MIDI", exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
+    await page.locator(".hymn-reader-settings-summary").click();
+    await expect(page.getByText("SoundFont aktif")).toBeVisible();
+    await expect(
+      page.getByText("GeneralUser-GS", { exact: true }),
+    ).toBeVisible();
+    const instrument = page.getByLabel("Instrumen MIDI");
+    await expect(instrument).toHaveValue("-1");
+    await instrument.selectOption("40");
+    await expect(instrument).toHaveValue("40");
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
@@ -212,10 +410,38 @@ test.describe("responsive reader navigation", () => {
     await page.getByText("Filter pencarian", { exact: true }).click();
     await expect(page.locator(".bible-search-options")).toBeVisible();
 
-    const speechToggle = page.getByRole("button", {
-      name: /pengaturan suara/i,
-    });
+    const speechToggle = page.locator(".speech-settings-toggle");
+    await expect(speechToggle).toBeHidden();
+    await page.getByRole("button", { name: "Tampilkan kontrol" }).click();
     await expect(speechToggle).toBeVisible();
     await expect(speechToggle).toHaveAttribute("aria-expanded", "false");
+    await speechToggle.click();
+    const engine = page.getByLabel("Mesin");
+    await expect(engine).toBeVisible();
+    await expect(engine.locator("option")).toHaveText([
+      "Edge TTS",
+      "TTS lokal",
+    ]);
+  });
+
+  test("Bible desktop keeps search behind its header action", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/GYSApp-Tauri/bible");
+
+    const searchHeader = page.locator(".bible-page-header");
+    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(searchHeader).toHaveCSS("margin-bottom", "0px");
+    await expect(page.locator(".bible-reader-layout")).toBeInViewport();
+    await expect(page.locator(".verse-row").first()).toBeInViewport();
+
+    await page
+      .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+      .click();
+    await expect(page.locator("#bible-query")).toBeFocused();
+    await expect(searchHeader).not.toHaveCSS("margin-bottom", "0px");
   });
 });

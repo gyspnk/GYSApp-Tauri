@@ -106,6 +106,20 @@ describe("DistributedAssetStore", () => {
     await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
   });
 
+  it("does not report a cached payload whose bytes no longer match", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const store = new DistributedAssetStore({
+      cacheStorage,
+      registry: memoryStorage(),
+    });
+    await store.put(input, new Uint8Array([1]));
+    const record = await store.getRecord("b_kjv");
+    const cache = await cacheStorage.open(record!.cacheName);
+    await cache.put(record!.cacheKey, new Response(new Uint8Array([1, 2])));
+
+    await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
+  });
+
   it("keeps the cache when removing the registry pointer fails", async () => {
     const cacheStorage = memoryCacheStorage();
     const registry = memoryStorage();

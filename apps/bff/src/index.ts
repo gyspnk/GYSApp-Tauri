@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import {
+  DISTRIBUTED_ASSET_CONFIG,
   ChordManifestV1Schema,
   ErrorResponseSchema,
   OnlineContentSchema,
@@ -12,6 +13,7 @@ import {
   EdgeTtsRequestSchema,
   EdgeTtsVoicesResponseSchema,
   DistributedAssetTrackManifestSchema,
+  SuaraSejatiFeedSchema,
 } from "@gys/contracts";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
@@ -43,45 +45,29 @@ const ForkPdfQuerySchema = z.object({
   commit: z.string().regex(/^[a-f0-9]{7,64}$/i),
   path: z.string().min(1).max(512),
 });
-const DISTRIBUTED_MANIFESTS = {
-  b_kjv:
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/bibles-manifest.json",
-  b_cuv:
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/bibles-manifest.json",
-  HYMNE:
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
-  MDR: "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
-  "ASM-I":
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
-  "ASM-M":
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
-  "ASM-P":
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
-  "GeneralUser-GS":
-    "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/soundfont-manifest.json",
-} as const;
-const DISTRIBUTED_HYMN_INDEXES = {
-  HYMNE: {
-    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
-    sizeBytes: 740939,
-  },
-  MDR: {
-    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
-    sizeBytes: 636392,
-  },
-  "ASM-I": {
-    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
-    sizeBytes: 45562,
-  },
-  "ASM-M": {
-    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
-    sizeBytes: 56106,
-  },
-  "ASM-P": {
-    url: "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
-    sizeBytes: 54893,
-  },
-} as const;
+const DISTRIBUTED_MANIFESTS = Object.fromEntries(
+  DISTRIBUTED_ASSET_CONFIG.definitions
+    .filter((definition) => !definition.bundledByDefault)
+    .map((definition) => [
+      definition.code,
+      DISTRIBUTED_ASSET_CONFIG.manifestUrls[definition.track],
+    ]),
+);
+const DISTRIBUTED_HYMN_INDEXES = Object.fromEntries(
+  DISTRIBUTED_ASSET_CONFIG.definitions.flatMap((definition) =>
+    definition.kind === "hymnal" && definition.metadata
+      ? [
+          [
+            definition.code,
+            {
+              url: definition.metadata.downloadUrl,
+              sizeBytes: definition.metadata.sizeBytes,
+            },
+          ],
+        ]
+      : [],
+  ),
+) as Record<string, { url: string; sizeBytes: number }>;
 
 function trustedDistributedPackageUrl(value: string): boolean {
   try {
@@ -328,6 +314,7 @@ export function createApp(
     | {
         items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
         etag: string;
+        generatedAt: string;
         expiresAt: number;
       }
     | undefined;
@@ -335,6 +322,7 @@ export function createApp(
     | Promise<{
         items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
         etag: string;
+        generatedAt: string;
         expiresAt: number;
       }>
     | undefined;
@@ -454,7 +442,7 @@ export function createApp(
   });
 
   app.get("/api/v1/assets/distributed/:code", async (c) => {
-    const code = c.req.param("code") as keyof typeof DISTRIBUTED_MANIFESTS;
+    const code = c.req.param("code");
     const manifestUrl = DISTRIBUTED_MANIFESTS[code];
     if (!manifestUrl)
       return errorResponse(c, "NOT_FOUND", "Distributed asset is unknown");
@@ -519,7 +507,7 @@ export function createApp(
   });
 
   app.get("/api/v1/assets/distributed/:code/index", async (c) => {
-    const code = c.req.param("code") as keyof typeof DISTRIBUTED_HYMN_INDEXES;
+    const code = c.req.param("code");
     const index = DISTRIBUTED_HYMN_INDEXES[code];
     if (!index)
       return errorResponse(c, "NOT_FOUND", "Distributed hymn index is unknown");
@@ -936,7 +924,12 @@ export function createApp(
             allowlistedTjcSource(c.env?.SUARA_SOURCE_URL),
           );
           const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
-          const next = { items, etag, expiresAt: Date.now() + 5 * 60_000 };
+          const next = {
+            items,
+            etag,
+            generatedAt: new Date().toISOString(),
+            expiresAt: Date.now() + 5 * 60_000,
+          };
           suaraCache = next;
           return next;
         })().finally(() => {
@@ -946,14 +939,20 @@ export function createApp(
       }
       const cached = suaraCache;
       if (!cached) throw new Error("Suara Sejati cache was not populated");
-      const { items, etag } = cached;
+      const { items, etag, generatedAt } = cached;
       c.header(
         "cache-control",
         "public, max-age=300, stale-while-revalidate=3600",
       );
       c.header("etag", etag);
       if (c.req.header("if-none-match") === etag) return c.body(null, 304);
-      return c.json({ items });
+      return c.json(
+        SuaraSejatiFeedSchema.parse({
+          source: "tjc.org",
+          generatedAt,
+          items,
+        }),
+      );
     } catch {
       return errorResponse(
         c,
