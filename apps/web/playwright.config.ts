@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
-  snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
+  snapshotPathTemplate:
+    "{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}",
   // PDF.js and the FluidSynth worker are intentionally exercised in the same
   // browser flow. Serial contexts keep the verification deterministic on
   // memory-constrained CI runners without changing production concurrency.

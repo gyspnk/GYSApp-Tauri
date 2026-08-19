@@ -6772,6 +6772,9 @@ body.is-resizing-bible {
     padding-inline: 11px;
     font-size: 12px;
   }
+  .primary-button {
+    min-width: 44px;
+  }
   .text-button {
     min-height: 40px;
     padding-inline: 4px;
@@ -7075,6 +7078,13 @@ body.is-resizing-bible {
   .more-category-bar {
     gap: 6px;
     padding-inline: 0;
+  }
+  .more-category-bar,
+  .bible-page-header,
+  .bible-reader,
+  .reader-toolbar {
+    min-width: 0;
+    max-width: 100%;
   }
   .more-cat-btn {
     padding-inline: 12px;
