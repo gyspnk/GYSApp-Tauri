@@ -70,6 +70,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
+      - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - run: pnpm --filter @gys/native bundle:windows
 
       - name: Sign Windows installer
