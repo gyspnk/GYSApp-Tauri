@@ -2,8 +2,10 @@ import {
   Component,
   lazy,
   Suspense,
-  useEffect,
   useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -26,11 +28,21 @@ import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   fetchSauh,
-  firstParagraph,
+  getCachedSauh,
+  isTodaySauhAvailable,
   selectTodaySauh,
   subscribeSauh,
 } from "./sauh.js";
-import { fetchSuara, fetchSuaraSnapshot } from "./suara.js";
+import { fetchSuara, fetchSuaraSnapshot, getCachedSuara } from "./suara.js";
+import {
+  fetchLiteratureCatalog,
+  literatureCategoryLabels,
+} from "./literature-catalog.js";
+import {
+  SpeechEnginePreferenceSchema,
+  type LiteratureItem,
+} from "@gys/contracts";
+import { LazyImage } from "./lazy-image.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -38,6 +50,7 @@ import {
   playPreviousMidiPlaylistItem,
 } from "./midi-queue.js";
 import { speechPlayer } from "./speech-player.js";
+import { getCustomEdgeEndpoint, setCustomEdgeEndpoint } from "./edge-speech.js";
 import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -56,6 +69,7 @@ import {
   type ShellTheme,
 } from "./settings.js";
 import { Icon } from "./icons.js";
+import { useBibleHeaderState } from "./bible-header-store.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -65,9 +79,6 @@ const KidungPage = lazy(() =>
 );
 const FaithPage = lazy(() =>
   import("./faith.js").then(({ FaithPage: Page }) => ({ default: Page })),
-);
-const MorePage = lazy(() =>
-  import("./more.js").then(({ MorePage: Page }) => ({ default: Page })),
 );
 const LiteraturePage = lazy(() =>
   import("./literature.js").then(({ LiteraturePage: Page }) => ({
@@ -84,15 +95,18 @@ const SauhPage = lazy(() =>
     default: Page,
   })),
 );
+const SuaraPage = lazy(() =>
+  import("./online-content.js").then(({ SuaraPage: Page }) => ({
+    default: Page,
+  })),
+);
 const SuaraDetailPage = lazy(() =>
   import("./online-content.js").then(({ SuaraDetailPage: Page }) => ({
     default: Page,
   })),
 );
-const SuaraPage = lazy(() =>
-  import("./online-content.js").then(({ SuaraPage: Page }) => ({
-    default: Page,
-  })),
+const MorePage = lazy(() =>
+  import("./more.js").then(({ MorePage: Page }) => ({ default: Page })),
 );
 const GlobalSearch = lazy(() =>
   import("./global-search.js").then(({ GlobalSearch: Search }) => ({
@@ -101,6 +115,23 @@ const GlobalSearch = lazy(() =>
 );
 
 type Theme = ShellTheme;
+
+async function handleHardRefresh() {
+  try {
+    if ("caches" in window) {
+      const keys = await window.caches.keys();
+      await Promise.all(keys.map((key) => window.caches.delete(key)));
+    }
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    }
+    window.sessionStorage.clear();
+  } catch {
+    // ignore purge error
+  }
+  window.location.reload();
+}
 
 class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -126,7 +157,7 @@ class AppErrorBoundary extends Component<
           <button
             className="primary-button"
             type="button"
-            onClick={() => window.location.reload()}
+            onClick={() => void handleHardRefresh()}
           >
             Muat ulang
           </button>
@@ -161,14 +192,81 @@ function useAppSettings() {
 }
 
 function Navigation({ locale }: { locale: Locale }) {
+  const location = useLocation();
+  const navRef = useRef<HTMLElement>(null);
+  const itemsRef = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    opacity: number;
+  }>({ top: 0, left: 0, width: 0, height: 0, opacity: 0 });
+
+  const activePath = useMemo(() => {
+    const matched = DESTINATIONS.find((destination) =>
+      destination.path === "/"
+        ? location.pathname === "/"
+        : location.pathname === destination.path ||
+          location.pathname.startsWith(`${destination.path}/`),
+    );
+    return matched?.path ?? "/";
+  }, [location.pathname]);
+
+  const updateIndicator = useCallback(() => {
+    if (!navRef.current || !activePath) {
+      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+      return;
+    }
+    const activeEl = itemsRef.current.get(activePath);
+    if (!activeEl) {
+      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+      return;
+    }
+    const navRect = navRef.current.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    setIndicatorStyle({
+      top: itemRect.top - navRect.top,
+      left: itemRect.left - navRect.left,
+      width: itemRect.width,
+      height: itemRect.height,
+      opacity: 1,
+    });
+  }, [activePath]);
+
+  useLayoutEffect(() => {
+    updateIndicator();
+  }, [updateIndicator]);
+
+  useEffect(() => {
+    const handleResize = () => updateIndicator();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateIndicator]);
+
   return (
     <nav
+      ref={navRef}
       className="primary-nav"
       aria-label={translate(locale, "shell.navigation")}
     >
+      <div
+        className="nav-active-indicator"
+        aria-hidden="true"
+        style={{
+          transform: `translate3d(${indicatorStyle.left}px, ${indicatorStyle.top}px, 0)`,
+          width: `${indicatorStyle.width}px`,
+          height: `${indicatorStyle.height}px`,
+          opacity: indicatorStyle.opacity,
+        }}
+      />
       {DESTINATIONS.map((destination) => (
         <NavLink
           key={destination.path}
+          ref={(el) => {
+            if (el) itemsRef.current.set(destination.path, el);
+            else itemsRef.current.delete(destination.path);
+          }}
           to={destination.path}
           end={destination.path === "/"}
           className={({ isActive }) =>
@@ -212,49 +310,646 @@ function Header({
   const isKidungRoute =
     pathname === "/kidung" || pathname.startsWith("/kidung/");
   const isReaderRoute = isBibleRoute || isKidungRoute;
+  const bibleHeader = useBibleHeaderState();
+  const [typographyOpen, setTypographyOpen] = useState(false);
+  const typographyRef = useRef<HTMLDivElement>(null);
+  const [hamburgerOpen, setHamburgerOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLDivElement>(null);
+
+  const midiSnapshot = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+    midiPlayer.snapshot,
+  );
+  const isMidiPlaying = midiSnapshot.status === "playing";
+
+  const speechSnapshot = useSyncExternalStore(
+    speechPlayer.subscribe,
+    speechPlayer.snapshot,
+    speechPlayer.snapshot,
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        typographyRef.current &&
+        !typographyRef.current.contains(event.target as Node)
+      ) {
+        setTypographyOpen(false);
+      }
+    };
+    if (typographyOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [typographyOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        hamburgerRef.current &&
+        !hamburgerRef.current.contains(event.target as Node)
+      ) {
+        setHamburgerOpen(false);
+      }
+    };
+    if (hamburgerOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [hamburgerOpen]);
+
+  const handleToggleMidi = () => {
+    if (isMidiPlaying) {
+      void midiPlayer.pause();
+    } else if (midiSnapshot.songId) {
+      void midiPlayer.play();
+    }
+  };
 
   if (isReaderRoute) {
     return (
       <header className="topbar is-reader-context">
         <div className="reader-context-bar">
-          <Link
-            className="reader-context-home"
-            to="/"
-            aria-label="Kembali"
-            title="Kembali"
-          >
-            <Icon name="home" size={18} />
-          </Link>
-          <div className="reader-context-title">
-            <span>{isBibleRoute ? "Bacaan" : "Kidung Rohani"}</span>
-            <strong>{isBibleRoute ? "Alkitab" : "Kidung"}</strong>
+          <div className="reader-context-left">
+            {isBibleRoute && bibleHeader?.active ? (
+              <>
+                <button
+                  className="reader-context-book-picker quick-nav-handle"
+                  type="button"
+                  onClick={bibleHeader.onOpenPicker}
+                  onPointerDown={bibleHeader.startQuickNav}
+                  onKeyDown={bibleHeader.quickNavKeyDown}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Geser judul untuk berpindah pasal"
+                  title="Pilih Kitab & Pasal"
+                >
+                  <Icon name="book" size={15} />
+                  <strong className="picker-book-title">
+                    {bibleHeader.bookName} {bibleHeader.chapter}
+                  </strong>
+                  <span className="picker-chevron">
+                    <Icon name="chevronDown" size={12} />
+                  </span>
+                </button>
+
+                <div className="reader-version-select-wrap">
+                  <Select
+                    value={bibleHeader.versionCode}
+                    onChange={bibleHeader.onSelectVersion}
+                    className="topbar-select reader-context-select version-select"
+                    label={bibleHeader.splitView ? "Versi 1" : "Versi"}
+                    options={bibleHeader.versionOptions}
+                  />
+                  {bibleHeader.splitView &&
+                    bibleHeader.secondaryVersionCode &&
+                    bibleHeader.onSelectSecondaryVersion && (
+                      <Select
+                        value={bibleHeader.secondaryVersionCode}
+                        onChange={bibleHeader.onSelectSecondaryVersion}
+                        className="topbar-select reader-context-select version-select secondary-version-select"
+                        label="Versi 2"
+                        options={bibleHeader.versionOptions}
+                      />
+                    )}
+                </div>
+              </>
+            ) : (
+              <div className="reader-context-title">
+                <span>{isBibleRoute ? "Bacaan" : "Kidung Rohani"}</span>
+                <strong>{isBibleRoute ? "Alkitab" : "Kidung"}</strong>
+              </div>
+            )}
           </div>
+
           <div className="reader-context-actions">
-            {isKidungRoute && pathname !== "/kidung" ? (
-              <Link
-                className="reader-context-button"
-                to="/kidung"
-                aria-label="Buka daftar kidung"
-              >
-                Daftar
-              </Link>
-            ) : null}
-            {isBibleRoute || pathname === "/kidung" ? (
-              <button
-                className="reader-context-button"
-                type="button"
-                onClick={onFocusPageSearch}
-                aria-label={
-                  isBibleRoute
-                    ? "Buka pencarian ayat di Alkitab"
-                    : "Buka pencarian lagu"
-                }
-              >
-                <Icon name="search" size={16} />
-                <span>{isBibleRoute ? "Cari ayat" : "Cari lagu"}</span>
-              </button>
-            ) : null}
+            {isBibleRoute && bibleHeader?.active ? (
+              <>
+                <button
+                  className="reader-context-button reader-search-btn"
+                  type="button"
+                  onClick={onFocusPageSearch}
+                  aria-label="Buka pencarian ayat di Alkitab"
+                  title="Cari ayat"
+                >
+                  <Icon name="search" size={15} />
+                </button>
+
+                <div className="reader-typography-wrapper" ref={typographyRef}>
+                  <button
+                    className={`reader-context-button reader-typography-btn${typographyOpen ? " is-active" : ""}`}
+                    type="button"
+                    onClick={() => setTypographyOpen((prev) => !prev)}
+                    aria-expanded={typographyOpen}
+                    aria-label="Ukuran teks bacaan"
+                    title="Ukuran teks"
+                  >
+                    <span className="typography-icon-label">Aa</span>
+                    <Icon name="chevronDown" size={10} />
+                  </button>
+                  {typographyOpen && (
+                    <div
+                      className="reader-typography-popover bible-typography-controls"
+                      role="group"
+                      aria-label="Ukuran teks bacaan"
+                    >
+                      <button
+                        type="button"
+                        onClick={bibleHeader.onDecreaseFontSize}
+                        disabled={
+                          bibleHeader.fontSize <= bibleHeader.minFontSize
+                        }
+                        aria-label="Perkecil teks"
+                      >
+                        A−
+                      </button>
+                      <output aria-live="polite">{bibleHeader.fontSize}</output>
+                      <button
+                        type="button"
+                        onClick={bibleHeader.onIncreaseFontSize}
+                        disabled={
+                          bibleHeader.fontSize >= bibleHeader.maxFontSize
+                        }
+                        aria-label="Perbesar teks"
+                      >
+                        A+
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  className={`reader-context-button reader-split-btn${bibleHeader.splitView ? " is-active" : ""}`}
+                  type="button"
+                  onClick={bibleHeader.onToggleSplitView}
+                  aria-pressed={bibleHeader.splitView}
+                  aria-label={
+                    bibleHeader.splitView
+                      ? "Tampilkan satu kolom"
+                      : "Tampilkan dua kolom"
+                  }
+                  title={bibleHeader.splitView ? "Satu kolom" : "Dua kolom"}
+                >
+                  <Icon name="columns" size={15} />
+                </button>
+
+                {bibleHeader.splitView && (
+                  <button
+                    className={`reader-context-button reader-sync-btn${bibleHeader.syncScroll ? " is-active" : ""}`}
+                    type="button"
+                    onClick={bibleHeader.onToggleSyncScroll}
+                    aria-pressed={bibleHeader.syncScroll}
+                    aria-label={
+                      bibleHeader.syncScroll ? "Gulir sinkron" : "Gulir mandiri"
+                    }
+                    title={
+                      bibleHeader.syncScroll ? "Gulir sinkron" : "Gulir mandiri"
+                    }
+                  >
+                    <Icon name="arrow" size={15} />
+                  </button>
+                )}
+
+                <button
+                  className={`reader-context-button reader-speech-btn${bibleHeader.speaking ? " is-speaking" : ""}`}
+                  type="button"
+                  onClick={bibleHeader.onToggleSpeech}
+                  disabled={!bibleHeader.speechAvailable}
+                  aria-label={
+                    bibleHeader.speechStatus === "paused"
+                      ? "Lanjutkan bacaan"
+                      : bibleHeader.speechStatus === "speaking"
+                        ? "Jeda bacaan"
+                        : bibleHeader.speaking
+                          ? translate(locale, "bible.stopReading")
+                          : translate(locale, "bible.readAloud")
+                  }
+                  title={
+                    bibleHeader.speaking ? "Hentikan bacaan" : "Bacakan pasal"
+                  }
+                >
+                  <Icon
+                    name={
+                      bibleHeader.speechStatus === "speaking"
+                        ? "pause"
+                        : bibleHeader.speechStatus === "paused"
+                          ? "play"
+                          : bibleHeader.speaking
+                            ? "stop"
+                            : "play"
+                    }
+                    size={15}
+                  />
+                </button>
+
+                {/* Hamburger: otomatis muat saat tombol tidak muat di mobile bible */}
+                <div className="reader-hamburger-wrapper" ref={hamburgerRef}>
+                  <button
+                    className={`reader-context-button reader-hamburger-btn${hamburgerOpen ? " is-active" : ""}`}
+                    type="button"
+                    aria-expanded={hamburgerOpen}
+                    aria-label="Menu Alkitab"
+                    title="Menu"
+                    onClick={() => setHamburgerOpen((v) => !v)}
+                  >
+                    <span className="hamburger-icon" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </button>
+                  {hamburgerOpen && (
+                    <>
+                      <div
+                        className="reader-hamburger-backdrop"
+                        onClick={() => setHamburgerOpen(false)}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="reader-hamburger-drawer"
+                        role="dialog"
+                        aria-label="Menu Bacaan"
+                      >
+                        <div className="hamburger-drawer-header">
+                          <div className="hamburger-drawer-title">
+                            <Icon name="book" size={16} />
+                            <strong>Menu Bacaan</strong>
+                          </div>
+                          <button
+                            className="hamburger-drawer-close"
+                            type="button"
+                            onClick={() => setHamburgerOpen(false)}
+                            aria-label="Tutup menu"
+                            title="Tutup"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        <div className="hamburger-drawer-body">
+                          {/* Section 1: Typography */}
+                          <div className="hamburger-card">
+                            <div className="hamburger-card-header">
+                              <span className="hamburger-section-label">
+                                Ukuran Teks
+                              </span>
+                              <span className="hamburger-size-badge">
+                                {bibleHeader.fontSize}px
+                              </span>
+                            </div>
+                            <div className="hamburger-typography-stepper">
+                              <button
+                                type="button"
+                                className="typography-step-btn"
+                                onClick={bibleHeader.onDecreaseFontSize}
+                                disabled={
+                                  bibleHeader.fontSize <=
+                                  bibleHeader.minFontSize
+                                }
+                                aria-label="Perkecil teks"
+                              >
+                                <span className="step-label">A−</span>
+                                <small>Kecil</small>
+                              </button>
+                              <div className="typography-size-indicator">
+                                <strong>{bibleHeader.fontSize}</strong>
+                                <small>pt</small>
+                              </div>
+                              <button
+                                type="button"
+                                className="typography-step-btn"
+                                onClick={bibleHeader.onIncreaseFontSize}
+                                disabled={
+                                  bibleHeader.fontSize >=
+                                  bibleHeader.maxFontSize
+                                }
+                                aria-label="Perbesar teks"
+                              >
+                                <span className="step-label">A+</span>
+                                <small>Besar</small>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Section 2: Mode Tampilan */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              Mode Tampilan
+                            </span>
+                            <div className="hamburger-group">
+                              <button
+                                className={`hamburger-item${bibleHeader.splitView ? " is-active" : ""}`}
+                                type="button"
+                                onClick={() => {
+                                  bibleHeader.onToggleSplitView();
+                                }}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon name="columns" size={16} />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>Tampilan Belah</strong>
+                                  <small>Bandingkan 2 pasal / terjemahan</small>
+                                </div>
+                                <div
+                                  className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
+                                >
+                                  <span className="switch-thumb" />
+                                </div>
+                              </button>
+
+                              {bibleHeader.splitView && (
+                                <button
+                                  className={`hamburger-item${bibleHeader.syncScroll ? " is-active" : ""}`}
+                                  type="button"
+                                  onClick={() =>
+                                    bibleHeader.onToggleSyncScroll()
+                                  }
+                                >
+                                  <div className="hamburger-item-icon">
+                                    <Icon name="arrow" size={16} />
+                                  </div>
+                                  <div className="hamburger-item-text">
+                                    <strong>Gulir Sinkron</strong>
+                                    <small>Geser kedua kolom bersamaan</small>
+                                  </div>
+                                  <div
+                                    className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
+                                  >
+                                    <span className="switch-thumb" />
+                                  </div>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Section 3: Audio Alkitab Suara */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              Alkitab Suara
+                            </span>
+                            <div className="hamburger-group">
+                              <button
+                                className={`hamburger-item${speechSnapshot.playerOpen || bibleHeader.speaking ? " is-active" : ""}`}
+                                type="button"
+                                disabled={!bibleHeader.speechAvailable}
+                                onClick={() => {
+                                  bibleHeader.onToggleSpeech();
+                                }}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon
+                                    name={
+                                      speechSnapshot.playerOpen ||
+                                      bibleHeader.speaking
+                                        ? "bible"
+                                        : "play"
+                                    }
+                                    size={16}
+                                  />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>Player Alkitab Suara</strong>
+                                  <small>
+                                    {speechSnapshot.playerOpen ||
+                                    bibleHeader.speaking
+                                      ? "Pemutar audio aktif di layar"
+                                      : "Tampilkan pemutar audio"}
+                                  </small>
+                                </div>
+                                <span
+                                  className={`hamburger-badge ${speechSnapshot.playerOpen || bibleHeader.speaking ? "is-playing" : ""}`}
+                                >
+                                  {speechSnapshot.playerOpen ||
+                                  bibleHeader.speaking
+                                    ? "Aktif"
+                                    : "Buka"}
+                                </span>
+                              </button>
+
+                              <button
+                                className={`hamburger-item speech-settings-toggle${bibleHeader.speechControlsOpen ? " is-active" : ""}`}
+                                type="button"
+                                aria-expanded={bibleHeader.speechControlsOpen}
+                                onClick={bibleHeader.onToggleSpeechControls}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon name="settings" size={16} />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>Pengaturan Suara</strong>
+                                  <small>
+                                    {bibleHeader.speechControlsOpen
+                                      ? "Tutup opsi suara & nada"
+                                      : "Atur mesin suara, kecepatan & nada"}
+                                  </small>
+                                </div>
+                                <div className="hamburger-expand-badge">
+                                  <Icon
+                                    name={
+                                      bibleHeader.speechControlsOpen
+                                        ? "chevronUp"
+                                        : "chevronDown"
+                                    }
+                                    size={15}
+                                  />
+                                </div>
+                              </button>
+                            </div>
+
+                            {/* Pengaturan Detail Alkitab Suara */}
+                            {bibleHeader.speechControlsOpen && (
+                              <div className="drawer-speech-card">
+                                <label className="drawer-speech-row">
+                                  <span>Mesin</span>
+                                  <select
+                                    className="drawer-speech-select"
+                                    value={speechSnapshot.engine}
+                                    onChange={(event) =>
+                                      speechPlayer.setEngine(
+                                        SpeechEnginePreferenceSchema.parse(
+                                          event.target.value,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    <option value="edge">Edge TTS</option>
+                                    <option value="local">TTS lokal</option>
+                                  </select>
+                                </label>
+
+                                <label className="drawer-speech-row">
+                                  <span>Pilihan Suara</span>
+                                  <select
+                                    className="drawer-speech-select"
+                                    value={
+                                      speechSnapshot.voices.some(
+                                        (v) => v.id === speechSnapshot.voiceId,
+                                      )
+                                        ? speechSnapshot.voiceId
+                                        : ""
+                                    }
+                                    onChange={(e) =>
+                                      speechPlayer.setVoice(e.target.value)
+                                    }
+                                  >
+                                    <option value="">Otomatis (Default)</option>
+                                    {speechSnapshot.voices
+                                      .filter((voice) =>
+                                        speechSnapshot.engine === "edge"
+                                          ? !voice.local ||
+                                            voice.id.includes("Neural")
+                                          : voice.local ||
+                                            !voice.id.includes("Neural"),
+                                      )
+                                      .map((voice) => (
+                                        <option value={voice.id} key={voice.id}>
+                                          {voice.name}
+                                        </option>
+                                      ))}
+                                  </select>
+                                </label>
+
+                                {speechSnapshot.engine === "edge" && (
+                                  <label className="drawer-speech-row">
+                                    <span className="drawer-speech-label">
+                                      Endpoint Gateway (Opsional)
+                                    </span>
+                                    <input
+                                      type="url"
+                                      className="drawer-speech-input"
+                                      placeholder="https://... (default)"
+                                      defaultValue={getCustomEdgeEndpoint()}
+                                      onBlur={(e) => {
+                                        setCustomEdgeEndpoint(e.target.value);
+                                        void speechPlayer.loadVoices();
+                                      }}
+                                    />
+                                  </label>
+                                )}
+
+                                <div className="drawer-speech-row">
+                                  <div className="drawer-speech-row-header">
+                                    <span className="drawer-speech-label">
+                                      Kecepatan Baca
+                                    </span>
+                                    <span className="drawer-speech-val">
+                                      {speechSnapshot.rate.toFixed(1)}×
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    className="drawer-speech-range"
+                                    aria-label="Kecepatan bacaan suara"
+                                    min="0.5"
+                                    max="2"
+                                    step="0.1"
+                                    value={speechSnapshot.rate}
+                                    onChange={(e) =>
+                                      speechPlayer.setRate(
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </div>
+
+                                <div className="drawer-speech-row">
+                                  <div className="drawer-speech-row-header">
+                                    <span className="drawer-speech-label">
+                                      Tinggi Nada (Pitch)
+                                    </span>
+                                    <span className="drawer-speech-val">
+                                      {speechSnapshot.pitch.toFixed(1)}×
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    className="drawer-speech-range"
+                                    aria-label="Nada bacaan suara"
+                                    min="0.5"
+                                    max="2"
+                                    step="0.1"
+                                    value={speechSnapshot.pitch}
+                                    onChange={(e) =>
+                                      speechPlayer.setPitch(
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </div>
+
+                                <div className="drawer-speech-row">
+                                  <div className="drawer-speech-row-header">
+                                    <span className="drawer-speech-label">
+                                      Volume
+                                    </span>
+                                    <span className="drawer-speech-val">
+                                      {Math.round(speechSnapshot.volume * 100)}%
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    className="drawer-speech-range"
+                                    aria-label="Volume bacaan suara"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value={speechSnapshot.volume}
+                                    onChange={(e) =>
+                                      speechPlayer.setVolume(
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {isKidungRoute && pathname !== "/kidung" ? (
+                  <Link
+                    className="reader-context-button"
+                    to="/kidung"
+                    aria-label="Buka daftar kidung"
+                  >
+                    Daftar
+                  </Link>
+                ) : null}
+                {isBibleRoute || pathname === "/kidung" ? (
+                  <button
+                    className="reader-context-button"
+                    type="button"
+                    onClick={onFocusPageSearch}
+                    aria-label={
+                      isBibleRoute
+                        ? "Buka pencarian ayat di Alkitab"
+                        : "Buka pencarian lagu"
+                    }
+                  >
+                    <Icon name="search" size={15} />
+                  </button>
+                ) : null}
+                <button
+                  className={`reader-context-button reader-midi-btn${isMidiPlaying ? " is-active" : ""}`}
+                  type="button"
+                  onClick={handleToggleMidi}
+                  aria-label="Pemutar Musik MIDI"
+                  title="Pemutar Musik MIDI"
+                >
+                  <Icon name="music" size={15} />
+                </button>
+              </>
+            )}
           </div>
+
           <div className="reader-context-settings">
             <Select
               value={locale}
@@ -371,7 +1066,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
     getMidiPlaylist,
   );
   const speechActive =
-    speechSnapshot.total > 0 && speechSnapshot.status !== "idle";
+    (speechSnapshot.total > 0 && speechSnapshot.status !== "idle") ||
+    speechSnapshot.playerOpen;
   const isKidungMedia =
     !speechActive && location.pathname.startsWith("/kidung");
   const latestMidiRef = useRef(snapshot);
@@ -581,13 +1277,15 @@ function MediaSurface({ locale }: { locale: Locale }) {
     currentPlaylistIndex < playlist.items.length - 1;
   const togglePlayback = () => {
     if (speechActive) {
-      const action =
-        speechSnapshot.status === "error"
-          ? speechPlayer.stop()
-          : playing
-            ? speechPlayer.pause()
-            : speechPlayer.resume();
-      void action.catch(() => undefined);
+      if (speechSnapshot.status === "error") {
+        void speechPlayer.stop();
+      } else if (playing) {
+        void speechPlayer.pause();
+      } else if (speechSnapshot.status === "paused") {
+        void speechPlayer.resume();
+      } else {
+        void speechPlayer.play();
+      }
       return;
     }
     if (!playing) void speechPlayer.stop();
@@ -657,9 +1355,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
   };
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}${dragging ? " is-dragging" : ""}${isKidungMedia ? " is-kidung-media" : ""}`}
-      data-media-status={speechActive ? speechSnapshot.status : snapshot.status}
-      data-media-backend={
+      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${dragging ? " is-dragging" : ""}`}
+      data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
           : snapshot.backend
@@ -676,13 +1373,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
       aria-label={translate(locale, "shell.media")}
     >
-      {isKidungMedia && !minimized && (
+      {(isKidungMedia || speechActive) && !minimized && (
         <button
           className="media-collapse-toggle"
           type="button"
           onClick={() => setMinimized(true)}
           aria-expanded="true"
-          aria-label="Minimalkan pemutar"
+          aria-label="Ciutkan panel"
         >
           <span className="media-collapse-grip" aria-hidden="true" />
           <Icon name="chevronDown" size={15} />
@@ -727,7 +1424,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
               : speechActive
                 ? speechSnapshot.offline
                   ? "Bacaan offline"
-                  : "Bacaan Alkitab"
+                  : "Alkitab Suara"
                 : snapshot.status === "loading"
                   ? `Memuat MIDI ${snapshot.loadingProgress}%`
                   : snapshot.backend === "fluidsynth"
@@ -764,90 +1461,67 @@ function MediaSurface({ locale }: { locale: Locale }) {
           <span>
             {speechActive
               ? speechSnapshot.status === "error"
-                ? speechSnapshot.error
+                ? (speechSnapshot.error ?? "Gagal memutar audio")
                 : speechSnapshot.currentIndex >= 0
                   ? `Ayat ${speechSnapshot.currentIndex + 1} dari ${speechSnapshot.total}`
                   : "Siap dibaca"
               : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
           </span>
         </div>
-        <label className="media-progress">
-          <span className="sr-only">
-            {speechActive ? "Posisi bacaan" : "Posisi MIDI"}
-          </span>
-          <input
-            type="range"
-            min="0"
-            max={Math.max(0.01, snapshot.duration)}
-            step="0.1"
-            value={Math.min(snapshot.duration, snapshot.position)}
-            disabled={speechActive}
-            onChange={(event) =>
-              void midiPlayer
-                .seek(Number(event.target.value))
-                .catch(() => undefined)
-            }
-          />
-        </label>
+        {speechActive ? (
+          <div
+            className="speech-progress-track"
+            aria-label="Progres bacaan ayat"
+          >
+            <div
+              className="speech-progress-fill"
+              style={{
+                width: `${Math.min(100, Math.max(0, ((speechSnapshot.currentIndex + 1) / Math.max(1, speechSnapshot.total)) * 100))}%`,
+              }}
+            />
+          </div>
+        ) : (
+          <label className="media-progress">
+            <span className="sr-only">Posisi MIDI</span>
+            <input
+              type="range"
+              min="0"
+              max={Math.max(0.01, snapshot.duration)}
+              step="0.1"
+              value={Math.min(snapshot.duration, snapshot.position)}
+              onChange={(event) =>
+                void midiPlayer
+                  .seek(Number(event.target.value))
+                  .catch(() => undefined)
+              }
+            />
+          </label>
+        )}
         {!minimized &&
           !isKidungMedia &&
-          (speechActive || playlist.items.length > 0) && (
-            <div
-              className="media-queue-controls"
-              aria-label={speechActive ? "Navigasi bacaan" : "Antrean MIDI"}
-            >
-              {speechActive ? (
-                <>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={() =>
-                      void speechPlayer.previous().catch(() => undefined)
-                    }
-                    aria-label="Ayat sebelumnya"
-                    disabled={speechSnapshot.currentIndex <= 0}
-                  >
-                    <Icon name="skipPrevious" size={17} />
-                  </button>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={() =>
-                      void speechPlayer.next().catch(() => undefined)
-                    }
-                    aria-label="Ayat berikutnya"
-                    disabled={
-                      speechSnapshot.currentIndex < 0 ||
-                      speechSnapshot.currentIndex >= speechSnapshot.total - 1
-                    }
-                  >
-                    <Icon name="skipNext" size={17} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={() =>
-                      void playPreviousMidiPlaylistItem().catch(() => undefined)
-                    }
-                    aria-label="Lagu MIDI sebelumnya"
-                  >
-                    <Icon name="skipPrevious" size={17} />
-                  </button>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={() =>
-                      void playNextMidiPlaylistItem().catch(() => undefined)
-                    }
-                    aria-label="Lagu MIDI berikutnya"
-                  >
-                    <Icon name="skipNext" size={17} />
-                  </button>
-                </>
-              )}
+          !speechActive &&
+          playlist.items.length > 0 && (
+            <div className="media-queue-controls" aria-label="Antrean MIDI">
+              <button
+                className="media-control"
+                type="button"
+                onClick={() =>
+                  void playPreviousMidiPlaylistItem().catch(() => undefined)
+                }
+                aria-label="Lagu MIDI sebelumnya"
+              >
+                <Icon name="skipPrevious" size={17} />
+              </button>
+              <button
+                className="media-control"
+                type="button"
+                onClick={() =>
+                  void playNextMidiPlaylistItem().catch(() => undefined)
+                }
+                aria-label="Lagu MIDI berikutnya"
+              >
+                <Icon name="skipNext" size={17} />
+              </button>
             </div>
           )}
         {!minimized && (
@@ -868,80 +1542,106 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 }
               />
             </label>
-            <label>
-              <span>Tempo {snapshot.tempo}</span>
-              <input
-                aria-label="Tempo MIDI"
-                type="range"
-                min="30"
-                max="220"
-                step="1"
-                value={snapshot.tempo}
-                disabled={speechActive}
-                onChange={(event) =>
-                  void midiPlayer.setTempo(Number(event.target.value))
-                }
-              />
-            </label>
-            <label className="media-instrument-control">
-              <span>Instrumen</span>
-              <select
-                aria-label="Instrumen MIDI"
-                value={snapshot.instrument}
-                disabled={speechActive}
-                onChange={(event) =>
-                  void midiPlayer
-                    .setInstrument(Number(event.target.value))
-                    .catch(() => undefined)
-                }
-              >
-                <option value={-1}>{midiInstrumentLabel(-1)}</option>
-                {GM_INSTRUMENTS.map((name, program) => (
-                  <option key={program} value={program}>
-                    {String(program + 1).padStart(3, "0")} · {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="media-transpose">
-              <span>
-                Nada{" "}
-                {snapshot.transpose > 0
-                  ? `+${snapshot.transpose}`
-                  : snapshot.transpose}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  void midiPlayer.setTranspose(snapshot.transpose - 1)
-                }
-                aria-label="Turunkan nada"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  void midiPlayer.setTranspose(snapshot.transpose + 1)
-                }
-                aria-label="Naikkan nada"
-              >
-                +
-              </button>
-            </div>
+            {speechActive ? (
+              <label className="media-speech-rate-control">
+                <span>Kecepatan</span>
+                <select
+                  aria-label="Kecepatan bacaan"
+                  value={speechSnapshot.rate}
+                  onChange={(e) => speechPlayer.setRate(Number(e.target.value))}
+                >
+                  <option value={0.75}>0.75x</option>
+                  <option value={0.9}>0.9x</option>
+                  <option value={1.0}>1.0x</option>
+                  <option value={1.25}>1.25x</option>
+                  <option value={1.5}>1.5x</option>
+                </select>
+              </label>
+            ) : (
+              <>
+                <label>
+                  <span>Tempo {snapshot.tempo}</span>
+                  <input
+                    aria-label="Tempo MIDI"
+                    type="range"
+                    min="30"
+                    max="220"
+                    step="1"
+                    value={snapshot.tempo}
+                    onChange={(event) =>
+                      void midiPlayer.setTempo(Number(event.target.value))
+                    }
+                  />
+                </label>
+                <label className="media-instrument-control">
+                  <span>Instrumen</span>
+                  <select
+                    aria-label="Instrumen MIDI"
+                    value={snapshot.instrument}
+                    onChange={(event) =>
+                      void midiPlayer
+                        .setInstrument(Number(event.target.value))
+                        .catch(() => undefined)
+                    }
+                  >
+                    <option value={-1}>{midiInstrumentLabel(-1)}</option>
+                    {GM_INSTRUMENTS.map((name, program) => (
+                      <option key={program} value={program}>
+                        {String(program + 1).padStart(3, "0")} · {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="media-transpose">
+                  <span>
+                    Nada{" "}
+                    {snapshot.transpose > 0
+                      ? `+${snapshot.transpose}`
+                      : snapshot.transpose}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void midiPlayer.setTranspose(snapshot.transpose - 1)
+                    }
+                    aria-label="Turunkan nada"
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void midiPlayer.setTranspose(snapshot.transpose + 1)
+                    }
+                    aria-label="Naikkan nada"
+                  >
+                    +
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
-      {isKidungMedia && !minimized ? (
-        <div className="media-transport-controls" aria-label="Kontrol MIDI">
+      {!minimized ? (
+        <div
+          className="media-transport-controls"
+          aria-label={speechActive ? "Kontrol Suara" : "Kontrol MIDI"}
+        >
           <button
             className="media-control media-secondary-control media-previous-control"
             type="button"
             onClick={() =>
-              void playPreviousMidiPlaylistItem().catch(() => undefined)
+              speechActive
+                ? void speechPlayer.previous().catch(() => undefined)
+                : void playPreviousMidiPlaylistItem().catch(() => undefined)
             }
-            aria-label="Lagu MIDI sebelumnya"
-            disabled={!canPlayPrevious}
+            aria-label={
+              speechActive ? "Ayat sebelumnya" : "Lagu MIDI sebelumnya"
+            }
+            disabled={
+              speechActive ? speechSnapshot.currentIndex <= 0 : !canPlayPrevious
+            }
           >
             <Icon name="skipPrevious" size={17} />
           </button>
@@ -961,10 +1661,19 @@ function MediaSurface({ locale }: { locale: Locale }) {
             className="media-control media-secondary-control media-next-control"
             type="button"
             onClick={() =>
-              void playNextMidiPlaylistItem().catch(() => undefined)
+              speechActive
+                ? void speechPlayer.next().catch(() => undefined)
+                : void playNextMidiPlaylistItem().catch(() => undefined)
             }
-            aria-label="Lagu MIDI berikutnya"
-            disabled={!canPlayNext}
+            aria-label={
+              speechActive ? "Ayat berikutnya" : "Lagu MIDI berikutnya"
+            }
+            disabled={
+              speechActive
+                ? speechSnapshot.currentIndex < 0 ||
+                  speechSnapshot.currentIndex >= speechSnapshot.total - 1
+                : !canPlayNext
+            }
           >
             <Icon name="skipNext" size={17} />
           </button>
@@ -1030,6 +1739,20 @@ function MediaSurface({ locale }: { locale: Locale }) {
             />
           </button>
         </>
+      )}
+      {speechActive && !minimized && (
+        <button
+          className="media-minimize media-close-button"
+          type="button"
+          onClick={() => {
+            void speechPlayer.stop();
+            speechPlayer.togglePlayer(false);
+          }}
+          aria-label="Tutup pemutar suara"
+          title="Tutup pemutar"
+        >
+          ✕
+        </button>
       )}
       <button
         className="media-minimize"
@@ -1214,22 +1937,29 @@ function Shell({
 }
 
 function HomePage({ locale }: { locale: Locale }) {
-  const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>([]);
+  const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>(
+    () => {
+      return getCachedSauh() ?? [];
+    },
+  );
   const [suara, setSuara] = useState<Awaited<ReturnType<typeof fetchSuara>>>(
-    [],
+    () => {
+      return getCachedSuara() ?? [];
+    },
   );
   const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
+    () => {
+      const cached = getCachedSauh();
+      return cached && cached.length ? "ready" : "loading";
+    },
   );
   const [suaraStatus, setSuaraStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
+    () => {
+      const cached = getCachedSuara();
+      return cached && cached.length ? "ready" : "loading";
+    },
   );
   const [activity, setActivity] = useState<ActivityState>(() => getActivity());
-  const [dailyMode, setDailyMode] = useState<"verse" | "reflection">(() =>
-    localStorage.getItem("gys-daily-sauh-mode-v1") === "reflection"
-      ? "reflection"
-      : "verse",
-  );
   useEffect(() => subscribeActivity(() => setActivity(getActivity())), []);
   useEffect(
     () =>
@@ -1239,15 +1969,10 @@ function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
-  const continueActivity =
-    activity.hymn &&
-    (!activity.bible || activity.hymn.updatedAt > activity.bible.updatedAt)
-      ? { kind: "hymn" as const, value: activity.hymn }
-      : activity.bible
-        ? { kind: "bible" as const, value: activity.bible }
-        : undefined;
+  const hasActivity = Boolean(activity.bible || activity.hymn);
   const loadSauh = useCallback((signal?: AbortSignal) => {
-    setSauhStatus("loading");
+    const cached = getCachedSauh();
+    if (!cached || !cached.length) setSauhStatus("loading");
     void fetchSauh(signal)
       .then((items) => {
         if (signal?.aborted) return;
@@ -1264,7 +1989,8 @@ function HomePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, [loadSauh]);
   const loadSuara = useCallback((signal?: AbortSignal) => {
-    setSuaraStatus("loading");
+    const cached = getCachedSuara();
+    if (!cached || !cached.length) setSuaraStatus("loading");
     void (async () => {
       let displayedSnapshot = false;
       try {
@@ -1293,12 +2019,74 @@ function HomePage({ locale }: { locale: Locale }) {
     loadSuara(controller.signal);
     return () => controller.abort();
   }, [loadSuara]);
+
+  const [literature, setLiterature] = useState<LiteratureItem[]>([]);
+  const [literatureStatus, setLiteratureStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+
+  const loadLiterature = useCallback((signal?: AbortSignal) => {
+    setLiteratureStatus("loading");
+    void fetchLiteratureCatalog(signal)
+      .then((items) => {
+        if (signal?.aborted) return;
+        setLiterature(items);
+        setLiteratureStatus(items.length > 0 ? "ready" : "error");
+      })
+      .catch((error: unknown) => {
+        if (signal?.aborted) return;
+        recordDiagnostic("warn", "home.literature", error);
+        setLiteratureStatus("error");
+      });
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadLiterature(controller.signal);
+    return () => controller.abort();
+  }, [loadLiterature]);
+
+  useEffect(() => {
+    const selected = sauh[0];
+    const isToday = selected && isTodaySauhAvailable([selected]);
+    if (
+      sauhStatus === "ready" &&
+      !isToday &&
+      typeof navigator !== "undefined" &&
+      navigator.onLine
+    ) {
+      void fetchSauh(undefined, true)
+        .then((items) => {
+          if (items.length) setSauh(items);
+        })
+        .catch(() => {});
+    }
+  }, [sauh, sauhStatus]);
+
+  useEffect(() => {
+    const checkFreshness = () => {
+      const selected = sauh[0];
+      const isToday = selected && isTodaySauhAvailable([selected]);
+      if (!isToday && typeof navigator !== "undefined" && navigator.onLine) {
+        void fetchSauh(undefined, true)
+          .then((items) => {
+            if (items.length) setSauh(items);
+          })
+          .catch(() => {});
+      }
+    };
+    window.addEventListener("focus", checkFreshness);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") checkFreshness();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", checkFreshness);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [sauh]);
   const selected = sauh[0];
-  const dailyText = selected
-    ? dailyMode === "verse"
-      ? (selected.verse ?? selected.body)
-      : firstParagraph(selected.body)
-    : "";
+  const dailyText = selected ? (selected.verse ?? selected.body) : "";
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
@@ -1315,122 +2103,110 @@ function HomePage({ locale }: { locale: Locale }) {
       </section>
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">
-          <div className="section-heading">
-            <span>Sauh hari ini</span>
-            <small>
-              {selected?.reference ?? translate(locale, "home.sauhNoReference")}
-            </small>
-          </div>
-          {sauhStatus === "loading" && (
-            <p className="sauh-loading">Mengambil renungan Sauh Bagi Jiwa…</p>
-          )}
-          {sauhStatus === "error" && (
-            <div className="sauh-offline-state">
-              <strong>{translate(locale, "home.sauhUnavailable")}</strong>
-              <small>{translate(locale, "home.sauhOfflineHint")}</small>
-              <button
-                className="quiet-button"
-                type="button"
-                onClick={() => loadSauh()}
-              >
-                {translate(locale, "home.sauhRetry")}
-              </button>
+          {selected?.imageUrl && sauhStatus === "ready" && (
+            <div className="sauh-card-media">
+              <LazyImage
+                className="sauh-image"
+                wrapperClassName="sauh-image-wrap"
+                src={selected.imageUrl}
+                alt={`Ilustrasi ${selected.title}`}
+                loading="eager"
+              />
+              <div className="sauh-media-overlay" />
             </div>
           )}
-          {selected && sauhStatus === "ready" && (
-            <>
-              {selected.imageUrl && (
-                <img
-                  className="sauh-image"
-                  src={selected.imageUrl}
-                  alt={`Ilustrasi ${selected.title}`}
-                  loading="eager"
-                  decoding="async"
-                />
-              )}
-              <p className="sauh-title">{selected.title}</p>
-              <blockquote>“{dailyText}”</blockquote>
-              {!selectTodaySauh([selected]).length && (
-                <small className="sauh-source">
-                  Konten tersimpan ·{" "}
-                  {new Date(selected.updatedAt).toLocaleDateString(locale)}
-                </small>
-              )}
-            </>
-          )}
-          <div className="verse-actions">
-            {selected && (
-              <Link className="quiet-button" to="/sauh">
-                Baca Sauh
-              </Link>
+          <div className="sauh-card-content">
+            <div className="section-heading">
+              <span>Sauh hari ini</span>
+              <small>
+                {selected?.reference ??
+                  translate(locale, "home.sauhNoReference")}
+              </small>
+            </div>
+            {sauhStatus === "loading" && (
+              <p className="sauh-loading">Mengambil renungan Sauh Bagi Jiwa…</p>
             )}
-            {selected && (
-              <button
-                className="quiet-button"
-                type="button"
-                onClick={() => {
-                  const next = dailyMode === "verse" ? "reflection" : "verse";
-                  setDailyMode(next);
-                  localStorage.setItem("gys-daily-sauh-mode-v1", next);
-                }}
-              >
-                {dailyMode === "verse" ? "Baca renungan" : "Tampilkan ayat"}
-              </button>
+            {sauhStatus === "error" && (
+              <div className="sauh-offline-state">
+                <strong>{translate(locale, "home.sauhUnavailable")}</strong>
+                <small>{translate(locale, "home.sauhOfflineHint")}</small>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => loadSauh()}
+                >
+                  {translate(locale, "home.sauhRetry")}
+                </button>
+              </div>
             )}
+            {selected && sauhStatus === "ready" && (
+              <div className="sauh-card-body">
+                <p className="sauh-title">{selected.title}</p>
+                <blockquote>“{dailyText}”</blockquote>
+                {!selectTodaySauh([selected]).length && (
+                  <small className="sauh-source">
+                    Konten tersimpan ·{" "}
+                    {new Date(selected.updatedAt).toLocaleDateString(locale)}
+                  </small>
+                )}
+              </div>
+            )}
+            <div className="verse-actions">
+              {selected && (
+                <Link className="quiet-button" to="/sauh">
+                  Baca Lebih Lanjut →
+                </Link>
+              )}
+            </div>
           </div>
         </article>
         <article className="continue-panel">
           <div className="section-heading">
             <span>{translate(locale, "home.continue")}</span>
           </div>
-          {continueActivity?.kind === "bible" && (
-            <Link className="continue-item" to="/bible">
-              <div className="item-icon">
-                <Icon name="book" size={21} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <strong>
-                  {continueActivity.value.book} {continueActivity.value.chapter}
-                </strong>
-                <span>Alkitab Terjemahan Baru</span>
-              </div>
-              <Icon name="arrow" size={17} />
-            </Link>
-          )}
-          {continueActivity?.kind === "hymn" && (
-            <Link
-              className="continue-item"
-              to={`/kidung/${continueActivity.value.id}`}
-            >
-              <div className="item-icon music-icon">
-                <Icon name="music" size={21} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <strong>{continueActivity.value.title}</strong>
-                <span>
-                  Kidung Rohani ·{" "}
-                  {String(continueActivity.value.number).padStart(3, "0")}
-                </span>
-              </div>
-              <Icon name="arrow" size={17} />
-            </Link>
-          )}
-          {!continueActivity && (
+          {hasActivity ? (
+            <div className="continue-grid">
+              {activity.bible && (
+                <Link className="continue-item" to="/bible">
+                  <div className="item-icon">
+                    <Icon name="book" size={20} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <strong>
+                      {activity.bible.book} {activity.bible.chapter}
+                    </strong>
+                    <span>Alkitab Terjemahan Baru</span>
+                  </div>
+                  <Icon name="arrow" size={16} />
+                </Link>
+              )}
+              {activity.hymn && (
+                <Link
+                  className="continue-item"
+                  to={`/kidung/${activity.hymn.id}`}
+                >
+                  <div className="item-icon music-icon">
+                    <Icon name="music" size={20} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <strong>{activity.hymn.title}</strong>
+                    <span>
+                      Kidung Rohani ·{" "}
+                      {String(activity.hymn.number).padStart(3, "0")}
+                    </span>
+                  </div>
+                  <Icon name="arrow" size={16} />
+                </Link>
+              )}
+            </div>
+          ) : (
             <div className="empty-inline">
               <p>Belum ada bacaan terakhir.</p>
-              <div>
-                <Link className="quiet-button" to="/bible">
-                  Buka Alkitab
-                </Link>
-                <Link className="quiet-button" to="/kidung">
-                  Pilih Kidung
-                </Link>
-              </div>
             </div>
           )}
         </article>
         <section
-          className="home-media-section"
+          className="home-media-section home-suara-section"
           aria-labelledby="home-suara-heading"
         >
           <div className="section-title-row">
@@ -1461,32 +2237,126 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {suaraStatus === "ready" && (
             <div className="home-suara-shelf">
-              {suara.slice(0, 4).map((post) => (
+              {suara.slice(0, 8).map((post) => (
                 <Link
                   className="suara-library-item"
                   key={post.id}
                   to={`/suara/${encodeURIComponent(post.id)}`}
                 >
-                  {post.imageUrl ? (
-                    <img
-                      src={post.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <span
-                      className="suara-thumbnail-fallback"
-                      aria-hidden="true"
-                    >
-                      SS
+                  <div className="suara-card-media">
+                    {post.imageUrl ? (
+                      <LazyImage
+                        className="suara-thumb-img"
+                        wrapperClassName="suara-library-thumb"
+                        src={post.imageUrl}
+                        alt={`Cover ${post.title}`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span
+                        className="suara-thumbnail-fallback"
+                        aria-hidden="true"
+                      >
+                        SS
+                      </span>
+                    )}
+                    <div className="suara-media-overlay" />
+                  </div>
+                  <div className="suara-card-content">
+                    <span className="suara-date">
+                      {new Date(post.publishedAt).toLocaleDateString(locale, {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </span>
-                  )}
-                  <span>
                     <strong>{post.title}</strong>
                     <small>{post.excerpt}</small>
-                    <em>{new Date(post.publishedAt).toLocaleDateString()}</em>
-                  </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+        <section
+          className="home-media-section"
+          aria-labelledby="home-literature-heading"
+        >
+          <div className="section-title-row">
+            <div>
+              <p className="date-line">Bacaan &amp; Pembinaan</p>
+              <h2 id="home-literature-heading">Literatur Terbaru</h2>
+            </div>
+            <Link className="text-button" to="/literatur">
+              Lihat semua →
+            </Link>
+          </div>
+          {literatureStatus === "loading" && (
+            <div className="loading-panel" role="status">
+              Mengambil literatur…
+            </div>
+          )}
+          {literatureStatus === "error" && (
+            <div className="error-panel" role="alert">
+              <strong>Literatur belum tersedia.</strong>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => loadLiterature()}
+              >
+                Coba lagi
+              </button>
+            </div>
+          )}
+          {literatureStatus === "ready" && (
+            <div className="home-suara-shelf home-literature-shelf">
+              {literature.slice(0, 8).map((item) => (
+                <Link
+                  className="suara-library-item"
+                  key={item.id}
+                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                >
+                  <div className="suara-card-media">
+                    {item.imageUrl ? (
+                      <LazyImage
+                        className="suara-thumb-img"
+                        wrapperClassName="suara-library-thumb"
+                        src={item.imageUrl}
+                        alt={`Cover ${item.title}`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span
+                        className="suara-thumbnail-fallback"
+                        aria-hidden="true"
+                      >
+                        {item.category.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                    <div className="suara-media-overlay" />
+                  </div>
+                  <div className="suara-card-content">
+                    <span className="suara-date">
+                      {literatureCategoryLabels[item.category] ?? item.category}{" "}
+                      ·{" "}
+                      {item.publishedAt
+                        ? new Date(item.publishedAt).toLocaleDateString(
+                            locale,
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )
+                        : "Arsip TJC"}
+                    </span>
+                    <strong>{item.title}</strong>
+                    {item.description ? (
+                      <small>{item.description}</small>
+                    ) : (
+                      <small>{item.format.toUpperCase()} · TJC Indonesia</small>
+                    )}
+                  </div>
                 </Link>
               ))}
             </div>

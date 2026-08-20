@@ -11,27 +11,27 @@ import {
 
 describe("Bible split controller geometry & sync scrolling", () => {
   it("keeps the ratio inside the readable pane bounds", () => {
-    expect(clampSplitRatio(20)).toBe(42);
-    expect(clampSplitRatio(58)).toBe(58);
-    expect(clampSplitRatio(90)).toBe(72);
-    expect(clampSplitRatio(Number.NaN)).toBe(58);
+    expect(clampSplitRatio(10)).toBe(20);
+    expect(clampSplitRatio(50)).toBe(50);
+    expect(clampSplitRatio(90)).toBe(80);
+    expect(clampSplitRatio(Number.NaN)).toBe(50);
   });
 
   it("maps pointer movement to a bounded percentage", () => {
-    const rect = { left: 100, width: 800 } as DOMRect;
-    expect(splitRatioFromPointer(100, rect)).toBe(42);
-    expect(splitRatioFromPointer(564, rect)).toBe(58);
-    expect(splitRatioFromPointer(900, rect)).toBe(72);
+    const rect = { left: 100, width: 800, top: 0, height: 600 } as DOMRect;
+    expect(splitRatioFromPointer(100, 0, rect)).toBe(20);
+    expect(splitRatioFromPointer(500, 0, rect)).toBe(50);
+    expect(splitRatioFromPointer(900, 0, rect)).toBe(80);
   });
 
   it("supports keyboard-friendly ratio adjustments", () => {
-    expect(adjustSplitRatio(58, -2)).toBe(56);
-    expect(adjustSplitRatio(42, -2)).toBe(42);
-    expect(adjustSplitRatio(72, 2)).toBe(72);
+    expect(adjustSplitRatio(50, -2)).toBe(48);
+    expect(adjustSplitRatio(20, -2)).toBe(20);
+    expect(adjustSplitRatio(80, 2)).toBe(80);
   });
 
   it("uses the default when a storage key is missing instead of treating null as zero", () => {
-    expect(readStoredSplitRatio({ getItem: () => null })).toBe(58);
+    expect(readStoredSplitRatio({ getItem: () => null })).toBe(50);
     expect(readStoredSplitRatio({ getItem: () => "64" })).toBe(64);
   });
 

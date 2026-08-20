@@ -716,6 +716,23 @@ function HymnDetail({
     return ((initialTranspose % 12) + 12) % 12;
   });
   const [accidental, setAccidental] = useState<"sharp" | "flat">("sharp");
+  const [capo, setCapo] = useState(0);
+  const [viewScope, setViewScope] = useState<"all" | "verse">(() => {
+    if (typeof window === "undefined") return "verse";
+    return (
+      (localStorage.getItem("gys-hymn-view-scope") as "all" | "verse") ??
+      "verse"
+    );
+  });
+  const updateViewScope = (scope: "all" | "verse") => {
+    setViewScope(scope);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("gys-hymn-view-scope", scope);
+    }
+  };
+  const [autoScrollActive, setAutoScrollActive] = useState(false);
+  const [autoScrollSpeed, setAutoScrollSpeed] = useState(2);
+  const autoScrollTimer = useRef<number | undefined>(undefined);
   const [typography, setTypography] = useState<HymnTypography>(() =>
     readHymnTypography(songId),
   );
@@ -948,6 +965,42 @@ function HymnDetail({
       ),
     [chordDocument, chordLayout, safeVerseIndex, lyricText],
   );
+  const allVersesChordLines = useMemo(() => {
+    if (!chordDocument || !chordsVisible) return [];
+    return verses.map((verseText, vIdx) => {
+      const lines = verseText.split("\n");
+      return matchChordLinesToLyrics(lines, chordDocument, chordLayout, vIdx);
+    });
+  }, [chordDocument, chordLayout, chordsVisible, verses]);
+
+  useEffect(() => {
+    if (!autoScrollActive) {
+      if (autoScrollTimer.current)
+        cancelAnimationFrame(autoScrollTimer.current);
+      return;
+    }
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = Math.min(100, now - last) / 1000;
+      last = now;
+      const px = autoScrollSpeed * 20 * dt;
+      window.scrollBy({ top: px, behavior: "auto" });
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 10
+      ) {
+        setAutoScrollActive(false);
+        return;
+      }
+      autoScrollTimer.current = requestAnimationFrame(step);
+    };
+    autoScrollTimer.current = requestAnimationFrame(step);
+    return () => {
+      if (autoScrollTimer.current)
+        cancelAnimationFrame(autoScrollTimer.current);
+    };
+  }, [autoScrollActive, autoScrollSpeed]);
+
   useLayoutEffect(() => {
     if (viewerMode !== "lyrics") return;
     const element = lyricsRef.current;
@@ -1013,11 +1066,11 @@ function HymnDetail({
           page,
           markers.map((marker) => ({
             ...marker,
-            chord: transposeChord(marker.chord, transpose, accidental),
+            chord: transposeChord(marker.chord, transpose - capo, accidental),
           })),
         ]),
       ),
-    [accidental, chordOverlays, transpose],
+    [accidental, chordOverlays, transpose, capo],
   );
   const musicMidiRef = musicLock
     ? findMusicAsset(musicLock, "midi", item?.midiPath ?? "")
@@ -1639,6 +1692,78 @@ function HymnDetail({
               </span>
             </button>
           </div>
+
+          <div className="hymn-segmented-toolbar">
+            {viewerMode === "lyrics" && (
+              <div
+                className="hymn-scope-pill-group"
+                role="group"
+                aria-label="Cakupan Bait"
+              >
+                <button
+                  type="button"
+                  className={`hymn-scope-pill-btn${viewScope === "all" ? " is-active" : ""}`}
+                  onClick={() => updateViewScope("all")}
+                  title="Tampilkan semua bait berurutan"
+                  aria-pressed={viewScope === "all"}
+                >
+                  Semua
+                </button>
+                <button
+                  type="button"
+                  className={`hymn-scope-pill-btn${viewScope === "verse" ? " is-active" : ""}`}
+                  onClick={() => updateViewScope("verse")}
+                  title="Tampilkan bait per bait"
+                  aria-pressed={viewScope === "verse"}
+                >
+                  Bait {safeVerseIndex + 1}
+                </button>
+              </div>
+            )}
+
+            <div className="hymn-autoscroll-control">
+              <button
+                type="button"
+                className={`quiet-button hymn-autoscroll-btn${autoScrollActive ? " is-active" : ""}`}
+                onClick={() => setAutoScrollActive((a) => !a)}
+                title={
+                  autoScrollActive
+                    ? "Hentikan Gulir Otomatis"
+                    : "Mulai Gulir Otomatis"
+                }
+                aria-label={
+                  autoScrollActive
+                    ? "Hentikan Gulir Otomatis"
+                    : "Mulai Gulir Otomatis"
+                }
+                aria-pressed={autoScrollActive}
+              >
+                <span className="hymn-action-icon" aria-hidden="true">
+                  <Icon name={autoScrollActive ? "pause" : "play"} size={16} />
+                </span>
+                <span className="hymn-action-label">
+                  {autoScrollActive
+                    ? `Gulir ${autoScrollSpeed}×`
+                    : "Auto Scroll"}
+                </span>
+              </button>
+              {autoScrollActive && (
+                <select
+                  className="hymn-autoscroll-speed-select"
+                  value={autoScrollSpeed}
+                  onChange={(e) => setAutoScrollSpeed(Number(e.target.value))}
+                  aria-label="Kecepatan gulir otomatis"
+                >
+                  <option value={1}>1×</option>
+                  <option value={2}>2×</option>
+                  <option value={3}>3×</option>
+                  <option value={4}>4×</option>
+                  <option value={5}>5×</option>
+                </select>
+              )}
+            </div>
+          </div>
+
           <details className="hymn-more-actions" name="hymn-text-toolbar-menu">
             <summary
               className="hymn-more-actions-summary"
@@ -1817,8 +1942,13 @@ function HymnDetail({
                 ]}
               />
               <div className="transpose-control">
-                <span>Nada tampil · {renderedKey}</span>
-                <div>
+                <span>
+                  Nada tampil · {renderedKey}
+                  {capo > 0
+                    ? ` (Bentuk: ${chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental)})`
+                    : ""}
+                </span>
+                <div className="transpose-btn-group">
                   <button
                     type="button"
                     onClick={() => updateTranspose(transpose - 1)}
@@ -1834,6 +1964,48 @@ function HymnDetail({
                   >
                     +
                   </button>
+                  {transpose !== 0 && (
+                    <button
+                      type="button"
+                      className="transpose-reset-btn"
+                      onClick={() => updateTranspose(0)}
+                      title="Reset Transpose"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="capo-control">
+                <span>Capo · {capo === 0 ? "Tanpa Capo" : `Fret ${capo}`}</span>
+                <div className="capo-btn-group">
+                  <button
+                    type="button"
+                    onClick={() => setCapo((c) => Math.max(0, c - 1))}
+                    disabled={capo <= 0}
+                    aria-label="Turunkan Capo"
+                  >
+                    −
+                  </button>
+                  <strong>{capo === 0 ? "0" : capo}</strong>
+                  <button
+                    type="button"
+                    onClick={() => setCapo((c) => Math.min(11, c + 1))}
+                    disabled={capo >= 11}
+                    aria-label="Naikkan Capo"
+                  >
+                    +
+                  </button>
+                  {capo > 0 && (
+                    <button
+                      type="button"
+                      className="transpose-reset-btn"
+                      onClick={() => setCapo(0)}
+                      title="Matikan Capo"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
               <div
@@ -1895,40 +2067,82 @@ function HymnDetail({
             </div>
           </details>
         </div>
-        {viewerMode === "lyrics" && (
-          <article
-            className={`lyrics-sheet verse-enter is-${transitionDirection}${gestureActive ? " is-pinching" : ""}`}
-            key={`${item.id}-${safeVerseIndex}`}
-            ref={lyricsRef}
-            aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
-            style={{
-              fontSize: `${fitFontSize}px`,
-              lineHeight: typography.lineHeight,
-            }}
-            data-autofit-font-size={fitFontSize}
-            onPointerDown={onLyricsPointerDown}
-            onPointerMove={onLyricsPointerMove}
-            onPointerUp={finishLyricsPointer}
-            onPointerCancel={finishLyricsPointer}
-          >
-            {lyricLines.map((line, index) => {
-              const chordLine = chordsVisible ? chordLines[index] : undefined;
-              return (
-                <p key={`${index}-${line}`}>
-                  {chordLine && chordLine.chords.length > 0 ? (
-                    <ChordCapability
-                      lines={[chordLine]}
-                      transpose={transpose}
-                      accidental={accidental}
-                    />
-                  ) : (
-                    line || " "
-                  )}
-                </p>
-              );
-            })}
-          </article>
-        )}
+        {viewerMode === "lyrics" &&
+          (viewScope === "all" ? (
+            <div className="hymn-all-verses-container">
+              {verses.map((verseText, vIdx) => {
+                const vLines = verseText.split("\n");
+                const vChordLines = allVersesChordLines[vIdx] ?? [];
+                return (
+                  <article
+                    key={`${item.id}-verse-${vIdx}`}
+                    className="lyrics-sheet is-continuous"
+                    style={{
+                      fontSize: `${fitFontSize}px`,
+                      lineHeight: typography.lineHeight,
+                    }}
+                  >
+                    <div className="hymn-verse-header">
+                      <span className="hymn-verse-number-badge">
+                        Bait {vIdx + 1}
+                      </span>
+                    </div>
+                    {vLines.map((line, index) => {
+                      const chordLine = chordsVisible
+                        ? vChordLines[index]
+                        : undefined;
+                      return (
+                        <p key={`${index}-${line}`}>
+                          {chordLine && chordLine.chords.length > 0 ? (
+                            <ChordCapability
+                              lines={[chordLine]}
+                              transpose={transpose - capo}
+                              accidental={accidental}
+                            />
+                          ) : (
+                            line || " "
+                          )}
+                        </p>
+                      );
+                    })}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <article
+              className={`lyrics-sheet verse-enter is-${transitionDirection}${gestureActive ? " is-pinching" : ""}`}
+              key={`${item.id}-${safeVerseIndex}`}
+              ref={lyricsRef}
+              aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
+              style={{
+                fontSize: `${fitFontSize}px`,
+                lineHeight: typography.lineHeight,
+              }}
+              data-autofit-font-size={fitFontSize}
+              onPointerDown={onLyricsPointerDown}
+              onPointerMove={onLyricsPointerMove}
+              onPointerUp={finishLyricsPointer}
+              onPointerCancel={finishLyricsPointer}
+            >
+              {lyricLines.map((line, index) => {
+                const chordLine = chordsVisible ? chordLines[index] : undefined;
+                return (
+                  <p key={`${index}-${line}`}>
+                    {chordLine && chordLine.chords.length > 0 ? (
+                      <ChordCapability
+                        lines={[chordLine]}
+                        transpose={transpose - capo}
+                        accidental={accidental}
+                      />
+                    ) : (
+                      line || " "
+                    )}
+                  </p>
+                );
+              })}
+            </article>
+          ))}
         {chordsVisible && chordStatus === "loading" && (
           <div className="loading-panel" role="status">
             {translate(locale, "kidung.chordVerifying")}
@@ -2004,36 +2218,48 @@ function HymnDetail({
               disabled={!prev}
               onClick={() => prev && navigate(`/kidung/${prev.id}`)}
               aria-label={translate(locale, "kidung.previous")}
+              title="Lagu Sebelumnya"
             >
               <Icon name="skipPrevious" size={19} />
             </button>
-            <button
-              type="button"
-              disabled={safeVerseIndex === 0}
-              onClick={() => changeVerse(-1)}
-              aria-label={translate(locale, "kidung.previousVerse")}
-            >
-              <Icon name="chevronLeft" size={19} />
-            </button>
-            <span>
-              {translate(locale, "kidung.verseCount", {
-                current: safeVerseIndex + 1,
-                total: verses.length,
-              })}
-            </span>
-            <button
-              type="button"
-              disabled={safeVerseIndex >= verses.length - 1}
-              onClick={() => changeVerse(1)}
-              aria-label={translate(locale, "kidung.nextVerse")}
-            >
-              <Icon name="chevronRight" size={19} />
-            </button>
+            {viewScope === "verse" ? (
+              <>
+                <button
+                  type="button"
+                  disabled={safeVerseIndex === 0}
+                  onClick={() => changeVerse(-1)}
+                  aria-label={translate(locale, "kidung.previousVerse")}
+                  title="Bait Sebelumnya"
+                >
+                  <Icon name="chevronLeft" size={19} />
+                </button>
+                <span>
+                  {translate(locale, "kidung.verseCount", {
+                    current: safeVerseIndex + 1,
+                    total: verses.length,
+                  })}
+                </span>
+                <button
+                  type="button"
+                  disabled={safeVerseIndex >= verses.length - 1}
+                  onClick={() => changeVerse(1)}
+                  aria-label={translate(locale, "kidung.nextVerse")}
+                  title="Bait Berikutnya"
+                >
+                  <Icon name="chevronRight" size={19} />
+                </button>
+              </>
+            ) : (
+              <span className="hymn-all-verses-summary">
+                {verses.length} Bait Lengkap
+              </span>
+            )}
             <button
               type="button"
               disabled={!next}
               onClick={() => next && navigate(`/kidung/${next.id}`)}
               aria-label={translate(locale, "kidung.next")}
+              title="Lagu Berikutnya"
             >
               <Icon name="skipNext" size={19} />
             </button>

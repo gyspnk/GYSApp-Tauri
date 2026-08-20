@@ -207,15 +207,56 @@ export const BibleVerseSchema = z.object({
   verse: z.number().int().positive(),
   text: z.string().min(1),
 });
+export const BibleParallelPassageSchema = z.object({
+  text: z.string().min(1),
+  start: z
+    .object({
+      book: z.string().min(1),
+      chapter: z.number().int().positive(),
+      verse: z.number().int().positive(),
+    })
+    .optional(),
+  end: z
+    .object({
+      book: z.string().min(1),
+      chapter: z.number().int().positive(),
+      verse: z.number().int().positive(),
+    })
+    .optional(),
+});
+export type BibleParallelPassage = z.infer<typeof BibleParallelPassageSchema>;
+
+export const BiblePericopeSchema = z.object({
+  id: z.string().min(1),
+  book: z.string().min(1),
+  chapter: z.number().int().positive(),
+  verse: z.number().int().nonnegative(),
+  title: z.string().min(1),
+  parallels: z.array(BibleParallelPassageSchema).optional(),
+});
+export const BibleCrossReferenceSchema = z.object({
+  book: z.string().min(1),
+  chapter: z.number().int().positive(),
+  verse: z.number().int().positive(),
+  endBook: z.string().min(1).optional(),
+  endChapter: z.number().int().positive().optional(),
+  endVerse: z.number().int().positive().optional(),
+});
 export const BibleReaderPackSchema = z.object({
   version: z.literal(1),
   translation: z.string().min(1),
   source: z.string().min(1),
   books: z.array(BibleBookSchema).min(1),
   verses: z.array(BibleVerseSchema).min(1),
+  pericopes: z.array(BiblePericopeSchema).optional(),
+  crossRefs: z
+    .record(z.string(), z.array(BibleCrossReferenceSchema))
+    .optional(),
 });
 export type BibleBook = z.infer<typeof BibleBookSchema>;
 export type BibleVerse = z.infer<typeof BibleVerseSchema>;
+export type BiblePericope = z.infer<typeof BiblePericopeSchema>;
+export type BibleCrossReference = z.infer<typeof BibleCrossReferenceSchema>;
 export type BibleReaderPack = z.infer<typeof BibleReaderPackSchema>;
 
 export const OnlineContentSchema = z.object({

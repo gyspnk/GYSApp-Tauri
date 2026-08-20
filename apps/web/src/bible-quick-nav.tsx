@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { BibleBook, BibleVerse } from "@gys/contracts";
 import { hapticTick } from "./haptics.js";
 import { translate, type Locale } from "./i18n.js";
@@ -91,19 +84,11 @@ export function BibleQuickNavOverlay({
   books: readonly BibleBook[];
   dragState: QuickNavDragState;
 }) {
-  const bookListRef = useRef<HTMLDivElement | null>(null);
-  const chapterListRef = useRef<HTMLDivElement | null>(null);
-  const verseListRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll the active column to keep the selected item in view
   useEffect(() => {
-    const activeRef =
-      dragState.activeColumn === "book"
-        ? bookListRef
-        : dragState.activeColumn === "chapter"
-          ? chapterListRef
-          : verseListRef;
-    const container = activeRef.current;
+    const container = listRef.current;
     if (!container) return;
     const selectedEl = container.querySelector<HTMLElement>(".is-selected");
     if (selectedEl) {
@@ -126,6 +111,31 @@ export function BibleQuickNavOverlay({
         return "Menggeser Ayat";
     }
   }, [dragState.activeColumn]);
+  const items =
+    dragState.activeColumn === "book"
+      ? books.map((book) => ({ value: book.id, label: book.name }))
+      : Array.from(
+          {
+            length:
+              dragState.activeColumn === "chapter"
+                ? dragState.totalChapters
+                : Math.max(1, dragState.totalVerses),
+          },
+          (_, index) => ({ value: index + 1, label: String(index + 1) }),
+        );
+  const selected =
+    dragState.activeColumn === "book"
+      ? dragState.bookId
+      : dragState.activeColumn === "chapter"
+        ? dragState.chapter
+        : dragState.verse;
+  const availableRows = Math.max(
+    4,
+    Math.floor(
+      ((typeof window === "undefined" ? 800 : window.innerHeight) - 210) / 34,
+    ),
+  );
+  const columns = Math.max(1, Math.ceil(items.length / availableRows));
 
   return (
     <div
@@ -140,68 +150,30 @@ export function BibleQuickNavOverlay({
           {dragState.verse > 0 ? `:${dragState.verse}` : ""}
         </strong>
         <span>{columnLabel}</span>
-        <small>Lepaskan untuk membuka</small>
+        <small>
+          {dragState.activeColumn === "verse"
+            ? "Lepaskan untuk memilih ayat"
+            : "Lepas untuk ayat 1 · diam 1 detik untuk lanjut"}
+        </small>
       </div>
 
-      <div
-        className="quick-nav-columns-container"
-        style={{
-          width: "min(640px, 100%)",
-          height: "min(340px, calc(100vh - 180px))",
-        }}
-      >
-        {/* Kolom 1: Kitab */}
-        <div
-          className={`quick-nav-column is-book${dragState.activeColumn === "book" ? " is-active-column" : ""}`}
-        >
-          <div className="quick-nav-column-header">Kitab</div>
-          <div className="quick-nav-column-list" ref={bookListRef}>
-            {books.map((b) => (
+      <div className="quick-nav-columns-container">
+        <div className="quick-nav-column is-active-column">
+          <div className="quick-nav-column-header">{columnLabel}</div>
+          <div
+            className="quick-nav-column-list"
+            ref={listRef}
+            style={{
+              gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+            }}
+          >
+            {items.map((item) => (
               <div
-                key={b.id}
-                className={`quick-nav-item${b.id === dragState.bookId ? " is-selected" : ""}`}
+                key={item.value}
+                data-quick-nav-value={item.value}
+                className={`quick-nav-item${item.value === selected ? " is-selected" : ""}`}
               >
-                {b.name}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Kolom 2: Pasal */}
-        <div
-          className={`quick-nav-column is-chapter${dragState.activeColumn === "chapter" ? " is-active-column" : ""}`}
-        >
-          <div className="quick-nav-column-header">Pasal</div>
-          <div className="quick-nav-column-list" ref={chapterListRef}>
-            {Array.from(
-              { length: dragState.totalChapters },
-              (_, i) => i + 1,
-            ).map((ch) => (
-              <div
-                key={ch}
-                className={`quick-nav-item${ch === dragState.chapter ? " is-selected" : ""}`}
-              >
-                {ch}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Kolom 3: Ayat */}
-        <div
-          className={`quick-nav-column is-verse${dragState.activeColumn === "verse" ? " is-active-column" : ""}`}
-        >
-          <div className="quick-nav-column-header">Ayat</div>
-          <div className="quick-nav-column-list" ref={verseListRef}>
-            {Array.from(
-              { length: Math.max(1, dragState.totalVerses) },
-              (_, i) => i + 1,
-            ).map((v) => (
-              <div
-                key={v}
-                className={`quick-nav-item${v === dragState.verse ? " is-selected" : ""}`}
-              >
-                {v}
+                {item.label}
               </div>
             ))}
           </div>
@@ -370,7 +342,8 @@ export function BiblePickerModal({
             className={`bible-picker-tab${activeTab === "book" ? " is-active" : ""}`}
             onClick={() => setActiveTab("book")}
           >
-            Kitab: <strong>{currentBook?.name ?? "Pilih"}</strong>
+            {translate(locale, "bible.book")}:{" "}
+            <strong>{currentBook?.name ?? "Pilih"}</strong>
           </button>
           <button
             type="button"
@@ -379,7 +352,8 @@ export function BiblePickerModal({
             className={`bible-picker-tab${activeTab === "chapter" ? " is-active" : ""}`}
             onClick={() => setActiveTab("chapter")}
           >
-            Pasal: <strong>{selectedChapter}</strong>
+            {translate(locale, "bible.chapter")}:{" "}
+            <strong>{selectedChapter}</strong>
           </button>
           <button
             type="button"

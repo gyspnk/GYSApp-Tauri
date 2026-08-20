@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-18T16:14:44.291Z",
+  "generatedAt": "2026-08-20T16:14:10.271Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -13,8 +13,8 @@
     {
       "id": "bible-tb-reader",
       "path": "offline/bible/tb-reader.json",
-      "bytes": 7317700,
-      "sha256": "e5ebc8fc2351dde57029c02337ff7ccd912df3fe9165ef59c5eacb314db23421"
+      "bytes": 7939120,
+      "sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c"
     },
     {
       "id": "hymn-catalog",

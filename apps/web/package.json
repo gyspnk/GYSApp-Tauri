@@ -8,9 +8,18 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
+    "test:e2e:changed": "node ../../scripts/test-e2e-selective.mjs",
+    "test:e2e:smoke": "playwright test e2e/smoke.spec.ts",
+    "test:e2e:nav": "playwright test e2e/navigation-layout.spec.ts",
+    "test:e2e:bible": "playwright test -g \"Bible\"",
+    "test:e2e:hymn": "playwright test -g \"hymn|Kidung\"",
+    "test:e2e:home": "playwright test -g \"home|Sauh|Suara|literature\"",
+    "test:e2e:visual": "playwright test e2e/visual.spec.ts",
     "audit:workspace-export": "node ../../scripts/export-workspace-audit.mjs",
     "lint": "tsc -b --pretty false",
-    "dev": "vite"
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "serve": "vite preview --host 127.0.0.1 --port 4173"
   },
   "dependencies": {
     "@gys/contracts": "workspace:*",

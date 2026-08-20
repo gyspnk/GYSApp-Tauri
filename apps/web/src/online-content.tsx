@@ -2,10 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import type { Locale } from "./i18n.js";
-import { fetchSauh, selectTodaySauh, subscribeSauh } from "./sauh.js";
-import { fetchSuara } from "./suara.js";
+import {
+  fetchSauh,
+  getCachedSauh,
+  selectTodaySauh,
+  subscribeSauh,
+} from "./sauh.js";
+import { fetchSuara, getCachedSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { LazyImage } from "./lazy-image.js";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -34,10 +40,16 @@ export function SauhPage() {
     | { status: "loading" }
     | { status: "ready"; post: SauhPost }
     | { status: "error"; message: string }
-  >({ status: "loading" });
+  >(() => {
+    const cached = getCachedSauh();
+    const [post] = cached ? selectTodaySauh(cached) : [];
+    return post ? { status: "ready", post } : { status: "loading" };
+  });
 
   const load = useCallback((signal?: AbortSignal) => {
-    setState({ status: "loading" });
+    const cached = getCachedSauh();
+    const [cachedPost] = cached ? selectTodaySauh(cached) : [];
+    if (!cachedPost) setState({ status: "loading" });
     void fetchSauh(signal)
       .then(([post]) => {
         if (signal?.aborted) return;
@@ -96,12 +108,12 @@ export function SauhPage() {
           className={`online-article-card sauh-article${state.post.imageUrl ? " has-image" : ""}`}
         >
           {state.post.imageUrl && (
-            <img
+            <LazyImage
               className="online-article-image"
+              wrapperClassName="sauh-article-image-wrap"
               src={state.post.imageUrl}
               alt={`Ilustrasi ${state.post.title}`}
               loading="eager"
-              decoding="async"
             />
           )}
           <p className="date-line">Sauh Bagi Jiwa · sumber langsung TJC</p>
@@ -128,9 +140,15 @@ export function SuaraPage() {
     | { status: "loading" }
     | { status: "ready"; posts: SuaraSejatiPost[] }
     | { status: "error" }
-  >({ status: "loading" });
+  >(() => {
+    const cached = getCachedSuara();
+    return cached && cached.length
+      ? { status: "ready", posts: cached }
+      : { status: "loading" };
+  });
   const load = (signal?: AbortSignal) => {
-    setState({ status: "loading" });
+    const cached = getCachedSuara();
+    if (!cached || !cached.length) setState({ status: "loading" });
     void fetchSuara(signal)
       .then((posts) => {
         if (!signal?.aborted) setState({ status: "ready", posts });
@@ -186,23 +204,33 @@ export function SuaraPage() {
               key={post.id}
               to={`/suara/${encodeURIComponent(post.id)}`}
             >
-              {post.imageUrl ? (
-                <img
-                  src={post.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <span className="suara-thumbnail-fallback" aria-hidden="true">
-                  SS
+              <div className="suara-card-media">
+                {post.imageUrl ? (
+                  <LazyImage
+                    className="suara-thumb-img"
+                    wrapperClassName="suara-library-thumb"
+                    src={post.imageUrl}
+                    alt={`Cover ${post.title}`}
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="suara-thumbnail-fallback" aria-hidden="true">
+                    SS
+                  </span>
+                )}
+                <div className="suara-media-overlay" />
+              </div>
+              <div className="suara-card-content">
+                <span className="suara-date">
+                  {new Date(post.publishedAt).toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </span>
-              )}
-              <span>
                 <strong>{post.title}</strong>
                 <small>{post.excerpt}</small>
-                <em>{new Date(post.publishedAt).toLocaleDateString()}</em>
-              </span>
+              </div>
             </Link>
           ))}
         </div>
@@ -232,15 +260,19 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
         setState({ status: "ready", post, body: article.body });
       } catch (error) {
         if (controller.signal.aborted) return;
-        recordDiagnostic("error", "content.article", error);
-        setState({
-          status: "error",
-          post,
-          message:
-            error instanceof Error
-              ? error.message
-              : "Artikel belum dapat dimuat di aplikasi",
-        });
+        recordDiagnostic("warn", "content.article", error);
+        if (post.excerpt) {
+          setState({ status: "ready", post, body: post.excerpt });
+        } else {
+          setState({
+            status: "error",
+            post,
+            message:
+              error instanceof Error
+                ? error.message
+                : "Artikel belum dapat dimuat di aplikasi",
+          });
+        }
       }
     })().catch((error: unknown) => {
       if (controller.signal.aborted) return;
@@ -295,12 +327,12 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
           </p>
           <h1>{state.post.title}</h1>
           {state.post.imageUrl && (
-            <img
+            <LazyImage
               className="online-article-image"
+              wrapperClassName="suara-article-image-wrap"
               src={state.post.imageUrl}
               alt={`Thumbnail ${state.post.title}`}
               loading="eager"
-              decoding="async"
             />
           )}
           <Paragraphs text={state.body ?? state.post.excerpt} />

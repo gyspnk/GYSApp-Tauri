@@ -204,10 +204,17 @@ export async function fetchSuara(
   if (feedInFlight) return [...(await waitFor(feedInFlight, signal))];
   const shared = (async () => {
     const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+    const isCrossPortLocalhost =
+      typeof window !== "undefined" &&
+      Boolean(
+        base &&
+        (base.includes("127.0.0.1") || base.includes("localhost")) &&
+        !base.includes(`:${window.location.port}`),
+      );
     const networkCandidates = [
-      base
-        ? `${base.replace(/\/$/, "")}/api/v1/content/suara-sejati`
-        : undefined,
+      isCrossPortLocalhost
+        ? undefined
+        : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`,
       API_URL,
     ].filter((value): value is string => Boolean(value));
     const candidates =
@@ -249,4 +256,11 @@ export async function fetchSuara(
     },
   );
   return [...(await waitFor(tracked, signal))];
+}
+
+export function getCachedSuara(): SuaraSejatiPost[] | undefined {
+  if (feedCache && feedCache.items.length) {
+    return [...feedCache.items];
+  }
+  return undefined;
 }

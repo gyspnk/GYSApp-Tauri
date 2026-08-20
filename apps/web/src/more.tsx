@@ -1,4 +1,9 @@
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { type AccountProfile, type AssetManifestV1 } from "@gys/contracts";
 import {
@@ -41,6 +46,12 @@ import {
   distributedDownloadsConfigured,
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
+import {
+  ACCENT_PRESETS,
+  getAccentColor,
+  setAccentColor,
+  subscribeAccentColor,
+} from "./accent-color.js";
 
 type PackManifest = {
   version: number;
@@ -342,6 +353,11 @@ export function MorePage({
   const [distributedError, setDistributedError] = useState<string>();
   const [reminderTime, setReminderTime] = useState(
     () => localStorage.getItem("gys-reminder-time-v1") ?? "",
+  );
+  const accentColor = useSyncExternalStore(
+    subscribeAccentColor,
+    getAccentColor,
+    getAccentColor,
   );
   const changeTheme = (next: ShellTheme) => {
     setTheme(next);
@@ -981,6 +997,62 @@ export function MorePage({
                     <span className="pill-label">{item.label}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="appearance-section">
+              <label className="section-subtitle">Warna Aksen</label>
+              <div
+                className="accent-palette-grid"
+                role="radiogroup"
+                aria-label="Pilih Warna Aksen"
+              >
+                {ACCENT_PRESETS.map((preset) => {
+                  const active = accentColor === preset.color;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      className={`accent-palette-item${active ? " is-active" : ""}`}
+                      onClick={() => setAccentColor(preset.color)}
+                      aria-label={`Warna aksen ${preset.name}`}
+                      title={preset.name}
+                    >
+                      <span
+                        className="accent-swatch-circle"
+                        style={{ backgroundColor: preset.color }}
+                      />
+                      <span className="accent-swatch-name">{preset.name}</span>
+                    </button>
+                  );
+                })}
+                <label
+                  className={`accent-palette-item is-custom${!ACCENT_PRESETS.some((p) => p.color === accentColor) ? " is-active" : ""}`}
+                  title="Pilih Warna Kustom"
+                >
+                  <input
+                    type="color"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="sr-only"
+                    aria-label="Pilih warna aksen kustom"
+                  />
+                  <span
+                    className="accent-swatch-circle is-custom-circle"
+                    style={{
+                      backgroundColor: !ACCENT_PRESETS.some(
+                        (p) => p.color === accentColor,
+                      )
+                        ? accentColor
+                        : "transparent",
+                    }}
+                  >
+                    🎨
+                  </span>
+                  <span className="accent-swatch-name">Kustom</span>
+                </label>
               </div>
             </div>
 

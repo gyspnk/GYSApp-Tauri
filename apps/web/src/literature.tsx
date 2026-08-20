@@ -47,16 +47,14 @@ function literaturePdfUrl(sourceUrl: string): string {
     : sourceUrl;
 }
 
-const labels: Record<LiteratureCategory | "all", string> = {
-  all: "Semua koleksi",
-  kesaksian: "Kesaksian",
-  warta: "Warta Sejati",
-  panduan: "Panduan Alkitab",
-  renungan: "Renungan",
-  "pelita-kecil": "Pelita Kecil",
-  pujian: "Pujian",
-  buku: "Buku PDF",
-};
+import {
+  fetchLiteratureCatalog,
+  literatureCategoryLabels,
+} from "./literature-catalog.js";
+
+export { fetchLiteratureCatalog, literatureCategoryLabels };
+
+const labels = literatureCategoryLabels;
 const categoryOrder: LiteratureCategory[] = [
   "kesaksian",
   "warta",
@@ -72,70 +70,6 @@ const formatLabels: Record<LiteratureItem["format"], string> = {
   pdf: "PDF",
 };
 
-async function loadCatalog(signal: AbortSignal) {
-  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  const candidates = [
-    base ? `${base.replace(/\/$/, "")}/api/v1/content/literature` : undefined,
-    `${import.meta.env.BASE_URL}offline/literature.json`,
-  ].filter((value): value is string => Boolean(value));
-  let lastError: unknown;
-  for (const url of candidates) {
-    try {
-      const response = await fetch(url, {
-        signal,
-        // BFF literature serves max-age=300 + stale-while-revalidate; reuse
-        // the HTTP cache inside the freshness window (zero revalidation).
-        cache: "default",
-      });
-      if (!response.ok)
-        throw new Error(`Literature request failed: ${response.status}`);
-      const catalog = LiteratureCatalogSchema.parse(await response.json());
-      // The Worker can be refreshed independently from the checked-in pack.
-      // Merge the verified cover index from the same revision so a BFF catalog
-      // never regresses to generic covers while its HTML parser is updating.
-      if (url !== `${import.meta.env.BASE_URL}offline/literature.json`) {
-        try {
-          const snapshotResponse = await fetch(
-            `${import.meta.env.BASE_URL}offline/literature.json`,
-            { signal, cache: "force-cache" },
-          );
-          if (snapshotResponse.ok) {
-            const snapshot = LiteratureCatalogSchema.parse(
-              await snapshotResponse.json(),
-            );
-            const covers = new Map(
-              snapshot.items
-                .filter((item) => item.imageUrl)
-                .map((item) => [item.id, item.imageUrl]),
-            );
-            return {
-              ...catalog,
-              items: catalog.items.map((item) => ({
-                ...item,
-                ...(item.imageUrl || !covers.get(item.id)
-                  ? {}
-                  : { imageUrl: covers.get(item.id) }),
-              })),
-            };
-          }
-        } catch {
-          // A valid BFF catalog remains usable without its optional cover map.
-        }
-      }
-      return catalog;
-    } catch (error) {
-      if (signal.aborted) throw error;
-      lastError = error;
-    }
-  }
-  const failure =
-    lastError instanceof Error
-      ? lastError
-      : new Error("Literature catalog unavailable");
-  recordDiagnostic("error", "literature.catalog", failure);
-  throw failure;
-}
-
 type CatalogState =
   | { status: "loading" }
   | { status: "ready"; items: LiteratureItem[] }
@@ -145,15 +79,8 @@ function useLiteratureCatalog() {
   const [state, setState] = useState<CatalogState>({ status: "loading" });
   useEffect(() => {
     const controller = new AbortController();
-    void loadCatalog(controller.signal)
-      .then((catalog) =>
-        setState({
-          status: "ready",
-          items: [
-            ...new Map(catalog.items.map((item) => [item.id, item])).values(),
-          ],
-        }),
-      )
+    void fetchLiteratureCatalog(controller.signal)
+      .then((items) => setState({ status: "ready", items }))
       .catch(() => {
         if (!controller.signal.aborted) setState({ status: "error" });
       });
@@ -328,12 +255,8 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
     () =>
       getRecentLiteratureIds(12)
         .map((id) => items.find((item) => item.id === id))
-        .filter((item): item is LiteratureItem => Boolean(item))
-        .filter((item) => {
-          const entry = progressMap[item.id];
-          return isLiteratureProgressCompatible(entry, item);
-        }),
-    [items, progressMap],
+        .filter((item): item is LiteratureItem => Boolean(item)),
+    [items, progressRevision],
   );
 
   return (
@@ -435,7 +358,10 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     type="button"
                     aria-label={`Hapus ${item.title} dari terakhir dilihat`}
                     title="Hapus dari terakhir dilihat"
-                    onClick={() => removeLiteratureProgress(item.id)}
+                    onClick={() => {
+                      removeLiteratureProgress(item.id);
+                      setProgressRevision((r) => r + 1);
+                    }}
                   >
                     ×
                   </button>

@@ -32,7 +32,7 @@ test("Sauh shows a verified saved snapshot before slow live revalidation", async
           {
             id: 18,
             slug: "live-sauh",
-            date: "2026-08-19T00:00:00.000Z",
+            date: new Date().toISOString(),
             link: "https://tjc.org/id/gerakan-baca-alkitab/live-sauh/",
             title: { rendered: "Renungan hari ini" },
             content: {

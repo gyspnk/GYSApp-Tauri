@@ -16,6 +16,8 @@ import {
   BibleReaderPackSchema,
   SpeechEnginePreferenceSchema,
   type BibleBook,
+  type BibleCrossReference,
+  type BiblePericope,
   type BibleReaderPack,
 } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
@@ -49,7 +51,9 @@ import { hapticTick } from "./haptics.js";
 import {
   BiblePickerModal,
   BibleQuickNavOverlay,
+  scrubBookIndex,
   scrubChapterNumber,
+  scrubVerseNumber,
   type QuickNavDragState,
 } from "./bible-quick-nav.js";
 import {
@@ -58,6 +62,7 @@ import {
 } from "./distributed-asset-manager.js";
 import { loadBibleReaderPack } from "./bible-distributed.js";
 import { Icon } from "./icons.js";
+import { setBibleHeaderState } from "./bible-header-store.js";
 
 type PackState =
   | { status: "loading" }
@@ -197,11 +202,18 @@ function findNextTarget(
     : undefined;
 }
 
+const EMPTY_BOOKMARKS = new Set<string>();
+const EMPTY_HIGHLIGHTS: Record<string, string> = {};
+
 function ChapterPane({
   book,
   chapter,
   verses,
   translation,
+  pericopes,
+  crossRefs,
+  onOpenCrossRefs,
+  onSelectParallel,
   bookmarks,
   highlights,
   selectedVerseId,
@@ -219,6 +231,15 @@ function ChapterPane({
   chapter: number;
   verses: BibleVerse[];
   translation: string;
+  pericopes?: readonly BiblePericope[] | undefined;
+  crossRefs?:
+    Readonly<Record<string, readonly BibleCrossReference[]>> | undefined;
+  onOpenCrossRefs?: (
+    id: string,
+    refs: readonly BibleCrossReference[],
+    title: string,
+  ) => void;
+  onSelectParallel?: (bookId: number, chapter: number, verse: number) => void;
   bookmarks: Set<string>;
   highlights: Record<string, string>;
   selectedVerseId?: string | undefined;
@@ -232,20 +253,77 @@ function ChapterPane({
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
 }) {
+  const chapterPericopes = useMemo(() => {
+    if (!pericopes?.length) return [];
+    return pericopes.filter(
+      (p) => p.book === String(book.id) && p.chapter === chapter,
+    );
+  }, [pericopes, book.id, chapter]);
+
+  const pericopeByVerse = useMemo(() => {
+    const map = new Map<number, BiblePericope>();
+    for (const p of chapterPericopes) {
+      map.set(p.verse, p);
+    }
+    return map;
+  }, [chapterPericopes]);
+
   return (
     <section
       className={`bible-pane${secondary ? " bible-pane-secondary" : ""}`}
       aria-label={`${book.name} ${chapter}`}
+      data-pericopes={pericopes?.length ?? 0}
+      data-book={book.id}
+      data-chapter={chapter}
     >
       <div className="reader-heading">
-        <div>
-          <p className="date-line">{translation}</p>
-          <h2>
-            {book.name} {chapter}
-          </h2>
-        </div>
+        <p className="date-line">{translation}</p>
+        <h2>
+          {book.name} {chapter}
+        </h2>
         <span>{verses.length} ayat</span>
       </div>
+      {(() => {
+        const chapterPericope = pericopeByVerse.get(0);
+        if (!chapterPericope) return null;
+        return (
+          <div
+            className="bible-pericope-heading is-chapter"
+            role="heading"
+            aria-level={3}
+          >
+            <div className="bible-pericope-title-row">
+              <span className="bible-pericope-title">
+                {chapterPericope.title}
+              </span>
+            </div>
+            {chapterPericope.parallels &&
+              chapterPericope.parallels.length > 0 && (
+                <div className="bible-pericope-parallels">
+                  {chapterPericope.parallels.map((par, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="bible-parallel-pill"
+                      onClick={() => {
+                        if (par.start) {
+                          onSelectParallel?.(
+                            Number(par.start.book),
+                            par.start.chapter,
+                            par.start.verse,
+                          );
+                        }
+                      }}
+                      title={`Buka paralel ${par.text}`}
+                    >
+                      {par.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+          </div>
+        );
+      })()}
       <div
         className="verse-list"
         ref={scrollRef}
@@ -257,36 +335,117 @@ function ChapterPane({
           const selected = selectedVerseId === verse.id;
           const speaking = speakingVerseId === verse.id;
           const highlight = highlights[verse.id];
+          const pericope =
+            verse.verse === 0 ? undefined : pericopeByVerse.get(verse.verse);
+
+          const numericId = String(
+            book.id * 1_000_000 + chapter * 1000 + verse.verse,
+          );
+          const verseRefs =
+            crossRefs?.[verse.id] ??
+            crossRefs?.[`${book.id}:${chapter}:${verse.verse}`] ??
+            crossRefs?.[numericId];
+          const hasVerseRefs = Boolean(verseRefs && verseRefs.length);
+
           return (
-            <article
-              className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlight ? ` is-highlight-${highlight}` : ""}`}
-              id={`bible-verse-${verse.id}`}
-              key={verse.id}
-              aria-current={speaking ? "true" : undefined}
-            >
-              <button
-                className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
-                type="button"
-                onClick={() => onBookmark(verse.id)}
-                aria-label={`Tandai ayat ${verse.verse}`}
-                aria-pressed={bookmarks.has(verse.id)}
-              >
-                {verse.verse}
-              </button>
-              <button
-                className="verse-text"
-                type="button"
-                onClick={() => onSelect(verse)}
-                aria-pressed={selected}
-              >
-                <HighlightedText text={cleanVerse(verse)} query={searchQuery} />
-              </button>
-              {speaking && (
-                <span className="sr-only" role="status">
-                  Sedang dibacakan: ayat {verse.verse}
-                </span>
+            <div key={verse.id}>
+              {pericope && (
+                <div
+                  className="bible-pericope-heading"
+                  role="heading"
+                  aria-level={3}
+                >
+                  <div className="bible-pericope-title-row">
+                    <span className="bible-pericope-title">
+                      {pericope.title}
+                    </span>
+                  </div>
+                  {pericope.parallels && pericope.parallels.length > 0 && (
+                    <div className="bible-pericope-parallels">
+                      {pericope.parallels.map((par, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="bible-parallel-pill"
+                          onClick={() => {
+                            if (par.start) {
+                              onSelectParallel?.(
+                                Number(par.start.book),
+                                par.start.chapter,
+                                par.start.verse,
+                              );
+                            }
+                          }}
+                          title={`Buka paralel ${par.text}`}
+                        >
+                          {par.text}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
-            </article>
+              <article
+                className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlight ? ` is-highlight-${highlight}` : ""}`}
+                id={`bible-verse-${verse.id}`}
+                aria-current={speaking ? "true" : undefined}
+              >
+                <button
+                  className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
+                  type="button"
+                  onClick={() => onBookmark(verse.id)}
+                  aria-label={`Tandai ayat ${verse.verse}`}
+                  aria-pressed={bookmarks.has(verse.id)}
+                >
+                  {verse.verse}
+                </button>
+                <div className="verse-content">
+                  <span
+                    className="verse-text"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onSelect(verse)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onSelect(verse);
+                      }
+                    }}
+                    aria-pressed={selected}
+                  >
+                    <HighlightedText
+                      text={cleanVerse(verse)}
+                      query={searchQuery}
+                    />
+                  </span>
+                  {hasVerseRefs && onOpenCrossRefs && verseRefs && (
+                    <button
+                      className="bible-crossref-inline"
+                      type="button"
+                      aria-label={`Lihat ${verseRefs.length} rujukan silang untuk ${book.name} ${chapter}:${verse.verse}`}
+                      title={`${verseRefs.length} rujukan silang`}
+                      onClick={() =>
+                        onOpenCrossRefs(
+                          verse.id,
+                          verseRefs,
+                          `${book.name} ${chapter}:${verse.verse}`,
+                        )
+                      }
+                    >
+                      <span className="bible-crossref-star">*</span>
+                      <span className="bible-crossref-count">
+                        {verseRefs.length}
+                      </span>
+                    </button>
+                  )}
+                </div>
+                {speaking && (
+                  <span className="sr-only" role="status">
+                    Sedang dibacakan: ayat {verse.verse}
+                  </span>
+                )}
+              </article>
+            </div>
           );
         })}
       </div>
@@ -342,6 +501,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectionToolbar, setSelectionToolbar] = useState<
     SelectionToolbarState | undefined
   >();
+  const [secondaryVersionCode, setSecondaryVersionCode] = useState(() => {
+    if (typeof window === "undefined") return "b_tb";
+    return localStorage.getItem("gys-bible-secondary-version") ?? "b_tb";
+  });
+  const [secondaryPackState, setSecondaryPackState] = useState<PackState>({
+    status: "loading",
+  });
+  const [crossRefModal, setCrossRefModal] = useState<
+    | {
+        pericopeId: string;
+        title: string;
+        refs: readonly BibleCrossReference[];
+      }
+    | undefined
+  >(undefined);
   const {
     splitView,
     setSplitView,
@@ -371,7 +545,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
         startY: number;
         startTime: number;
         hasDragged: boolean;
+        levelStartY: number;
+        currentY: number;
+        activeColumn: "book" | "chapter" | "verse";
+        initialBookIndex: number;
         initialChapter: number;
+        initialVerse: number;
         currentBookId: number;
         currentChapter: number;
         currentVerse: number;
@@ -419,7 +598,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     };
   }, []);
 
-  const startQuickNav = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const startQuickNav = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -431,14 +610,22 @@ export function BiblePage({ locale }: { locale: Locale }) {
       startY: event.clientY,
       startTime: Date.now(),
       hasDragged: false,
+      levelStartY: event.clientY,
+      currentY: event.clientY,
+      activeColumn: "book",
+      initialBookIndex: Math.max(
+        0,
+        books.findIndex((candidate) => candidate.id === bookId),
+      ),
       initialChapter: chapter,
+      initialVerse: 1,
       currentBookId: bookId,
       currentChapter: chapter,
       currentVerse: 1,
     };
   };
 
-  const quickNavKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+  const quickNavKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (!book) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -517,13 +704,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
       selectedVersionCode === "b_tb"
         ? fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
             signal: controller.signal,
-            cache: "force-cache",
+            cache: "no-store",
           }).then(async (response) => {
             if (!response.ok)
               throw new Error("Offline TB reader pack unavailable");
             const json: unknown = await response.json();
             const parsed = BibleReaderPackSchema.safeParse(json);
-            if (!parsed.success) throw new Error("TB reader pack is invalid");
+            if (!parsed.success) {
+              throw new Error("TB reader pack is invalid");
+            }
             return parsed.data;
           })
         : loadBibleReaderPack(
@@ -547,6 +736,66 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, [packAttempt, selectedVersionCode]);
 
+  useEffect(() => {
+    localStorage.setItem("gys-bible-secondary-version", secondaryVersionCode);
+  }, [secondaryVersionCode]);
+
+  useEffect(() => {
+    if (!splitView) return;
+    if (
+      secondaryVersionCode === selectedVersionCode &&
+      packState.status === "ready"
+    ) {
+      setSecondaryPackState({ status: "ready", pack: packState.pack });
+      return;
+    }
+    const controller = new AbortController();
+    setSecondaryPackState({ status: "loading" });
+    const request =
+      secondaryVersionCode === "b_tb"
+        ? fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
+            signal: controller.signal,
+            cache: "no-store",
+          }).then(async (response) => {
+            if (!response.ok)
+              throw new Error("Offline TB reader pack unavailable");
+            const json: unknown = await response.json();
+            const parsed = BibleReaderPackSchema.safeParse(json);
+            if (!parsed.success) throw new Error("TB reader pack is invalid");
+            return parsed.data;
+          })
+        : loadBibleReaderPack(
+            secondaryVersionCode,
+            getDistributedAssetManager().getStore(),
+          );
+    void request
+      .then((pack) => {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[bible secondary] loaded pack ${pack.translation} pericopes ${(pack as unknown as { pericopes?: unknown[] }).pericopes?.length ?? 0}`,
+        );
+        if (!controller.signal.aborted)
+          setSecondaryPackState({ status: "ready", pack });
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted)
+          setSecondaryPackState({
+            status: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Unable to load secondary pack",
+          });
+      });
+    return () => controller.abort();
+  }, [
+    splitView,
+    secondaryVersionCode,
+    selectedVersionCode,
+    packState,
+    packAttempt,
+  ]);
+
   const searchClient = useMemo(
     () =>
       packState.status === "ready"
@@ -567,14 +816,32 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const books = packState.status === "ready" ? packState.pack.books : [];
   const bibleVersionOptions = [
-    { value: "b_tb", label: "Terjemahan Baru" },
+    { value: "b_tb", label: "Terjemahan Baru", shortLabel: "TB" },
     ...bibleAssets
       .filter(
         (asset) =>
           asset.code !== "b_tb" &&
           (asset.state === "installed" || asset.state === "update"),
       )
-      .map((asset) => ({ value: asset.code, label: asset.title })),
+      .map((asset) => {
+        const raw = asset.code.replace(/^b_/, "").toUpperCase();
+        const short =
+          raw === "TB" || asset.title.toLowerCase().includes("terjemahan baru")
+            ? "TB"
+            : raw === "KJV" || asset.title.toLowerCase().includes("king james")
+              ? "KJV"
+              : raw === "CUV" ||
+                  asset.title.toLowerCase().includes("chinese union")
+                ? "CUV"
+                : raw === "AYT"
+                  ? "AYT"
+                  : raw === "BBE"
+                    ? "BBE"
+                    : raw.length <= 5
+                      ? raw
+                      : asset.title.slice(0, 4).toUpperCase();
+        return { value: asset.code, label: asset.title, shortLabel: short };
+      }),
   ];
   useEffect(() => {
     if (!assetCatalogReady || selectedVersionCode === "b_tb") return;
@@ -588,35 +855,142 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const book =
     books.find((candidate) => candidate.id === selectedBook) ?? books[0];
   const chapter = Math.min(selectedChapter, book?.chapters ?? selectedChapter);
+  // Each held level advances after two seconds; only releasing on Ayat commits.
+  const quickNavLevel = quickNavDrag?.activeColumn;
+  const quickNavHeldValue = quickNavDrag
+    ? quickNavDrag.activeColumn === "book"
+      ? quickNavDrag.bookId
+      : quickNavDrag.activeColumn === "chapter"
+        ? quickNavDrag.chapter
+        : quickNavDrag.verse
+    : undefined;
+  useEffect(() => {
+    if (!quickNavLevel || quickNavLevel === "verse") return;
+    const timer = window.setTimeout(() => {
+      const active = quickNavRef.current;
+      if (!active || !active.hasDragged) return;
+      hapticTick("hold");
+      active.levelStartY = active.currentY;
+      if (quickNavLevel === "book") {
+        active.activeColumn = "chapter";
+        active.initialChapter = 1;
+        active.currentChapter = 1;
+        active.currentVerse = 1;
+        setQuickNavDrag((value) =>
+          value
+            ? { ...value, activeColumn: "chapter", chapter: 1, verse: 1 }
+            : value,
+        );
+      } else {
+        active.activeColumn = "verse";
+        active.initialVerse = 1;
+        active.currentVerse = 1;
+        setQuickNavDrag((value) =>
+          value ? { ...value, activeColumn: "verse", verse: 1 } : value,
+        );
+      }
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [quickNavHeldValue, quickNavLevel]);
+
+  const quickNavValueAtPoint = (clientX: number, clientY: number) => {
+    const list = document.querySelector<HTMLElement>(".quick-nav-column-list");
+    if (!list) return undefined;
+    const bounds = list.getBoundingClientRect();
+    if (
+      clientX < bounds.left ||
+      clientX > bounds.right ||
+      clientY < bounds.top ||
+      clientY > bounds.bottom
+    ) {
+      return undefined;
+    }
+    let closest: { value: number; distance: number } | undefined;
+    for (const item of list.querySelectorAll<HTMLElement>(
+      "[data-quick-nav-value]",
+    )) {
+      const rect = item.getBoundingClientRect();
+      const distance =
+        (clientX - (rect.left + rect.right) / 2) ** 2 +
+        (clientY - (rect.top + rect.bottom) / 2) ** 2;
+      const value = Number(item.dataset.quickNavValue);
+      if (Number.isFinite(value) && (!closest || distance < closest.distance)) {
+        closest = { value, distance };
+      }
+    }
+    return closest?.value;
+  };
+
   useEffect(() => {
     const move = (event: PointerEvent) => {
       const active = quickNavRef.current;
       if (!active || active.pointerId !== event.pointerId) return;
       const dx = event.clientX - active.startX;
       const dy = event.clientY - active.startY;
+      active.currentY = event.clientY;
 
       if (!active.hasDragged && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
         active.hasDragged = true;
+        const currentBook =
+          books.find((candidate) => candidate.id === active.currentBookId) ??
+          book;
+        setQuickNavDrag({
+          activeColumn: "book",
+          bookId: active.currentBookId,
+          chapter: active.currentChapter,
+          verse: 1,
+          bookName: currentBook?.name ?? "Alkitab",
+          totalChapters: currentBook?.chapters ?? 1,
+          totalVerses: 1,
+        });
       }
 
       if (!active.hasDragged) return;
 
       event.preventDefault();
+      const levelDelta = event.clientY - active.levelStartY;
       let nextBookId = active.currentBookId;
       let nextChapter = active.currentChapter;
       let nextVerse = active.currentVerse;
-
-      const currentB =
-        books.find((candidate) => candidate.id === active.currentBookId) ??
-        book;
-      if (currentB) {
-        nextChapter = scrubChapterNumber(
-          active.initialChapter,
-          dy,
-          currentB.chapters,
-          48,
-        );
+      const pointedValue = quickNavValueAtPoint(event.clientX, event.clientY);
+      if (active.activeColumn === "book") {
+        const index = pointedValue
+          ? books.findIndex((candidate) => candidate.id === pointedValue)
+          : scrubBookIndex(
+              active.initialBookIndex,
+              levelDelta,
+              books.length,
+              24,
+            );
+        nextBookId = books[index]?.id ?? nextBookId;
+        nextChapter = 1;
         nextVerse = 1;
+      }
+      const currentB =
+        books.find((candidate) => candidate.id === nextBookId) ?? book;
+      if (active.activeColumn === "chapter" && currentB) {
+        nextChapter = pointedValue
+          ? Math.min(currentB.chapters, pointedValue)
+          : scrubChapterNumber(
+              active.initialChapter,
+              levelDelta,
+              currentB.chapters,
+              28,
+            );
+        nextVerse = 1;
+      }
+      const totalVerses =
+        packState.status === "ready"
+          ? packState.pack.verses.filter(
+              (verse) =>
+                verse.book === String(nextBookId) &&
+                verse.chapter === nextChapter,
+            ).length || 1
+          : 30;
+      if (active.activeColumn === "verse") {
+        nextVerse = pointedValue
+          ? Math.min(totalVerses, pointedValue)
+          : scrubVerseNumber(active.initialVerse, levelDelta, totalVerses, 24);
       }
 
       if (
@@ -630,25 +1004,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
         active.currentVerse = nextVerse;
       }
 
-      const currentBookObj = books.find((b) => b.id === nextBookId) ?? book;
-      const totalVersesCount =
-        packState.status === "ready"
-          ? packState.pack.verses.filter(
-              (v) => v.book === String(nextBookId) && v.chapter === nextChapter,
-            ).length
-          : 30;
-
-      setSelectedBook(nextBookId);
-      setSelectedChapter(nextChapter);
-
       setQuickNavDrag({
-        activeColumn: "chapter",
+        activeColumn: active.activeColumn,
         bookId: nextBookId,
         chapter: nextChapter,
         verse: nextVerse,
-        bookName: currentBookObj?.name ?? "Alkitab",
-        totalChapters: currentBookObj?.chapters ?? 1,
-        totalVerses: totalVersesCount || 30,
+        bookName: currentB?.name ?? "Alkitab",
+        totalChapters: currentB?.chapters ?? 1,
+        totalVerses,
       });
     };
 
@@ -658,16 +1021,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
       if (active.hasDragged) {
         suppressQuickNavClickRef.current = true;
-        if (active.currentVerse > 1) {
-          setSelectedVerseId(
-            `${active.currentBookId}:${active.currentChapter}:${active.currentVerse}`,
-          );
-        }
+        setPickerModalOpen(false);
+        const targetChapter =
+          active.activeColumn === "book" ? 1 : active.currentChapter;
+        const targetVerse =
+          active.activeColumn === "verse" ? active.currentVerse : 1;
+        setSelectedBook(active.currentBookId);
+        setSelectedChapter(targetChapter);
+        setSelectedVerseId(
+          `${active.currentBookId}:${targetChapter}:${targetVerse}`,
+        );
         quickNavRef.current = undefined;
-        window.setTimeout(() => setQuickNavDrag(undefined), 120);
+        setQuickNavDrag(undefined);
         window.setTimeout(() => {
           suppressQuickNavClickRef.current = false;
-        }, 0);
+        }, 750);
       } else {
         quickNavRef.current = undefined;
         setQuickNavDrag(undefined);
@@ -684,6 +1052,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       window.removeEventListener("pointercancel", end);
     };
   }, [book, books, packState]);
+
   const chapterVerses = useMemo(() => {
     if (packState.status !== "ready" || !book) return [];
     return packState.pack.verses.filter(
@@ -944,6 +1313,117 @@ export function BiblePage({ locale }: { locale: Locale }) {
         .join("\n")}`,
     );
   };
+
+  useEffect(() => {
+    if (packState.status !== "ready" || !book) {
+      setBibleHeaderState(null);
+      return;
+    }
+
+    setBibleHeaderState({
+      active: true,
+      bookName: book.name,
+      chapter,
+      totalChapters: book.chapters,
+      verseCount: chapterVerses.length,
+      versionCode: selectedVersionCode,
+      versionOptions: bibleVersionOptions,
+      onSelectVersion: (value) => {
+        setSelectedVersionCode(value);
+        localStorage.setItem(VERSION_KEY, value);
+        setSearchResults([]);
+        setSearchedQuery("");
+        setSelectedVerseId(undefined);
+      },
+      onOpenPicker: () => {
+        if (suppressQuickNavClickRef.current) {
+          suppressQuickNavClickRef.current = false;
+          return;
+        }
+        setPickerModalOpen(true);
+      },
+      startQuickNav,
+      quickNavKeyDown,
+      fontSize: typography.fontSize,
+      minFontSize: BIBLE_FONT_SIZE_MIN,
+      maxFontSize: BIBLE_FONT_SIZE_MAX,
+      onIncreaseFontSize: () =>
+        setTypography((current) => {
+          const next = increaseBibleFontSize(current);
+          writeBibleTypography(next);
+          return next;
+        }),
+      onDecreaseFontSize: () =>
+        setTypography((current) => {
+          const next = decreaseBibleFontSize(current);
+          writeBibleTypography(next);
+          return next;
+        }),
+      splitView,
+      onToggleSplitView: () => setSplitView((value) => !value),
+      secondaryVersionCode,
+      onSelectSecondaryVersion: setSecondaryVersionCode,
+      syncScroll,
+      onToggleSyncScroll: toggleSyncScroll,
+      speechAvailable,
+      speaking,
+      speechStatus: speechSnapshot.status,
+      onToggleSpeech: () => {
+        if (speechSnapshot.status === "speaking") {
+          void speechPlayer.pause();
+        } else if (speechSnapshot.status === "paused") {
+          void speechPlayer.resume();
+        } else {
+          if (book && chapterVerses.length) {
+            void speechPlayer.speak(
+              chapterVerses.map((verse) => ({
+                id: verse.id,
+                text: `${verse.verse}. ${cleanVerse(verse)}`,
+                context: {
+                  path: `/bible#bible-verse-${encodeURIComponent(verse.id)}`,
+                  label: `${book.name} ${verse.chapter}:${verse.verse}`,
+                },
+              })),
+            );
+          }
+        }
+      },
+      copied,
+      onCopyChapter: () => void copyChapter(),
+      speechControlsOpen,
+      onToggleSpeechControls: () =>
+        setSpeechControlsOpen((current) => !current),
+      onFocusSearch: () => {
+        const input = document.querySelector<HTMLInputElement>(
+          ".bible-search-row input",
+        );
+        input?.focus();
+        input?.scrollIntoView({ behavior: "smooth", block: "center" });
+      },
+    });
+  }, [
+    packState.status,
+    book,
+    chapter,
+    chapterVerses.length,
+    selectedVersionCode,
+    secondaryVersionCode,
+    bibleVersionOptions,
+    startQuickNav,
+    quickNavKeyDown,
+    typography.fontSize,
+    splitView,
+    syncScroll,
+    speechAvailable,
+    speaking,
+    speechSnapshot.status,
+    speechControlsOpen,
+    copied,
+  ]);
+
+  useEffect(() => {
+    return () => setBibleHeaderState(null);
+  }, []);
 
   const copySelected = async () => {
     if (!selectedVerse || !book) return;
@@ -1289,371 +1769,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
           className={`bible-reader${splitView ? " is-split" : ""}`}
           aria-label={translate(locale, "page.bibleTitle")}
         >
-          {quickNavDrag && (
-            <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />
-          )}
-          <div className="reader-toolbar">
-            <div className="reader-navigation-group">
-              <div
-                className="reader-toolbar-title quick-nav-handle"
-                onPointerDown={startQuickNav}
-                onClick={() => {
-                  if (suppressQuickNavClickRef.current) return;
-                  setPickerModalOpen(true);
-                }}
-                onKeyDown={quickNavKeyDown}
-                role="button"
-                tabIndex={0}
-                aria-label="Geser judul untuk berpindah pasal"
-              >
-                <span>Geser untuk navigasi</span>
-                <strong>
-                  {book.name} {chapter}
-                </strong>
-                <small>{chapterVerses.length} ayat</small>
-              </div>
-              <div className="reader-selectors">
-                <Select
-                  value={selectedVersionCode}
-                  onChange={(value) => {
-                    setSelectedVersionCode(value);
-                    localStorage.setItem(VERSION_KEY, value);
-                    setSearchResults([]);
-                    setSearchedQuery("");
-                    setSelectedVerseId(undefined);
-                  }}
-                  label="Versi"
-                  options={bibleVersionOptions}
-                />
-                <Select
-                  value={book.id}
-                  onChange={(value) => {
-                    setSelectedBook(value);
-                    setSelectedChapter(1);
-                  }}
-                  label={translate(locale, "bible.book")}
-                  options={books.map((option) => ({
-                    value: option.id,
-                    label: option.name,
-                  }))}
-                />
-                <Select
-                  value={chapter}
-                  onChange={setSelectedChapter}
-                  label={translate(locale, "bible.chapter")}
-                  options={Array.from(
-                    { length: book.chapters },
-                    (_, index) => ({
-                      value: index + 1,
-                      label: String(index + 1),
-                    }),
-                  )}
-                />
-              </div>
-              <div
-                className="bible-typography-controls"
-                role="group"
-                aria-label="Ukuran teks bacaan"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTypography((current) => {
-                      const next = decreaseBibleFontSize(current);
-                      writeBibleTypography(next);
-                      return next;
-                    })
-                  }
-                  disabled={typography.fontSize <= BIBLE_FONT_SIZE_MIN}
-                  aria-label="Perkecil teks"
-                >
-                  A−
-                </button>
-                <output aria-live="polite">{typography.fontSize}</output>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTypography((current) => {
-                      const next = increaseBibleFontSize(current);
-                      writeBibleTypography(next);
-                      return next;
-                    })
-                  }
-                  disabled={typography.fontSize >= BIBLE_FONT_SIZE_MAX}
-                  aria-label="Perbesar teks"
-                >
-                  A+
-                </button>
-              </div>
-              <label className="chapter-scrubber">
-                <span>Pasal cepat</span>
-                <input
-                  type="range"
-                  min="1"
-                  max={book.chapters}
-                  value={chapter}
-                  onChange={(event) =>
-                    setSelectedChapter(Number(event.target.value))
-                  }
-                />
-                <output>{chapter}</output>
-              </label>
-            </div>
-            <div
-              className={`reader-action-group${readerActionsOpen ? " is-open" : ""}`}
-            >
-              {assetCatalogReady && bibleVersionOptions.length === 1 && (
-                <Link
-                  className="quiet-button reader-control reader-control-icon reader-secondary-action"
-                  to="/lainnya?section=data"
-                  aria-label="Unduh versi Alkitab lain"
-                  title="Unduh versi lain"
-                >
-                  <Icon name="download" size={17} />
-                </Link>
-              )}
-              <button
-                className="quiet-button reader-control reader-control-icon reader-secondary-action"
-                type="button"
-                onClick={() => setSplitView((value) => !value)}
-                aria-pressed={splitView}
-                aria-label={
-                  splitView ? "Tampilkan satu kolom" : "Tampilkan dua kolom"
-                }
-                title={splitView ? "Satu kolom" : "Dua kolom"}
-              >
-                <Icon name="columns" size={17} />
-                <span className="control-copy">
-                  {splitView ? "Satu kolom" : "Dua kolom"}
-                </span>
-              </button>
-              {splitView && (
-                <button
-                  className={`quiet-button reader-control reader-control-sync reader-secondary-action${syncScroll ? " is-active" : ""}`}
-                  type="button"
-                  onClick={toggleSyncScroll}
-                  aria-pressed={syncScroll}
-                  aria-label={syncScroll ? "Gulir sinkron" : "Gulir mandiri"}
-                  title={syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
-                >
-                  <Icon name="arrow" size={17} />
-                  <span className="sr-only">
-                    {syncScroll ? "Gulir: Sinkron" : "Gulir: Mandiri"}
-                  </span>
-                </button>
-              )}
-              <button
-                className="quiet-button reader-control reader-control-icon reader-secondary-action"
-                type="button"
-                onClick={() => void copyChapter()}
-                aria-label={copied ? "Ayat tersalin" : "Salin pasal"}
-                title={copied ? "Ayat tersalin" : "Salin pasal"}
-              >
-                <Icon name="copy" size={17} />
-                <span className="control-copy">
-                  {copied
-                    ? translate(locale, "bible.copied")
-                    : translate(locale, "bible.copy")}
-                </span>
-              </button>
-              <button
-                className="quiet-button reader-control reader-control-icon"
-                type="button"
-                onClick={() => {
-                  if (speechSnapshot.status === "speaking") {
-                    void speechPlayer.pause();
-                  } else if (speechSnapshot.status === "paused") {
-                    void speechPlayer.resume();
-                  } else if (speaking) {
-                    void speechPlayer.stop();
-                    setSpeaking(false);
-                  } else speakChapter();
-                }}
-                disabled={!speechAvailable}
-                aria-label={
-                  speechSnapshot.status === "paused"
-                    ? "Lanjutkan bacaan"
-                    : speechSnapshot.status === "speaking"
-                      ? "Jeda bacaan"
-                      : speaking
-                        ? translate(locale, "bible.stopReading")
-                        : translate(locale, "bible.readAloud")
-                }
-                title={
-                  speechSnapshot.status === "paused"
-                    ? "Lanjutkan bacaan"
-                    : speechSnapshot.status === "speaking"
-                      ? "Jeda bacaan"
-                      : speaking
-                        ? translate(locale, "bible.stopReading")
-                        : translate(locale, "bible.readAloud")
-                }
-              >
-                <Icon
-                  name={
-                    speechSnapshot.status === "speaking"
-                      ? "pause"
-                      : speechSnapshot.status === "paused"
-                        ? "play"
-                        : speaking
-                          ? "stop"
-                          : "play"
-                  }
-                  size={17}
-                />
-                <span className="control-copy">
-                  {speechSnapshot.status === "paused"
-                    ? "Lanjutkan bacaan"
-                    : speechSnapshot.status === "speaking"
-                      ? "Jeda bacaan"
-                      : speaking
-                        ? translate(locale, "bible.stopReading")
-                        : translate(locale, "bible.readAloud")}
-                </span>
-              </button>
-              <button
-                className="quiet-button reader-control reader-control-icon speech-settings-toggle reader-secondary-action"
-                type="button"
-                aria-expanded={speechControlsOpen}
-                onClick={() => setSpeechControlsOpen((current) => !current)}
-                aria-label={
-                  speechControlsOpen
-                    ? "Tutup pengaturan suara"
-                    : "Pengaturan suara"
-                }
-                title={speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
-              >
-                <Icon name="settings" size={17} />
-                <span className="control-copy">
-                  {speechControlsOpen ? "Tutup suara" : "Pengaturan suara"}
-                </span>
-              </button>
-              <button
-                className="quiet-button reader-control reader-control-icon reader-overflow-toggle"
-                type="button"
-                aria-expanded={readerActionsOpen}
-                aria-label={
-                  readerActionsOpen ? "Ringkas kontrol" : "Tampilkan kontrol"
-                }
-                title={readerActionsOpen ? "Ringkas kontrol" : "Kontrol lain"}
-                onClick={() => setReaderActionsOpen((current) => !current)}
-              >
-                <Icon
-                  name={readerActionsOpen ? "chevronDown" : "more"}
-                  size={17}
-                />
-              </button>
-            </div>
-            <div
-              className={`speech-controls${speechControlsOpen ? " is-open" : ""}`}
-              aria-label="Pengaturan bacaan suara"
-            >
-              <label>
-                <span>Mesin</span>
-                <select
-                  value={speechSnapshot.engine}
-                  onChange={(event) =>
-                    speechPlayer.setEngine(
-                      SpeechEnginePreferenceSchema.parse(event.target.value),
-                    )
-                  }
-                >
-                  <option value="edge">Edge TTS</option>
-                  <option value="local">TTS lokal</option>
-                </select>
-              </label>
-              <label>
-                <span>Suara</span>
-                <select
-                  value={
-                    availableSpeechVoices.some(
-                      (voice) => voice.id === speechSnapshot.voiceId,
-                    )
-                      ? speechSnapshot.voiceId
-                      : ""
-                  }
-                  onChange={(event) =>
-                    speechPlayer.setVoice(event.target.value)
-                  }
-                  disabled={availableSpeechVoices.length === 0}
-                >
-                  <option value="">Otomatis</option>
-                  {availableSpeechVoices.map((voice) => (
-                    <option value={voice.id} key={voice.id}>
-                      {voice.name} · {voice.language}
-                      {voice.local ? " · lokal" : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Kecepatan {speechSnapshot.rate.toFixed(1)}×</span>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={speechSnapshot.rate}
-                  onChange={(event) =>
-                    speechPlayer.setRate(Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                <span>Nada {speechSnapshot.pitch.toFixed(1)}×</span>
-                <input
-                  aria-label="Nada bacaan suara"
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={speechSnapshot.pitch}
-                  onChange={(event) =>
-                    speechPlayer.setPitch(Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                <span>Volume {Math.round(speechSnapshot.volume * 100)}%</span>
-                <input
-                  aria-label="Volume bacaan suara"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={speechSnapshot.volume}
-                  onChange={(event) =>
-                    speechPlayer.setVolume(Number(event.target.value))
-                  }
-                />
-              </label>
-            </div>
-          </div>
-          {splitView && (
-            <div className="split-controls-row">
-              <label className="split-ratio-control">
-                <span>Lebar bacaan</span>
-                <input
-                  type="range"
-                  min="42"
-                  max="72"
-                  value={splitRatio}
-                  onChange={(event) =>
-                    setSplitRatio(Number(event.target.value))
-                  }
-                />
-                <output>{splitRatio}%</output>
-              </label>
-              <label className="split-sync-toggle">
-                <input
-                  type="checkbox"
-                  checked={syncScroll}
-                  onChange={(event) => setSyncScroll(event.target.checked)}
-                />
-                <span>Gulir serentak</span>
-              </label>
-            </div>
-          )}
           <div
             className="bible-reader-layout"
             ref={splitLayoutRef}
@@ -1664,6 +1779,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
               chapter={chapter}
               verses={chapterVerses}
               translation={packState.pack.translation}
+              pericopes={packState.pack.pericopes}
+              crossRefs={packState.pack.crossRefs}
+              onOpenCrossRefs={(id, refs, title) => {
+                setCrossRefModal({ pericopeId: id, title, refs });
+              }}
+              onSelectParallel={(bId, ch, v) => {
+                setSelectedBook(bId);
+                setSelectedChapter(ch);
+                setSelectedVerseId(`${bId}:${ch}:${v}`);
+              }}
               bookmarks={bookmarks}
               highlights={highlights}
               selectedVerseId={selectedVerseId}
@@ -1682,46 +1807,102 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 role="separator"
                 aria-label="Atur lebar kolom bacaan"
                 aria-orientation="vertical"
-                aria-valuemin={42}
-                aria-valuemax={72}
+                aria-valuemin={20}
+                aria-valuemax={80}
                 aria-valuenow={splitRatio}
                 tabIndex={0}
                 onPointerDown={startSplitDrag}
                 onKeyDown={(event) => {
-                  if (event.key === "ArrowLeft")
-                    setSplitRatio((value) => Math.max(42, value - 2));
-                  if (event.key === "ArrowRight")
-                    setSplitRatio((value) => Math.min(72, value + 2));
+                  if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+                    setSplitRatio((value) => Math.max(20, value - 2));
+                  if (event.key === "ArrowRight" || event.key === "ArrowDown")
+                    setSplitRatio((value) => Math.min(80, value + 2));
                 }}
               >
                 <span aria-hidden="true" />
               </div>
             )}
-            {splitView && nextTarget && (
-              <ChapterPane
-                book={nextTarget.book}
-                chapter={nextTarget.chapter}
-                verses={nextVerses}
-                translation={packState.pack.translation}
-                bookmarks={bookmarks}
-                highlights={highlights}
-                selectedVerseId={selectedVerseId}
-                speakingVerseId={speakingVerseId}
-                searchQuery={query}
-                secondary
-                scrollRef={secondaryScrollRef}
-                onScroll={onSecondaryScroll}
-                onSelect={selectVerse}
-                onBookmark={toggleBookmark}
-              />
-            )}
-            {splitView && !nextTarget && (
-              <div className="bible-pane-secondary bible-side-empty">
-                Ini adalah bacaan terakhir dalam paket{" "}
-                {packState.pack.translation}.
-              </div>
-            )}
+            {splitView &&
+              (() => {
+                if (secondaryPackState.status === "loading") {
+                  return (
+                    <div className="bible-pane-secondary bible-side-empty">
+                      Memuat versi kedua…
+                    </div>
+                  );
+                }
+                if (secondaryPackState.status === "error") {
+                  return (
+                    <div className="bible-pane-secondary bible-side-empty">
+                      Gagal memuat {secondaryVersionCode}:{" "}
+                      {secondaryPackState.message}
+                    </div>
+                  );
+                }
+                const secPack = secondaryPackState.pack;
+                const secBook =
+                  secPack.books.find((b) => b.id === selectedBook) ??
+                  secPack.books.find((b) => String(b.id) === String(book.id)) ??
+                  book;
+                const secVerses = secPack.verses.filter(
+                  (v) => v.book === String(secBook.id) && v.chapter === chapter,
+                );
+                return (
+                  <ChapterPane
+                    book={secBook}
+                    chapter={chapter}
+                    verses={secVerses}
+                    translation={secPack.translation}
+                    pericopes={secPack.pericopes}
+                    crossRefs={secPack.crossRefs}
+                    onOpenCrossRefs={(id, refs, title) => {
+                      setCrossRefModal({ pericopeId: id, title, refs });
+                    }}
+                    onSelectParallel={(bId, ch, v) => {
+                      setSelectedBook(bId);
+                      setSelectedChapter(ch);
+                      setSelectedVerseId(`${bId}:${ch}:${v}`);
+                    }}
+                    bookmarks={EMPTY_BOOKMARKS}
+                    highlights={EMPTY_HIGHLIGHTS}
+                    selectedVerseId={selectedVerseId}
+                    speakingVerseId={speakingVerseId}
+                    searchQuery={query}
+                    secondary
+                    scrollRef={secondaryScrollRef}
+                    onScroll={onSecondaryScroll}
+                    onSelect={selectVerse}
+                    onBookmark={toggleBookmark}
+                  />
+                );
+              })()}
           </div>
+          {quickNavDrag &&
+            createPortal(
+              <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />,
+              document.body,
+            )}
+          {quickNavDrag &&
+            createPortal(
+              <div
+                className="quick-nav-multistep"
+                data-step={quickNavDrag.activeColumn}
+              >
+                <span>
+                  Langkah{" "}
+                  {quickNavDrag.activeColumn === "book"
+                    ? "1/3 · Kitab"
+                    : quickNavDrag.activeColumn === "chapter"
+                      ? "2/3 · Pasal"
+                      : "3/3 · Ayat"}{" "}
+                  —{" "}
+                  {quickNavDrag.activeColumn === "verse"
+                    ? "lepas untuk pilih"
+                    : "lepas ke ayat 1 · diam 1 detik untuk lanjut"}
+                </span>
+              </div>,
+              document.body,
+            )}
           <div className="reader-pagination">
             <button
               className="quiet-button"
@@ -1746,29 +1927,32 @@ export function BiblePage({ locale }: { locale: Locale }) {
         </section>
       )}
       {packState.status === "ready" && renderSidePanel()}
-      {packState.status === "ready" && book && (
-        <BiblePickerModal
-          open={pickerModalOpen}
-          onClose={() => setPickerModalOpen(false)}
-          books={books}
-          currentBookId={book.id}
-          currentChapter={chapter}
-          currentVerse={selectedVerse?.verse}
-          allVerses={packState.pack.verses}
-          onSelect={(target) => {
-            setSelectedBook(target.bookId);
-            setSelectedChapter(target.chapter);
-            if (target.verse) {
-              setSelectedVerseId(
-                `${target.bookId}:${target.chapter}:${target.verse}`,
-              );
-            } else {
-              setSelectedVerseId(undefined);
-            }
-          }}
-          locale={locale}
-        />
-      )}
+      {packState.status === "ready" &&
+        book &&
+        createPortal(
+          <BiblePickerModal
+            open={pickerModalOpen}
+            onClose={() => setPickerModalOpen(false)}
+            books={books}
+            currentBookId={book.id}
+            currentChapter={chapter}
+            currentVerse={selectedVerse?.verse}
+            allVerses={packState.pack.verses}
+            onSelect={(target) => {
+              setSelectedBook(target.bookId);
+              setSelectedChapter(target.chapter);
+              if (target.verse) {
+                setSelectedVerseId(
+                  `${target.bookId}:${target.chapter}:${target.verse}`,
+                );
+              } else {
+                setSelectedVerseId(undefined);
+              }
+            }}
+            locale={locale}
+          />,
+          document.body,
+        )}
       {selectedVerse &&
         book &&
         createPortal(
@@ -1877,6 +2061,106 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </button>
         </div>
       )}
+      {crossRefModal &&
+        createPortal(
+          <div
+            className="bible-crossref-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Rujukan untuk ${crossRefModal.title}`}
+            onClick={() => setCrossRefModal(undefined)}
+          >
+            <div
+              className="bible-crossref-modal"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="bible-crossref-header">
+                <div>
+                  <small>Rujukan silang</small>
+                  <strong>{crossRefModal.title}</strong>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Tutup rujukan"
+                  onClick={() => setCrossRefModal(undefined)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="bible-crossref-list">
+                {crossRefModal.refs.map((ref, idx) => {
+                  const pack =
+                    packState.status === "ready"
+                      ? packState.pack
+                      : secondaryPackState.status === "ready"
+                        ? secondaryPackState.pack
+                        : undefined;
+                  const bookName =
+                    pack?.books.find((b) => String(b.id) === ref.book)?.name ??
+                    `Kitab ${ref.book}`;
+                  const endBook = ref.endBook ?? ref.book;
+                  const endChapter = ref.endChapter ?? ref.chapter;
+                  const endBookName =
+                    pack?.books.find((b) => String(b.id) === endBook)?.name ??
+                    `Kitab ${endBook}`;
+                  const label = `${bookName} ${ref.chapter}:${ref.verse}${ref.endVerse ? (endBook === ref.book && endChapter === ref.chapter ? `-${ref.endVerse}` : ` – ${endBookName} ${endChapter}:${ref.endVerse}`) : ""}`;
+                  const startId =
+                    Number(ref.book) * 1_000_000 +
+                    ref.chapter * 1000 +
+                    ref.verse;
+                  const endId = ref.endVerse
+                    ? Number(endBook) * 1_000_000 +
+                      endChapter * 1000 +
+                      ref.endVerse
+                    : startId;
+                  const snippet = pack?.verses
+                    .filter((verse) => {
+                      const id =
+                        Number(verse.book) * 1_000_000 +
+                        verse.chapter * 1000 +
+                        verse.verse;
+                      return id >= startId && id <= endId;
+                    })
+                    .map((verse) => `${verse.verse}. ${cleanVerse(verse)}`)
+                    .join(" ");
+                  return (
+                    <button
+                      key={`${ref.book}:${ref.chapter}:${ref.verse}-${idx}`}
+                      type="button"
+                      className="bible-crossref-card"
+                      onClick={() => {
+                        const bookId = Number(ref.book);
+                        setSelectedBook(bookId);
+                        setSelectedChapter(ref.chapter);
+                        setSelectedVerseId(
+                          `${bookId}:${ref.chapter}:${ref.verse}`,
+                        );
+                        setCrossRefModal(undefined);
+                        // ensure primary version is used for navigation; secondary will sync via same book/chapter
+                      }}
+                    >
+                      <span className="bible-crossref-card-header">
+                        <strong className="bible-crossref-ref-tag">
+                          {label}
+                        </strong>
+                        <Icon name="arrow" size={12} />
+                      </span>
+                      {snippet && (
+                        <span className="bible-crossref-snippet">
+                          {snippet}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="bible-crossref-hint">
+                {crossRefModal.refs.length} ayat terkait — ketuk untuk membuka
+              </p>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

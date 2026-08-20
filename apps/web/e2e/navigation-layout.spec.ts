@@ -32,31 +32,140 @@ async function touchSwipe(page: Page, fromX = 300, toX = 210) {
 }
 
 test.describe("responsive reader navigation", () => {
+  test("mobile Bible chrome stays contained in normal and split views", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      localStorage.setItem("gys-bible-book", "1");
+      localStorage.setItem("gys-bible-chapter", "1");
+    });
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
+
+    const nav = page.locator(".navigation-shell");
+    const navBox = await nav.boundingBox();
+    expect(navBox).not.toBeNull();
+    expect(navBox!.x).toBeGreaterThanOrEqual(0);
+    expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(390);
+    const firstNavItem = page.locator(".navigation-shell .nav-item").first();
+    const [iconBox, labelBox] = await Promise.all([
+      firstNavItem.locator("svg").boundingBox(),
+      firstNavItem.locator(".nav-copy strong").boundingBox(),
+    ]);
+    expect(iconBox).not.toBeNull();
+    expect(labelBox).not.toBeNull();
+    expect(iconBox!.y + iconBox!.height).toBeLessThanOrEqual(labelBox!.y);
+    await expect(
+      page.locator(".bible-pericope-heading .bible-crossref-trigger"),
+    ).toHaveCount(0);
+    await expect(page.locator(".bible-crossref-inline")).toHaveCount(5);
+    await expect(
+      page.locator(
+        '.verse-content > .verse-text + .bible-crossref-inline[title="54 rujukan silang"]',
+      ),
+    ).toHaveCount(1);
+    await expect(page.locator(".bible-crossref-inline").first()).toHaveCSS(
+      "min-width",
+      "0px",
+    );
+    await expect(page.locator(".bible-crossref-count").first()).toHaveCSS(
+      "position",
+      "absolute",
+    );
+    expect(
+      await page
+        .locator(".verse-content")
+        .first()
+        .evaluate((content) => {
+          const text = content.querySelector(".verse-text");
+          const marker = content.querySelector(".bible-crossref-inline");
+          if (!text || !marker) return false;
+          const walker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+          let lastText: Text | null = null;
+          while (walker.nextNode()) lastText = walker.currentNode as Text;
+          if (!lastText?.length) return false;
+          const range = document.createRange();
+          range.setStart(lastText, lastText.length - 1);
+          range.setEnd(lastText, lastText.length);
+          const finalCharacter = range.getBoundingClientRect();
+          const star = marker.getBoundingClientRect();
+          return (
+            star.bottom > finalCharacter.top && star.top < finalCharacter.bottom
+          );
+        }),
+    ).toBe(true);
+    const headerControlHeights = await page
+      .locator(
+        ".reader-context-book-picker, .reader-version-select-wrap .control-select-trigger, .reader-context-actions > .reader-context-button, .reader-hamburger-btn",
+      )
+      .evaluateAll((controls) =>
+        controls
+          .map((control) => control.getBoundingClientRect().height)
+          .filter((height) => height > 0),
+      );
+    expect(headerControlHeights).toEqual(headerControlHeights.map(() => 44));
+    await expect(page.locator(".bible-reader")).toHaveCSS(
+      "border-top-width",
+      "0px",
+    );
+    await page
+      .getByRole("button", {
+        name: "Lihat 54 rujukan silang untuk Kejadian 1:1",
+      })
+      .click();
+    await expect(
+      page.getByText(
+        /Sebab enam hari lamanya TUHAN menjadikan langit dan bumi/,
+      ),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Tutup rujukan" }).click();
+
+    await page.getByRole("button", { name: "Menu Alkitab" }).click();
+    await expect(
+      page.getByRole("radiogroup", { name: "Pilih Warna Aksen" }),
+    ).toHaveCount(0);
+    await page.getByText("Tampilan Belah", { exact: true }).click();
+
+    const panes = page.locator(".bible-pane");
+    await expect(panes).toHaveCount(2);
+    const boxes = await panes.evaluateAll((elements) =>
+      elements.map((element) => {
+        const box = element.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom };
+      }),
+    );
+    expect(boxes[0]!.bottom).toBeLessThanOrEqual(boxes[1]!.top);
+    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/lainnya");
+    await page.getByRole("button", { name: "Tampilan & Bahasa" }).click();
+    await expect(
+      page.getByRole("radiogroup", { name: "Pilih Warna Aksen" }),
+    ).toBeVisible();
+  });
+
   test("dashboard uses an adaptive compact scale without wasting desktop space", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 720 });
     await page.goto("/GYSApp-Tauri/");
     await expect(page.locator(".home-grid")).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator(".verse-actions > *")).toHaveCount(2);
+    await expect(page.locator(".verse-actions > *")).toHaveCount(1);
     const phone = await page.evaluate(() => {
-      const actions = [...document.querySelectorAll(".verse-actions > *")];
+      const action = document.querySelector(".verse-actions > *")!;
       return {
         heading: Number.parseFloat(
           getComputedStyle(document.querySelector(".home-page h1")!).fontSize,
         ),
-        actionTops: actions.map(
-          (element) => element.getBoundingClientRect().top,
-        ),
+        actionTop: action ? action.getBoundingClientRect().top : 0,
         mediaTop: document
           .querySelector(".home-media-section")!
           .getBoundingClientRect().top,
       };
     });
     expect(phone.heading).toBeLessThanOrEqual(23);
-    expect(Math.abs(phone.actionTops[0]! - phone.actionTops[1]!)).toBeLessThan(
-      1,
-    );
+    expect(phone.actionTop).toBeGreaterThan(0);
     expect(phone.mediaTop).toBeLessThan(720);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
@@ -410,9 +519,10 @@ test.describe("responsive reader navigation", () => {
     await page.getByText("Filter pencarian", { exact: true }).click();
     await expect(page.locator(".bible-search-options")).toBeVisible();
 
-    const speechToggle = page.locator(".speech-settings-toggle");
-    await expect(speechToggle).toBeHidden();
-    await page.getByRole("button", { name: "Tampilkan kontrol" }).click();
+    await page.locator(".reader-hamburger-btn").click();
+    const speechToggle = page.locator(
+      ".reader-hamburger-drawer .speech-settings-toggle",
+    );
     await expect(speechToggle).toBeVisible();
     await expect(speechToggle).toHaveAttribute("aria-expanded", "false");
     await speechToggle.click();

@@ -481,8 +481,8 @@ export class BrowserSpeechProvider implements SpeechProvider {
       };
     const voices = await this.voices();
     return {
-      available: voices.length > 0,
-      offline: voices.some((voice) => voice.local),
+      available: true,
+      offline: voices.some((voice) => voice.local) || voices.length === 0,
     };
   }
 

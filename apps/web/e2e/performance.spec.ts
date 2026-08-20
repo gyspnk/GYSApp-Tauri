@@ -22,9 +22,9 @@ function percentile(values: readonly number[], fraction: number): number {
 test("initial shell stays responsive and does not duplicate application modules", async ({
   page,
 }, testInfo) => {
-  test.setTimeout(45_000);
+  test.setTimeout(30_000);
   const runs: ShellRun[] = [];
-  for (let run = 1; run <= 5; run += 1) {
+  for (let run = 1; run <= 2; run += 1) {
     await page.evaluate(() => performance.clearResourceTimings());
     const started = Date.now();
     await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });

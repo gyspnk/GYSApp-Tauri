@@ -49,6 +49,7 @@ export type DistributedAssetManagerOptions = {
 export function distributedDownloadsConfigured(
   baseUrl: string | undefined = import.meta.env.VITE_BFF_BASE_URL,
 ): boolean {
+  if (typeof window !== "undefined") return true;
   return Boolean(baseUrl?.trim());
 }
 
@@ -187,7 +188,9 @@ export class DistributedAssetManager {
       ? item.downloadUrl
       : this.downloadBaseUrl
         ? `${this.downloadBaseUrl}/api/v1/assets/distributed/${encodeURIComponent(item.code)}`
-        : undefined;
+        : typeof window !== "undefined"
+          ? `/api/v1/assets/distributed/${encodeURIComponent(item.code)}`
+          : undefined;
     if (!downloadUrl)
       throw new Error("Distributed download service is not configured");
     const response = await this.fetcher(
@@ -209,7 +212,13 @@ export class DistributedAssetManager {
     if (item.metadata) {
       const metadataUrl = this.directDownloads
         ? item.metadata.downloadUrl
-        : `${this.downloadBaseUrl}/api/v1/assets/distributed/${encodeURIComponent(item.code)}/index`;
+        : this.downloadBaseUrl
+          ? `${this.downloadBaseUrl}/api/v1/assets/distributed/${encodeURIComponent(item.code)}/index`
+          : typeof window !== "undefined"
+            ? `/api/v1/assets/distributed/${encodeURIComponent(item.code)}/index`
+            : undefined;
+      if (!metadataUrl)
+        throw new Error("Distributed download service is not configured");
       const metadataResponse = await this.fetcher(metadataUrl, {
         cache: "no-store",
         ...(options.signal ? { signal: options.signal } : {}),

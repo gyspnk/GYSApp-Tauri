@@ -1,6 +1,89 @@
 import { SauhPostSchema, type SauhPost } from "@gys/contracts";
 import { htmlToText } from "./article.js";
 
+export function cleanSauhHtml(rawHtml: string): string {
+  let cleaned = rawHtml.replace(
+    /<(script|style|iframe|object|embed|template|svg|audio|form)[^>]*>[\s\S]*?<\/\1>/gi,
+    " ",
+  );
+
+  const cutoffRegexes = [
+    /<(?:div|h[1-6]|span|section)[^>]*class="[^"]*(?:module-fancy-heading|tb_zlsh85)[^"]*"[^>]*>[\s\S]*?Sauh Bagi Jiwa Sebelumnya/i,
+    /Sauh Bagi Jiwa Sebelumnya/i,
+    /<(?:div|section)[^>]*id=["'](?:GBA|Ayat)["']/i,
+    /<ul[^>]*class="[^"]*module-accordion[^"]*"[^>]*>/i,
+    /Apakah Anda sudah membaca Alkitab/i,
+    /Terima kasih atas dukungan dari Saudara\/i/i,
+    /Bank Central Asia/i,
+  ];
+
+  let earliestCutoff = cleaned.length;
+  for (const regex of cutoffRegexes) {
+    const match = cleaned.match(regex);
+    if (match && match.index !== undefined && match.index < earliestCutoff) {
+      earliestCutoff = match.index;
+    }
+  }
+  cleaned = cleaned.slice(0, earliestCutoff);
+
+  cleaned = cleaned.replace(
+    /<div[^>]*class="[^"]*module-audio[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(/\[audio[^\]]*\]/gi, " ");
+  cleaned = cleaned.replace(
+    /https?:\/\/[^\s<"']+\.(?:mp3|wav|ogg|m4a)[^\s<"']*/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<a[^>]*class="[^"]*su-button[^"]*"[^>]*>[\s\S]*?<\/a>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<div[^>]*class="[^"]*shortcode[^"]*box[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<p[^>]*>\s*<strong>\s*Renungan Tanggal:[\s\S]*?<\/p>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<h[1-6][^>]*>[\s\S]*?Bacaan Alkitab Harian[\s\S]*?<\/h[1-6]>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<h[1-6][^>]*>[\s\S]*?SAUH BAGI JIWA[\s\S]*?<\/h[1-6]>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<a[^>]*class="[^"]*builder_button[^"]*"[^>]*>[\s\S]*?Gerakan Baca Alkitab[\s\S]*?<\/a>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<span[^>]*class="[^"]*su-dropcap[^"]*"[^>]*>([A-Za-z0-9])<\/span>/gi,
+    "$1",
+  );
+
+  return cleaned;
+}
+
+export function extractSauhBody(value: string): string {
+  const cleaned = cleanSauhHtml(value);
+  return htmlToText(
+    cleaned
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(
+        /<\/p>|<\/h[1-6]>|<\/li>|<\/div>|<\/section>|<\/article>/gi,
+        "\n",
+      )
+      .replace(/<\/?(?:span|strong|b|em|i|u|a|small|font)[^>]*>/gi, ""),
+  )
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function stripHtml(value: string): string {
   return htmlToText(value);
 }
@@ -97,7 +180,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
     // Keep the full readable article for the Sauh viewer. The home card uses
     // its own first-paragraph excerpt, so truncating here silently broke the
     // detail route while pretending the upstream response was complete.
-    const body = stripHtml(raw).slice(0, 20_000);
+    const body = extractSauhBody(raw).slice(0, 20_000);
     const url = typeof post.link === "string" ? post.link : "";
     const updatedAt =
       typeof post.modified === "string" ? post.modified : post.date;

@@ -2,7 +2,7 @@ import { SpeechOrchestrator } from "@gys/domain";
 import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
-import { EdgeSpeechProvider } from "./edge-speech.js";
+import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
 import {
   persistSpeechSettings,
   readSpeechSettings,
@@ -20,6 +20,7 @@ export type SpeechSnapshot = {
   status: "idle" | "loading" | "speaking" | "paused" | "error";
   currentIndex: number;
   total: number;
+  playerOpen?: boolean;
   providerId?: string;
   offline?: boolean;
   voices: SpeechVoice[];
@@ -37,6 +38,7 @@ const initial: SpeechSnapshot = {
   status: "idle",
   currentIndex: -1,
   total: 0,
+  playerOpen: false,
   voices: [],
   rate: 0.9,
   pitch: 1,
@@ -83,14 +85,17 @@ class BrowserSpeechSession {
       ];
       const saved = readSpeechSettings(localStorage);
       const engine: SpeechEnginePreference = saved.engine;
+      const edgeEffective = isEdgeSpeechConfigured()
+        ? edgeStatus.available
+        : browserStatus.available;
       this.patch({
         voices,
         available:
           engine === "edge"
-            ? edgeStatus.available
+            ? edgeEffective
             : engine === "local"
               ? browserStatus.available
-              : edgeStatus.available || browserStatus.available,
+              : edgeEffective || browserStatus.available,
         engine,
         ...(saved.voiceId && voices.some((voice) => voice.id === saved.voiceId)
           ? { voiceId: saved.voiceId }
@@ -145,6 +150,63 @@ class BrowserSpeechSession {
       error: undefined,
     });
     await this.playQueue(0);
+  }
+
+  public prepare(
+    queue: readonly SpeechQueueItem[],
+    context?: SpeechContext,
+  ): void {
+    if (!queue.length) return;
+    this.queue = queue.map((item) => {
+      const itemContext = item.context ?? context;
+      return {
+        id: item.id,
+        text: item.text,
+        ...(itemContext ? { context: itemContext } : {}),
+      };
+    });
+    this.patch({
+      total: this.queue.length,
+      currentIndex: Math.max(
+        0,
+        this.state.currentIndex >= 0 ? this.state.currentIndex : 0,
+      ),
+      context: context ?? queue[0]?.context,
+      playerOpen: true,
+      error: undefined,
+    });
+  }
+
+  public togglePlayer(open?: boolean): void {
+    const next = open ?? !this.state.playerOpen;
+    if (!next && this.state.status === "speaking") {
+      void this.stop(false);
+    }
+    this.patch({ playerOpen: next });
+  }
+
+  public async play(): Promise<void> {
+    if (!this.queue.length) return;
+    if (this.state.status === "paused") {
+      return this.resume();
+    }
+    await midiPlayer.pause().catch(() => undefined);
+    await this.stop(false);
+    this.orchestrator = new SpeechOrchestrator(
+      this.providersFor(this.state.engine),
+    );
+    const target = Math.max(
+      0,
+      this.state.currentIndex >= 0 ? this.state.currentIndex : 0,
+    );
+    this.patch({
+      status: "loading",
+      currentIndex: target,
+      total: this.queue.length,
+      playerOpen: true,
+      error: undefined,
+    });
+    await this.playQueue(target);
   }
 
   public async previous(): Promise<void> {
@@ -289,7 +351,13 @@ class BrowserSpeechSession {
   }
 
   private providersFor(engine: SpeechEnginePreference) {
-    if (engine === "edge") return [this.edgeProvider];
+    // "Edge TTS" tanpa API: kalau endpoint Edge tidak dikonfigurasi atau gagal,
+    // speech synthesis bawaan browser siap sebagai fallback agar player tetap jalan.
+    if (engine === "edge") {
+      return isEdgeSpeechConfigured()
+        ? [this.edgeProvider, this.browserProvider]
+        : [this.browserProvider];
+    }
     if (engine === "local") return [this.browserProvider];
     return [this.edgeProvider, this.browserProvider];
   }
@@ -301,13 +369,16 @@ class BrowserSpeechSession {
       this.edgeProvider.status(),
       this.browserProvider.status(),
     ]);
+    const edgeEffective = isEdgeSpeechConfigured()
+      ? edgeStatus.available
+      : browserStatus.available;
     this.patch({
       available:
         engine === "edge"
-          ? edgeStatus.available
+          ? edgeEffective
           : engine === "local"
             ? browserStatus.available
-            : edgeStatus.available || browserStatus.available,
+            : edgeEffective || browserStatus.available,
     });
   }
 }

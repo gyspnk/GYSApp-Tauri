@@ -11,9 +11,9 @@ import {
 export const SPLIT_KEY = "gys-bible-split-v1";
 export const SPLIT_RATIO_KEY = "gys-bible-split-ratio-v1";
 export const SPLIT_SYNC_SCROLL_KEY = "gys-bible-split-sync-scroll-v1";
-export const MIN_SPLIT_RATIO = 42;
-export const MAX_SPLIT_RATIO = 72;
-export const DEFAULT_SPLIT_RATIO = 58;
+export const MIN_SPLIT_RATIO = 20;
+export const MAX_SPLIT_RATIO = 80;
+export const DEFAULT_SPLIT_RATIO = 50;
 export const DEFAULT_SYNC_SCROLL = true;
 
 export function clampSplitRatio(
@@ -33,8 +33,15 @@ export function clampSplitRatio(
 
 export function splitRatioFromPointer(
   clientX: number,
-  rect: Pick<DOMRect, "left" | "width">,
+  clientY: number,
+  rect: Pick<DOMRect, "left" | "width" | "top" | "height">,
+  isVertical = false,
 ): number {
+  if (isVertical) {
+    if (!Number.isFinite(clientY) || rect.height <= 0)
+      return DEFAULT_SPLIT_RATIO;
+    return clampSplitRatio(((clientY - rect.top) / rect.height) * 100);
+  }
   if (!Number.isFinite(clientX) || rect.width <= 0) return DEFAULT_SPLIT_RATIO;
   return clampSplitRatio(((clientX - rect.left) / rect.width) * 100);
 }
@@ -162,7 +169,10 @@ export function useBibleSplitController(): BibleSplitController {
     const updateRatio = (event: PointerEvent) => {
       if (!splitDragging.current || !splitLayoutRef.current) return;
       const rect = splitLayoutRef.current.getBoundingClientRect();
-      setSplitRatio(splitRatioFromPointer(event.clientX, rect));
+      const isVertical = window.innerWidth <= 680;
+      setSplitRatio(
+        splitRatioFromPointer(event.clientX, event.clientY, rect, isVertical),
+      );
     };
     const finishDrag = () => {
       splitDragging.current = false;
@@ -181,7 +191,6 @@ export function useBibleSplitController(): BibleSplitController {
 
   const startSplitDrag = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (window.innerWidth <= 720) return;
       event.preventDefault();
       splitDragging.current = true;
       document.body.classList.add("is-resizing-bible");

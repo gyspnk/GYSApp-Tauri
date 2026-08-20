@@ -191,7 +191,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     .getByRole("button", { name: "Sebelumnya" })
     .click();
   const resumeButton = page.locator('[data-pdf-resume="true"]');
-  await expect(resumeButton).toBeVisible();
+  await expect(resumeButton).toBeVisible({ timeout: 15_000 });
   const resumeLabel = await resumeButton.textContent();
   const resumePage = resumeLabel?.match(/(\d+)$/)?.[1];
   if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);

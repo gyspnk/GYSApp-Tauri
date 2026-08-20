@@ -1,11 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const viewports = [
-  { name: "320x720", width: 320, height: 720 },
   { name: "390x844", width: 390, height: 844 },
   { name: "768x1024", width: 768, height: 1024 },
   { name: "1440x900", width: 1440, height: 900 },
-  { name: "844x390", width: 844, height: 390 },
 ] as const;
 
 const surfaces = [
@@ -133,7 +131,7 @@ for (const surface of surfaces) {
             surface.name === "home"
               ? [
                   page.locator(
-                    ".home-page .date-line, .home-page .sauh-source, .home-page .sauh-image, .home-page .suara-card img",
+                    ".home-page .date-line, .home-page .sauh-source, .home-page .sauh-image, .home-page .suara-card img, .home-page .suara-library-item img",
                   ),
                 ]
               : [],

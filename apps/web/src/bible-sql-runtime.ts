@@ -61,12 +61,90 @@ export async function projectSqliteBibleAsync(
       verse: Number(verse),
       text: String(text),
     }));
+    // Pericopes & cross-refs are optional — TB has them, some packs may not.
+    let pericopes:
+      | {
+          id: string;
+          book: string;
+          chapter: number;
+          verse: number;
+          title: string;
+        }[]
+      | undefined;
+    let crossRefs:
+      | Record<
+          string,
+          {
+            book: string;
+            chapter: number;
+            verse: number;
+            endBook?: string;
+            endChapter?: number;
+            endVerse?: number;
+          }[]
+        >
+      | undefined;
+    try {
+      const rawPericopes = firstResult(
+        database,
+        "select id, s, b, c, v, t from pericope order by b, c, v",
+      );
+      if (rawPericopes.length) {
+        pericopes = rawPericopes.map(([id, , b, c, v, t]) => ({
+          id: String(id),
+          book: String(b),
+          chapter: Number(c),
+          verse: Number(v),
+          title: String(t),
+        }));
+      }
+    } catch {}
+    try {
+      const rawRefs = firstResult(
+        database,
+        "select id, sv, ev from ref order by id, sv",
+      );
+      if (rawRefs.length) {
+        const map: NonNullable<typeof crossRefs> = {};
+        for (const [id, sv, ev] of rawRefs) {
+          const svNum = Number(sv);
+          if (!svNum) continue;
+          const b = Math.floor(svNum / 1_000_000);
+          const c = Math.floor((svNum % 1_000_000) / 1000);
+          const v = svNum % 1000;
+          if (!b || !c || !v) continue;
+          const key = String(id);
+          const entry: NonNullable<typeof crossRefs>[string][number] = {
+            book: String(b),
+            chapter: c,
+            verse: v,
+          };
+          const evNum = Number(ev);
+          if (evNum) {
+            if (evNum >= 1_000_000) {
+              const eb = Math.floor(evNum / 1_000_000);
+              const ec = Math.floor((evNum % 1_000_000) / 1000);
+              const evv = evNum % 1000;
+              if (eb !== b) entry.endBook = String(eb);
+              if (ec !== c) entry.endChapter = ec;
+              if (eb !== b || ec !== c || evv !== v) entry.endVerse = evv;
+            } else if (evNum !== v) {
+              entry.endVerse = evNum;
+            }
+          }
+          (map[key] ??= []).push(entry);
+        }
+        if (Object.keys(map).length) crossRefs = map;
+      }
+    } catch {}
     return BibleReaderPackSchema.parse({
       version: 1,
       translation: bibleTranslationCode(code),
       source,
       books,
       verses,
+      ...(pericopes ? { pericopes } : {}),
+      ...(crossRefs ? { crossRefs } : {}),
     });
   } finally {
     database.close();

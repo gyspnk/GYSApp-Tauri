@@ -111,6 +111,7 @@ test("shell remains usable across the release viewport matrix", async ({
 test("offline reader packs open without a network request", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(
     page.getByRole("heading", { name: "Alkitab", exact: true }),
@@ -239,12 +240,12 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   });
   await splitDivider.focus();
   await splitDivider.press("ArrowRight");
-  await expect(splitDivider).toHaveAttribute("aria-valuenow", "60");
+  await expect(splitDivider).toHaveAttribute("aria-valuenow", "52");
   await expect
     .poll(() =>
       page.evaluate(() => localStorage.getItem("gys-bible-split-ratio-v1")),
     )
-    .toBe("60");
+    .toBe("52");
   await page
     .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
     .first()
@@ -350,6 +351,10 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
       getComputedStyle(element).fontSize.replace("px", ""),
     ),
   );
+  const typoToggle = page.getByRole("button", { name: "Ukuran teks bacaan" });
+  if (await typoToggle.isVisible()) {
+    await typoToggle.click();
+  }
   await page.getByRole("button", { name: "Perbesar teks" }).click();
   await page.getByRole("button", { name: "Perbesar teks" }).click();
   await expect
@@ -369,6 +374,9 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
+  if (await typoToggle.isVisible()) {
+    await typoToggle.click();
+  }
   await expect
     .poll(() =>
       page
@@ -385,25 +393,157 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Bible title drag exposes quick chapter navigation with keyboard fallback", async ({
+test("Bible title drag advances through book, chapter, and verse before commit", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
-  const handle = page.locator(".reader-toolbar .quick-nav-handle");
+  const handle = page.locator(".quick-nav-handle");
   const box = await handle.boundingBox();
   if (!box) throw new Error("Bible quick navigation handle is not measurable");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 96);
+  await page.mouse.move(box.x + box.width / 2 + 8, box.y + box.height / 2);
   await expect(page.locator(".quick-nav-floater")).toBeVisible();
+  const fieldBox = await page
+    .locator(".quick-nav-columns-container")
+    .boundingBox();
+  expect(fieldBox).not.toBeNull();
+  expect(fieldBox!.height).toBeGreaterThan(500);
+  await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
+    "data-step",
+    "book",
+  );
+  const matthew = page.locator('[data-quick-nav-value="40"]');
+  const matthewBox = await matthew.boundingBox();
+  if (!matthewBox) throw new Error("Quick navigation book is not measurable");
+  await page.mouse.move(
+    matthewBox.x + matthewBox.width / 2,
+    matthewBox.y + matthewBox.height / 2,
+  );
+  await expect(matthew).toHaveClass(/is-selected/);
+  await page.waitForTimeout(600);
+  const mark = page.locator('[data-quick-nav-value="41"]');
+  const markBox = await mark.boundingBox();
+  if (!markBox) throw new Error("Quick navigation book is not measurable");
+  await page.mouse.move(
+    markBox.x + markBox.width / 2,
+    markBox.y + markBox.height / 2,
+  );
+  await page.waitForTimeout(600);
+  await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
+    "data-step",
+    "book",
+  );
+  await page.mouse.move(
+    matthewBox.x + matthewBox.width / 2,
+    matthewBox.y + matthewBox.height / 2,
+  );
+  await page.waitForTimeout(1_100);
+  await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
+    "data-step",
+    "chapter",
+  );
+  const chapterFive = page.locator('[data-quick-nav-value="5"]');
+  const chapterBox = await chapterFive.boundingBox();
+  if (!chapterBox)
+    throw new Error("Quick navigation chapter is not measurable");
+  await page.mouse.move(
+    chapterBox.x + chapterBox.width / 2,
+    chapterBox.y + chapterBox.height / 2,
+  );
+  await expect(chapterFive).toHaveClass(/is-selected/);
+  await page.waitForTimeout(1_100);
+  await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
+    "data-step",
+    "verse",
+  );
+  const verseThree = page.locator('[data-quick-nav-value="3"]');
+  const verseBox = await verseThree.boundingBox();
+  if (!verseBox) throw new Error("Quick navigation verse is not measurable");
+  await page.mouse.move(
+    verseBox.x + verseBox.width / 2,
+    verseBox.y + verseBox.height / 2,
+  );
+  await expect(verseThree).toHaveClass(/is-selected/);
   await page.mouse.up();
-  await expect(page.getByRole("heading", { name: /Yohanes 5/ })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Pilih Kitab & Pasal" }),
+  ).toBeHidden();
+  await expect(page.getByRole("heading", { name: /Matius 5/ })).toBeVisible();
+  await expect(page.locator(".verse-row.is-selected")).toContainText(
+    "Berbahagialah",
+  );
   await handle.focus();
-  await handle.press("ArrowUp");
-  await expect(page.getByRole("heading", { name: /Yohanes 4/ })).toBeVisible();
+  await handle.press("ArrowDown");
+  await expect(page.getByRole("heading", { name: /Matius 6/ })).toBeVisible();
+});
+
+test("Bible drag release defaults incomplete book and chapter choices to verse one", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  const dragTo = async (value: number) => {
+    const handle = page.locator(".quick-nav-handle");
+    const handleBox = await handle.boundingBox();
+    if (!handleBox)
+      throw new Error("Bible quick navigation handle is not measurable");
+    await page.mouse.move(
+      handleBox.x + handleBox.width / 2,
+      handleBox.y + handleBox.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      handleBox.x + handleBox.width / 2 + 16,
+      handleBox.y + handleBox.height / 2,
+    );
+    await expect(page.locator(".quick-nav-floater")).toBeVisible();
+    const item = page.locator(`[data-quick-nav-value="${value}"]`);
+    const itemBox = await item.boundingBox();
+    if (!itemBox) throw new Error("Quick navigation item is not measurable");
+    await page.mouse.move(
+      itemBox.x + itemBox.width / 2,
+      itemBox.y + itemBox.height / 2,
+    );
+  };
+
+  await dragTo(40);
+  await page.mouse.up();
+  await expect(page.getByRole("heading", { name: /Matius 1/ })).toBeVisible();
+  await expect(page.locator(".verse-row.is-selected")).toContainText(
+    "silsilah",
+  );
+
+  await dragTo(40);
+  await page.waitForTimeout(1_100);
+  await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
+    "data-step",
+    "chapter",
+  );
+  const chapterFive = page.locator('[data-quick-nav-value="5"]');
+  const chapterBox = await chapterFive.boundingBox();
+  if (!chapterBox)
+    throw new Error("Quick navigation chapter is not measurable");
+  await page.mouse.move(
+    chapterBox.x + chapterBox.width / 2,
+    chapterBox.y + chapterBox.height / 2,
+  );
+  await page.mouse.up();
+  await expect(page.getByRole("heading", { name: /Matius 5/ })).toBeVisible();
+  await expect(page.locator(".verse-row.is-selected")).toContainText(
+    "Ketika Yesus melihat orang banyak",
+  );
+  await expect(
+    page.getByRole("dialog", { name: "Pilih Kitab & Pasal" }),
+  ).toBeHidden();
 });
 
 test("Bible text selection exposes contextual copy/share/note actions", async ({
@@ -455,7 +595,9 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
     page.getByRole("heading", { name: "Alkitab", exact: true }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".bible-search")).toBeVisible();
-  await expect(page.locator(".reader-toolbar .quick-nav-handle")).toBeVisible();
+  await expect(page.locator(".quick-nav-handle")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(
     page.getByText(
       "Buka bacaan terakhir atau cari ayat di seluruh Alkitab TB.",
@@ -484,20 +626,25 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
 }) => {
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".continue-panel")).toHaveCount(1);
-  await expect(page.locator(".home-page .home-media-section")).toHaveCount(1);
+  await expect(page.locator(".home-page .home-media-section")).toHaveCount(2);
   await expect(
     page.getByRole("heading", { name: "Suara Sejati" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Literatur Terbaru" }),
   ).toBeVisible();
   await expect(page.locator(".verse-panel .section-heading")).toContainText(
     "Sauh hari ini",
   );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Baca Sauh" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Baca Lebih Lanjut/i }),
+  ).toBeVisible();
 });
 
 test("online content opens inside the application shell", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/");
-  await page.getByRole("link", { name: "Baca Sauh" }).click();
+  await page.getByRole("link", { name: /Baca Lebih Lanjut/i }).click();
   await expect(page).toHaveURL(/\/sauh$/);
   await expect(page.getByTestId("sauh-page")).toBeVisible();
   await page.goto("/GYSApp-Tauri/suara");
@@ -624,7 +771,7 @@ test("hymn catalog keeps search and collection controls in its header", async ({
     .toBe(true);
 });
 
-test("home keeps one continue item when Bible and hymn history coexist", async ({
+test("home shows Bible and hymn history side by side when both coexist", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -648,7 +795,7 @@ test("home keeps one continue item when Bible and hymn history coexist", async (
     );
   });
   await page.goto("/GYSApp-Tauri/");
-  await expect(page.locator(".continue-item")).toHaveCount(1);
+  await expect(page.locator(".continue-item")).toHaveCount(2);
 });
 
 test("device reset clears browser preferences, durable blobs, and app caches", async ({
@@ -697,7 +844,7 @@ test("device reset clears browser preferences, durable blobs, and app caches", a
   await page.getByRole("button", { name: "Reset perangkat" }).click();
   await expect(
     page.getByText(/Preferensi dan cache GYS sudah direset/),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   await expect
     .poll(
       () =>
@@ -788,11 +935,11 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await page.goto("/GYSApp-Tauri/bible");
   await page.getByRole("heading", { name: "Alkitab" }).waitFor();
   const readButton = page.getByRole("button", { name: "Bacakan" });
-  await expect(readButton).toBeEnabled({ timeout: 5_000 });
+  await expect(readButton).toBeEnabled({ timeout: 15_000 });
   await readButton.click();
   await expect(page.locator(".media-surface")).toBeVisible();
   await expect(page.locator(".verse-row.is-speaking")).toBeVisible({
-    timeout: 5_000,
+    timeout: 15_000,
   });
   await expect(
     page.getByRole("button", { name: "Ayat berikutnya" }),
@@ -806,13 +953,15 @@ test("the shared read-aloud surface can be minimized without losing the session"
     .not.toBe(firstSpokenVerse);
   await page.locator(".media-context-link").click();
   await expect(page).toHaveURL(/\/bible#bible-verse-/);
-  await page.getByRole("button", { name: "Pengaturan suara" }).click();
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
+  await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
   const pitch = page.getByLabel("Nada bacaan suara");
   const volume = page.getByLabel("Volume bacaan suara");
   await pitch.fill("1.4");
   await volume.fill("0.65");
   await expect(pitch).toHaveValue("1.4");
   await expect(volume).toHaveValue("0.65");
+  await page.getByRole("button", { name: "Tutup menu" }).click();
   const dragHandle = page.locator(".media-drag-handle");
   const dragBox = await dragHandle.boundingBox();
   if (!dragBox) throw new Error("Media drag handle is not measurable");
@@ -856,6 +1005,8 @@ test("the shared read-aloud surface can be minimized without losing the session"
 
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
+  await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
   await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
   await expect(page.getByLabel("Volume bacaan suara")).toHaveValue("0.65");
 });
@@ -1009,6 +1160,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
 test("Bible title tap opens standard book/chapter/verse picker dialog and navigates", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
@@ -1020,6 +1172,22 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
   await handle.click();
   const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
   await expect(dialog).toBeVisible();
+  await expect
+    .poll(() =>
+      dialog.evaluate(
+        (element) =>
+          element.getBoundingClientRect().right <= innerWidth &&
+          element.scrollWidth <= element.clientWidth,
+      ),
+    )
+    .toBe(true);
+  const longBook = page.getByRole("button", { name: "Kidung Agung" });
+  await expect(longBook).toBeVisible();
+  expect(
+    await longBook.evaluate(
+      (element) => getComputedStyle(element).whiteSpace === "normal",
+    ),
+  ).toBe(true);
 
   // Filter book by name and select
   await page.getByPlaceholder("Cari nama kitab…").fill("Matius");

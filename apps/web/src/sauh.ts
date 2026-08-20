@@ -54,6 +54,94 @@ function decodeEntities(value: string): string {
     );
 }
 
+export function cleanSauhHtml(rawHtml: string): string {
+  let cleaned = rawHtml.replace(
+    /<(script|style|iframe|object|embed|template|svg|audio|form)[^>]*>[\s\S]*?<\/\1>/gi,
+    " ",
+  );
+
+  // Cut off bottom modules: Previous slider, Bible reading accordion, newsletter form, donation
+  const cutoffRegexes = [
+    /<(?:div|h[1-6]|span|section)[^>]*class="[^"]*(?:module-fancy-heading|tb_zlsh85)[^"]*"[^>]*>[\s\S]*?Sauh Bagi Jiwa Sebelumnya/i,
+    /Sauh Bagi Jiwa Sebelumnya/i,
+    /<(?:div|section)[^>]*id=["'](?:GBA|Ayat)["']/i,
+    /<ul[^>]*class="[^"]*module-accordion[^"]*"[^>]*>/i,
+    /Apakah Anda sudah membaca Alkitab/i,
+    /Terima kasih atas dukungan dari Saudara\/i/i,
+    /Bank Central Asia/i,
+  ];
+
+  let earliestCutoff = cleaned.length;
+  for (const regex of cutoffRegexes) {
+    const match = cleaned.match(regex);
+    if (match && match.index !== undefined && match.index < earliestCutoff) {
+      earliestCutoff = match.index;
+    }
+  }
+  cleaned = cleaned.slice(0, earliestCutoff);
+
+  // Remove top audio embeds and boilerplate
+  cleaned = cleaned.replace(
+    /<div[^>]*class="[^"]*module-audio[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(/\[audio[^\]]*\]/gi, " ");
+  cleaned = cleaned.replace(
+    /https?:\/\/[^\s<"']+\.(?:mp3|wav|ogg|m4a)[^\s<"']*/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<a[^>]*class="[^"]*su-button[^"]*"[^>]*>[\s\S]*?<\/a>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<div[^>]*class="[^"]*shortcode[^"]*box[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<p[^>]*>\s*<strong>\s*Renungan Tanggal:[\s\S]*?<\/p>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<h[1-6][^>]*>[\s\S]*?Bacaan Alkitab Harian[\s\S]*?<\/h[1-6]>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<h[1-6][^>]*>[\s\S]*?SAUH BAGI JIWA[\s\S]*?<\/h[1-6]>/gi,
+    " ",
+  );
+  cleaned = cleaned.replace(
+    /<a[^>]*class="[^"]*builder_button[^"]*"[^>]*>[\s\S]*?Gerakan Baca Alkitab[\s\S]*?<\/a>/gi,
+    " ",
+  );
+
+  // Clean dropcaps without inserting spaces between first letter and word
+  cleaned = cleaned.replace(
+    /<span[^>]*class="[^"]*su-dropcap[^"]*"[^>]*>([A-Za-z0-9])<\/span>/gi,
+    "$1",
+  );
+
+  return cleaned;
+}
+
+export function extractSauhBody(value: string): string {
+  const cleaned = cleanSauhHtml(value);
+  return decodeEntities(
+    cleaned
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(
+        /<\/p>|<\/h[1-6]>|<\/li>|<\/div>|<\/section>|<\/article>/gi,
+        "\n",
+      )
+      .replace(/<\/?(?:span|strong|b|em|i|u|a|small|font)[^>]*>/gi, "")
+      .replace(/<[^>]*>/g, " "),
+  )
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function stripHtml(value: string): string {
   const unsafeRemoved = value.replace(
     /<(script|style|iframe|object|embed|template|svg)[^>]*>[\s\S]*?<\/\1>/gi,
@@ -92,7 +180,7 @@ export function stripHtml(value: string): string {
 }
 
 export function firstParagraph(value: string): string {
-  const text = stripHtml(value);
+  const text = extractSauhBody(value) || stripHtml(value);
   return text.split(/\n+/)[0]?.trim() || text.slice(0, 440);
 }
 
@@ -166,7 +254,7 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
         : typeof post.title === "string"
           ? stripHtml(post.title)
           : "";
-    const body = stripHtml(rawBody).slice(0, 20_000);
+    const body = extractSauhBody(rawBody).slice(0, 20_000);
     const sourceUrl = typeof post.url === "string" ? post.url : post.link;
     const updatedAt =
       typeof post.modified === "string"
@@ -235,9 +323,17 @@ export function expectedSauhSlug(date = new Date()): string {
 
 /** Prefer the same-origin BFF; direct WordPress remains the no-config fallback. */
 export function sauhNetworkCandidates(bffBase?: string): string[] {
-  const proxy = bffBase?.trim()
-    ? `${bffBase.trim().replace(/\/$/, "")}/api/v1/content/sauh`
-    : undefined;
+  const base = bffBase?.trim();
+  const isCrossPortLocalhost =
+    typeof window !== "undefined" &&
+    Boolean(
+      base &&
+      (base.includes("127.0.0.1") || base.includes("localhost")) &&
+      !base.includes(`:${window.location.port}`),
+    );
+  const proxy = isCrossPortLocalhost
+    ? undefined
+    : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/sauh`;
   return [proxy, WORDPRESS_URL].filter((value): value is string =>
     Boolean(value),
   );
@@ -376,34 +472,118 @@ async function loadNetworkToday(): Promise<SauhPost[]> {
     : new Error("Sauh Bagi Jiwa is unavailable");
 }
 
-export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
+const STORAGE_KEY_PREFIX = "gys_sauh_cached_";
+
+function loadStoredSauh(dayKey: string): SauhPost[] | undefined {
+  if (typeof window === "undefined" || !window.sessionStorage) return undefined;
+  try {
+    const raw = window.sessionStorage.getItem(`${STORAGE_KEY_PREFIX}${dayKey}`);
+    if (!raw) return undefined;
+    const parsed: unknown = JSON.parse(raw);
+    const validated = parseNormalizedSauh(parsed);
+    return validated.length ? validated : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function storeSauh(dayKey: string, items: SauhPost[]) {
+  if (typeof window === "undefined" || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.setItem(
+      `${STORAGE_KEY_PREFIX}${dayKey}`,
+      JSON.stringify(items),
+    );
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+export function isTodaySauhAvailable(
+  items: SauhPost[],
+  now = new Date(),
+): boolean {
+  return selectTodaySauh(items, now).length > 0;
+}
+
+export function getCachedSauh(): SauhPost[] | undefined {
   const dayKey = localDateKey(new Date());
   if (
     cachedToday &&
     cachedToday.dayKey === dayKey &&
-    cachedToday.expiresAt > Date.now()
-  )
+    cachedToday.items.length
+  ) {
     return [...cachedToday.items];
+  }
+  const stored = loadStoredSauh(dayKey);
+  if (stored && stored.length) {
+    cachedToday = {
+      dayKey,
+      expiresAt: Date.now() + CACHE_TTL_MS,
+      items: [...stored],
+    };
+    return [...stored];
+  }
+  return undefined;
+}
+
+export async function fetchSauh(
+  signal?: AbortSignal,
+  forceNetwork = false,
+): Promise<SauhPost[]> {
+  const dayKey = localDateKey(new Date());
+  if (!forceNetwork) {
+    if (
+      cachedToday &&
+      cachedToday.dayKey === dayKey &&
+      cachedToday.expiresAt > Date.now()
+    )
+      return [...cachedToday.items];
+    const stored = loadStoredSauh(dayKey);
+    if (stored && stored.length) {
+      cachedToday = {
+        dayKey,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+        items: [...stored],
+      };
+      return [...stored];
+    }
+  }
   const existing =
-    inFlightToday?.dayKey === dayKey ? inFlightToday.promise : undefined;
+    !forceNetwork && inFlightToday?.dayKey === dayKey
+      ? inFlightToday.promise
+      : undefined;
   if (existing) return [...(await waitFor(existing, signal))];
   const shared = (async () => {
     const offline = typeof navigator !== "undefined" && !navigator.onLine;
     if (offline) {
-      // Offline users should see the pinned snapshot immediately, without
-      // spending two network timeouts before the fallback is attempted. A
-      // stale but verified snapshot is a deliberate degraded mode; an empty
-      // or malformed snapshot still produces the actionable error state.
       const snapshot = await request(STATIC_URL);
       const selected = selectOfflineSauh(snapshot);
-      if (selected.length) return selected;
+      if (selected.length) {
+        storeSauh(dayKey, selected);
+        return selected;
+      }
       throw new Error("Sauh snapshot is empty");
     }
 
-    // The local snapshot is a verified, source-backed baseline. Race it with
-    // live revalidation so a slow/CORS-blocked WordPress request never leaves
-    // Home blank for four seconds. When the snapshot wins, the live result
-    // still updates the in-memory cache for the next open.
+    if (forceNetwork) {
+      try {
+        const networkItems = await loadNetworkToday();
+        if (networkItems.length) {
+          cachedToday = {
+            dayKey,
+            expiresAt: Date.now() + CACHE_TTL_MS,
+            items: [...networkItems],
+          };
+          storeSauh(dayKey, networkItems);
+          publishSauhUpdate(networkItems);
+          return networkItems;
+        }
+      } catch (error) {
+        recordDiagnostic("warn", "sauh.forceNetwork", error);
+      }
+    }
+
     const snapshot = request(STATIC_URL).then(
       (items) => {
         const selected = selectOfflineSauh(items);
@@ -423,6 +603,7 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
     const first = await Promise.race([snapshot, network]);
     if (first) {
       if (first.source === "snapshot") {
+        storeSauh(dayKey, first.items);
         void network.then((result) => {
           if (result?.source === "network") {
             cachedToday = {
@@ -430,9 +611,12 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
               expiresAt: Date.now() + CACHE_TTL_MS,
               items: [...result.items],
             };
+            storeSauh(dayKey, result.items);
             publishSauhUpdate(result.items);
           }
         });
+      } else if (first.source === "network") {
+        storeSauh(dayKey, first.items);
       }
       return first.items;
     }
@@ -442,7 +626,10 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
       network,
     ]);
     const fallback = networkResult ?? snapshotResult;
-    if (fallback) return fallback.items;
+    if (fallback) {
+      storeSauh(dayKey, fallback.items);
+      return fallback.items;
+    }
     const failure = new Error("Sauh Bagi Jiwa is unavailable");
     recordDiagnostic("error", "sauh.fetch", failure);
     throw failure;
@@ -454,6 +641,7 @@ export async function fetchSauh(signal?: AbortSignal): Promise<SauhPost[]> {
         expiresAt: Date.now() + CACHE_TTL_MS,
         items: [...items],
       };
+      storeSauh(dayKey, items);
       return items;
     },
     (error: unknown) => {

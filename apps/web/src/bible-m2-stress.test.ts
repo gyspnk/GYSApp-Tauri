@@ -276,20 +276,43 @@ describe("Milestone 2 Stress Tests: calculateProportionalScroll & calculateVerse
 
 describe("Milestone 2 Stress Tests: split ratio & storage resilience", () => {
   it("clampSplitRatio handles NaN, Infinity, -Infinity, strings, extreme ranges safely", () => {
-    expect(clampSplitRatio(Number.NaN)).toBe(58);
-    expect(clampSplitRatio(Infinity)).toBe(58);
-    expect(clampSplitRatio(-Infinity)).toBe(58);
-    expect(clampSplitRatio(0)).toBe(42);
-    expect(clampSplitRatio(100)).toBe(72);
+    expect(clampSplitRatio(Number.NaN)).toBe(50);
+    expect(clampSplitRatio(Infinity)).toBe(50);
+    expect(clampSplitRatio(-Infinity)).toBe(50);
+    expect(clampSplitRatio(0)).toBe(20);
+    expect(clampSplitRatio(100)).toBe(80);
     expect(clampSplitRatio(50.4)).toBe(50);
     expect(clampSplitRatio(50.6)).toBe(51);
   });
 
   it("splitRatioFromPointer handles rect width 0 and negative coordinates", () => {
-    expect(splitRatioFromPointer(100, { left: 0, width: 0 })).toBe(58);
-    expect(splitRatioFromPointer(100, { left: 0, width: -100 })).toBe(58);
-    expect(splitRatioFromPointer(-500, { left: 0, width: 1000 })).toBe(42);
-    expect(splitRatioFromPointer(5000, { left: 0, width: 1000 })).toBe(72);
+    expect(
+      splitRatioFromPointer(100, 0, { left: 0, width: 0, top: 0, height: 0 }),
+    ).toBe(50);
+    expect(
+      splitRatioFromPointer(100, 0, {
+        left: 0,
+        width: -100,
+        top: 0,
+        height: 0,
+      }),
+    ).toBe(50);
+    expect(
+      splitRatioFromPointer(-500, 0, {
+        left: 0,
+        width: 1000,
+        top: 0,
+        height: 0,
+      }),
+    ).toBe(20);
+    expect(
+      splitRatioFromPointer(5000, 0, {
+        left: 0,
+        width: 1000,
+        top: 0,
+        height: 0,
+      }),
+    ).toBe(80);
   });
 
   it("adjustSplitRatio handles non-finite delta", () => {
@@ -299,10 +322,10 @@ describe("Milestone 2 Stress Tests: split ratio & storage resilience", () => {
   });
 
   it("readStoredSplitRatio handles malformed storage values", () => {
-    expect(readStoredSplitRatio({ getItem: () => "invalid" })).toBe(58);
-    expect(readStoredSplitRatio({ getItem: () => "" })).toBe(42);
-    expect(readStoredSplitRatio({ getItem: () => "999" })).toBe(72);
-    expect(readStoredSplitRatio({ getItem: () => "-50" })).toBe(42);
+    expect(readStoredSplitRatio({ getItem: () => "invalid" })).toBe(50);
+    expect(readStoredSplitRatio({ getItem: () => "" })).toBe(20);
+    expect(readStoredSplitRatio({ getItem: () => "999" })).toBe(80);
+    expect(readStoredSplitRatio({ getItem: () => "-50" })).toBe(20);
   });
 
   it("readStoredSyncScroll handles missing or corrupt values", () => {

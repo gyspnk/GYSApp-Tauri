@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 export type SelectOption<T extends string | number> = {
   value: T;
   label: string;
+  shortLabel?: string;
   hint?: string;
 };
 
@@ -92,7 +93,7 @@ export function Select<T extends string | number>({
         onClick={() => setOpen((current) => !current)}
         onKeyDown={onKeyDown}
       >
-        <span>{selected?.label ?? "—"}</span>
+        <span>{selected?.shortLabel ?? selected?.label ?? "—"}</span>
         <span className="control-select-chevron" aria-hidden="true">
           {open ? "⌃" : "⌄"}
         </span>

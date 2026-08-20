@@ -155,6 +155,71 @@ describe("Sauh feed normalization", () => {
     );
   });
 
+  it("cuts off bottom Bible reading, previous slider, newsletter and donation sections", () => {
+    const rawContent = `
+      <h3>SAUH BAGI JIWA</h3>
+      <p><strong>Renungan Tanggal: 19 Agustus 2026</strong></p>
+      <a class="su-button" href="test.mp3">Unduh</a>
+      <div class="shortcode box white"><p><strong><i>"Ayat Emas"</i> (Matius 15:33)</strong></p></div>
+      <p><span class="su-dropcap">L</span>upa merupakan hal yang wajar terjadi.</p>
+      <p>Ini adalah isi renungan utama yang harus tampil di halaman.</p>
+      <div class="module-fancy-heading"><h2>Sauh Bagi Jiwa Sebelumnya</h2></div>
+      <div id="GBA"><h2>Gerakan Membaca Alkitab</h2></div>
+      <div id="Ayat"><ul class="module-accordion"><li>Bacaan Alkitab Harian Matius 15:32-39 32 Lalu Yesus...</li></ul></div>
+      <p>Apakah Anda sudah membaca Alkitab hari ini?</p>
+      <p>Terima kasih atas dukungan dari Saudara/i. Bank Central Asia (BCA)</p>
+    `;
+
+    const posts = parseSauhPosts([
+      {
+        id: 100,
+        slug: "sbj260819",
+        date: "2026-08-19T00:00:00+00:00",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260819/",
+        title: { rendered: "Lupa" },
+        content: { rendered: rawContent },
+      },
+    ]);
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]?.body).toBe(
+      "Lupa merupakan hal yang wajar terjadi.\nIni adalah isi renungan utama yang harus tampil di halaman.",
+    );
+    expect(posts[0]?.body).not.toContain("Bacaan Alkitab Harian");
+    expect(posts[0]?.body).not.toContain("Sauh Bagi Jiwa Sebelumnya");
+    expect(posts[0]?.body).not.toContain("Lalu Yesus");
+    expect(posts[0]?.body).not.toContain("Bank Central Asia");
+  });
+
+  it("preserves article body when top banner contains Bacaan Alkitab Harian heading", () => {
+    const rawContent = `
+      <h4>Bacaan Alkitab Harian - Matius 15:32-39</h4>
+      <h3>SAUH BAGI JIWA</h3>
+      <p><strong>Renungan Tanggal: 19 Agustus 2026</strong></p>
+      <a class="builder_button" href="#">Gerakan Baca Alkitab</a>
+      <div class="shortcode box white"><p><strong><i>"Ayat"</i> (Matius 15:33)</strong></p></div>
+      <p><span class="su-dropcap">L</span>upa merupakan hal yang wajar terjadi pada setiap orang.</p>
+      <p>Seseorang dapat melupakan sesuatu peristiwa karena menganggapnya tidak penting.</p>
+      <div class="module-fancy-heading"><h2>Sauh Bagi Jiwa Sebelumnya</h2></div>
+    `;
+
+    const posts = parseSauhPosts([
+      {
+        id: 101,
+        slug: "sbj260819",
+        date: "2026-08-19T00:00:00+00:00",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260819/",
+        title: { rendered: "Lupa" },
+        content: { rendered: rawContent },
+      },
+    ]);
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]?.body).toBe(
+      "Lupa merupakan hal yang wajar terjadi pada setiap orang.\nSeseorang dapat melupakan sesuatu peristiwa karena menganggapnya tidak penting.",
+    );
+  });
+
   it("strips markup without losing paragraph boundaries", () => {
     expect(stripHtml("<p>Satu</p><p>Dua &amp; tiga</p>")).toBe(
       "Satu\nDua & tiga",

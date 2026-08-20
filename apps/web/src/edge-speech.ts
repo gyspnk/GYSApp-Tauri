@@ -14,16 +14,87 @@ import { recordDiagnostic } from "./diagnostics.js";
  * to a detected system voice instead of pretending that web speech is
  * available offline.
  */
-const configuredEndpoint =
-  import.meta.env.VITE_EDGE_TTS_URL?.trim() ||
-  (import.meta.env.VITE_BFF_BASE_URL?.trim()
-    ? `${import.meta.env.VITE_BFF_BASE_URL.trim().replace(/\/$/, "")}/api/v1/tts/edge`
-    : "");
-const configuredVoicesEndpoint =
-  import.meta.env.VITE_EDGE_TTS_VOICES_URL?.trim() ||
-  (import.meta.env.VITE_BFF_BASE_URL?.trim()
-    ? `${import.meta.env.VITE_BFF_BASE_URL.trim().replace(/\/$/, "")}/api/v1/tts/edge/voices`
-    : "");
+export const BUILTIN_EDGE_VOICES: SpeechVoice[] = [
+  {
+    id: "id-ID-GadisNeural",
+    name: "Gadis (Indonesia · Wanita)",
+    language: "id-ID",
+    local: false,
+  },
+  {
+    id: "id-ID-ArdiNeural",
+    name: "Ardi (Indonesia · Pria)",
+    language: "id-ID",
+    local: false,
+  },
+  {
+    id: "en-US-JennyNeural",
+    name: "Jenny (English US · Female)",
+    language: "en-US",
+    local: false,
+  },
+  {
+    id: "en-US-GuyNeural",
+    name: "Guy (English US · Male)",
+    language: "en-US",
+    local: false,
+  },
+  {
+    id: "zh-CN-XiaoxiaoNeural",
+    name: "Xiaoxiao (Chinese · Female)",
+    language: "zh-CN",
+    local: false,
+  },
+];
+
+export function getCustomEdgeEndpoint(): string {
+  if (typeof localStorage !== "undefined") {
+    const custom = localStorage.getItem("gys-custom-edge-endpoint-v1")?.trim();
+    if (custom) return custom;
+  }
+  return "";
+}
+
+export function setCustomEdgeEndpoint(endpoint: string): void {
+  if (typeof localStorage !== "undefined") {
+    if (endpoint.trim()) {
+      localStorage.setItem("gys-custom-edge-endpoint-v1", endpoint.trim());
+    } else {
+      localStorage.removeItem("gys-custom-edge-endpoint-v1");
+    }
+  }
+}
+
+export function getEdgeEndpoint(): string {
+  const custom = getCustomEdgeEndpoint();
+  if (custom) return custom;
+  const direct = import.meta.env.VITE_EDGE_TTS_URL?.trim();
+  if (direct) return direct;
+  const bff = import.meta.env.VITE_BFF_BASE_URL?.trim();
+  if (!bff) return "";
+  if (typeof window !== "undefined" && window.location) {
+    try {
+      const parsed = new URL(bff, window.location.href);
+      if (parsed.port && parsed.port !== window.location.port) {
+        return "";
+      }
+    } catch {
+      return "";
+    }
+  }
+  return `${bff.replace(/\/$/, "")}/api/v1/tts/edge`;
+}
+
+export function getEdgeVoicesEndpoint(): string {
+  const direct = import.meta.env.VITE_EDGE_TTS_VOICES_URL?.trim();
+  if (direct) return direct;
+  const edge = getEdgeEndpoint();
+  if (edge) {
+    return edge.replace(/\/api\/v1\/tts\/edge\/?$/, "/api/v1/tts/edge/voices");
+  }
+  return "";
+}
+
 const DEFAULT_EDGE_VOICE =
   import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE?.trim() &&
   /^[A-Za-z0-9-]{2,80}$/.test(
@@ -59,28 +130,33 @@ export class EdgeSpeechProvider implements SpeechProvider {
     offline: boolean;
     reason?: string;
   }> {
-    if (typeof window === "undefined" || !configuredEndpoint)
+    const endpoint = getEdgeEndpoint();
+    if (typeof window === "undefined" || !endpoint)
       return {
         available: false,
         offline: false,
         reason: "Edge compatibility endpoint is not configured",
       };
-    // The actual speech request is the health probe. A transient upstream
-    // failure must not permanently disable the retry control for this session.
     return { available: true, offline: false };
   }
 
   public async voices(signal?: AbortSignal): Promise<SpeechVoice[]> {
-    if (signal?.aborted || !configuredEndpoint || !configuredVoicesEndpoint)
-      return this.advertisedVoices.map(remoteVoice);
-    if (this.voicesExpiresAt > Date.now())
+    if (signal?.aborted) return BUILTIN_EDGE_VOICES.map(remoteVoice);
+    const endpoint = getEdgeEndpoint();
+    const voicesEndpoint = getEdgeVoicesEndpoint();
+    if (!endpoint || !voicesEndpoint)
+      return BUILTIN_EDGE_VOICES.map(remoteVoice);
+    if (this.voicesExpiresAt > Date.now() && this.advertisedVoices.length > 0)
       return this.advertisedVoices.map(remoteVoice);
     if (this.voicesRequest) return this.voicesRequest;
 
-    const request = this.fetchVoices(signal);
+    const request = this.fetchVoices(voicesEndpoint, signal);
     this.voicesRequest = request;
     try {
-      return (await request).map(remoteVoice);
+      const fetched = await request;
+      return (fetched.length > 0 ? fetched : BUILTIN_EDGE_VOICES).map(
+        remoteVoice,
+      );
     } finally {
       if (this.voicesRequest === request) this.voicesRequest = undefined;
     }
@@ -96,7 +172,8 @@ export class EdgeSpeechProvider implements SpeechProvider {
     },
     signal?: AbortSignal,
   ): Promise<void> {
-    if (!configuredEndpoint) {
+    const endpoint = getEdgeEndpoint();
+    if (!endpoint) {
       throw new Error("Edge compatibility endpoint is not configured");
     }
     if (signal?.aborted) throw abortError();
@@ -117,7 +194,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     if (signal) requestInit.signal = signal;
     let response: Response;
     try {
-      response = await fetch(configuredEndpoint, requestInit);
+      response = await fetch(endpoint, requestInit);
     } catch (error) {
       if (signal?.aborted) throw abortError();
       const failure =
@@ -217,13 +294,17 @@ export class EdgeSpeechProvider implements SpeechProvider {
     return requested;
   }
 
-  private async fetchVoices(signal?: AbortSignal): Promise<SpeechVoice[]> {
+  private async fetchVoices(
+    voicesEndpoint: string,
+    signal?: AbortSignal,
+  ): Promise<SpeechVoice[]> {
+    if (!voicesEndpoint) return [];
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 2_500);
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
     try {
-      const response = await fetch(configuredVoicesEndpoint, {
+      const response = await fetch(voicesEndpoint, {
         headers: { accept: "application/json" },
         signal: controller.signal,
         cache: "no-cache",
@@ -247,5 +328,5 @@ export class EdgeSpeechProvider implements SpeechProvider {
 }
 
 export function isEdgeSpeechConfigured(): boolean {
-  return Boolean(configuredEndpoint);
+  return Boolean(getEdgeEndpoint());
 }

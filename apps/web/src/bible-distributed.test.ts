@@ -12,8 +12,10 @@ async function fixtureDatabase(): Promise<Uint8Array> {
   database.run(
     "CREATE TABLE book (id INTEGER, bs TEXT, bl TEXT, c INTEGER);" +
       "CREATE TABLE bible (b INTEGER, c INTEGER, v INTEGER, t TEXT);" +
+      "CREATE TABLE ref (id INTEGER, sv INTEGER, ev INTEGER);" +
       "INSERT INTO book VALUES (1, 'Gen', 'Genesis', 50);" +
-      "INSERT INTO bible VALUES (1, 1, 1, 'In the beginning');",
+      "INSERT INTO bible VALUES (1, 1, 1, 'In the beginning');" +
+      "INSERT INTO ref VALUES (1001001, 1002001, 1003002);",
   );
   return new Uint8Array(database.export());
 }
@@ -42,6 +44,15 @@ describe("distributed Bible reader", () => {
         chapter: 1,
         verse: 1,
         text: "In the beginning",
+      },
+    ]);
+    expect(pack.crossRefs?.["1001001"]).toEqual([
+      {
+        book: "1",
+        chapter: 2,
+        verse: 1,
+        endChapter: 3,
+        endVerse: 2,
       },
     ]);
   });

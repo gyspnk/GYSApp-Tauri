@@ -8,6 +8,26 @@ import "./styles.css";
 runStorageMigrations();
 installGlobalDiagnostics();
 
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", () => {
+    const reloaded = window.sessionStorage.getItem("gys_chunk_reload");
+    if (!reloaded) {
+      window.sessionStorage.setItem("gys_chunk_reload", "1");
+      const cachesObj = (window as unknown as { caches?: CacheStorage }).caches;
+      if (cachesObj) {
+        void cachesObj
+          .keys()
+          .then((keys) => Promise.all(keys.map((k) => cachesObj.delete(k))))
+          .then(() => {
+            window.location.reload();
+          });
+      } else {
+        window.location.reload();
+      }
+    }
+  });
+}
+
 const routeParams = new URLSearchParams(window.location.search);
 const restoredPath = routeParams.get("p");
 if (restoredPath) {
