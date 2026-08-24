@@ -27,6 +27,71 @@ function Paragraphs({ text }: { text: string }) {
   );
 }
 
+function isSuaraByline(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed.length > 180) return false;
+  if (/^["“'‘]/.test(trimmed) && /["”'’]$/.test(trimmed)) {
+    return /Gereja|Sdr\.|Sdri\.|Jemaat|cabang/i.test(trimmed);
+  }
+  return /Gereja.*cabang|Sdr\.|Sdri\./i.test(trimmed) && trimmed.length < 140;
+}
+
+function renderSuaraInline(text: string): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  const verseRe = /(\([^)]*\d+:\d+[^)]*\))/g;
+  const parts = text.split(verseRe);
+  let key = 0;
+  for (const part of parts) {
+    if (!part) continue;
+    if (/^\([^)]*\d+:\d+[^)]*\)$/.test(part)) {
+      nodes.push(
+        <span key={`v-${key++}`} className="suara-verse-ref">
+          {part}
+        </span>,
+      );
+      continue;
+    }
+    const quoteRe = /(“[^”]*”|"[^"]*"|‘[^’]*’|'[^']*')/g;
+    const quoteParts = part.split(quoteRe);
+    for (const q of quoteParts) {
+      if (!q) continue;
+      if (/^(“[^”]*”|"[^"]*"|‘[^’]*’|'[^']*')$/.test(q)) {
+        nodes.push(
+          <em key={`q-${key++}`} className="suara-quote">
+            {q}
+          </em>,
+        );
+      } else {
+        nodes.push(q);
+      }
+    }
+  }
+  return nodes;
+}
+
+function SuaraParagraphs({ text }: { text: string }) {
+  const paragraphs = text
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (paragraphs.length === 0) return null;
+  const first = paragraphs[0] ?? "";
+  const hasByline = isSuaraByline(first);
+  const bodyParas = hasByline ? paragraphs.slice(1) : paragraphs;
+  return (
+    <div className="online-article-body suara-article-body">
+      {hasByline && (
+        <p className="online-article-byline">{renderSuaraInline(first)}</p>
+      )}
+      {bodyParas.map((paragraph, index) => (
+        <p key={`${index}-${paragraph.slice(0, 16)}`}>
+          {renderSuaraInline(paragraph)}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function SourceLink({ href }: { href: string }) {
   return (
     <a className="quiet-button" href={href} target="_blank" rel="noreferrer">
@@ -320,7 +385,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
         </div>
       )}
       {state.status === "ready" && (
-        <article className="online-article-card">
+        <article className="online-article-card suara-article-card">
           <p className="date-line">
             Suara Sejati ·{" "}
             {new Date(state.post.publishedAt).toLocaleDateString(locale)}
@@ -335,7 +400,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
               loading="eager"
             />
           )}
-          <Paragraphs text={state.body ?? state.post.excerpt} />
+          <SuaraParagraphs text={state.body ?? state.post.excerpt} />
           <div className="detail-actions">
             <SourceLink href={state.post.url} />
             <Link className="quiet-button" to="/">

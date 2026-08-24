@@ -29,7 +29,7 @@ export type BibleSearchOptions = {
   wholeWord?: boolean;
 };
 
-const SKIPPED_HTML_TAGS = new Set(["script", "style", "svg", "template"]);
+const SKIPPED_HTML_TAGS = new Set(["script", "style", "svg", "template", "f"]);
 
 /** TB has 39 Old Testament books; bookOrder 40+ is the New Testament. */
 export const OLD_TESTAMENT_BOOKS = 39;

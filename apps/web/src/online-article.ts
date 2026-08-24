@@ -2,6 +2,70 @@ import { OnlineArticleSchema, type OnlineArticle } from "@gys/contracts";
 import { stripHtml } from "./sauh.js";
 import { recordDiagnostic } from "./diagnostics.js";
 
+function isSuaraContent(html: string, url?: string): boolean {
+  const lowerHtml = html.toLowerCase();
+  const lowerUrl = url?.toLowerCase() ?? "";
+  return lowerHtml.includes("tb_qnx359") || lowerUrl.includes("suarasejati");
+}
+
+function extractSuaraBodyHtml(html: string): string {
+  let working = html;
+
+  const cutoffPatterns: RegExp[] = [
+    /<div[^>]*class="[^"]*tb_bve9352[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*module-post[^"]*tb_w1on855[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*pagenav[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*builder-posts-wrap[^"]*"[^>]*>/i,
+  ];
+  let earliest = working.length;
+  for (const re of cutoffPatterns) {
+    const match = working.match(re);
+    if (match?.index !== undefined && match.index < earliest) {
+      earliest = match.index;
+    }
+  }
+  if (earliest !== working.length) {
+    working = working.slice(0, earliest);
+  } else {
+    const fancyIdx = working.search(
+      /Suara\s+Sejati[\s\S]{0,300}?Lihat\s+Semua/i,
+    );
+    if (fancyIdx >= 0) working = working.slice(0, fancyIdx);
+  }
+
+  const bylineMatch = working.match(
+    /<div[^>]*class="[^"]*tb_1uj5387[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*tb_text_wrap[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
+  );
+  const qnxMatch = working.match(
+    /<div[^>]*class="[^"]*tb_qnx359[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*tb_text_wrap[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
+  );
+  if (qnxMatch?.[1]) {
+    const main = qnxMatch[1];
+    if (bylineMatch?.[1]) {
+      const bylineText = stripHtml(bylineMatch[1]).trim();
+      if (bylineText && bylineText.length < 200) {
+        return `${bylineMatch[1]}\n${main}`;
+      }
+    }
+    return main;
+  }
+
+  const textWrapIdx = working.toLowerCase().indexOf("tb_text_wrap");
+  if (textWrapIdx >= 0) {
+    const after = working.slice(textWrapIdx);
+    const pIdx = after.search(/<p[^>]*>/i);
+    if (pIdx >= 0) {
+      return after.slice(pIdx);
+    }
+  }
+  return working;
+}
+
+function cleanSuaraRawContent(html: string, url?: string): string {
+  if (!isSuaraContent(html, url)) return html;
+  return extractSuaraBodyHtml(html);
+}
+
 function bffUrl(url: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
   if (!base) throw new Error("BFF artikel belum dikonfigurasi");
@@ -10,10 +74,40 @@ function bffUrl(url: string): string {
 
 const articleMemoryCache = new Map<string, OnlineArticle>();
 const ARTICLE_STORAGE_PREFIX = "gys_article_cache_";
+// 24 jam — auto-expire jadi perbaikan parsing / styling langsung kelihatan tanpa hard refresh
+const ARTICLE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function isExpiredArticle(article: OnlineArticle): boolean {
+  const age = Date.now() - Date.parse(article.fetchedAt);
+  return Number.isFinite(age) && age > ARTICLE_CACHE_TTL_MS;
+}
+
+function isStaleSuaraCache(article: OnlineArticle): boolean {
+  if (!article.url.toLowerCase().includes("suarasejati")) return false;
+  return (
+    article.body.includes("Lihat Semua") ||
+    /\b1\s+2\s+3\s+4\b/.test(article.body) ||
+    article.body.includes("https://tjc.org/id/wp-content/uploads")
+  );
+}
+
+function isStaleArticle(article: OnlineArticle): boolean {
+  return isStaleSuaraCache(article) || isExpiredArticle(article);
+}
 
 function getCachedArticle(url: string): OnlineArticle | undefined {
   const mem = articleMemoryCache.get(url);
-  if (mem) return mem;
+  if (mem && !isStaleArticle(mem)) return mem;
+  if (mem && isStaleArticle(mem)) {
+    articleMemoryCache.delete(url);
+    try {
+      window.localStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+      window.sessionStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+    } catch {
+      // ignore
+    }
+    return undefined;
+  }
   if (typeof window === "undefined") return undefined;
   try {
     const raw =
@@ -22,6 +116,11 @@ function getCachedArticle(url: string): OnlineArticle | undefined {
     if (!raw) return undefined;
     const parsed = OnlineArticleSchema.safeParse(JSON.parse(raw));
     if (parsed.success) {
+      if (isStaleArticle(parsed.data)) {
+        window.localStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+        window.sessionStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+        return undefined;
+      }
       articleMemoryCache.set(url, parsed.data);
       return parsed.data;
     }
@@ -121,7 +220,8 @@ export async function fetchOnlineArticle(
             : typeof record.excerpt?.rendered === "string"
               ? record.excerpt.rendered
               : "";
-        const body = stripHtml(rawContent).slice(0, 200_000);
+        const cleaned = cleanSuaraRawContent(rawContent, source.toString());
+        const body = stripHtml(cleaned).slice(0, 200_000);
         if (body) {
           const modified =
             typeof record.modified === "string" &&
@@ -177,7 +277,8 @@ export async function fetchOnlineArticle(
             : typeof record.excerpt?.rendered === "string"
               ? record.excerpt.rendered
               : "";
-        const body = stripHtml(rawContent).slice(0, 200_000);
+        const cleaned = cleanSuaraRawContent(rawContent, source.toString());
+        const body = stripHtml(cleaned).slice(0, 200_000);
         if (body) {
           const article = OnlineArticleSchema.parse({
             id: String(record.id ?? slug),

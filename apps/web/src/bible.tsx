@@ -182,6 +182,216 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
   );
 }
 
+function decodeBibleEntityLocal(value: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    nbsp: " ",
+    quot: '"',
+    lt: "<",
+    gt: ">",
+  };
+  return value.replace(
+    /&(?:#(\d+)|#x([0-9a-f]+)|([a-z][a-z0-9]+));/gi,
+    (whole, decimal: string, hexadecimal: string, name: string) => {
+      const codePoint = decimal
+        ? Number(decimal)
+        : hexadecimal
+          ? Number.parseInt(hexadecimal, 16)
+          : undefined;
+      if (
+        codePoint !== undefined &&
+        Number.isInteger(codePoint) &&
+        codePoint >= 0 &&
+        codePoint <= 0x10ffff
+      )
+        return String.fromCodePoint(codePoint);
+      return name ? (named[name.toLowerCase()] ?? whole) : whole;
+    },
+  );
+}
+
+type VerseSegment = {
+  text: string;
+  isJesus?: boolean;
+  isFootnote?: boolean;
+  isItalic?: boolean;
+  isPoetry?: boolean;
+};
+
+function parseBibleVerseSegments(raw: string): VerseSegment[] {
+  const segments: VerseSegment[] = [];
+  const stack: Array<
+    Pick<VerseSegment, "isJesus" | "isFootnote" | "isItalic" | "isPoetry">
+  > = [];
+  let buffer = "";
+  const flush = () => {
+    if (!buffer) return;
+    const style = stack.reduce(
+      (acc, cur) => ({ ...acc, ...cur }),
+      {} as Pick<
+        VerseSegment,
+        "isJesus" | "isFootnote" | "isItalic" | "isPoetry"
+      >,
+    );
+    // footnote ⓐⓑ hidden completely — jangan push sama sekali
+    if (style.isFootnote) {
+      buffer = "";
+      return;
+    }
+    const decoded = decodeBibleEntityLocal(buffer);
+    segments.push({ text: decoded, ...style });
+    buffer = "";
+  };
+  let i = 0;
+  while (i < raw.length) {
+    if (raw[i] === "<") {
+      const end = raw.indexOf(">", i);
+      if (end === -1) {
+        buffer += raw[i];
+        i += 1;
+        continue;
+      }
+      const tagRaw = raw.slice(i + 1, end).trim();
+      const isClosing = tagRaw.startsWith("/");
+      const tagName = tagRaw
+        .replace(/^\//, "")
+        .split(/[\s\/]/, 1)[0]
+        ?.toLowerCase();
+      const isSelfClosing = tagRaw.endsWith("/") || tagName === "pb";
+      flush();
+      if (!isClosing && !isSelfClosing) {
+        if (tagName === "j") stack.push({ isJesus: true });
+        else if (tagName === "f") stack.push({ isFootnote: true });
+        else if (tagName === "i") stack.push({ isItalic: true });
+        else if (tagName === "t") stack.push({ isPoetry: true });
+        else if (tagName === "br" || tagName === "p") {
+          segments.push({ text: "\n" });
+        }
+      } else if (isClosing) {
+        for (let s = stack.length - 1; s >= 0; s -= 1) {
+          const cur = stack[s];
+          if (!cur) continue;
+          if (
+            (tagName === "j" && cur.isJesus) ||
+            (tagName === "f" && cur.isFootnote) ||
+            (tagName === "i" && cur.isItalic) ||
+            (tagName === "t" && cur.isPoetry)
+          ) {
+            stack.splice(s, 1);
+            break;
+          }
+        }
+        if (tagName === "t") {
+          segments.push({ text: "\n" });
+        }
+      } else if (isSelfClosing) {
+        if (tagName === "pb") segments.push({ text: "\n" });
+        else if (tagName === "br") segments.push({ text: "\n" });
+      }
+      i = end + 1;
+      continue;
+    }
+    if (raw[i] === "&") {
+      const semi = raw.indexOf(";", i);
+      if (semi !== -1 && semi - i <= 32) {
+        buffer += raw.slice(i, semi + 1);
+        i = semi + 1;
+        continue;
+      }
+    }
+    buffer += raw[i];
+    i += 1;
+  }
+  flush();
+  // Merge consecutive segments with same style and normalize spaces
+  const merged: VerseSegment[] = [];
+  for (const seg of segments) {
+    if (seg.text === "\n") {
+      merged.push(seg);
+      continue;
+    }
+    const normalized = seg.text.replace(/\s+/g, " ");
+    if (!normalized.trim()) continue;
+    const last = merged[merged.length - 1];
+    if (
+      last &&
+      last.text !== "\n" &&
+      last.isJesus === seg.isJesus &&
+      last.isFootnote === seg.isFootnote &&
+      last.isItalic === seg.isItalic &&
+      last.isPoetry === seg.isPoetry
+    ) {
+      last.text += normalized;
+    } else {
+      merged.push({ ...seg, text: normalized });
+    }
+  }
+  // hapus <br> di awal/akhir yang bikin first line ter-enter sekali, dan rapikan dobel enter
+  while (merged.length && merged[0]?.text === "\n") merged.shift();
+  while (merged.length && merged[merged.length - 1]?.text === "\n")
+    merged.pop();
+  const compact: VerseSegment[] = [];
+  for (const seg of merged) {
+    if (seg.text === "\n" && compact[compact.length - 1]?.text === "\n")
+      continue;
+    compact.push(seg);
+  }
+  return compact;
+}
+
+function highlightSegmentText(text: string, query: string): React.ReactNode[] {
+  const terms = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
+  if (!terms.length) return [text];
+  const matcher = new RegExp(`(${terms.join("|")})`, "ig");
+  return text
+    .split(matcher)
+    .map((part, idx) =>
+      terms.some((term) => new RegExp(`^${term}$`, "i").test(part)) ? (
+        <mark key={`${part}-${idx}`}>{part}</mark>
+      ) : (
+        <span key={`${part}-${idx}`}>{part}</span>
+      ),
+    );
+}
+
+function BibleVerseText({ raw, query }: { raw: string; query: string }) {
+  const segments = parseBibleVerseSegments(raw);
+  if (!segments.length) return null;
+  return (
+    <>
+      {segments.map((seg, idx) => {
+        if (seg.text === "\n") return <br key={`br-${idx}`} />;
+        if (seg.isFootnote) return null;
+        const highlighted = highlightSegmentText(seg.text, query);
+        // footnote ⓐⓑ hidden per request — gak tampak sama sekali
+        if (seg.isJesus) {
+          return (
+            <span key={`seg-${idx}`} className="bible-jw">
+              {highlighted}
+            </span>
+          );
+        }
+        if (seg.isPoetry) {
+          return (
+            <span key={`seg-${idx}`} className="bible-poetry">
+              {highlighted}
+            </span>
+          );
+        }
+        if (seg.isItalic) {
+          return (
+            <em key={`seg-${idx}`} className="bible-italic">
+              {highlighted}
+            </em>
+          );
+        }
+        return <span key={`seg-${idx}`}>{highlighted}</span>;
+      })}
+    </>
+  );
+}
+
 function findNextTarget(
   books: readonly BibleBook[],
   book: BibleBook,
@@ -413,10 +623,7 @@ function ChapterPane({
                     }}
                     aria-pressed={selected}
                   >
-                    <HighlightedText
-                      text={cleanVerse(verse)}
-                      query={searchQuery}
-                    />
+                    <BibleVerseText raw={verse.text} query={searchQuery} />
                   </span>
                   {hasVerseRefs && onOpenCrossRefs && verseRefs && (
                     <button
@@ -866,9 +1073,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
     : undefined;
   useEffect(() => {
     if (!quickNavLevel || quickNavLevel === "verse") return;
+    if (quickNavDrag?.isOutside) return;
     const timer = window.setTimeout(() => {
       const active = quickNavRef.current;
       if (!active || !active.hasDragged) return;
+      if (quickNavDrag?.isOutside) return;
       hapticTick("hold");
       active.levelStartY = active.currentY;
       if (quickNavLevel === "book") {
@@ -878,7 +1087,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
         active.currentVerse = 1;
         setQuickNavDrag((value) =>
           value
-            ? { ...value, activeColumn: "chapter", chapter: 1, verse: 1 }
+            ? {
+                ...value,
+                activeColumn: "chapter",
+                chapter: 1,
+                verse: 1,
+                isOutside: false,
+              }
             : value,
         );
       } else {
@@ -886,12 +1101,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
         active.initialVerse = 1;
         active.currentVerse = 1;
         setQuickNavDrag((value) =>
-          value ? { ...value, activeColumn: "verse", verse: 1 } : value,
+          value
+            ? { ...value, activeColumn: "verse", verse: 1, isOutside: false }
+            : value,
         );
       }
     }, 1000);
     return () => window.clearTimeout(timer);
-  }, [quickNavHeldValue, quickNavLevel]);
+  }, [quickNavHeldValue, quickNavLevel, quickNavDrag?.isOutside]);
 
   const quickNavValueAtPoint = (clientX: number, clientY: number) => {
     const list = document.querySelector<HTMLElement>(".quick-nav-column-list");
@@ -942,41 +1159,39 @@ export function BiblePage({ locale }: { locale: Locale }) {
           bookName: currentBook?.name ?? "Alkitab",
           totalChapters: currentBook?.chapters ?? 1,
           totalVerses: 1,
+          isOutside: false,
         });
       }
 
       if (!active.hasDragged) return;
 
       event.preventDefault();
-      const levelDelta = event.clientY - active.levelStartY;
+      const pointedValue = quickNavValueAtPoint(event.clientX, event.clientY);
+      const isOutside = pointedValue === undefined;
+      if (isOutside) {
+        // di luar box aktif → deselect, tidak auto proceed sampai kembali ke dalam
+        setQuickNavDrag((prev) =>
+          prev && !prev.isOutside ? { ...prev, isOutside: true } : prev,
+        );
+        return;
+      }
       let nextBookId = active.currentBookId;
       let nextChapter = active.currentChapter;
       let nextVerse = active.currentVerse;
-      const pointedValue = quickNavValueAtPoint(event.clientX, event.clientY);
       if (active.activeColumn === "book") {
-        const index = pointedValue
-          ? books.findIndex((candidate) => candidate.id === pointedValue)
-          : scrubBookIndex(
-              active.initialBookIndex,
-              levelDelta,
-              books.length,
-              24,
-            );
-        nextBookId = books[index]?.id ?? nextBookId;
-        nextChapter = 1;
-        nextVerse = 1;
+        const index = books.findIndex(
+          (candidate) => candidate.id === pointedValue,
+        );
+        if (index !== -1) {
+          nextBookId = books[index]!.id;
+          nextChapter = 1;
+          nextVerse = 1;
+        }
       }
       const currentB =
-        books.find((candidate) => candidate.id === nextBookId) ?? book;
+        books.find((candidate) => candidate.id === nextBookId) ?? book!;
       if (active.activeColumn === "chapter" && currentB) {
-        nextChapter = pointedValue
-          ? Math.min(currentB.chapters, pointedValue)
-          : scrubChapterNumber(
-              active.initialChapter,
-              levelDelta,
-              currentB.chapters,
-              28,
-            );
+        nextChapter = Math.min(currentB.chapters, pointedValue);
         nextVerse = 1;
       }
       const totalVerses =
@@ -988,9 +1203,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             ).length || 1
           : 30;
       if (active.activeColumn === "verse") {
-        nextVerse = pointedValue
-          ? Math.min(totalVerses, pointedValue)
-          : scrubVerseNumber(active.initialVerse, levelDelta, totalVerses, 24);
+        nextVerse = Math.min(totalVerses, pointedValue);
       }
 
       if (
@@ -1012,6 +1225,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         bookName: currentB?.name ?? "Alkitab",
         totalChapters: currentB?.chapters ?? 1,
         totalVerses,
+        isOutside: false,
       });
     };
 

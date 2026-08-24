@@ -48,14 +48,27 @@ createRoot(document.getElementById("root")!).render(
 );
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  let refreshing = false;
+  const reloadForUpdate = () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  };
+  navigator.serviceWorker.addEventListener("controllerchange", reloadForUpdate);
+  const checkForSwUpdate = async (
+    registration: ServiceWorkerRegistration | undefined,
+  ) => {
+    if (!registration || typeof registration.update !== "function") return;
+    try {
+      await registration.update();
+    } catch {
+      // update is best-effort
+    }
+  };
   window.addEventListener("load", () => {
     void navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`)
       .then(async (registration) => {
-        // Some embedded/webview implementations expose `register()` but
-        // return a reduced registration object without the optional update
-        // method.  A missing method must not become an uncaught production
-        // error that masks the otherwise usable application shell.
         if (typeof registration?.update === "function")
           await registration.update();
         const connection = (
@@ -66,12 +79,41 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
         if (connection?.saveData || connection?.effectiveType === "2g") return;
         const ready = await navigator.serviceWorker.ready;
         ready.active?.postMessage({ type: "gys-cache-optional" });
+
+        // Auto-activate waiting worker and reload so users see new parsing
+        // / styling without hard refresh or "hapus data site"
+        const promptUpdate = (worker: ServiceWorker | null) => {
+          if (!worker) return;
+          worker.addEventListener("statechange", () => {
+            if (
+              worker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              worker.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
+        };
+        if (registration.waiting) promptUpdate(registration.waiting);
+        registration.addEventListener("updatefound", () => {
+          const worker = registration.installing;
+          promptUpdate(worker);
+        });
+
+        // Periodic + visibility-based update check (every 10m / on focus)
+        const scheduleUpdateCheck = () => void checkForSwUpdate(registration);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") scheduleUpdateCheck();
+        });
+        window.addEventListener("focus", scheduleUpdateCheck);
+        window.setInterval(scheduleUpdateCheck, 10 * 60 * 1000);
       })
       .catch((error: unknown) => {
-        // Offline/PWA support is progressive enhancement.  Registration
-        // failure should be observable, but never block or crash the shell.
         recordDiagnostic("warn", "service-worker.register", error);
         console.warn("GYS service worker registration unavailable", error);
       });
+  });
+  // Fallback: if a new SW was already waiting before this script ran (e.g. after hard reload)
+  void navigator.serviceWorker.ready.then((reg) => {
+    if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
   });
 }

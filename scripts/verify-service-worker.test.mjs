@@ -46,7 +46,7 @@ function loadServiceWorker({ fetch, cacheNames = [] }) {
 }
 
 test("service-worker shell cache is versioned after a deploy change", () => {
-  assert.match(source, /const CACHE = "gysapp-shell-v15";/);
+  assert.match(source, /const CACHE = "gysapp-shell-v16";/);
   assert.doesNotMatch(source, /distributed-hymn-catalog/);
 });
 
@@ -81,7 +81,7 @@ test("service-worker reset drains and clears application caches", async () => {
   const replies = [];
   const { handlers, deletedCaches } = loadServiceWorker({
     cacheNames: [
-      "gysapp-shell-v15",
+      "gysapp-shell-v16",
       "gysapp-remote-media-v1",
       "unrelated-cache",
     ],
@@ -106,7 +106,7 @@ test("service-worker reset drains and clears application caches", async () => {
   await reset;
 
   assert.deepEqual(deletedCaches, [
-    "gysapp-shell-v15",
+    "gysapp-shell-v16",
     "gysapp-remote-media-v1",
   ]);
   assert.equal(replies.length, 1);
@@ -115,7 +115,7 @@ test("service-worker reset drains and clears application caches", async () => {
 
 test("service-worker does not repopulate caches after reset", async () => {
   const { handlers, writes } = loadServiceWorker({
-    cacheNames: ["gysapp-shell-v15"],
+    cacheNames: ["gysapp-shell-v16"],
     fetch: async () => ({ ok: true, clone: () => ({}) }),
   });
   let reset;

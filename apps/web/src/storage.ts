@@ -6,8 +6,12 @@
  * current names were introduced. Migrations are idempotent and never delete
  * a value until its replacement has been written.
  */
-export const STORAGE_SCHEMA_VERSION = 2 as const;
+export const STORAGE_SCHEMA_VERSION = 3 as const;
 const META_KEY = "gys-storage-meta-v1";
+const VOLATILE_STORAGE_PREFIXES = [
+  "gys_article_cache_",
+  "gys_sauh_cached_",
+] as const;
 
 function hasStorage(): boolean {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -130,12 +134,70 @@ function migrateLegacyLiteratureProgress(): boolean {
   return true;
 }
 
+function clearVolatileCaches(): void {
+  if (!hasStorage()) return;
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+      const key = localStorage.key(i);
+      if (
+        key &&
+        VOLATILE_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))
+      ) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // ignore quota/private mode
+  }
+  try {
+    if (typeof sessionStorage !== "undefined") {
+      for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+        const key = sessionStorage.key(i);
+        if (
+          key &&
+          VOLATILE_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))
+        ) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+  // Also clear the volatile SW/CacheStorage entries for app shell when version bumps
+  // (best-effort, SW will also clean on activate, this is for immediate stale-data removal)
+  if (typeof caches !== "undefined" && typeof window !== "undefined") {
+    void caches
+      .keys()
+      .then((names) =>
+        Promise.all(
+          names
+            .filter((name) => name.startsWith("gysapp-shell-"))
+            .map((name) => caches.delete(name).catch(() => undefined)),
+        ),
+      )
+      .catch(() => undefined);
+  }
+}
+
 /** Run all known migrations once per app start. Safe to call repeatedly. */
 export function runStorageMigrations(): { version: number; changed: boolean } {
   if (!hasStorage()) return { version: STORAGE_SCHEMA_VERSION, changed: false };
   const current = readJson(META_KEY);
-  if (validMeta(current) && current.version >= STORAGE_SCHEMA_VERSION)
+  const needsVersionBump =
+    !validMeta(current) || current.version < STORAGE_SCHEMA_VERSION;
+  if (
+    !needsVersionBump &&
+    validMeta(current) &&
+    current.version >= STORAGE_SCHEMA_VERSION
+  )
     return { version: current.version, changed: false };
+
+  // On any version bump, auto-clear volatile caches so old parsing / stale feeds
+  // don't require a hard refresh or "hapus data site"
+  if (needsVersionBump) {
+    clearVolatileCaches();
+  }
 
   const changed = [
     migrateLegacyActivity(),
@@ -146,7 +208,10 @@ export function runStorageMigrations(): { version: number; changed: boolean } {
     version: STORAGE_SCHEMA_VERSION,
     migratedAt: new Date().toISOString(),
   });
-  return { version: STORAGE_SCHEMA_VERSION, changed };
+  return {
+    version: STORAGE_SCHEMA_VERSION,
+    changed: changed || needsVersionBump,
+  };
 }
 
 export function readVersionedJson<T>(

@@ -106,7 +106,7 @@ describe("BibleRepository", () => {
       ),
     ).toEqual(["joh-3-16", "joh-3-18"]);
     expect(sanitizeBibleText("<pb/><f>ⓐ</f>Firman &amp; terang")).toBe(
-      "ⓐFirman & terang",
+      "Firman & terang",
     );
     expect(
       (await repository.search('"begitu besar" kasih')).map(

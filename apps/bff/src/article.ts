@@ -133,6 +133,82 @@ function extractContainer(html: string): string {
   return html;
 }
 
+function isSuaraContent(html: string, url?: string): boolean {
+  const lowerHtml = html.toLowerCase();
+  const lowerUrl = url?.toLowerCase() ?? "";
+  return lowerHtml.includes("tb_qnx359") || lowerUrl.includes("suarasejati");
+}
+
+function extractSuaraBodyHtml(html: string): string {
+  let working = html;
+
+  const cutoffPatterns: RegExp[] = [
+    /<div[^>]*class="[^"]*tb_bve9352[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*module-post[^"]*tb_w1on855[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*pagenav[^"]*"[^>]*>/i,
+    /<div[^>]*class="[^"]*builder-posts-wrap[^"]*"[^>]*>/i,
+  ];
+  let earliest = working.length;
+  for (const re of cutoffPatterns) {
+    const match = working.match(re);
+    if (match?.index !== undefined && match.index < earliest) {
+      earliest = match.index;
+    }
+  }
+  if (earliest !== working.length) {
+    working = working.slice(0, earliest);
+  } else {
+    const fancyIdx = working.search(
+      /Suara\s+Sejati[\s\S]{0,300}?Lihat\s+Semua/i,
+    );
+    if (fancyIdx >= 0) working = working.slice(0, fancyIdx);
+  }
+
+  const bylineMatch = working.match(
+    /<div[^>]*class="[^"]*tb_1uj5387[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*tb_text_wrap[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
+  );
+  const qnxMatch = working.match(
+    /<div[^>]*class="[^"]*tb_qnx359[^"]*"[^>]*>[\s\S]*?<div[^>]*class="[^"]*tb_text_wrap[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i,
+  );
+  if (qnxMatch?.[1]) {
+    const main = qnxMatch[1];
+    if (bylineMatch?.[1]) {
+      const bylineText = htmlToText(bylineMatch[1]).trim();
+      if (bylineText && bylineText.length < 200) {
+        return `${bylineMatch[1]}\n${main}`;
+      }
+    }
+    return main;
+  }
+
+  const textWrapIdx = working.toLowerCase().indexOf("tb_text_wrap");
+  if (textWrapIdx >= 0) {
+    const after = working.slice(textWrapIdx);
+    const pIdx = after.search(/<p[^>]*>/i);
+    if (pIdx >= 0) {
+      const tail = after.slice(pIdx);
+      return tail;
+    }
+  }
+  return working;
+}
+
+function extractSuaraTitle(html: string, fallback: string): string | undefined {
+  const match = html.match(
+    /<div[^>]*class="[^"]*tb_qd4q477[^"]*"[^>]*>[\s\S]*?<h3[^>]*>([\s\S]*?)<\/h3>/i,
+  );
+  if (match?.[1]) {
+    const title = htmlToText(match[1]);
+    if (title) return title;
+  }
+  const h3Match = html.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
+  if (h3Match?.[1]) {
+    const title = htmlToText(h3Match[1]);
+    if (title && title.length > 4 && !/Suara Sejati/i.test(title)) return title;
+  }
+  return undefined;
+}
+
 /** Convert upstream HTML to plain text without exposing markup or scripts. */
 export function htmlToText(value: string): string {
   let output = "";
@@ -224,14 +300,24 @@ export function normalizeArticle(
 ): OnlineArticle {
   const parsedUrl = new URL(url);
   const container = extractContainer(html);
-  const body = htmlToText(container).slice(0, 200_000);
+  const isSuara = isSuaraContent(container, url) || isSuaraContent(html, url);
+  const fallbackTitle =
+    parsedUrl.pathname.split("/").filter(Boolean).pop() ?? "Artikel";
+  const suaraTitle = isSuara
+    ? (extractSuaraTitle(container, fallbackTitle) ??
+      extractSuaraTitle(html, fallbackTitle))
+    : undefined;
+  const bodySource = isSuara
+    ? extractSuaraBodyHtml(container) || extractSuaraBodyHtml(html)
+    : container;
+  const body = htmlToText(bodySource).slice(0, 200_000);
   if (!body) throw new Error("article body is empty");
   return OnlineArticleSchema.parse({
     id: parsedUrl.pathname.replace(/^\/+|\/+$/g, "") || parsedUrl.hostname,
-    title: titleFrom(
-      container,
-      parsedUrl.pathname.split("/").filter(Boolean).pop() ?? "Artikel",
-    ),
+    title:
+      suaraTitle ??
+      titleFrom(container, fallbackTitle) ??
+      titleFrom(html, fallbackTitle),
     body,
     url: parsedUrl.toString(),
     source: "tjc.org",

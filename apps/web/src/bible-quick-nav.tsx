@@ -13,6 +13,7 @@ export type QuickNavDragState = {
   bookName: string;
   totalChapters: number;
   totalVerses: number;
+  isOutside?: boolean;
 };
 
 /**
@@ -123,8 +124,9 @@ export function BibleQuickNavOverlay({
           },
           (_, index) => ({ value: index + 1, label: String(index + 1) }),
         );
-  const selected =
-    dragState.activeColumn === "book"
+  const selected = dragState.isOutside
+    ? -1
+    : dragState.activeColumn === "book"
       ? dragState.bookId
       : dragState.activeColumn === "chapter"
         ? dragState.chapter
@@ -149,11 +151,13 @@ export function BibleQuickNavOverlay({
           {dragState.bookName} {dragState.chapter}
           {dragState.verse > 0 ? `:${dragState.verse}` : ""}
         </strong>
-        <span>{columnLabel}</span>
+        <span>{dragState.isOutside ? "Di luar area" : columnLabel}</span>
         <small>
-          {dragState.activeColumn === "verse"
-            ? "Lepaskan untuk memilih ayat"
-            : "Lepas untuk ayat 1 · diam 1 detik untuk lanjut"}
+          {dragState.isOutside
+            ? "Geser kembali ke dalam box untuk memilih"
+            : dragState.activeColumn === "verse"
+              ? "Lepaskan untuk memilih ayat"
+              : "Lepas untuk ayat 1 · diam 1 detik untuk lanjut"}
         </small>
       </div>
 
@@ -165,6 +169,8 @@ export function BibleQuickNavOverlay({
             ref={listRef}
             style={{
               gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${availableRows}, minmax(28px, auto))`,
+              gridAutoFlow: "column",
             }}
           >
             {items.map((item) => (

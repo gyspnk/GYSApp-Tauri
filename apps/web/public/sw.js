@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v15";
+const CACHE = "gysapp-shell-v16";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
@@ -144,6 +144,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
   if (event.data?.type === "gys-cache-optional")
     event.waitUntil(cacheOptional());
   if (event.data?.type === "gys-clear-cache") {
