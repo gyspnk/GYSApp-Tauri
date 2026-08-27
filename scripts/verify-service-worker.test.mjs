@@ -46,7 +46,7 @@ function loadServiceWorker({ fetch, cacheNames = [] }) {
 }
 
 test("service-worker shell cache is versioned after a deploy change", () => {
-  assert.match(source, /const CACHE = "gysapp-shell-v16";/);
+  assert.match(source, /const CACHE = "gysapp-shell-v17";/);
   assert.doesNotMatch(source, /distributed-hymn-catalog/);
 });
 

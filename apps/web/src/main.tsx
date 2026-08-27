@@ -67,7 +67,11 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   };
   window.addEventListener("load", () => {
     void navigator.serviceWorker
-      .register(`${import.meta.env.BASE_URL}sw.js`)
+      .register(`${import.meta.env.BASE_URL}sw.js`, {
+        // GitHub Pages caches sw.js with a long max-age; bypassing the HTTP
+        // cache for update checks keeps deploys from lagging behind.
+        updateViaCache: "none",
+      })
       .then(async (registration) => {
         if (typeof registration?.update === "function")
           await registration.update();

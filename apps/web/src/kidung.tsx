@@ -1,4 +1,4 @@
-﻿import {
+import {
   lazy,
   Suspense,
   useDeferredValue,
@@ -467,7 +467,7 @@ function HymnPlaylistPage({
                       <strong>{saved.name}</strong>
                       <small>
                         {saved.songIds.length} lagu
-                        {getActivePlaylistId() === saved.id ? " Â· Aktif" : ""}
+                        {getActivePlaylistId() === saved.id ? " · Aktif" : ""}
                       </small>
                     </span>
                   </button>
@@ -479,7 +479,7 @@ function HymnPlaylistPage({
                         className="text-button"
                         onClick={() => removeSongFromPlaylist(saved.id, songId)}
                       >
-                        âˆ’ {songId}
+                        − {songId}
                       </button>
                     ))}
                     <button
@@ -518,7 +518,7 @@ function HymnPlaylistPage({
               di sini.
             </p>
             <Link className="text-button" to="/kidung">
-              Kembali ke daftar Kidung â†’
+              Kembali ke daftar Kidung →
             </Link>
           </div>
         ) : (
@@ -790,7 +790,7 @@ function HymnSettingsPage({
             <strong>{playlist.items.length} lagu</strong>
           </div>
           <Link className="text-button" to="/kidung?section=playlist">
-            Kelola playlist â†’
+            Kelola playlist →
           </Link>
         </section>
       </div>
@@ -846,20 +846,12 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
           />
         </button>
         {isActive && midiState.duration > 0 && (
-          <div
-            className="hymn-midi-seekbar"
-            style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}
-          >
-            <span
-              style={{
-                fontVariantNumeric: "tabular-nums",
-                fontSize: "0.8rem",
-                minWidth: 28,
-              }}
-            >
+          <div className="hymn-midi-seekbar">
+            <span className="hymn-midi-time hymn-midi-time-end">
               {formatMidiTime(midiState.position)}
             </span>
             <input
+              className="hymn-midi-seek-input"
               type="range"
               min={0}
               max={midiState.duration}
@@ -870,16 +862,9 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
                   .seek(Number(event.target.value))
                   .catch(() => undefined)
               }
-              style={{ flex: 1 }}
               aria-label="Posisi MIDI"
             />
-            <span
-              style={{
-                fontVariantNumeric: "tabular-nums",
-                fontSize: "0.8rem",
-                minWidth: 28,
-              }}
-            >
+            <span className="hymn-midi-time">
               {formatMidiTime(midiState.duration)}
             </span>
           </div>
@@ -891,30 +876,17 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
             aria-valuenow={midiState.loadingProgress}
             aria-valuemin={0}
             aria-valuemax={100}
-            style={{
-              width: 120,
-              height: 4,
-              background: "rgba(141,110,63,0.18)",
-              borderRadius: 999,
-              overflow: "hidden",
-            }}
           >
             <div
-              style={{
-                width: `${Math.max(4, midiState.loadingProgress)}%`,
-                height: "100%",
-                background: "var(--accent, #8d6e3f)",
-                transition: "width 0.2s ease",
-              }}
+              className="midi-preload-fill"
+              style={{ width: `${Math.max(4, midiState.loadingProgress)}%` }}
             />
           </div>
         )}
       </div>
       <div className="hymn-midi-dock-row">
         <label>
-          <span style={{ fontSize: "0.75rem" }}>
-            {translate(locale, "kidung.instrument")}
-          </span>
+          <span>{translate(locale, "kidung.instrument")}</span>
           <select
             aria-label={translate(locale, "kidung.instrument")}
             value={midiSettings.instrument}
@@ -933,9 +905,7 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
           </select>
         </label>
         <label>
-          <span style={{ fontSize: "0.75rem" }}>
-            {translate(locale, "kidung.tempo")}
-          </span>
+          <span>{translate(locale, "kidung.tempo")}</span>
           <input
             type="number"
             min={30}
@@ -950,12 +920,11 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
                 (event.target as HTMLInputElement).blur();
             }}
             aria-label="Tempo BPM"
-            style={{ width: 56, textAlign: "center" }}
           />
-          <span style={{ fontSize: "0.75rem" }}>BPM</span>
+          <span>BPM</span>
         </label>
         <label>
-          <span style={{ fontSize: "0.75rem" }}>Volume</span>
+          <span>Volume</span>
           <input
             type="range"
             min={0}
@@ -967,19 +936,20 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
                 .setVolume(Number(event.target.value))
                 .catch(() => undefined)
             }
-            style={{ width: 90 }}
             aria-label="Volume MIDI"
           />
         </label>
         <button
           type="button"
-          className="quiet-button"
+          className="quiet-button hymn-midi-mute"
           onClick={() =>
             void midiPlayer.setMuted(!midiState.muted).catch(() => undefined)
           }
           aria-label={midiState.muted ? "Unmute" : "Mute"}
+          aria-pressed={midiState.muted}
+          title={midiState.muted ? "Bunyikan" : "Bisukan"}
         >
-          {midiState.muted ? "🍵" : "🔊"}
+          <Icon name={midiState.muted ? "volumeOff" : "volume"} size={16} />
         </button>
       </div>
     </div>
@@ -1148,7 +1118,7 @@ function HymnCatalog({
                           : `Tambah ${item.title} ke Playlist`
                       }
                     >
-                      <span aria-hidden="true">{inQueue ? "âœ“" : "ï¼‹"}</span>
+                      <span aria-hidden="true">{inQueue ? "✓" : "＋"}</span>
                     </button>
                   )}
                 </li>
@@ -1296,9 +1266,17 @@ function HymnDetail({
     timeout: number | undefined;
     interval: number | undefined;
   }>({ timeout: undefined, interval: undefined });
+  // gyschordweb-style press-and-hold steppers: a quick tap must fire the step
+  // exactly once, so a hold that just ended suppresses the trailing click.
+  const lastHoldAt = useRef(0);
   const holdStart = (fn: () => void) => {
     holdState.current.timeout = window.setTimeout(() => {
-      holdState.current.interval = window.setInterval(fn, 90);
+      fn();
+      lastHoldAt.current = Date.now();
+      holdState.current.interval = window.setInterval(() => {
+        fn();
+        lastHoldAt.current = Date.now();
+      }, 90);
     }, 400);
   };
   const holdStop = () => {
@@ -1308,6 +1286,11 @@ function HymnDetail({
       window.clearInterval(holdState.current.interval);
     holdState.current.timeout = undefined;
     holdState.current.interval = undefined;
+  };
+  /** onClick wrapper for buttons that also support press-and-hold. */
+  const tapStep = (fn: () => void) => () => {
+    if (Date.now() - lastHoldAt.current < 350) return;
+    fn();
   };
   const [transitionDirection, setTransitionDirection] = useState<
     "previous" | "next"
@@ -1346,7 +1329,7 @@ function HymnDetail({
   const index = item
     ? sequence.findIndex((candidate) => candidate.id === item.id)
     : -1;
-  // gyschordweb wrap-around navigation (number mode: last â†’ first).
+  // gyschordweb wrap-around navigation (number mode: last → first).
   const prev =
     sequence.length === 0
       ? undefined
@@ -1744,7 +1727,7 @@ function HymnDetail({
   );
   const editChordAt = (pageKey: string, noteIdx: number, current: string) => {
     const input = window.prompt(
-      "Masukkan chord (contoh: C, Câ™¯, Bâ™­, Fdim, Aadd9).\nKosongkan untuk hapus chord di posisi ini.",
+      "Masukkan chord (contoh: C, C♯, B♭, Fdim, Aadd9).\nKosongkan untuk hapus chord di posisi ini.",
       current,
     );
     if (input === null) return;
@@ -2334,6 +2317,35 @@ function HymnDetail({
           </Link>
           <h1>{item.title}</h1>
         </div>
+        {/* gyschordweb two-mode presentation: text and PDF are equal citizens
+            switched straight from the header, persisted per hymn. */}
+        <div
+          className="hymn-mode-toggle"
+          role="tablist"
+          aria-label="Mode tampilan kidung"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewerMode !== "pdf"}
+            className={`hymn-mode-button${viewerMode !== "pdf" ? " is-active" : ""}`}
+            onClick={() => selectViewerMode("lyrics")}
+          >
+            <Icon name="book" size={16} />
+            <span>Teks</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewerMode === "pdf"}
+            className={`hymn-mode-button${viewerMode === "pdf" ? " is-active" : ""}`}
+            disabled={!item.pdfPath && !item.assetCode}
+            onClick={() => selectViewerMode("pdf")}
+          >
+            <Icon name="file" size={16} />
+            <span>PDF</span>
+          </button>
+        </div>
         <div className="detail-neighbors">
           <button
             type="button"
@@ -2574,6 +2586,11 @@ function HymnDetail({
                 className="quiet-button hymn-action"
                 onClick={toggleChords}
                 disabled={chordStatus === "loading"}
+                title={
+                  chordsVisible
+                    ? translate(locale, "kidung.hideChord")
+                    : translate(locale, "kidung.showChord")
+                }
                 aria-pressed={chordsVisible}
                 aria-label={
                   chordStatus === "loading"
@@ -2600,6 +2617,7 @@ function HymnDetail({
                 type="button"
                 className="primary-button hymn-action hymn-action-primary"
                 onClick={() => void loadMidi()}
+                title={translate(locale, "kidung.playMidi")}
                 disabled={
                   midiStatus === "loading" || midiState.status === "loading"
                 }
@@ -2639,6 +2657,11 @@ function HymnDetail({
             <button
               type="button"
               className="quiet-button hymn-action"
+              title={
+                viewerMode === "pdf"
+                  ? translate(locale, "kidung.closePdf")
+                  : translate(locale, "kidung.openPdf")
+              }
               onClick={() =>
                 viewerMode === "pdf"
                   ? selectViewerMode("lyrics")
@@ -2716,7 +2739,7 @@ function HymnDetail({
                 </span>
                 <span className="hymn-action-label">
                   {autoScrollActive
-                    ? `Gulir ${autoScrollSpeed}Ã—`
+                    ? `Gulir ${autoScrollSpeed}×`
                     : "Auto Scroll"}
                 </span>
               </button>
@@ -2727,11 +2750,11 @@ function HymnDetail({
                   onChange={(e) => setAutoScrollSpeed(Number(e.target.value))}
                   aria-label="Kecepatan gulir otomatis"
                 >
-                  <option value={1}>1Ã—</option>
-                  <option value={2}>2Ã—</option>
-                  <option value={3}>3Ã—</option>
-                  <option value={4}>4Ã—</option>
-                  <option value={5}>5Ã—</option>
+                  <option value={1}>1×</option>
+                  <option value={2}>2×</option>
+                  <option value={3}>3×</option>
+                  <option value={4}>4×</option>
+                  <option value={5}>5×</option>
                 </select>
               )}
             </div>
@@ -2971,7 +2994,7 @@ function HymnDetail({
                       <option value={-1}>{midiInstrumentLabel(-1)}</option>
                       {GM_INSTRUMENTS.map((name, program) => (
                         <option key={program} value={program}>
-                          {String(program + 1).padStart(3, "0")} Â· {name}
+                          {String(program + 1).padStart(3, "0")} · {name}
                         </option>
                       ))}
                     </select>
@@ -2989,12 +3012,12 @@ function HymnDetail({
                       onPointerUp={holdStop}
                       onPointerLeave={holdStop}
                       onPointerCancel={holdStop}
-                      onClick={() =>
-                        void midiPlayer.setTempo(midiSettings.tempo - 2)
-                      }
+                      onClick={tapStep(
+                        () => void midiPlayer.setTempo(midiSettings.tempo - 2),
+                      )}
                       aria-label={translate(locale, "kidung.tempoDown")}
                     >
-                      âˆ’
+                      −
                     </button>
                     <input
                       type="number"
@@ -3032,9 +3055,9 @@ function HymnDetail({
                       onPointerUp={holdStop}
                       onPointerLeave={holdStop}
                       onPointerCancel={holdStop}
-                      onClick={() =>
-                        void midiPlayer.setTempo(midiSettings.tempo + 2)
-                      }
+                      onClick={tapStep(
+                        () => void midiPlayer.setTempo(midiSettings.tempo + 2),
+                      )}
                       aria-label={translate(locale, "kidung.tempoUp")}
                     >
                       +
@@ -3110,7 +3133,7 @@ function HymnDetail({
               />
               <div className="transpose-control">
                 <span>
-                  Nada tampil Â· {renderedKey}
+                  Nada tampil · {renderedKey}
                   {capo > 0
                     ? ` (Bentuk: ${chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental)})`
                     : ""}
@@ -3124,10 +3147,10 @@ function HymnDetail({
                     onPointerUp={holdStop}
                     onPointerLeave={holdStop}
                     onPointerCancel={holdStop}
-                    onClick={() => updateTranspose(transpose - 1)}
+                    onClick={tapStep(() => updateTranspose(transpose - 1))}
                     aria-label={translate(locale, "kidung.transposeDown")}
                   >
-                    âˆ’
+                    −
                   </button>
                   <strong>{transpose > 0 ? `+${transpose}` : transpose}</strong>
                   <button
@@ -3138,7 +3161,7 @@ function HymnDetail({
                     onPointerUp={holdStop}
                     onPointerLeave={holdStop}
                     onPointerCancel={holdStop}
-                    onClick={() => updateTranspose(transpose + 1)}
+                    onClick={tapStep(() => updateTranspose(transpose + 1))}
                     aria-label={translate(locale, "kidung.transposeUp")}
                   >
                     +
@@ -3156,9 +3179,7 @@ function HymnDetail({
                 </div>
               </div>
               <div className="capo-control">
-                <span>
-                  Capo Â· {capo === 0 ? "Tanpa Capo" : `Fret ${capo}`}
-                </span>
+                <span>Capo · {capo === 0 ? "Tanpa Capo" : `Fret ${capo}`}</span>
                 <div className="capo-btn-group">
                   <button
                     type="button"
@@ -3168,11 +3189,11 @@ function HymnDetail({
                     onPointerUp={holdStop}
                     onPointerLeave={holdStop}
                     onPointerCancel={holdStop}
-                    onClick={() => setCapo((c) => Math.max(0, c - 1))}
+                    onClick={tapStep(() => setCapo((c) => Math.max(0, c - 1)))}
                     disabled={capo <= 0}
                     aria-label="Turunkan Capo"
                   >
-                    âˆ’
+                    −
                   </button>
                   <strong>{capo === 0 ? "0" : capo}</strong>
                   <button
@@ -3183,7 +3204,7 @@ function HymnDetail({
                     onPointerUp={holdStop}
                     onPointerLeave={holdStop}
                     onPointerCancel={holdStop}
-                    onClick={() => setCapo((c) => Math.min(11, c + 1))}
+                    onClick={tapStep(() => setCapo((c) => Math.min(11, c + 1)))}
                     disabled={capo >= 11}
                     aria-label="Naikkan Capo"
                   >
@@ -3218,12 +3239,12 @@ function HymnDetail({
                   onPointerUp={holdStop}
                   onPointerLeave={holdStop}
                   onPointerCancel={holdStop}
-                  onClick={() =>
-                    updateTypography({ fontSize: typography.fontSize - 1 })
-                  }
+                  onClick={tapStep(() =>
+                    updateTypography({ fontSize: typography.fontSize - 1 }),
+                  )}
                   aria-label={translate(locale, "kidung.decreaseText")}
                 >
-                  Aâˆ’
+                  A−
                 </button>
                 <output aria-live="polite">
                   {Math.round(typography.fontSize)} px
@@ -3240,9 +3261,9 @@ function HymnDetail({
                   onPointerUp={holdStop}
                   onPointerLeave={holdStop}
                   onPointerCancel={holdStop}
-                  onClick={() =>
-                    updateTypography({ fontSize: typography.fontSize + 1 })
-                  }
+                  onClick={tapStep(() =>
+                    updateTypography({ fontSize: typography.fontSize + 1 }),
+                  )}
                   aria-label={translate(locale, "kidung.increaseText")}
                 >
                   A+
@@ -3259,14 +3280,14 @@ function HymnDetail({
                   onPointerUp={holdStop}
                   onPointerLeave={holdStop}
                   onPointerCancel={holdStop}
-                  onClick={() =>
+                  onClick={tapStep(() =>
                     updateTypography({
                       lineHeight: typography.lineHeight - 0.1,
-                    })
-                  }
+                    }),
+                  )}
                   aria-label={translate(locale, "kidung.decreaseSpacing")}
                 >
-                  âˆ’ Spasi
+                  − Spasi
                 </button>
                 <button
                   type="button"
@@ -3280,11 +3301,11 @@ function HymnDetail({
                   onPointerUp={holdStop}
                   onPointerLeave={holdStop}
                   onPointerCancel={holdStop}
-                  onClick={() =>
+                  onClick={tapStep(() =>
                     updateTypography({
                       lineHeight: typography.lineHeight + 0.1,
-                    })
-                  }
+                    }),
+                  )}
                   aria-label={translate(locale, "kidung.increaseSpacing")}
                 >
                   + Spasi
@@ -3333,7 +3354,7 @@ function HymnDetail({
                               accidental={accidental}
                             />
                           ) : (
-                            line || "Â "
+                            line || "\u00A0"
                           )}
                         </p>
                       );
@@ -3369,7 +3390,7 @@ function HymnDetail({
                         accidental={accidental}
                       />
                     ) : (
-                      line || "Â "
+                      line || "\u00A0"
                     )}
                   </p>
                 );

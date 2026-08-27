@@ -200,6 +200,13 @@ function quoteFrom(value: string): string | undefined {
   );
 }
 
+/** The publisher mirrors featured images on an official S3 bucket. */
+const TJC_IMAGE_HOSTS = [
+  "tjc.org",
+  "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
+];
+
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
@@ -207,6 +214,19 @@ function isTjcUrl(value: unknown): value is string {
     return (
       url.protocol === "https:" &&
       ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isTjcImageUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      TJC_IMAGE_HOSTS.includes(url.hostname.toLowerCase())
     );
   } catch {
     return false;
@@ -289,7 +309,7 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
       ...(verse ? { verse } : {}),
       body,
       url: sourceUrl,
-      ...(isTjcUrl(embeddedImage) ? { imageUrl: embeddedImage } : {}),
+      ...(isTjcImageUrl(embeddedImage) ? { imageUrl: embeddedImage } : {}),
       updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org" as const,
     };
@@ -390,16 +410,16 @@ export function selectTodaySauh(
 }
 
 /**
- * Offline snapshots can lag the publisher by a day between releases. Prefer
- * today's entry, but keep the newest verified snapshot readable instead of
- * turning an otherwise usable offline library into a blank error screen.
+ * A packaged snapshot can lag the publisher by days between deploys. Serving
+ * an arbitrary old reflection as “today” misleads readers (the Aug snapshot
+ * ships a different series entry), so the home surface now renders an
+ * explicit loading/error state instead of ever reusing stale content.
  */
-export function selectOfflineSauh(
+export function verifiedTodaySnapshot(
   posts: SauhPost[],
   now = new Date(),
 ): SauhPost[] {
-  const today = selectTodaySauh(posts, now);
-  return today.length ? today : posts.slice(0, 1);
+  return selectTodaySauh(posts, now);
 }
 
 function parseNormalizedSauh(value: unknown): SauhPost[] {
@@ -412,7 +432,7 @@ function parseNormalizedSauh(value: unknown): SauhPost[] {
   for (const item of candidates) {
     const result = SauhPostSchema.safeParse(item);
     if (!result.success || !isTjcUrl(result.data.url)) continue;
-    if (result.data.imageUrl && !isTjcUrl(result.data.imageUrl)) continue;
+    if (result.data.imageUrl && !isTjcImageUrl(result.data.imageUrl)) continue;
     parsed.push(result.data);
   }
   return parsed.sort((left, right) =>
@@ -472,28 +492,49 @@ async function loadNetworkToday(): Promise<SauhPost[]> {
     : new Error("Sauh Bagi Jiwa is unavailable");
 }
 
-const STORAGE_KEY_PREFIX = "gys_sauh_cached_";
+const STORAGE_KEY_PREFIX = "gys_sauh_day_";
+
+/** localStorage survives tab/session restarts; sessionStorage keeps legacy keys readable. */
+function sauhStorageAreas(): Storage[] {
+  if (typeof window === "undefined") return [];
+  const areas: Storage[] = [];
+  try {
+    if (window.localStorage) areas.push(window.localStorage);
+  } catch {
+    // storage can be unavailable in private modes
+  }
+  try {
+    if (window.sessionStorage) areas.push(window.sessionStorage);
+  } catch {
+    // ignore
+  }
+  return areas;
+}
 
 function loadStoredSauh(dayKey: string): SauhPost[] | undefined {
-  if (typeof window === "undefined" || !window.sessionStorage) return undefined;
-  try {
-    const raw = window.sessionStorage.getItem(`${STORAGE_KEY_PREFIX}${dayKey}`);
-    if (!raw) return undefined;
-    const parsed: unknown = JSON.parse(raw);
-    const validated = parseNormalizedSauh(parsed);
-    return validated.length ? validated : undefined;
-  } catch {
-    return undefined;
+  for (const area of sauhStorageAreas()) {
+    try {
+      const raw = area.getItem(`${STORAGE_KEY_PREFIX}${dayKey}`);
+      if (!raw) continue;
+      const parsed: unknown = JSON.parse(raw);
+      const validated = parseNormalizedSauh(parsed);
+      // Cached values are only reusable when they still contain today's
+      // verified entry; a stale payload must trigger a live fetch instead of
+      // being painted as today's reflection.
+      const todays = selectTodaySauh(validated);
+      if (todays.length) return todays;
+    } catch {
+      // corrupt entry: ignore and keep probing other areas
+    }
   }
+  return undefined;
 }
 
 function storeSauh(dayKey: string, items: SauhPost[]) {
-  if (typeof window === "undefined" || !window.sessionStorage) return;
+  const [primary] = sauhStorageAreas();
+  if (!primary) return;
   try {
-    window.sessionStorage.setItem(
-      `${STORAGE_KEY_PREFIX}${dayKey}`,
-      JSON.stringify(items),
-    );
+    primary.setItem(`${STORAGE_KEY_PREFIX}${dayKey}`, JSON.stringify(items));
   } catch {
     // ignore storage quota errors
   }
@@ -558,12 +599,12 @@ export async function fetchSauh(
     const offline = typeof navigator !== "undefined" && !navigator.onLine;
     if (offline) {
       const snapshot = await request(STATIC_URL);
-      const selected = selectOfflineSauh(snapshot);
+      const selected = verifiedTodaySnapshot(snapshot);
       if (selected.length) {
         storeSauh(dayKey, selected);
         return selected;
       }
-      throw new Error("Sauh snapshot is empty");
+      throw new Error("Renungan hari ini belum tersedia di perangkat ini");
     }
 
     if (forceNetwork) {
@@ -584,9 +625,13 @@ export async function fetchSauh(
       }
     }
 
+    // A packaged snapshot is only an instant paint candidate when the deploy
+    // was fresh enough to embed today's own entry; otherwise resolving it
+    // to `undefined` hands control straight to the live network result so
+    // stale content can never be painted as today's reflection.
     const snapshot = request(STATIC_URL).then(
       (items) => {
-        const selected = selectOfflineSauh(items);
+        const selected = verifiedTodaySnapshot(items);
         return selected.length
           ? { source: "snapshot" as const, items: selected }
           : undefined;
@@ -630,7 +675,9 @@ export async function fetchSauh(
       storeSauh(dayKey, fallback.items);
       return fallback.items;
     }
-    const failure = new Error("Sauh Bagi Jiwa is unavailable");
+    const failure = new Error(
+      "Sauh Bagi Jiwa untuk hari ini belum dapat diambil dari sumber resmi.",
+    );
     recordDiagnostic("error", "sauh.fetch", failure);
     throw failure;
   })();

@@ -10,6 +10,13 @@ function stripHtml(value: string) {
   return htmlToText(value).replace(/\s+/g, " ").trim();
 }
 
+/** The publisher mirrors featured images on an official S3 bucket. */
+const TJC_IMAGE_HOSTS = [
+  "tjc.org",
+  "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
+];
+
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
@@ -17,6 +24,19 @@ function isTjcUrl(value: unknown): value is string {
     return (
       url.protocol === "https:" &&
       ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isTjcImageUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      TJC_IMAGE_HOSTS.includes(url.hostname.toLowerCase())
     );
   } catch {
     return false;
@@ -89,7 +109,7 @@ export async function fetchSuaraSejati(
     if (!title || !excerpt || !isTjcUrl(url) || !publishedAt) continue;
     const candidateImageUrl =
       post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const imageUrl = isTjcUrl(candidateImageUrl)
+    const imageUrl = isTjcImageUrl(candidateImageUrl)
       ? candidateImageUrl
       : undefined;
     const parsed = SuaraSejatiPostSchema.safeParse({

@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v16";
+const CACHE = "gysapp-shell-v17";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
@@ -32,6 +32,16 @@ const OPTIONAL = [
   "vendor/midi-render-worker.js",
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
+].map(withBase);
+// Editorial content snapshots change independently of the shell between
+// deploys. These must revalidate against the network first (falling back to
+// cache offline) so a GitHub Pages deploy is picked up without waiting for a
+// full shell update; shell-vendored code/data keeps cache-first below.
+const CONTENT_JSON = [
+  "offline/sauh.json",
+  "offline/suara-sejati.json",
+  "offline/literature.json",
+  "offline/faith.json",
 ].map(withBase);
 
 function isAppCache(name) {
@@ -171,12 +181,14 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) {
-    // Only cache media from the verified TJC source. This keeps real
-    // literature/Sauh/Suara covers available after the first online visit
-    // without turning the service worker into an arbitrary cross-origin
-    // proxy.
+    // Only cache media from the verified TJC source (site + its official S3
+    // upload mirror). This keeps real literature/Sauh/Suara covers available
+    // after the first online visit without turning the service worker into an
+    // arbitrary cross-origin proxy.
     const isTjcMedia =
-      requestUrl.hostname === "tjc.org" &&
+      (requestUrl.hostname === "tjc.org" ||
+        requestUrl.hostname === "www.tjc.org" ||
+        requestUrl.hostname === "tjcorguploads.s3.amazonaws.com") &&
       /\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(requestUrl.pathname);
     if (!isTjcMedia) return;
     if (cacheWritesPaused) return;
@@ -207,6 +219,26 @@ self.addEventListener("fetch", (event) => {
       fetchAndCacheShell(event.request, event.waitUntil).catch(() =>
         caches.match(withBase("index.html")),
       ),
+    );
+    return;
+  }
+
+  if (CONTENT_JSON.includes(requestUrl.pathname)) {
+    event.respondWith(
+      (async () => {
+        try {
+          const response = await fetch(event.request, { cache: "no-cache" });
+          if (!response.ok) throw new Error(String(response.status));
+          const copy = response.clone();
+          event.waitUntil(
+            putNamedCached(CACHE, event.request, copy).catch(() => undefined),
+          );
+          return response;
+        } catch {
+          // offline / transient failure: serve the cached snapshot below
+        }
+        return (await caches.match(event.request)) ?? Response.error();
+      })(),
     );
     return;
   }

@@ -31,6 +31,7 @@ import {
 import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
+import { bibleSpeechLanguage } from "./bible-language.js";
 import { BibleSearchClient } from "./bible-search.js";
 import {
   calculateProportionalScroll,
@@ -1328,9 +1329,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const speechAvailable =
     typeof window !== "undefined" && speechSnapshot.available;
+  // Both Edge and local voices are selectable on "auto"/"edge"; only the
+  // explicit "local" engine hides remote voices.
   const availableSpeechVoices = speechSnapshot.voices.filter((voice) =>
-    speechSnapshot.engine === "edge" ? !voice.local : voice.local,
+    speechSnapshot.engine === "local" ? voice.local : true,
   );
+  const bibleLanguageTag = bibleSpeechLanguage(selectedVersionCode);
   const speakingVerseId = useMemo(
     () =>
       speechSnapshot.status === "speaking" || speechSnapshot.status === "paused"
@@ -1488,6 +1492,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       rate: speechSnapshot.rate,
       pitch: speechSnapshot.pitch,
       volume: speechSnapshot.volume,
+      languageTag: bibleLanguageTag,
       ...(speechSnapshot.voiceId ? { voiceId: speechSnapshot.voiceId } : {}),
     };
     void speechPlayer
@@ -1599,6 +1604,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   label: `${book.name} ${verse.chapter}:${verse.verse}`,
                 },
               })),
+              {
+                rate: speechSnapshot.rate,
+                pitch: speechSnapshot.pitch,
+                volume: speechSnapshot.volume,
+                languageTag: bibleLanguageTag,
+                ...(speechSnapshot.voiceId
+                  ? { voiceId: speechSnapshot.voiceId }
+                  : {}),
+              },
             );
           }
         }

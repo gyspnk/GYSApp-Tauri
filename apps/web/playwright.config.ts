@@ -2,7 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
+  // Sequential e2e shares one preview server; a 30s budget intermittently
+  // starves first-hit navigations (cold asset compile) on slower runners.
+  timeout: 40_000,
+  // A few specs fetch immutable upstream fixtures (gyschordweb raw CDN).
+  // One retry absorbs transient upstream hiccups without masking real bugs.
+  retries: 1,
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}",
   workers: 2,

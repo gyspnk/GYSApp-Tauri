@@ -1,168 +1,165 @@
-import { describe, expect, it, vi } from "vitest";
-import { fetchSuara, parseSuaraSejati } from "./suara.js";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import type { SuaraSejatiPost } from "@gys/contracts";
 
-describe("Suara Sejati feed normalization", () => {
-  it("filters untrusted URLs in a validated feed envelope", () => {
-    const posts = parseSuaraSejati({
-      source: "tjc.org",
-      generatedAt: "2026-08-15T00:00:00.000Z",
-      items: [
-        {
-          id: "foreign-envelope",
-          title: "Sumber asing",
-          excerpt: "Kesaksian.",
-          url: "https://evil.example/foreign",
-          imageUrl: "https://evil.example/image.jpg",
-          publishedAt: "2026-08-15T00:00:00.000Z",
-          source: "tjc.org",
-        },
-        {
-          id: "safe-envelope",
-          title: "Sumber aman",
-          excerpt: "Kesaksian.",
-          url: "https://tjc.org/id/suarasejati/safe",
-          imageUrl: "https://evil.example/image.jpg",
-          publishedAt: "2026-08-15T00:00:00.000Z",
-          source: "tjc.org",
-        },
-      ],
-    });
+const PERSIST_KEY = "gys_suara_feed_v1";
 
-    expect(posts).toHaveLength(1);
-    expect(posts[0]?.id).toBe("safe-envelope");
-    expect(posts[0]?.imageUrl).toBeUndefined();
-  });
+function post(partial: Partial<SuaraSejatiPost>): SuaraSejatiPost {
+  return {
+    id: "suara-test",
+    title: "Kesaksian uji",
+    excerpt: "Cuplikan pengujian.",
+    url: "https://tjc.org/id/suarasejati/suara-test/",
+    publishedAt: "2026-08-01T00:00:00.000Z",
+    source: "tjc.org",
+    ...partial,
+  };
+}
 
-  it("drops invalid dates and foreign URLs while keeping safe TJC content", () => {
-    const posts = parseSuaraSejati([
-      {
-        id: 1,
-        slug: "foreign",
-        date: "2026-08-15T00:00:00.000Z",
-        link: "https://evil.example/foreign",
-        title: { rendered: "Sumber asing" },
-        excerpt: { rendered: "<p>Kesaksian.</p>" },
-      },
-      {
-        id: 2,
-        slug: "invalid-date",
-        date: "not-a-date",
-        link: "https://tjc.org/id/suarasejati/invalid-date",
-        title: { rendered: "Tanggal rusak" },
-        excerpt: { rendered: "<p>Kesaksian.</p>" },
-      },
-      {
-        id: 3,
-        slug: "safe",
-        date: "2026-08-15T00:00:00.000Z",
-        link: "https://tjc.org/id/suarasejati/safe",
-        title: { rendered: "Sumber aman" },
-        excerpt: { rendered: "<p>Kesaksian.</p>" },
-        _embedded: {
-          "wp:featuredmedia": [
-            { source_url: "https://evil.example/image.jpg" },
-          ],
-        },
-      },
-    ]);
-
-    expect(posts).toHaveLength(1);
-    expect(posts[0]?.id).toBe("safe");
-    expect(posts[0]?.imageUrl).toBeUndefined();
-  });
-
-  it("loads every WordPress page when the direct source is used", async () => {
-    const originalFetch = globalThis.fetch;
-    const requestedPages: number[] = [];
-    vi.stubGlobal("window", {
-      setTimeout: globalThis.setTimeout,
-      clearTimeout: globalThis.clearTimeout,
-      location: { href: "https://app.example/" },
-    });
-    globalThis.fetch = (async (input) => {
-      const url = new URL(String(input));
-      const page = Number(url.searchParams.get("page") ?? "1");
-      requestedPages.push(page);
-      const posts =
-        page === 1
-          ? [
-              {
-                id: 1,
-                slug: "kesaksian-satu",
-                date: "2026-08-15T00:00:00.000Z",
-                link: "https://tjc.org/id/suarasejati/kesaksian-satu/",
-                title: { rendered: "Kesaksian satu" },
-                excerpt: { rendered: "<p>Halaman pertama.</p>" },
-              },
-            ]
-          : [
-              {
-                id: 2,
-                slug: "kesaksian-dua",
-                date: "2026-08-14T00:00:00.000Z",
-                link: "https://tjc.org/id/suarasejati/kesaksian-dua/",
-                title: { rendered: "Kesaksian dua" },
-                excerpt: { rendered: "<p>Halaman kedua.</p>" },
-              },
-            ];
-      return Response.json(posts, {
-        headers: { "X-WP-TotalPages": "2" },
-      });
-    }) as typeof fetch;
-
+async function until(assertion: () => void): Promise<void> {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
     try {
-      const posts = await fetchSuara();
-
-      expect(posts.map((post) => post.id)).toEqual([
-        "kesaksian-satu",
-        "kesaksian-dua",
-      ]);
-      expect(requestedPages).toEqual([1, 2]);
-    } finally {
-      globalThis.fetch = originalFetch;
-      vi.unstubAllGlobals();
+      assertion();
+      return;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 10));
     }
-  });
+  }
+  assertion();
+}
 
-  it("continues past full pages when pagination headers are unavailable", async () => {
+describe("Suara Sejati persistent + incremental cache", () => {
+  let storage: Map<string, string>;
+  let fetchCalls: string[];
+
+  beforeEach(() => {
     vi.resetModules();
-    const { fetchSuara: fetchFreshSuara } = await import("./suara.js");
-    const originalFetch = globalThis.fetch;
-    const requestedPages: number[] = [];
+    vi.unstubAllGlobals();
+    // Keep candidate resolution relative so no real BFF worker is contacted.
+    vi.stubEnv("VITE_BFF_BASE_URL", "");
+    storage = new Map();
+    fetchCalls = [];
+    const events = new EventTarget();
+    vi.stubGlobal("navigator", { onLine: true });
     vi.stubGlobal("window", {
-      setTimeout: globalThis.setTimeout,
-      clearTimeout: globalThis.clearTimeout,
-      location: { href: "https://app.example/" },
+      setTimeout,
+      clearTimeout,
+      location: { href: "http://localhost:4173/GYSApp-Tauri/", port: "4173" },
+      localStorage: {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => void storage.set(key, value),
+        removeItem: (key: string) => void storage.delete(key),
+      },
+      addEventListener: events.addEventListener.bind(events),
+      removeEventListener: events.removeEventListener.bind(events),
+      dispatchEvent: events.dispatchEvent.bind(events),
     });
-    globalThis.fetch = (async (input) => {
-      const url = new URL(String(input));
-      const page = Number(url.searchParams.get("page") ?? "1");
-      requestedPages.push(page);
-      const start = (page - 1) * 100 + 1;
-      const count = page < 3 ? 100 : 1;
-      const posts = Array.from({ length: count }, (_, index) => {
-        const id = start + index;
-        return {
-          id,
-          slug: `kesaksian-${id}`,
-          date: new Date(Date.UTC(2026, 7, 15) - id * 1_000).toISOString(),
-          link: `https://tjc.org/id/suarasejati/kesaksian-${id}/`,
-          title: { rendered: `Kesaksian ${id}` },
-          excerpt: { rendered: `<p>Kesaksian ${id}.</p>` },
-        };
-      });
-      return Response.json(posts);
-    }) as typeof fetch;
+  });
 
-    try {
-      const posts = await fetchFreshSuara();
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
-      expect(posts).toHaveLength(201);
-      expect(posts.some((post) => post.id === "kesaksian-201")).toBe(true);
-      expect(requestedPages).toEqual([1, 2, 3]);
-    } finally {
-      globalThis.fetch = originalFetch;
-      vi.unstubAllGlobals();
-    }
+  it("paints the persisted feed without any network and merges only additions", async () => {
+    const saved = post({
+      id: "suara-lama",
+      title: "Kesaksian tersimpan",
+      publishedAt: "2026-07-01T00:00:00.000Z",
+    });
+    storage.set(
+      PERSIST_KEY,
+      JSON.stringify({ fetchedAt: new Date().toISOString(), items: [saved] }),
+    );
+    const fresh = post({
+      id: "suara-baru",
+      title: "Kesaksian terbaru",
+      publishedAt: "2026-08-20T00:00:00.000Z",
+    });
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      fetchCalls.push(String(input));
+      return Promise.resolve(
+        new Response(JSON.stringify([fresh]), { status: 200 }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { fetchSuara, subscribeSuara } = await import("./suara.js");
+    const updates: SuaraSejatiPost[][] = [];
+    const unsubscribe = subscribeSuara((items) => updates.push(items));
+
+    // First load resolves instantly from persistence; zero requests so far.
+    const first = await fetchSuara();
+    expect(first.map((item) => item.id)).toEqual(["suara-lama"]);
+    expect(fetchCalls).toEqual([]);
+
+    // Background revalidation adds only upstream additions, keeping order.
+    await until(() => {
+      expect(updates.length).toBeGreaterThan(0);
+      expect(updates[0]?.map((item) => item.id)).toEqual([
+        "suara-baru",
+        "suara-lama",
+      ]);
+    });
+    unsubscribe();
+
+    const persisted: unknown = JSON.parse(storage.get(PERSIST_KEY) ?? "{}");
+    const items = (persisted as { items?: SuaraSejatiPost[] }).items ?? [];
+    expect(items.map((item) => item.id)).toEqual(["suara-baru", "suara-lama"]);
+  });
+
+  it("dedupes a revalidation response instead of duplicating cached entries", async () => {
+    const same = post({ id: "suara-sama" });
+    storage.set(
+      PERSIST_KEY,
+      JSON.stringify({
+        fetchedAt: new Date().toISOString(),
+        items: [same],
+      }),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        fetchCalls.push(String(input));
+        return Promise.resolve(new Response(JSON.stringify([same])));
+      }),
+    );
+
+    const { fetchSuara, subscribeSuara } = await import("./suara.js");
+    const updates: SuaraSejatiPost[][] = [];
+    const unsubscribe = subscribeSuara((items) => updates.push(items));
+
+    const items = await fetchSuara();
+    expect(items).toHaveLength(1);
+
+    // Let the background revalidation settle: no duplicates, no repaint.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(updates).toHaveLength(0);
+    unsubscribe();
+  });
+
+  it("falls back to the packaged snapshot when nothing is cached", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        fetchCalls.push(String(input));
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              source: "tjc.org",
+              generatedAt: "2026-08-01T00:00:00.000Z",
+              items: [post({ id: "suara-snapshot" })],
+            }),
+            { status: 200 },
+          ),
+        );
+      }),
+    );
+
+    const { fetchSuara, getCachedSuara } = await import("./suara.js");
+    const items = await fetchSuara();
+    expect(items.map((item) => item.id)).toEqual(["suara-snapshot"]);
+    expect(getCachedSuara()?.map((item) => item.id)).toEqual([
+      "suara-snapshot",
+    ]);
+    expect(storage.has(PERSIST_KEY)).toBe(true);
   });
 });

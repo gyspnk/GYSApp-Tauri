@@ -29,14 +29,19 @@ import { translate, type Locale } from "./i18n.js";
 import {
   fetchSauh,
   getCachedSauh,
-  isTodaySauhAvailable,
   selectTodaySauh,
   subscribeSauh,
 } from "./sauh.js";
-import { fetchSuara, fetchSuaraSnapshot, getCachedSuara } from "./suara.js";
+import {
+  fetchSuara,
+  fetchSuaraSnapshot,
+  getCachedSuara,
+  subscribeSuara,
+} from "./suara.js";
 import {
   fetchLiteratureCatalog,
   literatureCategoryLabels,
+  subscribeLiterature,
 } from "./literature-catalog.js";
 import {
   SpeechEnginePreferenceSchema,
@@ -1937,10 +1942,31 @@ function Shell({
   );
 }
 
+function SauhSkeleton() {
+  return (
+    <div
+      className="sauh-skeleton"
+      role="status"
+      aria-live="polite"
+      data-testid="home-sauh-skeleton"
+    >
+      <strong>
+        <span className="sauh-skeleton-spinner" aria-hidden="true" />
+        Memuat Sauh Bagi Jiwa…
+      </strong>
+      <span className="sauh-skeleton-line is-title" aria-hidden="true" />
+      <span className="sauh-skeleton-line" aria-hidden="true" />
+      <span className="sauh-skeleton-line is-short" aria-hidden="true" />
+      <small>Mengambil renungan resmi hari ini dari TJC…</small>
+    </div>
+  );
+}
+
 function HomePage({ locale }: { locale: Locale }) {
   const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>(
     () => {
-      return getCachedSauh() ?? [];
+      const cached = getCachedSauh();
+      return cached ? selectTodaySauh(cached) : [];
     },
   );
   const [suara, setSuara] = useState<Awaited<ReturnType<typeof fetchSuara>>>(
@@ -1949,10 +1975,7 @@ function HomePage({ locale }: { locale: Locale }) {
     },
   );
   const [sauhStatus, setSauhStatus] = useState<"loading" | "ready" | "error">(
-    () => {
-      const cached = getCachedSauh();
-      return cached && cached.length ? "ready" : "loading";
-    },
+    () => (sauh.length ? "ready" : "loading"),
   );
   const [suaraStatus, setSuaraStatus] = useState<"loading" | "ready" | "error">(
     () => {
@@ -1965,8 +1988,29 @@ function HomePage({ locale }: { locale: Locale }) {
   useEffect(
     () =>
       subscribeSauh((items) => {
-        setSauh(items);
-        setSauhStatus(items.length > 0 ? "ready" : "error");
+        const todays = selectTodaySauh(items);
+        setSauh(todays);
+        setSauhStatus(todays.length > 0 ? "ready" : "error");
+      }),
+    [],
+  );
+  // Suara Sejati & Literatur refresh incrementally: cached lists stay
+  // painted while upstream additions are merged in place.
+  useEffect(
+    () =>
+      subscribeSuara((posts) => {
+        if (!posts.length) return;
+        setSuara(posts);
+        setSuaraStatus("ready");
+      }),
+    [],
+  );
+  useEffect(
+    () =>
+      subscribeLiterature((items) => {
+        if (!items.length) return;
+        setLiterature(items);
+        setLiteratureStatus("ready");
       }),
     [],
   );
@@ -1987,12 +2031,16 @@ function HomePage({ locale }: { locale: Locale }) {
   }, []);
   const loadSauh = useCallback((signal?: AbortSignal) => {
     const cached = getCachedSauh();
-    if (!cached || !cached.length) setSauhStatus("loading");
+    if (!cached || !selectTodaySauh(cached).length) {
+      setSauh([]);
+      setSauhStatus("loading");
+    }
     void fetchSauh(signal)
       .then((items) => {
         if (signal?.aborted) return;
-        setSauh(items);
-        setSauhStatus("ready");
+        const todays = selectTodaySauh(items);
+        setSauh(todays);
+        setSauhStatus(todays.length > 0 ? "ready" : "error");
       })
       .catch(() => {
         if (!signal?.aborted) setSauhStatus("error");
@@ -2063,7 +2111,7 @@ function HomePage({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     const selected = sauh[0];
-    const isToday = selected && isTodaySauhAvailable([selected]);
+    const isToday = Boolean(selected && selectTodaySauh([selected]).length);
     if (sauhStatus === "ready" && !isToday && navigator.onLine) {
       refreshTodaySauh();
     }
@@ -2072,7 +2120,7 @@ function HomePage({ locale }: { locale: Locale }) {
   useEffect(() => {
     const checkFreshness = () => {
       const selected = sauh[0];
-      const isToday = selected && isTodaySauhAvailable([selected]);
+      const isToday = Boolean(selected && selectTodaySauh([selected]).length);
       if (!isToday && navigator.onLine) {
         refreshTodaySauh();
       }
@@ -2088,7 +2136,10 @@ function HomePage({ locale }: { locale: Locale }) {
     };
   }, [sauh, refreshTodaySauh]);
   const selected = sauh[0];
-  const dailyText = selected ? (selected.verse ?? selected.body) : "";
+  const selectedToday = selectTodaySauh(sauh)[0];
+  const dailyText = selectedToday
+    ? (selectedToday.verse ?? selectedToday.body)
+    : "";
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
@@ -2105,13 +2156,13 @@ function HomePage({ locale }: { locale: Locale }) {
       </section>
       <section className="home-grid" aria-label="Daily overview">
         <article className="verse-panel">
-          {selected?.imageUrl && sauhStatus === "ready" && (
+          {selectedToday?.imageUrl && (
             <div className="sauh-card-media">
               <LazyImage
                 className="sauh-image"
                 wrapperClassName="sauh-image-wrap"
-                src={selected.imageUrl}
-                alt={`Ilustrasi ${selected.title}`}
+                src={selectedToday.imageUrl}
+                alt={`Ilustrasi ${selectedToday.title}`}
                 loading="eager"
               />
               <div className="sauh-media-overlay" />
@@ -2121,14 +2172,14 @@ function HomePage({ locale }: { locale: Locale }) {
             <div className="section-heading">
               <span>Sauh hari ini</span>
               <small>
-                {selected?.reference ??
-                  translate(locale, "home.sauhNoReference")}
+                {selectedToday
+                  ? (selectedToday.reference ??
+                    translate(locale, "home.sauhNoReference"))
+                  : "Sumber langsung TJC"}
               </small>
             </div>
-            {sauhStatus === "loading" && (
-              <p className="sauh-loading">Mengambil renungan Sauh Bagi Jiwa…</p>
-            )}
-            {sauhStatus === "error" && (
+            {!selectedToday && sauhStatus !== "error" && <SauhSkeleton />}
+            {sauhStatus === "error" && !selectedToday && (
               <div className="sauh-offline-state">
                 <strong>{translate(locale, "home.sauhUnavailable")}</strong>
                 <small>{translate(locale, "home.sauhOfflineHint")}</small>
@@ -2141,25 +2192,19 @@ function HomePage({ locale }: { locale: Locale }) {
                 </button>
               </div>
             )}
-            {selected && sauhStatus === "ready" && (
+            {selectedToday && sauhStatus !== "error" && (
               <div className="sauh-card-body">
-                <p className="sauh-title">{selected.title}</p>
+                <p className="sauh-title">{selectedToday.title}</p>
                 <blockquote>“{dailyText}”</blockquote>
-                {!selectTodaySauh([selected]).length && (
-                  <small className="sauh-source">
-                    Konten tersimpan ·{" "}
-                    {new Date(selected.updatedAt).toLocaleDateString(locale)}
-                  </small>
-                )}
               </div>
             )}
-            <div className="verse-actions">
-              {selected && (
+            {selected && (
+              <div className="verse-actions">
                 <Link className="quiet-button" to="/sauh">
                   Baca Lebih Lanjut →
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </article>
         <article className="continue-panel">

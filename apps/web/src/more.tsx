@@ -23,7 +23,13 @@ import {
   readActiveAssetManifest,
   type AssetManifestDiff,
 } from "./asset-updater.js";
-import { getEgysProfile, signOutEgys } from "./egys.js";
+import {
+  getEgysProfile,
+  readEgysSessionTrace,
+  signOutEgys,
+  trackEgysProfileSeen,
+  type EgysSessionTrace,
+} from "./egys.js";
 import {
   clearMidiPlaylist,
   downloadMidiPlaylist,
@@ -364,6 +370,9 @@ export function MorePage({
   >("idle");
   const [notice, setNotice] = useState("");
   const [accountProfile, setAccountProfile] = useState<AccountProfile>();
+  const [egysSession, setEgysSession] = useState<EgysSessionTrace | undefined>(
+    () => readEgysSessionTrace(),
+  );
   const [accountLoading, setAccountLoading] = useState(true);
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
@@ -523,6 +532,7 @@ export function MorePage({
         .then((profile) => {
           setAccountProfile(profile);
           setEgysUnavailable(false);
+          if (profile) setEgysSession(trackEgysProfileSeen(profile));
           show(
             profile
               ? `Selamat datang, ${profile.displayName}.`
@@ -551,7 +561,10 @@ export function MorePage({
     void getEgysProfile(controller.signal)
       .then((profile) => {
         setAccountProfile(profile);
-        if (profile) setEgysUnavailable(false);
+        if (profile) {
+          setEgysUnavailable(false);
+          setEgysSession(trackEgysProfileSeen(profile));
+        }
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
@@ -915,9 +928,11 @@ export function MorePage({
                   </div>
                   <div className="member-info-grid">
                     <div>
-                      <span className="info-label">Cabang Gereja</span>
+                      <span className="info-label">Daerah / Cabang</span>
                       <strong className="info-value">
-                        {accountProfile.branchName ?? "Pusat"}
+                        {accountProfile.branchName ??
+                          accountProfile.branchCode ??
+                          "Pusat"}
                       </strong>
                     </div>
                     {accountProfile.membershipNo && (
@@ -929,6 +944,14 @@ export function MorePage({
                       </div>
                     )}
                   </div>
+                  {accountProfile.memberStatus && (
+                    <div className="member-info-row">
+                      <span className="info-label">Status Keanggotaan</span>
+                      <span className="info-value-text">
+                        {accountProfile.memberStatus}
+                      </span>
+                    </div>
+                  )}
                   {accountProfile.email && (
                     <div className="member-info-row">
                       <span className="info-label">Email</span>
@@ -936,6 +959,16 @@ export function MorePage({
                         {accountProfile.email}
                       </span>
                     </div>
+                  )}
+                  {egysSession?.userId === accountProfile.id && (
+                    <small className="egys-login-trace">
+                      Login terakhir{" "}
+                      {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
+                      · terdeteksi sejak{" "}
+                      {new Date(egysSession.firstLoginAt).toLocaleDateString(
+                        locale,
+                      )}
+                    </small>
                   )}
                 </div>
                 <div className="member-badge-actions">
@@ -945,6 +978,7 @@ export function MorePage({
                     onClick={() => {
                       void signOutEgys().then(() => {
                         setAccountProfile(undefined);
+                        setEgysSession(undefined);
                         show(
                           "Sesi e-GYS sudah dikeluarkan dari perangkat ini.",
                         );

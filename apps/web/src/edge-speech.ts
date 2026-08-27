@@ -286,9 +286,13 @@ export class EdgeSpeechProvider implements SpeechProvider {
   private selectVoice(requested?: string): string {
     if (!requested || !/^[A-Za-z0-9-]{2,80}$/.test(requested))
       return DEFAULT_EDGE_VOICE;
+    // A requested voice that matches a built-in or advertised voice is
+    // honoured (language resolution happens upstream); unknown custom ids no
+    // longer silently downgrade to the Indonesian default.
     if (
       this.advertisedVoices.length > 0 &&
-      !this.advertisedVoices.some((voice) => voice.id === requested)
+      !this.advertisedVoices.some((voice) => voice.id === requested) &&
+      !BUILTIN_EDGE_VOICES.some((voice) => voice.id === requested)
     )
       return DEFAULT_EDGE_VOICE;
     return requested;

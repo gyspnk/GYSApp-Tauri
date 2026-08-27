@@ -149,6 +149,25 @@ test.describe("responsive reader navigation", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 720 });
+    // Deterministic Sauh entry keeps layout assertions independent of live
+    // upstream latency; skeleton/stale-policy is covered by dedicated specs.
+    const todaySlug = `sbj${new Date().toISOString().slice(2, 10).replaceAll("-", "")}`;
+    const todaySauh = {
+      id: todaySlug,
+      title: "Renungan hari ini",
+      reference: "Yohanes 3:16",
+      verse: "Karena begitu besar kasih Allah akan dunia ini.",
+      body: "Isi renungan resmi untuk pengujian tata letak beranda.",
+      url: `https://tjc.org/id/gerakan-baca-alkitab/${todaySlug}/`,
+      updatedAt: new Date().toISOString(),
+      source: "tjc.org",
+    };
+    await page.route("**/offline/sauh.json", (route) =>
+      route.fulfill({ json: { items: [todaySauh] } }),
+    );
+    await page.route("**/wp-json/wp/v2/posts**", (route) =>
+      route.fulfill({ json: [todaySauh] }),
+    );
     await page.goto("/GYSApp-Tauri/");
     await expect(page.locator(".home-grid")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator(".verse-actions > *")).toHaveCount(1);

@@ -2,7 +2,12 @@ import { SpeechOrchestrator } from "@gys/domain";
 import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
-import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
+import {
+  EdgeSpeechProvider,
+  BUILTIN_EDGE_VOICES,
+  isEdgeSpeechConfigured,
+} from "./edge-speech.js";
+import { resolveVoiceForLanguage } from "./bible-language.js";
 import {
   persistSpeechSettings,
   readSpeechSettings,
@@ -118,6 +123,8 @@ class BrowserSpeechSession {
       rate?: number;
       pitch?: number;
       volume?: number;
+      /** BCP-47 hint (e.g. the open Bible version's language). */
+      languageTag?: string | undefined;
     } = {},
   ): Promise<void> {
     if (!queue.length) return;
@@ -130,10 +137,26 @@ class BrowserSpeechSession {
     const nextRate = clamp(options.rate ?? this.state.rate, 0.5, 2);
     const nextPitch = clamp(options.pitch ?? this.state.pitch, 0.5, 2);
     const nextVolume = clamp(options.volume ?? this.state.volume, 0, 1);
+    // Language-aware voice resolution: a saved voice is kept only when it
+    // speaks the requested language; otherwise the best matching advertised
+    // (or built-in Edge) voice for that language is chosen so e.g. an English
+    // Bible is never read with an Indonesian pronunciation.
+    let effectiveVoiceId = options.voiceId ?? this.state.voiceId;
+    if (options.languageTag) {
+      const pool = this.voicesForEngine(this.state.engine);
+      const resolved = resolveVoiceForLanguage(
+        pool,
+        options.voiceId ?? this.state.voiceId,
+        options.languageTag,
+      );
+      if (resolved) effectiveVoiceId = resolved;
+    }
     persistSpeechSettings(
       typeof localStorage !== "undefined" ? localStorage : undefined,
       {
-        ...(options.voiceId !== undefined ? { voiceId: options.voiceId } : {}),
+        ...(effectiveVoiceId !== undefined
+          ? { voiceId: effectiveVoiceId }
+          : {}),
         rate: nextRate,
         pitch: nextPitch,
         volume: nextVolume,
@@ -146,10 +169,18 @@ class BrowserSpeechSession {
       rate: nextRate,
       pitch: nextPitch,
       volume: nextVolume,
-      ...(options.voiceId !== undefined ? { voiceId: options.voiceId } : {}),
+      ...(effectiveVoiceId !== undefined ? { voiceId: effectiveVoiceId } : {}),
       error: undefined,
     });
     await this.playQueue(0);
+  }
+
+  private voicesForEngine(engine: SpeechEnginePreference): SpeechVoice[] {
+    const merged = [...this.state.voices];
+    const seen = new Set(merged.map((voice) => voice.id));
+    for (const builtin of BUILTIN_EDGE_VOICES)
+      if (!seen.has(builtin.id)) merged.push(builtin);
+    return engine === "local" ? merged.filter((voice) => voice.local) : merged;
   }
 
   public prepare(

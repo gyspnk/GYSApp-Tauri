@@ -124,6 +124,13 @@ function localDateKey(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
+/** The publisher mirrors featured images on an official S3 bucket. */
+const TJC_IMAGE_HOSTS = [
+  "tjc.org",
+  "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
+];
+
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
@@ -131,6 +138,19 @@ function isTjcUrl(value: unknown): value is string {
     return (
       url.protocol === "https:" &&
       ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isTjcImageUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      TJC_IMAGE_HOSTS.includes(url.hostname.toLowerCase())
     );
   } catch {
     return false;
@@ -204,7 +224,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       verse: quoteFrom(raw),
       body,
       url,
-      ...(isTjcUrl(post._embedded?.["wp:featuredmedia"]?.[0]?.source_url)
+      ...(isTjcImageUrl(post._embedded?.["wp:featuredmedia"]?.[0]?.source_url)
         ? { imageUrl: post._embedded?.["wp:featuredmedia"]?.[0]?.source_url }
         : {}),
       updatedAt: parsedUpdatedAt.toISOString(),

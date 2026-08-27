@@ -4,7 +4,6 @@ import {
   expectedSauhSlug,
   onlyTodaySauh,
   parseSauhPosts,
-  selectOfflineSauh,
   selectTodaySauh,
   sauhNetworkCandidates,
   stripHtml,
@@ -259,7 +258,7 @@ describe("Sauh feed normalization", () => {
     ).toBe("today");
   });
 
-  it("keeps the newest verified snapshot readable when offline data lags one day", () => {
+  it("never serves a stale snapshot as today's entry", () => {
     const posts = parseSauhPosts([
       {
         id: 1,
@@ -272,8 +271,8 @@ describe("Sauh feed normalization", () => {
     ]);
 
     expect(
-      selectOfflineSauh(posts, new Date("2026-08-17T08:00:00+07:00"))[0]?.id,
-    ).toBe("sbj260816");
+      selectTodaySauh(posts, new Date("2026-08-17T08:00:00+07:00")),
+    ).toHaveLength(0);
   });
 
   it("uses the publisher's daily slug when UTC modification rolls over", () => {
@@ -372,7 +371,7 @@ describe("Sauh feed normalization", () => {
     vi.unstubAllGlobals();
   }, 15_000);
 
-  it("shows the newest verified snapshot when the online snapshot is not from today", async () => {
+  it("rejects instead of showing an outdated snapshot when today's entry is unavailable", async () => {
     vi.resetModules();
     const snapshot = {
       items: [
@@ -403,9 +402,56 @@ describe("Sauh feed normalization", () => {
     });
     const { fetchSauh } = await import("./sauh.js");
 
-    await expect(fetchSauh()).resolves.toMatchObject([
-      { id: "sbj200101", title: "Snapshot tersimpan" },
+    // No today entry anywhere: the UI must get an error state (aesthetic
+    // loading / retry), never yesterday's (or 2020's) reflection.
+    await expect(fetchSauh()).rejects.toThrow(/belum dapat diambil/i);
+    vi.unstubAllGlobals();
+  });
+
+  it("ignores a stale payload persisted under today's storage key", async () => {
+    vi.resetModules();
+    const staleDayKey = (() => {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Jakarta",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(new Date());
+      const map = Object.fromEntries(
+        parts.map((part) => [part.type, part.value]),
+      );
+      return `${map.year}-${map.month}-${map.day}`;
+    })();
+    const stored = JSON.stringify([
+      {
+        id: "sbj260816",
+        title: "Orang Biasa yang Luar Biasa",
+        body: "Konten lama yang tidak boleh ditampilkan sebagai renungan hari ini.",
+        url: "https://tjc.org/id/gerakan-baca-alkitab/sbj260816/",
+        updatedAt: "2026-08-16T00:09:34+00:00",
+        source: "tjc.org",
+      },
     ]);
+    vi.stubGlobal("fetch", () =>
+      Promise.resolve(new Response("unavailable", { status: 503 })),
+    );
+    vi.stubGlobal("navigator", { onLine: true });
+    const storage = new Map<string, string>([
+      [`gys_sauh_day_${staleDayKey}`, stored],
+    ]);
+    vi.stubGlobal("window", {
+      setTimeout,
+      clearTimeout,
+      location: { pathname: "/" },
+      localStorage: {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => void storage.set(key, value),
+      },
+    });
+    const { fetchSauh, getCachedSauh } = await import("./sauh.js");
+
+    expect(getCachedSauh()).toBeUndefined();
+    await expect(fetchSauh()).rejects.toThrow(/belum dapat diambil/i);
     vi.unstubAllGlobals();
   });
 });

@@ -638,6 +638,28 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
 test("home uses Sauh for the daily verse and keeps one continue surface", async ({
   page,
 }) => {
+  // Deterministic today entry so the assertions never depend on live TJC
+  // latency; the cover intentionally points at the official S3 mirror to
+  // prove mirrored featured images stay accepted end-to-end.
+  const todaySauh = {
+    id: `sbj${new Date().toISOString().slice(2, 10).replaceAll("-", "")}`,
+    title: "Renungan hari ini",
+    reference: "Yohanes 3:16",
+    verse: "Karena begitu besar kasih Allah akan dunia ini.",
+    body: "Isi renungan resmi untuk pengujian antarmuka beranda.",
+    url: `https://tjc.org/id/gerakan-baca-alkitab/sbj${new Date().toISOString().slice(2, 10).replaceAll("-", "")}/`,
+    imageUrl:
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/08/Kalahkanlah-Itu.png",
+    updatedAt: new Date().toISOString(),
+    source: "tjc.org",
+  };
+  await page.route("**/offline/sauh.json", (route) =>
+    route.fulfill({ json: { items: [todaySauh] } }),
+  );
+  await page.route("**/wp-json/wp/v2/posts**", (route) =>
+    route.fulfill({ json: [todaySauh] }),
+  );
+
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".continue-panel")).toHaveCount(1);
   await expect(page.locator(".home-page .home-media-section")).toHaveCount(2);
@@ -652,11 +674,64 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
   );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
   await expect(
+    page.getByText("Renungan hari ini", { exact: true }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("link", { name: /Baca Lebih Lanjut/i }),
   ).toBeVisible();
 });
 
 test("online content opens inside the application shell", async ({ page }) => {
+  // Deterministic feeds keep shell navigation independent of upstream latency.
+  const todaySlug = `sbj${new Date().toISOString().slice(2, 10).replaceAll("-", "")}`;
+  const todaySauh = {
+    id: todaySlug,
+    title: "Renungan hari ini",
+    reference: "Yohanes 3:16",
+    verse: "Karena begitu besar kasih Allah akan dunia ini.",
+    body: "Isi renungan resmi untuk pengujian navigasi shell.",
+    url: `https://tjc.org/id/gerakan-baca-alkitab/${todaySlug}/`,
+    updatedAt: new Date().toISOString(),
+    source: "tjc.org",
+  };
+  await page.route("**/offline/sauh.json", (route) =>
+    route.fulfill({ json: { items: [todaySauh] } }),
+  );
+  await page.route("**/wp-json/wp/v2/posts**", (route) =>
+    route.fulfill({ json: [todaySauh] }),
+  );
+  await page.route("**/offline/suara-sejati.json", (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            id: "kesaksian-shell",
+            title: "Kesaksian uji shell",
+            excerpt: "Cuplikan navigasi.",
+            url: "https://tjc.org/id/suarasejati/kesaksian-shell/",
+            publishedAt: new Date().toISOString(),
+            source: "tjc.org",
+          },
+        ],
+      },
+    }),
+  );
+  await page.route(
+    /tjc\.org\/id\/wp-json\/wp\/v2\/posts.*categories=194/,
+    (route) =>
+      route.fulfill({
+        json: [
+          {
+            id: 44,
+            slug: "kesaksian-shell",
+            date: new Date().toISOString(),
+            link: "https://tjc.org/id/suarasejati/kesaksian-shell/",
+            title: { rendered: "Kesaksian uji shell" },
+            excerpt: { rendered: "<p>Cuplikan navigasi.</p>" },
+          },
+        ],
+      }),
+  );
   await page.goto("/GYSApp-Tauri/");
   await page.getByRole("link", { name: /Baca Lebih Lanjut/i }).click();
   await expect(page).toHaveURL(/\/sauh$/);

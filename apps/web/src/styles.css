@@ -3925,6 +3925,17 @@ body.is-resizing-bible {
   box-shadow: var(--shadow);
   color: var(--ink);
   font-size: 12px;
+  animation: toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .faith-layout {
   display: grid;
@@ -4745,13 +4756,74 @@ body.is-resizing-bible {
   color: var(--muted);
   font-size: 11px;
 }
-.sauh-loading,
 .sauh-offline-state {
   display: grid;
   gap: 10px;
   margin: 35px 0;
   color: var(--muted);
   line-height: 1.6;
+}
+/* Aesthetic loading state while today's verified Sauh entry is being
+   fetched: shimmer placeholders instead of reusing stale reflections. */
+.sauh-skeleton {
+  display: grid;
+  gap: 12px;
+  margin: 28px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blue) 5%, var(--surface)) 0%,
+    var(--surface) 100%
+  );
+}
+.sauh-skeleton strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--navy);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.sauh-skeleton small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.sauh-skeleton-spinner {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--blue) 32%, var(--line));
+  border-top-color: var(--blue);
+  animation: gys-spin 0.9s linear infinite;
+}
+.sauh-skeleton-line {
+  display: block;
+  height: 12px;
+  width: min(100%, 440px);
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft),
+    color-mix(in srgb, var(--blue) 13%, var(--surface-soft)),
+    var(--surface-soft)
+  );
+  background-size: 200% 100%;
+  animation: gys-shimmer 1.6s ease-in-out infinite;
+}
+.sauh-skeleton-line.is-title {
+  height: 16px;
+  width: 62%;
+}
+.sauh-skeleton-line.is-short {
+  width: 38%;
+}
+@keyframes gys-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .sauh-offline-state strong {
   color: var(--navy);
@@ -6420,6 +6492,280 @@ body.is-resizing-bible {
   max-width: 760px;
   margin-bottom: 10px;
 }
+/* gyschordweb two-mode header toggle (Teks / PDF). */
+.hymn-mode-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  animation: hymn-surface-fade-in 0.18s ease both;
+}
+.hymn-mode-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+.hymn-mode-button:hover:not(:disabled):not(.is-active) {
+  color: var(--ink);
+}
+.hymn-mode-button.is-active {
+  background: var(--surface);
+  color: var(--blue);
+  box-shadow: var(--shadow);
+}
+.hymn-mode-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* e-GYS login tracking line on the account card. */
+.egys-login-trace {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+/* e-GYS profile check state: same visual language as loading-panel. */
+.account-loading-box {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  animation: loading-pulse 1.8s ease-in-out infinite;
+}
+.account-loading-box p {
+  margin: 0;
+}
+.member-badge-body {
+  display: grid;
+  gap: 12px;
+}
+.pack-badge.is-verified {
+  border-color: color-mix(in srgb, #2e7d32 45%, var(--line-strong));
+  color: #2e7d32;
+}
+/* Row-level cue for the hymn list; the title keeps its own hover accent. */
+.pujian-item {
+  transition: background 0.15s ease;
+}
+@media (hover: hover) {
+  .pujian-item:hover {
+    background: color-mix(in srgb, var(--blue) 5%, transparent);
+  }
+}
+/* ---- Surfaces that previously shipped unstyled ------------------------- */
+/* Secondary action (literature "muat lagi", share list actions). */
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.secondary-button:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.empty-panel {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 11px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 13px;
+}
+/* Bible empty search result state inherits panel language above. */
+/* Kidung playlist tool pages. */
+.kidung-tool-page .kidung-saved-playlists {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: fade-in 180ms var(--ease-out) both;
+}
+.kidung-saved-playlists h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.kidung-saved-playlist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.kidung-saved-playlist-row:hover {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+}
+@media (max-width: 599px) {
+  .kidung-saved-playlist-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+/* MIDI dock panel inside hymn settings / viewer. */
+.hymn-midi-controls-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hymn-midi-dock-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hymn-midi-dock-row > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.hymn-midi-dock-row select,
+.hymn-midi-dock-row input[type="number"] {
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+.hymn-midi-dock-play {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+.hymn-midi-dock-play:hover:not(:disabled) {
+  transform: scale(1.05);
+  filter: brightness(1.08);
+}
+.hymn-midi-dock-play:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* Chord editor floating toolbar in the PDF overlay. */
+.chord-editor-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: calc(var(--z-toolbar) + 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 16px);
+  padding: 7px 12px;
+  overflow-x: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-50%);
+}
+.chord-editor-label {
+  flex: none;
+  color: var(--blue);
+  font-size: 11px;
+  white-space: nowrap;
+}
+/* Language pill grid (appearance section). */
+.lang-pill-grid {
+  max-width: 340px;
+}
+/* Segmented groups inside the PDF toolbar (layout toggle & zoom). */
+.pdf-view-scroll-toggle,
+.pdf-zoom-controls {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+.pdf-view-scroll-toggle button,
+.pdf-zoom-controls button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.5px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.pdf-view-scroll-toggle button:hover:not(:disabled):not(.is-active),
+.pdf-zoom-controls button:hover:not(:disabled) {
+  color: var(--ink);
+}
+.pdf-view-scroll-toggle button.is-active {
+  background: var(--surface);
+  color: var(--blue);
+  box-shadow: var(--shadow);
+}
 .detail-neighbors,
 .detail-actions,
 .faith-actions {
@@ -7473,9 +7819,45 @@ body.is-resizing-bible {
   .detail-neighbors {
     width: 100%;
   }
+  .hymn-mode-toggle {
+    justify-self: start;
+    max-width: 100%;
+  }
+  .hymn-mode-button {
+    flex: 1;
+    justify-content: center;
+    min-height: 40px;
+  }
   .detail-neighbors .quiet-button {
     flex: 1 1 0;
     justify-content: center;
+  }
+  /* The header mode toggle must not push the compact text-mode reader past
+     the fold: title and toggle share one row, neighbor buttons move to the
+     text footer / pdf chrome that already provide song navigation. */
+  .hymn-detail-page .detail-hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .hymn-detail-page .detail-hero h1 {
+    margin-bottom: 0;
+    font-size: 19px;
+  }
+  /* Outranks the global is-text-viewer flex rule above (0-3-0 vs 0-4-0):
+     phones navigate songs from the text footer / pdf chrome instead. */
+  .hymn-detail-page.is-text-viewer .detail-hero .detail-neighbors {
+    display: none;
+  }
+  .hymn-detail-surface {
+    gap: 12px;
+  }
+  .hymn-mode-toggle {
+    padding: 3px;
+  }
+  .hymn-mode-button {
+    min-height: 34px;
+    padding-inline: 12px;
   }
   .detail-actions .quiet-button,
   .detail-actions .primary-button {
@@ -10721,5 +11103,144 @@ body:has(.home-page)::-webkit-scrollbar {
 .hymn-all-verses-summary {
   font-size: 12px;
   font-weight: 600;
+  color: var(--muted);
+}
+
+/* ---- gyschordweb compact control pass (kidung) --------------------------
+   Reference: gyschordweb 04-viewer.css - icon buttons 32px, indicators
+   0.7rem, transport rows slimmer than page-level buttons. */
+.hymn-text-toolbar .detail-actions .hymn-action {
+  min-height: 34px;
+  padding: 0;
+  width: 34px;
+  justify-content: center;
+  gap: 0;
+}
+.hymn-text-toolbar .detail-actions .hymn-action-primary {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.hymn-text-toolbar .detail-actions .hymn-action-primary:hover:not(:disabled),
+.hymn-text-toolbar .detail-actions .hymn-action-primary:focus-visible {
+  filter: brightness(1.08);
+}
+/* Labels become screen-reader-only; buttons keep aria-label + title. */
+.hymn-text-toolbar .detail-actions .hymn-action-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.hymn-scope-pill-btn,
+.hymn-autoscroll-btn {
+  min-height: 28px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+.hymn-autoscroll-speed-select {
+  min-height: 28px;
+  font-size: 11px;
+}
+.hymn-more-actions-summary,
+.hymn-reader-settings-summary {
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  min-height: 34px;
+}
+.hymn-more-actions,
+.hymn-reader-settings {
+  width: 34px;
+  flex: 0 0 34px;
+}
+.hymn-text-footer {
+  grid-template-columns: 38px 38px minmax(80px, 1fr) 38px 38px;
+  gap: 5px;
+}
+.hymn-text-footer button {
+  width: 38px;
+  height: 38px;
+}
+.detail-hero .detail-neighbor-button {
+  min-height: 32px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+@media (max-width: 599px) {
+  .hymn-text-toolbar .detail-actions .hymn-action {
+    width: 36px;
+    min-height: 36px;
+  }
+  .hymn-text-footer {
+    grid-template-columns: 40px 40px minmax(70px, 1fr) 40px 40px;
+  }
+  .hymn-text-footer button {
+    width: 40px;
+    height: 40px;
+  }
+}
+/* Small phones honour the >=44px touch-target gate. */
+@media (max-width: 390px) {
+  .hymn-scope-pill-btn,
+  .hymn-autoscroll-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+  .hymn-autoscroll-speed-select {
+    min-height: 44px;
+  }
+  .hymn-more-actions-summary,
+  .hymn-reader-settings-summary {
+    width: 44px;
+    min-width: 44px;
+    flex: 0 0 44px;
+    min-height: 44px;
+  }
+  .hymn-more-actions,
+  .hymn-reader-settings {
+    width: 44px;
+    flex: 0 0 44px;
+  }
+  .hymn-text-toolbar .detail-actions .hymn-action {
+    width: 44px;
+    min-height: 44px;
+  }
+}
+/* MIDI dock classes freed from inline styles. */
+.hymn-midi-seekbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 160px;
+}
+.hymn-midi-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  min-width: 32px;
+  color: var(--muted);
+}
+.hymn-midi-time-end {
+  text-align: right;
+}
+.midi-preload-bar {
+  height: 4px;
+  flex: 0 0 120px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #8d6e3f 18%, transparent);
+  overflow: hidden;
+}
+.midi-preload-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent, #8d6e3f);
+  transition: width 0.2s ease;
+}
+.hymn-midi-mute[aria-pressed="true"] {
   color: var(--muted);
 }

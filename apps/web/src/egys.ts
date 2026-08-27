@@ -48,6 +48,90 @@ async function request(
   }
 }
 
+const SESSION_KEY = "gys-egys-session-v1";
+
+export type EgysSessionTrace = {
+  userId: string;
+  displayName?: string;
+  branchCode?: string;
+  branchName?: string;
+  isMember?: boolean;
+  firstLoginAt: string;
+  lastSeenAt: string;
+};
+
+function readSession(): EgysSessionTrace | undefined {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return undefined;
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      typeof (parsed as { userId?: unknown }).userId === "string"
+    )
+      return parsed as EgysSessionTrace;
+  } catch {
+    // corrupt trace: start fresh
+  }
+  return undefined;
+}
+
+function writeSession(trace: EgysSessionTrace) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(trace));
+  } catch {
+    // storage quota must not break auth
+  }
+}
+
+/**
+ * Device-side login tracking: every successful profile read updates
+ * `lastSeenAt`; a different account resets `firstLoginAt`. This powers the
+ * settings screen's "login terakhir" indicator without storing tokens.
+ */
+export function trackEgysProfileSeen(
+  profile: AccountProfile,
+): EgysSessionTrace {
+  const now = new Date().toISOString();
+  const previous = readSession();
+  if (previous && previous.userId === profile.id) {
+    const next = {
+      ...previous,
+      ...(profile.displayName ? { displayName: profile.displayName } : {}),
+      ...(profile.branchCode ? { branchCode: profile.branchCode } : {}),
+      ...(profile.branchName ? { branchName: profile.branchName } : {}),
+      ...(profile.isMember !== undefined ? { isMember: profile.isMember } : {}),
+      lastSeenAt: now,
+    };
+    writeSession(next);
+    return next;
+  }
+  const fresh: EgysSessionTrace = {
+    userId: profile.id,
+    ...(profile.displayName ? { displayName: profile.displayName } : {}),
+    ...(profile.branchCode ? { branchCode: profile.branchCode } : {}),
+    ...(profile.branchName ? { branchName: profile.branchName } : {}),
+    ...(profile.isMember !== undefined ? { isMember: profile.isMember } : {}),
+    firstLoginAt: now,
+    lastSeenAt: now,
+  };
+  writeSession(fresh);
+  return fresh;
+}
+
+export function readEgysSessionTrace(): EgysSessionTrace | undefined {
+  return readSession();
+}
+
+export function clearEgysSessionTrace() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export async function getEgysProfile(
   signal?: AbortSignal,
 ): Promise<AccountProfile | undefined> {
@@ -74,5 +158,6 @@ export async function signOutEgys(): Promise<void> {
     });
   } finally {
     if (isTauriShell()) await removeNativeEgysToken();
+    clearEgysSessionTrace();
   }
 }
