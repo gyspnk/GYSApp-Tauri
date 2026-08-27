@@ -94,7 +94,11 @@ function distributedAssetStateLabel(asset: ManagedDistributedAsset): string {
   }
 }
 
-const ASSET_GROUPS: { key: DistributedAssetKind; label: string; icon: IconName }[] = [
+const ASSET_GROUPS: {
+  key: DistributedAssetKind;
+  label: string;
+  icon: IconName;
+}[] = [
   { key: "bible", label: "Alkitab", icon: "book" },
   { key: "hymnal", label: "Kidung Rohani", icon: "music" },
   { key: "soundfont", label: "Soundfont", icon: "music" },
@@ -167,7 +171,9 @@ function DistributedAssetPanel({
                     <strong>{asset.title}</strong>
                     <small>
                       {distributedAssetStateLabel(asset)}
-                      {asset.sizeBytes ? ` · ${formatBytes(asset.sizeBytes)}` : ""}
+                      {asset.sizeBytes
+                        ? ` · ${formatBytes(asset.sizeBytes)}`
+                        : ""}
                     </small>
                     {busy && (
                       <progress
@@ -183,8 +189,11 @@ function DistributedAssetPanel({
                         Mengunduh {percent}%…
                       </span>
                     ) : asset.state === "bundled" ? (
-                      <span className="pack-badge is-verified">Siap offline</span>
-                    ) : asset.state === "installed" || asset.state === "update" ? (
+                      <span className="pack-badge is-verified">
+                        Siap offline
+                      </span>
+                    ) : asset.state === "installed" ||
+                      asset.state === "update" ? (
                       <>
                         <button
                           className="quiet-button asset-action-button"
@@ -196,7 +205,9 @@ function DistributedAssetPanel({
                         >
                           <Icon name="download" size={17} />
                           <span className="asset-action-copy">
-                            {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+                            {asset.state === "update"
+                              ? "Perbarui"
+                              : "Unduh ulang"}
                           </span>
                         </button>
                         <button
@@ -214,17 +225,17 @@ function DistributedAssetPanel({
                         disabled={!downloadAvailable}
                         onClick={() => onInstall(asset.code)}
                         aria-label={`Unduh ${asset.title}`}
-                    title={`Unduh ${asset.title}`}
-                  >
-                    <Icon name="download" size={17} />
-                    <span className="asset-action-copy">Unduh</span>
-                  </button>
-                ) : (
-                  <span className="account-sync-note">Tidak tersedia</span>
-                )}
-              </div>
-            </div>
-            );
+                        title={`Unduh ${asset.title}`}
+                      >
+                        <Icon name="download" size={17} />
+                        <span className="asset-action-copy">Unduh</span>
+                      </button>
+                    ) : (
+                      <span className="account-sync-note">Tidak tersedia</span>
+                    )}
+                  </div>
+                </div>
+              );
             })}
           </section>
         ))}

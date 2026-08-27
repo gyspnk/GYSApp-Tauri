@@ -10,7 +10,15 @@ for (const url of urls) {
       console.log(url, "ERR", res.message);
       continue;
     }
-    console.log(url, res.status, res.headers.get("content-type"), "| ACAO:", res.headers.get("access-control-allow-origin"), "| len", res.headers.get("content-length"));
+    console.log(
+      url,
+      res.status,
+      res.headers.get("content-type"),
+      "| ACAO:",
+      res.headers.get("access-control-allow-origin"),
+      "| len",
+      res.headers.get("content-length"),
+    );
     res.body?.cancel();
   } catch (e) {
     console.log(url, "EXC", String(e));

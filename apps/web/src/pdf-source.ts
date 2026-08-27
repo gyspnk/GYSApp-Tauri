@@ -22,8 +22,7 @@ export function bffPdfUrl(sourceUrl: string): string {
 
 function isPdf(bytes: Uint8Array): boolean {
   return (
-    bytes.length > 8 &&
-    new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-"
+    bytes.length > 8 && new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-"
   );
 }
 
