@@ -798,6 +798,171 @@ function HymnSettingsPage({
   );
 }
 
+function MidiControlsPanel({ locale }: { locale: Locale }) {
+  const midiSettings = useSyncExternalStore(
+    midiPlayer.subscribeSettings,
+    midiPlayer.settingsSnapshot,
+    midiPlayer.settingsSnapshot,
+  );
+  const midiState = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+    midiPlayer.snapshot,
+  );
+  const setTempo = (next: number) =>
+    void midiPlayer.setTempo(next).catch(() => undefined);
+  const isActive =
+    midiState.status === "playing" ||
+    midiState.status === "paused" ||
+    midiState.status === "ready" ||
+    midiState.status === "stopped";
+  return (
+    <div className="hymn-midi-controls-panel">
+      <div className="hymn-midi-dock-row">
+        <button
+          type="button"
+          className="hymn-midi-dock-play"
+          onClick={() =>
+            void (midiState.status === "playing"
+              ? midiPlayer
+                  .pause()
+                  .then(() => undefined)
+                  .catch(() => undefined)
+              : midiPlayer
+                  .play()
+                  .then(() => undefined)
+                  .catch(() => undefined))
+          }
+          disabled={!midiPlayer.getCurrentMidiUrl()}
+          aria-label={
+            midiState.status === "playing"
+              ? translate(locale, "kidung.pauseMidi")
+              : translate(locale, "kidung.playMidi")
+          }
+        >
+          <Icon name={midiState.status === "playing" ? "pause" : "play"} size={18} />
+        </button>
+        {isActive && midiState.duration > 0 && (
+          <div className="hymn-midi-seekbar" style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+            <span style={{ fontVariantNumeric: "tabular-nums", fontSize: "0.8rem", minWidth: 28 }}>
+              {formatMidiTime(midiState.position)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={midiState.duration}
+              step={0.1}
+              value={Math.min(midiState.position, midiState.duration)}
+              onChange={(event) =>
+                void midiPlayer
+                  .seek(Number(event.target.value))
+                  .catch(() => undefined)
+              }
+              style={{ flex: 1 }}
+              aria-label="Posisi MIDI"
+            />
+            <span style={{ fontVariantNumeric: "tabular-nums", fontSize: "0.8rem", minWidth: 28 }}>
+              {formatMidiTime(midiState.duration)}
+            </span>
+          </div>
+        )}
+        {midiState.status === "loading" && (
+          <div
+            className="midi-preload-bar"
+            role="progressbar"
+            aria-valuenow={midiState.loadingProgress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            style={{
+              width: 120,
+              height: 4,
+              background: "rgba(141,110,63,0.18)",
+              borderRadius: 999,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${Math.max(4, midiState.loadingProgress)}%`,
+                height: "100%",
+                background: "var(--accent, #8d6e3f)",
+                transition: "width 0.2s ease",
+              }}
+            />
+          </div>
+        )}
+      </div>
+      <div className="hymn-midi-dock-row">
+        <label>
+          <span style={{ fontSize: "0.75rem" }}>{translate(locale, "kidung.instrument")}</span>
+          <select
+            aria-label={translate(locale, "kidung.instrument")}
+            value={midiSettings.instrument}
+            onChange={(event) =>
+              void midiPlayer
+                .setInstrument(Number(event.target.value))
+                .catch(() => undefined)
+            }
+          >
+            <option value={-1}>{midiInstrumentLabel(-1)}</option>
+            {GM_INSTRUMENTS.map((name, program) => (
+              <option key={program} value={program}>
+                {String(program + 1).padStart(3, "0")} · {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span style={{ fontSize: "0.75rem" }}>{translate(locale, "kidung.tempo")}</span>
+          <input
+            type="number"
+            min={30}
+            max={220}
+            value={midiSettings.tempo}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              if (Number.isFinite(value)) setTempo(value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") (event.target as HTMLInputElement).blur();
+            }}
+            aria-label="Tempo BPM"
+            style={{ width: 56, textAlign: "center" }}
+          />
+          <span style={{ fontSize: "0.75rem" }}>BPM</span>
+        </label>
+        <label>
+          <span style={{ fontSize: "0.75rem" }}>Volume</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={midiState.muted ? 0 : midiState.volume}
+            onChange={(event) =>
+              void midiPlayer
+                .setVolume(Number(event.target.value))
+                .catch(() => undefined)
+            }
+            style={{ width: 90 }}
+            aria-label="Volume MIDI"
+          />
+        </label>
+        <button
+          type="button"
+          className="quiet-button"
+          onClick={() =>
+            void midiPlayer.setMuted(!midiState.muted).catch(() => undefined)
+          }
+          aria-label={midiState.muted ? "Unmute" : "Mute"}
+        >
+          {midiState.muted ? "🍵" : "🔊"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function HymnCatalog({
   locale,
   state,
@@ -1057,6 +1222,7 @@ function HymnDetail({
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   // gyschordweb chord editor (note-aligned): 5 taps on title toggles it,
   // edited chords are local until the user saves the .chord.json.
+  const [midiDockOpen, setMidiDockOpen] = useState(false);
   const [chordEditorEnabled, setChordEditorEnabled] = useState(false);
   const [editableChords, setEditableChords] = useState<
     Record<string, PdfChordOverlayMarker[]>
@@ -2236,7 +2402,14 @@ function HymnDetail({
                 <button
                   type="button"
                   className="viewer-chrome-button viewer-chrome-midi"
-                  onClick={() => void loadMidi()}
+                  aria-expanded={midiDockOpen}
+                  onClick={() => {
+                    if (midiState.songId !== item.id) {
+                      void loadMidi().then(() => setMidiDockOpen(true));
+                    } else {
+                      setMidiDockOpen((open) => !open);
+                    }
+                  }}
                   disabled={
                     midiStatus === "loading" || midiState.status === "loading"
                   }
@@ -2247,6 +2420,15 @@ function HymnDetail({
                   </span>
                   <span className="viewer-chrome-copy">MIDI</span>
                 </button>
+              )}
+              {midiAvailable && midiDockOpen && (
+                <div
+                  className="hymn-midi-dock"
+                  role="group"
+                  aria-label="Pemutar MIDI"
+                >
+                  <MidiControlsPanel locale={locale} />
+                </div>
               )}
               {chordEditorEnabled && (
                 <div
@@ -2283,14 +2465,92 @@ function HymnDetail({
                   />
                 </div>
               )}
+              {!item.assetCode && (
+                <button
+                  type="button"
+                  className="viewer-chrome-button"
+                  onClick={toggleChords}
+                  disabled={chordStatus === "loading"}
+                  aria-pressed={chordsVisible}
+                  aria-label={
+                    chordsVisible
+                      ? "Sembunyikan chord"
+                      : "Tampilkan chord"
+                  }
+                >
+                  <span aria-hidden="true">
+                    <Icon name="music" size={18} />
+                  </span>
+                  <span className="viewer-chrome-copy">
+                    {chordStatus === "loading"
+                      ? "..."
+                      : chordsVisible
+                        ? "Chord ✓"
+                        : "Chord"}
+                  </span>
+                </button>
+              )}
             </div>
-            <div className="hymn-text-toolbar">
-              <div className="detail-actions">
-                {!item.assetCode && (
-                  <button
-                    type="button"
-                    className="quiet-button hymn-action"
-                    onClick={toggleChords}
+            {pdfStatus === "loading" && (
+              <div className="loading-panel" role="status">
+                {translate(locale, "kidung.pdfOpening")}
+              </div>
+            )}
+            {pdfStatus === "error" && (
+              <div className="error-panel" role="alert">
+                <strong>{translate(locale, "kidung.pdfFailed")}</strong>
+                <span>{translate(locale, "kidung.pdfRetry")}</span>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => void loadPdf()}
+                >
+                  Coba lagi
+                </button>
+              </div>
+            )}
+            {pdfStatus === "ready" && (
+              <Suspense
+                fallback={
+                  <div className="loading-panel">
+                    {translate(locale, "kidung.pdfOpening")}
+                  </div>
+                }
+              >
+                <PdfReader
+                  src={pdfUrl ?? ""}
+                  {...(pdfBytes ? { data: pdfBytes } : {})}
+                  initialPage={pdfInitialPage}
+                  {...(pdfSource === "fork" && pdfPageCount
+                    ? {
+                        pageRange: {
+                          start: pdfInitialPage,
+                          count: pdfPageCount,
+                        },
+                      }
+                    : {})}
+                  progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
+                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
+                  title={item.title}
+                  variant="hymn"
+                  chordOverlays={
+                    chordEditorEnabled ? editableChords : pdfChordOverlays
+                  }
+                  chordsVisible={chordsVisible}
+                  editorEnabled={chordEditorEnabled}
+                  onEditChord={editChordAt}
+                />
+              </Suspense>
+            )}
+          </div>
+        )}
+        <div className="hymn-text-toolbar">
+          <div className="detail-actions">
+            {!item.assetCode && (
+              <button
+                type="button"
+                className="quiet-button hymn-action"
+                onClick={toggleChords}
                     disabled={chordStatus === "loading"}
                     aria-pressed={chordsVisible}
                     aria-label={
@@ -3141,59 +3401,6 @@ function HymnDetail({
                 </button>
               </div>
             )}
-            {viewerMode === "pdf" && pdfStatus === "loading" && (
-              <div className="loading-panel" role="status">
-                {translate(locale, "kidung.pdfOpening")}
-              </div>
-            )}
-            {viewerMode === "pdf" && pdfStatus === "error" && (
-              <div className="error-panel" role="alert">
-                <strong>{translate(locale, "kidung.pdfFailed")}</strong>
-                <span>{translate(locale, "kidung.pdfRetry")}</span>
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => void loadPdf()}
-                >
-                  Coba lagi
-                </button>
-              </div>
-            )}
-            {viewerMode === "pdf" && pdfStatus === "ready" && (
-              <Suspense
-                fallback={
-                  <div className="loading-panel">
-                    {translate(locale, "kidung.pdfOpening")}
-                  </div>
-                }
-              >
-                <PdfReader
-                  src={pdfUrl ?? ""}
-                  {...(pdfBytes ? { data: pdfBytes } : {})}
-                  initialPage={pdfInitialPage}
-                  {...(pdfSource === "fork" && pdfPageCount
-                    ? {
-                        pageRange: {
-                          start: pdfInitialPage,
-                          count: pdfPageCount,
-                        },
-                      }
-                    : {})}
-                  progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
-                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
-                  title={item.title}
-                  variant="hymn"
-                  chordOverlays={
-                    chordEditorEnabled ? editableChords : pdfChordOverlays
-                  }
-                  chordsVisible={chordsVisible}
-                  editorEnabled={chordEditorEnabled}
-                  onEditChord={editChordAt}
-                />
-              </Suspense>
-            )}
-          </div>
-        )}
         {viewerMode !== "pdf" && (
           <nav
             className="hymn-text-footer"

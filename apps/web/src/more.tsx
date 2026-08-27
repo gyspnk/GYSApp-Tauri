@@ -5,7 +5,11 @@ import {
   type FormEvent,
 } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { type AccountProfile, type AssetManifestV1 } from "@gys/contracts";
+import {
+  type AccountProfile,
+  type AssetManifestV1,
+  type DistributedAssetKind,
+} from "@gys/contracts";
 import {
   decryptBackupV2,
   encryptBackupV2,
@@ -32,7 +36,7 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
-import { Icon } from "./icons.js";
+import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage } from "./platform.js";
 import {
@@ -90,6 +94,12 @@ function distributedAssetStateLabel(asset: ManagedDistributedAsset): string {
   }
 }
 
+const ASSET_GROUPS: { key: DistributedAssetKind; label: string; icon: IconName }[] = [
+  { key: "bible", label: "Alkitab", icon: "book" },
+  { key: "hymnal", label: "Kidung Rohani", icon: "music" },
+  { key: "soundfont", label: "Soundfont", icon: "music" },
+];
+
 function DistributedAssetPanel({
   assets,
   busyCode,
@@ -109,6 +119,10 @@ function DistributedAssetPanel({
   onInstall: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
+  const groups = ASSET_GROUPS.map((group) => ({
+    ...group,
+    items: assets.filter((asset) => asset.kind === group.key),
+  })).filter((group) => group.items.length > 0);
   return (
     <article className="more-card more-card-wide distributed-assets-card">
       <div className="more-card-heading">
@@ -131,68 +145,75 @@ function DistributedAssetPanel({
             Belum ada aset tambahan yang tersedia.
           </small>
         )}
-        {assets.map((asset) => {
-          const busy = busyCode === asset.code;
-          const percent =
-            busy && progress?.total
-              ? Math.min(
-                  100,
-                  Math.round((progress.received / progress.total) * 100),
-                )
-              : 0;
-          return (
-            <div className="distributed-asset-row" key={asset.code}>
-              <div className="distributed-asset-copy">
-                <strong>{asset.title}</strong>
-                <small>
-                  {distributedAssetStateLabel(asset)}
-                  {asset.sizeBytes ? ` · ${formatBytes(asset.sizeBytes)}` : ""}
-                </small>
-                {busy && (
-                  <progress
-                    value={percent}
-                    max={100}
-                    aria-label={`Mengunduh ${asset.title}`}
-                  />
-                )}
-              </div>
-              <div className="distributed-asset-actions">
-                {busy ? (
-                  <span className="account-sync-note">
-                    Mengunduh {percent}%…
-                  </span>
-                ) : asset.state === "bundled" ? (
-                  <span className="pack-badge is-verified">Siap offline</span>
-                ) : asset.state === "installed" || asset.state === "update" ? (
-                  <>
-                    <button
-                      className="quiet-button asset-action-button"
-                      type="button"
-                      disabled={!downloadAvailable}
-                      onClick={() => onInstall(asset.code)}
-                      aria-label={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
-                      title={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
-                    >
-                      <Icon name="download" size={17} />
-                      <span className="asset-action-copy">
-                        {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+        {groups.map((group) => (
+          <section className="distributed-asset-group" key={group.key}>
+            <div className="distributed-asset-group-label">
+              <Icon name={group.icon} size={15} />
+              <strong>{group.label}</strong>
+              <span>{group.items.length}</span>
+            </div>
+            {group.items.map((asset) => {
+              const busy = busyCode === asset.code;
+              const percent =
+                busy && progress?.total
+                  ? Math.min(
+                      100,
+                      Math.round((progress.received / progress.total) * 100),
+                    )
+                  : 0;
+              return (
+                <div className="distributed-asset-row" key={asset.code}>
+                  <div className="distributed-asset-copy">
+                    <strong>{asset.title}</strong>
+                    <small>
+                      {distributedAssetStateLabel(asset)}
+                      {asset.sizeBytes ? ` · ${formatBytes(asset.sizeBytes)}` : ""}
+                    </small>
+                    {busy && (
+                      <progress
+                        value={percent}
+                        max={100}
+                        aria-label={`Mengunduh ${asset.title}`}
+                      />
+                    )}
+                  </div>
+                  <div className="distributed-asset-actions">
+                    {busy ? (
+                      <span className="account-sync-note">
+                        Mengunduh {percent}%…
                       </span>
-                    </button>
-                    <button
-                      className="text-button"
-                      type="button"
-                      onClick={() => onRemove(asset.code)}
-                    >
-                      Hapus
-                    </button>
-                  </>
-                ) : asset.state === "available" ? (
-                  <button
-                    className="primary-button asset-action-button"
-                    type="button"
-                    disabled={!downloadAvailable}
-                    onClick={() => onInstall(asset.code)}
-                    aria-label={`Unduh ${asset.title}`}
+                    ) : asset.state === "bundled" ? (
+                      <span className="pack-badge is-verified">Siap offline</span>
+                    ) : asset.state === "installed" || asset.state === "update" ? (
+                      <>
+                        <button
+                          className="quiet-button asset-action-button"
+                          type="button"
+                          disabled={!downloadAvailable}
+                          onClick={() => onInstall(asset.code)}
+                          aria-label={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
+                          title={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
+                        >
+                          <Icon name="download" size={17} />
+                          <span className="asset-action-copy">
+                            {asset.state === "update" ? "Perbarui" : "Unduh ulang"}
+                          </span>
+                        </button>
+                        <button
+                          className="text-button"
+                          type="button"
+                          onClick={() => onRemove(asset.code)}
+                        >
+                          Hapus
+                        </button>
+                      </>
+                    ) : asset.state === "available" ? (
+                      <button
+                        className="primary-button asset-action-button"
+                        type="button"
+                        disabled={!downloadAvailable}
+                        onClick={() => onInstall(asset.code)}
+                        aria-label={`Unduh ${asset.title}`}
                     title={`Unduh ${asset.title}`}
                   >
                     <Icon name="download" size={17} />
@@ -203,8 +224,10 @@ function DistributedAssetPanel({
                 )}
               </div>
             </div>
-          );
-        })}
+            );
+            })}
+          </section>
+        ))}
       </div>
       {error && (
         <div className="inline-error" role="alert">

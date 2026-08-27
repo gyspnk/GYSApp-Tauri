@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
+import { Icon } from "./icons.js";
+import { bffPdfUrl, loadPdfBytes } from "./pdf-source.js";
 
 type FaithItem = { number: string; text: string };
 type FaithGroup = { language: string; title: string; content: FaithItem[] };
@@ -98,10 +100,7 @@ const DK_READ_MORE = new Map<string, { pdf: string; source: string }>([
 ]);
 
 function faithPdfUrl(sourceUrl: string): string {
-  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  return base
-    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf?url=${encodeURIComponent(sourceUrl)}`
-    : sourceUrl;
+  return bffPdfUrl(sourceUrl);
 }
 
 const PDF_PROGRESS_PREFIX = "gys-faith-pdf-";
@@ -175,6 +174,24 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const [pdfProgress, setPdfProgress] = useState<FaithPdfProgress | undefined>(
     undefined,
   );
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
+  const [pdfError, setPdfError] = useState(false);
+  const [pdfLoadKey, setPdfLoadKey] = useState(0);
+
+  useEffect(() => {
+    if (!pdfRead) return;
+    let cancelled = false;
+    setPdfBytes(undefined);
+    setPdfError(false);
+    void loadPdfBytes(pdfRead.url).then((bytes) => {
+      if (cancelled) return;
+      if (bytes) setPdfBytes(bytes);
+      else setPdfError(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pdfRead, pdfLoadKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -290,6 +307,8 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const closeReadMore = () => {
     setPdfRead(undefined);
     setPdfProgress(undefined);
+    setPdfBytes(undefined);
+    setPdfError(false);
   };
 
   const onPageChange = (page: number, totalPages: number) => {
@@ -309,14 +328,6 @@ export function FaithPage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page faith-page">
-      <section className="page-intro">
-        <div>
-          <p className="date-line">{translate(locale, "faith.packLabel")}</p>
-          <h1>{translate(locale, "page.imanTitle")}</h1>
-          <p className="intro-copy">{translate(locale, "page.imanBody")}</p>
-        </div>
-        <span className="pack-badge">ID · EN · 中文</span>
-      </section>
       {!pack && (
         <div className="loading-panel" role="status">
           {translate(locale, "faith.loading")}
@@ -329,19 +340,16 @@ export function FaithPage({ locale }: { locale: Locale }) {
       )}
       {group && (
         <section className="faith-stack" aria-label={group.title}>
-          <div className="faith-stack-toolbar">
-            <label htmlFor="faith-query">
-              {translate(locale, "faith.search")}
-            </label>
+          <div className="faith-search-bar">
+            <Icon name="search" size={16} />
             <input
               id="faith-query"
+              type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={translate(locale, "faith.searchPlaceholder")}
+              aria-label={translate(locale, "faith.search")}
             />
-            <span>
-              {translate(locale, "faith.count", { count: filtered.length })}
-            </span>
           </div>
           <div
             className="faith-rows"
@@ -624,19 +632,43 @@ export function FaithPage({ locale }: { locale: Locale }) {
                 </div>
               </div>
               <div className="faith-pdf-body">
-                <Suspense
-                  fallback={
-                    <div className="loading-panel">Memuat viewer PDF…</div>
-                  }
-                >
-                  <FaithPdfReader
-                    src={faithPdfUrl(pdfRead.url)}
-                    initialPage={pdfProgress?.page ?? 1}
-                    title={pdfRead.title}
-                    progressKey={`faith:dk-${pdfRead.number}`}
-                    onPageChange={onPageChange}
-                  />
-                </Suspense>
+                {pdfError && (
+                  <div className="error-panel" role="alert">
+                    <strong>PDF belum dapat dimuat.</strong>
+                    <span>
+                      Unduhan terblokir koneksi. Coba lagi saat tersambung
+                      internet.
+                    </span>
+                    <button
+                      className="quiet-button"
+                      type="button"
+                      onClick={() => setPdfLoadKey((key) => key + 1)}
+                    >
+                      Coba lagi
+                    </button>
+                  </div>
+                )}
+                {!pdfError && !pdfBytes && (
+                  <div className="loading-panel" role="status">
+                    Memuat PDF… (berkas bisa beberapa MB)
+                  </div>
+                )}
+                {pdfBytes && (
+                  <Suspense
+                    fallback={
+                      <div className="loading-panel">Memuat viewer PDF…</div>
+                    }
+                  >
+                    <FaithPdfReader
+                      src={faithPdfUrl(pdfRead.url)}
+                      data={pdfBytes}
+                      initialPage={pdfProgress?.page ?? 1}
+                      title={pdfRead.title}
+                      progressKey={`faith:dk-${pdfRead.number}`}
+                      onPageChange={onPageChange}
+                    />
+                  </Suspense>
+                )}
               </div>
             </div>
           </div>,
