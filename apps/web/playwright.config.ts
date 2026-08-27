@@ -6,7 +6,15 @@ export default defineConfig({
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}",
   workers: 2,
-  use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure" },
+  use: {
+    baseURL: "http://127.0.0.1:4173",
+    trace: "retain-on-failure",
+    // Service workers reload the page when they take control (SKIP_WAITING +
+    // controllerchange). Existing contexts reload mid-test otherwise, so e2e
+    // runs against the first paint; PWA metadata is still verified through
+    // page.request against the built sw.js in runtime-health.spec.ts.
+    serviceWorkers: "block",
+  },
   webServer: {
     // The app imports workspace packages from their generated `dist` entrypoints.
     // Build from the monorepo root so a clean checkout (CI or a new developer

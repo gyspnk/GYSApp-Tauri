@@ -17,7 +17,7 @@ const surfaces = [
     name: "kidung",
     path: "/GYSApp-Tauri/kidung",
     ready: ".hymn-catalog-shell",
-    fold: ".pujian-row",
+    fold: ".pujian-list > li",
   },
   {
     name: "bible",

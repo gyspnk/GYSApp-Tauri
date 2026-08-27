@@ -121,11 +121,11 @@ test("offline reader packs open without a network request", async ({
   });
   await page.getByRole("link", { name: /Iman/ }).first().click();
   await expect(
-    page.getByRole("heading", { name: "Iman", exact: true }),
-  ).toBeVisible();
-  await expect(
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
+  await expect(page.locator(".faith-row-heading").first()).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 test.describe("offline Bible recovery", () => {
@@ -161,7 +161,7 @@ test("faith topics search, select, and persist a personal note", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/iman");
   await expect(
-    page.getByRole("heading", { name: "Iman", exact: true }),
+    page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
   const rows = page.locator(".faith-row-heading");
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
@@ -182,6 +182,10 @@ test("faith topics search, select, and persist a personal note", async ({
   // A note on the selected topic persists across reloads.
   await page.getByLabel("Cari pokok iman").fill("");
   await page
+    .getByRole("dialog", { name: /Pokok/ })
+    .getByRole("button", { name: "Catatan pribadi" })
+    .click();
+  await page
     .getByLabel("Catatan pribadi")
     .fill("Renungan dari pokok dasar kepercayaan.");
   await page.getByRole("button", { name: "Simpan catatan" }).click();
@@ -190,12 +194,16 @@ test("faith topics search, select, and persist a personal note", async ({
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Iman", exact: true }),
+    page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible({
     timeout: 15_000,
   });
   // The note is keyed per topic, so reopen the same topic after the reload.
   await page.locator(".faith-row-heading").nth(1).click();
+  await page
+    .getByRole("dialog", { name: /Pokok/ })
+    .getByRole("button", { name: "Catatan pribadi" })
+    .click();
   await expect(page.getByLabel("Catatan pribadi")).toHaveValue(
     "Renungan dari pokok dasar kepercayaan.",
   );
@@ -250,11 +258,13 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
     .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
     .first()
     .click();
+  await page.getByRole("button", { name: /Buka catatan ayat/ }).click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
   await page
     .getByLabel("Catatan pribadi")
     .fill("Kasih Tuhan menjadi dasar pengharapan.");
   await page.getByRole("button", { name: "Simpan catatan" }).click();
+  await page.getByRole("button", { name: "Tutup catatan ayat" }).click();
   await page.getByRole("button", { name: "Sorot blue" }).click();
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
@@ -565,7 +575,11 @@ test("Bible text selection exposes contextual copy/share/note actions", async ({
   await expect(
     page.getByRole("toolbar", { name: "Tindakan teks terpilih" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Catat" }).click();
+  await page.getByRole("button", { name: "Catat", exact: true }).click();
+  await page
+    .getByRole("toolbar", { name: "Aksi ayat terpilih" })
+    .getByRole("button", { name: "Catatan", exact: true })
+    .click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
 });
 
@@ -727,7 +741,10 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
     .click();
   await expect(page).toHaveURL(/\/kidung$/);
   await page
-    .getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ })
+    .getByRole("button", {
+      name: "Pujilah Allah Yang Maha Esa",
+      exact: true,
+    })
     .click();
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
   await expect(page.getByText("Bait 1 dari 3", { exact: true })).toBeVisible();
@@ -742,7 +759,10 @@ test("hymn search uses indexed AND matching instead of lyric rescans", async ({
   ).toBeVisible();
   await page.getByLabel("Cari lagu").fill("Allah Pujilah 001");
   await expect(
-    page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }),
+    page.getByRole("button", {
+      name: "Pujilah Allah Yang Maha Esa",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(page.locator(".pujian-list > li")).toHaveCount(1);
 });

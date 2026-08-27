@@ -214,7 +214,10 @@ test.describe("responsive reader navigation", () => {
     await expect(search).toBeFocused();
     await search.fill("Allah Pujilah");
     await expect(
-      page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }),
+      page.getByRole("button", {
+        name: "Pujilah Allah Yang Maha Esa",
+        exact: true,
+      }),
     ).toBeVisible();
   });
 
@@ -379,7 +382,7 @@ test.describe("responsive reader navigation", () => {
       page.getByRole("heading", { name: "Pengaturan", exact: true }),
     ).toBeVisible();
     await localNav.getByRole("link", { name: "Kidung" }).click();
-    await expect(page.locator(".pujian-row").first()).toBeVisible({
+    await expect(page.locator(".pujian-list > li").first()).toBeVisible({
       timeout: 15_000,
     });
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
@@ -490,7 +493,6 @@ test.describe("responsive reader navigation", () => {
       .toBeGreaterThan(650);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
-    await page.getByRole("button", { name: "Pengaturan PDF" }).click();
     await expect(page.locator(".pdf-advanced-controls.is-open")).toBeVisible();
   });
 

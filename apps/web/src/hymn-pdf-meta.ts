@@ -4,8 +4,6 @@
  * `_preloadTransposeByPdfHref` caches: extraction happens once per song, and
  * the MIDI load path reads the cached value synchronously.
  */
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
-import { workerSrc } from "./pdf-worker.js";
 import {
   detectPreloadTransposeFromPdfText,
   extractPdfKeyFromText,
@@ -14,8 +12,6 @@ import {
 } from "./pdf-meta.js";
 import { loadForkHymnalPdfBytes } from "./fork-pdf.js";
 import type { HymnCatalogEntry } from "@gys/contracts";
-
-GlobalWorkerOptions.workerSrc = workerSrc;
 
 export type HymnPdfMeta = {
   tempo?: number;
@@ -26,9 +22,24 @@ export type HymnPdfMeta = {
 
 const cache = new Map<string, Promise<HymnPdfMeta>>();
 
+let pdfjsPromise: Promise<typeof import("pdfjs-dist")> | undefined;
+/**
+ * Load pdf.js on first use so text-first hymn pages never pull the library
+ * or the worker into the Kidung route's first-load chunk graph.
+ */
+async function loadPdfJs(): Promise<typeof import("pdfjs-dist")> {
+  pdfjsPromise ??= import("pdfjs-dist").then(async (pdfjs) => {
+    const { workerSrc } = await import("./pdf-worker.js");
+    pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+    return pdfjs;
+  });
+  return pdfjsPromise;
+}
+
 export async function extractPdfMetaFromBytes(
   bytes: Uint8Array,
 ): Promise<HymnPdfMeta> {
+  const { getDocument } = await loadPdfJs();
   const task = getDocument({ data: bytes.slice() });
   try {
     const doc = await task.promise;

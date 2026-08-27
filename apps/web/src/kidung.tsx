@@ -1297,7 +1297,6 @@ function HymnDetail({
     interval: number | undefined;
   }>({ timeout: undefined, interval: undefined });
   const holdStart = (fn: () => void) => {
-    fn();
     holdState.current.timeout = window.setTimeout(() => {
       holdState.current.interval = window.setInterval(fn, 90);
     }, 400);
@@ -1382,11 +1381,11 @@ function HymnDetail({
         safeVerseIndex,
       );
   }, [item, safeVerseIndex]);
-  // gyschordweb `_resolveSongTempoForLoad`: warm per-song PDF tempo/key cache
-  useEffect(() => {
-    if (item && !item.assetCode)
-      void warmHymnPdfMeta(item).catch(() => undefined);
-  }, [item]);
+  // gyschordweb `_resolveSongTempoForLoad`: the per-song PDF tempo/key cache
+  // is warmed only when a PDF- or MIDI-backed feature is explicitly used so
+  // text-first hymn pages do not download PDF.js or the master PDF eagerly.
+  // (see loadChord / loadMidi)
+
   // gyschordweb _forceAutoPlayNext: after a song switch that happened while
   // MIDI was playing, start the new song automatically once it is prepared.
   useEffect(() => {
@@ -2069,6 +2068,7 @@ function HymnDetail({
     setChordStatus("loading");
     setChordLayout([]);
     setChordOverlays({});
+    void warmHymnPdfMeta(item).catch(() => undefined);
     try {
       const nextDocument = await chordRepository.getChord(
         item.id,
@@ -2240,6 +2240,7 @@ function HymnDetail({
       /* ignore */
     }
     setMidiStatus("loading");
+    void warmHymnPdfMeta(item).catch(() => undefined);
     try {
       const preloaded = await midiPlayer.hasPreloaded(
         ref.sha256,

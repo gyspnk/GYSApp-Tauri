@@ -51,8 +51,17 @@ async function requestServiceWorkerCacheReset(): Promise<void> {
   let registration: ServiceWorkerRegistration | undefined;
   let worker: ServiceWorker | null | undefined;
   try {
-    registration = await navigator.serviceWorker.ready;
-    worker = registration.active;
+    // `ready` never settles when service workers are disabled (e2e with
+    // serviceWorkers: "block", privacy modes, embedded webviews). Give the
+    // reset a short grace period and let the page-side Cache API fallback
+    // below finish the job instead of blocking the reset toast forever.
+    registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<undefined>((resolve) => {
+        globalThis.setTimeout(() => resolve(undefined), 1_500);
+      }),
+    ]);
+    worker = registration?.active;
   } catch {
     return;
   }
@@ -76,7 +85,7 @@ async function requestServiceWorkerCacheReset(): Promise<void> {
       finish();
     }
   });
-  if (typeof registration.unregister === "function") {
+  if (registration?.unregister) {
     try {
       await registration.unregister();
     } catch {

@@ -25,6 +25,11 @@ const IDB_KEY = "saved-playlists";
 
 let hydrated = false;
 let playlists: SavedPlaylist[] = [];
+let snapshotCache: SavedPlaylist[] | undefined;
+
+function invalidateSnapshotCache(): void {
+  snapshotCache = undefined;
+}
 
 function backupToIDB(): void {
   if (typeof indexedDB === "undefined") return;
@@ -70,6 +75,7 @@ function restoreFromIDB(): void {
       const backup = get.result as { playlists?: SavedPlaylist[] } | undefined;
       if (!backup?.playlists) return;
       playlists = backup.playlists;
+      invalidateSnapshotCache();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
       } catch {
@@ -98,6 +104,7 @@ function hydrate(): void {
 
 function persist(): void {
   if (typeof window === "undefined") return;
+  invalidateSnapshotCache();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
   } catch {
@@ -113,10 +120,11 @@ function makeId(): string {
 
 export function getSavedPlaylists(): SavedPlaylist[] {
   hydrate();
-  return playlists.map((playlist) => ({
+  snapshotCache ??= playlists.map((playlist) => ({
     ...playlist,
     songIds: [...playlist.songIds],
   }));
+  return snapshotCache;
 }
 
 export function subscribeSavedPlaylists(listener: () => void): () => void {

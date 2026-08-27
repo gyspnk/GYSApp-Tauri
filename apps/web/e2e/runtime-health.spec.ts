@@ -73,7 +73,7 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
   );
   expect(serviceWorkerResponse.ok()).toBe(true);
   const serviceWorker = await serviceWorkerResponse.text();
-  expect(serviceWorker).toContain("gysapp-shell-v15");
+  expect(serviceWorker).toContain("gysapp-shell-v16");
   expect(serviceWorker).not.toContain("distributed-hymn-catalog");
   expect(serviceWorker).toContain("MAX_REMOTE_MEDIA_ENTRIES = 96");
   expect(metadataWarnings).toEqual([]);

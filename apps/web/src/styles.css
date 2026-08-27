@@ -1454,7 +1454,7 @@ blockquote {
   hyphens: auto;
   text-wrap: pretty;
 }
-@container sauh-reader (max-width: 720px) {
+@media (max-width: 720px) {
   .sauh-article.has-image {
     grid-template-columns: 1fr;
     gap: 1rem;

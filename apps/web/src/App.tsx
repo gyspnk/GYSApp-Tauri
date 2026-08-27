@@ -1971,6 +1971,20 @@ function HomePage({ locale }: { locale: Locale }) {
     [],
   );
   const hasActivity = Boolean(activity.bible || activity.hymn);
+  // An outdated snapshot must not trigger an endless revalidation loop
+  // (forced re-fetch -> setSauh -> effect -> fetch again): throttle at most
+  // one network re-check per minute.
+  const lastForcedSauhAtRef = useRef(0);
+  const refreshTodaySauh = useCallback(() => {
+    const now = Date.now();
+    if (now - lastForcedSauhAtRef.current < 60_000) return;
+    lastForcedSauhAtRef.current = now;
+    void fetchSauh(undefined, true)
+      .then((items) => {
+        if (items.length) setSauh(items);
+      })
+      .catch(() => undefined);
+  }, []);
   const loadSauh = useCallback((signal?: AbortSignal) => {
     const cached = getCachedSauh();
     if (!cached || !cached.length) setSauhStatus("loading");
@@ -2050,30 +2064,17 @@ function HomePage({ locale }: { locale: Locale }) {
   useEffect(() => {
     const selected = sauh[0];
     const isToday = selected && isTodaySauhAvailable([selected]);
-    if (
-      sauhStatus === "ready" &&
-      !isToday &&
-      typeof navigator !== "undefined" &&
-      navigator.onLine
-    ) {
-      void fetchSauh(undefined, true)
-        .then((items) => {
-          if (items.length) setSauh(items);
-        })
-        .catch(() => {});
+    if (sauhStatus === "ready" && !isToday && navigator.onLine) {
+      refreshTodaySauh();
     }
-  }, [sauh, sauhStatus]);
+  }, [sauh, sauhStatus, refreshTodaySauh]);
 
   useEffect(() => {
     const checkFreshness = () => {
       const selected = sauh[0];
       const isToday = selected && isTodaySauhAvailable([selected]);
-      if (!isToday && typeof navigator !== "undefined" && navigator.onLine) {
-        void fetchSauh(undefined, true)
-          .then((items) => {
-            if (items.length) setSauh(items);
-          })
-          .catch(() => {});
+      if (!isToday && navigator.onLine) {
+        refreshTodaySauh();
       }
     };
     window.addEventListener("focus", checkFreshness);
@@ -2085,7 +2086,7 @@ function HomePage({ locale }: { locale: Locale }) {
       window.removeEventListener("focus", checkFreshness);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [sauh]);
+  }, [sauh, refreshTodaySauh]);
   const selected = sauh[0];
   const dailyText = selected ? (selected.verse ?? selected.body) : "";
   const today = new Intl.DateTimeFormat(locale, {

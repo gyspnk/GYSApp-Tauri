@@ -203,7 +203,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     "horizontal",
   );
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Pengaturan PDF" }).click();
+  await expect(page.locator(".pdf-advanced-controls")).toHaveClass(/is-open/);
   await page.getByRole("button", { name: "2 halaman" }).click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
