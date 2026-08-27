@@ -1,8 +1,15 @@
 import { MidiPlaylistController } from "@gys/domain";
-import type { MidiPlaylist, MidiPlaylistItem } from "@gys/contracts";
+import type {
+  AutoNextMode,
+  MidiPlaylist,
+  MidiPlaylistItem,
+} from "@gys/contracts";
 
 const STORAGE_KEY = "gys-midi-playlist-v1";
 const EVENT_NAME = "gys-midi-playlist-change";
+const IDB_DB = "gys-playlist-backup";
+const IDB_STORE = "kv";
+const IDB_KEY = "playlists";
 
 // The controller owns playlist invariants (deduplication, reorder, loop and
 // shuffle). This adapter adds a durable browser boundary so a queue survives
@@ -12,23 +19,139 @@ const controller = new MidiPlaylistController();
 let hydrated = false;
 let stableSnapshot: MidiPlaylist = controller.snapshot();
 
+function openBackupDb(mode: "readonly" | "readwrite"): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_DB, 1);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore(IDB_STORE);
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      if (db.objectStoreNames.contains(IDB_STORE)) {
+        resolve(db);
+      } else {
+        // Self-heal: recreate the store with version+1 when it went missing.
+        db.close();
+        const retry = indexedDB.open(IDB_DB, (db.version || 1) + 1);
+        retry.onupgradeneeded = () => {
+          retry.result.createObjectStore(IDB_STORE);
+        };
+        retry.onsuccess = () => resolve(retry.result);
+        retry.onerror = () => reject(retry.error);
+      }
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/** IndexedDB mirror (gyschordweb gys-playlist-backup): survives eviction. */
+function backupPlaylistToIDB(payload: unknown): void {
+  try {
+    void openBackupDb("readwrite").then(
+      (db) => {
+        try {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.objectStore(IDB_STORE).put(payload, IDB_KEY);
+          tx.oncomplete = () => db.close();
+        } catch {
+          db.close();
+        }
+      },
+      () => undefined,
+    );
+  } catch {
+    // Backup is best-effort.
+  }
+}
+
+async function restorePlaylistFromIDB(): Promise<unknown> {
+  if (typeof indexedDB === "undefined") return undefined;
+  try {
+    const db = await openBackupDb("readonly");
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, "readonly");
+      const request = tx.objectStore(IDB_STORE).get(IDB_KEY);
+      request.onsuccess = () => {
+        db.close();
+        resolve(request.result);
+      };
+      request.onerror = () => {
+        db.close();
+        resolve(undefined);
+      };
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Translate the gyschordweb auto-next mode into the controller's engine
+ * flags. The mode is authoritative; loop/shuffle/autoNext are derived.
+ */
+export function applyAutoNextMode(mode: AutoNextMode): void {
+  hydrate();
+  const derived = {
+    off: { loop: "off" as const, shuffle: false, autoNext: false },
+    number: { loop: "all" as const, shuffle: false, autoNext: true },
+    playlist: { loop: "all" as const, shuffle: false, autoNext: true },
+    one: { loop: "one" as const, shuffle: false, autoNext: true },
+    all: { loop: "all" as const, shuffle: false, autoNext: true },
+    "shuffle-all": { loop: "all" as const, shuffle: true, autoNext: true },
+    "shuffle-playlist": {
+      loop: "all" as const,
+      shuffle: true,
+      autoNext: true,
+    },
+  }[mode];
+  controller.setOptions({ autoNextMode: mode, ...derived });
+  persist();
+}
+
+export function getAutoNextMode(): AutoNextMode {
+  hydrate();
+  return stableSnapshot.autoNextMode;
+}
+
 function hydrate(): void {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
   const serialized = localStorage.getItem(STORAGE_KEY);
-  if (!serialized) return;
-  try {
-    controller.import(serialized);
-    stableSnapshot = controller.snapshot();
-  } catch {
-    localStorage.removeItem(STORAGE_KEY);
+  if (serialized) {
+    try {
+      controller.import(serialized);
+      stableSnapshot = controller.snapshot();
+      return;
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+  // gyschordweb parity: restore from IndexedDB when localStorage was evicted.
+  if (typeof indexedDB !== "undefined") {
+    void restorePlaylistFromIDB().then((restored) => {
+      if (!restored) return;
+      try {
+        const serializedBackup = JSON.stringify(restored);
+        localStorage.setItem(STORAGE_KEY, serializedBackup);
+        controller.import(serializedBackup);
+        stableSnapshot = controller.snapshot();
+        window.dispatchEvent(new CustomEvent(EVENT_NAME));
+      } catch {
+        // The backup record can be stale/corrupt; keep localStorage as-is.
+      }
+    });
   }
 }
 
 function persist(): void {
   if (typeof window === "undefined") return;
   stableSnapshot = controller.snapshot();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stableSnapshot));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stableSnapshot));
+  } catch {
+    // Quota failures must not block the queue; backup path still records it.
+  }
+  backupPlaylistToIDB(stableSnapshot);
   window.dispatchEvent(new CustomEvent(EVENT_NAME));
 }
 

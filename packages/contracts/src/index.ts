@@ -171,6 +171,16 @@ export const MidiPlaylistItemSchema = z.object({
   title: z.string().min(1),
   sourceHash: Sha256Schema.optional(),
 });
+export const AutoNextModeSchema = z.enum([
+  "off",
+  "number",
+  "playlist",
+  "one",
+  "all",
+  "shuffle-all",
+  "shuffle-playlist",
+]);
+export type AutoNextMode = z.infer<typeof AutoNextModeSchema>;
 export const MidiPlaylistSchema = z.object({
   version: z.literal(1),
   items: z.array(MidiPlaylistItemSchema),
@@ -178,6 +188,12 @@ export const MidiPlaylistSchema = z.object({
   loop: z.enum(["off", "one", "all"]).default("off"),
   shuffle: z.boolean().default(false),
   autoNext: z.boolean().default(true),
+  /**
+   * gyschordweb `PlaylistManager.getAutoNextMode()` parity: the authoritative
+   * auto-next selection. `loop`/`shuffle`/`autoNext` remain as the derived
+   * engine flags so old consumers keep working.
+   */
+  autoNextMode: AutoNextModeSchema.default("off"),
   crossfadeMs: z.number().int().min(0).max(10_000).default(0),
 });
 export type MidiPlaylistItem = z.infer<typeof MidiPlaylistItemSchema>;

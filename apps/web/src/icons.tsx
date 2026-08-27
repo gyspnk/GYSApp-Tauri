@@ -31,7 +31,8 @@ export type IconName =
   | "download"
   | "file"
   | "heart"
-  | "playlist";
+  | "playlist"
+  | "bookmark";
 
 const ICON_PATHS: Record<IconName, ReactNode> = {
   home: (
@@ -171,6 +172,12 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M4 6h11M4 11h11M4 16h7" />
       <path d="m17 14 4 2.5-4 2.5z" />
+    </>
+  ),
+  bookmark: (
+    <>
+      <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />
+      <path d="M9 8h6" />
     </>
   ),
 };

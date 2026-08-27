@@ -269,12 +269,16 @@ export class BrowserMidiPlayer {
   private current: NormalizedMidi | undefined;
   private rawMidi: Uint8Array | undefined;
   private sourceHash = "";
+  private currentMidiUrl = "";
   private notes: Note[] = [];
   private audio: AudioContext | undefined;
   private master: GainNode | undefined;
+  private limiter: DynamicsCompressorNode | undefined;
   private masterConnected = false;
   private scheduled: AudioNodePair[] = [];
   private bufferSource: AudioBufferSourceNode | undefined;
+  private sourceGain: GainNode | undefined;
+  private crossfadeMs = 0;
   private timer: number | undefined;
   private startedAt = 0;
   private positionAtStart = 0;
@@ -329,19 +333,34 @@ export class BrowserMidiPlayer {
     songId: string,
     title: string,
     midi: NormalizedMidi,
-    options: { rawMidi?: Uint8Array; sourceHash?: string } = {},
+    options: {
+      rawMidi?: Uint8Array;
+      sourceHash?: string;
+      midiUrl?: string;
+      /** Detected tempo from the PDF metadata (gyschordweb _tempoByPdfHref). */
+      tempo?: number;
+      /** A/B crossfade: keep the previous playlist song audible while this
+       * song's buffer renders. `play()` fades it out instead of cutting. */
+      keepPlaying?: boolean;
+    } = {},
   ): Promise<boolean> {
     this.cancelPreloads();
     const generation = this.operationGate.next();
-    await this.stopAudio();
+    if (!options.keepPlaying || this.crossfadeMs <= 0) await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
     const tempo =
-      savedMidiPreferences.tempo === undefined && !this.state.songId
-        ? Math.round(midi.tempo)
-        : this.state.tempo;
+      options.tempo !== undefined
+        ? clampTempo(options.tempo)
+        : savedMidiPreferences.tempo === undefined && !this.state.songId
+          ? Math.round(midi.tempo)
+          : this.state.tempo;
     this.current = midi;
     this.rawMidi = options.rawMidi?.slice();
     this.sourceHash = options.sourceHash ?? "";
+    this.currentMidiUrl = options.midiUrl ?? this.currentMidiUrl;
+    if (options.midiUrl) this.currentMidiUrl = options.midiUrl;
+    else if (!this.currentMidiUrl)
+      this.currentMidiUrl = `midi:${songId}:${this.sourceHash}`;
     this.rendered = undefined;
     this.notes = buildNotes(midi);
     const duration = this.notes.reduce(
@@ -361,6 +380,86 @@ export class BrowserMidiPlayer {
       error: undefined,
     });
     return true;
+  }
+
+  /** Compatibility with gyschordweb MidiEngine API */
+  public isPlaying(): boolean {
+    return this.state.status === "playing";
+  }
+  public isLoading(): boolean {
+    return this.state.status === "loading";
+  }
+  public getDuration(): number {
+    return this.state.duration;
+  }
+  public getTime(): number {
+    if (this.state.status === "playing" && this.audio) {
+      const elapsed = this.audio.currentTime - this.startedAt;
+      return Math.min(this.state.duration, this.positionAtStart + elapsed);
+    }
+    return this.state.position;
+  }
+  public getCurrentMidiUrl(): string {
+    return this.currentMidiUrl;
+  }
+  public getTempoRate(): number {
+    const base = this.current?.tempo ?? this.state.tempo;
+    if (!Number.isFinite(base) || base <= 0) return 1;
+    return this.state.tempo / base;
+  }
+  public async hasPreloaded(
+    sourceHash: string,
+    transpose: number,
+    instrument: number,
+    tempo?: number,
+  ): Promise<boolean> {
+    const sampleRate = this.audio?.sampleRate ?? 44_100;
+    const key = midiRenderKey(
+      sourceHash,
+      clampTempo(tempo ?? this.state.tempo),
+      clampTranspose(transpose),
+      clampInstrument(instrument),
+      sampleRate,
+    );
+    if (this.rendered?.key === key) return true;
+    if (this.renderInFlight.has(key)) return true;
+    const cached = await this.renderCache.get(key);
+    return Boolean(cached);
+  }
+  /** Synchronous fast-path check used by viewer-core generation gate */
+  public hasPreloadedSync(
+    sourceHash: string,
+    transpose: number,
+    instrument: number,
+    tempo?: number,
+  ): boolean {
+    const sampleRate = this.audio?.sampleRate ?? 44_100;
+    const key = midiRenderKey(
+      sourceHash,
+      clampTempo(tempo ?? this.state.tempo),
+      clampTranspose(transpose),
+      clampInstrument(instrument),
+      sampleRate,
+    );
+    if (this.rendered?.key === key) return true;
+    if (this.renderInFlight.has(key)) return true;
+    return false;
+  }
+  public cancelPreload(): void {
+    this.cancelPreloads();
+  }
+  public async resumeContext(): Promise<void> {
+    try {
+      await this.ensureAudio().resume();
+    } catch {
+      // Private browsing or suspended context must not block UI
+    }
+  }
+  public getCurrentTranspose(): number {
+    return this.state.transpose;
+  }
+  public getCurrentInstrument(): number {
+    return this.state.instrument;
   }
 
   public async play(): Promise<void> {
@@ -594,9 +693,14 @@ export class BrowserMidiPlayer {
     return this.preloadQueue.stats();
   }
 
-  private cancelPreloads(): void {
+  public cancelPreloads(): void {
     this.preloadGeneration += 1;
     this.preloadQueue.clear();
+  }
+
+  /** gyschordweb crossfadePrefs: ms of gapless overlap on song switches. */
+  public setCrossfadeMs(milliseconds: number): void {
+    this.crossfadeMs = Math.max(0, Math.min(10_000, Math.trunc(milliseconds)));
   }
 
   private ensureAudio(): AudioContext {
@@ -609,8 +713,25 @@ export class BrowserMidiPlayer {
     this.audio ??= new AudioContextCtor();
     this.master ??= this.audio.createGain();
     this.master.gain.value = this.state.muted ? 0 : this.state.volume;
+    if (
+      !this.limiter &&
+      typeof this.audio.createDynamicsCompressor === "function"
+    ) {
+      this.limiter = this.audio.createDynamicsCompressor();
+      // Mirror gyschordweb MidiEngine limiter as safety net (render already at 0.94)
+      this.limiter.threshold.value = -0.3;
+      this.limiter.ratio.value = 20;
+      this.limiter.attack.value = 0.002;
+      this.limiter.knee.value = 0.5;
+      this.limiter.release.value = 0.05;
+    }
     if (!this.masterConnected) {
-      this.master.connect(this.audio.destination);
+      if (this.limiter) {
+        this.master.connect(this.limiter);
+        this.limiter.connect(this.audio.destination);
+      } else {
+        this.master.connect(this.audio.destination);
+      }
       this.masterConnected = true;
     }
     return this.audio;
@@ -845,10 +966,38 @@ export class BrowserMidiPlayer {
 
   private startBuffer(buffer: AudioBuffer, position: number): void {
     const audio = this.ensureAudio();
-    void this.stopAudio();
+    // A/B deck parity: when a previous source is still playing, overlap it
+    // with a gain crossfade instead of cutting it instantly (gapless).
+    const previous = this.bufferSource;
+    const previousGain = this.sourceGain;
+    if (previous && this.crossfadeMs > 0 && this.state.status === "playing") {
+      previous.onended = null;
+      const now = audio.currentTime;
+      const fade = this.crossfadeMs / 1000;
+      if (previousGain) {
+        try {
+          previousGain.gain.cancelScheduledValues(now);
+          previousGain.gain.setValueAtTime(previousGain.gain.value, now);
+          previousGain.gain.linearRampToValueAtTime(0.0001, now + fade);
+          previous.stop(now + fade + 0.05);
+        } catch {
+          // Already stopped.
+        }
+      }
+    } else {
+      void this.stopAudio();
+    }
     const source = audio.createBufferSource();
     source.buffer = buffer;
-    source.connect(this.master!);
+    const gain = audio.createGain();
+    gain.gain.value = previous && this.crossfadeMs > 0 ? 0.0001 : 1;
+    source.connect(gain).connect(this.master!);
+    if (previous && this.crossfadeMs > 0) {
+      const now = audio.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(1, now + this.crossfadeMs / 1000);
+    }
+    this.sourceGain = gain;
     const safePosition = Math.max(
       0,
       Math.min(Math.max(0, buffer.duration - 0.02), position),
@@ -933,6 +1082,10 @@ export class BrowserMidiPlayer {
       }
       this.bufferSource.disconnect();
       this.bufferSource = undefined;
+      if (this.sourceGain) {
+        this.sourceGain.disconnect();
+        this.sourceGain = undefined;
+      }
     }
     for (const pair of this.scheduled) {
       try {
@@ -986,6 +1139,7 @@ export class BrowserMidiPlayer {
         // Private browsing and quota failures must not block playback.
       }
     }
+    // MediaSession + Wake Lock parity lives in media-session.ts (global bridge).
     for (const listener of this.listeners) listener();
   }
 }

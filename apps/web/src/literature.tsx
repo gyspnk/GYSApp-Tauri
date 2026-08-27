@@ -47,6 +47,49 @@ function literaturePdfUrl(sourceUrl: string): string {
     : sourceUrl;
 }
 
+const ISSUE_PDF_CACHE = new Map<string, string>();
+
+/**
+ * Warta Sejati “issue” pages are hub posts: the actual newsletter PDF lives
+ * inside the post content as a tjc.org `.pdf` link. Resolve it once so the
+ * Baca-lanjut flow opens the PDF viewer (jump halaman, nomor halaman, resume)
+ * instead of the raw text fallback.
+ */
+async function resolveIssuePdfUrl(
+  sourceUrl: string,
+): Promise<string | undefined> {
+  const cached = ISSUE_PDF_CACHE.get(sourceUrl);
+  if (cached) return cached;
+  try {
+    const slug = new URL(sourceUrl).pathname.split("/").filter(Boolean).pop();
+    if (!slug) return undefined;
+    const endpoint = new URL("https://tjc.org/id/wp-json/wp/v2/posts");
+    endpoint.searchParams.set("slug", slug);
+    endpoint.searchParams.set("per_page", "1");
+    const response = await fetch(endpoint, {
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) return undefined;
+    const payload: unknown = await response.json();
+    const first = Array.isArray(payload) ? payload[0] : undefined;
+    const rendered =
+      first && typeof first === "object"
+        ? (first as { content?: { rendered?: unknown } }).content?.rendered
+        : undefined;
+    const match =
+      typeof rendered === "string"
+        ? rendered.match(/https:\/\/tjc\.org\/[^"'<>\s]+\.pdf/i)
+        : undefined;
+    if (match?.[0]) {
+      ISSUE_PDF_CACHE.set(sourceUrl, match[0]);
+      return match[0];
+    }
+  } catch {
+    // offline/transient failure: keep the text reader fallback
+  }
+  return undefined;
+}
+
 import {
   fetchLiteratureCatalog,
   literatureCategoryLabels,
@@ -510,23 +553,45 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const articleScrollTimer = useRef<number | undefined>(undefined);
   const articleRestoreFrame = useRef<number | undefined>(undefined);
   const resourceVersion = literatureResourceVersion(item?.publishedAt);
-  const pdfSourceUrl =
-    item?.format === "pdf" ? literaturePdfUrl(item.url) : undefined;
+  const [issuePdfUrl, setIssuePdfUrl] = useState<string>();
+  useEffect(() => {
+    if (item?.format !== "issue") {
+      setIssuePdfUrl(undefined);
+      return;
+    }
+    let cancelled = false;
+    void resolveIssuePdfUrl(item.url).then((url) => {
+      if (!cancelled) setIssuePdfUrl(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [item]);
+  const actualPdfUrl =
+    item?.format === "pdf"
+      ? item.url
+      : item?.format === "issue"
+        ? issuePdfUrl
+        : undefined;
+  const isPdfItem = Boolean(actualPdfUrl);
+  const pdfSourceUrl = actualPdfUrl
+    ? literaturePdfUrl(actualPdfUrl)
+    : undefined;
   const pdfAsset = useMemo(
     () =>
-      item?.format === "pdf"
+      item && isPdfItem && actualPdfUrl
         ? {
             id: `literature-pdf:${item.id}`,
             kind: "pdf" as const,
             source: "remote" as const,
-            path: pdfSourceUrl ?? item.url,
-            url: pdfSourceUrl ?? item.url,
+            path: pdfSourceUrl ?? actualPdfUrl,
+            url: pdfSourceUrl ?? actualPdfUrl,
             version: resourceVersion,
             status: "remote" as const,
             lastUpdated: resourceVersion,
           }
         : undefined,
-    [item, pdfSourceUrl, resourceVersion],
+    [item, actualPdfUrl, isPdfItem, pdfSourceUrl, resourceVersion],
   );
 
   useEffect(() => {
@@ -556,7 +621,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     setArticleStatus("idle");
     setArticleBody(undefined);
     let cancelled = false;
-    setDownloadStatus(item.format === "pdf" ? "checking" : "idle");
+    setDownloadStatus(pdfAsset ? "checking" : "idle");
     void (async () => {
       if (!pdfAsset) {
         return;
@@ -685,7 +750,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   );
 
   const openArticle = useCallback(async () => {
-    if (!item || item.format === "pdf") return;
+    if (!item || isPdfItem) return;
     setArticleOpen(true);
     setArticleStatus("loading");
     try {
@@ -696,7 +761,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     } catch {
       setArticleStatus("error");
     }
-  }, [item, updateProgress]);
+  }, [item, isPdfItem, updateProgress]);
 
   const openReader = useCallback(async () => {
     if (!item || !pdfAsset) return;
@@ -829,7 +894,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             <span>{dateLabel(item.publishedAt, locale)}</span>
           </div>
           <div className="detail-actions">
-            {item.format === "pdf" ? (
+            {isPdfItem ? (
               <button
                 className="primary-button"
                 type="button"
@@ -879,7 +944,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           aria-label={`Kemajuan membaca ${progressPercent}%`}
         />
         <div className="literature-progress-actions">
-          {item.format === "pdf" && (
+          {isPdfItem && (
             <button
               className="quiet-button"
               type="button"
@@ -902,7 +967,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           >
             Tandai selesai
           </button>
-          {item.format === "pdf" && (
+          {isPdfItem && (
             <>
               <button
                 className="quiet-button"
@@ -927,7 +992,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               )}
             </>
           )}
-          {item.format !== "pdf" && resumeScrollRatio !== undefined && (
+          {!isPdfItem && resumeScrollRatio !== undefined && (
             <button
               className="quiet-button"
               type="button"
@@ -958,7 +1023,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             : "Kemajuan tersimpan di perangkat ini."}
         </small>
       </section>
-      {readerOpen && pdfBytes && item.format === "pdf" && (
+      {readerOpen && pdfBytes && isPdfItem && (
         <section
           className="literature-reader-panel"
           aria-label={`Membaca ${item.title}`}
@@ -987,7 +1052,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </Suspense>
         </section>
       )}
-      {articleOpen && item.format !== "pdf" && (
+      {articleOpen && !isPdfItem && (
         <section
           className="literature-reader-panel"
           aria-label={`Membaca ${item.title}`}

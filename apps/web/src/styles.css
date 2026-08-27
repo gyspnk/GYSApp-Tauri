@@ -1967,7 +1967,8 @@ blockquote {
   border-radius: 4px;
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   color: var(--blue);
-  font-size: clamp(9px, 1.2vw, 13px);
+  /* gyschordweb getChordFontSizeRem: 0.55rem adapted to the PDF scale */
+  font-size: clamp(0.2rem, calc(0.55rem * var(--pdf-chord-scale, 1)), 20px);
   font-weight: 750;
   line-height: 1.1;
   white-space: nowrap;
@@ -3352,6 +3353,167 @@ body.is-resizing-bible {
   color: var(--muted);
   font-size: 11px;
   text-align: center;
+}
+.bible-notes-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 24, 46, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.bible-notes-modal {
+  width: min(560px, 96vw);
+  max-height: min(80vh, 680px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+}
+@media (max-width: 680px) {
+  .bible-notes-backdrop {
+    display: flex;
+    align-items: flex-end;
+    padding: 0;
+  }
+  .bible-notes-modal {
+    width: 100%;
+    max-height: 86vh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom, 18px)) 16px;
+  }
+}
+.bible-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bible-notes-header div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.bible-notes-header small {
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.bible-notes-header strong {
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.bible-notes-count {
+  flex: 1;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+.bible-notes-close {
+  flex: 0 0 auto;
+  width: 34px;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+.bible-notes-close:hover,
+.bible-notes-close:focus-visible {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.bible-notes-body {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 14px;
+  padding-right: 2px;
+}
+.bible-notes-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.bible-notes-list {
+  display: grid;
+  gap: 8px;
+}
+.bible-notes-item {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+.bible-notes-item-open {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 11px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.bible-notes-item-open:hover {
+  background: var(--blue-soft);
+}
+.bible-notes-item-open strong {
+  font-size: 12.5px;
+  color: var(--blue);
+}
+.bible-notes-item-open span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.bible-notes-item-delete {
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+.bible-notes-item-delete:hover {
+  background: color-mix(in srgb, #b98132 14%, transparent);
+  color: #b98132;
 }
 .split-version-select {
   min-width: 140px;
@@ -6241,6 +6403,16 @@ body.is-resizing-bible {
 .hymn-detail-surface {
   display: grid;
   gap: 22px;
+  /* gyschordweb animateViewChange: soft fade each song switch. */
+  animation: hymn-surface-fade-in 0.18s ease both;
+}
+@keyframes hymn-surface-fade-in {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .detail-actions {
   padding-bottom: 2px;
@@ -6341,6 +6513,9 @@ body.is-resizing-bible {
 .faith-stack {
   display: grid;
   gap: 18px;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
 }
 .faith-stack-toolbar {
   display: flex;
@@ -6351,6 +6526,9 @@ body.is-resizing-bible {
 .faith-stack-toolbar label {
   color: var(--muted);
   font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 .faith-stack-toolbar input {
   min-width: 260px;
@@ -6361,19 +6539,79 @@ body.is-resizing-bible {
   padding-bottom: 11px;
 }
 .faith-rows {
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 .faith-rows > div {
   border-bottom: 1px solid var(--line);
   content-visibility: auto;
-  contain-intrinsic-size: auto 86px;
+  contain-intrinsic-size: auto 58px;
+}
+.faith-rows > div:last-child {
+  border-bottom: 0;
 }
 .faith-selection {
   display: grid;
-  gap: 14px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
+  gap: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
   animation: verse-in var(--motion-normal) var(--ease-out);
+}
+.faith-selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.faith-selection-header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.faith-selection-number {
+  flex: 0 0 auto;
+  min-width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 800;
+}
+.faith-selection-header strong {
+  color: var(--ink);
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+.faith-selection-close {
+  flex: 0 0 auto;
+  width: 34px;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+.faith-selection-close:hover,
+.faith-selection-close:focus-visible {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 .faith-selection-toolbar {
   display: flex;
@@ -6383,26 +6621,27 @@ body.is-resizing-bible {
   color: var(--muted);
   font-size: 12px;
 }
-.faith-selection-toolbar > span {
-  margin-right: auto;
-  color: var(--ink);
-  font-weight: 700;
+.faith-selection-toolbar .quiet-button.has-note {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+  background: var(--blue-soft);
+  color: var(--blue);
 }
-.faith-row {
-  border-bottom: 1px solid var(--line);
+.faith-selection-toolbar .faith-read-more {
+  margin-left: auto;
 }
 .faith-row-heading {
   width: 100%;
   display: grid;
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 44px 1fr auto auto;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   border: 0;
   background: transparent;
   text-align: left;
   color: var(--ink);
-  padding: 17px 6px;
+  padding: 15px 18px;
   cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-out);
 }
 .faith-row-heading:hover {
   background: var(--surface-soft);
@@ -6412,30 +6651,257 @@ body.is-resizing-bible {
   background: var(--blue-soft);
 }
 .faith-row-heading strong {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 620;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-width: 0;
+}
+.faith-number {
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  justify-self: center;
+}
+.faith-row-note-dot {
+  color: var(--blue);
+  font-size: 13px;
 }
 .faith-row-heading > span:last-child {
   color: var(--blue);
-  font-size: 21px;
-}
-.faith-row-body {
-  padding: 0 6px 22px 64px;
-  animation: verse-in 220ms var(--ease-out);
+  font-size: 19px;
+  line-height: 1;
 }
 .faith-copy {
   max-width: 850px;
-  margin: 0 0 18px;
-  font-size: clamp(18px, 2vw, 24px);
-  line-height: 1.7;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.8;
 }
-.faith-note {
+.faith-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 14px 0 4px;
+}
+.faith-note-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.faith-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
   display: grid;
-  gap: 6px;
-  max-width: 640px;
-  margin-top: 16px;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 24, 46, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fade-in 180ms var(--ease-out);
+}
+.faith-modal {
+  width: min(640px, 96vw);
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  overflow-y: auto;
+  animation: slide-up 220ms var(--ease-out);
+}
+@media (max-width: 680px) {
+  .faith-modal-backdrop {
+    display: flex;
+    align-items: flex-end;
+    padding: 0;
+  }
+  .faith-modal {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom, 18px)) 16px;
+  }
+}
+.faith-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.faith-modal-header strong {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: -0.015em;
+}
+.faith-modal .faith-copy {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.faith-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+.faith-modal-actions .faith-read-more {
+  margin-left: auto;
+}
+.faith-row-progress {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.faith-pdf-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(10, 24, 46, 0.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fade-in 180ms var(--ease-out);
+}
+.faith-pdf-overlay {
+  width: min(1120px, 96vw);
+  height: min(94vh, 980px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+  animation: slide-up 240ms var(--ease-out);
+}
+@media (max-width: 680px) {
+  .faith-pdf-backdrop {
+    display: flex;
+    align-items: flex-end;
+    padding: 0;
+  }
+  .faith-pdf-overlay {
+    width: 100%;
+    height: 96dvh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding: 16px 12px max(14px, env(safe-area-inset-bottom, 14px)) 12px;
+  }
+}
+.faith-pdf-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.faith-pdf-title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.faith-pdf-title small {
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.faith-pdf-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.faith-pdf-stats {
+  flex: 1;
+  min-width: 0;
   color: var(--muted);
   font-size: 12px;
+  text-align: right;
+}
+.faith-pdf-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.faith-pdf-head-actions .quiet-button {
+  min-height: 34px;
+  padding-inline: 11px;
+  font-size: 11px;
+}
+.faith-pdf-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  overflow: hidden;
+}
+.faith-pdf-body .pdf-reader {
+  margin-top: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.faith-pdf-body .pdf-stage {
+  flex: 1;
+  min-height: 0;
+}
+.faith-pdf-body .pdf-toolbar {
+  position: static;
+  flex-shrink: 0;
+}
+.faith-copy-wrap {
+  display: grid;
+  gap: 0.95rem;
+  color: var(--ink);
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+.faith-copy-wrap p {
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-wrap: pretty;
+}
+.faith-reader-modal {
+  width: min(680px, 96vw);
+}
+.faith-reader-copy {
+  padding-right: 4px;
+}
+.faith-reader-source {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 6px;
 }
 .literature-sections {
   display: grid;
@@ -7367,6 +7833,78 @@ body.is-resizing-bible {
 .pujian-row-action-label {
   opacity: 0.8;
 }
+/* gyschordweb displayPujian parity: nomor + title + add-to-playlist link */
+.pujian-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.pujian-nomor {
+  flex: 0 0 auto;
+  min-width: 44px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  font-size: 15px;
+  color: var(--blue);
+}
+.pujian-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+.pujian-title:hover,
+.pujian-title:focus-visible {
+  color: var(--blue);
+}
+.add-to-playlist-btn {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.add-to-playlist-btn.in-playlist {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+  color: var(--blue);
+}
+.gys-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  transform: scale(0);
+  animation: gys-ripple-grow 0.55s ease-out forwards;
+  pointer-events: none;
+}
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+@keyframes gys-ripple-grow {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
 
 .hymn-detail-page .detail-actions {
   align-items: stretch;
@@ -7641,13 +8179,50 @@ body.is-resizing-bible {
   margin-top: 0;
   border-top: 0;
 }
+/* gyschordweb pdf-viewer-overlay: fullscreen slide-in shell */
+.gys-pdf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 60);
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-area-top, 0) 0 0;
+  background: var(--surface);
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1);
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay {
+  transform: translateX(0);
+}
+body.gys-viewer-active {
+  overflow: hidden;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-detail-surface {
+  padding: 0;
+  display: block;
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-reader-hymn {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-toolbar {
+  padding-inline: 14px;
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 0;
+  padding: 18px;
+}
 .hymn-pdf-viewer-chrome {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 0;
+  padding: 8px 0 8px 14px;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }

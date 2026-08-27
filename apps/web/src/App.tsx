@@ -49,6 +49,7 @@ import {
   playNextMidiPlaylistItem,
   playPreviousMidiPlaylistItem,
 } from "./midi-queue.js";
+import { installMediaSessionBridge } from "./media-session.js";
 import { speechPlayer } from "./speech-player.js";
 import { getCustomEdgeEndpoint, setCustomEdgeEndpoint } from "./edge-speech.js";
 import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
@@ -2371,6 +2372,7 @@ function RoutedApp() {
   const settings = useAppSettings();
   const locale = settings.locale;
   useEffect(() => installMidiQueueCoordinator(), []);
+  useEffect(() => installMediaSessionBridge(), []);
   useEffect(() => installHeadphoneDisconnectGuard(), []);
   return (
     <Routes>

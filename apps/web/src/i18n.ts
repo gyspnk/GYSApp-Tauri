@@ -268,6 +268,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.shareCancelled": "Berbagi dibatalkan.",
     "faith.note": "Catatan pribadi",
     "faith.notePlaceholder": "Tambahkan refleksi…",
+    "faith.selectHint":
+      "Pilih salah satu pokok iman di atas untuk membaca dan memberi catatan.",
+    "faith.noNotes":
+      "Belum ada catatan. Pilih pokok iman lalu tekan tombol Catatan.",
     "search.eyebrow": "Pencarian lintas ruang",
     "search.title": "Temukan sesuatu",
     "search.close": "Tutup",
@@ -366,6 +370,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.shareCancelled": "Sharing cancelled.",
     "faith.note": "Personal note",
     "faith.notePlaceholder": "Add a reflection…",
+    "faith.selectHint":
+      "Choose one of the topics above to read and add a note.",
+    "faith.noNotes": "No notes yet. Select a topic and press Note.",
     "search.eyebrow": "Search across spaces",
     "search.title": "Find something",
     "search.close": "Close",
@@ -461,6 +468,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.shareCancelled": "已取消分享。",
     "faith.note": "个人笔记",
     "faith.notePlaceholder": "添加默想…",
+    "faith.selectHint": "请从上方选择一个信仰要点来阅读并添加笔记。",
+    "faith.noNotes": "还没有笔记。选择要点后按“笔记”按钮。",
     "search.eyebrow": "跨空间搜索",
     "search.title": "查找内容",
     "search.close": "关闭",

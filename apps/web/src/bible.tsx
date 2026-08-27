@@ -739,6 +739,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const isSyncingRef = useRef(false);
 
   const [pickerModalOpen, setPickerModalOpen] = useState(false);
+  const [notesPopupOpen, setNotesPopupOpen] = useState(false);
   const [packAttempt, setPackAttempt] = useState(0);
   const [quickNavDrag, setQuickNavDrag] = useState<
     QuickNavDragState | undefined
@@ -1699,11 +1700,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const focusSelectedVerseNote = () => {
-    const note = document.querySelector<HTMLTextAreaElement>(
-      ".bible-note-field textarea",
-    );
-    note?.scrollIntoView({ behavior: "smooth", block: "center" });
-    note?.focus();
+    setNotesPopupOpen(true);
+    // focus after popup mounts
+    window.setTimeout(() => {
+      const note = document.querySelector<HTMLTextAreaElement>(
+        ".bible-note-field textarea",
+      );
+      note?.focus();
+    }, 50);
+  };
+
+  const addNoteForNewVerse = () => {
+    setNotesPopupOpen(false);
+    setPickerModalOpen(true);
   };
 
   const onVerseTouchStart = (event: TouchEvent<HTMLDivElement>) => {
@@ -1719,70 +1728,144 @@ export function BiblePage({ locale }: { locale: Locale }) {
     navigateBy(end < start ? 1 : -1);
   };
 
-  const renderSidePanel = (): ReactNode => (
-    <aside className="bible-side-panel" aria-label="Alat bantu bacaan">
-      <div className="section-title-row">
-        <div>
-          <p className="date-line">Bacaan tersimpan</p>
-          <h2>Catatan & ayat</h2>
-        </div>
-        <span>{bookmarks.size}</span>
-      </div>
-      {selectedVerse ? (
-        <div className="bible-selection-panel">
-          <strong>
-            {book?.name} {chapter}:{selectedVerse.verse}
-          </strong>
-          <p>{cleanVerse(selectedVerse)}</p>
-          <label className="bible-note-field">
-            <span>Catatan pribadi</span>
-            <textarea
-              value={noteDraft}
-              rows={3}
-              onChange={(event) => setNoteDraft(event.target.value)}
-              placeholder="Tulis renungan singkat…"
-            />
-          </label>
-          <button className="primary-button" type="button" onClick={saveNote}>
-            Simpan catatan
-          </button>
-        </div>
-      ) : (
-        <p className="bible-side-empty">
-          Pilih ayat untuk menyalin, menyorot, atau menambahkan catatan.
-        </p>
-      )}
-      <div className="bible-bookmark-list">
-        {[...bookmarks]
-          .map((id) =>
-            packState.status === "ready"
-              ? packState.pack.verses.find((verse) => verse.id === id)
-              : undefined,
-          )
-          .filter((verse): verse is BibleVerse => Boolean(verse))
-          .slice(0, 8)
-          .map((verse) => (
+  const savedNotesList = Object.entries(notes)
+    .map(([noteVerseId, text]) => {
+      const noteVerse =
+        packState.status === "ready"
+          ? packState.pack.verses.find((verse) => verse.id === noteVerseId)
+          : undefined;
+      return noteVerse
+        ? {
+            id: noteVerse.id,
+            verse: noteVerse,
+            text,
+            label: `${books.find((candidate) => String(candidate.id) === noteVerse.book)?.name ?? noteVerse.book} ${noteVerse.chapter}:${noteVerse.verse}`,
+          }
+        : undefined;
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .sort((left, right) =>
+      left.label.localeCompare(right.label, "id", { numeric: true }),
+    );
+
+  const renderNotesPopup = (): ReactNode => {
+    if (!notesPopupOpen) return null;
+    return createPortal(
+      <div
+        className="bible-notes-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Catatan ayat"
+        onClick={() => setNotesPopupOpen(false)}
+      >
+        <div
+          className="bible-notes-modal"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="bible-notes-header">
+            <div>
+              <small>Bacaan tersimpan</small>
+              <strong>Catatan ayat</strong>
+            </div>
+            <span className="bible-notes-count">
+              {savedNotesList.length} catatan
+              {bookmarks.size > 0 ? ` · ${bookmarks.size} tandai` : ""}
+            </span>
             <button
-              className="bible-bookmark-item"
+              className="bible-notes-close"
               type="button"
-              key={verse.id}
-              onClick={() => {
-                setSelectedBook(Number(verse.book));
-                setSelectedChapter(verse.chapter);
-                setSelectedVerseId(verse.id);
-              }}
+              aria-label="Tutup catatan ayat"
+              onClick={() => setNotesPopupOpen(false)}
             >
-              <strong>
-                {books.find((candidate) => String(candidate.id) === verse.book)
-                  ?.name ?? verse.book}{" "}
-                {verse.chapter}:{verse.verse}
-              </strong>
-              <span>{cleanVerse(verse)}</span>
+              ×
             </button>
-          ))}
-      </div>
-    </aside>
-  );
+          </div>
+
+          <div className="bible-notes-body">
+            {selectedVerse && (
+              <div className="bible-selection-panel">
+                <strong>
+                  {book?.name} {chapter}:{selectedVerse.verse}
+                </strong>
+                <p>{cleanVerse(selectedVerse)}</p>
+                <label className="bible-note-field">
+                  <span>Catatan pribadi</span>
+                  <textarea
+                    value={noteDraft}
+                    rows={3}
+                    onChange={(event) => setNoteDraft(event.target.value)}
+                    placeholder="Tulis renungan singkat…"
+                  />
+                </label>
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={saveNote}
+                >
+                  Simpan catatan
+                </button>
+              </div>
+            )}
+
+            <div className="bible-notes-section-label">
+              <span>Catatan tersimpan</span>
+              {savedNotesList.length > 0 && (
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={addNoteForNewVerse}
+                >
+                  + Tambah catatan
+                </button>
+              )}
+            </div>
+            {savedNotesList.length > 0 ? (
+              <div className="bible-notes-list">
+                {savedNotesList.map((entry) => (
+                  <div className="bible-notes-item" key={entry.id}>
+                    <button
+                      className="bible-notes-item-open"
+                      type="button"
+                      onClick={() => {
+                        setSelectedBook(Number(entry.verse.book));
+                        setSelectedChapter(entry.verse.chapter);
+                        setSelectedVerseId(entry.id);
+                        setNoteDraft(entry.text);
+                      }}
+                    >
+                      <strong>{entry.label}</strong>
+                      <span>{entry.text}</span>
+                    </button>
+                    <button
+                      className="bible-notes-item-delete"
+                      type="button"
+                      aria-label={`Hapus catatan ${entry.label}`}
+                      onClick={() =>
+                        setNotes((current) => {
+                          const next = { ...current };
+                          delete next[entry.id];
+                          return next;
+                        })
+                      }
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="bible-side-empty">
+                {selectedVerse
+                  ? "Belum ada catatan untuk ayat lain. Pilih ayat atau tambahkan via tombol di toolbar."
+                  : "Pilih ayat lalu tekan tombol “Catatan” untuk menyimpan renungan."}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body,
+    );
+  };
 
   const splitStyle = {
     "--bible-split": `${splitRatio}%`,
@@ -1865,6 +1948,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </label>
             </div>
           </details>
+          <div className="page-intro-actions">
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => setNotesPopupOpen(true)}
+              aria-label={`Buka catatan ayat (${Object.keys(notes).length})`}
+            >
+              Catatan ayat
+              {Object.keys(notes).length > 0
+                ? ` (${Object.keys(notes).length})`
+                : ""}
+            </button>
+          </div>
           {searchError && (
             <div className="inline-error" role="alert">
               <span>{searchError}</span>
@@ -2140,7 +2236,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
         </section>
       )}
-      {packState.status === "ready" && renderSidePanel()}
+      {notesPopupOpen && renderNotesPopup()}
       {packState.status === "ready" &&
         book &&
         createPortal(

@@ -2,6 +2,32 @@ export function clampPdfZoom(value: number): number {
   return Math.max(0.5, Math.min(3, Math.round(value * 100) / 100));
 }
 
+/** gyschordweb zoom is relative to the page-fit scale: 100%–800%. */
+export function clampPdfZoomPercent(value: number): number {
+  return Math.max(100, Math.min(800, Math.round(value)));
+}
+
+/**
+ * Resolve the desired PDF.js scale from a fit scale (the scale that makes the
+ * page fit the viewport) and the percent zoom relative to the initial fit.
+ * At 100% the page keeps the fit scale; above it, the initial scale is scaled
+ * by percent/100 exactly like gyschordweb's onZoom (25% steps, 100–800%).
+ */
+export function pdfPercentScale(
+  percent: number,
+  fitScale: number,
+  initialScale: number | undefined,
+): number {
+  const safePercent = clampPdfZoomPercent(percent);
+  const safeFit = Number.isFinite(fitScale) && fitScale > 0 ? fitScale : 1;
+  if (safePercent === 100) return safeFit;
+  const base =
+    Number.isFinite(initialScale) && (initialScale ?? 0) > 0
+      ? (initialScale as number)
+      : safeFit;
+  return Math.max(0.08, base * (safePercent / 100));
+}
+
 export type PdfDocumentSourceOptions =
   | { data: Uint8Array }
   | {

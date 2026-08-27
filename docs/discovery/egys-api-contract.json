@@ -1,7 +1,7 @@
 {
   "sourceRepo": "Gereja-Yesus-Sejati/egys",
-  "sourceCommit": "aa8ddeffd2e7690f15e83f42218b57057f8712b4",
-  "generatedAt": "2026-08-18T02:12:43.500Z",
+  "sourceCommit": "a64b3ba1aa2bf01ed3363a061fc0ebf737a248a7",
+  "generatedAt": "2026-08-27T00:27:14.521Z",
   "auth": {
     "mode": "provider-id-token-exchange",
     "providersPath": "/api/v1/auth/providers",
@@ -195,6 +195,12 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/memberships/{membershipId}/archive",
+      "authentication": "session",
+      "source": "backend/src/main/java/id/gys/egys/core/person/MembershipArchiveController.java"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/meta/build",
       "authentication": "session",
       "source": "backend/src/main/java/id/gys/egys/meta/BuildController.java"
@@ -230,5 +236,5 @@
       "source": "backend/src/main/java/id/gys/egys/auth/whatsapp/BotWebhookController.java"
     }
   ],
-  "contractHash": "b9e2e84adcddfe713682af78c0771afb898b06585cbb705270c52d29552e196a"
+  "contractHash": "952df86676a419828dc0a0212c75ce9d6ccc0603e2b443d5d8943f5c864457f7"
 }

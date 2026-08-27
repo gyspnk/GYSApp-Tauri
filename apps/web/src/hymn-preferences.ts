@@ -4,6 +4,31 @@ export type HymnTypography = {
   lineHeight: number;
 };
 
+/**
+ * gyschordweb `prefs.preferNaturalChords`: a default upward transpose (-1)
+ * is applied for songs whose PDF key lands on a black key.
+ */
+const NATURAL_CHORD_KEY = "gys-hymn-natural-chords";
+
+export function readNaturalChordPreference(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const value = window.localStorage.getItem(NATURAL_CHORD_KEY);
+    return value === null ? true : value !== "0";
+  } catch {
+    return true;
+  }
+}
+
+export function writeNaturalChordPreference(enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(NATURAL_CHORD_KEY, enabled ? "1" : "0");
+  } catch {
+    // Storage failures must not break the reader.
+  }
+}
+
 export const DEFAULT_HYMN_TYPOGRAPHY: HymnTypography = {
   fontSize: 18,
   lineHeight: 1.65,
