@@ -43,6 +43,9 @@
   --z-toolbar: 30;
   --z-popover: 40;
   --z-modal: 50;
+
+  /* Global Topbar Height: standardized across all pages for layout consistency */
+  --topbar-height: 58px;
 }
 
 :root[data-theme="dark"] {
@@ -187,11 +190,11 @@ a:focus-visible {
   background: var(--canvas);
 }
 .topbar {
-  height: 78px;
+  height: var(--topbar-height, 58px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 42px;
+  padding: 0 clamp(16px, 3vw, 38px);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   position: sticky;
@@ -205,8 +208,8 @@ a:focus-visible {
   min-width: 180px;
 }
 .brand img {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 .brand span {
@@ -497,7 +500,7 @@ a:focus-visible {
 .workspace {
   display: grid;
   grid-template-columns: 256px minmax(0, 1fr);
-  min-height: calc(100vh - 78px);
+  min-height: calc(100vh - var(--topbar-height, 58px));
 }
 .navigation-shell {
   border-right: 1px solid var(--line);
@@ -507,8 +510,8 @@ a:focus-visible {
   justify-content: space-between;
   background: var(--surface);
   position: sticky;
-  top: 78px;
-  height: calc(100vh - 78px);
+  top: var(--topbar-height, 58px);
+  height: calc(100vh - var(--topbar-height, 58px));
   z-index: var(--z-nav);
 }
 .primary-nav {
@@ -5286,15 +5289,15 @@ body.is-resizing-bible {
 
 @media (max-width: 599px) {
   .topbar {
-    height: 66px;
+    height: var(--topbar-height, 58px);
     padding: 0 17px;
   }
   .brand {
     min-width: auto;
   }
   .brand img {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
   }
   .brand small,
   .connection-status {
@@ -5304,14 +5307,14 @@ body.is-resizing-bible {
     gap: 7px;
   }
   .account-button {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
   }
   .workspace {
     display: block;
-    min-height: calc(100vh - 66px);
+    min-height: calc(100vh - var(--topbar-height, 58px));
   }
   .navigation-shell {
     position: fixed;
@@ -6369,11 +6372,11 @@ body.is-resizing-bible {
 
 @media (max-width: 599px) {
   .app-frame.is-reader-route .topbar {
-    height: 54px;
+    height: var(--topbar-height, 58px);
     padding-inline: 12px;
   }
   .app-frame.is-reader-route .workspace {
-    min-height: calc(100vh - 54px);
+    min-height: calc(100vh - var(--topbar-height, 58px));
   }
   .app-frame.is-reader-route .navigation-shell {
     top: auto;
@@ -6479,12 +6482,12 @@ body.is-resizing-bible {
     padding: 14px 19px 8px;
   }
   .app-frame.is-reader-route .reader-toolbar {
-    top: 54px;
+    top: var(--topbar-height, 58px);
   }
   .app-frame.is-reader-route
     .hymn-detail-page.is-pdf-viewer
     .hymn-pdf-viewer-chrome {
-    top: 54px;
+    top: var(--topbar-height, 58px);
   }
   .reader-context-bar {
     gap: 6px;
@@ -10273,7 +10276,7 @@ body.gys-viewer-active {
    reducing gutters and fixed minimums that cause narrow-screen overflow. */
 @media (min-width: 600px) and (max-width: 959px) {
   .topbar {
-    height: 72px;
+    height: var(--topbar-height, 58px);
     padding-inline: clamp(16px, 3vw, 28px);
   }
   .brand-mark {
@@ -10282,8 +10285,8 @@ body.gys-viewer-active {
   }
   .brand-mark img {
     width: auto;
-    height: 42px;
-    max-height: 46px;
+    height: 38px;
+    max-height: 40px;
     max-width: 180px;
   }
   .topbar-actions {
@@ -10291,18 +10294,18 @@ body.gys-viewer-active {
   }
   .search-trigger,
   .topbar-select .control-select-trigger {
-    min-height: 44px;
+    min-height: 40px;
   }
   .topbar-select {
     min-width: 50px;
   }
   .workspace {
     grid-template-columns: 72px minmax(0, 1fr);
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - var(--topbar-height, 58px));
   }
   .navigation-shell {
-    top: 72px;
-    height: calc(100vh - 72px);
+    top: var(--topbar-height, 58px);
+    height: calc(100vh - var(--topbar-height, 58px));
     padding: 24px 10px 20px;
   }
   .navigation-shell .nav-item {
@@ -10375,7 +10378,7 @@ body.gys-viewer-active {
     font-size: 15px;
   }
   .topbar {
-    height: 56px;
+    height: var(--topbar-height, 58px);
     gap: 8px;
     padding-inline: 12px;
   }
@@ -10389,8 +10392,8 @@ body.gys-viewer-active {
   }
   .brand-mark img {
     width: auto;
-    height: 36px;
-    max-height: 38px;
+    height: 34px;
+    max-height: 36px;
     max-width: 145px;
   }
   .topbar-actions {
@@ -10423,7 +10426,7 @@ body.gys-viewer-active {
     min-height: 44px;
   }
   .workspace {
-    min-height: calc(100vh - 56px);
+    min-height: calc(100vh - var(--topbar-height, 58px));
   }
   .navigation-shell {
     padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
