@@ -150,6 +150,37 @@ export async function getEgysProfile(
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
 }
 
+export const EGYS_PROFILE_KEY = "gys-egys-profile-v1";
+
+export function readCachedEgysProfile(): AccountProfile | undefined {
+  try {
+    const raw = localStorage.getItem(EGYS_PROFILE_KEY);
+    if (!raw) return undefined;
+    const parsed: unknown = JSON.parse(raw);
+    const validated = AccountProfileSchema.safeParse(parsed);
+    return validated.success ? validated.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function saveEgysProfile(profile: AccountProfile): void {
+  try {
+    localStorage.setItem(EGYS_PROFILE_KEY, JSON.stringify(profile));
+    trackEgysProfileSeen(profile);
+  } catch {
+    // ignore
+  }
+}
+
+export function clearEgysProfile(): void {
+  try {
+    localStorage.removeItem(EGYS_PROFILE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export async function signOutEgys(): Promise<void> {
   try {
     await request(apiUrl("/api/v1/auth/logout"), {
@@ -159,5 +190,6 @@ export async function signOutEgys(): Promise<void> {
   } finally {
     if (isTauriShell()) await removeNativeEgysToken();
     clearEgysSessionTrace();
+    clearEgysProfile();
   }
 }

@@ -248,7 +248,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.list": "Daftar dasar kepercayaan",
     "faith.topic": "Pokok {number}",
     "faith.copySection": "Salin bagian",
-    "faith.copyShare": "Salin / bagikan",
+    "faith.copyShare": "Bagikan",
     "faith.saveNote": "Simpan catatan",
     "faith.noteSaved": "Catatan disimpan di perangkat ini.",
     "faith.copyDone": "Bagian pokok iman disalin.",

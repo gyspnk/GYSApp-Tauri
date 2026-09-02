@@ -4,6 +4,7 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import {
   type AccountProfile,
@@ -25,7 +26,9 @@ import {
 } from "./asset-updater.js";
 import {
   getEgysProfile,
+  readCachedEgysProfile,
   readEgysSessionTrace,
+  saveEgysProfile,
   signOutEgys,
   trackEgysProfileSeen,
   type EgysSessionTrace,
@@ -368,13 +371,19 @@ export function MorePage({
     "idle" | "sending" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
-  const [accountProfile, setAccountProfile] = useState<AccountProfile>();
+  const [accountProfile, setAccountProfile] = useState<
+    AccountProfile | undefined
+  >(() => readCachedEgysProfile());
   const [egysSession, setEgysSession] = useState<EgysSessionTrace | undefined>(
     () => readEgysSessionTrace(),
   );
-  const [accountLoading, setAccountLoading] = useState(true);
+  const [accountLoading, setAccountLoading] = useState(
+    () => !readCachedEgysProfile(),
+  );
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
+  const [egysLoginOpen, setEgysLoginOpen] = useState(false);
+  const [isEgysLoginClosing, setIsEgysLoginClosing] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<File>();
@@ -531,7 +540,10 @@ export function MorePage({
         .then((profile) => {
           setAccountProfile(profile);
           setEgysUnavailable(false);
-          if (profile) setEgysSession(trackEgysProfileSeen(profile));
+          if (profile) {
+            saveEgysProfile(profile);
+            setEgysSession(trackEgysProfileSeen(profile));
+          }
           show(
             profile
               ? `Selamat datang, ${profile.displayName}.`
@@ -552,15 +564,35 @@ export function MorePage({
   }, [nativeShell]);
 
   useEffect(() => {
-    if (!nativeShell) {
-      setAccountLoading(false);
-      return;
+    // If we already have a full cached profile, ensure session trace is up to date
+    const cached = readCachedEgysProfile();
+    if (cached) {
+      setAccountProfile(cached);
+      setEgysSession(readEgysSessionTrace());
+    } else {
+      // Check if there is an existing session trace to reconstruct active profile
+      const trace = readEgysSessionTrace();
+      if (trace && trace.userId) {
+        const reconstructed: AccountProfile = {
+          id: trace.userId,
+          displayName: trace.displayName ?? "Jemaat e-GYS",
+          branchCode: trace.branchCode,
+          branchName: trace.branchName,
+          isMember: trace.isMember ?? true,
+          memberStatus: trace.isMember ? "Jemaat Aktif" : undefined,
+          provider: "egys",
+          locale: "id",
+        };
+        setAccountProfile(reconstructed);
+      }
     }
+
     const controller = new AbortController();
     void getEgysProfile(controller.signal)
       .then((profile) => {
-        setAccountProfile(profile);
         if (profile) {
+          setAccountProfile(profile);
+          saveEgysProfile(profile);
           setEgysUnavailable(false);
           setEgysSession(trackEgysProfileSeen(profile));
         }
@@ -568,12 +600,52 @@ export function MorePage({
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           recordDiagnostic("warn", "egys.profile.detect", error);
-          setEgysUnavailable(true);
+          if (nativeShell) setEgysUnavailable(true);
         }
       })
       .finally(() => setAccountLoading(false));
     return () => controller.abort();
   }, [nativeShell]);
+
+  const closeEgysLogin = () => {
+    if (isEgysLoginClosing) return;
+    setIsEgysLoginClosing(true);
+    window.setTimeout(() => {
+      setEgysLoginOpen(false);
+      setIsEgysLoginClosing(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    const handleAuthMessage = (event: MessageEvent) => {
+      try {
+        const data = event.data as Record<string, unknown> | undefined;
+        if (!data || typeof data !== "object") return;
+        if (
+          data.type === "egys-login-success" ||
+          data.event === "auth-success"
+        ) {
+          closeEgysLogin();
+          const controller = new AbortController();
+          setAuthBusy(true);
+          void getEgysProfile(controller.signal)
+            .then((profile) => {
+              if (profile) {
+                setAccountProfile(profile);
+                saveEgysProfile(profile);
+                setEgysSession(trackEgysProfileSeen(profile));
+                show(`Selamat datang, ${profile.displayName}.`);
+              }
+            })
+            .finally(() => setAuthBusy(false));
+        }
+      } catch {
+        // ignore unknown events
+      }
+    };
+    window.addEventListener("message", handleAuthMessage);
+    return () => window.removeEventListener("message", handleAuthMessage);
+  }, []);
 
   const show = (message: string) => {
     setNotice(message);
@@ -954,8 +1026,10 @@ export function MorePage({
                   <a
                     className="primary-button egys-login-button"
                     href={`https://e.gys.or.id/login?theme=${theme}`}
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setEgysLoginOpen(true);
+                    }}
                   >
                     <Icon name="person" size={16} />
                     <span>Buka login e-GYS resmi</span>
@@ -1511,6 +1585,60 @@ export function MorePage({
           </small>
         </section>
       )}
+      {egysLoginOpen &&
+        createPortal(
+          <div
+            className={`egys-login-backdrop${isEgysLoginClosing ? " is-closing" : ""}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Login e-GYS resmi"
+            onClick={closeEgysLogin}
+          >
+            <div
+              className="egys-login-overlay"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="egys-login-head">
+                <div className="egys-login-title">
+                  <Icon name="person" size={18} />
+                  <strong>Login e-GYS Resmi</strong>
+                  <small>Gereja Yesus Sejati</small>
+                </div>
+                <button
+                  className="egys-login-close"
+                  type="button"
+                  aria-label="Tutup login e-GYS"
+                  onClick={closeEgysLogin}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="egys-login-frame-container">
+                <iframe
+                  className="egys-login-iframe"
+                  src={`https://e.gys.or.id/login?theme=${theme}`}
+                  title="Halaman Login Resmi e-GYS"
+                  allow="camera; microphone"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                />
+              </div>
+              <div className="egys-login-footer">
+                <span>
+                  <Icon name="check" size={14} />
+                  Koneksi resmi & aman langsung ke portal e.gys.or.id
+                </span>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={closeEgysLogin}
+                >
+                  Selesai / Tutup
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
       {notice && (
         <div className="toast" role="status">
           {notice}

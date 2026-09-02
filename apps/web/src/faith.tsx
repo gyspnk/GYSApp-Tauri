@@ -165,7 +165,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const [selected, setSelected] = useState<string>(
     () => searchParams.get("item") ?? "",
   );
+  const [isModalClosing, setIsModalClosing] = useState(false);
   const [notePopupOpen, setNotePopupOpen] = useState(false);
+  const [isNoteClosing, setIsNoteClosing] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [notice, setNotice] = useState("");
   const [pdfRead, setPdfRead] = useState<
@@ -177,6 +179,24 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfError, setPdfError] = useState(false);
   const [pdfLoadKey, setPdfLoadKey] = useState(0);
+
+  const closeModal = () => {
+    if (isModalClosing) return;
+    setIsModalClosing(true);
+    window.setTimeout(() => {
+      setSelected("");
+      setIsModalClosing(false);
+    }, 200);
+  };
+
+  const closeNote = () => {
+    if (isNoteClosing) return;
+    setIsNoteClosing(true);
+    window.setTimeout(() => {
+      setNotePopupOpen(false);
+      setIsNoteClosing(false);
+    }, 200);
+  };
 
   useEffect(() => {
     if (!pdfRead) return;
@@ -280,7 +300,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
     if (!active) return;
     localStorage.setItem(noteKey(active.number), noteDraft.trim());
     flash(translate(locale, "faith.noteSaved"));
-    setNotePopupOpen(false);
+    closeNote();
   };
   const deleteNote = (number: string) => {
     localStorage.removeItem(noteKey(number));
@@ -392,13 +412,13 @@ export function FaithPage({ locale }: { locale: Locale }) {
           {active &&
             createPortal(
               <div
-                className="faith-modal-backdrop"
+                className={`faith-modal-backdrop${isModalClosing ? " is-closing" : ""}`}
                 role="dialog"
                 aria-modal="true"
                 aria-label={translate(locale, "faith.topic", {
                   number: active.number,
                 })}
-                onClick={() => setSelected("")}
+                onClick={closeModal}
               >
                 <div
                   className="faith-modal"
@@ -417,7 +437,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                       className="faith-selection-close"
                       type="button"
                       aria-label="Tutup pokok iman"
-                      onClick={() => setSelected("")}
+                      onClick={closeModal}
                     >
                       ×
                     </button>
@@ -471,11 +491,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
       {notePopupOpen &&
         createPortal(
           <div
-            className="bible-notes-backdrop"
+            className={`bible-notes-backdrop${isNoteClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"
             aria-label="Catatan pokok iman"
-            onClick={() => setNotePopupOpen(false)}
+            onClick={closeNote}
           >
             <div
               className="bible-notes-modal"
@@ -497,7 +517,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   className="bible-notes-close"
                   type="button"
                   aria-label="Tutup catatan"
-                  onClick={() => setNotePopupOpen(false)}
+                  onClick={closeNote}
                 >
                   ×
                 </button>
