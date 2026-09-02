@@ -141,10 +141,11 @@ function bffCandidates(): string[] {
       (base.includes("127.0.0.1") || base.includes("localhost")) &&
       !base.includes(`:${window.location.port}`),
     );
+  const proxy = isCrossPortLocalhost
+    ? undefined
+    : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/literature`;
   return [
-    isCrossPortLocalhost
-      ? undefined
-      : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/literature`,
+    proxy,
     `${import.meta.env.BASE_URL}offline/literature.json`,
   ].filter((value): value is string => Boolean(value));
 }
@@ -217,6 +218,9 @@ async function loadMergedCatalog(current: LiteratureItem[]) {
       const response = await fetch(url, { cache: "default" });
       if (!response.ok)
         throw new Error(`Literature request failed: ${response.status}`);
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("text/html"))
+        throw new Error(`Expected JSON from ${url}, got HTML`);
       const incoming = LiteratureCatalogSchema.parse(await response.json());
       const covers = new Map(
         current
@@ -247,6 +251,9 @@ async function loadCatalog(signal: AbortSignal) {
       });
       if (!response.ok)
         throw new Error(`Literature request failed: ${response.status}`);
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("text/html"))
+        throw new Error(`Expected JSON from ${url}, got HTML`);
       const catalog = LiteratureCatalogSchema.parse(await response.json());
       if (url !== `${import.meta.env.BASE_URL}offline/literature.json`) {
         try {

@@ -634,18 +634,29 @@ export function FaithPage({ locale }: { locale: Locale }) {
               <div className="faith-pdf-body">
                 {pdfError && (
                   <div className="error-panel" role="alert">
-                    <strong>PDF belum dapat dimuat.</strong>
+                    <strong>Dokumen PDF belum dapat dimuat langsung.</strong>
                     <span>
-                      Unduhan terblokir koneksi. Coba lagi saat tersambung
-                      internet.
+                      Server sumber dokumen sedang mengalami kendala CORS atau offline. Anda dapat membaca artikel lengkapnya langsung di situs resmi TJC.
                     </span>
-                    <button
-                      className="quiet-button"
-                      type="button"
-                      onClick={() => setPdfLoadKey((key) => key + 1)}
-                    >
-                      Coba lagi
-                    </button>
+                    <div style={{ display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }}>
+                      {DK_READ_MORE.get(pdfRead.number)?.source && (
+                        <a
+                          className="primary-button"
+                          href={DK_READ_MORE.get(pdfRead.number)?.source}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Buka Artikel di Situs Resmi ↗
+                        </a>
+                      )}
+                      <button
+                        className="quiet-button"
+                        type="button"
+                        onClick={() => setPdfLoadKey((key) => key + 1)}
+                      >
+                        Coba lagi
+                      </button>
+                    </div>
                   </div>
                 )}
                 {!pdfError && !pdfBytes && (

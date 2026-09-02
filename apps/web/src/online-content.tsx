@@ -154,48 +154,69 @@ export function SauhPage() {
         </Link>
         <span>Sauh Bagi Jiwa · hari ini</span>
       </div>
-      {state.status === "loading" && (
-        <div className="loading-panel" role="status">
-          Mengambil Sauh Bagi Jiwa…
-        </div>
-      )}
-      {state.status === "error" && (
-        <div className="error-panel" role="alert">
-          <strong>Renungan hari ini belum tersedia.</strong>
-          <span>{state.message}</span>
-          <button className="quiet-button" type="button" onClick={() => load()}>
-            Coba lagi
-          </button>
-        </div>
-      )}
-      {state.status === "ready" && (
-        <article
-          className={`online-article-card sauh-article${state.post.imageUrl ? " has-image" : ""}`}
-        >
-          {state.post.imageUrl && (
-            <LazyImage
-              className="online-article-image"
-              wrapperClassName="sauh-article-image-wrap"
-              src={state.post.imageUrl}
-              alt={`Ilustrasi ${state.post.title}`}
-              loading="eager"
-            />
-          )}
-          <p className="date-line">Sauh Bagi Jiwa · sumber langsung TJC</p>
-          <h1>{state.post.title}</h1>
-          {state.post.reference && (
-            <p className="online-article-reference">{state.post.reference}</p>
-          )}
-          {state.post.verse && <blockquote>“{state.post.verse}”</blockquote>}
-          <Paragraphs text={state.post.body} />
-          <div className="detail-actions">
-            <SourceLink href={state.post.url} />
-            <Link className="quiet-button" to="/">
-              Kembali ke beranda
-            </Link>
+      <article
+        className={`online-article-card sauh-article${state.status === "ready" && state.post.imageUrl ? " has-image" : ""}`}
+        data-sauh-status={state.status}
+      >
+        {state.status === "loading" && (
+          <div className="sauh-inline-loading" role="status" aria-live="polite">
+            <span className="sauh-inline-spinner" aria-hidden="true" />
+            <div>
+              <strong>Mengambil Sauh Bagi Jiwa…</strong>
+              <small>Menunggu renungan resmi hari ini dari TJC.</small>
+            </div>
           </div>
-        </article>
-      )}
+        )}
+        {state.status === "error" && (
+          <div className="sauh-inline-error" role="alert">
+            <strong>Renungan hari ini belum tersedia.</strong>
+            <span>{state.message}</span>
+            <div className="detail-actions">
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => load()}
+              >
+                Coba lagi
+              </button>
+              <a
+                className="quiet-button"
+                href="https://tjc.org/id/category/sauh-bagi-jiwa/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buka di tjc.org →
+              </a>
+            </div>
+          </div>
+        )}
+        {state.status === "ready" && (
+          <>
+            {state.post.imageUrl && (
+              <LazyImage
+                className="online-article-image"
+                wrapperClassName="sauh-article-image-wrap"
+                src={state.post.imageUrl}
+                alt={`Ilustrasi ${state.post.title}`}
+                loading="eager"
+              />
+            )}
+            <p className="date-line">Sauh Bagi Jiwa · sumber langsung TJC</p>
+            <h1>{state.post.title}</h1>
+            {state.post.reference && (
+              <p className="online-article-reference">{state.post.reference}</p>
+            )}
+            {state.post.verse && <blockquote>“{state.post.verse}”</blockquote>}
+            <Paragraphs text={state.post.body} />
+            <div className="detail-actions">
+              <SourceLink href={state.post.url} />
+              <Link className="quiet-button" to="/">
+                Kembali ke beranda
+              </Link>
+            </div>
+          </>
+        )}
+      </article>
     </div>
   );
 }
@@ -270,19 +291,15 @@ export function SuaraPage() {
               to={`/suara/${encodeURIComponent(post.id)}`}
             >
               <div className="suara-card-media">
-                {post.imageUrl ? (
-                  <LazyImage
-                    className="suara-thumb-img"
-                    wrapperClassName="suara-library-thumb"
-                    src={post.imageUrl}
-                    alt={`Cover ${post.title}`}
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="suara-thumbnail-fallback" aria-hidden="true">
-                    SS
-                  </span>
-                )}
+                <LazyImage
+                  className="suara-thumb-img"
+                  wrapperClassName="suara-library-thumb"
+                  src={post.imageUrl}
+                  fallbackTitle={post.title}
+                  fallbackCategory="kesaksian"
+                  alt={`Cover ${post.title}`}
+                  loading="lazy"
+                />
                 <div className="suara-media-overlay" />
               </div>
               <div className="suara-card-content">

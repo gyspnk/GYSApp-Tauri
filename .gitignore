@@ -23,3 +23,4 @@ apps/web/vite.config.js.map
 apps/web/vite.config.d.ts
 apps/web/vite.config.d.ts.map
 *.log
+.commandcode/

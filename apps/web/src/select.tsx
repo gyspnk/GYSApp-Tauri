@@ -1,19 +1,21 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { Icon, type IconName } from "./icons.js";
 
 export type SelectOption<T extends string | number> = {
   value: T;
   label: string;
-  shortLabel?: string;
-  hint?: string;
+  shortLabel?: string | undefined;
+  icon?: IconName | undefined;
+  hint?: string | undefined;
 };
 
 type SelectProps<T extends string | number> = {
   value: T;
   options: readonly SelectOption<T>[];
   onChange: (value: T) => void;
-  label?: string;
-  className?: string;
-  disabled?: boolean;
+  label?: string | undefined;
+  className?: string | undefined;
+  disabled?: boolean | undefined;
 };
 
 /** A small accessible listbox used in place of browser-native selects. */
@@ -93,9 +95,14 @@ export function Select<T extends string | number>({
         onClick={() => setOpen((current) => !current)}
         onKeyDown={onKeyDown}
       >
-        <span>{selected?.shortLabel ?? selected?.label ?? "—"}</span>
+        <span className="control-select-value">
+          {selected?.icon && (
+            <Icon name={selected.icon} size={15} className="control-select-icon" />
+          )}
+          {selected?.shortLabel ?? selected?.label ?? "—"}
+        </span>
         <span className="control-select-chevron" aria-hidden="true">
-          {open ? "⌃" : "⌄"}
+          <Icon name="chevronDown" size={13} />
         </span>
       </button>
       {open && (
@@ -115,7 +122,12 @@ export function Select<T extends string | number>({
               onMouseEnter={() => setActiveIndex(optionIndex)}
               onClick={() => choose(option)}
             >
-              <span>{option.label}</span>
+              <span className="control-select-option-content">
+                {option.icon && (
+                  <Icon name={option.icon} size={15} className="control-select-icon" />
+                )}
+                <span>{option.label}</span>
+              </span>
               {option.hint && <small>{option.hint}</small>}
             </button>
           ))}

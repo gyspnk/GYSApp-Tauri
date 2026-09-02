@@ -131,10 +131,11 @@ function suaraNetworkCandidates(): string[] {
       (base.includes("127.0.0.1") || base.includes("localhost")) &&
       !base.includes(`:${window.location.port}`),
     );
+  const proxy = isCrossPortLocalhost
+    ? undefined
+    : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`;
   return [
-    isCrossPortLocalhost
-      ? undefined
-      : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`,
+    proxy,
     API_URL,
   ].filter((value): value is string => Boolean(value));
 }
@@ -178,20 +179,21 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
     if (!feed.success) return [];
     return feed.data.items.flatMap((item) => {
       if (!isTjcUrl(item.url)) return [];
-      const { imageUrl, ...rest } = item;
-      return [isTjcImageUrl(imageUrl) ? { ...rest, imageUrl } : rest];
+      if (item.imageUrl && !isTjcImageUrl(item.imageUrl)) return [];
+      return [item];
     });
   }
   if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    // Persisted caches (and some upstreams) already carry the normalized
-    // contract; accept those directly before trying the raw WP post shape.
+  return value.flatMap((item: unknown): SuaraSejatiPost[] => {
+    if (!item || typeof item !== "object") return [];
     const direct = SuaraSejatiPostSchema.safeParse(item);
     if (direct.success && isTjcUrl(direct.data.url)) {
-      const { imageUrl, ...rest } = direct.data;
-      return [isTjcImageUrl(imageUrl) ? { ...rest, imageUrl } : rest];
+      if (direct.data.imageUrl && !isTjcImageUrl(direct.data.imageUrl)) {
+        const { imageUrl: _, ...rest } = direct.data;
+        return [rest];
+      }
+      return [direct.data];
     }
-    if (!item || typeof item !== "object") return [];
     const post = item as {
       id?: unknown;
       slug?: unknown;
@@ -271,6 +273,9 @@ async function requestPage(url: string, signal?: AbortSignal) {
     });
     if (!response.ok)
       throw new Error(`Suara Sejati request failed: ${response.status}`);
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("text/html"))
+      throw new Error(`Expected JSON from ${url}, got HTML`);
     return {
       value: await response.json(),
       totalPages: Number(response.headers.get("x-wp-totalpages")),

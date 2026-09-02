@@ -176,8 +176,13 @@ for (const item of assets.items) {
     )
       throw new Error(`asset manifest integrity drift: ${item.id}`);
   } else if (
-    !item.url?.startsWith("https://tjc.org/") ||
-    !/^https:\/\/tjc\.org\//.test(item.path)
+    !(
+      item.url?.startsWith("https://tjc.org/") ||
+      item.url?.startsWith("https://tjcorguploads.s3.amazonaws.com/")
+    ) ||
+    !/^(?:https:\/\/tjc\.org\/|https:\/\/tjcorguploads\.s3\.amazonaws\.com\/)/.test(
+      item.path,
+    )
   ) {
     throw new Error(
       `asset manifest remote source is not allowlisted: ${item.id}`,

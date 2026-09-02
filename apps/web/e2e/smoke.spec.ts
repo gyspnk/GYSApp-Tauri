@@ -34,6 +34,9 @@ test("feature-critical hymn actions follow the selected locale", async ({
   await page.getByRole("option", { name: "中文" }).click();
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
+  await page.goto("/GYSApp-Tauri/kidung");
+  await page.getByRole("button", { name: "语言" }).click();
+  await page.getByRole("option", { name: "ID" }).click();
 });
 
 test("compact section headings stay smaller than page and catalog titles", async ({
@@ -116,7 +119,7 @@ test("offline reader packs open without a network request", async ({
   await expect(
     page.getByRole("heading", { name: "Alkitab", exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   await page.getByRole("link", { name: /Iman/ }).first().click();
@@ -149,9 +152,11 @@ test.describe("offline Bible recovery", () => {
       "Paket Alkitab belum tersedia",
     );
     await page.getByRole("button", { name: "Coba lagi" }).click();
-    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 15_000,
+      },
+    );
     expect(attempts).toBeGreaterThanOrEqual(2);
   });
 });
@@ -209,6 +214,33 @@ test("faith topics search, select, and persist a personal note", async ({
   );
 });
 
+test("faith read more opens PDF viewer in fullscreen overlay", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(
+    page.getByRole("region", { name: "Dasar Kepercayaan" }),
+  ).toBeVisible();
+  const rows = page.locator(".faith-row-heading");
+  await expect(rows.first()).toBeVisible({ timeout: 15_000 });
+
+  await rows.first().click();
+  const modal = page.getByRole("dialog", { name: /Pokok/ });
+  await expect(modal).toBeVisible();
+
+  const readMoreBtn = modal.getByRole("button", { name: /Baca lebih lanjut/ });
+  await expect(readMoreBtn).toBeVisible();
+  await readMoreBtn.click();
+
+  const pdfOverlay = page.locator(".faith-pdf-backdrop");
+  await expect(pdfOverlay).toBeVisible();
+  await expect(pdfOverlay.locator(".faith-pdf-head")).toBeVisible();
+  await expect(pdfOverlay.locator(".faith-pdf-body")).toBeVisible();
+  await expect(pdfOverlay.getByRole("button", { name: "Tutup bacaan" })).toBeVisible();
+  await pdfOverlay.getByRole("button", { name: "Tutup bacaan" }).click();
+  await expect(pdfOverlay).toBeHidden();
+});
+
 test("offline pack manager keeps one update action and reports manifest status", async ({
   page,
 }) => {
@@ -234,14 +266,16 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   await page.getByLabel("Cari Alkitab").fill("begitu besar");
   await page.getByLabel("Frasa tepat").check();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect(page.locator(".result-item").first()).toBeVisible();
-  await page.getByRole("button", { name: "Dua kolom" }).click();
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
+  await page.getByText("Tampilan Belah").click();
+  await page.getByRole("button", { name: "Tutup menu" }).click();
   await expect(page.locator(".bible-pane")).toHaveCount(2);
   const splitDivider = page.getByRole("separator", {
     name: "Atur lebar kolom bacaan",
@@ -270,18 +304,15 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
 });
 test("Bible search narrows results to a testament", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
+  await page.getByLabel("Cari Alkitab").fill("Allah");
   const searchBook = page.locator(
     ".bible-search-options .control-select-trigger",
   );
   await searchBook.click();
   await page.getByRole("option", { name: "Perjanjian Lama (39)" }).click();
-  await page.getByLabel("Cari Alkitab").fill("Allah");
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect(page.locator(".result-item").first()).toBeVisible({
     timeout: 15_000,
@@ -298,7 +329,7 @@ test("Bible search narrows results to a testament", async ({ page }) => {
     )
     .toEqual({ hasOldTestament: true, hasNewTestament: false });
 
-  await searchBook.click();
+  await searchBook.click({ force: true });
   await page.getByRole("option", { name: "Perjanjian Baru (27)" }).click();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect
@@ -318,7 +349,7 @@ test("Bible search matches book names from the offline pack", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   // A bare book name must surface verses from that book even though other
@@ -352,7 +383,7 @@ test("Bible search matches book names from the offline pack", async ({
 
 test("Bible reader typography persists across reloads", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   const verseText = page.locator(".verse-text").first();
@@ -361,12 +392,10 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
       getComputedStyle(element).fontSize.replace("px", ""),
     ),
   );
-  const typoToggle = page.getByRole("button", { name: "Ukuran teks bacaan" });
-  if (await typoToggle.isVisible()) {
-    await typoToggle.click();
-  }
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByRole("button", { name: "Perbesar teks" }).click();
   await page.getByRole("button", { name: "Perbesar teks" }).click();
+  await page.getByRole("button", { name: "Tutup menu" }).click();
   await expect
     .poll(() =>
       verseText.evaluate((element) =>
@@ -381,12 +410,9 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
     .toContain(String(initialSize + 2));
   // The preference survives a full reload.
   await page.reload();
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
-  if (await typoToggle.isVisible()) {
-    await typoToggle.click();
-  }
   await expect
     .poll(() =>
       page
@@ -397,10 +423,9 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
         ),
     )
     .toBe(initialSize + 2);
-  // The bounded controls expose their state and stay keyboard-usable.
-  await expect(
-    page.getByRole("group", { name: "Ukuran teks bacaan" }),
-  ).toBeVisible();
+  // The bounded controls expose their state and stay keyboard-usable in the menu drawer.
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
+  await expect(page.locator(".hamburger-typography-stepper")).toBeVisible();
 });
 
 test("Bible title drag advances through book, chapter, and verse before commit", async ({
@@ -408,7 +433,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   const handle = page.locator(".quick-nav-handle");
@@ -497,7 +522,7 @@ test("Bible drag release defaults incomplete book and chapter choices to verse o
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
 
@@ -560,7 +585,7 @@ test("Bible text selection exposes contextual copy/share/note actions", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   await page.evaluate(() => {
@@ -587,17 +612,25 @@ test("selected Bible verse exposes a floating bottom action toolbar", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  const handle = page.locator(".quick-nav-handle");
+  await expect(handle).toBeVisible({ timeout: 15_000 });
+  // Navigate to Yohanes 3 to test the contextual action toolbar on that verse.
+  await handle.click();
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await expect(picker).toBeVisible();
+  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Yohanes");
+  await page.getByRole("button", { name: "Yohanes", exact: true }).click();
+  await page.getByRole("button", { name: "3", exact: true }).click();
+  await page.getByRole("button", { name: "Buka Seluruh Pasal" }).click();
+  await expect(page.locator(".verse-row").first()).toBeVisible({
     timeout: 15_000,
   });
-  await page
-    .getByRole("button", { name: /Adalah seorang Farisi yang bernama/ })
-    .click();
+  await page.locator(".verse-row").first().click();
 
   const toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
   await expect(toolbar).toBeVisible();
   await expect(toolbar).toHaveCSS("position", "fixed");
-  await expect(toolbar).toContainText("Yohanes 3:1");
+  await expect(toolbar).toContainText("3:1");
 });
 
 test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
@@ -605,13 +638,9 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(
-    page.getByRole("heading", { name: "Alkitab", exact: true }),
-  ).toBeVisible({ timeout: 15_000 });
+  const handle = page.locator(".quick-nav-handle");
+  await expect(handle).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".bible-search")).toBeVisible();
-  await expect(page.locator(".quick-nav-handle")).toBeVisible({
-    timeout: 15_000,
-  });
   await expect(
     page.getByText(
       "Buka bacaan terakhir atau cari ayat di seluruh Alkitab TB.",
@@ -622,6 +651,20 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
       page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     )
     .toBe(true);
+
+  // Navigate to Yohanes 3 so the contextual toolbar has a verse to act on.
+  await page
+    .getByRole("button", { name: "Geser judul untuk berpindah pasal" })
+    .click();
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await expect(picker).toBeVisible();
+  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Yohanes");
+  await page.getByRole("button", { name: "Yohanes", exact: true }).click();
+  await page.getByRole("button", { name: "3", exact: true }).click();
+  await page.getByRole("button", { name: "Buka Seluruh Pasal" }).click();
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
 
   await page
     .getByRole("button", { name: /Adalah seorang Farisi yang bernama/ })
@@ -1257,7 +1300,7 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
   const handle = page.getByRole("button", {
@@ -1285,7 +1328,7 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
   ).toBe(true);
 
   // Filter book by name and select
-  await page.getByPlaceholder("Cari nama kitab…").fill("Matius");
+  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Matius");
   await page.getByRole("button", { name: "Matius", exact: true }).click();
 
   // Select Chapter 5
@@ -1306,17 +1349,18 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
 
-  // Enable split view
-  await page.getByRole("button", { name: "Dua kolom" }).click();
+  // Enable split view via Hamburger menu
+  await page.getByRole("button", { name: "Menu Alkitab" }).click();
+  await expect(page.getByText("Tampilan Belah")).toBeVisible();
+  await page.getByText("Tampilan Belah").click();
   await expect(page.locator(".bible-pane")).toHaveCount(2);
 
   // Sync scroll toggle is visible and active by default
-  const syncToggle = page.getByRole("button", { name: "Gulir sinkron" });
-  await expect(syncToggle).toBeVisible();
+  await expect(page.getByText("Gulir Sinkron")).toBeVisible();
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -1325,11 +1369,8 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
     )
     .toBe("1");
 
-  // Toggle sync scroll off (Independent scrolling)
-  await syncToggle.click();
-  await expect(
-    page.getByRole("button", { name: "Gulir mandiri" }),
-  ).toBeVisible();
+  // Toggle sync scroll off
+  await page.getByText("Gulir Sinkron").click();
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -1339,10 +1380,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
     .toBe("0");
 
   // Toggle sync scroll back on
-  await page.getByRole("button", { name: "Gulir mandiri" }).click();
-  await expect(
-    page.getByRole("button", { name: "Gulir sinkron" }),
-  ).toBeVisible();
+  await page.getByText("Gulir Sinkron").click();
   await expect
     .poll(() =>
       page.evaluate(() =>

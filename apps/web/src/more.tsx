@@ -4,7 +4,7 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   type AccountProfile,
   type AssetManifestV1,
@@ -321,7 +321,7 @@ function downloadBackup(envelope: unknown) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }
 
-async function clearAppData() {
+export async function clearAppData() {
   let resetError: unknown;
   try {
     for (const key of Object.keys(localStorage)) {
@@ -353,7 +353,6 @@ export function MorePage({
   setLocale: (value: Locale) => void;
   setTheme: (value: ShellTheme) => void;
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const nativeShell = isTauriShell();
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
@@ -815,23 +814,6 @@ export function MorePage({
     }
   };
 
-  const requestedSection = searchParams.get("section");
-  const activeSection = (
-    ["account", "appearance", "data", "help"] as const
-  ).includes(requestedSection as "account" | "appearance" | "data" | "help")
-    ? (requestedSection as "account" | "appearance" | "data" | "help")
-    : "account";
-  const selectSection = (section: typeof activeSection) =>
-    setSearchParams({ section });
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      document
-        .querySelector<HTMLElement>('.more-category-bar [aria-current="page"]')
-        ?.scrollIntoView({ block: "nearest", inline: "center" });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [activeSection]);
-
   return (
     <div className="page more-page">
       <section className="page-intro">
@@ -840,48 +822,8 @@ export function MorePage({
         </div>
       </section>
 
-      <div
-        className="more-category-bar"
-        role="navigation"
-        aria-label="Kategori Pengaturan"
-      >
-        <button
-          type="button"
-          aria-current={activeSection === "account" ? "page" : undefined}
-          className={`more-cat-btn${activeSection === "account" ? " is-active" : ""}`}
-          onClick={() => selectSection("account")}
-        >
-          Akun e-GYS
-        </button>
-        <button
-          type="button"
-          aria-current={activeSection === "appearance" ? "page" : undefined}
-          className={`more-cat-btn${activeSection === "appearance" ? " is-active" : ""}`}
-          onClick={() => selectSection("appearance")}
-        >
-          Tampilan & Bahasa
-        </button>
-        <button
-          type="button"
-          aria-current={activeSection === "data" ? "page" : undefined}
-          className={`more-cat-btn${activeSection === "data" ? " is-active" : ""}`}
-          onClick={() => selectSection("data")}
-        >
-          Data & Offline
-        </button>
-        <button
-          type="button"
-          aria-current={activeSection === "help" ? "page" : undefined}
-          className={`more-cat-btn${activeSection === "help" ? " is-active" : ""}`}
-          onClick={() => selectSection("help")}
-        >
-          Bantuan
-        </button>
-      </div>
-
       <section className="more-grid">
-        {activeSection === "account" && (
-          <article className="more-card more-card-wide account-card egys-card">
+        <article className="more-card more-card-wide account-card egys-card">
             <div className="more-card-heading">
               <div>
                 <h2>
@@ -1027,9 +969,7 @@ export function MorePage({
               </div>
             )}
           </article>
-        )}
 
-        {activeSection === "appearance" && (
           <article className="more-card more-card-wide appearance-card">
             <div className="more-card-heading">
               <div>
@@ -1045,11 +985,11 @@ export function MorePage({
                 aria-label="Pilih Tema"
               >
                 {[
-                  { key: "light", icon: "☼", label: "Terang" },
-                  { key: "dark", icon: "☾", label: "Gelap" },
-                  { key: "amoled", icon: "■", label: "AMOLED" },
-                  { key: "sepia", icon: "☕", label: "Sepia" },
-                  { key: "system", icon: "◐", label: "Otomatis" },
+                  { key: "light", icon: "sun" as const, label: "Terang" },
+                  { key: "dark", icon: "moon" as const, label: "Gelap" },
+                  { key: "amoled", icon: "amoled" as const, label: "AMOLED" },
+                  { key: "sepia", icon: "sepia" as const, label: "Sepia" },
+                  { key: "system", icon: "system" as const, label: "Otomatis" },
                 ].map((item) => (
                   <button
                     key={item.key}
@@ -1061,7 +1001,9 @@ export function MorePage({
                     aria-label={item.label}
                     title={item.label}
                   >
-                    <span className="pill-icon">{item.icon}</span>
+                    <span className="pill-icon">
+                      <Icon name={item.icon} size={18} />
+                    </span>
                     <span className="pill-label">{item.label}</span>
                   </button>
                 ))}
@@ -1143,11 +1085,8 @@ export function MorePage({
               </div>
             </div>
           </article>
-        )}
 
-        {activeSection === "data" && (
-          <>
-            <article className="more-card more-card-wide">
+          <article className="more-card more-card-wide">
               <div className="more-card-heading">
                 <div>
                   <h2>Paket lokal</h2>
@@ -1283,11 +1222,7 @@ export function MorePage({
               <strong>Reset perangkat</strong>
               <small>Bersihkan cache dan mulai ulang preferensi</small>
             </button>
-          </>
-        )}
 
-        {activeSection === "help" && (
-          <>
             <button
               className="more-card more-action"
               type="button"
@@ -1331,8 +1266,6 @@ export function MorePage({
                   : `${report.length}/2.000 karakter`}
               </small>
             </form>
-          </>
-        )}
       </section>
       {backupOpen && (
         <section className="utility-panel" aria-label="Backup dan import">

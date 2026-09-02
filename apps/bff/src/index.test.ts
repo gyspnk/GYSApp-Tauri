@@ -884,6 +884,36 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("proxies allowlisted TJC images with CORS and cache headers", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input) => {
+      const url = String(input);
+      if (url.includes("tjc.org") || url.includes("amazonaws.com")) {
+        return new Response(new Uint8Array([0xff, 0xd8, 0xff]), {
+          status: 200,
+          headers: { "content-type": "image/jpeg" },
+        });
+      }
+      return new Response("Not found", { status: 404 });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const url = "https://tjc.org/id/wp-content/uploads/sites/43/cover.jpg";
+      const response = await app.request(
+        `/api/v1/content/image?url=${encodeURIComponent(url)}`,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("image/jpeg");
+      expect(response.headers.get("access-control-allow-origin")).toBe("*");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves the canonical Suara Sejati feed with thumbnails", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>

@@ -165,6 +165,34 @@ self.addEventListener("message", (event) => {
       ),
     );
   }
+  // gyschordweb PURGE_URLS parity: delete cached entries whose URL contains
+  // any of the given needles. Used for self-healing when a cached PDF.js
+  // worker/source chunk is corrupted and PDF loading fails repeatedly.
+  if (event.data?.type === "gys-purge-urls") {
+    const needles = Array.isArray(event.data.urls) ? event.data.urls : [];
+    const reply = event.ports?.[0];
+    event.waitUntil(
+      (async () => {
+        const names = await caches.keys();
+        await Promise.allSettled(
+          names.filter(isAppCache).map(async (name) => {
+            const cache = await caches.open(name);
+            const requests = await cache.keys();
+            await Promise.allSettled(
+              requests.map((request) => {
+                const url = request.url || "";
+                if (needles.some((needle) => url.indexOf(needle) !== -1)) {
+                  return cache.delete(request);
+                }
+                return Promise.resolve(false);
+              }),
+            );
+          }),
+        );
+        reply?.postMessage({ type: "gys-purge-urls-done" });
+      })(),
+    );
+  }
 });
 
 async function fetchAndCacheShell(request, waitUntil) {

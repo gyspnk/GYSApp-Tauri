@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -492,7 +493,6 @@ function ChapterPane({
         <h2>
           {book.name} {chapter}
         </h2>
-        <span>{verses.length} ayat</span>
       </div>
       {(() => {
         const chapterPericope = pericopeByVerse.get(0);
@@ -674,10 +674,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const lastAppliedDeepLinkRef = useRef<string | undefined>(undefined);
   const [selectedBook, setSelectedBook] = useState(() =>
-    readSavedNumber(BOOK_KEY, 43),
+    readSavedNumber(BOOK_KEY, 1),
   );
   const [selectedChapter, setSelectedChapter] = useState(() =>
-    readSavedNumber(CHAPTER_KEY, 3),
+    readSavedNumber(CHAPTER_KEY, 1),
   );
   const [query, setQuery] = useState("");
   const [searchBook, setSearchBook] = useState("all");
@@ -1287,6 +1287,37 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const selectedVerse = selectedVerseId
     ? chapterVerses.find((verse) => verse.id === selectedVerseId)
     : undefined;
+
+  const [exitingVerse, setExitingVerse] = useState(false);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const activeVerseRef = useRef<BibleVerse | undefined>(undefined);
+
+  if (selectedVerse) {
+    activeVerseRef.current = selectedVerse;
+  }
+
+  const handleCloseSelectedVerse = useCallback(() => {
+    setExitingVerse(true);
+    if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = setTimeout(() => {
+      setSelectedVerseId(undefined);
+      setExitingVerse(false);
+      activeVerseRef.current = undefined;
+    }, 180);
+  }, []);
+
+  useEffect(() => {
+    if (selectedVerseId) {
+      setExitingVerse(false);
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    }
+  }, [selectedVerseId]);
+
+  const activeToolbarVerse =
+    selectedVerse ?? (exitingVerse ? activeVerseRef.current : undefined);
+
   useEffect(() => {
     const onSelectionChange = () => {
       const selection = window.getSelection();
@@ -1352,7 +1383,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     if (!book) return;
-    setSelectedBook(book.id);
+    // Keep the chapter within the book's bounds. Do NOT re-write
+    // `selectedBook` here: `book` is derived from `selectedBook` at render
+    // time, so writing it back would clobber a freshly applied deep-link
+    // (e.g. /bible?book=43 opens Yohanes, not the previous Kejadian).
     setSelectedChapter((value) => Math.min(value, book.chapters));
   }, [book]);
 
@@ -2277,20 +2311,20 @@ export function BiblePage({ locale }: { locale: Locale }) {
           />,
           document.body,
         )}
-      {selectedVerse &&
+      {activeToolbarVerse &&
         book &&
         createPortal(
           <div
-            className="selected-verse-toolbar"
+            className={`selected-verse-toolbar${exitingVerse ? " is-exiting" : ""}`}
             data-testid="selected-verse-toolbar"
             role="toolbar"
             aria-label="Aksi ayat terpilih"
           >
             <div className="selected-verse-context">
               <strong>
-                {book.name} {chapter}:{selectedVerse.verse}
+                {book.name} {chapter}:{activeToolbarVerse.verse}
               </strong>
-              <span>{cleanVerse(selectedVerse)}</span>
+              <span>{cleanVerse(activeToolbarVerse)}</span>
             </div>
             <div className="selected-verse-actions">
               <button
@@ -2311,7 +2345,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 className="quiet-button"
                 type="button"
                 disabled={!speechAvailable}
-                onClick={() => speakVerses([selectedVerse])}
+                onClick={() => speakVerses([activeToolbarVerse])}
               >
                 Baca ayat
               </button>
@@ -2321,15 +2355,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
               >
                 {(["yellow", "blue", "green"] as const).map((color) => (
                   <button
-                    className={`highlight-dot is-${color}${highlights[selectedVerse.id] === color ? " is-active" : ""}`}
+                    className={`highlight-dot is-${color}${highlights[activeToolbarVerse.id] === color ? " is-active" : ""}`}
                     key={color}
                     type="button"
                     aria-label={`Sorot ${color}`}
-                    aria-pressed={highlights[selectedVerse.id] === color}
+                    aria-pressed={highlights[activeToolbarVerse.id] === color}
                     onClick={() =>
                       setHighlights((current) => ({
                         ...current,
-                        [selectedVerse.id]: color,
+                        [activeToolbarVerse.id]: color,
                       }))
                     }
                   />
@@ -2346,7 +2380,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 className="selected-verse-close"
                 type="button"
                 aria-label="Tutup ayat terpilih"
-                onClick={() => setSelectedVerseId(undefined)}
+                onClick={handleCloseSelectedVerse}
               >
                 ×
               </button>

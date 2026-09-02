@@ -31,6 +31,14 @@ import { recordDiagnostic } from "./diagnostics.js";
 import { hapticTick } from "./haptics.js";
 import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 import { readHymnViewerPrefs } from "./hymn-viewer-prefs.js";
+import {
+  chordFillColor,
+  chordTextColor,
+  readChordUiPrefs,
+  subscribeChordUiPrefs,
+} from "./chord-ui-prefs.js";
+import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
+import { Icon } from "./icons.js";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -52,14 +60,40 @@ function PdfChordLayer({
   editorEnabled?: boolean;
   onEditChord?: (noteIdx: number, current: string) => void;
 }) {
+  const [chordUiPrefs, setChordUiPrefs] = useState(() => readChordUiPrefs());
+  const [accent, setAccent] = useState(() => getAccentColor());
+  useEffect(
+    () => subscribeChordUiPrefs(() => setChordUiPrefs(readChordUiPrefs())),
+    [],
+  );
+  useEffect(() => subscribeAccentColor(() => setAccent(getAccentColor())), []);
   if (!visible || !markers?.length) return null;
+  const textColor = chordTextColor(chordUiPrefs, accent);
+  const fillColor = chordFillColor(chordUiPrefs, accent);
+  const fillStyle =
+    chordUiPrefs.fill === "none"
+      ? "transparent"
+      : `color-mix(in srgb, ${fillColor} ${
+          chordUiPrefs.fill === "solid" ? "65%" : "32%"
+        }, #ffffff)`;
+  const chordStyle = {
+    "--chord-text-color": textColor,
+    "--chord-fill-background": fillStyle,
+    "--chord-fill-opacity": `${chordUiPrefs.fillOpacityPercent}%`,
+    "--chord-font-scale": chordUiPrefs.fontOverridePercent / 100,
+    "--chord-fill-padding-scale": chordUiPrefs.fillPaddingPercent / 100,
+  } as React.CSSProperties;
   if (editorEnabled && onEditChord) {
     // gyschordweb note-aligned editor: every chord marker is a clickable note
     // target that prompts for a replacement chord.
     const targetLabel = (marker: PdfChordOverlayMarker) =>
       marker.noteIdx < 0 ? "▸" : marker.noteIdx > 50_000 ? "◂" : "•";
     return (
-      <div className="pdf-chord-layer is-editor" aria-label="Editor chord">
+      <div
+        className="pdf-chord-layer is-editor"
+        aria-label="Editor chord"
+        style={chordStyle}
+      >
         {markers.map((marker) => (
           <button
             type="button"
@@ -80,7 +114,11 @@ function PdfChordLayer({
     );
   }
   return (
-    <div className="pdf-chord-layer" aria-label="Chord overlay">
+    <div
+      className="pdf-chord-layer"
+      aria-label="Chord overlay"
+      style={chordStyle}
+    >
       {markers.map((marker) => (
         <span
           className="pdf-chord-marker"
@@ -156,6 +194,11 @@ function VerticalPdfPage({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // gyschordweb parity: the page-fit scale for THIS page is the zoom base.
+  // Keeping it in a local ref (updated at 100%) makes zoom relative to the
+  // fit scale even when the parent's shared initialScaleRef was never set for
+  // scroll layouts — fixing zoom from 100% appearing dead in vertical mode.
+  const fitScaleRef = useRef<number | undefined>(baseScale);
   const [nearViewport, setNearViewport] = useState(() =>
     shouldRenderPdfPage(pageNumber, false),
   );
@@ -208,7 +251,12 @@ function VerticalPdfPage({
         const baseViewport = nextPage.getViewport({ scale: 1 });
         const availableWidth = Math.max(320, hostRef.current.clientWidth - 32);
         const fitScale = availableWidth / baseViewport.width;
-        const scale = pdfPercentScale(zoomPercent, fitScale, baseScale);
+        if (zoomPercent === 100) fitScaleRef.current = fitScale;
+        const scale = pdfPercentScale(
+          zoomPercent,
+          fitScale,
+          fitScaleRef.current ?? baseScale,
+        );
         const dpr =
           typeof window !== "undefined" && window.devicePixelRatio
             ? window.devicePixelRatio
@@ -255,14 +303,16 @@ function VerticalPdfPage({
 
   return (
     <div
-      className={`${horizontal ? "pdf-horizontal-page" : "pdf-vertical-page"}${status === "ready" ? " is-ready" : ""}`}
+      className={`${horizontal ? "pdf-horizontal-page" : "pdf-vertical-page"}${status === "ready" ? " is-ready" : ""}${zoomPercent === 100 ? " is-fit" : " is-zoomed"}`}
       data-pdf-page={pageNumber}
       ref={hostRef}
       tabIndex={0}
       aria-label={`PDF page ${pageNumber}`}
       onFocus={() => onActive(pageNumber)}
     >
-      <div className="pdf-page-frame">
+      <div
+        className={`pdf-page-frame${zoomPercent === 100 ? " is-fit" : " is-zoomed"}`}
+      >
         <canvas
           ref={canvasRef}
           aria-hidden={status !== "ready"}
@@ -339,6 +389,56 @@ export function PdfReader({
   );
   const [zoomPercent, setZoomPercent] = useState(100);
   const [advancedOpen, setAdvancedOpen] = useState(variant === "hymn");
+  const [fullscreenActive, setFullscreenActive] = useState(false);
+  const toggleFullscreen = () => {
+    const target = pdfStageRef.current;
+    if (!target) return;
+    const doc = target.ownerDocument as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => void;
+    };
+    const isActive =
+      (doc.fullscreenElement ?? doc.webkitFullscreenElement) === target;
+    if (isActive) {
+      void (doc.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+      setFullscreenActive(false);
+    } else {
+      const request =
+        target.requestFullscreen?.() ??
+        (
+          target as HTMLElement & { webkitRequestFullscreen?: () => void }
+        ).webkitRequestFullscreen?.();
+      if (request && typeof request.catch === "function") {
+        void request
+          .then(() => setFullscreenActive(true))
+          .catch(() => undefined);
+      } else {
+        setFullscreenActive(true);
+      }
+    }
+  };
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const target = pdfStageRef.current;
+      const doc = target?.ownerDocument as
+        (Document & { webkitFullscreenElement?: Element | null }) | undefined;
+      setFullscreenActive(
+        Boolean(
+          target &&
+          (doc?.fullscreenElement ?? doc?.webkitFullscreenElement) === target,
+        ),
+      );
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        onFullscreenChange,
+      );
+    };
+  }, []);
   const viewerPrefs = useMemo(() => readHymnViewerPrefs(), []);
   const defaultLayout: PdfLayout = viewerPrefs.defaultTwoPage
     ? "two"
@@ -414,8 +514,15 @@ export function PdfReader({
 
   // gyschordweb parity: a fit ("page-fit") reset recalculates the initial
   // scale, and zooming keeps the anchor content point stable on screen.
+  // The ref is only reset when returning to fit in the single/two layout —
+  // scroll layouts keep their per-page fit base so zoom stays relative to it.
   useEffect(() => {
-    if (zoomPercent === 100) initialScaleRef.current = undefined;
+    if (
+      zoomPercent === 100 &&
+      effectiveLayout !== "vertical" &&
+      effectiveLayout !== "horizontal"
+    )
+      initialScaleRef.current = undefined;
   }, [zoomPercent, layout, effectiveLayout]);
 
   // gyschordweb updateCenteringAndOverflow: only-vertical-centered page when
@@ -569,6 +676,22 @@ export function PdfReader({
       .catch((error: unknown) => {
         if (!disposed) setStatus("error");
         if (!disposed) recordDiagnostic("error", "pdf.document", error);
+        consecutiveFailures.current += 1;
+        if (
+          !disposed &&
+          consecutiveFailures.current >= 2 &&
+          typeof navigator !== "undefined" &&
+          navigator.onLine
+        ) {
+          let alreadyPurged = false;
+          try {
+            const at = sessionStorage.getItem("gys-pdf-purged-at");
+            alreadyPurged = at !== null && Date.now() - Number(at) < 120_000;
+          } catch {
+            // ignore
+          }
+          if (!alreadyPurged) void purgePdfCacheAndReload();
+        }
       });
     return () => {
       void loadingTask.destroy().catch(() => undefined);
@@ -791,7 +914,42 @@ export function PdfReader({
     resumePage !== page &&
     resumePage >= pageStart &&
     resumePage <= pageStart + total - 1;
+  // gyschordweb `_recoverPdfStack` parity: two consecutive load failures with
+  // the same source indicate a poisoned cached PDF.js chunk — purge it from
+  // the service-worker caches and reload once per session.
+  const consecutiveFailures = useRef(0);
+  const purgePdfCacheAndReload = async () => {
+    const done = (await new Promise<boolean>((resolve) => {
+      try {
+        if (!navigator.serviceWorker?.controller) {
+          resolve(false);
+          return;
+        }
+        const channel = new MessageChannel();
+        const timeout = window.setTimeout(() => resolve(false), 1500);
+        channel.port1.onmessage = (event) => {
+          if (event.data?.type === "gys-purge-urls-done") {
+            window.clearTimeout(timeout);
+            resolve(true);
+          }
+        };
+        navigator.serviceWorker.controller.postMessage(
+          { type: "gys-purge-urls", urls: ["pdf.worker", "pdfjs"] },
+          [channel.port2],
+        );
+      } catch {
+        resolve(false);
+      }
+    })) as boolean;
+    try {
+      sessionStorage.setItem("gys-pdf-purged-at", String(Date.now()));
+    } catch {
+      // ignore
+    }
+    if (done) window.location.reload();
+  };
   const retry = () => {
+    consecutiveFailures.current = 0;
     setStatus("loading");
     setLoadAttempt((attempt) => attempt + 1);
   };
@@ -892,7 +1050,7 @@ export function PdfReader({
               onClick={() => setLayout("vertical")}
               title="Gulir vertikal"
             >
-              ↓
+              <Icon name="swapVert" size={15} />
             </button>
             <button
               type="button"
@@ -901,7 +1059,7 @@ export function PdfReader({
               onClick={() => setLayout("horizontal")}
               title="Gulir mendatar"
             >
-              →
+              <Icon name="book" size={15} />
             </button>
           </div>
         )}
@@ -913,6 +1071,17 @@ export function PdfReader({
             onClick={() => setAdvancedOpen((value) => !value)}
           >
             {advancedOpen ? "Tutup alat PDF" : "Pengaturan PDF"}
+          </button>
+        )}
+        {variant === "hymn" && (
+          <button
+            className="pdf-fullscreen-toggle"
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={fullscreenActive ? "Keluar layar penuh" : "Layar penuh"}
+            title={fullscreenActive ? "Keluar layar penuh" : "Layar penuh"}
+          >
+            {fullscreenActive ? "Keluar" : "Fullscreen"}
           </button>
         )}
         <div
@@ -1034,7 +1203,7 @@ export function PdfReader({
         </div>
       </div>
       <div
-        className={`pdf-stage${stageState.centered ? " is-centered" : ""}${stageState.overflowing ? " is-overflowing" : ""}`}
+        className={`pdf-stage${stageState.centered ? " is-centered" : ""}${stageState.overflowing ? " is-overflowing" : ""}${zoomPercent === 100 ? " is-fit" : " is-zoomed"}`}
         data-pdf-layout={effectiveLayout}
         ref={pdfStageRef}
         style={{ "--pdf-chord-scale": `${zoomPercent / 100}` } as CSSProperties}
@@ -1146,7 +1315,9 @@ export function PdfReader({
           </div>
         ) : (
           <div className={`pdf-pages pdf-layout-${effectiveLayout}`}>
-            <div className="pdf-page-frame">
+            <div
+              className={`pdf-page-frame${zoomPercent === 100 ? " is-fit" : " is-zoomed"}`}
+            >
               <canvas
                 className={zoomPercent === 100 ? "is-fit" : ""}
                 ref={canvasRef}
@@ -1161,7 +1332,9 @@ export function PdfReader({
                 }
               />
             </div>
-            <div className="pdf-page-frame">
+            <div
+              className={`pdf-page-frame${zoomPercent === 100 ? " is-fit" : " is-zoomed"}`}
+            >
               <canvas
                 className={zoomPercent === 100 ? "is-fit" : ""}
                 ref={secondaryCanvasRef}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-20T16:14:10.271Z",
+  "generatedAt": "2026-09-02T09:09:20.153Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -43,8 +43,8 @@
     {
       "id": "sauh-feed",
       "path": "offline/sauh.json",
-      "bytes": 802,
-      "sha256": "406c38a8fd813c3c8987991ca22778d1e1b798244341f932da6f0799a30fcde8"
+      "bytes": 3874,
+      "sha256": "2c6178d71062a777e343344a8162b469d286f54c6eb5a7d73946e58d5848aee6"
     },
     {
       "id": "literature-catalog",

@@ -1,6 +1,14 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
+import {
+  chordFillColor,
+  chordTextColor,
+  readChordUiPrefs,
+  subscribeChordUiPrefs,
+  type ChordUiPrefs,
+} from "./chord-ui-prefs.js";
+import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
 
 const SHARP_NOTES = [
   "C",
@@ -400,8 +408,50 @@ export function matchChordLinesToLyrics(
     });
     if (bestIndex < 0 || bestScore < 0.6) return undefined;
     used.add(bestIndex);
-    return candidates[bestIndex];
+    const matched = candidates[bestIndex];
+    if (!matched) return undefined;
+    // gyschordweb parity: keep the APP's lyric text (the catalog can differ
+    // from the chord document) and only take the chord tokens from the
+    // document. Re-map indices against the rendered string so markers land on
+    // the right syllables even when the two texts differ.
+    const chords = matched.chords
+      .map((chord) => ({
+        token: chord.token,
+        index: remapChordIndex(chord.index, matched.text, line),
+      }))
+      .filter((chord) => chord.index >= 0 && chord.index <= line.length);
+    return { text: line, chords };
   });
+}
+
+/**
+ * Convert a chord index measured against the document line to an index against
+ * the app lyric line. When the texts differ, falls back to a proportional
+ * position so chords still land near the correct syllable.
+ */
+function remapChordIndex(
+  documentIndex: number,
+  documentText: string,
+  appText: string,
+): number {
+  const clamped = Math.max(
+    0,
+    Math.min(documentText.length, Math.round(documentIndex)),
+  );
+  const docNormalized = normalizeText(stripVerseLabel(documentText));
+  const appNormalized = normalizeText(stripVerseLabel(appText));
+  if (docNormalized && appNormalized) {
+    const fraction =
+      docNormalized.length > 0
+        ? Math.min(1, clamped / Math.max(1, docNormalized.length))
+        : 0;
+    return Math.round(fraction * appNormalized.length);
+  }
+  const fraction =
+    documentText.length > 0
+      ? Math.min(1, clamped / Math.max(1, documentText.length))
+      : 0;
+  return Math.round(fraction * appText.length);
 }
 
 function ChordLine({
@@ -522,9 +572,39 @@ export function ChordCapability({
   accidental?: "sharp" | "flat";
 }) {
   const visible = lines.some((line) => line && line.chords.length > 0);
+  const [prefs, setPrefs] = useState<ChordUiPrefs>(() => readChordUiPrefs());
+  const [accent, setAccent] = useState(() => getAccentColor());
+  useLayoutEffect(
+    () => subscribeChordUiPrefs(() => setPrefs(readChordUiPrefs())),
+    [],
+  );
+  useLayoutEffect(
+    () => subscribeAccentColor(() => setAccent(getAccentColor())),
+    [],
+  );
   if (!visible) return null;
+  const textColor = chordTextColor(prefs, accent);
+  const fillColor = chordFillColor(prefs, accent);
+  const fillStyle =
+    prefs.fill === "none"
+      ? "transparent"
+      : `color-mix(in srgb, ${fillColor} ${
+          prefs.fill === "solid" ? "65%" : "32%"
+        }, #ffffff)`;
   return (
-    <span className="chord-capability" aria-label="Chord layer">
+    <span
+      className="chord-capability"
+      aria-label="Chord layer"
+      style={
+        {
+          "--chord-text-color": textColor,
+          "--chord-fill-background": fillStyle,
+          "--chord-fill-opacity": `${prefs.fillOpacityPercent}%`,
+          "--chord-font-scale": prefs.fontOverridePercent / 100,
+          "--chord-fill-padding-scale": prefs.fillPaddingPercent / 100,
+        } as React.CSSProperties
+      }
+    >
       {lines.map((line, index) =>
         line && line.chords.length > 0 ? (
           <ChordLine

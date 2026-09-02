@@ -16,12 +16,12 @@ function post(partial: Partial<SuaraSejatiPost>): SuaraSejatiPost {
 }
 
 async function until(assertion: () => void): Promise<void> {
-  for (let attempt = 0; attempt < 200; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
       assertion();
       return;
     } catch {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 2));
     }
   }
   assertion();

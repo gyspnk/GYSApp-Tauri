@@ -892,6 +892,34 @@ h1 {
   pointer-events: none;
 }
 
+.img-loading-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--blue) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: gys-loading-bar 1.5s ease-in-out infinite;
+}
+
+@keyframes gys-loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .img-with-skeleton {
   opacity: 0;
   transition: opacity 0.35s var(--ease-out);
@@ -906,13 +934,19 @@ h1 {
   height: 100%;
   min-height: 80px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--surface-soft);
-  color: var(--muted);
+  gap: 6px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--blue) 12%, var(--surface-soft)) 0%,
+    var(--surface-soft) 100%
+  );
+  color: var(--blue);
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  letter-spacing: 0.06em;
 }
 
 .verse-panel {
@@ -1126,7 +1160,8 @@ blockquote {
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 2px 14px;
+  padding: 6px 8px 16px;
+  margin: -6px -8px 0;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
 }
@@ -1160,6 +1195,10 @@ blockquote {
   background: var(--surface);
   text-decoration: none;
   color: inherit;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  isolation: isolate;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  transform: translateZ(0);
   transition:
     transform var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -1168,7 +1207,7 @@ blockquote {
 .home-suara-shelf .suara-library-item:hover {
   transform: translateY(-3px);
   border-color: var(--line-strong);
-  box-shadow: var(--shadow-lift);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
 .suara-card-media {
@@ -1180,6 +1219,8 @@ blockquote {
   background: var(--surface-soft);
   z-index: 0;
   pointer-events: none;
+  border-radius: var(--radius-md);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 .suara-card-media .suara-library-thumb {
   width: 100%;
@@ -1207,12 +1248,18 @@ blockquote {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--surface-soft);
-  color: var(--muted);
+  gap: 6px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--blue) 16%, var(--surface-soft)) 0%,
+    var(--surface-soft) 100%
+  );
+  color: var(--blue);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 22px;
   letter-spacing: 0.08em;
 }
 
@@ -1953,6 +2000,11 @@ blockquote {
   place-items: start center;
   max-width: 100%;
 }
+/* gyschordweb parity: zoomed pages must keep the JS-set canvas size instead of
+   being squeezed back to the container width. The stage scrolls when needed. */
+.pdf-page-frame.is-zoomed {
+  max-width: none;
+}
 .pdf-chord-layer {
   position: absolute;
   inset: 0;
@@ -1962,13 +2014,21 @@ blockquote {
 .pdf-chord-marker {
   position: absolute;
   transform: translate(-50%, -115%);
-  padding: 2px 4px;
+  padding: calc(2px * var(--chord-fill-padding-scale, 1))
+    calc(4px * var(--chord-fill-padding-scale, 1));
   border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
   border-radius: 4px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  color: var(--blue);
+  background: var(
+    --chord-fill-background,
+    color-mix(in srgb, var(--surface) 92%, transparent)
+  );
+  color: var(--chord-text-color, var(--blue));
   /* gyschordweb getChordFontSizeRem: 0.55rem adapted to the PDF scale */
-  font-size: clamp(0.2rem, calc(0.55rem * var(--pdf-chord-scale, 1)), 20px);
+  font-size: clamp(
+    0.2rem,
+    calc(0.55rem * var(--pdf-chord-scale, 1) * var(--chord-font-scale, 1)),
+    20px
+  );
   font-weight: 750;
   line-height: 1.1;
   white-space: nowrap;
@@ -2000,6 +2060,11 @@ blockquote {
   min-height: 260px;
   scroll-margin-inline: 18px;
 }
+.pdf-pages.pdf-layout-horizontal .pdf-horizontal-page.is-zoomed {
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
+}
 .pdf-horizontal-page {
   position: relative;
   display: grid;
@@ -2017,11 +2082,17 @@ blockquote {
   height: auto;
   box-shadow: 0 8px 26px rgba(31, 66, 112, 0.12);
 }
+.pdf-horizontal-page.is-zoomed canvas {
+  max-width: none;
+}
 .pdf-pages.pdf-layout-vertical canvas {
   justify-self: center;
 }
 .pdf-pages.pdf-layout-vertical .pdf-page-frame {
   max-width: 100%;
+}
+.pdf-pages.pdf-layout-vertical .pdf-page-frame.is-zoomed {
+  max-width: none;
 }
 .pdf-vertical-page {
   position: relative;
@@ -2037,6 +2108,10 @@ blockquote {
   content-visibility: auto;
   contain-intrinsic-size: 820px 1080px;
 }
+.pdf-vertical-page.is-zoomed {
+  width: max-content;
+  max-width: none;
+}
 .pdf-vertical-page:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--blue) 40%, transparent);
   outline-offset: 2px;
@@ -2046,6 +2121,9 @@ blockquote {
   max-width: 100%;
   height: auto;
   box-shadow: 0 8px 26px rgba(31, 66, 112, 0.12);
+}
+.pdf-vertical-page.is-zoomed canvas {
+  max-width: none;
 }
 .pdf-page-placeholder {
   position: absolute;
@@ -2526,10 +2604,12 @@ body.is-resizing-bible {
 }
 .reader-heading {
   display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 28px 30px 18px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 26px 24px 6px;
 }
 
 .quick-nav-handle {
@@ -2856,6 +2936,70 @@ body.is-resizing-bible {
   color: #ffffff;
 }
 
+.bible-picker-results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.bible-picker-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 4px 0 6px;
+}
+
+.bible-picker-verse-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bible-picker-verse-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+
+.bible-picker-verse-item:hover,
+.bible-picker-verse-item:focus-visible {
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 40%, var(--line));
+}
+
+.bible-picker-verse-ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.bible-picker-verse-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.bible-picker-mark {
+  background: color-mix(in srgb, var(--blue) 22%, transparent);
+  color: var(--blue);
+  font-weight: 700;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
 .bible-picker-subheading {
   display: flex;
   align-items: center;
@@ -2946,22 +3090,29 @@ body.is-resizing-bible {
 
 .selected-verse-toolbar {
   position: fixed;
-  left: calc(50% + 128px);
-  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
   z-index: var(--z-toolbar);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  width: min(920px, calc(100vw - 32px));
-  padding: 10px 12px 10px 16px;
+  gap: 14px;
+  width: min(860px, calc(100vw - 32px));
+  padding: 10px 14px 10px 18px;
   border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line-strong));
   border-radius: 14px;
   background: color-mix(in srgb, var(--surface) 96%, var(--blue-soft));
-  box-shadow: var(--shadow-lift);
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateX(-50%);
-  animation: quick-nav-in var(--motion-fast) var(--ease-out);
+  animation: selected-verse-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }
+
+.selected-verse-toolbar.is-exiting {
+  animation: selected-verse-out 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
 .selected-verse-context {
   display: grid;
   min-width: 0;
@@ -3010,6 +3161,7 @@ body.is-resizing-bible {
   color: var(--muted);
   cursor: pointer;
   font-size: 20px;
+  transition: all var(--motion-fast);
 }
 .selected-verse-close:hover,
 .selected-verse-close:focus-visible {
@@ -3017,28 +3169,61 @@ body.is-resizing-bible {
   color: var(--ink);
 }
 
-@keyframes quick-nav-in {
+@keyframes selected-verse-in {
   from {
     opacity: 0;
-    transform: translateY(-0.35rem) scale(0.98);
+    transform: translateX(-50%) translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes selected-verse-out {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px) scale(0.96);
+  }
+}
+
+@keyframes selected-verse-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
+
+@keyframes selected-verse-out-mobile {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
 .reader-heading h2 {
   margin: 0;
-  font-size: 24px;
-  letter-spacing: -0.035em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(var(--bible-font-size, 18px) * 1.25);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--ink);
 }
 .reader-heading .date-line {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-size: 10px;
-}
-.reader-heading > span {
-  color: var(--muted);
-  font-size: 11px;
 }
 .verse-list {
   padding: 0 30px 26px;
@@ -3079,44 +3264,52 @@ body.is-resizing-bible {
 .bible-pericope-heading {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  margin: 20px 24px 4px;
-  padding: 10px 14px;
-  border-left: 3px solid var(--blue);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--blue-soft) 55%, var(--surface));
-  color: var(--navy);
-  font-size: calc(var(--bible-font-size, 18px) * 0.75);
-  font-weight: 750;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  margin: 18px 20px 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: var(--bible-font-size, 18px);
+  font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .bible-pericope-heading.is-chapter {
-  margin-top: 10px;
+  margin-top: 2px;
+  margin-bottom: 12px;
 }
 @media (max-width: 680px) {
   .bible-pericope-heading {
-    margin-left: 10px;
-    margin-right: 10px;
-    padding: 8px 12px;
+    margin-left: 14px;
+    margin-right: 14px;
+    padding: 0;
   }
 }
 .bible-pericope-title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  text-align: center;
   gap: 8px;
   width: 100%;
 }
 .bible-pericope-title {
-  flex: 1;
-  min-width: 0;
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: var(--bible-font-size, 18px);
+  font-weight: 700;
+  color: var(--ink);
 }
 .bible-pericope-parallels {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   margin-top: 2px;
 }
@@ -3600,12 +3793,11 @@ body.is-resizing-bible {
 .bible-page {
   container-type: inline-size;
   container-name: bible-page;
+  width: 100%;
 }
 .bible-page-header,
 .bible-reader,
 .bible-side-panel {
-  max-width: 960px;
-  margin-inline: auto;
   width: 100%;
 }
 .bible-reader {
@@ -4283,7 +4475,14 @@ body.is-resizing-bible {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 .theme-pill-btn .pill-icon {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+.theme-pill-btn .pill-icon svg {
+  display: block;
 }
 .theme-pill-btn .pill-label {
   font-size: 11px;
@@ -4763,62 +4962,32 @@ body.is-resizing-bible {
   color: var(--muted);
   line-height: 1.6;
 }
-/* Aesthetic loading state while today's verified Sauh entry is being
-   fetched: shimmer placeholders instead of reusing stale reflections. */
+/* Centered loading spinner for Sauh Bagi Jiwa */
 .sauh-skeleton {
-  display: grid;
-  gap: 12px;
-  margin: 28px 0;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--blue) 5%, var(--surface)) 0%,
-    var(--surface) 100%
-  );
-}
-.sauh-skeleton strong {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  color: var(--navy);
-  font-size: 15px;
-  line-height: 1.4;
-}
-.sauh-skeleton small {
-  color: var(--muted);
-  font-size: 12px;
+  justify-content: center;
+  gap: 12px;
+  min-height: 160px;
+  width: 100%;
+  margin: 12px 0;
+  padding: 24px 0;
+  text-align: center;
 }
 .sauh-skeleton-spinner {
-  width: 16px;
-  height: 16px;
+  width: 32px;
+  height: 32px;
   flex: none;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--blue) 32%, var(--line));
+  border: 3px solid color-mix(in srgb, var(--blue) 25%, var(--line));
   border-top-color: var(--blue);
-  animation: gys-spin 0.9s linear infinite;
+  animation: gys-spin 0.85s linear infinite;
 }
-.sauh-skeleton-line {
-  display: block;
-  height: 12px;
-  width: min(100%, 440px);
-  border-radius: 7px;
-  background: linear-gradient(
-    90deg,
-    var(--surface-soft),
-    color-mix(in srgb, var(--blue) 13%, var(--surface-soft)),
-    var(--surface-soft)
-  );
-  background-size: 200% 100%;
-  animation: gys-shimmer 1.6s ease-in-out infinite;
-}
-.sauh-skeleton-line.is-title {
-  height: 16px;
-  width: 62%;
-}
-.sauh-skeleton-line.is-short {
-  width: 38%;
+.sauh-skeleton-loading-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
 }
 @keyframes gys-spin {
   to {
@@ -4909,9 +5078,6 @@ body.is-resizing-bible {
   }
   .main-content {
     padding-inline: 38px;
-  }
-  .selected-verse-toolbar {
-    left: calc(50% + 40px);
   }
 }
 
@@ -5058,7 +5224,7 @@ body.is-resizing-bible {
     padding: 22px 19px 14px;
   }
   .reader-heading h2 {
-    font-size: 24px;
+    font-size: calc(var(--bible-font-size, 18px) * 1.25);
   }
   .verse-list {
     padding-inline: 19px;
@@ -5074,10 +5240,15 @@ body.is-resizing-bible {
     right: 12px;
     bottom: calc(76px + env(safe-area-inset-bottom));
     width: auto;
+    max-width: calc(100vw - 24px);
     transform: none;
     grid-template-columns: 1fr;
     gap: 7px;
-    padding: 9px 10px;
+    padding: 9px 12px;
+    animation: selected-verse-in-mobile 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .selected-verse-toolbar.is-exiting {
+    animation: selected-verse-out-mobile 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
   .selected-verse-context span {
     -webkit-line-clamp: 1;
@@ -6220,16 +6391,16 @@ body.is-resizing-bible {
 }
 .control-select-trigger {
   width: 100%;
-  min-height: 42px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--surface);
   color: var(--ink);
-  padding: 9px 11px;
+  padding: 8px 11px;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition:
@@ -6251,13 +6422,33 @@ body.is-resizing-bible {
   cursor: not-allowed;
   transform: none;
 }
-.control-select-chevron {
-  color: var(--muted);
-  font-size: 15px;
+.control-select-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  line-height: 1;
+}
+.control-select-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--motion-fast) var(--ease-out);
+  flex: 0 0 auto;
+}
+.control-select-chevron {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  transform-origin: center center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+}
+.control-select-chevron svg {
+  display: block;
 }
 .control-select-trigger[aria-expanded="true"] .control-select-chevron {
   transform: rotate(180deg);
@@ -6281,6 +6472,7 @@ body.is-resizing-bible {
   left: 0;
   right: 0;
   min-width: 100%;
+  max-width: calc(100vw - 24px);
   max-height: 280px;
   overflow: auto;
   padding: 5px;
@@ -6306,6 +6498,12 @@ body.is-resizing-bible {
     background var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out),
     transform 120ms ease;
+}
+.control-select-option-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
 }
 .control-select-option small {
   color: var(--muted);
@@ -6335,17 +6533,37 @@ body.is-resizing-bible {
 }
 .topbar-select .control-select-trigger {
   min-height: 36px;
-  padding: 6px 10px;
+  height: 36px;
+  padding: 0 10px;
   font-size: 12px;
   font-weight: 550;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
-.topbar-select .control-select-menu {
-  min-width: 94px;
-  right: auto;
+.topbar-select .control-select-menu,
+.topbar-actions .control-select-menu {
+  min-width: 130px;
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+.topbar-select.theme-select .control-select-menu {
+  min-width: 155px;
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+.topbar-select.version-select .control-select-menu {
+  min-width: 140px;
+  left: auto;
+  right: 0;
+  transform-origin: top right;
 }
 .empty-inline {
   display: grid;
@@ -6362,8 +6580,7 @@ body.is-resizing-bible {
 }
 .hymn-catalog-shell,
 .hymn-detail-surface,
-.literature-section,
-.faith-stack {
+.literature-section {
   border-top: 1px solid var(--line);
   padding-top: 20px;
 }
@@ -6886,8 +7103,6 @@ body.is-resizing-bible {
 .faith-stack {
   display: grid;
   gap: 18px;
-  max-width: 920px;
-  margin: 0 auto;
   width: 100%;
 }
 .faith-search-bar {
@@ -7027,12 +7242,13 @@ body.is-resizing-bible {
   display: grid;
   grid-template-columns: 44px 1fr auto auto;
   align-items: center;
-  gap: 12px;
+  column-gap: 20px;
+  row-gap: 8px;
   border: 0;
   background: transparent;
   text-align: left;
   color: var(--ink);
-  padding: 15px 18px;
+  padding: 16px 20px;
   cursor: pointer;
   transition: background var(--motion-fast) var(--ease-out);
 }
@@ -7046,19 +7262,24 @@ body.is-resizing-bible {
 .faith-row-heading strong {
   font-size: 15px;
   font-weight: 620;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  line-height: 1.5;
   min-width: 0;
 }
-.faith-number {
+.faith-row-heading .faith-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--blue-soft);
   color: var(--blue);
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 750;
   letter-spacing: 0.04em;
+  flex-shrink: 0;
   justify-self: center;
 }
 .faith-row-note-dot {
@@ -7170,75 +7391,84 @@ body.is-resizing-bible {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(10, 24, 46, 0.62);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: var(--surface);
   animation: fade-in 180ms var(--ease-out);
 }
 .faith-pdf-overlay {
-  width: min(1120px, 96vw);
-  height: min(94vh, 980px);
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: var(--surface);
-  box-shadow: var(--shadow-lift);
+  box-shadow: none;
   overflow: hidden;
-  animation: slide-up 240ms var(--ease-out);
 }
 @media (max-width: 680px) {
   .faith-pdf-backdrop {
     display: flex;
-    align-items: flex-end;
     padding: 0;
   }
   .faith-pdf-overlay {
     width: 100%;
-    height: 96dvh;
-    border-radius: 20px 20px 0 0;
-    border-bottom: 0;
-    padding: 16px 12px max(14px, env(safe-area-inset-bottom, 14px)) 12px;
+    height: 100%;
+    border-radius: 0;
+    border: 0;
+    padding: 0;
   }
 }
 .faith-pdf-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex: 0 0 auto;
   min-width: 0;
+  height: 56px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 .faith-pdf-title {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 .faith-pdf-title small {
-  color: var(--muted);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
+  color: var(--blue);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 700;
+  background: var(--blue-soft);
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 .faith-pdf-title strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 15.5px;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .faith-pdf-stats {
   flex: 1;
   min-width: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 12.5px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .faith-pdf-head-actions {
   display: inline-flex;
@@ -7248,18 +7478,21 @@ body.is-resizing-bible {
 }
 .faith-pdf-head-actions .quiet-button {
   min-height: 34px;
-  padding-inline: 11px;
-  font-size: 11px;
+  padding-inline: 12px;
+  font-size: 11.5px;
 }
 .faith-pdf-body {
   flex: 1;
   min-height: 0;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  background: var(--surface-soft);
 }
 .faith-pdf-body .pdf-reader {
   margin-top: 0;
   min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -8264,17 +8497,30 @@ body.is-resizing-bible {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 10px;
+  gap: 14px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--line);
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.pujian-item:last-child {
+  border-bottom: 0;
+}
+.pujian-item:hover {
+  background: var(--surface-soft);
 }
 .pujian-nomor {
   flex: 0 0 auto;
-  min-width: 44px;
+  min-width: 48px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--blue-soft);
+  color: var(--blue);
   font-variant-numeric: tabular-nums;
   font-weight: 750;
-  font-size: 15px;
-  color: var(--blue);
+  font-size: 14px;
 }
 .pujian-title {
   flex: 1 1 auto;
@@ -8285,12 +8531,37 @@ body.is-resizing-bible {
   color: var(--ink);
   font-weight: 600;
   font-size: 16px;
-  padding: 4px 2px;
+  line-height: 1.4;
+  padding: 4px 0;
   cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-out);
 }
 .pujian-title:hover,
 .pujian-title:focus-visible {
   color: var(--blue);
+}
+/* gyschordweb parity: Playfair Display for hymn titles */
+.hymn-detail-page .detail-hero h1,
+.hymn-text-title h1,
+.pujian-title,
+.lyrics-title h2,
+.hymn-pdf-viewer-title strong {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+.chord-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--muted);
+  opacity: 0.65;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+.chord-indicator.has-chord {
+  color: var(--success, #16a34a);
+  opacity: 1;
 }
 .add-to-playlist-btn {
   flex: 0 0 auto;
@@ -8299,15 +8570,24 @@ body.is-resizing-bible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--surface-soft);
+  background: var(--surface);
   color: var(--muted);
   font-size: 14px;
   line-height: 1;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+.add-to-playlist-btn:hover {
+  color: var(--blue);
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.add-to-playlist-btn.in-playlist {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 30%, var(--line));
 }
 .add-to-playlist-btn.in-playlist {
   border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
@@ -8665,6 +8945,79 @@ body.gys-viewer-active {
   border-radius: 12px;
   background: var(--surface-soft);
 }
+/* The chord toggle is a secondary viewer action: keep it off the main
+   five-slot chrome row (Lirik/prev/title/next/MIDI) and place it on its own
+   right-aligned row so the title never gets squeezed by a 6th track. */
+.viewer-chrome-chord {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-inline-end: 14px;
+}
+/* gyschordweb parity: transpose/key/accidental controls inside the PDF
+   overlay so chords can be transposed while reading the sheet. */
+.pdf-transpose-inline {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end;
+  padding: 0 14px 8px 0;
+  flex-wrap: wrap;
+}
+.pdf-key-control {
+  position: relative;
+}
+.pdf-key-btn {
+  min-width: 44px;
+  font-weight: 700;
+}
+.pdf-key-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-popover);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 2px;
+  padding: 6px;
+  min-width: 160px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+.pdf-key-dropdown button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pdf-key-dropdown button:hover {
+  background: var(--surface-soft);
+}
+.pdf-key-dropdown button.is-selected {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+}
+.pdf-transpose-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pdf-transpose-btns strong {
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-transpose-reset {
+  font-size: 11px;
+}
 .hymn-midi-dock-row {
   display: flex;
   align-items: center;
@@ -8894,8 +9247,15 @@ body.gys-viewer-active {
     min-height: min(560px, calc(100vh - 230px));
     padding: 16px 10px 22px;
   }
-  .pdf-reader-hymn .pdf-stage canvas {
+  /* gyschordweb parity: the fit-size caps only apply at 100% zoom. Once the
+     reader zooms in, the JS-set canvas pixel size must be honored so the zoom
+     is visible instead of being re-scaled back to the fit box. */
+  .pdf-reader-hymn .pdf-stage.is-fit canvas {
     max-height: calc(100vh - 404px);
+    width: auto;
+  }
+  .pdf-reader-hymn .pdf-stage.is-zoomed canvas {
+    max-height: none;
     width: auto;
   }
   .pdf-reader-hymn .pdf-pages {
@@ -8958,10 +9318,18 @@ body.gys-viewer-active {
   min-height: 0;
   padding: 16px 12px 28px;
 }
+/* gyschordweb parity: the 500px page-frame cap only applies at 100% zoom so
+   a zoomed-in canvas is not re-scaled back to the fit width. */
 .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
   .pdf-reader-hymn
-  .pdf-page-frame {
+  .pdf-page-frame.is-fit {
   width: min(100%, 500px);
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .pdf-reader-hymn
+  .pdf-page-frame.is-zoomed {
+  width: auto;
+  max-width: none;
 }
 @media (max-width: 599px) {
   .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
@@ -8988,28 +9356,36 @@ body.gys-viewer-active {
   .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
     .pdf-reader-hymn
     .pdf-stage
-    canvas {
+    canvas.is-fit {
     max-height: calc(100vh - 170px);
+  }
+  .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+    .pdf-reader-hymn
+    .pdf-stage.is-zoomed
+    canvas {
+    max-height: none;
   }
 }
 
-/* Kidung navigation and MIDI dock: flat rows, one active underline, one
-   surface for the player. */
+/* Kidung navigation: modern segmented pill navigation */
 .kidung-local-nav {
   display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--line);
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+  border-bottom: 0;
 }
 .kidung-local-nav-links {
-  display: flex;
-  align-items: end;
-  gap: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-soft);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
   min-width: 0;
   overflow-x: auto;
-  overflow-y: hidden;
   scrollbar-width: none;
 }
 .kidung-local-nav-links::-webkit-scrollbar {
@@ -9019,30 +9395,30 @@ body.gys-viewer-active {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 42px;
-  padding-bottom: 10px;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 8px;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
   white-space: nowrap;
-}
-.kidung-local-nav a::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  background: transparent;
-  content: "";
+  transition: all var(--motion-fast) var(--ease-out);
 }
 .kidung-local-nav a:hover,
-.kidung-local-nav a:focus-visible,
+.kidung-local-nav a:focus-visible {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+}
 .kidung-local-nav a.is-active {
   color: var(--blue);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
 }
 .kidung-local-nav a.is-active::after {
-  background: var(--blue);
+  display: none;
 }
 .kidung-local-nav a small {
   display: inline-grid;
@@ -9053,18 +9429,25 @@ body.gys-viewer-active {
   border-radius: 999px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.kidung-tool-page {
+  width: 100%;
 }
 .kidung-tool-heading {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 24px;
+  gap: 20px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--line);
 }
 .kidung-tool-heading h1 {
   margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  color: var(--ink);
 }
 .kidung-tool-heading .intro-copy {
   max-width: 560px;
@@ -9080,12 +9463,19 @@ body.gys-viewer-active {
 }
 .kidung-queue-surface {
   display: grid;
-  margin-top: 22px;
+  gap: 24px;
+  margin-top: 24px;
 }
 .kidung-queue-options {
-  align-items: end;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
 }
 .kidung-inline-toggle,
 .kidung-settings-switch {
@@ -9102,7 +9492,7 @@ body.gys-viewer-active {
   accent-color: var(--blue);
 }
 .kidung-queue-options .control-select {
-  min-width: 180px;
+  min-width: 220px;
 }
 .kidung-inline-error {
   margin: 14px 0 0;
@@ -9127,34 +9517,43 @@ body.gys-viewer-active {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 .kidung-playlist-list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  min-width: 0;
-  padding: 14px 0;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--line);
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.kidung-playlist-list li:last-child {
+  border-bottom: 0;
+}
+.kidung-playlist-list li:hover {
+  background: var(--surface-soft);
 }
 .kidung-playlist-list li.is-current {
-  padding-left: 12px;
-  box-shadow: inset 3px 0 0 var(--blue);
+  background: var(--blue-soft);
+  box-shadow: inset 4px 0 0 var(--blue);
 }
 .kidung-playlist-song {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  flex: 1 1 auto;
   min-width: 0;
-  min-height: 44px;
-  padding: 0;
   border: 0;
   background: transparent;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
+  padding: 0;
 }
 .kidung-playlist-song:hover strong {
   color: var(--blue);
@@ -9166,66 +9565,140 @@ body.gys-viewer-active {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.kidung-playlist-song strong {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
 .kidung-playlist-song small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .kidung-playlist-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-soft);
   color: var(--blue);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
+}
+.kidung-playlist-list li.is-current .kidung-playlist-index {
+  background: var(--surface);
 }
 .kidung-playlist-actions .text-button {
   min-height: 32px;
-  padding-inline: 4px;
-  font-size: 10px;
+  padding-inline: 8px;
+  font-size: 11px;
+  border-radius: 8px;
+}
+.kidung-saved-playlists {
+  margin-top: 12px;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+}
+.kidung-saved-playlists h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+.kidung-saved-playlist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.kidung-saved-playlist-row:last-child {
+  border-bottom: 0;
 }
 .kidung-settings-layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 32px;
-  margin-top: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
 }
 .kidung-settings-section {
-  display: grid;
-  align-content: start;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
 }
 .kidung-settings-section h2 {
   margin: 0;
   font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
 }
 .kidung-settings-controls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
 }
 .kidung-settings-switch {
-  align-items: start;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-soft);
   color: var(--ink);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.kidung-settings-switch:hover {
+  background: color-mix(in srgb, var(--surface-soft) 80%, var(--blue-soft));
+}
+.kidung-settings-switch input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--blue);
+  cursor: pointer;
 }
 .kidung-settings-switch > span {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+}
+.kidung-settings-switch strong {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--ink);
 }
 .kidung-settings-switch small {
   color: var(--muted);
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.45;
 }
 .kidung-settings-summary {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .kidung-settings-summary strong {
   color: var(--ink);
+  font-size: 13px;
 }
 .hymn-page .hymn-page-header {
   border: 0;
@@ -10046,27 +10519,44 @@ body.gys-viewer-active {
   position: relative;
   z-index: var(--z-toolbar);
   display: flex;
-  align-items: stretch;
-  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   padding: 6px 0;
   border-bottom: 1px solid var(--line);
   background: var(--canvas);
 }
 .hymn-text-toolbar .detail-actions {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
   gap: 6px;
   padding: 0;
+  min-width: 0;
+  order: 1;
+  width: auto;
 }
 .hymn-text-toolbar .detail-actions .hymn-action {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
+}
+/* gyschordweb parity: the scope/autoscroll group gets its own row below the
+   primary actions so eight controls never fight for one unwrappable strip.
+   more/settings join row 1; segmented takes the full second row. */
+.hymn-segmented-toolbar {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+  order: 2;
 }
 .hymn-more-actions,
 .hymn-reader-settings {
   position: static;
   width: 44px;
   flex: 0 0 44px;
+  order: 1;
 }
 .hymn-more-actions-summary,
 .hymn-reader-settings-summary {
@@ -10276,6 +10766,12 @@ body.gys-viewer-active {
   gap: 6px;
   padding: 7px 0 max(7px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
+}
+/* gyschordweb parity: in "all verses" mode the footer has no verse chevrons,
+   so collapse to three balanced columns instead of leaving a hole in the
+   five-column grid. */
+.hymn-text-footer.is-all-verses {
+  grid-template-columns: 44px minmax(100px, 1fr) 44px;
 }
 .hymn-text-footer button {
   width: 44px;
@@ -11162,6 +11658,9 @@ body:has(.home-page)::-webkit-scrollbar {
   grid-template-columns: 38px 38px minmax(80px, 1fr) 38px 38px;
   gap: 5px;
 }
+.hymn-text-footer.is-all-verses {
+  grid-template-columns: 38px minmax(80px, 1fr) 38px;
+}
 .hymn-text-footer button {
   width: 38px;
   height: 38px;
@@ -11178,6 +11677,9 @@ body:has(.home-page)::-webkit-scrollbar {
   }
   .hymn-text-footer {
     grid-template-columns: 40px 40px minmax(70px, 1fr) 40px 40px;
+  }
+  .hymn-text-footer.is-all-verses {
+    grid-template-columns: 40px minmax(70px, 1fr) 40px;
   }
   .hymn-text-footer button {
     width: 40px;
@@ -11243,4 +11745,596 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .hymn-midi-mute[aria-pressed="true"] {
   color: var(--muted);
+}
+
+/* ── Sauh inline loading/error inside the main content card ── */
+.sauh-inline-loading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px;
+}
+.sauh-inline-loading div {
+  display: grid;
+  gap: 4px;
+}
+.sauh-inline-loading strong {
+  font-size: 15px;
+}
+.sauh-inline-loading small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.sauh-inline-spinner {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 3px solid color-mix(in srgb, var(--blue) 22%, transparent);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: sauh-spin 0.8s linear infinite;
+}
+@keyframes sauh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sauh-inline-error {
+  display: grid;
+  gap: 8px;
+  padding: 28px 20px;
+}
+.sauh-inline-error strong {
+  font-size: 15px;
+}
+.sauh-inline-error span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sauh-inline-error .detail-actions {
+  margin-top: 8px;
+}
+
+/* ── gyschordweb chord-ui-prefs parity: marker theming ── */
+.chord-capability {
+  --chord-text-color: #0b4c99;
+  --chord-fill-background: transparent;
+  --chord-fill-opacity: 70%;
+  --chord-font-scale: 1;
+  --chord-fill-padding-scale: 1;
+}
+.chord-capability .chord-visual-marker {
+  color: var(--chord-text-color);
+  background: var(--chord-fill-background);
+  opacity: 1;
+  font-size: calc(0.62rem * var(--chord-font-scale));
+  padding: calc(0.1rem * var(--chord-fill-padding-scale))
+    calc(0.22rem * var(--chord-fill-padding-scale));
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+.pdf-chord-layer {
+  --chord-text-color: #0b4c99;
+  --chord-fill-background: transparent;
+  --chord-fill-opacity: 70%;
+  --chord-font-scale: 1;
+  --chord-fill-padding-scale: 1;
+}
+
+/* Chord UI settings */
+.chord-ui-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chord-ui-swatch {
+  width: 26px;
+  height: 26px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.chord-ui-swatch.is-selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.chord-ui-swatch.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.chord-ui-slider {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.chord-ui-slider span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.chord-ui-slider input {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.media-autonext-subtitle {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chord-indicator {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.chord-indicator.has-chord {
+  color: #16a34a;
+}
+.chord-indicator.no-chord {
+  color: var(--line);
+}
+.pdf-fullscreen-toggle {
+  flex-shrink: 0;
+}
+
+/* ── gyschordweb mini-player parity: MIDI Queue kicker + seek time ── */
+.media-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  grid-column: 1 / -1;
+}
+.media-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 70%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+.media-seek-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  grid-column: 1 / -1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.media-seek-time input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--blue);
+}
+.media-midi-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+}
+.media-loop-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-width: 52px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+.media-loop-control[aria-pressed="true"] {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+}
+.media-key-control {
+  position: relative;
+}
+.media-key-control .media-control {
+  width: auto;
+  min-width: 40px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.media-key-dropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 2px;
+  padding: 6px;
+  min-width: 160px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+.media-key-dropdown button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.media-key-dropdown button:hover {
+  background: var(--surface-soft);
+}
+.media-key-dropdown button.is-selected {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+}
+.media-midi-actions .media-transpose {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.media-midi-actions .media-transpose button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+.media-midi-actions .media-transpose strong {
+  min-width: 24px;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* gyschordweb mini tempo toggle + popover */
+.media-tempo-control {
+  position: relative;
+}
+.media-tempo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 54px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.media-tempo-toggle strong {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.media-tempo-toggle small {
+  color: var(--muted);
+  font-size: 9px;
+}
+.media-tempo-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-popover);
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-width: 200px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+.media-tempo-popover input {
+  accent-color: var(--blue);
+}
+.media-tempo-popover span {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── gyschordweb lyrics-panel parity: fullscreen lyrics reader ── */
+.lyrics-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+.lyrics-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+}
+.lyrics-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  max-width: 860px;
+}
+.lyrics-header {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+.lyrics-main-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.lyrics-transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.lyrics-hdr-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.lyrics-hdr-btn:hover {
+  background: var(--surface);
+}
+.lyrics-play-toggle {
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  color: var(--blue);
+}
+.lyrics-midi-label {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lyrics-seek {
+  flex: 1;
+  min-width: 60px;
+  accent-color: var(--blue);
+}
+.lyrics-title {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: center;
+  text-align: center;
+}
+.lyrics-song-number {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.lyrics-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lyrics-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.lyrics-ctrl-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lyrics-ctrl-btn:hover,
+.lyrics-ctrl-btn.is-active {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+}
+.lyrics-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lyrics-tune-line,
+.lyrics-text-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lyrics-midi-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.lyrics-instrument-select {
+  max-width: 180px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.lyrics-tempo-input {
+  width: 52px;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+}
+.lyrics-key-group {
+  position: relative;
+}
+.lyrics-key-btn {
+  min-width: 44px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+.lyrics-key-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 2px;
+  padding: 6px;
+  min-width: 160px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+.lyrics-key-dropdown button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lyrics-key-dropdown button:hover {
+  background: var(--surface-soft);
+}
+.lyrics-key-dropdown button.is-selected {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+}
+.lyrics-transpose-label {
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lyrics-verse-indicator {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lyrics-content {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px 28px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.lyrics-verse-container {
+  text-align: center;
+  width: 100%;
+}
+.lyrics-verse-text p {
+  margin: 0;
+  padding: 0;
+}
+.lyrics-chords-on .lyrics-chord-row {
+  min-height: 1.6em;
+}
+.lyrics-verse-text.is-pinching {
+  transition: none !important;
+}
+
+.hymn-midi-loop {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+}
+.hymn-midi-loop[aria-pressed="true"] {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+}
+.hymn-loop-label {
+  font-size: 10px;
+  font-weight: 700;
+}
+.kidung-settings-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 599px) {
+  .lyrics-main-line {
+    flex-wrap: wrap;
+  }
+  .lyrics-transport {
+    order: 2;
+    flex-basis: 100%;
+  }
+  .lyrics-title {
+    order: 1;
+    flex-basis: 100%;
+  }
+  .lyrics-header-actions {
+    order: 3;
+  }
+  .lyrics-content {
+    padding: 10px 14px 20px;
+  }
 }

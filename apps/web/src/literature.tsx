@@ -19,6 +19,8 @@ import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
 import { fetchOnlineArticle } from "./online-article.js";
+import { getCoverDataUri } from "./cover-generator.js";
+import { resolveProxiedImageUrl } from "./lazy-image.js";
 import {
   getRecentLiteratureIds,
   isLiteratureProgressCompatible,
@@ -173,32 +175,39 @@ function Cover({
   item: LiteratureItem;
   compact?: boolean;
 }) {
+  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [item.imageUrl]);
-  const initials = item.title
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
-  return item.imageUrl && !failed ? (
-    <img
-      className={`literature-cover ${compact ? "is-compact" : ""}`}
-      src={item.imageUrl}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      onError={() => setFailed(true)}
-    />
-  ) : (
-    <span
-      className={`literature-cover literature-cover-${item.category} ${compact ? "is-compact" : ""}`}
-      aria-hidden="true"
+  const effectiveSrc = resolveProxiedImageUrl(item.imageUrl);
+
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+  }, [effectiveSrc]);
+
+  return (
+    <div
+      className={`img-skeleton-wrapper literature-cover ${compact ? "is-compact" : ""}`}
     >
-      <small>{labels[item.category]}</small>
-      <strong>{initials || "GYS"}</strong>
-    </span>
+      {(!loaded || failed) && (
+        <div className="img-skeleton-shimmer" aria-hidden="true">
+          <div className="img-loading-bar" />
+        </div>
+      )}
+      {effectiveSrc && (
+        <img
+          className={`img-with-skeleton ${loaded && !failed ? "is-loaded" : ""}`}
+          src={effectiveSrc}
+          alt={`Sampul ${item.title}`}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => {
+            setLoaded(true);
+            setFailed(false);
+          }}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
   );
 }
 

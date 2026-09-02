@@ -8,6 +8,8 @@ export type IconName =
   | "more"
   | "sun"
   | "moon"
+  | "amoled"
+  | "sepia"
   | "system"
   | "play"
   | "pause"
@@ -21,6 +23,8 @@ export type IconName =
   | "volume"
   | "volumeOff"
   | "cross"
+  | "checkCircle"
+  | "cancel"
   | "arrow"
   | "book"
   | "search"
@@ -32,7 +36,21 @@ export type IconName =
   | "file"
   | "heart"
   | "playlist"
-  | "bookmark";
+  | "bookmark"
+  | "repeat"
+  | "menuBook"
+  | "tune"
+  | "textDecrease"
+  | "textIncrease"
+  | "formatLineSpacing"
+  | "lineWeight"
+  | "south"
+  | "north"
+  | "playlistAdd"
+  | "playlistAddCheck"
+  | "musicNote"
+  | "queueMusic"
+  | "swapVert";
 
 const ICON_PATHS: Record<IconName, ReactNode> = {
   home: (
@@ -73,6 +91,18 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+  amoled: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" />
+    </>
+  ),
+  sepia: (
+    <>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+      <path d="M8 7h8M8 11h8M8 15h5" />
+    </>
+  ),
   system: (
     <>
       <rect x="2" y="3" width="20" height="14" rx="2" />
@@ -111,6 +141,18 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   cross: <path d="M18 6 6 18M6 6l12 12" />,
+  checkCircle: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8.5 12 2.5 2.5 5-5" />
+    </>
+  ),
+  cancel: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 9 6 6M15 9l-6 6" />
+    </>
+  ),
   arrow: (
     <>
       <path d="M5 12h14M13 6l6 6-6 6" />
@@ -180,14 +222,96 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <path d="M9 8h6" />
     </>
   ),
+  repeat: (
+    <>
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </>
+  ),
+  menuBook: (
+    <>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+      <path d="M6 6h11M6 10h11M6 14h7" />
+    </>
+  ),
+  tune: (
+    <>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+      <circle cx="9" cy="6" r="2" />
+      <circle cx="15" cy="12" r="2" />
+      <circle cx="9" cy="18" r="2" />
+    </>
+  ),
+  textDecrease: (
+    <>
+      <path d="M4 20 10 4h4l6 16" />
+      <path d="M7 14h10" />
+      <path d="m19 7-3 3-3-3" />
+    </>
+  ),
+  textIncrease: (
+    <>
+      <path d="M4 20 10 4h4l6 16" />
+      <path d="M7 14h10" />
+      <path d="m13 7 3 3 3-3" />
+    </>
+  ),
+  formatLineSpacing: (
+    <>
+      <path d="M4 4h10M4 10h10M4 16h10" />
+      <path d="M18 4v16M15.5 17.5 18 20l2.5-2.5" />
+    </>
+  ),
+  lineWeight: (
+    <>
+      <path d="M4 5h16M4 9h16M4 13h16" />
+      <path d="M4 17h16M4 21h16" />
+    </>
+  ),
+  south: <path d="M12 4v16M6 14l6 6 6-6" />,
+  north: <path d="M12 20V4M6 10l6-6 6 6" />,
+  playlistAdd: (
+    <>
+      <path d="M4 6h11M4 11h11M4 16h7" />
+      <path d="M18 14v6M15 17h6" />
+    </>
+  ),
+  playlistAddCheck: (
+    <>
+      <path d="M4 6h11M4 11h11M4 16h7" />
+      <path d="m16 15 2.2 2.2L22 13" />
+    </>
+  ),
+  musicNote: (
+    <>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </>
+  ),
+  queueMusic: (
+    <>
+      <path d="M4 6h16M4 12h16M4 18h7" />
+      <circle cx="18" cy="18" r="3" />
+    </>
+  ),
+  swapVert: (
+    <>
+      <path d="M8 3v18M4 7l4-4 4 4M16 21V3M12 17l4 4 4-4" />
+    </>
+  ),
 };
 
 export const Icon = memo(function Icon({
   name,
   size = 20,
+  className,
 }: {
   name: IconName;
-  size?: number;
+  size?: number | undefined;
+  className?: string | undefined;
 }) {
   const common = {
     width: size,
@@ -198,6 +322,7 @@ export const Icon = memo(function Icon({
     strokeWidth: 1.8,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
+    className,
     "aria-hidden": true,
   };
   return <svg {...common}>{ICON_PATHS[name]}</svg>;

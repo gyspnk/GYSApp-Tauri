@@ -39,9 +39,11 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 15_000,
+      },
+    );
 
     await page.keyboard.press("Tab");
     const focused = page.locator(":focus");

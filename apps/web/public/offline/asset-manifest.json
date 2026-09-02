@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-20T16:14:10.271Z",
+  "generatedAt": "2026-09-02T09:09:20.153Z",
   "items": [
     {
       "id": "bible-tb",
@@ -11,7 +11,7 @@
       "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
       "bytes": 21340160,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "bible-tb-reader",
@@ -22,7 +22,7 @@
       "sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
       "bytes": 7939120,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "hymn-catalog",
@@ -33,7 +33,7 @@
       "sha256": "51b86cc84b6ce7921b96fec29687490cfff531f51facb8f02c0ba2c18f175b28",
       "bytes": 868855,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "distributed-asset-catalog",
@@ -44,7 +44,7 @@
       "sha256": "9bb199a0768958fe06d2512376c2bf4ac731b3d6a6255aa8d59194ffe477096f",
       "bytes": 7505,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "music-lock",
@@ -55,7 +55,7 @@
       "sha256": "446270643489c563fd7d8de89841be7b46d2f30b9d8445a03eb43dd5c63a3adc",
       "bytes": 308690,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "faith-topics",
@@ -66,18 +66,18 @@
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
       "bytes": 8311,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "sauh-feed",
       "kind": "pack",
       "source": "local",
       "path": "offline/sauh.json",
-      "version": "406c38a8fd813c3c8987991ca22778d1e1b798244341f932da6f0799a30fcde8",
-      "sha256": "406c38a8fd813c3c8987991ca22778d1e1b798244341f932da6f0799a30fcde8",
-      "bytes": 802,
+      "version": "2c6178d71062a777e343344a8162b469d286f54c6eb5a7d73946e58d5848aee6",
+      "sha256": "2c6178d71062a777e343344a8162b469d286f54c6eb5a7d73946e58d5848aee6",
+      "bytes": 3874,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "literature-catalog",
@@ -88,7 +88,7 @@
       "sha256": "6fb05401d7cd4bf0e8a743282fabc0e5e31aa8663038c757db63f1f0e01b2490",
       "bytes": 150389,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "suara-sejati",
@@ -99,7 +99,7 @@
       "sha256": "13427480ec2c743314dd884347fa950640b971c6ab002656c70fb44c5f169a3a",
       "bytes": 99375,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "fork-hymnal-map",
@@ -110,7 +110,7 @@
       "sha256": "df14db981bf30bb6481e3f6ed0aff6cc185a0c0642a539b55a718bf015ea88b5",
       "bytes": 60815,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "music-seed:assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -121,7 +121,7 @@
       "sha256": "44c545e4bba6ab9aa63a533697cc81663be47b2ffac59ffe8da1f184f65cf887",
       "bytes": 13540,
       "status": "available",
-      "lastUpdated": "2026-08-20T16:14:10.271Z"
+      "lastUpdated": "2026-09-02T09:09:20.153Z"
     },
     {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",
@@ -2914,13 +2914,33 @@
       "status": "remote"
     },
     {
+      "id": "sauh-cover:sbj260902",
+      "kind": "cover",
+      "version": "2026-09-02T00:00:09.000Z",
+      "lastUpdated": "2026-09-02T00:00:09.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Bersedih-scaled.png",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Bersedih-scaled.png",
+      "status": "remote"
+    },
+    {
+      "id": "sauh-cover:sbj260901",
+      "kind": "cover",
+      "version": "2026-09-01T00:00:59.000Z",
+      "lastUpdated": "2026-09-01T00:00:59.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Kompleks-Banget-Sih.png",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Kompleks-Banget-Sih.png",
+      "status": "remote"
+    },
+    {
       "id": "sauh-cover:sbj260816",
       "kind": "cover",
-      "version": "2026-08-16T00:09:34+00:00",
-      "lastUpdated": "2026-08-16T00:09:34+00:00",
+      "version": "2026-08-16T00:09:34.000Z",
+      "lastUpdated": "2026-08-16T00:09:34.000Z",
       "source": "remote",
-      "path": "https://tjc.org/id/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
-      "url": "https://tjc.org/id/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
       "status": "remote"
     },
     {

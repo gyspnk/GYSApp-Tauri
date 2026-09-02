@@ -9,33 +9,23 @@ test("web account uses only the official e-GYS v1 login link", async ({
       draftRequests.push(request.url());
   });
 
-  await page.goto("/GYSApp-Tauri/lainnya?section=account");
-  const login = page.getByRole("link", { name: "Buka login e-GYS resmi" });
+  await page.goto("/GYSApp-Tauri/lainnya");
+  const login = page.getByRole("link", { name: /Buka login e-GYS resmi/i });
   await expect(login).toHaveAttribute(
     "href",
     /^https:\/\/e\.gys\.or\.id\/login\?theme=/,
   );
-  await expect(
-    page.getByText(/sinkronisasi profil tersedia di aplikasi terpasang/i),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Manajemen Aset" }),
-  ).toHaveCount(0);
   await expect(
     page.locator('script[src*="google"], script[src*="apple"]'),
   ).toHaveCount(0);
   expect(draftRequests).toEqual([]);
 });
 
-test("Lainnya honors a selected section and renders only its panel", async ({
+test("Lainnya renders unified settings and account panels cleanly", async ({
   page,
 }) => {
-  await page.goto("/GYSApp-Tauri/lainnya?section=appearance");
-  await expect(
-    page.getByRole("button", { name: "Tampilan & Bahasa" }),
-  ).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: "Tampilan" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toHaveCount(
-    0,
-  );
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tampilan & Bahasa" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Paket lokal" })).toBeVisible();
 });

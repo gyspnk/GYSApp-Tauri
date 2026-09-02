@@ -57,7 +57,13 @@ import {
 import { installMediaSessionBridge } from "./media-session.js";
 import { speechPlayer } from "./speech-player.js";
 import { getCustomEdgeEndpoint, setCustomEdgeEndpoint } from "./edge-speech.js";
-import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
+import {
+  getMidiPlaylist,
+  subscribeMidiPlaylist,
+  applyAutoNextMode,
+  getAutoNextMode,
+} from "./midi-playlist.js";
+import { chordKeyName, transposeBetweenKeys } from "./chord-viewer.js";
 import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
@@ -317,8 +323,6 @@ function Header({
     pathname === "/kidung" || pathname.startsWith("/kidung/");
   const isReaderRoute = isBibleRoute || isKidungRoute;
   const bibleHeader = useBibleHeaderState();
-  const [typographyOpen, setTypographyOpen] = useState(false);
-  const typographyRef = useRef<HTMLDivElement>(null);
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
 
@@ -334,21 +338,6 @@ function Header({
     speechPlayer.snapshot,
     speechPlayer.snapshot,
   );
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        typographyRef.current &&
-        !typographyRef.current.contains(event.target as Node)
-      ) {
-        setTypographyOpen(false);
-      }
-    };
-    if (typographyOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [typographyOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -432,124 +421,40 @@ function Header({
           <div className="reader-context-actions">
             {isBibleRoute && bibleHeader?.active ? (
               <>
-                <button
-                  className="reader-context-button reader-search-btn"
-                  type="button"
-                  onClick={onFocusPageSearch}
-                  aria-label="Buka pencarian ayat di Alkitab"
-                  title="Cari ayat"
-                >
-                  <Icon name="search" size={15} />
-                </button>
-
-                <div className="reader-typography-wrapper" ref={typographyRef}>
+                {bibleHeader.speechAvailable && (
                   <button
-                    className={`reader-context-button reader-typography-btn${typographyOpen ? " is-active" : ""}`}
+                    className={`reader-context-button reader-speech-btn${bibleHeader.speaking ? " is-speaking" : ""}`}
                     type="button"
-                    onClick={() => setTypographyOpen((prev) => !prev)}
-                    aria-expanded={typographyOpen}
-                    aria-label="Ukuran teks bacaan"
-                    title="Ukuran teks"
-                  >
-                    <span className="typography-icon-label">Aa</span>
-                    <Icon name="chevronDown" size={10} />
-                  </button>
-                  {typographyOpen && (
-                    <div
-                      className="reader-typography-popover bible-typography-controls"
-                      role="group"
-                      aria-label="Ukuran teks bacaan"
-                    >
-                      <button
-                        type="button"
-                        onClick={bibleHeader.onDecreaseFontSize}
-                        disabled={
-                          bibleHeader.fontSize <= bibleHeader.minFontSize
-                        }
-                        aria-label="Perkecil teks"
-                      >
-                        A−
-                      </button>
-                      <output aria-live="polite">{bibleHeader.fontSize}</output>
-                      <button
-                        type="button"
-                        onClick={bibleHeader.onIncreaseFontSize}
-                        disabled={
-                          bibleHeader.fontSize >= bibleHeader.maxFontSize
-                        }
-                        aria-label="Perbesar teks"
-                      >
-                        A+
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  className={`reader-context-button reader-split-btn${bibleHeader.splitView ? " is-active" : ""}`}
-                  type="button"
-                  onClick={bibleHeader.onToggleSplitView}
-                  aria-pressed={bibleHeader.splitView}
-                  aria-label={
-                    bibleHeader.splitView
-                      ? "Tampilkan satu kolom"
-                      : "Tampilkan dua kolom"
-                  }
-                  title={bibleHeader.splitView ? "Satu kolom" : "Dua kolom"}
-                >
-                  <Icon name="columns" size={15} />
-                </button>
-
-                {bibleHeader.splitView && (
-                  <button
-                    className={`reader-context-button reader-sync-btn${bibleHeader.syncScroll ? " is-active" : ""}`}
-                    type="button"
-                    onClick={bibleHeader.onToggleSyncScroll}
-                    aria-pressed={bibleHeader.syncScroll}
+                    onClick={bibleHeader.onToggleSpeech}
                     aria-label={
-                      bibleHeader.syncScroll ? "Gulir sinkron" : "Gulir mandiri"
+                      bibleHeader.speechStatus === "paused"
+                        ? "Lanjutkan bacaan"
+                        : bibleHeader.speechStatus === "speaking"
+                          ? "Jeda bacaan"
+                          : bibleHeader.speaking
+                            ? translate(locale, "bible.stopReading")
+                            : translate(locale, "bible.readAloud")
                     }
                     title={
-                      bibleHeader.syncScroll ? "Gulir sinkron" : "Gulir mandiri"
+                      bibleHeader.speaking ? "Hentikan bacaan" : "Bacakan pasal"
                     }
                   >
-                    <Icon name="arrow" size={15} />
+                    <Icon
+                      name={
+                        bibleHeader.speechStatus === "speaking"
+                          ? "pause"
+                          : bibleHeader.speechStatus === "paused"
+                            ? "play"
+                            : bibleHeader.speaking
+                              ? "stop"
+                              : "play"
+                      }
+                      size={15}
+                    />
                   </button>
                 )}
 
-                <button
-                  className={`reader-context-button reader-speech-btn${bibleHeader.speaking ? " is-speaking" : ""}`}
-                  type="button"
-                  onClick={bibleHeader.onToggleSpeech}
-                  disabled={!bibleHeader.speechAvailable}
-                  aria-label={
-                    bibleHeader.speechStatus === "paused"
-                      ? "Lanjutkan bacaan"
-                      : bibleHeader.speechStatus === "speaking"
-                        ? "Jeda bacaan"
-                        : bibleHeader.speaking
-                          ? translate(locale, "bible.stopReading")
-                          : translate(locale, "bible.readAloud")
-                  }
-                  title={
-                    bibleHeader.speaking ? "Hentikan bacaan" : "Bacakan pasal"
-                  }
-                >
-                  <Icon
-                    name={
-                      bibleHeader.speechStatus === "speaking"
-                        ? "pause"
-                        : bibleHeader.speechStatus === "paused"
-                          ? "play"
-                          : bibleHeader.speaking
-                            ? "stop"
-                            : "play"
-                    }
-                    size={15}
-                  />
-                </button>
-
-                {/* Hamburger: otomatis muat saat tombol tidak muat di mobile bible */}
+                {/* Hamburger menu di paling kanan */}
                 <div className="reader-hamburger-wrapper" ref={hamburgerRef}>
                   <button
                     className={`reader-context-button reader-hamburger-btn${hamburgerOpen ? " is-active" : ""}`}
@@ -912,6 +817,72 @@ function Header({
                               </div>
                             )}
                           </div>
+
+                          {/* Section 4: Tampilan & Bahasa */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              Tampilan & Tema
+                            </span>
+                            <div
+                              className="hamburger-group"
+                              style={{
+                                padding: "12px 14px",
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: "10px",
+                              }}
+                            >
+                              <Select
+                                value={locale}
+                                onChange={setLocale}
+                                className="topbar-select"
+                                label={translate(locale, "shell.language")}
+                                options={[
+                                  { value: "id", label: "ID" },
+                                  { value: "en", label: "EN" },
+                                  { value: "zh", label: "中文" },
+                                ]}
+                              />
+                              <Select
+                                value={theme}
+                                onChange={setTheme}
+                                className="topbar-select theme-select"
+                                label={translate(locale, "shell.theme")}
+                                options={[
+                                  {
+                                    value: "system",
+                                    label: "Otomatis",
+                                    shortLabel: "",
+                                    icon: "system",
+                                  },
+                                  {
+                                    value: "light",
+                                    label: "Terang",
+                                    shortLabel: "",
+                                    icon: "sun",
+                                  },
+                                  {
+                                    value: "dark",
+                                    label: "Gelap",
+                                    shortLabel: "",
+                                    icon: "moon",
+                                  },
+                                  {
+                                    value: "amoled",
+                                    label: "AMOLED",
+                                    shortLabel: "",
+                                    icon: "amoled",
+                                  },
+                                  {
+                                    value: "sepia",
+                                    label: "Sepia",
+                                    shortLabel: "",
+                                    icon: "sepia",
+                                  },
+                                ]}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </>
@@ -956,32 +927,34 @@ function Header({
             )}
           </div>
 
-          <div className="reader-context-settings">
-            <Select
-              value={locale}
-              onChange={setLocale}
-              className="topbar-select reader-context-select"
-              label={translate(locale, "shell.language")}
-              options={[
-                { value: "id", label: "ID" },
-                { value: "en", label: "EN" },
-                { value: "zh", label: "中文" },
-              ]}
-            />
-            <Select
-              value={theme}
-              onChange={setTheme}
-              className="topbar-select reader-context-select theme-select"
-              label={translate(locale, "shell.theme")}
-              options={[
-                { value: "system", label: "◐" },
-                { value: "light", label: "☼" },
-                { value: "dark", label: "☾" },
-                { value: "amoled", label: "■" },
-                { value: "sepia", label: "☕" },
-              ]}
-            />
-          </div>
+          {!isBibleRoute && (
+            <div className="reader-context-settings">
+              <Select
+                value={locale}
+                onChange={setLocale}
+                className="topbar-select reader-context-select"
+                label={translate(locale, "shell.language")}
+                options={[
+                  { value: "id", label: "ID" },
+                  { value: "en", label: "EN" },
+                  { value: "zh", label: "中文" },
+                ]}
+              />
+              <Select
+                value={theme}
+                onChange={setTheme}
+                className="topbar-select reader-context-select theme-select"
+                label={translate(locale, "shell.theme")}
+                options={[
+                  { value: "system", label: "Otomatis", shortLabel: "", icon: "system" },
+                  { value: "light", label: "Terang", shortLabel: "", icon: "sun" },
+                  { value: "dark", label: "Gelap", shortLabel: "", icon: "moon" },
+                  { value: "amoled", label: "AMOLED", shortLabel: "", icon: "amoled" },
+                  { value: "sepia", label: "Sepia", shortLabel: "", icon: "sepia" },
+                ]}
+              />
+            </div>
+          )}
         </div>
       </header>
     );
@@ -1034,11 +1007,11 @@ function Header({
           className="topbar-select theme-select"
           label={translate(locale, "shell.theme")}
           options={[
-            { value: "system", label: "◐" },
-            { value: "light", label: "☼" },
-            { value: "dark", label: "☾" },
-            { value: "amoled", label: "■" },
-            { value: "sepia", label: "☕" },
+            { value: "system", label: "Otomatis", shortLabel: "", icon: "system" },
+            { value: "light", label: "Terang", shortLabel: "", icon: "sun" },
+            { value: "dark", label: "Gelap", shortLabel: "", icon: "moon" },
+            { value: "amoled", label: "AMOLED", shortLabel: "", icon: "amoled" },
+            { value: "sepia", label: "Sepia", shortLabel: "", icon: "sepia" },
           ]}
         />
         <Link
@@ -1082,6 +1055,64 @@ function MediaSurface({ locale }: { locale: Locale }) {
   latestMidiRef.current = snapshot;
   latestSpeechRef.current = speechSnapshot;
   latestSpeechActiveRef.current = speechActive;
+  // gyschordweb mini-player parity: key/accidental mirror the hymn transpose
+  // state; the displayed key is derived from the current transpose offset.
+  const [keyAccidental, setKeyAccidental] = useState<"sharp" | "flat">(
+    () =>
+      (localStorage.getItem("gys-hymn-accidental") as "sharp" | "flat") ??
+      "sharp",
+  );
+  useEffect(() => {
+    localStorage.setItem("gys-hymn-accidental", keyAccidental);
+  }, [keyAccidental]);
+  const [keyMenuOpen, setKeyMenuOpen] = useState(false);
+  const [tempoOpen, setTempoOpen] = useState(false);
+  const midiLoopMode = getAutoNextMode();
+  const cycleLoopMode = () => {
+    const order: Array<"off" | "one" | "all"> = ["off", "one", "all"];
+    let current: "off" | "one" | "all" = "off";
+    if (midiLoopMode === "off") current = "off";
+    else if (midiLoopMode === "one") current = "one";
+    else if (midiLoopMode === "all") current = "all";
+    const next = order[(order.indexOf(current) + 1) % order.length] ?? "off";
+    applyAutoNextMode(next);
+  };
+  const loopLabel = {
+    off: "Off",
+    one: "1×",
+    all: "Semua",
+    number: "Nomor",
+    playlist: "Playlist",
+    "shuffle-all": "Acak",
+    "shuffle-playlist": "Acak Playlist",
+  }[midiLoopMode];
+  // Key index from the current transpose offset, matching the hymn viewer.
+  const keyIndex = ((snapshot.transpose % 12) + 12) % 12;
+  // gyschordweb mini-player subtitle: shows the effective auto-next mode and
+  // the next song when known.
+  const autoNextSubtitle = (() => {
+    if (midiLoopMode === "one") return "Single Loop Mode";
+    if (midiLoopMode === "off") return "Mode Loop Mati";
+    const currentIndex = playlist.items.findIndex(
+      (entry) => entry.songId === snapshot.songId,
+    );
+    if (midiLoopMode === "shuffle-all")
+      return currentIndex >= 0 ? "Shuffle Semua Lagu" : "Acak Semua";
+    if (midiLoopMode === "shuffle-playlist")
+      return currentIndex >= 0 ? "Shuffle Playlist" : "Acak Playlist";
+    if (midiLoopMode === "playlist") {
+      if (currentIndex >= 0 && currentIndex < playlist.items.length - 1)
+        return `Playlist: ${playlist.items[currentIndex + 1]?.title ?? ""}`;
+      return currentIndex >= 0 ? "Playlist: Selesai" : "Auto Next: Playlist";
+    }
+    if (currentIndex >= 0 && currentIndex < playlist.items.length - 1)
+      return `Berikutnya: ${playlist.items[currentIndex + 1]?.title ?? ""}`;
+    return currentIndex >= 0 ? "Selesai (Akhir Daftar)" : "Tidak ada antrean";
+  })();
+  // gyschordweb mini-player lyrics toggle: jump into the hymn text view.
+  const openHymnLyrics = () => {
+    if (mediaPath) navigate(mediaPath);
+  };
   const mediaTitle = speechActive
     ? (speechSnapshot.context?.label ??
       `Alkitab · ayat ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`)
@@ -1473,6 +1504,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
                   : "Siap dibaca"
               : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
           </span>
+          {!speechActive && (
+            <small className="media-autonext-subtitle">
+              {autoNextSubtitle}
+            </small>
+          )}
         </div>
         {speechActive ? (
           <div
@@ -1565,20 +1601,170 @@ function MediaSurface({ locale }: { locale: Locale }) {
               </label>
             ) : (
               <>
-                <label>
-                  <span>Tempo {snapshot.tempo}</span>
+                <div className="media-kicker" aria-hidden="true">
+                  <span className="media-status-dot" />
+                  <span>MIDI Queue</span>
+                </div>
+                <div className="media-seek-time">
+                  <span>{formatDuration(snapshot.position)}</span>
+                  <span className="sr-only">Posisi MIDI</span>
                   <input
-                    aria-label="Tempo MIDI"
+                    aria-label="Posisi MIDI"
                     type="range"
-                    min="30"
-                    max="220"
-                    step="1"
-                    value={snapshot.tempo}
+                    min="0"
+                    max={Math.max(0.01, snapshot.duration)}
+                    step="0.1"
+                    value={Math.min(snapshot.duration, snapshot.position)}
                     onChange={(event) =>
-                      void midiPlayer.setTempo(Number(event.target.value))
+                      void midiPlayer
+                        .seek(Number(event.target.value))
+                        .catch(() => undefined)
                     }
                   />
-                </label>
+                  <span>{formatDuration(snapshot.duration)}</span>
+                </div>
+                <div className="media-midi-actions">
+                  <button
+                    className="media-control media-loop-control"
+                    type="button"
+                    onClick={cycleLoopMode}
+                    aria-pressed={midiLoopMode !== "off"}
+                    aria-label={`Mode ulang: ${loopLabel}`}
+                    title={`Ulang · ${loopLabel}`}
+                  >
+                    <Icon name="repeat" size={16} />
+                    <small>{loopLabel}</small>
+                  </button>
+                  <div className="media-key-control">
+                    <button
+                      className="media-control"
+                      type="button"
+                      onClick={() => setKeyMenuOpen((open) => !open)}
+                      aria-expanded={keyMenuOpen}
+                      aria-haspopup="listbox"
+                      aria-label="Pilih nada dasar"
+                      title="Pilih nada dasar"
+                    >
+                      {chordKeyName(keyIndex, keyAccidental)}
+                    </button>
+                    {keyMenuOpen && (
+                      <div
+                        className="media-key-dropdown"
+                        role="listbox"
+                        aria-label="Nada dasar"
+                      >
+                        {Array.from({ length: 12 }, (_, value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            role="option"
+                            aria-selected={value === keyIndex}
+                            className={
+                              value === keyIndex ? "is-selected" : undefined
+                            }
+                            onClick={() => {
+                              void midiPlayer
+                                .setTranspose(
+                                  transposeBetweenKeys(keyIndex, value),
+                                )
+                                .catch(() => undefined);
+                              setKeyMenuOpen(false);
+                            }}
+                          >
+                            {chordKeyName(value, keyAccidental)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="media-control"
+                    type="button"
+                    onClick={() =>
+                      setKeyAccidental((current) =>
+                        current === "sharp" ? "flat" : "sharp",
+                      )
+                    }
+                    aria-label="Ganti notasi kres/mol"
+                    aria-pressed={keyAccidental === "flat"}
+                    title={
+                      keyAccidental === "sharp"
+                        ? "Notasi kres (♯)"
+                        : "Notasi mol (♭)"
+                    }
+                  >
+                    {keyAccidental === "sharp" ? "♯" : "♭"}
+                  </button>
+                  <div className="media-transpose">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void midiPlayer.setTranspose(snapshot.transpose - 1)
+                      }
+                      aria-label="Turunkan nada"
+                    >
+                      −
+                    </button>
+                    <strong>
+                      {snapshot.transpose > 0
+                        ? `+${snapshot.transpose}`
+                        : snapshot.transpose}
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void midiPlayer.setTranspose(snapshot.transpose + 1)
+                      }
+                      aria-label="Naikkan nada"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    className="media-control"
+                    type="button"
+                    onClick={openHymnLyrics}
+                    aria-label="Lihat lirik"
+                    title="Lihat lirik"
+                  >
+                    <Icon name="menuBook" size={16} />
+                  </button>
+                </div>
+                <div className="media-tempo-control">
+                  <button
+                    type="button"
+                    className="media-tempo-toggle"
+                    onClick={() => setTempoOpen((open) => !open)}
+                    aria-expanded={tempoOpen}
+                    aria-haspopup="dialog"
+                    aria-label="Atur tempo MIDI"
+                    title="Atur tempo MIDI"
+                  >
+                    <Icon name="tune" size={14} />
+                    <strong>{snapshot.tempo}</strong>
+                    <small>BPM</small>
+                  </button>
+                  {tempoOpen && (
+                    <div
+                      className="media-tempo-popover"
+                      role="dialog"
+                      aria-label="Kontrol tempo"
+                    >
+                      <input
+                        aria-label="Tempo MIDI"
+                        type="range"
+                        min="30"
+                        max="220"
+                        step="1"
+                        value={snapshot.tempo}
+                        onChange={(event) =>
+                          void midiPlayer.setTempo(Number(event.target.value))
+                        }
+                      />
+                      <span>{snapshot.tempo} BPM</span>
+                    </div>
+                  )}
+                </div>
                 <label className="media-instrument-control">
                   <span>Instrumen</span>
                   <select
@@ -1598,32 +1784,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
                     ))}
                   </select>
                 </label>
-                <div className="media-transpose">
-                  <span>
-                    Nada{" "}
-                    {snapshot.transpose > 0
-                      ? `+${snapshot.transpose}`
-                      : snapshot.transpose}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void midiPlayer.setTranspose(snapshot.transpose - 1)
-                    }
-                    aria-label="Turunkan nada"
-                  >
-                    −
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void midiPlayer.setTranspose(snapshot.transpose + 1)
-                    }
-                    aria-label="Naikkan nada"
-                  >
-                    +
-                  </button>
-                </div>
               </>
             )}
           </div>
@@ -1901,12 +2061,6 @@ function Shell({
       <div className="workspace">
         <aside className="navigation-shell">
           <Navigation locale={locale} />
-          <div className="sidebar-foot">
-            <span className="offline-note">
-              <i />
-              {translate(locale, "home.offlinePack")}
-            </span>
-          </div>
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>
           <div
@@ -1950,14 +2104,8 @@ function SauhSkeleton() {
       aria-live="polite"
       data-testid="home-sauh-skeleton"
     >
-      <strong>
-        <span className="sauh-skeleton-spinner" aria-hidden="true" />
-        Memuat Sauh Bagi Jiwa…
-      </strong>
-      <span className="sauh-skeleton-line is-title" aria-hidden="true" />
-      <span className="sauh-skeleton-line" aria-hidden="true" />
-      <span className="sauh-skeleton-line is-short" aria-hidden="true" />
-      <small>Mengambil renungan resmi hari ini dari TJC…</small>
+      <span className="sauh-skeleton-spinner" aria-hidden="true" />
+      <span className="sauh-skeleton-loading-text">Memuat Sauh Bagi Jiwa…</span>
     </div>
   );
 }
@@ -2291,22 +2439,15 @@ function HomePage({ locale }: { locale: Locale }) {
                   to={`/suara/${encodeURIComponent(post.id)}`}
                 >
                   <div className="suara-card-media">
-                    {post.imageUrl ? (
-                      <LazyImage
-                        className="suara-thumb-img"
-                        wrapperClassName="suara-library-thumb"
-                        src={post.imageUrl}
-                        alt={`Cover ${post.title}`}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span
-                        className="suara-thumbnail-fallback"
-                        aria-hidden="true"
-                      >
-                        SS
-                      </span>
-                    )}
+                    <LazyImage
+                      className="suara-thumb-img"
+                      wrapperClassName="suara-library-thumb"
+                      src={post.imageUrl}
+                      fallbackTitle={post.title}
+                      fallbackCategory="kesaksian"
+                      alt={`Cover ${post.title}`}
+                      loading="lazy"
+                    />
                     <div className="suara-media-overlay" />
                   </div>
                   <div className="suara-card-content">
@@ -2364,22 +2505,15 @@ function HomePage({ locale }: { locale: Locale }) {
                   to={`/literatur/${encodeURIComponent(item.id)}`}
                 >
                   <div className="suara-card-media">
-                    {item.imageUrl ? (
-                      <LazyImage
-                        className="suara-thumb-img"
-                        wrapperClassName="suara-library-thumb"
-                        src={item.imageUrl}
-                        alt={`Cover ${item.title}`}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span
-                        className="suara-thumbnail-fallback"
-                        aria-hidden="true"
-                      >
-                        {item.category.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
+                    <LazyImage
+                      className="suara-thumb-img"
+                      wrapperClassName="suara-library-thumb"
+                      src={item.imageUrl}
+                      fallbackTitle={item.title}
+                      fallbackCategory={item.category}
+                      alt={`Cover ${item.title}`}
+                      loading="lazy"
+                    />
                     <div className="suara-media-overlay" />
                   </div>
                   <div className="suara-card-content">

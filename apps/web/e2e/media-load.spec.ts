@@ -197,7 +197,10 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);
   await resumeButton.click();
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 2 / 2");
-  await page.getByRole("button", { name: "Mendatar" }).click();
+  await page
+    .locator(".pdf-view-scroll-toggle")
+    .getByRole("button", { name: "Gulir mendatar" })
+    .click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
     "horizontal",

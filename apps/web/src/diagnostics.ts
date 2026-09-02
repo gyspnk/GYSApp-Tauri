@@ -103,6 +103,13 @@ export function subscribeDiagnostics(listener: () => void): () => void {
 export function installGlobalDiagnostics(): () => void {
   if (typeof window === "undefined") return () => undefined;
   const onError = (event: ErrorEvent) => {
+    if (
+      event.filename?.includes("chrome-extension://") ||
+      event.filename?.includes("moz-extension://") ||
+      event.message?.includes("startTime")
+    ) {
+      return;
+    }
     recordDiagnostic("error", "window.error", event.error ?? event.message);
   };
   const onRejection = (event: PromiseRejectionEvent) => {

@@ -27,8 +27,8 @@ const surfaces = [
   },
   {
     name: "more",
-    path: "/GYSApp-Tauri/lainnya?section=account",
-    ready: ".more-category-bar",
+    path: "/GYSApp-Tauri/lainnya",
+    ready: ".more-page",
     fold: ".more-grid",
   },
   {

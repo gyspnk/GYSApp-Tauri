@@ -139,7 +139,6 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await page.goto("/GYSApp-Tauri/lainnya");
-    await page.getByRole("button", { name: "Tampilan & Bahasa" }).click();
     await expect(
       page.getByRole("radiogroup", { name: "Pilih Warna Aksen" }),
     ).toBeVisible();
@@ -275,7 +274,7 @@ test.describe("responsive reader navigation", () => {
 
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action"),
-    ).toHaveCount(2);
+    ).toHaveCount(3);
     await expect(page.locator(".hymn-more-actions")).toBeVisible();
     await expect(
       page.locator(".hymn-more-actions .hymn-more-actions-panel"),
@@ -520,9 +519,11 @@ test.describe("responsive reader navigation", () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 15_000,
+      },
+    );
     await expect(page.locator(".reader-context-bar")).toBeVisible();
     await expect(page.locator(".brand-mark")).toHaveCount(0);
 
@@ -531,14 +532,14 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".bible-reader article").first()).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
-    const bibleQuery = page.locator("#bible-query");
-    await page
-      .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-      .click();
-    await expect(bibleQuery).toBeFocused();
-
-    await page.getByText("Filter pencarian", { exact: true }).click();
-    await expect(page.locator(".bible-search-options")).toBeVisible();
+    const handle = page.getByRole("button", {
+      name: "Geser judul untuk berpindah pasal",
+    });
+    await handle.click();
+    const searchInput = page.getByPlaceholder("Cari kitab atau isi ayat…");
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill("Kejadian");
+    await page.getByRole("button", { name: "Tutup", exact: false }).click();
 
     await page.locator(".reader-hamburger-btn").click();
     const speechToggle = page.locator(
@@ -555,24 +556,40 @@ test.describe("responsive reader navigation", () => {
     ]);
   });
 
-  test("Bible desktop keeps search behind its header action", async ({
+  test("Bible navigation dialog supports verse content search and scope filter", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/GYSApp-Tauri/bible");
-
-    const searchHeader = page.locator(".bible-page-header");
-    await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(searchHeader).toHaveCSS("margin-bottom", "0px");
-    await expect(page.locator(".bible-reader-layout")).toBeInViewport();
-    await expect(page.locator(".verse-row").first()).toBeInViewport();
 
-    await page
-      .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-      .click();
-    await expect(page.locator("#bible-query")).toBeFocused();
-    await expect(searchHeader).not.toHaveCSS("margin-bottom", "0px");
+    // Tap title picker to open navigation modal
+    await page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }).click();
+    const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+    await expect(dialog).toBeVisible();
+
+    // Verify scope pills: Semua, PL, PB, and active book (Kejadian Saja)
+    await expect(page.getByRole("button", { name: "Semua (66)" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "PL (39)" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "PB (27)" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Kejadian Saja" })).toBeVisible();
+
+    // Search by verse text inside active book
+    await page.getByRole("button", { name: "Kejadian Saja" }).click();
+    await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("menciptakan langit");
+
+    // Results show matched verse item
+    const verseResult = page.locator(".bible-picker-verse-item").first();
+    await expect(verseResult).toBeVisible();
+    await expect(verseResult).toContainText("Kejadian 1:1");
+    await expect(verseResult).not.toContainText("<pb/>");
+    await expect(verseResult).not.toContainText("<");
+    await verseResult.click();
+
+    // Navigates and closes modal
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible();
   });
 });

@@ -19,12 +19,12 @@ function item(partial: Partial<LiteratureItem>): LiteratureItem {
 }
 
 async function until(assertion: () => void): Promise<void> {
-  for (let attempt = 0; attempt < 200; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
       assertion();
       return;
     } catch {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 2));
     }
   }
   assertion();
@@ -155,9 +155,10 @@ describe("Literature persistent + incremental catalog", () => {
 
     // Let the background revalidation settle, then verify the local cache
     // kept the richer entry instead of being overwritten by bare metadata.
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const cached = getCachedLiteratureCatalog();
-    expect(cached).toHaveLength(1);
-    expect(cached?.[0]?.imageUrl).toContain("cover.png");
+    await until(() => {
+      const cached = getCachedLiteratureCatalog();
+      expect(cached).toHaveLength(1);
+      expect(cached?.[0]?.imageUrl).toContain("cover.png");
+    });
   });
 });

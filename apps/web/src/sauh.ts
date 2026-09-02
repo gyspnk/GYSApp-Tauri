@@ -343,7 +343,7 @@ export function expectedSauhSlug(date = new Date()): string {
 
 /** Prefer the same-origin BFF; direct WordPress remains the no-config fallback. */
 export function sauhNetworkCandidates(bffBase?: string): string[] {
-  const base = bffBase?.trim();
+  const base = (bffBase ?? import.meta.env.VITE_BFF_BASE_URL)?.trim();
   const isCrossPortLocalhost =
     typeof window !== "undefined" &&
     Boolean(
@@ -442,7 +442,7 @@ function parseNormalizedSauh(value: unknown): SauhPost[] {
 
 async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 4_000);
+  const timer = window.setTimeout(() => controller.abort(), 3_000);
   const abort = () => controller.abort();
   signal?.addEventListener("abort", abort, { once: true });
   try {
@@ -455,6 +455,9 @@ async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
     });
     if (!response.ok)
       throw new Error(`Sauh request failed: ${response.status}`);
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("text/html"))
+      throw new Error(`Expected JSON from ${url}, got HTML`);
     const payload: unknown = await response.json();
     // Pages/BFF snapshots already contain the normalized contract. The live
     // WordPress endpoint still returns raw posts, so accept both shapes while

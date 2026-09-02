@@ -112,6 +112,16 @@ import {
 } from "./hymn-preferences.js";
 import { autoFitFontSize } from "./hymn-autofit.js";
 import type { ShellTheme } from "./settings.js";
+import { LyricsPanel } from "./lyrics-panel.js";
+import { clearAppData } from "./more.js";
+import {
+  CHORD_FILL_PRESETS,
+  CHORD_THEME_PRESETS,
+  readChordUiPrefs,
+  subscribeChordUiPrefs,
+  writeChordUiPrefs,
+  type ChordUiPrefs,
+} from "./chord-ui-prefs.js";
 
 type KidungShellContext = {
   locale?: Locale;
@@ -279,17 +289,24 @@ function KidungLocalNav({ active }: { active: KidungSection }) {
     getMidiPlaylist,
     getMidiPlaylist,
   );
-  const links: Array<{ id: KidungSection; label: string; to: string }> = [
-    { id: "songs", label: "Kidung", to: "/kidung" },
+  const links: Array<{
+    id: KidungSection;
+    label: string;
+    to: string;
+    icon: "musicNote" | "queueMusic" | "settings";
+  }> = [
+    { id: "songs", label: "Kidung", to: "/kidung", icon: "musicNote" },
     {
       id: "playlist",
       label: "Playlist",
       to: "/kidung?section=playlist",
+      icon: "queueMusic",
     },
     {
       id: "settings",
       label: "Pengaturan",
       to: "/kidung?section=settings",
+      icon: "settings",
     },
   ];
   return (
@@ -302,6 +319,7 @@ function KidungLocalNav({ active }: { active: KidungSection }) {
             to={link.to}
             aria-current={active === link.id ? "page" : undefined}
           >
+            <Icon name={link.icon} size={15} />
             <span>{link.label}</span>
             {link.id === "playlist" && playlist.items.length > 0 && (
               <small>{playlist.items.length}</small>
@@ -620,6 +638,16 @@ function HymnSettingsPage({
   const [naturalChords, setNaturalChords] = useState(() =>
     readNaturalChordPreference(),
   );
+  const [chordUiPrefs, setChordUiPrefs] = useState<ChordUiPrefs>(() =>
+    readChordUiPrefs(),
+  );
+  useEffect(
+    () => subscribeChordUiPrefs(() => setChordUiPrefs(readChordUiPrefs())),
+    [],
+  );
+  const updateChordUiPrefs = (patch: Partial<ChordUiPrefs>) => {
+    setChordUiPrefs((current) => writeChordUiPrefs({ ...current, ...patch }));
+  };
   const [viewPrefs, setViewPrefs] = useState<HymnViewerPrefs>(() =>
     readHymnViewerPrefs(),
   );
@@ -793,6 +821,174 @@ function HymnSettingsPage({
             Kelola playlist →
           </Link>
         </section>
+        <section
+          className="kidung-settings-section"
+          aria-labelledby="kidung-chord-heading"
+        >
+          <p className="date-line">Chord</p>
+          <h2 id="kidung-chord-heading">Tampilan chord</h2>
+          <div className="kidung-settings-controls">
+            <label className="kidung-settings-switch">
+              <input
+                type="checkbox"
+                checked={chordUiPrefs.syncThemeWithAccent}
+                onChange={(event) =>
+                  updateChordUiPrefs({
+                    syncThemeWithAccent: event.target.checked,
+                  })
+                }
+              />
+              <span>
+                <strong>Samakan huruf chord ke warna utama</strong>
+              </span>
+            </label>
+            <div
+              className="chord-ui-palette"
+              role="group"
+              aria-label="Tema huruf chord"
+            >
+              {CHORD_THEME_PRESETS.map((preset) => (
+                <button
+                  key={preset.key}
+                  type="button"
+                  className={`chord-ui-swatch${chordUiPrefs.theme === preset.key ? " is-selected" : ""}${chordUiPrefs.syncThemeWithAccent ? " is-disabled" : ""}`}
+                  disabled={chordUiPrefs.syncThemeWithAccent}
+                  style={{ background: preset.color }}
+                  aria-label={`Tema chord ${preset.label}`}
+                  title={preset.label}
+                  onClick={() => updateChordUiPrefs({ theme: preset.key })}
+                />
+              ))}
+            </div>
+            <label className="kidung-settings-switch">
+              <input
+                type="checkbox"
+                checked={chordUiPrefs.syncFillWithAccent}
+                onChange={(event) =>
+                  updateChordUiPrefs({
+                    syncFillWithAccent: event.target.checked,
+                  })
+                }
+              />
+              <span>
+                <strong>Samakan fill chord ke warna utama</strong>
+              </span>
+            </label>
+            <Select
+              value={chordUiPrefs.fill}
+              onChange={(value) =>
+                updateChordUiPrefs({
+                  fill: value as "none" | "soft" | "solid",
+                })
+              }
+              label="Fill chord"
+              options={[
+                { value: "none", label: "Tanpa Fill" },
+                { value: "soft", label: "Soft Rounded" },
+                { value: "solid", label: "Solid Rounded" },
+              ]}
+            />
+            <div
+              className="chord-ui-palette"
+              role="group"
+              aria-label="Warna fill chord"
+            >
+              {CHORD_FILL_PRESETS.map((preset) => (
+                <button
+                  key={preset.key}
+                  type="button"
+                  className={`chord-ui-swatch is-fill${chordUiPrefs.fillColor === preset.key ? " is-selected" : ""}${chordUiPrefs.syncFillWithAccent ? " is-disabled" : ""}`}
+                  disabled={chordUiPrefs.syncFillWithAccent}
+                  style={{ background: preset.color }}
+                  aria-label={`Warna fill ${preset.label}`}
+                  title={preset.label}
+                  onClick={() => updateChordUiPrefs({ fillColor: preset.key })}
+                />
+              ))}
+            </div>
+            <label className="chord-ui-slider">
+              <span>
+                Opacity latar chord ({chordUiPrefs.fillOpacityPercent}%)
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={chordUiPrefs.fillOpacityPercent}
+                onChange={(event) =>
+                  updateChordUiPrefs({
+                    fillOpacityPercent: Number(event.target.value),
+                  })
+                }
+              />
+            </label>
+            <label className="chord-ui-slider">
+              <span>
+                Ukuran font chord ({chordUiPrefs.fontOverridePercent}%)
+              </span>
+              <input
+                type="range"
+                min={80}
+                max={180}
+                step={5}
+                value={chordUiPrefs.fontOverridePercent}
+                onChange={(event) =>
+                  updateChordUiPrefs({
+                    fontOverridePercent: Number(event.target.value),
+                  })
+                }
+              />
+            </label>
+            <label className="chord-ui-slider">
+              <span>Padding chord ({chordUiPrefs.fillPaddingPercent}%)</span>
+              <input
+                type="range"
+                min={0}
+                max={400}
+                step={10}
+                value={chordUiPrefs.fillPaddingPercent}
+                onChange={(event) =>
+                  updateChordUiPrefs({
+                    fillPaddingPercent: Number(event.target.value),
+                  })
+                }
+              />
+            </label>
+          </div>
+        </section>
+        <section
+          className="kidung-settings-section"
+          aria-labelledby="kidung-info-heading"
+        >
+          <p className="date-line">Informasi</p>
+          <h2 id="kidung-info-heading">Versi dan penyimpanan</h2>
+          <div className="kidung-settings-summary">
+            <span>Versi aplikasi</span>
+            <strong>0.1.0</strong>
+          </div>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => {
+              void clearAppData()
+                .then(() =>
+                  window.setTimeout(() => window.location.reload(), 400),
+                )
+                .catch(() => {
+                  window.alert(
+                    "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                  );
+                });
+            }}
+          >
+            Bersihkan cache & reset preferensi
+          </button>
+          <small className="kidung-settings-note">
+            Menghapus preferensi, cache aset, dan data lokal Kidung. Data yang
+            tersinkronisasi dengan akun tidak terpengaruh.
+          </small>
+        </section>
       </div>
     </div>
   );
@@ -816,6 +1012,25 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
     midiState.status === "paused" ||
     midiState.status === "ready" ||
     midiState.status === "stopped";
+  const midiLoopMode = getAutoNextMode();
+  const cycleLoopMode = () => {
+    const order: Array<"off" | "one" | "all"> = ["off", "one", "all"];
+    let current: "off" | "one" | "all" = "off";
+    if (midiLoopMode === "off") current = "off";
+    else if (midiLoopMode === "one") current = "one";
+    else if (midiLoopMode === "all") current = "all";
+    const next = order[(order.indexOf(current) + 1) % order.length] ?? "off";
+    applyAutoNextMode(next);
+  };
+  const loopLabel = {
+    off: "Off",
+    one: "1×",
+    all: "Semua",
+    number: "Nomor",
+    playlist: "Playlist",
+    "shuffle-all": "Acak",
+    "shuffle-playlist": "Acak Playlist",
+  }[midiLoopMode];
   return (
     <div className="hymn-midi-controls-panel">
       <div className="hymn-midi-dock-row">
@@ -939,6 +1154,17 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
             aria-label="Volume MIDI"
           />
         </label>
+        <button
+          type="button"
+          className="quiet-button hymn-midi-loop"
+          onClick={cycleLoopMode}
+          aria-pressed={midiLoopMode !== "off"}
+          aria-label={`Mode ulang: ${loopLabel}`}
+          title={`Ulang · ${loopLabel}`}
+        >
+          <Icon name="repeat" size={16} />
+          <span className="hymn-loop-label">{loopLabel}</span>
+        </button>
         <button
           type="button"
           className="quiet-button hymn-midi-mute"
@@ -1103,6 +1329,22 @@ function HymnCatalog({
                     {item.title}
                   </button>
                   {!item.assetCode && (
+                    <span
+                      className={`chord-indicator${item.chordRef ? " has-chord" : " no-chord"}`}
+                      title={
+                        item.chordRef
+                          ? "Chord tersedia"
+                          : "Chord belum tersedia"
+                      }
+                      aria-hidden="true"
+                    >
+                      <Icon
+                        name={item.chordRef ? "checkCircle" : "cancel"}
+                        size={15}
+                      />
+                    </span>
+                  )}
+                  {!item.assetCode && (
                     <button
                       type="button"
                       className={`icon-button add-to-playlist-btn${inQueue ? " in-playlist" : ""}`}
@@ -1118,7 +1360,10 @@ function HymnCatalog({
                           : `Tambah ${item.title} ke Playlist`
                       }
                     >
-                      <span aria-hidden="true">{inQueue ? "✓" : "＋"}</span>
+                      <Icon
+                        name={inQueue ? "playlistAddCheck" : "playlistAdd"}
+                        size={18}
+                      />
                     </button>
                   )}
                 </li>
@@ -1217,6 +1462,8 @@ function HymnDetail({
   // edited chords are local until the user saves the .chord.json.
   const [midiDockOpen, setMidiDockOpen] = useState(false);
   const [chordEditorEnabled, setChordEditorEnabled] = useState(false);
+  const [lyricsPanelOpen, setLyricsPanelOpen] = useState(false);
+  const [pdfKeyMenuOpen, setPdfKeyMenuOpen] = useState(false);
   const [editableChords, setEditableChords] = useState<
     Record<string, PdfChordOverlayMarker[]>
   >({});
@@ -1667,6 +1914,8 @@ function HymnDetail({
         preferredFontSize: typography.fontSize,
         availableWidth: element.clientWidth,
         measuredWidth: element.scrollWidth,
+        availableHeight: element.clientHeight,
+        measuredHeight: element.scrollHeight,
         lastFittedFontSize: lastFitRef.current,
       });
       lastFitRef.current = next;
@@ -2294,7 +2543,7 @@ function HymnDetail({
     );
   };
   const updateTranspose = (next: number) => {
-    const bounded = Math.max(-6, Math.min(6, next));
+    const bounded = Math.max(-11, Math.min(11, next));
     userSetTransposeRef.current = true;
     transposeRef.current = bounded;
     setTranspose(bounded);
@@ -2504,7 +2753,7 @@ function HymnDetail({
               {!item.assetCode && (
                 <button
                   type="button"
-                  className="viewer-chrome-button"
+                  className="viewer-chrome-button viewer-chrome-chord"
                   onClick={toggleChords}
                   disabled={chordStatus === "loading"}
                   aria-pressed={chordsVisible}
@@ -2524,6 +2773,100 @@ function HymnDetail({
                   </span>
                 </button>
               )}
+              <div
+                className="pdf-transpose-inline"
+                role="group"
+                aria-label="Transpose PDF"
+              >
+                <div className="pdf-key-control">
+                  <button
+                    type="button"
+                    className="viewer-chrome-button pdf-key-btn"
+                    onClick={() => setPdfKeyMenuOpen((open) => !open)}
+                    aria-expanded={pdfKeyMenuOpen}
+                    aria-haspopup="listbox"
+                    aria-label="Pilih nada dasar"
+                    title="Pilih nada dasar"
+                  >
+                    {chordKeyName(keyIndex, accidental)}
+                  </button>
+                  {pdfKeyMenuOpen && (
+                    <div
+                      className="pdf-key-dropdown"
+                      role="listbox"
+                      aria-label="Nada dasar"
+                    >
+                      {Array.from({ length: 12 }, (_, value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          role="option"
+                          aria-selected={value === keyIndex}
+                          className={
+                            value === keyIndex ? "is-selected" : undefined
+                          }
+                          onClick={() => {
+                            setKeyIndex(value);
+                            updateTranspose(
+                              transposeBetweenKeys(sourceKeyIndex, value),
+                            );
+                            setPdfKeyMenuOpen(false);
+                          }}
+                        >
+                          {chordKeyName(value, accidental)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="viewer-chrome-button pdf-accidental-btn"
+                  onClick={() =>
+                    setAccidental((current) =>
+                      current === "sharp" ? "flat" : "sharp",
+                    )
+                  }
+                  aria-pressed={accidental === "flat"}
+                  aria-label="Ganti notasi kres/mol"
+                  title={
+                    accidental === "sharp"
+                      ? "Notasi kres (♯)"
+                      : "Notasi mol (♭)"
+                  }
+                >
+                  {accidental === "sharp" ? "♯" : "♭"}
+                </button>
+                <div className="pdf-transpose-btns">
+                  <button
+                    type="button"
+                    className="viewer-chrome-button"
+                    onClick={() => updateTranspose(transpose - 1)}
+                    aria-label={translate(locale, "kidung.transposeDown")}
+                  >
+                    −
+                  </button>
+                  <strong>{transpose > 0 ? `+${transpose}` : transpose}</strong>
+                  <button
+                    type="button"
+                    className="viewer-chrome-button"
+                    onClick={() => updateTranspose(transpose + 1)}
+                    aria-label={translate(locale, "kidung.transposeUp")}
+                  >
+                    +
+                  </button>
+                  {transpose !== 0 && (
+                    <button
+                      type="button"
+                      className="viewer-chrome-button pdf-transpose-reset"
+                      onClick={() => updateTranspose(0)}
+                      title="Reset Transpose"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
             {pdfStatus === "loading" && (
               <div className="loading-panel" role="status">
@@ -2654,6 +2997,18 @@ function HymnDetail({
                 </span>
               </button>
             )}
+            <button
+              type="button"
+              className="quiet-button hymn-action"
+              onClick={() => setLyricsPanelOpen(true)}
+              aria-label="Mode lirik layar penuh"
+              title="Mode lirik layar penuh"
+            >
+              <span className="hymn-action-icon" aria-hidden="true">
+                <Icon name="menuBook" size={17} />
+              </span>
+              <span className="hymn-action-label">Lirik</span>
+            </button>
             <button
               type="button"
               className="quiet-button hymn-action"
@@ -3099,7 +3454,10 @@ function HymnDetail({
                       aria-label={midiState.muted ? "Unmute" : "Mute"}
                       style={{ fontSize: "0.8rem" }}
                     >
-                      {midiState.muted ? "ðŸ”‡" : "ðŸ”Š"}
+                      <Icon
+                        name={midiState.muted ? "volumeOff" : "volume"}
+                        size={16}
+                      />
                     </button>
                   </div>
                 </div>
@@ -3417,7 +3775,7 @@ function HymnDetail({
         )}
         {viewerMode !== "pdf" && (
           <nav
-            className="hymn-text-footer"
+            className={`hymn-text-footer${viewScope === "all" ? " is-all-verses" : ""}`}
             aria-label={translate(locale, "kidung.verseNavigation")}
           >
             <button
@@ -3477,6 +3835,23 @@ function HymnDetail({
         <div className="toast" role="status">
           {notice}
         </div>
+      )}
+      {lyricsPanelOpen && (
+        <LyricsPanel
+          item={item}
+          verses={verses}
+          getChordLinesForVerse={(verseIdx) =>
+            matchChordLinesToLyrics(
+              (verses[verseIdx] ?? "").split("\n"),
+              chordDocument,
+              chordLayout,
+              verseIdx,
+            )
+          }
+          initialVerseIndex={safeVerseIndex}
+          onNavigateSong={(delta) => changeVerse(delta)}
+          onClose={() => setLyricsPanelOpen(false)}
+        />
       )}
     </div>
   );
