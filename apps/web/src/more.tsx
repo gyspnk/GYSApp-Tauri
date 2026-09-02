@@ -1624,7 +1624,7 @@ export function MorePage({
               </div>
               <div className="egys-login-footer">
                 <span>
-                  <Icon name="check" size={14} />
+                  <Icon name="checkCircle" size={14} />
                   Koneksi resmi & aman langsung ke portal e.gys.or.id
                 </span>
                 <button
