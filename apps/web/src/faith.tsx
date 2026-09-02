@@ -636,9 +636,18 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   <div className="error-panel" role="alert">
                     <strong>Dokumen PDF belum dapat dimuat langsung.</strong>
                     <span>
-                      Server sumber dokumen sedang mengalami kendala CORS atau offline. Anda dapat membaca artikel lengkapnya langsung di situs resmi TJC.
+                      Server sumber dokumen sedang mengalami kendala CORS atau
+                      offline. Anda dapat membaca artikel lengkapnya langsung di
+                      situs resmi TJC.
                     </span>
-                    <div style={{ display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        marginTop: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {DK_READ_MORE.get(pdfRead.number)?.source && (
                         <a
                           className="primary-button"

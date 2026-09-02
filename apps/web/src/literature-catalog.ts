@@ -144,10 +144,9 @@ function bffCandidates(): string[] {
   const proxy = isCrossPortLocalhost
     ? undefined
     : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/literature`;
-  return [
-    proxy,
-    `${import.meta.env.BASE_URL}offline/literature.json`,
-  ].filter((value): value is string => Boolean(value));
+  return [proxy, `${import.meta.env.BASE_URL}offline/literature.json`].filter(
+    (value): value is string => Boolean(value),
+  );
 }
 
 export async function fetchLiteratureCatalog(

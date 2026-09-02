@@ -561,24 +561,34 @@ test.describe("responsive reader navigation", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 15_000,
+      },
+    );
 
     // Tap title picker to open navigation modal
-    await page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }).click();
+    await page
+      .getByRole("button", { name: "Geser judul untuk berpindah pasal" })
+      .click();
     const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
     await expect(dialog).toBeVisible();
 
     // Verify scope pills: Semua, PL, PB, and active book (Kejadian Saja)
-    await expect(page.getByRole("button", { name: "Semua (66)" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Semua (66)" }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "PL (39)" })).toBeVisible();
     await expect(page.getByRole("button", { name: "PB (27)" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Kejadian Saja" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Kejadian Saja" }),
+    ).toBeVisible();
 
     // Search by verse text inside active book
     await page.getByRole("button", { name: "Kejadian Saja" }).click();
-    await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("menciptakan langit");
+    await page
+      .getByPlaceholder("Cari kitab atau isi ayat…")
+      .fill("menciptakan langit");
 
     // Results show matched verse item
     const verseResult = page.locator(".bible-picker-verse-item").first();
@@ -590,6 +600,8 @@ test.describe("responsive reader navigation", () => {
 
     // Navigates and closes modal
     await expect(dialog).toBeHidden();
-    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Kejadian 1/ }),
+    ).toBeVisible();
   });
 });

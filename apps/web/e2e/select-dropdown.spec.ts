@@ -9,7 +9,9 @@ test("topbar theme and select dropdowns stay within viewport without right cutof
   await page.goto("/GYSApp-Tauri/");
 
   // Click the theme select button in topbar
-  const themeTrigger = page.locator(".topbar-select.theme-select .control-select-trigger");
+  const themeTrigger = page.locator(
+    ".topbar-select.theme-select .control-select-trigger",
+  );
   await expect(themeTrigger).toBeVisible({ timeout: 10_000 });
   await themeTrigger.click();
 

@@ -26,6 +26,10 @@ test("Lainnya renders unified settings and account panels cleanly", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/lainnya");
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Tampilan & Bahasa" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Paket lokal" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Tampilan & Bahasa" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Paket lokal" }),
+  ).toBeVisible();
 });

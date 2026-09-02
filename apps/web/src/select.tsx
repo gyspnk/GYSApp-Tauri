@@ -97,7 +97,11 @@ export function Select<T extends string | number>({
       >
         <span className="control-select-value">
           {selected?.icon && (
-            <Icon name={selected.icon} size={15} className="control-select-icon" />
+            <Icon
+              name={selected.icon}
+              size={15}
+              className="control-select-icon"
+            />
           )}
           {selected?.shortLabel ?? selected?.label ?? "—"}
         </span>
@@ -124,7 +128,11 @@ export function Select<T extends string | number>({
             >
               <span className="control-select-option-content">
                 {option.icon && (
-                  <Icon name={option.icon} size={15} className="control-select-icon" />
+                  <Icon
+                    name={option.icon}
+                    size={15}
+                    className="control-select-icon"
+                  />
                 )}
                 <span>{option.label}</span>
               </span>

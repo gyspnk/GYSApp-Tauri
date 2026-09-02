@@ -236,7 +236,9 @@ test("faith read more opens PDF viewer in fullscreen overlay", async ({
   await expect(pdfOverlay).toBeVisible();
   await expect(pdfOverlay.locator(".faith-pdf-head")).toBeVisible();
   await expect(pdfOverlay.locator(".faith-pdf-body")).toBeVisible();
-  await expect(pdfOverlay.getByRole("button", { name: "Tutup bacaan" })).toBeVisible();
+  await expect(
+    pdfOverlay.getByRole("button", { name: "Tutup bacaan" }),
+  ).toBeVisible();
   await pdfOverlay.getByRole("button", { name: "Tutup bacaan" }).click();
   await expect(pdfOverlay).toBeHidden();
 });

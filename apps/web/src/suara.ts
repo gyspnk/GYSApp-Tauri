@@ -134,10 +134,7 @@ function suaraNetworkCandidates(): string[] {
   const proxy = isCrossPortLocalhost
     ? undefined
     : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`;
-  return [
-    proxy,
-    API_URL,
-  ].filter((value): value is string => Boolean(value));
+  return [proxy, API_URL].filter((value): value is string => Boolean(value));
 }
 
 /** The publisher mirrors featured images on an official S3 bucket. */

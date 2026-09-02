@@ -62,9 +62,27 @@ describe("Bible quick navigation scrubbing math & column resolution", () => {
       { id: 43, name: "Yohanes", chapters: 21 },
     ];
     const sampleVerses = [
-      { id: "1:1:1", book: "1", chapter: 1, verse: 1, text: "Pada mulanya Allah menciptakan langit dan bumi." },
-      { id: "16:1:4", book: "16", chapter: 1, verse: 4, text: "Ketika kudengar berita ini, duduklah aku menangis dan berkabung." },
-      { id: "43:3:16", book: "43", chapter: 3, verse: 16, text: "Karena begitu besar kasih Allah akan dunia ini." },
+      {
+        id: "1:1:1",
+        book: "1",
+        chapter: 1,
+        verse: 1,
+        text: "Pada mulanya Allah menciptakan langit dan bumi.",
+      },
+      {
+        id: "16:1:4",
+        book: "16",
+        chapter: 1,
+        verse: 4,
+        text: "Ketika kudengar berita ini, duduklah aku menangis dan berkabung.",
+      },
+      {
+        id: "43:3:16",
+        book: "43",
+        chapter: 3,
+        verse: 16,
+        text: "Karena begitu besar kasih Allah akan dunia ini.",
+      },
     ];
 
     // Filter by PL (Old Testament: id <= 39)
@@ -78,16 +96,19 @@ describe("Bible quick navigation scrubbing math & column resolution", () => {
     // Filter by current active book (Nehemia id: 16)
     const currentBookVerses = sampleVerses.filter((v) => Number(v.book) === 16);
     expect(currentBookVerses).toHaveLength(1);
-    expect(currentBookVerses[0].text).toContain("menangis");
+    expect(currentBookVerses[0]?.text).toContain("menangis");
 
     // Search query "kasih" across all verses
-    const matchesKasih = sampleVerses.filter((v) => v.text.toLowerCase().includes("kasih"));
+    const matchesKasih = sampleVerses.filter((v) =>
+      v.text.toLowerCase().includes("kasih"),
+    );
     expect(matchesKasih).toHaveLength(1);
-    expect(matchesKasih[0].book).toBe("43");
+    expect(matchesKasih[0]?.book).toBe("43");
   });
 
   it("strips XML/HTML tags like <pb/> from verse search snippets", () => {
-    const rawText = "<pb/>Pada mulanya Allah menciptakan <f>ⓐ</f>langit dan bumi.";
+    const rawText =
+      "<pb/>Pada mulanya Allah menciptakan <f>ⓐ</f>langit dan bumi.";
     const clean = sanitizeBibleText(rawText);
     expect(clean).toBe("Pada mulanya Allah menciptakan langit dan bumi.");
     expect(clean).not.toContain("<pb/>");

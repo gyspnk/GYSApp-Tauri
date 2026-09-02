@@ -946,11 +946,36 @@ function Header({
                 className="topbar-select reader-context-select theme-select"
                 label={translate(locale, "shell.theme")}
                 options={[
-                  { value: "system", label: "Otomatis", shortLabel: "", icon: "system" },
-                  { value: "light", label: "Terang", shortLabel: "", icon: "sun" },
-                  { value: "dark", label: "Gelap", shortLabel: "", icon: "moon" },
-                  { value: "amoled", label: "AMOLED", shortLabel: "", icon: "amoled" },
-                  { value: "sepia", label: "Sepia", shortLabel: "", icon: "sepia" },
+                  {
+                    value: "system",
+                    label: "Otomatis",
+                    shortLabel: "",
+                    icon: "system",
+                  },
+                  {
+                    value: "light",
+                    label: "Terang",
+                    shortLabel: "",
+                    icon: "sun",
+                  },
+                  {
+                    value: "dark",
+                    label: "Gelap",
+                    shortLabel: "",
+                    icon: "moon",
+                  },
+                  {
+                    value: "amoled",
+                    label: "AMOLED",
+                    shortLabel: "",
+                    icon: "amoled",
+                  },
+                  {
+                    value: "sepia",
+                    label: "Sepia",
+                    shortLabel: "",
+                    icon: "sepia",
+                  },
                 ]}
               />
             </div>
@@ -1007,10 +1032,20 @@ function Header({
           className="topbar-select theme-select"
           label={translate(locale, "shell.theme")}
           options={[
-            { value: "system", label: "Otomatis", shortLabel: "", icon: "system" },
+            {
+              value: "system",
+              label: "Otomatis",
+              shortLabel: "",
+              icon: "system",
+            },
             { value: "light", label: "Terang", shortLabel: "", icon: "sun" },
             { value: "dark", label: "Gelap", shortLabel: "", icon: "moon" },
-            { value: "amoled", label: "AMOLED", shortLabel: "", icon: "amoled" },
+            {
+              value: "amoled",
+              label: "AMOLED",
+              shortLabel: "",
+              icon: "amoled",
+            },
             { value: "sepia", label: "Sepia", shortLabel: "", icon: "sepia" },
           ]}
         />
