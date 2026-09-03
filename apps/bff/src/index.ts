@@ -287,7 +287,12 @@ function egysGoogleRejectionMessage(payload: unknown): string {
     typeof payload.message === "string"
       ? payload.message.toLowerCase()
       : "";
-  if (message.includes("not registered") || message.includes("not_registered"))
+  if (
+    message.includes("not registered") ||
+    message.includes("not_registered") ||
+    message.includes("no egys account") ||
+    message.includes("no e-gys account")
+  )
     return "Akun Google belum terdaftar di e-GYS";
   if (message.includes("token is not valid"))
     return "Token Google ditolak oleh e-GYS";
