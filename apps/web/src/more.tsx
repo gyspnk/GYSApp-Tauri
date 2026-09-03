@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type FormEvent,
@@ -25,14 +26,18 @@ import {
   type AssetManifestDiff,
 } from "./asset-updater.js";
 import {
+  clearEgysProfile,
+  clearEgysSessionTrace,
   getEgysProfile,
   readCachedEgysProfile,
   readEgysSessionTrace,
   saveEgysProfile,
+  signInEgysWithGoogle,
   signOutEgys,
   trackEgysProfileSeen,
   type EgysSessionTrace,
 } from "./egys.js";
+import { renderEgysGoogleButton } from "./egys-google.js";
 import {
   clearMidiPlaylist,
   downloadMidiPlaylist,
@@ -383,6 +388,8 @@ export function MorePage({
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
   const [egysLoginOpen, setEgysLoginOpen] = useState(false);
+  const [egysGoogleError, setEgysGoogleError] = useState("");
+  const googleButtonRef = useRef<HTMLDivElement>(null);
   const [isEgysLoginClosing, setIsEgysLoginClosing] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
@@ -595,6 +602,11 @@ export function MorePage({
           saveEgysProfile(profile);
           setEgysUnavailable(false);
           setEgysSession(trackEgysProfileSeen(profile));
+        } else {
+          clearEgysProfile();
+          clearEgysSessionTrace();
+          setAccountProfile(undefined);
+          setEgysSession(undefined);
         }
       })
       .catch((error: unknown) => {
@@ -616,36 +628,54 @@ export function MorePage({
     }, 200);
   };
 
+  const completeGoogleLogin = async (credential: string) => {
+    setAuthBusy(true);
+    setEgysGoogleError("");
+    try {
+      await signInEgysWithGoogle(credential);
+      const profile = await getEgysProfile();
+      if (!profile) throw new Error("e-GYS profile was not returned");
+      setAccountProfile(profile);
+      saveEgysProfile(profile);
+      setEgysSession(trackEgysProfileSeen(profile));
+      show(`Selamat datang, ${profile.displayName}.`);
+      closeEgysLogin();
+    } catch (error) {
+      recordDiagnostic("error", "egys.google-login.complete", error);
+      setEgysGoogleError(
+        "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
+      );
+      show("Login e-GYS belum berhasil. Coba lagi.");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
   useEffect(() => {
-    const handleAuthMessage = (event: MessageEvent) => {
-      try {
-        const data = event.data as Record<string, unknown> | undefined;
-        if (!data || typeof data !== "object") return;
-        if (
-          data.type === "egys-login-success" ||
-          data.event === "auth-success"
-        ) {
-          closeEgysLogin();
-          const controller = new AbortController();
-          setAuthBusy(true);
-          void getEgysProfile(controller.signal)
-            .then((profile) => {
-              if (profile) {
-                setAccountProfile(profile);
-                saveEgysProfile(profile);
-                setEgysSession(trackEgysProfileSeen(profile));
-                show(`Selamat datang, ${profile.displayName}.`);
-              }
-            })
-            .finally(() => setAuthBusy(false));
-        }
-      } catch {
-        // ignore unknown events
-      }
+    if (!egysLoginOpen || nativeShell || !googleButtonRef.current) return;
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
+    const host = googleButtonRef.current;
+    setEgysGoogleError("");
+    void renderEgysGoogleButton(host, (credential) =>
+      completeGoogleLogin(credential),
+    )
+      .then((nextCleanup) => {
+        if (disposed) nextCleanup();
+        else cleanup = nextCleanup;
+      })
+      .catch((error: unknown) => {
+        if (disposed) return;
+        recordDiagnostic("warn", "egys.google-script", error);
+        setEgysGoogleError(
+          "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+        );
+      });
+    return () => {
+      disposed = true;
+      cleanup?.();
     };
-    window.addEventListener("message", handleAuthMessage);
-    return () => window.removeEventListener("message", handleAuthMessage);
-  }, []);
+  }, [egysLoginOpen, nativeShell]);
 
   const show = (message: string) => {
     setNotice(message);
@@ -1004,7 +1034,7 @@ export function MorePage({
               <p className="egys-login-desc">
                 {nativeShell
                   ? "Masuk melalui halaman resmi e-GYS."
-                  : "Login resmi; sinkronisasi profil tersedia di aplikasi terpasang."}
+                  : "Login dengan Google; akun e-GYS akan terdeteksi otomatis setelah berhasil."}
               </p>
               <div className="egys-login-actions">
                 {nativeShell ? (
@@ -1613,27 +1643,55 @@ export function MorePage({
                   ×
                 </button>
               </div>
-              <div className="egys-login-frame-container">
-                <iframe
-                  className="egys-login-iframe"
-                  src={`https://e.gys.or.id/login?theme=${theme}`}
-                  title="Halaman Login Resmi e-GYS"
-                  allow="camera; microphone"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              <div className="egys-login-frame-container egys-login-google-container">
+                <p>
+                  Login dengan akun Google. Setelah berhasil, aplikasi akan
+                  langsung memeriksa dan menampilkan akun e-GYS Anda.
+                </p>
+                <div
+                  ref={googleButtonRef}
+                  className="egys-google-button"
+                  aria-label="Login dengan Google"
                 />
+                {authBusy && (
+                  <p className="egys-google-status" role="status">
+                    Memeriksa akun e-GYS…
+                  </p>
+                )}
+                {egysGoogleError && (
+                  <p className="egys-google-error" role="alert">
+                    {egysGoogleError}
+                  </p>
+                )}
+                <p className="egys-google-fallback">
+                  Untuk Apple atau WhatsApp OTP, lanjutkan melalui portal resmi
+                  e-GYS. Login tersebut belum bisa dibaca lintas situs oleh
+                  browser.
+                </p>
               </div>
               <div className="egys-login-footer">
                 <span>
                   <Icon name="checkCircle" size={14} />
-                  Koneksi resmi & aman langsung ke portal e.gys.or.id
+                  Credential Google diproses melalui koneksi aman aplikasi
                 </span>
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={closeEgysLogin}
-                >
-                  Selesai / Tutup
-                </button>
+                <div className="egys-login-footer-actions">
+                  <a
+                    className="text-button"
+                    href={`https://e.gys.or.id/login?theme=${theme}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    style={{ textDecoration: "none" }}
+                  >
+                    Portal resmi e-GYS ↗
+                  </a>
+                  <button
+                    type="button"
+                    className="quiet-button"
+                    onClick={closeEgysLogin}
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             </div>
           </div>,

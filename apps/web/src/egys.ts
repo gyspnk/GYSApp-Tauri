@@ -150,6 +150,23 @@ export async function getEgysProfile(
   return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
 }
 
+export async function signInEgysWithGoogle(credential: string): Promise<void> {
+  if (!credential.trim()) throw new Error("Google credential is empty");
+  const response = await request(apiUrl("/api/v1/auth/egys/google"), {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+  const body = (await response.json().catch(() => undefined)) as
+    { ok?: unknown } | undefined;
+  if (!response.ok || body?.ok !== true) {
+    const failure = new Error(`e-GYS Google login failed: ${response.status}`);
+    recordDiagnostic("error", "egys.google-login", failure);
+    throw failure;
+  }
+}
+
 export const EGYS_PROFILE_KEY = "gys-egys-profile-v1";
 
 export function readCachedEgysProfile(): AccountProfile | undefined {

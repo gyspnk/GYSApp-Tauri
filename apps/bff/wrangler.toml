@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2026-08-01"
 
 [vars]
-ALLOWED_ORIGINS = "https://gyspnk.github.io,http://localhost:5173"
+ALLOWED_ORIGINS = "https://gyspnk.github.io,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://tauri.localhost"
 SAUH_SOURCE_URL = "https://tjc.org/id/wp-json/wp/v2/posts"
 SUARA_SOURCE_URL = "https://tjc.org/id/wp-json/wp/v2/posts?categories=194&per_page=6&orderby=date&order=desc&_embed=wp:featuredmedia"
 LITERATURE_SOURCE_URL = "https://tjc.org/id/literatur/"

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import {
   DISTRIBUTED_ASSET_CONFIG,
@@ -68,6 +69,11 @@ const DISTRIBUTED_HYMN_INDEXES = Object.fromEntries(
       : [],
   ),
 ) as Record<string, { url: string; sizeBytes: number }>;
+const EGYS_V1_GOOGLE_CLIENT_ID =
+  "748303683851-46ea0qkq8ti4r6lh8ss5aivf60ct71u7.apps.googleusercontent.com";
+const EgysGoogleLoginSchema = z.object({
+  credential: z.string().trim().min(1).max(16_384),
+});
 
 function trustedDistributedPackageUrl(value: string): boolean {
   try {
@@ -116,6 +122,7 @@ export type BffBindings = {
   SAUH_SOURCE_URL?: string;
   SUARA_SOURCE_URL?: string;
   EGYS_API_BASE_URL?: string;
+  EGYS_GOOGLE_CLIENT_ID?: string;
   EDGE_TTS_URL?: string;
   EDGE_TTS_VOICES_URL?: string;
   LITERATURE_SOURCE_URL?: string;
@@ -190,6 +197,20 @@ function egysBase(c: AppContext): string | undefined {
   }
 }
 
+function secureCookie(c: AppContext): boolean {
+  return new URL(c.req.url).protocol === "https:";
+}
+
+function egysSessionCookieOptions(c: AppContext) {
+  return {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 30,
+    path: "/",
+    sameSite: secureCookie(c) ? ("None" as const) : ("Lax" as const),
+    secure: secureCookie(c),
+  };
+}
+
 function allowlistedTjcSource(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   if (!trimmed) return undefined;
@@ -209,12 +230,53 @@ function allowlistedTjcSource(value: string | undefined): string | undefined {
 function egysHeaders(c: AppContext, headers?: HeadersInit): Headers {
   const next = new Headers(headers);
   next.set("accept", "application/json");
-  const cookie = c.req.header("cookie");
+  const session = getCookie(c, "egys_session");
+  const cookie = c.req
+    .header("cookie")
+    ?.split(";")
+    .map((part) => part.trim())
+    .filter((part) => !part.startsWith("egys_session="))
+    .join("; ");
   const authorization = c.req.header("authorization");
   if (cookie) next.set("cookie", cookie);
   if (authorization) next.set("authorization", authorization);
+  else if (session) next.set("authorization", `Bearer ${session}`);
   next.set("x-request-id", requestId(c));
   return next;
+}
+
+async function requestEgysGoogleLogin(
+  c: AppContext,
+  credential: string,
+): Promise<Response | undefined> {
+  const base = egysBase(c);
+  if (!base) return undefined;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  const abort = () => controller.abort();
+  c.req.raw.signal.addEventListener("abort", abort, { once: true });
+  try {
+    return await fetch(`${base}/auth/google/callbackgis`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/x-www-form-urlencoded",
+        "x-request-id": requestId(c),
+      },
+      body: new URLSearchParams({
+        __mode: "popup",
+        client_id:
+          c.env?.EGYS_GOOGLE_CLIENT_ID?.trim() || EGYS_V1_GOOGLE_CLIENT_ID,
+        credential,
+        ismobile: "1",
+        select_by: "btn",
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+    c.req.raw.signal.removeEventListener("abort", abort);
+  }
 }
 
 function forwardSetCookie(c: AppContext, upstream: Response): void {
@@ -1197,12 +1259,65 @@ export function createApp(
     }
   });
 
+  app.post("/api/v1/auth/egys/google", async (c) => {
+    c.header("cache-control", "no-store");
+    const parsed = EgysGoogleLoginSchema.safeParse(
+      await c.req.json().catch(() => undefined),
+    );
+    if (!parsed.success)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Google credential is invalid",
+      );
+    let upstream: Response | undefined;
+    try {
+      upstream = await requestEgysGoogleLogin(c, parsed.data.credential);
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS login is unavailable",
+      );
+    }
+    if (!upstream)
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "e-GYS is not configured for this deployment",
+      );
+    const payload: unknown = await upstream.json().catch(() => undefined);
+    const rejected =
+      typeof payload === "object" &&
+      payload !== null &&
+      "error" in payload &&
+      payload.error === true;
+    if (!upstream.ok || rejected)
+      return errorResponse(
+        c,
+        "UNAUTHORIZED",
+        "Google login was rejected by e-GYS",
+      );
+    const token =
+      typeof payload === "object" &&
+      payload !== null &&
+      "token" in payload &&
+      typeof payload.token === "string"
+        ? payload.token.trim()
+        : "";
+    if (!token)
+      return errorResponse(
+        c,
+        "INTEGRITY_ERROR",
+        "e-GYS login returned no session token",
+      );
+    setCookie(c, "egys_session", token, egysSessionCookieOptions(c));
+    return c.json({ ok: true });
+  });
+
   app.post("/api/v1/auth/logout", async (c) => {
     c.header("cache-control", "no-store");
-    c.header(
-      "set-cookie",
-      "egys_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-    );
+    deleteCookie(c, "egys_session", egysSessionCookieOptions(c));
     return c.body(null, 204);
   });
 
@@ -1268,7 +1383,14 @@ export function createApp(
 }
 
 export const app = createApp({
-  allowedOrigins: ["https://gyspnk.github.io", "http://localhost:5173"],
+  allowedOrigins: [
+    "https://gyspnk.github.io",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://tauri.localhost",
+  ],
   chordManifest: generatedChordManifest,
   content: [],
 });
