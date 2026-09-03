@@ -643,7 +643,9 @@ export function MorePage({
     } catch (error) {
       recordDiagnostic("error", "egys.google-login.complete", error);
       setEgysGoogleError(
-        "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
+        error instanceof Error && error.message
+          ? error.message
+          : "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
       );
       show("Login e-GYS belum berhasil. Coba lagi.");
     } finally {

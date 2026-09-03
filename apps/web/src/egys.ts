@@ -159,9 +159,13 @@ export async function signInEgysWithGoogle(credential: string): Promise<void> {
     body: JSON.stringify({ credential }),
   });
   const body = (await response.json().catch(() => undefined)) as
-    { ok?: unknown } | undefined;
+    { ok?: unknown; error?: { message?: unknown } } | undefined;
   if (!response.ok || body?.ok !== true) {
-    const failure = new Error(`e-GYS Google login failed: ${response.status}`);
+    const message =
+      typeof body?.error?.message === "string" && body.error.message.trim()
+        ? body.error.message.trim()
+        : `e-GYS Google login failed: ${response.status}`;
+    const failure = new Error(message);
     recordDiagnostic("error", "egys.google-login", failure);
     throw failure;
   }

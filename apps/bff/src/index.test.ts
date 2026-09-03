@@ -1116,6 +1116,51 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("returns a safe reason when e-GYS rejects the Google credential", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json(
+        {
+          error: true,
+          message: "Token is not valid.",
+          token: "must-not-leak",
+        },
+        { status: 200 },
+      ),
+    );
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/auth/egys/google",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ credential: "google-id-token" }),
+        },
+        { EGYS_API_BASE_URL: "https://e.gys.or.id" },
+      );
+
+      expect(response.status).toBe(401);
+      const body = await response.json();
+      expect(body).toMatchObject({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Token Google ditolak oleh e-GYS",
+        },
+      });
+      expect(JSON.stringify(body)).not.toContain("must-not-leak");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("does not expose draft e-GYS v2 login routes", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getEgysProfile } from "./egys.js";
+import { getEgysProfile, signInEgysWithGoogle } from "./egys.js";
 
 describe("e-GYS client authentication boundary", () => {
   it("attaches the native v1 token only to the BFF request", async () => {
@@ -38,6 +38,40 @@ describe("e-GYS client authentication boundary", () => {
       expect(fetchMock).toHaveBeenCalledOnce();
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
+
+  it("surfaces the safe BFF rejection reason", async () => {
+    vi.stubEnv("VITE_BFF_BASE_URL", "https://bff.example");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(() =>
+        Promise.resolve(
+          Response.json(
+            {
+              error: {
+                code: "UNAUTHORIZED",
+                message: "Token Google ditolak oleh e-GYS",
+                requestId: "request-1",
+              },
+            },
+            { status: 401 },
+          ),
+        ),
+      ),
+    );
+    vi.stubGlobal("window", {
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+      location: { pathname: "/lainnya", href: "https://bff.example/lainnya" },
+    });
+    try {
+      await expect(signInEgysWithGoogle("google-id-token")).rejects.toThrow(
+        "Token Google ditolak oleh e-GYS",
+      );
+    } finally {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
     }
   });
 });

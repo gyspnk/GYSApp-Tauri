@@ -279,6 +279,21 @@ async function requestEgysGoogleLogin(
   }
 }
 
+function egysGoogleRejectionMessage(payload: unknown): string {
+  const message =
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof payload.message === "string"
+      ? payload.message.toLowerCase()
+      : "";
+  if (message.includes("not registered") || message.includes("not_registered"))
+    return "Akun Google belum terdaftar di e-GYS";
+  if (message.includes("token is not valid"))
+    return "Token Google ditolak oleh e-GYS";
+  return "Google login was rejected by e-GYS";
+}
+
 function forwardSetCookie(c: AppContext, upstream: Response): void {
   const value = upstream.headers.get("set-cookie");
   if (!value) return;
@@ -1296,7 +1311,7 @@ export function createApp(
       return errorResponse(
         c,
         "UNAUTHORIZED",
-        "Google login was rejected by e-GYS",
+        egysGoogleRejectionMessage(payload),
       );
     const token =
       typeof payload === "object" &&
