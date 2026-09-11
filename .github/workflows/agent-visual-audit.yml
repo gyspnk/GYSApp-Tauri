@@ -1,0 +1,45 @@
+name: Agent visual audit
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-visual-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - id: visual
+        name: Capture visual regressions
+        continue-on-error: true
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts --project=chromium --reporter=line
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-evidence
+          if-no-files-found: warn
+          path: |
+            apps/web/test-results/**
+            apps/web/e2e/visual.spec.ts-snapshots/**
+      - name: Preserve visual gate result
+        if: steps.visual.outcome != 'success'
+        run: exit 1
