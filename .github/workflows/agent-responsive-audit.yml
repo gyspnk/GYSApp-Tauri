@@ -26,8 +26,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Build web
-        run: pnpm --filter @gys/web build
+      - name: Build workspace
+        run: pnpm build
       - name: Start preview
         run: |
           pnpm --filter @gys/web exec vite preview --host 127.0.0.1 --port 4173 > /tmp/gys-preview.log 2>&1 &
