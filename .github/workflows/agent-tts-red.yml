@@ -1,0 +1,41 @@
+name: Agent TTS red-phase verifier
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - '.github/workflows/agent-tts-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Prove new TTS contracts fail before implementation
+        shell: bash
+        run: |
+          set +e
+          pnpm --filter @gys/web exec vitest run src/speech-language.test.ts src/edge-direct.test.ts 2>&1 | tee /tmp/tts-red.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "Expected focused TTS tests to be RED before implementation, but they passed."
+            exit 1
+          fi
+          grep -Eq "detectSpeechLanguage|resolveSpeechVoiceForText" /tmp/tts-red.log
+          grep -Eq "xml:lang|id-ID" /tmp/tts-red.log
+          echo "RED phase confirmed: language detection/voice resolution and SSML locale contracts fail before production changes."
