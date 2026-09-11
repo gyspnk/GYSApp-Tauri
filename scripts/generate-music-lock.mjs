@@ -4,7 +4,8 @@ import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 const sourceRepo = "gyspnk/gyschordweb";
-const sourceCommit = process.env.GYSCHORDWEB_COMMIT ?? "a3d1ea7";
+const sourceCommit =
+  process.env.GYSCHORDWEB_COMMIT ?? "a9bf3219105dca3dde1b286328f46a0eede3287e";
 const generatedAt = new Date().toISOString();
 const sourceRoot = process.env.GYSCHORDWEB_SNAPSHOT;
 

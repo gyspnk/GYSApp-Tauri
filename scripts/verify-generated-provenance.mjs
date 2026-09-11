@@ -36,12 +36,34 @@ const sourceField = (field, value) =>
   forkPdfSource.includes(`${field}: ${value}`) ||
   forkPdfSource.includes(`"${field}": ${value}`);
 
-if (lock.sourceRepo !== "gyspnk/gyschordweb" || lock.sourceCommit !== "a3d1ea7")
+if (
+  lock.sourceRepo !== "gyspnk/gyschordweb" ||
+  lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"
+)
   throw new Error("music lock provenance drifted");
-if (lock.items.length !== 1212)
-  throw new Error(`expected 1212 music entries, got ${lock.items.length}`);
-if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 144)
+if (lock.items.length !== 1221)
+  throw new Error(`expected 1221 music entries, got ${lock.items.length}`);
+if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 153)
   throw new Error("chord manifest drifted from music lock");
+for (const requiredChord of [
+  "108_",
+  "196_",
+  "271_",
+  "322_",
+  "398_",
+  "407_",
+  "466_",
+  "467_",
+  "492_",
+]) {
+  if (
+    !lock.items.some(
+      (item) => item.kind === "chord" && item.path.includes(requiredChord),
+    )
+  )
+    throw new Error(`required canonical chord missing: ${requiredChord}`);
+}
+
 if (
   chordAudit.version !== 1 ||
   chordAudit.sourceRepo !== lock.sourceRepo ||

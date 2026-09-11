@@ -123,3 +123,7 @@ No row is marked `PARITY` until the scope-specific benchmark, accessibility,
 device, or protected-service evidence named in the final column is attached.
 This prevents the matrix from claiming a full GA sign-off merely because a
 route or control exists locally.
+
+## September 2026 canonical parity refresh
+
+Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). Compared with the previous `a3d1ea7` source lock, canonical upstream adds nine note-aligned chord assets: hymns 108, 196, 271, 322, 398, 407, 466, 467, and 492. The canonical generated set is now 1,221 music assets and 153 chord references. Generated provenance and the strict chord-position audit must pass before this refresh is treated as verified parity evidence.
