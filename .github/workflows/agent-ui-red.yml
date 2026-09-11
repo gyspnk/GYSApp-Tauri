@@ -27,11 +27,54 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Diagnose first compact Kidung row
+        run: |
+          cat > apps/web/e2e/.agent-kidung-diagnostic.spec.ts <<'EOF'
+          import { expect, test } from "@playwright/test";
+          test.use({ serviceWorkers: "block" });
+          test("diagnose first Kidung row at 320px", async ({ page }) => {
+            await page.setViewportSize({ width: 320, height: 720 });
+            await page.goto("/GYSApp-Tauri/kidung");
+            await expect(page.getByRole("heading", { name: "Kidung", exact: true })).toBeVisible();
+            const data = await page.locator(".pujian-item").first().evaluate((item) => {
+              const read = (el: Element | null) => {
+                if (!el) return null;
+                const rect = el.getBoundingClientRect();
+                const style = getComputedStyle(el);
+                return {
+                  className: (el as HTMLElement).className,
+                  x: rect.x,
+                  width: rect.width,
+                  right: rect.right,
+                  display: style.display,
+                  minWidth: style.minWidth,
+                  widthCss: style.width,
+                  flex: style.flex,
+                  flexBasis: style.flexBasis,
+                  flexGrow: style.flexGrow,
+                  flexShrink: style.flexShrink,
+                  gap: style.gap,
+                  paddingInline: `${style.paddingInlineStart}/${style.paddingInlineEnd}`,
+                  whiteSpace: style.whiteSpace,
+                  overflow: style.overflow,
+                };
+              };
+              return {
+                viewport: innerWidth,
+                documentWidth: document.documentElement.scrollWidth,
+                page: read(item.closest(".hymn-page")),
+                list: read(item.closest(".pujian-list")),
+                item: read(item),
+                number: read(item.querySelector(".pujian-nomor")),
+                title: read(item.querySelector(".pujian-title")),
+                chord: read(item.querySelector(".chord-indicator")),
+                add: read(item.querySelector(".add-to-playlist-btn")),
+              };
+            });
+            console.log("KIDUNG_DIAGNOSTIC", JSON.stringify(data));
+          });
+          EOF
+          pnpm --filter @gys/web exec playwright test e2e/.agent-kidung-diagnostic.spec.ts --project=chromium
+          rm apps/web/e2e/.agent-kidung-diagnostic.spec.ts
       - name: Compact Kidung contract
         run: pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium
-      - name: Reader and navigation regressions
-        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
-      - name: Web typecheck
-        run: pnpm --filter @gys/web typecheck
-      - name: Workspace build
-        run: pnpm build
