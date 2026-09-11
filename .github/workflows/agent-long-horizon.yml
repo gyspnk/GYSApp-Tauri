@@ -1,4 +1,4 @@
-name: Agent final quality retry
+name: Agent final quality replan
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
   quality:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,12 +26,24 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Apply diagnosed documentation and Hono repairs
+      - name: Apply generated-artifact boundary, docs repair, and Hono patch
         shell: bash
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
+
+          ignore = Path('.prettierignore')
+          ignored = ignore.read_text().splitlines()
+          generated = [
+              'apps/bff/src/chord-manifest.ts',
+              'apps/web/public/offline/hymn-catalog.json',
+              'packages/contracts/generated/hymn-catalog.json',
+          ]
+          for item in generated:
+              if item not in ignored:
+                  ignored.append(item)
+          ignore.write_text('\n'.join(ignored).rstrip() + '\n')
 
           verifier = Path('scripts/verify-documentation.mjs')
           source = verifier.read_text()
@@ -50,46 +62,43 @@ jobs:
                   source = source[:start] + source[end + len('  ],\n'):]
           verifier.write_text(source)
 
+          package = Path('apps/bff/package.json')
+          data = json.loads(package.read_text())
+          data['dependencies']['hono'] = '4.13.5'
+          package.write_text(json.dumps(data, indent=2) + '\n')
+
           changelog = Path('CHANGELOG.md')
           text = changelog.read_text()
           anchor = '## Unreleased — GA hardening slice\n'
-          note = '''\n- Synced canonical hymn/chord parity to the 2026-09-05 gyschordweb source, added native keyless Edge-compatible online TTS with safe fallbacks, and hardened the responsive sidebar/media shell.\n- Clean-checkout documentation verification now validates tracked living documentation instead of local-only continuity artifacts that were never committed to the repository.\n- Updated Hono to the first patched 4.13.5 release used by this branch to clear current production dependency advisories.\n'''
+          note = '''\n- Synced canonical hymn/chord parity to the 2026-09-05 gyschordweb source, added native keyless Edge-compatible online TTS with safe fallbacks, and hardened the responsive sidebar/media shell.\n- Clean-checkout documentation verification now validates tracked living documentation instead of local-only continuity artifacts that were never committed to the repository.\n- Generated canonical hymn/chord outputs with byte-integrity provenance are excluded from generic Prettier rewriting; their dedicated provenance verifier remains authoritative.\n- Updated Hono from 4.13.2 to patched 4.13.5 to clear current production dependency advisories.\n'''
           if note.strip() not in text:
               if anchor not in text:
                   raise SystemExit('Unreleased changelog anchor not found')
               text = text.replace(anchor, anchor + note, 1)
           changelog.write_text(text)
-
-          package = Path('apps/bff/package.json')
-          data = json.loads(package.read_text())
-          data['dependencies']['hono'] = '4.13.5'
-          package.write_text(json.dumps(data, indent=2) + '\n')
           PY
 
-      - name: Resolve patched dependency lockfile
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Repair known formatting drift
+      - name: Resolve dependency lock and format mutable files only
+        shell: bash
         run: |
+          pnpm install --no-frozen-lockfile
           pnpm exec prettier --write \
+            .prettierignore \
             scripts/verify-documentation.mjs \
             CHANGELOG.md \
             apps/bff/package.json \
-            apps/bff/src/chord-manifest.ts \
-            apps/web/public/offline/hymn-catalog.json \
             docs/superpowers/plans/2026-09-11-parity-ui-tts-redesign.md \
-            packages/contracts/generated/hymn-catalog.json \
             pnpm-lock.yaml
 
-      - name: Verify targeted repairs before full matrix
+      - name: Focused integrity, security, and format gates
         run: |
+          pnpm verify:generated
           node --test scripts/verify-documentation.test.mjs
           pnpm verify:docs
-          pnpm verify:generated
-          pnpm --filter @gys/bff typecheck
-          pnpm --filter @gys/bff test
           pnpm audit --prod
           pnpm format:check
+          pnpm --filter @gys/bff typecheck
+          pnpm --filter @gys/bff test
 
       - name: Run complete JavaScript quality matrix
         run: |
@@ -132,15 +141,13 @@ jobs:
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
+            .prettierignore \
             scripts/verify-documentation.mjs \
             CHANGELOG.md \
             apps/bff/package.json \
-            apps/bff/src/chord-manifest.ts \
-            apps/web/public/offline/hymn-catalog.json \
             docs/superpowers/plans/2026-09-11-parity-ui-tts-redesign.md \
-            packages/contracts/generated/hymn-catalog.json \
             pnpm-lock.yaml
           if ! git diff --cached --quiet; then
-            git commit -m "fix(ci): clear repository quality gates [agent-generated]"
+            git commit -m "fix(ci): align formatting, provenance, and dependency gates [agent-generated]"
             git push origin HEAD:audit/parity-ui-tts-20260911
           fi
