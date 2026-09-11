@@ -12,7 +12,7 @@ jobs:
   shell:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,11 +24,36 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build workspace dependencies
+
+      - name: Repair missing React Vite plugin dependency
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('apps/web/package.json')
+          data = json.loads(path.read_text())
+          data.setdefault('devDependencies', {})['@vitejs/plugin-react'] = '6.1.1'
+          path.write_text(json.dumps(data, indent=2) + '\n')
+          PY
+          pnpm install --no-frozen-lockfile
+
+      - name: Verify clean web build root cause
         run: |
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
+          pnpm --filter @gys/web build
+
+      - name: Commit build dependency repair
+        shell: bash
+        run: |
+          git config user.name "OpenAI Agent"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/package.json pnpm-lock.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "fix(web): declare React Vite build plugin [agent-generated]"
+            git push origin HEAD:audit/parity-ui-tts-20260911
+          fi
 
       - name: RED - define persisted sidebar preference
         shell: bash
@@ -137,14 +162,10 @@ jobs:
             .workspace {
               transition: grid-template-columns var(--motion-normal, 220ms) var(--ease-out, ease-out);
             }
-
             .navigation-shell {
               position: relative;
-              transition:
-                padding var(--motion-normal, 220ms) var(--ease-out, ease-out),
-                background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
+              transition: padding var(--motion-normal, 220ms) var(--ease-out, ease-out);
             }
-
             .sidebar-collapse-toggle {
               position: absolute;
               top: 22px;
@@ -158,43 +179,29 @@ jobs:
               border: 1px solid var(--line);
               border-radius: 10px;
               background: var(--surface);
-              color: var(--muted-strong, var(--text));
-              box-shadow: 0 4px 14px color-mix(in srgb, var(--text) 10%, transparent);
+              color: var(--text);
               cursor: pointer;
-              transition:
-                border-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
-                background-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
-                transform var(--motion-fast, 150ms) var(--ease-out, ease-out);
+              transition: border-color var(--motion-fast, 150ms) var(--ease-out, ease-out), background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
             }
-
             .sidebar-collapse-toggle:hover {
               border-color: color-mix(in srgb, var(--accent, var(--blue)) 42%, var(--line));
               background: color-mix(in srgb, var(--accent, var(--blue)) 7%, var(--surface));
             }
-
             .sidebar-collapse-toggle:focus-visible {
               outline: 2px solid var(--accent, var(--blue));
               outline-offset: 3px;
             }
-
             .workspace.is-sidebar-collapsed {
               grid-template-columns: 80px minmax(0, 1fr);
             }
-
             .workspace.is-sidebar-collapsed .navigation-shell {
               padding-inline: 12px;
             }
-
-            .workspace.is-sidebar-collapsed .primary-nav {
-              align-items: stretch;
-            }
-
             .workspace.is-sidebar-collapsed .nav-item {
               justify-content: center;
               gap: 0;
               padding-inline: 0;
             }
-
             .workspace.is-sidebar-collapsed .nav-copy,
             .workspace.is-sidebar-collapsed .sidebar-foot {
               width: 0;
@@ -204,26 +211,16 @@ jobs:
               pointer-events: none;
               transform: translateX(-6px);
               white-space: nowrap;
-              transition:
-                opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
-                transform var(--motion-normal, 220ms) var(--ease-out, ease-out),
-                width var(--motion-normal, 220ms) var(--ease-out, ease-out);
+              transition: opacity var(--motion-fast, 150ms) var(--ease-out, ease-out), transform var(--motion-normal, 220ms) var(--ease-out, ease-out), width var(--motion-normal, 220ms) var(--ease-out, ease-out);
             }
-
             .workspace:not(.is-sidebar-collapsed) .nav-copy,
             .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
-              transition:
-                opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
-                transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
+              transition: opacity var(--motion-fast, 150ms) var(--ease-out, ease-out), transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
             }
           }
-
           @media (max-width: 959px) {
-            .sidebar-collapse-toggle {
-              display: none;
-            }
+            .sidebar-collapse-toggle { display: none; }
           }
-
           @media (prefers-reduced-motion: reduce) {
             .workspace,
             .navigation-shell,
@@ -253,7 +250,6 @@ jobs:
             const expanded = await nav.boundingBox();
             expect(expanded).not.toBeNull();
             expect(expanded!.width).toBeGreaterThan(200);
-
             const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
             await expect(collapse).toBeVisible();
             await expect(collapse).toHaveAttribute("aria-expanded", "true");
@@ -263,7 +259,6 @@ jobs:
             expect(collapsed).not.toBeNull();
             expect(collapsed!.width).toBeLessThan(100);
             await expect(page.getByRole("button", { name: "Perluas navigasi" })).toHaveAttribute("aria-expanded", "false");
-
             await page.reload();
             await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
             await expect(page.getByRole("button", { name: "Perluas navigasi" })).toBeVisible();
@@ -282,7 +277,7 @@ jobs:
           });
           EOF
 
-      - name: Format and unit/type/build verification
+      - name: Format and unit type build verification
         run: |
           pnpm exec prettier --write apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
           pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts
@@ -300,5 +295,7 @@ jobs:
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
-          git commit -m "feat(shell): add responsive desktop navigation collapse [agent-generated]"
-          git push origin HEAD:audit/parity-ui-tts-20260911
+          if ! git diff --cached --quiet; then
+            git commit -m "feat(shell): add responsive desktop navigation collapse [agent-generated]"
+            git push origin HEAD:audit/parity-ui-tts-20260911
+          fi
