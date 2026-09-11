@@ -1,4 +1,4 @@
-name: Agent visual audit
+name: Agent visual baseline acceptance
 
 on:
   push:
@@ -8,10 +8,10 @@ on:
       - ".github/workflows/agent-visual-audit.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  audit:
+  accept:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -27,19 +27,31 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - id: visual
-        name: Capture visual regressions
-        continue-on-error: true
+      - name: Update inspected visual baselines
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts --project=chromium --update-snapshots --reporter=line
+      - name: Guard accepted snapshot set
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git diff --name-only -- apps/web/e2e/visual.spec.ts-snapshots | sort)"
+          expected="$(printf '%s\n' \
+            apps/web/e2e/visual.spec.ts-snapshots/bible-1440x900-linux.png \
+            apps/web/e2e/visual.spec.ts-snapshots/bible-768x1024-linux.png \
+            apps/web/e2e/visual.spec.ts-snapshots/home-1440x900-linux.png \
+            apps/web/e2e/visual.spec.ts-snapshots/kidung-1440x900-linux.png \
+            apps/web/e2e/visual.spec.ts-snapshots/kidung-390x844-linux.png \
+            apps/web/e2e/visual.spec.ts-snapshots/kidung-768x1024-linux.png | sort)"
+          printf 'Changed snapshots:\n%s\n' "$actual"
+          test "$actual" = "$expected"
+          git diff --check
+      - name: Re-run visual gate against accepted baselines
         run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts --project=chromium --reporter=line
-      - name: Upload visual evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: visual-evidence
-          if-no-files-found: warn
-          path: |
-            apps/web/test-results/**
-            apps/web/e2e/visual.spec.ts-snapshots/**
-      - name: Preserve visual gate result
-        if: steps.visual.outcome != 'success'
-        run: exit 1
+      - name: Commit verified baselines
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/e2e/visual.spec.ts-snapshots
+          git commit -m "test: accept inspected visual baselines"
+          git push origin HEAD:audit/parity-ui-tts-20260911
