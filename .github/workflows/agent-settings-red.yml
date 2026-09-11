@@ -1,4 +1,4 @@
-name: Agent settings integrity RED
+name: Agent direct reader close RED
 
 on:
   push:
@@ -27,5 +27,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Expected RED regressions with final note interaction
-        run: pnpm --filter @gys/web exec playwright test e2e/settings-data-integrity.spec.ts --project=chromium --reporter=line
+      - name: Expected RED direct-reader close regression
+        run: pnpm --filter @gys/web exec playwright test e2e/reading-direct-flow.spec.ts --project=chromium --reporter=line
