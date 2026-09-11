@@ -1,17 +1,12 @@
-name: Agent More menu GREEN
-
+name: More menu verification
 on:
   push:
-    branches:
-      - audit/parity-ui-tts-20260911
-    paths:
-      - ".github/workflows/agent-more-green.yml"
-
+    branches: [audit/parity-ui-tts-20260911]
+    paths: [.github/workflows/agent-more-green.yml]
 permissions:
   contents: write
-
 jobs:
-  green:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -27,177 +22,16 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Refine More information hierarchy and guard destructive reset
-        run: |
-          python3 <<'PY'
-          from pathlib import Path
-
-          path = Path("apps/web/src/more.tsx")
-          text = path.read_text()
-          old = '''        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
-              : "Daftar lagu untuk kebaktian atau latihan"}
-          </small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setBackupOpen((open) => !open)}
-        >
-          <span className="more-icon">↥</span>
-          <strong>Backup & import</strong>
-          <small>Simpan atau pulihkan data catatan & riwayat</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => {
-            void clearAppData()
-              .then(() =>
-                show(
-                  "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
-                ),
-              )
-              .catch(() =>
-                show(
-                  "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                ),
-              );
-          }}
-        >
-          <span className="more-icon">⌁</span>
-          <strong>Reset perangkat</strong>
-          <small>Bersihkan cache dan mulai ulang preferensi</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setReminderOpen((open) => !open)}
-        >
-          <span className="more-icon">◷</span>
-          <strong>Pengingat</strong>
-          <small>Atur waktu teduh membaca firman harian</small>
-        </button>'''
-          new = '''        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setBackupOpen((open) => !open)}
-        >
-          <span className="more-icon">↥</span>
-          <strong>Backup & import</strong>
-          <small>Simpan atau pulihkan catatan, progres baca, dan preferensi</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setReminderOpen((open) => !open)}
-        >
-          <span className="more-icon">◷</span>
-          <strong>Pengingat</strong>
-          <small>Atur waktu teduh membaca firman harian</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
-              : "Susun lagu untuk kebaktian atau latihan"}
-          </small>
-        </button>
-
-        <details
-          className="more-card more-card-wide device-data-tools"
-          data-testid="device-data-tools"
-        >
-          <summary className="device-data-summary">
-            <span>
-              <strong>Perangkat & data</strong>
-              <small>Alat lanjutan untuk penyimpanan lokal</small>
-            </span>
-            <span className="device-data-chevron" aria-hidden="true">
-              ›
-            </span>
-          </summary>
-          <div className="device-data-body">
-            <div>
-              <strong>Reset perangkat</strong>
-              <small>
-                Hapus preferensi, cache, progres lokal, dan data offline aplikasi
-                dari perangkat ini. Gunakan hanya bila diperlukan.
-              </small>
-            </div>
-            <button
-              className="quiet-button danger-button"
-              type="button"
-              onClick={() => {
-                const confirmed = window.confirm(
-                  "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
-                );
-                if (!confirmed) return;
-                void clearAppData()
-                  .then(() =>
-                    show(
-                      "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
-                    ),
-                  )
-                  .catch(() =>
-                    show(
-                      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                    ),
-                  );
-              }}
-            >
-              Reset perangkat
-            </button>
-          </div>
-        </details>'''
-          if text.count(old) != 1:
-              raise SystemExit(f"Expected one More action cluster, found {text.count(old)}")
-          path.write_text(text.replace(old, new, 1))
-
-          styles = Path("apps/web/src/styles.css")
-          styles.write_text(
-              styles.read_text()
-              + '''\n\n/* More: keep destructive device actions secondary to everyday settings. */\n.device-data-tools {\n  padding: 0;\n  overflow: clip;\n}\n\n.device-data-summary {\n  min-height: 70px;\n  padding: 18px 20px;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 16px;\n  cursor: pointer;\n  list-style: none;\n}\n\n.device-data-summary::-webkit-details-marker {\n  display: none;\n}\n\n.device-data-summary > span:first-child {\n  display: grid;\n  gap: 3px;\n}\n\n.device-data-summary small,\n.device-data-body small {\n  color: var(--muted);\n}\n\n.device-data-chevron {\n  font-size: 1.35rem;\n  line-height: 1;\n  transition: transform 160ms ease;\n}\n\n.device-data-tools[open] .device-data-chevron {\n  transform: rotate(90deg);\n}\n\n.device-data-body {\n  border-top: 1px solid var(--line);\n  padding: 16px 20px 20px;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 20px;\n}\n\n.device-data-body > div {\n  display: grid;\n  gap: 4px;\n  max-width: 64ch;\n}\n\n.danger-button {\n  flex: 0 0 auto;\n}\n\n@media (max-width: 620px) {\n  .device-data-summary {\n    min-height: 64px;\n    padding: 16px;\n  }\n\n  .device-data-body {\n    padding: 14px 16px 16px;\n    align-items: stretch;\n    flex-direction: column;\n  }\n\n  .danger-button {\n    width: 100%;\n  }\n}\n'''
-          )
-          PY
-      - name: Format changed UI
-        run: pnpm exec prettier --write apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/more-device-data.spec.ts
-      - name: Verify code gates
-        run: |
-          pnpm format:check
-          pnpm lint
-          pnpm typecheck
-          pnpm test
-          pnpm build
-          pnpm verify:bundle
-      - name: Verify More interaction
-        run: |
-          pnpm --filter @gys/web exec playwright install --with-deps chromium
-          pnpm --filter @gys/web exec playwright test e2e/more-device-data.spec.ts --project=chromium
+      - run: python3 scripts/agent-more-patch.py
+      - run: pnpm exec prettier --write apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/more-device-data.spec.ts
+      - run: pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm verify:bundle
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @gys/web exec playwright test e2e/more-device-data.spec.ts --project=chromium
       - name: Commit verified hierarchy
         run: |
           git config user.name "gysapp-agent"
           git config user.email "actions@users.noreply.github.com"
-          git rm .github/workflows/agent-more-red.yml .github/workflows/agent-more-green.yml
+          git rm .github/workflows/agent-more-red.yml .github/workflows/agent-more-green.yml scripts/agent-more-patch.py
           git add apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/more-device-data.spec.ts
           git commit -m "refactor: make device reset safer and secondary"
           git push origin HEAD:audit/parity-ui-tts-20260911
