@@ -26,6 +26,7 @@
 ### Task 1: Lock current gyschordweb parity and expose stale-source failures
 
 **Files:**
+
 - Modify: `scripts/generate-music-lock.mjs`
 - Modify: `scripts/generate-chord-manifest.mjs`
 - Modify: `docs/discovery/feature-parity-matrix.md`
@@ -33,6 +34,7 @@
 - Test: existing script/generation verification tests plus chord audit
 
 **Interfaces:**
+
 - Consumes: `GYSCHORDWEB_SNAPSHOT` checkout at the exact canonical source commit.
 - Produces: generated music/chord manifests that include hymn chord resources 108, 196, 271, and 492 and record the exact source commit.
 
@@ -43,7 +45,11 @@ Update the existing generation/provenance verification test so it expects the ca
 ```js
 assert.equal(lock.sourceCommit, "a9bf3219105dca3dde1b286328f46a0eede3287e");
 for (const required of ["108_", "196_", "271_", "492_"]) {
-  assert.ok(lock.items.some((item) => item.kind === "chord" && item.path.includes(required)));
+  assert.ok(
+    lock.items.some(
+      (item) => item.kind === "chord" && item.path.includes(required),
+    ),
+  );
 }
 ```
 
@@ -104,12 +110,14 @@ git commit -m "chore(parity): sync current gyschordweb chord source"
 ### Task 2: Build a unit-testable direct Edge-compatible speech protocol
 
 **Files:**
+
 - Create: `apps/web/src/edge-direct.ts`
 - Create: `apps/web/src/edge-direct.test.ts`
 - Modify: `apps/web/src/edge-speech.ts`
 - Modify: `apps/web/src/edge-speech.test.ts`
 
 **Interfaces:**
+
 - Produces: `DirectEdgeTransport` with `synthesize(request, signal): Promise<Blob>` and `available(): boolean`.
 - `EdgeSpeechProvider` selects configured gateway first and direct transport second.
 
@@ -119,9 +127,17 @@ git commit -m "chore(parity): sync current gyschordweb chord source"
 it("uses direct keyless transport when no gateway is configured", async () => {
   vi.stubEnv("VITE_EDGE_TTS_URL", "");
   vi.stubEnv("VITE_BFF_BASE_URL", "");
-  const direct = { available: () => true, synthesize: vi.fn().mockResolvedValue(new Blob(["mp3"], { type: "audio/mpeg" })) };
+  const direct = {
+    available: () => true,
+    synthesize: vi
+      .fn()
+      .mockResolvedValue(new Blob(["mp3"], { type: "audio/mpeg" })),
+  };
   const provider = new EdgeSpeechProvider({ directTransport: direct });
-  await expect(provider.status()).resolves.toMatchObject({ available: true, offline: false });
+  await expect(provider.status()).resolves.toMatchObject({
+    available: true,
+    offline: false,
+  });
 });
 ```
 
@@ -219,12 +235,14 @@ git commit -m "feat(tts): add keyless direct Edge-compatible transport"
 ### Task 3: Make TTS fallback and settings truthful and recoverable
 
 **Files:**
+
 - Modify: `apps/web/src/speech-player.ts`
 - Modify: corresponding speech-player tests
 - Modify: `apps/web/src/more.tsx`
 - Test: speech orchestrator/settings tests
 
 **Interfaces:**
+
 - Consumes: `EdgeSpeechProvider.status()` and failures from gateway/direct mode.
 - Produces: recoverable fallback to system provider and truthful UI copy for online Edge-compatible speech.
 
@@ -271,6 +289,7 @@ git commit -m "fix(tts): recover from Edge transport failures"
 ### Task 4: Add a persistent desktop sidebar collapse state
 
 **Files:**
+
 - Create: `apps/web/src/shell-preferences.ts`
 - Create: `apps/web/src/shell-preferences.test.ts`
 - Modify: `apps/web/src/App.tsx`
@@ -279,6 +298,7 @@ git commit -m "fix(tts): recover from Edge transport failures"
 - Test: `apps/web/e2e/navigation-layout.spec.ts`
 
 **Interfaces:**
+
 - Produces: `readSidebarCollapsed(storage): boolean` and `writeSidebarCollapsed(storage, value): void`.
 - Shell applies `.is-sidebar-collapsed` only at wide desktop composition.
 
@@ -301,8 +321,12 @@ At 1440×900:
 ```ts
 await page.getByRole("button", { name: "Ciutkan navigasi" }).click();
 await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
-expect((await page.locator(".navigation-shell").boundingBox())!.width).toBeLessThan(100);
-await expect(page.getByRole("button", { name: "Perluas navigasi" })).toHaveAttribute("aria-expanded", "false");
+expect(
+  (await page.locator(".navigation-shell").boundingBox())!.width,
+).toBeLessThan(100);
+await expect(
+  page.getByRole("button", { name: "Perluas navigasi" }),
+).toHaveAttribute("aria-expanded", "false");
 ```
 
 Reload and verify state persists.
@@ -321,7 +345,9 @@ Add an edge toggle with existing SVG icon primitives. Do not use raw Unicode arr
   .navigation-shell,
   .nav-copy,
   .sidebar-collapse-toggle,
-  .nav-active-indicator { transition: none !important; }
+  .nav-active-indicator {
+    transition: none !important;
+  }
 }
 ```
 
@@ -345,6 +371,7 @@ git commit -m "feat(shell): add accessible desktop navigation collapse"
 ### Task 5: Redesign the persistent media surface and minimize/restore behavior
 
 **Files:**
+
 - Prefer create: `apps/web/src/media-surface.tsx` by extracting existing component from `App.tsx`
 - Modify: `apps/web/src/App.tsx`
 - Modify: `apps/web/src/icons.tsx`
@@ -354,6 +381,7 @@ git commit -m "feat(shell): add accessible desktop navigation collapse"
 - Test: `apps/web/e2e/navigation-layout.spec.ts`
 
 **Interfaces:**
+
 - Consumes: unchanged `midiPlayer`, `speechPlayer`, queue, route context, persisted media minimize/position preferences.
 - Produces: bottom-centered expanded dock and compact minimized dock without interrupting playback.
 
@@ -365,7 +393,9 @@ Cover:
 await expect(page.locator(".media-surface")).toBeVisible();
 await page.getByRole("button", { name: "Minimalkan pemutar" }).click();
 await expect(page.locator(".media-surface")).toHaveClass(/is-minimized/);
-await expect(page.getByRole("button", { name: "Perbesar pemutar" })).toBeVisible();
+await expect(
+  page.getByRole("button", { name: "Perbesar pemutar" }),
+).toBeVisible();
 await expect(page.locator(".media-surface")).toContainText(/Pujilah|Kejadian/);
 ```
 
@@ -428,12 +458,14 @@ git commit -m "feat(media): redesign persistent mini player"
 ### Task 6: Remove repeated AI-slop UI patterns without semantic churn
 
 **Files:**
+
 - Modify: `apps/web/src/styles.css` and focused route components only where needed
 - Test: `apps/web/e2e/visual.spec.ts`
 - Test: `apps/web/e2e/accessibility.spec.ts`
 - Test: route-specific smoke/navigation tests
 
 **Interfaces:**
+
 - No domain/API changes.
 - Produces: a consistent control vocabulary and denser reading-first shell.
 
@@ -472,12 +504,14 @@ git commit -m "refactor(ui): tighten reading-first interaction design"
 ### Task 7: Full verification, performance cleanup, and parity documentation
 
 **Files:**
+
 - Modify only files required by discovered regressions
 - Modify: `CHANGELOG.md`
 - Modify: `docs/discovery/feature-parity-matrix.md`
 - Modify: `docs/release-readiness.md` if evidence changes
 
 **Interfaces:**
+
 - Produces: verified branch ready for review/merge, with remaining platform-only limitations explicitly documented.
 
 - [ ] **Step 1: Run web/workspace quality gates**

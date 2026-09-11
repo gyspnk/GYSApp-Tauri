@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+- Synced canonical hymn/chord parity to the 2026-09-05 gyschordweb source, added native keyless Edge-compatible online TTS with safe fallbacks, and hardened the responsive sidebar/media shell.
+- Clean-checkout documentation verification now validates tracked living documentation instead of local-only continuity artifacts that were never committed to the repository.
+- Generated canonical hymn/chord outputs with byte-integrity provenance are excluded from generic Prettier rewriting; their dedicated provenance verifier remains authoritative.
+- Updated Hono from 4.13.2 to patched 4.13.5 to clear current production dependency advisories.
+- Updated the e-GYS overlay regression to verify the current in-app Google login host plus official portal fallback without mistaking Google Sign-In's nested iframe for the application login surface.
+
 - **Current production-readiness hardening**:
   - Added a validated, versioned shell-settings envelope with legacy-key
     migration and safe handling for malformed or unavailable browser storage.
