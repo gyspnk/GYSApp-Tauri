@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   parity-sync:
-    if: ${{ !contains(github.event.head_commit.message, '[agent-generated]') }}
+    if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -30,7 +30,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: RED - make provenance expectation current and prove stale checkout fails
+      - name: RED - prove stale provenance fails current expectation
         shell: bash
         run: |
           python3 - <<'PY'
@@ -42,7 +42,7 @@ jobs:
           s = s.replace('expected 1212 music entries', 'expected 1216 music entries')
           s = s.replace('chord.entries.length !== 144', 'chord.entries.length !== 148')
           marker = 'if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 148)\n  throw new Error("chord manifest drifted from music lock");'
-          required = '''\nfor (const requiredChord of ["108_", "196_", "271_", "492_"]) {\n  if (!lock.items.some((item) => item.kind === "chord" && item.path.includes(requiredChord)))\n    throw new Error(`required canonical chord missing: ${requiredChord}`);\n}\n'''
+          required = '\nfor (const requiredChord of ["108_", "196_", "271_", "492_"]) {\n  if (!lock.items.some((item) => item.kind === "chord" && item.path.includes(requiredChord)))\n    throw new Error(`required canonical chord missing: ${requiredChord}`);\n}\n'
           if required.strip() not in s:
               s = s.replace(marker, marker + required)
           p.write_text(s)
@@ -58,7 +58,7 @@ jobs:
           fi
           grep -E "music lock provenance drifted|required canonical chord missing|expected 1216" /tmp/red.log
 
-      - name: GREEN - update generation source and regenerate canonical artifacts
+      - name: GREEN - regenerate current canonical parity artifacts
         shell: bash
         env:
           GYSCHORDWEB_COMMIT: a9bf3219105dca3dde1b286328f46a0eede3287e
@@ -78,7 +78,7 @@ jobs:
           pnpm audit:chords
           pnpm verify:generated
 
-      - name: Record parity evidence
+      - name: Record and verify parity evidence
         shell: bash
         run: |
           cat >> docs/discovery/feature-parity-matrix.md <<'EOF'
