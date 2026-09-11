@@ -78,6 +78,40 @@ button[aria-label*="rujukan silang untuk"]::before {
   min-block-size: 40px;
 }
 
+/* The Kidung local tabs are primary navigation, not a carousel. On very small
+   phones keep all three destinations visible at once instead of allowing the
+   segmented control to widen the whole page. */
+@media (max-width: 420px) {
+  .kidung-local-nav,
+  .kidung-local-nav-links {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .kidung-local-nav-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .kidung-local-nav a {
+    min-inline-size: 0;
+    justify-content: center;
+    gap: 4px;
+    padding-inline: 4px;
+  }
+
+  .kidung-local-nav a > span {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 /* An unavailable daily devotion is an operational state, not a hero image.
    On wide screens stop the empty card from spanning the height of both content
    shelves and let the shelves use the full content width below. */
