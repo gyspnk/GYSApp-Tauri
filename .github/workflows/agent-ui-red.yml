@@ -1,0 +1,41 @@
+name: Agent UI red-phase verifier
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - '.github/workflows/agent-ui-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Prove responsive usability contracts are RED before implementation
+        shell: bash
+        run: |
+          set +e
+          pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium 2>&1 | tee /tmp/ui-red.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "Expected responsive usability tests to be RED before implementation, but they passed."
+            exit 1
+          fi
+          grep -Eq "Tandai ayat|rujukan silang|pujian-title|Lihat semua|Periksa versi|420" /tmp/ui-red.log
+          echo "RED phase confirmed: measured touch-target and compact outage contracts fail before production UI changes."
