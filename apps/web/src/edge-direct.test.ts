@@ -85,7 +85,9 @@ describe("direct Edge-compatible TTS protocol", () => {
       listener({ type: "Text", data: "Path:turn.end\r\n\r\n{}" });
 
     const blob = await promise;
-    expect(Array.from(new Uint8Array(await blob.arrayBuffer()))).toEqual([7, 9]);
+    expect(Array.from(new Uint8Array(await blob.arrayBuffer()))).toEqual([
+      7, 9,
+    ]);
     expect(socket.send).toHaveBeenCalledTimes(2);
     expect(socket.disconnect).toHaveBeenCalledTimes(1);
   });

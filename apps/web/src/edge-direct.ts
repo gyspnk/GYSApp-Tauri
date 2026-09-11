@@ -144,7 +144,10 @@ function parsePath(text: string): string {
     const index = line.indexOf(":");
     if (index < 0) continue;
     if (line.slice(0, index).trim().toLowerCase() === "path")
-      return line.slice(index + 1).trim().toLowerCase();
+      return line
+        .slice(index + 1)
+        .trim()
+        .toLowerCase();
   }
   return "";
 }
@@ -154,7 +157,7 @@ export function parseEdgeAudioFrame(
 ): Uint8Array | undefined {
   const bytes = value instanceof Uint8Array ? value : Uint8Array.from(value);
   if (bytes.length < 3) return undefined;
-  const headerLength = (bytes[0] << 8) | bytes[1];
+  const headerLength = ((bytes[0] ?? 0) << 8) | (bytes[1] ?? 0);
   const payloadOffset = 2 + headerLength;
   if (headerLength <= 0 || payloadOffset > bytes.length) return undefined;
   const headerText = new TextDecoder().decode(bytes.subarray(2, payloadOffset));
@@ -179,7 +182,9 @@ export function canUseNativeEdgeTransport(
     __TAURI_INTERNALS__?: { invoke?: unknown };
     __TAURI__?: { invoke?: unknown };
   };
-  return Boolean(candidate.__TAURI_INTERNALS__?.invoke ?? candidate.__TAURI__?.invoke);
+  return Boolean(
+    candidate.__TAURI_INTERNALS__?.invoke ?? candidate.__TAURI__?.invoke,
+  );
 }
 
 export async function synthesizeEdgeDirect(
@@ -249,7 +254,10 @@ export async function synthesizeEdgeDirect(
       }
       settled = true;
       cleanup();
-      const blob = new Blob(chunks, { type: "audio/mpeg" });
+      const blob = new Blob(
+        chunks.map((chunk) => chunk.slice().buffer as ArrayBuffer),
+        { type: "audio/mpeg" },
+      );
       void disconnect().finally(() => resolve(blob));
     };
     const onAbort = () => fail(abortError());

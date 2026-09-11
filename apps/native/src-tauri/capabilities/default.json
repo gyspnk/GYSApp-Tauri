@@ -10,6 +10,7 @@
     "fs:default",
     "notification:default",
     "shell:default",
+    "websocket:default",
     "allow-platform-name",
     "allow-key-value-get",
     "allow-key-value-set",

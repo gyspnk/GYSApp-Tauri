@@ -99,7 +99,9 @@ export function getEdgeVoicesEndpoint(): string {
 
 const DEFAULT_EDGE_VOICE =
   import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE?.trim() &&
-  /^[A-Za-z0-9-]{2,80}$/.test(import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim())
+  /^[A-Za-z0-9-]{2,80}$/.test(
+    import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim(),
+  )
     ? import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim()
     : "id-ID-GadisNeural";
 const VOICE_CACHE_TTL_MS = 5 * 60_000;
@@ -131,13 +133,18 @@ export class EdgeSpeechProvider implements SpeechProvider {
     reason?: string;
   }> {
     if (typeof window === "undefined")
-      return { available: false, offline: false, reason: "Speech UI is unavailable" };
+      return {
+        available: false,
+        offline: false,
+        reason: "Speech UI is unavailable",
+      };
     if (getEdgeEndpoint() || canUseNativeEdgeTransport())
       return { available: true, offline: false };
     return {
       available: false,
       offline: false,
-      reason: "Edge-compatible speech requires the native app or a configured gateway",
+      reason:
+        "Edge-compatible speech requires the native app or a configured gateway",
     };
   }
 
@@ -155,7 +162,9 @@ export class EdgeSpeechProvider implements SpeechProvider {
     this.voicesRequest = request;
     try {
       const fetched = await request;
-      return (fetched.length > 0 ? fetched : BUILTIN_EDGE_VOICES).map(remoteVoice);
+      return (fetched.length > 0 ? fetched : BUILTIN_EDGE_VOICES).map(
+        remoteVoice,
+      );
     } finally {
       if (this.voicesRequest === request) this.voicesRequest = undefined;
     }
@@ -191,7 +200,9 @@ export class EdgeSpeechProvider implements SpeechProvider {
       } catch (error) {
         if (signal?.aborted) throw abortError();
         const failure =
-          error instanceof Error ? error : new Error("Edge speech transport failed");
+          error instanceof Error
+            ? error
+            : new Error("Edge speech transport failed");
         recordDiagnostic("error", "tts.edge.direct", failure);
         throw failure;
       }
@@ -239,7 +250,9 @@ export class EdgeSpeechProvider implements SpeechProvider {
     } catch (error) {
       if (signal?.aborted) throw abortError();
       const failure =
-        error instanceof Error ? error : new Error("Edge speech request failed");
+        error instanceof Error
+          ? error
+          : new Error("Edge speech request failed");
       recordDiagnostic("error", "tts.edge.request", failure);
       throw failure;
     }
@@ -301,11 +314,15 @@ export class EdgeSpeechProvider implements SpeechProvider {
       signal?.addEventListener("abort", abort, { once: true });
       audio.onended = finish;
       audio.onerror = () => fail(new Error("Edge audio playback failed"));
-      void audio.play().catch((error: unknown) =>
-        fail(
-          error instanceof Error ? error : new Error("Edge audio playback failed"),
-        ),
-      );
+      void audio
+        .play()
+        .catch((error: unknown) =>
+          fail(
+            error instanceof Error
+              ? error
+              : new Error("Edge audio playback failed"),
+          ),
+        );
     });
   }
 
