@@ -33,12 +33,57 @@ test("faith note list updates immediately after saving without a reload", async 
   ).toHaveCount(1);
 });
 
-test("encrypted backup includes faith notes promised by the backup UI", async ({
+test("encrypted backup preserves durable preferences but excludes sensitive device state", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("gys-faith-note-1", "Catatan iman yang dibackup");
-  });
+  const durableSettings: Record<string, string> = {
+    "gys-faith-note-1": "Catatan iman yang dibackup",
+    "gys-accent-color": "#355c9a",
+    "gys-bible-secondary-version": "KJV",
+    "gys-bible-split-sync-scroll-v1": "0",
+    "gys-bible-typography-v1": JSON.stringify({ fontSize: 21, lineHeight: 1.8 }),
+    "gys-chord-ui-prefs": JSON.stringify({ theme: "red", fill: "soft" }),
+    "gys-hymn-natural-chords": "0",
+    "gys-hymn-view-scope": "favorites",
+    "gys-hymn-viewer-prefs-v1": JSON.stringify({
+      defaultTwoPage: true,
+      defaultVerticalScroll: false,
+    }),
+    "gys-kidung-active-playlist": "ibadah-malam",
+    "gys-kidung-playlists-v1": JSON.stringify([
+      {
+        id: "ibadah-malam",
+        name: "Ibadah Malam",
+        songIds: ["hymn-001"],
+        createdAt: 1,
+      },
+    ]),
+    "gys-lyrics-font-size": "32",
+    "gys-lyrics-header-collapsed": "1",
+    "gys-lyrics-line-spacing": "1.9",
+    "gys-lyrics-show-chords": "0",
+    "gys-hymn-accidental": "flat",
+    "gys-speech-pitch-v1": "1.1",
+    "gys-speech-volume-v1": "0.7",
+  };
+  const excludedSettings: Record<string, string> = {
+    "gys-live-v1-token": "do-not-export-token",
+    "gys-egys-session-v1": JSON.stringify({ userId: "private-session" }),
+    "gys-egys-profile-v1": JSON.stringify({ id: "private-profile" }),
+    "gys-diagnostics-v1": JSON.stringify([{ message: "device log" }]),
+    "gys-custom-edge-endpoint-v1": "https://private-device.invalid/tts",
+    "gys-distributed-assets-v1": JSON.stringify({ device: "cache-state" }),
+  };
+
+  await page.addInitScript(
+    ({ durableSettings, excludedSettings }) => {
+      for (const [key, value] of Object.entries(durableSettings))
+        localStorage.setItem(key, value);
+      for (const [key, value] of Object.entries(excludedSettings))
+        localStorage.setItem(key, value);
+    },
+    { durableSettings, excludedSettings },
+  );
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
@@ -52,9 +97,9 @@ test("encrypted backup includes faith notes promised by the backup UI", async ({
   const envelope = JSON.parse(await readFile(path!, "utf8"));
   const restored = await decryptBackupV2(envelope, "integrity-1234");
 
-  expect(restored.settings?.["gys-faith-note-1"]).toBe(
-    "Catatan iman yang dibackup",
-  );
+  expect(restored.settings).toMatchObject(durableSettings);
+  for (const key of Object.keys(excludedSettings))
+    expect(restored.settings).not.toHaveProperty(key);
 });
 
 test("disabling the daily reminder removes the persisted reminder immediately", async ({
