@@ -1,0 +1,113 @@
+/* Evidence-backed interaction hardening.
+   This file intentionally contains only late-stage usability overrides that
+   were measured in the multi-viewport audit. It is not a second design system. */
+
+/* Compact text actions must still be real controls, not 14px text targets. */
+.section-title-row .text-button,
+.pack-manager-actions .text-button,
+.more-card-heading .text-button,
+.version-actions .text-button,
+button.text-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.brand-mark {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Keep verse numbers visually compact while making the actual button easier
+   to acquire with touch, pen, trackpad, or motor-impaired pointer input. */
+.verse-number {
+  inline-size: 40px;
+  min-inline-size: 40px;
+  block-size: 40px;
+  min-block-size: 40px;
+  background: radial-gradient(circle, var(--surface-soft) 0 14px, transparent 14.5px);
+}
+
+.verse-number.is-bookmarked {
+  background: radial-gradient(circle, var(--blue) 0 14px, transparent 14.5px);
+}
+
+/* Cross-reference stars are intentionally visually quiet, but their hit area
+   should not be a single glyph. Negative inline margin preserves prose flow. */
+button[aria-label*="rujukan silang untuk"] {
+  min-inline-size: 40px;
+  min-block-size: 40px;
+  display: inline-grid;
+  place-items: center;
+  margin-inline: -8px;
+  padding: 0 8px;
+}
+
+/* Song titles are the primary row action. Give the full title zone a reliable
+   finger-sized height without turning the catalog into oversized cards. */
+.pujian-title {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding-block: 7px;
+}
+
+.add-to-playlist-btn,
+.pujian-fav-btn,
+.pujian-row-action {
+  min-inline-size: 40px;
+  min-block-size: 40px;
+}
+
+/* An unavailable daily devotion is an operational state, not a hero image.
+   On wide screens stop the empty card from spanning the height of both content
+   shelves and let the shelves use the full content width below. */
+@media (min-width: 960px) {
+  .home-grid:has(.verse-panel .sauh-offline-state) {
+    grid-template-areas:
+      "verse continue"
+      "suara suara"
+      "literature literature";
+  }
+
+  .verse-panel:has(.sauh-offline-state) {
+    min-height: 0;
+    height: auto;
+    align-self: start;
+    box-shadow: none;
+  }
+
+  .verse-panel:has(.sauh-offline-state):hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Pointer-coarse devices should not depend on hover movement for hierarchy. */
+@media (hover: none), (pointer: coarse) {
+  .verse-panel:hover,
+  .continue-panel:hover,
+  .more-card:hover,
+  .kidung-card:hover {
+    transform: none;
+  }
+
+  .pujian-title,
+  button[aria-label*="rujukan silang untuk"],
+  .verse-number {
+    min-block-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verse-panel,
+  .continue-panel,
+  .pujian-title,
+  .text-button,
+  .verse-number {
+    transition: none !important;
+  }
+}
