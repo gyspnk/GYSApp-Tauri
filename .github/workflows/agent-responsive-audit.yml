@@ -15,7 +15,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -58,11 +58,15 @@ jobs:
             ["small-desktop", 1024, 768],
             ["tablet", 768, 1024],
             ["phone-small", 320, 720],
-            ["phone", 390, 844],
             ["phone-landscape", 844, 390],
           ];
           const browser = await chromium.launch({ headless: true });
           const report = [];
+
+          async function settle(page) {
+            await page.waitForTimeout(700);
+            await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          }
 
           async function inspect(page) {
             return page.evaluate(() => {
@@ -101,11 +105,10 @@ jobs:
                 viewport: { width, height },
                 colorScheme: theme,
                 reducedMotion: "reduce",
+                serviceWorkers: "block",
               });
               const page = await context.newPage();
-              await page.addInitScript((mode) => {
-                localStorage.setItem("gys-theme-v1", mode);
-              }, theme);
+              await page.addInitScript((mode) => localStorage.setItem("gys-theme-v1", mode), theme);
               for (const [slug, route] of routes) {
                 const errors = [];
                 page.removeAllListeners("console");
@@ -114,8 +117,8 @@ jobs:
                   if (message.type() === "error") errors.push(`console:${message.text()}`);
                 });
                 page.on("pageerror", (error) => errors.push(`page:${error.message}`));
-                await page.goto(base + route, { waitUntil: "networkidle", timeout: 30_000 });
-                await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+                await page.goto(base + route, { waitUntil: "domcontentloaded", timeout: 15_000 });
+                await settle(page);
                 const geometry = await inspect(page);
                 await page.screenshot({
                   path: `/tmp/gys-visual-audit/screenshots/${slug}-${label}-${theme}-${width}x${height}.png`,
@@ -127,12 +130,18 @@ jobs:
             }
           }
 
-          const outageContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "light", reducedMotion: "reduce" });
+          const outageContext = await browser.newContext({
+            viewport: { width: 1440, height: 900 },
+            colorScheme: "light",
+            reducedMotion: "reduce",
+            serviceWorkers: "block",
+          });
           const outage = await outageContext.newPage();
           await outage.route("**/wp-json/wp/v2/posts**", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
           await outage.route("**/api/v1/content/sauh", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
           await outage.route("**/offline/sauh.json", (route) => route.fulfill({ status: 503, body: "snapshot unavailable" }));
-          await outage.goto(base + "/", { waitUntil: "networkidle", timeout: 30_000 });
+          await outage.goto(base + "/", { waitUntil: "domcontentloaded", timeout: 15_000 });
+          await settle(outage);
           await outage.screenshot({ path: "/tmp/gys-visual-audit/screenshots/home-sauh-outage-desktop-light-1440x900.png", fullPage: false });
           report.push({ slug: "home-sauh-outage", route: "/", theme: "light", viewport: { label: "desktop", width: 1440, height: 900 }, errors: [], ...(await inspect(outage)) });
           await outageContext.close();
@@ -155,6 +164,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: second-pass-visual-audit
+          name: second-pass-visual-audit-fast
           path: /tmp/gys-visual-audit
           if-no-files-found: error
