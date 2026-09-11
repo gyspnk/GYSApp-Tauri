@@ -1,4 +1,4 @@
-name: Agent UX refinement
+name: Agent UX refinement retry
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
 
-      - name: Remove blanket interaction animation and refine shell surfaces
+      - name: Apply restrained interaction model and tablet rail fix
         shell: bash
         run: |
           python3 - <<'PY'
@@ -96,6 +96,21 @@ jobs:
             transition-timing-function: var(--ease-out, cubic-bezier(.2,.8,.2,1));
           }
 
+          /* The 600-959px composition is an icon rail, not a compressed full sidebar.
+             Keep accessible names on links while hiding visual copy that otherwise
+             overflows the 80px rail into reader content. */
+          @media (min-width: 600px) and (max-width: 959px) {
+            .navigation-shell .nav-copy,
+            .navigation-shell .sidebar-foot {
+              display: none !important;
+            }
+            .navigation-shell .nav-item {
+              justify-content: center;
+              gap: 0;
+              padding-inline: 0;
+            }
+          }
+
           @media (prefers-reduced-motion: reduce) {
             html {
               scroll-behavior: auto !important;
@@ -129,7 +144,21 @@ jobs:
               css.write_text(style.rstrip() + block + '\n')
           PY
 
-      - name: Add responsive theme and reduced-motion UX verification
+      - name: Stabilize sidebar transition assertion
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/e2e/sidebar-collapse.spec.ts')
+          source = path.read_text()
+          old = '''  const collapsed = await nav.boundingBox();\n  expect(collapsed).not.toBeNull();\n  expect(collapsed!.width).toBeLessThan(100);\n'''
+          new = '''  await expect\n    .poll(() => nav.evaluate((element) => element.getBoundingClientRect().width))\n    .toBeLessThan(100);\n'''
+          if old not in source:
+              raise SystemExit('sidebar transition assertion anchor not found')
+          path.write_text(source.replace(old, new, 1))
+          PY
+
+      - name: Add visual geometry and reduced-motion coverage
         shell: bash
         run: |
           cat > apps/web/e2e/ux-refinement.spec.ts <<'EOF'
@@ -164,7 +193,7 @@ jobs:
             await page.screenshot({ path: "test-results/ux-light-desktop.png", fullPage: true });
           });
 
-          test("dark tablet shell preserves density and viewport containment", async ({ page }) => {
+          test("dark tablet uses a true icon rail without labels bleeding into content", async ({ page }) => {
             await setTheme(page, "dark");
             await page.setViewportSize({ width: 768, height: 1024 });
             await page.goto("/GYSApp-Tauri/");
@@ -172,8 +201,9 @@ jobs:
             await expectNoHorizontalOverflow(page);
             const nav = await page.locator(".navigation-shell").boundingBox();
             expect(nav).not.toBeNull();
-            expect(nav!.x).toBeGreaterThanOrEqual(0);
-            expect(nav!.x + nav!.width).toBeLessThanOrEqual(768);
+            expect(nav!.width).toBeLessThanOrEqual(80);
+            await expect(page.locator(".navigation-shell .nav-copy").first()).toBeHidden();
+            await expect(page.locator(".navigation-shell .nav-item").first()).toHaveAttribute("aria-label", /.+/);
             await page.screenshot({ path: "test-results/ux-dark-tablet.png", fullPage: true });
           });
 
@@ -200,25 +230,25 @@ jobs:
           });
           EOF
 
-      - name: Format, typecheck, and build
+      - name: Format typecheck and build
         run: |
-          pnpm exec prettier --write apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts
+          pnpm exec prettier --write apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts apps/web/e2e/sidebar-collapse.spec.ts
           pnpm --filter @gys/web typecheck
           pnpm --filter @gys/web build
 
       - name: Install Chromium
         run: pnpm --filter @gys/web exec playwright install --with-deps chromium
 
-      - name: Run UX and shell regression verification
+      - name: Verify UX and regressions
         run: |
           mkdir -p apps/web/test-results
-          pnpm --filter @gys/web exec playwright test e2e/ux-refinement.spec.ts e2e/sidebar-collapse.spec.ts e2e/media-dock.spec.ts e2e/navigation-layout.spec.ts
+          pnpm --filter @gys/web exec playwright test e2e/ux-refinement.spec.ts e2e/sidebar-collapse.spec.ts e2e/media-dock.spec.ts e2e/navigation-layout.spec.ts e2e/smoke.spec.ts
 
       - name: Upload UX evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ux-evidence-${{ github.run_id }}
+          name: ux-evidence-retry-${{ github.run_id }}
           path: apps/web/test-results/ux-*.png
           if-no-files-found: ignore
 
@@ -227,8 +257,8 @@ jobs:
         run: |
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts
+          git add apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts apps/web/e2e/sidebar-collapse.spec.ts
           if ! git diff --cached --quiet; then
-            git commit -m "refactor(ux): use restrained state-led motion and shell surfaces [agent-generated]"
+            git commit -m "refactor(ux): refine responsive rail and state-led motion [agent-generated]"
             git push origin HEAD:audit/parity-ui-tts-20260911
           fi
