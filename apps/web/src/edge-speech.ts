@@ -5,14 +5,19 @@ import {
   type SpeechVoice,
 } from "@gys/contracts";
 import { recordDiagnostic } from "./diagnostics.js";
+import {
+  canUseNativeEdgeTransport,
+  synthesizeEdgeDirect,
+} from "./edge-direct.js";
 
 /**
- * Edge compatibility speech is deliberately opt-in at the transport layer.
- * The browser never receives a key: a deployment can point this adapter at
- * the same-origin BFF route (or another trusted compatibility gateway) with
- * VITE_EDGE_TTS_URL. When it is not configured, the orchestrator falls back
- * to a detected system voice instead of pretending that web speech is
- * available offline.
+ * Edge-compatible neural speech supports two online transports:
+ * 1. an explicitly configured trusted gateway; and
+ * 2. a keyless native Tauri WebSocket transport.
+ *
+ * Browser/PWA builds intentionally do not attempt the direct Microsoft
+ * WebSocket because browsers cannot set the compatibility headers required by
+ * that service. They continue to use a configured gateway or system speech.
  */
 export const BUILTIN_EDGE_VOICES: SpeechVoice[] = [
   {
@@ -75,9 +80,7 @@ export function getEdgeEndpoint(): string {
   if (typeof window !== "undefined" && window.location) {
     try {
       const parsed = new URL(bff, window.location.href);
-      if (parsed.port && parsed.port !== window.location.port) {
-        return "";
-      }
+      if (parsed.port && parsed.port !== window.location.port) return "";
     } catch {
       return "";
     }
@@ -89,17 +92,14 @@ export function getEdgeVoicesEndpoint(): string {
   const direct = import.meta.env.VITE_EDGE_TTS_VOICES_URL?.trim();
   if (direct) return direct;
   const edge = getEdgeEndpoint();
-  if (edge) {
+  if (edge)
     return edge.replace(/\/api\/v1\/tts\/edge\/?$/, "/api/v1/tts/edge/voices");
-  }
   return "";
 }
 
 const DEFAULT_EDGE_VOICE =
   import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE?.trim() &&
-  /^[A-Za-z0-9-]{2,80}$/.test(
-    import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim(),
-  )
+  /^[A-Za-z0-9-]{2,80}$/.test(import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim())
     ? import.meta.env.VITE_EDGE_TTS_DEFAULT_VOICE.trim()
     : "id-ID-GadisNeural";
 const VOICE_CACHE_TTL_MS = 5 * 60_000;
@@ -130,14 +130,15 @@ export class EdgeSpeechProvider implements SpeechProvider {
     offline: boolean;
     reason?: string;
   }> {
-    const endpoint = getEdgeEndpoint();
-    if (typeof window === "undefined" || !endpoint)
-      return {
-        available: false,
-        offline: false,
-        reason: "Edge compatibility endpoint is not configured",
-      };
-    return { available: true, offline: false };
+    if (typeof window === "undefined")
+      return { available: false, offline: false, reason: "Speech UI is unavailable" };
+    if (getEdgeEndpoint() || canUseNativeEdgeTransport())
+      return { available: true, offline: false };
+    return {
+      available: false,
+      offline: false,
+      reason: "Edge-compatible speech requires the native app or a configured gateway",
+    };
   }
 
   public async voices(signal?: AbortSignal): Promise<SpeechVoice[]> {
@@ -154,9 +155,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     this.voicesRequest = request;
     try {
       const fetched = await request;
-      return (fetched.length > 0 ? fetched : BUILTIN_EDGE_VOICES).map(
-        remoteVoice,
-      );
+      return (fetched.length > 0 ? fetched : BUILTIN_EDGE_VOICES).map(remoteVoice);
     } finally {
       if (this.voicesRequest === request) this.voicesRequest = undefined;
     }
@@ -172,20 +171,62 @@ export class EdgeSpeechProvider implements SpeechProvider {
     },
     signal?: AbortSignal,
   ): Promise<void> {
-    const endpoint = getEdgeEndpoint();
-    if (!endpoint) {
-      throw new Error("Edge compatibility endpoint is not configured");
-    }
     if (signal?.aborted) throw abortError();
     await this.stop();
-    const voiceId = this.selectVoice(options.voiceId);
     const parsed = EdgeTtsRequestSchema.parse({
       text: text.slice(0, 8_000),
-      voice: voiceId,
+      voice: this.selectVoice(options.voiceId),
       rate: clamp(options.rate ?? 0.9, 0.5, 2),
       pitch: clamp(options.pitch ?? 1, 0.5, 2),
       volume: clamp(options.volume ?? 1, 0, 1),
     });
+
+    let blob: Blob;
+    const endpoint = getEdgeEndpoint();
+    if (endpoint) {
+      blob = await this.fetchGatewayAudio(endpoint, parsed, signal);
+    } else if (canUseNativeEdgeTransport()) {
+      try {
+        blob = await synthesizeEdgeDirect(parsed, {}, signal);
+      } catch (error) {
+        if (signal?.aborted) throw abortError();
+        const failure =
+          error instanceof Error ? error : new Error("Edge speech transport failed");
+        recordDiagnostic("error", "tts.edge.direct", failure);
+        throw failure;
+      }
+    } else {
+      throw new Error(
+        "Edge-compatible speech requires the native app or a configured gateway",
+      );
+    }
+
+    await this.playAudioBlob(blob, parsed.rate, parsed.volume, signal);
+  }
+
+  public async pause(): Promise<void> {
+    this.active?.pause();
+  }
+
+  public async resume(): Promise<void> {
+    if (this.active) await this.active.play();
+  }
+
+  public async stop(): Promise<void> {
+    this.activeCancel?.(abortError());
+    this.active?.pause();
+    this.active?.removeAttribute("src");
+    if (this.activeUrl) URL.revokeObjectURL(this.activeUrl);
+    this.active = undefined;
+    this.activeUrl = undefined;
+    this.activeCancel = undefined;
+  }
+
+  private async fetchGatewayAudio(
+    endpoint: string,
+    parsed: ReturnType<typeof EdgeTtsRequestSchema.parse>,
+    signal?: AbortSignal,
+  ): Promise<Blob> {
     const requestInit: RequestInit = {
       method: "POST",
       headers: { accept: "audio/mpeg", "content-type": "application/json" },
@@ -198,9 +239,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     } catch (error) {
       if (signal?.aborted) throw abortError();
       const failure =
-        error instanceof Error
-          ? error
-          : new Error("Edge speech request failed");
+        error instanceof Error ? error : new Error("Edge speech request failed");
       recordDiagnostic("error", "tts.edge.request", failure);
       throw failure;
     }
@@ -215,11 +254,20 @@ export class EdgeSpeechProvider implements SpeechProvider {
       recordDiagnostic("error", "tts.edge.response", failure);
       throw failure;
     }
-    const url = URL.createObjectURL(await response.blob());
+    return response.blob();
+  }
+
+  private async playAudioBlob(
+    blob: Blob,
+    rate: number,
+    volume: number,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.preload = "auto";
-    audio.volume = clamp(parsed.volume, 0, 1);
-    audio.playbackRate = clamp(parsed.rate, 0.5, 2);
+    audio.volume = clamp(volume, 0, 1);
+    audio.playbackRate = clamp(rate, 0.5, 2);
     this.active = audio;
     this.activeUrl = url;
 
@@ -231,7 +279,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
         audio.onerror = null;
         if (this.active === audio) this.active = undefined;
         if (this.activeUrl === url) this.activeUrl = undefined;
-        if (this.activeCancel) this.activeCancel = undefined;
+        if (this.activeCancel === fail) this.activeCancel = undefined;
         URL.revokeObjectURL(url);
       };
       const finish = () => {
@@ -253,42 +301,17 @@ export class EdgeSpeechProvider implements SpeechProvider {
       signal?.addEventListener("abort", abort, { once: true });
       audio.onended = finish;
       audio.onerror = () => fail(new Error("Edge audio playback failed"));
-      void audio
-        .play()
-        .catch((error: unknown) =>
-          fail(
-            error instanceof Error
-              ? error
-              : new Error("Edge audio playback failed"),
-          ),
-        );
+      void audio.play().catch((error: unknown) =>
+        fail(
+          error instanceof Error ? error : new Error("Edge audio playback failed"),
+        ),
+      );
     });
-  }
-
-  public async pause(): Promise<void> {
-    this.active?.pause();
-  }
-
-  public async resume(): Promise<void> {
-    if (this.active) await this.active.play();
-  }
-
-  public async stop(): Promise<void> {
-    this.activeCancel?.(abortError());
-    this.active?.pause();
-    this.active?.removeAttribute("src");
-    if (this.activeUrl) URL.revokeObjectURL(this.activeUrl);
-    this.active = undefined;
-    this.activeUrl = undefined;
-    this.activeCancel = undefined;
   }
 
   private selectVoice(requested?: string): string {
     if (!requested || !/^[A-Za-z0-9-]{2,80}$/.test(requested))
       return DEFAULT_EDGE_VOICE;
-    // A requested voice that matches a built-in or advertised voice is
-    // honoured (language resolution happens upstream); unknown custom ids no
-    // longer silently downgrade to the Indonesian default.
     if (
       this.advertisedVoices.length > 0 &&
       !this.advertisedVoices.some((voice) => voice.id === requested) &&
@@ -332,5 +355,5 @@ export class EdgeSpeechProvider implements SpeechProvider {
 }
 
 export function isEdgeSpeechConfigured(): boolean {
-  return Boolean(getEdgeEndpoint());
+  return Boolean(getEdgeEndpoint()) || canUseNativeEdgeTransport();
 }
