@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-async function expectTouchTarget(locator: ReturnType<Parameters<typeof test>[1]> extends never ? never : any, min = 40) {
+async function expectTouchTarget(locator: Locator, min = 40) {
   const box = await locator.boundingBox();
   expect(box, "control should be visible and measurable").not.toBeNull();
   expect(box!.width).toBeGreaterThanOrEqual(min);
