@@ -5,16 +5,17 @@ on:
     branches:
       - audit/parity-ui-tts-20260911
     paths:
-      - '.github/workflows/agent-responsive-audit.yml'
+      - ".github/workflows/agent-responsive-audit.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Temporary screenshot harness; removed before the final exact-SHA CI gate.
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -41,83 +42,119 @@ jobs:
         run: |
           mkdir -p /tmp/gys-visual-audit/screenshots
           cat > apps/web/.agent-responsive-audit.mjs <<'EOF'
-          import { chromium } from '@playwright/test';
-          import fs from 'node:fs/promises';
+          import { chromium } from "@playwright/test";
+          import fs from "node:fs/promises";
 
-          const base = 'http://127.0.0.1:4173/GYSApp-Tauri';
-          const routes = ['/', '/bible', '/kidung', '/assets', '/lainnya'];
+          const base = "http://127.0.0.1:4173/GYSApp-Tauri";
+          const routes = [
+            ["home", "/"],
+            ["bible", "/bible"],
+            ["kidung", "/kidung"],
+            ["assets", "/assets"],
+            ["settings", "/lainnya"],
+          ];
           const viewports = [
-            ['desktop', 1440, 900],
-            ['small-desktop', 1024, 768],
-            ['tablet-portrait', 768, 1024],
-            ['phone-small', 320, 720],
-            ['phone', 390, 844],
-            ['phone-large', 412, 915],
-            ['phone-landscape', 844, 390],
+            ["desktop", 1440, 900],
+            ["small-desktop", 1024, 768],
+            ["tablet", 768, 1024],
+            ["phone-small", 320, 720],
+            ["phone", 390, 844],
+            ["phone-landscape", 844, 390],
           ];
           const browser = await chromium.launch({ headless: true });
           const report = [];
-          for (const [label, width, height] of viewports) {
-            const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
-            const page = await context.newPage();
-            for (const route of routes) {
-              const errors = [];
-              page.removeAllListeners('console');
-              page.removeAllListeners('pageerror');
-              page.on('console', msg => { if (msg.type() === 'error') errors.push(`console:${msg.text()}`); });
-              page.on('pageerror', err => errors.push(`page:${err.message}`));
-              await page.goto(base + route, { waitUntil: 'networkidle', timeout: 30000 });
-              await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-              const geometry = await page.evaluate(() => {
-                const root = document.documentElement;
-                const body = document.body;
-                const all = [...document.querySelectorAll('button,a,input,select,textarea,[role="button"],[role="tab"]')]
-                  .filter(el => {
-                    const r = el.getBoundingClientRect();
-                    const s = getComputedStyle(el);
-                    return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
-                  });
-                const clipped = all.filter(el => {
-                  if (el.classList.contains('skip-link')) return false;
-                  if (el.closest('.horizontal-track,.home-scroll-track,.carousel-track')) return false;
-                  const r = el.getBoundingClientRect();
-                  return r.right > innerWidth + 2 || r.left < -2 || r.bottom > innerHeight + 2 || r.top < -2;
-                }).slice(0, 20).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), rect: el.getBoundingClientRect().toJSON() }));
-                const tiny = all.filter(el => {
-                  if (el.classList.contains('skip-link')) return false;
-                  const r = el.getBoundingClientRect();
-                  return (r.width < 36 || r.height < 36) && !el.closest('.bible-verse-text,.lyrics-text,.chord-canvas');
-                }).slice(0, 30).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) }));
-                return {
-                  scrollWidth: Math.max(root.scrollWidth, body.scrollWidth),
-                  clientWidth: root.clientWidth,
-                  horizontalOverflow: Math.max(root.scrollWidth, body.scrollWidth) > innerWidth + 2,
-                  clipped,
-                  tiny,
-                  activeFixed: [...document.querySelectorAll('*')].filter(el => getComputedStyle(el).position === 'fixed' && el.getBoundingClientRect().width > 0).slice(0,20).map(el => ({ cls: String(el.className), rect: el.getBoundingClientRect().toJSON() })),
-                };
+
+          async function inspect(page) {
+            return page.evaluate(() => {
+              const root = document.documentElement;
+              const body = document.body;
+              const visibleControls = [...document.querySelectorAll("button,a,input,select,textarea,[role='button'],[role='tab']")].filter((el) => {
+                const rect = el.getBoundingClientRect();
+                const style = getComputedStyle(el);
+                return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
               });
-              const slug = route === '/' ? 'home' : route.slice(1);
-              await page.screenshot({ path: `/tmp/gys-visual-audit/screenshots/${slug}-${label}-${width}x${height}.png`, fullPage: false });
-              report.push({ route, viewport: { label, width, height }, errors, ...geometry });
-            }
-            await context.close();
+              const clipped = visibleControls
+                .filter((el) => {
+                  if (el.classList.contains("skip-link")) return false;
+                  if (el.closest(".horizontal-track,.home-scroll-track,.carousel-track")) return false;
+                  const rect = el.getBoundingClientRect();
+                  return rect.right > innerWidth + 2 || rect.left < -2;
+                })
+                .slice(0, 20)
+                .map((el) => ({
+                  tag: el.tagName,
+                  text: (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 80),
+                  rect: el.getBoundingClientRect().toJSON(),
+                }));
+              return {
+                scrollWidth: Math.max(root.scrollWidth, body.scrollWidth),
+                clientWidth: root.clientWidth,
+                horizontalOverflow: Math.max(root.scrollWidth, body.scrollWidth) > innerWidth + 2,
+                clipped,
+              };
+            });
           }
+
+          for (const [label, width, height] of viewports) {
+            for (const theme of ["light", "dark"]) {
+              const context = await browser.newContext({
+                viewport: { width, height },
+                colorScheme: theme,
+                reducedMotion: "reduce",
+              });
+              const page = await context.newPage();
+              await page.addInitScript((mode) => {
+                localStorage.setItem("gys-theme-v1", mode);
+              }, theme);
+              for (const [slug, route] of routes) {
+                const errors = [];
+                page.removeAllListeners("console");
+                page.removeAllListeners("pageerror");
+                page.on("console", (message) => {
+                  if (message.type() === "error") errors.push(`console:${message.text()}`);
+                });
+                page.on("pageerror", (error) => errors.push(`page:${error.message}`));
+                await page.goto(base + route, { waitUntil: "networkidle", timeout: 30_000 });
+                await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+                const geometry = await inspect(page);
+                await page.screenshot({
+                  path: `/tmp/gys-visual-audit/screenshots/${slug}-${label}-${theme}-${width}x${height}.png`,
+                  fullPage: false,
+                });
+                report.push({ slug, route, theme, viewport: { label, width, height }, errors, ...geometry });
+              }
+              await context.close();
+            }
+          }
+
+          const outageContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "light", reducedMotion: "reduce" });
+          const outage = await outageContext.newPage();
+          await outage.route("**/wp-json/wp/v2/posts**", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
+          await outage.route("**/api/v1/content/sauh", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
+          await outage.route("**/offline/sauh.json", (route) => route.fulfill({ status: 503, body: "snapshot unavailable" }));
+          await outage.goto(base + "/", { waitUntil: "networkidle", timeout: 30_000 });
+          await outage.screenshot({ path: "/tmp/gys-visual-audit/screenshots/home-sauh-outage-desktop-light-1440x900.png", fullPage: false });
+          report.push({ slug: "home-sauh-outage", route: "/", theme: "light", viewport: { label: "desktop", width: 1440, height: 900 }, errors: [], ...(await inspect(outage)) });
+          await outageContext.close();
+
           await browser.close();
-          await fs.writeFile('/tmp/gys-visual-audit/layout-report.json', JSON.stringify(report, null, 2));
-          const overflow = report.filter(x => x.horizontalOverflow);
-          const consoleErrors = report.filter(x => x.errors.length);
-          const clipped = report.filter(x => x.clipped.length);
-          console.log(`AUDIT routes=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${consoleErrors.length} clippedCases=${clipped.length}`);
-          for (const row of [...overflow, ...clipped, ...consoleErrors].slice(0,30)) console.log(JSON.stringify({route:row.route,viewport:row.viewport,overflow:row.horizontalOverflow,clipped:row.clipped,errors:row.errors.slice(0,6)}));
+          await fs.writeFile("/tmp/gys-visual-audit/layout-report.json", JSON.stringify(report, null, 2));
+          const overflow = report.filter((row) => row.horizontalOverflow);
+          const errors = report.filter((row) => row.errors.length > 0);
+          const clipped = report.filter((row) => row.clipped.length > 0);
+          console.log(`AUDIT cases=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${errors.length} clippedCases=${clipped.length}`);
+          for (const row of [...overflow, ...clipped, ...errors].slice(0, 30)) {
+            console.log(JSON.stringify({ slug: row.slug, theme: row.theme, viewport: row.viewport, overflow: row.horizontalOverflow, clipped: row.clipped, errors: row.errors.slice(0, 6) }));
+          }
+          if (overflow.length || clipped.length) process.exitCode = 1;
           EOF
           node apps/web/.agent-responsive-audit.mjs
           rm apps/web/.agent-responsive-audit.mjs
       - name: Existing responsive regression tests
-        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
+        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts e2e/responsive-touch-targets.spec.ts --project=chromium
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: responsive-visual-audit
+          name: second-pass-visual-audit
           path: /tmp/gys-visual-audit
           if-no-files-found: error
