@@ -1,0 +1,53 @@
+name: Agent persisted preference audit
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-storage-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+      - name: Inventory gys-* storage keys and backup coverage
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path("apps/web/src")
+          more = (root / "more.tsx").read_text()
+          dynamic_prefixes = (
+              "gys-pdf-page:",
+              "gys-pdf-layout:",
+              "gys-faith-pdf-",
+              "gys-faith-note-",
+          )
+          key_pattern = re.compile(r"gys-[A-Za-z0-9:_-]+")
+          inventory = {}
+          for path in root.rglob("*"):
+              if path.suffix not in {".ts", ".tsx", ".js", ".mjs"}:
+                  continue
+              text = path.read_text(errors="ignore")
+              for key in sorted(set(key_pattern.findall(text))):
+                  inventory.setdefault(key, []).append(str(path))
+
+          print("PERSISTED_KEY_INVENTORY")
+          uncovered = []
+          for key, paths in sorted(inventory.items()):
+              covered = key in more or any(key.startswith(prefix) for prefix in dynamic_prefixes)
+              marker = "COVERED" if covered else "UNREVIEWED"
+              print(f"{marker}\t{key}\t{','.join(paths)}")
+              if not covered:
+                  uncovered.append(key)
+          print(f"TOTAL={len(inventory)} UNREVIEWED={len(uncovered)}")
+          PY
