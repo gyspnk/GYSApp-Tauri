@@ -1,0 +1,119 @@
+name: Agent responsive visual audit
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - '.github/workflows/agent-responsive-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Build web
+        run: pnpm --filter @gys/web build
+      - name: Start preview
+        run: |
+          pnpm --filter @gys/web exec vite preview --host 127.0.0.1 --port 4173 > /tmp/gys-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/gys-preview.log
+          exit 1
+      - name: Capture responsive audit
+        run: |
+          mkdir -p /tmp/gys-visual-audit/screenshots
+          cat > /tmp/gys-visual-audit/audit.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+
+          const base = 'http://127.0.0.1:4173';
+          const routes = ['/', '/bible', '/kidung', '/assets', '/more'];
+          const viewports = [
+            ['desktop', 1440, 900],
+            ['small-desktop', 1024, 768],
+            ['tablet-portrait', 768, 1024],
+            ['tablet-landscape', 1024, 768],
+            ['phone-small', 320, 720],
+            ['phone', 390, 844],
+            ['phone-large', 412, 915],
+            ['phone-landscape', 844, 390],
+          ];
+          const browser = await chromium.launch({ headless: true });
+          const report = [];
+          for (const [label, width, height] of viewports) {
+            const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+            const page = await context.newPage();
+            for (const route of routes) {
+              const errors = [];
+              page.removeAllListeners('console');
+              page.removeAllListeners('pageerror');
+              page.on('console', msg => { if (msg.type() === 'error') errors.push(`console:${msg.text()}`); });
+              page.on('pageerror', err => errors.push(`page:${err.message}`));
+              await page.goto(base + route, { waitUntil: 'networkidle', timeout: 30000 });
+              await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+              const geometry = await page.evaluate(() => {
+                const root = document.documentElement;
+                const body = document.body;
+                const all = [...document.querySelectorAll('button,a,input,select,textarea,[role="button"],[role="tab"]')]
+                  .filter(el => {
+                    const r = el.getBoundingClientRect();
+                    const s = getComputedStyle(el);
+                    return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
+                  });
+                const clipped = all.filter(el => {
+                  const r = el.getBoundingClientRect();
+                  return r.right > innerWidth + 2 || r.left < -2 || r.bottom > innerHeight + 2 || r.top < -2;
+                }).slice(0, 20).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), rect: el.getBoundingClientRect().toJSON() }));
+                const tiny = all.filter(el => {
+                  const r = el.getBoundingClientRect();
+                  return (r.width < 36 || r.height < 36) && !el.closest('.bible-verse-text,.lyrics-text,.chord-canvas');
+                }).slice(0, 30).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) }));
+                return {
+                  scrollWidth: Math.max(root.scrollWidth, body.scrollWidth),
+                  clientWidth: root.clientWidth,
+                  horizontalOverflow: Math.max(root.scrollWidth, body.scrollWidth) > innerWidth + 2,
+                  clipped,
+                  tiny,
+                  activeFixed: [...document.querySelectorAll('*')].filter(el => getComputedStyle(el).position === 'fixed' && el.getBoundingClientRect().width > 0).slice(0,20).map(el => ({ cls: el.className, rect: el.getBoundingClientRect().toJSON() })),
+                };
+              });
+              const slug = route === '/' ? 'home' : route.slice(1);
+              await page.screenshot({ path: `/tmp/gys-visual-audit/screenshots/${slug}-${label}-${width}x${height}.png`, fullPage: false });
+              report.push({ route, viewport: { label, width, height }, errors, ...geometry });
+            }
+            await context.close();
+          }
+          await browser.close();
+          await fs.writeFile('/tmp/gys-visual-audit/layout-report.json', JSON.stringify(report, null, 2));
+          const overflow = report.filter(x => x.horizontalOverflow);
+          const consoleErrors = report.filter(x => x.errors.length);
+          console.log(`AUDIT routes=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${consoleErrors.length}`);
+          for (const row of [...overflow, ...consoleErrors].slice(0,20)) console.log(JSON.stringify(row));
+          EOF
+          (cd apps/web && node /tmp/gys-visual-audit/audit.mjs)
+      - name: Existing responsive regression tests
+        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: responsive-visual-audit
+          path: /tmp/gys-visual-audit
+          if-no-files-found: error
