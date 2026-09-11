@@ -40,7 +40,7 @@ jobs:
       - name: Capture responsive audit
         run: |
           mkdir -p /tmp/gys-visual-audit/screenshots
-          cat > /tmp/gys-visual-audit/audit.mjs <<'EOF'
+          cat > apps/web/.agent-responsive-audit.mjs <<'EOF'
           import { chromium } from 'playwright';
           import fs from 'node:fs/promises';
 
@@ -107,7 +107,8 @@ jobs:
           console.log(`AUDIT routes=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${consoleErrors.length}`);
           for (const row of [...overflow, ...consoleErrors].slice(0,20)) console.log(JSON.stringify(row));
           EOF
-          (cd apps/web && node /tmp/gys-visual-audit/audit.mjs)
+          node apps/web/.agent-responsive-audit.mjs
+          rm apps/web/.agent-responsive-audit.mjs
       - name: Existing responsive regression tests
         run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
       - uses: actions/upload-artifact@v4
