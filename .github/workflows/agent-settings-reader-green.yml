@@ -41,7 +41,7 @@ jobs:
           pnpm verify:bundle
       - name: Install Chromium
         run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Verify focused regressions
+      - name: Verify focused regressions after selector correction
         run: pnpm --filter @gys/web exec playwright test e2e/settings-data-integrity.spec.ts e2e/reading-direct-flow.spec.ts --project=chromium --reporter=line
       - name: Commit verified production fixes
         run: |
