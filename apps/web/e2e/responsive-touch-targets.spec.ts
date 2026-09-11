@@ -21,10 +21,18 @@ async function expectPseudoTouchTarget(locator: Locator, min = 40) {
   expect(size.height).toBeGreaterThanOrEqual(min);
 }
 
+async function expectFullyInViewport(locator: Locator, viewportWidth: number) {
+  const box = await locator.boundingBox();
+  expect(box, "control should be visible and measurable").not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(viewportWidth);
+}
+
 test("phone Bible and Kidung controls expose comfortable touch targets", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 320, height: 720 });
+  const phoneWidth = 320;
+  await page.setViewportSize({ width: phoneWidth, height: 720 });
 
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: "Kejadian 1" })).toBeVisible();
@@ -44,6 +52,17 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
     page.getByRole("heading", { name: "Kidung", exact: true }),
   ).toBeVisible();
   await expectTouchTarget(page.locator(".pujian-title").first(), 40);
+  await expectFullyInViewport(
+    page.getByRole("link", { name: "Pengaturan", exact: true }),
+    phoneWidth,
+  );
+  await expectFullyInViewport(
+    page.getByRole("button", {
+      name: "Tambah Pujilah Allah Yang Maha Esa ke Playlist",
+      exact: true,
+    }),
+    phoneWidth,
+  );
 });
 
 test("phone navigation and compact text actions remain easy to tap", async ({
