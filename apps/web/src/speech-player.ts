@@ -34,8 +34,8 @@ export type SpeechSnapshot = {
   offline?: boolean;
   voices: SpeechVoice[];
   voiceId?: string;
-  activeLanguageTag?: string;
-  activeVoiceId?: string;
+  activeLanguageTag?: string | undefined;
+  activeVoiceId?: string | undefined;
   rate: number;
   pitch: number;
   volume: number;
