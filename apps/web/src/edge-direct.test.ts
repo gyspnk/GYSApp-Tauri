@@ -35,6 +35,7 @@ describe("direct Edge-compatible TTS protocol", () => {
       "Fri Sep 11 2026 00:00:00 GMT+0000",
     );
     expect(ssml).toContain("Path:ssml\r\n\r\n");
+    expect(ssml).toContain("xml:lang='id-ID'");
     expect(ssml).toContain("voice name='id-ID-GadisNeural'");
     expect(ssml).toContain("Kasih &lt; Tuhan &amp; sesama");
   });
