@@ -59,7 +59,10 @@ test("phone navigation and compact text actions remain easy to tap", async ({
   await expectTouchTarget(seeAll, 40);
 
   await page.goto("/GYSApp-Tauri/lainnya?section=data");
-  await expectTouchTarget(page.getByRole("button", { name: "Periksa versi" }), 40);
+  await expectTouchTarget(
+    page.getByRole("button", { name: "Periksa versi" }),
+    40,
+  );
 });
 
 test("desktop Sauh outage uses a compact recovery state instead of an empty hero", async ({

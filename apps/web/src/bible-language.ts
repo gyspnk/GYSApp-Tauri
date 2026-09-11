@@ -137,8 +137,7 @@ export function detectSpeechLanguage(
     if (ENGLISH_WORDS.has(word)) englishScore += 1;
   }
 
-  if (indonesianScore >= 2 && indonesianScore > englishScore)
-    return "id-ID";
+  if (indonesianScore >= 2 && indonesianScore > englishScore) return "id-ID";
   if (englishScore >= 2 && englishScore > indonesianScore) return "en-US";
   return fallback;
 }
