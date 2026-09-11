@@ -328,12 +328,12 @@ const lock = await readJson(lockPath);
 const musicLock = await readJson(musicLockPath);
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
-  lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"
+  lock.sourceCommit !== "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
 )
   throw new Error("unexpected chord lock provenance");
-if (!Array.isArray(lock.entries) || lock.entries.length !== 153)
+if (!Array.isArray(lock.entries) || lock.entries.length !== 155)
   throw new Error(
-    `expected 153 chord entries, got ${lock.entries?.length ?? 0}`,
+    `expected 155 chord entries, got ${lock.entries?.length ?? 0}`,
   );
 
 const files = [];

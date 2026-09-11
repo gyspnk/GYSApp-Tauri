@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 const sourceRepo = "gyspnk/gyschordweb";
 const sourceCommit =
-  process.env.GYSCHORDWEB_COMMIT ?? "a9bf3219105dca3dde1b286328f46a0eede3287e";
+  process.env.GYSCHORDWEB_COMMIT ?? "3039ae678c9e0e6ca439f4e1e0250759667dbcdf";
 const generatedAt = new Date().toISOString();
 const sourceRoot = process.env.GYSCHORDWEB_SNAPSHOT;
 

@@ -127,3 +127,14 @@ route or control exists locally.
 ## September 2026 canonical parity refresh
 
 Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). Compared with the previous `a3d1ea7` source lock, canonical upstream adds nine note-aligned chord assets: hymns 108, 196, 271, 322, 398, 407, 466, 467, and 492. The canonical generated set is now 1,221 music assets and 153 chord references. Generated provenance and the strict chord-position audit must pass before this refresh is treated as verified parity evidence.
+
+## September 12, 2026 canonical parity refresh
+
+Re-checked the immutable `gyspnk/gyschordweb` source at
+`3039ae678c9e0e6ca439f4e1e0250759667dbcdf`. Relative to the September 5
+lock, upstream adds two note-aligned chord assets: hymn 106
+(`Aku Murid Yesus`) and hymn 363 (`Berpegang Pada JanjiNya`). The generated
+music lock, chord manifest, offline runtime lock, hymn catalog, and strict chord
+position audit are regenerated from that exact source commit. Canonical chord
+references are now 155. This refresh is only accepted when provenance, strict
+geometry, unit, build, and bundle-budget verification all pass.

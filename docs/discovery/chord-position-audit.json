@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-11T07:12:18.128Z",
+  "generatedAt": "2026-09-11T18:10:22.095Z",
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "a9bf3219105dca3dde1b286328f46a0eede3287e",
+  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
   "lockPath": "packages/contracts/generated/chord-manifest.json",
   "musicLockPath": "apps/web/public/offline/music-lock.json",
-  "chordCount": 153,
+  "chordCount": 155,
   "totals": {
-    "pdfPages": 173,
-    "auditedPages": 173,
-    "chordEntries": 3547,
-    "mappedEntries": 3547,
+    "pdfPages": 175,
+    "auditedPages": 175,
+    "chordEntries": 3596,
+    "mappedEntries": 3596,
     "orphanEntries": 0,
     "sentinelEntries": 2,
     "invalidEntries": 0
@@ -2138,6 +2138,51 @@
               "noteIdx": 12,
               "chord": "A",
               "position": 0.4698
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-106",
+      "chordPath": "assets/chord/106_Aku Murid Yesus.chord.json",
+      "chordBytes": 1691,
+      "chordSha256": "16721dbf3cd417cd72bb4523a419d21618778fb4c935040a549916010d56c1d1",
+      "pdfPath": "assets/pdf/106_Aku Murid Yesus.pdf",
+      "pdfBytes": 14901,
+      "pdfSha256": "244a15f695f9484b3c88cd4bf46a2d4084410c215fccf0891723df405bfdcc64",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 400,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0439
+            },
+            {
+              "noteIdx": 7,
+              "chord": "A#",
+              "position": 0.2992
+            },
+            {
+              "noteIdx": 12,
+              "chord": "F",
+              "position": 0.4652
             }
           ]
         }
@@ -5849,6 +5894,51 @@
         }
       ],
       "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-363",
+      "chordPath": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+      "chordBytes": 1502,
+      "chordSha256": "837c72db7b07c789c2338ccf4649c15bc69b622c227cff2baf34065aa05fe8ee",
+      "pdfPath": "assets/pdf/363_Berpegang Pada JanjiNya.pdf",
+      "pdfBytes": 14270,
+      "pdfSha256": "d81cc8c2616b689850a1e0d1430b66c2671d7fbad98b7ad411574fba6c7e2c72",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 524,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0.0339
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.1998
+            },
+            {
+              "noteIdx": 12,
+              "chord": "A",
+              "position": 0.3803
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0

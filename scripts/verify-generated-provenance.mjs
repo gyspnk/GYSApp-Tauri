@@ -38,18 +38,20 @@ const sourceField = (field, value) =>
 
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
-  lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"
+  lock.sourceCommit !== "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
 )
   throw new Error("music lock provenance drifted");
-if (lock.items.length !== 1221)
-  throw new Error(`expected 1221 music entries, got ${lock.items.length}`);
-if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 153)
+if (lock.items.length !== 1223)
+  throw new Error(`expected 1223 music entries, got ${lock.items.length}`);
+if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 155)
   throw new Error("chord manifest drifted from music lock");
 for (const requiredChord of [
+  "106_",
   "108_",
   "196_",
   "271_",
   "322_",
+  "363_",
   "398_",
   "407_",
   "466_",
