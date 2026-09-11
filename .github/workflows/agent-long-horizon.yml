@@ -26,6 +26,12 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Install Tauri Linux system dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
+
       - name: Apply verified native wiring and strict type fixes
         shell: bash
         run: |
