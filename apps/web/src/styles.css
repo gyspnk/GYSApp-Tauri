@@ -12994,3 +12994,80 @@ body:has(.home-page)::-webkit-scrollbar {
     margin-left: 48px;
   }
 }
+
+/* More: keep destructive device actions secondary to everyday settings. */
+.device-data-tools {
+  padding: 0;
+  overflow: clip;
+}
+
+.device-data-summary {
+  min-height: 70px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.device-data-summary::-webkit-details-marker {
+  display: none;
+}
+
+.device-data-summary > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.device-data-summary small,
+.device-data-body small {
+  color: var(--muted);
+}
+
+.device-data-chevron {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+.device-data-tools[open] .device-data-chevron {
+  transform: rotate(90deg);
+}
+
+.device-data-body {
+  border-top: 1px solid var(--line);
+  padding: 16px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.device-data-body > div {
+  display: grid;
+  gap: 4px;
+  max-width: 64ch;
+}
+
+.danger-button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 620px) {
+  .device-data-summary {
+    min-height: 64px;
+    padding: 16px;
+  }
+
+  .device-data-body {
+    padding: 14px 16px 16px;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .danger-button {
+    width: 100%;
+  }
+}

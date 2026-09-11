@@ -25,7 +25,9 @@ test("reset is secondary, guarded, and cancel-safe", async ({ page }) => {
   });
   await reset.click();
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem("gys-test-reset-guard")))
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-test-reset-guard")),
+    )
     .toBe("preserve-me");
 
   page.once("dialog", async (dialog) => {
@@ -34,6 +36,8 @@ test("reset is secondary, guarded, and cancel-safe", async ({ page }) => {
   });
   await reset.click();
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem("gys-test-reset-guard")))
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-test-reset-guard")),
+    )
     .toBeNull();
 });

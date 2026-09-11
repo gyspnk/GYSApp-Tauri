@@ -1276,47 +1276,13 @@ export function MorePage({
         <button
           className="more-card more-action"
           type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
-              : "Daftar lagu untuk kebaktian atau latihan"}
-          </small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
           onClick={() => setBackupOpen((open) => !open)}
         >
           <span className="more-icon">↥</span>
           <strong>Backup & import</strong>
-          <small>Simpan atau pulihkan data catatan & riwayat</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => {
-            void clearAppData()
-              .then(() =>
-                show(
-                  "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
-                ),
-              )
-              .catch(() =>
-                show(
-                  "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                ),
-              );
-          }}
-        >
-          <span className="more-icon">⌁</span>
-          <strong>Reset perangkat</strong>
-          <small>Bersihkan cache dan mulai ulang preferensi</small>
+          <small>
+            Simpan atau pulihkan catatan, progres baca, dan preferensi
+          </small>
         </button>
 
         <button
@@ -1328,6 +1294,67 @@ export function MorePage({
           <strong>Pengingat</strong>
           <small>Atur waktu teduh membaca firman harian</small>
         </button>
+
+        <button
+          className="more-card more-action"
+          type="button"
+          onClick={() => setPlaylistOpen((open) => !open)}
+        >
+          <span className="more-icon">♫</span>
+          <strong>Antrean MIDI</strong>
+          <small>
+            {playlist.items.length
+              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
+              : "Susun lagu untuk kebaktian atau latihan"}
+          </small>
+        </button>
+
+        <details
+          className="more-card more-card-wide device-data-tools"
+          data-testid="device-data-tools"
+        >
+          <summary className="device-data-summary">
+            <span>
+              <strong>Perangkat & data</strong>
+              <small>Alat lanjutan untuk penyimpanan lokal</small>
+            </span>
+            <span className="device-data-chevron" aria-hidden="true">
+              ›
+            </span>
+          </summary>
+          <div className="device-data-body">
+            <div>
+              <strong>Reset perangkat</strong>
+              <small>
+                Hapus preferensi, cache, progres lokal, dan data offline
+                aplikasi dari perangkat ini. Gunakan hanya bila diperlukan.
+              </small>
+            </div>
+            <button
+              className="quiet-button danger-button"
+              type="button"
+              onClick={() => {
+                const confirmed = window.confirm(
+                  "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
+                );
+                if (!confirmed) return;
+                void clearAppData()
+                  .then(() =>
+                    show(
+                      "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
+                    ),
+                  )
+                  .catch(() =>
+                    show(
+                      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                    ),
+                  );
+              }}
+            >
+              Reset perangkat
+            </button>
+          </div>
+        </details>
 
         <form className="more-card report-card" onSubmit={submitReport}>
           <div className="more-card-heading">
