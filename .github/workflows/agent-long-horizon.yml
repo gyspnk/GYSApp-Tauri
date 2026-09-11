@@ -1,4 +1,4 @@
-name: Agent media dock retry
+name: Agent UX refinement
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  media:
+  ux:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -30,7 +30,7 @@ jobs:
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
 
-      - name: Implement diagnosed media dock fix
+      - name: Remove blanket interaction animation and refine shell surfaces
         shell: bash
         run: |
           python3 - <<'PY'
@@ -38,111 +38,90 @@ jobs:
 
           app = Path('apps/web/src/App.tsx')
           source = app.read_text()
-          old_class = 'className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${dragging ? " is-dragging" : ""}`}'
-          new_class = 'className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}'
-          if old_class not in source:
-              raise SystemExit('media surface class anchor not found')
-          source = source.replace(old_class, new_class, 1)
-
-          collapse = '''      {(isKidungMedia || speechActive) && !minimized && (\n        <button\n          className="media-collapse-toggle"\n          type="button"\n          onClick={() => setMinimized(true)}\n          aria-expanded="true"\n          aria-label="Ciutkan panel"\n        >\n          <span className="media-collapse-grip" aria-hidden="true" />\n          <Icon name="chevronDown" size={15} />\n        </button>\n      )}\n'''
-          if collapse not in source:
-              raise SystemExit('duplicate collapse control anchor not found')
-          source = source.replace(collapse, '', 1)
-
-          begin_anchor = '  const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {\n'
-          source = source.replace(begin_anchor, begin_anchor + '    if (window.matchMedia("(max-width: 959px)").matches) return;\n', 1)
-          keyboard_anchor = '  const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {\n'
-          source = source.replace(keyboard_anchor, keyboard_anchor + '    if (window.matchMedia("(max-width: 959px)").matches) return;\n', 1)
-
-          close_old = '''        >\n          ✕\n        </button>\n      )}\n      <button\n        className="media-minimize"'''
-          close_new = '''        >\n          <Icon name="cross" size={16} />\n        </button>\n      )}\n      <button\n        className="media-minimize"'''
-          if close_old not in source:
-              raise SystemExit('media close glyph anchor not found')
-          source = source.replace(close_old, close_new, 1)
-
-          glyph_old = '''      >\n        {minimized ? "↗" : "−"}\n      </button>\n    </aside>'''
-          glyph_new = '''      >\n        <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />\n      </button>\n    </aside>'''
-          if glyph_old not in source:
-              raise SystemExit('media minimize glyph anchor not found')
-          source = source.replace(glyph_old, glyph_new, 1)
+          start_marker = '  useEffect(() => {\n    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");\n    const animateControl = (target: EventTarget | null) => {\n'
+          end_marker = '  useEffect(() => {\n    const onShortcut = (event: KeyboardEvent) => {\n'
+          start = source.find(start_marker)
+          end = source.find(end_marker, start + 1)
+          if start < 0 or end < 0:
+              raise SystemExit('global control animation block not found')
+          source = source[:start] + source[end:]
           app.write_text(source)
 
           css = Path('apps/web/src/styles.css')
           style = css.read_text()
-          marker = '/* Long-horizon media refinement: centered persistent dock */'
+          marker = '/* Long-horizon UX refinement: quiet, state-led interaction */'
           block = r'''
 
-          /* Long-horizon media refinement: centered persistent dock */
-          .media-surface {
-            max-width: min(720px, calc(100vw - 32px));
-            transition:
-              width var(--motion-normal) var(--ease-out),
-              max-width var(--motion-normal) var(--ease-out),
-              transform var(--motion-normal) var(--ease-out),
-              bottom var(--motion-normal) var(--ease-out),
-              box-shadow var(--motion-fast) var(--ease-out);
-          }
-          .media-surface:not(.has-custom-position) {
-            left: 50% !important;
-            right: auto !important;
-            bottom: 18px !important;
-            transform: translateX(-50%) !important;
-          }
-          .media-surface.has-custom-position {
-            transform: none;
-          }
-          .media-surface.is-minimized {
-            width: min(360px, calc(100vw - 32px));
-            max-width: min(360px, calc(100vw - 32px));
-          }
+          /* Long-horizon UX refinement: quiet, state-led interaction */
+          .search-trigger,
+          .account-button,
+          .sidebar-collapse-toggle,
           .media-minimize,
           .media-close-button {
-            width: 44px;
-            height: 44px;
             min-width: 44px;
             min-height: 44px;
-            border-radius: 9px;
           }
-          .media-surface.is-minimized .media-mini-context {
-            min-width: 0;
+
+          .search-trigger:hover,
+          .account-button:hover,
+          .global-search-result:hover,
+          .primary-button:hover,
+          .quiet-button:hover,
+          .text-button:hover {
+            transform: none;
           }
-          @media (max-width: 959px) {
-            .media-surface,
-            .media-surface.has-custom-position {
-              left: 50% !important;
-              right: auto !important;
-              top: auto !important;
-              bottom: 18px !important;
-              transform: translateX(-50%) !important;
-              width: min(560px, calc(100vw - 24px));
-              max-width: min(560px, calc(100vw - 24px));
-            }
-            .media-surface.is-minimized {
-              width: min(360px, calc(100vw - 24px));
-              max-width: min(360px, calc(100vw - 24px));
-            }
-            .media-drag-handle {
-              cursor: default;
-            }
+
+          .search-trigger:hover,
+          .account-button:hover,
+          .sidebar-collapse-toggle:hover {
+            box-shadow: none;
           }
-          @media (max-width: 599px) {
-            .media-surface,
-            .media-surface.has-custom-position {
-              bottom: calc(78px + env(safe-area-inset-bottom)) !important;
-              width: calc(100vw - 24px);
-              max-width: calc(100vw - 24px);
-            }
-            .media-surface.is-minimized {
-              width: min(360px, calc(100vw - 24px));
-              max-width: min(360px, calc(100vw - 24px));
-            }
+
+          .topbar,
+          .navigation-shell {
+            box-shadow: none;
           }
+
+          .media-surface {
+            box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 13%, transparent);
+          }
+
+          .nav-item,
+          .search-trigger,
+          .account-button,
+          .sidebar-collapse-toggle,
+          .media-control,
+          .media-minimize,
+          .media-close-button {
+            transition-timing-function: var(--ease-out, cubic-bezier(.2,.8,.2,1));
+          }
+
           @media (prefers-reduced-motion: reduce) {
+            html {
+              scroll-behavior: auto !important;
+            }
+            .route-view,
+            .workspace,
+            .navigation-shell,
+            .nav-item,
+            .nav-active-indicator,
+            .nav-copy,
+            .sidebar-foot,
+            .sidebar-collapse-toggle,
             .media-surface,
+            .media-control,
             .media-minimize,
-            .media-close-button {
-              transition: none !important;
+            .media-close-button,
+            .search-trigger,
+            .account-button,
+            .global-search-result,
+            .reader-context-button,
+            .control-select-trigger,
+            .popover,
+            .menu-popover {
               animation: none !important;
+              transition: none !important;
+              scroll-behavior: auto !important;
             }
           }
           '''
@@ -150,96 +129,106 @@ jobs:
               css.write_text(style.rstrip() + block + '\n')
           PY
 
-      - name: Add deterministic responsive media tests
+      - name: Add responsive theme and reduced-motion UX verification
         shell: bash
         run: |
-          cat > apps/web/e2e/media-dock.spec.ts <<'EOF'
+          cat > apps/web/e2e/ux-refinement.spec.ts <<'EOF'
           import { expect, test, type Page } from "@playwright/test";
 
-          async function openSpeechPlayerAtDesktop(page: Page) {
+          async function setTheme(page: Page, theme: "light" | "dark") {
+            await page.addInitScript((selected) => {
+              localStorage.setItem(
+                "gys-shell-settings-v1",
+                JSON.stringify({ version: 1, locale: "id", theme: selected }),
+              );
+              localStorage.setItem("gys-theme", selected);
+            }, theme);
+          }
+
+          async function expectNoHorizontalOverflow(page: Page) {
+            await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+          }
+
+          test("desktop light shell is compact, stable, and uses reachable controls", async ({ page }) => {
+            await setTheme(page, "light");
             await page.setViewportSize({ width: 1440, height: 900 });
-            await page.goto("/GYSApp-Tauri/bible");
-            await expect(page.getByRole("heading", { name: "Alkitab", exact: true })).toBeVisible();
-            const read = page.getByRole("button", { name: "Bacakan" });
-            await expect(read).toBeEnabled({ timeout: 15_000 });
-            await read.click();
-            await expect(page.locator(".media-surface")).toBeVisible({ timeout: 15_000 });
-          }
-
-          async function expectCentered(page: Page, width: number) {
-            const box = await page.locator(".media-surface").boundingBox();
+            await page.goto("/GYSApp-Tauri/");
+            await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+            await expectNoHorizontalOverflow(page);
+            const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
+            const box = await collapse.boundingBox();
             expect(box).not.toBeNull();
-            expect(Math.abs(box!.x + box!.width / 2 - width / 2)).toBeLessThanOrEqual(3);
-            return box!;
-          }
-
-          test("persistent media defaults to one centered semantic dock", async ({ page }) => {
-            await page.addInitScript(() => localStorage.removeItem("gys-media-position-v1"));
-            await openSpeechPlayerAtDesktop(page);
-            await expectCentered(page, 1440);
-            await expect(page.getByRole("button", { name: "Ciutkan panel" })).toHaveCount(0);
-            const minimize = page.getByRole("button", { name: "Minimalkan pemutar" });
-            await expect(minimize).toHaveCount(1);
-            await expect(minimize.locator("svg")).toHaveCount(1);
-            const controlBox = await minimize.boundingBox();
-            expect(controlBox).not.toBeNull();
-            expect(controlBox!.width).toBeGreaterThanOrEqual(44);
-            expect(controlBox!.height).toBeGreaterThanOrEqual(44);
-            await minimize.click();
-            await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
-            await expect.poll(() => page.evaluate(() => localStorage.getItem("gys-media-minimized"))).toBe("1");
-            const restore = page.getByRole("button", { name: "Perbesar pemutar" });
-            await expect(restore.locator("svg")).toHaveCount(1);
-            await restore.click();
-            await expect(page.locator(".media-surface")).not.toHaveClass(/is-minimized/);
-            await expect.poll(() => page.evaluate(() => localStorage.getItem("gys-media-minimized"))).toBe("0");
+            expect(box!.width).toBeGreaterThanOrEqual(44);
+            expect(box!.height).toBeGreaterThanOrEqual(44);
+            await expect(page.locator(".topbar")).toHaveCSS("box-shadow", "none");
+            await page.screenshot({ path: "test-results/ux-light-desktop.png", fullPage: true });
           });
 
-          test("phone ignores a stale dragged position and keeps dock above bottom navigation", async ({ page }) => {
-            await page.addInitScript(() => {
-              localStorage.setItem("gys-media-position-v1", JSON.stringify({ left: 8, top: 8 }));
-              localStorage.setItem("gys-media-minimized", "0");
-            });
-            await openSpeechPlayerAtDesktop(page);
-            await page.setViewportSize({ width: 390, height: 844 });
-            const media = await expectCentered(page, 390);
+          test("dark tablet shell preserves density and viewport containment", async ({ page }) => {
+            await setTheme(page, "dark");
+            await page.setViewportSize({ width: 768, height: 1024 });
+            await page.goto("/GYSApp-Tauri/");
+            await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+            await expectNoHorizontalOverflow(page);
             const nav = await page.locator(".navigation-shell").boundingBox();
             expect(nav).not.toBeNull();
-            expect(media.y + media.height).toBeLessThanOrEqual(nav!.y);
+            expect(nav!.x).toBeGreaterThanOrEqual(0);
+            expect(nav!.x + nav!.width).toBeLessThanOrEqual(768);
+            await page.screenshot({ path: "test-results/ux-dark-tablet.png", fullPage: true });
           });
 
-          test("tablet uses stable centered dock geometry after resize", async ({ page }) => {
-            await page.addInitScript(() => localStorage.removeItem("gys-media-position-v1"));
-            await openSpeechPlayerAtDesktop(page);
-            await page.setViewportSize({ width: 768, height: 1024 });
-            const media = await expectCentered(page, 768);
-            expect(media.x).toBeGreaterThanOrEqual(12);
-            expect(media.x + media.width).toBeLessThanOrEqual(756);
+          test("phone composition remains contained above bottom navigation", async ({ page }) => {
+            await setTheme(page, "light");
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.goto("/GYSApp-Tauri/");
+            await expectNoHorizontalOverflow(page);
+            const nav = await page.locator(".navigation-shell").boundingBox();
+            expect(nav).not.toBeNull();
+            expect(nav!.x).toBeGreaterThanOrEqual(0);
+            expect(nav!.x + nav!.width).toBeLessThanOrEqual(390);
+            expect(nav!.y + nav!.height).toBeLessThanOrEqual(844);
+            await page.screenshot({ path: "test-results/ux-light-phone.png", fullPage: true });
+          });
+
+          test("reduced motion removes shell and dock transitions", async ({ page }) => {
+            await page.emulateMedia({ reducedMotion: "reduce" });
+            await page.setViewportSize({ width: 1440, height: 900 });
+            await page.goto("/GYSApp-Tauri/");
+            await expect(page.locator(".workspace")).toHaveCSS("transition-duration", "0s");
+            await expect(page.locator(".sidebar-collapse-toggle")).toHaveCSS("transition-duration", "0s");
+            expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
           });
           EOF
 
-      - name: Format typecheck and build
+      - name: Format, typecheck, and build
         run: |
-          pnpm exec prettier --write apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/media-dock.spec.ts
+          pnpm exec prettier --write apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts
           pnpm --filter @gys/web typecheck
           pnpm --filter @gys/web build
 
       - name: Install Chromium
         run: pnpm --filter @gys/web exec playwright install --with-deps chromium
 
-      - name: Verify media dock focused tests
-        run: pnpm --filter @gys/web exec playwright test e2e/media-dock.spec.ts
+      - name: Run UX and shell regression verification
+        run: |
+          mkdir -p apps/web/test-results
+          pnpm --filter @gys/web exec playwright test e2e/ux-refinement.spec.ts e2e/sidebar-collapse.spec.ts e2e/media-dock.spec.ts e2e/navigation-layout.spec.ts
 
-      - name: Verify existing media and shell regressions
-        run: pnpm --filter @gys/web exec playwright test e2e/smoke.spec.ts e2e/navigation-layout.spec.ts
+      - name: Upload UX evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ux-evidence-${{ github.run_id }}
+          path: apps/web/test-results/ux-*.png
+          if-no-files-found: ignore
 
-      - name: Commit verified media dock
+      - name: Commit verified UX refinement
         shell: bash
         run: |
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/media-dock.spec.ts
+          git add apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/ux-refinement.spec.ts
           if ! git diff --cached --quiet; then
-            git commit -m "feat(media): unify responsive persistent dock [agent-generated]"
+            git commit -m "refactor(ux): use restrained state-led motion and shell surfaces [agent-generated]"
             git push origin HEAD:audit/parity-ui-tts-20260911
           fi
