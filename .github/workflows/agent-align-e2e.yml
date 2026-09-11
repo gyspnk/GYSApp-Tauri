@@ -38,7 +38,7 @@ jobs:
           pnpm typecheck
       - name: Install Chromium
         run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Verify complete affected suites
+      - name: Verify complete affected suites with one-page completion semantics
         run: pnpm --filter @gys/web exec playwright test e2e/media-load.spec.ts e2e/smoke.spec.ts --project=chromium --reporter=line
       - name: Commit verified contract alignment
         run: |
