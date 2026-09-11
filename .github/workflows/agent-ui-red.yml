@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
 
+# Temporary verifier; removed before the final exact-SHA CI gate.
 jobs:
   red:
     runs-on: ubuntu-latest
@@ -37,5 +38,5 @@ jobs:
             echo "Expected responsive usability tests to be RED before implementation, but they passed."
             exit 1
           fi
-          grep -Eq "Tandai ayat|rujukan silang|pujian-title|Lihat semua|Periksa versi|420" /tmp/ui-red.log
+          grep -Eq "Expected: >= 40|Expected: <= 420" /tmp/ui-red.log
           echo "RED phase confirmed: measured touch-target and compact outage contracts fail before production UI changes."
