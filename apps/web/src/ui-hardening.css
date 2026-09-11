@@ -80,7 +80,9 @@ button[aria-label*="rujukan silang untuk"]::before {
 
 /* The Kidung local tabs are primary navigation, not a carousel. On very small
    phones keep all three destinations visible at once instead of allowing the
-   segmented control to widen the whole page. */
+   segmented control to widen the whole page. Grid children also need an
+   explicit zero minimum: otherwise the intrinsic width of one hymn row can be
+   wider than the 296px catalog column even though the title itself can shrink. */
 @media (max-width: 420px) {
   .kidung-local-nav,
   .kidung-local-nav-links {
@@ -109,6 +111,13 @@ button[aria-label*="rujukan silang untuk"]::before {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .hymn-page .pujian-item {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    box-sizing: border-box;
   }
 }
 
