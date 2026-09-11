@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
 
+# Temporary long-horizon verifier; removed before the final CI gate.
 jobs:
   green:
     runs-on: ubuntu-latest
