@@ -15,7 +15,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -29,5 +29,11 @@ jobs:
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
       - name: Inline-safe touch target contract
         run: pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium
-      - name: Existing Bible reader containment contract
-        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts --project=chromium
+      - name: Existing responsive regression contracts
+        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
+      - name: Backend-facing recovery state contracts
+        run: pnpm --filter @gys/web exec playwright test e2e/runtime-health.spec.ts e2e/sauh-error.spec.ts --project=chromium
+      - name: Web typecheck
+        run: pnpm --filter @gys/web typecheck
+      - name: Workspace build
+        run: pnpm build
