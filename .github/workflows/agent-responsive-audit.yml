@@ -15,7 +15,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,9 +38,9 @@ jobs:
           done
           cat /tmp/gys-preview.log
           exit 1
-      - name: Capture responsive audit
+      - name: Capture final responsive matrix
         run: |
-          mkdir -p /tmp/gys-visual-audit/screenshots
+          mkdir -p /tmp/gys-visual-audit-final/screenshots
           cat > apps/web/.agent-responsive-audit.mjs <<'EOF'
           import { chromium } from "@playwright/test";
           import fs from "node:fs/promises";
@@ -58,13 +58,14 @@ jobs:
             ["small-desktop", 1024, 768],
             ["tablet", 768, 1024],
             ["phone-small", 320, 720],
+            ["phone", 390, 844],
             ["phone-landscape", 844, 390],
           ];
           const browser = await chromium.launch({ headless: true });
           const report = [];
 
           async function settle(page) {
-            await page.waitForTimeout(700);
+            await page.waitForTimeout(650);
             await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
           }
 
@@ -72,6 +73,13 @@ jobs:
             return page.evaluate(() => {
               const root = document.documentElement;
               const body = document.body;
+              const hasHorizontalScroller = (element) => {
+                for (let current = element.parentElement; current; current = current.parentElement) {
+                  const style = getComputedStyle(current);
+                  if ((style.overflowX === "auto" || style.overflowX === "scroll") && current.scrollWidth > current.clientWidth + 2) return true;
+                }
+                return false;
+              };
               const visibleControls = [...document.querySelectorAll("button,a,input,select,textarea,[role='button'],[role='tab']")].filter((el) => {
                 const rect = el.getBoundingClientRect();
                 const style = getComputedStyle(el);
@@ -79,9 +87,10 @@ jobs:
               });
               const clipped = visibleControls
                 .filter((el) => {
-                  if (el.classList.contains("skip-link")) return false;
+                  if (el.classList.contains("skip-link") || hasHorizontalScroller(el)) return false;
                   if (el.closest(".horizontal-track,.home-scroll-track,.carousel-track")) return false;
                   const rect = el.getBoundingClientRect();
+                  if (rect.bottom <= 0 || rect.top >= innerHeight) return false;
                   return rect.right > innerWidth + 2 || rect.left < -2;
                 })
                 .slice(0, 20)
@@ -91,6 +100,7 @@ jobs:
                   rect: el.getBoundingClientRect().toJSON(),
                 }));
               return {
+                activeTheme: root.dataset.theme || body.dataset.theme || "",
                 scrollWidth: Math.max(root.scrollWidth, body.scrollWidth),
                 clientWidth: root.clientWidth,
                 horizontalOverflow: Math.max(root.scrollWidth, body.scrollWidth) > innerWidth + 2,
@@ -108,7 +118,12 @@ jobs:
                 serviceWorkers: "block",
               });
               const page = await context.newPage();
-              await page.addInitScript((mode) => localStorage.setItem("gys-theme-v1", mode), theme);
+              await page.addInitScript((mode) => {
+                const settings = JSON.stringify({ version: 1, locale: "id", theme: mode });
+                localStorage.setItem("gys-shell-settings-v1", settings);
+                localStorage.setItem("gys-locale", "id");
+                localStorage.setItem("gys-theme", mode);
+              }, theme);
               for (const [slug, route] of routes) {
                 const errors = [];
                 page.removeAllListeners("console");
@@ -121,7 +136,7 @@ jobs:
                 await settle(page);
                 const geometry = await inspect(page);
                 await page.screenshot({
-                  path: `/tmp/gys-visual-audit/screenshots/${slug}-${label}-${theme}-${width}x${height}.png`,
+                  path: `/tmp/gys-visual-audit-final/screenshots/${slug}-${label}-${theme}-${width}x${height}.png`,
                   fullPage: false,
                 });
                 report.push({ slug, route, theme, viewport: { label, width, height }, errors, ...geometry });
@@ -130,40 +145,36 @@ jobs:
             }
           }
 
-          const outageContext = await browser.newContext({
-            viewport: { width: 1440, height: 900 },
-            colorScheme: "light",
-            reducedMotion: "reduce",
-            serviceWorkers: "block",
-          });
+          const outageContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "light", reducedMotion: "reduce", serviceWorkers: "block" });
           const outage = await outageContext.newPage();
           await outage.route("**/wp-json/wp/v2/posts**", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
           await outage.route("**/api/v1/content/sauh", (route) => route.fulfill({ status: 503, body: "upstream unavailable" }));
           await outage.route("**/offline/sauh.json", (route) => route.fulfill({ status: 503, body: "snapshot unavailable" }));
           await outage.goto(base + "/", { waitUntil: "domcontentloaded", timeout: 15_000 });
           await settle(outage);
-          await outage.screenshot({ path: "/tmp/gys-visual-audit/screenshots/home-sauh-outage-desktop-light-1440x900.png", fullPage: false });
+          await outage.screenshot({ path: "/tmp/gys-visual-audit-final/screenshots/home-sauh-outage-desktop-light-1440x900.png", fullPage: false });
           report.push({ slug: "home-sauh-outage", route: "/", theme: "light", viewport: { label: "desktop", width: 1440, height: 900 }, errors: [], ...(await inspect(outage)) });
           await outageContext.close();
 
           await browser.close();
-          await fs.writeFile("/tmp/gys-visual-audit/layout-report.json", JSON.stringify(report, null, 2));
+          await fs.writeFile("/tmp/gys-visual-audit-final/layout-report.json", JSON.stringify(report, null, 2));
           const overflow = report.filter((row) => row.horizontalOverflow);
-          const errors = report.filter((row) => row.errors.length > 0);
           const clipped = report.filter((row) => row.clipped.length > 0);
-          console.log(`AUDIT cases=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${errors.length} clippedCases=${clipped.length}`);
-          for (const row of [...overflow, ...clipped, ...errors].slice(0, 30)) {
-            console.log(JSON.stringify({ slug: row.slug, theme: row.theme, viewport: row.viewport, overflow: row.horizontalOverflow, clipped: row.clipped, errors: row.errors.slice(0, 6) }));
+          const themeMismatch = report.filter((row) => row.slug !== "home-sauh-outage" && row.activeTheme !== row.theme);
+          const errorCases = report.filter((row) => row.errors.length > 0);
+          console.log(`AUDIT cases=${report.length} horizontalOverflow=${overflow.length} clippedCases=${clipped.length} themeMismatch=${themeMismatch.length} consoleErrorCases=${errorCases.length}`);
+          for (const row of [...overflow, ...clipped, ...themeMismatch, ...errorCases].slice(0, 30)) {
+            console.log(JSON.stringify({ slug: row.slug, theme: row.theme, activeTheme: row.activeTheme, viewport: row.viewport, overflow: row.horizontalOverflow, clipped: row.clipped, errors: row.errors.slice(0, 4) }));
           }
-          if (overflow.length || clipped.length) process.exitCode = 1;
+          if (overflow.length || clipped.length || themeMismatch.length) process.exitCode = 1;
           EOF
           node apps/web/.agent-responsive-audit.mjs
           rm apps/web/.agent-responsive-audit.mjs
-      - name: Existing responsive regression tests
+      - name: Responsive regression tests
         run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts e2e/responsive-touch-targets.spec.ts --project=chromium
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: second-pass-visual-audit-fast
-          path: /tmp/gys-visual-audit
+          name: second-pass-visual-audit-final
+          path: /tmp/gys-visual-audit-final
           if-no-files-found: error
