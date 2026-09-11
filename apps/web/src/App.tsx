@@ -82,6 +82,10 @@ import {
 } from "./settings.js";
 import { Icon } from "./icons.js";
 import { useBibleHeaderState } from "./bible-header-store.js";
+import {
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from "./shell-preferences.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -1980,6 +1984,17 @@ function Shell({
 }: ReturnType<typeof useAppSettings>) {
   const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    readSidebarCollapsed(
+      typeof window === "undefined" ? undefined : window.localStorage,
+    ),
+  );
+  useEffect(() => {
+    writeSidebarCollapsed(
+      typeof window === "undefined" ? undefined : window.localStorage,
+      sidebarCollapsed,
+    );
+  }, [sidebarCollapsed]);
   const location = useLocation();
   const isReaderRoute =
     location.pathname === "/bible" ||
@@ -2093,8 +2108,25 @@ function Shell({
         pathname={location.pathname}
         onFocusPageSearch={focusPageSearch}
       />
-      <div className="workspace">
+      <div
+        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}
+      >
         <aside className="navigation-shell">
+          <button
+            className="sidebar-collapse-toggle"
+            type="button"
+            onClick={() => setSidebarCollapsed((current) => !current)}
+            aria-expanded={!sidebarCollapsed}
+            aria-label={
+              sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"
+            }
+            title={sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"}
+          >
+            <Icon
+              name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}
+              size={17}
+            />
+          </button>
           <Navigation locale={locale} />
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>

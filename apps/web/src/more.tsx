@@ -289,6 +289,7 @@ const BACKUP_STORAGE_KEYS = [
   "gys-bible-split-v1",
   "gys-bible-split-ratio-v1",
   "gys-daily-sauh-mode-v1",
+  "gys-sidebar-collapsed-v1",
   "gys-media-minimized",
   "gys-media-position-v1",
   "gys-midi-preferences-v1",

@@ -12644,3 +12644,97 @@ body:has(.home-page)::-webkit-scrollbar {
     padding: 10px 14px 20px;
   }
 }
+
+/* Long-horizon shell refinement: desktop sidebar collapse */
+@media (min-width: 960px) {
+  .workspace {
+    transition: grid-template-columns var(--motion-normal, 220ms)
+      var(--ease-out, ease-out);
+  }
+  .navigation-shell {
+    position: relative;
+    transition: padding var(--motion-normal, 220ms) var(--ease-out, ease-out);
+  }
+  .sidebar-collapse-toggle {
+    position: absolute;
+    top: 16px;
+    right: -22px;
+    z-index: 3;
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
+  }
+  .sidebar-collapse-toggle:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--accent, var(--blue)) 42%,
+      var(--line)
+    );
+    background: color-mix(
+      in srgb,
+      var(--accent, var(--blue)) 7%,
+      var(--surface)
+    );
+  }
+  .sidebar-collapse-toggle:focus-visible {
+    outline: 2px solid var(--accent, var(--blue));
+    outline-offset: 3px;
+  }
+  .workspace.is-sidebar-collapsed {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+  .workspace.is-sidebar-collapsed .navigation-shell {
+    padding-inline: 12px;
+  }
+  .workspace.is-sidebar-collapsed .nav-item {
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+  }
+  .workspace.is-sidebar-collapsed .nav-copy,
+  .workspace.is-sidebar-collapsed .sidebar-foot {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateX(-6px);
+    white-space: nowrap;
+    transition:
+      opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      transform var(--motion-normal, 220ms) var(--ease-out, ease-out),
+      width var(--motion-normal, 220ms) var(--ease-out, ease-out);
+  }
+  .workspace:not(.is-sidebar-collapsed) .nav-copy,
+  .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
+    transition:
+      opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
+  }
+}
+@media (max-width: 959px) {
+  .sidebar-collapse-toggle {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace,
+  .navigation-shell,
+  .nav-copy,
+  .sidebar-foot,
+  .sidebar-collapse-toggle,
+  .nav-active-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
+}
