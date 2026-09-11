@@ -26,7 +26,7 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Wire native websocket plugin
+      - name: Apply verified native wiring and strict type fixes
         shell: bash
         run: |
           python3 - <<'PY'
@@ -48,6 +48,18 @@ jobs:
               insert_at = permissions.index('shell:default') + 1
               permissions.insert(insert_at, 'websocket:default')
           capability.write_text(json.dumps(data, indent=2) + '\n')
+
+          direct = Path('apps/web/src/edge-direct.ts')
+          source = direct.read_text()
+          source = source.replace(
+              'const headerLength = (bytes[0] << 8) | bytes[1];',
+              'const headerLength = ((bytes[0] ?? 0) << 8) | (bytes[1] ?? 0);',
+          )
+          source = source.replace(
+              'const blob = new Blob(chunks, { type: "audio/mpeg" });',
+              'const blob = new Blob(\n        chunks.map((chunk) => chunk.slice().buffer as ArrayBuffer),\n        { type: "audio/mpeg" },\n      );',
+          )
+          direct.write_text(source)
           PY
 
       - name: Resolve lockfiles
@@ -73,6 +85,7 @@ jobs:
           cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
           pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/edge-direct.test.ts src/edge-speech.test.ts
           pnpm --filter @gys/web typecheck
+          cargo check --manifest-path apps/native/src-tauri/Cargo.toml
 
       - name: Commit verified TTS dependency wiring
         shell: bash
