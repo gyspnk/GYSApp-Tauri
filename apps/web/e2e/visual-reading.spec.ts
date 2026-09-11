@@ -130,13 +130,22 @@ function faithPack() {
           { number: "1", text: "Percaya bahwa Yesus Kristus adalah Firman." },
           { number: "2", text: "Percaya bahwa Alkitab adalah firman Allah." },
           { number: "3", text: "Percaya bahwa Gereja adalah tubuh Kristus." },
-          { number: "4", text: "Percaya akan baptisan air untuk pengampunan dosa." },
+          {
+            number: "4",
+            text: "Percaya akan baptisan air untuk pengampunan dosa.",
+          },
           { number: "5", text: "Percaya akan penerimaan Roh Kudus." },
           { number: "6", text: "Percaya akan sakramen basuh kaki." },
           { number: "7", text: "Percaya akan sakramen Perjamuan Kudus." },
           { number: "8", text: "Percaya bahwa hari Sabat adalah hari kudus." },
-          { number: "9", text: "Percaya bahwa keselamatan adalah karena kasih karunia." },
-          { number: "10", text: "Percaya akan kedatangan Tuhan yang kedua kali." },
+          {
+            number: "9",
+            text: "Percaya bahwa keselamatan adalah karena kasih karunia.",
+          },
+          {
+            number: "10",
+            text: "Percaya akan kedatangan Tuhan yang kedua kali.",
+          },
         ],
       },
     ],
@@ -144,7 +153,9 @@ function faithPack() {
 }
 
 for (const viewport of viewports) {
-  test(`literature catalog ${viewport.name} visual baseline`, async ({ page }) => {
+  test(`literature catalog ${viewport.name} visual baseline`, async ({
+    page,
+  }) => {
     await page.setViewportSize(viewport);
     await prepare(page);
     await page.route("**/offline/literature.json", (route) =>
@@ -159,7 +170,9 @@ for (const viewport of viewports) {
 
     await page.goto("/GYSApp-Tauri/literatur");
     await expect(page.locator(".literature-page")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Literatur" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Literatur" }),
+    ).toBeVisible();
     await expect(page.locator(".literature-row")).toHaveCount(6);
     await assertViewportIntegrity(page);
     await page.waitForTimeout(250);
@@ -212,7 +225,8 @@ for (const viewport of readerViewports) {
               id: "pdf-visual",
               category: "buku",
               title: "Panduan Uji PDF",
-              description: "Dokumen lokal deterministik untuk verifikasi reader.",
+              description:
+                "Dokumen lokal deterministik untuk verifikasi reader.",
               url: `http://127.0.0.1:4173${localPdfPath}`,
               format: "pdf",
               publishedAt: "2026-09-01T00:00:00.000Z",
@@ -250,7 +264,9 @@ for (const viewport of readerViewports) {
     );
   });
 
-  test(`faith PDF overlay ${viewport.name} visual baseline`, async ({ page }) => {
+  test(`faith PDF overlay ${viewport.name} visual baseline`, async ({
+    page,
+  }) => {
     await page.setViewportSize(viewport);
     await prepare(page);
     const pdfResponse = await page.request.get(localPdfPath);
