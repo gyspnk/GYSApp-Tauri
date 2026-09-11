@@ -1,0 +1,62 @@
+name: Agent full parity and visual QA
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-full-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Code and native gates
+        run: |
+          pnpm verify:generated
+          pnpm format:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          pnpm verify:bundle
+          pnpm native:check
+      - name: Install Chromium
+        run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Run complete browser suite
+        id: browser
+        shell: bash
+        run: |
+          set +e
+          pnpm --filter @gys/web exec playwright test --project=chromium --reporter=line
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-qa-playwright
+          path: |
+            apps/web/test-results
+            apps/web/playwright-report
+          if-no-files-found: ignore
+          retention-days: 3
+      - name: Enforce browser result
+        if: steps.browser.outputs.exit_code != '0'
+        run: exit 1
