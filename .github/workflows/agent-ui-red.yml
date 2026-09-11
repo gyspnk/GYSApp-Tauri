@@ -1,11 +1,11 @@
-name: Agent UI green verifier
+name: Agent UI inline-hit-area verifier
 
 on:
   push:
     branches:
       - audit/parity-ui-tts-20260911
     paths:
-      - '.github/workflows/agent-ui-red.yml'
+      - ".github/workflows/agent-ui-red.yml"
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,7 @@ permissions:
 
 # Temporary verifier; removed before the final exact-SHA CI gate.
 jobs:
-  green:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -27,11 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Focused responsive usability tests
+      - name: Inline-safe touch target contract
         run: pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium
-      - name: Existing responsive regression tests
-        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
-      - name: Typecheck
-        run: pnpm --filter @gys/web typecheck
-      - name: Workspace build
-        run: pnpm build
+      - name: Existing Bible reader containment contract
+        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts --project=chromium
