@@ -14,9 +14,15 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
 
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: "Kejadian 1" })).toBeVisible();
-  await expectTouchTarget(page.getByRole("button", { name: "Tandai ayat 1" }), 40);
   await expectTouchTarget(
-    page.getByRole("button", { name: /rujukan silang untuk Kejadian 1:1/ }),
+    page.getByRole("button", { name: "Tandai ayat 1", exact: true }),
+    40,
+  );
+  await expectTouchTarget(
+    page.getByRole("button", {
+      name: "Lihat 54 rujukan silang untuk Kejadian 1:1",
+      exact: true,
+    }),
     40,
   );
 
@@ -28,7 +34,7 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
 test("phone navigation and compact text actions remain easy to tap", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/GYSApp-Tauri/");
-  await expectTouchTarget(page.getByRole("link", { name: "Gereja Yesus Sejati" }), 40);
+  await expectTouchTarget(page.locator(".brand-mark"), 40);
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/GYSApp-Tauri/");
