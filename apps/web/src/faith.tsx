@@ -313,16 +313,19 @@ export function FaithPage({ locale }: { locale: Locale }) {
     if (item) setNotePopupOpen(true);
   };
 
-  const openReadMore = () => {
-    if (!active) return;
-    const entry = DK_READ_MORE.get(active.number);
+  const openFaithPdf = (item: FaithItem) => {
+    const entry = DK_READ_MORE.get(item.number);
     if (!entry) return;
-    setPdfProgress(readFaithPdfProgress(active.number));
+    setSelected("");
+    setPdfProgress(readFaithPdfProgress(item.number));
     setPdfRead({
-      number: active.number,
-      title: `${active.text.split(/[.!?]/)[0] ?? active.text} (PDF)`,
+      number: item.number,
+      title: `${item.text.split(/[.!?]/)[0] ?? item.text} (PDF)`,
       url: entry.pdf,
     });
+  };
+  const openReadMore = () => {
+    if (active) openFaithPdf(active);
   };
   const closeReadMore = () => {
     setPdfRead(undefined);
@@ -385,24 +388,44 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   <button
                     className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
                     type="button"
-                    onClick={() => toggleSelected(item.number)}
-                    aria-pressed={isActive}
-                    aria-haspopup="dialog"
+                    onClick={() => openFaithPdf(item)}
+                    aria-label={`Baca PDF pokok iman ${item.number}`}
                   >
                     <span className="faith-number">
                       {item.number.padStart(2, "0")}
                     </span>
-                    <strong>{item.text.split(/[.!?]/)[0]}</strong>
-                    {note && <span className="faith-row-note-dot">✎</span>}
-                    {progress && (
-                      <span
-                        className="faith-row-progress"
-                        title={`Progres ${progress.percent}%`}
-                      >
-                        {progress.percent}%
-                      </span>
-                    )}
-                    <span aria-hidden="true">{isActive ? "•" : "›"}</span>
+                    <strong>
+                      {item.text.split(/[.!?]/)[0]}
+                      {note && (
+                        <span
+                          className="faith-row-note-dot"
+                          aria-label="Ada catatan"
+                        >
+                          ✎
+                        </span>
+                      )}
+                    </strong>
+                    <span
+                      className="faith-row-progress"
+                      title={
+                        progress
+                          ? `Progres ${progress.percent}%`
+                          : "Belum dibaca"
+                      }
+                    >
+                      {progress
+                        ? `Lanjut · halaman ${progress.page}`
+                        : "Baca PDF"}
+                    </span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                  <button
+                    className="faith-row-summary"
+                    type="button"
+                    onClick={() => toggleSelected(item.number)}
+                    aria-label={`Buka ringkasan dan catatan pokok iman ${item.number}`}
+                  >
+                    Ringkasan & catatan
                   </button>
                 </div>
               );
@@ -651,6 +674,12 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   </button>
                 </div>
               </div>
+              <progress
+                className="faith-pdf-progress"
+                value={pdfProgress?.percent ?? 0}
+                max={100}
+                aria-label={`Kemajuan bacaan ${pdfProgress?.percent ?? 0}%`}
+              />
               <div className="faith-pdf-body">
                 {pdfError && (
                   <div className="error-panel" role="alert">

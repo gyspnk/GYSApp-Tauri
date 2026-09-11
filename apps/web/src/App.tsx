@@ -2515,7 +2515,7 @@ function HomePage({ locale }: { locale: Locale }) {
                 <Link
                   className="suara-library-item"
                   key={item.id}
-                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                  to={`/literatur/${encodeURIComponent(item.id)}${item.format === "pdf" || item.format === "issue" ? "?read=1" : ""}`}
                 >
                   <div className="suara-card-media">
                     <LazyImage

@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   LiteratureCatalogSchema,
   type LiteratureCategory,
@@ -114,6 +114,22 @@ const formatLabels: Record<LiteratureItem["format"], string> = {
   issue: "Edisi",
   pdf: "PDF",
 };
+
+function literatureHref(item: LiteratureItem): string {
+  const directRead = item.format === "pdf" || item.format === "issue";
+  return `/literatur/${encodeURIComponent(item.id)}${directRead ? "?read=1" : ""}`;
+}
+
+function literatureRowAction(
+  item: LiteratureItem,
+  progress: LiteratureProgress | undefined,
+): string {
+  if (item.format === "article") return "Buka bacaan";
+  if (progress?.location?.kind === "page") {
+    return `Lanjut · halaman ${progress.location.page}`;
+  }
+  return "Baca PDF";
+}
 
 type CatalogState =
   | { status: "loading" }
@@ -346,7 +362,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               {featured.map((item) => (
                 <Link
                   className="literature-shelf-item"
-                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                  to={literatureHref(item)}
                   key={item.id}
                 >
                   <Cover item={item} compact />
@@ -383,7 +399,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 <div className="literature-recent-item" key={item.id}>
                   <Link
                     className="literature-recent-link"
-                    to={`/literatur/${encodeURIComponent(item.id)}`}
+                    to={literatureHref(item)}
                   >
                     <Cover item={item} compact />
                     <span>
@@ -492,7 +508,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 {groupItems.map((item) => (
                   <Link
                     className="literature-row"
-                    to={`/literatur/${encodeURIComponent(item.id)}`}
+                    to={literatureHref(item)}
                     key={item.id}
                   >
                     <Cover item={item} />
@@ -502,7 +518,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                         {formatLabels[item.format]} ·{" "}
                         {dateLabel(item.publishedAt, locale)}
                       </small>
-                      <em>Buka detail</em>
+                      <em>{literatureRowAction(item, progressMap[item.id])}</em>
                     </span>
                     <span className="literature-arrow" aria-hidden="true">
                       ›
@@ -539,6 +555,8 @@ function itemFromRoute(items: LiteratureItem[], encodedId: string | undefined) {
 
 export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const { itemId } = useParams();
+  const [searchParams] = useSearchParams();
+  const directRead = searchParams.get("read") === "1";
   const catalogState = useLiteratureCatalog();
   const item =
     catalogState.status === "ready"
@@ -795,6 +813,12 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   }, [downloadStatus, item, pdfAsset, pdfBytes]);
 
+  useEffect(() => {
+    if (!directRead || !isPdfItem || !pdfAsset || readerOpen || readerError)
+      return;
+    void openReader();
+  }, [directRead, isPdfItem, pdfAsset, readerOpen, readerError, openReader]);
+
   const toggle = () => {
     if (!item) return;
     const next = toggleFavorite({
@@ -881,7 +905,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const hasResume = Boolean(progress?.location || progressPercent > 0);
   return (
     <div
-      className="page literature-detail-page"
+      className={`page literature-detail-page${directRead && isPdfItem ? " is-direct-reader" : ""}`}
       data-testid="literature-detail"
     >
       <div className="detail-back">
@@ -939,6 +963,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
+      {directRead && isPdfItem && !readerOpen && !readerError && (
+        <div className="loading-panel literature-direct-loading" role="status">
+          Menyiapkan PDF…
+        </div>
+      )}
       <section className="literature-reading-panel">
         <div className="section-title-row">
           <div>

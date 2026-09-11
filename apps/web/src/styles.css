@@ -12900,3 +12900,97 @@ body:has(.home-page)::-webkit-scrollbar {
     scroll-behavior: auto !important;
   }
 }
+
+/* Focused reading UX: direct documents, resumable progress, centered Sauh state. */
+.literature-detail-page.is-direct-reader .literature-detail-hero {
+  display: none;
+}
+
+.literature-detail-page.is-direct-reader {
+  gap: 14px;
+}
+
+.literature-detail-page.is-direct-reader .literature-reading-panel {
+  padding-block: 14px;
+}
+
+.literature-direct-loading {
+  min-height: 180px;
+}
+
+.faith-row-heading strong {
+  min-width: 0;
+}
+
+.faith-row-note-dot {
+  margin-inline-start: 7px;
+}
+
+.faith-row-progress {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.faith-row-summary {
+  display: block;
+  width: max-content;
+  margin: -2px 40px 10px 58px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.faith-row-summary:hover,
+.faith-row-summary:focus-visible {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.faith-pdf-progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.verse-panel:has(.sauh-skeleton) {
+  position: relative;
+}
+
+.verse-panel:has(.sauh-skeleton) .sauh-card-content {
+  position: static;
+}
+
+.verse-panel:has(.sauh-skeleton) .sauh-skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 24px;
+  justify-content: center;
+}
+
+@media (max-width: 620px) {
+  .faith-row-heading {
+    grid-template-columns: 34px minmax(0, 1fr) auto 18px;
+  }
+
+  .faith-row-progress {
+    font-size: 0.72rem;
+  }
+
+  .faith-row-summary {
+    margin-left: 48px;
+  }
+}

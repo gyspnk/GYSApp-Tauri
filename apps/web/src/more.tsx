@@ -308,7 +308,9 @@ const BACKUP_STORAGE_KEYS = [
 function collectBackupSettings() {
   const dynamicKeys = Object.keys(localStorage).filter(
     (key) =>
-      key.startsWith("gys-pdf-page:") || key.startsWith("gys-pdf-layout:"),
+      key.startsWith("gys-pdf-page:") ||
+      key.startsWith("gys-pdf-layout:") ||
+      key.startsWith("gys-faith-pdf-"),
   );
   return Object.fromEntries(
     [...BACKUP_STORAGE_KEYS, ...dynamicKeys].flatMap((key) => {
