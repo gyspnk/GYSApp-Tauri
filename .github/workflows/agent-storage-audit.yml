@@ -1,4 +1,4 @@
-name: Agent durable backup RED
+name: Agent durable backup GREEN
 
 on:
   push:
@@ -8,16 +8,17 @@ on:
       - ".github/workflows/agent-storage-audit.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  red:
+  green:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
           ref: audit/parity-ui-tts-20260911
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.21.0
@@ -26,6 +27,27 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Expected RED durable backup boundary
+      - name: Apply durable backup allowlist fix
+        run: python3 scripts/agent-backup-coverage-fix.py
+      - name: Format changed source and regression test
+        run: pnpm exec prettier --write apps/web/src/more.tsx apps/web/e2e/settings-data-integrity.spec.ts
+      - name: Verify code gates
+        run: |
+          pnpm format:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          pnpm verify:bundle
+      - name: Install Chromium
+        run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Verify durable backup boundary
         run: pnpm --filter @gys/web exec playwright test e2e/settings-data-integrity.spec.ts --project=chromium --reporter=line
+      - name: Commit verified backup coverage
+        run: |
+          git config user.name "gysapp-agent"
+          git config user.email "actions@users.noreply.github.com"
+          git rm scripts/agent-backup-coverage-fix.py .github/workflows/agent-storage-audit.yml
+          git add apps/web/src/more.tsx apps/web/e2e/settings-data-integrity.spec.ts
+          git commit -m "fix: preserve durable user settings in backups"
+          git push origin HEAD:audit/parity-ui-tts-20260911
