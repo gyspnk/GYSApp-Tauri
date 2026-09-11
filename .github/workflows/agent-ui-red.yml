@@ -1,4 +1,4 @@
-name: Agent UI red-phase verifier
+name: Agent UI green verifier
 
 on:
   push:
@@ -13,9 +13,9 @@ permissions:
 
 # Temporary verifier; removed before the final exact-SHA CI gate.
 jobs:
-  red:
+  green:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -27,16 +27,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - name: Prove responsive usability contracts are RED before implementation
-        shell: bash
-        run: |
-          set +e
-          pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium 2>&1 | tee /tmp/ui-red.log
-          code=${PIPESTATUS[0]}
-          set -e
-          if [ "$code" -eq 0 ]; then
-            echo "Expected responsive usability tests to be RED before implementation, but they passed."
-            exit 1
-          fi
-          grep -Eq "Expected: >= 40|Expected: <= 420" /tmp/ui-red.log
-          echo "RED phase confirmed: measured touch-target and compact outage contracts fail before production UI changes."
+      - name: Focused responsive usability tests
+        run: pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium
+      - name: Existing responsive regression tests
+        run: pnpm --filter @gys/web exec playwright test e2e/navigation-layout.spec.ts e2e/media-dock.spec.ts e2e/ux-refinement.spec.ts --project=chromium
+      - name: Typecheck
+        run: pnpm --filter @gys/web typecheck
+      - name: Workspace build
+        run: pnpm build
