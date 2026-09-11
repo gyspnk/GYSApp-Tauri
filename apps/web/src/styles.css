@@ -12812,3 +12812,91 @@ body:has(.home-page)::-webkit-scrollbar {
     animation: none !important;
   }
 }
+
+/* Long-horizon UX refinement: quiet, state-led interaction */
+.search-trigger,
+.account-button,
+.sidebar-collapse-toggle,
+.media-minimize,
+.media-close-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.search-trigger:hover,
+.account-button:hover,
+.global-search-result:hover,
+.primary-button:hover,
+.quiet-button:hover,
+.text-button:hover {
+  transform: none;
+}
+
+.search-trigger:hover,
+.account-button:hover,
+.sidebar-collapse-toggle:hover {
+  box-shadow: none;
+}
+
+.topbar,
+.navigation-shell {
+  box-shadow: none;
+}
+
+.media-surface {
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 13%, transparent);
+}
+
+.nav-item,
+.search-trigger,
+.account-button,
+.sidebar-collapse-toggle,
+.media-control,
+.media-minimize,
+.media-close-button {
+  transition-timing-function: var(--ease-out, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+/* The 600-959px composition is an icon rail, not a compressed full sidebar.
+   Keep accessible names on links while hiding visual copy that otherwise
+   overflows the 80px rail into reader content. */
+@media (min-width: 600px) and (max-width: 959px) {
+  .navigation-shell .nav-copy,
+  .navigation-shell .sidebar-foot {
+    display: none !important;
+  }
+  .navigation-shell .nav-item {
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  .route-view,
+  .workspace,
+  .navigation-shell,
+  .nav-item,
+  .nav-active-indicator,
+  .nav-copy,
+  .sidebar-foot,
+  .sidebar-collapse-toggle,
+  .media-surface,
+  .media-control,
+  .media-minimize,
+  .media-close-button,
+  .search-trigger,
+  .account-button,
+  .global-search-result,
+  .reader-context-button,
+  .control-select-trigger,
+  .popover,
+  .menu-popover {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

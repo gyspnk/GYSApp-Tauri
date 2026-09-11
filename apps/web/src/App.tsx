@@ -2025,50 +2025,6 @@ function Shell({
     };
   }, []);
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const animateControl = (target: EventTarget | null) => {
-      if (reducedMotion.matches || !(target instanceof Element)) return;
-      const control = target.closest<HTMLElement>(
-        'button, summary, a[href], [role="button"]',
-      );
-      if (
-        !control ||
-        control.matches(":disabled, [aria-disabled='true']") ||
-        !control.animate
-      )
-        return;
-      control.animate(
-        [
-          { scale: "1", filter: "brightness(1)" },
-          { scale: "0.96", filter: "brightness(0.97)" },
-          { scale: "1", filter: "brightness(1)" },
-        ],
-        { duration: 190, easing: "cubic-bezier(.2,.8,.2,1)" },
-      );
-      control
-        .querySelector("svg")
-        ?.animate(
-          [
-            { transform: "rotate(0deg) scale(1)" },
-            { transform: "rotate(-5deg) scale(0.9)" },
-            { transform: "rotate(0deg) scale(1)" },
-          ],
-          { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" },
-        );
-    };
-    const onPointerDown = (event: PointerEvent) => animateControl(event.target);
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" || event.key === " ")
-        animateControl(event.target);
-    };
-    document.addEventListener("pointerdown", onPointerDown, { passive: true });
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
-  useEffect(() => {
     const onShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();

@@ -20,9 +20,11 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   await collapse.click();
 
   await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
-  const collapsed = await nav.boundingBox();
-  expect(collapsed).not.toBeNull();
-  expect(collapsed!.width).toBeLessThan(100);
+  await expect
+    .poll(() =>
+      nav.evaluate((element) => element.getBoundingClientRect().width),
+    )
+    .toBeLessThan(100);
   await expect(
     page.getByRole("button", { name: "Perluas navigasi" }),
   ).toHaveAttribute("aria-expanded", "false");
