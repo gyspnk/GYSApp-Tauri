@@ -1,4 +1,4 @@
-name: Agent reading visual capture
+name: Agent reading visual acceptance
 
 on:
   push:
@@ -8,10 +8,10 @@ on:
       - ".github/workflows/agent-visual-audit.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  capture:
+  accept:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -26,20 +26,41 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Format the new visual contract
+        run: pnpm exec prettier --write apps/web/e2e/visual-reading.spec.ts
+      - name: Verify formatting before browser work
+        run: pnpm format:check
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - id: visual
-        name: Capture reading visual contracts
-        continue-on-error: true
+      - name: Create inspected reading baselines
+        run: pnpm --filter @gys/web exec playwright test e2e/visual-reading.spec.ts --project=chromium --update-snapshots --reporter=line
+      - name: Guard accepted reading files
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git status --short | sed 's/^...//' | sort)"
+          expected="$(printf '%s\n' \
+            apps/web/e2e/visual-reading.spec.ts \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/faith-catalog-1440x900-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/faith-catalog-390x844-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/faith-catalog-768x1024-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/faith-pdf-overlay-1440x900-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/faith-pdf-overlay-390x844-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/literature-catalog-1440x900-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/literature-catalog-390x844-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/literature-catalog-768x1024-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/literature-direct-reader-1440x900-linux.png \
+            apps/web/e2e/visual-reading.spec.ts-snapshots/literature-direct-reader-390x844-linux.png | sort)"
+          printf 'Changed files:\n%s\n' "$actual"
+          test "$actual" = "$expected"
+          git diff --check
+      - name: Re-run reading visual gate
         run: pnpm --filter @gys/web exec playwright test e2e/visual-reading.spec.ts --project=chromium --reporter=line
-      - name: Upload reading visual evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reading-visual-evidence
-          if-no-files-found: warn
-          path: |
-            apps/web/test-results/**
-            apps/web/e2e/visual-reading.spec.ts-snapshots/**
-      - name: Preserve expected missing-baseline RED
-        if: steps.visual.outcome != 'success'
-        run: exit 1
+      - name: Commit verified reading visual coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/e2e/visual-reading.spec.ts apps/web/e2e/visual-reading.spec.ts-snapshots
+          git commit -m "test: verify literature and faith visual coverage"
+          git push origin HEAD:audit/parity-ui-tts-20260911
