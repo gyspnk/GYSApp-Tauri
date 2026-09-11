@@ -1,0 +1,149 @@
+name: Agent reading UX implementation
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-reading-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply reading UX patch
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one match, got {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          def replace_all(path, old, new, minimum=1):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count < minimum:
+                  raise SystemExit(f"{path}: expected >= {minimum} matches, got {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new))
+
+          literature = "apps/web/src/literature.tsx"
+          replace_once(
+              literature,
+              'import { Link, useParams } from "react-router-dom";',
+              'import { Link, useParams, useSearchParams } from "react-router-dom";',
+          )
+          replace_once(
+              literature,
+              'const formatLabels: Record<LiteratureItem["format"], string> = {\n  article: "Artikel",\n  issue: "Edisi",\n  pdf: "PDF",\n};',
+              '''const formatLabels: Record<LiteratureItem["format"], string> = {\n  article: "Artikel",\n  issue: "Edisi",\n  pdf: "PDF",\n};\n\nfunction literatureHref(item: LiteratureItem): string {\n  const directRead = item.format === "pdf" || item.format === "issue";\n  return `/literatur/${encodeURIComponent(item.id)}${directRead ? "?read=1" : ""}`;\n}\n\nfunction literatureRowAction(\n  item: LiteratureItem,\n  progress: LiteratureProgress | undefined,\n): string {\n  if (item.format === "article") return "Buka bacaan";\n  if (progress?.location?.kind === "page") {\n    return `Lanjut · halaman ${progress.location.page}`;\n  }\n  return "Baca PDF";\n}''',
+          )
+          replace_all(
+              literature,
+              'to={`/literatur/${encodeURIComponent(item.id)}`}',
+              'to={literatureHref(item)}',
+              3,
+          )
+          replace_once(
+              literature,
+              '<em>Buka detail</em>',
+              '<em>{literatureRowAction(item, progressMap[item.id])}</em>',
+          )
+          replace_once(
+              literature,
+              'export function LiteratureDetailPage({ locale }: { locale: Locale }) {\n  const { itemId } = useParams();',
+              'export function LiteratureDetailPage({ locale }: { locale: Locale }) {\n  const { itemId } = useParams();\n  const [searchParams] = useSearchParams();\n  const directRead = searchParams.get("read") === "1";',
+          )
+          replace_once(
+              literature,
+              '''  const toggle = () => {\n    if (!item) return;''',
+              '''  useEffect(() => {\n    if (\n      !directRead ||\n      !isPdfItem ||\n      !pdfAsset ||\n      readerOpen ||\n      readerError\n    )\n      return;\n    void openReader();\n  }, [\n    directRead,\n    isPdfItem,\n    pdfAsset,\n    readerOpen,\n    readerError,\n    openReader,\n  ]);\n\n  const toggle = () => {\n    if (!item) return;''',
+          )
+          replace_once(
+              literature,
+              '''    <div\n      className="page literature-detail-page"\n      data-testid="literature-detail"\n    >''',
+              '''    <div\n      className={`page literature-detail-page${directRead && isPdfItem ? " is-direct-reader" : ""}`}\n      data-testid="literature-detail"\n    >''',
+          )
+          replace_once(
+              literature,
+              '''      <section className="literature-reading-panel">''',
+              '''      {directRead && isPdfItem && !readerOpen && !readerError && (\n        <div className="loading-panel literature-direct-loading" role="status">\n          Menyiapkan PDF…\n        </div>\n      )}\n      <section className="literature-reading-panel">''',
+          )
+
+          faith = "apps/web/src/faith.tsx"
+          replace_once(
+              faith,
+              '''  const openReadMore = () => {\n    if (!active) return;\n    const entry = DK_READ_MORE.get(active.number);\n    if (!entry) return;\n    setPdfProgress(readFaithPdfProgress(active.number));\n    setPdfRead({\n      number: active.number,\n      title: `${active.text.split(/[.!?]/)[0] ?? active.text} (PDF)`,\n      url: entry.pdf,\n    });\n  };''',
+              '''  const openFaithPdf = (item: FaithItem) => {\n    const entry = DK_READ_MORE.get(item.number);\n    if (!entry) return;\n    setSelected("");\n    setPdfProgress(readFaithPdfProgress(item.number));\n    setPdfRead({\n      number: item.number,\n      title: `${item.text.split(/[.!?]/)[0] ?? item.text} (PDF)`,\n      url: entry.pdf,\n    });\n  };\n  const openReadMore = () => {\n    if (active) openFaithPdf(active);\n  };''',
+          )
+          replace_once(
+              faith,
+              '''                    onClick={() => toggleSelected(item.number)}\n                    aria-pressed={isActive}\n                    aria-haspopup="dialog"''',
+              '''                    onClick={() => openFaithPdf(item)}\n                    aria-label={`Baca PDF pokok iman ${item.number}`}''',
+          )
+          replace_once(
+              faith,
+              '''                    <strong>{item.text.split(/[.!?]/)[0]}</strong>\n                    {note && <span className="faith-row-note-dot">✎</span>}\n                    {progress && (\n                      <span\n                        className="faith-row-progress"\n                        title={`Progres ${progress.percent}%`}\n                      >\n                        {progress.percent}%\n                      </span>\n                    )}\n                    <span aria-hidden="true">{isActive ? "•" : "›"}</span>\n                  </button>''',
+              '''                    <strong>\n                      {item.text.split(/[.!?]/)[0]}\n                      {note && (\n                        <span className="faith-row-note-dot" aria-label="Ada catatan">\n                          ✎\n                        </span>\n                      )}\n                    </strong>\n                    <span\n                      className="faith-row-progress"\n                      title={progress ? `Progres ${progress.percent}%` : "Belum dibaca"}\n                    >\n                      {progress ? `Lanjut · halaman ${progress.page}` : "Baca PDF"}\n                    </span>\n                    <span aria-hidden="true">›</span>\n                  </button>\n                  <button\n                    className="faith-row-summary"\n                    type="button"\n                    onClick={() => toggleSelected(item.number)}\n                    aria-label={`Buka ringkasan dan catatan pokok iman ${item.number}`}\n                  >\n                    Ringkasan & catatan\n                  </button>''',
+          )
+          replace_once(
+              faith,
+              '''              </div>\n              <div className="faith-pdf-body">''',
+              '''              </div>\n              <progress\n                className="faith-pdf-progress"\n                value={pdfProgress?.percent ?? 0}\n                max={100}\n                aria-label={`Kemajuan bacaan ${pdfProgress?.percent ?? 0}%`}\n              />\n              <div className="faith-pdf-body">''',
+          )
+
+          more = "apps/web/src/more.tsx"
+          replace_once(
+              more,
+              '''    (key) =>\n      key.startsWith("gys-pdf-page:") || key.startsWith("gys-pdf-layout:"),''',
+              '''    (key) =>\n      key.startsWith("gys-pdf-page:") ||\n      key.startsWith("gys-pdf-layout:") ||\n      key.startsWith("gys-faith-pdf-"),''',
+          )
+
+          styles = Path("apps/web/src/styles.css")
+          styles.write_text(
+              styles.read_text()
+              + '''\n\n/* Focused reading UX: direct documents, resumable progress, centered Sauh state. */\n.literature-detail-page.is-direct-reader .literature-detail-hero {\n  display: none;\n}\n\n.literature-detail-page.is-direct-reader {\n  gap: 14px;\n}\n\n.literature-detail-page.is-direct-reader .literature-reading-panel {\n  padding-block: 14px;\n}\n\n.literature-direct-loading {\n  min-height: 180px;\n}\n\n.faith-row-heading strong {\n  min-width: 0;\n}\n\n.faith-row-note-dot {\n  margin-inline-start: 7px;\n}\n\n.faith-row-progress {\n  white-space: nowrap;\n  font-size: 0.78rem;\n  font-weight: 700;\n  color: var(--blue);\n}\n\n.faith-row-summary {\n  display: block;\n  width: max-content;\n  margin: -2px 40px 10px 58px;\n  padding: 2px 0;\n  border: 0;\n  background: transparent;\n  color: var(--muted);\n  font: inherit;\n  font-size: 0.78rem;\n  font-weight: 650;\n  cursor: pointer;\n}\n\n.faith-row-summary:hover,\n.faith-row-summary:focus-visible {\n  color: var(--blue);\n  text-decoration: underline;\n  text-underline-offset: 3px;\n}\n\n.faith-pdf-progress {\n  display: block;\n  width: 100%;\n  height: 4px;\n  border: 0;\n  border-radius: 999px;\n}\n\n.verse-panel:has(.sauh-skeleton) {\n  display: flex;\n  flex-direction: column;\n}\n\n.verse-panel:has(.sauh-skeleton) .sauh-skeleton {\n  flex: 1 1 auto;\n  min-height: clamp(220px, 34vh, 420px);\n  margin: 0;\n  padding: 24px 0;\n}\n\n@media (max-width: 620px) {\n  .faith-row-heading {\n    grid-template-columns: 34px minmax(0, 1fr) auto 18px;\n  }\n\n  .faith-row-progress {\n    font-size: 0.72rem;\n  }\n\n  .faith-row-summary {\n    margin-left: 48px;\n  }\n\n  .verse-panel:has(.sauh-skeleton) .sauh-skeleton {\n    min-height: clamp(170px, 28vh, 280px);\n  }\n}\n'''
+          )
+          PY
+      - name: Format changed source
+        run: pnpm exec prettier --write apps/web/src/literature.tsx apps/web/src/faith.tsx apps/web/src/more.tsx apps/web/src/styles.css
+      - name: Verify source and unit gates
+        run: |
+          pnpm format:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+      - name: Verify focused browser behavior
+        run: |
+          pnpm --filter @gys/web exec playwright install --with-deps chromium
+          pnpm --filter @gys/web exec playwright test e2e/reading-direct-flow.spec.ts --project=chromium
+      - name: Commit verified implementation
+        run: |
+          git config user.name "gysapp-agent"
+          git config user.email "actions@users.noreply.github.com"
+          git rm .github/workflows/agent-reading-fix.yml
+          git add apps/web/src/literature.tsx apps/web/src/faith.tsx apps/web/src/more.tsx apps/web/src/styles.css
+          git commit -m "feat: streamline resumable reading flows"
+          git push origin HEAD:audit/parity-ui-tts-20260911
