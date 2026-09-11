@@ -1,4 +1,4 @@
-name: Agent sidebar verification
+name: Agent media dock verification
 
 on:
   push:
@@ -9,10 +9,10 @@ permissions:
   contents: write
 
 jobs:
-  sidebar:
+  media:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,169 +30,167 @@ jobs:
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
 
-      - name: Implement persisted accessible desktop sidebar collapse
+      - name: RED - define dock behavior before implementation
         shell: bash
         run: |
-          cat > apps/web/src/shell-preferences.ts <<'EOF'
-          export const SIDEBAR_COLLAPSED_KEY = "gys-sidebar-collapsed-v1";
+          cat > apps/web/e2e/media-dock.spec.ts <<'EOF'
+          import { expect, test, type Page } from "@playwright/test";
 
-          export type ShellStorage = {
-            getItem(key: string): string | null;
-            setItem(key: string, value: string): void;
-            removeItem?(key: string): void;
-          };
-
-          export function readSidebarCollapsed(storage?: ShellStorage): boolean {
-            if (!storage) return false;
-            try {
-              return storage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-            } catch {
-              return false;
-            }
+          async function openSpeechPlayer(page: Page) {
+            await page.goto("/GYSApp-Tauri/bible");
+            await expect(page.getByRole("heading", { name: "Alkitab", exact: true })).toBeVisible();
+            const read = page.getByRole("button", { name: "Bacakan" });
+            await expect(read).toBeEnabled({ timeout: 15_000 });
+            await read.click();
+            await expect(page.locator(".media-surface")).toBeVisible({ timeout: 15_000 });
           }
 
-          export function writeSidebarCollapsed(
-            storage: ShellStorage | undefined,
-            collapsed: boolean,
-          ): void {
-            if (!storage) return;
-            try {
-              storage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
-            } catch {
-              // Storage can be unavailable in private/restricted webviews.
-            }
-          }
-          EOF
-
-          cat > apps/web/src/shell-preferences.test.ts <<'EOF'
-          import { describe, expect, it } from "vitest";
-          import { readSidebarCollapsed, writeSidebarCollapsed } from "./shell-preferences.js";
-
-          function memoryStorage() {
-            const data = new Map<string, string>();
-            return {
-              getItem: (key: string) => data.get(key) ?? null,
-              setItem: (key: string, value: string) => void data.set(key, value),
-              removeItem: (key: string) => void data.delete(key),
-            };
-          }
-
-          describe("desktop sidebar preference", () => {
-            it("defaults expanded and persists both states", () => {
-              const storage = memoryStorage();
-              expect(readSidebarCollapsed(storage)).toBe(false);
-              writeSidebarCollapsed(storage, true);
-              expect(readSidebarCollapsed(storage)).toBe(true);
-              writeSidebarCollapsed(storage, false);
-              expect(readSidebarCollapsed(storage)).toBe(false);
-            });
+          test("persistent media defaults to one centered semantic dock", async ({ page }) => {
+            await page.setViewportSize({ width: 1440, height: 900 });
+            await openSpeechPlayer(page);
+            const surface = page.locator(".media-surface");
+            const box = await surface.boundingBox();
+            expect(box).not.toBeNull();
+            expect(Math.abs(box!.x + box!.width / 2 - 720)).toBeLessThanOrEqual(3);
+            await expect(page.getByRole("button", { name: "Ciutkan panel" })).toHaveCount(0);
+            const minimize = page.getByRole("button", { name: "Minimalkan pemutar" });
+            await expect(minimize).toHaveCount(1);
+            await expect(minimize.locator("svg")).toHaveCount(1);
           });
           EOF
+          pnpm --filter @gys/web exec playwright install --with-deps chromium >/dev/null
+          set +e
+          pnpm --filter @gys/web exec playwright test e2e/media-dock.spec.ts > /tmp/media-red.log 2>&1
+          code=$?
+          set -e
+          cat /tmp/media-red.log
+          test "$code" -ne 0
+          grep -E "persistent media defaults|failed" /tmp/media-red.log
 
+      - name: GREEN - unify media placement and minimize controls
+        shell: bash
+        run: |
           python3 - <<'PY'
           from pathlib import Path
 
           app = Path('apps/web/src/App.tsx')
           source = app.read_text()
-          import_anchor = 'import { useBibleHeaderState } from "./bible-header-store.js";\n'
-          addition = 'import {\n  readSidebarCollapsed,\n  writeSidebarCollapsed,\n} from "./shell-preferences.js";\n'
-          if addition not in source:
-              source = source.replace(import_anchor, import_anchor + addition, 1)
 
-          state_anchor = '  const [searchOpen, setSearchOpen] = useState(false);\n'
-          state_add = '''  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>\n    readSidebarCollapsed(\n      typeof window === "undefined" ? undefined : window.localStorage,\n    ),\n  );\n  useEffect(() => {\n    writeSidebarCollapsed(\n      typeof window === "undefined" ? undefined : window.localStorage,\n      sidebarCollapsed,\n    );\n  }, [sidebarCollapsed]);\n'''
-          if state_add not in source:
-              source = source.replace(state_anchor, state_anchor + state_add, 1)
+          old_class = 'className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${dragging ? " is-dragging" : ""}`}'
+          new_class = 'className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}'
+          if old_class not in source:
+              raise SystemExit('media surface class anchor not found')
+          source = source.replace(old_class, new_class, 1)
 
-          old_shell = '''      <div className="workspace">\n        <aside className="navigation-shell">\n          <Navigation locale={locale} />\n        </aside>'''
-          new_shell = '''      <div\n        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}\n      >\n        <aside className="navigation-shell">\n          <button\n            className="sidebar-collapse-toggle"\n            type="button"\n            onClick={() => setSidebarCollapsed((current) => !current)}\n            aria-expanded={!sidebarCollapsed}\n            aria-label={\n              sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"\n            }\n            title={sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"}\n          >\n            <Icon\n              name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}\n              size={17}\n            />\n          </button>\n          <Navigation locale={locale} />\n        </aside>'''
-          if old_shell not in source:
-              raise SystemExit('workspace/navigation shell anchor not found')
-          source = source.replace(old_shell, new_shell, 1)
+          collapse = '''      {(isKidungMedia || speechActive) && !minimized && (\n        <button\n          className="media-collapse-toggle"\n          type="button"\n          onClick={() => setMinimized(true)}\n          aria-expanded="true"\n          aria-label="Ciutkan panel"\n        >\n          <span className="media-collapse-grip" aria-hidden="true" />\n          <Icon name="chevronDown" size={15} />\n        </button>\n      )}\n'''
+          if collapse not in source:
+              raise SystemExit('duplicate collapse control anchor not found')
+          source = source.replace(collapse, '', 1)
+
+          begin_anchor = '  const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {\n'
+          if begin_anchor not in source:
+              raise SystemExit('beginDrag anchor not found')
+          source = source.replace(
+              begin_anchor,
+              begin_anchor + '    if (window.matchMedia("(max-width: 959px)").matches) return;\n',
+              1,
+          )
+          keyboard_anchor = '  const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {\n'
+          if keyboard_anchor not in source:
+              raise SystemExit('keyboard drag anchor not found')
+          source = source.replace(
+              keyboard_anchor,
+              keyboard_anchor + '    if (window.matchMedia("(max-width: 959px)").matches) return;\n',
+              1,
+          )
+
+          close_old = '''        >\n          ✕\n        </button>\n      )}\n      <button\n        className="media-minimize"'''
+          close_new = '''        >\n          <Icon name="cross" size={16} />\n        </button>\n      )}\n      <button\n        className="media-minimize"'''
+          if close_old not in source:
+              raise SystemExit('media close glyph anchor not found')
+          source = source.replace(close_old, close_new, 1)
+
+          glyph_old = '''      >\n        {minimized ? "↗" : "−"}\n      </button>\n    </aside>'''
+          glyph_new = '''      >\n        <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />\n      </button>\n    </aside>'''
+          if glyph_old not in source:
+              raise SystemExit('media minimize glyph anchor not found')
+          source = source.replace(glyph_old, glyph_new, 1)
           app.write_text(source)
-
-          more = Path('apps/web/src/more.tsx')
-          text = more.read_text()
-          if '"gys-sidebar-collapsed-v1"' not in text:
-              text = text.replace('  "gys-media-minimized",\n', '  "gys-sidebar-collapsed-v1",\n  "gys-media-minimized",\n', 1)
-          more.write_text(text)
 
           css = Path('apps/web/src/styles.css')
           style = css.read_text()
-          marker = '/* Long-horizon shell refinement: desktop sidebar collapse */'
+          marker = '/* Long-horizon media refinement: centered persistent dock */'
           block = r'''
 
-          /* Long-horizon shell refinement: desktop sidebar collapse */
-          @media (min-width: 960px) {
-            .workspace {
-              transition: grid-template-columns var(--motion-normal, 220ms) var(--ease-out, ease-out);
-            }
-            .navigation-shell {
-              position: relative;
-              transition: padding var(--motion-normal, 220ms) var(--ease-out, ease-out);
-            }
-            .sidebar-collapse-toggle {
-              position: absolute;
-              top: 16px;
-              right: -22px;
-              z-index: 3;
-              display: inline-grid;
-              width: 44px;
-              height: 44px;
-              place-items: center;
-              padding: 0;
-              border: 1px solid var(--line);
-              border-radius: 10px;
-              background: var(--surface);
-              color: var(--text);
-              cursor: pointer;
-              transition: border-color var(--motion-fast, 150ms) var(--ease-out, ease-out), background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
-            }
-            .sidebar-collapse-toggle:hover {
-              border-color: color-mix(in srgb, var(--accent, var(--blue)) 42%, var(--line));
-              background: color-mix(in srgb, var(--accent, var(--blue)) 7%, var(--surface));
-            }
-            .sidebar-collapse-toggle:focus-visible {
-              outline: 2px solid var(--accent, var(--blue));
-              outline-offset: 3px;
-            }
-            .workspace.is-sidebar-collapsed {
-              grid-template-columns: 80px minmax(0, 1fr);
-            }
-            .workspace.is-sidebar-collapsed .navigation-shell {
-              padding-inline: 12px;
-            }
-            .workspace.is-sidebar-collapsed .nav-item {
-              justify-content: center;
-              gap: 0;
-              padding-inline: 0;
-            }
-            .workspace.is-sidebar-collapsed .nav-copy,
-            .workspace.is-sidebar-collapsed .sidebar-foot {
-              width: 0;
-              min-width: 0;
-              opacity: 0;
-              overflow: hidden;
-              pointer-events: none;
-              transform: translateX(-6px);
-              white-space: nowrap;
-              transition: opacity var(--motion-fast, 150ms) var(--ease-out, ease-out), transform var(--motion-normal, 220ms) var(--ease-out, ease-out), width var(--motion-normal, 220ms) var(--ease-out, ease-out);
-            }
-            .workspace:not(.is-sidebar-collapsed) .nav-copy,
-            .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
-              transition: opacity var(--motion-fast, 150ms) var(--ease-out, ease-out), transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
-            }
+          /* Long-horizon media refinement: centered persistent dock */
+          .media-surface {
+            max-width: min(720px, calc(100vw - 32px));
+            transition:
+              width var(--motion-normal) var(--ease-out),
+              max-width var(--motion-normal) var(--ease-out),
+              transform var(--motion-normal) var(--ease-out),
+              bottom var(--motion-normal) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out);
+          }
+          .media-surface:not(.has-custom-position) {
+            left: 50%;
+            right: auto;
+            bottom: 18px;
+            transform: translateX(-50%);
+          }
+          .media-surface.has-custom-position {
+            transform: none;
+          }
+          .media-surface.is-minimized {
+            width: min(360px, calc(100vw - 32px));
+            max-width: min(360px, calc(100vw - 32px));
+          }
+          .media-minimize,
+          .media-close-button {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 9px;
+          }
+          .media-surface.is-minimized .media-mini-context {
+            min-width: 0;
           }
           @media (max-width: 959px) {
-            .sidebar-collapse-toggle { display: none; }
+            .media-surface,
+            .media-surface.has-custom-position {
+              left: 50% !important;
+              right: auto !important;
+              top: auto !important;
+              bottom: 18px !important;
+              transform: translateX(-50%) !important;
+              width: min(560px, calc(100vw - 24px));
+              max-width: min(560px, calc(100vw - 24px));
+            }
+            .media-surface.is-minimized {
+              width: min(360px, calc(100vw - 24px));
+              max-width: min(360px, calc(100vw - 24px));
+            }
+            .media-drag-handle {
+              cursor: default;
+            }
+          }
+          @media (max-width: 599px) {
+            .media-surface,
+            .media-surface.has-custom-position {
+              bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+              width: calc(100vw - 24px);
+              max-width: calc(100vw - 24px);
+            }
+            .media-surface.is-minimized {
+              width: min(360px, calc(100vw - 24px));
+              max-width: min(360px, calc(100vw - 24px));
+            }
           }
           @media (prefers-reduced-motion: reduce) {
-            .workspace,
-            .navigation-shell,
-            .nav-copy,
-            .sidebar-foot,
-            .sidebar-collapse-toggle,
-            .nav-active-indicator {
+            .media-surface,
+            .media-minimize,
+            .media-close-button {
               transition: none !important;
               animation: none !important;
             }
@@ -202,72 +200,92 @@ jobs:
               css.write_text(style.rstrip() + block + '\n')
           PY
 
-      - name: Add responsive sidebar E2E coverage
+      - name: Expand media regression coverage
         shell: bash
         run: |
-          cat > apps/web/e2e/sidebar-collapse.spec.ts <<'EOF'
-          import { expect, test } from "@playwright/test";
+          cat > apps/web/e2e/media-dock.spec.ts <<'EOF'
+          import { expect, test, type Page } from "@playwright/test";
 
-          test("desktop sidebar collapses, persists, and stays accessible", async ({ page }) => {
+          async function openSpeechPlayer(page: Page) {
+            await page.goto("/GYSApp-Tauri/bible");
+            await expect(page.getByRole("heading", { name: "Alkitab", exact: true })).toBeVisible();
+            const read = page.getByRole("button", { name: "Bacakan" });
+            await expect(read).toBeEnabled({ timeout: 15_000 });
+            await read.click();
+            await expect(page.locator(".media-surface")).toBeVisible({ timeout: 15_000 });
+          }
+
+          async function expectCentered(page: Page, width: number) {
+            const box = await page.locator(".media-surface").boundingBox();
+            expect(box).not.toBeNull();
+            expect(Math.abs(box!.x + box!.width / 2 - width / 2)).toBeLessThanOrEqual(3);
+            return box!;
+          }
+
+          test("persistent media defaults to one centered semantic dock", async ({ page }) => {
             await page.setViewportSize({ width: 1440, height: 900 });
-            await page.goto("/GYSApp-Tauri/");
-            const nav = page.locator(".navigation-shell");
-            const expanded = await nav.boundingBox();
-            expect(expanded).not.toBeNull();
-            expect(expanded!.width).toBeGreaterThan(200);
+            await openSpeechPlayer(page);
+            await expectCentered(page, 1440);
+            await expect(page.getByRole("button", { name: "Ciutkan panel" })).toHaveCount(0);
 
-            const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
-            await expect(collapse).toBeVisible();
-            await expect(collapse).toHaveAttribute("aria-expanded", "true");
-            const controlBox = await collapse.boundingBox();
+            const minimize = page.getByRole("button", { name: "Minimalkan pemutar" });
+            await expect(minimize).toHaveCount(1);
+            await expect(minimize.locator("svg")).toHaveCount(1);
+            const controlBox = await minimize.boundingBox();
             expect(controlBox).not.toBeNull();
             expect(controlBox!.width).toBeGreaterThanOrEqual(44);
             expect(controlBox!.height).toBeGreaterThanOrEqual(44);
-            await collapse.click();
 
-            await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
-            const collapsed = await nav.boundingBox();
-            expect(collapsed).not.toBeNull();
-            expect(collapsed!.width).toBeLessThan(100);
-            await expect(page.getByRole("button", { name: "Perluas navigasi" })).toHaveAttribute("aria-expanded", "false");
-
-            await page.reload();
-            await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
-            await expect(page.getByRole("button", { name: "Perluas navigasi" })).toBeVisible();
+            await minimize.click();
+            await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
+            await expect.poll(() => page.evaluate(() => localStorage.getItem("gys-media-minimized"))).toBe("1");
+            const restore = page.getByRole("button", { name: "Perbesar pemutar" });
+            await expect(restore.locator("svg")).toHaveCount(1);
+            await restore.click();
+            await expect(page.locator(".media-surface")).not.toHaveClass(/is-minimized/);
+            await expect.poll(() => page.evaluate(() => localStorage.getItem("gys-media-minimized"))).toBe("0");
           });
 
-          test("desktop collapse preference does not replace mobile bottom navigation", async ({ page }) => {
+          test("phone ignores stale dragged position and keeps the dock above bottom navigation", async ({ page }) => {
             await page.setViewportSize({ width: 390, height: 844 });
-            await page.addInitScript(() => localStorage.setItem("gys-sidebar-collapsed-v1", "1"));
-            await page.goto("/GYSApp-Tauri/");
-            await expect(page.getByRole("button", { name: /navigasi/i })).toHaveCount(0);
-            const nav = page.locator(".navigation-shell");
-            const box = await nav.boundingBox();
-            expect(box).not.toBeNull();
-            expect(box!.width).toBeGreaterThan(360);
-            expect(box!.y + box!.height).toBeLessThanOrEqual(844);
+            await page.addInitScript(() => {
+              localStorage.setItem("gys-media-position-v1", JSON.stringify({ left: 8, top: 8 }));
+              localStorage.setItem("gys-media-minimized", "0");
+            });
+            await openSpeechPlayer(page);
+            const media = await expectCentered(page, 390);
+            const nav = await page.locator(".navigation-shell").boundingBox();
+            expect(nav).not.toBeNull();
+            expect(media.y + media.height).toBeLessThanOrEqual(nav!.y);
+          });
+
+          test("tablet uses stable centered dock geometry", async ({ page }) => {
+            await page.setViewportSize({ width: 768, height: 1024 });
+            await page.addInitScript(() => localStorage.removeItem("gys-media-position-v1"));
+            await openSpeechPlayer(page);
+            const media = await expectCentered(page, 768);
+            expect(media.x).toBeGreaterThanOrEqual(12);
+            expect(media.x + media.width).toBeLessThanOrEqual(756);
           });
           EOF
 
-      - name: Format and verify sidebar
+      - name: Format typecheck and build
         run: |
-          pnpm exec prettier --write apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
-          pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts
+          pnpm exec prettier --write apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/media-dock.spec.ts
           pnpm --filter @gys/web typecheck
           pnpm --filter @gys/web build
 
-      - name: Run responsive shell E2E
+      - name: Verify media dock and existing regression suite
         run: |
-          pnpm --filter @gys/web exec playwright install --with-deps chromium
-          pnpm --filter @gys/web exec playwright test e2e/sidebar-collapse.spec.ts e2e/navigation-layout.spec.ts
+          pnpm --filter @gys/web exec playwright test e2e/media-dock.spec.ts e2e/smoke.spec.ts e2e/navigation-layout.spec.ts
 
-      - name: Commit verified sidebar
+      - name: Commit verified media dock
         shell: bash
         run: |
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
+          git add apps/web/src/App.tsx apps/web/src/styles.css apps/web/e2e/media-dock.spec.ts
           if ! git diff --cached --quiet; then
-            git commit -m "feat(shell): add responsive desktop navigation collapse [agent-generated]"
+            git commit -m "feat(media): unify responsive persistent dock [agent-generated]"
             git push origin HEAD:audit/parity-ui-tts-20260911
           fi
