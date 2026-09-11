@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.17.1
+          version: 11.21.0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -50,7 +50,6 @@ jobs:
             ['desktop', 1440, 900],
             ['small-desktop', 1024, 768],
             ['tablet-portrait', 768, 1024],
-            ['tablet-landscape', 1024, 768],
             ['phone-small', 320, 720],
             ['phone', 390, 844],
             ['phone-large', 412, 915],
@@ -92,7 +91,7 @@ jobs:
                   horizontalOverflow: Math.max(root.scrollWidth, body.scrollWidth) > innerWidth + 2,
                   clipped,
                   tiny,
-                  activeFixed: [...document.querySelectorAll('*')].filter(el => getComputedStyle(el).position === 'fixed' && el.getBoundingClientRect().width > 0).slice(0,20).map(el => ({ cls: el.className, rect: el.getBoundingClientRect().toJSON() })),
+                  activeFixed: [...document.querySelectorAll('*')].filter(el => getComputedStyle(el).position === 'fixed' && el.getBoundingClientRect().width > 0).slice(0,20).map(el => ({ cls: String(el.className), rect: el.getBoundingClientRect().toJSON() })),
                 };
               });
               const slug = route === '/' ? 'home' : route.slice(1);
