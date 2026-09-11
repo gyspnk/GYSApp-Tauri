@@ -310,7 +310,8 @@ function collectBackupSettings() {
     (key) =>
       key.startsWith("gys-pdf-page:") ||
       key.startsWith("gys-pdf-layout:") ||
-      key.startsWith("gys-faith-pdf-"),
+      key.startsWith("gys-faith-pdf-") ||
+      key.startsWith("gys-faith-note-"),
   );
   return Object.fromEntries(
     [...BACKUP_STORAGE_KEYS, ...dynamicKeys].flatMap((key) => {
@@ -801,6 +802,13 @@ export function MorePage({
         ? `Pengingat aktif setiap hari pukul ${reminderTime}.`
         : "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
     );
+  };
+
+  const disableReminder = () => {
+    setReminderTime("");
+    localStorage.removeItem("gys-reminder-time-v1");
+    setReminderOpen(false);
+    show("Pengingat dinonaktifkan.");
   };
 
   const checkOfflinePack = async () => {
@@ -1406,8 +1414,8 @@ export function MorePage({
             </button>
           </div>
           <p>
-            Backup hanya memuat preferensi, riwayat baca, bookmark, dan indeks
-            cache. Kata sandi tidak dikirim ke server.
+            Backup memuat preferensi, progres baca, bookmark, catatan, dan
+            indeks cache. Kata sandi tidak dikirim ke server.
           </p>
           <label className="search-field">
             <span>Kata sandi backup</span>
@@ -1484,10 +1492,7 @@ export function MorePage({
             <button
               className="quiet-button"
               type="button"
-              onClick={() => {
-                setReminderTime("");
-                void saveReminder();
-              }}
+              onClick={disableReminder}
             >
               Nonaktifkan
             </button>

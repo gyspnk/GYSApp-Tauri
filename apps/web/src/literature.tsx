@@ -8,7 +8,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   LiteratureCatalogSchema,
   type LiteratureCategory,
@@ -555,6 +560,7 @@ function itemFromRoute(items: LiteratureItem[], encodedId: string | undefined) {
 
 export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const { itemId } = useParams();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const directRead = searchParams.get("read") === "1";
   const catalogState = useLiteratureCatalog();
@@ -572,6 +578,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerError, setReaderError] = useState("");
+  const closeReader = () => {
+    if (directRead) {
+      navigate("/literatur");
+      return;
+    }
+    setReaderOpen(false);
+  };
   const [articleOpen, setArticleOpen] = useState(false);
   const [articleStatus, setArticleStatus] = useState<
     "idle" | "loading" | "ready" | "error"
@@ -1068,11 +1081,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         >
           <div className="section-title-row">
             <h2>PDF · {item.title}</h2>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setReaderOpen(false)}
-            >
+            <button className="text-button" type="button" onClick={closeReader}>
               Tutup
             </button>
           </div>

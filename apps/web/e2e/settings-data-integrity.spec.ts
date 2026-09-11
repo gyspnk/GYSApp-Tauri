@@ -18,7 +18,9 @@ test("faith note list updates immediately after saving without a reload", async 
   await summary.getByRole("button", { name: /Catatan pribadi/ }).click();
   const notes = page.getByRole("dialog", { name: "Catatan pokok iman" });
   await expect(notes).toBeVisible();
-  await notes.getByRole("textbox").fill("Refleksi yang harus langsung terlihat");
+  await notes
+    .getByRole("textbox")
+    .fill("Refleksi yang harus langsung terlihat");
   await notes.getByRole("button", { name: "Simpan catatan" }).click();
   await expect(notes).toBeHidden();
 

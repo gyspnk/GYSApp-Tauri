@@ -169,6 +169,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const [notePopupOpen, setNotePopupOpen] = useState(false);
   const [isNoteClosing, setIsNoteClosing] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+  const [noteRevision, setNoteRevision] = useState(0);
   const [notice, setNotice] = useState("");
   const [pdfRead, setPdfRead] = useState<
     { number: string; title: string; url: string } | undefined
@@ -255,7 +256,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
           text: localStorage.getItem(noteKey(item.number)) ?? "",
         }))
         .filter((entry) => Boolean(entry.text.trim())),
-    [items],
+    [items, noteRevision],
   );
   const hasNote = (number: string) =>
     Boolean(localStorage.getItem(noteKey(number))?.trim());
@@ -299,11 +300,13 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const saveNote = () => {
     if (!active) return;
     localStorage.setItem(noteKey(active.number), noteDraft.trim());
+    setNoteRevision((revision) => revision + 1);
     flash(translate(locale, "faith.noteSaved"));
     closeNote();
   };
   const deleteNote = (number: string) => {
     localStorage.removeItem(noteKey(number));
+    setNoteRevision((revision) => revision + 1);
     if (active?.number === number) setNoteDraft("");
   };
   const openOtherNote = (number: string) => {
