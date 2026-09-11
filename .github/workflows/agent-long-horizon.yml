@@ -1,4 +1,4 @@
-name: Agent shell verification
+name: Agent sidebar verification
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  shell:
+  sidebar:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -24,73 +24,13 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-
-      - name: Repair missing React Vite plugin dependency
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          path = Path('apps/web/package.json')
-          data = json.loads(path.read_text())
-          data.setdefault('devDependencies', {})['@vitejs/plugin-react'] = '6.1.1'
-          path.write_text(json.dumps(data, indent=2) + '\n')
-          PY
-          pnpm install --no-frozen-lockfile
-
-      - name: Verify clean web build root cause
+      - run: pnpm install --frozen-lockfile
+      - name: Build workspace dependencies
         run: |
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
-          pnpm --filter @gys/web build
 
-      - name: Commit build dependency repair
-        shell: bash
-        run: |
-          git config user.name "OpenAI Agent"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/package.json pnpm-lock.yaml
-          if ! git diff --cached --quiet; then
-            git commit -m "fix(web): declare React Vite build plugin [agent-generated]"
-            git push origin HEAD:audit/parity-ui-tts-20260911
-          fi
-
-      - name: RED - define persisted sidebar preference
-        shell: bash
-        run: |
-          cat > apps/web/src/shell-preferences.test.ts <<'EOF'
-          import { describe, expect, it } from "vitest";
-          import { readSidebarCollapsed, writeSidebarCollapsed } from "./shell-preferences.js";
-
-          function memoryStorage() {
-            const data = new Map<string, string>();
-            return {
-              getItem: (key: string) => data.get(key) ?? null,
-              setItem: (key: string, value: string) => void data.set(key, value),
-              removeItem: (key: string) => void data.delete(key),
-            };
-          }
-
-          describe("desktop sidebar preference", () => {
-            it("defaults expanded and persists both states", () => {
-              const storage = memoryStorage();
-              expect(readSidebarCollapsed(storage)).toBe(false);
-              writeSidebarCollapsed(storage, true);
-              expect(readSidebarCollapsed(storage)).toBe(true);
-              writeSidebarCollapsed(storage, false);
-              expect(readSidebarCollapsed(storage)).toBe(false);
-            });
-          });
-          EOF
-          set +e
-          pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts > /tmp/sidebar-red.log 2>&1
-          code=$?
-          set -e
-          cat /tmp/sidebar-red.log
-          test "$code" -ne 0
-          grep -E "shell-preferences|Cannot find|Failed to resolve" /tmp/sidebar-red.log
-
-      - name: GREEN - implement sidebar state and shell control
+      - name: Implement persisted accessible desktop sidebar collapse
         shell: bash
         run: |
           cat > apps/web/src/shell-preferences.ts <<'EOF'
@@ -122,6 +62,31 @@ jobs:
               // Storage can be unavailable in private/restricted webviews.
             }
           }
+          EOF
+
+          cat > apps/web/src/shell-preferences.test.ts <<'EOF'
+          import { describe, expect, it } from "vitest";
+          import { readSidebarCollapsed, writeSidebarCollapsed } from "./shell-preferences.js";
+
+          function memoryStorage() {
+            const data = new Map<string, string>();
+            return {
+              getItem: (key: string) => data.get(key) ?? null,
+              setItem: (key: string, value: string) => void data.set(key, value),
+              removeItem: (key: string) => void data.delete(key),
+            };
+          }
+
+          describe("desktop sidebar preference", () => {
+            it("defaults expanded and persists both states", () => {
+              const storage = memoryStorage();
+              expect(readSidebarCollapsed(storage)).toBe(false);
+              writeSidebarCollapsed(storage, true);
+              expect(readSidebarCollapsed(storage)).toBe(true);
+              writeSidebarCollapsed(storage, false);
+              expect(readSidebarCollapsed(storage)).toBe(false);
+            });
+          });
           EOF
 
           python3 - <<'PY'
@@ -168,12 +133,12 @@ jobs:
             }
             .sidebar-collapse-toggle {
               position: absolute;
-              top: 22px;
-              right: -16px;
+              top: 16px;
+              right: -22px;
               z-index: 3;
               display: inline-grid;
-              width: 32px;
-              height: 32px;
+              width: 44px;
+              height: 44px;
               place-items: center;
               padding: 0;
               border: 1px solid var(--line);
@@ -250,15 +215,22 @@ jobs:
             const expanded = await nav.boundingBox();
             expect(expanded).not.toBeNull();
             expect(expanded!.width).toBeGreaterThan(200);
+
             const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
             await expect(collapse).toBeVisible();
             await expect(collapse).toHaveAttribute("aria-expanded", "true");
+            const controlBox = await collapse.boundingBox();
+            expect(controlBox).not.toBeNull();
+            expect(controlBox!.width).toBeGreaterThanOrEqual(44);
+            expect(controlBox!.height).toBeGreaterThanOrEqual(44);
             await collapse.click();
+
             await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
             const collapsed = await nav.boundingBox();
             expect(collapsed).not.toBeNull();
             expect(collapsed!.width).toBeLessThan(100);
             await expect(page.getByRole("button", { name: "Perluas navigasi" })).toHaveAttribute("aria-expanded", "false");
+
             await page.reload();
             await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
             await expect(page.getByRole("button", { name: "Perluas navigasi" })).toBeVisible();
@@ -273,23 +245,23 @@ jobs:
             const box = await nav.boundingBox();
             expect(box).not.toBeNull();
             expect(box!.width).toBeGreaterThan(360);
-            expect(box!.bottom).toBeLessThanOrEqual(844);
+            expect(box!.y + box!.height).toBeLessThanOrEqual(844);
           });
           EOF
 
-      - name: Format and unit type build verification
+      - name: Format and verify sidebar
         run: |
           pnpm exec prettier --write apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
           pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts
           pnpm --filter @gys/web typecheck
           pnpm --filter @gys/web build
 
-      - name: Install Chromium and run shell E2E
+      - name: Run responsive shell E2E
         run: |
           pnpm --filter @gys/web exec playwright install --with-deps chromium
           pnpm --filter @gys/web exec playwright test e2e/sidebar-collapse.spec.ts e2e/navigation-layout.spec.ts
 
-      - name: Commit verified shell work
+      - name: Commit verified sidebar
         shell: bash
         run: |
           git config user.name "OpenAI Agent"
