@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir -p /tmp/gys-visual-audit/screenshots
           cat > apps/web/.agent-responsive-audit.mjs <<'EOF'
-          import { chromium } from 'playwright';
+          import { chromium } from '@playwright/test';
           import fs from 'node:fs/promises';
 
           const base = 'http://127.0.0.1:4173';
