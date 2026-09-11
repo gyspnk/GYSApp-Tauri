@@ -8,20 +8,21 @@ test("faith note list updates immediately after saving without a reload", async 
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/iman");
-  const summary = page.getByRole("button", {
+  const summaryButton = page.getByRole("button", {
     name: "Buka ringkasan dan catatan pokok iman 1",
     exact: true,
   });
-  await summary.click();
-  await page.getByRole("button", { name: /Catatan pribadi/ }).click();
+  await summaryButton.click();
+  const summary = page.getByRole("dialog", { name: "Pokok 1" });
+  await expect(summary).toBeVisible();
+  await summary.getByRole("button", { name: /Catatan pribadi/ }).click();
   const notes = page.getByRole("dialog", { name: "Catatan pokok iman" });
   await expect(notes).toBeVisible();
   await notes.getByRole("textbox").fill("Refleksi yang harus langsung terlihat");
   await notes.getByRole("button", { name: "Simpan catatan" }).click();
   await expect(notes).toBeHidden();
 
-  await summary.click();
-  await page.getByRole("button", { name: /Catatan pribadi/ }).click();
+  await summary.getByRole("button", { name: /Catatan pribadi/ }).click();
   await expect(notes.getByText("1 catatan", { exact: true })).toBeVisible();
   await expect(
     notes.getByText("Refleksi yang harus langsung terlihat", { exact: true }),
