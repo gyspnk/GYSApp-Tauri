@@ -38,11 +38,11 @@ jobs:
           p = Path('scripts/verify-generated-provenance.mjs')
           s = p.read_text()
           s = s.replace('lock.sourceCommit !== "a3d1ea7"', 'lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"')
-          s = s.replace('lock.items.length !== 1212', 'lock.items.length !== 1216')
-          s = s.replace('expected 1212 music entries', 'expected 1216 music entries')
-          s = s.replace('chord.entries.length !== 144', 'chord.entries.length !== 148')
-          marker = 'if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 148)\n  throw new Error("chord manifest drifted from music lock");'
-          required = '\nfor (const requiredChord of ["108_", "196_", "271_", "492_"]) {\n  if (!lock.items.some((item) => item.kind === "chord" && item.path.includes(requiredChord)))\n    throw new Error(`required canonical chord missing: ${requiredChord}`);\n}\n'
+          s = s.replace('lock.items.length !== 1212', 'lock.items.length !== 1221')
+          s = s.replace('expected 1212 music entries', 'expected 1221 music entries')
+          s = s.replace('chord.entries.length !== 144', 'chord.entries.length !== 153')
+          marker = 'if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 153)\n  throw new Error("chord manifest drifted from music lock");'
+          required = '\nfor (const requiredChord of ["108_", "196_", "271_", "322_", "398_", "407_", "466_", "467_", "492_"]) {\n  if (!lock.items.some((item) => item.kind === "chord" && item.path.includes(requiredChord)))\n    throw new Error(`required canonical chord missing: ${requiredChord}`);\n}\n'
           if required.strip() not in s:
               s = s.replace(marker, marker + required)
           p.write_text(s)
@@ -53,7 +53,7 @@ jobs:
           set -e
           cat /tmp/red.log
           test "$code" -ne 0
-          grep -E "music lock provenance drifted|required canonical chord missing|expected 1216" /tmp/red.log
+          grep -E "music lock provenance drifted|required canonical chord missing|expected 1221" /tmp/red.log
       - name: GREEN - regenerate from canonical upstream
         shell: bash
         env:
@@ -66,6 +66,12 @@ jobs:
               p = Path(name)
               s = p.read_text().replace('process.env.GYSCHORDWEB_COMMIT ?? "a3d1ea7"', 'process.env.GYSCHORDWEB_COMMIT ?? "a9bf3219105dca3dde1b286328f46a0eede3287e"')
               p.write_text(s)
+          p = Path('scripts/audit-chord-layout.mjs')
+          s = p.read_text()
+          s = s.replace('lock.sourceCommit !== "a3d1ea7"', 'lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"')
+          s = s.replace('lock.entries.length !== 144', 'lock.entries.length !== 153')
+          s = s.replace('expected 144 chord entries', 'expected 153 chord entries')
+          p.write_text(s)
           PY
           pnpm generate:music-lock
           pnpm generate:chord-manifest
@@ -80,12 +86,12 @@ jobs:
           from pathlib import Path
           p = Path('docs/discovery/feature-parity-matrix.md')
           heading = '## September 2026 canonical parity refresh'
-          section = '\n\n' + heading + '\n\n' + 'Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). The upstream changes after the previous `728c93cc` audit add note-aligned chord data for hymns 108, 196, 271, and 492 and regenerate the upstream asset manifests. The canonical chord set is now 148 files; generated provenance and the strict chord-position audit are required to pass before this refresh is treated as verified parity evidence.\n'
+          section = '\n\n' + heading + '\n\n' + 'Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). Compared with the previous `a3d1ea7` source lock, canonical upstream adds nine note-aligned chord assets: hymns 108, 196, 271, 322, 398, 407, 466, 467, and 492. The canonical generated set is now 1,221 music assets and 153 chord references. Generated provenance and the strict chord-position audit must pass before this refresh is treated as verified parity evidence.\n'
           text = p.read_text()
           if heading not in text:
               p.write_text(text.rstrip() + section)
           PY
-          pnpm exec prettier --write scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs docs/discovery/feature-parity-matrix.md
+          pnpm exec prettier --write scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs scripts/audit-chord-layout.mjs docs/discovery/feature-parity-matrix.md
           pnpm verify:generated
           pnpm audit:chords:check
       - name: Commit parity refresh
@@ -93,7 +99,7 @@ jobs:
         run: |
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs packages/contracts/generated apps/bff/src/chord-manifest.ts apps/web/public/offline docs/discovery/chord-position-audit.json docs/discovery/feature-parity-matrix.md
+          git add scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs scripts/audit-chord-layout.mjs packages/contracts/generated apps/bff/src/chord-manifest.ts apps/web/public/offline docs/discovery/chord-position-audit.json docs/discovery/feature-parity-matrix.md
           if ! git diff --cached --quiet; then
             git commit -m "chore(parity): sync current gyschordweb chord source [agent-generated]"
             git push origin HEAD:audit/parity-ui-tts-20260911
