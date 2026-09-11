@@ -9,7 +9,21 @@ async function expectTouchTarget(locator: Locator, min = 40) {
   expect(box!.height).toBeGreaterThanOrEqual(min);
 }
 
-test("phone Bible and Kidung controls expose comfortable touch targets", async ({ page }) => {
+async function expectPseudoTouchTarget(locator: Locator, min = 40) {
+  const size = await locator.evaluate((element) => {
+    const style = getComputedStyle(element, "::before");
+    return {
+      width: Number.parseFloat(style.width),
+      height: Number.parseFloat(style.height),
+    };
+  });
+  expect(size.width).toBeGreaterThanOrEqual(min);
+  expect(size.height).toBeGreaterThanOrEqual(min);
+}
+
+test("phone Bible and Kidung controls expose comfortable touch targets", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 720 });
 
   await page.goto("/GYSApp-Tauri/bible");
@@ -18,20 +32,23 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
     page.getByRole("button", { name: "Tandai ayat 1", exact: true }),
     40,
   );
-  await expectTouchTarget(
-    page.getByRole("button", {
-      name: "Lihat 54 rujukan silang untuk Kejadian 1:1",
-      exact: true,
-    }),
-    40,
-  );
+  const crossReference = page.getByRole("button", {
+    name: "Lihat 54 rujukan silang untuk Kejadian 1:1",
+    exact: true,
+  });
+  await expect(crossReference).toHaveCSS("min-width", "0px");
+  await expectPseudoTouchTarget(crossReference, 40);
 
   await page.goto("/GYSApp-Tauri/kidung");
-  await expect(page.getByRole("heading", { name: "Kidung", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Kidung", exact: true }),
+  ).toBeVisible();
   await expectTouchTarget(page.locator(".pujian-title").first(), 40);
 });
 
-test("phone navigation and compact text actions remain easy to tap", async ({ page }) => {
+test("phone navigation and compact text actions remain easy to tap", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/GYSApp-Tauri/");
   await expectTouchTarget(page.locator(".brand-mark"), 40);
@@ -45,7 +62,9 @@ test("phone navigation and compact text actions remain easy to tap", async ({ pa
   await expectTouchTarget(page.getByRole("button", { name: "Periksa versi" }), 40);
 });
 
-test("desktop Sauh outage uses a compact recovery state instead of an empty hero", async ({ page }) => {
+test("desktop Sauh outage uses a compact recovery state instead of an empty hero", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route("**/wp-json/wp/v2/posts**", (route) =>
     route.fulfill({ status: 503, body: "upstream unavailable" }),
