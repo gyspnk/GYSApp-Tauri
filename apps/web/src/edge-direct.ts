@@ -65,6 +65,12 @@ function escapeXml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
+function languageFromVoice(voice: string): string {
+  const match = /^([a-z]{2,3})[-_]([a-z]{2}|\d{3})(?:[-_]|$)/i.exec(voice);
+  if (!match?.[1] || !match[2]) return "en-US";
+  return `${match[1].toLowerCase()}-${match[2].toUpperCase()}`;
+}
+
 function signedPercent(multiplier: number): string {
   const value = Math.round((multiplier - 1) * 100);
   return `${value >= 0 ? "+" : ""}${value}%`;
@@ -122,9 +128,10 @@ export function buildEdgeSsml(
   timestamp: string,
 ): string {
   const voice = escapeXml(request.voice);
+  const language = escapeXml(languageFromVoice(request.voice));
   const text = escapeXml(request.text);
   const ssml =
-    `<speak version='1.0' xml:lang='en-US'><voice name='${voice}'>` +
+    `<speak version='1.0' xml:lang='${language}'><voice name='${voice}'>` +
     `<prosody pitch='${signedPercent(request.pitch)}' rate='${signedPercent(request.rate)}' volume='${volumePercent(request.volume)}'>` +
     `${text}</prosody></voice></speak>`;
   return [
