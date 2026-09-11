@@ -41,7 +41,10 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     "gys-accent-color": "#355c9a",
     "gys-bible-secondary-version": "KJV",
     "gys-bible-split-sync-scroll-v1": "0",
-    "gys-bible-typography-v1": JSON.stringify({ fontSize: 21, lineHeight: 1.8 }),
+    "gys-bible-typography-v1": JSON.stringify({
+      fontSize: 21,
+      lineHeight: 1.8,
+    }),
     "gys-chord-ui-prefs": JSON.stringify({ theme: "red", fill: "soft" }),
     "gys-hymn-natural-chords": "0",
     "gys-hymn-view-scope": "favorites",

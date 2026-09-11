@@ -303,6 +303,27 @@ const BACKUP_STORAGE_KEYS = [
   "gys-midi-playlist-v1",
   "gys-hymn-view-mode-v1",
   "gys-hymn-chord-visibility-v1",
+
+  // Durable user settings and user-created presentation data. Keep this
+  // allowlist explicit so device sessions, auth tokens, diagnostics, and
+  // cache/download state are never exported by accident.
+  "gys-accent-color",
+  "gys-bible-secondary-version",
+  "gys-bible-split-sync-scroll-v1",
+  "gys-bible-typography-v1",
+  "gys-chord-ui-prefs",
+  "gys-hymn-natural-chords",
+  "gys-hymn-view-scope",
+  "gys-hymn-viewer-prefs-v1",
+  "gys-kidung-active-playlist",
+  "gys-kidung-playlists-v1",
+  "gys-lyrics-font-size",
+  "gys-lyrics-header-collapsed",
+  "gys-lyrics-line-spacing",
+  "gys-lyrics-show-chords",
+  "gys-hymn-accidental",
+  "gys-speech-pitch-v1",
+  "gys-speech-volume-v1",
 ];
 
 function collectBackupSettings() {
