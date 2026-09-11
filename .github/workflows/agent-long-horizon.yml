@@ -1,112 +1,13 @@
-name: Agent long-horizon execution
+name: Agent runner probe
 
 on:
   push:
-    branches: [audit/parity-ui-tts-20260911]
-
-permissions:
-  contents: write
+    branches:
+      - audit/parity-ui-tts-20260911
 
 jobs:
-  parity-sync:
-    if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
+  probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          repository: gyspnk/gyschordweb
-          ref: a9bf3219105dca3dde1b286328f46a0eede3287e
-          path: .tmp-gyschordweb-a3d1ea7
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.21.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-
-      - name: RED - prove stale provenance fails current expectation
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('scripts/verify-generated-provenance.mjs')
-          s = p.read_text()
-          s = s.replace('lock.sourceCommit !== "a3d1ea7"', 'lock.sourceCommit !== "a9bf3219105dca3dde1b286328f46a0eede3287e"')
-          s = s.replace('lock.items.length !== 1212', 'lock.items.length !== 1216')
-          s = s.replace('expected 1212 music entries', 'expected 1216 music entries')
-          s = s.replace('chord.entries.length !== 144', 'chord.entries.length !== 148')
-          marker = 'if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 148)\n  throw new Error("chord manifest drifted from music lock");'
-          required = '\nfor (const requiredChord of ["108_", "196_", "271_", "492_"]) {\n  if (!lock.items.some((item) => item.kind === "chord" && item.path.includes(requiredChord)))\n    throw new Error(`required canonical chord missing: ${requiredChord}`);\n}\n'
-          if required.strip() not in s:
-              s = s.replace(marker, marker + required)
-          p.write_text(s)
-          PY
-          set +e
-          pnpm verify:generated > /tmp/red.log 2>&1
-          status=$?
-          set -e
-          cat /tmp/red.log
-          if [ "$status" -eq 0 ]; then
-            echo "Expected stale provenance verification to fail, but it passed"
-            exit 1
-          fi
-          grep -E "music lock provenance drifted|required canonical chord missing|expected 1216" /tmp/red.log
-
-      - name: GREEN - regenerate current canonical parity artifacts
-        shell: bash
-        env:
-          GYSCHORDWEB_COMMIT: a9bf3219105dca3dde1b286328f46a0eede3287e
-          GYSCHORDWEB_SNAPSHOT: .tmp-gyschordweb-a3d1ea7
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          for name in ['scripts/generate-music-lock.mjs', 'scripts/generate-hymn-catalog.mjs']:
-              p = Path(name)
-              s = p.read_text().replace('process.env.GYSCHORDWEB_COMMIT ?? "a3d1ea7"', 'process.env.GYSCHORDWEB_COMMIT ?? "a9bf3219105dca3dde1b286328f46a0eede3287e"')
-              p.write_text(s)
-          PY
-          pnpm generate:music-lock
-          pnpm generate:chord-manifest
-          pnpm generate:hymn-catalog
-          pnpm generate:offline-manifest
-          pnpm audit:chords
-          pnpm verify:generated
-
-      - name: Record and verify parity evidence
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('docs/discovery/feature-parity-matrix.md')
-          section = """
-
-## September 2026 canonical parity refresh
-
-Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). The upstream changes after the previous `728c93cc` audit add note-aligned chord data for hymns 108, 196, 271, and 492 and regenerate the upstream asset manifests. The canonical chord set is now 148 files; generated provenance and the strict chord-position audit are required to pass before this refresh is treated as verified parity evidence.
-"""
-          text = p.read_text()
-          if '## September 2026 canonical parity refresh' not in text:
-              p.write_text(text.rstrip() + section + '\n')
-          PY
-          pnpm exec prettier --write scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs docs/discovery/feature-parity-matrix.md
-          pnpm verify:generated
-          pnpm audit:chords:check
-
-      - name: Commit generated parity refresh
-        shell: bash
-        run: |
-          git config user.name "OpenAI Agent"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs packages/contracts/generated apps/bff/src/chord-manifest.ts apps/web/public/offline docs/discovery/chord-position-audit.json docs/discovery/feature-parity-matrix.md
-          if git diff --cached --quiet; then
-            echo "No parity changes to commit"
-          else
-            git commit -m "chore(parity): sync current gyschordweb chord source [agent-generated]"
-            git push origin HEAD:audit/parity-ui-tts-20260911
-          fi
+      - name: Verify runner startup
+        run: echo "agent runner available"
