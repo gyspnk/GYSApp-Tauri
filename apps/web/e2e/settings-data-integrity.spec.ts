@@ -10,6 +10,7 @@ test("faith note list updates immediately after saving without a reload", async 
   await page.goto("/GYSApp-Tauri/iman");
   const summary = page.getByRole("button", {
     name: "Buka ringkasan dan catatan pokok iman 1",
+    exact: true,
   });
   await summary.click();
   await page.getByRole("button", { name: /Catatan pribadi/ }).click();
