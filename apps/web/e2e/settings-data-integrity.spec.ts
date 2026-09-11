@@ -25,8 +25,10 @@ test("faith note list updates immediately after saving without a reload", async 
   await summary.getByRole("button", { name: /Catatan pribadi/ }).click();
   await expect(notes.getByText("1 catatan", { exact: true })).toBeVisible();
   await expect(
-    notes.getByText("Refleksi yang harus langsung terlihat", { exact: true }),
-  ).toBeVisible();
+    notes
+      .locator(".bible-notes-list .bible-notes-item-open")
+      .filter({ hasText: "Refleksi yang harus langsung terlihat" }),
+  ).toHaveCount(1);
 });
 
 test("encrypted backup includes faith notes promised by the backup UI", async ({
