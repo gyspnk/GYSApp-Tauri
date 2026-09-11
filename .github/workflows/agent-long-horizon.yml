@@ -1,4 +1,4 @@
-name: Agent TTS verification
+name: Agent shell verification
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  tts:
+  shell:
     if: "${{ !contains(github.event.head_commit.message, '[agent-generated]') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -24,82 +24,281 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Tauri Linux system dependencies
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
-
-      - name: Apply verified native wiring and strict type fixes
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          lib = Path('apps/native/src-tauri/src/lib.rs')
-          text = lib.read_text()
-          anchor = 'tauri::Builder::default()\n'
-          plugin = '        .plugin(tauri_plugin_websocket::init())\n'
-          if plugin not in text:
-              text = text.replace(anchor, anchor + plugin, 1)
-          lib.write_text(text)
-
-          capability = Path('apps/native/src-tauri/capabilities/default.json')
-          data = json.loads(capability.read_text())
-          permissions = data['permissions']
-          if 'websocket:default' not in permissions:
-              insert_at = permissions.index('shell:default') + 1
-              permissions.insert(insert_at, 'websocket:default')
-          capability.write_text(json.dumps(data, indent=2) + '\n')
-
-          direct = Path('apps/web/src/edge-direct.ts')
-          source = direct.read_text()
-          source = source.replace(
-              'const headerLength = (bytes[0] << 8) | bytes[1];',
-              'const headerLength = ((bytes[0] ?? 0) << 8) | (bytes[1] ?? 0);',
-          )
-          source = source.replace(
-              'const blob = new Blob(chunks, { type: "audio/mpeg" });',
-              'const blob = new Blob(\n        chunks.map((chunk) => chunk.slice().buffer as ArrayBuffer),\n        { type: "audio/mpeg" },\n      );',
-          )
-          direct.write_text(source)
-          PY
-
-      - name: Resolve lockfiles
-        run: pnpm install --no-frozen-lockfile
-
+      - run: pnpm install --frozen-lockfile
       - name: Build workspace dependencies
         run: |
           pnpm --filter @gys/contracts build
           pnpm --filter @gys/domain build
 
-      - name: Focused TTS tests
-        run: pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/edge-direct.test.ts src/edge-speech.test.ts
-
-      - name: Web typecheck
-        run: pnpm --filter @gys/web typecheck
-
-      - name: Native check
-        run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
-
-      - name: Format and reverify
+      - name: RED - define persisted sidebar preference
+        shell: bash
         run: |
-          pnpm exec prettier --write apps/web/src/edge-direct.ts apps/web/src/edge-direct.test.ts apps/web/src/edge-speech.ts apps/web/package.json apps/native/src-tauri/capabilities/default.json
-          cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
-          pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/edge-direct.test.ts src/edge-speech.test.ts
-          pnpm --filter @gys/web typecheck
-          cargo check --manifest-path apps/native/src-tauri/Cargo.toml
+          cat > apps/web/src/shell-preferences.test.ts <<'EOF'
+          import { describe, expect, it } from "vitest";
+          import { readSidebarCollapsed, writeSidebarCollapsed } from "./shell-preferences.js";
 
-      - name: Commit verified TTS dependency wiring
+          function memoryStorage() {
+            const data = new Map<string, string>();
+            return {
+              getItem: (key: string) => data.get(key) ?? null,
+              setItem: (key: string, value: string) => void data.set(key, value),
+              removeItem: (key: string) => void data.delete(key),
+            };
+          }
+
+          describe("desktop sidebar preference", () => {
+            it("defaults expanded and persists both states", () => {
+              const storage = memoryStorage();
+              expect(readSidebarCollapsed(storage)).toBe(false);
+              writeSidebarCollapsed(storage, true);
+              expect(readSidebarCollapsed(storage)).toBe(true);
+              writeSidebarCollapsed(storage, false);
+              expect(readSidebarCollapsed(storage)).toBe(false);
+            });
+          });
+          EOF
+          set +e
+          pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts > /tmp/sidebar-red.log 2>&1
+          code=$?
+          set -e
+          cat /tmp/sidebar-red.log
+          test "$code" -ne 0
+          grep -E "shell-preferences|Cannot find|Failed to resolve" /tmp/sidebar-red.log
+
+      - name: GREEN - implement sidebar state and shell control
+        shell: bash
+        run: |
+          cat > apps/web/src/shell-preferences.ts <<'EOF'
+          export const SIDEBAR_COLLAPSED_KEY = "gys-sidebar-collapsed-v1";
+
+          export type ShellStorage = {
+            getItem(key: string): string | null;
+            setItem(key: string, value: string): void;
+            removeItem?(key: string): void;
+          };
+
+          export function readSidebarCollapsed(storage?: ShellStorage): boolean {
+            if (!storage) return false;
+            try {
+              return storage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+            } catch {
+              return false;
+            }
+          }
+
+          export function writeSidebarCollapsed(
+            storage: ShellStorage | undefined,
+            collapsed: boolean,
+          ): void {
+            if (!storage) return;
+            try {
+              storage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+            } catch {
+              // Storage can be unavailable in private/restricted webviews.
+            }
+          }
+          EOF
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          app = Path('apps/web/src/App.tsx')
+          source = app.read_text()
+          import_anchor = 'import { useBibleHeaderState } from "./bible-header-store.js";\n'
+          addition = 'import {\n  readSidebarCollapsed,\n  writeSidebarCollapsed,\n} from "./shell-preferences.js";\n'
+          if addition not in source:
+              source = source.replace(import_anchor, import_anchor + addition, 1)
+
+          state_anchor = '  const [searchOpen, setSearchOpen] = useState(false);\n'
+          state_add = '''  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>\n    readSidebarCollapsed(\n      typeof window === "undefined" ? undefined : window.localStorage,\n    ),\n  );\n  useEffect(() => {\n    writeSidebarCollapsed(\n      typeof window === "undefined" ? undefined : window.localStorage,\n      sidebarCollapsed,\n    );\n  }, [sidebarCollapsed]);\n'''
+          if state_add not in source:
+              source = source.replace(state_anchor, state_anchor + state_add, 1)
+
+          old_shell = '''      <div className="workspace">\n        <aside className="navigation-shell">\n          <Navigation locale={locale} />\n        </aside>'''
+          new_shell = '''      <div\n        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}\n      >\n        <aside className="navigation-shell">\n          <button\n            className="sidebar-collapse-toggle"\n            type="button"\n            onClick={() => setSidebarCollapsed((current) => !current)}\n            aria-expanded={!sidebarCollapsed}\n            aria-label={\n              sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"\n            }\n            title={sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"}\n          >\n            <Icon\n              name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}\n              size={17}\n            />\n          </button>\n          <Navigation locale={locale} />\n        </aside>'''
+          if old_shell not in source:
+              raise SystemExit('workspace/navigation shell anchor not found')
+          source = source.replace(old_shell, new_shell, 1)
+          app.write_text(source)
+
+          more = Path('apps/web/src/more.tsx')
+          text = more.read_text()
+          if '"gys-sidebar-collapsed-v1"' not in text:
+              text = text.replace('  "gys-media-minimized",\n', '  "gys-sidebar-collapsed-v1",\n  "gys-media-minimized",\n', 1)
+          more.write_text(text)
+
+          css = Path('apps/web/src/styles.css')
+          style = css.read_text()
+          marker = '/* Long-horizon shell refinement: desktop sidebar collapse */'
+          block = r'''
+
+          /* Long-horizon shell refinement: desktop sidebar collapse */
+          @media (min-width: 960px) {
+            .workspace {
+              transition: grid-template-columns var(--motion-normal, 220ms) var(--ease-out, ease-out);
+            }
+
+            .navigation-shell {
+              position: relative;
+              transition:
+                padding var(--motion-normal, 220ms) var(--ease-out, ease-out),
+                background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
+            }
+
+            .sidebar-collapse-toggle {
+              position: absolute;
+              top: 22px;
+              right: -16px;
+              z-index: 3;
+              display: inline-grid;
+              width: 32px;
+              height: 32px;
+              place-items: center;
+              padding: 0;
+              border: 1px solid var(--line);
+              border-radius: 10px;
+              background: var(--surface);
+              color: var(--muted-strong, var(--text));
+              box-shadow: 0 4px 14px color-mix(in srgb, var(--text) 10%, transparent);
+              cursor: pointer;
+              transition:
+                border-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+                background-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+                transform var(--motion-fast, 150ms) var(--ease-out, ease-out);
+            }
+
+            .sidebar-collapse-toggle:hover {
+              border-color: color-mix(in srgb, var(--accent, var(--blue)) 42%, var(--line));
+              background: color-mix(in srgb, var(--accent, var(--blue)) 7%, var(--surface));
+            }
+
+            .sidebar-collapse-toggle:focus-visible {
+              outline: 2px solid var(--accent, var(--blue));
+              outline-offset: 3px;
+            }
+
+            .workspace.is-sidebar-collapsed {
+              grid-template-columns: 80px minmax(0, 1fr);
+            }
+
+            .workspace.is-sidebar-collapsed .navigation-shell {
+              padding-inline: 12px;
+            }
+
+            .workspace.is-sidebar-collapsed .primary-nav {
+              align-items: stretch;
+            }
+
+            .workspace.is-sidebar-collapsed .nav-item {
+              justify-content: center;
+              gap: 0;
+              padding-inline: 0;
+            }
+
+            .workspace.is-sidebar-collapsed .nav-copy,
+            .workspace.is-sidebar-collapsed .sidebar-foot {
+              width: 0;
+              min-width: 0;
+              opacity: 0;
+              overflow: hidden;
+              pointer-events: none;
+              transform: translateX(-6px);
+              white-space: nowrap;
+              transition:
+                opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
+                transform var(--motion-normal, 220ms) var(--ease-out, ease-out),
+                width var(--motion-normal, 220ms) var(--ease-out, ease-out);
+            }
+
+            .workspace:not(.is-sidebar-collapsed) .nav-copy,
+            .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
+              transition:
+                opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
+                transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
+            }
+          }
+
+          @media (max-width: 959px) {
+            .sidebar-collapse-toggle {
+              display: none;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .workspace,
+            .navigation-shell,
+            .nav-copy,
+            .sidebar-foot,
+            .sidebar-collapse-toggle,
+            .nav-active-indicator {
+              transition: none !important;
+              animation: none !important;
+            }
+          }
+          '''
+          if marker not in style:
+              css.write_text(style.rstrip() + block + '\n')
+          PY
+
+      - name: Add responsive sidebar E2E coverage
+        shell: bash
+        run: |
+          cat > apps/web/e2e/sidebar-collapse.spec.ts <<'EOF'
+          import { expect, test } from "@playwright/test";
+
+          test("desktop sidebar collapses, persists, and stays accessible", async ({ page }) => {
+            await page.setViewportSize({ width: 1440, height: 900 });
+            await page.goto("/GYSApp-Tauri/");
+            const nav = page.locator(".navigation-shell");
+            const expanded = await nav.boundingBox();
+            expect(expanded).not.toBeNull();
+            expect(expanded!.width).toBeGreaterThan(200);
+
+            const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
+            await expect(collapse).toBeVisible();
+            await expect(collapse).toHaveAttribute("aria-expanded", "true");
+            await collapse.click();
+            await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
+            const collapsed = await nav.boundingBox();
+            expect(collapsed).not.toBeNull();
+            expect(collapsed!.width).toBeLessThan(100);
+            await expect(page.getByRole("button", { name: "Perluas navigasi" })).toHaveAttribute("aria-expanded", "false");
+
+            await page.reload();
+            await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
+            await expect(page.getByRole("button", { name: "Perluas navigasi" })).toBeVisible();
+          });
+
+          test("desktop collapse preference does not replace mobile bottom navigation", async ({ page }) => {
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.addInitScript(() => localStorage.setItem("gys-sidebar-collapsed-v1", "1"));
+            await page.goto("/GYSApp-Tauri/");
+            await expect(page.getByRole("button", { name: /navigasi/i })).toHaveCount(0);
+            const nav = page.locator(".navigation-shell");
+            const box = await nav.boundingBox();
+            expect(box).not.toBeNull();
+            expect(box!.width).toBeGreaterThan(360);
+            expect(box!.bottom).toBeLessThanOrEqual(844);
+          });
+          EOF
+
+      - name: Format and unit/type/build verification
+        run: |
+          pnpm exec prettier --write apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
+          pnpm --filter @gys/web exec vitest run --config vitest.config.ts src/shell-preferences.test.ts
+          pnpm --filter @gys/web typecheck
+          pnpm --filter @gys/web build
+
+      - name: Install Chromium and run shell E2E
+        run: |
+          pnpm --filter @gys/web exec playwright install --with-deps chromium
+          pnpm --filter @gys/web exec playwright test e2e/sidebar-collapse.spec.ts e2e/navigation-layout.spec.ts
+
+      - name: Commit verified shell work
         shell: bash
         run: |
           git config user.name "OpenAI Agent"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/package.json apps/web/src/edge-direct.ts apps/web/src/edge-direct.test.ts apps/web/src/edge-speech.ts apps/native/src-tauri/Cargo.toml apps/native/src-tauri/src/lib.rs apps/native/src-tauri/capabilities/default.json pnpm-lock.yaml apps/native/src-tauri/Cargo.lock
-          if ! git diff --cached --quiet; then
-            git commit -m "feat(tts): enable keyless Edge speech in native app [agent-generated]"
-            git push origin HEAD:audit/parity-ui-tts-20260911
-          fi
+          git add apps/web/src/shell-preferences.ts apps/web/src/shell-preferences.test.ts apps/web/src/App.tsx apps/web/src/more.tsx apps/web/src/styles.css apps/web/e2e/sidebar-collapse.spec.ts
+          git commit -m "feat(shell): add responsive desktop navigation collapse [agent-generated]"
+          git push origin HEAD:audit/parity-ui-tts-20260911
