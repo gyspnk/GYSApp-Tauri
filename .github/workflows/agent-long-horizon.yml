@@ -81,12 +81,19 @@ jobs:
       - name: Record and verify parity evidence
         shell: bash
         run: |
-          cat >> docs/discovery/feature-parity-matrix.md <<'EOF'
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('docs/discovery/feature-parity-matrix.md')
+          section = """
 
 ## September 2026 canonical parity refresh
 
 Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). The upstream changes after the previous `728c93cc` audit add note-aligned chord data for hymns 108, 196, 271, and 492 and regenerate the upstream asset manifests. The canonical chord set is now 148 files; generated provenance and the strict chord-position audit are required to pass before this refresh is treated as verified parity evidence.
-EOF
+"""
+          text = p.read_text()
+          if '## September 2026 canonical parity refresh' not in text:
+              p.write_text(text.rstrip() + section + '\n')
+          PY
           pnpm exec prettier --write scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs scripts/verify-generated-provenance.mjs docs/discovery/feature-parity-matrix.md
           pnpm verify:generated
           pnpm audit:chords:check
