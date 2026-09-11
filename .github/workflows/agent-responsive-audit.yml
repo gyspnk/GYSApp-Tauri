@@ -32,7 +32,7 @@ jobs:
         run: |
           pnpm --filter @gys/web exec vite preview --host 127.0.0.1 --port 4173 > /tmp/gys-preview.log 2>&1 &
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:4173/GYSApp-Tauri/ >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/gys-preview.log
@@ -44,8 +44,8 @@ jobs:
           import { chromium } from '@playwright/test';
           import fs from 'node:fs/promises';
 
-          const base = 'http://127.0.0.1:4173';
-          const routes = ['/', '/bible', '/kidung', '/assets', '/more'];
+          const base = 'http://127.0.0.1:4173/GYSApp-Tauri';
+          const routes = ['/', '/bible', '/kidung', '/assets', '/lainnya'];
           const viewports = [
             ['desktop', 1440, 900],
             ['small-desktop', 1024, 768],
@@ -78,10 +78,13 @@ jobs:
                     return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
                   });
                 const clipped = all.filter(el => {
+                  if (el.classList.contains('skip-link')) return false;
+                  if (el.closest('.horizontal-track,.home-scroll-track,.carousel-track')) return false;
                   const r = el.getBoundingClientRect();
                   return r.right > innerWidth + 2 || r.left < -2 || r.bottom > innerHeight + 2 || r.top < -2;
                 }).slice(0, 20).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), rect: el.getBoundingClientRect().toJSON() }));
                 const tiny = all.filter(el => {
+                  if (el.classList.contains('skip-link')) return false;
                   const r = el.getBoundingClientRect();
                   return (r.width < 36 || r.height < 36) && !el.closest('.bible-verse-text,.lyrics-text,.chord-canvas');
                 }).slice(0, 30).map(el => ({ tag: el.tagName, text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0,80), w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) }));
@@ -104,8 +107,9 @@ jobs:
           await fs.writeFile('/tmp/gys-visual-audit/layout-report.json', JSON.stringify(report, null, 2));
           const overflow = report.filter(x => x.horizontalOverflow);
           const consoleErrors = report.filter(x => x.errors.length);
-          console.log(`AUDIT routes=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${consoleErrors.length}`);
-          for (const row of [...overflow, ...consoleErrors].slice(0,20)) console.log(JSON.stringify(row));
+          const clipped = report.filter(x => x.clipped.length);
+          console.log(`AUDIT routes=${report.length} horizontalOverflow=${overflow.length} consoleErrorCases=${consoleErrors.length} clippedCases=${clipped.length}`);
+          for (const row of [...overflow, ...clipped, ...consoleErrors].slice(0,30)) console.log(JSON.stringify({route:row.route,viewport:row.viewport,overflow:row.horizontalOverflow,clipped:row.clipped,errors:row.errors.slice(0,6)}));
           EOF
           node apps/web/.agent-responsive-audit.mjs
           rm apps/web/.agent-responsive-audit.mjs
