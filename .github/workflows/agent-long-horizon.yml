@@ -1,4 +1,4 @@
-name: Agent final quality replan
+name: Agent final quality replan retry
 
 on:
   push:
@@ -83,7 +83,6 @@ jobs:
         run: |
           pnpm install --no-frozen-lockfile
           pnpm exec prettier --write \
-            .prettierignore \
             scripts/verify-documentation.mjs \
             CHANGELOG.md \
             apps/bff/package.json \
