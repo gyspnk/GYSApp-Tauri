@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          actual="$(git status --short | sed 's/^...//' | sort)"
+          actual="$(git status --short --untracked-files=all | sed 's/^...//' | sort)"
           expected="$(printf '%s\n' \
             apps/web/e2e/visual-reading.spec.ts \
             apps/web/e2e/visual-reading.spec.ts-snapshots/faith-catalog-1440x900-linux.png \
