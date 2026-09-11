@@ -12,7 +12,9 @@ const tinyPdf = [
   "%%EOF",
 ].join("\n");
 
-test("literature PDF opens directly and resumes", async ({ page }) => {
+test("literature PDF opens directly, resumes, and closes back to the shelf", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     localStorage.setItem(
       "gys-literature-progress-v2",
@@ -66,8 +68,13 @@ test("literature PDF opens directly and resumes", async ({ page }) => {
   await expect(page.locator(".literature-detail-page")).toHaveClass(
     /is-direct-reader/,
   );
-  await expect(page.locator(".literature-reader-panel")).toBeVisible();
+  const reader = page.locator(".literature-reader-panel");
+  await expect(reader).toBeVisible();
   await expect(page.locator(".literature-detail-hero")).toBeHidden();
+
+  await reader.getByRole("button", { name: "Tutup" }).click();
+  await expect(page).toHaveURL(/\/literatur$/);
+  await expect(page.locator(".literature-reader-panel")).toHaveCount(0);
 });
 
 test("faith row opens PDF directly and shows resume", async ({ page }) => {
