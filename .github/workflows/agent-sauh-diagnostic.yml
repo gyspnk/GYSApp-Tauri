@@ -1,0 +1,108 @@
+name: Agent Sauh geometry diagnostic
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-sauh-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Reproduce candidate patch in workspace
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import textwrap
+
+          workflow = Path(".github/workflows/agent-reading-fix.yml").read_text()
+          marker = "          python3 <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index("\n          PY", start)
+          exec(compile(textwrap.dedent(workflow[start:end]), "reading-patch", "exec"), {})
+
+          styles = Path("apps/web/src/styles.css")
+          text = styles.read_text()
+          old = '''.verse-panel:has(.sauh-skeleton) {\n  display: flex;\n  flex-direction: column;\n}\n\n.verse-panel:has(.sauh-skeleton) .sauh-skeleton {\n  flex: 1 1 auto;\n  min-height: clamp(220px, 34vh, 420px);\n  margin: 0;\n  padding: 24px 0;\n}'''
+          new = '''.verse-panel:has(.sauh-skeleton) {\n  position: relative;\n}\n\n.verse-panel:has(.sauh-skeleton) .sauh-skeleton {\n  position: absolute;\n  inset: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 0;\n  margin: 0;\n  padding: 24px;\n  justify-content: center;\n}'''
+          text = text.replace(old, new, 1)
+          text = text.replace('''\n\n  .verse-panel:has(.sauh-skeleton) .sauh-skeleton {\n    min-height: clamp(170px, 28vh, 280px);\n  }''', '', 1)
+          styles.write_text(text)
+          PY
+      - name: Install browser
+        run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Capture geometry and computed styles
+        run: |
+          cat > apps/web/e2e/sauh-debug.spec.ts <<'EOF'
+          import { test } from "@playwright/test";
+          test.use({ serviceWorkers: "block" });
+          test("debug Sauh geometry", async ({ page }) => {
+            await page.route("**/offline/sauh.json", (route) => route.fulfill({ json: { items: [] } }));
+            await page.route(/wp-json\/wp\/v2\/posts/, async (route) => {
+              await new Promise((resolve) => setTimeout(resolve, 10000));
+              await route.abort("timedout");
+            });
+            await page.setViewportSize({ width: 1440, height: 900 });
+            await page.goto("/GYSApp-Tauri/");
+            await page.getByTestId("home-sauh-skeleton").waitFor();
+            const report = await page.evaluate(() => {
+              const skeleton = document.querySelector<HTMLElement>(".sauh-skeleton")!;
+              const chain: Array<Record<string, unknown>> = [];
+              let node: HTMLElement | null = skeleton;
+              for (let i = 0; node && i < 7; i++, node = node.parentElement) {
+                const r = node.getBoundingClientRect();
+                const s = getComputedStyle(node);
+                chain.push({
+                  tag: node.tagName,
+                  className: node.className,
+                  testid: node.dataset.testid ?? null,
+                  rect: { x: r.x, y: r.y, width: r.width, height: r.height, top: r.top, bottom: r.bottom },
+                  css: {
+                    position: s.position,
+                    display: s.display,
+                    height: s.height,
+                    minHeight: s.minHeight,
+                    paddingTop: s.paddingTop,
+                    paddingBottom: s.paddingBottom,
+                    alignItems: s.alignItems,
+                    justifyContent: s.justifyContent,
+                    overflow: s.overflow,
+                  },
+                });
+              }
+              return {
+                viewport: { width: innerWidth, height: innerHeight },
+                chain,
+                versePanels: Array.from(document.querySelectorAll<HTMLElement>(".verse-panel")).map((el) => {
+                  const r = el.getBoundingClientRect();
+                  return { className: el.className, rect: { x: r.x, y: r.y, width: r.width, height: r.height } };
+                }),
+              };
+            });
+            console.log("SAUH_GEOMETRY=" + JSON.stringify(report, null, 2));
+            await page.screenshot({ path: "sauh-debug.png", fullPage: true });
+          });
+          EOF
+          pnpm --filter @gys/web exec playwright test e2e/sauh-debug.spec.ts --project=chromium --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sauh-geometry
+          path: sauh-debug.png
