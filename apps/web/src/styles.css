@@ -12738,3 +12738,77 @@ body:has(.home-page)::-webkit-scrollbar {
     animation: none !important;
   }
 }
+
+/* Long-horizon media refinement: centered persistent dock */
+.media-surface {
+  max-width: min(720px, calc(100vw - 32px));
+  transition:
+    width var(--motion-normal) var(--ease-out),
+    max-width var(--motion-normal) var(--ease-out),
+    transform var(--motion-normal) var(--ease-out),
+    bottom var(--motion-normal) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.media-surface:not(.has-custom-position) {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 18px !important;
+  transform: translateX(-50%) !important;
+}
+.media-surface.has-custom-position {
+  transform: none;
+}
+.media-surface.is-minimized {
+  width: min(360px, calc(100vw - 32px));
+  max-width: min(360px, calc(100vw - 32px));
+}
+.media-minimize,
+.media-close-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9px;
+}
+.media-surface.is-minimized .media-mini-context {
+  min-width: 0;
+}
+@media (max-width: 959px) {
+  .media-surface,
+  .media-surface.has-custom-position {
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 18px !important;
+    transform: translateX(-50%) !important;
+    width: min(560px, calc(100vw - 24px));
+    max-width: min(560px, calc(100vw - 24px));
+  }
+  .media-surface.is-minimized {
+    width: min(360px, calc(100vw - 24px));
+    max-width: min(360px, calc(100vw - 24px));
+  }
+  .media-drag-handle {
+    cursor: default;
+  }
+}
+@media (max-width: 599px) {
+  .media-surface,
+  .media-surface.has-custom-position {
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+  .media-surface.is-minimized {
+    width: min(360px, calc(100vw - 24px));
+    max-width: min(360px, calc(100vw - 24px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-surface,
+  .media-minimize,
+  .media-close-button {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1370,6 +1370,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
     );
   };
   const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (window.matchMedia("(max-width: 959px)").matches) return;
     const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
     if (!surface) return;
     const rect = surface.getBoundingClientRect();
@@ -1409,6 +1410,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
       event.currentTarget.releasePointerCapture(event.pointerId);
   };
   const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (window.matchMedia("(max-width: 959px)").matches) return;
     const directionByKey: Record<string, [number, number]> = {
       ArrowLeft: [-1, 0],
       ArrowRight: [1, 0],
@@ -1431,7 +1433,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
   };
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${dragging ? " is-dragging" : ""}`}
+      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}
       data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
@@ -1449,18 +1451,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
       aria-label={translate(locale, "shell.media")}
     >
-      {(isKidungMedia || speechActive) && !minimized && (
-        <button
-          className="media-collapse-toggle"
-          type="button"
-          onClick={() => setMinimized(true)}
-          aria-expanded="true"
-          aria-label="Ciutkan panel"
-        >
-          <span className="media-collapse-grip" aria-hidden="true" />
-          <Icon name="chevronDown" size={15} />
-        </button>
-      )}
       <div
         className="media-art media-drag-handle"
         title="Geser pemutar"
@@ -1956,7 +1946,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
           aria-label="Tutup pemutar suara"
           title="Tutup pemutar"
         >
-          ✕
+          <Icon name="cross" size={16} />
         </button>
       )}
       <button
@@ -1965,7 +1955,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         onClick={() => setMinimized((value) => !value)}
         aria-label={minimized ? "Perbesar pemutar" : "Minimalkan pemutar"}
       >
-        {minimized ? "↗" : "−"}
+        <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />
       </button>
     </aside>
   );
