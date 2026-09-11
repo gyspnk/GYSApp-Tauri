@@ -1,4 +1,4 @@
-name: Agent second-pass format cleanup
+name: Agent compact Kidung verifier
 
 on:
   push:
@@ -9,13 +9,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
-# Temporary formatter; removed before the final exact-SHA CI gate.
+# Temporary focused verifier; removed before the final exact-SHA CI gate.
 jobs:
-  format:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -26,35 +26,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Format second-pass files
-        run: |
-          pnpm exec prettier --write \
-            .github/workflows/agent-responsive-audit.yml \
-            .github/workflows/agent-tts-red.yml \
-            .github/workflows/agent-ui-red.yml \
-            apps/web/e2e/responsive-touch-targets.spec.ts \
-            apps/web/src/bible-language.ts \
-            apps/web/src/edge-direct.test.ts \
-            apps/web/src/speech-language.test.ts \
-            apps/web/src/ui-hardening.css
-      - name: Verify repository formatting
-        run: pnpm format:check
-      - name: Commit format-only changes
-        run: |
-          if git diff --quiet; then
-            echo "No formatting changes needed"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            .github/workflows/agent-responsive-audit.yml \
-            .github/workflows/agent-tts-red.yml \
-            .github/workflows/agent-ui-red.yml \
-            apps/web/e2e/responsive-touch-targets.spec.ts \
-            apps/web/src/bible-language.ts \
-            apps/web/src/edge-direct.test.ts \
-            apps/web/src/speech-language.test.ts \
-            apps/web/src/ui-hardening.css
-          git commit -m "style: format second-pass UI and TTS hardening [agent-generated]"
-          git push origin HEAD:audit/parity-ui-tts-20260911
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Compact Kidung contract
+        run: pnpm --filter @gys/web exec playwright test e2e/responsive-touch-targets.spec.ts --project=chromium
