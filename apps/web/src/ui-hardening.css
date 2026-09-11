@@ -28,22 +28,38 @@ button.text-button {
   min-inline-size: 40px;
   block-size: 40px;
   min-block-size: 40px;
-  background: radial-gradient(circle, var(--surface-soft) 0 14px, transparent 14.5px);
+  background: radial-gradient(
+    circle,
+    var(--surface-soft) 0 14px,
+    transparent 14.5px
+  );
 }
 
 .verse-number.is-bookmarked {
   background: radial-gradient(circle, var(--blue) 0 14px, transparent 14.5px);
 }
 
-/* Cross-reference stars are intentionally visually quiet, but their hit area
-   should not be a single glyph. Negative inline margin preserves prose flow. */
+/* Cross-reference stars remain true inline content. Their visual box must not
+   widen a verse line, so the larger hit area lives on an absolutely positioned
+   pseudo-element instead of min-size/padding on the button itself. */
 button[aria-label*="rujukan silang untuk"] {
-  min-inline-size: 40px;
-  min-block-size: 40px;
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
   display: inline-grid;
   place-items: center;
-  margin-inline: -8px;
-  padding: 0 8px;
+  margin: 0;
+  padding: 0;
+}
+
+button[aria-label*="rujukan silang untuk"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: 40px;
+  block-size: 40px;
+  transform: translate(-50%, -50%);
 }
 
 /* Song titles are the primary row action. Give the full title zone a reliable
@@ -96,9 +112,13 @@ button[aria-label*="rujukan silang untuk"] {
   }
 
   .pujian-title,
-  button[aria-label*="rujukan silang untuk"],
   .verse-number {
     min-block-size: 44px;
+  }
+
+  button[aria-label*="rujukan silang untuk"]::before {
+    inline-size: 44px;
+    block-size: 44px;
   }
 }
 
