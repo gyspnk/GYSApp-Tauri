@@ -1,0 +1,85 @@
+name: Agent latest parity refresh
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - ".github/workflows/agent-parity-refresh.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Checkout immutable gyschordweb source
+        run: |
+          rm -rf .tmp-gyschordweb-latest
+          git clone --filter=blob:none --no-checkout https://github.com/gyspnk/gyschordweb.git .tmp-gyschordweb-latest
+          git -C .tmp-gyschordweb-latest checkout --detach 3039ae678c9e0e6ca439f4e1e0250759667dbcdf
+          test "$(git -C .tmp-gyschordweb-latest rev-parse HEAD)" = "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
+      - name: Regenerate immutable music and chord provenance
+        env:
+          GYSCHORDWEB_SNAPSHOT: .tmp-gyschordweb-latest
+          GYSCHORDWEB_COMMIT: 3039ae678c9e0e6ca439f4e1e0250759667dbcdf
+        run: |
+          pnpm generate:music-lock
+          pnpm generate:chord-manifest
+          pnpm generate:hymn-catalog
+      - name: Refresh generator defaults and parity notes
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          old = "a9bf3219105dca3dde1b286328f46a0eede3287e"
+          new = "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
+          for name in ["scripts/generate-music-lock.mjs", "scripts/generate-hymn-catalog.mjs"]:
+              path = Path(name)
+              text = path.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f"{name}: expected one default source commit")
+              path.write_text(text.replace(old, new, 1))
+
+          matrix = Path("docs/discovery/feature-parity-matrix.md")
+          text = matrix.read_text()
+          addition = '''\n\n## September 12, 2026 canonical parity refresh\n\nRe-checked the immutable `gyspnk/gyschordweb` source at\n`3039ae678c9e0e6ca439f4e1e0250759667dbcdf`. Relative to the September 5\nlock, upstream adds two note-aligned chord assets: hymn 106\n(`Aku Murid Yesus`) and hymn 363 (`Berpegang Pada JanjiNya`). The generated\nmusic lock, chord manifest, BFF chord manifest, and hymn metadata provenance\nare regenerated from that exact source commit. Canonical chord references are\ntherefore 155. Verification requires generated-provenance checks, strict chord\nlayout audit against this immutable checkout, unit tests, and production build.\n'''
+          if "## September 12, 2026 canonical parity refresh" not in text:
+              matrix.write_text(text.rstrip() + addition)
+          PY
+          pnpm exec prettier --write scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs packages/contracts/generated/upstream-music-lock.json packages/contracts/generated/chord-manifest.json packages/contracts/generated/hymn-catalog.json apps/bff/src/chord-manifest.ts docs/discovery/feature-parity-matrix.md
+      - name: Verify generated data, strict chord geometry, and app
+        env:
+          GYSCHORDWEB_SNAPSHOT: .tmp-gyschordweb-latest
+          GYSCHORDWEB_COMMIT: 3039ae678c9e0e6ca439f4e1e0250759667dbcdf
+        run: |
+          pnpm verify:generated
+          node scripts/audit-chord-layout.mjs --source-root .tmp-gyschordweb-latest --strict --check
+          pnpm format:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          pnpm verify:bundle
+      - name: Commit verified parity refresh
+        run: |
+          git config user.name "gysapp-agent"
+          git config user.email "actions@users.noreply.github.com"
+          rm -rf .tmp-gyschordweb-latest
+          git rm .github/workflows/agent-parity-refresh.yml
+          git add scripts/generate-music-lock.mjs scripts/generate-hymn-catalog.mjs packages/contracts/generated/upstream-music-lock.json packages/contracts/generated/chord-manifest.json packages/contracts/generated/hymn-catalog.json apps/bff/src/chord-manifest.ts docs/discovery/feature-parity-matrix.md
+          git commit -m "chore: sync latest gyschordweb chord provenance"
+          git push origin HEAD:audit/parity-ui-tts-20260911
