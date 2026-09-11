@@ -1,4 +1,4 @@
-name: Agent TTS red-phase verifier
+name: Agent TTS green verifier
 
 on:
   push:
@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  red:
+  green:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,17 +25,21 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Prove new TTS contracts fail before implementation
+      - name: Multilingual TTS regression suite
+        run: pnpm --filter @gys/web exec vitest run src/speech-language.test.ts src/edge-direct.test.ts
+      - name: Web typecheck
+        run: pnpm --filter @gys/web typecheck
+      - name: Workspace build
+        run: pnpm build
+      - name: Live keyless Edge-compatible smoke
         shell: bash
         run: |
-          set +e
-          pnpm --filter @gys/web exec vitest run src/speech-language.test.ts src/edge-direct.test.ts 2>&1 | tee /tmp/tts-red.log
-          code=${PIPESTATUS[0]}
-          set -e
-          if [ "$code" -eq 0 ]; then
-            echo "Expected focused TTS tests to be RED before implementation, but they passed."
-            exit 1
-          fi
-          grep -Eq "detectSpeechLanguage|resolveSpeechVoiceForText" /tmp/tts-red.log
-          grep -Eq "xml:lang|id-ID" /tmp/tts-red.log
-          echo "RED phase confirmed: language detection/voice resolution and SSML locale contracts fail before production changes."
+          python -m pip install --quiet edge-tts==7.2.8
+          edge-tts --voice id-ID-GadisNeural --text 'Tuhan adalah gembalaku.' --write-media /tmp/edge-id.mp3
+          edge-tts --voice en-US-JennyNeural --text 'The Lord is my shepherd.' --write-media /tmp/edge-en.mp3
+          edge-tts --voice zh-CN-XiaoxiaoNeural --text '神是我的牧者。' --write-media /tmp/edge-zh.mp3
+          for audio in /tmp/edge-id.mp3 /tmp/edge-en.mp3 /tmp/edge-zh.mp3; do
+            bytes=$(wc -c < "$audio")
+            echo "$audio bytes=$bytes"
+            test "$bytes" -gt 1000
+          done
