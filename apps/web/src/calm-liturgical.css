@@ -147,7 +147,9 @@ summary:focus-visible {
   outline-offset: 3px;
 }
 
-/* Tablet is a compact labelled rail, not mystery icon navigation. */
+/* Tablet is a compact labelled rail, not mystery icon navigation. The legacy
+   tablet rail used !important to force visual copy off, so the approved
+   labelled-rail contract intentionally overrides that rule only here. */
 @media (min-width: 600px) and (max-width: 959px) {
   .workspace,
   .workspace.is-sidebar-collapsed {
@@ -182,9 +184,12 @@ summary:focus-visible {
 
   .navigation-shell .nav-copy,
   .workspace.is-sidebar-collapsed .navigation-shell .nav-copy {
-    display: block;
+    display: block !important;
     width: 100%;
     min-width: 0;
+    opacity: 1;
+    overflow: visible;
+    transform: none;
     text-align: center;
   }
 
@@ -202,6 +207,10 @@ summary:focus-visible {
   .workspace.is-sidebar-collapsed .navigation-shell .nav-copy small,
   .navigation-shell .nav-item::after {
     display: none;
+  }
+
+  .navigation-shell .sidebar-foot {
+    display: none !important;
   }
 }
 
