@@ -1,0 +1,491 @@
+:root {
+  --motion-fast: 160ms;
+  --motion-normal: 200ms;
+  --motion-slow: 240ms;
+  --ui-preference-radius: 14px;
+}
+
+:root[data-ui-density="comfortable"] {
+  font-size: 106.25%;
+  --control-hit: 50px;
+  --text-ui: 1rem;
+  --text-meta: 0.8125rem;
+}
+
+:root[data-ui-density="compact"] {
+  --control-hit: 44px;
+  --text-ui: 0.90625rem;
+  --text-meta: 0.75rem;
+}
+
+@media (min-width: 960px) and (pointer: fine) {
+  :root[data-ui-density="compact"] {
+    font-size: 93.75%;
+  }
+}
+
+@media (max-width: 959px), (pointer: coarse) {
+  :root[data-ui-density="compact"] {
+    font-size: 100%;
+    --control-hit: 44px;
+  }
+}
+
+:root[data-ui-font="hymnal"]
+  :is(
+    h1,
+    h2,
+    h3,
+    .brand strong,
+    .hymn-title,
+    .pdf-title,
+    .lyrics-title,
+    .kidung-song-title
+  ) {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+:root[data-ui-font="sans"] {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+:root[data-ui-font="sans"]
+  :is(
+    h1,
+    h2,
+    h3,
+    .brand strong,
+    .hymn-title,
+    .pdf-title,
+    .lyrics-title,
+    .kidung-song-title
+  ) {
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+.ui-preferences-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.ui-preferences-entry-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-preferences-entry-copy strong {
+  font-size: var(--text-ui);
+  line-height: 1.25;
+}
+
+.ui-preferences-entry-copy small {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.ui-preferences-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--control-hit);
+  padding-inline: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+
+.ui-preferences-open:hover,
+.ui-preferences-open:focus-visible {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line-strong));
+  background: color-mix(in srgb, var(--blue-soft) 42%, var(--surface));
+}
+
+.ui-preferences-open-mark {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding-inline: 5px;
+  border: 1px solid color-mix(in srgb, var(--blue) 28%, var(--line));
+  border-radius: 7px;
+  color: var(--blue);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ui-preferences-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 4);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  isolation: isolate;
+}
+
+.ui-preferences-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(10, 19, 34, 0.48);
+  cursor: default;
+  animation: ui-preferences-fade-in var(--motion-fast) var(--ease-out) both;
+}
+
+.ui-preferences-panel {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(780px, calc(100dvh - 32px));
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--calm-shadow-raised, var(--shadow));
+  outline: none;
+  transition:
+    transform var(--motion-normal) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+  animation: ui-preferences-panel-in var(--motion-normal) var(--ease-out) both;
+}
+
+.ui-preferences-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ui-preferences-header h2 {
+  margin: 2px 0 6px;
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
+  line-height: 1.15;
+}
+
+.ui-preferences-header p {
+  max-width: 58ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ui-preferences-eyebrow {
+  color: var(--blue) !important;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-preferences-close {
+  display: grid;
+  place-items: center;
+  width: var(--control-hit);
+  height: var(--control-hit);
+  min-width: var(--control-hit);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+
+.ui-preferences-close:hover,
+.ui-preferences-close:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.ui-preferences-section {
+  display: grid;
+  gap: 12px;
+  padding-block: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ui-preferences-section-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ui-preferences-section-heading h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.ui-preferences-section-heading p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.ui-preferences-current {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.ui-preference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ui-preference-choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 10px;
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--ui-preference-radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+.ui-preference-choice:hover {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+}
+
+.ui-preference-choice:active {
+  transform: scale(0.985);
+}
+
+.ui-preference-choice.is-selected {
+  border-color: color-mix(in srgb, var(--blue) 64%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 54%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+.ui-preference-sample {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.ui-preference-sample.is-hymnal {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 17px;
+}
+
+.ui-preference-sample.is-sans {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.ui-preference-choice-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ui-preference-choice-copy strong {
+  font-size: 13.5px;
+  line-height: 1.25;
+}
+
+.ui-preference-choice-copy small {
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.ui-preference-check {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ui-preference-choice.is-selected .ui-preference-check {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.ui-preferences-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+}
+
+.ui-preferences-footer > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ui-preferences-footer .primary-button {
+  min-height: var(--control-hit);
+  padding-inline: 22px;
+}
+
+@keyframes ui-preferences-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ui-preferences-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .ui-preference-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ui-preference-choice {
+    min-height: var(--control-hit);
+  }
+}
+
+@media (max-width: 599px) {
+  .ui-preferences-entry {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ui-preferences-open {
+    width: 100%;
+  }
+
+  .ui-preferences-dialog-layer {
+    place-items: end stretch;
+    padding: 8px 8px 0;
+  }
+
+  .ui-preferences-panel {
+    width: 100%;
+    max-height: calc(100dvh - 8px);
+    padding: 20px 16px calc(18px + env(safe-area-inset-bottom));
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    animation-name: ui-preferences-sheet-in;
+  }
+
+  .ui-preferences-header {
+    gap: 12px;
+  }
+
+  .ui-preferences-section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .ui-preferences-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ui-preferences-footer .primary-button {
+    width: 100%;
+  }
+}
+
+@keyframes ui-preferences-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-preferences-open,
+  .ui-preferences-scrim,
+  .ui-preferences-panel,
+  .ui-preferences-close,
+  .ui-preference-choice {
+    transition: none !important;
+    animation: none !important;
+  }
+}

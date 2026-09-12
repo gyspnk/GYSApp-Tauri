@@ -48,6 +48,7 @@ const PORTABLE_BACKUP_KEYS = new Set([
   "gys-hymn-accidental",
   "gys-speech-pitch-v1",
   "gys-speech-volume-v1",
+  "gys-ui-preferences-v1",
 ]);
 
 const PORTABLE_BACKUP_PREFIXES = [
