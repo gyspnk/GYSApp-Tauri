@@ -32,12 +32,12 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
 
-  await page.getByRole("button", { name: /Nyaman/ }).click();
+  await page.getByRole("radio", { name: /Nyaman/ }).click();
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
   );
-  await page.getByRole("button", { name: /Himne/ }).click();
+  await page.getByRole("radio", { name: /Himne/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "hymnal");
 
   await savePreview(page, "appearance-comfortable-tablet-768x1024.png");
@@ -66,7 +66,7 @@ test("compact mode stays touch-safe on phone and produces real visual evidence",
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openAppearance(page);
-  await page.getByRole("button", { name: /Ringkas/ }).click();
+  await page.getByRole("radio", { name: /Ringkas/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "compact");
 
   const navTargets = page.locator(".navigation-shell .nav-item");
@@ -89,8 +89,8 @@ test("compact mode stays touch-safe on phone and produces real visual evidence",
 test("standard desktop and panel composition remain readable", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openAppearance(page);
-  await page.getByRole("button", { name: /Standar/ }).click();
-  await page.getByRole("button", { name: /Otomatis/ }).click();
+  await page.getByRole("radio", { name: /Standar/ }).click();
+  await page.getByRole("radio", { name: /Otomatis/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
   await expect
