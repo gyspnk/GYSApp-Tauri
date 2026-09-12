@@ -4,7 +4,7 @@
 
 **Goal:** Refine GYSApp into a calm, professional, universally understandable interface without removing features or regressing parity.
 
-**Architecture:** Add one final, small cross-app refinement stylesheet after the existing base and hardening layers, and protect it with a dedicated Playwright usability contract. Avoid component rewrites unless a behavior cannot be expressed safely through shared CSS. Keep feature code stable and use visual evidence plus existing regression suites to validate intentional styling changes.
+**Architecture:** Add one final, small cross-app refinement stylesheet after the existing base and hardening layers, and protect it with a dedicated Playwright usability contract. Avoid component rewrites unless a behavior cannot be expressed safely through shared CSS. Keep feature code stable and use visual evidence plus existing regression suites to validate intentional styling changes. The CI path must reuse equivalent verified outputs instead of recompiling the monorepo in downstream jobs.
 
 **Tech Stack:** React, TypeScript, CSS, Playwright, pnpm, GitHub Actions, Tauri/Rust verification.
 
@@ -20,6 +20,7 @@
 - Mobile navigation labels must remain readable at 320px width.
 - Preserve reduced-motion and keyboard accessibility.
 - Visual changes require screenshot inspection before baseline acceptance.
+- Faster CI must come from reuse, parallelism, caching, or targeted feedback; never from silently dropping the final full verification gate.
 
 ---
 
@@ -176,7 +177,7 @@ Use a guarded workflow or exact-file update so only reviewed visual baselines ch
 
 - [ ] **Step 1: Run repository gates**
 
-Verify `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm verify:native-assets`, `pnpm verify:bundle`, and `pnpm audit --prod` through CI.
+Verify `pnpm format:check`, the canonical TypeScript static check, `pnpm test`, `pnpm build`, `pnpm verify:native-assets`, `pnpm verify:bundle`, and `pnpm audit --prod` through CI.
 
 - [ ] **Step 2: Run full Playwright suite**
 
@@ -192,4 +193,89 @@ Commit message: `chore: remove calm UI audit workflow`
 
 - [ ] **Step 5: Re-run exact-head CI**
 
-Do not claim completion until the exact final head SHA has green verify/e2e/secret-scan/native-check jobs.
+Do not claim completion until the exact final head SHA has green quality/build/e2e/secret-scan/native-check jobs.
+
+---
+
+### Task 5: Remove redundant CI compilation and accelerate developer feedback
+
+**Files:**
+
+- Modify: `.github/workflows/ci.yml`
+- Modify: `apps/web/playwright.config.ts`
+- Modify: `package.json`
+- Modify: `scripts/test-e2e-selective.mjs`
+- Create or modify tests for selective-E2E/base-ref resolution if the script is changed.
+
+**Interfaces:**
+
+- Consumes: existing root `pnpm build`, Playwright preview server, GitHub PR base/head SHAs, Cargo workspace, existing full E2E suite.
+- Produces: one verified web build reused by E2E, nonduplicated TypeScript static checking, safe compiler/dependency caches, and a CI-aware targeted feedback path while preserving a full exact-head gate.
+
+- [ ] **Step 1: Record the baseline from a known successful run**
+
+Use GitHub Actions logs from run `34661279551` as the initial reference. Record approximately:
+
+```text
+E2E job total: ~4m07s
+Playwright/browser + OS dependency setup: ~30.6s
+Duplicate root build inside Playwright webServer: ~6.2s
+Full browser suite: 129 passed, ~3.3m
+```
+
+Also record that `lint` and `typecheck` currently execute the same `tsc -b --pretty false` command for each TypeScript workspace.
+
+- [ ] **Step 2: Protect prebuilt-versus-local Playwright server behavior**
+
+Add a small deterministic configuration/helper test before changing production CI behavior. The contract must prove:
+
+```ts
+GYS_E2E_PREBUILT=1 -> vite preview only
+GYS_E2E_PREBUILT unset -> root build + vite preview
+```
+
+The local default must remain clean-checkout safe.
+
+- [ ] **Step 3: Make Playwright consume a prebuilt artifact in CI**
+
+Change `apps/web/playwright.config.ts` so CI may set `GYS_E2E_PREBUILT=1`. Under that flag, the `webServer.command` starts only `vite preview`; otherwise it keeps the existing root-build fallback for local development.
+
+- [ ] **Step 4: Split the permanent CI critical path around a single web build**
+
+Refactor `.github/workflows/ci.yml` so the production build is produced once, verified, and uploaded as an artifact. Let the E2E job download `apps/web/dist`, set `GYS_E2E_PREBUILT=1`, and start tests without rebuilding the workspace. Run independent quality checks in parallel where correctness permits rather than making browser testing wait for unrelated checks.
+
+- [ ] **Step 5: Remove duplicate TypeScript compilation semantics**
+
+Because all current workspace `lint` scripts are aliases for `tsc -b --pretty false`, permanent CI should run one canonical TypeScript static gate instead of both `pnpm lint` and `pnpm typecheck`. Keep command naming/documentation honest; do not claim a distinct linter exists when it does not.
+
+- [ ] **Step 6: Add persistent Rust dependency/build caching**
+
+After the Rust toolchain setup, use `Swatinem/rust-cache@v2` scoped to `apps/native/src-tauri -> target`. Keep cargo check, fmt, test, and clippy unchanged so only reuse changes, not coverage.
+
+- [ ] **Step 7: Optimize Playwright setup by measurement**
+
+Do not blindly cache browser binaries: Playwright documentation notes that restoring browser caches can cost about as much as downloading them. Benchmark the current install against either the matching official Playwright container or a version-keyed browser cache; keep only the option that materially lowers wall-clock time and remains deterministic.
+
+- [ ] **Step 8: Make selective E2E CI-aware for fast feedback**
+
+Update `scripts/test-e2e-selective.mjs` to accept an explicit base/head range (CLI or environment) rather than relying only on a dirty working tree. Add tests for PR range selection. This path is for rapid feedback; it must not replace the final full E2E acceptance run.
+
+- [ ] **Step 9: Benchmark safe Playwright parallelism**
+
+Measure the current two-worker configuration against a carefully bounded alternative or Playwright sharding. Keep the faster option only if repeated runs stay deterministic. Do not trade stable visual/E2E behavior for nominal speed.
+
+- [ ] **Step 10: Verify the optimized pipeline**
+
+Compare GitHub Actions logs phase by phase and require all permanent checks to stay green. Confirm the E2E logs no longer show the root `pnpm build` sequence when `GYS_E2E_PREBUILT=1`, and confirm the final full E2E/native/visual gate still executes before goal completion.
+
+- [ ] **Step 11: Commit in reviewable slices**
+
+Suggested commit sequence:
+
+```text
+test: define prebuilt e2e server contract
+ci: reuse verified web build in browser tests
+ci: remove duplicate TypeScript compile gate
+ci: cache native Rust dependencies
+test: make selective e2e PR-aware
+```
