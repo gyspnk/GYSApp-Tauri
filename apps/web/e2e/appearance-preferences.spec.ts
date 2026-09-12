@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -6,12 +6,15 @@ import path from "node:path";
 // acceptance is based on the rendered application rather than a mockup.
 const previewDir = path.resolve("test-results", "ui-preview");
 
-async function openAppearance(page: Page): Promise<void> {
+async function openAppearance(
+  page: Page,
+): Promise<{ dialog: Locator; opener: Locator }> {
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page.getByRole("button", { name: "Tampilan & keterbacaan" }).click();
-  await expect(
-    page.getByRole("dialog", { name: "Tampilan & keterbacaan" }),
-  ).toBeVisible();
+  const opener = page.getByRole("button", { name: "Tampilan & keterbacaan" });
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: "Tampilan & keterbacaan" });
+  await expect(dialog).toBeVisible();
+  return { dialog, opener };
 }
 
 async function savePreview(page: Page, name: string): Promise<void> {
@@ -27,17 +30,17 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   page,
 }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
-  await openAppearance(page);
+  const { dialog } = await openAppearance(page);
 
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
 
-  await page.getByRole("radio", { name: /Nyaman/ }).click();
+  await dialog.getByRole("radio", { name: /^Nyaman/ }).click();
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
   );
-  await page.getByRole("radio", { name: /Himne/ }).click();
+  await dialog.getByRole("radio", { name: /^Himne/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "hymnal");
 
   await savePreview(page, "appearance-comfortable-tablet-768x1024.png");
@@ -61,13 +64,18 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   expect(headingFont.toLowerCase()).toContain("playfair");
 });
 
-test("compact mode stays touch-safe on phone and produces real visual evidence", async ({
+test("compact mode stays touch-safe and keeps mobile sheet controls reachable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await openAppearance(page);
-  await page.getByRole("radio", { name: /Ringkas/ }).click();
+  const { dialog } = await openAppearance(page);
+  await dialog.getByRole("radio", { name: /^Ringkas/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "compact");
+
+  const closeButton = dialog.getByRole("button", {
+    name: "Tutup pengaturan tampilan",
+  });
+  await expect(closeButton).toBeInViewport();
 
   const navTargets = page.locator(".navigation-shell .nav-item");
   const undersized = await navTargets.evaluateAll((elements) =>
@@ -86,11 +94,20 @@ test("compact mode stays touch-safe on phone and produces real visual evidence",
   await savePreview(page, "appearance-compact-phone-390x844.png");
 });
 
-test("standard desktop and panel composition remain readable", async ({ page }) => {
+test("standard desktop, automatic font, and sans font remain readable", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await openAppearance(page);
-  await page.getByRole("radio", { name: /Standar/ }).click();
-  await page.getByRole("radio", { name: /Otomatis/ }).click();
+  const { dialog } = await openAppearance(page);
+  await dialog.getByRole("radio", { name: /^Standar/ }).click();
+  await dialog.getByRole("radio", { name: /^Sans modern/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-ui-font", "sans");
+  const sansHeadingFont = await dialog.locator("h2").evaluate(
+    (element) => getComputedStyle(element).fontFamily,
+  );
+  expect(sansHeadingFont.toLowerCase()).not.toContain("playfair");
+
+  await dialog.getByRole("radio", { name: /^Otomatis/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
   await expect
@@ -99,13 +116,23 @@ test("standard desktop and panel composition remain readable", async ({ page }) 
   await savePreview(page, "appearance-standard-desktop-1440x900.png");
 });
 
+test("Escape closes appearance settings and restores focus to the launcher", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const { dialog, opener } = await openAppearance(page);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+
 test("reduced motion keeps the appearance panel usable without nonessential animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
-  await openAppearance(page);
-  const transitionDuration = await page.locator(".ui-preferences-panel").evaluate(
+  const { dialog } = await openAppearance(page);
+  const transitionDuration = await dialog.evaluate(
     (element) => getComputedStyle(element).transitionDuration,
   );
   expect(transitionDuration.split(",").every((value) => value.trim() === "0s")).toBe(
