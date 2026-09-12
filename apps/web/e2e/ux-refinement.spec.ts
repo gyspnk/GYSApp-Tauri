@@ -42,7 +42,7 @@ test("desktop light shell is compact, stable, and uses reachable controls", asyn
   });
 });
 
-test("dark tablet uses a true icon rail without labels bleeding into content", async ({
+test("dark tablet uses a compact labelled rail without bleeding into content", async ({
   page,
 }) => {
   await setTheme(page, "dark");
@@ -52,10 +52,13 @@ test("dark tablet uses a true icon rail without labels bleeding into content", a
   await expectNoHorizontalOverflow(page);
   const nav = await page.locator(".navigation-shell").boundingBox();
   expect(nav).not.toBeNull();
-  expect(nav!.width).toBeLessThanOrEqual(80);
-  await expect(
-    page.locator(".navigation-shell .nav-copy").first(),
-  ).toBeHidden();
+  expect(nav!.width).toBeLessThanOrEqual(96);
+  const navCopy = page.locator(".navigation-shell .nav-copy").first();
+  await expect(navCopy).toBeVisible();
+  const labelSize = await navCopy.locator("strong").evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).fontSize),
+  );
+  expect(labelSize).toBeGreaterThanOrEqual(11);
   await expect(
     page.locator(".navigation-shell .nav-item").first(),
   ).toHaveAttribute("aria-label", /.+/);
