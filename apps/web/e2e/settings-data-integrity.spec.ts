@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { decryptBackupV2 } from "@gys/domain";
+import { decryptBackupV2, encryptBackupV2 } from "@gys/domain";
 import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
@@ -76,6 +76,9 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     "gys-diagnostics-v1": JSON.stringify([{ message: "device log" }]),
     "gys-custom-edge-endpoint-v1": "https://private-device.invalid/tts",
     "gys-distributed-assets-v1": JSON.stringify({ device: "cache-state" }),
+    "gys-asset-index-v1": JSON.stringify({ local: "cache-pointer" }),
+    "gys-active-asset-manifest-v1": JSON.stringify({ local: "manifest-pointer" }),
+    "gys-chord-cache-index-v1": JSON.stringify({ local: "blob-pointer" }),
   };
 
   await page.addInitScript(
@@ -103,6 +106,67 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
   expect(restored.settings).toMatchObject(durableSettings);
   for (const key of Object.keys(excludedSettings))
     expect(restored.settings).not.toHaveProperty(key);
+});
+
+test("backup import restores only portable settings from a valid envelope", async ({
+  page,
+}) => {
+  const password = "import-integrity-1234";
+  const portableSettings = {
+    "gys-accent-color": "#355c9a",
+    "gys-bible-secondary-version": "KJV",
+  };
+  const blockedSettings = {
+    "gys-live-v1-token": "injected-token",
+    "gys-egys-session-v1": JSON.stringify({ userId: "injected-session" }),
+    "gys-custom-edge-endpoint-v1": "https://injected.invalid/tts",
+    "gys-asset-index-v1": JSON.stringify({ local: "cache-pointer" }),
+    "gys-active-asset-manifest-v1": JSON.stringify({ local: "manifest-pointer" }),
+    "gys-chord-cache-index-v1": JSON.stringify({ local: "blob-pointer" }),
+  };
+  const envelope = await encryptBackupV2(
+    { settings: { ...portableSettings, ...blockedSettings } },
+    password,
+    { appVersion: "0.1.0", domains: ["settings"] },
+  );
+
+  await page.addInitScript((blockedKeys) => {
+    for (const key of blockedKeys) localStorage.removeItem(key);
+  }, Object.keys(blockedSettings));
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.getByRole("button", { name: /Backup & import/ }).click();
+  const panel = page.getByRole("region", { name: "Backup dan import" });
+  await panel.getByLabel("Kata sandi backup").fill(password);
+  await panel.locator('input[type="file"]').setInputFiles({
+    name: "portable-policy.gysbk",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(envelope)),
+  });
+  await panel.getByRole("button", { name: "Impor" }).click();
+
+  await expect
+    .poll(() =>
+      page.evaluate(
+        ({ portableKeys, blockedKeys }) => ({
+          portable: Object.fromEntries(
+            portableKeys.map((key) => [key, localStorage.getItem(key)]),
+          ),
+          blocked: Object.fromEntries(
+            blockedKeys.map((key) => [key, localStorage.getItem(key)]),
+          ),
+        }),
+        {
+          portableKeys: Object.keys(portableSettings),
+          blockedKeys: Object.keys(blockedSettings),
+        },
+      ),
+    )
+    .toEqual({
+      portable: portableSettings,
+      blocked: Object.fromEntries(
+        Object.keys(blockedSettings).map((key) => [key, null]),
+      ),
+    });
 });
 
 test("disabling the daily reminder removes the persisted reminder immediately", async ({
