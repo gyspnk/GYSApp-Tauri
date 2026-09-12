@@ -62,6 +62,11 @@ button.text-button {
   min-height: var(--control-hit);
 }
 
+.home-media-section .section-title-row > .text-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .brand small {
   font-size: 11px;
 }
