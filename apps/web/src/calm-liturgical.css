@@ -273,7 +273,9 @@ summary:focus-visible {
     padding-block: 12px;
   }
 
-  .literature-detail-page.is-direct-reader .literature-reading-panel .section-title-row {
+  .literature-detail-page.is-direct-reader
+    .literature-reading-panel
+    .section-title-row {
     margin-bottom: 0;
   }
 

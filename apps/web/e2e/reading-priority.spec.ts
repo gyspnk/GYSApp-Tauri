@@ -32,7 +32,9 @@ test("direct literature PDF exposes the document in the first mobile viewport", 
   );
 
   await page.goto("/GYSApp-Tauri/literatur/pdf-priority?read=1");
-  const canvas = page.locator(".literature-reader-panel .pdf-pages canvas").first();
+  const canvas = page
+    .locator(".literature-reader-panel .pdf-pages canvas")
+    .first();
   await expect
     .poll(() => canvas.evaluate((element) => element.width), {
       timeout: 20_000,
