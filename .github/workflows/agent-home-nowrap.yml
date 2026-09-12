@@ -1,0 +1,30 @@
+name: Agent home header layout
+
+on:
+  pull_request:
+    paths:
+      - "apps/web/e2e/universal-usability.spec.ts"
+      - "apps/web/src/calm-liturgical.css"
+      - ".github/workflows/agent-home-nowrap.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  home-header:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Run home section action contract
+        run: pnpm --filter @gys/web exec playwright test e2e/universal-usability.spec.ts -g "home section actions"
