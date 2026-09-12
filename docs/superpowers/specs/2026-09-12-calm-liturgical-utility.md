@@ -44,10 +44,28 @@ Make GYSApp feel like a calm, professional Bible and worship utility that is eas
 - Lainnya: account/preferences first, offline/data second, personal utilities next, advanced device tools last.
 - Media surface: persistent and predictable; playback controls are easy to hit while metadata stays secondary.
 
+## Developer velocity and CI contract
+
+Fast feedback is part of product quality. The normal edit-test loop and pull-request checks must avoid repeating expensive work when an equivalent verified artifact can be reused.
+
+1. A CI run should build the production web application once where practical; browser tests should consume that verified build rather than compiling the full workspace again.
+2. Permanent CI must not run semantically identical TypeScript compilation gates twice. If `lint` and `typecheck` are both aliases for `tsc -b`, one canonical static TypeScript gate is sufficient until a distinct linter exists.
+3. Playwright keeps a clean-checkout local fallback that can build automatically, while CI can explicitly select a prebuilt artifact path.
+4. GitHub-hosted runners should reuse safe dependency/compiler caches where they materially help, especially Cargo/Rust dependencies. Browser caching is used only when measurement shows it is faster than a fresh Playwright install.
+5. Targeted/selective tests may provide rapid development and PR feedback, but they do not replace the full exact-head E2E, native, build, bundle, audit, and visual acceptance gate required before this goal can finish.
+6. CI changes must preserve generated-provenance, documentation, security scan, native, bundle-budget, and production dependency-audit coverage.
+7. Performance changes are accepted from measured GitHub Actions evidence, comparing the same meaningful phases before and after rather than relying on subjective speed.
+8. Local development should expose a fast path for affected tests without changing the semantics of the full verification command.
+
+### Measured baseline
+
+The reference successful CI run before this optimization used a separate E2E runner that reinstalled dependencies, installed Playwright system/browser payloads, then executed the Playwright `webServer` command which rebuilt the full monorepo before browser tests. The browser job was about 4 minutes end to end; browser/dependency setup consumed roughly 30 seconds, the duplicate root build roughly 6 seconds, and the 129-test Playwright run roughly 3.3 minutes. These figures are the comparison baseline for this refinement cycle.
+
 ## Acceptance gates
 
 - Universal-usability E2E contract passes on phone, tablet, and desktop.
 - Existing accessibility, navigation, touch-target, UX, reader, media, settings, smoke, and parity tests remain green.
 - Representative visual screenshots are inspected before intentional baselines are accepted.
-- Format, lint, typecheck, unit tests, build, bundle budget, production audit, and native checks pass.
+- CI/development optimization demonstrably removes redundant compilation/setup and improves feedback time without weakening the final full verification gate.
+- Format, canonical TypeScript static check, unit tests, build, bundle budget, production audit, full E2E, and native checks pass on the exact final head.
 - Temporary QA workflows are removed before final acceptance.
