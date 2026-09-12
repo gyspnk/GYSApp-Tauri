@@ -72,9 +72,11 @@ test("compact mode stays touch-safe and keeps mobile sheet controls reachable", 
   await dialog.getByRole("radio", { name: /^Ringkas/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-density", "compact");
 
+  const heading = dialog.getByRole("heading", { name: "Tampilan & keterbacaan" });
   const closeButton = dialog.getByRole("button", {
     name: "Tutup pengaturan tampilan",
   });
+  await expect(heading).toBeInViewport();
   await expect(closeButton).toBeInViewport();
 
   const navTargets = page.locator(".navigation-shell .nav-item");
