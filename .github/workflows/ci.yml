@@ -142,20 +142,16 @@ jobs:
       # the warm-cache restore cost when a Rust file only needs rustfmt.
       - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
       - name: Restore Rust dependency and target cache
-        id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "apps/native/src-tauri -> target"
           shared-key: native-windows-v2
           cache-on-failure: false
-      # A full cache hit already contains the registry data required by the
-      # lockfile. Avoid refreshing crates.io on every run; cold/partial caches
-      # fetch once before switching the compile/test steps to deterministic
-      # offline mode.
-      - name: Fetch locked Rust dependencies on cache miss
-        if: steps.rust-cache.outputs.cache-hit != 'true'
-        run: cargo fetch --manifest-path apps/native/src-tauri/Cargo.toml --locked
-      - name: Run native unit tests from the locked cache
-        run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked --offline
-      - name: Run native clippy from the locked cache
-        run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked --offline -- -D warnings
+      # Keep Cargo locked for deterministic resolution. `--lib` avoids building
+      # empty binary/doc-test targets during the unit pass, while clippy still
+      # validates every native target. Do not force `--offline`: rust-cache can
+      # restore compiled artifacts without every sparse-index entry Cargo needs.
+      - name: Run native library tests
+        run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked
+      - name: Run native clippy
+        run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked -- -D warnings
