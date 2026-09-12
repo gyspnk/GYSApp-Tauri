@@ -28,7 +28,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
       - name: Verify universal usability behavior
-        run: pnpm --filter @gys/web exec playwright test e2e/universal-usability.spec.ts e2e/ux-refinement.spec.ts
+        run: pnpm --filter @gys/web exec playwright test e2e/universal-usability.spec.ts e2e/ux-refinement.spec.ts e2e/reading-priority.spec.ts
       - name: Render current visual surfaces without accepting baselines
         run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts --update-snapshots
       - uses: actions/upload-artifact@v4
