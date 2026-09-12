@@ -55,9 +55,11 @@ test("dark tablet uses a compact labelled rail without bleeding into content", a
   expect(nav!.width).toBeLessThanOrEqual(96);
   const navCopy = page.locator(".navigation-shell .nav-copy").first();
   await expect(navCopy).toBeVisible();
-  const labelSize = await navCopy.locator("strong").evaluate((element) =>
-    Number.parseFloat(getComputedStyle(element).fontSize),
-  );
+  const labelSize = await navCopy
+    .locator("strong")
+    .evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
   expect(labelSize).toBeGreaterThanOrEqual(11);
   await expect(
     page.locator(".navigation-shell .nav-item").first(),

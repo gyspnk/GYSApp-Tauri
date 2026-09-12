@@ -8,38 +8,28 @@
   --text-ui: 0.9375rem;
   --text-meta: 0.75rem;
   --calm-shadow:
-    0 1px 2px rgba(31, 66, 112, 0.05),
-    0 8px 24px rgba(31, 66, 112, 0.045);
+    0 1px 2px rgba(31, 66, 112, 0.05), 0 8px 24px rgba(31, 66, 112, 0.045);
   --calm-shadow-raised:
-    0 2px 5px rgba(31, 66, 112, 0.08),
-    0 12px 28px rgba(31, 66, 112, 0.075);
+    0 2px 5px rgba(31, 66, 112, 0.08), 0 12px 28px rgba(31, 66, 112, 0.075);
 }
 
 :root[data-theme="dark"] {
-  --calm-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.22),
-    0 8px 24px rgba(0, 0, 0, 0.14);
+  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.14);
   --calm-shadow-raised:
-    0 2px 5px rgba(0, 0, 0, 0.28),
-    0 12px 28px rgba(0, 0, 0, 0.2);
+    0 2px 5px rgba(0, 0, 0, 0.28), 0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
 :root[data-theme="amoled"] {
-  --calm-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55),
-    0 8px 24px rgba(0, 0, 0, 0.42);
+  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.42);
   --calm-shadow-raised:
-    0 2px 5px rgba(0, 0, 0, 0.68),
-    0 12px 28px rgba(0, 0, 0, 0.5);
+    0 2px 5px rgba(0, 0, 0, 0.68), 0 12px 28px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="sepia"] {
   --calm-shadow:
-    0 1px 2px rgba(92, 64, 51, 0.07),
-    0 8px 24px rgba(92, 64, 51, 0.055);
+    0 1px 2px rgba(92, 64, 51, 0.07), 0 8px 24px rgba(92, 64, 51, 0.055);
   --calm-shadow-raised:
-    0 2px 5px rgba(92, 64, 51, 0.1),
-    0 12px 28px rgba(92, 64, 51, 0.08);
+    0 2px 5px rgba(92, 64, 51, 0.1), 0 12px 28px rgba(92, 64, 51, 0.08);
 }
 
 /* Common controls should be comfortable without looking oversized. */
