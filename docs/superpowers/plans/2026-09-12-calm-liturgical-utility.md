@@ -26,9 +26,11 @@
 ### Task 1: Add universal-usability contract
 
 **Files:**
+
 - Create: `apps/web/e2e/universal-usability.spec.ts`
 
 **Interfaces:**
+
 - Consumes: existing `.navigation-shell`, `.nav-item`, `.nav-copy`, `.search-trigger`, `.account-button`, `.main-content`, route classes.
 - Produces: automated constraints for touch size, tablet labels, 200% text zoom containment, readable mobile labels, and reduced motion.
 
@@ -66,10 +68,12 @@ Commit message: `test: define universal usability contract`
 ### Task 2: Implement the Calm Liturgical refinement layer
 
 **Files:**
+
 - Create: `apps/web/src/calm-liturgical.css`
 - Modify: `apps/web/src/main.tsx`
 
 **Interfaces:**
+
 - Consumes: existing CSS custom properties/classes.
 - Produces: final shared visual hierarchy and responsive interaction behavior without changing feature APIs.
 
@@ -83,7 +87,8 @@ Add only refinement variables such as:
   --text-ui: 0.9375rem;
   --text-meta: 0.75rem;
   --content-reading: 72rem;
-  --surface-shadow-calm: 0 1px 2px rgba(31, 50, 78, 0.06), 0 8px 24px rgba(31, 50, 78, 0.05);
+  --surface-shadow-calm:
+    0 1px 2px rgba(31, 50, 78, 0.06), 0 8px 24px rgba(31, 50, 78, 0.05);
 }
 ```
 
@@ -132,10 +137,12 @@ Commit message: `feat: apply calm liturgical utility system`
 ### Task 3: Visual evidence across core surfaces
 
 **Files:**
+
 - Create temporarily: `.github/workflows/agent-calm-ui-audit.yml`
 - Reuse: `apps/web/e2e/visual.spec.ts`, `apps/web/e2e/visual-reading.spec.ts`
 
 **Interfaces:**
+
 - Produces: screenshot artifact for manual inspection before baseline acceptance.
 
 - [ ] **Step 1: Add a temporary PR workflow**
@@ -159,10 +166,12 @@ Use a guarded workflow or exact-file update so only reviewed visual baselines ch
 ### Task 4: Full regression and cleanup
 
 **Files:**
+
 - Remove temporary workflow from Task 3.
 - Modify visual snapshots only where manually accepted.
 
 **Interfaces:**
+
 - Produces: exact-head green PR evidence.
 
 - [ ] **Step 1: Run repository gates**
