@@ -3,7 +3,7 @@ import {
   synthesizeEdgeDirect,
   type EdgeSocket,
   type EdgeSocketMessage,
-} from "./edge-direct.js";
+} from "./edge-direct-safe.js";
 
 const REQUEST = {
   text: "Uji koneksi suara",
