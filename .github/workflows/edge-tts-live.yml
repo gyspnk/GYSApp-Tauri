@@ -32,9 +32,9 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Capture canonical Prettier output
+      - name: Show canonical Prettier diff
         run: |
           pnpm exec prettier scripts/edge-tts-live-smoke.mjs --write
-          node -e "console.log('FORMATTED_SMOKE_BASE64=' + require('node:fs').readFileSync('scripts/edge-tts-live-smoke.mjs').toString('base64'))"
+          git --no-pager diff -- scripts/edge-tts-live-smoke.mjs
       - name: Synthesize Indonesian speech without an API key
         run: node scripts/edge-tts-live-smoke.mjs
