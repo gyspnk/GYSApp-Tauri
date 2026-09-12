@@ -147,6 +147,46 @@ summary:focus-visible {
   outline-offset: 3px;
 }
 
+/* Direct reading should foreground the document while keeping management
+   features available in an explicit, finger-sized disclosure. */
+.literature-reading-tools {
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.literature-reading-tools > summary {
+  min-height: var(--control-hit);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--blue);
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.literature-reading-tools > summary::-webkit-details-marker {
+  display: none;
+}
+
+.literature-reading-tools > summary::after {
+  content: "⌄";
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.literature-reading-tools[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.literature-reading-tools .literature-progress-actions {
+  margin-top: 8px;
+}
+
 /* Tablet is a compact labelled rail, not mystery icon navigation. The legacy
    tablet rail used !important to force visual copy off, so the approved
    labelled-rail contract intentionally overrides that rule only here. */
@@ -228,6 +268,18 @@ summary:focus-visible {
   .more-card.more-action {
     min-height: 56px;
   }
+
+  .literature-detail-page.is-direct-reader .literature-reading-panel {
+    padding-block: 12px;
+  }
+
+  .literature-detail-page.is-direct-reader .literature-reading-panel .section-title-row {
+    margin-bottom: 0;
+  }
+
+  .literature-detail-page.is-direct-reader .literature-progress-note {
+    line-height: 1.4;
+  }
 }
 
 /* Coarse pointers should never depend on hover choreography. */
@@ -254,7 +306,8 @@ summary:focus-visible {
   .navigation-shell .nav-item,
   .more-card,
   .kidung-card,
-  .media-control {
+  .media-control,
+  .literature-reading-tools > summary::after {
     transition: none !important;
     animation: none !important;
   }
