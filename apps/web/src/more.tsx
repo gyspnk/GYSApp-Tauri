@@ -17,6 +17,10 @@ import {
   encryptBackupV2,
   importLegacyGysbk,
 } from "@gys/domain";
+import {
+  collectPortableBackupSettings,
+  restorePortableBackupSettings,
+} from "./backup-settings.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   applyAssetManifestUpdate,
@@ -267,79 +271,6 @@ function localUpdateCount(diff: AssetManifestDiff): number {
   return [...diff.added, ...diff.changed].filter(
     (item) => item.source === "local",
   ).length;
-}
-
-const BACKUP_STORAGE_KEYS = [
-  "gys-locale",
-  "gys-theme",
-  "gys-shell-settings-v1",
-  "gys-activity-v1",
-  "gys-favorites-v1",
-  "gys-literature-progress-v2",
-  "gys-asset-index-v1",
-  "gys-active-asset-manifest-v1",
-  "gys-bible-book",
-  "gys-bible-chapter",
-  "gys-bible-version-v1",
-  "gys-bible-last-reading",
-  "gys-bible-bookmarks",
-  "gys-bible-notes-v1",
-  "gys-bible-highlights-v1",
-  "gys-bible-search-history-v1",
-  "gys-bible-split-v1",
-  "gys-bible-split-ratio-v1",
-  "gys-daily-sauh-mode-v1",
-  "gys-sidebar-collapsed-v1",
-  "gys-media-minimized",
-  "gys-media-position-v1",
-  "gys-midi-preferences-v1",
-  "gys-hymn-typography-v1",
-  "gys-speech-voice-v1",
-  "gys-speech-rate-v1",
-  "gys-speech-engine-v1",
-  "gys-report-draft",
-  "gys-reminder-time-v1",
-  "gys-chord-cache-index-v1",
-  "gys-midi-playlist-v1",
-  "gys-hymn-view-mode-v1",
-  "gys-hymn-chord-visibility-v1",
-
-  // Durable user settings and user-created presentation data. Keep this
-  // allowlist explicit so device sessions, auth tokens, diagnostics, and
-  // cache/download state are never exported by accident.
-  "gys-accent-color",
-  "gys-bible-secondary-version",
-  "gys-bible-split-sync-scroll-v1",
-  "gys-bible-typography-v1",
-  "gys-chord-ui-prefs",
-  "gys-hymn-natural-chords",
-  "gys-hymn-view-scope",
-  "gys-hymn-viewer-prefs-v1",
-  "gys-kidung-active-playlist",
-  "gys-kidung-playlists-v1",
-  "gys-lyrics-font-size",
-  "gys-lyrics-header-collapsed",
-  "gys-lyrics-line-spacing",
-  "gys-lyrics-show-chords",
-  "gys-hymn-accidental",
-  "gys-speech-pitch-v1",
-  "gys-speech-volume-v1",
-];
-
-function collectBackupSettings() {
-  const dynamicKeys = Object.keys(localStorage).filter(
-    (key) =>
-      key.startsWith("gys-pdf-page:") ||
-      key.startsWith("gys-pdf-layout:") ||
-      key.startsWith("gys-faith-pdf-") ||
-      key.startsWith("gys-faith-note-"),
-  );
-  return Object.fromEntries(
-    [...BACKUP_STORAGE_KEYS, ...dynamicKeys].flatMap((key) => {
-      const value = localStorage.getItem(key);
-      return value === null ? [] : [[key, value]];
-    }),
-  );
 }
 
 function downloadBackup(envelope: unknown) {
@@ -746,7 +677,7 @@ export function MorePage({
     }
     try {
       const envelope = await encryptBackupV2(
-        { settings: collectBackupSettings() },
+        { settings: collectPortableBackupSettings() },
         backupPassword,
         { appVersion: "0.1.0", domains: ["settings"] },
       );
@@ -779,12 +710,7 @@ export function MorePage({
         backupPassword,
       );
       const settings = data.settings;
-      if (!settings || typeof settings !== "object" || Array.isArray(settings))
-        throw new Error("settings missing");
-      for (const [key, value] of Object.entries(settings)) {
-        if (key.startsWith("gys-") && typeof value === "string")
-          localStorage.setItem(key, value);
-      }
+      restorePortableBackupSettings(settings);
       setBackupPassword("");
       setBackupFile(undefined);
       setBackupOpen(false);
@@ -1435,8 +1361,9 @@ export function MorePage({
             </button>
           </div>
           <p>
-            Backup memuat preferensi, progres baca, bookmark, catatan, dan
-            indeks cache. Kata sandi tidak dikirim ke server.
+            Backup memuat preferensi, progres baca, bookmark, dan catatan. Sesi
+            akun, data perangkat, serta cache tidak ikut disalin. Kata sandi
+            tidak dikirim ke server.
           </p>
           <label className="search-field">
             <span>Kata sandi backup</span>
