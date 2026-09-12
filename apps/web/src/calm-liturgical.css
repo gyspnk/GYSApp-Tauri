@@ -139,6 +139,12 @@ button.text-button {
   line-height: 1.2;
 }
 
+/* Human-facing account/preferences lead the More page. Technical asset
+   management remains fully available in the DOM order that follows it. */
+.distributed-assets-card {
+  order: 0;
+}
+
 /* Give keyboard users the same clarity on native controls and disclosures. */
 input:focus-visible,
 select:focus-visible,
