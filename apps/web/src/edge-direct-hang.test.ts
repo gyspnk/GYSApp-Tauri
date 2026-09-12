@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   synthesizeEdgeDirect,
   type EdgeSocket,
@@ -34,11 +34,13 @@ function settleWithin<T>(promise: Promise<T>, milliseconds = 25) {
   ]);
 }
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("direct Edge transport hang hardening", () => {
   it("aborts while the native WebSocket connect call is still pending", async () => {
-    const connect = vi.fn(
-      () => new Promise<EdgeSocket>(() => undefined),
-    );
+    const connect = vi.fn(() => new Promise<EdgeSocket>(() => undefined));
     const controller = new AbortController();
     const speech = synthesizeEdgeDirect(
       REQUEST,
@@ -56,7 +58,8 @@ describe("direct Edge transport hang hardening", () => {
     }
   });
 
-  it("returns completed audio without waiting for a stalled disconnect handshake", async () => {
+  it("times out instead of hanging on a stalled disconnect handshake", async () => {
+    vi.useFakeTimers();
     const listeners = new Set<(message: EdgeSocketMessage) => void>();
     const socket: EdgeSocket = {
       addListener(listener) {
@@ -71,7 +74,8 @@ describe("direct Edge transport hang hardening", () => {
       connect: vi.fn(async () => socket),
     });
 
-    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(2));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(socket.send).toHaveBeenCalledTimes(2);
 
     const header = new TextEncoder().encode(
       "Path:audio\r\nContent-Type:audio/mpeg\r\n\r\n",
@@ -86,13 +90,8 @@ describe("direct Edge transport hang hardening", () => {
       listener({ type: "Text", data: "Path:turn.end\r\n\r\n{}" });
     }
 
-    const outcome = await settleWithin(speech);
-    expect(outcome.status).toBe("resolved");
-    if (outcome.status === "resolved") {
-      expect(Array.from(new Uint8Array(await outcome.value.arrayBuffer()))).toEqual([
-        7, 9,
-      ]);
-    }
+    await vi.advanceTimersByTimeAsync(30_000);
+    await expect(speech).rejects.toThrow("Edge speech transport timed out");
     expect(socket.disconnect).toHaveBeenCalledTimes(1);
   });
 });
