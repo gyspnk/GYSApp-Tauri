@@ -95,3 +95,7 @@
 2. Require the new head to pass format/docs/generated/audit, build, unit/policy, bundle, security, native Windows and full two-shard Playwright.
 3. Inspect browser artifacts and final screenshots from that same final head.
 4. Do not claim completion until verification evidence is fresh and all required gates pass.
+
+## Execution status
+
+Draft selective verification is green with the production build reused by browser tests. Removing Playwright's redundant hosted-runner dependency bootstrap reduced the measured headless-browser install step from about 17.8 seconds to about 6.2 seconds while the Chromium smoke suite continued to pass. The pull request is now ready for review; this documentation-only synchronization intentionally triggers the required full two-shard exact-head acceptance run.
