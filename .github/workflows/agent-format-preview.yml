@@ -1,0 +1,33 @@
+name: Agent format preview
+
+on:
+  pull_request:
+    paths:
+      - "scripts/prepush-plan.test.mjs"
+      - "scripts/test-e2e-selective-core.mjs"
+      - ".github/workflows/agent-format-preview.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  format-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Print exact Prettier output
+        run: |
+          echo '=== scripts/prepush-plan.test.mjs ==='
+          pnpm exec prettier scripts/prepush-plan.test.mjs
+          echo '=== scripts/test-e2e-selective-core.mjs ==='
+          pnpm exec prettier scripts/test-e2e-selective-core.mjs
