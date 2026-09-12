@@ -5,11 +5,7 @@ import {
   type EdgeSocketMessage,
 } from "./edge-direct.js";
 
-export {
-  canUseNativeEdgeTransport,
-  type EdgeSocket,
-  type EdgeSocketMessage,
-};
+export { canUseNativeEdgeTransport, type EdgeSocket, type EdgeSocketMessage };
 
 const HARD_DEADLINE_MS = 30_000;
 
