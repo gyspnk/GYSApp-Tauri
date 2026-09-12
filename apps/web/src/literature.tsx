@@ -994,65 +994,73 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           max={100}
           aria-label={`Kemajuan membaca ${progressPercent}%`}
         />
-        <div className="literature-progress-actions">
-          {isPdfItem && (
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void openReader()}
-            >
-              {hasResume ? `Lanjutkan dari halaman ${resumePage}` : "Buka PDF"}
-            </button>
-          )}
-          <button
-            className="quiet-button"
-            type="button"
-            onClick={() => updateProgress(Math.max(1, progressPercent))}
-          >
-            Tandai dibuka
-          </button>
-          <button
-            className="quiet-button"
-            type="button"
-            onClick={() => updateProgress(100, progress?.location, true)}
-          >
-            Tandai selesai
-          </button>
-          {isPdfItem && (
-            <>
+        <details
+          className="literature-reading-tools"
+          open={!directRead || !isPdfItem}
+        >
+          <summary>Kelola kemajuan & offline</summary>
+          <div className="literature-progress-actions">
+            {isPdfItem && (
               <button
                 className="quiet-button"
                 type="button"
-                onClick={() => void download()}
-                disabled={downloadStatus === "downloading"}
+                onClick={() => void openReader()}
               >
-                {downloadStatus === "downloading"
-                  ? "Mengunduh…"
-                  : downloadStatus === "ready"
-                    ? "Perbarui PDF offline"
-                    : "Unduh PDF"}
+                {hasResume
+                  ? `Lanjutkan dari halaman ${resumePage}`
+                  : "Buka PDF"}
               </button>
-              {downloadStatus === "ready" && (
-                <button
-                  className="quiet-button"
-                  type="button"
-                  onClick={() => void openReader()}
-                >
-                  Buka offline
-                </button>
-              )}
-            </>
-          )}
-          {!isPdfItem && resumeScrollRatio !== undefined && (
+            )}
             <button
               className="quiet-button"
               type="button"
-              onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+              onClick={() => updateProgress(Math.max(1, progressPercent))}
             >
-              Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+              Tandai dibuka
             </button>
-          )}
-        </div>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => updateProgress(100, progress?.location, true)}
+            >
+              Tandai selesai
+            </button>
+            {isPdfItem && (
+              <>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => void download()}
+                  disabled={downloadStatus === "downloading"}
+                >
+                  {downloadStatus === "downloading"
+                    ? "Mengunduh…"
+                    : downloadStatus === "ready"
+                      ? "Perbarui PDF offline"
+                      : "Unduh PDF"}
+                </button>
+                {downloadStatus === "ready" && (
+                  <button
+                    className="quiet-button"
+                    type="button"
+                    onClick={() => void openReader()}
+                  >
+                    Buka offline
+                  </button>
+                )}
+              </>
+            )}
+            {!isPdfItem && resumeScrollRatio !== undefined && (
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+              >
+                Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+              </button>
+            )}
+          </div>
+        </details>
         {readerError && (
           <div className="error-copy literature-reader-error" role="alert">
             <span>{readerError}</span>
