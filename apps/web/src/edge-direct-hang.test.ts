@@ -90,8 +90,11 @@ describe("direct Edge transport hang hardening", () => {
       listener({ type: "Text", data: "Path:turn.end\r\n\r\n{}" });
     }
 
+    const timeoutExpectation = expect(speech).rejects.toThrow(
+      "Edge speech transport timed out",
+    );
     await vi.advanceTimersByTimeAsync(30_000);
-    await expect(speech).rejects.toThrow("Edge speech transport timed out");
+    await timeoutExpectation;
     expect(socket.disconnect).toHaveBeenCalledTimes(1);
   });
 });
