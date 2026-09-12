@@ -95,7 +95,10 @@ jobs:
         with:
           name: e2e-build-${{ github.run_id }}
           path: .
-      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      # CI runs Chromium headlessly, so downloading the full headed Chromium
+      # bundle is redundant. Keep system dependencies while installing only the
+      # headless shell actually used by Playwright.
+      - run: pnpm --filter @gys/web exec playwright install --with-deps --only-shell chromium
       - name: Run full browser shard ${{ matrix.shard }}/2
         env:
           GYS_E2E_PREBUILT: "1"
@@ -139,15 +142,20 @@ jobs:
       # the warm-cache restore cost when a Rust file only needs rustfmt.
       - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
       - name: Restore Rust dependency and target cache
+        id: rust-cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "apps/native/src-tauri -> target"
-          # The v2 namespace was populated only from a fully successful job.
-          # A warm restore cuts native verification from ~7m10s to ~2m20s.
           shared-key: native-windows-v2
           cache-on-failure: false
-      # cargo test compiles the native test targets and clippy --all-targets
-      # performs the static compile/lint pass. A separate cargo check repeated
-      # the dev-profile compilation (~42s on the measured warm run).
-      - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
-      - run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets -- -D warnings
+      # A full cache hit already contains the registry data required by the
+      # lockfile. Avoid refreshing crates.io on every run; cold/partial caches
+      # fetch once before switching the compile/test steps to deterministic
+      # offline mode.
+      - name: Fetch locked Rust dependencies on cache miss
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        run: cargo fetch --manifest-path apps/native/src-tauri/Cargo.toml --locked
+      - name: Run native unit tests from the locked cache
+        run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked --offline
+      - name: Run native clippy from the locked cache
+        run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked --offline -- -D warnings
