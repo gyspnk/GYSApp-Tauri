@@ -77,7 +77,9 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     "gys-custom-edge-endpoint-v1": "https://private-device.invalid/tts",
     "gys-distributed-assets-v1": JSON.stringify({ device: "cache-state" }),
     "gys-asset-index-v1": JSON.stringify({ local: "cache-pointer" }),
-    "gys-active-asset-manifest-v1": JSON.stringify({ local: "manifest-pointer" }),
+    "gys-active-asset-manifest-v1": JSON.stringify({
+      local: "manifest-pointer",
+    }),
     "gys-chord-cache-index-v1": JSON.stringify({ local: "blob-pointer" }),
   };
 
@@ -121,7 +123,9 @@ test("backup import restores only portable settings from a valid envelope", asyn
     "gys-egys-session-v1": JSON.stringify({ userId: "injected-session" }),
     "gys-custom-edge-endpoint-v1": "https://injected.invalid/tts",
     "gys-asset-index-v1": JSON.stringify({ local: "cache-pointer" }),
-    "gys-active-asset-manifest-v1": JSON.stringify({ local: "manifest-pointer" }),
+    "gys-active-asset-manifest-v1": JSON.stringify({
+      local: "manifest-pointer",
+    }),
     "gys-chord-cache-index-v1": JSON.stringify({ local: "blob-pointer" }),
   };
   const envelope = await encryptBackupV2(
