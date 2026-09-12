@@ -35,17 +35,14 @@ jobs:
       - run: pnpm verify:generated
       - run: pnpm verify:docs
       - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
+      # Root build in the parallel e2e job runs the same tsc project builds that
+      # previously backed both `lint` and `typecheck`. Keep one canonical compile
+      # path instead of executing identical TypeScript gates three times.
       - run: pnpm test
-      - run: pnpm build
-      - run: pnpm verify:native-assets
-      - run: pnpm verify:bundle
       - run: pnpm audit --prod
 
   e2e:
     runs-on: ubuntu-latest
-    needs: verify
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -56,8 +53,15 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build and typecheck once
+        run: pnpm build
+      - run: pnpm verify:native-assets
+      - run: pnpm verify:bundle
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - run: pnpm --filter @gys/web test:e2e
+      - name: Run full browser suite against the prebuilt app
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: pnpm --filter @gys/web test:e2e
       - name: Upload browser diagnostics on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -80,6 +84,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: Restore Rust dependency and target cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "apps/native/src-tauri -> target"
+          shared-key: native-windows
+          cache-on-failure: true
       - run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
       - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
       - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
