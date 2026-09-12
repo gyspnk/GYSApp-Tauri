@@ -3,8 +3,20 @@ name: Agent calm UI visual audit
 on:
   pull_request:
     paths:
-      - "apps/web/src/**"
-      - "apps/web/e2e/**"
+      - "apps/web/src/App.tsx"
+      - "apps/web/src/styles.css"
+      - "apps/web/src/ui-hardening.css"
+      - "apps/web/src/calm-liturgical.css"
+      - "apps/web/src/bible.tsx"
+      - "apps/web/src/kidung.tsx"
+      - "apps/web/src/faith.tsx"
+      - "apps/web/src/literature.tsx"
+      - "apps/web/src/more.tsx"
+      - "apps/web/e2e/universal-usability.spec.ts"
+      - "apps/web/e2e/ux-refinement.spec.ts"
+      - "apps/web/e2e/reading-priority.spec.ts"
+      - "apps/web/e2e/visual.spec.ts"
+      - "apps/web/e2e/visual-reading.spec.ts"
       - ".github/workflows/agent-calm-ui-audit.yml"
 
 permissions:
