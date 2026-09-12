@@ -122,6 +122,16 @@ for (const surface of surfaces) {
         )
         .toBe(true);
 
+      if (surface.name === "assets") {
+        const topbar = await page.locator(".topbar").boundingBox();
+        const heading = await page
+          .getByRole("heading", { name: "Manajemen Aset" })
+          .boundingBox();
+        expect(topbar).not.toBeNull();
+        expect(heading).not.toBeNull();
+        expect(heading!.y).toBeGreaterThanOrEqual(topbar!.y + topbar!.height);
+      }
+
       await expect(page).toHaveScreenshot(
         `${surface.name}-${viewport.name}.png`,
         {
