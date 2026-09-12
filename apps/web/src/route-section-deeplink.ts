@@ -11,6 +11,16 @@ export function resolveRouteSectionTarget(location: {
   return section ? MORE_SECTION_TARGETS[section] : undefined;
 }
 
+function scrollTargetBelowTopbar(target: HTMLElement): void {
+  const topbar = document.querySelector<HTMLElement>(".topbar");
+  const topbarHeight = topbar?.getBoundingClientRect().height ?? 0;
+  const targetTop = target.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({
+    top: Math.max(0, targetTop - topbarHeight - 12),
+    behavior: "auto",
+  });
+}
+
 export function installRouteSectionDeepLinks(
   root: HTMLElement | null = document.getElementById("root"),
 ): () => void {
@@ -32,11 +42,14 @@ export function installRouteSectionDeepLinks(
     const target = document.querySelector<HTMLElement>(selector);
     if (!target) return;
 
+    // The More route renders the account card before its asynchronous profile
+    // check finishes. Scrolling while that loading box is still present leaves
+    // the section stranded under the sticky topbar when the card later shrinks.
+    if (document.querySelector(".account-loading-box")) return;
+
     handledLocation = locationKey;
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      target.scrollIntoView({ block: "start", behavior: "auto" });
-    });
+    frame = requestAnimationFrame(() => scrollTargetBelowTopbar(target));
   };
 
   const observer = new MutationObserver(revealLinkedSection);
