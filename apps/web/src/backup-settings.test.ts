@@ -21,6 +21,11 @@ describe("portable backup settings", () => {
   it("collects durable settings and dynamic reading data only", () => {
     const storage = memoryStorage({
       "gys-accent-color": "#355c9a",
+      "gys-ui-preferences-v1": JSON.stringify({
+        version: 1,
+        density: "comfortable",
+        font: "hymnal",
+      }),
       "gys-faith-note-1": "portable note",
       "gys-asset-index-v1": "cache pointer",
       "gys-egys-session-v1": "private session",
@@ -29,8 +34,14 @@ describe("portable backup settings", () => {
 
     expect(collectPortableBackupSettings(storage)).toEqual({
       "gys-accent-color": "#355c9a",
+      "gys-ui-preferences-v1": JSON.stringify({
+        version: 1,
+        density: "comfortable",
+        font: "hymnal",
+      }),
       "gys-faith-note-1": "portable note",
     });
+    expect(isPortableBackupSetting("gys-ui-preferences-v1")).toBe(true);
     expect(isPortableBackupSetting("gys-asset-index-v1")).toBe(false);
     expect(isPortableBackupSetting("gys-active-asset-manifest-v1")).toBe(false);
     expect(isPortableBackupSetting("gys-chord-cache-index-v1")).toBe(false);
@@ -41,6 +52,11 @@ describe("portable backup settings", () => {
     const restored = restorePortableBackupSettings(
       {
         "gys-accent-color": "#355c9a",
+        "gys-ui-preferences-v1": JSON.stringify({
+          version: 1,
+          density: "compact",
+          font: "sans",
+        }),
         "gys-faith-note-1": "portable note",
         "gys-live-v1-token": "injected token",
         "gys-egys-session-v1": "injected session",
@@ -51,8 +67,9 @@ describe("portable backup settings", () => {
       storage,
     );
 
-    expect(restored).toBe(2);
+    expect(restored).toBe(3);
     expect(storage.getItem("gys-accent-color")).toBe("#355c9a");
+    expect(storage.getItem("gys-ui-preferences-v1")).toContain('"compact"');
     expect(storage.getItem("gys-faith-note-1")).toBe("portable note");
     expect(storage.getItem("gys-live-v1-token")).toBeNull();
     expect(storage.getItem("gys-egys-session-v1")).toBeNull();
