@@ -21,11 +21,20 @@ concurrency:
 jobs:
   live-keyless-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Capture canonical Prettier output
+        run: |
+          pnpm exec prettier scripts/edge-tts-live-smoke.mjs --write
+          node -e "console.log('FORMATTED_SMOKE_BASE64=' + require('node:fs').readFileSync('scripts/edge-tts-live-smoke.mjs').toString('base64'))"
       - name: Synthesize Indonesian speech without an API key
         run: node scripts/edge-tts-live-smoke.mjs
