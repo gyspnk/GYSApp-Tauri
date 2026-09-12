@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 import baseConfig from "./playwright.config.js";
 
 export default defineConfig(baseConfig, {
-  // Benchmark-only: distribute individual tests instead of whole files so CI
-  // shards can be balanced without changing the normal local test semantics.
+  // CI-only: distribute individual tests instead of whole files so two shards
+  // stay balanced. The ordinary local config keeps its existing semantics.
   fullyParallel: true,
 });
