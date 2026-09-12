@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import https from "node:https";
 
 const { synthesizeEdgeDirect } = await import(
-  new URL("../apps/web/src/edge-direct.ts", import.meta.url),
+  new URL("../apps/web/src/edge-direct.ts", import.meta.url)
 );
 
 const WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -60,13 +60,10 @@ class NativeLikeSocket {
       ? Buffer.from(message, "utf8")
       : Buffer.from(message);
     await new Promise((resolve, reject) => {
-      this.#socket.write(
-        clientFrame(isText ? 0x1 : 0x2, payload),
-        (error) => {
-          if (error) reject(error);
-          else resolve();
-        },
-      );
+      this.#socket.write(clientFrame(isText ? 0x1 : 0x2, payload), (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
     });
   }
 
