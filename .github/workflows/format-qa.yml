@@ -1,0 +1,60 @@
+name: Temporary Format QA
+
+on:
+  push:
+    branches: [audit/parity-ui-tts-20260911]
+    paths:
+      - .github/workflows/format-qa.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format universal appearance changes
+        run: |
+          pnpm exec prettier --write \
+            .github/workflows/ci.yml \
+            apps/web/e2e/appearance-preferences.spec.ts \
+            apps/web/src/backup-settings.test.ts \
+            apps/web/src/ui-preferences-panel.tsx \
+            apps/web/src/ui-preferences.css \
+            apps/web/src/ui-preferences.test.ts \
+            apps/web/src/ui-preferences.ts \
+            docs/discovery/feature-parity-matrix.md \
+            docs/superpowers/plans/2026-09-12-balanced-universal-appearance-ci.md
+          git diff --check
+      - name: Commit formatting if needed
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/ci.yml \
+            apps/web/e2e/appearance-preferences.spec.ts \
+            apps/web/src/backup-settings.test.ts \
+            apps/web/src/ui-preferences-panel.tsx \
+            apps/web/src/ui-preferences.css \
+            apps/web/src/ui-preferences.test.ts \
+            apps/web/src/ui-preferences.ts \
+            docs/discovery/feature-parity-matrix.md \
+            docs/superpowers/plans/2026-09-12-balanced-universal-appearance-ci.md
+          git commit -m "style: format universal appearance changes"
+          git push origin HEAD:audit/parity-ui-tts-20260911
