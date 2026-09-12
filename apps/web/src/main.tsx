@@ -5,6 +5,7 @@ import { installGlobalDiagnostics, recordDiagnostic } from "./diagnostics.js";
 import { runStorageMigrations } from "./storage.js";
 import "./styles.css";
 import "./ui-hardening.css";
+import "./calm-liturgical.css";
 
 runStorageMigrations();
 installGlobalDiagnostics();
