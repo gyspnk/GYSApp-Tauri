@@ -2,6 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
+// This contract deliberately writes screenshots from real Chromium so visual
+// acceptance is based on the rendered application rather than a mockup.
 const previewDir = path.resolve("test-results", "ui-preview");
 
 async function openAppearance(page: Page): Promise<void> {
