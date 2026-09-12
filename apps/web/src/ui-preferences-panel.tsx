@@ -37,7 +37,8 @@ const DENSITY_OPTIONS: readonly PreferenceOption<UiDensity>[] = [
   {
     value: "compact",
     label: "Ringkas",
-    description: "Lebih banyak konten di desktop tanpa mengecilkan target sentuh.",
+    description:
+      "Lebih banyak konten di desktop tanpa mengecilkan target sentuh.",
     sample: "Aa−",
   },
 ] as const;
@@ -307,7 +308,11 @@ export function UiPreferencesPanel() {
 
               <footer className="ui-preferences-footer">
                 <span>Target sentuh tetap aman pada mode Ringkas.</span>
-                <button type="button" className="primary-button" onClick={close}>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={close}
+                >
                   Selesai
                 </button>
               </footer>

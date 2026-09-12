@@ -32,7 +32,10 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   await page.setViewportSize({ width: 768, height: 1024 });
   const { dialog } = await openAppearance(page);
 
-  await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "standard",
+  );
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
 
   await dialog.getByRole("radio", { name: /^Nyaman/ }).click();
@@ -58,9 +61,9 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   );
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "hymnal");
 
-  const headingFont = await page.locator("h1").evaluate(
-    (element) => getComputedStyle(element).fontFamily,
-  );
+  const headingFont = await page
+    .locator("h1")
+    .evaluate((element) => getComputedStyle(element).fontFamily);
   expect(headingFont.toLowerCase()).toContain("playfair");
 });
 
@@ -70,9 +73,14 @@ test("compact mode stays touch-safe and keeps mobile sheet controls reachable", 
   await page.setViewportSize({ width: 390, height: 844 });
   const { dialog } = await openAppearance(page);
   await dialog.getByRole("radio", { name: /^Ringkas/ }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-ui-density", "compact");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "compact",
+  );
 
-  const heading = dialog.getByRole("heading", { name: "Tampilan & keterbacaan" });
+  const heading = dialog.getByRole("heading", {
+    name: "Tampilan & keterbacaan",
+  });
   const closeButton = dialog.getByRole("button", {
     name: "Tutup pengaturan tampilan",
   });
@@ -83,14 +91,18 @@ test("compact mode stays touch-safe and keeps mobile sheet controls reachable", 
   const undersized = await navTargets.evaluateAll((elements) =>
     elements.flatMap((element) => {
       const rect = element.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && (rect.width < 43.5 || rect.height < 43.5)
+      return rect.width > 0 &&
+        rect.height > 0 &&
+        (rect.width < 43.5 || rect.height < 43.5)
         ? [`${rect.width}x${rect.height}`]
         : [];
     }),
   );
   expect(undersized).toEqual([]);
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
     .toBe(true);
 
   await savePreview(page, "appearance-compact-phone-390x844.png");
@@ -104,21 +116,28 @@ test("standard desktop, automatic font, and sans font remain readable", async ({
   await dialog.getByRole("radio", { name: /^Standar/ }).click();
   await dialog.getByRole("radio", { name: /^Sans modern/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "sans");
-  const sansHeadingFont = await dialog.locator("h2").evaluate(
-    (element) => getComputedStyle(element).fontFamily,
-  );
+  const sansHeadingFont = await dialog
+    .locator("h2")
+    .evaluate((element) => getComputedStyle(element).fontFamily);
   expect(sansHeadingFont.toLowerCase()).not.toContain("playfair");
 
   await dialog.getByRole("radio", { name: /^Otomatis/ }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-ui-density", "standard");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "standard",
+  );
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
     .toBe(true);
   await savePreview(page, "appearance-standard-desktop-1440x900.png");
 });
 
-test("appearance controls stay legible with the existing dark theme", async ({ page }) => {
+test("appearance controls stay legible with the existing dark theme", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("gys-theme", "dark");
   });
@@ -152,7 +171,7 @@ test("reduced motion keeps the appearance panel usable without nonessential anim
   const transitionDuration = await dialog.evaluate(
     (element) => getComputedStyle(element).transitionDuration,
   );
-  expect(transitionDuration.split(",").every((value) => value.trim() === "0s")).toBe(
-    true,
-  );
+  expect(
+    transitionDuration.split(",").every((value) => value.trim() === "0s"),
+  ).toBe(true);
 });

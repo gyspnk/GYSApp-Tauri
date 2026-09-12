@@ -39,10 +39,7 @@ describe("ui preferences", () => {
 
   it("applies density and font as document data attributes", () => {
     const root = { dataset: {} as Record<string, string> };
-    applyUiPreferences(
-      { version: 1, density: "compact", font: "sans" },
-      root,
-    );
+    applyUiPreferences({ version: 1, density: "compact", font: "sans" }, root);
     expect(root.dataset.uiDensity).toBe("compact");
     expect(root.dataset.uiFont).toBe("sans");
   });

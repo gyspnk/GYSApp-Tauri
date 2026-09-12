@@ -13,10 +13,12 @@
 ## Task 1: Lock preference behavior with failing unit tests
 
 **Files:**
+
 - Create: `apps/web/src/ui-preferences.test.ts`
 - Create later: `apps/web/src/ui-preferences.ts`
 
 **Steps:**
+
 1. Add tests for defaults (`standard` + `auto`), invalid stored values, persistence, document dataset application, and subscriber notification.
 2. Push tests before production code and verify CI fails because the preference module does not exist.
 3. Implement only the preference module needed by the tests.
@@ -25,6 +27,7 @@
 ## Task 2: Add the real UI and browser contract
 
 **Files:**
+
 - Create: `apps/web/src/ui-preferences-panel.tsx`
 - Modify: `apps/web/src/main.tsx`
 - Modify: `apps/web/src/calm-liturgical.css`
@@ -32,6 +35,7 @@
 - Create: `apps/web/e2e/appearance-preferences.spec.ts`
 
 **Steps:**
+
 1. Browser test first: panel is reachable in `Lainnya`, density and font changes apply immediately, persist across navigation/reload, compact mode preserves mobile 44px targets, and reduced-motion removes nonessential motion.
 2. Browser test writes QA screenshots for phone/tablet/desktop states into Playwright test output.
 3. Implement a polished `Tampilan & Keterbacaan` panel with `Nyaman`, `Standar`, `Ringkas` and `Otomatis`, `Himne`, `Sans modern` font choices.
@@ -42,10 +46,12 @@
 ## Task 3: Complete the motion system safely
 
 **Files:**
+
 - Modify: `apps/web/src/calm-liturgical.css`
 - Verify with: `apps/web/e2e/appearance-preferences.spec.ts`, existing navigation/media/sidebar specs
 
 **Steps:**
+
 1. Define shared 160/200/240ms motion tokens and a non-bouncy ease-out curve.
 2. Apply transition properties only to stateful shell/navigation/media/panel/popover surfaces; avoid `transition: all` and continuous decorative animation.
 3. Use transform/opacity for the new panel entrance and state affordances.
@@ -54,11 +60,13 @@
 ## Task 4: Make draft PR browser feedback selective
 
 **Files:**
+
 - Create: `scripts/test-e2e-selective-ui.test.mjs`
 - Modify: `scripts/test-e2e-selective-core.mjs`
 - Modify: `.github/workflows/ci.yml`
 
 **Steps:**
+
 1. Add a failing resolver test proving `ui-preferences`/appearance CSS changes include the appearance, smoke, navigation, accessibility and universal-usability browser contracts.
 2. Update the resolver minimally until the test passes.
 3. On draft PRs, run one selective browser job using exact PR base/head SHAs and the already verified build artifact.
@@ -69,9 +77,11 @@
 ## Task 5: Measure and visually inspect
 
 **Files:**
+
 - Existing visual suites plus new appearance suite
 
 **Steps:**
+
 1. Inspect draft workflow timings against the existing full-suite baseline.
 2. Download Playwright screenshots generated from real Chromium.
 3. Visually inspect at least 390x844, 768x1024 and 1440x900; inspect standard, comfortable and compact states, panel open/closed, light/dark when exercised.
@@ -80,6 +90,7 @@
 ## Task 6: Final exact-head acceptance
 
 **Steps:**
+
 1. Mark PR ready for review.
 2. Require the new head to pass format/docs/generated/audit, build, unit/policy, bundle, security, native Windows and full two-shard Playwright.
 3. Inspect browser artifacts and final screenshots from that same final head.

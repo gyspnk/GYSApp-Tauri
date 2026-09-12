@@ -91,7 +91,10 @@ export function writeUiPreferences(
   patch: Partial<Pick<UiPreferences, "density" | "font">>,
   storage: UiPreferenceStorage = browserStorage(),
 ): UiPreferences {
-  const next = normalizeUiPreferences({ ...readUiPreferences(storage), ...patch });
+  const next = normalizeUiPreferences({
+    ...readUiPreferences(storage),
+    ...patch,
+  });
   try {
     storage.setItem(UI_PREFERENCES_STORAGE_KEY, JSON.stringify(next));
   } catch {
@@ -113,10 +116,12 @@ export function getUiPreferences(): UiPreferences {
   return currentPreferences;
 }
 
-export function initializeUiPreferences(options: {
-  storage?: UiPreferenceStorage;
-  root?: UiPreferenceRoot;
-} = {}): UiPreferences {
+export function initializeUiPreferences(
+  options: {
+    storage?: UiPreferenceStorage;
+    root?: UiPreferenceRoot;
+  } = {},
+): UiPreferences {
   const next = readUiPreferences(options.storage ?? browserStorage());
   currentPreferences = next;
   applyUiPreferences(next, options.root ?? browserRoot());
