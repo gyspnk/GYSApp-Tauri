@@ -1,0 +1,42 @@
+name: Agent accept reviewed visuals
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/agent-accept-visuals.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  accept-visuals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Regenerate reviewed visual baselines
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts --update-snapshots
+      - name: Commit changed Linux baselines only
+        run: |
+          git add apps/web/e2e/visual.spec.ts-snapshots/*-linux.png apps/web/e2e/visual-reading.spec.ts-snapshots/*-linux.png
+          if git diff --cached --quiet; then
+            echo "No visual baseline changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test: accept reviewed calm UI baselines"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
