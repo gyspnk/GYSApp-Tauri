@@ -27,9 +27,8 @@ describe("Edge speech retry availability", () => {
     vi.stubGlobal("window", {});
     vi.stubGlobal("__TAURI_INTERNALS__", { invoke: vi.fn() });
 
-    const { EdgeSpeechProvider, isEdgeSpeechConfigured } = await import(
-      "./edge-speech.js"
-    );
+    const { EdgeSpeechProvider, isEdgeSpeechConfigured } =
+      await import("./edge-speech.js");
     const provider = new EdgeSpeechProvider();
 
     expect(isEdgeSpeechConfigured()).toBe(true);
