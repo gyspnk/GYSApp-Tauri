@@ -32,6 +32,20 @@ function cacheStorage() {
   };
 }
 
+function localStorageMock(initial: Record<string, string> = {}) {
+  const values = new Map(Object.entries(initial));
+  return {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+    key: (index: number) => [...values.keys()][index] ?? null,
+    get length() {
+      return values.size;
+    },
+  };
+}
+
 describe("BrowserAssetStore", () => {
   it("shares one in-flight download for simultaneous callers", async () => {
     const originalWindow = globalThis.window;
@@ -67,6 +81,45 @@ describe("BrowserAssetStore", () => {
       if (originalCaches === undefined)
         delete (globalThis as { caches?: unknown }).caches;
       else vi.stubGlobal("caches", originalCaches);
+    }
+  });
+
+  it("removes stale index metadata when Cache Storage payload was evicted", async () => {
+    const originalWindow = globalThis.window;
+    const originalCaches = globalThis.caches;
+    const originalLocalStorage = globalThis.localStorage;
+    const caches = cacheStorage();
+    const storage = localStorageMock({
+      "gys-asset-index-v1": JSON.stringify({
+        [item.id]: {
+          id: item.id,
+          version: item.version,
+          cacheName: "gys-assets-v1-demo-midi-v1",
+          url: item.url,
+          bytes: 4,
+          storedAt: "2026-09-12T00:00:00.000Z",
+        },
+      }),
+    });
+    vi.stubGlobal("window", { caches });
+    vi.stubGlobal("caches", caches);
+    vi.stubGlobal("localStorage", storage);
+
+    try {
+      const store = new BrowserAssetStore();
+      expect(store.stats()).toEqual({ entries: 1, bytes: 4 });
+      await expect(store.get(item)).resolves.toBeUndefined();
+      expect(store.stats()).toEqual({ entries: 0, bytes: 0 });
+    } finally {
+      if (originalWindow === undefined)
+        delete (globalThis as { window?: unknown }).window;
+      else vi.stubGlobal("window", originalWindow);
+      if (originalCaches === undefined)
+        delete (globalThis as { caches?: unknown }).caches;
+      else vi.stubGlobal("caches", originalCaches);
+      if (originalLocalStorage === undefined)
+        delete (globalThis as { localStorage?: unknown }).localStorage;
+      else vi.stubGlobal("localStorage", originalLocalStorage);
     }
   });
 });
