@@ -443,14 +443,20 @@
   .ui-preferences-panel {
     width: 100%;
     max-height: calc(100dvh - 8px);
-    padding: 20px 16px calc(18px + env(safe-area-inset-bottom));
+    padding: 0 16px calc(18px + env(safe-area-inset-bottom));
     border-bottom: 0;
     border-radius: 16px 16px 0 0;
     animation-name: ui-preferences-sheet-in;
   }
 
   .ui-preferences-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     gap: 12px;
+    margin-inline: -16px;
+    padding: 20px 16px 16px;
+    background: var(--surface);
   }
 
   .ui-preferences-section-heading {
