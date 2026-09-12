@@ -116,6 +116,21 @@ test("standard desktop, automatic font, and sans font remain readable", async ({
   await savePreview(page, "appearance-standard-desktop-1440x900.png");
 });
 
+test("appearance controls stay legible with the existing dark theme", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("gys-theme", "dark");
+  });
+  await page.setViewportSize({ width: 768, height: 1024 });
+  const { dialog } = await openAppearance(page);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await dialog.getByRole("radio", { name: /^Nyaman/ }).click();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "comfortable",
+  );
+  await savePreview(page, "appearance-dark-comfortable-tablet-768x1024.png");
+});
+
 test("Escape closes appearance settings and restores focus to the launcher", async ({
   page,
 }) => {
