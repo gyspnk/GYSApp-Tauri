@@ -42,11 +42,12 @@ test("direct literature PDF exposes the document in the first mobile viewport", 
   const canvasTop = await canvas.evaluate(
     (element) => element.getBoundingClientRect().top,
   );
-  expect(canvasTop).toBeLessThan(844);
+  expect(canvasTop).toBeLessThan(700);
 
   const tools = page.locator(".literature-reading-tools");
   await expect(tools).toBeVisible();
   await expect(tools).not.toHaveAttribute("open", "");
+  await expect(tools.locator("summary")).toContainText(/kemajuan.*offline/i);
 
   await expect
     .poll(() =>
