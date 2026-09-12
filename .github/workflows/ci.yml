@@ -35,10 +35,9 @@ jobs:
       - run: pnpm verify:generated
       - run: pnpm verify:docs
       - run: pnpm format:check
-      # Root build in the parallel e2e job runs the same tsc project builds that
-      # previously backed both `lint` and `typecheck`. Keep one canonical compile
-      # path instead of executing identical TypeScript gates three times.
-      - run: pnpm test
+      # Keep this job compile-free so it returns cheap structural feedback in
+      # parallel. The e2e job builds the workspace once, then runs every unit
+      # suite against those outputs before browser verification.
       - run: pnpm audit --prod
 
   e2e:
@@ -55,6 +54,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build and typecheck once
         run: pnpm build
+      - name: Run unit and policy suites against the built workspace
+        run: pnpm test
       - run: pnpm verify:native-assets
       - run: pnpm verify:bundle
       - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
@@ -84,16 +85,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      # Formatting does not need dependency artifacts. Fail here before paying
+      # the ~20s warm-cache restore cost when a Rust file only needs rustfmt.
+      - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
       - name: Restore Rust dependency and target cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "apps/native/src-tauri -> target"
-          # The previous namespace was first populated from partial runs. GitHub
-          # cache entries are immutable, so an exact but incomplete cache could
-          # never be replaced. Start clean and save only fully successful jobs.
+          # The v2 namespace was populated only from a fully successful job.
+          # A warm restore cuts native verification from ~7m10s to ~2m20s.
           shared-key: native-windows-v2
           cache-on-failure: false
-      - run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
-      - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
+      # cargo test compiles the native test targets and clippy --all-targets
+      # performs the static compile/lint pass. A separate cargo check repeated
+      # the dev-profile compilation (~42s on the measured warm run).
       - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
       - run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets -- -D warnings
