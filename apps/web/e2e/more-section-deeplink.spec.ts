@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-async function isInViewport(page: import("@playwright/test").Page, selector: string) {
+async function isInViewport(
+  page: import("@playwright/test").Page,
+  selector: string,
+) {
   return page.locator(selector).evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return rect.top >= 0 && rect.top < window.innerHeight;
@@ -31,4 +34,10 @@ test("More keeps account first but data deep link reveals asset management", asy
   await expect
     .poll(() => isInViewport(page, ".distributed-assets-card"))
     .toBe(true);
+
+  const heading = page.getByRole("heading", { name: "Manajemen Aset" });
+  await expect(heading).toBeVisible();
+  const headingBox = await heading.boundingBox();
+  expect(headingBox).not.toBeNull();
+  expect(headingBox!.y).toBeGreaterThanOrEqual(64);
 });
