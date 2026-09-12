@@ -1,5 +1,4 @@
-const PREVIEW_COMMAND =
-  "pnpm exec vite preview --host 127.0.0.1 --port 4173";
+const PREVIEW_COMMAND = "pnpm exec vite preview --host 127.0.0.1 --port 4173";
 
 export function resolveE2eServerCommand(
   env: Readonly<Record<string, string | undefined>>,
