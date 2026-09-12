@@ -133,6 +133,18 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
 
     if (
+      file.includes("ui-preferences") ||
+      file.includes("calm-liturgical.css")
+    ) {
+      specFiles.add("e2e/appearance-preferences.spec.ts");
+      specFiles.add("e2e/smoke.spec.ts");
+      specFiles.add("e2e/navigation-layout.spec.ts");
+      specFiles.add("e2e/accessibility.spec.ts");
+      specFiles.add("e2e/universal-usability.spec.ts");
+      runSmokeAll = true;
+    }
+
+    if (
       file.includes("App.tsx") ||
       file.includes("styles.css") ||
       file.includes("ui-hardening.css") ||

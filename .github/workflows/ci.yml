@@ -72,7 +72,56 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  # Draft PRs need fast feedback while implementation is still moving. The
+  # synchronize event supplies the prior head SHA, so ordinary pushes exercise
+  # only the changed surface. Open/reopened draft PRs fall back to the PR base.
+  e2e-selective:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+    needs: web-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore verified build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-build-${{ github.run_id }}
+          path: .
+      - run: pnpm --filter @gys/web exec playwright install --with-deps --only-shell chromium
+      - name: Run browser contracts affected by this draft update
+        env:
+          GYS_E2E_PREBUILT: "1"
+          GYS_E2E_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+          GYS_E2E_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
+      - name: Upload selective browser diagnostics on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-selective-failures-${{ github.run_id }}
+          path: apps/web/test-results
+          if-no-files-found: ignore
+      - name: Upload selective visual QA previews
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-preview-selective-${{ github.run_id }}
+          path: apps/web/test-results/ui-preview
+          if-no-files-found: ignore
+          retention-days: 7
+
   e2e-shard:
+    if: ${{ github.event_name == 'push' || github.event.pull_request.draft == false }}
     needs: web-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -110,17 +159,31 @@ jobs:
           name: e2e-shard-${{ matrix.shard }}-failures-${{ github.run_id }}
           path: apps/web/test-results
           if-no-files-found: ignore
+      - name: Upload full-suite visual QA previews
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-preview-full-${{ matrix.shard }}-${{ github.run_id }}
+          path: apps/web/test-results/ui-preview
+          if-no-files-found: ignore
+          retention-days: 7
 
-  # Preserve the stable e2e check name for branch protection while the actual
-  # full suite runs in two measured, deterministic shards above.
+  # Preserve the stable e2e check name for branch protection. Exactly one of
+  # the two paths is expected to execute: selective for draft PRs, full shards
+  # for ready PRs/main.
   e2e:
     if: ${{ always() }}
-    needs: e2e-shard
+    needs: [e2e-selective, e2e-shard]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Require every browser shard to pass
-        run: test "${{ needs.e2e-shard.result }}" = "success"
+      - name: Require the applicable browser verification path to pass
+        run: |
+          if [ "${{ needs.e2e-selective.result }}" = "success" ] || [ "${{ needs.e2e-shard.result }}" = "success" ]; then
+            exit 0
+          fi
+          echo "Neither selective nor full browser verification succeeded."
+          exit 1
 
   secret-scan:
     runs-on: ubuntu-latest
