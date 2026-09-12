@@ -65,7 +65,9 @@ export function collectChangedFiles({
 
 export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   if (userArgs.includes("--all") || userArgs.includes("-a")) {
-    const filtered = userArgs.filter((arg) => arg !== "--all" && arg !== "-a");
+    const filtered = userArgs.filter(
+      (arg) => arg !== "--all" && arg !== "-a",
+    );
     return { description: "Full test suite (--all requested)", args: filtered };
   }
 
