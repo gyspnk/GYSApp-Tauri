@@ -88,8 +88,11 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "apps/native/src-tauri -> target"
-          shared-key: native-windows
-          cache-on-failure: true
+          # The previous namespace was first populated from partial runs. GitHub
+          # cache entries are immutable, so an exact but incomplete cache could
+          # never be replaced. Start clean and save only fully successful jobs.
+          shared-key: native-windows-v2
+          cache-on-failure: false
       - run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
       - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
       - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
