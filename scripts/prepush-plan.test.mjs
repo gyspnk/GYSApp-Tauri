@@ -8,10 +8,7 @@ test("pre-push verification compiles the TypeScript workspace only once", () => 
     .filter((step) => step.command === "pnpm")
     .map((step) => step.args.join(" "));
 
-  assert.equal(
-    pnpmCommands.filter((command) => command === "build").length,
-    1,
-  );
+  assert.equal(pnpmCommands.filter((command) => command === "build").length, 1);
   assert.equal(pnpmCommands.includes("lint"), false);
   assert.equal(pnpmCommands.includes("typecheck"), false);
 });
@@ -20,7 +17,8 @@ test("full browser verification reuses the pre-push build", () => {
   const plan = createPrepushPlan();
   const e2e = plan.find(
     (step) =>
-      step.command === "pnpm" && step.args.join(" ") === "--filter @gys/web test:e2e",
+      step.command === "pnpm" &&
+      step.args.join(" ") === "--filter @gys/web test:e2e",
   );
 
   assert.ok(e2e, "full web e2e step should remain in pre-push verification");
@@ -29,8 +27,8 @@ test("full browser verification reuses the pre-push build", () => {
 
 test("pre-push still keeps non-duplicate quality and native gates", () => {
   const plan = createPrepushPlan();
-  const commands = plan.map(
-    (step) => `${step.command} ${step.args.join(" ")}`.trim(),
+  const commands = plan.map((step) =>
+    `${step.command} ${step.args.join(" ")}`.trim(),
   );
 
   for (const expected of [
@@ -47,6 +45,9 @@ test("pre-push still keeps non-duplicate quality and native gates", () => {
     "pnpm verify:bundle",
     "pnpm --filter @gys/web test:e2e",
   ]) {
-    assert.ok(commands.includes(expected), `missing pre-push gate: ${expected}`);
+    assert.ok(
+      commands.includes(expected),
+      `missing pre-push gate: ${expected}`,
+    );
   }
 });
