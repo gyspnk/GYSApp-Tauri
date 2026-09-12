@@ -51,6 +51,19 @@ test("tablet rail keeps every primary destination named and easy to acquire", as
   await expectNoHorizontalOverflow(page);
 });
 
+test("tablet home section actions stay on one line", async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto("/GYSApp-Tauri/");
+
+  const actions = page.locator(
+    ".home-media-section .section-title-row > .text-button",
+  );
+  await expect(actions).toHaveCount(2);
+  for (let index = 0; index < 2; index += 1) {
+    await expect(actions.nth(index)).toHaveCSS("white-space", "nowrap");
+  }
+});
+
 test("phone shell keeps navigation labels readable and common actions finger sized", async ({
   page,
 }) => {
