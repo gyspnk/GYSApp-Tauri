@@ -97,7 +97,11 @@ jobs:
         with:
           name: e2e-build-${{ github.run_id }}
           path: .
-      - run: pnpm --filter @gys/web exec playwright install --with-deps --only-shell chromium
+      # GitHub's Ubuntu image already carries Chromium runtime libraries. Avoid
+      # Playwright's apt/font bootstrap and download only the headless browser
+      # payload actually exercised by CI. The browser contract below proves the
+      # runner remains sufficient on every image revision.
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run browser contracts affected by this draft update
         env:
           GYS_E2E_PREBUILT: "1"
@@ -144,10 +148,10 @@ jobs:
         with:
           name: e2e-build-${{ github.run_id }}
           path: .
-      # CI runs Chromium headlessly, so downloading the full headed Chromium
-      # bundle is redundant. Keep system dependencies while installing only the
-      # headless shell actually used by Playwright.
-      - run: pnpm --filter @gys/web exec playwright install --with-deps --only-shell chromium
+      # CI runs Chromium headlessly. The hosted image already provides the
+      # runtime libraries, so skip redundant apt/font installation and fetch
+      # only the headless shell used by Playwright.
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run full browser shard ${{ matrix.shard }}/2
         env:
           GYS_E2E_PREBUILT: "1"
