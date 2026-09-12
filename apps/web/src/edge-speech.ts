@@ -8,7 +8,7 @@ import { recordDiagnostic } from "./diagnostics.js";
 import {
   canUseNativeEdgeTransport,
   synthesizeEdgeDirect,
-} from "./edge-direct.js";
+} from "./edge-direct-safe.js";
 
 /**
  * Edge-compatible neural speech supports two online transports:
