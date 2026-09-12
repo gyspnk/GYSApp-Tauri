@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
 import { installGlobalDiagnostics, recordDiagnostic } from "./diagnostics.js";
+import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
 import "./styles.css";
 import "./ui-hardening.css";
@@ -48,6 +49,7 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
+installRouteSectionDeepLinks();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   let refreshing = false;
