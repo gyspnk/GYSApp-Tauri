@@ -1,0 +1,42 @@
+name: Agent calm UI visual audit
+
+on:
+  pull_request:
+    paths:
+      - "apps/web/src/**"
+      - "apps/web/e2e/**"
+      - ".github/workflows/agent-calm-ui-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
+      - name: Verify universal usability behavior
+        run: pnpm --filter @gys/web exec playwright test e2e/universal-usability.spec.ts e2e/ux-refinement.spec.ts
+      - name: Render current visual surfaces without accepting baselines
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts --update-snapshots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calm-ui-visual-evidence-${{ github.run_id }}
+          path: |
+            apps/web/e2e/visual.spec.ts-snapshots/*.png
+            apps/web/e2e/visual-reading.spec.ts-snapshots/*.png
+            apps/web/test-results/**/*.png
+          if-no-files-found: error
