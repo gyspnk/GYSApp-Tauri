@@ -1,0 +1,40 @@
+name: Agent format calm UI docs
+
+on:
+  pull_request:
+    paths:
+      - "docs/superpowers/specs/2026-09-12-calm-liturgical-utility.md"
+      - "docs/superpowers/plans/2026-09-12-calm-liturgical-utility.md"
+      - ".github/workflows/agent-format-calm-plan.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format design docs
+        run: pnpm exec prettier --write docs/superpowers/specs/2026-09-12-calm-liturgical-utility.md docs/superpowers/plans/2026-09-12-calm-liturgical-utility.md
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/superpowers/specs/2026-09-12-calm-liturgical-utility.md docs/superpowers/plans/2026-09-12-calm-liturgical-utility.md
+          git commit -m "chore: format calm UI design docs"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
