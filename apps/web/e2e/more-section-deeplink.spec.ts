@@ -35,6 +35,9 @@ test("More keeps account first but data deep link reveals asset management", asy
     .poll(() => isInViewport(page, ".distributed-assets-card"))
     .toBe(true);
 
+  // Asset metadata can finish rendering after the route itself is ready. Verify
+  // the settled scroll position rather than accepting a transient first frame.
+  await page.waitForTimeout(500);
   const heading = page.getByRole("heading", { name: "Manajemen Aset" });
   await expect(heading).toBeVisible();
   const headingBox = await heading.boundingBox();
