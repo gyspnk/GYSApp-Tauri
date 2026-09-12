@@ -36,6 +36,7 @@ function settleWithin<T>(promise: Promise<T>, milliseconds = 25) {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("direct Edge transport hang hardening", () => {
@@ -60,6 +61,11 @@ describe("direct Edge transport hang hardening", () => {
 
   it("times out instead of hanging on a stalled disconnect handshake", async () => {
     vi.useFakeTimers();
+    vi.stubGlobal("crypto", {
+      subtle: {
+        digest: vi.fn(async () => new Uint8Array(32).buffer),
+      },
+    });
     const listeners = new Set<(message: EdgeSocketMessage) => void>();
     const socket: EdgeSocket = {
       addListener(listener) {
