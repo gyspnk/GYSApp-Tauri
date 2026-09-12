@@ -20,6 +20,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +42,7 @@ jobs:
 
   web-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -73,6 +75,7 @@ jobs:
   e2e-shard:
     needs: web-build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -111,12 +114,14 @@ jobs:
     if: ${{ always() }}
     needs: e2e-shard
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Require every browser shard to pass
         run: test "${{ needs.e2e-shard.result }}" = "success"
 
   secret-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -126,6 +131,7 @@ jobs:
 
   native-check:
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
