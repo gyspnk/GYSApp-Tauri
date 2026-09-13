@@ -37,7 +37,7 @@ jobs:
       - name: Refresh only Kidung and reader Linux baselines
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts --config=playwright.ci.config.ts --grep='^(kidung|reader) ' --update-snapshots
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts --config=playwright.ci.config.ts --grep='(kidung|reader) .* visual baseline' --update-snapshots
       - name: Verify exact baseline scope
         shell: bash
         run: |
