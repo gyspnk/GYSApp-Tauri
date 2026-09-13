@@ -1,24 +1,3 @@
-export type PdfZoomShortcut = "in" | "out" | "reset" | null;
-
-export function resolvePdfZoomShortcut(
-  event: Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey">,
-): PdfZoomShortcut {
-  if (!event.ctrlKey && !event.metaKey) return null;
-  if (event.key === "+" || event.key === "=") return "in";
-  if (event.key === "-" || event.key === "_") return "out";
-  if (event.key === "0") return "reset";
-  return null;
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return Boolean(
-    target.closest(
-      'input:not([type="button"]):not([type="submit"]), textarea, select, [contenteditable="true"]',
-    ),
-  );
-}
-
 function createZoomHud(stage: HTMLElement, value: string): HTMLElement {
   const existing = stage.querySelector<HTMLElement>(".pdf-zoom-hud");
   if (existing) return existing;
@@ -47,7 +26,14 @@ function enhancePdfReader(reader: HTMLElement): void {
     '.pdf-zoom-controls button[aria-label="Perkecil zoom"]',
   );
   const zoomReset = reader.querySelector<HTMLButtonElement>(".pdf-zoom-reset");
-  if (!stage || !indicator || !advancedToggle || !zoomIn || !zoomOut || !zoomReset)
+  if (
+    !stage ||
+    !indicator ||
+    !advancedToggle ||
+    !zoomIn ||
+    !zoomOut ||
+    !zoomReset
+  )
     return;
 
   reader.dataset.directManipulationReady = "true";
@@ -98,17 +84,13 @@ function enhancePdfReader(reader: HTMLElement): void {
     stage.focus({ preventScroll: true });
   });
 
+  // pdf.tsx already owns Ctrl/Cmd +/- globally. Keep that canonical handler
+  // single-owned; this layer only adds the missing reset shortcut.
   stage.addEventListener("keydown", (event) => {
-    if (isEditableTarget(event.target)) return;
-    const action = resolvePdfZoomShortcut(event);
-    if (!action) return;
-
-    const control =
-      action === "in" ? zoomIn : action === "out" ? zoomOut : zoomReset;
-    if (control.disabled) return;
-
+    if ((!event.ctrlKey && !event.metaKey) || event.key !== "0") return;
+    if (zoomReset.disabled) return;
     event.preventDefault();
-    control.click();
+    zoomReset.click();
     window.requestAnimationFrame(showZoomHud);
   });
 }
