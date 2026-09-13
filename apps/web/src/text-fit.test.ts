@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  autoFitTextSingleLine,
-  observeSingleLineFit,
-} from "./text-fit.js";
+import { autoFitTextSingleLine, observeSingleLineFit } from "./text-fit.js";
 
 type ResizeEntry = { contentRect: { width: number } };
 type ResizeCallback = (entries: ResizeEntry[]) => void;
@@ -70,13 +67,10 @@ describe("single-line autofit (gyschordweb autoFitTextSingleLine)", () => {
     };
     const documentQuery = vi.fn(() => [inside, outside]);
     vi.stubGlobal("document", { querySelectorAll: documentQuery });
-    vi.stubGlobal(
-      "requestAnimationFrame",
-      (callback: FrameRequestCallback) => {
-        callback(0);
-        return 1;
-      },
-    );
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
 
     const cleanup = observeSingleLineFit(
@@ -108,13 +102,10 @@ describe("single-line autofit (gyschordweb autoFitTextSingleLine)", () => {
 
     vi.stubGlobal("document", {});
     vi.stubGlobal("ResizeObserver", FakeResizeObserver);
-    vi.stubGlobal(
-      "requestAnimationFrame",
-      (callback: FrameRequestCallback) => {
-        callback(0);
-        return 1;
-      },
-    );
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
 
     const cleanup = observeSingleLineFit(

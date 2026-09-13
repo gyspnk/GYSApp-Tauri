@@ -35,10 +35,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
-      - name: Show canonical text-fit formatting
-        run: |
-          pnpm exec prettier apps/web/src/text-fit.test.ts > /tmp/text-fit-prettier.ts
-          diff -u apps/web/src/text-fit.test.ts /tmp/text-fit-prettier.ts || true
       - run: pnpm format:check
       # Keep this job compile-free so it returns cheap structural feedback in
       # parallel. Browser verification consumes one separately verified build.
