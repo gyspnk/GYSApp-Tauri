@@ -40,17 +40,18 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
     }
   });
 
-  await page.goto("/GYSApp-Tauri/", { waitUntil: "networkidle" });
-  const iconHref = await page.locator('link[rel="icon"]').getAttribute("href");
-  expect(iconHref).toMatch(/assets\/gys-mark\.svg$/);
+  await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });
+  const iconLink = page.locator('link[rel="icon"]');
+  await expect(iconLink).toHaveAttribute("href", /assets\/gys-mark\.svg$/);
+  const iconHref = await iconLink.getAttribute("href");
   const icon = await page.request.get(
     new URL(iconHref!, page.url()).toString(),
   );
   expect(icon.ok()).toBe(true);
 
-  const manifestHref = await page
-    .locator('link[rel="manifest"]')
-    .getAttribute("href");
+  const manifestLink = page.locator('link[rel="manifest"]');
+  await expect(manifestLink).toHaveAttribute("href", /manifest\.webmanifest$/);
+  const manifestHref = await manifestLink.getAttribute("href");
   expect(manifestHref).toBeTruthy();
   const manifestResponse = await page.request.get(
     new URL(manifestHref!, page.url()).toString(),
@@ -93,7 +94,7 @@ test("deep routes keep PWA metadata rooted at the Pages base path", async ({
   });
 
   await page.goto("/GYSApp-Tauri/kidung/hymn-508", {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
   });
   await expect(
     page.getByRole("heading", { name: "Sauh Jiwa Kita" }),

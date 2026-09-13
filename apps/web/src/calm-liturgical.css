@@ -1,0 +1,327 @@
+/* Calm Liturgical Utility
+   Final cross-app refinement layer. Keep this file focused on shared visual
+   grammar and universal usability; feature-specific layout stays with the
+   feature that owns it. */
+
+:root {
+  --control-hit: 44px;
+  --text-ui: 0.9375rem;
+  --text-meta: 0.75rem;
+  --calm-shadow:
+    0 1px 2px rgba(31, 66, 112, 0.05), 0 8px 24px rgba(31, 66, 112, 0.045);
+  --calm-shadow-raised:
+    0 2px 5px rgba(31, 66, 112, 0.08), 0 12px 28px rgba(31, 66, 112, 0.075);
+}
+
+:root[data-theme="dark"] {
+  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.14);
+  --calm-shadow-raised:
+    0 2px 5px rgba(0, 0, 0, 0.28), 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="amoled"] {
+  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.42);
+  --calm-shadow-raised:
+    0 2px 5px rgba(0, 0, 0, 0.68), 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="sepia"] {
+  --calm-shadow:
+    0 1px 2px rgba(92, 64, 51, 0.07), 0 8px 24px rgba(92, 64, 51, 0.055);
+  --calm-shadow-raised:
+    0 2px 5px rgba(92, 64, 51, 0.1), 0 12px 28px rgba(92, 64, 51, 0.08);
+}
+
+/* Common controls should be comfortable without looking oversized. */
+.search-trigger,
+.account-button,
+.primary-button,
+.quiet-button,
+button.text-button,
+.sidebar-collapse-toggle,
+.media-control {
+  min-block-size: var(--control-hit);
+}
+
+.search-trigger {
+  min-height: var(--control-hit);
+  padding-inline: 14px;
+}
+
+.search-trigger span {
+  font-size: 14px;
+}
+
+.account-button {
+  inline-size: var(--control-hit);
+  block-size: var(--control-hit);
+  min-inline-size: var(--control-hit);
+}
+
+button.text-button {
+  min-height: var(--control-hit);
+}
+
+.home-media-section .section-title-row > .text-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.brand small {
+  font-size: 11px;
+}
+
+.connection-status,
+.global-search-result small,
+.more-card > p,
+.account-sync-note {
+  line-height: 1.5;
+}
+
+.connection-status {
+  font-size: 12.5px;
+}
+
+.global-search-result strong {
+  font-size: 14.5px;
+}
+
+.global-search-result small {
+  font-size: 12.5px;
+}
+
+.more-card > p {
+  font-size: 14px;
+}
+
+.theme-pill-btn .pill-label,
+.accent-swatch-name {
+  font-size: 12px;
+}
+
+/* Calm surfaces: hierarchy comes from structure, not floating-card effects. */
+.verse-panel,
+.continue-panel,
+.more-card,
+.kidung-card,
+.global-search,
+.media-surface {
+  box-shadow: var(--calm-shadow);
+}
+
+.global-search,
+.media-surface {
+  border-color: var(--line-strong);
+}
+
+.search-trigger:hover,
+.account-button:hover,
+.global-search-result:hover,
+.global-search-result:focus-visible,
+.verse-panel:hover,
+.continue-panel:hover,
+.more-card:hover,
+.kidung-card:hover {
+  transform: none;
+}
+
+.search-trigger:hover,
+.account-button:hover {
+  box-shadow: none;
+}
+
+/* Active navigation must be obvious without needing motion or glow. */
+.navigation-shell .nav-active-indicator {
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
+  box-shadow: none;
+}
+
+.navigation-shell .nav-item {
+  min-block-size: var(--control-hit);
+}
+
+.navigation-shell .nav-copy strong {
+  line-height: 1.2;
+}
+
+/* Human-facing account/preferences lead the More page. Technical asset
+   management remains fully available in the DOM order that follows it. */
+.distributed-assets-card {
+  order: 0;
+}
+
+/* Give keyboard users the same clarity on native controls and disclosures. */
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline-offset: 3px;
+}
+
+/* Direct reading should foreground the document while keeping management
+   features available in an explicit, finger-sized disclosure. */
+.literature-reading-tools {
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.literature-reading-tools > summary {
+  min-height: var(--control-hit);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--blue);
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.literature-reading-tools > summary::-webkit-details-marker {
+  display: none;
+}
+
+.literature-reading-tools > summary::after {
+  content: "⌄";
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.literature-reading-tools[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.literature-reading-tools .literature-progress-actions {
+  margin-top: 8px;
+}
+
+/* Tablet is a compact labelled rail, not mystery icon navigation. The legacy
+   tablet rail used !important to force visual copy off, so the approved
+   labelled-rail contract intentionally overrides that rule only here. */
+@media (min-width: 600px) and (max-width: 959px) {
+  .workspace,
+  .workspace.is-sidebar-collapsed {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .navigation-shell,
+  .workspace.is-sidebar-collapsed .navigation-shell {
+    width: 92px;
+    padding: 22px 8px 20px;
+  }
+
+  .navigation-shell .sidebar-collapse-toggle {
+    display: none;
+  }
+
+  .navigation-shell .primary-nav {
+    gap: 6px;
+  }
+
+  .navigation-shell .nav-item,
+  .workspace.is-sidebar-collapsed .nav-item {
+    display: grid;
+    min-height: 60px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-content: center;
+    gap: 5px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+
+  .navigation-shell .nav-copy,
+  .workspace.is-sidebar-collapsed .navigation-shell .nav-copy {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    opacity: 1;
+    overflow: visible;
+    transform: none;
+    text-align: center;
+  }
+
+  .navigation-shell .nav-copy strong,
+  .workspace.is-sidebar-collapsed .navigation-shell .nav-copy strong {
+    display: block;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .navigation-shell .nav-copy small,
+  .workspace.is-sidebar-collapsed .navigation-shell .nav-copy small,
+  .navigation-shell .nav-item::after {
+    display: none;
+  }
+
+  .navigation-shell .sidebar-foot {
+    display: none !important;
+  }
+}
+
+/* Phone navigation stays compact, but its labels should remain readable. */
+@media (max-width: 599px) {
+  .navigation-shell .nav-copy strong {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  .navigation-shell .nav-item {
+    min-height: var(--control-hit);
+  }
+
+  .more-card.more-action {
+    min-height: 56px;
+  }
+
+  .literature-detail-page.is-direct-reader .literature-reading-panel {
+    padding-block: 12px;
+  }
+
+  .literature-detail-page.is-direct-reader
+    .literature-reading-panel
+    .section-title-row {
+    margin-bottom: 0;
+  }
+
+  .literature-detail-page.is-direct-reader .literature-progress-note {
+    line-height: 1.4;
+  }
+}
+
+/* Coarse pointers should never depend on hover choreography. */
+@media (hover: none), (pointer: coarse) {
+  .search-trigger:hover,
+  .account-button:hover,
+  .global-search-result:hover,
+  .verse-panel:hover,
+  .continue-panel:hover,
+  .more-card:hover,
+  .kidung-card:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .search-trigger,
+  .account-button,
+  .global-search-result,
+  .navigation-shell .nav-item,
+  .more-card,
+  .kidung-card,
+  .media-control,
+  .literature-reading-tools > summary::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

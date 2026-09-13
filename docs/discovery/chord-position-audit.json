@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-16T13:49:52.536Z",
+  "generatedAt": "2026-09-11T18:10:22.095Z",
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "a3d1ea7",
+  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
   "lockPath": "packages/contracts/generated/chord-manifest.json",
   "musicLockPath": "apps/web/public/offline/music-lock.json",
-  "chordCount": 144,
+  "chordCount": 155,
   "totals": {
-    "pdfPages": 163,
-    "auditedPages": 163,
-    "chordEntries": 3291,
-    "mappedEntries": 3291,
+    "pdfPages": 175,
+    "auditedPages": 175,
+    "chordEntries": 3596,
+    "mappedEntries": 3596,
     "orphanEntries": 0,
     "sentinelEntries": 2,
     "invalidEntries": 0
@@ -2148,6 +2148,96 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-106",
+      "chordPath": "assets/chord/106_Aku Murid Yesus.chord.json",
+      "chordBytes": 1691,
+      "chordSha256": "16721dbf3cd417cd72bb4523a419d21618778fb4c935040a549916010d56c1d1",
+      "pdfPath": "assets/pdf/106_Aku Murid Yesus.pdf",
+      "pdfBytes": 14901,
+      "pdfSha256": "244a15f695f9484b3c88cd4bf46a2d4084410c215fccf0891723df405bfdcc64",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 400,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0439
+            },
+            {
+              "noteIdx": 7,
+              "chord": "A#",
+              "position": 0.2992
+            },
+            {
+              "noteIdx": 12,
+              "chord": "F",
+              "position": 0.4652
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-108",
+      "chordPath": "assets/chord/108_Ikut Almasih.chord.json",
+      "chordBytes": 1946,
+      "chordSha256": "636277276d21840202e3fed796a70c0f169ca69e53f0560d585aabaea6ddd16f",
+      "pdfPath": "assets/pdf/108_Ikut Almasih.pdf",
+      "pdfBytes": 9661,
+      "pdfSha256": "761330667d14b824e1f4033297cb81bed4e8d4d9af18e95830468d42c14c0064",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 284,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 30,
+          "mappedEntries": 30,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "D#",
+              "position": 0.0475
+            },
+            {
+              "noteIdx": 5,
+              "chord": "G#",
+              "position": 0.3275
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D#",
+              "position": 0.4394
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 30,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-122",
       "chordPath": "assets/chord/122_Saling Mengasihi.chord.json",
       "chordBytes": 1005,
@@ -2964,6 +3054,79 @@
         }
       ],
       "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-196",
+      "chordPath": "assets/chord/196_Surga Indah.chord.json",
+      "chordBytes": 3246,
+      "chordSha256": "85fbfa404966200fd59370cf2d2c77fd43a94035fdf5e4a573add0e3dc5d2d30",
+      "pdfPath": "assets/pdf/196_Surga Indah.pdf",
+      "pdfBytes": 15702,
+      "pdfSha256": "e4b7085afa041c6f6c7c1462c3ba436645df8bbd016fce7c5723fdede2e2fc8a",
+      "pdfPages": 2,
+      "auditedPages": 2,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 288,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "F",
+              "position": 0.0403
+            },
+            {
+              "noteIdx": 3,
+              "chord": "A#",
+              "position": 0.1952
+            },
+            {
+              "noteIdx": 5,
+              "chord": "F",
+              "position": 0.3339
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "pdfNotes": 284,
+          "notationRows": 12,
+          "lyricRows": 3,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F",
+              "position": 0.0755
+            },
+            {
+              "noteIdx": 3,
+              "chord": "A#",
+              "position": 0.1557
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F",
+              "position": 0.3046
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 51,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -5410,6 +5573,96 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-271",
+      "chordPath": "assets/chord/271_Jangan Takut.chord.json",
+      "chordBytes": 1520,
+      "chordSha256": "26eed4cca1f837723260072550f2b3c3f188d3233a8abe71f3952240527d9f5f",
+      "pdfPath": "assets/pdf/271_Jangan Takut.pdf",
+      "pdfBytes": 10725,
+      "pdfSha256": "3912e0e837e9de025f87802883448056379eb4b41228010829e1b6761f39926f",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 264,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0363
+            },
+            {
+              "noteIdx": 6,
+              "chord": "A#m",
+              "position": 0.3828
+            },
+            {
+              "noteIdx": 10,
+              "chord": "F#",
+              "position": 0.6262
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-322",
+      "chordPath": "assets/chord/322_Kemuliaan Untuk Tuhan.chord.json",
+      "chordBytes": 1999,
+      "chordSha256": "779821a6af90868b7952d440fda1ec641ddd2b4190abd8533e976d6c0abe469e",
+      "pdfPath": "assets/pdf/322_Kemuliaan Untuk Tuhan.pdf",
+      "pdfBytes": 12280,
+      "pdfSha256": "860a58489228c4ab05a43dbac7983bcbe967d6f7c04dc18f9cc56f3806fc030c",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 441,
+          "notationRows": 16,
+          "lyricRows": 13,
+          "chordEntries": 31,
+          "mappedEntries": 31,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "F",
+              "position": 0.0956
+            },
+            {
+              "noteIdx": 5,
+              "chord": "Dm",
+              "position": 0.2393
+            },
+            {
+              "noteIdx": 8,
+              "chord": "C",
+              "position": 0.3556
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 31,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-330",
       "chordPath": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
       "chordBytes": 1446,
@@ -5641,6 +5894,51 @@
         }
       ],
       "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-363",
+      "chordPath": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+      "chordBytes": 1502,
+      "chordSha256": "837c72db7b07c789c2338ccf4649c15bc69b622c227cff2baf34065aa05fe8ee",
+      "pdfPath": "assets/pdf/363_Berpegang Pada JanjiNya.pdf",
+      "pdfBytes": 14270,
+      "pdfSha256": "d81cc8c2616b689850a1e0d1430b66c2671d7fbad98b7ad411574fba6c7e2c72",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 524,
+          "notationRows": 16,
+          "lyricRows": 17,
+          "chordEntries": 23,
+          "mappedEntries": 23,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "A",
+              "position": 0.0339
+            },
+            {
+              "noteIdx": 6,
+              "chord": "E",
+              "position": 0.1998
+            },
+            {
+              "noteIdx": 12,
+              "chord": "A",
+              "position": 0.3803
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 23,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -6034,6 +6332,51 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-398",
+      "chordPath": "assets/chord/398_Hidup Untuk Yesus.chord.json",
+      "chordBytes": 2155,
+      "chordSha256": "c112c12cac217631ab50faf490ad55ebf8d2934a781ddf199541086e6b9496e3",
+      "pdfPath": "assets/pdf/398_Hidup Untuk Yesus.pdf",
+      "pdfBytes": 10856,
+      "pdfSha256": "d7c79c3299068d741b4265ec83d5a6cc19b07da25c3a2fbe6be0a6116fb76e07",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 516,
+          "notationRows": 16,
+          "lyricRows": 12,
+          "chordEntries": 33,
+          "mappedEntries": 33,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.05
+            },
+            {
+              "noteIdx": 4,
+              "chord": "G#",
+              "position": 0.1875
+            },
+            {
+              "noteIdx": 8,
+              "chord": "F#m",
+              "position": 0.3251
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 33,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-405",
       "chordPath": "assets/chord/405_Berdoakah Engkau_.chord.json",
       "chordBytes": 1830,
@@ -6102,6 +6445,51 @@
         }
       ],
       "mappedEntries": 28,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-407",
+      "chordPath": "assets/chord/407_Dalam Taman.chord.json",
+      "chordBytes": 1376,
+      "chordSha256": "53c07eb36d8ce9d93b0b2e5d8740a4619179dacca0ec2d436466764428cf28ed",
+      "pdfPath": "assets/pdf/407_Dalam Taman.pdf",
+      "pdfBytes": 17273,
+      "pdfSha256": "bdce1802f9d6aa11b4a2099ad5721c3e74751aaa103e6daa7100e3ff1dac1e0e",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 364,
+          "notationRows": 12,
+          "lyricRows": 12,
+          "chordEntries": 21,
+          "mappedEntries": 21,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D",
+              "position": 0.1314
+            },
+            {
+              "noteIdx": 7,
+              "chord": "Bm",
+              "position": 0.3969
+            },
+            {
+              "noteIdx": 13,
+              "chord": "G",
+              "position": 0.6344
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 21,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -6703,6 +7091,96 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-466",
+      "chordPath": "assets/chord/466_Tiap Hari, Tiap Waktu.chord.json",
+      "chordBytes": 1210,
+      "chordSha256": "14a210602217263d92dbddb28a9123772befaf0cdc13bd9c25c9838ff18c3031",
+      "pdfPath": "assets/pdf/466_Tiap Hari, Tiap Waktu.pdf",
+      "pdfBytes": 13018,
+      "pdfSha256": "5a8833ef4a71fe715e1d9e27c73b767ddc57e511e73aa3cb006e5efd906f9b1b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 399,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "G#",
+              "position": 0.1466
+            },
+            {
+              "noteIdx": 9,
+              "chord": "A#m",
+              "position": 0.4477
+            },
+            {
+              "noteIdx": 14,
+              "chord": "D#",
+              "position": 0.6753
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 18,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-467",
+      "chordPath": "assets/chord/467_Percayalah Pada Yesus.chord.json",
+      "chordBytes": 1616,
+      "chordSha256": "72897f907cae6637d1636c727d4f12af7129e2a1b16d2d30cf401c489ed5fc1e",
+      "pdfPath": "assets/pdf/467_Percayalah Pada Yesus.pdf",
+      "pdfBytes": 9087,
+      "pdfSha256": "adba6dd4f5aa73f0522eead3090b7f4d1401cff1f69c58a56c8cc22fdf4f124b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 292,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 25,
+          "mappedEntries": 25,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D",
+              "position": 0.1031
+            },
+            {
+              "noteIdx": 6,
+              "chord": "Bm",
+              "position": 0.405
+            },
+            {
+              "noteIdx": 9,
+              "chord": "A",
+              "position": 0.5602
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 25,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-468",
       "chordPath": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
       "chordBytes": 1522,
@@ -6788,6 +7266,51 @@
         }
       ],
       "mappedEntries": 34,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-492",
+      "chordPath": "assets/chord/492_Allahku Yang Ajaib.chord.json",
+      "chordBytes": 1584,
+      "chordSha256": "de24a98d06c99beb89639e435e8a4456aaae04ad14cdcd0ec5ab88bf985d79e7",
+      "pdfPath": "assets/pdf/492_Allahku Yang Ajaib.pdf",
+      "pdfBytes": 17332,
+      "pdfSha256": "667a2bbb4ab74563b4e52ef9bbafa47c279648ced1ac6ad16876dcf1f3ab3a48",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 470,
+          "notationRows": 18,
+          "lyricRows": 14,
+          "chordEntries": 24,
+          "mappedEntries": 24,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "D#",
+              "position": 0.1565
+            },
+            {
+              "noteIdx": 9,
+              "chord": "G#",
+              "position": 0.4328
+            },
+            {
+              "noteIdx": 12,
+              "chord": "D#",
+              "position": 0.5501
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 24,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0

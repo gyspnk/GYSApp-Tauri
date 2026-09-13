@@ -1,0 +1,31 @@
+name: Edge TTS Live
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "apps/web/src/edge-direct.ts"
+      - "apps/web/src/edge-direct-safe.ts"
+      - "apps/web/src/edge-speech.ts"
+      - "apps/web/src/edge-direct*.test.ts"
+      - "scripts/edge-tts-live-smoke.mjs"
+      - ".github/workflows/edge-tts-live.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: edge-tts-live-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  live-keyless-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Synthesize Indonesian speech without an API key
+        run: node scripts/edge-tts-live-smoke.mjs

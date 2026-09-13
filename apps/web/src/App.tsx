@@ -82,6 +82,10 @@ import {
 } from "./settings.js";
 import { Icon } from "./icons.js";
 import { useBibleHeaderState } from "./bible-header-store.js";
+import {
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from "./shell-preferences.js";
 
 const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
@@ -1366,6 +1370,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
     );
   };
   const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (window.matchMedia("(max-width: 959px)").matches) return;
     const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
     if (!surface) return;
     const rect = surface.getBoundingClientRect();
@@ -1405,6 +1410,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
       event.currentTarget.releasePointerCapture(event.pointerId);
   };
   const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (window.matchMedia("(max-width: 959px)").matches) return;
     const directionByKey: Record<string, [number, number]> = {
       ArrowLeft: [-1, 0],
       ArrowRight: [1, 0],
@@ -1427,7 +1433,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
   };
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${dragging ? " is-dragging" : ""}`}
+      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}
       data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
@@ -1445,18 +1451,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
       aria-label={translate(locale, "shell.media")}
     >
-      {(isKidungMedia || speechActive) && !minimized && (
-        <button
-          className="media-collapse-toggle"
-          type="button"
-          onClick={() => setMinimized(true)}
-          aria-expanded="true"
-          aria-label="Ciutkan panel"
-        >
-          <span className="media-collapse-grip" aria-hidden="true" />
-          <Icon name="chevronDown" size={15} />
-        </button>
-      )}
       <div
         className="media-art media-drag-handle"
         title="Geser pemutar"
@@ -1952,7 +1946,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
           aria-label="Tutup pemutar suara"
           title="Tutup pemutar"
         >
-          ✕
+          <Icon name="cross" size={16} />
         </button>
       )}
       <button
@@ -1961,7 +1955,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         onClick={() => setMinimized((value) => !value)}
         aria-label={minimized ? "Perbesar pemutar" : "Minimalkan pemutar"}
       >
-        {minimized ? "↗" : "−"}
+        <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />
       </button>
     </aside>
   );
@@ -1980,6 +1974,17 @@ function Shell({
 }: ReturnType<typeof useAppSettings>) {
   const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    readSidebarCollapsed(
+      typeof window === "undefined" ? undefined : window.localStorage,
+    ),
+  );
+  useEffect(() => {
+    writeSidebarCollapsed(
+      typeof window === "undefined" ? undefined : window.localStorage,
+      sidebarCollapsed,
+    );
+  }, [sidebarCollapsed]);
   const location = useLocation();
   const isReaderRoute =
     location.pathname === "/bible" ||
@@ -2020,50 +2025,6 @@ function Shell({
     };
   }, []);
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const animateControl = (target: EventTarget | null) => {
-      if (reducedMotion.matches || !(target instanceof Element)) return;
-      const control = target.closest<HTMLElement>(
-        'button, summary, a[href], [role="button"]',
-      );
-      if (
-        !control ||
-        control.matches(":disabled, [aria-disabled='true']") ||
-        !control.animate
-      )
-        return;
-      control.animate(
-        [
-          { scale: "1", filter: "brightness(1)" },
-          { scale: "0.96", filter: "brightness(0.97)" },
-          { scale: "1", filter: "brightness(1)" },
-        ],
-        { duration: 190, easing: "cubic-bezier(.2,.8,.2,1)" },
-      );
-      control
-        .querySelector("svg")
-        ?.animate(
-          [
-            { transform: "rotate(0deg) scale(1)" },
-            { transform: "rotate(-5deg) scale(0.9)" },
-            { transform: "rotate(0deg) scale(1)" },
-          ],
-          { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" },
-        );
-    };
-    const onPointerDown = (event: PointerEvent) => animateControl(event.target);
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" || event.key === " ")
-        animateControl(event.target);
-    };
-    document.addEventListener("pointerdown", onPointerDown, { passive: true });
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
-  useEffect(() => {
     const onShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
@@ -2093,8 +2054,25 @@ function Shell({
         pathname={location.pathname}
         onFocusPageSearch={focusPageSearch}
       />
-      <div className="workspace">
+      <div
+        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}
+      >
         <aside className="navigation-shell">
+          <button
+            className="sidebar-collapse-toggle"
+            type="button"
+            onClick={() => setSidebarCollapsed((current) => !current)}
+            aria-expanded={!sidebarCollapsed}
+            aria-label={
+              sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"
+            }
+            title={sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"}
+          >
+            <Icon
+              name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}
+              size={17}
+            />
+          </button>
           <Navigation locale={locale} />
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>
@@ -2537,7 +2515,7 @@ function HomePage({ locale }: { locale: Locale }) {
                 <Link
                   className="suara-library-item"
                   key={item.id}
-                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                  to={`/literatur/${encodeURIComponent(item.id)}${item.format === "pdf" || item.format === "issue" ? "?read=1" : ""}`}
                 >
                   <div className="suara-card-media">
                     <LazyImage

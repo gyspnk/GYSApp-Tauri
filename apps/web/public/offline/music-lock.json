@@ -1,7 +1,7 @@
 {
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "a3d1ea7",
-  "generatedAt": "2026-08-16T13:54:48.918Z",
+  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
+  "generatedAt": "2026-09-11T18:10:18.732Z",
   "items": [
     {
       "id": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -7767,6 +7767,20 @@
       "sha256": "f4105afac7318f63e0e4bcb203f08134f399c527c0e612de65a2ca243ff9548e"
     },
     {
+      "id": "assets/chord/106_Aku Murid Yesus.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/106_Aku Murid Yesus.chord.json",
+      "size": 1691,
+      "sha256": "16721dbf3cd417cd72bb4523a419d21618778fb4c935040a549916010d56c1d1"
+    },
+    {
+      "id": "assets/chord/108_Ikut Almasih.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/108_Ikut Almasih.chord.json",
+      "size": 1946,
+      "sha256": "636277276d21840202e3fed796a70c0f169ca69e53f0560d585aabaea6ddd16f"
+    },
+    {
       "id": "assets/chord/122_Saling Mengasihi.chord.json",
       "kind": "chord",
       "path": "assets/chord/122_Saling Mengasihi.chord.json",
@@ -7884,6 +7898,13 @@
       "path": "assets/chord/179_Bersiap Masuk Surga.chord.json",
       "size": 1499,
       "sha256": "4c4628e8413cb1f9599a2bedff9a9b6c0ea47d842258d38783064b44fbb8c369"
+    },
+    {
+      "id": "assets/chord/196_Surga Indah.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/196_Surga Indah.chord.json",
+      "size": 3246,
+      "sha256": "85fbfa404966200fd59370cf2d2c77fd43a94035fdf5e4a573add0e3dc5d2d30"
     },
     {
       "id": "assets/chord/200_Merindukan Rumah di Surga.chord.json",
@@ -8257,6 +8278,20 @@
       "sha256": "1a1fc06efb7afd8f380c393bc1f6a082850e3e322dc90adde088e0b190b6f024"
     },
     {
+      "id": "assets/chord/271_Jangan Takut.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/271_Jangan Takut.chord.json",
+      "size": 1520,
+      "sha256": "26eed4cca1f837723260072550f2b3c3f188d3233a8abe71f3952240527d9f5f"
+    },
+    {
+      "id": "assets/chord/322_Kemuliaan Untuk Tuhan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/322_Kemuliaan Untuk Tuhan.chord.json",
+      "size": 1999,
+      "sha256": "779821a6af90868b7952d440fda1ec641ddd2b4190abd8533e976d6c0abe469e"
+    },
+    {
       "id": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
       "kind": "chord",
       "path": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
@@ -8283,6 +8318,13 @@
       "path": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
       "size": 1828,
       "sha256": "ef22c12ffc0d200ffce0513f0c0343db75cd666c0da7239cfb1fce1fc8b04bac"
+    },
+    {
+      "id": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+      "size": 1502,
+      "sha256": "837c72db7b07c789c2338ccf4649c15bc69b622c227cff2baf34065aa05fe8ee"
     },
     {
       "id": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
@@ -8341,11 +8383,25 @@
       "sha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585"
     },
     {
+      "id": "assets/chord/398_Hidup Untuk Yesus.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/398_Hidup Untuk Yesus.chord.json",
+      "size": 2155,
+      "sha256": "c112c12cac217631ab50faf490ad55ebf8d2934a781ddf199541086e6b9496e3"
+    },
+    {
       "id": "assets/chord/405_Berdoakah Engkau_.chord.json",
       "kind": "chord",
       "path": "assets/chord/405_Berdoakah Engkau_.chord.json",
       "size": 1830,
       "sha256": "dcd9971b992223154d827a8a44aa9cc4f3bb3a5bfffd6eb48be53fe2ccf4d26f"
+    },
+    {
+      "id": "assets/chord/407_Dalam Taman.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/407_Dalam Taman.chord.json",
+      "size": 1376,
+      "sha256": "53c07eb36d8ce9d93b0b2e5d8740a4619179dacca0ec2d436466764428cf28ed"
     },
     {
       "id": "assets/chord/411_Taman Doa Nan indah.chord.json",
@@ -8432,6 +8488,20 @@
       "sha256": "2b7056cf07eddf37bc9d5ce4982cdb1ee44a10b533fbcdc1d65df2ed433d51b5"
     },
     {
+      "id": "assets/chord/466_Tiap Hari, Tiap Waktu.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/466_Tiap Hari, Tiap Waktu.chord.json",
+      "size": 1210,
+      "sha256": "14a210602217263d92dbddb28a9123772befaf0cdc13bd9c25c9838ff18c3031"
+    },
+    {
+      "id": "assets/chord/467_Percayalah Pada Yesus.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/467_Percayalah Pada Yesus.chord.json",
+      "size": 1616,
+      "sha256": "72897f907cae6637d1636c727d4f12af7129e2a1b16d2d30cf401c489ed5fc1e"
+    },
+    {
       "id": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
       "kind": "chord",
       "path": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
@@ -8444,6 +8514,13 @@
       "path": "assets/chord/483_Hanya Satu Rencana.chord.json",
       "size": 2205,
       "sha256": "e493ca630d5fe5dc6ec8345a2f514f16d2656e9f815403d713c3d44baa911e40"
+    },
+    {
+      "id": "assets/chord/492_Allahku Yang Ajaib.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/492_Allahku Yang Ajaib.chord.json",
+      "size": 1584,
+      "sha256": "de24a98d06c99beb89639e435e8a4456aaae04ad14cdcd0ec5ab88bf985d79e7"
     },
     {
       "id": "assets/chord/516_Aku Bertekad.chord.json",

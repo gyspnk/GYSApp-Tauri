@@ -1,0 +1,176 @@
+/* Evidence-backed interaction hardening.
+   This file intentionally contains only late-stage usability overrides that
+   were measured in the multi-viewport audit. It is not a second design system. */
+
+/* Compact text actions must still be real controls, not 14px text targets. */
+.section-title-row .text-button,
+.pack-manager-actions .text-button,
+.more-card-heading .text-button,
+.version-actions .text-button,
+button.text-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.brand-mark {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Keep verse numbers visually compact while making the actual button easier
+   to acquire with touch, pen, trackpad, or motor-impaired pointer input. */
+.verse-number {
+  inline-size: 40px;
+  min-inline-size: 40px;
+  block-size: 40px;
+  min-block-size: 40px;
+  background: radial-gradient(
+    circle,
+    var(--surface-soft) 0 14px,
+    transparent 14.5px
+  );
+}
+
+.verse-number.is-bookmarked {
+  background: radial-gradient(circle, var(--blue) 0 14px, transparent 14.5px);
+}
+
+/* Cross-reference stars remain true inline content. Their visual box must not
+   widen a verse line, so the larger hit area lives on an absolutely positioned
+   pseudo-element instead of min-size/padding on the button itself. */
+button[aria-label*="rujukan silang untuk"] {
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+button[aria-label*="rujukan silang untuk"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: 40px;
+  block-size: 40px;
+  transform: translate(-50%, -50%);
+}
+
+/* Song titles are the primary row action. Give the full title zone a reliable
+   finger-sized height without turning the catalog into oversized cards. */
+.pujian-title {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding-block: 7px;
+}
+
+.add-to-playlist-btn,
+.pujian-fav-btn,
+.pujian-row-action {
+  min-inline-size: 40px;
+  min-block-size: 40px;
+}
+
+/* The Kidung local tabs are primary navigation, not a carousel. On very small
+   phones keep all three destinations visible at once instead of allowing the
+   segmented control to widen the whole page. Grid children also need an
+   explicit zero minimum: otherwise the intrinsic width of one hymn row can be
+   wider than the 296px catalog column even though the title itself can shrink. */
+@media (max-width: 420px) {
+  .kidung-local-nav,
+  .kidung-local-nav-links {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .kidung-local-nav-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .kidung-local-nav a {
+    min-inline-size: 0;
+    justify-content: center;
+    gap: 4px;
+    padding-inline: 4px;
+  }
+
+  .kidung-local-nav a > span {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hymn-page .pujian-item {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* An unavailable daily devotion is an operational state, not a hero image.
+   On wide screens stop the empty card from spanning the height of both content
+   shelves and let the shelves use the full content width below. */
+@media (min-width: 960px) {
+  .home-grid:has(.verse-panel .sauh-offline-state) {
+    grid-template-areas:
+      "verse continue"
+      "suara suara"
+      "literature literature";
+  }
+
+  .verse-panel:has(.sauh-offline-state) {
+    min-height: 0;
+    height: auto;
+    align-self: start;
+    box-shadow: none;
+  }
+
+  .verse-panel:has(.sauh-offline-state):hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Pointer-coarse devices should not depend on hover movement for hierarchy. */
+@media (hover: none), (pointer: coarse) {
+  .verse-panel:hover,
+  .continue-panel:hover,
+  .more-card:hover,
+  .kidung-card:hover {
+    transform: none;
+  }
+
+  .pujian-title,
+  .verse-number {
+    min-block-size: 44px;
+  }
+
+  button[aria-label*="rujukan silang untuk"]::before {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verse-panel,
+  .continue-panel,
+  .pujian-title,
+  .text-button,
+  .verse-number {
+    transition: none !important;
+  }
+}

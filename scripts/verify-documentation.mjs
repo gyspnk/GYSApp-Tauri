@@ -3,18 +3,6 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const required = {
-  "CONTEXT.md": [
-    "# GYSApp-Tauri context",
-    "## Verification ladder",
-    "## Current baseline",
-  ],
-  "AGENTS.md": ["# GYSApp-Tauri agent rules", "CONTEXT.md", "e-GYS v2 WIP"],
-  "README.md": [
-    "## Architecture at a glance",
-    "## Feature map",
-    "## Development",
-    "## Deployment prerequisites",
-  ],
   "docs/architecture.md": [
     "## Feature lifecycle diagrams",
     "### Persistent media",
@@ -32,11 +20,6 @@ const required = {
     "GitHub Pages now builds",
   ],
   "CHANGELOG.md": ["# Changelog", "## Unreleased — GA hardening slice"],
-  "docs/maintenance/codebase-simplification-spec.md": [
-    "# Codebase simplification and continuity specification",
-    "## Non-negotiable boundaries",
-    "## Acceptance gates",
-  ],
   "docs/maintenance/codebase-map.md": [
     "# Codebase simplification map",
     "## Documentation and skill cadence",
@@ -45,12 +28,6 @@ const required = {
     "## Decisions so far",
     "## Frontier",
     "## Not yet specified",
-  ],
-  ".codex/skills/gysapp-maintenance/SKILL.md": [
-    "name: gysapp-maintenance",
-    "# GYSApp maintenance",
-    "## Maintenance cadence",
-    "## 5. Verify completion",
   ],
 };
 

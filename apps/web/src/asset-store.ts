@@ -150,6 +150,12 @@ export class BrowserAssetStore {
         writeIndex(index);
       }
     }
+    if (stored?.version === item.version) {
+      // Cache Storage can be evicted independently from localStorage. Drop a
+      // matching stale pointer so stats and future lookups reflect reality.
+      delete index[item.id];
+      writeIndex(index);
+    }
     return undefined;
   }
 

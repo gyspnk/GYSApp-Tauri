@@ -1,8 +1,15 @@
 {
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "a3d1ea7",
-  "generatedAt": "2026-08-16T13:55:00.616Z",
-  "books": ["rohani", "kidung-jemaat", "pujian", "anak", "mandarin", "english"],
+  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
+  "generatedAt": "2026-09-11T18:10:20.191Z",
+  "books": [
+    "rohani",
+    "kidung-jemaat",
+    "pujian",
+    "anak",
+    "mandarin",
+    "english"
+  ],
   "items": [
     {
       "id": "hymn-001",

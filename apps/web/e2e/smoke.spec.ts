@@ -161,7 +161,7 @@ test.describe("offline Bible recovery", () => {
   });
 });
 
-test("faith topics search, select, and persist a personal note", async ({
+test("faith topics search, open summary, and persist a personal note", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/iman");
@@ -173,48 +173,53 @@ test("faith topics search, select, and persist a personal note", async ({
   const initialCount = await rows.count();
   expect(initialCount).toBeGreaterThan(0);
 
-  // The vertical list keeps one active selection at a time.
-  await rows.nth(1).click();
-  await expect(rows.nth(1)).toHaveAttribute("aria-pressed", "true");
-  await expect(rows.first()).toHaveAttribute("aria-pressed", "false");
-
-  // Search filters the list using real content.
+  // Search filters the list using real content without changing the direct-PDF action.
   await page.getByLabel("Cari pokok iman").fill("Allah");
   await expect
     .poll(async () => page.locator(".faith-row-heading").count())
     .toBeLessThan(initialCount);
-
-  // A note on the selected topic persists across reloads.
   await page.getByLabel("Cari pokok iman").fill("");
+
+  // Summary and notes remain available as the explicit secondary action.
+  const summaryButton = page.getByRole("button", {
+    name: "Buka ringkasan dan catatan pokok iman 2",
+    exact: true,
+  });
+  await summaryButton.click();
+  const summary = page.getByRole("dialog", { name: "Pokok 2" });
+  await expect(summary).toBeVisible();
+  await summary.getByRole("button", { name: /Catatan pribadi/ }).click();
   await page
-    .getByRole("dialog", { name: /Pokok/ })
-    .getByRole("button", { name: "Catatan pribadi" })
-    .click();
-  await page
-    .getByLabel("Catatan pribadi")
+    .getByRole("dialog", { name: "Catatan pokok iman" })
+    .getByRole("textbox")
     .fill("Renungan dari pokok dasar kepercayaan.");
   await page.getByRole("button", { name: "Simpan catatan" }).click();
   await expect(
     page.getByRole("status").filter({ hasText: "disimpan" }),
   ).toBeVisible();
+
   await page.reload();
   await expect(
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
-  ).toBeVisible({
-    timeout: 15_000,
-  });
-  // The note is keyed per topic, so reopen the same topic after the reload.
-  await page.locator(".faith-row-heading").nth(1).click();
+  ).toBeVisible({ timeout: 15_000 });
   await page
-    .getByRole("dialog", { name: /Pokok/ })
-    .getByRole("button", { name: "Catatan pribadi" })
+    .getByRole("button", {
+      name: "Buka ringkasan dan catatan pokok iman 2",
+      exact: true,
+    })
     .click();
-  await expect(page.getByLabel("Catatan pribadi")).toHaveValue(
-    "Renungan dari pokok dasar kepercayaan.",
-  );
+  await page
+    .getByRole("dialog", { name: "Pokok 2" })
+    .getByRole("button", { name: /Catatan pribadi/ })
+    .click();
+  await expect(
+    page
+      .getByRole("dialog", { name: "Catatan pokok iman" })
+      .getByRole("textbox"),
+  ).toHaveValue("Renungan dari pokok dasar kepercayaan.");
 });
 
-test("faith read more opens PDF viewer in fullscreen overlay", async ({
+test("faith row opens its PDF viewer directly in fullscreen overlay", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/iman");
@@ -225,15 +230,9 @@ test("faith read more opens PDF viewer in fullscreen overlay", async ({
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
 
   await rows.first().click();
-  const modal = page.getByRole("dialog", { name: /Pokok/ });
-  await expect(modal).toBeVisible();
-
-  const readMoreBtn = modal.getByRole("button", { name: /Baca lebih lanjut/ });
-  await expect(readMoreBtn).toBeVisible();
-  await readMoreBtn.click();
-
   const pdfOverlay = page.locator(".faith-pdf-backdrop");
   await expect(pdfOverlay).toBeVisible();
+  await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
   await expect(pdfOverlay.locator(".faith-pdf-head")).toBeVisible();
   await expect(pdfOverlay.locator(".faith-pdf-body")).toBeVisible();
   await expect(
@@ -981,10 +980,15 @@ test("device reset clears browser preferences, durable blobs, and app caches", a
   });
 
   await page.goto("/GYSApp-Tauri/lainnya?section=data");
-  await page.getByRole("button", { name: "Reset perangkat" }).click();
-  await expect(
-    page.getByText(/Preferensi dan cache GYS sudah direset/),
-  ).toBeVisible({ timeout: 15_000 });
+  const deviceData = page.getByTestId("device-data-tools");
+  await deviceData.locator("summary").click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await deviceData
+    .getByRole("button", { name: "Reset perangkat", exact: true })
+    .click();
+  await expect(page.getByText(/Data lokal GYS sudah direset/)).toBeVisible({
+    timeout: 15_000,
+  });
   await expect
     .poll(
       () =>

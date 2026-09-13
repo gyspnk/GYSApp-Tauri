@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { resolveE2eServerCommand } from "./src/e2e-server-command.js";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -21,11 +22,10 @@ export default defineConfig({
     serviceWorkers: "block",
   },
   webServer: {
-    // The app imports workspace packages from their generated `dist` entrypoints.
-    // Build from the monorepo root so a clean checkout (CI or a new developer
-    // machine) does not depend on ignored workspace artifacts being present.
-    command:
-      "pnpm --dir ../.. build && pnpm exec vite preview --host 127.0.0.1 --port 4173",
+    // Local clean checkouts still build all workspace entrypoints automatically.
+    // CI may set GYS_E2E_PREBUILT=1 after downloading the verified web build,
+    // which starts preview directly and avoids compiling the monorepo twice.
+    command: resolveE2eServerCommand(process.env),
     port: 4173,
     reuseExistingServer: true,
   },

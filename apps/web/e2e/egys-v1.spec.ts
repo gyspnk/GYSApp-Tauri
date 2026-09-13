@@ -40,15 +40,21 @@ test("clicking e-GYS login opens the login flow in an overlay modal without redi
   await page.goto("/GYSApp-Tauri/lainnya");
   const loginBtn = page.getByRole("link", { name: /Buka login e-GYS resmi/i });
   await expect(loginBtn).toBeVisible();
+  const pageUrl = page.url();
   await loginBtn.click();
+  await expect(page).toHaveURL(pageUrl);
 
   const overlay = page.getByRole("dialog", { name: /Login e-GYS resmi/i });
   await expect(overlay).toBeVisible();
-  const iframe = overlay.locator("iframe");
-  await expect(iframe).toHaveAttribute(
-    "src",
+  await expect(overlay.getByLabel("Login dengan Google")).toBeVisible();
+  const officialPortal = overlay.getByRole("link", {
+    name: /Portal resmi e-GYS/i,
+  });
+  await expect(officialPortal).toHaveAttribute(
+    "href",
     /^https:\/\/e\.gys\.or\.id\/login\?theme=/,
   );
+  await expect(officialPortal).toHaveAttribute("target", "_blank");
 
   // Close overlay
   const closeBtn = overlay.getByRole("button", { name: /Tutup login e-GYS/i });
