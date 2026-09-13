@@ -4,6 +4,9 @@ import {
   observeSingleLineFit,
 } from "./text-fit.js";
 
+type ResizeEntry = { contentRect: { width: number } };
+type ResizeCallback = (entries: ResizeEntry[]) => void;
+
 function fakeElement(initialWidth: number) {
   const style: Record<string, string> = {
     fontSize: "16px",
@@ -94,13 +97,9 @@ describe("single-line autofit (gyschordweb autoFitTextSingleLine)", () => {
       clientWidth: 320,
       querySelectorAll: vi.fn(() => [inside]),
     };
-    let resizeCallback:
-      | ((entries: Array<{ contentRect: { width: number } }>) => void)
-      | undefined;
+    let resizeCallback: ResizeCallback | undefined;
     class FakeResizeObserver {
-      constructor(
-        callback: (entries: Array<{ contentRect: { width: number } }>) => void,
-      ) {
+      constructor(callback: ResizeCallback) {
         resizeCallback = callback;
       }
       observe() {}
