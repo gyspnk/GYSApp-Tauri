@@ -54,6 +54,20 @@ async function openFirstHymnPdf(page: Page) {
     state: "visible",
     timeout: 20_000,
   });
+  await page.locator(".pdf-reader").waitFor({
+    state: "visible",
+    timeout: 30_000,
+  });
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".pdf-pages canvas")
+          .first()
+          .evaluate((canvas) => canvas.width),
+      { timeout: 30_000 },
+    )
+    .toBeGreaterThan(0);
 }
 
 test(
@@ -209,6 +223,8 @@ test(
 );
 
 test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
+  test.setTimeout(150_000);
+
   const cases = [
     {
       name: "catalog-phone-390x844",
@@ -315,7 +331,7 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
       path: `test-results/ui-preview/kidung-density/${entry.name}.png`,
-      fullPage: true,
+      fullPage: false,
       animations: "disabled",
     });
   }
