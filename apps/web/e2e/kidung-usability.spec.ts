@@ -59,9 +59,20 @@ async function openFirstHymnPdf(page: Page) {
     state: "visible",
     timeout: 30_000,
   });
-  await expect(
-    page.locator('.pdf-pages canvas[data-pdf-rendered="true"]').first(),
-  ).toBeVisible({ timeout: 30_000 });
+
+  const renderedPage = page.locator('.pdf-reader canvas[aria-label^="PDF page"]').first();
+  await expect(renderedPage).toBeVisible({ timeout: 30_000 });
+  await expect
+    .poll(
+      () =>
+        renderedPage.evaluate((canvas) => {
+          const pageCanvas = canvas as HTMLCanvasElement;
+          return pageCanvas.width > 0 && pageCanvas.height > 0;
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await expect(page.getByText(/Memuat PDF…/)).toBeHidden({ timeout: 30_000 });
 }
 
 test(
