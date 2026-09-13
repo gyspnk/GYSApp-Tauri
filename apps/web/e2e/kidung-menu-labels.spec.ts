@@ -20,7 +20,7 @@ test("More menu labels stay visible", async ({ page }) => {
     await expect(labels.nth(index)).not.toHaveText(/^\s*$/);
   }
 
-  // Keep a focused artifact for manual review of mobile action-sheet readability.
+  // Keep a focused artifact for manual phone action-sheet readability review.
   await page.screenshot({
     path: "test-results/ui-preview/kidung-density/reader-more-phone-390x844.png",
     fullPage: false,
