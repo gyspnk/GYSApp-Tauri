@@ -59,16 +59,9 @@ async function openFirstHymnPdf(page: Page) {
     state: "visible",
     timeout: 30_000,
   });
-  await expect
-    .poll(
-      () =>
-        page
-          .locator(".pdf-pages canvas")
-          .first()
-          .evaluate((canvas) => canvas.width),
-      { timeout: 30_000 },
-    )
-    .toBeGreaterThan(0);
+  await expect(
+    page.locator('.pdf-pages canvas[data-pdf-rendered="true"]').first(),
+  ).toBeVisible({ timeout: 30_000 });
 }
 
 test(
