@@ -1,4 +1,5 @@
 name: Refresh Kidung Baselines
+# One-shot trigger after the workflow file is registered on this branch.
 
 on:
   push:
