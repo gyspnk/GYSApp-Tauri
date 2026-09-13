@@ -43,8 +43,25 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await options.click();
   await expect(advanced).toBeHidden();
 
-  // Desktop keyboard mirrors pinch / Ctrl+wheel and gives transient feedback.
+  // The canonical keyboard handler intentionally ignores input until PDF.js
+  // has completed its page render, so synchronize with the visible reader
+  // readiness instead of racing the loading state.
   const stage = page.locator(".pdf-reader-hymn .pdf-stage");
+  await expect(stage.locator(".pdf-loading")).toHaveCount(0, {
+    timeout: 30_000,
+  });
+  await expect
+    .poll(
+      () =>
+        stage
+          .locator("canvas")
+          .first()
+          .evaluate((element: HTMLCanvasElement) => element.width),
+      { timeout: 30_000 },
+    )
+    .toBeGreaterThan(0);
+
+  // Desktop keyboard mirrors pinch / Ctrl+wheel and gives transient feedback.
   await stage.focus();
   await page.keyboard.press("Control+=");
   const zoomHud = page.getByRole("status", { name: "Zoom PDF" });
