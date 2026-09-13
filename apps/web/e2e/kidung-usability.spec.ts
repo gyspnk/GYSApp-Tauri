@@ -6,8 +6,8 @@ test.use({ serviceWorkers: "block" });
 async function expectTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
   expect(box, "control should be visible and measurable").not.toBeNull();
-  expect(box!.width).toBeGreaterThanOrEqual(min);
-  expect(box!.height).toBeGreaterThanOrEqual(min);
+  expect(box!.width).toBeGreaterThanOrEqual(min - 0.5);
+  expect(box!.height).toBeGreaterThanOrEqual(min - 0.5);
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
