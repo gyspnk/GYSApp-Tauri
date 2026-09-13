@@ -27,7 +27,7 @@ test("phone catalog moves collection filtering behind one compact trigger", asyn
   await openCatalog(page);
 
   await expect(
-    page.locator(".hymn-catalog-controls .control-select"),
+    page.locator(".kidung-desktop-filter .control-select"),
   ).toBeHidden();
   await expect(
     page.getByRole("button", { name: "Filter koleksi" }),
