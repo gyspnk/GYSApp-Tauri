@@ -64,6 +64,33 @@ test("text reader removes duplicate song navigation and PDF action from persiste
   ).toHaveCount(0);
 });
 
+test("reader settings prioritize typography and collapse music controls", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openFirstHymn(page);
+
+  const settings = page.locator(".hymn-reader-settings-summary");
+  await expect(settings).toContainText("Aa");
+  await settings.click();
+
+  const panel = page.locator(".hymn-reader-settings > .song-controls");
+  await expect(panel.locator(".hymn-reading-settings")).toHaveAttribute(
+    "open",
+    "",
+  );
+  await expect(
+    panel.locator(".hymn-reading-settings .reader-preferences"),
+  ).toBeVisible();
+  await expect(panel.locator(".hymn-music-settings")).not.toHaveAttribute(
+    "open",
+    "",
+  );
+  await expect(
+    panel.locator(".hymn-music-settings .transpose-control"),
+  ).toBeHidden();
+});
+
 test("PDF reader keeps navigation and transpose out of permanent top chrome", async ({
   page,
 }) => {
