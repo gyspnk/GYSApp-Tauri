@@ -511,6 +511,12 @@ test.describe("responsive reader navigation", () => {
       .toBeGreaterThan(650);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
+    await expect(page.locator(".pdf-advanced-controls")).not.toHaveClass(
+      /is-open/,
+    );
+    const pdfOptions = page.getByRole("button", { name: "Opsi PDF" });
+    await expect(pdfOptions).toBeVisible();
+    await pdfOptions.click();
     await expect(page.locator(".pdf-advanced-controls.is-open")).toBeVisible();
   });
 

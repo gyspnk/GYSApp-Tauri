@@ -21,6 +21,9 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await expect(
     page.locator('.pdf-reader-hymn input[type="range"]'),
   ).toBeHidden();
+  await expect(
+    page.locator(".pdf-reader-hymn .pdf-view-scroll-toggle"),
+  ).toBeHidden();
 
   // Technical controls begin collapsed, but remain available as an explicit
   // single-pointer/accessibility fallback when requested.
@@ -30,6 +33,9 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await expect(options).toBeVisible();
   await options.click();
   await expect(advanced).toBeVisible();
+  await expect(
+    page.locator(".pdf-reader-hymn .pdf-layout-toggle"),
+  ).toBeVisible();
   await expect(
     advanced.getByRole("button", { name: "Perbesar PDF" }),
   ).toBeVisible();

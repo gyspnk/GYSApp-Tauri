@@ -37,8 +37,9 @@ function enhancePdfReader(reader: HTMLElement): void {
 
   const stage = reader.querySelector<HTMLElement>(".pdf-stage");
   const indicator = reader.querySelector<HTMLElement>(".pdf-zoom-indicator");
-  const advancedToggle =
-    reader.querySelector<HTMLButtonElement>(".pdf-advanced-toggle");
+  const advancedToggle = reader.querySelector<HTMLButtonElement>(
+    ".pdf-advanced-toggle",
+  );
   if (!stage || !indicator || !advancedToggle) return;
 
   reader.dataset.directManipulationReady = "true";
@@ -117,6 +118,9 @@ export function installDirectManipulationEnhancements(): () => void {
 
   enhance();
   const observer = new MutationObserver(enhance);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
   return () => observer.disconnect();
 }

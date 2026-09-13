@@ -186,16 +186,25 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);
   await resumeButton.click();
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 2 / 2");
+  const pdfOptions = page.getByRole("button", { name: "Opsi PDF" });
+  await expect(page.locator(".pdf-advanced-controls")).not.toHaveClass(
+    /is-open/,
+  );
+  await pdfOptions.click();
   await page
-    .locator(".pdf-view-scroll-toggle")
-    .getByRole("button", { name: "Gulir mendatar" })
+    .locator(".pdf-layout-toggle")
+    .getByRole("button", { name: "Mendatar" })
     .click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
     "horizontal",
   );
+  await pdfOptions.click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator(".pdf-advanced-controls")).toHaveClass(/is-open/);
+  await expect(page.locator(".pdf-advanced-controls")).not.toHaveClass(
+    /is-open/,
+  );
+  await pdfOptions.click();
   await page.getByRole("button", { name: "2 halaman" }).click();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
