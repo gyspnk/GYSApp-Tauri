@@ -102,10 +102,12 @@ jobs:
       # payload actually exercised by CI. The browser contract below proves the
       # runner remains sufficient on every image revision.
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
-      - name: Prove Kidung density contracts fail before implementation
+      - name: Run browser contracts affected by this draft update
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test e2e/kidung-density.spec.ts --config=playwright.ci.config.ts
+          GYS_E2E_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+          GYS_E2E_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
       - name: Upload selective browser diagnostics on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
