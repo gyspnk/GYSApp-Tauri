@@ -73,9 +73,9 @@ test(
     expect(searchBox!.width).toBeGreaterThanOrEqual(340);
 
     await expect(page.locator(".kidung-desktop-filter")).toBeHidden();
-    const filterTrigger = page.getByRole("button", {
-      name: "Filter koleksi",
-    });
+    const filterTrigger = page.locator(
+      'summary[aria-label="Filter koleksi"]',
+    );
     await expectTarget(filterTrigger);
     await filterTrigger.click();
     const filterPanel = page.locator(".kidung-mobile-filter-panel");
