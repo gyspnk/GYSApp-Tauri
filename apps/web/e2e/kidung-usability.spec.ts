@@ -24,7 +24,10 @@ async function openCatalog(page: Page) {
   await expect(
     page.getByRole("heading", { name: "Kidung", exact: true }),
   ).toBeVisible();
-  await page.locator(".pujian-list > li").first().waitFor({ state: "visible" });
+  await page
+    .locator(".pujian-list > li")
+    .first()
+    .waitFor({ state: "visible" });
 }
 
 async function openFirstHymn(page: Page) {
@@ -34,87 +37,94 @@ async function openFirstHymn(page: Page) {
   ).toBeVisible();
 }
 
-test("phone Kidung catalog prioritizes full-width search and large library rows", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await openCatalog(page);
+test(
+  "phone Kidung catalog prioritizes full-width search and large library rows",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openCatalog(page);
 
-  const localLinks = page.locator(".kidung-local-nav a");
-  for (let index = 0; index < (await localLinks.count()); index += 1) {
-    await expectTarget(localLinks.nth(index));
-  }
+    const localLinks = page.locator(".kidung-local-nav a");
+    for (let index = 0; index < (await localLinks.count()); index += 1) {
+      await expectTarget(localLinks.nth(index));
+    }
 
-  const search = page.locator(".hymn-catalog-controls .search-field");
-  const collection = page.locator(
-    ".hymn-catalog-controls .control-select",
-  );
-  const searchBox = await search.boundingBox();
-  const collectionBox = await collection.boundingBox();
-  expect(searchBox).not.toBeNull();
-  expect(collectionBox).not.toBeNull();
-  expect(searchBox!.width).toBeGreaterThanOrEqual(340);
-  expect(collectionBox!.width).toBeGreaterThanOrEqual(340);
-  expect(collectionBox!.y).toBeGreaterThan(searchBox!.y + searchBox!.height - 1);
+    const search = page.locator(".hymn-catalog-controls .search-field");
+    const collection = page.locator(".hymn-catalog-controls .control-select");
+    const searchBox = await search.boundingBox();
+    const collectionBox = await collection.boundingBox();
+    expect(searchBox).not.toBeNull();
+    expect(collectionBox).not.toBeNull();
+    expect(searchBox!.width).toBeGreaterThanOrEqual(340);
+    expect(collectionBox!.width).toBeGreaterThanOrEqual(340);
+    expect(collectionBox!.y).toBeGreaterThan(
+      searchBox!.y + searchBox!.height - 1,
+    );
 
-  const firstOpen = page.locator(".pujian-open-button").first();
-  await expect(firstOpen).toBeVisible();
-  const openBox = await firstOpen.boundingBox();
-  expect(openBox).not.toBeNull();
-  expect(openBox!.height).toBeGreaterThanOrEqual(56);
-  expect(openBox!.width).toBeGreaterThanOrEqual(230);
-  await expect(firstOpen).toContainText("001");
-  await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
+    const firstOpen = page.locator(".pujian-open-button").first();
+    await expect(firstOpen).toBeVisible();
+    const openBox = await firstOpen.boundingBox();
+    expect(openBox).not.toBeNull();
+    expect(openBox!.height).toBeGreaterThanOrEqual(56);
+    expect(openBox!.width).toBeGreaterThanOrEqual(230);
+    await expect(firstOpen).toContainText("001");
+    await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
 
-  await expectTarget(page.locator(".add-to-playlist-btn").first());
-  await expectNoHorizontalOverflow(page);
-});
+    await expectTarget(page.locator(".add-to-playlist-btn").first());
+    await expectNoHorizontalOverflow(page);
+  },
+);
 
-test("phone hymn reader keeps primary actions self-explanatory and touch friendly", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await openFirstHymn(page);
-
-  for (const tab of await page.getByRole("tab").all()) await expectTarget(tab);
-
-  const actions = page.locator(".hymn-text-toolbar .detail-actions .hymn-action");
-  expect(await actions.count()).toBeGreaterThanOrEqual(3);
-  for (let index = 0; index < (await actions.count()); index += 1) {
-    await expectTarget(actions.nth(index));
-  }
-
-  const labels = page.locator(
-    ".hymn-text-toolbar .detail-actions .hymn-action-label",
-  );
-  expect(await labels.count()).toBeGreaterThanOrEqual(3);
-  for (let index = 0; index < (await labels.count()); index += 1) {
-    await expect(labels.nth(index)).toBeVisible();
-  }
-
-  await expectTarget(page.locator(".hymn-more-actions-summary"));
-  await expectTarget(page.locator(".hymn-reader-settings-summary"));
-  await expectNoHorizontalOverflow(page);
-});
-
-test("tablet and desktop hymn actions preserve labels without crowding", async ({
-  page,
-}) => {
-  for (const viewport of [
-    { width: 768, height: 1024 },
-    { width: 1440, height: 900 },
-  ]) {
-    await page.setViewportSize(viewport);
+test(
+  "phone hymn reader keeps primary actions self-explanatory and touch friendly",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await openFirstHymn(page);
+
+    for (const tab of await page.getByRole("tab").all()) {
+      await expectTarget(tab);
+    }
+
+    const actions = page.locator(
+      ".hymn-text-toolbar .detail-actions .hymn-action",
+    );
+    expect(await actions.count()).toBeGreaterThanOrEqual(3);
+    for (let index = 0; index < (await actions.count()); index += 1) {
+      await expectTarget(actions.nth(index));
+    }
+
     const labels = page.locator(
       ".hymn-text-toolbar .detail-actions .hymn-action-label",
     );
+    expect(await labels.count()).toBeGreaterThanOrEqual(3);
     for (let index = 0; index < (await labels.count()); index += 1) {
       await expect(labels.nth(index)).toBeVisible();
     }
+
+    await expectTarget(page.locator(".hymn-more-actions-summary"));
+    await expectTarget(page.locator(".hymn-reader-settings-summary"));
     await expectNoHorizontalOverflow(page);
-  }
-});
+  },
+);
+
+test(
+  "tablet and desktop hymn actions preserve labels without crowding",
+  async ({ page }) => {
+    for (const viewport of [
+      { width: 768, height: 1024 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await openFirstHymn(page);
+      const labels = page.locator(
+        ".hymn-text-toolbar .detail-actions .hymn-action-label",
+      );
+      for (let index = 0; index < (await labels.count()); index += 1) {
+        await expect(labels.nth(index)).toBeVisible();
+      }
+      await expectNoHorizontalOverflow(page);
+    }
+  },
+);
 
 test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
   const cases = [
