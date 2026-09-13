@@ -17,7 +17,8 @@ async function openHymnPdf(page: Page) {
 test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await openHymnPdf(page);
 
-  // Primary reading chrome must not carry a persistent zoom scrubber.
+  // Primary reading chrome stays focused on the document itself: zoom and
+  // layout configuration belong to direct manipulation / the options surface.
   await expect(
     page.locator('.pdf-reader-hymn input[type="range"]'),
   ).toBeHidden();
