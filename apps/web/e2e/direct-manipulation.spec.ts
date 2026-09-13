@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-async function openHymnPdf(page: import("@playwright/test").Page) {
+async function openHymnPdf(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
@@ -20,7 +20,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   // Primary reading chrome must not carry a persistent zoom scrubber.
   await expect(
     page.locator('.pdf-reader-hymn input[type="range"]'),
-  ).toHaveCount(0);
+  ).toBeHidden();
 
   // Technical controls begin collapsed, but remain available as an explicit
   // single-pointer/accessibility fallback when requested.
