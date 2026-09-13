@@ -8,3 +8,4 @@ ORIGINAL_REQUEST.md
 apps/bff/src/chord-manifest.ts
 apps/web/public/offline/hymn-catalog.json
 packages/contracts/generated/hymn-catalog.json
+apps/web/e2e/kidung-usability.spec.ts
