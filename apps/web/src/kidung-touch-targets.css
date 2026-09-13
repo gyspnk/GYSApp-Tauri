@@ -1,0 +1,8 @@
+/* Final Kidung interaction hardening.
+   Legacy playlist button rules use a more specific 32px target; contextual
+   menus must retain the shared 44px minimum touch target across layouts. */
+.kidung-playlist-actions .kidung-row-menu-panel > .text-button,
+.kidung-playlist-actions .kidung-manage-saved-items .text-button,
+.kidung-playlist-actions .kidung-manage-saved-items > summary {
+  min-height: var(--control-hit, 44px);
+}
