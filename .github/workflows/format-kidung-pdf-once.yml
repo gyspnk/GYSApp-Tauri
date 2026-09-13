@@ -1,0 +1,32 @@
+name: Format Kidung PDF Regression Once
+
+on:
+  push:
+    branches:
+      - ui/kidung-density-pass-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format regression test and remove helper
+        run: |
+          pnpm exec prettier apps/web/e2e/kidung-pdf-density.spec.ts --write
+          rm .github/workflows/format-kidung-pdf-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/e2e/kidung-pdf-density.spec.ts .github/workflows/format-kidung-pdf-once.yml
+          git commit -m "style: format PDF density regression test"
+          git push origin HEAD:${GITHUB_REF_NAME}
