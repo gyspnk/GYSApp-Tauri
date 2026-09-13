@@ -35,11 +35,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
-      - name: Show canonical Kidung density formatting
-        run: |
-          pnpm exec prettier apps/web/e2e/kidung-density.spec.ts --write
-          git diff -- apps/web/e2e/kidung-density.spec.ts
-          exit 1
+      - run: pnpm format:check
       # Keep this job compile-free so it returns cheap structural feedback in
       # parallel. Browser verification consumes one separately verified build.
       - run: pnpm audit --prod
