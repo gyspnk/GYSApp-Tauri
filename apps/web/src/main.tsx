@@ -10,6 +10,7 @@ import "./styles.css";
 import "./ui-hardening.css";
 import "./calm-liturgical.css";
 import "./ui-preferences.css";
+import "./kidung-ux.css";
 
 runStorageMigrations();
 initializeUiPreferences();
