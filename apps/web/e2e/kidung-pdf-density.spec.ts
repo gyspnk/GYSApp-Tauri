@@ -20,8 +20,9 @@ test(
     const unavailablePager = reader.locator(
       ".pdf-page-navigation > button:disabled",
     );
-    expect(await unavailablePager.count()).toBe(2);
-    for (let index = 0; index < (await unavailablePager.count()); index += 1) {
+    const unavailablePagerCount = await unavailablePager.count();
+    expect(unavailablePagerCount).toBe(2);
+    for (let index = 0; index < unavailablePagerCount; index += 1) {
       await expect(unavailablePager.nth(index)).toBeHidden();
     }
   },
