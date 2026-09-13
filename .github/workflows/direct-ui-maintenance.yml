@@ -1,0 +1,68 @@
+name: Direct UI Maintenance
+
+on:
+  push:
+    branches:
+      - audit/parity-ui-tts-20260911
+    paths:
+      - scripts/direct-ui-maintenance.mjs
+      - .github/workflows/direct-ui-maintenance.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: direct-ui-maintenance
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/parity-ui-tts-20260911
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply interaction maintenance
+        run: node scripts/direct-ui-maintenance.mjs
+      - name: Format changed interaction files
+        run: >-
+          pnpm exec prettier --write
+          apps/web/e2e/direct-manipulation.spec.ts
+          apps/web/e2e/media-load.spec.ts
+          apps/web/e2e/navigation-layout.spec.ts
+          apps/web/src/direct-manipulation.ts
+          apps/web/src/direct-manipulation.css
+          docs/superpowers/plans/2026-09-13-direct-manipulation-ui.md
+          docs/superpowers/specs/2026-09-13-direct-manipulation-ui.md
+          scripts/direct-ui-maintenance.mjs
+          .github/workflows/direct-ui-maintenance.yml
+      - run: git diff --check
+      - name: Commit maintenance result
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/web/e2e/direct-manipulation.spec.ts \
+            apps/web/e2e/media-load.spec.ts \
+            apps/web/e2e/navigation-layout.spec.ts \
+            apps/web/src/direct-manipulation.ts \
+            apps/web/src/direct-manipulation.css \
+            docs/superpowers/plans/2026-09-13-direct-manipulation-ui.md \
+            docs/superpowers/specs/2026-09-13-direct-manipulation-ui.md \
+            scripts/direct-ui-maintenance.mjs \
+            .github/workflows/direct-ui-maintenance.yml
+          git commit -m "test: align direct manipulation interaction contracts"
+          git push origin HEAD:audit/parity-ui-tts-20260911
