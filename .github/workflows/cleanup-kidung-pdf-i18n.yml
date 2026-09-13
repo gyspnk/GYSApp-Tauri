@@ -1,0 +1,53 @@
+name: Cleanup Kidung PDF i18n
+
+on:
+  push:
+    branches: [ui/kidung-density-pass-20260913]
+    paths:
+      - .github/workflows/cleanup-kidung-pdf-i18n.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ui/kidung-density-pass-20260913
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Remove obsolete duplicate-PDF copy
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const path = "apps/web/src/i18n.ts";
+          const source = readFileSync(path, "utf8");
+          const pattern = /^\s*"kidung\.(?:loadingPdf|closePdf|openPdf)":.*\n/gm;
+          const matches = source.match(pattern) ?? [];
+          if (matches.length !== 9) {
+            throw new Error(`Expected 9 obsolete PDF translation entries, found ${matches.length}`);
+          }
+          writeFileSync(path, source.replace(pattern, ""));
+          NODE
+          pnpm exec prettier apps/web/src/i18n.ts --write
+      - name: Verify i18n policy
+        run: pnpm --filter @gys/web exec vitest run src/i18n.test.ts
+      - name: Commit cleanup and remove helper
+        run: |
+          rm .github/workflows/cleanup-kidung-pdf-i18n.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/i18n.ts .github/workflows/cleanup-kidung-pdf-i18n.yml
+          git commit -m "chore: remove obsolete Kidung PDF copy"
+          git push origin HEAD:ui/kidung-density-pass-20260913
