@@ -1,0 +1,46 @@
+name: Apply Kidung Reader Settings Pass
+
+on:
+  push:
+    branches: [ui/kidung-density-pass-20260913]
+    paths:
+      - .github/workflows/apply-kidung-reader-settings-pass.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ui/kidung-density-pass-20260913
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply reader hierarchy patch
+        run: node scripts/apply-kidung-reader-settings-pass.mjs
+      - name: Format changed source
+        run: pnpm exec prettier apps/web/src/kidung.tsx apps/web/src/kidung-ux.css --write
+      - name: Verify source before commit
+        run: |
+          pnpm build
+          git diff --check
+      - name: Commit source changes and remove helper
+        run: |
+          rm scripts/apply-kidung-reader-settings-pass.mjs
+          rm .github/workflows/apply-kidung-reader-settings-pass.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/kidung.tsx apps/web/src/kidung-ux.css scripts/apply-kidung-reader-settings-pass.mjs .github/workflows/apply-kidung-reader-settings-pass.yml
+          git commit -m "feat: simplify Kidung reader settings hierarchy"
+          git push origin HEAD:ui/kidung-density-pass-20260913
