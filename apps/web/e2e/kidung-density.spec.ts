@@ -73,7 +73,12 @@ test("PDF reader keeps navigation and transpose out of permanent top chrome", as
   await page.locator(".gys-pdf-overlay").waitFor({ state: "visible" });
 
   const chrome = page.locator(".hymn-pdf-viewer-chrome");
-  await expect(chrome.locator(".detail-neighbor-button")).toHaveCount(0);
+  await expect(
+    chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    chrome.getByRole("button", { name: "Berikutnya", exact: true }),
+  ).toHaveCount(0);
   await expect(chrome.locator(".pdf-transpose-inline")).toBeHidden();
   await expect(
     chrome.locator('summary[aria-label="Opsi musik"]'),
