@@ -1,5 +1,6 @@
 name: Apply Kidung Reader Settings Pass
 
+# One-time helper; self-deletes after committing the verified source patch.
 on:
   push:
     branches: [ui/kidung-density-pass-20260913]
