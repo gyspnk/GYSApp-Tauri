@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+// Contextual Kidung menus share the same 44px minimum target as primary chrome.
 async function expectTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
   expect(box, "control should be visible and measurable").not.toBeNull();
