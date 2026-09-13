@@ -41,10 +41,14 @@ test("direct literature PDF exposes the document in the first mobile viewport", 
     })
     .toBeGreaterThan(0);
 
-  const canvasTop = await canvas.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-  expect(canvasTop).toBeLessThan(700);
+  // PDF.js can set the backing canvas size one frame before the responsive
+  // reader finishes settling. Assert the user-facing position with polling so
+  // this checks the stable layout rather than sampling that transient frame.
+  await expect
+    .poll(() => canvas.evaluate((element) => element.getBoundingClientRect().top), {
+      timeout: 5_000,
+    })
+    .toBeLessThan(700);
 
   const tools = page.locator(".literature-reading-tools");
   await expect(tools).toBeVisible();
