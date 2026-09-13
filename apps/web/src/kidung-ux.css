@@ -347,36 +347,51 @@
   }
 
   .hymn-page .pujian-item {
-    grid-template-columns: minmax(0, 1fr) 28px 48px;
+    grid-template-columns: minmax(0, 1fr) 24px 44px;
+  }
+
+  .hymn-page .add-to-playlist-btn {
+    margin-right: 0;
   }
 
   .hymn-text-toolbar {
     grid-template-columns: minmax(0, 1fr) 44px 44px;
-    gap: 8px;
+    gap: 6px;
+    padding: 4px 0;
   }
 
   .hymn-text-toolbar .detail-actions {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     width: 100%;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action {
     width: 100%;
     min-width: 0;
-    min-height: 56px;
-    padding: 6px 5px;
-    flex-direction: column;
-    gap: 4px;
+    min-height: 44px;
+    padding: 0 8px;
+    flex-direction: row;
+    gap: 6px;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action-label {
     display: block;
-    white-space: normal;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    opacity: 1;
+    white-space: nowrap;
     text-align: center;
     font-size: 10.5px;
-    line-height: 1.05;
+    line-height: 1;
   }
 
   .hymn-text-toolbar .hymn-segmented-toolbar {
