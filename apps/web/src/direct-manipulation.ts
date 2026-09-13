@@ -40,7 +40,15 @@ function enhancePdfReader(reader: HTMLElement): void {
   const advancedToggle = reader.querySelector<HTMLButtonElement>(
     ".pdf-advanced-toggle",
   );
-  if (!stage || !indicator || !advancedToggle) return;
+  const zoomIn = reader.querySelector<HTMLButtonElement>(
+    '.pdf-zoom-controls button[aria-label="Perbesar zoom"]',
+  );
+  const zoomOut = reader.querySelector<HTMLButtonElement>(
+    '.pdf-zoom-controls button[aria-label="Perkecil zoom"]',
+  );
+  const zoomReset = reader.querySelector<HTMLButtonElement>(".pdf-zoom-reset");
+  if (!stage || !indicator || !advancedToggle || !zoomIn || !zoomOut || !zoomReset)
+    return;
 
   reader.dataset.directManipulationReady = "true";
   stage.dataset.directManipulationReady = "true";
@@ -52,6 +60,12 @@ function enhancePdfReader(reader: HTMLElement): void {
 
   advancedToggle.setAttribute("aria-label", "Opsi PDF");
   advancedToggle.title = "Opsi PDF";
+  zoomIn.setAttribute("aria-label", "Perbesar PDF");
+  zoomIn.title = "Perbesar PDF";
+  zoomOut.setAttribute("aria-label", "Perkecil PDF");
+  zoomOut.title = "Perkecil PDF";
+  zoomReset.setAttribute("aria-label", "Reset zoom PDF");
+  zoomReset.title = "Reset zoom PDF";
   if (advancedToggle.getAttribute("aria-expanded") === "true") {
     advancedToggle.click();
   }
@@ -90,16 +104,8 @@ function enhancePdfReader(reader: HTMLElement): void {
     if (!action) return;
 
     const control =
-      action === "in"
-        ? reader.querySelector<HTMLButtonElement>(
-            '.pdf-zoom-controls button[aria-label="Perbesar zoom"]',
-          )
-        : action === "out"
-          ? reader.querySelector<HTMLButtonElement>(
-              '.pdf-zoom-controls button[aria-label="Perkecil zoom"]',
-            )
-          : reader.querySelector<HTMLButtonElement>(".pdf-zoom-reset");
-    if (!control || control.disabled) return;
+      action === "in" ? zoomIn : action === "out" ? zoomOut : zoomReset;
+    if (control.disabled) return;
 
     event.preventDefault();
     control.click();
