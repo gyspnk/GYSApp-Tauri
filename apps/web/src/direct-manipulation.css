@@ -2,6 +2,9 @@
    Keep reading chrome calm while retaining explicit keyboard/single-pointer
    fallbacks for actions that cannot be gesture-only. */
 
+.pdf-reader-hymn .pdf-view-scroll-toggle,
+.pdf-reader-hymn:not([data-direct-manipulation-ready="true"])
+  .pdf-advanced-controls,
 .pdf-reader-hymn .pdf-advanced-controls:not(.is-open) {
   display: none !important;
 }
