@@ -8,7 +8,7 @@ async function openHymnPdf(page: Page) {
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Buka PDF" }).click();
+  await page.getByRole("tab", { name: "PDF" }).click();
   await expect(page.locator(".pdf-reader-hymn")).toBeVisible({
     timeout: 30_000,
   });

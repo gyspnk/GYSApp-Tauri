@@ -897,7 +897,9 @@ test("hymn catalog keeps search and collection controls in its header", async ({
   const header = page.locator(".hymn-page-header");
   await expect(header).toBeVisible();
   await expect(header.getByLabel("Cari lagu")).toBeVisible();
-  await expect(header.getByRole("button", { name: "Koleksi" })).toBeVisible();
+  await expect(
+    header.locator('summary[aria-label="Filter koleksi"]'),
+  ).toBeVisible();
   await expect(
     page.getByText(
       "Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau iringan MIDI.",

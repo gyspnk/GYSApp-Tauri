@@ -1,0 +1,22 @@
+/* Final Kidung interaction hardening.
+   Legacy playlist button rules use a more specific 32px target; contextual
+   menus must retain the shared 44px minimum touch target across layouts. */
+.kidung-playlist-actions .kidung-row-menu-panel > .text-button,
+.kidung-playlist-actions .kidung-manage-saved-items .text-button,
+.kidung-playlist-actions .kidung-manage-saved-items > summary {
+  min-height: var(--control-hit, 44px);
+}
+
+/* Legacy compact-toolbar rules set every Kidung action label to display:none.
+   The More panel intentionally restores text labels so low-frequency actions
+   remain understandable without relying on icon recognition. */
+.hymn-more-actions-panel .hymn-action-label {
+  display: block;
+}
+
+/* Direct navigation is unavailable at the edge of a hymn PDF. Do not reserve
+   toolbar space for disabled transport controls; gestures and keyboard input
+   remain available when there is another page to visit. */
+.pdf-reader-hymn .pdf-page-navigation > button:disabled {
+  display: none;
+}
