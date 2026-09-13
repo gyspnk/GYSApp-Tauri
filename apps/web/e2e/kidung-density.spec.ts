@@ -30,7 +30,7 @@ test("phone catalog moves collection filtering behind one compact trigger", asyn
     page.locator(".kidung-desktop-filter .control-select"),
   ).toBeHidden();
   await expect(
-    page.getByRole("button", { name: "Filter koleksi" }),
+    page.locator('summary[aria-label="Filter koleksi"]'),
   ).toBeVisible();
 });
 
