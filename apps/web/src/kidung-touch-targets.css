@@ -6,3 +6,10 @@
 .kidung-playlist-actions .kidung-manage-saved-items > summary {
   min-height: var(--control-hit, 44px);
 }
+
+/* Legacy compact-toolbar rules set every Kidung action label to display:none.
+   The More panel intentionally restores text labels so low-frequency actions
+   remain understandable without relying on icon recognition. */
+.hymn-more-actions-panel .hymn-action-label {
+  display: block;
+}
