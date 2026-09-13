@@ -13,3 +13,10 @@
 .hymn-more-actions-panel .hymn-action-label {
   display: block;
 }
+
+/* Direct navigation is unavailable at the edge of a hymn PDF. Do not reserve
+   toolbar space for disabled transport controls; gestures and keyboard input
+   remain available when there is another page to visit. */
+.pdf-reader-hymn .pdf-page-navigation > button:disabled {
+  display: none;
+}
