@@ -7,10 +7,10 @@ async function openCatalog(page: Page) {
   await expect(
     page.getByRole("heading", { name: "Kidung", exact: true }),
   ).toBeVisible();
-  await page.locator(".pujian-list > li").first().waitFor({
-    state: "visible",
-    timeout: 20_000,
-  });
+  await page
+    .locator(".pujian-list > li")
+    .first()
+    .waitFor({ state: "visible", timeout: 20_000 });
 }
 
 async function openFirstHymn(page: Page) {
