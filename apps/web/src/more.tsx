@@ -17,6 +17,10 @@ import {
   encryptBackupV2,
   importLegacyGysbk,
 } from "@gys/domain";
+import {
+  collectPortableBackupSettings,
+  restorePortableBackupSettings,
+} from "./backup-settings.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   applyAssetManifestUpdate,
@@ -267,54 +271,6 @@ function localUpdateCount(diff: AssetManifestDiff): number {
   return [...diff.added, ...diff.changed].filter(
     (item) => item.source === "local",
   ).length;
-}
-
-const BACKUP_STORAGE_KEYS = [
-  "gys-locale",
-  "gys-theme",
-  "gys-shell-settings-v1",
-  "gys-activity-v1",
-  "gys-favorites-v1",
-  "gys-literature-progress-v2",
-  "gys-asset-index-v1",
-  "gys-active-asset-manifest-v1",
-  "gys-bible-book",
-  "gys-bible-chapter",
-  "gys-bible-version-v1",
-  "gys-bible-last-reading",
-  "gys-bible-bookmarks",
-  "gys-bible-notes-v1",
-  "gys-bible-highlights-v1",
-  "gys-bible-search-history-v1",
-  "gys-bible-split-v1",
-  "gys-bible-split-ratio-v1",
-  "gys-daily-sauh-mode-v1",
-  "gys-media-minimized",
-  "gys-media-position-v1",
-  "gys-midi-preferences-v1",
-  "gys-hymn-typography-v1",
-  "gys-speech-voice-v1",
-  "gys-speech-rate-v1",
-  "gys-speech-engine-v1",
-  "gys-report-draft",
-  "gys-reminder-time-v1",
-  "gys-chord-cache-index-v1",
-  "gys-midi-playlist-v1",
-  "gys-hymn-view-mode-v1",
-  "gys-hymn-chord-visibility-v1",
-];
-
-function collectBackupSettings() {
-  const dynamicKeys = Object.keys(localStorage).filter(
-    (key) =>
-      key.startsWith("gys-pdf-page:") || key.startsWith("gys-pdf-layout:"),
-  );
-  return Object.fromEntries(
-    [...BACKUP_STORAGE_KEYS, ...dynamicKeys].flatMap((key) => {
-      const value = localStorage.getItem(key);
-      return value === null ? [] : [[key, value]];
-    }),
-  );
 }
 
 function downloadBackup(envelope: unknown) {
@@ -721,7 +677,7 @@ export function MorePage({
     }
     try {
       const envelope = await encryptBackupV2(
-        { settings: collectBackupSettings() },
+        { settings: collectPortableBackupSettings() },
         backupPassword,
         { appVersion: "0.1.0", domains: ["settings"] },
       );
@@ -754,12 +710,7 @@ export function MorePage({
         backupPassword,
       );
       const settings = data.settings;
-      if (!settings || typeof settings !== "object" || Array.isArray(settings))
-        throw new Error("settings missing");
-      for (const [key, value] of Object.entries(settings)) {
-        if (key.startsWith("gys-") && typeof value === "string")
-          localStorage.setItem(key, value);
-      }
+      restorePortableBackupSettings(settings);
       setBackupPassword("");
       setBackupFile(undefined);
       setBackupOpen(false);
@@ -798,6 +749,13 @@ export function MorePage({
         ? `Pengingat aktif setiap hari pukul ${reminderTime}.`
         : "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
     );
+  };
+
+  const disableReminder = () => {
+    setReminderTime("");
+    localStorage.removeItem("gys-reminder-time-v1");
+    setReminderOpen(false);
+    show("Pengingat dinonaktifkan.");
   };
 
   const checkOfflinePack = async () => {
@@ -1273,47 +1231,13 @@ export function MorePage({
         <button
           className="more-card more-action"
           type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
-              : "Daftar lagu untuk kebaktian atau latihan"}
-          </small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
           onClick={() => setBackupOpen((open) => !open)}
         >
           <span className="more-icon">↥</span>
           <strong>Backup & import</strong>
-          <small>Simpan atau pulihkan data catatan & riwayat</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => {
-            void clearAppData()
-              .then(() =>
-                show(
-                  "Preferensi dan cache GYS sudah direset. Muat ulang bila diperlukan.",
-                ),
-              )
-              .catch(() =>
-                show(
-                  "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                ),
-              );
-          }}
-        >
-          <span className="more-icon">⌁</span>
-          <strong>Reset perangkat</strong>
-          <small>Bersihkan cache dan mulai ulang preferensi</small>
+          <small>
+            Simpan atau pulihkan catatan, progres baca, dan preferensi
+          </small>
         </button>
 
         <button
@@ -1325,6 +1249,67 @@ export function MorePage({
           <strong>Pengingat</strong>
           <small>Atur waktu teduh membaca firman harian</small>
         </button>
+
+        <button
+          className="more-card more-action"
+          type="button"
+          onClick={() => setPlaylistOpen((open) => !open)}
+        >
+          <span className="more-icon">♫</span>
+          <strong>Antrean MIDI</strong>
+          <small>
+            {playlist.items.length
+              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
+              : "Susun lagu untuk kebaktian atau latihan"}
+          </small>
+        </button>
+
+        <details
+          className="more-card more-card-wide device-data-tools"
+          data-testid="device-data-tools"
+        >
+          <summary className="device-data-summary">
+            <span>
+              <strong>Perangkat & data</strong>
+              <small>Alat lanjutan untuk penyimpanan lokal</small>
+            </span>
+            <span className="device-data-chevron" aria-hidden="true">
+              ›
+            </span>
+          </summary>
+          <div className="device-data-body">
+            <div>
+              <strong>Reset perangkat</strong>
+              <small>
+                Hapus preferensi, cache, progres lokal, dan data offline
+                aplikasi dari perangkat ini. Gunakan hanya bila diperlukan.
+              </small>
+            </div>
+            <button
+              className="quiet-button danger-button"
+              type="button"
+              onClick={() => {
+                const confirmed = window.confirm(
+                  "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
+                );
+                if (!confirmed) return;
+                void clearAppData()
+                  .then(() =>
+                    show(
+                      "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
+                    ),
+                  )
+                  .catch(() =>
+                    show(
+                      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                    ),
+                  );
+              }}
+            >
+              Reset perangkat
+            </button>
+          </div>
+        </details>
 
         <form className="more-card report-card" onSubmit={submitReport}>
           <div className="more-card-heading">
@@ -1376,8 +1361,9 @@ export function MorePage({
             </button>
           </div>
           <p>
-            Backup hanya memuat preferensi, riwayat baca, bookmark, dan indeks
-            cache. Kata sandi tidak dikirim ke server.
+            Backup memuat preferensi, progres baca, bookmark, dan catatan. Sesi
+            akun, data perangkat, serta cache tidak ikut disalin. Kata sandi
+            tidak dikirim ke server.
           </p>
           <label className="search-field">
             <span>Kata sandi backup</span>
@@ -1454,10 +1440,7 @@ export function MorePage({
             <button
               className="quiet-button"
               type="button"
-              onClick={() => {
-                setReminderTime("");
-                void saveReminder();
-              }}
+              onClick={disableReminder}
             >
               Nonaktifkan
             </button>

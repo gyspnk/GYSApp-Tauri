@@ -67,7 +67,7 @@ export function autoFitTextSingleLine(
 
 /**
  * Fit every matching element inside a container and refit when fonts load or
- * the container resizes (gyschordweb fitListTitles/fitViewerTitle).
+ * the container width changes (gyschordweb fitListTitles/fitViewerTitle).
  * Returns a cleanup function.
  */
 export function observeSingleLineFit(
@@ -77,28 +77,37 @@ export function observeSingleLineFit(
   extraDeps: unknown[] = [],
 ): () => void {
   if (!container) return () => undefined;
+
   const run = () => {
-    if (typeof document === "undefined") return;
-    document
+    container
       .querySelectorAll(selector)
       .forEach((element) =>
         autoFitTextSingleLine(element as HTMLElement, options),
       );
   };
+
   run();
   let raf = 0;
   let resizeRaf = 0;
-  const rerun = () => {
+  let lastWidth = Math.round(container.clientWidth);
+  const scheduleRun = () => {
+    cancelAnimationFrame(raf);
     raf = requestAnimationFrame(run);
   };
-  const onResize = () => {
+  const onResize = (entries: ResizeObserverEntry[]) => {
+    const entry =
+      entries.find((candidate) => candidate.target === container) ?? entries[0];
+    const width = Math.round(entry?.contentRect.width ?? container.clientWidth);
+    if (width === lastWidth) return;
+    lastWidth = width;
     cancelAnimationFrame(resizeRaf);
     resizeRaf = requestAnimationFrame(run);
   };
+
   let fontCleanup: (() => void) | undefined;
   if (typeof document !== "undefined" && document.fonts) {
-    document.fonts.ready.then(() => requestAnimationFrame(run));
-    const onLoadingDone = () => requestAnimationFrame(run);
+    void document.fonts.ready.then(scheduleRun);
+    const onLoadingDone = () => scheduleRun();
     document.fonts.addEventListener(
       "loadingdone",
       onLoadingDone as EventListener,
@@ -109,9 +118,11 @@ export function observeSingleLineFit(
         onLoadingDone as EventListener,
       );
   }
+
   const observer =
     typeof ResizeObserver === "function" ? new ResizeObserver(onResize) : null;
   observer?.observe(container);
+
   return () => {
     cancelAnimationFrame(raf);
     cancelAnimationFrame(resizeRaf);

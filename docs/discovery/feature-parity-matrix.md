@@ -89,16 +89,21 @@ template + viewer CSS):
 | Lyrics fullscreen panel gains explicit verse prev/next buttons (desktop parity; swipe/wheel remain)                                           | IMPLEMENTED (`LyricsPanel`)      |
 | Playfair Display font for hymn titles (katalog, detail, PDF title, lyrics panel)                                                              | IMPLEMENTED (`index.html` + CSS) |
 
-## Skipped (superseded by app architecture)
+## Adapted / superseded by app architecture
 
-- Layout style density presets (balanced/compact/focused/spacious): the app's
-  shell uses a topbar + nav rail (desktop) / bottom-nav (mobile) design, not
-  the gyschordweb header + bottom-nav variables (`--app-header-height`,
-  `--layout-list-width`, …). Porting those presets would require re-theming the
-  entire shell; the app already offers equivalent density controls via its own
-  responsive layout.
-- Appearance Studio colorScheme palettes (warm/slate/sage/rose/ocean):
-  superseded by the app's theme system (light/dark/sepia/amoled + accent).
+- Upstream `layoutStyle` density presets are now behaviorally adapted rather
+  than pixel-cloned. GYSApp exposes global `Nyaman`, `Standar`, and `Ringkas`
+  modes through `ui-preferences.ts`/`ui-preferences.css`. Compact mode keeps a
+  44 px touch target floor on touch/coarse-pointer layouts instead of inheriting
+  desktop density blindly.
+- Upstream `uiFont` customization is adapted as `Otomatis`, `Himne`, and
+  `Sans modern`. The hymn option applies Playfair to display/title surfaces
+  while preserving a readable body stack; the sans option uses the platform
+  system stack.
+- Appearance Studio `colorScheme` palettes (warm/slate/sage/rose/ocean) remain
+  superseded by the app's stronger theme system (light/dark/sepia/AMOLED/system)
+  plus accent presets/custom accent, so no second competing palette system is
+  introduced.
 
 ## Audited and confirmed already present (no change needed)
 
@@ -108,7 +113,7 @@ template + viewer CSS):
 - Data caching: `gys-data-cache` IndexedDB with 30 s revalidation + `gys-data-updated` events; `assets-list`/`assets-lyrics`/`assets-chord-list` equivalents live in generated `offline/hymn-catalog.json` + `music-lock.json`.
 - Search: normalized lyric index, AND token matching, prefix fallback, re-filter on data update.
 - Chord engine: note-aligned v2 `.chord.json`, note extraction from PDF (noteIdx → xPct/yPct), chord transposition with accidental sharp/flat, family-chord key dropdown, natural-chord preference (-1 for black keys), hold-repeat steppers.
-- Appearance: theme light/dark/system/sepia/amoled, accent presets + custom, locale id/en/zh.
+- Appearance: theme light/dark/system/sepia/AMOLED, accent presets + custom, locale id/en/zh.
 - Auto-update: SW version + `CLEAR_CACHE`/`GET_VERSION` message API equivalent via `more.tsx` reset + `sw.js`.
 
 ## Skipped (data not available upstream or superseded)
@@ -123,3 +128,32 @@ No row is marked `PARITY` until the scope-specific benchmark, accessibility,
 device, or protected-service evidence named in the final column is attached.
 This prevents the matrix from claiming a full GA sign-off merely because a
 route or control exists locally.
+
+## September 2026 canonical parity refresh
+
+Re-synchronized generated music/chord provenance to `gyspnk/gyschordweb@a9bf3219105dca3dde1b286328f46a0eede3287e` (2026-09-05). Compared with the previous `a3d1ea7` source lock, canonical upstream adds nine note-aligned chord assets: hymns 108, 196, 271, 322, 398, 407, 466, 467, and 492. The canonical generated set is now 1,221 music assets and 153 chord references. Generated provenance and the strict chord-position audit must pass before this refresh is treated as verified parity evidence.
+
+## September 12, 2026 canonical parity refresh
+
+Re-checked the immutable `gyspnk/gyschordweb` source at
+`3039ae678c9e0e6ca439f4e1e0250759667dbcdf`. Relative to the September 5
+lock, upstream adds two note-aligned chord assets: hymn 106
+(`Aku Murid Yesus`) and hymn 363 (`Berpegang Pada JanjiNya`). The generated
+music lock, chord manifest, offline runtime lock, hymn catalog, and strict chord
+position audit are regenerated from that exact source commit. Canonical chord
+references are now 155. This refresh is only accepted when provenance, strict
+geometry, unit, build, and bundle-budget verification all pass.
+
+### Universal appearance adaptation
+
+The remaining useful Appearance Studio behavior from the audited upstream is
+now represented by a dedicated global readability preference layer rather than
+by shell-specific upstream variables. Unit coverage verifies defaults,
+normalization, persistence, DOM application, and subscriptions. Browser coverage
+exercises comfortable/standard/compact density, automatic/hymnal/sans font,
+route/reload persistence, dark-theme compatibility, Escape/focus restoration,
+reduced motion, 44 px mobile navigation targets, horizontal-overflow safety, and
+sticky mobile dialog controls at 390×844, 768×1024, and 1440×900. Portable backup
+coverage also exercises the new preference record. These are implementation and
+CI-browser evidence; physical-device and screen-reader review remain separate
+acceptance evidence rather than being implied by this matrix.

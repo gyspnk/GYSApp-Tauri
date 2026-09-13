@@ -19,7 +19,7 @@
     "verify:bundle": "node scripts/check-bundle-budget.mjs",
     "typecheck": "pnpm --filter @gys/contracts typecheck && pnpm --filter @gys/domain typecheck && pnpm --filter @gys/testkit typecheck && pnpm --filter @gys/bff typecheck && pnpm --filter @gys/web typecheck",
     "native:check": "pnpm --filter @gys/native check",
-    "test": "pnpm --filter @gys/contracts test && pnpm --filter @gys/domain test && pnpm --filter @gys/testkit test && pnpm --filter @gys/bff test && pnpm --filter @gys/web test && pnpm test:policy && node --test scripts/verify-documentation.test.mjs scripts/verify-service-worker.test.mjs",
+    "test": "pnpm --filter @gys/contracts test && pnpm --filter @gys/domain test && pnpm --filter @gys/testkit test && pnpm --filter @gys/bff test && pnpm --filter @gys/web test && pnpm test:policy && node --test scripts/verify-documentation.test.mjs scripts/verify-service-worker.test.mjs scripts/test-e2e-selective-core.test.mjs scripts/test-e2e-selective-ui.test.mjs scripts/prepush-plan.test.mjs",
     "test:e2e": "pnpm --filter @gys/web test:e2e",
     "test:e2e:changed": "node scripts/test-e2e-selective.mjs",
     "test:e2e:smoke": "pnpm --filter @gys/web test:e2e:smoke",

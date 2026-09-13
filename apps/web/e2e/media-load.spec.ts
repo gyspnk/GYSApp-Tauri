@@ -110,12 +110,7 @@ test("literature PDF failure exposes retry inside the application reader shell",
     .getByRole("link", { name: /Kitab Markus/i })
     .first()
     .click();
-  await expect(page.getByRole("heading", { name: "Kitab Markus" })).toBeVisible(
-    {
-      timeout: 15_000,
-    },
-  );
-  await page.getByRole("button", { name: "Baca di aplikasi" }).click();
+  await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.getByRole("alert")).toContainText(
     "PDF belum dapat dibuka",
     {
@@ -144,24 +139,18 @@ test("literature PDF stays inline and resumes the last page", async ({
     });
   });
   await page.goto("/GYSApp-Tauri/literatur");
-  await page
-    .getByRole("link", { name: /Kitab Markus/i })
-    .first()
-    .click();
-  await expect(page.getByRole("heading", { name: "Kitab Markus" })).toBeVisible(
-    { timeout: 15_000 },
-  );
-  await page.getByRole("button", { name: "Baca di aplikasi" }).click();
+  const markus = page.getByRole("link", { name: /Kitab Markus/i }).first();
+  await markus.click();
+  await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");
-  await expect(page).toHaveURL(/\/literatur\//);
 
   await page.getByRole("button", { name: "Tutup" }).click();
+  await expect(page).toHaveURL(/\/literatur$/);
   await expect(page.locator(".pdf-reader")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Lanjutkan dari halaman 1" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Lanjutkan dari halaman 1" }).click();
+  const resume = page.getByRole("link", { name: /Kitab Markus/i }).first();
+  await expect(resume).toContainText(/100% selesai/i);
+  await resume.click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");
 });

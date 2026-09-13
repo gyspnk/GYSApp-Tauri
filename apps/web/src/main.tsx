@@ -2,10 +2,18 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
 import { installGlobalDiagnostics, recordDiagnostic } from "./diagnostics.js";
+import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
+import { initializeUiPreferences } from "./ui-preferences.js";
+import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import "./styles.css";
+import "./ui-hardening.css";
+import "./calm-liturgical.css";
+import "./ui-preferences.css";
+import "./kidung-ux.css";
 
 runStorageMigrations();
+initializeUiPreferences();
 installGlobalDiagnostics();
 
 if (typeof window !== "undefined") {
@@ -44,8 +52,10 @@ if (restoredPath) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
+    <UiPreferencesPanel />
   </StrictMode>,
 );
+installRouteSectionDeepLinks();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   let refreshing = false;

@@ -1,5 +1,8 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
-import { autoFitTextSingleLine } from "./text-fit.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { autoFitTextSingleLine, observeSingleLineFit } from "./text-fit.js";
+
+type ResizeEntry = { contentRect: { width: number } };
+type ResizeCallback = (entries: ResizeEntry[]) => void;
 
 function fakeElement(initialWidth: number) {
   const style: Record<string, string> = {
@@ -26,7 +29,10 @@ function fakeElement(initialWidth: number) {
 }
 
 describe("single-line autofit (gyschordweb autoFitTextSingleLine)", () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   it("keeps maxPx when the text already fits", () => {
     const element = fakeElement(10_000);
@@ -48,5 +54,73 @@ describe("single-line autofit (gyschordweb autoFitTextSingleLine)", () => {
     expect(applied).toBeGreaterThanOrEqual(10);
     expect(applied).toBeLessThanOrEqual(16);
     expect(element.style.textOverflow).toBe("ellipsis");
+  });
+
+  it("scopes fitting to the observed container", () => {
+    const inside = fakeElement(240);
+    const outside = fakeElement(240);
+    outside.style.fontSize = "23px";
+
+    const container = {
+      clientWidth: 320,
+      querySelectorAll: vi.fn(() => [inside]),
+    };
+    const documentQuery = vi.fn(() => [inside, outside]);
+    vi.stubGlobal("document", { querySelectorAll: documentQuery });
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+
+    const cleanup = observeSingleLineFit(
+      container as unknown as HTMLElement,
+      ".fit",
+      { maxPx: 16, minPx: 10 },
+    );
+
+    expect(container.querySelectorAll).toHaveBeenCalledWith(".fit");
+    expect(documentQuery).not.toHaveBeenCalled();
+    expect(outside.style.fontSize).toBe("23px");
+    cleanup();
+  });
+
+  it("ignores height-only ResizeObserver updates", () => {
+    const inside = fakeElement(240);
+    const container = {
+      clientWidth: 320,
+      querySelectorAll: vi.fn(() => [inside]),
+    };
+    let resizeCallback: ResizeCallback | undefined;
+    class FakeResizeObserver {
+      constructor(callback: ResizeCallback) {
+        resizeCallback = callback;
+      }
+      observe() {}
+      disconnect() {}
+    }
+
+    vi.stubGlobal("document", {});
+    vi.stubGlobal("ResizeObserver", FakeResizeObserver);
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+
+    const cleanup = observeSingleLineFit(
+      container as unknown as HTMLElement,
+      ".fit",
+      { maxPx: 16, minPx: 10 },
+    );
+    expect(inside.style.fontSize).not.toBe("23px");
+
+    inside.style.fontSize = "23px";
+    resizeCallback?.([{ contentRect: { width: 320 } }]);
+    expect(inside.style.fontSize).toBe("23px");
+
+    resizeCallback?.([{ contentRect: { width: 360 } }]);
+    expect(inside.style.fontSize).not.toBe("23px");
+    cleanup();
   });
 });

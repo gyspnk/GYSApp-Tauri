@@ -7,7 +7,7 @@ import {
   BUILTIN_EDGE_VOICES,
   isEdgeSpeechConfigured,
 } from "./edge-speech.js";
-import { resolveVoiceForLanguage } from "./bible-language.js";
+import { resolveSpeechVoiceForText } from "./bible-language.js";
 import {
   persistSpeechSettings,
   readSpeechSettings,
@@ -19,6 +19,10 @@ export type SpeechQueueItem = {
   id: string;
   text: string;
   context?: SpeechContext;
+  /** Optional explicit BCP-47 language hint for this queue item. */
+  languageTag?: string;
+  /** Runtime-resolved voice. Callers normally leave this undefined. */
+  voiceId?: string;
 };
 export type { SpeechEnginePreference } from "@gys/contracts";
 export type SpeechSnapshot = {
@@ -30,6 +34,8 @@ export type SpeechSnapshot = {
   offline?: boolean;
   voices: SpeechVoice[];
   voiceId?: string;
+  activeLanguageTag?: string | undefined;
+  activeVoiceId?: string | undefined;
   rate: number;
   pitch: number;
   volume: number;
@@ -133,30 +139,31 @@ class BrowserSpeechSession {
     this.orchestrator = new SpeechOrchestrator(
       this.providersFor(this.state.engine),
     );
-    this.queue = queue.map((item) => ({ ...item }));
+    const preferredVoiceId = options.voiceId ?? this.state.voiceId;
+    const pool = this.voicesForEngine(this.state.engine);
+    this.queue = queue.map((item) => {
+      const resolved = resolveSpeechVoiceForText(
+        pool,
+        preferredVoiceId,
+        item.text,
+        item.languageTag ?? options.languageTag,
+      );
+      return {
+        ...item,
+        languageTag: resolved.languageTag,
+        ...(resolved.voiceId ? { voiceId: resolved.voiceId } : {}),
+      };
+    });
     const nextRate = clamp(options.rate ?? this.state.rate, 0.5, 2);
     const nextPitch = clamp(options.pitch ?? this.state.pitch, 0.5, 2);
     const nextVolume = clamp(options.volume ?? this.state.volume, 0, 1);
-    // Language-aware voice resolution: a saved voice is kept only when it
-    // speaks the requested language; otherwise the best matching advertised
-    // (or built-in Edge) voice for that language is chosen so e.g. an English
-    // Bible is never read with an Indonesian pronunciation.
-    let effectiveVoiceId = options.voiceId ?? this.state.voiceId;
-    if (options.languageTag) {
-      const pool = this.voicesForEngine(this.state.engine);
-      const resolved = resolveVoiceForLanguage(
-        pool,
-        options.voiceId ?? this.state.voiceId,
-        options.languageTag,
-      );
-      if (resolved) effectiveVoiceId = resolved;
-    }
+
+    // Auto-selected voices are runtime-only. Persist only playback tuning here;
+    // an explicit user voice choice is persisted by setVoice(), so switching
+    // Bible languages cannot silently rewrite the user's preferred voice.
     persistSpeechSettings(
       typeof localStorage !== "undefined" ? localStorage : undefined,
       {
-        ...(effectiveVoiceId !== undefined
-          ? { voiceId: effectiveVoiceId }
-          : {}),
         rate: nextRate,
         pitch: nextPitch,
         volume: nextVolume,
@@ -169,7 +176,6 @@ class BrowserSpeechSession {
       rate: nextRate,
       pitch: nextPitch,
       volume: nextVolume,
-      ...(effectiveVoiceId !== undefined ? { voiceId: effectiveVoiceId } : {}),
       error: undefined,
     });
     await this.playQueue(0);
@@ -194,6 +200,8 @@ class BrowserSpeechSession {
         id: item.id,
         text: item.text,
         ...(itemContext ? { context: itemContext } : {}),
+        ...(item.languageTag ? { languageTag: item.languageTag } : {}),
+        ...(item.voiceId ? { voiceId: item.voiceId } : {}),
       };
     });
     this.patch({
@@ -275,16 +283,26 @@ class BrowserSpeechSession {
         if (!item) continue;
         if (controller.signal.aborted || generation !== this.playbackGeneration)
           return;
+        const resolved = item.voiceId
+          ? { languageTag: item.languageTag, voiceId: item.voiceId }
+          : resolveSpeechVoiceForText(
+              this.voicesForEngine(this.state.engine),
+              this.state.voiceId,
+              item.text,
+              item.languageTag,
+            );
         this.patch({
           status: "speaking",
           currentIndex: index,
           context: item.context,
+          activeLanguageTag: resolved.languageTag,
+          activeVoiceId: resolved.voiceId,
         });
         const speechOptions = {
           rate: this.state.rate,
           pitch: this.state.pitch,
           volume: this.state.volume,
-          ...(this.state.voiceId ? { voiceId: this.state.voiceId } : {}),
+          ...(resolved.voiceId ? { voiceId: resolved.voiceId } : {}),
         };
         const result = await this.orchestrator.speak(
           item.text,
@@ -296,7 +314,12 @@ class BrowserSpeechSession {
         this.patch({ providerId: result.providerId, offline: result.offline });
       }
       if (generation === this.playbackGeneration)
-        this.patch({ status: "idle", currentIndex: -1 });
+        this.patch({
+          status: "idle",
+          currentIndex: -1,
+          activeLanguageTag: undefined,
+          activeVoiceId: undefined,
+        });
     } catch (error) {
       if (controller.signal.aborted || generation !== this.playbackGeneration)
         return;
@@ -332,6 +355,8 @@ class BrowserSpeechSession {
       status: "idle",
       currentIndex: -1,
       total: clearQueue ? 0 : this.state.total,
+      activeLanguageTag: undefined,
+      activeVoiceId: undefined,
       ...(clearQueue ? { context: undefined } : {}),
     });
   }
@@ -382,8 +407,8 @@ class BrowserSpeechSession {
   }
 
   private providersFor(engine: SpeechEnginePreference) {
-    // "Edge TTS" tanpa API: kalau endpoint Edge tidak dikonfigurasi atau gagal,
-    // speech synthesis bawaan browser siap sebagai fallback agar player tetap jalan.
+    // Native Edge-compatible speech is keyless but online. If the compatibility
+    // endpoint is unavailable, system speech remains the recoverable fallback.
     if (engine === "edge") {
       return isEdgeSpeechConfigured()
         ? [this.edgeProvider, this.browserProvider]

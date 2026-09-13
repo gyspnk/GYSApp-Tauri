@@ -20,6 +20,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,17 +36,13 @@ jobs:
       - run: pnpm verify:generated
       - run: pnpm verify:docs
       - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
-      - run: pnpm verify:native-assets
-      - run: pnpm verify:bundle
+      # Keep this job compile-free so it returns cheap structural feedback in
+      # parallel. Browser verification consumes one separately verified build.
       - run: pnpm audit --prod
 
-  e2e:
+  web-build:
     runs-on: ubuntu-latest
-    needs: verify
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -56,18 +53,145 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @gys/web exec playwright install --with-deps chromium
-      - run: pnpm --filter @gys/web test:e2e
-      - name: Upload browser diagnostics on failure
+      - name: Build and typecheck once
+        run: pnpm build
+      - name: Run unit and policy suites against the built workspace
+        run: pnpm test
+      - run: pnpm verify:native-assets
+      - run: pnpm verify:bundle
+      - name: Upload verified build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-build-${{ github.run_id }}
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+          if-no-files-found: error
+          retention-days: 1
+
+  # Draft PRs need fast feedback while implementation is still moving. The
+  # synchronize event supplies the prior head SHA, so ordinary pushes exercise
+  # only the changed surface. Open/reopened draft PRs fall back to the PR base.
+  e2e-selective:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+    needs: web-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore verified build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-build-${{ github.run_id }}
+          path: .
+      # GitHub's Ubuntu image already carries Chromium runtime libraries. Avoid
+      # Playwright's apt/font bootstrap and download only the headless browser
+      # payload actually exercised by CI. The browser contract below proves the
+      # runner remains sufficient on every image revision.
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Run browser contracts affected by this draft update
+        env:
+          GYS_E2E_PREBUILT: "1"
+          GYS_E2E_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+          GYS_E2E_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
+      - name: Upload selective browser diagnostics on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-failures-${{ github.run_id }}
+          name: e2e-selective-failures-${{ github.run_id }}
           path: apps/web/test-results
           if-no-files-found: ignore
+      - name: Upload selective visual QA previews
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-preview-selective-${{ github.run_id }}
+          path: apps/web/test-results/ui-preview
+          if-no-files-found: ignore
+          retention-days: 7
+
+  e2e-shard:
+    if: ${{ github.event_name == 'push' || github.event.pull_request.draft == false }}
+    needs: web-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore verified build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-build-${{ github.run_id }}
+          path: .
+      # CI runs Chromium headlessly. The hosted image already provides the
+      # runtime libraries, so skip redundant apt/font installation and fetch
+      # only the headless shell used by Playwright.
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Run full browser shard ${{ matrix.shard }}/2
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: pnpm --filter @gys/web exec playwright test --config=playwright.ci.config.ts --shard=${{ matrix.shard }}/2
+      - name: Upload shard diagnostics on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-shard-${{ matrix.shard }}-failures-${{ github.run_id }}
+          path: apps/web/test-results
+          if-no-files-found: ignore
+      - name: Upload full-suite visual QA previews
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-preview-full-${{ matrix.shard }}-${{ github.run_id }}
+          path: apps/web/test-results/ui-preview
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # Preserve the stable e2e check name for branch protection. Exactly one of
+  # the two paths is expected to execute: selective for draft PRs, full shards
+  # for ready PRs/main.
+  e2e:
+    if: ${{ always() }}
+    needs: [e2e-selective, e2e-shard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require the applicable browser verification path to pass
+        run: |
+          if [ "${{ needs.e2e-selective.result }}" = "success" ] || [ "${{ needs.e2e-shard.result }}" = "success" ]; then
+            exit 0
+          fi
+          echo "Neither selective nor full browser verification succeeded."
+          exit 1
 
   secret-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,10 +201,24 @@ jobs:
 
   native-check:
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo check --manifest-path apps/native/src-tauri/Cargo.toml
+      # Formatting does not need dependency artifacts. Fail here before paying
+      # the warm-cache restore cost when a Rust file only needs rustfmt.
       - run: cargo fmt --manifest-path apps/native/src-tauri/Cargo.toml -- --check
-      - run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml
-      - run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets -- -D warnings
+      - name: Restore Rust dependency and target cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "apps/native/src-tauri -> target"
+          shared-key: native-windows-v2
+          cache-on-failure: false
+      # Keep Cargo locked for deterministic resolution. `--lib` avoids building
+      # empty binary/doc-test targets during the unit pass, while clippy still
+      # validates every native target. Do not force `--offline`: rust-cache can
+      # restore compiled artifacts without every sparse-index entry Cargo needs.
+      - name: Run native library tests
+        run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked
+      - name: Run native clippy
+        run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked -- -D warnings

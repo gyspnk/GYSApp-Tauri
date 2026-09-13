@@ -8,7 +8,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   LiteratureCatalogSchema,
   type LiteratureCategory,
@@ -114,6 +119,22 @@ const formatLabels: Record<LiteratureItem["format"], string> = {
   issue: "Edisi",
   pdf: "PDF",
 };
+
+function literatureHref(item: LiteratureItem): string {
+  const directRead = item.format === "pdf" || item.format === "issue";
+  return `/literatur/${encodeURIComponent(item.id)}${directRead ? "?read=1" : ""}`;
+}
+
+function literatureRowAction(
+  item: LiteratureItem,
+  progress: LiteratureProgress | undefined,
+): string {
+  if (item.format === "article") return "Buka bacaan";
+  if (progress?.location?.kind === "page") {
+    return `Lanjut · halaman ${progress.location.page}`;
+  }
+  return "Baca PDF";
+}
 
 type CatalogState =
   | { status: "loading" }
@@ -346,7 +367,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               {featured.map((item) => (
                 <Link
                   className="literature-shelf-item"
-                  to={`/literatur/${encodeURIComponent(item.id)}`}
+                  to={literatureHref(item)}
                   key={item.id}
                 >
                   <Cover item={item} compact />
@@ -383,7 +404,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 <div className="literature-recent-item" key={item.id}>
                   <Link
                     className="literature-recent-link"
-                    to={`/literatur/${encodeURIComponent(item.id)}`}
+                    to={literatureHref(item)}
                   >
                     <Cover item={item} compact />
                     <span>
@@ -492,7 +513,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 {groupItems.map((item) => (
                   <Link
                     className="literature-row"
-                    to={`/literatur/${encodeURIComponent(item.id)}`}
+                    to={literatureHref(item)}
                     key={item.id}
                   >
                     <Cover item={item} />
@@ -502,7 +523,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                         {formatLabels[item.format]} ·{" "}
                         {dateLabel(item.publishedAt, locale)}
                       </small>
-                      <em>Buka detail</em>
+                      <em>{literatureRowAction(item, progressMap[item.id])}</em>
                     </span>
                     <span className="literature-arrow" aria-hidden="true">
                       ›
@@ -539,6 +560,9 @@ function itemFromRoute(items: LiteratureItem[], encodedId: string | undefined) {
 
 export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const { itemId } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const directRead = searchParams.get("read") === "1";
   const catalogState = useLiteratureCatalog();
   const item =
     catalogState.status === "ready"
@@ -554,6 +578,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerError, setReaderError] = useState("");
+  const closeReader = () => {
+    if (directRead) {
+      navigate("/literatur");
+      return;
+    }
+    setReaderOpen(false);
+  };
   const [articleOpen, setArticleOpen] = useState(false);
   const [articleStatus, setArticleStatus] = useState<
     "idle" | "loading" | "ready" | "error"
@@ -795,6 +826,12 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   }, [downloadStatus, item, pdfAsset, pdfBytes]);
 
+  useEffect(() => {
+    if (!directRead || !isPdfItem || !pdfAsset || readerOpen || readerError)
+      return;
+    void openReader();
+  }, [directRead, isPdfItem, pdfAsset, readerOpen, readerError, openReader]);
+
   const toggle = () => {
     if (!item) return;
     const next = toggleFavorite({
@@ -881,7 +918,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const hasResume = Boolean(progress?.location || progressPercent > 0);
   return (
     <div
-      className="page literature-detail-page"
+      className={`page literature-detail-page${directRead && isPdfItem ? " is-direct-reader" : ""}`}
       data-testid="literature-detail"
     >
       <div className="detail-back">
@@ -939,6 +976,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
+      {directRead && isPdfItem && !readerOpen && !readerError && (
+        <div className="loading-panel literature-direct-loading" role="status">
+          Menyiapkan PDF…
+        </div>
+      )}
       <section className="literature-reading-panel">
         <div className="section-title-row">
           <div>
@@ -952,65 +994,73 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           max={100}
           aria-label={`Kemajuan membaca ${progressPercent}%`}
         />
-        <div className="literature-progress-actions">
-          {isPdfItem && (
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void openReader()}
-            >
-              {hasResume ? `Lanjutkan dari halaman ${resumePage}` : "Buka PDF"}
-            </button>
-          )}
-          <button
-            className="quiet-button"
-            type="button"
-            onClick={() => updateProgress(Math.max(1, progressPercent))}
-          >
-            Tandai dibuka
-          </button>
-          <button
-            className="quiet-button"
-            type="button"
-            onClick={() => updateProgress(100, progress?.location, true)}
-          >
-            Tandai selesai
-          </button>
-          {isPdfItem && (
-            <>
+        <details
+          className="literature-reading-tools"
+          open={!directRead || !isPdfItem}
+        >
+          <summary>Kelola kemajuan & offline</summary>
+          <div className="literature-progress-actions">
+            {isPdfItem && (
               <button
                 className="quiet-button"
                 type="button"
-                onClick={() => void download()}
-                disabled={downloadStatus === "downloading"}
+                onClick={() => void openReader()}
               >
-                {downloadStatus === "downloading"
-                  ? "Mengunduh…"
-                  : downloadStatus === "ready"
-                    ? "Perbarui PDF offline"
-                    : "Unduh PDF"}
+                {hasResume
+                  ? `Lanjutkan dari halaman ${resumePage}`
+                  : "Buka PDF"}
               </button>
-              {downloadStatus === "ready" && (
-                <button
-                  className="quiet-button"
-                  type="button"
-                  onClick={() => void openReader()}
-                >
-                  Buka offline
-                </button>
-              )}
-            </>
-          )}
-          {!isPdfItem && resumeScrollRatio !== undefined && (
+            )}
             <button
               className="quiet-button"
               type="button"
-              onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+              onClick={() => updateProgress(Math.max(1, progressPercent))}
             >
-              Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+              Tandai dibuka
             </button>
-          )}
-        </div>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => updateProgress(100, progress?.location, true)}
+            >
+              Tandai selesai
+            </button>
+            {isPdfItem && (
+              <>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => void download()}
+                  disabled={downloadStatus === "downloading"}
+                >
+                  {downloadStatus === "downloading"
+                    ? "Mengunduh…"
+                    : downloadStatus === "ready"
+                      ? "Perbarui PDF offline"
+                      : "Unduh PDF"}
+                </button>
+                {downloadStatus === "ready" && (
+                  <button
+                    className="quiet-button"
+                    type="button"
+                    onClick={() => void openReader()}
+                  >
+                    Buka offline
+                  </button>
+                )}
+              </>
+            )}
+            {!isPdfItem && resumeScrollRatio !== undefined && (
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+              >
+                Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+              </button>
+            )}
+          </div>
+        </details>
         {readerError && (
           <div className="error-copy literature-reader-error" role="alert">
             <span>{readerError}</span>
@@ -1039,11 +1089,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         >
           <div className="section-title-row">
             <h2>PDF · {item.title}</h2>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setReaderOpen(false)}
-            >
+            <button className="text-button" type="button" onClick={closeReader}>
               Tutup
             </button>
           </div>

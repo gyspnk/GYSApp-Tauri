@@ -122,6 +122,28 @@ for (const surface of surfaces) {
         )
         .toBe(true);
 
+      if (surface.name === "assets") {
+        const topbar = await page.locator(".topbar").boundingBox();
+        const heading = await page
+          .getByRole("heading", { name: "Manajemen Aset" })
+          .boundingBox();
+        expect(topbar).not.toBeNull();
+        expect(heading).not.toBeNull();
+        expect(heading!.y).toBeGreaterThanOrEqual(topbar!.y + topbar!.height);
+      }
+
+      // The universal appearance launcher has its own dedicated behavior +
+      // screenshot suite. Keep the legacy More-page baseline scoped to the
+      // pre-existing layout so intentional additions cannot weaken its pixel
+      // threshold or force unrelated baseline churn.
+      if (surface.name === "more") {
+        const preferencesEntry = page.locator(".ui-preferences-entry");
+        await expect(preferencesEntry).toHaveCount(1);
+        await preferencesEntry.evaluate((element) => {
+          (element as HTMLElement).style.display = "none";
+        });
+      }
+
       await expect(page).toHaveScreenshot(
         `${surface.name}-${viewport.name}.png`,
         {

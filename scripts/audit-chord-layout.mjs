@@ -326,11 +326,14 @@ async function auditPdf(pdfBytes, pages) {
 
 const lock = await readJson(lockPath);
 const musicLock = await readJson(musicLockPath);
-if (lock.sourceRepo !== "gyspnk/gyschordweb" || lock.sourceCommit !== "a3d1ea7")
+if (
+  lock.sourceRepo !== "gyspnk/gyschordweb" ||
+  lock.sourceCommit !== "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
+)
   throw new Error("unexpected chord lock provenance");
-if (!Array.isArray(lock.entries) || lock.entries.length !== 144)
+if (!Array.isArray(lock.entries) || lock.entries.length !== 155)
   throw new Error(
-    `expected 144 chord entries, got ${lock.entries?.length ?? 0}`,
+    `expected 155 chord entries, got ${lock.entries?.length ?? 0}`,
   );
 
 const files = [];
