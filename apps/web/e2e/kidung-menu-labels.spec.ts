@@ -19,4 +19,10 @@ test("More menu labels stay visible", async ({ page }) => {
     await expect(labels.nth(index)).toBeVisible();
     await expect(labels.nth(index)).not.toHaveText(/^\s*$/);
   }
+
+  await page.screenshot({
+    path: "test-results/ui-preview/kidung-density/reader-more-phone-390x844.png",
+    fullPage: false,
+    animations: "disabled",
+  });
 });
