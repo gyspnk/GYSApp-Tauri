@@ -180,7 +180,7 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
     });
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
-      path: `test-results/kidung-preview/${entry.name}.png`,
+      path: `test-results/ui-preview/kidung/${entry.name}.png`,
       fullPage: true,
       animations: "disabled",
     });
