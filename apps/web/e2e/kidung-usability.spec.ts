@@ -60,13 +60,19 @@ test(
       searchBox!.y + searchBox!.height - 1,
     );
 
-    const firstOpen = page.locator(".pujian-open-button").first();
+    const firstOpen = page.locator(".pujian-title").first();
+    const firstNumber = page.locator(".pujian-nomor").first();
     await expect(firstOpen).toBeVisible();
     const openBox = await firstOpen.boundingBox();
+    const numberBox = await firstNumber.boundingBox();
     expect(openBox).not.toBeNull();
+    expect(numberBox).not.toBeNull();
     expect(openBox!.height).toBeGreaterThanOrEqual(56);
     expect(openBox!.width).toBeGreaterThanOrEqual(230);
-    await expect(firstOpen).toContainText("001");
+    expect(openBox!.x).toBeLessThanOrEqual(numberBox!.x);
+    expect(openBox!.x + openBox!.width).toBeGreaterThanOrEqual(
+      numberBox!.x + numberBox!.width,
+    );
     await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
 
     await expectTarget(page.locator(".add-to-playlist-btn").first());
