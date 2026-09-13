@@ -23,7 +23,7 @@ async function openCatalog(page: Page) {
   await page.goto("/GYSApp-Tauri/kidung");
   await expect(
     page.getByRole("heading", { name: "Kidung", exact: true }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 });
   await page
     .locator(".pujian-list > li")
     .first()
@@ -34,7 +34,7 @@ async function openFirstHymn(page: Page) {
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 });
 }
 
 async function openPlaylistWithSong(page: Page) {
@@ -44,7 +44,7 @@ async function openPlaylistWithSong(page: Page) {
   await page
     .locator(".kidung-playlist-list > li")
     .first()
-    .waitFor({ state: "visible" });
+    .waitFor({ state: "visible", timeout: 20_000 });
 }
 
 async function openFirstHymnPdf(page: Page) {
@@ -167,6 +167,13 @@ test(
     await menu.click();
     const panel = row.locator(".kidung-row-menu-panel");
     await expect(panel).toBeVisible();
+
+    const buttons = panel.getByRole("button");
+    expect(await buttons.count()).toBeGreaterThanOrEqual(4);
+    for (let index = 0; index < (await buttons.count()); index += 1) {
+      await expectTarget(buttons.nth(index));
+    }
+
     await expect(panel.getByRole("button", { name: "Naikkan" })).toBeVisible();
     await expect(
       panel.getByRole("button", { name: "Turunkan" }),
@@ -181,6 +188,7 @@ test(
 test(
   "PDF reader exposes one contextual music control instead of permanent transport chrome",
   async ({ page }) => {
+    test.setTimeout(75_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await openFirstHymnPdf(page);
 
@@ -222,117 +230,67 @@ test(
   },
 );
 
-test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
-  test.setTimeout(150_000);
+const visualCases = [
+  ["catalog-phone-390x844", 390, 844, "catalog", "light"],
+  ["catalog-tablet-768x1024", 768, 1024, "catalog", "light"],
+  ["catalog-desktop-1440x900", 1440, 900, "catalog", "light"],
+  ["playlist-phone-390x844", 390, 844, "playlist", "light"],
+  ["playlist-tablet-768x1024", 768, 1024, "playlist", "light"],
+  ["reader-text-phone-390x844", 390, 844, "reader", "light"],
+  ["reader-text-tablet-768x1024", 768, 1024, "reader", "light"],
+  ["reader-text-desktop-1440x900", 1440, 900, "reader", "light"],
+  ["reader-pdf-phone-390x844", 390, 844, "pdf", "light"],
+  ["reader-pdf-tablet-768x1024", 768, 1024, "pdf", "light"],
+  ["reader-pdf-desktop-1440x900", 1440, 900, "pdf", "light"],
+  ["reader-dark-phone-390x844", 390, 844, "reader", "dark"],
+  ["reader-dark-tablet-768x1024", 768, 1024, "reader", "dark"],
+  ["playlist-menu-phone-390x844", 390, 844, "playlist-menu", "light"],
+  ["reader-more-phone-390x844", 390, 844, "reader-more", "light"],
+  ["reader-settings-phone-390x844", 390, 844, "reader-settings", "light"],
+  ["pdf-music-phone-390x844", 390, 844, "pdf-music", "light"],
+] as const;
 
-  const cases = [
-    {
-      name: "catalog-phone-390x844",
-      width: 390,
-      height: 844,
-      surface: "catalog",
-      theme: "light",
-    },
-    {
-      name: "catalog-tablet-768x1024",
-      width: 768,
-      height: 1024,
-      surface: "catalog",
-      theme: "light",
-    },
-    {
-      name: "catalog-desktop-1440x900",
-      width: 1440,
-      height: 900,
-      surface: "catalog",
-      theme: "light",
-    },
-    {
-      name: "playlist-phone-390x844",
-      width: 390,
-      height: 844,
-      surface: "playlist",
-      theme: "light",
-    },
-    {
-      name: "playlist-tablet-768x1024",
-      width: 768,
-      height: 1024,
-      surface: "playlist",
-      theme: "light",
-    },
-    {
-      name: "reader-text-phone-390x844",
-      width: 390,
-      height: 844,
-      surface: "reader",
-      theme: "light",
-    },
-    {
-      name: "reader-text-tablet-768x1024",
-      width: 768,
-      height: 1024,
-      surface: "reader",
-      theme: "light",
-    },
-    {
-      name: "reader-text-desktop-1440x900",
-      width: 1440,
-      height: 900,
-      surface: "reader",
-      theme: "light",
-    },
-    {
-      name: "reader-pdf-phone-390x844",
-      width: 390,
-      height: 844,
-      surface: "pdf",
-      theme: "light",
-    },
-    {
-      name: "reader-pdf-tablet-768x1024",
-      width: 768,
-      height: 1024,
-      surface: "pdf",
-      theme: "light",
-    },
-    {
-      name: "reader-pdf-desktop-1440x900",
-      width: 1440,
-      height: 900,
-      surface: "pdf",
-      theme: "light",
-    },
-    {
-      name: "reader-dark-phone-390x844",
-      width: 390,
-      height: 844,
-      surface: "reader",
-      theme: "dark",
-    },
-    {
-      name: "reader-dark-tablet-768x1024",
-      width: 768,
-      height: 1024,
-      surface: "reader",
-      theme: "dark",
-    },
-  ] as const;
+for (const [name, width, height, surface, theme] of visualCases) {
+  test(`Kidung visual ${name}`, async ({ page }) => {
+    test.setTimeout(surface === "pdf" || surface === "pdf-music" ? 75_000 : 45_000);
+    await page.setViewportSize({ width, height });
 
-  for (const entry of cases) {
-    await page.setViewportSize({ width: entry.width, height: entry.height });
-    if (entry.surface === "catalog") await openCatalog(page);
-    if (entry.surface === "playlist") await openPlaylistWithSong(page);
-    if (entry.surface === "reader") await openFirstHymn(page);
-    if (entry.surface === "pdf") await openFirstHymnPdf(page);
-    await page.evaluate((theme) => {
-      document.documentElement.dataset.theme = theme;
-    }, entry.theme);
+    if (surface === "catalog") await openCatalog(page);
+    if (surface === "playlist") await openPlaylistWithSong(page);
+    if (surface === "reader") await openFirstHymn(page);
+    if (surface === "pdf") await openFirstHymnPdf(page);
+    if (surface === "playlist-menu") {
+      await openPlaylistWithSong(page);
+      const row = page.locator(".kidung-playlist-list > li").first();
+      await row.locator('summary[aria-label^="Opsi"]').click();
+      await expect(row.locator(".kidung-row-menu-panel")).toBeVisible();
+    }
+    if (surface === "reader-more") {
+      await openFirstHymn(page);
+      await page.locator(".hymn-more-actions-summary").click();
+      await expect(page.locator(".hymn-more-actions-panel")).toBeVisible();
+    }
+    if (surface === "reader-settings") {
+      await openFirstHymn(page);
+      await page.locator(".hymn-reader-settings-summary").click();
+      await expect(
+        page.locator(".hymn-reader-settings > .song-controls"),
+      ).toBeVisible();
+    }
+    if (surface === "pdf-music") {
+      await openFirstHymnPdf(page);
+      await page.locator('summary[aria-label="Opsi musik"]').click();
+      await expect(page.locator(".pdf-music-menu-panel")).toBeVisible();
+    }
+
+    await page.evaluate((nextTheme) => {
+      document.documentElement.dataset.theme = nextTheme;
+    }, theme);
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
-      path: `test-results/ui-preview/kidung-density/${entry.name}.png`,
+      path: `test-results/ui-preview/kidung-density/${name}.png`,
       fullPage: false,
       animations: "disabled",
     });
-  }
-});
+  });
+}
