@@ -27,7 +27,7 @@ async function openCatalog(page: Page) {
   await page
     .locator(".pujian-list > li")
     .first()
-    .waitFor({ state: "visible" });
+    .waitFor({ state: "visible", timeout: 20_000 });
 }
 
 async function openFirstHymn(page: Page) {
@@ -37,8 +37,27 @@ async function openFirstHymn(page: Page) {
   ).toBeVisible();
 }
 
+async function openPlaylistWithSong(page: Page) {
+  await openCatalog(page);
+  await page.locator(".add-to-playlist-btn").first().click();
+  await page.goto("/GYSApp-Tauri/kidung?section=playlist");
+  await page
+    .locator(".kidung-playlist-list > li")
+    .first()
+    .waitFor({ state: "visible" });
+}
+
+async function openFirstHymnPdf(page: Page) {
+  await openFirstHymn(page);
+  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".gys-pdf-overlay").waitFor({
+    state: "visible",
+    timeout: 20_000,
+  });
+}
+
 test(
-  "phone Kidung catalog prioritizes full-width search and large library rows",
+  "phone Kidung catalog prioritizes search, compact filtering, and large library rows",
   async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openCatalog(page);
@@ -49,16 +68,19 @@ test(
     }
 
     const search = page.locator(".hymn-catalog-controls .search-field");
-    const collection = page.locator(".hymn-catalog-controls .control-select");
     const searchBox = await search.boundingBox();
-    const collectionBox = await collection.boundingBox();
     expect(searchBox).not.toBeNull();
-    expect(collectionBox).not.toBeNull();
     expect(searchBox!.width).toBeGreaterThanOrEqual(340);
-    expect(collectionBox!.width).toBeGreaterThanOrEqual(340);
-    expect(collectionBox!.y).toBeGreaterThan(
-      searchBox!.y + searchBox!.height - 1,
-    );
+
+    await expect(page.locator(".kidung-desktop-filter")).toBeHidden();
+    const filterTrigger = page.getByRole("button", {
+      name: "Filter koleksi",
+    });
+    await expectTarget(filterTrigger);
+    await filterTrigger.click();
+    const filterPanel = page.locator(".kidung-mobile-filter-panel");
+    await expect(filterPanel).toBeVisible();
+    await expectTarget(filterPanel.locator(".control-select-trigger"));
 
     const firstOpen = page.locator(".pujian-title").first();
     const firstNumber = page.locator(".pujian-nomor").first();
@@ -81,7 +103,7 @@ test(
 );
 
 test(
-  "phone hymn reader keeps primary actions self-explanatory and touch friendly",
+  "phone hymn reader keeps only contextual primary actions on the surface",
   async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openFirstHymn(page);
@@ -93,21 +115,75 @@ test(
     const actions = page.locator(
       ".hymn-text-toolbar .detail-actions .hymn-action",
     );
-    expect(await actions.count()).toBeGreaterThanOrEqual(3);
-    for (let index = 0; index < (await actions.count()); index += 1) {
+    const actionCount = await actions.count();
+    expect(actionCount).toBeGreaterThan(0);
+    expect(actionCount).toBeLessThanOrEqual(2);
+    for (let index = 0; index < actionCount; index += 1) {
       await expectTarget(actions.nth(index));
     }
 
     const labels = page.locator(
       ".hymn-text-toolbar .detail-actions .hymn-action-label",
     );
-    expect(await labels.count()).toBeGreaterThanOrEqual(3);
     for (let index = 0; index < (await labels.count()); index += 1) {
       await expect(labels.nth(index)).toBeVisible();
     }
 
-    await expectTarget(page.locator(".hymn-more-actions-summary"));
+    const more = page.locator(".hymn-more-actions-summary");
+    await expectTarget(more);
+    await more.click();
+    await expect(
+      page.getByRole("button", { name: "Mode lirik layar penuh" }),
+    ).toBeVisible();
+
     await expectTarget(page.locator(".hymn-reader-settings-summary"));
+    await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
+  "playlist rows keep low-frequency actions behind one touch-friendly menu",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openPlaylistWithSong(page);
+
+    const row = page.locator(".kidung-playlist-list > li").first();
+    const menu = row.locator('summary[aria-label^="Opsi"]');
+    await expectTarget(menu);
+    await menu.click();
+    const panel = row.locator(".kidung-row-menu-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole("button", { name: "Naikkan" })).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: "Turunkan" }),
+    ).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: "Buka kidung" }),
+    ).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
+  "PDF reader exposes one contextual music control instead of permanent transport chrome",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openFirstHymnPdf(page);
+
+    const chrome = page.locator(".hymn-pdf-viewer-chrome");
+    await expect(
+      chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      chrome.getByRole("button", { name: "Berikutnya", exact: true }),
+    ).toHaveCount(0);
+
+    const music = chrome.locator('summary[aria-label="Opsi musik"]');
+    await expectTarget(music);
+    await music.click();
+    const panel = chrome.locator(".pdf-music-menu-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel.locator(".pdf-transpose-inline")).toBeVisible();
     await expectNoHorizontalOverflow(page);
   },
 );
@@ -138,49 +214,107 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
       name: "catalog-phone-390x844",
       width: 390,
       height: 844,
-      path: "/GYSApp-Tauri/kidung",
-      ready: ".pujian-list > li",
+      surface: "catalog",
       theme: "light",
     },
     {
       name: "catalog-tablet-768x1024",
       width: 768,
       height: 1024,
-      path: "/GYSApp-Tauri/kidung",
-      ready: ".pujian-list > li",
+      surface: "catalog",
       theme: "light",
     },
     {
-      name: "reader-desktop-1440x900",
+      name: "catalog-desktop-1440x900",
       width: 1440,
       height: 900,
-      path: "/GYSApp-Tauri/kidung/hymn-001",
-      ready: ".lyrics-sheet",
+      surface: "catalog",
+      theme: "light",
+    },
+    {
+      name: "playlist-phone-390x844",
+      width: 390,
+      height: 844,
+      surface: "playlist",
+      theme: "light",
+    },
+    {
+      name: "playlist-tablet-768x1024",
+      width: 768,
+      height: 1024,
+      surface: "playlist",
+      theme: "light",
+    },
+    {
+      name: "reader-text-phone-390x844",
+      width: 390,
+      height: 844,
+      surface: "reader",
+      theme: "light",
+    },
+    {
+      name: "reader-text-tablet-768x1024",
+      width: 768,
+      height: 1024,
+      surface: "reader",
+      theme: "light",
+    },
+    {
+      name: "reader-text-desktop-1440x900",
+      width: 1440,
+      height: 900,
+      surface: "reader",
+      theme: "light",
+    },
+    {
+      name: "reader-pdf-phone-390x844",
+      width: 390,
+      height: 844,
+      surface: "pdf",
+      theme: "light",
+    },
+    {
+      name: "reader-pdf-tablet-768x1024",
+      width: 768,
+      height: 1024,
+      surface: "pdf",
+      theme: "light",
+    },
+    {
+      name: "reader-pdf-desktop-1440x900",
+      width: 1440,
+      height: 900,
+      surface: "pdf",
       theme: "light",
     },
     {
       name: "reader-dark-phone-390x844",
       width: 390,
       height: 844,
-      path: "/GYSApp-Tauri/kidung/hymn-001",
-      ready: ".lyrics-sheet",
+      surface: "reader",
+      theme: "dark",
+    },
+    {
+      name: "reader-dark-tablet-768x1024",
+      width: 768,
+      height: 1024,
+      surface: "reader",
       theme: "dark",
     },
   ] as const;
 
   for (const entry of cases) {
     await page.setViewportSize({ width: entry.width, height: entry.height });
-    await page.goto(entry.path);
+    if (entry.surface === "catalog") await openCatalog(page);
+    if (entry.surface === "playlist") await openPlaylistWithSong(page);
+    if (entry.surface === "reader") await openFirstHymn(page);
+    if (entry.surface === "pdf") await openFirstHymnPdf(page);
     await page.evaluate((theme) => {
       document.documentElement.dataset.theme = theme;
     }, entry.theme);
-    await page.locator(entry.ready).first().waitFor({
-      state: "visible",
-      timeout: 20_000,
-    });
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
-      path: `test-results/ui-preview/kidung/${entry.name}.png`,
+      path: `test-results/ui-preview/kidung-density/${entry.name}.png`,
       fullPage: true,
       animations: "disabled",
     });
