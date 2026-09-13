@@ -45,9 +45,12 @@ test("direct literature PDF exposes the document in the first mobile viewport", 
   // reader finishes settling. Assert the user-facing position with polling so
   // this checks the stable layout rather than sampling that transient frame.
   await expect
-    .poll(() => canvas.evaluate((element) => element.getBoundingClientRect().top), {
-      timeout: 5_000,
-    })
+    .poll(
+      () => canvas.evaluate((element) => element.getBoundingClientRect().top),
+      {
+        timeout: 5_000,
+      },
+    )
     .toBeLessThan(700);
 
   const tools = page.locator(".literature-reading-tools");
