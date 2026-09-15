@@ -17,4 +17,16 @@ test("appearance preference changes select the dedicated visual/usability contra
   assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
   assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+});
+
+test("Kidung presentation changes select the dedicated Kidung usability and visual contracts", () => {
+  const plan = resolveSelectiveTestArgs(["apps/web/src/kidung-ux.css"], []);
+
+  assert.ok(plan.args.includes("e2e/kidung-usability.spec.ts"));
+  assert.ok(plan.args.includes("e2e/visual.spec.ts"));
+  assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
+  assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
+  assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
 });

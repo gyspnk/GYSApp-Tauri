@@ -1,43 +1,45 @@
 /* Kidung usability layer
-   Loaded after the global visual system so Kidung can keep large, explicit
-   controls without weakening the compact desktop defaults used elsewhere. */
+   Feature-owned layout for the hymn catalog and reader. Keep this layer
+   content-first and quiet: rows behave like a library index, while elevated
+   surfaces are reserved for contextual menus/sheets. */
 
 .kidung-local-nav {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .kidung-local-nav-links {
-  gap: 5px;
-  padding: 4px;
+  gap: 3px;
+  padding: 3px;
   border: 1px solid var(--line);
-  border-radius: 13px;
-  background: color-mix(in srgb, var(--surface-soft) 82%, var(--surface));
+  border-radius: 10px;
+  background: var(--surface-soft);
 }
 
 .kidung-local-nav a {
   min-height: var(--control-hit, 44px);
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: 7px;
   justify-content: center;
   transition:
     background-color var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out);
+    border-color var(--motion-fast) var(--ease-out);
 }
 
 .kidung-local-nav a:hover,
 .kidung-local-nav a:focus-visible {
-  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
 .kidung-local-nav a.is-active {
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 9%, transparent);
+  background: var(--surface);
+  color: var(--blue);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 22%, var(--line));
 }
 
 .hymn-page .hymn-page-header {
   gap: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   padding-bottom: 16px;
 }
 
@@ -53,17 +55,17 @@
 }
 
 .hymn-catalog-shell {
-  padding-top: 4px;
-  border-top: 0;
+  padding-top: 0;
+  border-top: 1px solid var(--line);
 }
 
 .hymn-page .pujian-list {
-  gap: 6px;
+  gap: 0;
   border-top: 0;
 }
 
 .hymn-page .pujian-list li {
-  border-bottom: 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .hymn-page .pujian-item {
@@ -72,24 +74,18 @@
   grid-template-columns: minmax(0, 1fr) 30px 48px;
   align-items: center;
   min-height: 64px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  overflow: hidden;
-  transition:
-    border-color var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  transition: background-color var(--motion-fast) var(--ease-out);
 }
 
 .hymn-page .pujian-item:hover,
 .hymn-page .pujian-item:focus-within {
-  border-color: color-mix(in srgb, var(--blue) 34%, var(--line));
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 7%, transparent);
-}
-
-.hymn-page .pujian-item:hover {
-  transform: translateY(-1px);
+  background: var(--surface-soft);
+  box-shadow: none;
+  transform: none;
 }
 
 .hymn-page .pujian-title {
@@ -105,16 +101,14 @@
   color: var(--ink);
   text-align: left;
   font-weight: 650;
-  line-height: 1.3;
+  line-height: 1.35;
   cursor: pointer;
-  transition:
-    background-color var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out);
+  transition: color var(--motion-fast) var(--ease-out);
 }
 
 .hymn-page .pujian-title:hover,
 .hymn-page .pujian-title:focus-visible {
-  background: color-mix(in srgb, var(--blue-soft) 42%, transparent);
+  background: transparent;
   color: var(--navy);
 }
 
@@ -150,7 +144,7 @@
   height: 44px;
   min-height: 44px;
   margin-right: 4px;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .hymn-page .add-to-playlist-btn:hover,
@@ -166,11 +160,18 @@
 
 .hymn-text-toolbar {
   display: grid;
-  grid-template-columns: max-content 44px 44px;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
   align-items: center;
-  justify-content: start;
+  justify-content: stretch;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.hymn-text-toolbar > * {
+  min-width: 0;
 }
 
 .hymn-text-toolbar .detail-actions {
@@ -178,7 +179,7 @@
   grid-row: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
   width: auto;
   min-width: 0;
 }
@@ -189,13 +190,13 @@
   min-height: var(--control-hit, 44px);
   padding: 0 12px;
   gap: 7px;
-  border-radius: 10px;
+  border-radius: 8px;
   justify-content: center;
 }
 
 .hymn-text-toolbar .detail-actions .hymn-action-primary {
   padding-inline: 15px;
-  box-shadow: 0 5px 14px color-mix(in srgb, var(--blue) 18%, transparent);
+  box-shadow: none;
 }
 
 .hymn-text-toolbar .hymn-action-label {
@@ -219,6 +220,7 @@
   display: flex;
   flex: none;
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 10px;
   padding-top: 2px;
@@ -251,15 +253,14 @@
   place-items: center;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--surface);
   color: var(--muted);
   cursor: pointer;
   transition:
     border-color var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out);
+    color var(--motion-fast) var(--ease-out);
 }
 
 .hymn-more-actions-summary:hover,
@@ -273,22 +274,19 @@
   color: var(--blue);
 }
 
-.hymn-more-actions-summary:active,
-.hymn-reader-settings-summary:active {
-  transform: scale(0.96);
-}
-
 .hymn-more-actions-panel,
 .hymn-reader-settings > .song-controls {
+  box-sizing: border-box;
   width: min(390px, calc(100vw - 32px));
+  max-width: calc(100vw - 24px);
   max-height: min(620px, calc(100dvh - 120px));
   overflow: auto;
   overscroll-behavior: contain;
   padding: 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
-  box-shadow: var(--shadow-lift);
+  box-shadow: var(--calm-shadow-raised, var(--shadow-lift));
 }
 
 .hymn-more-actions-panel {
@@ -303,7 +301,7 @@
   padding-inline: 10px;
   justify-content: flex-start;
   gap: 8px;
-  border-radius: 9px;
+  border-radius: 8px;
 }
 
 .hymn-more-actions-panel .hymn-action-label {
@@ -320,11 +318,11 @@
 @keyframes kidung-sheet-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.985);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -362,14 +360,15 @@
 
   .hymn-text-toolbar .detail-actions {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 6px;
     width: 100%;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action {
-    width: 100%;
+    flex: 1 1 0;
+    width: auto;
     min-width: 0;
     min-height: 44px;
     padding: 0 8px;
@@ -384,22 +383,56 @@
     height: auto;
     margin: 0;
     padding: 0;
-    overflow: visible;
+    overflow: hidden;
     clip: auto;
     clip-path: none;
     opacity: 1;
     white-space: nowrap;
+    text-overflow: ellipsis;
     text-align: center;
-    font-size: 10.5px;
-    line-height: 1;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  .hymn-text-toolbar
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"] {
+    display: none;
   }
 
   .hymn-text-toolbar .hymn-segmented-toolbar {
     grid-column: 1;
     grid-row: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(44px, max-content);
     min-width: 0;
     gap: 6px;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .hymn-text-toolbar .hymn-scope-pill-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hymn-text-toolbar .hymn-scope-pill-btn {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 7px;
+  }
+
+  .hymn-text-toolbar .hymn-autoscroll-control {
+    min-width: 44px;
+    justify-self: end;
+  }
+
+  .hymn-text-toolbar .hymn-autoscroll-btn {
+    width: 44px;
+    min-width: 44px;
+    padding-inline: 0;
   }
 
   .hymn-text-toolbar .hymn-more-actions {
@@ -421,13 +454,44 @@
     left: 12px;
     z-index: calc(var(--z-modal) - 1);
     width: auto;
+    max-width: none;
     max-height: min(72dvh, 620px);
-    border-radius: 16px;
+    border-radius: 14px 14px 10px 10px;
     animation: kidung-sheet-in var(--motion-normal) var(--ease-out) both;
   }
 
   .hymn-more-actions-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hymn-more-actions[open] > .hymn-more-actions-panel {
+    padding-bottom: 70px;
+  }
+
+  .hymn-text-toolbar:has(.hymn-more-actions[open])
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"] {
+    position: fixed;
+    right: 24px;
+    bottom: max(24px, calc(env(safe-area-inset-bottom) + 24px));
+    left: 24px;
+    z-index: var(--z-modal);
+    display: flex;
+    width: auto;
+    min-width: 0;
+    min-height: 46px;
+    flex: none;
+    justify-content: flex-start;
+    padding-inline: 10px;
+  }
+
+  .hymn-text-toolbar:has(.hymn-more-actions[open])
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"]
+    .hymn-action-label {
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
   }
 
   .hymn-reader-settings > .song-controls {
@@ -449,6 +513,12 @@
 
   .hymn-page .pujian-title {
     padding-left: 58px;
+    font-size: 14px !important;
+    line-height: 1.35;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    text-wrap: pretty;
   }
 
   .hymn-page .pujian-nomor {

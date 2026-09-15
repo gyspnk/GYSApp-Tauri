@@ -81,34 +81,95 @@ test(
 );
 
 test(
-  "phone hymn reader keeps primary actions self-explanatory and touch friendly",
+  "small-phone hymn titles stay readable instead of shrinking to fit one line",
   async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openFirstHymn(page);
+    await page.setViewportSize({ width: 320, height: 720 });
+    await openCatalog(page);
 
-    for (const tab of await page.getByRole("tab").all()) {
-      await expectTarget(tab);
+    const titles = page.locator(".pujian-title");
+    for (let index = 0; index < Math.min(5, await titles.count()); index += 1) {
+      const title = titles.nth(index);
+      const computed = await title.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontSize: Number.parseFloat(style.fontSize),
+          lineHeight: Number.parseFloat(style.lineHeight),
+          whiteSpace: style.whiteSpace,
+        };
+      });
+      expect(computed.fontSize).toBeGreaterThanOrEqual(13);
+      expect(computed.lineHeight).toBeGreaterThanOrEqual(16);
+      expect(computed.whiteSpace).not.toBe("nowrap");
+      await expectTarget(title, 44);
     }
 
-    const actions = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action",
-    );
-    expect(await actions.count()).toBeGreaterThanOrEqual(3);
-    for (let index = 0; index < (await actions.count()); index += 1) {
-      await expectTarget(actions.nth(index));
-    }
-
-    const labels = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action-label",
-    );
-    expect(await labels.count()).toBeGreaterThanOrEqual(3);
-    for (let index = 0; index < (await labels.count()); index += 1) {
-      await expect(labels.nth(index)).toBeVisible();
-    }
-
-    await expectTarget(page.locator(".hymn-more-actions-summary"));
-    await expectTarget(page.locator(".hymn-reader-settings-summary"));
     await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
+  "phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow",
+  async ({ page }) => {
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await openFirstHymn(page);
+
+      for (const tab of await page.getByRole("tab").all()) {
+        await expectTarget(tab);
+      }
+
+      const actions = page.locator(
+        ".hymn-text-toolbar .detail-actions .hymn-action:visible",
+      );
+      await expect(actions).toHaveCount(2);
+      for (let index = 0; index < (await actions.count()); index += 1) {
+        await expectTarget(actions.nth(index));
+      }
+
+      const labels = actions.locator(".hymn-action-label");
+      await expect(labels).toHaveCount(2);
+      for (let index = 0; index < (await labels.count()); index += 1) {
+        await expect(labels.nth(index)).toBeVisible();
+      }
+
+      const toolbarBox = await page
+        .locator(".hymn-text-toolbar")
+        .boundingBox();
+      expect(toolbarBox).not.toBeNull();
+      expect(toolbarBox!.height).toBeLessThanOrEqual(118);
+
+      const fullscreenLyrics = page.getByRole("button", {
+        name: "Mode lirik layar penuh",
+      });
+      await expect(fullscreenLyrics).toBeHidden();
+
+      const overflow = page.locator(".hymn-more-actions-summary");
+      await expectTarget(overflow);
+      await overflow.click();
+      await expect(fullscreenLyrics).toBeVisible();
+      await expectTarget(fullscreenLyrics);
+
+      const panel = page.locator(".hymn-more-actions-panel");
+      await expect(panel).toBeVisible();
+      const panelBox = await panel.boundingBox();
+      const fullscreenBox = await fullscreenLyrics.boundingBox();
+      expect(panelBox).not.toBeNull();
+      expect(fullscreenBox).not.toBeNull();
+      expect(fullscreenBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
+      expect(fullscreenBox!.x + fullscreenBox!.width).toBeLessThanOrEqual(
+        panelBox!.x + panelBox!.width,
+      );
+      expect(fullscreenBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
+      expect(fullscreenBox!.y + fullscreenBox!.height).toBeLessThanOrEqual(
+        panelBox!.y + panelBox!.height,
+      );
+
+      await expectTarget(page.locator(".hymn-reader-settings-summary"));
+      await expectNoHorizontalOverflow(page);
+    }
   },
 );
 
@@ -132,12 +193,29 @@ test(
   },
 );
 
-test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
+test("Kidung visual QA covers representative device classes", async ({ page }) => {
+  test.setTimeout(120_000);
   const cases = [
+    {
+      name: "catalog-small-phone-320x720",
+      width: 320,
+      height: 720,
+      path: "/GYSApp-Tauri/kidung",
+      ready: ".pujian-list > li",
+      theme: "light",
+    },
     {
       name: "catalog-phone-390x844",
       width: 390,
       height: 844,
+      path: "/GYSApp-Tauri/kidung",
+      ready: ".pujian-list > li",
+      theme: "light",
+    },
+    {
+      name: "catalog-large-phone-430x932",
+      width: 430,
+      height: 932,
       path: "/GYSApp-Tauri/kidung",
       ready: ".pujian-list > li",
       theme: "light",
@@ -151,9 +229,17 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
       theme: "light",
     },
     {
-      name: "reader-desktop-1440x900",
-      width: 1440,
-      height: 900,
+      name: "catalog-landscape-1024x768",
+      width: 1024,
+      height: 768,
+      path: "/GYSApp-Tauri/kidung",
+      ready: ".pujian-list > li",
+      theme: "light",
+    },
+    {
+      name: "reader-small-phone-320x720",
+      width: 320,
+      height: 720,
       path: "/GYSApp-Tauri/kidung/hymn-001",
       ready: ".lyrics-sheet",
       theme: "light",
@@ -165,6 +251,30 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
       path: "/GYSApp-Tauri/kidung/hymn-001",
       ready: ".lyrics-sheet",
       theme: "dark",
+    },
+    {
+      name: "reader-tablet-768x1024",
+      width: 768,
+      height: 1024,
+      path: "/GYSApp-Tauri/kidung/hymn-001",
+      ready: ".lyrics-sheet",
+      theme: "light",
+    },
+    {
+      name: "reader-desktop-1440x900",
+      width: 1440,
+      height: 900,
+      path: "/GYSApp-Tauri/kidung/hymn-001",
+      ready: ".lyrics-sheet",
+      theme: "light",
+    },
+    {
+      name: "reader-wide-1920x1080",
+      width: 1920,
+      height: 1080,
+      path: "/GYSApp-Tauri/kidung/hymn-001",
+      ready: ".lyrics-sheet",
+      theme: "light",
     },
   ] as const;
 
@@ -181,7 +291,7 @@ test("Kidung visual QA surfaces render without clipping", async ({ page }) => {
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
       path: `test-results/ui-preview/kidung/${entry.name}.png`,
-      fullPage: true,
+      fullPage: false,
       animations: "disabled",
     });
   }

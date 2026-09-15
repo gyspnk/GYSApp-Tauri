@@ -9,10 +9,11 @@ import { initializeUiPreferences } from "./ui-preferences.js";
 import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import "./styles.css";
 import "./ui-hardening.css";
-import "./calm-liturgical.css";
 import "./ui-preferences.css";
 import "./kidung-ux.css";
 import "./direct-manipulation.css";
+import "./calm-liturgical.css";
+import "./kidung-responsive.css";
 
 runStorageMigrations();
 initializeUiPreferences();

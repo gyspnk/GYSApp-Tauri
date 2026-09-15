@@ -1,0 +1,13 @@
+/* Device-specific Kidung refinements that intentionally load after the shared
+   visual layers. Keep this file limited to breakpoint fixes validated by E2E. */
+
+@media (max-width: 340px) {
+  .kidung-local-nav a {
+    gap: 4px;
+    padding-inline: 6px;
+  }
+
+  .kidung-local-nav a > svg {
+    display: none;
+  }
+}
