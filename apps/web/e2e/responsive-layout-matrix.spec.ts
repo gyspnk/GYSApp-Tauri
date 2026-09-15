@@ -39,6 +39,15 @@ const coreRoutes = [
   "/lainnya",
 ] as const;
 
+const routeReadySelector: Partial<Record<(typeof coreRoutes)[number], string>> = {
+  "/": ".home-grid",
+  "/bible": ".bible-reader",
+  "/kidung": ".hymn-catalog-shell",
+  "/iman": ".faith-page",
+  "/literatur": ".literature-page",
+  "/lainnya": ".more-page",
+};
+
 async function expectNoHorizontalOverflow(page: Page, label: string) {
   try {
     await expect
@@ -96,6 +105,13 @@ async function openRoute(page: Page, route: string, width: number) {
     state: "visible",
     timeout: 20_000,
   });
+  const ready = routeReadySelector[route as (typeof coreRoutes)[number]];
+  if (ready) {
+    await page.locator(ready).first().waitFor({
+      state: "visible",
+      timeout: 20_000,
+    });
+  }
   await expect(page.locator("#main-content")).toBeVisible();
   await expect(page.locator("h1")).toHaveCount(1);
   await expectNoHorizontalOverflow(page, `${route} @ ${width}px`);
@@ -154,10 +170,6 @@ test("Kidung stays contained around both breakpoints", async ({ page }) => {
   ]) {
     await page.setViewportSize(viewport);
     await openRoute(page, "/kidung", viewport.width);
-    await page
-      .locator(".pujian-list > li")
-      .first()
-      .waitFor({ state: "visible" });
 
     await expectInsideViewport(page.locator(".kidung-local-nav"), viewport.width);
     await expectInsideViewport(
