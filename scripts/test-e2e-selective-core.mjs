@@ -132,6 +132,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/visual.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
+      specFiles.add("e2e/responsive-layout-matrix.spec.ts");
       runSmokeAll = true;
     }
 
@@ -155,6 +156,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/navigation-layout.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
+      specFiles.add("e2e/responsive-layout-matrix.spec.ts");
       runSmokeAll = true;
     }
 
@@ -170,6 +172,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/navigation-layout.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
+      specFiles.add("e2e/responsive-layout-matrix.spec.ts");
       runSmokeAll = true;
     }
   }
