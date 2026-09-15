@@ -83,42 +83,47 @@ test(
 test(
   "phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow",
   async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openFirstHymn(page);
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await openFirstHymn(page);
 
-    for (const tab of await page.getByRole("tab").all()) {
-      await expectTarget(tab);
+      for (const tab of await page.getByRole("tab").all()) {
+        await expectTarget(tab);
+      }
+
+      const actions = page.locator(
+        ".hymn-text-toolbar .detail-actions .hymn-action",
+      );
+      await expect(actions).toHaveCount(2);
+      for (let index = 0; index < (await actions.count()); index += 1) {
+        await expectTarget(actions.nth(index));
+      }
+
+      const labels = page.locator(
+        ".hymn-text-toolbar .detail-actions .hymn-action-label",
+      );
+      await expect(labels).toHaveCount(2);
+      for (let index = 0; index < (await labels.count()); index += 1) {
+        await expect(labels.nth(index)).toBeVisible();
+      }
+
+      const fullscreenLyrics = page.getByRole("button", {
+        name: "Mode lirik layar penuh",
+      });
+      await expect(fullscreenLyrics).toBeHidden();
+
+      const overflow = page.locator(".hymn-more-actions-summary");
+      await expectTarget(overflow);
+      await overflow.click();
+      await expect(fullscreenLyrics).toBeVisible();
+      await expectTarget(fullscreenLyrics);
+
+      await expectTarget(page.locator(".hymn-reader-settings-summary"));
+      await expectNoHorizontalOverflow(page);
     }
-
-    const actions = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action",
-    );
-    await expect(actions).toHaveCount(2);
-    for (let index = 0; index < (await actions.count()); index += 1) {
-      await expectTarget(actions.nth(index));
-    }
-
-    const labels = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action-label",
-    );
-    await expect(labels).toHaveCount(2);
-    for (let index = 0; index < (await labels.count()); index += 1) {
-      await expect(labels.nth(index)).toBeVisible();
-    }
-
-    const fullscreenLyrics = page.getByRole("button", {
-      name: "Mode lirik layar penuh",
-    });
-    await expect(fullscreenLyrics).toBeHidden();
-
-    const overflow = page.locator(".hymn-more-actions-summary");
-    await expectTarget(overflow);
-    await overflow.click();
-    await expect(fullscreenLyrics).toBeVisible();
-    await expectTarget(fullscreenLyrics);
-
-    await expectTarget(page.locator(".hymn-reader-settings-summary"));
-    await expectNoHorizontalOverflow(page);
   },
 );
 
@@ -182,6 +187,14 @@ test("Kidung visual QA covers representative device classes", async ({ page }) =
       height: 768,
       path: "/GYSApp-Tauri/kidung",
       ready: ".pujian-list > li",
+      theme: "light",
+    },
+    {
+      name: "reader-small-phone-320x720",
+      width: 320,
+      height: 720,
+      path: "/GYSApp-Tauri/kidung/hymn-001",
+      ready: ".lyrics-sheet",
       theme: "light",
     },
     {
