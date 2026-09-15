@@ -13,6 +13,7 @@ import "./ui-preferences.css";
 import "./kidung-ux.css";
 import "./direct-manipulation.css";
 import "./calm-liturgical.css";
+import "./kidung-responsive.css";
 
 runStorageMigrations();
 initializeUiPreferences();
