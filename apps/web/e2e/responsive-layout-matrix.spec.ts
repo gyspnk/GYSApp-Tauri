@@ -71,47 +71,48 @@ async function openRoute(page: Page, route: string) {
   await expectNoHorizontalOverflow(page);
 }
 
-test("shell switches cleanly at phone, tablet, and desktop breakpoints", async ({
-  page,
-}) => {
-  for (const viewport of shellViewports) {
-    await page.setViewportSize({
-      width: viewport.width,
-      height: viewport.height,
-    });
-    await openRoute(page, "/");
+test(
+  "shell switches cleanly at phone, tablet, and desktop breakpoints",
+  async ({ page }) => {
+    for (const viewport of shellViewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      await openRoute(page, "/");
 
-    const nav = page.locator(".navigation-shell");
-    await expect(nav).toBeVisible();
-    await expectInsideViewport(nav, viewport.width);
+      const nav = page.locator(".navigation-shell");
+      await expect(nav).toBeVisible();
+      await expectInsideViewport(nav, viewport.width);
 
-    const navItems = nav.locator(".nav-item");
-    await expect(navItems).toHaveCount(5);
+      const navItems = nav.locator(".nav-item");
+      await expect(navItems).toHaveCount(5);
 
-    if (viewport.mode === "phone") {
-      await expect(nav).toHaveCSS("position", "fixed");
-      const navBox = await nav.boundingBox();
-      expect(navBox).not.toBeNull();
-      expect(navBox!.y + navBox!.height).toBeLessThanOrEqual(
-        viewport.height + 1,
-      );
-    } else if (viewport.mode === "tablet") {
-      const navBox = await nav.boundingBox();
-      expect(navBox).not.toBeNull();
-      expect(navBox!.width).toBeGreaterThanOrEqual(88);
-      expect(navBox!.width).toBeLessThanOrEqual(96);
-    } else {
-      const navBox = await nav.boundingBox();
-      expect(navBox).not.toBeNull();
-      expect(navBox!.width).toBeGreaterThanOrEqual(220);
+      if (viewport.mode === "phone") {
+        await expect(nav).toHaveCSS("position", "fixed");
+        const navBox = await nav.boundingBox();
+        expect(navBox).not.toBeNull();
+        expect(navBox!.y + navBox!.height).toBeLessThanOrEqual(
+          viewport.height + 1,
+        );
+      } else if (viewport.mode === "tablet") {
+        const navBox = await nav.boundingBox();
+        expect(navBox).not.toBeNull();
+        expect(navBox!.width).toBeGreaterThanOrEqual(88);
+        expect(navBox!.width).toBeLessThanOrEqual(96);
+      } else {
+        const navBox = await nav.boundingBox();
+        expect(navBox).not.toBeNull();
+        expect(navBox!.width).toBeGreaterThanOrEqual(220);
+      }
+
+      const labels = nav.locator(".nav-copy strong");
+      for (let index = 0; index < (await labels.count()); index += 1) {
+        await expect(labels.nth(index)).toBeVisible();
+      }
     }
-
-    const labels = nav.locator(".nav-copy strong");
-    for (let index = 0; index < (await labels.count()); index += 1) {
-      await expect(labels.nth(index)).toBeVisible();
-    }
-  }
-});
+  },
+);
 
 test(
   "all primary surfaces stay contained from small phone through wide desktop",
