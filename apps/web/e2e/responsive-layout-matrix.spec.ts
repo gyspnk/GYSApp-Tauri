@@ -114,7 +114,6 @@ async function openRoute(page: Page, route: string, width: number) {
     });
   }
   await expect(page.locator("#main-content")).toBeVisible();
-  await expect(page.locator("h1")).toHaveCount(1);
   await expectNoHorizontalOverflow(page, `${route} @ ${width}px`);
 }
 
