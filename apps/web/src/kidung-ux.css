@@ -160,12 +160,18 @@
 
 .hymn-text-toolbar {
   display: grid;
-  grid-template-columns: max-content 44px 44px;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
   align-items: center;
-  justify-content: start;
+  justify-content: stretch;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
+}
+
+.hymn-text-toolbar > * {
+  min-width: 0;
 }
 
 .hymn-text-toolbar .detail-actions {
@@ -214,6 +220,7 @@
   display: flex;
   flex: none;
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 10px;
   padding-top: 2px;
@@ -269,7 +276,9 @@
 
 .hymn-more-actions-panel,
 .hymn-reader-settings > .song-controls {
+  box-sizing: border-box;
   width: min(390px, calc(100vw - 32px));
+  max-width: calc(100vw - 24px);
   max-height: min(620px, calc(100dvh - 120px));
   overflow: auto;
   overscroll-behavior: contain;
@@ -385,12 +394,45 @@
     line-height: 1.1;
   }
 
+  .hymn-text-toolbar
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"] {
+    display: none;
+  }
+
   .hymn-text-toolbar .hymn-segmented-toolbar {
     grid-column: 1;
     grid-row: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(44px, max-content);
     min-width: 0;
     gap: 6px;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .hymn-text-toolbar .hymn-scope-pill-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hymn-text-toolbar .hymn-scope-pill-btn {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 7px;
+  }
+
+  .hymn-text-toolbar .hymn-autoscroll-control {
+    min-width: 44px;
+    justify-self: end;
+  }
+
+  .hymn-text-toolbar .hymn-autoscroll-btn {
+    width: 44px;
+    min-width: 44px;
+    padding-inline: 0;
   }
 
   .hymn-text-toolbar .hymn-more-actions {
@@ -412,6 +454,7 @@
     left: 12px;
     z-index: calc(var(--z-modal) - 1);
     width: auto;
+    max-width: none;
     max-height: min(72dvh, 620px);
     border-radius: 14px 14px 10px 10px;
     animation: kidung-sheet-in var(--motion-normal) var(--ease-out) both;
@@ -419,6 +462,36 @@
 
   .hymn-more-actions-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hymn-more-actions[open] > .hymn-more-actions-panel {
+    padding-bottom: 70px;
+  }
+
+  .hymn-text-toolbar:has(.hymn-more-actions[open])
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"] {
+    position: fixed;
+    right: 24px;
+    bottom: max(24px, calc(env(safe-area-inset-bottom) + 24px));
+    left: 24px;
+    z-index: var(--z-modal);
+    display: flex;
+    width: auto;
+    min-width: 0;
+    min-height: 46px;
+    flex: none;
+    justify-content: flex-start;
+    padding-inline: 10px;
+  }
+
+  .hymn-text-toolbar:has(.hymn-more-actions[open])
+    .detail-actions
+    .hymn-action[aria-label="Mode lirik layar penuh"]
+    .hymn-action-label {
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
   }
 
   .hymn-reader-settings > .song-controls {
@@ -440,6 +513,12 @@
 
   .hymn-page .pujian-title {
     padding-left: 58px;
+    font-size: 14px !important;
+    line-height: 1.35;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    text-wrap: pretty;
   }
 
   .hymn-page .pujian-nomor {
