@@ -26,9 +26,7 @@ describe("visual layer authority", () => {
   it("loads the shared calm refinement after every feature style layer", () => {
     const calm = main.indexOf('import "./calm-liturgical.css";');
     expect(calm).toBeGreaterThan(main.indexOf('import "./styles.css";'));
-    expect(calm).toBeGreaterThan(
-      main.indexOf('import "./ui-hardening.css";'),
-    );
+    expect(calm).toBeGreaterThan(main.indexOf('import "./ui-hardening.css";'));
     expect(calm).toBeGreaterThan(
       main.indexOf('import "./ui-preferences.css";'),
     );
