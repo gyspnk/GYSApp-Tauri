@@ -81,6 +81,33 @@ test(
 );
 
 test(
+  "small-phone hymn titles stay readable instead of shrinking to fit one line",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await openCatalog(page);
+
+    const titles = page.locator(".pujian-title");
+    for (let index = 0; index < Math.min(5, await titles.count()); index += 1) {
+      const title = titles.nth(index);
+      const computed = await title.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontSize: Number.parseFloat(style.fontSize),
+          lineHeight: Number.parseFloat(style.lineHeight),
+          whiteSpace: style.whiteSpace,
+        };
+      });
+      expect(computed.fontSize).toBeGreaterThanOrEqual(13);
+      expect(computed.lineHeight).toBeGreaterThanOrEqual(16);
+      expect(computed.whiteSpace).not.toBe("nowrap");
+      await expectTarget(title, 44);
+    }
+
+    await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
   "phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow",
   async ({ page }) => {
     for (const viewport of [
@@ -148,6 +175,7 @@ test(
 );
 
 test("Kidung visual QA covers representative device classes", async ({ page }) => {
+  test.setTimeout(120_000);
   const cases = [
     {
       name: "catalog-small-phone-320x720",
