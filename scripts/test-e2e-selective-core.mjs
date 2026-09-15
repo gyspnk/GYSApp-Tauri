@@ -110,6 +110,12 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       grepPatterns.add("Suara|online content");
     }
 
+    const isKidungPresentation =
+      file.includes("kidung-ux.css") ||
+      file.includes("kidung.tsx") ||
+      file.includes("hymn-detail") ||
+      file.includes("hymn-reader");
+
     if (
       file.includes("kidung") ||
       file.includes("hymn") ||
@@ -119,6 +125,14 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/navigation-layout.spec.ts");
       specFiles.add("e2e/smoke.spec.ts");
       grepPatterns.add("hymn|Kidung|MIDI|chord");
+    }
+
+    if (isKidungPresentation) {
+      specFiles.add("e2e/kidung-usability.spec.ts");
+      specFiles.add("e2e/visual.spec.ts");
+      specFiles.add("e2e/accessibility.spec.ts");
+      specFiles.add("e2e/universal-usability.spec.ts");
+      runSmokeAll = true;
     }
 
     if (file.includes("literature") || file.includes("literatur")) {
