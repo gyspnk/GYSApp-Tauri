@@ -75,7 +75,10 @@ test("shell switches cleanly at phone, tablet, and desktop breakpoints", async (
   page,
 }) => {
   for (const viewport of shellViewports) {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.setViewportSize({
+      width: viewport.width,
+      height: viewport.height,
+    });
     await openRoute(page, "/");
 
     const nav = page.locator(".navigation-shell");
@@ -110,81 +113,107 @@ test("shell switches cleanly at phone, tablet, and desktop breakpoints", async (
   }
 });
 
-test("all primary surfaces stay contained from small phone through wide desktop", async ({
-  page,
-}) => {
-  for (const viewport of routeViewports) {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    for (const route of coreRoutes) {
-      await openRoute(page, route);
-      await expectInsideViewport(page.locator("#main-content"), viewport.width);
+test(
+  "all primary surfaces stay contained from small phone through wide desktop",
+  async ({ page }) => {
+    for (const viewport of routeViewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      for (const route of coreRoutes) {
+        await openRoute(page, route);
+        await expectInsideViewport(
+          page.locator("#main-content"),
+          viewport.width,
+        );
+      }
     }
-  }
-});
+  },
+);
 
-test("Kidung catalog stays contained immediately around both responsive breakpoints", async ({
-  page,
-}) => {
-  for (const viewport of [
-    { width: 599, height: 900 },
-    { width: 600, height: 900 },
-    { width: 959, height: 900 },
-    { width: 960, height: 900 },
-  ]) {
-    await page.setViewportSize(viewport);
-    await openRoute(page, "/kidung");
-    await page.locator(".pujian-list > li").first().waitFor({ state: "visible" });
+test(
+  "Kidung catalog stays contained immediately around both responsive breakpoints",
+  async ({ page }) => {
+    for (const viewport of [
+      { width: 599, height: 900 },
+      { width: 600, height: 900 },
+      { width: 959, height: 900 },
+      { width: 960, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await openRoute(page, "/kidung");
+      await page
+        .locator(".pujian-list > li")
+        .first()
+        .waitFor({ state: "visible" });
 
-    await expectInsideViewport(page.locator(".kidung-local-nav"), viewport.width);
-    await expectInsideViewport(
-      page.locator(".hymn-catalog-controls"),
-      viewport.width,
-    );
-    await expectInsideViewport(page.locator(".pujian-item").first(), viewport.width);
-  }
-});
+      await expectInsideViewport(
+        page.locator(".kidung-local-nav"),
+        viewport.width,
+      );
+      await expectInsideViewport(
+        page.locator(".hymn-catalog-controls"),
+        viewport.width,
+      );
+      await expectInsideViewport(
+        page.locator(".pujian-item").first(),
+        viewport.width,
+      );
+    }
+  },
+);
 
-test("focused hymn reader remains usable across phone, tablet, landscape, and wide layouts", async ({
-  page,
-}) => {
-  const readerViewports = [
-    { width: 320, height: 720 },
-    { width: 390, height: 844 },
-    { width: 600, height: 900 },
-    { width: 768, height: 1024 },
-    { width: 960, height: 900 },
-    { width: 1024, height: 768 },
-    { width: 1440, height: 900 },
-    { width: 1920, height: 1080 },
-  ] as const;
+test(
+  "focused hymn reader remains usable across phone, tablet, landscape, and wide layouts",
+  async ({ page }) => {
+    const readerViewports = [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 600, height: 900 },
+      { width: 768, height: 1024 },
+      { width: 960, height: 900 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+      { width: 1920, height: 1080 },
+    ] as const;
 
-  for (const viewport of readerViewports) {
-    await page.setViewportSize(viewport);
-    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
-    await page.locator(".lyrics-sheet").waitFor({
-      state: "visible",
-      timeout: 20_000,
-    });
+    for (const viewport of readerViewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+      await page.locator(".lyrics-sheet").waitFor({
+        state: "visible",
+        timeout: 20_000,
+      });
 
-    await expect(page.locator(".app-frame .topbar")).toBeHidden();
-    await expect(page.locator(".app-frame .navigation-shell")).toBeHidden();
-    await expectInsideViewport(page.locator(".hymn-detail-page"), viewport.width);
-    await expectInsideViewport(page.locator(".lyrics-sheet"), viewport.width);
-    await expectInsideViewport(page.locator(".hymn-text-footer"), viewport.width);
-    await expectNoHorizontalOverflow(page);
+      await expect(page.locator(".app-frame .topbar")).toBeHidden();
+      await expect(page.locator(".app-frame .navigation-shell")).toBeHidden();
+      await expectInsideViewport(
+        page.locator(".hymn-detail-page"),
+        viewport.width,
+      );
+      await expectInsideViewport(page.locator(".lyrics-sheet"), viewport.width);
+      await expectInsideViewport(
+        page.locator(".hymn-text-footer"),
+        viewport.width,
+      );
+      await expectNoHorizontalOverflow(page);
 
-    const geometry = await page.evaluate(() => {
-      const toolbar = document.querySelector(".hymn-text-toolbar")!;
-      const lyrics = document.querySelector(".lyrics-sheet")!;
-      const footer = document.querySelector(".hymn-text-footer")!;
-      return {
-        toolbarBottom: toolbar.getBoundingClientRect().bottom,
-        lyricsTop: lyrics.getBoundingClientRect().top,
-        lyricsBottom: lyrics.getBoundingClientRect().bottom,
-        footerTop: footer.getBoundingClientRect().top,
-      };
-    });
-    expect(geometry.lyricsTop).toBeGreaterThanOrEqual(geometry.toolbarBottom - 1);
-    expect(geometry.lyricsBottom).toBeLessThanOrEqual(geometry.footerTop + 1);
-  }
-});
+      const geometry = await page.evaluate(() => {
+        const toolbar = document.querySelector(".hymn-text-toolbar")!;
+        const lyrics = document.querySelector(".lyrics-sheet")!;
+        const footer = document.querySelector(".hymn-text-footer")!;
+        return {
+          toolbarBottom: toolbar.getBoundingClientRect().bottom,
+          lyricsTop: lyrics.getBoundingClientRect().top,
+          lyricsBottom: lyrics.getBoundingClientRect().bottom,
+          footerTop: footer.getBoundingClientRect().top,
+        };
+      });
+      expect(geometry.lyricsTop).toBeGreaterThanOrEqual(
+        geometry.toolbarBottom - 1,
+      );
+      expect(geometry.lyricsBottom).toBeLessThanOrEqual(geometry.footerTop + 1);
+    }
+  },
+);
