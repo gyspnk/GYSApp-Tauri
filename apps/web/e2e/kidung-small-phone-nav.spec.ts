@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+// Regression guard for the narrowest supported phone layout.
 test("320px Kidung local navigation keeps every label fully readable", async ({
   page,
 }) => {
