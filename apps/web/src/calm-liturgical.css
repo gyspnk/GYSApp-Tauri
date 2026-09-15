@@ -1,35 +1,59 @@
 /* Calm Liturgical Utility
-   Final cross-app refinement layer. Keep this file focused on shared visual
-   grammar and universal usability; feature-specific layout stays with the
+   Final cross-app refinement layer. This file is intentionally loaded last:
+   shared visual grammar belongs here; feature-owned layout stays with the
    feature that owns it. */
 
 :root {
   --control-hit: 44px;
   --text-ui: 0.9375rem;
   --text-meta: 0.75rem;
+  --page-gutter: clamp(22px, 4vw, 56px);
+  --page-start: clamp(34px, 4vw, 52px);
+  --page-end: 112px;
   --calm-shadow:
-    0 1px 2px rgba(31, 66, 112, 0.05), 0 8px 24px rgba(31, 66, 112, 0.045);
+    0 1px 2px rgba(31, 66, 112, 0.04), 0 6px 18px rgba(31, 66, 112, 0.035);
   --calm-shadow-raised:
     0 2px 5px rgba(31, 66, 112, 0.08), 0 12px 28px rgba(31, 66, 112, 0.075);
 }
 
 :root[data-theme="dark"] {
-  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.14);
+  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 18px rgba(0, 0, 0, 0.11);
   --calm-shadow-raised:
     0 2px 5px rgba(0, 0, 0, 0.28), 0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
 :root[data-theme="amoled"] {
-  --calm-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.42);
+  --calm-shadow: none;
   --calm-shadow-raised:
     0 2px 5px rgba(0, 0, 0, 0.68), 0 12px 28px rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="sepia"] {
   --calm-shadow:
-    0 1px 2px rgba(92, 64, 51, 0.07), 0 8px 24px rgba(92, 64, 51, 0.055);
+    0 1px 2px rgba(92, 64, 51, 0.055), 0 6px 18px rgba(92, 64, 51, 0.04);
   --calm-shadow-raised:
     0 2px 5px rgba(92, 64, 51, 0.1), 0 12px 28px rgba(92, 64, 51, 0.08);
+}
+
+/* A stable page rhythm prevents every feature from feeling like a separate
+   application. Reader routes intentionally keep their feature-specific chrome. */
+.app-frame:not(.is-reader-route) .main-content {
+  max-width: 1440px;
+  padding: var(--page-start) var(--page-gutter) var(--page-end);
+}
+
+.page > :first-child {
+  margin-top: 0;
+}
+
+.page h1,
+.page h2,
+.page h3 {
+  text-wrap: balance;
+}
+
+.page h1 {
+  letter-spacing: -0.025em;
 }
 
 /* Common controls should be comfortable without looking oversized. */
@@ -99,19 +123,19 @@ button.text-button {
   font-size: 12px;
 }
 
-/* Calm surfaces: hierarchy comes from structure, not floating-card effects. */
+/* Calm surfaces: ordinary content does not float. Elevation is reserved for
+   overlays, menus and persistent media that actually sit above the document. */
 .verse-panel,
 .continue-panel,
 .more-card,
-.kidung-card,
-.global-search,
-.media-surface {
-  box-shadow: var(--calm-shadow);
+.kidung-card {
+  box-shadow: none;
 }
 
 .global-search,
 .media-surface {
   border-color: var(--line-strong);
+  box-shadow: var(--calm-shadow-raised);
 }
 
 .search-trigger:hover,
@@ -121,12 +145,16 @@ button.text-button {
 .verse-panel:hover,
 .continue-panel:hover,
 .more-card:hover,
-.kidung-card:hover {
+.kidung-card:hover,
+.primary-button:hover,
+.quiet-button:hover,
+.text-button:hover {
   transform: none;
 }
 
 .search-trigger:hover,
-.account-button:hover {
+.account-button:hover,
+.primary-button:hover {
   box-shadow: none;
 }
 
@@ -142,6 +170,30 @@ button.text-button {
 
 .navigation-shell .nav-copy strong {
   line-height: 1.2;
+}
+
+/* Kidung is an index/reader, not a card gallery. These final assertions are
+   intentionally small and protect the cross-app calm contract from legacy
+   selectors in the monolithic base stylesheet. */
+.hymn-page .hymn-page-header {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+}
+
+.hymn-page .pujian-item,
+.hymn-page .pujian-item:hover,
+.hymn-page .pujian-item:focus-within {
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.hymn-text-toolbar .detail-actions .hymn-action-primary {
+  box-shadow: none;
 }
 
 /* Human-facing account/preferences lead the More page. Technical asset
@@ -202,6 +254,11 @@ summary:focus-visible {
    tablet rail used !important to force visual copy off, so the approved
    labelled-rail contract intentionally overrides that rule only here. */
 @media (min-width: 600px) and (max-width: 959px) {
+  :root {
+    --page-gutter: clamp(26px, 4vw, 38px);
+    --page-start: 36px;
+  }
+
   .workspace,
   .workspace.is-sidebar-collapsed {
     grid-template-columns: 92px minmax(0, 1fr);
@@ -267,6 +324,16 @@ summary:focus-visible {
 
 /* Phone navigation stays compact, but its labels should remain readable. */
 @media (max-width: 599px) {
+  :root {
+    --page-gutter: 16px;
+    --page-start: 20px;
+    --page-end: calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .app-frame:not(.is-reader-route) .main-content {
+    padding: var(--page-start) var(--page-gutter) var(--page-end);
+  }
+
   .navigation-shell .nav-copy strong {
     font-size: 11px;
     line-height: 1.15;
@@ -278,6 +345,11 @@ summary:focus-visible {
 
   .more-card.more-action {
     min-height: 56px;
+  }
+
+  .hymn-page .hymn-page-header {
+    padding: 0 0 14px;
+    border-radius: 0;
   }
 
   .literature-detail-page.is-direct-reader .literature-reading-panel {
@@ -303,7 +375,8 @@ summary:focus-visible {
   .verse-panel:hover,
   .continue-panel:hover,
   .more-card:hover,
-  .kidung-card:hover {
+  .kidung-card:hover,
+  .hymn-page .pujian-item:hover {
     transform: none;
   }
 }
@@ -320,6 +393,7 @@ summary:focus-visible {
   .more-card,
   .kidung-card,
   .media-control,
+  .hymn-page .pujian-item,
   .literature-reading-tools > summary::after {
     transition: none !important;
     animation: none !important;
