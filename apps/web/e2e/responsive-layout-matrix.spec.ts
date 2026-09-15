@@ -39,14 +39,15 @@ const coreRoutes = [
   "/lainnya",
 ] as const;
 
-const routeReadySelector: Partial<Record<(typeof coreRoutes)[number], string>> = {
-  "/": ".home-grid",
-  "/bible": ".bible-reader",
-  "/kidung": ".hymn-catalog-shell",
-  "/iman": ".faith-page",
-  "/literatur": ".literature-page",
-  "/lainnya": ".more-page",
-};
+const routeReadySelector: Partial<Record<(typeof coreRoutes)[number], string>> =
+  {
+    "/": ".home-grid",
+    "/bible": ".bible-reader",
+    "/kidung": ".hymn-catalog-shell",
+    "/iman": ".faith-page",
+    "/literatur": ".literature-page",
+    "/lainnya": ".more-page",
+  };
 
 async function expectNoHorizontalOverflow(page: Page, label: string) {
   try {
@@ -171,7 +172,10 @@ test("Kidung stays contained around both breakpoints", async ({ page }) => {
     await page.setViewportSize(viewport);
     await openRoute(page, "/kidung", viewport.width);
 
-    await expectInsideViewport(page.locator(".kidung-local-nav"), viewport.width);
+    await expectInsideViewport(
+      page.locator(".kidung-local-nav"),
+      viewport.width,
+    );
     await expectInsideViewport(
       page.locator(".hymn-catalog-controls"),
       viewport.width,
@@ -230,7 +234,9 @@ test("focused hymn reader fits every device class", async ({ page }) => {
         footerTop: footer.getBoundingClientRect().top,
       };
     });
-    expect(geometry.lyricsTop).toBeGreaterThanOrEqual(geometry.toolbarBottom - 1);
+    expect(geometry.lyricsTop).toBeGreaterThanOrEqual(
+      geometry.toolbarBottom - 1,
+    );
     expect(geometry.lyricsBottom).toBeLessThanOrEqual(geometry.footerTop + 1);
   }
 });
