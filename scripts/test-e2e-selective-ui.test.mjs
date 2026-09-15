@@ -17,6 +17,7 @@ test("appearance preference changes select the dedicated visual/usability contra
   assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
   assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
 });
 
 test("Kidung presentation changes select the dedicated Kidung usability and visual contracts", () => {
@@ -27,4 +28,5 @@ test("Kidung presentation changes select the dedicated Kidung usability and visu
   assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
   assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
 });
