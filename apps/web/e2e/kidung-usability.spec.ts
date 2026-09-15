@@ -122,20 +122,24 @@ test(
       }
 
       const actions = page.locator(
-        ".hymn-text-toolbar .detail-actions .hymn-action",
+        ".hymn-text-toolbar .detail-actions .hymn-action:visible",
       );
       await expect(actions).toHaveCount(2);
       for (let index = 0; index < (await actions.count()); index += 1) {
         await expectTarget(actions.nth(index));
       }
 
-      const labels = page.locator(
-        ".hymn-text-toolbar .detail-actions .hymn-action-label",
-      );
+      const labels = actions.locator(".hymn-action-label");
       await expect(labels).toHaveCount(2);
       for (let index = 0; index < (await labels.count()); index += 1) {
         await expect(labels.nth(index)).toBeVisible();
       }
+
+      const toolbarBox = await page
+        .locator(".hymn-text-toolbar")
+        .boundingBox();
+      expect(toolbarBox).not.toBeNull();
+      expect(toolbarBox!.height).toBeLessThanOrEqual(118);
 
       const fullscreenLyrics = page.getByRole("button", {
         name: "Mode lirik layar penuh",
@@ -147,6 +151,21 @@ test(
       await overflow.click();
       await expect(fullscreenLyrics).toBeVisible();
       await expectTarget(fullscreenLyrics);
+
+      const panel = page.locator(".hymn-more-actions-panel");
+      await expect(panel).toBeVisible();
+      const panelBox = await panel.boundingBox();
+      const fullscreenBox = await fullscreenLyrics.boundingBox();
+      expect(panelBox).not.toBeNull();
+      expect(fullscreenBox).not.toBeNull();
+      expect(fullscreenBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
+      expect(fullscreenBox!.x + fullscreenBox!.width).toBeLessThanOrEqual(
+        panelBox!.x + panelBox!.width,
+      );
+      expect(fullscreenBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
+      expect(fullscreenBox!.y + fullscreenBox!.height).toBeLessThanOrEqual(
+        panelBox!.y + panelBox!.height,
+      );
 
       await expectTarget(page.locator(".hymn-reader-settings-summary"));
       await expectNoHorizontalOverflow(page);
