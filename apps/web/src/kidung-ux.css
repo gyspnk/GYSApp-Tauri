@@ -346,19 +346,20 @@
   .hymn-text-toolbar {
     grid-template-columns: minmax(0, 1fr) 44px 44px;
     gap: 6px;
-    padding: 6px 0;
+    padding: 4px 0;
   }
 
   .hymn-text-toolbar .detail-actions {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 6px;
     width: 100%;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action {
-    width: 100%;
+    flex: 1 1 0;
+    width: auto;
     min-width: 0;
     min-height: 44px;
     padding: 0 8px;
