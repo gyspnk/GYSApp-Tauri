@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+// Cover the narrowest phone, breakpoint edges, and representative wide screens.
 type DeviceMode = "phone" | "tablet" | "desktop";
 type ViewportCase = {
   width: number;
