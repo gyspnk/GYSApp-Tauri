@@ -254,13 +254,19 @@ test(
       const actions = page.locator(
         ".hymn-text-toolbar .detail-actions .hymn-action:visible",
       );
-      await expect(actions).toHaveCount(2);
-      for (let index = 0; index < (await actions.count()); index += 1) {
+      // MIDI is intentionally hidden until the optional SoundFont is
+      // installed. The chord control remains available, so the compact
+      // toolbar should expose one or two contextual primary actions depending
+      // on the device's installed capabilities.
+      const actionCount = await actions.count();
+      expect(actionCount).toBeGreaterThanOrEqual(1);
+      expect(actionCount).toBeLessThanOrEqual(2);
+      for (let index = 0; index < actionCount; index += 1) {
         await expectTarget(actions.nth(index));
       }
 
       const labels = actions.locator(".hymn-action-label");
-      await expect(labels).toHaveCount(2);
+      await expect(labels).toHaveCount(actionCount);
       for (let index = 0; index < (await labels.count()); index += 1) {
         await expect(labels.nth(index)).toBeVisible();
       }
