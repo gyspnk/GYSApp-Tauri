@@ -7,8 +7,11 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   await page.goto("/GYSApp-Tauri/");
   const nav = page.locator(".navigation-shell");
   const expanded = await nav.boundingBox();
+  const topbar = await page.locator(".topbar").boundingBox();
   expect(expanded).not.toBeNull();
+  expect(topbar).not.toBeNull();
   expect(expanded!.width).toBeGreaterThan(200);
+  expect(expanded!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
 
   const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
   await expect(collapse).toBeVisible();

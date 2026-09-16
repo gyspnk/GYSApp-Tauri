@@ -105,6 +105,13 @@ test.describe("responsive reader navigation", () => {
           .filter((height) => height > 0),
       );
     expect(headerControlHeights).toEqual(headerControlHeights.map(() => 44));
+    const topbarBox = await page.locator(".topbar").boundingBox();
+    const bibleReaderBox = await page.locator(".bible-reader").boundingBox();
+    expect(topbarBox).not.toBeNull();
+    expect(bibleReaderBox).not.toBeNull();
+    expect(bibleReaderBox!.y).toBeLessThanOrEqual(
+      topbarBox!.y + topbarBox!.height + 1,
+    );
     await expect(page.locator(".bible-reader")).toHaveCSS(
       "border-top-width",
       "0px",

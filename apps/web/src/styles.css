@@ -5687,6 +5687,9 @@ body.is-resizing-bible {
 .app-frame.is-reader-route .main-content {
   padding-top: 34px;
 }
+.app-frame.is-reader-route .bible-reader {
+  margin-top: 0;
+}
 .app-frame.is-reader-route .reader-toolbar {
   top: 58px;
 }
@@ -11831,7 +11834,11 @@ body:has(.home-page)::-webkit-scrollbar {
   }
   .navigation-shell {
     position: relative;
+    top: 0;
     transition: padding var(--motion-normal, 220ms) var(--ease-out, ease-out);
+  }
+  .app-frame.is-reader-route .navigation-shell {
+    top: 0;
   }
   .sidebar-collapse-toggle {
     position: absolute;
