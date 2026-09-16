@@ -22,7 +22,7 @@ test("More menu labels stay visible", async ({ page }) => {
 
   // Keep a focused artifact for manual phone action-sheet readability review.
   await page.screenshot({
-    path: "test-results/ui-preview/kidung-density/reader-more-phone-390x844.png",
+    path: "test-results/ui-preview/kidung-density/reader-more-labels-phone-390x844.png",
     fullPage: false,
     animations: "disabled",
   });

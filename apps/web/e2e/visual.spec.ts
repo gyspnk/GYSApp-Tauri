@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Representative visual baselines cover phone, tablet, and desktop widths.
 const viewports = [
   { name: "390x844", width: 390, height: 844 },
   { name: "768x1024", width: 768, height: 1024 },

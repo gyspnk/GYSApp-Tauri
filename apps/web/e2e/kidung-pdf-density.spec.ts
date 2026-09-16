@@ -15,7 +15,21 @@ test("single-page hymn PDF hides unavailable pager buttons", async ({
   await page.getByRole("tab", { name: "PDF" }).click();
   const reader = page.locator(".pdf-reader-hymn");
   await expect(reader).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(/Memuat PDF…/)).toBeHidden({ timeout: 30_000 });
+  const renderedPage = reader.locator('canvas[aria-label^="PDF page"]').first();
+  await expect(renderedPage).toBeVisible({ timeout: 30_000 });
+  await expect
+    .poll(
+      () =>
+        renderedPage.evaluate((canvas) => {
+          const pageCanvas = canvas as HTMLCanvasElement;
+          return pageCanvas.width > 0 && pageCanvas.height > 0;
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await expect(page.locator(".gys-pdf-overlay > .loading-panel")).toHaveCount(
+    0,
+  );
 
   const unavailablePager = reader.locator(
     ".pdf-page-navigation > button:disabled",

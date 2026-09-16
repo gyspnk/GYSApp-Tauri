@@ -225,9 +225,7 @@ test.describe("responsive reader navigation", () => {
         search.evaluate((element) => element.getBoundingClientRect().width),
       )
       .toBeGreaterThan(200);
-    await expect(
-      page.locator('summary[aria-label="Filter koleksi"]'),
-    ).toBeVisible();
+    await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await search.click();

@@ -29,9 +29,7 @@ test("phone catalog moves collection filtering behind one compact trigger", asyn
   await expect(
     page.locator(".kidung-desktop-filter .control-select"),
   ).toBeHidden();
-  await expect(
-    page.locator('summary[aria-label="Filter koleksi"]'),
-  ).toBeVisible();
+  await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
 });
 
 test("playlist rows expose one contextual menu instead of permanent row actions", async ({
@@ -91,7 +89,7 @@ test("reader settings prioritize typography and collapse music controls", async 
   ).toBeHidden();
 });
 
-test("PDF reader keeps navigation and transpose out of permanent top chrome", async ({
+test("PDF reader keeps song navigation visible and transpose contextual", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -102,10 +100,10 @@ test("PDF reader keeps navigation and transpose out of permanent top chrome", as
   const chrome = page.locator(".hymn-pdf-viewer-chrome");
   await expect(
     chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   await expect(
     chrome.getByRole("button", { name: "Berikutnya", exact: true }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   await expect(chrome.locator(".pdf-transpose-inline")).toBeHidden();
   await expect(
     chrome.locator('summary[aria-label="Opsi musik"]'),

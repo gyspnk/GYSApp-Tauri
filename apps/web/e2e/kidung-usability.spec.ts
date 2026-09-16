@@ -72,7 +72,7 @@ async function openFirstHymnPdf(page: Page) {
       { timeout: 30_000 },
     )
     .toBe(true);
-  await expect(page.getByText(/Memuat PDF…/)).toBeHidden({ timeout: 30_000 });
+  await expect(page.locator(".gys-pdf-overlay > .loading-panel")).toHaveCount(0);
 }
 
 test(
@@ -93,7 +93,7 @@ test(
 
     await expect(page.locator(".kidung-desktop-filter")).toBeHidden();
     const filterTrigger = page.locator(
-      'summary[aria-label="Filter koleksi"]',
+      'summary[aria-label="Koleksi"]',
     );
     await expectTarget(filterTrigger);
     await filterTrigger.click();
@@ -122,14 +122,36 @@ test(
 );
 
 test(
+  "small-phone hymn titles stay readable instead of shrinking to fit one line",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await openCatalog(page);
+
+    const titles = page.locator(".pujian-title");
+    for (let index = 0; index < Math.min(5, await titles.count()); index += 1) {
+      const title = titles.nth(index);
+      const computed = await title.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontSize: Number.parseFloat(style.fontSize),
+          lineHeight: Number.parseFloat(style.lineHeight),
+          whiteSpace: style.whiteSpace,
+        };
+      });
+      expect(computed.fontSize).toBeGreaterThanOrEqual(13);
+      expect(computed.lineHeight).toBeGreaterThanOrEqual(16);
+      expect(computed.whiteSpace).not.toBe("nowrap");
+      await expectTarget(title, 44);
+    }
+    await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
   "phone hymn reader keeps only contextual primary actions on the surface",
   async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openFirstHymn(page);
-
-    for (const tab of await page.getByRole("tab").all()) {
-      await expectTarget(tab);
-    }
 
     const actions = page.locator(
       ".hymn-text-toolbar .detail-actions .hymn-action",
@@ -191,7 +213,7 @@ test(
 );
 
 test(
-  "PDF reader exposes one contextual music control instead of permanent transport chrome",
+  "PDF reader exposes contextual music controls with direct song navigation",
   async ({ page }) => {
     test.setTimeout(75_000);
     await page.setViewportSize({ width: 390, height: 844 });
@@ -200,10 +222,10 @@ test(
     const chrome = page.locator(".hymn-pdf-viewer-chrome");
     await expect(
       chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
-    ).toHaveCount(0);
+    ).toBeVisible();
     await expect(
       chrome.getByRole("button", { name: "Berikutnya", exact: true }),
-    ).toHaveCount(0);
+    ).toBeVisible();
 
     const music = chrome.locator('summary[aria-label="Opsi musik"]');
     await expectTarget(music);
@@ -212,6 +234,72 @@ test(
     await expect(panel).toBeVisible();
     await expect(panel.locator(".pdf-transpose-inline")).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  },
+);
+
+test(
+  "phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow",
+  async ({ page }) => {
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await openFirstHymn(page);
+
+      for (const tab of await page.getByRole("tab").all()) {
+        await expectTarget(tab);
+      }
+
+      const actions = page.locator(
+        ".hymn-text-toolbar .detail-actions .hymn-action:visible",
+      );
+      await expect(actions).toHaveCount(2);
+      for (let index = 0; index < (await actions.count()); index += 1) {
+        await expectTarget(actions.nth(index));
+      }
+
+      const labels = actions.locator(".hymn-action-label");
+      await expect(labels).toHaveCount(2);
+      for (let index = 0; index < (await labels.count()); index += 1) {
+        await expect(labels.nth(index)).toBeVisible();
+      }
+
+      const toolbarBox = await page
+        .locator(".hymn-text-toolbar")
+        .boundingBox();
+      expect(toolbarBox).not.toBeNull();
+      expect(toolbarBox!.height).toBeLessThanOrEqual(118);
+
+      const fullscreenLyrics = page.getByRole("button", {
+        name: "Mode lirik layar penuh",
+      });
+      await expect(fullscreenLyrics).toBeHidden();
+
+      const overflow = page.locator(".hymn-more-actions-summary");
+      await expectTarget(overflow);
+      await overflow.click();
+      await expect(fullscreenLyrics).toBeVisible();
+      await expectTarget(fullscreenLyrics);
+
+      const panel = page.locator(".hymn-more-actions-panel");
+      await expect(panel).toBeVisible();
+      const panelBox = await panel.boundingBox();
+      const fullscreenBox = await fullscreenLyrics.boundingBox();
+      expect(panelBox).not.toBeNull();
+      expect(fullscreenBox).not.toBeNull();
+      expect(fullscreenBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
+      expect(fullscreenBox!.x + fullscreenBox!.width).toBeLessThanOrEqual(
+        panelBox!.x + panelBox!.width,
+      );
+      expect(fullscreenBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
+      expect(fullscreenBox!.y + fullscreenBox!.height).toBeLessThanOrEqual(
+        panelBox!.y + panelBox!.height,
+      );
+
+      await expectTarget(page.locator(".hymn-reader-settings-summary"));
+      await expectNoHorizontalOverflow(page);
+    }
   },
 );
 
@@ -236,14 +324,19 @@ test(
 );
 
 const visualCases = [
+  ["catalog-small-phone-320x720", 320, 720, "catalog", "light"],
   ["catalog-phone-390x844", 390, 844, "catalog", "light"],
+  ["catalog-large-phone-430x932", 430, 932, "catalog", "light"],
   ["catalog-tablet-768x1024", 768, 1024, "catalog", "light"],
+  ["catalog-landscape-1024x768", 1024, 768, "catalog", "light"],
   ["catalog-desktop-1440x900", 1440, 900, "catalog", "light"],
   ["playlist-phone-390x844", 390, 844, "playlist", "light"],
   ["playlist-tablet-768x1024", 768, 1024, "playlist", "light"],
+  ["reader-text-small-phone-320x720", 320, 720, "reader", "light"],
   ["reader-text-phone-390x844", 390, 844, "reader", "light"],
   ["reader-text-tablet-768x1024", 768, 1024, "reader", "light"],
   ["reader-text-desktop-1440x900", 1440, 900, "reader", "light"],
+  ["reader-text-wide-1920x1080", 1920, 1080, "reader", "light"],
   ["reader-pdf-phone-390x844", 390, 844, "pdf", "light"],
   ["reader-pdf-tablet-768x1024", 768, 1024, "pdf", "light"],
   ["reader-pdf-desktop-1440x900", 1440, 900, "pdf", "light"],

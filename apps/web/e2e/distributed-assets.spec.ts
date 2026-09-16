@@ -49,7 +49,7 @@ test("Kidung catalog hides optional collections until they are installed", async
   await expect(
     page.getByRole("heading", { name: "Kidung", exact: true }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.locator('summary[aria-label="Filter koleksi"]').click();
+  await page.locator('summary[aria-label="Koleksi"]').click();
   const collectionPanel = page.locator(".kidung-mobile-filter-panel");
   await expect(collectionPanel).toBeVisible();
   await collectionPanel.locator(".control-select-trigger").click();
