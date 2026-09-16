@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v17";
+const CACHE = "gysapp-shell-v18";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();

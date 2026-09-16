@@ -374,6 +374,9 @@ describe("BFF public boundary", () => {
       expect(proxied.headers.get("access-control-allow-origin")).toBe(
         "http://localhost:5173",
       );
+      expect(proxied.headers.get("cross-origin-resource-policy")).toBe(
+        "cross-origin",
+      );
       expect(seenRange).toBe("bytes=0-4");
     } finally {
       globalThis.fetch = originalFetch;
@@ -658,6 +661,19 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("returns an empty optional Edge voice catalog when not configured", async () => {
+    const app = createApp({
+      allowedOrigins: ["http://localhost:5173"],
+      chordManifest: manifest,
+      content: [],
+    });
+    const response = await app.request("/api/v1/tts/edge/voices", {
+      headers: { Origin: "http://localhost:5173" },
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ voices: [] });
+  });
+
   it("applies a configurable per-client rate limit", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],
@@ -909,6 +925,38 @@ describe("BFF public boundary", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("image/jpeg");
       expect(response.headers.get("access-control-allow-origin")).toBe("*");
+      expect(response.headers.get("cross-origin-resource-policy")).toBe(
+        "cross-origin",
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("keeps media error responses embeddable for the same UI origin", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response("Not found", { status: 404 })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const pdf = await app.request(
+        `/api/v1/content/pdf?url=${encodeURIComponent("https://tjc.org/id/missing.pdf")}`,
+      );
+      const image = await app.request(
+        `/api/v1/content/image?url=${encodeURIComponent("https://tjc.org/id/missing.jpg")}`,
+      );
+      expect(pdf.status).toBe(503);
+      expect(image.status).toBe(503);
+      expect(pdf.headers.get("cross-origin-resource-policy")).toBe(
+        "cross-origin",
+      );
+      expect(image.headers.get("cross-origin-resource-policy")).toBe(
+        "cross-origin",
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }

@@ -760,3 +760,18 @@ differing pixels, so the commit was rebuilt slim (origin stylesheet plus only
 the viewer token/toggle hunks) and the catalog restyle stayed in the working
 tree for its own slice. Next frontier: resume the Kidung phone/tablet user
 review from CF-053.
+
+Validation for CF-055: 2026-09-16 — the current UI audit isolates active
+Literatur and Iman ownership in `reading-surfaces.css`, removes the old
+elevated row/shelf treatment, keeps metadata readable, adds the visible Iman
+heading, and moves the Iman PDF action below the text at <=360px so narrow
+phones do not force unreadable line breaks. Preferences keeps a single
+landmark heading, all controls remain reachable at 320px and 200% text, and
+the visual matrix covers 320/390/600/768/959/960/1024/1440/1920 classes plus
+light/dark/sepia/AMOLED samples. Proof: focused reading usability 6/6,
+visual reading 25/25, Kidung targeted 6/6, combined UI suite 61 passed with
+one Kidung visual poll flaky then passing on retry, and the web layer contract
+unit gate green. Protected prerequisites remain canonical gyschordweb data,
+generated manifests and integrity locks, release evidence, and the e-GYS v2
+discovery-only WIP; no PR was merged, pushed, or exposed. Next frontier:
+resolve the open/conflicting PR #5 integration separately after user review.

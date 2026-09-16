@@ -25,7 +25,7 @@ test("home paints saved Suara content before slow live revalidation", async ({
   });
 
   await page.goto("/GYSApp-Tauri/");
-  await expect(page.getByText("Menapaki Tiga Iman Bag 2")).toBeVisible({
+  await expect(page.getByText(/Menapaki Tiga Iman Bag/i)).toBeVisible({
     timeout: 800,
   });
   await expect(page.getByText("Kesaksian terbaru")).toBeVisible({

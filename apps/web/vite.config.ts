@@ -149,6 +149,10 @@ export default defineConfig({
   },
   build: {
     target: "es2022",
+    // The shell Service Worker owns the same module requests. Vite's
+    // modulepreload links then trigger Chromium cross-world mismatch warnings
+    // without improving the offline cache path.
+    modulePreload: false,
     // Source maps are useful for local diagnostics, but shipping them to
     // Pages adds several megabytes to the deploy without improving runtime.
     sourcemap: process.env.VITE_SOURCE_MAPS === "true",

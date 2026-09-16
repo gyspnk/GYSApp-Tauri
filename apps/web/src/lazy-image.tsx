@@ -19,6 +19,8 @@ export function LazyImage({
   wrapperClassName = "",
   loading = "lazy",
   decoding = "async",
+  fallbackTitle,
+  fallbackCategory,
   onLoad,
 }: {
   src?: string | undefined;
@@ -34,6 +36,13 @@ export function LazyImage({
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const effectiveSrc = resolveProxiedImageUrl(src);
+  const fallbackMark = (fallbackTitle ?? "GYS")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 
   useEffect(() => {
     setLoaded(false);
@@ -42,12 +51,22 @@ export function LazyImage({
 
   return (
     <div className={`img-skeleton-wrapper ${wrapperClassName}`}>
-      {(!loaded || error) && (
+      {!loaded && !error && effectiveSrc && (
         <div className="img-skeleton-shimmer" aria-hidden="true">
           <div className="img-loading-bar" />
         </div>
       )}
-      {effectiveSrc && (
+      {(!effectiveSrc || error) && (
+        <div
+          className="img-fallback-placeholder"
+          role="img"
+          aria-label={`Pratinjau tidak tersedia: ${alt}`}
+        >
+          <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
+          {fallbackCategory && <small>{fallbackCategory}</small>}
+        </div>
+      )}
+      {effectiveSrc && !error && (
         <img
           src={effectiveSrc}
           alt={alt}

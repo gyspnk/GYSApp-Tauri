@@ -228,7 +228,7 @@ export function UiPreferencesPanel() {
               aria-describedby="ui-preferences-description"
               tabIndex={-1}
             >
-              <header className="ui-preferences-header">
+              <div className="ui-preferences-header">
                 <div>
                   <p className="ui-preferences-eyebrow">Akses & kenyamanan</p>
                   <h2 id="ui-preferences-title">Tampilan & keterbacaan</h2>
@@ -245,7 +245,7 @@ export function UiPreferencesPanel() {
                 >
                   <span aria-hidden="true">×</span>
                 </button>
-              </header>
+              </div>
 
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">

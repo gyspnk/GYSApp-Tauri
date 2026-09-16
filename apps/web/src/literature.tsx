@@ -199,11 +199,20 @@ function Cover({
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const effectiveSrc = resolveProxiedImageUrl(item.imageUrl);
+  const fallbackSrc = getCoverDataUri({
+    title: item.title,
+    category: item.category,
+    format: item.format,
+    width: 280,
+    height: 400,
+  });
+  const [source, setSource] = useState(effectiveSrc ?? fallbackSrc);
 
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
-  }, [effectiveSrc]);
+    setSource(effectiveSrc ?? fallbackSrc);
+  }, [effectiveSrc, fallbackSrc]);
 
   return (
     <div
@@ -214,10 +223,10 @@ function Cover({
           <div className="img-loading-bar" />
         </div>
       )}
-      {effectiveSrc && (
+      {source && (
         <img
           className={`img-with-skeleton ${loaded && !failed ? "is-loaded" : ""}`}
-          src={effectiveSrc}
+          src={source}
           alt={`Sampul ${item.title}`}
           loading="lazy"
           decoding="async"
@@ -225,7 +234,15 @@ function Cover({
             setLoaded(true);
             setFailed(false);
           }}
-          onError={() => setFailed(true)}
+          onError={() => {
+            if (source !== fallbackSrc) {
+              setSource(fallbackSrc);
+              setLoaded(false);
+              setFailed(false);
+            } else {
+              setFailed(true);
+            }
+          }}
         />
       )}
     </div>

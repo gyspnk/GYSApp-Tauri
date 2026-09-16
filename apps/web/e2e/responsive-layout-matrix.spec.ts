@@ -187,6 +187,40 @@ test("Kidung stays contained around both breakpoints", async ({ page }) => {
   }
 });
 
+test("reading surfaces stay contained around phone, tablet, and desktop edges", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 430, height: 932 },
+    { width: 599, height: 900 },
+    { width: 600, height: 900 },
+    { width: 959, height: 900 },
+    { width: 960, height: 900 },
+    { width: 1024, height: 768 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openRoute(page, "/literatur", viewport.width);
+    await expectInsideViewport(
+      page.locator(".literature-toolbar"),
+      viewport.width,
+    );
+    await expectInsideViewport(
+      page.locator(".literature-row").first(),
+      viewport.width,
+    );
+
+    await openRoute(page, "/iman", viewport.width);
+    await expectInsideViewport(
+      page.locator(".faith-search-bar"),
+      viewport.width,
+    );
+    await expectInsideViewport(
+      page.locator(".faith-row-heading").first(),
+      viewport.width,
+    );
+  }
+});
+
 test("focused hymn reader fits every device class", async ({ page }) => {
   const viewports = [
     { width: 320, height: 720 },

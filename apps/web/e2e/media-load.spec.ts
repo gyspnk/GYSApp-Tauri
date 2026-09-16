@@ -102,15 +102,14 @@ test("literature PDF failure exposes retry inside the application reader shell",
     route.fulfill({ status: 503, body: "literature PDF unavailable" }),
   );
   await page.goto("/GYSApp-Tauri/literatur");
-  await expect(
-    page.getByRole("link", { name: /Kitab Markus/i }).first(),
-  ).toBeVisible({
+  const pdfLink = page
+    .locator(".literature-row")
+    .filter({ hasText: /PDF\s*·/ })
+    .first();
+  await expect(pdfLink).toBeVisible({
     timeout: 15_000,
   });
-  await page
-    .getByRole("link", { name: /Kitab Markus/i })
-    .first()
-    .click();
+  await pdfLink.click();
   await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.getByRole("alert")).toContainText(
     "PDF belum dapat dibuka",
@@ -140,8 +139,12 @@ test("literature PDF stays inline and resumes the last page", async ({
     });
   });
   await page.goto("/GYSApp-Tauri/literatur");
-  const markus = page.getByRole("link", { name: /Kitab Markus/i }).first();
-  await markus.click();
+  const pdfLink = page
+    .locator(".literature-row")
+    .filter({ hasText: /PDF\s*·/ })
+    .first();
+  await expect(pdfLink).toBeVisible({ timeout: 15_000 });
+  await pdfLink.click();
   await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");
@@ -149,8 +152,11 @@ test("literature PDF stays inline and resumes the last page", async ({
   await page.getByRole("button", { name: "Tutup" }).click();
   await expect(page).toHaveURL(/\/literatur$/);
   await expect(page.locator(".pdf-reader")).toHaveCount(0);
-  const resume = page.getByRole("link", { name: /Kitab Markus/i }).first();
-  await expect(resume).toContainText(/100% selesai/i);
+  const resume = page
+    .locator(".literature-row")
+    .filter({ hasText: /PDF\s*·/ })
+    .first();
+  await expect(resume).toContainText(/Lanjut.*halaman 1/i);
   await resume.click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");

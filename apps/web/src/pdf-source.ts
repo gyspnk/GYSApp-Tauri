@@ -68,8 +68,12 @@ export async function loadPdfBytes(
           }
         }
       } catch {
-        // fall through to direct/opaque
+        // A configured BFF is the only browser-safe source for TJC PDFs.
       }
+      // Do not retry the same stale URL directly: tjc.org does not grant CORS,
+      // and that fallback only turns one useful error into several console
+      // errors (CORS, 404 and opaque-cache failures).
+      return undefined;
     }
     try {
       const response = await fetch(url, { cache: "default" });

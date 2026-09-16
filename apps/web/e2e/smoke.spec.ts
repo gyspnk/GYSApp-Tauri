@@ -697,6 +697,16 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
     updatedAt: new Date().toISOString(),
     source: "tjc.org",
   };
+  await page.route("**/api/v1/content/image*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
+        "base64",
+      ),
+    }),
+  );
   await page.route("**/offline/sauh.json", (route) =>
     route.fulfill({ json: { items: [todaySauh] } }),
   );

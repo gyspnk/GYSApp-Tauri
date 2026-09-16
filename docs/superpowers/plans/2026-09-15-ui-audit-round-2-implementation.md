@@ -32,10 +32,12 @@
 ### Task 1: Define the reading-family structural contract
 
 **Files:**
+
 - Create: `apps/web/e2e/reading-family-usability.spec.ts`
 - Reuse fixtures/patterns from: `apps/web/e2e/visual-reading.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `.literature-page`, `.literature-toolbar`, `.literature-row`, `.literature-shelf-item`, `.literature-reader-panel`, `.faith-page`, `.faith-search-bar`, `.faith-rows`, `.faith-row-heading`, `.faith-pdf-overlay`.
 - Produces: `installLiteratureFixture(page)`, `installFaithFixture(page)`, `expectNoHorizontalOverflow(page)`, `expectTouchTarget(locator, min = 44)` test helpers local to this spec.
 
@@ -86,7 +88,9 @@ Then assert the intended calm reading-family grammar:
 
 ```ts
 const faithRows = page.locator(".faith-rows");
-expect(await faithRows.evaluate((el) => getComputedStyle(el).boxShadow)).toBe("none");
+expect(await faithRows.evaluate((el) => getComputedStyle(el).boxShadow)).toBe(
+  "none",
+);
 
 const shelfItem = page.locator(".literature-shelf-item").first();
 await shelfItem.hover();
@@ -133,12 +137,14 @@ git commit -m "test(ui): define reading family usability contract"
 ### Task 2: Give Literatur and Iman an explicit CSS owner
 
 **Files:**
+
 - Create: `apps/web/src/reading-surfaces.css`
 - Modify: `apps/web/src/main.tsx`
 - Modify: `apps/web/src/styles.css`
 - Modify: `apps/web/src/ui-layering-contract.test.ts`
 
 **Interfaces:**
+
 - Consumes: existing Literatur/Iman class names; no component API change.
 - Produces: `reading-surfaces.css` as the owner for active Literatur/Iman layout/presentation rules, imported after `direct-manipulation.css` and before `calm-liturgical.css`.
 
@@ -221,6 +227,7 @@ git commit -m "refactor(ui): isolate reading surface styles"
 ### Task 3: Normalize Literatur and Iman catalog hierarchy
 
 **Files:**
+
 - Modify: `apps/web/src/reading-surfaces.css`
 - Modify only if semantic markers are necessary: `apps/web/src/literature.tsx`
 - Modify only if semantic markers are necessary: `apps/web/src/faith.tsx`
@@ -228,6 +235,7 @@ git commit -m "refactor(ui): isolate reading surface styles"
 - Visual test: `apps/web/e2e/visual-reading.spec.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1 structural assertions and Task 2 CSS ownership.
 - Produces: flat ordinary rows, restrained publication shelves, consistent search/control rhythm, readable metadata, and no hover lift on reading indexes.
 
@@ -345,11 +353,13 @@ Only add the TSX files if they actually changed.
 ### Task 4: Normalize PDF/reader chrome and theme behavior
 
 **Files:**
+
 - Modify: `apps/web/src/reading-surfaces.css`
 - Modify: `apps/web/e2e/reading-family-usability.spec.ts`
 - Modify: `apps/web/e2e/visual-reading.spec.ts`
 
 **Interfaces:**
+
 - Consumes: existing `PdfReader`, `.literature-reader-panel`, `.faith-pdf-overlay`, `.faith-pdf-backdrop`, existing progress/resume behavior.
 - Produces: content-first reader chrome across Literatur/Iman without changing PDF engine APIs.
 
@@ -446,21 +456,32 @@ git commit -m "feat(ui): refine reading reader hierarchy"
 ### Task 5: Close Preferences responsive and keyboard blind spots
 
 **Files:**
+
 - Modify: `apps/web/e2e/appearance-preferences.spec.ts`
 - Modify only if a new assertion fails: `apps/web/src/ui-preferences.css`
 - Modify only if interaction semantics fail: `apps/web/src/ui-preferences-panel.tsx`
 
 **Interfaces:**
+
 - Consumes: `UiPreferencesPanel`, `DENSITY_OPTIONS`, `FONT_OPTIONS`, focus trap, `.ui-preferences-panel`.
 - Produces: verified reachability of all options across sheet/dialog breakpoints, short phone heights, density modes, keyboard traversal, and enlarged text.
 
 - [ ] **Step 1: Add pre-selection reachability test on a narrow/short phone**
 
 ```ts
-test("phone sheet exposes every preference before any selection", async ({ page }) => {
+test("phone sheet exposes every preference before any selection", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 640 });
   const { dialog } = await openAppearance(page);
-  for (const name of ["Nyaman", "Standar", "Ringkas", "Otomatis", "Himne", "Sans modern"]) {
+  for (const name of [
+    "Nyaman",
+    "Standar",
+    "Ringkas",
+    "Otomatis",
+    "Himne",
+    "Sans modern",
+  ]) {
     const option = dialog.getByRole("radio", { name: new RegExp(`^${name}`) });
     await option.scrollIntoViewIfNeeded();
     await expect(option).toBeVisible();
@@ -536,12 +557,14 @@ Only stage source files that actually changed.
 ### Task 6: Extend accessibility and protect Kidung from shared regressions
 
 **Files:**
+
 - Modify: `apps/web/e2e/accessibility.spec.ts`
 - Modify: `apps/web/e2e/responsive-layout-matrix.spec.ts`
 - Re-run only: `apps/web/e2e/kidung-usability.spec.ts`
 - Re-run only: `apps/web/e2e/kidung-small-phone-nav.spec.ts`
 
 **Interfaces:**
+
 - Consumes: final reading-family and preference states.
 - Produces: release gates for accessible reading surfaces and breakpoint containment.
 
@@ -551,7 +574,9 @@ Add deterministic literature/faith routes or use their local offline fixtures wh
 
 ```ts
 const results = await new AxeBuilder({ page }).analyze();
-expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual(
+  [],
+);
 ```
 
 Also test the Preferences dialog while open so radio semantics/focusable structure are scanned.
@@ -588,11 +613,13 @@ git commit -m "test(ui): extend second audit release gates"
 ### Task 7: Inspect and accept intentional visual baselines
 
 **Files:**
+
 - Review: `apps/web/e2e/visual-reading.spec.ts`
 - Modify only after inspection: `apps/web/e2e/visual-reading.spec.ts-snapshots/*.png`
 - Review only: existing Kidung visual preview output from `kidung-usability.spec.ts`
 
 **Interfaces:**
+
 - Consumes: all final styling from Tasks 2-6.
 - Produces: reviewed Linux visual baselines limited to intentional changes.
 
@@ -652,10 +679,12 @@ Skip this commit entirely if no baseline changed.
 ### Task 8: Exact-head verification and PR readiness
 
 **Files:**
+
 - No planned source changes.
 - If a verification failure requires a fix, return to the owning earlier task and add a regression test before fixing it.
 
 **Interfaces:**
+
 - Produces: exact-head evidence suitable for review/merge.
 
 - [ ] **Step 1: Run formatting and static checks**

@@ -6,6 +6,9 @@ import { describe, expect, it } from "vitest";
 const main = readFileSync(join(__dirname, "main.tsx"), "utf8");
 const kidung = readFileSync(join(__dirname, "kidung-ux.css"), "utf8");
 const kidungSource = readFileSync(join(__dirname, "kidung.tsx"), "utf8");
+const readingPath = join(__dirname, "reading-surfaces.css");
+const reading = readFileSync(readingPath, "utf8");
+const styles = readFileSync(join(__dirname, "styles.css"), "utf8");
 
 function block(source: string, selector: string): string {
   const start = source.indexOf(selector);
@@ -94,5 +97,21 @@ describe("visual layer authority", () => {
     expect(kidung).toContain(
       "grid-template-columns: 44px 44px minmax(0, 1fr) 44px 44px;",
     );
+  });
+
+  it("loads reading surfaces before the final calm authority", () => {
+    const readingImport = main.indexOf('import "./reading-surfaces.css";');
+    const calm = main.indexOf('import "./calm-liturgical.css";');
+    expect(readingImport).toBeGreaterThan(
+      main.indexOf('import "./direct-manipulation.css";'),
+    );
+    expect(readingImport).toBeLessThan(calm);
+  });
+
+  it("keeps active reading-family ownership out of the legacy base layer", () => {
+    expect(reading).toContain(".literature-row");
+    expect(reading).toContain(".faith-rows");
+    expect(styles).not.toContain(".literature-row {");
+    expect(styles).not.toContain(".faith-rows {");
   });
 });

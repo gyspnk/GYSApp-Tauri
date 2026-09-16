@@ -1,12 +1,21 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const viewports = [
+  { name: "320x720", width: 320, height: 720 },
   { name: "390x844", width: 390, height: 844 },
+  { name: "600x900", width: 600, height: 900 },
   { name: "768x1024", width: 768, height: 1024 },
+  { name: "1024x768", width: 1024, height: 768 },
   { name: "1440x900", width: 1440, height: 900 },
+  { name: "1920x1080", width: 1920, height: 1080 },
 ] as const;
 
-const readerViewports = [viewports[0], viewports[2]] as const;
+const readerViewports = [
+  viewports[1],
+  viewports[3],
+  viewports[4],
+  viewports[5],
+] as const;
 const transparentPixel = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
   "base64",
@@ -41,6 +50,18 @@ async function assertViewportIntegrity(page: Page): Promise<void> {
       ),
     )
     .toBe(true);
+}
+
+async function setShellTheme(
+  page: Page,
+  theme: "dark" | "sepia" | "amoled",
+): Promise<void> {
+  await page.addInitScript((value) => {
+    window.localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale: "id", theme: value }),
+    );
+  }, theme);
 }
 
 function literatureItems() {
@@ -311,3 +332,119 @@ for (const viewport of readerViewports) {
     );
   });
 }
+
+test("dark literature catalog theme sample", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page);
+  await setShellTheme(page, "dark");
+  await page.route("**/offline/literature.json", (route) =>
+    route.fulfill({
+      json: {
+        source: "tjc.org",
+        generatedAt: "2026-09-12T00:00:00.000Z",
+        items: literatureItems(),
+      },
+    }),
+  );
+
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(page.locator(".literature-page")).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await assertViewportIntegrity(page);
+  await expect(page).toHaveScreenshot("literature-catalog-dark-390x844.png", {
+    animations: "disabled",
+    caret: "hide",
+    maxDiffPixelRatio: 0.005,
+  });
+});
+
+test("sepia literature direct reader theme sample", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await prepare(page);
+  await setShellTheme(page, "sepia");
+  await page.route("**/offline/literature.json", (route) =>
+    route.fulfill({
+      json: {
+        source: "tjc.org",
+        generatedAt: "2026-09-12T00:00:00.000Z",
+        items: [
+          {
+            id: "pdf-sepia",
+            category: "buku",
+            title: "Panduan Uji PDF",
+            description: "Dokumen lokal deterministik untuk verifikasi reader.",
+            url: `http://127.0.0.1:4173${localPdfPath}`,
+            format: "pdf",
+            publishedAt: "2026-09-01T00:00:00.000Z",
+            updatedAt: "2026-09-01T00:00:00.000Z",
+            source: "tjc.org",
+          },
+        ],
+      },
+    }),
+  );
+
+  await page.goto("/GYSApp-Tauri/literatur/pdf-sepia?read=1");
+  await expect(page.locator(".literature-reader-panel")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "sepia");
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".pdf-pages canvas")
+          .first()
+          .evaluate((canvas) => canvas.width),
+      { timeout: 20_000 },
+    )
+    .toBeGreaterThan(0);
+  await assertViewportIntegrity(page);
+  await expect(page).toHaveScreenshot("literature-reader-sepia-1440x900.png", {
+    animations: "disabled",
+    caret: "hide",
+    maxDiffPixelRatio: 0.005,
+  });
+});
+
+test("AMOLED faith overlay theme sample", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page);
+  await setShellTheme(page, "amoled");
+  const pdfResponse = await page.request.get(localPdfPath);
+  expect(pdfResponse.ok()).toBe(true);
+  const pdfBytes = await pdfResponse.body();
+  await page.route("**/offline/faith.json", (route) =>
+    route.fulfill({ json: faithPack() }),
+  );
+  await page.route(/Yesus-Kristus\.pdf/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/pdf",
+      body: pdfBytes,
+    }),
+  );
+
+  await page.goto("/GYSApp-Tauri/iman");
+  await page.locator(".faith-row-heading").first().click();
+  await expect(page.locator(".faith-pdf-overlay")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "amoled");
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".faith-pdf-overlay .pdf-pages canvas")
+          .first()
+          .evaluate((canvas) => canvas.width),
+      { timeout: 20_000 },
+    )
+    .toBeGreaterThan(0);
+  await assertViewportIntegrity(page);
+  await expect(page).toHaveScreenshot("faith-overlay-amoled-390x844.png", {
+    animations: "disabled",
+    caret: "hide",
+    maxDiffPixelRatio: 0.005,
+  });
+});

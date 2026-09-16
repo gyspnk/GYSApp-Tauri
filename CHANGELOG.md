@@ -7,6 +7,7 @@
 - Generated canonical hymn/chord outputs with byte-integrity provenance are excluded from generic Prettier rewriting; their dedicated provenance verifier remains authoritative.
 - Updated Hono from 4.13.2 to patched 4.13.5 to clear current production dependency advisories.
 - Updated the e-GYS overlay regression to verify the current in-app Google login host plus official portal fallback without mistaking Google Sign-In's nested iframe for the application login surface.
+- Refined Literatur and Iman reading surfaces across phone, tablet, and desktop layouts with flatter hierarchy, readable metadata, small-phone text flow, reachable PDF controls, and visual coverage for dark, sepia, and AMOLED themes.
 
 - **Current production-readiness hardening**:
   - Added a validated, versioned shell-settings envelope with legacy-key

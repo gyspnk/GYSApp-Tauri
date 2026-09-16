@@ -55,7 +55,6 @@ const items = posts.flatMap((post) => {
       ? new Date(post.date).toISOString()
       : undefined;
   const url = typeof post?.link === "string" ? post.link : "";
-  const imageUrl = post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
   if (!title || !excerpt || !url || !publishedAt) return [];
   return [
     {
@@ -66,9 +65,6 @@ const items = posts.flatMap((post) => {
       title,
       excerpt,
       url,
-      ...(typeof imageUrl === "string" && imageUrl.startsWith("http")
-        ? { imageUrl }
-        : {}),
       publishedAt,
       source: "tjc.org",
     },

@@ -20,7 +20,7 @@ export const literatureCategoryLabels: Record<
   buku: "Buku PDF",
 };
 
-const CATALOG_PERSIST_KEY = "gys_literature_catalog_v1";
+const CATALOG_PERSIST_KEY = "gys_literature_catalog_v2";
 const REVALIDATE_THROTTLE_MS = 60_000;
 
 let catalogMemoryCache: LiteratureItem[] | undefined;

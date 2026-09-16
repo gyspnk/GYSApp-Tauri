@@ -12,7 +12,7 @@ const API_URL =
 const PAGE_SIZE = 100;
 const MAX_PAGES = 100;
 const CACHE_TTL_MS = 5 * 60_000;
-const PERSIST_KEY = "gys_suara_feed_v1";
+const PERSIST_KEY = "gys_suara_feed_v2";
 // Bound the persistent archive so quota errors stay impossible while still
 // keeping months of testimonies available for instant paint.
 const MAX_PERSISTED_ITEMS = 400;
@@ -137,13 +137,6 @@ function suaraNetworkCandidates(): string[] {
   return [proxy, API_URL].filter((value): value is string => Boolean(value));
 }
 
-/** The publisher mirrors featured images on an official S3 bucket. */
-const TJC_IMAGE_HOSTS = [
-  "tjc.org",
-  "www.tjc.org",
-  "tjcorguploads.s3.amazonaws.com",
-];
-
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
@@ -157,27 +150,16 @@ function isTjcUrl(value: unknown): value is string {
   }
 }
 
-function isTjcImageUrl(value: unknown): value is string {
-  if (typeof value !== "string") return false;
-  try {
-    const url = new URL(value);
-    return (
-      url.protocol === "https:" &&
-      TJC_IMAGE_HOSTS.includes(url.hostname.toLowerCase())
-    );
-  } catch {
-    return false;
-  }
-}
-
 export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
+  // ponytail: keep feed thumbnails text-only until the publisher exposes a
+  // health-checked media URL; the local fallback avoids a 503 per card.
   if (value && typeof value === "object" && "items" in value) {
     const feed = SuaraSejatiFeedSchema.safeParse(value);
     if (!feed.success) return [];
     return feed.data.items.flatMap((item) => {
       if (!isTjcUrl(item.url)) return [];
-      if (item.imageUrl && !isTjcImageUrl(item.imageUrl)) return [];
-      return [item];
+      const { imageUrl: _, ...textOnly } = item;
+      return [textOnly];
     });
   }
   if (!Array.isArray(value)) return [];
@@ -185,11 +167,8 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
     if (!item || typeof item !== "object") return [];
     const direct = SuaraSejatiPostSchema.safeParse(item);
     if (direct.success && isTjcUrl(direct.data.url)) {
-      if (direct.data.imageUrl && !isTjcImageUrl(direct.data.imageUrl)) {
-        const { imageUrl: _, ...rest } = direct.data;
-        return [rest];
-      }
-      return [direct.data];
+      const { imageUrl: _, ...textOnly } = direct.data;
+      return [textOnly];
     }
     const post = item as {
       id?: unknown;
@@ -217,11 +196,6 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
         ? parsedDate.toISOString()
         : "";
     const url = typeof post.link === "string" ? post.link : "";
-    const candidateImageUrl =
-      post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const imageUrl = isTjcImageUrl(candidateImageUrl)
-      ? candidateImageUrl
-      : undefined;
     if (!isTjcUrl(url) || !publishedAt) return [];
     const result = SuaraSejatiPostSchema.safeParse({
       id:
@@ -231,7 +205,6 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
       title,
       excerpt,
       url,
-      ...(imageUrl ? { imageUrl } : {}),
       publishedAt,
       source: "tjc.org",
     });

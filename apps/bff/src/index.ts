@@ -699,6 +699,7 @@ export function createApp(
   });
 
   app.get("/api/v1/content/pdf", async (c) => {
+    c.header("cross-origin-resource-policy", "cross-origin");
     const rawUrl = c.req.query("url");
     if (!rawUrl || rawUrl.length > 2_048)
       return errorResponse(c, "VALIDATION_ERROR", "PDF url is required");
@@ -758,6 +759,7 @@ export function createApp(
    * Handles CORS, referrer requirements, fallback resizing and format negotiation.
    */
   app.get("/api/v1/content/image", async (c) => {
+    c.header("cross-origin-resource-policy", "cross-origin");
     const rawUrl = c.req.query("url");
     if (!rawUrl || rawUrl.length > 2_048)
       return errorResponse(c, "VALIDATION_ERROR", "Image url is required");
@@ -1147,12 +1149,7 @@ export function createApp(
       "public, max-age=300, stale-while-revalidate=900",
     );
     const configured = c.env?.EDGE_TTS_VOICES_URL?.trim();
-    if (!configured)
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "Edge speech voice catalog is not configured",
-      );
+    if (!configured) return c.json({ voices: [] });
     let endpoint: URL;
     try {
       endpoint = new URL(configured);

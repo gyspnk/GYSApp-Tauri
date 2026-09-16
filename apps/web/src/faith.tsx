@@ -354,6 +354,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page faith-page">
+      <h1 className="faith-page-title">{group?.title ?? "Iman"}</h1>
       {!pack && (
         <div className="loading-panel" role="status">
           {translate(locale, "faith.loading")}

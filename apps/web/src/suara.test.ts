@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { SuaraSejatiPost } from "@gys/contracts";
 
-const PERSIST_KEY = "gys_suara_feed_v1";
+const PERSIST_KEY = "gys_suara_feed_v2";
 
 function post(partial: Partial<SuaraSejatiPost>): SuaraSejatiPost {
   return {
@@ -161,5 +161,13 @@ describe("Suara Sejati persistent + incremental cache", () => {
       "suara-snapshot",
     ]);
     expect(storage.has(PERSIST_KEY)).toBe(true);
+  });
+
+  it("drops remote thumbnails until their source is health-checked", async () => {
+    const { parseSuaraSejati } = await import("./suara.js");
+    const items = parseSuaraSejati([
+      post({ imageUrl: "https://tjc.org/id/wp-content/uploads/stale.jpg" }),
+    ]);
+    expect(items[0]?.imageUrl).toBeUndefined();
   });
 });
