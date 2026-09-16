@@ -4,15 +4,24 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
   if (!src) return undefined;
   if (src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("/"))
     return src;
-  // <img> does not need CORS. Use the publisher's immutable S3 mirror directly
-  // so the BFF cannot add a network hop or serve a stale/full-size URL.
+  // <img> does not need CORS. Use the publisher's immutable S3 original
+  // directly so the BFF cannot add a network hop or leave a resized derivative.
   try {
     const url = new URL(src);
+    const stripWordPressSize = (pathname: string) =>
+      pathname.replace(/-\d+x\d+(?=\.[^./]+$)/i, "");
     if (
       ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase()) &&
       url.pathname.startsWith("/id/wp-content/uploads/")
     ) {
-      return `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}${url.search}`;
+      return `https://tjcorguploads.s3.amazonaws.com/tjcorg${stripWordPressSize(url.pathname.replace(/^\/id/, ""))}${url.search}`;
+    }
+    if (
+      url.hostname.toLowerCase() === "tjcorguploads.s3.amazonaws.com" &&
+      url.pathname.startsWith("/tjcorg/wp-content/uploads/")
+    ) {
+      url.pathname = stripWordPressSize(url.pathname);
+      return url.toString();
     }
   } catch {
     return src;

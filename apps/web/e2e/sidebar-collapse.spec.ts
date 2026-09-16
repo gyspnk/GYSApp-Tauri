@@ -20,6 +20,7 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(controlBox).not.toBeNull();
   expect(controlBox!.width).toBeGreaterThanOrEqual(44);
   expect(controlBox!.height).toBeGreaterThanOrEqual(44);
+  expect(controlBox!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
   await collapse.click();
 
   await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);

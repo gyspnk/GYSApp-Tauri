@@ -162,6 +162,36 @@ test("primary routes fit from phone to wide desktop", async ({ page }) => {
   }
 });
 
+test("dashboard keeps a readable single column on narrow desktop", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 960, height: 900 },
+    { width: 1024, height: 768 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openRoute(page, "/", viewport.width);
+
+    const geometry = await page.evaluate(() => {
+      const verse = document
+        .querySelector(".verse-panel")!
+        .getBoundingClientRect();
+      const continuePanel = document
+        .querySelector(".continue-panel")!
+        .getBoundingClientRect();
+      return {
+        verseWidth: verse.width,
+        verseBottom: verse.bottom,
+        continueTop: continuePanel.top,
+      };
+    });
+    expect(geometry.verseWidth).toBeGreaterThan(500);
+    expect(geometry.continueTop).toBeGreaterThanOrEqual(
+      geometry.verseBottom + 20 - 1,
+    );
+  }
+});
+
 test("Kidung stays contained around both breakpoints", async ({ page }) => {
   for (const viewport of [
     { width: 599, height: 900 },

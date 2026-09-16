@@ -58,6 +58,14 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
       { timeout: 5_000 },
     )
     .toBeGreaterThan(0);
+  const firstSuaraImage = await page
+    .locator(".home-suara-shelf .suara-thumb-img")
+    .first()
+    .getAttribute("src");
+  expect(firstSuaraImage).toMatch(
+    /^https:\/\/tjcorguploads\.s3\.amazonaws\.com\//,
+  );
+  expect(firstSuaraImage).not.toMatch(/-\d+x\d+\.[^/]+$/i);
 
   // Navigate to Literatur page
   await page.goto("/GYSApp-Tauri/literatur");

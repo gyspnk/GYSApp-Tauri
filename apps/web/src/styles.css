@@ -10580,6 +10580,26 @@ body.gys-viewer-active {
     max-height: 33px;
   }
 }
+
+/* A full navigation rail leaves a narrow working canvas on small desktops.
+   Stack the dashboard until the content can support two readable columns. */
+@media (min-width: 960px) and (max-width: 1199px) {
+  .home-grid {
+    grid-template-areas:
+      "verse"
+      "continue"
+      "suara"
+      "literature";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    align-items: start;
+  }
+  .home-grid .verse-panel {
+    height: auto;
+    min-height: clamp(360px, 58vw, 520px);
+  }
+}
+
 @media (max-width: 599px) {
   /* Mobile: kurangi bottom yang kebanyakan */
   .home-page {
@@ -11842,7 +11862,7 @@ body:has(.home-page)::-webkit-scrollbar {
   }
   .sidebar-collapse-toggle {
     position: absolute;
-    top: 16px;
+    top: 0;
     right: -22px;
     z-index: 3;
     display: inline-grid;
