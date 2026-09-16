@@ -28,6 +28,21 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
       nav.evaluate((element) => element.getBoundingClientRect().width),
     )
     .toBeLessThan(100);
+  await expect
+    .poll(async () => {
+      const [collapsedNavBox, indicatorBox] = await Promise.all([
+        nav.boundingBox(),
+        nav.locator(".nav-active-indicator").boundingBox(),
+      ]);
+      return Boolean(
+        collapsedNavBox &&
+        indicatorBox &&
+        indicatorBox.x >= collapsedNavBox.x &&
+        indicatorBox.x + indicatorBox.width <=
+          collapsedNavBox.x + collapsedNavBox.width + 1,
+      );
+    })
+    .toBe(true);
   await expect(
     page.getByRole("button", { name: "Perluas navigasi" }),
   ).toHaveAttribute("aria-expanded", "false");

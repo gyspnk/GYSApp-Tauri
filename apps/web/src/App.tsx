@@ -260,6 +260,16 @@ function Navigation({ locale }: { locale: Locale }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [updateIndicator]);
 
+  useEffect(() => {
+    const nav = navRef.current;
+    const activeEl = activePath ? itemsRef.current.get(activePath) : undefined;
+    if (!nav || !activeEl || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateIndicator);
+    observer.observe(nav);
+    observer.observe(activeEl);
+    return () => observer.disconnect();
+  }, [activePath, updateIndicator]);
+
   return (
     <nav
       ref={navRef}
