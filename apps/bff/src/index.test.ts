@@ -975,7 +975,17 @@ describe("BFF public boundary", () => {
           excerpt: { rendered: "<p>Kesaksian terbaru.</p>" },
           _embedded: {
             "wp:featuredmedia": [
-              { source_url: "https://tjc.org/id/wp-content/uploads/cover.jpg" },
+              {
+                source_url: "https://tjc.org/id/wp-content/uploads/cover.jpg",
+                media_details: {
+                  sizes: {
+                    medium: {
+                      source_url:
+                        "https://tjc.org/id/wp-content/uploads/cover-300x200.jpg",
+                    },
+                  },
+                },
+              },
             ],
           },
         },
@@ -999,7 +1009,7 @@ describe("BFF public boundary", () => {
       );
       expect(payload.items[0]).toMatchObject({
         title: "Cahaya Kehidupan",
-        imageUrl: "https://tjc.org/id/wp-content/uploads/cover.jpg",
+        imageUrl: "https://tjc.org/id/wp-content/uploads/cover-300x200.jpg",
       });
     } finally {
       globalThis.fetch = originalFetch;

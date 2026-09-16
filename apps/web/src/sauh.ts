@@ -206,6 +206,12 @@ const TJC_IMAGE_HOSTS = [
   "www.tjc.org",
   "tjcorguploads.s3.amazonaws.com",
 ];
+type FeaturedMedia = {
+  source_url?: unknown;
+  media_details?: {
+    sizes?: Record<string, { source_url?: unknown } | undefined>;
+  };
+};
 
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
@@ -233,6 +239,18 @@ function isTjcImageUrl(value: unknown): value is string {
   }
 }
 
+function featuredImageUrl(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const media = value as FeaturedMedia;
+  const sizes = media.media_details?.sizes;
+  return [
+    sizes?.medium_large?.source_url,
+    sizes?.medium?.source_url,
+    sizes?.thumbnail?.source_url,
+    media.source_url,
+  ].find(isTjcImageUrl);
+}
+
 /** Convert the WordPress post shape used by the upstream into our stable contract. */
 export function parseSauhPosts(value: unknown): SauhPost[] {
   if (!Array.isArray(value)) {
@@ -253,7 +271,7 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
       content?: { rendered?: unknown };
       excerpt?: { rendered?: unknown };
       _embedded?: {
-        [key: string]: Array<{ source_url?: unknown }> | undefined;
+        [key: string]: FeaturedMedia[] | undefined;
       };
       reference?: unknown;
       verse?: unknown;
@@ -298,7 +316,9 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
         : referenceFrom(stripHtml(rawBody));
     const verse =
       typeof post.verse === "string" ? post.verse : quoteFrom(rawBody);
-    const embeddedImage = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const embeddedImage = featuredImageUrl(
+      post._embedded?.["wp:featuredmedia"]?.[0],
+    );
     const candidate = {
       id:
         typeof post.slug === "string"

@@ -130,6 +130,12 @@ const TJC_IMAGE_HOSTS = [
   "www.tjc.org",
   "tjcorguploads.s3.amazonaws.com",
 ];
+type FeaturedMedia = {
+  source_url?: unknown;
+  media_details?: {
+    sizes?: Record<string, { source_url?: unknown } | undefined>;
+  };
+};
 
 function isTjcUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
@@ -155,6 +161,18 @@ function isTjcImageUrl(value: unknown): value is string {
   } catch {
     return false;
   }
+}
+
+function featuredImageUrl(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const media = value as FeaturedMedia;
+  const sizes = media.media_details?.sizes;
+  return [
+    sizes?.medium_large?.source_url,
+    sizes?.medium?.source_url,
+    sizes?.thumbnail?.source_url,
+    media.source_url,
+  ].find(isTjcImageUrl);
 }
 
 /** Sauh is a daily reflection; never expose a stale multi-day feed to clients. */
@@ -184,7 +202,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       content?: { rendered?: unknown };
       excerpt?: { rendered?: unknown };
       _embedded?: {
-        [key: string]: Array<{ source_url?: unknown }> | undefined;
+        [key: string]: FeaturedMedia[] | undefined;
       };
     };
     const title =
@@ -214,6 +232,9 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       Number.isNaN(parsedUpdatedAt.getTime())
     )
       continue;
+    const imageUrl = featuredImageUrl(
+      post._embedded?.["wp:featuredmedia"]?.[0],
+    );
     const parsed = SauhPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -224,9 +245,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       verse: quoteFrom(raw),
       body,
       url,
-      ...(isTjcImageUrl(post._embedded?.["wp:featuredmedia"]?.[0]?.source_url)
-        ? { imageUrl: post._embedded?.["wp:featuredmedia"]?.[0]?.source_url }
-        : {}),
+      ...(imageUrl ? { imageUrl } : {}),
       updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org",
     });

@@ -6,6 +6,7 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
     return src;
   const bffBase = (import.meta.env.VITE_BFF_BASE_URL ?? "").trim();
   if (src.includes("tjc.org") || src.includes("s3.amazonaws.com")) {
+    if (!bffBase) return src;
     const base = bffBase.replace(/\/$/, "");
     return `${base}/api/v1/content/image?url=${encodeURIComponent(src)}`;
   }
@@ -21,6 +22,8 @@ export function LazyImage({
   decoding = "async",
   fallbackTitle,
   fallbackCategory,
+  fallbackSrc,
+  fetchPriority,
   onLoad,
 }: {
   src?: string | undefined;
@@ -31,11 +34,15 @@ export function LazyImage({
   decoding?: "async" | "sync" | "auto" | undefined;
   fallbackTitle?: string | undefined;
   fallbackCategory?: string | undefined;
+  fallbackSrc?: string | undefined;
+  fetchPriority?: "high" | "low" | "auto" | undefined;
   onLoad?: (() => void) | undefined;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [fallbackFailed, setFallbackFailed] = useState(false);
   const effectiveSrc = resolveProxiedImageUrl(src);
+  const effectiveFallbackSrc = resolveProxiedImageUrl(fallbackSrc);
   const fallbackMark = (fallbackTitle ?? "GYS")
     .split(/\s+/)
     .filter(Boolean)
@@ -47,16 +54,34 @@ export function LazyImage({
   useEffect(() => {
     setLoaded(false);
     setError(false);
-  }, [effectiveSrc]);
+    setFallbackFailed(false);
+  }, [effectiveFallbackSrc, effectiveSrc]);
+
+  const fallbackActive =
+    Boolean(effectiveFallbackSrc) && (!effectiveSrc || error);
+  const displaySrc =
+    fallbackActive && !fallbackFailed
+      ? effectiveFallbackSrc
+      : !error
+        ? effectiveSrc
+        : undefined;
 
   return (
     <div className={`img-skeleton-wrapper ${wrapperClassName}`}>
-      {!loaded && !error && effectiveSrc && (
+      {!loaded && !error && effectiveSrc && !fallbackActive && (
         <div className="img-skeleton-shimmer" aria-hidden="true">
           <div className="img-loading-bar" />
         </div>
       )}
-      {(!effectiveSrc || error) && (
+      {effectiveSrc && !loaded && !error && effectiveFallbackSrc && (
+        <img
+          src={effectiveFallbackSrc}
+          className="img-fallback-image"
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      {!displaySrc && (
         <div
           className="img-fallback-placeholder"
           role="img"
@@ -66,20 +91,22 @@ export function LazyImage({
           {fallbackCategory && <small>{fallbackCategory}</small>}
         </div>
       )}
-      {effectiveSrc && !error && (
+      {displaySrc && (
         <img
-          src={effectiveSrc}
+          src={displaySrc}
           alt={alt}
-          className={`${className} img-with-skeleton ${loaded && !error ? "is-loaded" : ""}`}
+          className={`${className} img-with-skeleton ${loaded || fallbackActive ? "is-loaded" : ""}`}
           loading={loading}
           decoding={decoding}
+          fetchPriority={fetchPriority}
           onLoad={() => {
             setLoaded(true);
-            setError(false);
+            if (!fallbackActive) setError(false);
             onLoad?.();
           }}
           onError={() => {
-            setError(true);
+            if (fallbackActive) setFallbackFailed(true);
+            else setError(true);
           }}
         />
       )}

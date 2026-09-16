@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { SuaraSejatiPost } from "@gys/contracts";
 
-const PERSIST_KEY = "gys_suara_feed_v2";
+const PERSIST_KEY = "gys_suara_feed_v3";
 
 function post(partial: Partial<SuaraSejatiPost>): SuaraSejatiPost {
   return {
@@ -163,11 +163,37 @@ describe("Suara Sejati persistent + incremental cache", () => {
     expect(storage.has(PERSIST_KEY)).toBe(true);
   });
 
-  it("drops remote thumbnails until their source is health-checked", async () => {
+  it("keeps official featured thumbnails while rejecting foreign URLs", async () => {
     const { parseSuaraSejati } = await import("./suara.js");
     const items = parseSuaraSejati([
-      post({ imageUrl: "https://tjc.org/id/wp-content/uploads/stale.jpg" }),
+      {
+        id: 1,
+        slug: "official-thumbnail",
+        date: "2026-08-01T00:00:00.000Z",
+        link: "https://tjc.org/id/suarasejati/official-thumbnail/",
+        title: { rendered: "Thumbnail resmi" },
+        excerpt: { rendered: "Cuplikan resmi." },
+        _embedded: {
+          "wp:featuredmedia": [
+            {
+              source_url: "https://tjc.org/id/wp-content/uploads/full.jpg",
+              media_details: {
+                sizes: {
+                  medium: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/medium.jpg",
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+      post({ imageUrl: "https://evil.example/stale.jpg" }),
     ]);
-    expect(items[0]?.imageUrl).toBeUndefined();
+    expect(items[0]?.imageUrl).toBe(
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/medium.jpg",
+    );
+    expect(items[1]?.imageUrl).toBeUndefined();
   });
 });

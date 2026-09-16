@@ -20,7 +20,7 @@ export const literatureCategoryLabels: Record<
   buku: "Buku PDF",
 };
 
-const CATALOG_PERSIST_KEY = "gys_literature_catalog_v2";
+const CATALOG_PERSIST_KEY = "gys_literature_catalog_v3";
 const REVALIDATE_THROTTLE_MS = 60_000;
 
 let catalogMemoryCache: LiteratureItem[] | undefined;
@@ -159,6 +159,27 @@ export async function fetchLiteratureCatalog(
   if (catalogMemoryCache && catalogMemoryCache.length > 0) {
     scheduleCatalogRevalidate();
     return [...catalogMemoryCache];
+  }
+  const snapshotUrl = `${import.meta.env.BASE_URL}offline/literature.json`;
+  try {
+    const response = await fetch(snapshotUrl, {
+      ...(signal ? { signal } : {}),
+      cache: "force-cache",
+    });
+    if (response.ok) {
+      const snapshot = LiteratureCatalogSchema.parse(await response.json());
+      if (snapshot.items.length) {
+        const items = [
+          ...new Map(snapshot.items.map((item) => [item.id, item])).values(),
+        ];
+        catalogMemoryCache = items;
+        persistCatalog(items);
+        scheduleCatalogRevalidate();
+        return items;
+      }
+    }
+  } catch (error) {
+    if (signal?.aborted) throw error;
   }
   const controller = signal ? undefined : new AbortController();
   const catalog = await loadCatalog(signal ?? controller!.signal);

@@ -12,23 +12,29 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
     }
   });
 
-  // Intercept image proxy requests to provide a valid test image
-  await page.route("**/api/v1/content/image*", async (route) => {
-    // Return a 1x1 transparent PNG image
-    const pixelPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-      "base64",
-    );
-    await route.fulfill({
-      status: 200,
-      contentType: "image/png",
-      headers: {
-        "access-control-allow-origin": "*",
-        "cache-control": "public, max-age=604800",
-      },
-      body: pixelPng,
+  // Intercept both proxy and direct official image requests to make the test
+  // independent of upstream image availability.
+  for (const pattern of [
+    "**/api/v1/content/image*",
+    "https://tjcorguploads.s3.amazonaws.com/**",
+    "https://tjc.org/id/wp-content/uploads/**",
+  ]) {
+    await page.route(pattern, async (route) => {
+      const pixelPng = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "base64",
+      );
+      await route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        headers: {
+          "access-control-allow-origin": "*",
+          "cache-control": "public, max-age=604800",
+        },
+        body: pixelPng,
+      });
     });
-  });
+  }
 
   await page.goto("/GYSApp-Tauri/");
 
@@ -39,6 +45,19 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
   // Verify skeleton loading wrappers exist
   const skeletons = page.locator(".home-suara-shelf .img-skeleton-wrapper");
   await expect(skeletons.first()).toBeVisible({ timeout: 5_000 });
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".home-suara-shelf .suara-thumb-img")
+          .evaluateAll(
+            (images) =>
+              images.filter((image) => image.complete && image.naturalWidth > 0)
+                .length,
+          ),
+      { timeout: 5_000 },
+    )
+    .toBeGreaterThan(0);
 
   // Navigate to Literatur page
   await page.goto("/GYSApp-Tauri/literatur");

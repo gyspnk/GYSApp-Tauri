@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { LiteratureItem } from "@gys/contracts";
 
-const PERSIST_KEY = "gys_literature_catalog_v2";
+const PERSIST_KEY = "gys_literature_catalog_v3";
 
 function item(partial: Partial<LiteratureItem>): LiteratureItem {
   return {

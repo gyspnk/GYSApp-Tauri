@@ -223,6 +223,14 @@ function Cover({
           <div className="img-loading-bar" />
         </div>
       )}
+      {effectiveSrc && !loaded && !failed && (
+        <img
+          src={fallbackSrc}
+          className="img-fallback-image"
+          alt=""
+          aria-hidden="true"
+        />
+      )}
       {source && (
         <img
           className={`img-with-skeleton ${loaded && !failed ? "is-loaded" : ""}`}

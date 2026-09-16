@@ -54,18 +54,12 @@ async function prepare(page: Page): Promise<void> {
   );
   await page.route("https://github.com/**", (route) => route.abort());
   await page.route("https://tjc.org/**", async (route) => {
-    if (route.request().resourceType() === "image") {
-      await route.fulfill({
-        body: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
-          "base64",
-        ),
-        contentType: "image/png",
-      });
-      return;
-    }
+    if (route.request().resourceType() === "image") return route.abort();
     await route.abort();
   });
+  await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
+    route.abort(),
+  );
 }
 
 for (const surface of surfaces) {
@@ -89,6 +83,18 @@ for (const surface of surfaces) {
           ),
         )
         .toBe(true);
+      if (surface.name === "home" && viewport.width === 390) {
+        await expect
+          .poll(
+            () =>
+              page
+                .locator(".home-suara-shelf .suara-thumb-img")
+                .first()
+                .evaluate((image) => image.complete && image.naturalWidth > 0),
+            { timeout: 5_000 },
+          )
+          .toBe(true);
+      }
       await expect(page.locator("h1")).toHaveCount(1);
       await expect(
         page.getByRole("navigation", { name: "Navigasi utama" }),

@@ -12,7 +12,7 @@ const API_URL =
 const PAGE_SIZE = 100;
 const MAX_PAGES = 100;
 const CACHE_TTL_MS = 5 * 60_000;
-const PERSIST_KEY = "gys_suara_feed_v2";
+const PERSIST_KEY = "gys_suara_feed_v3";
 // Bound the persistent archive so quota errors stay impossible while still
 // keeping months of testimonies available for instant paint.
 const MAX_PERSISTED_ITEMS = 400;
@@ -22,6 +22,49 @@ let feedInFlight: Promise<SuaraSejatiPost[]> | undefined;
 let revalidateInFlight = false;
 
 const SUARA_UPDATE_EVENT = "gys-suara-update";
+const TJC_IMAGE_HOSTS = [
+  "tjc.org",
+  "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
+];
+
+type FeaturedMedia = {
+  source_url?: unknown;
+  media_details?: {
+    sizes?: Record<string, { source_url?: unknown } | undefined>;
+  };
+};
+
+function isTjcImageUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      TJC_IMAGE_HOSTS.includes(url.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
+function featuredImageUrl(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const media = value as FeaturedMedia;
+  const sizes = media.media_details?.sizes;
+  return [
+    sizes?.medium?.source_url,
+    sizes?.thumbnail?.source_url,
+    sizes?.medium_large?.source_url,
+    media.source_url,
+  ].find(isTjcImageUrl);
+}
+
+function safeSuaraPost(item: SuaraSejatiPost): SuaraSejatiPost {
+  if (isTjcImageUrl(item.imageUrl)) return item;
+  const { imageUrl: _, ...textOnly } = item;
+  return textOnly;
+}
 
 /** Publishes incrementally merged feeds so open surfaces refresh without reloading. */
 export function subscribeSuara(
@@ -106,8 +149,12 @@ function mergeSuaraFeeds(
   for (const item of current) merged.set(item.id, item);
   let added = false;
   for (const item of incoming) {
-    if (!merged.has(item.id)) added = true;
-    merged.set(item.id, item);
+    const existing = merged.get(item.id);
+    if (!existing) added = true;
+    merged.set(
+      item.id,
+      existing?.imageUrl ? { ...item, imageUrl: existing.imageUrl } : item,
+    );
   }
   if (!added && merged.size === current.length) return undefined;
   const next = sortByNewest([...merged.values()]).slice(
@@ -151,15 +198,12 @@ function isTjcUrl(value: unknown): value is string {
 }
 
 export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
-  // ponytail: keep feed thumbnails text-only until the publisher exposes a
-  // health-checked media URL; the local fallback avoids a 503 per card.
   if (value && typeof value === "object" && "items" in value) {
     const feed = SuaraSejatiFeedSchema.safeParse(value);
     if (!feed.success) return [];
     return feed.data.items.flatMap((item) => {
       if (!isTjcUrl(item.url)) return [];
-      const { imageUrl: _, ...textOnly } = item;
-      return [textOnly];
+      return [safeSuaraPost(item)];
     });
   }
   if (!Array.isArray(value)) return [];
@@ -167,8 +211,7 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
     if (!item || typeof item !== "object") return [];
     const direct = SuaraSejatiPostSchema.safeParse(item);
     if (direct.success && isTjcUrl(direct.data.url)) {
-      const { imageUrl: _, ...textOnly } = direct.data;
-      return [textOnly];
+      return [safeSuaraPost(direct.data)];
     }
     const post = item as {
       id?: unknown;
@@ -178,7 +221,7 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
       title?: { rendered?: unknown };
       excerpt?: { rendered?: unknown };
       _embedded?: {
-        [key: string]: Array<{ source_url?: unknown }> | undefined;
+        [key: string]: FeaturedMedia[] | undefined;
       };
     };
     const title =
@@ -197,6 +240,9 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
         : "";
     const url = typeof post.link === "string" ? post.link : "";
     if (!isTjcUrl(url) || !publishedAt) return [];
+    const imageUrl = featuredImageUrl(
+      post._embedded?.["wp:featuredmedia"]?.[0],
+    );
     const result = SuaraSejatiPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -205,6 +251,7 @@ export function parseSuaraSejati(value: unknown): SuaraSejatiPost[] {
       title,
       excerpt,
       url,
+      ...(imageUrl ? { imageUrl } : {}),
       publishedAt,
       source: "tjc.org",
     });
@@ -340,7 +387,12 @@ function scheduleSuaraRevalidate() {
   if (revalidateInFlight) return;
   if (!feedCache || !feedCache.items.length) return;
   if (feedCache.expiresAt > Date.now()) return;
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    feedCache.expiresAt = Date.now() + CACHE_TTL_MS;
+    return;
+  }
   revalidateInFlight = true;
+  feedCache.expiresAt = Date.now() + CACHE_TTL_MS;
   // Off the paint path: refreshing never blocks first render.
   const delay =
     typeof window !== "undefined" && typeof window.setTimeout === "function"
@@ -392,11 +444,18 @@ export async function fetchSuara(
   }
   if (feedInFlight) return [...(await waitFor(feedInFlight, signal))];
   const shared = (async () => {
-    const candidates =
-      typeof navigator !== "undefined" && !navigator.onLine
-        ? [STATIC_URL]
-        : [...suaraNetworkCandidates(), STATIC_URL];
     let lastError: unknown;
+    const offline = typeof navigator !== "undefined" && !navigator.onLine;
+    if (!offline) {
+      try {
+        const snapshot = await request(STATIC_URL);
+        if (snapshot.length)
+          return sortByNewest(snapshot).slice(0, MAX_PERSISTED_ITEMS);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    const candidates = offline ? [STATIC_URL] : suaraNetworkCandidates();
     for (const url of candidates) {
       try {
         const items = await request(url);
@@ -415,8 +474,9 @@ export async function fetchSuara(
   })();
   const tracked = shared.then(
     (items) => {
-      feedCache = { expiresAt: Date.now() + CACHE_TTL_MS, items: [...items] };
+      feedCache = { expiresAt: 0, items: [...items] };
       persistSuara(items);
+      scheduleSuaraRevalidate();
       publishSuaraUpdate(items);
       return items;
     },

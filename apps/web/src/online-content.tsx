@@ -12,6 +12,7 @@ import { fetchSuara, getCachedSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
+import { getCoverDataUri } from "./cover-generator.js";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -155,7 +156,7 @@ export function SauhPage() {
         <span>Sauh Bagi Jiwa · hari ini</span>
       </div>
       <article
-        className={`online-article-card sauh-article${state.status === "ready" && state.post.imageUrl ? " has-image" : ""}`}
+        className={`online-article-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
         data-sauh-status={state.status}
       >
         {state.status === "loading" && (
@@ -192,15 +193,22 @@ export function SauhPage() {
         )}
         {state.status === "ready" && (
           <>
-            {state.post.imageUrl && (
-              <LazyImage
-                className="online-article-image"
-                wrapperClassName="sauh-article-image-wrap"
-                src={state.post.imageUrl}
-                alt={`Ilustrasi ${state.post.title}`}
-                loading="eager"
-              />
-            )}
+            <LazyImage
+              className="online-article-image"
+              wrapperClassName="sauh-article-image-wrap"
+              src={state.post.imageUrl}
+              fallbackSrc={getCoverDataUri({
+                title: state.post.title,
+                category: "renungan",
+                width: 800,
+                height: 560,
+              })}
+              fallbackTitle={state.post.title}
+              fallbackCategory="renungan"
+              alt={`Ilustrasi ${state.post.title}`}
+              loading="eager"
+              fetchPriority="high"
+            />
             <p className="date-line">Sauh Bagi Jiwa · sumber langsung TJC</p>
             <h1>{state.post.title}</h1>
             {state.post.reference && (
@@ -295,6 +303,12 @@ export function SuaraPage() {
                   className="suara-thumb-img"
                   wrapperClassName="suara-library-thumb"
                   src={post.imageUrl}
+                  fallbackSrc={getCoverDataUri({
+                    title: post.title,
+                    category: "kesaksian",
+                    width: 400,
+                    height: 280,
+                  })}
                   fallbackTitle={post.title}
                   fallbackCategory="kesaksian"
                   alt={`Cover ${post.title}`}
@@ -408,15 +422,22 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             {new Date(state.post.publishedAt).toLocaleDateString(locale)}
           </p>
           <h1>{state.post.title}</h1>
-          {state.post.imageUrl && (
-            <LazyImage
-              className="online-article-image"
-              wrapperClassName="suara-article-image-wrap"
-              src={state.post.imageUrl}
-              alt={`Thumbnail ${state.post.title}`}
-              loading="eager"
-            />
-          )}
+          <LazyImage
+            className="online-article-image"
+            wrapperClassName="suara-article-image-wrap"
+            src={state.post.imageUrl}
+            fallbackSrc={getCoverDataUri({
+              title: state.post.title,
+              category: "kesaksian",
+              width: 800,
+              height: 520,
+            })}
+            fallbackTitle={state.post.title}
+            fallbackCategory="kesaksian"
+            alt={`Thumbnail ${state.post.title}`}
+            loading="eager"
+            fetchPriority="high"
+          />
           <SuaraParagraphs text={state.body ?? state.post.excerpt} />
           <div className="detail-actions">
             <SourceLink href={state.post.url} />

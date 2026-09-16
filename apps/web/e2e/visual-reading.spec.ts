@@ -16,10 +16,6 @@ const readerViewports = [
   viewports[4],
   viewports[5],
 ] as const;
-const transparentPixel = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
-  "base64",
-);
 const localPdfPath =
   "/GYSApp-Tauri/assets/pdf/001_Pujilah%20Allah%20Yang%20Maha%20Esa.pdf";
 
@@ -31,13 +27,7 @@ async function prepare(page: Page): Promise<void> {
   );
   await page.route("https://github.com/**", (route) => route.abort());
   await page.route("https://tjc.org/**", async (route) => {
-    if (route.request().resourceType() === "image") {
-      await route.fulfill({
-        body: transparentPixel,
-        contentType: "image/png",
-      });
-      return;
-    }
+    if (route.request().resourceType() === "image") return route.abort();
     await route.abort();
   });
 }
@@ -196,6 +186,9 @@ for (const viewport of viewports) {
     ).toBeVisible();
     await expect(page.locator(".literature-row")).toHaveCount(6);
     await assertViewportIntegrity(page);
+    await expect(
+      page.locator(".literature-cover .img-with-skeleton").first(),
+    ).toHaveClass(/is-loaded/, { timeout: 5_000 });
     await page.waitForTimeout(250);
 
     await expect(page).toHaveScreenshot(

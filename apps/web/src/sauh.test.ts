@@ -89,6 +89,38 @@ describe("Sauh feed normalization", () => {
     expect(posts[0]?.imageUrl).toBeUndefined();
   });
 
+  it("selects the responsive featured image for Sauh surfaces", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 82,
+        slug: "responsive-sauh",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/responsive-sauh/",
+        title: { rendered: "Renungan responsif" },
+        content: { rendered: "<p>Isi renungan responsif.</p>" },
+        _embedded: {
+          "wp:featuredmedia": [
+            {
+              source_url: "https://tjc.org/id/wp-content/uploads/full.jpg",
+              media_details: {
+                sizes: {
+                  medium_large: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg",
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(posts[0]?.imageUrl).toBe(
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg",
+    );
+  });
+
   it("sanitizes a string-form title before it reaches the home reader", () => {
     const posts = parseSauhPosts([
       {

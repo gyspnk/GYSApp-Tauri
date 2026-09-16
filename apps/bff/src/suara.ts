@@ -43,6 +43,25 @@ function isTjcImageUrl(value: unknown): value is string {
   }
 }
 
+type FeaturedMedia = {
+  source_url?: unknown;
+  media_details?: {
+    sizes?: Record<string, { source_url?: unknown } | undefined>;
+  };
+};
+
+function featuredImageUrl(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const media = value as FeaturedMedia;
+  const sizes = media.media_details?.sizes;
+  return [
+    sizes?.medium?.source_url,
+    sizes?.thumbnail?.source_url,
+    sizes?.medium_large?.source_url,
+    media.source_url,
+  ].find(isTjcImageUrl);
+}
+
 export async function fetchSuaraSejati(
   sourceUrl = SOURCE,
 ): Promise<SuaraSejatiPost[]> {
@@ -88,7 +107,7 @@ export async function fetchSuaraSejati(
       title?: { rendered?: unknown };
       excerpt?: { rendered?: unknown };
       _embedded?: {
-        [key: string]: Array<{ source_url?: unknown }> | undefined;
+        [key: string]: FeaturedMedia[] | undefined;
       };
     };
     const title =
@@ -107,11 +126,9 @@ export async function fetchSuaraSejati(
         ? parsedDate.toISOString()
         : undefined;
     if (!title || !excerpt || !isTjcUrl(url) || !publishedAt) continue;
-    const candidateImageUrl =
-      post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const imageUrl = isTjcImageUrl(candidateImageUrl)
-      ? candidateImageUrl
-      : undefined;
+    const imageUrl = featuredImageUrl(
+      post._embedded?.["wp:featuredmedia"]?.[0],
+    );
     const parsed = SuaraSejatiPostSchema.safeParse({
       id:
         typeof post.slug === "string"
