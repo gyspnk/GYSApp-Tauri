@@ -225,10 +225,10 @@ test.describe("responsive reader navigation", () => {
         search.evaluate((element) => element.getBoundingClientRect().width),
       )
       .toBeGreaterThan(200);
-    await expect(page.getByRole("button", { name: "Koleksi" })).toBeVisible();
+    await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
-    await page.getByRole("button", { name: "Buka pencarian lagu" }).click();
+    await search.click();
     await expect(search).toBeFocused();
     await search.fill("Allah Pujilah");
     await expect(
@@ -256,7 +256,7 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("button", { name: "Tampilkan chord" }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Buka PDF" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "PDF" })).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action-primary"),
@@ -274,7 +274,7 @@ test.describe("responsive reader navigation", () => {
 
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action"),
-    ).toHaveCount(3);
+    ).toHaveCount(1);
     await expect(page.locator(".hymn-more-actions")).toBeVisible();
     await expect(
       page.locator(".hymn-more-actions .hymn-more-actions-panel"),
@@ -457,6 +457,7 @@ test.describe("responsive reader navigation", () => {
       page.getByRole("button", { name: "Putar MIDI", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
     await page.locator(".hymn-reader-settings-summary").click();
+    await page.locator(".hymn-music-settings > summary").click();
     await expect(page.getByText("SoundFont aktif")).toBeVisible();
     await expect(
       page.getByText("GeneralUser-GS", { exact: true }),
@@ -476,7 +477,7 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("button", { name: "Buka PDF" }).click();
+    await page.getByRole("tab", { name: "PDF" }).click();
 
     await expect(page.locator(".pdf-reader-hymn")).toBeVisible({
       timeout: 30_000,

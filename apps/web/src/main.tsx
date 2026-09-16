@@ -12,8 +12,9 @@ import "./ui-hardening.css";
 import "./ui-preferences.css";
 import "./kidung-ux.css";
 import "./direct-manipulation.css";
-import "./calm-liturgical.css";
+import "./kidung-touch-targets.css";
 import "./kidung-responsive.css";
+import "./calm-liturgical.css";
 
 runStorageMigrations();
 initializeUiPreferences();
