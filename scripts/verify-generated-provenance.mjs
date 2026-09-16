@@ -167,7 +167,10 @@ if (
 for (const item of literature.items) {
   if (
     item.imageUrl &&
-    (!item.imageUrl.startsWith("https://tjc.org/") ||
+    (!(
+      item.imageUrl.startsWith("https://tjc.org/") ||
+      item.imageUrl.startsWith("https://tjcorguploads.s3.amazonaws.com/")
+    ) ||
       !/\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(item.imageUrl))
   )
     throw new Error(`literature cover source is invalid: ${item.id}`);

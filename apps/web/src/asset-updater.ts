@@ -11,6 +11,7 @@ const TRUSTED_ASSET_HOSTS = new Set([
   "raw.githubusercontent.com",
   "tjc.org",
   "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
 ]);
 
 export type AssetManifestDiff = {

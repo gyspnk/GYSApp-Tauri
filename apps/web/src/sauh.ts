@@ -244,9 +244,9 @@ function featuredImageUrl(value: unknown): string | undefined {
   const media = value as FeaturedMedia;
   const sizes = media.media_details?.sizes;
   return [
-    sizes?.medium_large?.source_url,
     sizes?.medium?.source_url,
     sizes?.thumbnail?.source_url,
+    sizes?.medium_large?.source_url,
     media.source_url,
   ].find(isTjcImageUrl);
 }
@@ -515,7 +515,7 @@ async function loadNetworkToday(): Promise<SauhPost[]> {
     : new Error("Sauh Bagi Jiwa is unavailable");
 }
 
-const STORAGE_KEY_PREFIX = "gys_sauh_day_";
+const STORAGE_KEY_PREFIX = "gys_sauh_v2_day_";
 
 /** localStorage survives tab/session restarts; sessionStorage keeps legacy keys readable. */
 function sauhStorageAreas(): Storage[] {

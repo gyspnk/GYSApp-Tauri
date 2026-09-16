@@ -18,6 +18,10 @@ const readerViewports = [
 ] as const;
 const localPdfPath =
   "/GYSApp-Tauri/assets/pdf/001_Pujilah%20Allah%20Yang%20Maha%20Esa.pdf";
+const transparentPixel = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=",
+  "base64",
+);
 
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-09-12T06:00:00+07:00"));
@@ -30,6 +34,9 @@ async function prepare(page: Page): Promise<void> {
     if (route.request().resourceType() === "image") return route.abort();
     await route.abort();
   });
+  await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
+    route.fulfill({ body: transparentPixel, contentType: "image/png" }),
+  );
 }
 
 async function assertViewportIntegrity(page: Page): Promise<void> {

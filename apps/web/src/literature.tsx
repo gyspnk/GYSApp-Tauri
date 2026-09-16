@@ -24,8 +24,7 @@ import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
 import { fetchOnlineArticle } from "./online-article.js";
-import { getCoverDataUri } from "./cover-generator.js";
-import { resolveProxiedImageUrl } from "./lazy-image.js";
+import { LazyImage } from "./lazy-image.js";
 import {
   getRecentLiteratureIds,
   isLiteratureProgressCompatible,
@@ -192,68 +191,24 @@ function scrollDocumentToRatio(
 function Cover({
   item,
   compact = false,
+  loading = "lazy",
+  fetchPriority,
 }: {
   item: LiteratureItem;
   compact?: boolean;
+  loading?: "eager" | "lazy";
+  fetchPriority?: "high" | "low" | "auto";
 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const effectiveSrc = resolveProxiedImageUrl(item.imageUrl);
-  const fallbackSrc = getCoverDataUri({
-    title: item.title,
-    category: item.category,
-    format: item.format,
-    width: 280,
-    height: 400,
-  });
-  const [source, setSource] = useState(effectiveSrc ?? fallbackSrc);
-
-  useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-    setSource(effectiveSrc ?? fallbackSrc);
-  }, [effectiveSrc, fallbackSrc]);
-
   return (
-    <div
-      className={`img-skeleton-wrapper literature-cover ${compact ? "is-compact" : ""}`}
-    >
-      {(!loaded || failed) && (
-        <div className="img-skeleton-shimmer" aria-hidden="true">
-          <div className="img-loading-bar" />
-        </div>
-      )}
-      {effectiveSrc && !loaded && !failed && (
-        <img
-          src={fallbackSrc}
-          className="img-fallback-image"
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-      {source && (
-        <img
-          className={`img-with-skeleton ${loaded && !failed ? "is-loaded" : ""}`}
-          src={source}
-          alt={`Sampul ${item.title}`}
-          loading="lazy"
-          decoding="async"
-          onLoad={() => {
-            setLoaded(true);
-            setFailed(false);
-          }}
-          onError={() => {
-            if (source !== fallbackSrc) {
-              setSource(fallbackSrc);
-              setLoaded(false);
-              setFailed(false);
-            } else {
-              setFailed(true);
-            }
-          }}
-        />
-      )}
-    </div>
+    <LazyImage
+      wrapperClassName={`literature-cover ${compact ? "is-compact" : ""}`}
+      src={item.imageUrl}
+      fallbackTitle={item.title}
+      fallbackCategory={labels[item.category]}
+      alt={`Sampul ${item.title}`}
+      loading={loading}
+      fetchPriority={fetchPriority}
+    />
   );
 }
 
@@ -389,13 +344,18 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               <span>{featured.length} pilihan</span>
             </div>
             <div className="literature-shelf">
-              {featured.map((item) => (
+              {featured.map((item, index) => (
                 <Link
                   className="literature-shelf-item"
                   to={literatureHref(item)}
                   key={item.id}
                 >
-                  <Cover item={item} compact />
+                  <Cover
+                    item={item}
+                    compact
+                    loading={index < 3 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                  />
                   <span>
                     <strong>{item.title}</strong>
                     <small>

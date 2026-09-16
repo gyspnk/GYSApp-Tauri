@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-16T12:44:52.079Z",
+  "generatedAt": "2026-09-16T14:00:30.646Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -44,13 +44,13 @@
       "id": "sauh-feed",
       "path": "offline/sauh.json",
       "bytes": 7668,
-      "sha256": "e155e876f1ea72de28e653e4f1f96147a90375838488e5f66bea8ff0b545223e"
+      "sha256": "fbbfb750da1289732d2fdbae96f82180f24e586ea137b78af06ed6dea1e37237"
     },
     {
       "id": "literature-catalog",
       "path": "offline/literature.json",
-      "bytes": 119170,
-      "sha256": "a1ee9eb8732b31d63b3c4a6f498cefc582995ce8a3ccde2a2e52634867f6e2d4"
+      "bytes": 124713,
+      "sha256": "d1c1be3bf716261f80b2892381af89f2f5496a339930d4588c045aa9b8a52da7"
     },
     {
       "id": "suara-sejati",

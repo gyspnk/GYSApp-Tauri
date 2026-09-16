@@ -932,17 +932,6 @@ h1 {
   opacity: 1;
 }
 
-.img-fallback-image {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  pointer-events: none;
-}
-
 .img-fallback-placeholder {
   width: 100%;
   height: 100%;

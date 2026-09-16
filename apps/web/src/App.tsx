@@ -48,7 +48,6 @@ import {
   type LiteratureItem,
 } from "@gys/contracts";
 import { LazyImage } from "./lazy-image.js";
-import { getCoverDataUri } from "./cover-generator.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
@@ -2324,12 +2323,6 @@ function HomePage({ locale }: { locale: Locale }) {
                 className="sauh-image"
                 wrapperClassName="sauh-image-wrap"
                 src={selectedToday.imageUrl}
-                fallbackSrc={getCoverDataUri({
-                  title: selectedToday.title,
-                  category: "renungan",
-                  width: 800,
-                  height: 560,
-                })}
                 fallbackTitle={selectedToday.title}
                 fallbackCategory="renungan"
                 alt={`Ilustrasi ${selectedToday.title}`}
@@ -2455,7 +2448,7 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {suaraStatus === "ready" && (
             <div className="home-suara-shelf">
-              {suara.slice(0, 8).map((post) => (
+              {suara.slice(0, 8).map((post, index) => (
                 <Link
                   className="suara-library-item"
                   key={post.id}
@@ -2466,16 +2459,11 @@ function HomePage({ locale }: { locale: Locale }) {
                       className="suara-thumb-img"
                       wrapperClassName="suara-library-thumb"
                       src={post.imageUrl}
-                      fallbackSrc={getCoverDataUri({
-                        title: post.title,
-                        category: "kesaksian",
-                        width: 400,
-                        height: 280,
-                      })}
                       fallbackTitle={post.title}
                       fallbackCategory="kesaksian"
                       alt={`Cover ${post.title}`}
-                      loading="lazy"
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
                     />
                     <div className="suara-media-overlay" />
                   </div>
@@ -2527,7 +2515,7 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {literatureStatus === "ready" && (
             <div className="home-suara-shelf home-literature-shelf">
-              {literature.slice(0, 8).map((item) => (
+              {literature.slice(0, 8).map((item, index) => (
                 <Link
                   className="suara-library-item"
                   key={item.id}
@@ -2538,17 +2526,11 @@ function HomePage({ locale }: { locale: Locale }) {
                       className="suara-thumb-img"
                       wrapperClassName="suara-library-thumb"
                       src={item.imageUrl}
-                      fallbackSrc={getCoverDataUri({
-                        title: item.title,
-                        category: item.category,
-                        format: item.format,
-                        width: 400,
-                        height: 280,
-                      })}
                       fallbackTitle={item.title}
                       fallbackCategory={item.category}
                       alt={`Cover ${item.title}`}
-                      loading="lazy"
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
                     />
                     <div className="suara-media-overlay" />
                   </div>

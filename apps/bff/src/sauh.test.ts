@@ -65,7 +65,7 @@ describe("BFF Sauh normalization", () => {
     expect(posts[0]?.imageUrl).toBeUndefined();
   });
 
-  it("uses the responsive featured image for a Sauh hero", () => {
+  it("uses the smallest official featured derivative for a Sauh hero", () => {
     const posts = normalizeSauhPosts([
       {
         id: 5,
@@ -97,7 +97,7 @@ describe("BFF Sauh normalization", () => {
     ]);
 
     expect(posts[0]?.imageUrl).toBe(
-      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg",
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-300x200.jpg",
     );
   });
 

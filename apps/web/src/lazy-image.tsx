@@ -4,11 +4,18 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
   if (!src) return undefined;
   if (src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("/"))
     return src;
-  const bffBase = (import.meta.env.VITE_BFF_BASE_URL ?? "").trim();
-  if (src.includes("tjc.org") || src.includes("s3.amazonaws.com")) {
-    if (!bffBase) return src;
-    const base = bffBase.replace(/\/$/, "");
-    return `${base}/api/v1/content/image?url=${encodeURIComponent(src)}`;
+  // <img> does not need CORS. Use the publisher's immutable S3 mirror directly
+  // so the BFF cannot add a network hop or serve a stale/full-size URL.
+  try {
+    const url = new URL(src);
+    if (
+      ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase()) &&
+      url.pathname.startsWith("/id/wp-content/uploads/")
+    ) {
+      return `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}${url.search}`;
+    }
+  } catch {
+    return src;
   }
   return src;
 }
@@ -22,7 +29,6 @@ export function LazyImage({
   decoding = "async",
   fallbackTitle,
   fallbackCategory,
-  fallbackSrc,
   fetchPriority,
   onLoad,
 }: {
@@ -34,15 +40,12 @@ export function LazyImage({
   decoding?: "async" | "sync" | "auto" | undefined;
   fallbackTitle?: string | undefined;
   fallbackCategory?: string | undefined;
-  fallbackSrc?: string | undefined;
   fetchPriority?: "high" | "low" | "auto" | undefined;
   onLoad?: (() => void) | undefined;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const [fallbackFailed, setFallbackFailed] = useState(false);
   const effectiveSrc = resolveProxiedImageUrl(src);
-  const effectiveFallbackSrc = resolveProxiedImageUrl(fallbackSrc);
   const fallbackMark = (fallbackTitle ?? "GYS")
     .split(/\s+/)
     .filter(Boolean)
@@ -54,34 +57,16 @@ export function LazyImage({
   useEffect(() => {
     setLoaded(false);
     setError(false);
-    setFallbackFailed(false);
-  }, [effectiveFallbackSrc, effectiveSrc]);
-
-  const fallbackActive =
-    Boolean(effectiveFallbackSrc) && (!effectiveSrc || error);
-  const displaySrc =
-    fallbackActive && !fallbackFailed
-      ? effectiveFallbackSrc
-      : !error
-        ? effectiveSrc
-        : undefined;
+  }, [effectiveSrc]);
 
   return (
     <div className={`img-skeleton-wrapper ${wrapperClassName}`}>
-      {!loaded && !error && effectiveSrc && !fallbackActive && (
+      {!loaded && !error && effectiveSrc && (
         <div className="img-skeleton-shimmer" aria-hidden="true">
           <div className="img-loading-bar" />
         </div>
       )}
-      {effectiveSrc && !loaded && !error && effectiveFallbackSrc && (
-        <img
-          src={effectiveFallbackSrc}
-          className="img-fallback-image"
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-      {!displaySrc && (
+      {!effectiveSrc || error ? (
         <div
           className="img-fallback-placeholder"
           role="img"
@@ -90,23 +75,21 @@ export function LazyImage({
           <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
           {fallbackCategory && <small>{fallbackCategory}</small>}
         </div>
-      )}
-      {displaySrc && (
+      ) : (
         <img
-          src={displaySrc}
+          src={effectiveSrc}
           alt={alt}
-          className={`${className} img-with-skeleton ${loaded || fallbackActive ? "is-loaded" : ""}`}
+          className={`${className} img-with-skeleton ${loaded ? "is-loaded" : ""}`}
           loading={loading}
           decoding={decoding}
           fetchPriority={fetchPriority}
           onLoad={() => {
             setLoaded(true);
-            if (!fallbackActive) setError(false);
+            setError(false);
             onLoad?.();
           }}
           onError={() => {
-            if (fallbackActive) setFallbackFailed(true);
-            else setError(true);
+            setError(true);
           }}
         />
       )}

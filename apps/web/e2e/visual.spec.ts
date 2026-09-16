@@ -45,6 +45,10 @@ const surfaces = [
     fold: ".lyrics-sheet",
   },
 ] as const;
+const transparentPixel = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=",
+  "base64",
+);
 
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-08-18T08:00:00+07:00"));
@@ -58,7 +62,7 @@ async function prepare(page: Page): Promise<void> {
     await route.abort();
   });
   await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
-    route.abort(),
+    route.fulfill({ body: transparentPixel, contentType: "image/png" }),
   );
 }
 

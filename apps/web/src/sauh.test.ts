@@ -469,7 +469,7 @@ describe("Sauh feed normalization", () => {
     );
     vi.stubGlobal("navigator", { onLine: true });
     const storage = new Map<string, string>([
-      [`gys_sauh_day_${staleDayKey}`, stored],
+      [`gys_sauh_v2_day_${staleDayKey}`, stored],
     ]);
     vi.stubGlobal("window", {
       setTimeout,

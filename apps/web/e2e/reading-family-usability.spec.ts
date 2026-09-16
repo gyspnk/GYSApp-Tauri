@@ -117,6 +117,9 @@ async function prepare(page: Page) {
     }
     await route.abort();
   });
+  await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
+    route.fulfill({ body: transparentPixel, contentType: "image/png" }),
+  );
 }
 
 async function expectNoHorizontalOverflow(page: Page) {

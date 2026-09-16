@@ -12,7 +12,6 @@ import { fetchSuara, getCachedSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
-import { getCoverDataUri } from "./cover-generator.js";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -197,12 +196,6 @@ export function SauhPage() {
               className="online-article-image"
               wrapperClassName="sauh-article-image-wrap"
               src={state.post.imageUrl}
-              fallbackSrc={getCoverDataUri({
-                title: state.post.title,
-                category: "renungan",
-                width: 800,
-                height: 560,
-              })}
               fallbackTitle={state.post.title}
               fallbackCategory="renungan"
               alt={`Ilustrasi ${state.post.title}`}
@@ -292,7 +285,7 @@ export function SuaraPage() {
       )}
       {state.status === "ready" && (
         <div className="suara-library-grid">
-          {state.posts.map((post) => (
+          {state.posts.map((post, index) => (
             <Link
               className="suara-library-item"
               key={post.id}
@@ -303,16 +296,11 @@ export function SuaraPage() {
                   className="suara-thumb-img"
                   wrapperClassName="suara-library-thumb"
                   src={post.imageUrl}
-                  fallbackSrc={getCoverDataUri({
-                    title: post.title,
-                    category: "kesaksian",
-                    width: 400,
-                    height: 280,
-                  })}
                   fallbackTitle={post.title}
                   fallbackCategory="kesaksian"
                   alt={`Cover ${post.title}`}
-                  loading="lazy"
+                  loading={index < 4 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
                 />
                 <div className="suara-media-overlay" />
               </div>
@@ -426,12 +414,6 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             className="online-article-image"
             wrapperClassName="suara-article-image-wrap"
             src={state.post.imageUrl}
-            fallbackSrc={getCoverDataUri({
-              title: state.post.title,
-              category: "kesaksian",
-              width: 800,
-              height: 520,
-            })}
             fallbackTitle={state.post.title}
             fallbackCategory="kesaksian"
             alt={`Thumbnail ${state.post.title}`}
