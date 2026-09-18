@@ -378,6 +378,13 @@ describe("BFF public boundary", () => {
         "cross-origin",
       );
       expect(seenRange).toBe("bytes=0-4");
+      const s3Proxied = await app.request(
+        `/api/v1/content/pdf?url=${encodeURIComponent(
+          "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/12/WS126.pdf",
+        )}`,
+        { headers: { Origin: "http://localhost:5173" } },
+      );
+      expect(s3Proxied.status).toBe(206);
     } finally {
       globalThis.fetch = originalFetch;
     }

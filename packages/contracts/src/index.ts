@@ -676,6 +676,7 @@ export interface SpeechProvider {
     text: string,
     options: {
       voiceId?: string;
+      languageTag?: string;
       rate?: number;
       pitch?: number;
       volume?: number;

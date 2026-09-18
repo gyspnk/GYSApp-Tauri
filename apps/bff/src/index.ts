@@ -709,9 +709,14 @@ export function createApp(
     } catch {
       return errorResponse(c, "VALIDATION_ERROR", "PDF url is invalid");
     }
+    const allowedPdfHost =
+      url.hostname === "tjc.org" ||
+      url.hostname === "www.tjc.org" ||
+      (url.hostname === "tjcorguploads.s3.amazonaws.com" &&
+        url.pathname.startsWith("/tjcorg/wp-content/uploads/"));
     if (
       url.protocol !== "https:" ||
-      url.hostname !== "tjc.org" ||
+      !allowedPdfHost ||
       !/\.pdf$/i.test(url.pathname)
     )
       return errorResponse(c, "FORBIDDEN", "PDF source is not allowlisted");

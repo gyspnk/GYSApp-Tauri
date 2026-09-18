@@ -1,6 +1,45 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function openSpeechPlayerAtDesktop(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-speech-engine-v1", "local");
+    const voice = {
+      voiceURI: "gys-e2e-id",
+      name: "GYS E2E voice",
+      lang: "id-ID",
+      localService: true,
+      default: true,
+    };
+    const synthesis = {
+      getVoices: () => [voice],
+      speak: (utterance: { onend?: () => void }) => {
+        window.setTimeout(() => utterance.onend?.(), 1_200);
+      },
+      cancel: () => undefined,
+      pause: () => undefined,
+      resume: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    };
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: synthesis,
+    });
+    class TestUtterance {
+      public lang = "";
+      public voice: unknown = null;
+      public rate = 1;
+      public pitch = 1;
+      public volume = 1;
+      public onend?: () => void;
+      public onerror?: () => void;
+      public constructor(public readonly text: string) {}
+    }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true,
+      value: TestUtterance,
+    });
+  });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(
@@ -53,6 +92,8 @@ test("persistent media defaults to one centered semantic dock", async ({
       page.evaluate(() => localStorage.getItem("gys-media-minimized")),
     )
     .toBe("0");
+  await page.getByRole("button", { name: "Tutup pemutar suara" }).click();
+  await expect(page.locator(".media-surface")).toHaveCount(0);
 });
 
 test("phone ignores a stale dragged position and keeps dock above bottom navigation", async ({

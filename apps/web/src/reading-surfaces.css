@@ -924,6 +924,100 @@
   min-width: 0;
 }
 
+.literature-pdf-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  animation: fade-in 180ms var(--ease-out);
+}
+
+.literature-pdf-overlay {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.literature-pdf-overlay .literature-reader-panel {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.literature-pdf-overlay .literature-reader-panel > .section-title-row {
+  flex: 0 0 auto;
+  min-height: 56px;
+  margin: 0;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.literature-pdf-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.literature-pdf-head-actions .text-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.literature-pdf-overlay .literature-reader-panel > .section-title-row h2 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.literature-pdf-overlay .literature-reader-panel > .pdf-reader {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+  border-top: 0;
+}
+
+.literature-pdf-overlay .pdf-stage {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 680px) {
+  .literature-pdf-overlay .literature-reader-panel > .section-title-row {
+    padding-inline: 12px;
+  }
+
+  .literature-pdf-head-actions {
+    gap: 4px;
+  }
+
+  .literature-pdf-head-actions .literature-pdf-source-link {
+    max-width: 0;
+    overflow: hidden;
+    padding-inline: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 .error-copy {
   color: var(--danger, #a43b3b);
   font-size: 13px;

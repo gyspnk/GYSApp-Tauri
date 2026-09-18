@@ -13,10 +13,30 @@ const REMOTE_PDF_CACHE = "gysapp-remote-pdf-cache";
 const memory = new Map<string, Promise<Uint8Array | undefined>>();
 const inFlight = new Map<string, Promise<Uint8Array | undefined>>();
 
+function isTjcPdfSource(sourceUrl: string): boolean {
+  try {
+    const url = new URL(sourceUrl);
+    return [
+      "tjc.org",
+      "www.tjc.org",
+      "tjcorguploads.s3.amazonaws.com",
+    ].includes(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 export function bffPdfUrl(sourceUrl: string): string {
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  return base
-    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf?url=${encodeURIComponent(sourceUrl)}`
+  const endpoint = base
+    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf`
+    : import.meta.env.DEV &&
+        typeof window !== "undefined" &&
+        isTjcPdfSource(sourceUrl)
+      ? "/api/v1/content/pdf"
+      : undefined;
+  return endpoint
+    ? `${endpoint}?url=${encodeURIComponent(sourceUrl)}`
     : sourceUrl;
 }
 
@@ -53,13 +73,18 @@ export async function loadPdfBytes(
   url: string,
   signal?: AbortSignal,
 ): Promise<Uint8Array | undefined> {
+  const cached = memory.get(url);
+  if (cached) return cached;
   const existing = inFlight.get(url);
   if (existing) return existing;
   const task = (async () => {
     const proxy = bffPdfUrl(url);
     if (proxy !== url) {
       try {
-        const response = await fetch(proxy, { cache: "default" });
+        const response = await fetch(proxy, {
+          cache: "default",
+          ...(signal ? { signal } : {}),
+        });
         if (response.ok) {
           const bytes = new Uint8Array(await response.arrayBuffer());
           if (isPdf(bytes)) {
@@ -76,7 +101,10 @@ export async function loadPdfBytes(
       return undefined;
     }
     try {
-      const response = await fetch(url, { cache: "default" });
+      const response = await fetch(url, {
+        cache: "default",
+        ...(signal ? { signal } : {}),
+      });
       if (response.ok) {
         const bytes = new Uint8Array(await response.arrayBuffer());
         if (isPdf(bytes)) {

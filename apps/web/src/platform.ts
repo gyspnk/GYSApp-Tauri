@@ -532,23 +532,36 @@ export class BrowserSpeechProvider implements SpeechProvider {
     text: string,
     options: {
       voiceId?: string;
+      languageTag?: string;
       rate?: number;
       pitch?: number;
       volume?: number;
     },
     signal?: AbortSignal,
   ): Promise<void> {
+    if (signal?.aborted)
+      throw new DOMException("Speech cancelled", "AbortError");
     if (typeof window === "undefined" || !(await this.status()).available)
       throw new Error("No browser voice is available");
+    if (signal?.aborted)
+      throw new DOMException("Speech cancelled", "AbortError");
     await this.stop();
+    if (signal?.aborted)
+      throw new DOMException("Speech cancelled", "AbortError");
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = options.rate ?? 1;
     utterance.pitch = options.pitch ?? 1;
     utterance.volume = options.volume ?? 1;
     const voices = await this.voices();
-    const voice = options.voiceId
+    if (signal?.aborted)
+      throw new DOMException("Speech cancelled", "AbortError");
+    const language = options.languageTag ?? "id-ID";
+    const requestedVoice = options.voiceId
       ? voices.find((candidate) => candidate.id === options.voiceId)
-      : selectNaturalPreferredVoice(voices, utterance.lang);
+      : undefined;
+    const voice =
+      requestedVoice ?? selectNaturalPreferredVoice(voices, language);
+    utterance.lang = voice?.language ?? language;
     if (voice)
       utterance.voice =
         window.speechSynthesis

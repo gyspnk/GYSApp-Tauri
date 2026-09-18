@@ -51,12 +51,17 @@ import { LazyImage } from "./lazy-image.js";
 import { midiPlayer } from "./midi-player.js";
 import {
   installMidiQueueCoordinator,
+  playMidiPlaylistItem,
   playNextMidiPlaylistItem,
   playPreviousMidiPlaylistItem,
 } from "./midi-queue.js";
 import { installMediaSessionBridge } from "./media-session.js";
 import { speechPlayer } from "./speech-player.js";
-import { getCustomEdgeEndpoint, setCustomEdgeEndpoint } from "./edge-speech.js";
+import {
+  getCustomEdgeEndpoint,
+  isEdgeSpeechConfigured,
+  setCustomEdgeEndpoint,
+} from "./edge-speech.js";
 import {
   getMidiPlaylist,
   subscribeMidiPlaylist,
@@ -345,7 +350,14 @@ function Header({
     midiPlayer.snapshot,
     midiPlayer.snapshot,
   );
+  const midiPlaylist = useSyncExternalStore(
+    subscribeMidiPlaylist,
+    getMidiPlaylist,
+    getMidiPlaylist,
+  );
   const isMidiPlaying = midiSnapshot.status === "playing";
+  const queuedMidiItem =
+    midiPlaylist.items[midiPlaylist.currentIndex] ?? midiPlaylist.items[0];
 
   const speechSnapshot = useSyncExternalStore(
     speechPlayer.subscribe,
@@ -370,9 +382,13 @@ function Header({
 
   const handleToggleMidi = () => {
     if (isMidiPlaying) {
-      void midiPlayer.pause();
+      void midiPlayer.pause().catch(() => undefined);
     } else if (midiSnapshot.songId) {
-      void midiPlayer.play();
+      void midiPlayer.play().catch(() => undefined);
+    } else if (queuedMidiItem) {
+      void playMidiPlaylistItem(queuedMidiItem.songId).catch((error) =>
+        recordDiagnostic("warn", "midi.header-play", error),
+      );
     }
   };
 
@@ -621,6 +637,7 @@ function Header({
                                 disabled={!bibleHeader.speechAvailable}
                                 onClick={() => {
                                   bibleHeader.onToggleSpeech();
+                                  setHamburgerOpen(false);
                                 }}
                               >
                                 <div className="hamburger-item-icon">
@@ -699,7 +716,12 @@ function Header({
                                       )
                                     }
                                   >
-                                    <option value="edge">Edge TTS</option>
+                                    <option
+                                      value="edge"
+                                      disabled={!isEdgeSpeechConfigured()}
+                                    >
+                                      Edge TTS
+                                    </option>
                                     <option value="local">TTS lokal</option>
                                   </select>
                                 </label>
@@ -720,20 +742,27 @@ function Header({
                                     }
                                   >
                                     <option value="">Otomatis (Default)</option>
-                                    {speechSnapshot.voices
-                                      .filter((voice) =>
-                                        speechSnapshot.engine === "edge"
-                                          ? !voice.local ||
-                                            voice.id.includes("Neural")
-                                          : voice.local ||
-                                            !voice.id.includes("Neural"),
-                                      )
-                                      .map((voice) => (
-                                        <option value={voice.id} key={voice.id}>
-                                          {voice.name}
-                                        </option>
-                                      ))}
+                                    {(speechSnapshot.engine === "edge"
+                                      ? (speechSnapshot.edgeVoices ?? [])
+                                      : speechSnapshot.voices.filter((voice) =>
+                                          speechSnapshot.engine === "local"
+                                            ? voice.local
+                                            : true,
+                                        )
+                                    ).map((voice) => (
+                                      <option value={voice.id} key={voice.id}>
+                                        {voice.name}
+                                      </option>
+                                    ))}
                                   </select>
+                                  {speechSnapshot.engine === "edge" &&
+                                    !isEdgeSpeechConfigured() && (
+                                      <small className="drawer-speech-hint">
+                                        Edge TTS tanpa API key tersedia di
+                                        aplikasi desktop. Pilih TTS lokal untuk
+                                        preview browser.
+                                      </small>
+                                    )}
                                 </label>
 
                                 {speechSnapshot.engine === "edge" && (
@@ -1171,6 +1200,18 @@ function MediaSurface({ locale }: { locale: Locale }) {
     : snapshot.songId
       ? `/kidung/${encodeURIComponent(snapshot.songId)}`
       : undefined;
+  const speechProviderLabel =
+    speechSnapshot.providerId === "edge-compatibility"
+      ? "Edge TTS"
+      : speechSnapshot.providerId === "browser-system"
+        ? speechSnapshot.offline
+          ? "TTS lokal"
+          : "TTS sistem"
+        : speechSnapshot.engine === "edge"
+          ? "Edge TTS"
+          : speechSnapshot.engine === "local"
+            ? "TTS lokal"
+            : "Alkitab Suara";
   const dragRef = useRef<
     | {
         pointerId: number;
@@ -1498,9 +1539,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
             {isKidungMedia
               ? "MIDI QUEUE"
               : speechActive
-                ? speechSnapshot.offline
-                  ? "Bacaan offline"
-                  : "Alkitab Suara"
+                ? `${speechProviderLabel}${speechSnapshot.activeLanguageTag ? ` · ${speechSnapshot.activeLanguageTag}` : ""}`
                 : snapshot.status === "loading"
                   ? `Memuat MIDI ${snapshot.loadingProgress}%`
                   : snapshot.backend === "fluidsynth"
@@ -1949,10 +1988,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         <button
           className="media-minimize media-close-button"
           type="button"
-          onClick={() => {
-            void speechPlayer.stop();
-            speechPlayer.togglePlayer(false);
-          }}
+          onClick={() => speechPlayer.togglePlayer(false)}
           aria-label="Tutup pemutar suara"
           title="Tutup pemutar"
         >

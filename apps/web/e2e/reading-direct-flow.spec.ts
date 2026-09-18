@@ -77,6 +77,62 @@ test("literature PDF opens directly, resumes, and closes back to the shelf", asy
   await expect(page.locator(".literature-reader-panel")).toHaveCount(0);
 });
 
+test("literature issue resolves its direct PDF instead of opening raw article text", async ({
+  page,
+}) => {
+  await page.route("**/offline/literature.json", (route) =>
+    route.fulfill({
+      json: {
+        source: "tjc.org",
+        generatedAt: "2026-09-12T00:00:00.000Z",
+        items: [
+          {
+            id: "issue-test",
+            category: "warta",
+            title: "Warta Uji PDF",
+            description: "Edisi uji untuk pembuka PDF internal.",
+            url: "https://tjc.org/id/warta-sejati/ws126/",
+            format: "issue",
+            publishedAt: "2026-09-01T00:00:00.000Z",
+            updatedAt: "2026-09-01T00:00:00.000Z",
+            source: "tjc.org",
+          },
+        ],
+      },
+    }),
+  );
+  await page.route("**/wp-json/wp/v2/posts*", (route) =>
+    route.fulfill({
+      json: [
+        {
+          content: {
+            rendered:
+              '<p><a href="https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/12/WS126.pdf">Unduh PDF</a></p>',
+          },
+        },
+      ],
+    }),
+  );
+  await page.route(/WS126\.pdf/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/pdf",
+      body: tinyPdf,
+    }),
+  );
+
+  await page.goto("/GYSApp-Tauri/literatur/issue-test?read=1");
+  await expect(page.locator(".literature-reader-panel")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".literature-article-reader")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "PDF resmi ↗" })).toHaveAttribute(
+    "href",
+    /WS126\.pdf/,
+  );
+});
+
 test("faith row opens PDF directly and shows resume", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(

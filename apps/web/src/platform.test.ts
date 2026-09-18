@@ -1,11 +1,57 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  BrowserSpeechProvider,
   clearBrowserPlatformStorage,
   clearPlatformStorage,
   createBrowserPlatformServices,
 } from "./platform.js";
 
 describe("browser platform binary boundary", () => {
+  it("sets the utterance language and recovers to a matching browser voice", async () => {
+    const browserVoice = {
+      voiceURI: "browser-en",
+      name: "Browser English",
+      lang: "en-US",
+      localService: false,
+    };
+    const utterances: Array<{ lang: string; voice: unknown }> = [];
+    const synthesis = {
+      getVoices: () => [browserVoice],
+      speak: (utterance: {
+        lang: string;
+        voice: unknown;
+        onend?: () => void;
+      }) => {
+        utterances.push({ lang: utterance.lang, voice: utterance.voice });
+        queueMicrotask(() => utterance.onend?.());
+      },
+      cancel: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    class TestUtterance {
+      public lang = "";
+      public voice: unknown = null;
+      public rate = 1;
+      public pitch = 1;
+      public volume = 1;
+      public onend?: () => void;
+      public onerror?: () => void;
+      public constructor(public readonly text: string) {}
+    }
+    vi.stubGlobal("window", { speechSynthesis: synthesis });
+    vi.stubGlobal("SpeechSynthesisUtterance", TestUtterance);
+
+    await new BrowserSpeechProvider().speak("The beginning", {
+      voiceId: "missing-edge-voice",
+      languageTag: "en-US",
+    });
+
+    expect(utterances).toEqual([{ lang: "en-US", voice: browserVoice }]);
+  });
+
   it("keeps an atomic blob independent from the caller's mutable buffer", async () => {
     const services = createBrowserPlatformServices();
     const input = Uint8Array.from([7, 11, 19]);

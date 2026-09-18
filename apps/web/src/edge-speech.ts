@@ -118,6 +118,10 @@ function remoteVoice(value: SpeechVoice): SpeechVoice {
   return { ...value, local: false };
 }
 
+function languageBase(value?: string): string {
+  return value?.split(/[-_]/)[0]?.toLowerCase() ?? "";
+}
+
 export class EdgeSpeechProvider implements SpeechProvider {
   public readonly id = "edge-compatibility";
   private active: HTMLAudioElement | undefined;
@@ -152,6 +156,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     if (signal?.aborted) return BUILTIN_EDGE_VOICES.map(remoteVoice);
     const endpoint = getEdgeEndpoint();
     const voicesEndpoint = getEdgeVoicesEndpoint();
+    if (!endpoint && !canUseNativeEdgeTransport()) return [];
     if (!endpoint || !voicesEndpoint)
       return BUILTIN_EDGE_VOICES.map(remoteVoice);
     if (this.voicesExpiresAt > Date.now() && this.advertisedVoices.length > 0)
@@ -174,6 +179,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     text: string,
     options: {
       voiceId?: string;
+      languageTag?: string;
       rate?: number;
       pitch?: number;
       volume?: number;
@@ -184,7 +190,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     await this.stop();
     const parsed = EdgeTtsRequestSchema.parse({
       text: text.slice(0, 8_000),
-      voice: this.selectVoice(options.voiceId),
+      voice: this.selectVoice(options.voiceId, options.languageTag),
       rate: clamp(options.rate ?? 0.9, 0.5, 2),
       pitch: clamp(options.pitch ?? 1, 0.5, 2),
       volume: clamp(options.volume ?? 1, 0, 1),
@@ -326,16 +332,20 @@ export class EdgeSpeechProvider implements SpeechProvider {
     });
   }
 
-  private selectVoice(requested?: string): string {
-    if (!requested || !/^[A-Za-z0-9-]{2,80}$/.test(requested))
-      return DEFAULT_EDGE_VOICE;
-    if (
-      this.advertisedVoices.length > 0 &&
-      !this.advertisedVoices.some((voice) => voice.id === requested) &&
-      !BUILTIN_EDGE_VOICES.some((voice) => voice.id === requested)
-    )
-      return DEFAULT_EDGE_VOICE;
-    return requested;
+  private selectVoice(requested?: string, languageTag?: string): string {
+    const candidates =
+      this.advertisedVoices.length > 0
+        ? this.advertisedVoices
+        : BUILTIN_EDGE_VOICES;
+    if (requested && /^[A-Za-z0-9-]{2,80}$/.test(requested)) {
+      const selected = candidates.find((voice) => voice.id === requested);
+      if (selected) return selected.id;
+    }
+    const wanted = languageBase(languageTag);
+    const matching = candidates.find(
+      (voice) => languageBase(voice.language) === wanted,
+    );
+    return matching?.id ?? candidates[0]?.id ?? DEFAULT_EDGE_VOICE;
   }
 
   private async fetchVoices(

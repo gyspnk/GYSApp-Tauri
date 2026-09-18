@@ -30,7 +30,7 @@ test("Sauh keeps an aesthetic loading state instead of showing stale content", a
     releaseLive = resolve;
   });
   await page.route(
-    /tjc\.org\/id\/wp-json\/wp\/v2\/posts\?.*categories=229/,
+    /tjc\.org\/id\/wp-json\/wp\/v2\/posts\?.*(?:categories=229|slug=)/,
     async (route) => {
       // Hold revalidation open so the loading contract can be asserted
       // deterministically regardless of machine speed.

@@ -37,4 +37,13 @@ describe("Edge speech retry availability", () => {
       offline: false,
     });
   });
+
+  it("does not advertise Edge voices when no Edge transport exists", async () => {
+    vi.stubEnv("VITE_EDGE_TTS_URL", "");
+    vi.stubEnv("VITE_BFF_BASE_URL", "");
+    vi.stubGlobal("window", {});
+
+    const { EdgeSpeechProvider } = await import("./edge-speech.js");
+    await expect(new EdgeSpeechProvider().voices()).resolves.toEqual([]);
+  });
 });

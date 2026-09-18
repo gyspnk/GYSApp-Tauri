@@ -14,6 +14,7 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
+import { createPortal } from "react-dom";
 import {
   LiteratureCatalogSchema,
   type LiteratureCategory,
@@ -25,6 +26,7 @@ import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { LazyImage } from "./lazy-image.js";
+import { bffPdfUrl } from "./pdf-source.js";
 import {
   getRecentLiteratureIds,
   isLiteratureProgressCompatible,
@@ -45,13 +47,6 @@ const LiteraturePdfReader = lazy(() =>
     default: Component,
   })),
 );
-
-function literaturePdfUrl(sourceUrl: string): string {
-  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  return base
-    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf?url=${encodeURIComponent(sourceUrl)}`
-    : sourceUrl;
-}
 
 const ISSUE_PDF_CACHE = new Map<string, string>();
 
@@ -82,13 +77,25 @@ async function resolveIssuePdfUrl(
       first && typeof first === "object"
         ? (first as { content?: { rendered?: unknown } }).content?.rendered
         : undefined;
-    const match =
+    const matches =
       typeof rendered === "string"
-        ? rendered.match(/https:\/\/tjc\.org\/[^"'<>\s]+\.pdf/i)
+        ? rendered.match(/https:\/\/[^"'<>\s]+\.pdf(?:\?[^"'<>\s]*)?/gi)
         : undefined;
-    if (match?.[0]) {
-      ISSUE_PDF_CACHE.set(sourceUrl, match[0]);
-      return match[0];
+    const direct = matches?.find((value) => {
+      try {
+        const url = new URL(value);
+        return [
+          "tjc.org",
+          "www.tjc.org",
+          "tjcorguploads.s3.amazonaws.com",
+        ].includes(url.hostname.toLowerCase());
+      } catch {
+        return false;
+      }
+    });
+    if (direct) {
+      ISSUE_PDF_CACHE.set(sourceUrl, direct);
+      return direct;
     }
   } catch {
     // offline/transient failure: keep the text reader fallback
@@ -579,14 +586,22 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const articleRestoreFrame = useRef<number | undefined>(undefined);
   const resourceVersion = literatureResourceVersion(item?.publishedAt);
   const [issuePdfUrl, setIssuePdfUrl] = useState<string>();
+  const [issuePdfStatus, setIssuePdfStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
   useEffect(() => {
     if (item?.format !== "issue") {
       setIssuePdfUrl(undefined);
+      setIssuePdfStatus("idle");
       return;
     }
     let cancelled = false;
+    setIssuePdfUrl(undefined);
+    setIssuePdfStatus("loading");
     void resolveIssuePdfUrl(item.url).then((url) => {
-      if (!cancelled) setIssuePdfUrl(url);
+      if (cancelled) return;
+      setIssuePdfUrl(url);
+      setIssuePdfStatus(url ? "ready" : "error");
     });
     return () => {
       cancelled = true;
@@ -598,10 +613,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       : item?.format === "issue"
         ? issuePdfUrl
         : undefined;
-  const isPdfItem = Boolean(actualPdfUrl);
-  const pdfSourceUrl = actualPdfUrl
-    ? literaturePdfUrl(actualPdfUrl)
-    : undefined;
+  const isPdfItem = item?.format === "pdf" || item?.format === "issue";
+  const isPdfUnavailable =
+    isPdfItem && item?.format === "issue" && issuePdfStatus === "error";
+  const pdfSourceUrl = actualPdfUrl ? bffPdfUrl(actualPdfUrl) : undefined;
   const pdfAsset = useMemo(
     () =>
       item && isPdfItem && actualPdfUrl
@@ -775,7 +790,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   );
 
   const openArticle = useCallback(async () => {
-    if (!item || isPdfItem) return;
+    if (!item || item.format !== "article") return;
     setArticleOpen(true);
     setArticleStatus("loading");
     try {
@@ -786,7 +801,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     } catch {
       setArticleStatus("error");
     }
-  }, [item, isPdfItem, updateProgress]);
+  }, [item, updateProgress]);
 
   const openReader = useCallback(async () => {
     if (!item || !pdfAsset) return;
@@ -930,8 +945,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 className="primary-button"
                 type="button"
                 onClick={() => void openReader()}
+                disabled={!pdfAsset}
               >
-                {hasResume ? "Lanjutkan membaca" : "Baca di aplikasi"}
+                {isPdfUnavailable
+                  ? "PDF belum tersedia"
+                  : hasResume
+                    ? "Lanjutkan membaca"
+                    : "Baca di aplikasi"}
               </button>
             ) : (
               <button
@@ -944,11 +964,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             )}
             <a
               className="quiet-button"
-              href={item.url}
+              href={actualPdfUrl ?? item.url}
               target="_blank"
               rel="noreferrer"
             >
-              Sumber resmi ↗
+              {isPdfItem ? "PDF resmi ↗" : "Sumber resmi ↗"}
             </a>
             <button
               className="quiet-button"
@@ -961,9 +981,25 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
-      {directRead && isPdfItem && !readerOpen && !readerError && (
-        <div className="loading-panel literature-direct-loading" role="status">
-          Menyiapkan PDF…
+      {directRead &&
+        isPdfItem &&
+        !readerOpen &&
+        !readerError &&
+        !isPdfUnavailable && (
+          <div
+            className="loading-panel literature-direct-loading"
+            role="status"
+          >
+            Menyiapkan PDF…
+          </div>
+        )}
+      {isPdfUnavailable && (
+        <div className="error-panel literature-reader-error" role="alert">
+          <strong>PDF edisi ini belum tersedia.</strong>
+          <span>
+            Sumber resmi belum memberikan berkas PDF langsung. Coba lagi saat
+            tersambung internet atau buka halaman sumber resminya.
+          </span>
         </div>
       )}
       <section className="literature-reading-panel">
@@ -1067,32 +1103,62 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             : "Kemajuan tersimpan di perangkat ini."}
         </small>
       </section>
-      {readerOpen && pdfBytes && isPdfItem && (
-        <section
-          className="literature-reader-panel"
-          aria-label={`Membaca ${item.title}`}
-        >
-          <div className="section-title-row">
-            <h2>PDF · {item.title}</h2>
-            <button className="text-button" type="button" onClick={closeReader}>
-              Tutup
-            </button>
-          </div>
-          <Suspense
-            fallback={<div className="loading-panel">Memuat viewer PDF…</div>}
+      {readerOpen &&
+        pdfBytes &&
+        isPdfItem &&
+        createPortal(
+          <div
+            className="literature-pdf-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Membaca ${item.title}`}
+            onClick={closeReader}
           >
-            <LiteraturePdfReader
-              src={pdfSourceUrl ?? item.url}
-              data={pdfBytes}
-              initialPage={resumePage}
-              title={item.title}
-              progressKey={`literature:${item.id}:${resourceVersion}`}
-              onPageChange={onPageChange}
-            />
-          </Suspense>
-        </section>
-      )}
-      {articleOpen && !isPdfItem && (
+            <section
+              className="literature-pdf-overlay"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="literature-reader-panel">
+                <div className="section-title-row">
+                  <h2>PDF · {item.title}</h2>
+                  <div className="literature-pdf-head-actions">
+                    <a
+                      className="text-button literature-pdf-source-link"
+                      href={actualPdfUrl ?? item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      PDF resmi ↗
+                    </a>
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={closeReader}
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+                <Suspense
+                  fallback={
+                    <div className="loading-panel">Memuat viewer PDF…</div>
+                  }
+                >
+                  <LiteraturePdfReader
+                    src={pdfSourceUrl ?? item.url}
+                    data={pdfBytes}
+                    initialPage={resumePage}
+                    title={item.title}
+                    progressKey={`literature:${item.id}:${resourceVersion}`}
+                    onPageChange={onPageChange}
+                  />
+                </Suspense>
+              </div>
+            </section>
+          </div>,
+          document.body,
+        )}
+      {articleOpen && item.format === "article" && (
         <section
           className="literature-reader-panel"
           aria-label={`Membaca ${item.title}`}

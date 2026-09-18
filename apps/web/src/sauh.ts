@@ -462,7 +462,7 @@ function parseNormalizedSauh(value: unknown): SauhPost[] {
 
 async function request(url: string, signal?: AbortSignal): Promise<SauhPost[]> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 3_000);
+  const timer = window.setTimeout(() => controller.abort(), 8_000);
   const abort = () => controller.abort();
   signal?.addEventListener("abort", abort, { once: true });
   try {
@@ -502,8 +502,14 @@ async function loadNetworkToday(): Promise<SauhPost[]> {
   const networkCandidates = sauhNetworkCandidates(
     import.meta.env.VITE_BFF_BASE_URL,
   );
+  // Fast path: query today's canonical slug directly on WordPress.
+  // Querying by slug returns only today's article and resolves in ~2s (vs ~6s for full category listing).
+  const todaySlug = expectedSauhSlug();
+  const slugTarget = `https://tjc.org/id/wp-json/wp/v2/posts?slug=${todaySlug}&_embed=wp:featuredmedia`;
+  const candidates = [slugTarget, ...networkCandidates];
+
   let lastError: unknown;
-  for (const url of networkCandidates) {
+  for (const url of candidates) {
     try {
       return await requestToday(url);
     } catch (error) {

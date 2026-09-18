@@ -6101,6 +6101,11 @@ body.is-resizing-bible {
   flex-direction: column;
   gap: 6px;
 }
+.drawer-speech-hint {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
 .drawer-speech-row-header {
   display: flex;
   align-items: center;
@@ -9301,7 +9306,7 @@ body.gys-viewer-active {
   bottom: 20px;
   width: min(520px, calc(100vw - 40px));
   max-width: 520px;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto auto 28px;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto 28px 28px;
   gap: 10px;
   padding: 0 14px max(12px, env(safe-area-inset-bottom));
   border-radius: 16px;
@@ -9333,8 +9338,14 @@ body.gys-viewer-active {
   grid-row: 2;
   align-self: end;
 }
-.media-surface.is-speech-media:not(.is-minimized) > .media-minimize {
+.media-surface.is-speech-media:not(.is-minimized) > .media-close-button {
   grid-column: 6;
+  grid-row: 2;
+  align-self: end;
+}
+.media-surface.is-speech-media:not(.is-minimized)
+  > .media-minimize:not(.media-close-button) {
+  grid-column: 7;
   grid-row: 2;
   align-self: end;
 }
@@ -9473,7 +9484,7 @@ body.gys-viewer-active {
     bottom: calc(76px + env(safe-area-inset-bottom));
     width: calc(100vw - 20px);
     max-width: none;
-    grid-template-columns: 32px minmax(0, 1fr) auto auto 28px;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto 28px 28px;
     gap: 8px;
     padding-inline: 10px;
   }
@@ -9499,8 +9510,13 @@ body.gys-viewer-active {
     grid-column: 4;
     grid-row: 3;
   }
-  .media-surface.is-speech-media:not(.is-minimized) > .media-minimize {
+  .media-surface.is-speech-media:not(.is-minimized) > .media-close-button {
     grid-column: 5;
+    grid-row: 3;
+  }
+  .media-surface.is-speech-media:not(.is-minimized)
+    > .media-minimize:not(.media-close-button) {
+    grid-column: 6;
     grid-row: 3;
   }
   .media-surface.is-speech-media:not(.is-minimized) .media-adjustments {
@@ -12106,24 +12122,40 @@ body:has(.home-page)::-webkit-scrollbar {
   }
 }
 
-/* Focused Sauh UX: centered loading state. */
+/* Focused Sauh UX: center only the transient loading state. */
 .verse-panel:has(.sauh-skeleton) {
-  position: relative;
+  min-height: 290px;
 }
 
 .verse-panel:has(.sauh-skeleton) .sauh-card-content {
-  position: static;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   min-height: 0;
   margin: 0;
-  padding: 24px;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  text-align: center;
+}
+
+.verse-panel:has(.sauh-skeleton) .section-heading {
+  position: relative;
+  z-index: 1;
+}
+
+.verse-panel:has(.sauh-offline-state) {
+  height: auto;
+  min-height: 0;
 }
 
 /* More: keep destructive device actions secondary to everyday settings. */

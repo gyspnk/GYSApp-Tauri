@@ -2,11 +2,7 @@ import { SpeechOrchestrator } from "@gys/domain";
 import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
-import {
-  EdgeSpeechProvider,
-  BUILTIN_EDGE_VOICES,
-  isEdgeSpeechConfigured,
-} from "./edge-speech.js";
+import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
 import { resolveSpeechVoiceForText } from "./bible-language.js";
 import {
   persistSpeechSettings,
@@ -33,6 +29,7 @@ export type SpeechSnapshot = {
   providerId?: string;
   offline?: boolean;
   voices: SpeechVoice[];
+  edgeVoices?: SpeechVoice[];
   voiceId?: string;
   activeLanguageTag?: string | undefined;
   activeVoiceId?: string | undefined;
@@ -51,6 +48,7 @@ const initial: SpeechSnapshot = {
   total: 0,
   playerOpen: false,
   voices: [],
+  edgeVoices: [],
   rate: 0.9,
   pitch: 1,
   volume: 1,
@@ -83,7 +81,9 @@ class BrowserSpeechSession {
     try {
       const [edgeVoices, browserVoices, edgeStatus, browserStatus] =
         await Promise.all([
-          this.edgeProvider.voices(),
+          isEdgeSpeechConfigured()
+            ? this.edgeProvider.voices()
+            : Promise.resolve([]),
           this.browserProvider.voices(),
           this.edgeProvider.status(),
           this.browserProvider.status(),
@@ -96,11 +96,10 @@ class BrowserSpeechSession {
       ];
       const saved = readSpeechSettings(localStorage);
       const engine: SpeechEnginePreference = saved.engine;
-      const edgeEffective = isEdgeSpeechConfigured()
-        ? edgeStatus.available
-        : browserStatus.available;
+      const edgeEffective = edgeStatus.available;
       this.patch({
         voices,
+        edgeVoices,
         available:
           engine === "edge"
             ? edgeEffective
@@ -182,11 +181,10 @@ class BrowserSpeechSession {
   }
 
   private voicesForEngine(engine: SpeechEnginePreference): SpeechVoice[] {
-    const merged = [...this.state.voices];
-    const seen = new Set(merged.map((voice) => voice.id));
-    for (const builtin of BUILTIN_EDGE_VOICES)
-      if (!seen.has(builtin.id)) merged.push(builtin);
-    return engine === "local" ? merged.filter((voice) => voice.local) : merged;
+    if (engine === "edge") return [...(this.state.edgeVoices ?? [])];
+    if (engine === "local")
+      return this.state.voices.filter((voice) => voice.local);
+    return [...this.state.voices];
   }
 
   public prepare(
@@ -218,8 +216,8 @@ class BrowserSpeechSession {
 
   public togglePlayer(open?: boolean): void {
     const next = open ?? !this.state.playerOpen;
-    if (!next && this.state.status === "speaking") {
-      void this.stop(false);
+    if (!next && (this.state.status !== "idle" || this.state.total > 0)) {
+      void this.stop();
     }
     this.patch({ playerOpen: next });
   }
@@ -302,6 +300,9 @@ class BrowserSpeechSession {
           rate: this.state.rate,
           pitch: this.state.pitch,
           volume: this.state.volume,
+          ...(resolved.languageTag
+            ? { languageTag: resolved.languageTag }
+            : {}),
           ...(resolved.voiceId ? { voiceId: resolved.voiceId } : {}),
         };
         const result = await this.orchestrator.speak(
@@ -425,9 +426,7 @@ class BrowserSpeechSession {
       this.edgeProvider.status(),
       this.browserProvider.status(),
     ]);
-    const edgeEffective = isEdgeSpeechConfigured()
-      ? edgeStatus.available
-      : browserStatus.available;
+    const edgeEffective = edgeStatus.available;
     this.patch({
       available:
         engine === "edge"

@@ -44,6 +44,20 @@ describe("SpeechOrchestrator", () => {
     await expect(orchestrator.offlineStatus()).resolves.toBe(false);
   });
 
+  it("passes the resolved language hint to the active provider", async () => {
+    let receivedLanguage: string | undefined;
+    const edge = provider("edge", false, async (_text, options) => {
+      receivedLanguage = options.languageTag;
+    });
+    const orchestrator = new SpeechOrchestrator([edge]);
+
+    await orchestrator.speak("起初，神创造天地。", {
+      languageTag: "zh-CN",
+    });
+
+    expect(receivedLanguage).toBe("zh-CN");
+  });
+
   it("routes pause and resume to the provider during an active utterance", async () => {
     let finish: (() => void) | undefined;
     let paused = 0;
