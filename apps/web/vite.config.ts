@@ -96,23 +96,63 @@ function devImageProxyPlugin(): Plugin {
               res.statusCode = 403;
               return res.end("Forbidden");
             }
-            const upstream = await fetch(targetUrl, {
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                Accept: "application/pdf,*/*",
-                Referer: "https://tjc.org/",
-              },
-            });
-            if (upstream.ok) {
-              res.statusCode = 200;
-              res.setHeader("Content-Type", "application/pdf");
-              res.setHeader("Cache-Control", "public, max-age=86400");
-              res.setHeader("Access-Control-Allow-Origin", "*");
-              const arrayBuffer = await upstream.arrayBuffer();
-              return res.end(Buffer.from(arrayBuffer));
+            const candidates = [targetUrl];
+            if (
+              hostname.includes("tjc.org") &&
+              parsedTarget.pathname.includes("wp-content/uploads/")
+            ) {
+              candidates.push(
+                `https://tjcorguploads.s3.amazonaws.com/tjcorg${parsedTarget.pathname.replace(/^\/id/, "")}`,
+                `https://tjcorguploads.s3.amazonaws.com${parsedTarget.pathname.replace(/^\/id/, "")}`,
+              );
+            } else if (hostname === "tjcorguploads.s3.amazonaws.com") {
+              candidates.push(
+                `https://tjc.org/id${parsedTarget.pathname.replace(/^\/tjcorg/, "")}`,
+              );
             }
-            res.statusCode = upstream.status || 502;
+
+            for (const candidate of candidates) {
+              try {
+                const range = req.headers.range;
+                const upstream = await fetch(candidate, {
+                  headers: {
+                    "User-Agent":
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    Accept: "application/pdf,*/*",
+                    Referer: "https://tjc.org/",
+                    ...(range ? { Range: range } : {}),
+                  },
+                });
+                if (upstream.ok || upstream.status === 206) {
+                  res.statusCode = upstream.status;
+                  res.setHeader(
+                    "Content-Type",
+                    upstream.headers.get("content-type") || "application/pdf",
+                  );
+                  res.setHeader("Cache-Control", "public, max-age=86400");
+                  res.setHeader("Access-Control-Allow-Origin", "*");
+                  res.setHeader(
+                    "Access-Control-Expose-Headers",
+                    "Accept-Ranges, Content-Length, Content-Range",
+                  );
+                  for (const header of [
+                    "accept-ranges",
+                    "content-length",
+                    "content-range",
+                    "etag",
+                    "last-modified",
+                  ]) {
+                    const value = upstream.headers.get(header);
+                    if (value) res.setHeader(header, value);
+                  }
+                  const arrayBuffer = await upstream.arrayBuffer();
+                  return res.end(Buffer.from(arrayBuffer));
+                }
+              } catch {
+                // try the publisher's mirrored host
+              }
+            }
+            res.statusCode = 404;
             return res.end("Upstream error");
           } catch {
             res.statusCode = 500;

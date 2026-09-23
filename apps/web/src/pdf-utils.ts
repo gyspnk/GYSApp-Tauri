@@ -55,6 +55,14 @@ export function pdfDocumentSourceOptions(
   };
 }
 
+export function pdfHttpStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" && Number.isInteger(status)
+    ? status
+    : undefined;
+}
+
 export function pdfPageWindow(
   startPage: number,
   pageCount: number | undefined,

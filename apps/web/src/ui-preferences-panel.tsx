@@ -13,6 +13,7 @@ import {
   type UiDensity,
   type UiFont,
 } from "./ui-preferences.js";
+import { translate, type Locale } from "./i18n.js";
 
 type PreferenceOption<T extends string> = {
   value: T;
@@ -169,7 +170,7 @@ function useModalKeyboard(
   }, [onClose, open, openerRef, panelRef]);
 }
 
-export function UiPreferencesPanel() {
+export function UiPreferencesPanel({ locale }: { locale: Locale }) {
   const host = useAppearanceHost();
   const preferences = useSyncExternalStore(
     subscribeUiPreferences,
@@ -180,17 +181,24 @@ export function UiPreferencesPanel() {
   const openerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const close = () => setOpen(false);
+  const densityOptions = DENSITY_OPTIONS.map((option) => ({
+    ...option,
+    label: translate(locale, `more.density.${option.value}`),
+    description: translate(locale, `more.density.${option.value}Description`),
+  }));
+  const fontOptions = FONT_OPTIONS.map((option) => ({
+    ...option,
+    label: translate(locale, `more.font.${option.value}`),
+    description: translate(locale, `more.font.${option.value}Description`),
+  }));
   useModalKeyboard(open, panelRef, openerRef, close);
 
   const launcher = host
     ? createPortal(
         <div className="ui-preferences-entry">
           <div className="ui-preferences-entry-copy">
-            <strong>Tampilan & keterbacaan</strong>
-            <small>
-              Sesuaikan ukuran ruang dan karakter tipografi untuk cara membaca
-              Anda.
-            </small>
+            <strong>{translate(locale, "more.readabilityTitle")}</strong>
+            <small>{translate(locale, "more.readabilityDescription")}</small>
           </div>
           <button
             ref={openerRef}
@@ -202,7 +210,7 @@ export function UiPreferencesPanel() {
             <span className="ui-preferences-open-mark" aria-hidden="true">
               Aa
             </span>
-            <span>Tampilan & keterbacaan</span>
+            <span>{translate(locale, "more.readabilityTitle")}</span>
           </button>
         </div>,
         host,
@@ -216,7 +224,7 @@ export function UiPreferencesPanel() {
             <button
               type="button"
               className="ui-preferences-scrim"
-              aria-label="Tutup pengaturan tampilan"
+              aria-label={translate(locale, "more.closeAppearance")}
               onClick={close}
             />
             <section
@@ -230,18 +238,21 @@ export function UiPreferencesPanel() {
             >
               <div className="ui-preferences-header">
                 <div>
-                  <p className="ui-preferences-eyebrow">Akses & kenyamanan</p>
-                  <h2 id="ui-preferences-title">Tampilan & keterbacaan</h2>
+                  <p className="ui-preferences-eyebrow">
+                    {translate(locale, "more.appearanceEyebrow")}
+                  </p>
+                  <h2 id="ui-preferences-title">
+                    {translate(locale, "more.readabilityTitle")}
+                  </h2>
                   <p id="ui-preferences-description">
-                    Pengaturan ini berlaku di seluruh GYSApp dan tersimpan di
-                    perangkat ini.
+                    {translate(locale, "more.appearanceDescription")}
                   </p>
                 </div>
                 <button
                   type="button"
                   className="ui-preferences-close"
                   onClick={close}
-                  aria-label="Tutup pengaturan tampilan"
+                   aria-label={translate(locale, "more.closeAppearance")}
                 >
                   <span aria-hidden="true">×</span>
                 </button>
@@ -250,23 +261,21 @@ export function UiPreferencesPanel() {
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
                   <div>
-                    <h3>Kepadatan antarmuka</h3>
-                    <p>
-                      Pilih ruang yang paling nyaman tanpa menyembunyikan fitur.
-                    </p>
+                        <h3>{translate(locale, "more.densityTitle")}</h3>
+                        <p>{translate(locale, "more.densityDescription")}</p>
                   </div>
                   <span className="ui-preferences-current">
-                    {DENSITY_OPTIONS.find(
+                    {densityOptions.find(
                       (option) => option.value === preferences.density,
-                    )?.label ?? "Standar"}
+                    )?.label ?? translate(locale, "more.density.standard")}
                   </span>
                 </div>
                 <div
                   className="ui-preference-grid"
                   role="radiogroup"
-                  aria-label="Kepadatan antarmuka"
+                   aria-label={translate(locale, "more.densityTitle")}
                 >
-                  {DENSITY_OPTIONS.map((option) => (
+                  {densityOptions.map((option) => (
                     <PreferenceChoice
                       key={option.value}
                       option={option}
@@ -280,21 +289,21 @@ export function UiPreferencesPanel() {
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
                   <div>
-                    <h3>Gaya huruf</h3>
-                    <p>Jaga keterbacaan sambil memilih karakter visual.</p>
+                        <h3>{translate(locale, "more.fontTitle")}</h3>
+                        <p>{translate(locale, "more.fontDescription")}</p>
                   </div>
                   <span className="ui-preferences-current">
-                    {FONT_OPTIONS.find(
+                    {fontOptions.find(
                       (option) => option.value === preferences.font,
-                    )?.label ?? "Otomatis"}
+                    )?.label ?? translate(locale, "more.font.auto")}
                   </span>
                 </div>
                 <div
                   className="ui-preference-grid"
                   role="radiogroup"
-                  aria-label="Gaya huruf"
+                   aria-label={translate(locale, "more.fontTitle")}
                 >
-                  {FONT_OPTIONS.map((option) => (
+                  {fontOptions.map((option) => (
                     <PreferenceChoice
                       key={option.value}
                       option={option}
@@ -307,13 +316,13 @@ export function UiPreferencesPanel() {
               </div>
 
               <footer className="ui-preferences-footer">
-                <span>Target sentuh tetap aman pada mode Ringkas.</span>
+                <span>{translate(locale, "more.touchTargetHint")}</span>
                 <button
                   type="button"
                   className="primary-button"
                   onClick={close}
                 >
-                  Selesai
+                  {translate(locale, "more.done")}
                 </button>
               </footer>
             </section>

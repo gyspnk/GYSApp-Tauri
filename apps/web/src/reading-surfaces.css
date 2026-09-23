@@ -101,6 +101,14 @@
   contain-intrinsic-size: auto 58px;
 }
 
+.faith-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+}
+
 .faith-rows > div:last-child {
   border-bottom: 0;
 }
@@ -193,16 +201,16 @@
 
 .faith-row-heading {
   width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: 44px 1fr auto auto;
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
   column-gap: 20px;
-  row-gap: 8px;
   border: 0;
   background: transparent;
   text-align: left;
   color: var(--ink);
-  padding: 16px 20px;
+  padding: 6px 0;
   cursor: pointer;
   transition: background var(--motion-fast) var(--ease-out);
 }
@@ -220,6 +228,12 @@
   font-size: 15px;
   font-weight: 620;
   line-height: 1.5;
+  min-width: 0;
+}
+
+.faith-row-copy {
+  display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -246,10 +260,13 @@
   font-size: 13px;
 }
 
-.faith-row-heading > span:last-child {
-  color: var(--blue);
-  font-size: 19px;
-  line-height: 1;
+.faith-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 44px;
+  flex: 0 0 auto;
 }
 
 .faith-copy {
@@ -439,8 +456,9 @@
   gap: 14px;
   flex: 0 0 auto;
   min-width: 0;
-  height: 56px;
-  padding: 0 18px;
+  min-height: 56px;
+  height: auto;
+  padding: max(8px, env(safe-area-inset-top, 0px)) 18px 8px;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
@@ -449,6 +467,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1 1 28rem;
+  max-width: 45%;
   min-width: 0;
 }
 
@@ -491,15 +511,22 @@
 }
 
 .faith-pdf-head-actions .quiet-button {
-  min-height: 34px;
+  min-width: var(--control-hit);
+  min-height: var(--control-hit);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding-inline: 12px;
   font-size: 11.5px;
+  white-space: nowrap;
 }
 
 .faith-pdf-head-actions .bible-notes-close {
   width: var(--control-hit);
   min-width: var(--control-hit);
   min-height: var(--control-hit);
+  height: var(--control-hit);
+  padding: 0;
 }
 
 .faith-pdf-body {
@@ -769,6 +796,58 @@
   object-fit: cover;
 }
 
+.literature-cover[data-image-state="missing"] .img-fallback-placeholder,
+.literature-cover[data-image-state="error"] .img-fallback-placeholder {
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 11px;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.literature-cover[data-image-state="missing"] .img-fallback-placeholder::before,
+.literature-cover[data-image-state="error"] .img-fallback-placeholder::before {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.literature-cover[data-image-state="missing"] .img-fallback-placeholder::before {
+  content: "∅";
+}
+
+.literature-cover[data-image-state="error"] .img-fallback-placeholder {
+  background: color-mix(in srgb, var(--danger, #b42318) 8%, var(--surface));
+  color: var(--danger, #b42318);
+}
+
+.literature-cover[data-image-state="error"] .img-fallback-placeholder::before {
+  content: "!";
+}
+
+.literature-cover[data-image-state="missing"] .img-fallback-placeholder > strong,
+.literature-cover[data-image-state="error"] .img-fallback-placeholder > strong {
+  display: none;
+}
+
+.literature-cover[data-image-state="missing"] .img-fallback-placeholder > small,
+.literature-cover[data-image-state="error"] .img-fallback-placeholder > small {
+  max-width: 100%;
+  color: currentColor;
+  overflow: hidden;
+  opacity: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .literature-cover.is-compact {
   width: 100%;
   height: 116px;
@@ -959,22 +1038,31 @@
   flex: 0 0 auto;
   min-height: 56px;
   margin: 0;
-  padding: 8px 18px;
+  padding: max(8px, env(safe-area-inset-top, 0px)) 18px 8px;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
+}
+
+.literature-pdf-overlay .literature-reader-panel > .section-title-row h2 {
+  flex: 1 1 auto;
 }
 
 .literature-pdf-head-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  min-width: 0;
   flex: 0 0 auto;
 }
 
 .literature-pdf-head-actions .text-button {
-  min-height: 40px;
+  min-width: var(--control-hit);
+  min-height: var(--control-hit);
+  padding: 8px 10px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
   white-space: nowrap;
 }
 
@@ -1006,15 +1094,15 @@
   }
 
   .literature-pdf-head-actions {
-    gap: 4px;
+    gap: 6px;
   }
 
   .literature-pdf-head-actions .literature-pdf-source-link {
-    max-width: 0;
-    overflow: hidden;
-    padding-inline: 0;
-    opacity: 0;
-    pointer-events: none;
+    max-width: none;
+    padding-inline: 8px;
+    opacity: 1;
+    pointer-events: auto;
+    font-size: 11px;
   }
 }
 
@@ -1175,25 +1263,37 @@
 }
 
 .faith-row-summary {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: max-content;
-  margin: -2px 40px 10px 58px;
-  padding: 2px 0;
-  border: 0;
-  background: transparent;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
   color: var(--muted);
   font: inherit;
   font-size: max(var(--text-meta), 0.71875rem);
   font-weight: 650;
   line-height: 1.4;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
 }
 
 .faith-row-summary:hover,
 .faith-row-summary:focus-visible {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+  background: var(--blue-soft);
   color: var(--blue);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  outline: none;
 }
 
 .faith-pdf-progress {
@@ -1206,52 +1306,42 @@
 
 @media (max-width: 620px) {
   .faith-row-heading {
-    grid-template-columns: 34px minmax(0, 1fr) auto 18px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    column-gap: 12px;
   }
 
   .faith-row-progress {
     font-size: max(var(--text-meta), 0.71875rem);
   }
-
-  .faith-row-summary {
-    margin-left: 48px;
-  }
 }
 
 @media (max-width: 480px) {
-  .faith-row-heading {
-    grid-template-columns: 34px minmax(0, 1fr) 18px;
-    column-gap: 10px;
-    padding-inline: 2px;
-    align-items: start;
+  .faith-row {
+    gap: 10px;
+    padding-inline: 12px;
   }
 
-  .faith-row-heading strong {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .faith-row-heading .faith-row-progress {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: start;
-  }
-
-  .faith-row-heading > span:last-child {
-    grid-column: 3;
-    grid-row: 1;
-    margin-top: 12px;
+  .faith-row-actions {
+    gap: 6px;
   }
 
   .faith-row-summary {
-    margin-left: 46px;
+    padding-inline: 9px;
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 680px) {
   .faith-pdf-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
     gap: 8px;
-    padding-inline: 12px;
+    padding: max(8px, env(safe-area-inset-top, 0px)) 12px 8px;
+  }
+
+  .faith-pdf-title {
+    width: 100%;
+    max-width: none;
   }
 
   .faith-pdf-title small {
@@ -1259,16 +1349,76 @@
   }
 
   .faith-pdf-title strong {
-    white-space: normal;
+    display: block;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: clip;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-height: 1.25;
+    text-overflow: ellipsis;
   }
 
   .faith-pdf-stats {
-    display: none;
+    width: 100%;
+    text-align: left;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+
+  .faith-pdf-head-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+}
+
+/* PDF chrome: icon-first navigation keeps the reading surface calm without
+   shrinking touch targets or removing the accessible action names. */
+.pdf-reader .pdf-page-navigation > button:first-child:not(:disabled),
+.pdf-reader .pdf-page-navigation > button:last-child:not(:disabled) {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pdf-reader .pdf-page-navigation .pdf-resume,
+.pdf-reader .pdf-page-navigation .pdf-page-jump input,
+.pdf-reader .pdf-fullscreen-toggle,
+.pdf-reader .pdf-advanced-controls button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.pdf-reader .pdf-view-scroll-toggle button,
+.pdf-reader .pdf-layout-toggle button {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 10px;
+}
+
+.pdf-reader .pdf-advanced-toggle {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pdf-reader .pdf-download {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }

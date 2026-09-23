@@ -89,7 +89,7 @@ describe("Sauh feed normalization", () => {
     expect(posts[0]?.imageUrl).toBeUndefined();
   });
 
-  it("selects the responsive featured image for Sauh surfaces", () => {
+  it("selects the original featured image for Sauh surfaces", () => {
     const posts = parseSauhPosts([
       {
         id: 82,
@@ -117,7 +117,7 @@ describe("Sauh feed normalization", () => {
     ]);
 
     expect(posts[0]?.imageUrl).toBe(
-      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg",
+      "https://tjc.org/id/wp-content/uploads/full.jpg",
     );
   });
 

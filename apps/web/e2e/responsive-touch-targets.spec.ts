@@ -2,14 +2,19 @@ import { expect, test, type Locator } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-async function expectTouchTarget(locator: Locator, min = 40) {
+// Browser layout can report a 44px CSS box a few thousandths below 44 at a
+// device-pixel boundary; keep the product contract at 44px while tolerating
+// that measurement rounding.
+const geometryEpsilon = 0.01;
+
+async function expectTouchTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
   expect(box, "control should be visible and measurable").not.toBeNull();
-  expect(box!.width).toBeGreaterThanOrEqual(min);
-  expect(box!.height).toBeGreaterThanOrEqual(min);
+  expect(box!.width).toBeGreaterThanOrEqual(min - geometryEpsilon);
+  expect(box!.height).toBeGreaterThanOrEqual(min - geometryEpsilon);
 }
 
-async function expectPseudoTouchTarget(locator: Locator, min = 40) {
+async function expectPseudoTouchTarget(locator: Locator, min = 44) {
   const size = await locator.evaluate((element) => {
     const style = getComputedStyle(element, "::before");
     return {
@@ -17,8 +22,8 @@ async function expectPseudoTouchTarget(locator: Locator, min = 40) {
       height: Number.parseFloat(style.height),
     };
   });
-  expect(size.width).toBeGreaterThanOrEqual(min);
-  expect(size.height).toBeGreaterThanOrEqual(min);
+  expect(size.width).toBeGreaterThanOrEqual(min - geometryEpsilon);
+  expect(size.height).toBeGreaterThanOrEqual(min - geometryEpsilon);
 }
 
 async function expectFullyInViewport(locator: Locator, viewportWidth: number) {
@@ -36,6 +41,7 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
 
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: "Kejadian 1" })).toBeVisible();
+  await expectTouchTarget(page.getByRole("button", { name: "Menu Alkitab" }));
   await expectTouchTarget(
     page.getByRole("button", { name: "Tandai ayat 1", exact: true }),
     40,
@@ -58,7 +64,7 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
   );
   await expectFullyInViewport(
     page.getByRole("button", {
-      name: "Tambah Pujilah Allah Yang Maha Esa ke Playlist",
+      name: "Tambah Pujilah Allah Yang Maha Esa ke antrean MIDI",
       exact: true,
     }),
     phoneWidth,
@@ -74,6 +80,9 @@ test("phone navigation and compact text actions remain easy to tap", async ({
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/GYSApp-Tauri/");
+  await expectTouchTarget(
+    page.getByRole("link", { name: /Baca Lebih Lanjut/ }),
+  );
   const seeAll = page.getByRole("link", { name: /Lihat semua/ }).first();
   await expectTouchTarget(seeAll, 40);
 
@@ -105,5 +114,5 @@ test("desktop Sauh outage uses a compact recovery state instead of an empty hero
   const box = await panel.boundingBox();
   expect(box).not.toBeNull();
   expect(box!.height).toBeLessThanOrEqual(420);
-  await expectTouchTarget(state.getByRole("button", { name: "Coba lagi" }), 40);
+  await expectTouchTarget(state.getByRole("button", { name: "Coba lagi" }), 44);
 });

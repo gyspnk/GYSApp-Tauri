@@ -4,6 +4,21 @@ import { sanitizeBibleText } from "@gys/domain";
 import { hapticTick } from "./haptics.js";
 import { translate, type Locale } from "./i18n.js";
 
+const FOCUSABLE_SELECTOR = [
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "a[href]",
+  "[tabindex]:not([tabindex=\"-1\"])",
+].join(",");
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+  ).filter((element) => element.getClientRects().length > 0);
+}
+
 export type DragColumn = "book" | "chapter" | "verse";
 
 export type QuickNavDragState = {
@@ -82,9 +97,11 @@ export function scrubVerseNumber(
 export function BibleQuickNavOverlay({
   books,
   dragState,
+  locale,
 }: {
   books: readonly BibleBook[];
   dragState: QuickNavDragState;
+  locale: Locale;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -104,15 +121,16 @@ export function BibleQuickNavOverlay({
   ]);
 
   const columnLabel = useMemo(() => {
-    switch (dragState.activeColumn) {
-      case "book":
-        return "Menggeser Kitab";
-      case "chapter":
-        return "Menggeser Pasal";
-      case "verse":
-        return "Menggeser Ayat";
-    }
-  }, [dragState.activeColumn]);
+    const labelKey =
+      dragState.activeColumn === "book"
+        ? "bible.quickBook"
+        : dragState.activeColumn === "chapter"
+          ? "bible.quickChapter"
+          : "bible.quickVerse";
+    return translate(locale, "bible.quickDrag", {
+      label: translate(locale, labelKey),
+    });
+  }, [dragState.activeColumn, locale]);
   const items =
     dragState.activeColumn === "book"
       ? books.map((book) => ({ value: book.id, label: book.name }))
@@ -145,20 +163,24 @@ export function BibleQuickNavOverlay({
       className="quick-nav-drag-overlay"
       role="status"
       aria-live="polite"
-      aria-label="Navigasi cepat Alkitab"
+      aria-label={translate(locale, "bible.quickNavAria")}
     >
       <div className="quick-nav-floater">
         <strong>
           {dragState.bookName} {dragState.chapter}
           {dragState.verse > 0 ? `:${dragState.verse}` : ""}
         </strong>
-        <span>{dragState.isOutside ? "Di luar area" : columnLabel}</span>
+        <span>
+          {dragState.isOutside
+            ? translate(locale, "bible.quickOutside")
+            : columnLabel}
+        </span>
         <small>
           {dragState.isOutside
-            ? "Geser kembali ke dalam box untuk memilih"
+            ? translate(locale, "bible.quickOutsideHint")
             : dragState.activeColumn === "verse"
-              ? "Lepaskan untuk memilih ayat"
-              : "Lepas untuk ayat 1 · diam 1 detik untuk lanjut"}
+              ? translate(locale, "bible.quickRelease")
+              : translate(locale, "bible.quickContinue")}
         </small>
       </div>
 
@@ -228,6 +250,7 @@ export function BiblePickerModal({
   currentVerse,
   allVerses,
   onSelect,
+  restoreFocusTarget,
   locale = "id",
 }: {
   open: boolean;
@@ -242,6 +265,7 @@ export function BiblePickerModal({
     chapter: number;
     verse?: number;
   }) => void;
+  restoreFocusTarget?: HTMLElement | null;
   locale?: Locale;
 }) {
   const [activeTab, setActiveTab] = useState<"book" | "chapter" | "verse">(
@@ -252,6 +276,11 @@ export function BiblePickerModal({
   const [searchFilter, setSearchFilter] = useState("");
   const [scope, setScope] = useState<"all" | "old" | "new" | "current">("all");
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const restoreFocusTargetRef = useRef<HTMLElement | null>(
+    restoreFocusTarget ?? null,
+  );
+  restoreFocusTargetRef.current = restoreFocusTarget ?? null;
+  const wasOpenRef = useRef(false);
 
   // Sync state when opened
   useEffect(() => {
@@ -263,18 +292,69 @@ export function BiblePickerModal({
     }
   }, [currentBookId, currentChapter, open]);
 
-  // Handle escape key
+  // Keep keyboard focus inside the picker and send it back to its trigger.
   useEffect(() => {
     if (!open) return;
+
+    if (!restoreFocusTargetRef.current && document.activeElement instanceof HTMLElement) {
+      restoreFocusTargetRef.current = document.activeElement;
+    }
+
+    wasOpenRef.current = true;
+    const focusFrame = window.requestAnimationFrame(() => {
+      const modal = modalRef.current;
+      if (!modal) return;
+      const search = modal.querySelector<HTMLElement>(".bible-picker-search");
+      const first = getFocusableElements(modal)[0];
+      (search ?? first)?.focus({ preventScroll: true });
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const modal = modalRef.current;
+      if (!modal) return;
+      const focusable = getFocusableElements(modal);
+      if (!focusable.length) {
+        e.preventDefault();
+        modal.focus({ preventScroll: true });
+        return;
+      }
+
+      const active = document.activeElement;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (
+        (e.shiftKey && (active === first || !modal.contains(active))) ||
+        (!e.shiftKey && (active === last || !modal.contains(active)))
+      ) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus({ preventScroll: true });
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onClose, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    return () => {
+      // React StrictMode replays effects while the modal is still mounted.
+      if (modalRef.current || !wasOpenRef.current) return;
+      wasOpenRef.current = false;
+      const target = restoreFocusTargetRef.current;
+      if (target?.isConnected) target.focus({ preventScroll: true });
+    };
+  }, [open]);
 
   const currentBook = useMemo(
     () => books.find((b) => b.id === selectedBookId) ?? books[0],
@@ -338,7 +418,8 @@ export function BiblePickerModal({
           continue;
 
         const b = bookMap.get(String(v.book));
-        const bookName = b?.name ?? `Kitab ${v.book}`;
+        const bookName =
+          b?.name ?? translate(locale, "bible.pickerBookFallback", { book: v.book });
         const cleanText = sanitizeBibleText(v.text);
         const targetText =
           `${bookName} ${v.chapter}:${v.verse} ${cleanText}`.toLowerCase();
@@ -360,7 +441,7 @@ export function BiblePickerModal({
       matchingBooks,
       matchingVerses,
     };
-  }, [books, allVerses, searchFilter, scope, currentActiveBook]);
+  }, [books, allVerses, searchFilter, scope, currentActiveBook, locale]);
 
   const verseCountForChapter = useMemo(() => {
     if (!currentBook || !allVerses) return 30;
@@ -415,16 +496,20 @@ export function BiblePickerModal({
       >
         <div className="bible-picker-header">
           <div>
-            <p className="date-line">Navigasi Alkitab</p>
-            <h2 id="bible-picker-title">Pilih Kitab & Pasal</h2>
+            <p className="date-line">
+              {translate(locale, "bible.pickerEyebrow")}
+            </p>
+            <h2 id="bible-picker-title">
+              {translate(locale, "bible.pickerTitle")}
+            </h2>
           </div>
           <button
             className="text-button"
             type="button"
             onClick={onClose}
-            aria-label="Tutup pemilih kitab"
+            aria-label={translate(locale, "bible.closePicker")}
           >
-            Tutup <kbd>Esc</kbd>
+            {translate(locale, "bible.closeResults")} <kbd>Esc</kbd>
           </button>
         </div>
 
@@ -432,7 +517,7 @@ export function BiblePickerModal({
         <div
           className="bible-picker-tabs"
           role="tablist"
-          aria-label="Langkah pemilihan"
+          aria-label={translate(locale, "bible.pickerSteps")}
         >
           <button
             type="button"
@@ -442,7 +527,9 @@ export function BiblePickerModal({
             onClick={() => setActiveTab("book")}
           >
             {translate(locale, "bible.book")}:{" "}
-            <strong>{currentBook?.name ?? "Pilih"}</strong>
+            <strong>
+              {currentBook?.name ?? translate(locale, "bible.pickerChoose")}
+            </strong>
           </button>
           <button
             type="button"
@@ -461,7 +548,7 @@ export function BiblePickerModal({
             className={`bible-picker-tab${activeTab === "verse" ? " is-active" : ""}`}
             onClick={() => setActiveTab("verse")}
           >
-            Ayat
+            {translate(locale, "bible.quickVerse")}
           </button>
         </div>
 
@@ -472,11 +559,13 @@ export function BiblePickerModal({
               <input
                 type="search"
                 className="bible-picker-search"
-                placeholder="Cari kitab atau isi ayat…"
+                placeholder={translate(
+                  locale,
+                  "bible.pickerSearchPlaceholder",
+                )}
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
-                autoFocus
-                aria-label="Cari kitab atau isi ayat"
+                aria-label={translate(locale, "bible.pickerSearchAria")}
               />
               <div className="bible-picker-testament-pills">
                 <button
@@ -484,21 +573,21 @@ export function BiblePickerModal({
                   className={`pill-button${scope === "all" ? " is-active" : ""}`}
                   onClick={() => setScope("all")}
                 >
-                  Semua (66)
+                  {translate(locale, "bible.scopeAll", { count: 66 })}
                 </button>
                 <button
                   type="button"
                   className={`pill-button${scope === "old" ? " is-active" : ""}`}
                   onClick={() => setScope("old")}
                 >
-                  PL (39)
+                  {translate(locale, "bible.scopeOld", { count: 39 })}
                 </button>
                 <button
                   type="button"
                   className={`pill-button${scope === "new" ? " is-active" : ""}`}
                   onClick={() => setScope("new")}
                 >
-                  PB (27)
+                  {translate(locale, "bible.scopeNew", { count: 27 })}
                 </button>
                 {currentActiveBook && (
                   <button
@@ -506,7 +595,9 @@ export function BiblePickerModal({
                     className={`pill-button${scope === "current" ? " is-active" : ""}`}
                     onClick={() => setScope("current")}
                   >
-                    {currentActiveBook.name} Saja
+                    {translate(locale, "bible.scopeCurrent", {
+                      book: currentActiveBook.name,
+                    })}
                   </button>
                 )}
               </div>
@@ -517,7 +608,9 @@ export function BiblePickerModal({
                 {searchResults.matchingBooks.length > 0 && (
                   <div>
                     <h3 className="bible-picker-section-title">
-                      Kitab ({searchResults.matchingBooks.length})
+                      {translate(locale, "bible.pickerBooks", {
+                        count: searchResults.matchingBooks.length,
+                      })}
                     </h3>
                     <div className="bible-picker-book-grid">
                       {searchResults.matchingBooks.map((b) => (
@@ -537,8 +630,11 @@ export function BiblePickerModal({
                 {searchResults.matchingVerses.length > 0 && (
                   <div>
                     <h3 className="bible-picker-section-title">
-                      Ayat Alkitab ({searchResults.matchingVerses.length}
-                      {searchResults.matchingVerses.length >= 80 ? "+" : ""})
+                      {translate(locale, "bible.pickerVerses", {
+                        count: searchResults.matchingVerses.length,
+                        plus:
+                          searchResults.matchingVerses.length >= 80 ? "+" : "",
+                      })}
                     </h3>
                     <div className="bible-picker-verse-list" role="list">
                       {searchResults.matchingVerses.map((item, idx) => (
@@ -568,11 +664,12 @@ export function BiblePickerModal({
                   </div>
                 )}
 
-                {searchResults.matchingBooks.length === 0 &&
+                  {searchResults.matchingBooks.length === 0 &&
                   searchResults.matchingVerses.length === 0 && (
                     <p className="bible-side-empty">
-                      Tidak ada kitab atau ayat yang cocok dengan &ldquo;
-                      {searchFilter}&rdquo;.
+                      {translate(locale, "bible.pickerNoResults", {
+                        query: searchFilter,
+                      })}
                     </p>
                   )}
               </div>
@@ -590,7 +687,7 @@ export function BiblePickerModal({
                 ))}
                 {filteredBooks.length === 0 && (
                   <p className="bible-side-empty">
-                    Tidak ada kitab yang cocok.
+                    {translate(locale, "bible.pickerNoBooks")}
                   </p>
                 )}
               </div>
@@ -602,13 +699,19 @@ export function BiblePickerModal({
         {activeTab === "chapter" && currentBook && (
           <div className="bible-picker-tab-content" role="tabpanel">
             <div className="bible-picker-subheading">
-              <strong>{currentBook.name}</strong> · {currentBook.chapters} pasal
+              <strong>{currentBook.name}</strong> ·{" "}
+              {translate(locale, "bible.pickerChapterCount", {
+                count: currentBook.chapters,
+              })}
               <button
                 type="button"
                 className="quiet-button"
                 onClick={handleJumpEntireChapter}
               >
-                Buka {currentBook.name} {selectedChapter}
+                {translate(locale, "bible.pickerOpenReference", {
+                  book: currentBook.name,
+                  chapter: selectedChapter,
+                })}
               </button>
             </div>
             <div className="bible-picker-num-grid">
@@ -636,13 +739,16 @@ export function BiblePickerModal({
               <strong>
                 {currentBook.name} {selectedChapter}
               </strong>{" "}
-              · {verseCountForChapter} ayat
+              · {" "}
+              {translate(locale, "bible.pickerVerseCount", {
+                count: verseCountForChapter,
+              })}
               <button
                 type="button"
                 className="primary-button"
                 onClick={handleJumpEntireChapter}
               >
-                Buka Seluruh Pasal
+                {translate(locale, "bible.pickerOpenChapter")}
               </button>
             </div>
             <div className="bible-picker-num-grid">

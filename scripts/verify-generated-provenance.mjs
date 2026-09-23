@@ -164,8 +164,11 @@ if (
   )
 )
   throw new Error("bundled music seed is missing from the asset manifest");
+const literatureMissingCovers = literature.items.filter(
+  (item) => !item.imageUrl,
+);
 for (const item of literature.items) {
-  if (
+if (
     item.imageUrl &&
     (!(
       item.imageUrl.startsWith("https://tjc.org/") ||
@@ -174,6 +177,13 @@ for (const item of literature.items) {
       !/\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(item.imageUrl))
   )
     throw new Error(`literature cover source is invalid: ${item.id}`);
+}
+if (literatureMissingCovers.length) {
+  console.warn(
+    `Literature items without an official cover (${literatureMissingCovers.length}/${literature.items.length}):\\n${literatureMissingCovers
+      .map((item) => `${item.id} | ${item.url}`)
+      .join("\\n")}`,
+  );
 }
 
 for (const item of pack.items) {

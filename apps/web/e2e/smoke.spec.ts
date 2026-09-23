@@ -18,6 +18,39 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("home and more fixed chrome follows English and Chinese locales", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("option", { name: "EN" }).click();
+  await expect(page.getByText("Today’s Sauh", { exact: true })).toBeVisible();
+  await expect(page.getByText("Testimonies", { exact: true })).toBeVisible();
+  await expect(page.getByText("Kesaksian", { exact: true })).toHaveCount(0);
+
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await expect(
+    page.getByRole("heading", { name: "Appearance & language" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Local pack" }),
+  ).toBeVisible();
+  await expect(page.getByText("Tampilan & Bahasa", { exact: true })).toHaveCount(
+    0,
+  );
+
+  await page.getByRole("button", { name: "Language", exact: true }).click();
+  await page.getByRole("option", { name: "中文" }).click();
+  await expect(
+    page.getByRole("heading", { name: "外观与语言" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "外观与语言" }),
+  ).toBeVisible();
+});
+
 test("feature-critical hymn actions follow the selected locale", async ({
   page,
 }) => {
@@ -172,6 +205,8 @@ test("faith topics search, open summary, and persist a personal note", async ({
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
   const initialCount = await rows.count();
   expect(initialCount).toBeGreaterThan(0);
+  await expect(page.locator(".faith-row-pdf-action")).toHaveCount(0);
+  await expect(page.locator(".faith-row-summary").first()).toBeVisible();
 
   // Search filters the list using real content without changing the direct-PDF action.
   await page.getByLabel("Cari pokok iman").fill("Allah");
@@ -180,9 +215,9 @@ test("faith topics search, open summary, and persist a personal note", async ({
     .toBeLessThan(initialCount);
   await page.getByLabel("Cari pokok iman").fill("");
 
-  // Summary and notes remain available as the explicit secondary action.
+  // Notes remain available as the explicit secondary action.
   const summaryButton = page.getByRole("button", {
-    name: "Buka ringkasan dan catatan pokok iman 2",
+    name: "Buka catatan pokok iman 2",
     exact: true,
   });
   await summaryButton.click();
@@ -204,7 +239,7 @@ test("faith topics search, open summary, and persist a personal note", async ({
   ).toBeVisible({ timeout: 15_000 });
   await page
     .getByRole("button", {
-      name: "Buka ringkasan dan catatan pokok iman 2",
+      name: "Buka catatan pokok iman 2",
       exact: true,
     })
     .click();
@@ -300,7 +335,7 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
     .fill("Kasih Tuhan menjadi dasar pengharapan.");
   await page.getByRole("button", { name: "Simpan catatan" }).click();
   await page.getByRole("button", { name: "Tutup catatan ayat" }).click();
-  await page.getByRole("button", { name: "Sorot blue" }).click();
+  await page.getByRole("button", { name: "Sorot biru" }).click();
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
 test("Bible search narrows results to a testament", async ({ page }) => {

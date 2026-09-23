@@ -20,7 +20,7 @@ export const literatureCategoryLabels: Record<
   buku: "Buku PDF",
 };
 
-const CATALOG_PERSIST_KEY = "gys_literature_catalog_v4";
+const CATALOG_PERSIST_KEY = "gys_literature_catalog_v5";
 const REVALIDATE_THROTTLE_MS = 60_000;
 
 let catalogMemoryCache: LiteratureItem[] | undefined;
@@ -171,7 +171,11 @@ export async function fetchLiteratureCatalog(
       if (snapshot.items.length) {
         const items = [
           ...new Map(snapshot.items.map((item) => [item.id, item])).values(),
-        ];
+        ].sort((left, right) =>
+          (right.publishedAt ?? right.updatedAt).localeCompare(
+            left.publishedAt ?? left.updatedAt,
+          ),
+        );
         catalogMemoryCache = items;
         persistCatalog(items);
         scheduleCatalogRevalidate();

@@ -721,39 +721,56 @@ export function createApp(
     )
       return errorResponse(c, "FORBIDDEN", "PDF source is not allowlisted");
     try {
-      const range = c.req.header("range");
-      const upstream = await fetch(url, {
-        headers: {
-          accept: "application/pdf",
-          ...(range ? { range } : {}),
-        },
-        signal: c.req.raw.signal,
-      });
-      if (!upstream.ok && upstream.status !== 206)
-        return errorResponse(
-          c,
-          "UPSTREAM_UNAVAILABLE",
-          "PDF source unavailable",
+      const candidates: string[] = [url.toString()];
+      if (
+        ["tjc.org", "www.tjc.org"].includes(url.hostname) &&
+        url.pathname.includes("wp-content/uploads/")
+      ) {
+        candidates.push(
+          `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}`,
+          `https://tjcorguploads.s3.amazonaws.com${url.pathname.replace(/^\/id/, "")}`,
         );
-      c.header("content-type", "application/pdf");
-      c.header(
-        "cache-control",
-        "public, max-age=86400, stale-while-revalidate=604800",
-      );
-      c.header("cross-origin-resource-policy", "cross-origin");
-      for (const header of [
-        "content-length",
-        "content-range",
-        "accept-ranges",
-        "etag",
-      ]) {
-        const value = upstream.headers.get(header);
-        if (value) c.header(header, value);
+      } else if (url.hostname === "tjcorguploads.s3.amazonaws.com") {
+        candidates.push(
+          `https://tjc.org/id${url.pathname.replace(/^\/tjcorg/, "")}`,
+        );
       }
-      return new Response(upstream.body, {
-        status: upstream.status,
-        headers: c.res.headers,
-      });
+
+      const range = c.req.header("range");
+      for (const candidate of candidates) {
+        try {
+          const upstream = await fetch(candidate, {
+            headers: {
+              accept: "application/pdf",
+              ...(range ? { range } : {}),
+            },
+            signal: c.req.raw.signal,
+          });
+          if (!upstream.ok && upstream.status !== 206) continue;
+          c.header("content-type", "application/pdf");
+          c.header(
+            "cache-control",
+            "public, max-age=86400, stale-while-revalidate=604800",
+          );
+          c.header("cross-origin-resource-policy", "cross-origin");
+          for (const header of [
+            "content-length",
+            "content-range",
+            "accept-ranges",
+            "etag",
+          ]) {
+            const value = upstream.headers.get(header);
+            if (value) c.header(header, value);
+          }
+          return new Response(upstream.body, {
+            status: upstream.status,
+            headers: c.res.headers,
+          });
+        } catch {
+          // try the publisher's mirrored host
+        }
+      }
+      return errorResponse(c, "UPSTREAM_UNAVAILABLE", "PDF source unavailable");
     } catch {
       return errorResponse(c, "UPSTREAM_UNAVAILABLE", "PDF source unavailable");
     }

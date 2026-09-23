@@ -37,10 +37,48 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await expect(
     page.locator(".pdf-reader-hymn .pdf-layout-toggle"),
   ).toBeVisible();
+  const pagerButtons = page.locator(
+    ".pdf-reader-hymn .pdf-page-navigation > button",
+  );
+  await expect(pagerButtons).toHaveCount(2);
+  for (const [index, label] of ["Sebelumnya", "Berikutnya"].entries()) {
+    const button = pagerButtons.nth(index);
+    await expect(button).toHaveAttribute("aria-label", label);
+    await expect(button).toHaveAttribute("title", label);
+    await expect(button.locator("svg")).toHaveCount(1);
+  }
+  const layoutButtons = page.locator(
+    ".pdf-reader-hymn .pdf-layout-toggle button",
+  );
+  await expect(layoutButtons).toHaveCount(4);
+  for (let index = 0; index < await layoutButtons.count(); index += 1) {
+    const button = layoutButtons.nth(index);
+    await expect(button.locator("svg")).toHaveCount(1);
+    const box = await button.boundingBox();
+    expect(box, "PDF layout control should be measurable").not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+  const advancedButtons = page.locator(
+    ".pdf-reader-hymn .pdf-advanced-controls button",
+  );
+  for (let index = 0; index < await advancedButtons.count(); index += 1) {
+    const box = await advancedButtons.nth(index).boundingBox();
+    expect(box, "PDF advanced control should be measurable").not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
   await expect(
     advanced.getByRole("button", { name: "Perbesar PDF" }),
   ).toBeVisible();
-  await options.click();
+  await page.locator(".pdf-reader-hymn .pdf-advanced-toggle").click();
   await expect(advanced).toBeHidden();
 
   // The canonical keyboard handler intentionally ignores input until PDF.js
@@ -71,4 +109,85 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await page.keyboard.press("Control+0");
   await expect(zoomHud).toContainText("100%");
   await expect(stage).toHaveClass(/is-fit/);
+});
+
+test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
+  await page.addInitScript(() => {
+    const locale = new URLSearchParams(window.location.search).get(
+      "__gys_locale",
+    );
+    if (locale !== "id" && locale !== "en" && locale !== "zh") return;
+    localStorage.setItem("gys-locale", locale);
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale, theme: "light" }),
+    );
+  });
+
+  const copy = {
+    id: {
+      previous: "Sebelumnya",
+      next: "Berikutnya",
+      settings: "Opsi PDF",
+      zoomIn: "Perbesar PDF",
+      layout: "Layout PDF",
+    },
+    en: {
+      previous: "Previous",
+      next: "Next",
+      settings: "PDF settings",
+      zoomIn: "Zoom in",
+      layout: "PDF layout",
+    },
+    zh: {
+      previous: "上一页",
+      next: "下一页",
+      settings: "PDF 设置",
+      zoomIn: "放大",
+      layout: "PDF 布局",
+    },
+  } as const;
+
+  for (const locale of ["id", "en", "zh"] as const) {
+    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
+    const pdfTab = page.getByRole("tab", { name: "PDF", exact: true });
+    const reader = page.locator(".pdf-reader-hymn");
+    await expect(pdfTab.or(reader)).toBeVisible({ timeout: 30_000 });
+    if (await pdfTab.isVisible()) {
+      await pdfTab.click();
+    }
+    await expect(reader).toBeVisible({ timeout: 30_000 });
+    await expect(reader).toHaveAttribute("data-pdf-locale", locale);
+    const pagerButtons = reader.locator(
+      ".pdf-page-navigation > button",
+    );
+    await expect(pagerButtons).toHaveCount(2);
+    await expect(pagerButtons.nth(0)).toHaveAttribute(
+      "aria-label",
+      copy[locale].previous,
+    );
+    await expect(pagerButtons.nth(1)).toHaveAttribute(
+      "aria-label",
+      copy[locale].next,
+    );
+    await expect(
+      reader.getByRole("button", { name: copy[locale].settings, exact: true }),
+    ).toBeVisible();
+    await reader
+      .getByRole("button", { name: copy[locale].settings, exact: true })
+      .click();
+    await expect(
+      reader.getByRole("group", { name: copy[locale].layout, exact: true }),
+    ).toBeVisible();
+    await expect(
+      reader.getByRole("button", { name: copy[locale].zoomIn, exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+  }
 });

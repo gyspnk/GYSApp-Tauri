@@ -85,7 +85,7 @@ async function loadItem(
   // next buffer renders (gyschordweb _deckA/_deckB gapless behaviour).
   const previousWasPlaying =
     options.keepPlaying === true && midiPlayer.isPlaying();
-  if (!previousWasPlaying) await speechPlayer.stop();
+  if (!previousWasPlaying) await speechPlayer.pause();
   const loadedIntoPlayer = await midiPlayer.load(
     hymn.id,
     hymn.title,

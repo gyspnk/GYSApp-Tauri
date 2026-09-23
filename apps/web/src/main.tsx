@@ -6,7 +6,6 @@ import { installDirectManipulationEnhancements } from "./direct-manipulation.js"
 import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
 import { initializeUiPreferences } from "./ui-preferences.js";
-import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import "./styles.css";
 import "./ui-hardening.css";
 import "./ui-preferences.css";
@@ -58,7 +57,6 @@ if (restoredPath) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-    <UiPreferencesPanel />
   </StrictMode>,
 );
 installRouteSectionDeepLinks();

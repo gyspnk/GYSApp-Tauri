@@ -390,6 +390,40 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("tries the official S3 mirror when a TJC PDF path is unavailable", async () => {
+    const originalFetch = globalThis.fetch;
+    const bytes = new Uint8Array([37, 80, 68, 70, 45]);
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response("Not found", { status: 404 }))
+      .mockResolvedValueOnce(
+        new Response(bytes, {
+          status: 200,
+          headers: { "content-type": "application/pdf" },
+        }),
+      );
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        `/api/v1/content/pdf?url=${encodeURIComponent(
+          "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/file.pdf",
+        )}`,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.arrayBuffer()).toEqual(bytes.buffer);
+      expect(String(fetchMock.mock.calls[1]?.[0])).toContain(
+        "tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/file.pdf",
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("proxies only canonical same-commit MIDI/chord assets", async () => {
     const originalFetch = globalThis.fetch;
     let seenUrl = "";
@@ -765,6 +799,39 @@ describe("BFF public boundary", () => {
         headers: { "if-none-match": first.headers.get("etag") ?? "" },
       });
       expect(second.status).toBe(304);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("keeps official S3 PDF links in the literature catalog", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        '<div class="module module-accordion tb_9pdq304"><table id="table_1"><tr><td><a href="https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/Panduan-Pemahaman-Alkitab-Yakobus-1-2-Petrus.pdf">Kitab Yakobus</a></td></tr><tr><td><a href="https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/Panduan-Pemahaman-Alkitab-Tesalonika-Timotius-Titus.pdf">Kitab Tesalonika</a></td></tr></table></div>',
+        { headers: { "content-type": "text/html" } },
+      )) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/content/literature");
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        items: Array<{ title: string; url: string; format: string }>;
+      };
+      expect(
+        payload.items.some(
+          (item) =>
+            item.title === "Kitab Yakobus" &&
+            item.url ===
+              "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/Panduan-Pemahaman-Alkitab-Yakobus-1-2-Petrus.pdf" &&
+            item.format === "pdf",
+        ),
+      ).toBe(true);
+      expect(payload.items).toHaveLength(4);
     } finally {
       globalThis.fetch = originalFetch;
     }

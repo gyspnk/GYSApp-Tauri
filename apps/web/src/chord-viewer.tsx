@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
+import { translate, type Locale } from "./i18n.js";
 import {
   chordFillColor,
   chordTextColor,
@@ -546,10 +547,10 @@ function ChordLine({
             width: `${row.width * 100}%`,
           }}
         >
-          {row.markers.map((marker) => (
+          {row.markers.map((marker, markerIndex) => (
             <small
               className="chord-visual-marker"
-              key={`${marker.index}-${marker.token}`}
+              key={`${marker.index}-${marker.token}-${markerIndex}`}
               style={{ left: `${marker.position * 100}%` }}
             >
               {transposeChord(marker.token, transpose, accidental)}
@@ -566,10 +567,12 @@ export function ChordCapability({
   lines,
   transpose = 0,
   accidental = "sharp",
+  locale,
 }: {
   lines: Array<ChordTextLine | undefined>;
   transpose?: number;
   accidental?: "sharp" | "flat";
+  locale: Locale;
 }) {
   const visible = lines.some((line) => line && line.chords.length > 0);
   const [prefs, setPrefs] = useState<ChordUiPrefs>(() => readChordUiPrefs());
@@ -594,7 +597,7 @@ export function ChordCapability({
   return (
     <span
       className="chord-capability"
-      aria-label="Chord layer"
+      aria-label={translate(locale, "kidung.chordLayer")}
       style={
         {
           "--chord-text-color": textColor,

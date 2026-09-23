@@ -20,7 +20,8 @@ import {
   type LiteratureCategory,
   type LiteratureItem,
 } from "@gys/contracts";
-import { type Locale } from "./i18n.js";
+import { translate, type Locale } from "./i18n.js";
+import { Icon } from "./icons.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
@@ -41,6 +42,7 @@ import {
   type LiteratureProgress,
 } from "./literature-progress.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
 const LiteraturePdfReader = lazy(() =>
   import("./pdf.js").then(({ PdfReader: Component }) => ({
@@ -111,6 +113,16 @@ import {
 export { fetchLiteratureCatalog, literatureCategoryLabels };
 
 const labels = literatureCategoryLabels;
+const categoryKeys: Record<LiteratureCategory | "all", string> = {
+  all: "literature.category.all",
+  kesaksian: "literature.category.kesaksian",
+  warta: "literature.category.warta",
+  "pelita-kecil": "literature.category.pelitaKecil",
+  panduan: "literature.category.panduan",
+  renungan: "literature.category.renungan",
+  buku: "literature.category.buku",
+  pujian: "literature.category.pujian",
+};
 const categoryOrder: LiteratureCategory[] = [
   "kesaksian",
   "warta",
@@ -120,11 +132,19 @@ const categoryOrder: LiteratureCategory[] = [
   "buku",
   "pujian",
 ];
-const formatLabels: Record<LiteratureItem["format"], string> = {
-  article: "Artikel",
-  issue: "Edisi",
-  pdf: "PDF",
+const formatKeys: Record<LiteratureItem["format"], string> = {
+  article: "literature.format.article",
+  issue: "literature.format.issue",
+  pdf: "literature.format.pdf",
 };
+
+function categoryLabel(locale: Locale, category: LiteratureCategory | "all") {
+  return translate(locale, categoryKeys[category]);
+}
+
+function formatLabel(locale: Locale, format: LiteratureItem["format"]) {
+  return translate(locale, formatKeys[format]);
+}
 
 function literatureHref(item: LiteratureItem): string {
   const directRead = item.format === "pdf" || item.format === "issue";
@@ -134,12 +154,16 @@ function literatureHref(item: LiteratureItem): string {
 function literatureRowAction(
   item: LiteratureItem,
   progress: LiteratureProgress | undefined,
+  locale: Locale,
 ): string {
-  if (item.format === "article") return "Buka bacaan";
+  if (item.format === "article")
+    return translate(locale, "literature.openReading");
   if (progress?.location?.kind === "page") {
-    return `Lanjut · halaman ${progress.location.page}`;
+    return translate(locale, "literature.resumePage", {
+      page: progress.location.page,
+    });
   }
-  return "Baca PDF";
+  return translate(locale, "literature.readPdf");
 }
 
 type CatalogState =
@@ -162,7 +186,7 @@ function useLiteratureCatalog() {
 }
 
 function dateLabel(value: string | undefined, locale: Locale) {
-  if (!value) return "Terbit sesuai arsip TJC";
+  if (!value) return translate(locale, "literature.dateArchived");
   try {
     return new Intl.DateTimeFormat(locale === "id" ? "id-ID" : locale, {
       day: "numeric",
@@ -170,7 +194,7 @@ function dateLabel(value: string | undefined, locale: Locale) {
       year: "numeric",
     }).format(new Date(value));
   } catch {
-    return "Arsip TJC";
+    return translate(locale, "literature.archiveLabel");
   }
 }
 
@@ -200,19 +224,23 @@ function Cover({
   compact = false,
   loading = "lazy",
   fetchPriority,
+  fallbackCategory,
+  coverAlt,
 }: {
   item: LiteratureItem;
   compact?: boolean;
   loading?: "eager" | "lazy";
   fetchPriority?: "high" | "low" | "auto";
+  fallbackCategory?: string;
+  coverAlt?: string;
 }) {
   return (
     <LazyImage
-      wrapperClassName={`literature-cover ${compact ? "is-compact" : ""}`}
+      wrapperClassName={`literature-cover${compact ? " is-compact" : ""}${item.imageUrl ? "" : " is-coverless"}`}
       src={item.imageUrl}
       fallbackTitle={item.title}
-      fallbackCategory={labels[item.category]}
-      alt={`Sampul ${item.title}`}
+      fallbackCategory={fallbackCategory ?? labels[item.category]}
+      alt={coverAlt ?? `Sampul ${item.title}`}
       loading={loading}
       fetchPriority={fetchPriority}
     />
@@ -264,7 +292,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         (item) =>
           (category === "all" || item.category === category) &&
           (!normalized ||
-            `${item.title} ${item.description} ${labels[item.category]}`
+            `${item.title} ${item.description} ${categoryLabel(locale, item.category)}`
               .toLocaleLowerCase(locale)
               .includes(normalized)),
       )
@@ -323,14 +351,17 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
     <div className="page literature-page">
       <section className="page-intro literature-intro">
         <div>
-          <p className="date-line">tjc.org · perpustakaan rohani</p>
-          <h1>Literatur</h1>
-          <p className="intro-copy">
-            Temukan bacaan, edisi warta, kesaksian, dan PDF pembinaan dari arsip
-            resmi Gereja Yesus Sejati.
+          <p className="date-line">
+            {translate(locale, "literature.eyebrow")}
           </p>
+          <h1>{translate(locale, "literature.title")}</h1>
+          <p className="intro-copy">{translate(locale, "literature.intro")}</p>
         </div>
-        <span className="pack-badge">{items.length || "—"} judul</span>
+        <span className="pack-badge">
+          {translate(locale, "literature.itemCount", {
+            count: items.length || "—",
+          })}
+        </span>
       </section>
 
       {status === "ready" &&
@@ -343,12 +374,18 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           >
             <div className="section-title-row">
               <div>
-                <p className="date-line">Pilihan terbaru</p>
+                <p className="date-line">
+                  {translate(locale, "literature.latest")}
+                </p>
                 <h2 id="literature-featured-title">
-                  Buka dan lanjutkan membaca
+                  {translate(locale, "literature.continueReading")}
                 </h2>
               </div>
-              <span>{featured.length} pilihan</span>
+              <span>
+                {translate(locale, "literature.featuredCount", {
+                  count: featured.length,
+                })}
+              </span>
             </div>
             <div className="literature-shelf">
               {featured.map((item, index) => (
@@ -360,13 +397,17 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                   <Cover
                     item={item}
                     compact
+                    fallbackCategory={categoryLabel(locale, item.category)}
+                    coverAlt={translate(locale, "home.coverAlt", {
+                      title: item.title,
+                    })}
                     loading={index < 3 ? "eager" : "lazy"}
                     fetchPriority={index === 0 ? "high" : "auto"}
                   />
                   <span>
                     <strong>{item.title}</strong>
                     <small>
-                      {labels[item.category]} ·{" "}
+                      {categoryLabel(locale, item.category)} ·{" "}
                       {dateLabel(item.publishedAt, locale)}
                     </small>
                   </span>
@@ -382,11 +423,19 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           aria-labelledby="literature-recent-title"
         >
           <div className="section-title-row">
-            <div>
-              <p className="date-line">Perangkat ini</p>
-              <h2 id="literature-recent-title">Terakhir dilihat</h2>
+              <div>
+              <p className="date-line">
+                {translate(locale, "literature.thisDevice")}
+              </p>
+              <h2 id="literature-recent-title">
+                {translate(locale, "literature.lastViewed")}
+              </h2>
             </div>
-            <span>{recentItems.length} bacaan</span>
+            <span>
+              {translate(locale, "literature.readingCount", {
+                count: recentItems.length,
+              })}
+            </span>
           </div>
           <div className="literature-recent-list">
             {recentItems.map((item) => {
@@ -398,22 +447,35 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     className="literature-recent-link"
                     to={literatureHref(item)}
                   >
-                    <Cover item={item} compact />
+                    <Cover
+                      item={item}
+                      compact
+                      fallbackCategory={categoryLabel(locale, item.category)}
+                      coverAlt={translate(locale, "home.coverAlt", {
+                        title: item.title,
+                      })}
+                    />
                     <span>
                       <strong>{item.title}</strong>
                       <small>
-                        {percent > 0 ? `${percent}% selesai` : "Belum dimulai"}{" "}
+                        {percent > 0
+                          ? translate(locale, "literature.percentComplete", {
+                              percent,
+                            })
+                          : translate(locale, "literature.notStarted")}{" "}
                         ·{" "}
                         {entry?.lastOpenedAt
                           ? new Date(entry.lastOpenedAt).toLocaleDateString(
                               locale,
                             )
-                          : "baru dibuka"}
+                          : translate(locale, "literature.justOpened")}
                       </small>
                       <progress
                         value={percent}
                         max={100}
-                        aria-label={`Kemajuan ${item.title}`}
+                        aria-label={translate(locale, "literature.progressAria", {
+                          title: item.title,
+                        })}
                       />
                     </span>
                     <span aria-hidden="true">›</span>
@@ -421,8 +483,10 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                   <button
                     className="literature-recent-remove"
                     type="button"
-                    aria-label={`Hapus ${item.title} dari terakhir dilihat`}
-                    title="Hapus dari terakhir dilihat"
+                    aria-label={translate(locale, "literature.removeRecent", {
+                      title: item.title,
+                    })}
+                    title={translate(locale, "literature.removeFromRecent")}
                     onClick={() => {
                       removeLiteratureProgress(item.id);
                       setProgressRevision((r) => r + 1);
@@ -437,55 +501,65 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         </section>
       )}
 
-      <section className="literature-toolbar" aria-label="Filter literatur">
+      <section
+        className="literature-toolbar"
+        aria-label={translate(locale, "literature.filter")}
+      >
         <label className="search-field">
-          <span>Cari literatur</span>
+          <span>{translate(locale, "literature.search")}</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Judul, edisi, atau kata kunci…"
+            placeholder={translate(locale, "literature.searchPlaceholder")}
           />
         </label>
         <Select
           value={category}
           onChange={setCategory}
-          label="Kategori"
+          label={translate(locale, "literature.categoryLabel")}
           options={[
-            { value: "all", label: "Semua koleksi" },
+            {
+              value: "all",
+              label: categoryLabel(locale, "all"),
+            },
             ...availableCategories.map((value) => ({
               value,
-              label: `${labels[value]} · ${counts.get(value) ?? 0}`,
+              label: `${categoryLabel(locale, value)} · ${counts.get(value) ?? 0}`,
             })),
           ]}
         />
         <Select
           value={sort}
           onChange={setSort}
-          label="Urutkan"
+          label={translate(locale, "literature.sortLabel")}
           options={[
-            { value: "recent", label: "Terbaru" },
-            { value: "title", label: "Menurut judul" },
+            {
+              value: "recent",
+              label: translate(locale, "literature.sortRecent"),
+            },
+            {
+              value: "title",
+              label: translate(locale, "literature.sortTitle"),
+            },
           ]}
         />
       </section>
 
       {status === "loading" && (
         <div className="loading-panel" role="status">
-          Mengambil katalog literatur resmi…
+          {translate(locale, "literature.loading")}
         </div>
       )}
       {status === "error" && (
         <div className="error-panel" role="alert">
-          <strong>Katalog literatur belum tersedia.</strong>
-          <span>
-            Periksa koneksi lalu muat ulang untuk mengambil snapshot resmi TJC.
-          </span>
+          <strong>{translate(locale, "literature.errorTitle")}</strong>
+          <span>{translate(locale, "literature.errorBody")}</span>
         </div>
       )}
       {status === "ready" && !filtered.length && (
         <div className="empty-state">
-          <strong>Tidak ada judul yang cocok.</strong>
-          <span>Coba kata kunci atau kategori lain.</span>
+          <strong>{translate(locale, "literature.emptyTitle")}</strong>
+          <span>{translate(locale, "literature.emptyBody")}</span>
         </div>
       )}
 
@@ -496,10 +570,16 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             <section className="literature-section" key={group.category}>
               <div className="section-title-row">
                 <div>
-                  <p className="date-line">Koleksi resmi</p>
-                  <h2>{labels[group.category]}</h2>
+                  <p className="date-line">
+                    {translate(locale, "literature.officialCollection")}
+                  </p>
+                  <h2>{categoryLabel(locale, group.category)}</h2>
                 </div>
-                <span>{group.items.length} judul</span>
+                <span>
+                  {translate(locale, "literature.itemCount", {
+                    count: group.items.length,
+                  })}
+                </span>
               </div>
               <div className="literature-list">
                 {groupItems.map((item) => (
@@ -508,14 +588,26 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     to={literatureHref(item)}
                     key={item.id}
                   >
-                    <Cover item={item} />
+                    <Cover
+                      item={item}
+                      fallbackCategory={categoryLabel(locale, item.category)}
+                      coverAlt={translate(locale, "home.coverAlt", {
+                        title: item.title,
+                      })}
+                    />
                     <span className="literature-copy">
                       <strong>{item.title}</strong>
                       <small>
-                        {formatLabels[item.format]} ·{" "}
+                        {formatLabel(locale, item.format)} ·{" "}
                         {dateLabel(item.publishedAt, locale)}
                       </small>
-                      <em>{literatureRowAction(item, progressMap[item.id])}</em>
+                      <em>
+                        {literatureRowAction(
+                          item,
+                          progressMap[item.id],
+                          locale,
+                        )}
+                      </em>
                     </span>
                     <span className="literature-arrow" aria-hidden="true">
                       ›
@@ -533,7 +625,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           type="button"
           onClick={() => setVisibleCount((count) => count + 40)}
         >
-          Muat 40 judul lagi
+          {translate(locale, "literature.loadMore", { count: 40 })}
         </button>
       )}
     </div>
@@ -567,9 +659,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     "idle" | "checking" | "downloading" | "ready" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
-  const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [readerOpen, setReaderOpen] = useState(false);
-  const [readerError, setReaderError] = useState("");
+  const readerDialogRef = useRef<HTMLDivElement | null>(null);
+  const readerOpenerRef = useRef<HTMLElement | null>(null);
   const closeReader = () => {
     if (directRead) {
       navigate("/literatur");
@@ -803,34 +895,25 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   }, [item, updateProgress]);
 
-  const openReader = useCallback(async () => {
+  const openReader = useCallback((trigger?: HTMLElement | null) => {
     if (!item || !pdfAsset) return;
-    setReaderError("");
-    try {
-      const bytes =
-        pdfBytes ??
-        (downloadStatus === "ready"
-          ? ((await assetStore.get(pdfAsset)) ??
-            (await assetStore.download(pdfAsset)))
-          : await assetStore.download(pdfAsset));
-      if (!bytes || new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
-        throw new Error("not a PDF");
-      setPdfBytes(bytes);
-      setDownloadStatus("ready");
-      setReaderOpen(true);
-    } catch {
-      setReaderError(
-        "PDF belum dapat dibuka. Unduh ulang saat tersambung internet.",
-      );
-      setDownloadStatus("error");
-    }
-  }, [downloadStatus, item, pdfAsset, pdfBytes]);
+    rememberDialogOpener(readerOpenerRef, trigger);
+    setReaderOpen(true);
+  }, [item, pdfAsset]);
+
+  useDialogFocus({
+    open: readerOpen && isPdfItem,
+    dialogRef: readerDialogRef,
+    openerRef: readerOpenerRef,
+    onClose: closeReader,
+    initialFocusSelector: ".literature-pdf-close",
+  });
 
   useEffect(() => {
-    if (!directRead || !isPdfItem || !pdfAsset || readerOpen || readerError)
+    if (!directRead || !isPdfItem || !pdfAsset || readerOpen)
       return;
-    void openReader();
-  }, [directRead, isPdfItem, pdfAsset, readerOpen, readerError, openReader]);
+    openReader();
+  }, [directRead, isPdfItem, pdfAsset, readerOpen, openReader]);
 
   const toggle = () => {
     if (!item) return;
@@ -840,7 +923,12 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       title: item.title,
     });
     setFavorite(next);
-    flash(next ? "Ditambahkan ke favorit perangkat." : "Dihapus dari favorit.");
+    flash(
+      translate(
+        locale,
+        next ? "literature.favoriteSaved" : "literature.favoriteRemoved",
+      ),
+    );
   };
 
   const download = async () => {
@@ -850,7 +938,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       const bytes = await assetStore.download(pdfAsset);
       if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
         throw new Error("downloaded resource is not a PDF");
-      setPdfBytes(bytes);
       const current = progressRef.current;
       const next: LiteratureProgress = {
         version: 2,
@@ -866,10 +953,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       progressRef.current = next;
       setProgress(next);
       setDownloadStatus("ready");
-      flash("PDF tersimpan untuk dibaca offline.");
+      flash(translate(locale, "literature.pdfSaved"));
     } catch {
       setDownloadStatus("error");
-      flash("PDF belum dapat disimpan. Periksa koneksi dan coba lagi.");
+      flash(translate(locale, "literature.pdfSaveError"));
     }
   };
 
@@ -898,7 +985,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     return (
       <div className="page">
         <div className="loading-panel" role="status">
-          Membuka detail literatur…
+          {translate(locale, "literature.detailLoading")}
         </div>
       </div>
     );
@@ -906,14 +993,14 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     return (
       <div className="page">
         <div className="error-panel" role="alert">
-          <strong>Literatur tidak ditemukan</strong>
+          <strong>{translate(locale, "literature.detailNotFound")}</strong>
           <Link className="quiet-button" to="/literatur">
-            Kembali ke katalog
+            {translate(locale, "literature.backToCatalog")}
           </Link>
         </div>
       </div>
     );
-  const categoryLabel = labels[item.category];
+  const itemCategoryLabel = categoryLabel(locale, item.category);
   const progressPercent = progress?.percent ?? 0;
   const hasResume = Boolean(progress?.location || progressPercent > 0);
   return (
@@ -923,20 +1010,28 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     >
       <div className="detail-back">
         <Link className="text-button" to="/literatur">
-          ← Semua literatur
+          ← {translate(locale, "literature.backToLiterature")}
         </Link>
-        <span>{categoryLabel}</span>
+        <span>{itemCategoryLabel}</span>
       </div>
       <section className="literature-detail-hero">
-        <Cover item={item} />
+        <Cover
+          item={item}
+          fallbackCategory={itemCategoryLabel}
+          loading="eager"
+          fetchPriority="high"
+        />
         <div className="literature-detail-copy">
-          <p className="date-line">Perpustakaan rohani · {categoryLabel}</p>
+          <p className="date-line">
+            {translate(locale, "literature.detailEyebrow")} · {itemCategoryLabel}
+          </p>
           <h1>{item.title}</h1>
           <p className="intro-copy">
-            {item.description || "Bacaan resmi dari arsip Gereja Yesus Sejati."}
+            {item.description ||
+              translate(locale, "literature.detailDescriptionFallback")}
           </p>
           <div className="literature-detail-meta">
-            <span>{formatLabels[item.format]}</span>
+            <span>{formatLabel(locale, item.format)}</span>
             <span>{dateLabel(item.publishedAt, locale)}</span>
           </div>
           <div className="detail-actions">
@@ -944,14 +1039,14 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               <button
                 className="primary-button"
                 type="button"
-                onClick={() => void openReader()}
+                onClick={(event) => openReader(event.currentTarget)}
                 disabled={!pdfAsset}
               >
                 {isPdfUnavailable
-                  ? "PDF belum tersedia"
+                  ? translate(locale, "literature.pdfUnavailable")
                   : hasResume
-                    ? "Lanjutkan membaca"
-                    : "Baca di aplikasi"}
+                    ? translate(locale, "literature.resumeReading")
+                    : translate(locale, "literature.readInApp")}
               </button>
             ) : (
               <button
@@ -959,7 +1054,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => void openArticle()}
               >
-                {hasResume ? "Lanjutkan membaca" : "Baca di aplikasi"}
+                {hasResume
+                  ? translate(locale, "literature.resumeReading")
+                  : translate(locale, "literature.readInApp")}
               </button>
             )}
             <a
@@ -968,7 +1065,12 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               target="_blank"
               rel="noreferrer"
             >
-              {isPdfItem ? "PDF resmi ↗" : "Sumber resmi ↗"}
+              {translate(
+                locale,
+                isPdfItem
+                  ? "literature.officialPdf"
+                  : "literature.officialSource",
+              )}
             </a>
             <button
               className="quiet-button"
@@ -976,7 +1078,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               onClick={toggle}
               aria-pressed={favorite}
             >
-              {favorite ? "★ Favorit" : "☆ Simpan favorit"}
+              {translate(
+                locale,
+                favorite ? "literature.favorite" : "literature.saveFavorite",
+              )}
             </button>
           </div>
         </div>
@@ -984,52 +1089,58 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       {directRead &&
         isPdfItem &&
         !readerOpen &&
-        !readerError &&
         !isPdfUnavailable && (
           <div
             className="loading-panel literature-direct-loading"
             role="status"
           >
-            Menyiapkan PDF…
+            {translate(locale, "literature.preparePdf")}
           </div>
         )}
       {isPdfUnavailable && (
         <div className="error-panel literature-reader-error" role="alert">
-          <strong>PDF edisi ini belum tersedia.</strong>
-          <span>
-            Sumber resmi belum memberikan berkas PDF langsung. Coba lagi saat
-            tersambung internet atau buka halaman sumber resminya.
-          </span>
+          <strong>{translate(locale, "literature.pdfUnavailableTitle")}</strong>
+          <span>{translate(locale, "literature.pdfUnavailableBody")}</span>
         </div>
       )}
       <section className="literature-reading-panel">
         <div className="section-title-row">
           <div>
-            <p className="date-line">Perangkat ini</p>
-            <h2>{hasResume ? "Lanjutkan membaca" : "Mulai membaca"}</h2>
+            <p className="date-line">
+              {translate(locale, "literature.deviceSection")}
+            </p>
+            <h2>
+              {hasResume
+                ? translate(locale, "literature.resumeReading")
+                : translate(locale, "literature.startReading")}
+            </h2>
           </div>
           <span>{progressPercent}%</span>
         </div>
         <progress
           value={progressPercent}
           max={100}
-          aria-label={`Kemajuan membaca ${progressPercent}%`}
+          aria-label={translate(locale, "literature.progressAriaDetail", {
+            percent: progressPercent,
+          })}
         />
         <details
           className="literature-reading-tools"
           open={!directRead || !isPdfItem}
         >
-          <summary>Kelola kemajuan & offline</summary>
+          <summary>{translate(locale, "literature.manageProgress")}</summary>
           <div className="literature-progress-actions">
             {isPdfItem && (
               <button
                 className="quiet-button"
                 type="button"
-                onClick={() => void openReader()}
+                  onClick={(event) => openReader(event.currentTarget)}
               >
                 {hasResume
-                  ? `Lanjutkan dari halaman ${resumePage}`
-                  : "Buka PDF"}
+                  ? translate(locale, "literature.resumeFromPage", {
+                      page: resumePage,
+                    })
+                  : translate(locale, "literature.openPdf")}
               </button>
             )}
             <button
@@ -1037,14 +1148,14 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => updateProgress(Math.max(1, progressPercent))}
             >
-              Tandai dibuka
+              {translate(locale, "literature.markOpened")}
             </button>
             <button
               className="quiet-button"
               type="button"
               onClick={() => updateProgress(100, progress?.location, true)}
             >
-              Tandai selesai
+              {translate(locale, "literature.markComplete")}
             </button>
             {isPdfItem && (
               <>
@@ -1055,18 +1166,18 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                   disabled={downloadStatus === "downloading"}
                 >
                   {downloadStatus === "downloading"
-                    ? "Mengunduh…"
+                    ? translate(locale, "literature.downloading")
                     : downloadStatus === "ready"
-                      ? "Perbarui PDF offline"
-                      : "Unduh PDF"}
+                      ? translate(locale, "literature.updateOfflinePdf")
+                      : translate(locale, "literature.downloadPdf")}
                 </button>
                 {downloadStatus === "ready" && (
                   <button
                     className="quiet-button"
                     type="button"
-                    onClick={() => void openReader()}
+                    onClick={(event) => openReader(event.currentTarget)}
                   >
-                    Buka offline
+                    {translate(locale, "literature.openOffline")}
                   </button>
                 )}
               </>
@@ -1077,41 +1188,38 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
               >
-                Kembali ke posisi {Math.round(resumeScrollRatio * 100)}%
+                {translate(locale, "literature.returnToPosition", {
+                  percent: Math.round(resumeScrollRatio * 100),
+                })}
               </button>
             )}
           </div>
         </details>
-        {readerError && (
-          <div className="error-copy literature-reader-error" role="alert">
-            <span>{readerError}</span>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void openReader()}
-            >
-              Coba lagi
-            </button>
-          </div>
-        )}
         <small className="literature-progress-note">
-          {progress?.location?.kind === "page"
-            ? `Terakhir di halaman ${progress.location.page} dari ${progress.location.totalPages}. `
-            : ""}
+          {progress?.location?.kind === "page" &&
+            translate(locale, "literature.lastPage", {
+              page: progress.location.page,
+              totalPages: progress.location.totalPages,
+            })}
           {progress?.lastOpenedAt
-            ? `Terakhir dibuka ${new Date(progress.lastOpenedAt).toLocaleDateString(locale)}`
-            : "Kemajuan tersimpan di perangkat ini."}
+            ? ` ${translate(locale, "literature.lastOpened", {
+                date: new Date(progress.lastOpenedAt).toLocaleDateString(locale),
+              })}`
+            : !progress?.location &&
+              translate(locale, "literature.progressStored")}
         </small>
       </section>
       {readerOpen &&
-        pdfBytes &&
         isPdfItem &&
         createPortal(
           <div
             className="literature-pdf-backdrop"
+            ref={readerDialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label={`Membaca ${item.title}`}
+            aria-label={translate(locale, "literature.pdfReaderTitle", {
+              title: item.title,
+            })}
             onClick={closeReader}
           >
             <section
@@ -1127,27 +1235,39 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       href={actualPdfUrl ?? item.url}
                       target="_blank"
                       rel="noreferrer"
+                      aria-label={translate(locale, "literature.officialPdf")}
+                      title={translate(locale, "literature.officialPdf")}
                     >
-                      PDF resmi ↗
+                      <Icon name="file" size={16} />
+                      <span>
+                        {translate(locale, "literature.officialPdf")}
+                      </span>
                     </a>
                     <button
-                      className="text-button"
+                      className="text-button literature-pdf-close"
                       type="button"
                       onClick={closeReader}
+                      aria-label={translate(locale, "literature.closeReader")}
+                      title={translate(locale, "literature.closeReader")}
                     >
-                      Tutup
+                      <Icon name="cross" size={16} />
+                      <span>
+                        {translate(locale, "literature.closeReader")}
+                      </span>
                     </button>
                   </div>
                 </div>
                 <Suspense
                   fallback={
-                    <div className="loading-panel">Memuat viewer PDF…</div>
+                    <div className="loading-panel">
+                      {translate(locale, "literature.pdfViewerLoading")}
+                    </div>
                   }
                 >
                   <LiteraturePdfReader
                     src={pdfSourceUrl ?? item.url}
-                    data={pdfBytes}
                     initialPage={resumePage}
+                    locale={locale}
                     title={item.title}
                     progressKey={`literature:${item.id}:${resourceVersion}`}
                     onPageChange={onPageChange}
@@ -1161,7 +1281,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       {articleOpen && item.format === "article" && (
         <section
           className="literature-reader-panel"
-          aria-label={`Membaca ${item.title}`}
+          aria-label={translate(locale, "literature.articleReaderTitle", {
+            title: item.title,
+          })}
           data-testid="literature-article-reader"
           data-reading-location={
             resumeScrollRatio === undefined
@@ -1176,27 +1298,24 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => setArticleOpen(false)}
             >
-              Tutup
+              {translate(locale, "literature.closeReader")}
             </button>
           </div>
           {articleStatus === "loading" && (
             <div className="loading-panel" role="status">
-              Memuat bacaan resmi di aplikasi…
+              {translate(locale, "literature.articleLoading")}
             </div>
           )}
           {articleStatus === "error" && (
             <div className="error-panel" role="alert">
-              <strong>Bacaan belum dapat dimuat di aplikasi.</strong>
-              <span>
-                Worker artikel belum tersedia atau sumber sedang bermasalah.
-                Gunakan sumber resmi bila ingin membuka situs asal.
-              </span>
+              <strong>{translate(locale, "literature.articleErrorTitle")}</strong>
+              <span>{translate(locale, "literature.articleErrorBody")}</span>
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => void openArticle()}
               >
-                Coba lagi
+                {translate(locale, "literature.retry")}
               </button>
             </div>
           )}

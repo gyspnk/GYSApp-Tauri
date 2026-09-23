@@ -172,6 +172,142 @@ button.text-button {
   line-height: 1.2;
 }
 
+/* Keep dashboard media readable on tablets. The two-column desktop grid makes
+   the hero too narrow at 600–959px, so use the same document-first flow as
+   small desktops without introducing a second card composition. */
+@media (min-width: 600px) and (max-width: 959px) {
+  .home-grid {
+    grid-template-areas:
+      "verse"
+      "continue"
+      "suara"
+      "literature";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 18px;
+  }
+
+  .home-grid .verse-panel {
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+
+  .home-grid .verse-panel:has(.sauh-skeleton) {
+    min-height: 290px;
+  }
+
+  .sauh-card-media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    flex: 0 0 auto;
+  }
+
+  .sauh-card-media .sauh-image {
+    object-fit: contain;
+    object-position: center;
+    background: var(--surface-soft);
+  }
+
+  .sauh-card-media .sauh-media-overlay {
+    display: none;
+  }
+
+  .sauh-card-content {
+    margin-top: 0;
+    padding: 22px 24px 20px;
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Sauh's official artwork is 3:2. Keep the original frame intact on wide
+   layouts instead of centering it inside the legacy panoramic slot. */
+@media (min-width: 960px) {
+  .home-page .sauh-card-media {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+/* Shared shelf/list ergonomics: the affordance stays aligned while the
+   browser owns scrolling and virtualization. */
+.home-media-section .section-title-row {
+  min-block-size: var(--control-hit);
+  align-items: center;
+}
+
+.home-suara-shelf {
+  scroll-padding-inline: 8px;
+  overscroll-behavior-inline: contain;
+}
+
+/* Featured literature is a reading shelf, not a six-column thumbnail grid.
+   Keep cards wide enough for titles at every desktop width and let narrower
+   canvases scroll them instead of collapsing the text into ellipses. */
+.home-literature-section .home-literature-shelf {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 4px 12px;
+  margin-inline: 0;
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+}
+
+.home-literature-section .home-literature-shelf .suara-library-item {
+  width: clamp(148px, 12vw, 170px);
+  flex: 0 0 clamp(148px, 12vw, 170px);
+  scroll-snap-align: start;
+}
+
+.home-literature-section .home-literature-shelf .suara-library-item strong,
+.home-literature-section .home-literature-shelf .suara-library-item small {
+  white-space: normal;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+.hymn-page .pujian-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
+}
+
+@media (max-width: 599px) {
+  .home-page .sauh-card-media {
+    aspect-ratio: 3 / 2;
+    height: auto;
+    min-height: 0;
+  }
+
+  .home-page .sauh-card-media .sauh-image {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .hymn-detail-page.is-text-viewer .detail-hero h1 {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+@media (max-width: 359px) {
+  .hymn-detail-page.is-text-viewer .detail-hero h1 {
+    -webkit-line-clamp: 3;
+  }
+}
+
 /* Kidung is an index/reader, not a card gallery. These final assertions are
    intentionally small and protect the cross-app calm contract from legacy
    selectors in the monolithic base stylesheet. */

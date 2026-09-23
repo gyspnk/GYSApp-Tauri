@@ -202,6 +202,6 @@ test("hymn PDF viewer renders a verified page and exposes a download", async ({
     .toBeGreaterThan(0);
   await expect(page.locator(".pdf-pages canvas").first()).toHaveAttribute(
     "aria-label",
-    /PDF page \d+/,
+    /Halaman PDF \d+/,
   );
 });

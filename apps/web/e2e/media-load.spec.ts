@@ -112,7 +112,7 @@ test("literature PDF failure exposes retry inside the application reader shell",
   await pdfLink.click();
   await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.getByRole("alert")).toContainText(
-    "PDF belum dapat dibuka",
+    "PDF gagal dimuat",
     {
       timeout: 20_000,
     },
@@ -120,6 +120,119 @@ test("literature PDF failure exposes retry inside the application reader shell",
   await expect(
     page.getByRole("alert").getByRole("button", { name: "Coba lagi" }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "PDF resmi ↗" })).toBeVisible();
+});
+
+test("literature cover states stay honest without per-card fallback requests", async ({
+  page,
+}) => {
+  const transparentPixel = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=",
+    "base64",
+  );
+  const imageRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.resourceType() === "image") imageRequests.push(request.url());
+  });
+  await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) => {
+    if (/broken-cover\.png/i.test(route.request().url())) {
+      return route.fulfill({ status: 404, body: "missing cover" });
+    }
+    return route.fulfill({ body: transparentPixel, contentType: "image/png" });
+  });
+  await page.route("**/api/v1/content/image*", (route) => {
+    const source = new URL(route.request().url()).searchParams.get("url") ?? "";
+    if (/broken-cover\.png/i.test(source)) {
+      return route.fulfill({ status: 404, body: "missing cover" });
+    }
+    return route.fulfill({ body: transparentPixel, contentType: "image/png" });
+  });
+  await page.route("**/offline/literature.json", (route) =>
+    route.fulfill({
+      json: {
+        source: "tjc.org",
+        generatedAt: "2026-09-12T00:00:00.000Z",
+        items: [
+          {
+            id: "cover-official",
+            category: "panduan",
+            title: "Sampul Resmi",
+            description: "Cover resmi tersedia.",
+            url: "https://tjc.org/id/panduan/cover-official/",
+            format: "pdf",
+            publishedAt: "2026-09-03T00:00:00.000Z",
+            updatedAt: "2026-09-03T00:00:00.000Z",
+            source: "tjc.org",
+            imageUrl:
+              "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/official-cover.png",
+          },
+          {
+            id: "coverless",
+            category: "buku",
+            title: "Tanpa Sampul",
+            description: "Tidak ada cover resmi.",
+            url: "https://tjc.org/id/buku/coverless/",
+            format: "pdf",
+            publishedAt: "2026-09-02T00:00:00.000Z",
+            updatedAt: "2026-09-02T00:00:00.000Z",
+            source: "tjc.org",
+          },
+          {
+            id: "cover-error",
+            category: "warta",
+            title: "Sampul Gagal",
+            description: "Cover resmi gagal dimuat.",
+            url: "https://tjc.org/id/warta/cover-error/",
+            format: "pdf",
+            publishedAt: "2026-09-01T00:00:00.000Z",
+            updatedAt: "2026-09-01T00:00:00.000Z",
+            source: "tjc.org",
+            imageUrl:
+              "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/broken-cover.png",
+          },
+        ],
+      },
+    }),
+  );
+
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(page.locator(".literature-row")).toHaveCount(3);
+  await expect(
+    page.locator('.literature-cover[data-image-state="loaded"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('.literature-cover.is-coverless[data-image-state="missing"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('.literature-cover[data-image-state="error"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator(
+      '.literature-cover[data-image-state="missing"] .img-fallback-placeholder',
+    ),
+  ).toHaveClass(/is-missing/);
+  await expect(
+    page.locator(
+      '.literature-cover[data-image-state="error"] .img-fallback-placeholder',
+    ),
+  ).toHaveClass(/is-error/);
+  await expect(
+    page.locator(
+      '.literature-cover[data-image-state="missing"] .img-fallback-placeholder',
+    ),
+  ).toHaveAttribute("aria-label", /Pratinjau tidak tersedia/);
+  await expect(
+    page.locator(
+      '.literature-cover[data-image-state="error"] .img-fallback-placeholder',
+    ),
+  ).toHaveAttribute("aria-label", /Gagal memuat pratinjau/);
+
+  const rowHeights = await page.locator(".literature-row").evaluateAll((rows) =>
+    rows.map((row) => Math.round(row.getBoundingClientRect().height)),
+  );
+  expect(new Set(rowHeights).size).toBe(1);
+  expect(imageRequests.filter((url) => /official-cover|broken-cover/.test(url))).toHaveLength(2);
+  expect(imageRequests.some((url) => /coverless/.test(url))).toBe(false);
 });
 
 test("literature PDF stays inline and resumes the last page", async ({
@@ -147,7 +260,7 @@ test("literature PDF stays inline and resumes the last page", async ({
   await pdfLink.click();
   await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");
+  await expect(page.locator(".pdf-toolbar")).toContainText("Halaman 1 / 1");
 
   await page.getByRole("button", { name: "Tutup" }).click();
   await expect(page).toHaveURL(/\/literatur$/);
@@ -159,7 +272,7 @@ test("literature PDF stays inline and resumes the last page", async ({
   await expect(resume).toContainText(/Lanjut.*halaman 1/i);
   await resume.click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator(".pdf-toolbar")).toContainText("Page 1 / 1");
+  await expect(page.locator(".pdf-toolbar")).toContainText("Halaman 1 / 1");
 });
 
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
@@ -192,8 +305,8 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   const resumePage = resumeLabel?.match(/(\d+)$/)?.[1];
   if (!resumePage) throw new Error(`Unexpected resume label: ${resumeLabel}`);
   await resumeButton.click();
-  await expect(page.locator(".pdf-toolbar")).toContainText("Page 2 / 2");
-  const pdfOptions = page.getByRole("button", { name: "Opsi PDF" });
+  await expect(page.locator(".pdf-toolbar")).toContainText("Halaman 2 / 2");
+  const pdfOptions = page.locator(".pdf-reader-hymn .pdf-advanced-toggle");
   await expect(page.locator(".pdf-advanced-controls")).not.toHaveClass(
     /is-open/,
   );

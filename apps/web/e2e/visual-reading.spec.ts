@@ -49,6 +49,163 @@ async function assertViewportIntegrity(page: Page): Promise<void> {
     .toBe(true);
 }
 
+async function assertThemePdfChrome(
+  page: Page,
+  selectors: {
+    root: string;
+    header: string;
+    title: string;
+    actions: string;
+    content: string;
+  },
+): Promise<void> {
+  const metrics = await page.locator(selectors.root).evaluate(
+    (root, query) => {
+      const parseColor = (value: string) => {
+        const channels = value.match(/[\d.]+/g)?.map(Number) ?? [];
+        return {
+          r: channels[0] ?? 0,
+          g: channels[1] ?? 0,
+          b: channels[2] ?? 0,
+          a: channels[3] ?? 1,
+        };
+      };
+      const over = (
+        foreground: ReturnType<typeof parseColor>,
+        background: ReturnType<typeof parseColor>,
+      ) => ({
+        r: foreground.r * foreground.a + background.r * (1 - foreground.a),
+        g: foreground.g * foreground.a + background.g * (1 - foreground.a),
+        b: foreground.b * foreground.a + background.b * (1 - foreground.a),
+      });
+      const luminance = (color: { r: number; g: number; b: number }) =>
+        [color.r, color.g, color.b]
+          .map((channel) => channel / 255)
+          .map((channel) =>
+            channel <= 0.03928
+              ? channel / 12.92
+              : ((channel + 0.055) / 1.055) ** 2.4,
+          )
+          .reduce((sum, channel, index) =>
+            sum + channel * [0.2126, 0.7152, 0.0722][index],
+          0);
+      const contrast = (
+        foreground: { r: number; g: number; b: number },
+        background: { r: number; g: number; b: number },
+      ) => {
+        const foregroundLuminance = luminance(foreground);
+        const backgroundLuminance = luminance(background);
+        const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+        const darker = Math.min(foregroundLuminance, backgroundLuminance);
+        return (lighter + 0.05) / (darker + 0.05);
+      };
+      const rect = (element: Element | null) => {
+        const box = element?.getBoundingClientRect();
+        return box
+          ? {
+              left: box.left,
+              top: box.top,
+              right: box.right,
+              bottom: box.bottom,
+              width: box.width,
+              height: box.height,
+            }
+          : null;
+      };
+      const overlaps = (
+        first: ReturnType<typeof rect>,
+        second: ReturnType<typeof rect>,
+      ) =>
+        Boolean(
+          first &&
+            second &&
+            first.left < second.right &&
+            first.right > second.left &&
+            first.top < second.bottom &&
+            first.bottom > second.top,
+        );
+      const rootStyle = getComputedStyle(root);
+      const rootBackground = over(
+        parseColor(rootStyle.backgroundColor),
+        { r: 255, g: 255, b: 255, a: 1 },
+      );
+      const header = root.querySelector(query.header);
+      const title = root.querySelector(query.title);
+      const actions = root.querySelector(query.actions);
+      const content = root.querySelector(query.content);
+      const headerStyle = header ? getComputedStyle(header) : null;
+      const headerBackground = headerStyle
+        ? over(parseColor(headerStyle.backgroundColor), {
+            ...rootBackground,
+            a: 1,
+          })
+        : rootBackground;
+      const textContrast = (element: Element | null, background = headerBackground) => {
+        if (!element) return 0;
+        const style = getComputedStyle(element);
+        return contrast(
+          over(parseColor(style.color), { ...background, a: 1 }),
+          background,
+        );
+      };
+      const actionElements = actions
+        ? Array.from(actions.querySelectorAll("a, button"))
+        : [];
+      const actionRects = actionElements.map((element) => rect(element));
+      const rootRect = rect(root);
+      const headerRect = rect(header);
+      const titleRect = rect(title);
+      const actionsRect = rect(actions);
+      const contentRect = rect(content);
+
+      return {
+        rootRect,
+        headerRect,
+        contentRect,
+        titleRect,
+        actionsRect,
+        actionRects,
+        titleContrast: textContrast(title),
+        actionsContrast: actionElements.map((element) =>
+          textContrast(element),
+        ),
+        toolbarContrast: textContrast(
+          root.querySelector(".pdf-toolbar"),
+          rootBackground,
+        ),
+        titleActionsOverlap: overlaps(titleRect, actionsRect),
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      };
+    },
+    selectors,
+  );
+
+  expect(metrics.rootRect?.left ?? Infinity).toBeLessThanOrEqual(1);
+  expect(metrics.rootRect?.top ?? Infinity).toBeLessThanOrEqual(1);
+  expect(metrics.rootRect?.width ?? 0).toBeGreaterThanOrEqual(
+    metrics.viewportWidth - 1,
+  );
+  expect(metrics.rootRect?.height ?? 0).toBeGreaterThanOrEqual(
+    metrics.viewportHeight - 1,
+  );
+  expect(metrics.headerRect).not.toBeNull();
+  expect(metrics.contentRect).not.toBeNull();
+  expect(metrics.titleRect).not.toBeNull();
+  expect(metrics.actionsRect).not.toBeNull();
+  expect(metrics.titleActionsOverlap).toBe(false);
+  expect(metrics.titleContrast).toBeGreaterThanOrEqual(4.5);
+  expect(metrics.toolbarContrast).toBeGreaterThanOrEqual(4.5);
+  expect(metrics.actionsContrast.length).toBeGreaterThan(0);
+  expect(metrics.actionsContrast.every((ratio) => ratio >= 3)).toBe(true);
+  expect(
+    metrics.actionRects.every(
+      (action) =>
+        action !== null && action.width >= 44 && action.height >= 44,
+    ),
+  ).toBe(true);
+}
+
 async function setShellTheme(
   page: Page,
   theme: "dark" | "sepia" | "amoled",
@@ -400,6 +557,13 @@ test("sepia literature direct reader theme sample", async ({ page }) => {
     )
     .toBeGreaterThan(0);
   await assertViewportIntegrity(page);
+  await assertThemePdfChrome(page, {
+    root: ".literature-pdf-backdrop",
+    header: ".literature-pdf-overlay .section-title-row",
+    title: ".literature-pdf-overlay .section-title-row h2",
+    actions: ".literature-pdf-head-actions",
+    content: ".literature-pdf-overlay .pdf-reader",
+  });
   await expect(page).toHaveScreenshot("literature-reader-sepia-1440x900.png", {
     animations: "disabled",
     caret: "hide",
@@ -442,9 +606,111 @@ test("AMOLED faith overlay theme sample", async ({ page }) => {
     )
     .toBeGreaterThan(0);
   await assertViewportIntegrity(page);
+  await assertThemePdfChrome(page, {
+    root: ".faith-pdf-backdrop",
+    header: ".faith-pdf-head",
+    title: ".faith-pdf-title strong",
+    actions: ".faith-pdf-head-actions",
+    content: ".faith-pdf-body .pdf-reader",
+  });
   await expect(page).toHaveScreenshot("faith-overlay-amoled-390x844.png", {
     animations: "disabled",
     caret: "hide",
     maxDiffPixelRatio: 0.005,
   });
+});
+
+test("AMOLED Faith overlay unavailable state keeps localized source actions", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page);
+  await page.addInitScript(() => {
+    const locale = new URL(window.location.href).searchParams.get(
+      "__gys_locale",
+    );
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: locale === "en" || locale === "zh" ? locale : "id",
+        theme: "amoled",
+      }),
+    );
+  });
+  await page.route("**/offline/faith.json", (route) =>
+    route.fulfill({ json: faithPack() }),
+  );
+  await page.route("**/api/v1/content/pdf**", (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: "text/plain",
+      body: "official PDF not found",
+    }),
+  );
+  await page.route(/Yesus-Kristus\.pdf/, (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: "text/plain",
+      body: "official PDF not found",
+    }),
+  );
+
+  const copies = {
+    id: {
+      readMore: "Baca lebih lanjut ↗",
+      official: "PDF resmi ↗",
+      source: "Buka halaman sumber resmi ↗",
+      retry: "Coba lagi",
+    },
+    en: {
+      readMore: "Read more ↗",
+      official: "Official PDF ↗",
+      source: "Open official source page ↗",
+      retry: "Try again",
+    },
+    zh: {
+      readMore: "阅读更多 ↗",
+      official: "官方 PDF ↗",
+      source: "打开官方来源页面 ↗",
+      retry: "重试",
+    },
+  } as const;
+
+  for (const locale of ["id", "en", "zh"] as const) {
+    await page.goto(`/GYSApp-Tauri/iman?item=1&__gys_locale=${locale}`);
+    await page.getByRole("button", { name: copies[locale].readMore }).click();
+    await expect(page.getByRole("alert")).toContainText("HTTP 404");
+
+    const overlay = page.locator(".faith-pdf-overlay");
+    await expect(overlay).toBeVisible();
+    await expect(
+      overlay.getByRole("link", { name: copies[locale].official }),
+    ).toHaveAttribute("href", /Yesus-Kristus\.pdf/);
+    await expect(
+      overlay.getByRole("link", { name: copies[locale].source }),
+    ).toHaveAttribute("href", /dk-yesus-kristus/);
+    await expect(
+      overlay.getByRole("button", { name: copies[locale].retry }),
+    ).toBeVisible();
+    await assertViewportIntegrity(page);
+    await assertThemePdfChrome(page, {
+      root: ".faith-pdf-backdrop",
+      header: ".faith-pdf-head",
+      title: ".faith-pdf-title strong",
+      actions: ".faith-pdf-head-actions",
+      content: ".faith-pdf-body .pdf-reader",
+    });
+
+    if (locale === "id") {
+      await expect(page).toHaveScreenshot(
+        "faith-overlay-amoled-unavailable-390x844.png",
+        {
+          animations: "disabled",
+          caret: "hide",
+          maxDiffPixelRatio: 0.005,
+        },
+      );
+    }
+  }
 });

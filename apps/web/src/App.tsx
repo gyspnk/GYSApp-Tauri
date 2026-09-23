@@ -12,11 +12,13 @@ import {
   type ErrorInfo,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  type RefObject,
   type ReactNode,
 } from "react";
 import {
   BrowserRouter,
   Link,
+  Navigate,
   NavLink,
   Outlet,
   Route,
@@ -86,6 +88,7 @@ import {
   type ShellTheme,
 } from "./settings.js";
 import { Icon } from "./icons.js";
+import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { useBibleHeaderState } from "./bible-header-store.js";
 import {
   readSidebarCollapsed,
@@ -154,6 +157,16 @@ async function handleHardRefresh() {
   window.location.reload();
 }
 
+function getActiveLocale(): Locale {
+  const storage = getShellSettingsStorage();
+  if (storage) return readShellSettings(storage).locale;
+  const documentLocale =
+    typeof document === "undefined" ? "" : document.documentElement.lang;
+  return documentLocale === "en" || documentLocale === "zh"
+    ? documentLocale
+    : "id";
+}
+
 class AppErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -169,21 +182,183 @@ class AppErrorBoundary extends Component<
   public override render(): ReactNode {
     if (this.state.failed)
       return (
-        <main className="error-state">
-          <div className="feature-mark">
+        <main
+          className="error-state route-recovery"
+          aria-live="assertive"
+          data-testid="app-error-boundary"
+        >
+          <div className="route-recovery-mark" aria-hidden="true">
             <Icon name="book" size={27} />
           </div>
-          <h1>Ruang ini perlu dimuat ulang</h1>
-          <p>Konten lokal tetap aman. Muat ulang untuk memulihkan tampilan.</p>
+          <h1>{translate(getActiveLocale(), "shell.appErrorTitle")}</h1>
+          <p>{translate(getActiveLocale(), "shell.appErrorBody")}</p>
           <button
             className="primary-button"
             type="button"
+            autoFocus
             onClick={() => void handleHardRefresh()}
           >
-            Muat ulang
+            {translate(getActiveLocale(), "shell.reload")}
           </button>
         </main>
       );
+    return this.props.children;
+  }
+}
+
+type NonReaderRouteId =
+  | "home"
+  | "sauh"
+  | "suara"
+  | "faith"
+  | "literature"
+  | "more";
+
+function getNonReaderRouteId(pathname: string): NonReaderRouteId {
+  if (pathname === "/sauh") return "sauh";
+  if (pathname.startsWith("/suara")) return "suara";
+  if (pathname === "/iman") return "faith";
+  if (pathname.startsWith("/literatur")) return "literature";
+  if (pathname === "/lainnya") return "more";
+  return "home";
+}
+
+function getRouteTitleKey(pathname: string): string {
+  if (pathname === "/") return "home.title";
+  if (pathname === "/sauh") return "home.sauh";
+  if (pathname.startsWith("/suara")) return "home.testimony";
+  if (pathname === "/bible") return "page.bibleTitle";
+  if (pathname.startsWith("/kidung")) return "page.kidungTitle";
+  if (pathname === "/iman") return "nav.iman";
+  if (pathname.startsWith("/literatur")) return "literature.title";
+  if (pathname === "/lainnya") return "page.moreTitle";
+  return "shell.routeOpening";
+}
+
+function NonReaderRouteLoading({
+  locale,
+  pathname,
+}: {
+  locale: Locale;
+  pathname: string;
+}) {
+  const routeId = getNonReaderRouteId(pathname);
+  const title = translate(locale, getRouteTitleKey(pathname));
+  return (
+    <div
+      className={`route-loading non-reader-route-loading is-${routeId}`}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label={translate(locale, "shell.routeLoading", { title })}
+      data-testid="non-reader-route-loading"
+      data-route={routeId}
+    >
+      <span className="route-loading-label">
+        {translate(locale, "shell.routeLoading", { title })}
+      </span>
+      <div className="route-loading-heading" aria-hidden="true">
+        <span className="route-loading-kicker" />
+        <span className="route-loading-title" />
+      </div>
+      <div className="route-loading-grid" aria-hidden="true">
+        <div className="route-loading-card is-feature">
+          <span className="route-loading-media" />
+          <span className="route-loading-line is-title" />
+          <span className="route-loading-line" />
+          <span className="route-loading-line is-medium" />
+        </div>
+        <div className="route-loading-card is-stack">
+          <span className="route-loading-line is-short" />
+          <span className="route-loading-line" />
+          <span className="route-loading-line is-medium" />
+          <span className="route-loading-line" />
+          <span className="route-loading-line is-short" />
+        </div>
+        <div className="route-loading-card is-list">
+          <span className="route-loading-line is-title" />
+          <span className="route-loading-line" />
+          <span className="route-loading-line is-medium" />
+          <span className="route-loading-line" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RouteRecovery({
+  locale,
+  onRetry,
+}: {
+  locale: Locale;
+  onRetry: () => void;
+}) {
+  return (
+    <section
+      className="route-recovery"
+      role="alert"
+      aria-live="assertive"
+      data-testid="route-recovery"
+    >
+      <div className="route-recovery-mark" aria-hidden="true">
+        <Icon name="book" size={25} />
+      </div>
+      <h1>{translate(locale, "shell.routeErrorTitle")}</h1>
+      <p>{translate(locale, "shell.routeErrorBody")}</p>
+      <button className="primary-button" type="button" onClick={onRetry}>
+        {translate(locale, "shell.routeRetry")}
+      </button>
+    </section>
+  );
+}
+
+function NotFoundPage({ locale }: { locale: Locale }) {
+  return (
+    <section
+      className="route-recovery not-found-page"
+      role="status"
+      aria-live="polite"
+      aria-labelledby="not-found-title"
+      data-testid="not-found-page"
+    >
+      <div className="route-recovery-mark" aria-hidden="true">
+        <Icon name="book" size={25} />
+      </div>
+      <h1 id="not-found-title">{translate(locale, "shell.notFoundTitle")}</h1>
+      <p>{translate(locale, "shell.notFoundBody")}</p>
+      <Link className="primary-button" to="/">
+        {translate(locale, "shell.notFoundHome")}
+      </Link>
+    </section>
+  );
+}
+
+class RouteErrorBoundary extends Component<
+  { children: ReactNode; locale: Locale },
+  { error: Error | null }
+> {
+  public override state: { error: Error | null } = { error: null };
+
+  public static getDerivedStateFromError(error: Error): {
+    error: Error;
+  } {
+    return { error };
+  }
+
+  public override componentDidCatch(error: Error, info: ErrorInfo): void {
+    recordDiagnostic("error", "route-error-boundary", error);
+    console.error("GYSApp route error", error, info);
+  }
+
+  public override render(): ReactNode {
+    if (this.state.error) {
+      return (
+        <RouteRecovery
+          locale={this.props.locale}
+          onRetry={() => window.location.reload()}
+        />
+      );
+    }
     return this.props.children;
   }
 }
@@ -325,6 +500,7 @@ function Header({
   setTheme,
   online,
   onOpenSearch,
+  searchTriggerRef,
   pathname,
   onFocusPageSearch,
 }: {
@@ -334,13 +510,11 @@ function Header({
   setTheme: (value: Theme) => void;
   online: boolean;
   onOpenSearch: () => void;
+  searchTriggerRef: RefObject<HTMLButtonElement | null>;
   pathname: string;
   onFocusPageSearch: () => void;
 }) {
   const isBibleRoute = pathname === "/bible";
-  const isKidungRoute =
-    pathname === "/kidung" || pathname.startsWith("/kidung/");
-  const isReaderRoute = isBibleRoute || isKidungRoute;
   const bibleHeader = useBibleHeaderState();
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
@@ -392,7 +566,7 @@ function Header({
     }
   };
 
-  if (isReaderRoute) {
+  if (isBibleRoute) {
     return (
       <header className="topbar is-reader-context">
         <div className="reader-context-bar">
@@ -402,13 +576,15 @@ function Header({
                 <button
                   className="reader-context-book-picker quick-nav-handle"
                   type="button"
-                  onClick={bibleHeader.onOpenPicker}
+                  onClick={(event) =>
+                    bibleHeader.onOpenPicker(event.currentTarget)
+                  }
                   onPointerDown={bibleHeader.startQuickNav}
                   onKeyDown={bibleHeader.quickNavKeyDown}
                   role="button"
                   tabIndex={0}
-                  aria-label="Geser judul untuk berpindah pasal"
-                  title="Pilih Kitab & Pasal"
+                  aria-label={translate(locale, "bible.bookPickerAria")}
+                  title={translate(locale, "bible.pickBookChapter")}
                 >
                   <Icon name="book" size={15} />
                   <strong className="picker-book-title">
@@ -424,7 +600,10 @@ function Header({
                     value={bibleHeader.versionCode}
                     onChange={bibleHeader.onSelectVersion}
                     className="topbar-select reader-context-select version-select"
-                    label={bibleHeader.splitView ? "Versi 1" : "Versi"}
+                    label={translate(
+                      locale,
+                      bibleHeader.splitView ? "bible.versionOne" : "bible.version",
+                    )}
                     options={bibleHeader.versionOptions}
                   />
                   {bibleHeader.splitView &&
@@ -434,7 +613,7 @@ function Header({
                         value={bibleHeader.secondaryVersionCode}
                         onChange={bibleHeader.onSelectSecondaryVersion}
                         className="topbar-select reader-context-select version-select secondary-version-select"
-                        label="Versi 2"
+                        label={translate(locale, "bible.versionTwo")}
                         options={bibleHeader.versionOptions}
                       />
                     )}
@@ -442,7 +621,11 @@ function Header({
               </>
             ) : (
               <div className="reader-context-title">
-                <span>{isBibleRoute ? "Bacaan" : "Kidung Rohani"}</span>
+                <span>
+                  {isBibleRoute
+                    ? translate(locale, "bible.reading")
+                    : "Kidung Rohani"}
+                </span>
                 <strong>{isBibleRoute ? "Alkitab" : "Kidung"}</strong>
               </div>
             )}
@@ -458,16 +641,19 @@ function Header({
                     onClick={bibleHeader.onToggleSpeech}
                     aria-label={
                       bibleHeader.speechStatus === "paused"
-                        ? "Lanjutkan bacaan"
+                        ? translate(locale, "bible.resumeReading")
                         : bibleHeader.speechStatus === "speaking"
-                          ? "Jeda bacaan"
+                        ? translate(locale, "bible.pauseReading")
                           : bibleHeader.speaking
                             ? translate(locale, "bible.stopReading")
                             : translate(locale, "bible.readAloud")
                     }
-                    title={
-                      bibleHeader.speaking ? "Hentikan bacaan" : "Bacakan pasal"
-                    }
+                    title={translate(
+                      locale,
+                      bibleHeader.speaking
+                        ? "bible.stopChapter"
+                        : "bible.readChapter",
+                    )}
                   >
                     <Icon
                       name={
@@ -490,8 +676,8 @@ function Header({
                     className={`reader-context-button reader-hamburger-btn${hamburgerOpen ? " is-active" : ""}`}
                     type="button"
                     aria-expanded={hamburgerOpen}
-                    aria-label="Menu Alkitab"
-                    title="Menu"
+                    aria-label={translate(locale, "bible.menu")}
+                    title={translate(locale, "bible.menu")}
                     onClick={() => setHamburgerOpen((v) => !v)}
                   >
                     <span className="hamburger-icon" aria-hidden="true">
@@ -510,19 +696,19 @@ function Header({
                       <div
                         className="reader-hamburger-drawer"
                         role="dialog"
-                        aria-label="Menu Bacaan"
+                        aria-label={translate(locale, "bible.menuTitle")}
                       >
                         <div className="hamburger-drawer-header">
                           <div className="hamburger-drawer-title">
                             <Icon name="book" size={16} />
-                            <strong>Menu Bacaan</strong>
+                            <strong>{translate(locale, "bible.menuTitle")}</strong>
                           </div>
                           <button
                             className="hamburger-drawer-close"
                             type="button"
                             onClick={() => setHamburgerOpen(false)}
-                            aria-label="Tutup menu"
-                            title="Tutup"
+                            aria-label={translate(locale, "bible.closeMenu")}
+                            title={translate(locale, "bible.closeMenu")}
                           >
                             ✕
                           </button>
@@ -533,7 +719,7 @@ function Header({
                           <div className="hamburger-card">
                             <div className="hamburger-card-header">
                               <span className="hamburger-section-label">
-                                Ukuran Teks
+                                {translate(locale, "bible.textSize")}
                               </span>
                               <span className="hamburger-size-badge">
                                 {bibleHeader.fontSize}px
@@ -548,10 +734,10 @@ function Header({
                                   bibleHeader.fontSize <=
                                   bibleHeader.minFontSize
                                 }
-                                aria-label="Perkecil teks"
+                                aria-label={translate(locale, "bible.decreaseText")}
                               >
                                 <span className="step-label">A−</span>
-                                <small>Kecil</small>
+                                <small>{translate(locale, "bible.small")}</small>
                               </button>
                               <div className="typography-size-indicator">
                                 <strong>{bibleHeader.fontSize}</strong>
@@ -565,10 +751,10 @@ function Header({
                                   bibleHeader.fontSize >=
                                   bibleHeader.maxFontSize
                                 }
-                                aria-label="Perbesar teks"
+                                aria-label={translate(locale, "bible.increaseText")}
                               >
                                 <span className="step-label">A+</span>
-                                <small>Besar</small>
+                                <small>{translate(locale, "bible.large")}</small>
                               </button>
                             </div>
                           </div>
@@ -576,7 +762,7 @@ function Header({
                           {/* Section 2: Mode Tampilan */}
                           <div className="hamburger-section">
                             <span className="hamburger-section-label">
-                              Mode Tampilan
+                              {translate(locale, "bible.viewMode")}
                             </span>
                             <div className="hamburger-group">
                               <button
@@ -590,8 +776,8 @@ function Header({
                                   <Icon name="columns" size={16} />
                                 </div>
                                 <div className="hamburger-item-text">
-                                  <strong>Tampilan Belah</strong>
-                                  <small>Bandingkan 2 pasal / terjemahan</small>
+                                  <strong>{translate(locale, "bible.splitView")}</strong>
+                                  <small>{translate(locale, "bible.splitViewHint")}</small>
                                 </div>
                                 <div
                                   className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
@@ -612,8 +798,8 @@ function Header({
                                     <Icon name="arrow" size={16} />
                                   </div>
                                   <div className="hamburger-item-text">
-                                    <strong>Gulir Sinkron</strong>
-                                    <small>Geser kedua kolom bersamaan</small>
+                                    <strong>{translate(locale, "bible.syncScroll")}</strong>
+                                    <small>{translate(locale, "bible.syncScrollHint")}</small>
                                   </div>
                                   <div
                                     className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
@@ -628,7 +814,7 @@ function Header({
                           {/* Section 3: Audio Alkitab Suara */}
                           <div className="hamburger-section">
                             <span className="hamburger-section-label">
-                              Alkitab Suara
+                              {translate(locale, "bible.audioBible")}
                             </span>
                             <div className="hamburger-group">
                               <button
@@ -652,12 +838,12 @@ function Header({
                                   />
                                 </div>
                                 <div className="hamburger-item-text">
-                                  <strong>Player Alkitab Suara</strong>
+                                  <strong>{translate(locale, "bible.audioPlayer")}</strong>
                                   <small>
                                     {speechSnapshot.playerOpen ||
                                     bibleHeader.speaking
-                                      ? "Pemutar audio aktif di layar"
-                                      : "Tampilkan pemutar audio"}
+                                      ? translate(locale, "bible.audioActive")
+                                      : translate(locale, "bible.showAudioPlayer")}
                                   </small>
                                 </div>
                                 <span
@@ -665,8 +851,8 @@ function Header({
                                 >
                                   {speechSnapshot.playerOpen ||
                                   bibleHeader.speaking
-                                    ? "Aktif"
-                                    : "Buka"}
+                                    ? translate(locale, "bible.active")
+                                    : translate(locale, "bible.showAudioPlayer")}
                                 </span>
                               </button>
 
@@ -680,11 +866,11 @@ function Header({
                                   <Icon name="settings" size={16} />
                                 </div>
                                 <div className="hamburger-item-text">
-                                  <strong>Pengaturan Suara</strong>
+                                    <strong>{translate(locale, "bible.audioSettings")}</strong>
                                   <small>
                                     {bibleHeader.speechControlsOpen
-                                      ? "Tutup opsi suara & nada"
-                                      : "Atur mesin suara, kecepatan & nada"}
+                                      ? translate(locale, "bible.closeAudioOptions")
+                                      : translate(locale, "bible.configureAudio")}
                                   </small>
                                 </div>
                                 <div className="hamburger-expand-badge">
@@ -704,7 +890,7 @@ function Header({
                             {bibleHeader.speechControlsOpen && (
                               <div className="drawer-speech-card">
                                 <label className="drawer-speech-row">
-                                  <span>Mesin</span>
+                                  <span>{translate(locale, "bible.engine")}</span>
                                   <select
                                     className="drawer-speech-select"
                                     value={speechSnapshot.engine}
@@ -722,12 +908,14 @@ function Header({
                                     >
                                       Edge TTS
                                     </option>
-                                    <option value="local">TTS lokal</option>
+                                    <option value="local">
+                                      {translate(locale, "bible.localTts")}
+                                    </option>
                                   </select>
                                 </label>
 
                                 <label className="drawer-speech-row">
-                                  <span>Pilihan Suara</span>
+                                  <span>{translate(locale, "bible.voice")}</span>
                                   <select
                                     className="drawer-speech-select"
                                     value={
@@ -741,7 +929,9 @@ function Header({
                                       speechPlayer.setVoice(e.target.value)
                                     }
                                   >
-                                    <option value="">Otomatis (Default)</option>
+                                    <option value="">
+                                      {translate(locale, "bible.defaultVoice")}
+                                    </option>
                                     {(speechSnapshot.engine === "edge"
                                       ? (speechSnapshot.edgeVoices ?? [])
                                       : speechSnapshot.voices.filter((voice) =>
@@ -758,9 +948,7 @@ function Header({
                                   {speechSnapshot.engine === "edge" &&
                                     !isEdgeSpeechConfigured() && (
                                       <small className="drawer-speech-hint">
-                                        Edge TTS tanpa API key tersedia di
-                                        aplikasi desktop. Pilih TTS lokal untuk
-                                        preview browser.
+                                        {translate(locale, "bible.edgeHint")}
                                       </small>
                                     )}
                                 </label>
@@ -768,12 +956,16 @@ function Header({
                                 {speechSnapshot.engine === "edge" && (
                                   <label className="drawer-speech-row">
                                     <span className="drawer-speech-label">
-                                      Endpoint Gateway (Opsional)
+                                      {translate(locale, "bible.gatewayEndpoint")} (
+                                      {translate(locale, "bible.optional")})
                                     </span>
                                     <input
                                       type="url"
                                       className="drawer-speech-input"
-                                      placeholder="https://... (default)"
+                                      placeholder={translate(
+                                        locale,
+                                        "bible.edgeEndpointPlaceholder",
+                                      )}
                                       defaultValue={getCustomEdgeEndpoint()}
                                       onBlur={(e) => {
                                         setCustomEdgeEndpoint(e.target.value);
@@ -786,7 +978,7 @@ function Header({
                                 <div className="drawer-speech-row">
                                   <div className="drawer-speech-row-header">
                                     <span className="drawer-speech-label">
-                                      Kecepatan Baca
+                                      {translate(locale, "bible.readingSpeed")}
                                     </span>
                                     <span className="drawer-speech-val">
                                       {speechSnapshot.rate.toFixed(1)}×
@@ -795,7 +987,7 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label="Kecepatan bacaan suara"
+                                    aria-label={translate(locale, "bible.voiceRate")}
                                     min="0.5"
                                     max="2"
                                     step="0.1"
@@ -811,7 +1003,7 @@ function Header({
                                 <div className="drawer-speech-row">
                                   <div className="drawer-speech-row-header">
                                     <span className="drawer-speech-label">
-                                      Tinggi Nada (Pitch)
+                                      {translate(locale, "bible.readingPitch")}
                                     </span>
                                     <span className="drawer-speech-val">
                                       {speechSnapshot.pitch.toFixed(1)}×
@@ -820,7 +1012,7 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label="Nada bacaan suara"
+                                    aria-label={translate(locale, "bible.voicePitch")}
                                     min="0.5"
                                     max="2"
                                     step="0.1"
@@ -836,7 +1028,7 @@ function Header({
                                 <div className="drawer-speech-row">
                                   <div className="drawer-speech-row-header">
                                     <span className="drawer-speech-label">
-                                      Volume
+                                      {translate(locale, "bible.volume")}
                                     </span>
                                     <span className="drawer-speech-val">
                                       {Math.round(speechSnapshot.volume * 100)}%
@@ -845,7 +1037,7 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label="Volume bacaan suara"
+                                    aria-label={translate(locale, "bible.voiceVolume")}
                                     min="0"
                                     max="1"
                                     step="0.05"
@@ -864,7 +1056,7 @@ function Header({
                           {/* Section 4: Tampilan & Bahasa */}
                           <div className="hamburger-section">
                             <span className="hamburger-section-label">
-                              Tampilan & Tema
+                              {translate(locale, "more.appearance")}
                             </span>
                             <div
                               className="hamburger-group"
@@ -894,31 +1086,31 @@ function Header({
                                 options={[
                                   {
                                     value: "system",
-                                    label: "Otomatis",
+                                    label: translate(locale, "theme.system"),
                                     shortLabel: "",
                                     icon: "system",
                                   },
                                   {
                                     value: "light",
-                                    label: "Terang",
+                                    label: translate(locale, "theme.light"),
                                     shortLabel: "",
                                     icon: "sun",
                                   },
                                   {
                                     value: "dark",
-                                    label: "Gelap",
+                                    label: translate(locale, "theme.dark"),
                                     shortLabel: "",
                                     icon: "moon",
                                   },
                                   {
                                     value: "amoled",
-                                    label: "AMOLED",
+                                    label: translate(locale, "theme.amoled"),
                                     shortLabel: "",
                                     icon: "amoled",
                                   },
                                   {
                                     value: "sepia",
-                                    label: "Sepia",
+                                    label: translate(locale, "theme.sepia"),
                                     shortLabel: "",
                                     icon: "sepia",
                                   },
@@ -934,23 +1126,14 @@ function Header({
               </>
             ) : (
               <>
-                {isKidungRoute && pathname !== "/kidung" ? (
-                  <Link
-                    className="reader-context-button"
-                    to="/kidung"
-                    aria-label="Buka daftar kidung"
-                  >
-                    Daftar
-                  </Link>
-                ) : null}
-                {isBibleRoute || pathname === "/kidung" ? (
+                {isBibleRoute ? (
                   <button
                     className="reader-context-button"
                     type="button"
                     onClick={onFocusPageSearch}
                     aria-label={
                       isBibleRoute
-                        ? "Buka pencarian ayat di Alkitab"
+                        ? translate(locale, "bible.searchVerses")
                         : "Buka pencarian lagu"
                     }
                   >
@@ -961,8 +1144,8 @@ function Header({
                   className={`reader-context-button reader-midi-btn${isMidiPlaying ? " is-active" : ""}`}
                   type="button"
                   onClick={handleToggleMidi}
-                  aria-label="Pemutar Musik MIDI"
-                  title="Pemutar Musik MIDI"
+                  aria-label={translate(locale, "bible.musicPlayer")}
+                  title={translate(locale, "bible.musicPlayer")}
                 >
                   <Icon name="music" size={15} />
                 </button>
@@ -991,31 +1174,31 @@ function Header({
                 options={[
                   {
                     value: "system",
-                    label: "Otomatis",
+                    label: translate(locale, "shell.themeSystem"),
                     shortLabel: "",
                     icon: "system",
                   },
                   {
                     value: "light",
-                    label: "Terang",
+                    label: translate(locale, "shell.themeLight"),
                     shortLabel: "",
                     icon: "sun",
                   },
                   {
                     value: "dark",
-                    label: "Gelap",
+                    label: translate(locale, "shell.themeDark"),
                     shortLabel: "",
                     icon: "moon",
                   },
                   {
                     value: "amoled",
-                    label: "AMOLED",
+                    label: translate(locale, "shell.themeAmoled"),
                     shortLabel: "",
                     icon: "amoled",
                   },
                   {
                     value: "sepia",
-                    label: "Sepia",
+                    label: translate(locale, "shell.themeSepia"),
                     shortLabel: "",
                     icon: "sepia",
                   },
@@ -1042,13 +1225,14 @@ function Header({
       </Link>
       <div className="topbar-actions">
         <button
+          ref={searchTriggerRef}
           className="search-trigger"
           type="button"
           onClick={onOpenSearch}
-          aria-label="Cari di seluruh aplikasi"
-        >
-          <Icon name="search" size={18} />
-          <span>Cari</span>
+           aria-label={translate(locale, "shell.searchAll")}
+         >
+           <Icon name="search" size={18} />
+           <span>{translate(locale, "shell.search")}</span>
           <kbd>⌘K</kbd>
         </button>
         <span
@@ -1077,19 +1261,34 @@ function Header({
           options={[
             {
               value: "system",
-              label: "Otomatis",
+              label: translate(locale, "shell.themeSystem"),
               shortLabel: "",
               icon: "system",
             },
-            { value: "light", label: "Terang", shortLabel: "", icon: "sun" },
-            { value: "dark", label: "Gelap", shortLabel: "", icon: "moon" },
+            {
+              value: "light",
+              label: translate(locale, "shell.themeLight"),
+              shortLabel: "",
+              icon: "sun",
+            },
+            {
+              value: "dark",
+              label: translate(locale, "shell.themeDark"),
+              shortLabel: "",
+              icon: "moon",
+            },
             {
               value: "amoled",
-              label: "AMOLED",
+              label: translate(locale, "shell.themeAmoled"),
               shortLabel: "",
               icon: "amoled",
             },
-            { value: "sepia", label: "Sepia", shortLabel: "", icon: "sepia" },
+            {
+              value: "sepia",
+              label: translate(locale, "shell.themeSepia"),
+              shortLabel: "",
+              icon: "sepia",
+            },
           ]}
         />
         <Link
@@ -1106,7 +1305,6 @@ function Header({
 
 function MediaSurface({ locale }: { locale: Locale }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const snapshot = useSyncExternalStore(
     midiPlayer.subscribe,
     midiPlayer.snapshot,
@@ -1122,17 +1320,88 @@ function MediaSurface({ locale }: { locale: Locale }) {
     getMidiPlaylist,
     getMidiPlaylist,
   );
-  const speechActive =
+  const midiHasSession = Boolean(
+    snapshot.songId && snapshot.status !== "idle",
+  );
+  const speechHasSession =
     (speechSnapshot.total > 0 && speechSnapshot.status !== "idle") ||
     speechSnapshot.playerOpen;
-  const isKidungMedia =
-    !speechActive && location.pathname.startsWith("/kidung");
+  type MediaKind = "midi" | "speech";
+  const [activeMediaKind, setActiveMediaKind] = useState<
+    MediaKind | undefined
+  >(() =>
+    speechHasSession ? "speech" : midiHasSession ? "midi" : undefined,
+  );
+  const previousMediaRef = useRef({
+    midiSongId: snapshot.songId,
+    midiStatus: snapshot.status,
+    speechStatus: speechSnapshot.status,
+    speechPlayerOpen: Boolean(speechSnapshot.playerOpen),
+    speechContextPath: speechSnapshot.context?.path,
+  });
+  useEffect(() => {
+    const previous = previousMediaRef.current;
+    const speechStarted =
+      ((speechSnapshot.status === "loading" ||
+        speechSnapshot.status === "speaking") &&
+        speechSnapshot.status !== previous.speechStatus) ||
+      (Boolean(speechSnapshot.playerOpen) && !previous.speechPlayerOpen) ||
+      (speechHasSession &&
+        speechSnapshot.context?.path !== previous.speechContextPath);
+    const midiStarted =
+      snapshot.songId !== previous.midiSongId ||
+      ((snapshot.status === "loading" || snapshot.status === "playing") &&
+        snapshot.status !== previous.midiStatus);
+
+    previousMediaRef.current = {
+      midiSongId: snapshot.songId,
+      midiStatus: snapshot.status,
+      speechStatus: speechSnapshot.status,
+      speechPlayerOpen: Boolean(speechSnapshot.playerOpen),
+      speechContextPath: speechSnapshot.context?.path,
+    };
+
+    if (speechStarted) setActiveMediaKind("speech");
+    else if (midiStarted) setActiveMediaKind("midi");
+  }, [
+    snapshot.songId,
+    snapshot.status,
+    speechHasSession,
+    speechSnapshot.context?.path,
+    speechSnapshot.playerOpen,
+    speechSnapshot.status,
+  ]);
+  useEffect(() => {
+    setActiveMediaKind((current) => {
+      if (current === "speech" && !speechHasSession)
+        return midiHasSession ? "midi" : undefined;
+      if (current === "midi" && !midiHasSession)
+        return speechHasSession ? "speech" : undefined;
+      if (!current)
+        return speechHasSession ? "speech" : midiHasSession ? "midi" : undefined;
+      return current;
+    });
+  }, [midiHasSession, speechHasSession]);
+  const speechActive = activeMediaKind === "speech";
+  const isKidungMedia = activeMediaKind === "midi";
+  const hasMediaSession = speechActive ? speechHasSession : midiHasSession;
   const latestMidiRef = useRef(snapshot);
   const latestSpeechRef = useRef(speechSnapshot);
-  const latestSpeechActiveRef = useRef(speechActive);
+  const latestMediaKindRef = useRef(activeMediaKind);
   latestMidiRef.current = snapshot;
   latestSpeechRef.current = speechSnapshot;
-  latestSpeechActiveRef.current = speechActive;
+  latestMediaKindRef.current = activeMediaKind;
+  const previousMidiStatusRef = useRef(snapshot.status);
+  useEffect(() => {
+    const previousStatus = previousMidiStatusRef.current;
+    previousMidiStatusRef.current = snapshot.status;
+    if (
+      previousStatus !== snapshot.status &&
+      (snapshot.status === "loading" || snapshot.status === "playing")
+    ) {
+      void speechPlayer.pause().catch(() => undefined);
+    }
+  }, [snapshot.status]);
   // gyschordweb mini-player parity: key/accidental mirror the hymn transpose
   // state; the displayed key is derived from the current transpose offset.
   const [keyAccidental, setKeyAccidental] = useState<"sharp" | "flat">(
@@ -1156,36 +1425,50 @@ function MediaSurface({ locale }: { locale: Locale }) {
     applyAutoNextMode(next);
   };
   const loopLabel = {
-    off: "Off",
-    one: "1×",
-    all: "Semua",
-    number: "Nomor",
-    playlist: "Playlist",
-    "shuffle-all": "Acak",
-    "shuffle-playlist": "Acak Playlist",
+    off: translate(locale, "media.loopOff"),
+    one: translate(locale, "media.loopOne"),
+    all: translate(locale, "media.loopAll"),
+    number: translate(locale, "media.loopNumber"),
+    playlist: translate(locale, "media.loopPlaylist"),
+    "shuffle-all": translate(locale, "media.loopShuffleAll"),
+    "shuffle-playlist": translate(locale, "media.loopShufflePlaylist"),
   }[midiLoopMode];
+  const loopBadge =
+    midiLoopMode === "off" ? "0" : midiLoopMode === "one" ? "1" : "∞";
   // Key index from the current transpose offset, matching the hymn viewer.
   const keyIndex = ((snapshot.transpose % 12) + 12) % 12;
   // gyschordweb mini-player subtitle: shows the effective auto-next mode and
   // the next song when known.
   const autoNextSubtitle = (() => {
-    if (midiLoopMode === "one") return "Single Loop Mode";
-    if (midiLoopMode === "off") return "Mode Loop Mati";
+    if (midiLoopMode === "one")
+      return translate(locale, "media.singleLoopMode");
+    if (midiLoopMode === "off")
+      return translate(locale, "media.loopModeOff");
     const currentIndex = playlist.items.findIndex(
       (entry) => entry.songId === snapshot.songId,
     );
     if (midiLoopMode === "shuffle-all")
-      return currentIndex >= 0 ? "Shuffle Semua Lagu" : "Acak Semua";
+      return currentIndex >= 0
+        ? translate(locale, "media.shuffleAllSongs")
+        : translate(locale, "media.shuffleAll");
     if (midiLoopMode === "shuffle-playlist")
-      return currentIndex >= 0 ? "Shuffle Playlist" : "Acak Playlist";
+      return translate(locale, "media.shufflePlaylist");
     if (midiLoopMode === "playlist") {
       if (currentIndex >= 0 && currentIndex < playlist.items.length - 1)
-        return `Playlist: ${playlist.items[currentIndex + 1]?.title ?? ""}`;
-      return currentIndex >= 0 ? "Playlist: Selesai" : "Auto Next: Playlist";
+        return translate(locale, "media.playlistNext", {
+          title: playlist.items[currentIndex + 1]?.title ?? "",
+        });
+      return currentIndex >= 0
+        ? translate(locale, "media.playlistFinished")
+        : translate(locale, "media.autoNextPlaylist");
     }
     if (currentIndex >= 0 && currentIndex < playlist.items.length - 1)
-      return `Berikutnya: ${playlist.items[currentIndex + 1]?.title ?? ""}`;
-    return currentIndex >= 0 ? "Selesai (Akhir Daftar)" : "Tidak ada antrean";
+      return translate(locale, "media.nextTitle", {
+        title: playlist.items[currentIndex + 1]?.title ?? "",
+      });
+    return currentIndex >= 0
+      ? translate(locale, "media.endOfList")
+      : translate(locale, "media.queueEmpty");
   })();
   // gyschordweb mini-player lyrics toggle: jump into the hymn text view.
   const openHymnLyrics = () => {
@@ -1193,7 +1476,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
   };
   const mediaTitle = speechActive
     ? (speechSnapshot.context?.label ??
-      `Alkitab · ayat ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`)
+      translate(locale, "media.bibleVerse", {
+        current: Math.max(1, speechSnapshot.currentIndex + 1),
+        total: speechSnapshot.total,
+      }))
     : (snapshot.title ?? snapshot.songId);
   const mediaPath = speechActive
     ? speechSnapshot.context?.path
@@ -1205,13 +1491,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
       ? "Edge TTS"
       : speechSnapshot.providerId === "browser-system"
         ? speechSnapshot.offline
-          ? "TTS lokal"
-          : "TTS sistem"
+          ? translate(locale, "media.localTts")
+          : translate(locale, "media.systemTts")
         : speechSnapshot.engine === "edge"
           ? "Edge TTS"
           : speechSnapshot.engine === "local"
-            ? "TTS lokal"
-            : "Alkitab Suara";
+            ? translate(locale, "media.localTts")
+            : translate(locale, "media.speechBible");
   const dragRef = useRef<
     | {
         pointerId: number;
@@ -1306,7 +1592,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
     return () => window.cancelAnimationFrame(frame);
   }, [minimized, snapshot.songId, speechActive]);
   useEffect(() => {
-    if ((!snapshot.songId && !speechActive) || !("mediaSession" in navigator))
+    if (!hasMediaSession || !("mediaSession" in navigator))
       return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: mediaTitle ?? "GYS",
@@ -1323,25 +1609,25 @@ function MediaSurface({ locale }: { locale: Locale }) {
         "play",
         () => {
           const speech = latestSpeechRef.current;
-          if (latestSpeechActiveRef.current)
+          if (latestMediaKindRef.current === "speech")
             return speech.status === "error"
               ? speechPlayer.stop()
               : speechPlayer.resume();
-          void speechPlayer.stop();
+          void speechPlayer.pause();
           return midiPlayer.play().catch(() => undefined);
         },
       ],
       [
         "pause",
         () =>
-          latestSpeechActiveRef.current
+          latestMediaKindRef.current === "speech"
             ? speechPlayer.pause()
             : midiPlayer.pause().catch(() => undefined),
       ],
       [
         "stop",
         () =>
-          latestSpeechActiveRef.current
+          latestMediaKindRef.current === "speech"
             ? speechPlayer.stop()
             : midiPlayer.stop().catch(() => undefined),
       ],
@@ -1349,7 +1635,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         "seekbackward",
         () => {
           const midi = latestMidiRef.current;
-          return latestSpeechActiveRef.current
+          return latestMediaKindRef.current === "speech"
             ? speechPlayer.stop()
             : midiPlayer.seek(Math.max(0, midi.position - 10));
         },
@@ -1358,7 +1644,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         "seekforward",
         () => {
           const midi = latestMidiRef.current;
-          return latestSpeechActiveRef.current
+          return latestMediaKindRef.current === "speech"
             ? speechPlayer.stop()
             : midiPlayer.seek(Math.min(midi.duration, midi.position + 10));
         },
@@ -1367,7 +1653,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         "seekto",
         (details) => {
           const midi = latestMidiRef.current;
-          return latestSpeechActiveRef.current
+          return latestMediaKindRef.current === "speech"
             ? speechPlayer.stop()
             : midiPlayer.seek(details?.seekTime ?? midi.position);
         },
@@ -1389,9 +1675,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
         }
       }
     };
-  }, [mediaTitle, speechActive]);
-  if ((!snapshot.songId || snapshot.status === "idle") && !speechActive)
-    return null;
+  }, [hasMediaSession, mediaTitle, speechActive]);
+  if (!hasMediaSession) return null;
   const playing = speechActive
     ? speechSnapshot.status === "speaking"
     : snapshot.status === "playing";
@@ -1415,7 +1700,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
       }
       return;
     }
-    if (!playing) void speechPlayer.stop();
+    if (!playing) void speechPlayer.pause();
     void (playing ? midiPlayer.pause() : midiPlayer.play()).catch(
       () => undefined,
     );
@@ -1482,6 +1767,169 @@ function MediaSurface({ locale }: { locale: Locale }) {
       top: Math.max(8, Math.min(top, window.innerHeight - rect.height - 8)),
     });
   };
+  const midiAdvancedControls = (
+    <>
+      <div className="media-midi-actions">
+        <button
+          className="media-control media-loop-control"
+          type="button"
+          onClick={cycleLoopMode}
+          aria-pressed={midiLoopMode !== "off"}
+          aria-label={translate(locale, "media.loopControl", {
+            mode: loopLabel,
+          })}
+          title={translate(locale, "media.loopTitle", { mode: loopLabel })}
+        >
+          <Icon name="repeat" size={16} />
+          <small aria-hidden="true">{loopBadge}</small>
+        </button>
+        <div className="media-key-control">
+          <button
+            className="media-control"
+            type="button"
+            onClick={() => setKeyMenuOpen((open) => !open)}
+            aria-expanded={keyMenuOpen}
+            aria-haspopup="listbox"
+            aria-label={translate(locale, "media.keySelect")}
+            title={translate(locale, "media.keySelect")}
+          >
+            {chordKeyName(keyIndex, keyAccidental)}
+          </button>
+          {keyMenuOpen && (
+            <div
+              className="media-key-dropdown"
+              role="listbox"
+              aria-label={translate(locale, "media.keyLabel")}
+            >
+              {Array.from({ length: 12 }, (_, value) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="option"
+                  aria-selected={value === keyIndex}
+                  className={value === keyIndex ? "is-selected" : undefined}
+                  onClick={() => {
+                    void midiPlayer
+                      .setTranspose(transposeBetweenKeys(keyIndex, value))
+                      .catch(() => undefined);
+                    setKeyMenuOpen(false);
+                  }}
+                >
+                  {chordKeyName(value, keyAccidental)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          className="media-control"
+          type="button"
+          onClick={() =>
+            setKeyAccidental((current) =>
+              current === "sharp" ? "flat" : "sharp",
+            )
+          }
+          aria-label={translate(locale, "media.notation")}
+          aria-pressed={keyAccidental === "flat"}
+          title={
+            keyAccidental === "sharp"
+              ? translate(locale, "media.notationSharp")
+              : translate(locale, "media.notationFlat")
+          }
+        >
+          {keyAccidental === "sharp" ? "♯" : "♭"}
+        </button>
+        <div className="media-transpose">
+          <button
+            type="button"
+            onClick={() =>
+              void midiPlayer.setTranspose(snapshot.transpose - 1)
+            }
+            aria-label={translate(locale, "media.transposeDown")}
+          >
+            −
+          </button>
+          <strong>
+            {snapshot.transpose > 0
+              ? `+${snapshot.transpose}`
+              : snapshot.transpose}
+          </strong>
+          <button
+            type="button"
+            onClick={() =>
+              void midiPlayer.setTranspose(snapshot.transpose + 1)
+            }
+            aria-label={translate(locale, "media.transposeUp")}
+          >
+            +
+          </button>
+        </div>
+        <button
+          className="media-control"
+          type="button"
+          onClick={openHymnLyrics}
+          aria-label={translate(locale, "media.lyrics")}
+          title={translate(locale, "media.lyrics")}
+        >
+          <Icon name="menuBook" size={16} />
+        </button>
+      </div>
+      <div className="media-tempo-control">
+        <button
+          type="button"
+          className="media-tempo-toggle"
+          onClick={() => setTempoOpen((open) => !open)}
+          aria-expanded={tempoOpen}
+          aria-haspopup="dialog"
+          aria-label={translate(locale, "media.tempoControl")}
+          title={translate(locale, "media.tempoControl")}
+        >
+          <Icon name="tune" size={14} />
+          <strong>{snapshot.tempo}</strong>
+          <small>BPM</small>
+        </button>
+        {tempoOpen && (
+          <div
+            className="media-tempo-popover"
+            role="dialog"
+            aria-label={translate(locale, "media.tempoDialog")}
+          >
+            <input
+              aria-label={translate(locale, "media.tempoInput")}
+              type="range"
+              min="30"
+              max="220"
+              step="1"
+              value={snapshot.tempo}
+              onChange={(event) =>
+                void midiPlayer.setTempo(Number(event.target.value))
+              }
+            />
+            <span>{snapshot.tempo} BPM</span>
+          </div>
+        )}
+      </div>
+      <label className="media-instrument-control">
+        <span>{translate(locale, "media.instrument")}</span>
+        <select
+          aria-label={translate(locale, "media.instrumentMidi")}
+          value={snapshot.instrument}
+          onChange={(event) =>
+            void midiPlayer
+              .setInstrument(Number(event.target.value))
+              .catch(() => undefined)
+          }
+        >
+          <option value={-1}>{midiInstrumentLabel(-1)}</option>
+          {GM_INSTRUMENTS.map((name, program) => (
+            <option key={program} value={program}>
+              {String(program + 1).padStart(3, "0")} · {name}
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
+  );
   return (
     <aside
       className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}
@@ -1504,8 +1952,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
     >
       <div
         className="media-art media-drag-handle"
-        title="Geser pemutar"
-        aria-label="Geser pemutar media"
+        title={translate(locale, "media.dragHandle")}
+        aria-label={translate(locale, "media.dragHandle")}
         role="button"
         tabIndex={0}
         aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
@@ -1523,9 +1971,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
           type="button"
           onClick={() => mediaPath && navigate(mediaPath)}
           disabled={!mediaPath}
-          aria-label={`Buka ${mediaTitle ?? "sumber media"}`}
+          aria-label={translate(locale, "media.openSource", {
+            title: mediaTitle ?? translate(locale, "media.source"),
+          })}
         >
-          <strong>{mediaTitle ?? "Media GYS"}</strong>
+          <strong>{mediaTitle ?? translate(locale, "media.mediaGys")}</strong>
           <small>
             {speechActive
               ? `${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
@@ -1535,54 +1985,71 @@ function MediaSurface({ locale }: { locale: Locale }) {
       )}
       <div className="media-main">
         <div className="media-meta">
-          <small>
-            {isKidungMedia
-              ? "MIDI QUEUE"
-              : speechActive
+          {isKidungMedia ? (
+            <div className="media-meta-top">
+              <small>MIDI</small>
+              <button
+                className="media-queue-badge"
+                type="button"
+                onClick={() => navigate("/kidung?section=playlist")}
+                aria-label={`${translate(locale, "media.queueOpen")}${playlist.items.length ? ` · ${translate(locale, "media.queueSongCount", { count: playlist.items.length })}` : ""}`}
+                title={`${translate(locale, "media.queueTitle")}${playlist.items.length ? ` · ${playlist.items.length}` : ""}`}
+              >
+                <Icon name="queueMusic" size={14} />
+                <span aria-hidden="true">{playlist.items.length}</span>
+              </button>
+            </div>
+          ) : (
+            <small>
+              {speechActive
                 ? `${speechProviderLabel}${speechSnapshot.activeLanguageTag ? ` · ${speechSnapshot.activeLanguageTag}` : ""}`
                 : snapshot.status === "loading"
-                  ? `Memuat MIDI ${snapshot.loadingProgress}%`
+                  ? translate(locale, "media.loadingMidi", {
+                      percent: snapshot.loadingProgress,
+                    })
                   : snapshot.backend === "fluidsynth"
-                    ? `${translate(locale, "shell.media")} · ${snapshot.soundfont ?? "FluidSynth"}`
+                    ? translate(locale, "media.soundfont", {
+                        soundfont: snapshot.soundfont ?? "FluidSynth",
+                      })
                     : translate(locale, "shell.media")}
-            {!speechActive && playlist.items.length > 0
-              ? ` · ${playlist.items.length} antrean`
-              : ""}
-          </small>
-          {isKidungMedia && (
-            <button
-              className="media-queue-link"
-              type="button"
-              onClick={() => navigate("/kidung?section=playlist")}
-              aria-label="Antrean MIDI"
-            >
-              Antrean MIDI
-              {playlist.items.length ? ` · ${playlist.items.length}` : ""}
-            </button>
+              {!speechActive && playlist.items.length > 0
+                ? ` · ${translate(locale, "media.queueCount", { count: playlist.items.length })}`
+                : ""}
+            </small>
           )}
           {mediaPath ? (
             <button
               className="media-context-link"
               type="button"
               onClick={() => navigate(mediaPath)}
-              title="Buka sumber media"
-              aria-label={`Buka ${mediaTitle ?? "sumber media"}`}
+              title={translate(locale, "media.openSource", {
+                title: mediaTitle ?? translate(locale, "media.source"),
+              })}
+              aria-label={translate(locale, "media.openSource", {
+                title: mediaTitle ?? translate(locale, "media.source"),
+              })}
             >
               <strong>{mediaTitle}</strong>
             </button>
           ) : (
             <strong>{mediaTitle}</strong>
           )}
-          <span>
-            {speechActive
-              ? speechSnapshot.status === "error"
-                ? (speechSnapshot.error ?? "Gagal memutar audio")
-                : speechSnapshot.currentIndex >= 0
-                  ? `Ayat ${speechSnapshot.currentIndex + 1} dari ${speechSnapshot.total}`
-                  : "Siap dibaca"
-              : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
-          </span>
-          {!speechActive && (
+          {!isKidungMedia && (
+            <span>
+              {speechActive
+                ? speechSnapshot.status === "error"
+                  ? (speechSnapshot.error ??
+                    translate(locale, "media.speechError"))
+                  : speechSnapshot.currentIndex >= 0
+                    ? translate(locale, "media.speechVerse", {
+                        current: speechSnapshot.currentIndex + 1,
+                        total: speechSnapshot.total,
+                      })
+                    : translate(locale, "media.speechReady")
+                : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
+            </span>
+          )}
+          {!speechActive && !isKidungMedia && (
             <small className="media-autonext-subtitle">
               {autoNextSubtitle}
             </small>
@@ -1591,7 +2058,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         {speechActive ? (
           <div
             className="speech-progress-track"
-            aria-label="Progres bacaan ayat"
+            aria-label={translate(locale, "media.speechProgress")}
           >
             <div
               className="speech-progress-fill"
@@ -1600,9 +2067,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
               }}
             />
           </div>
-        ) : (
+        ) : !isKidungMedia ? (
           <label className="media-progress">
-            <span className="sr-only">Posisi MIDI</span>
+            <span className="sr-only">
+              {translate(locale, "media.positionMidi")}
+            </span>
             <input
               type="range"
               min="0"
@@ -1616,19 +2085,22 @@ function MediaSurface({ locale }: { locale: Locale }) {
               }
             />
           </label>
-        )}
+        ) : null}
         {!minimized &&
           !isKidungMedia &&
           !speechActive &&
           playlist.items.length > 0 && (
-            <div className="media-queue-controls" aria-label="Antrean MIDI">
+            <div
+              className="media-queue-controls"
+              aria-label={translate(locale, "media.queueTitle")}
+            >
               <button
                 className="media-control"
                 type="button"
                 onClick={() =>
                   void playPreviousMidiPlaylistItem().catch(() => undefined)
                 }
-                aria-label="Lagu MIDI sebelumnya"
+                aria-label={translate(locale, "media.previousSong")}
               >
                 <Icon name="skipPrevious" size={17} />
               </button>
@@ -1638,7 +2110,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 onClick={() =>
                   void playNextMidiPlaylistItem().catch(() => undefined)
                 }
-                aria-label="Lagu MIDI berikutnya"
+                aria-label={translate(locale, "media.nextSong")}
               >
                 <Icon name="skipNext" size={17} />
               </button>
@@ -1646,10 +2118,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
           )}
         {!minimized && (
           <div className="media-adjustments">
-            <label>
-              <span>Vol</span>
+            <label className="media-volume-control">
+              <span>{translate(locale, "media.volumeShort")}</span>
               <input
-                aria-label={speechActive ? "Volume bacaan" : "Volume MIDI"}
+                aria-label={translate(
+                  locale,
+                  speechActive ? "media.volumeSpeech" : "media.volumeMidi",
+                )}
                 type="range"
                 min="0"
                 max="1"
@@ -1664,9 +2139,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
             </label>
             {speechActive ? (
               <label className="media-speech-rate-control">
-                <span>Kecepatan</span>
+                <span>{translate(locale, "media.speed")}</span>
                 <select
-                  aria-label="Kecepatan bacaan"
+                  aria-label={translate(locale, "media.speedSpeech")}
                   value={speechSnapshot.rate}
                   onChange={(e) => speechPlayer.setRate(Number(e.target.value))}
                 >
@@ -1679,15 +2154,19 @@ function MediaSurface({ locale }: { locale: Locale }) {
               </label>
             ) : (
               <>
-                <div className="media-kicker" aria-hidden="true">
-                  <span className="media-status-dot" />
-                  <span>MIDI Queue</span>
-                </div>
+                {!isKidungMedia && (
+                  <div className="media-kicker" aria-hidden="true">
+                    <span className="media-status-dot" />
+                    <span>{translate(locale, "media.midiQueue")}</span>
+                  </div>
+                )}
                 <div className="media-seek-time">
                   <span>{formatDuration(snapshot.position)}</span>
-                  <span className="sr-only">Posisi MIDI</span>
+                  <span className="sr-only">
+                    {translate(locale, "media.positionMidi")}
+                  </span>
                   <input
-                    aria-label="Posisi MIDI"
+                    aria-label={translate(locale, "media.positionMidi")}
                     type="range"
                     min="0"
                     max={Math.max(0.01, snapshot.duration)}
@@ -1701,167 +2180,21 @@ function MediaSurface({ locale }: { locale: Locale }) {
                   />
                   <span>{formatDuration(snapshot.duration)}</span>
                 </div>
-                <div className="media-midi-actions">
-                  <button
-                    className="media-control media-loop-control"
-                    type="button"
-                    onClick={cycleLoopMode}
-                    aria-pressed={midiLoopMode !== "off"}
-                    aria-label={`Mode ulang: ${loopLabel}`}
-                    title={`Ulang · ${loopLabel}`}
-                  >
-                    <Icon name="repeat" size={16} />
-                    <small>{loopLabel}</small>
-                  </button>
-                  <div className="media-key-control">
-                    <button
-                      className="media-control"
-                      type="button"
-                      onClick={() => setKeyMenuOpen((open) => !open)}
-                      aria-expanded={keyMenuOpen}
-                      aria-haspopup="listbox"
-                      aria-label="Pilih nada dasar"
-                      title="Pilih nada dasar"
-                    >
-                      {chordKeyName(keyIndex, keyAccidental)}
-                    </button>
-                    {keyMenuOpen && (
-                      <div
-                        className="media-key-dropdown"
-                        role="listbox"
-                        aria-label="Nada dasar"
-                      >
-                        {Array.from({ length: 12 }, (_, value) => (
-                          <button
-                            key={value}
-                            type="button"
-                            role="option"
-                            aria-selected={value === keyIndex}
-                            className={
-                              value === keyIndex ? "is-selected" : undefined
-                            }
-                            onClick={() => {
-                              void midiPlayer
-                                .setTranspose(
-                                  transposeBetweenKeys(keyIndex, value),
-                                )
-                                .catch(() => undefined);
-                              setKeyMenuOpen(false);
-                            }}
-                          >
-                            {chordKeyName(value, keyAccidental)}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={() =>
-                      setKeyAccidental((current) =>
-                        current === "sharp" ? "flat" : "sharp",
-                      )
-                    }
-                    aria-label="Ganti notasi kres/mol"
-                    aria-pressed={keyAccidental === "flat"}
-                    title={
-                      keyAccidental === "sharp"
-                        ? "Notasi kres (♯)"
-                        : "Notasi mol (♭)"
-                    }
-                  >
-                    {keyAccidental === "sharp" ? "♯" : "♭"}
-                  </button>
-                  <div className="media-transpose">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void midiPlayer.setTranspose(snapshot.transpose - 1)
-                      }
-                      aria-label="Turunkan nada"
-                    >
-                      −
-                    </button>
-                    <strong>
-                      {snapshot.transpose > 0
-                        ? `+${snapshot.transpose}`
-                        : snapshot.transpose}
-                    </strong>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void midiPlayer.setTranspose(snapshot.transpose + 1)
-                      }
-                      aria-label="Naikkan nada"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <button
-                    className="media-control"
-                    type="button"
-                    onClick={openHymnLyrics}
-                    aria-label="Lihat lirik"
-                    title="Lihat lirik"
-                  >
-                    <Icon name="menuBook" size={16} />
-                  </button>
-                </div>
-                <div className="media-tempo-control">
-                  <button
-                    type="button"
-                    className="media-tempo-toggle"
-                    onClick={() => setTempoOpen((open) => !open)}
-                    aria-expanded={tempoOpen}
-                    aria-haspopup="dialog"
-                    aria-label="Atur tempo MIDI"
-                    title="Atur tempo MIDI"
-                  >
-                    <Icon name="tune" size={14} />
-                    <strong>{snapshot.tempo}</strong>
-                    <small>BPM</small>
-                  </button>
-                  {tempoOpen && (
-                    <div
-                      className="media-tempo-popover"
-                      role="dialog"
-                      aria-label="Kontrol tempo"
-                    >
-                      <input
-                        aria-label="Tempo MIDI"
-                        type="range"
-                        min="30"
-                        max="220"
-                        step="1"
-                        value={snapshot.tempo}
-                        onChange={(event) =>
-                          void midiPlayer.setTempo(Number(event.target.value))
-                        }
-                      />
-                      <span>{snapshot.tempo} BPM</span>
+                {isKidungMedia ? (
+                  <details className="media-advanced-controls">
+                    <summary className="media-advanced-summary">
+                      <span>{translate(locale, "media.advanced")}</span>
+                      <small>
+                        {chordKeyName(keyIndex, keyAccidental)} · {snapshot.tempo} BPM
+                      </small>
+                    </summary>
+                    <div className="media-advanced-panel">
+                      {midiAdvancedControls}
                     </div>
-                  )}
-                </div>
-                <label className="media-instrument-control">
-                  <span>Instrumen</span>
-                  <select
-                    aria-label="Instrumen MIDI"
-                    value={snapshot.instrument}
-                    onChange={(event) =>
-                      void midiPlayer
-                        .setInstrument(Number(event.target.value))
-                        .catch(() => undefined)
-                    }
-                  >
-                    <option value={-1}>{midiInstrumentLabel(-1)}</option>
-                    {GM_INSTRUMENTS.map((name, program) => (
-                      <option key={program} value={program}>
-                        {String(program + 1).padStart(3, "0")} · {name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                  </details>
+                ) : (
+                  midiAdvancedControls
+                )}
               </>
             )}
           </div>
@@ -1870,7 +2203,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
       {!minimized ? (
         <div
           className="media-transport-controls"
-          aria-label={speechActive ? "Kontrol Suara" : "Kontrol MIDI"}
+          aria-label={translate(
+            locale,
+            speechActive ? "media.controlsSpeech" : "media.controlsMidi",
+          )}
         >
           <button
             className="media-control media-secondary-control media-previous-control"
@@ -1881,7 +2217,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 : void playPreviousMidiPlaylistItem().catch(() => undefined)
             }
             aria-label={
-              speechActive ? "Ayat sebelumnya" : "Lagu MIDI sebelumnya"
+              translate(
+                locale,
+                speechActive ? "media.previousVerse" : "media.previousSong",
+              )
             }
             disabled={
               speechActive ? speechSnapshot.currentIndex <= 0 : !canPlayPrevious
@@ -1910,7 +2249,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 : void playNextMidiPlaylistItem().catch(() => undefined)
             }
             aria-label={
-              speechActive ? "Ayat berikutnya" : "Lagu MIDI berikutnya"
+              translate(
+                locale,
+                speechActive ? "media.nextVerse" : "media.nextSong",
+              )
             }
             disabled={
               speechActive
@@ -1944,7 +2286,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
             onClick={() =>
               void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
             }
-            aria-label={speechActive ? "Hentikan bacaan" : "Hentikan MIDI"}
+            aria-label={translate(
+              locale,
+              speechActive ? "media.stopSpeech" : "media.stopMidi",
+            )}
           >
             <Icon name="stop" size={16} />
           </button>
@@ -1959,11 +2304,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
             aria-label={
               speechActive
                 ? speechSnapshot.volume > 0
-                  ? "Bisukan bacaan"
-                  : "Nyalakan bacaan"
+                  ? translate(locale, "media.muteSpeech")
+                  : translate(locale, "media.unmuteSpeech")
                 : snapshot.muted
-                  ? "Nyalakan suara MIDI"
-                  : "Bisukan MIDI"
+                  ? translate(locale, "media.unmuteMidi")
+                  : translate(locale, "media.muteMidi")
             }
             aria-pressed={
               speechActive ? speechSnapshot.volume === 0 : snapshot.muted
@@ -1989,8 +2334,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
           className="media-minimize media-close-button"
           type="button"
           onClick={() => speechPlayer.togglePlayer(false)}
-          aria-label="Tutup pemutar suara"
-          title="Tutup pemutar"
+          aria-label={translate(locale, "media.closePlayer")}
+          title={translate(locale, "media.closePlayerTitle")}
         >
           <Icon name="cross" size={16} />
         </button>
@@ -1999,7 +2344,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
         className="media-minimize"
         type="button"
         onClick={() => setMinimized((value) => !value)}
-        aria-label={minimized ? "Perbesar pemutar" : "Minimalkan pemutar"}
+        aria-label={translate(
+          locale,
+          minimized ? "media.restore" : "media.minimize",
+        )}
       >
         <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />
       </button>
@@ -2020,6 +2368,7 @@ function Shell({
 }: ReturnType<typeof useAppSettings>) {
   const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     readSidebarCollapsed(
       typeof window === "undefined" ? undefined : window.localStorage,
@@ -2049,7 +2398,12 @@ function Shell({
   useScreenWakeLock(location.pathname, isAudioPlaying);
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
-  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    window.requestAnimationFrame(() =>
+      searchTriggerRef.current?.focus({ preventScroll: true }),
+    );
+  }, []);
   const focusPageSearch = useCallback(() => {
     const selector =
       location.pathname === "/bible"
@@ -2092,11 +2446,12 @@ function Shell({
   return (
     <div className={`app-frame${isReaderRoute ? " is-reader-route" : ""}`}>
       <a className="skip-link" href="#main-content">
-        Lewati ke konten utama
+        {translate(locale, "shell.skipContent")}
       </a>
       <Header
         {...{ locale, setLocale, theme, setTheme, online }}
         onOpenSearch={openSearch}
+        searchTriggerRef={searchTriggerRef}
         pathname={location.pathname}
         onFocusPageSearch={focusPageSearch}
       />
@@ -2110,13 +2465,19 @@ function Shell({
             onClick={() => setSidebarCollapsed((current) => !current)}
             aria-expanded={!sidebarCollapsed}
             aria-label={
-              sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"
+              sidebarCollapsed
+                ? translate(locale, "shell.expandNavigation")
+                : translate(locale, "shell.collapseNavigation")
             }
-            title={sidebarCollapsed ? "Perluas navigasi" : "Ciutkan navigasi"}
+            title={
+              sidebarCollapsed
+                ? translate(locale, "shell.expandNavigation")
+                : translate(locale, "shell.collapseNavigation")
+            }
           >
             <Icon
               name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}
-              size={17}
+              size={15}
             />
           </button>
           <Navigation locale={locale} />
@@ -2126,36 +2487,94 @@ function Shell({
             className="route-view"
             key={`${location.pathname}${location.search}`}
           >
-            <Suspense
-              fallback={
-                <div className="loading-panel route-loading" role="status">
-                  Membuka ruang ini…
-                </div>
-              }
-            >
-              <Outlet
-                context={{
-                  locale,
-                  theme,
-                  setLocale,
-                  setTheme,
-                }}
-              />
-            </Suspense>
+            <RouteErrorBoundary locale={locale}>
+              <Suspense
+                fallback={
+                  isReaderRoute ? (
+                    <div
+                      className="reader-route-loading route-loading"
+                      role="status"
+                      aria-live="polite"
+                      aria-busy="true"
+                    >
+                      <span className="reader-route-loading-label">
+                        {translate(locale, "bible.routeLoading", {
+                          title: translate(
+                            locale,
+                            location.pathname === "/bible"
+                              ? "page.bibleTitle"
+                              : "page.kidungTitle",
+                          ),
+                        })}
+                      </span>
+                      <div
+                        className="reader-route-loading-toolbar"
+                        aria-hidden="true"
+                      >
+                        <span className="reader-route-loading-control is-wide" />
+                        <span className="reader-route-loading-control" />
+                        <span className="reader-route-loading-control" />
+                      </div>
+                      <div
+                        className="reader-route-loading-surface"
+                        aria-hidden="true"
+                      >
+                        <div className="reader-route-loading-pane">
+                          <span className="reader-route-loading-line is-kicker" />
+                          <span className="reader-route-loading-line is-title" />
+                          <span className="reader-route-loading-line" />
+                          <span className="reader-route-loading-line is-short" />
+                          <span className="reader-route-loading-line" />
+                          <span className="reader-route-loading-line is-medium" />
+                        </div>
+                        <div className="reader-route-loading-pane">
+                          <span className="reader-route-loading-line is-kicker" />
+                          <span className="reader-route-loading-line is-title" />
+                          <span className="reader-route-loading-line" />
+                          <span className="reader-route-loading-line is-short" />
+                          <span className="reader-route-loading-line" />
+                          <span className="reader-route-loading-line is-medium" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <NonReaderRouteLoading
+                      locale={locale}
+                      pathname={location.pathname}
+                    />
+                  )
+                }
+              >
+                <Outlet
+                  context={{
+                    locale,
+                    theme,
+                    setLocale,
+                    setTheme,
+                  }}
+                />
+              </Suspense>
+            </RouteErrorBoundary>
           </div>
         </main>
       </div>
       <MediaSurface locale={locale} />
       {searchOpen ? (
         <Suspense fallback={null}>
-          <GlobalSearch locale={locale} open onClose={closeSearch} />
+          <GlobalSearch
+            locale={locale}
+            open
+            onClose={closeSearch}
+            returnFocusRef={searchTriggerRef}
+          />
         </Suspense>
       ) : null}
+      <UiPreferencesPanel locale={locale} />
     </div>
   );
 }
 
-function SauhSkeleton() {
+function SauhSkeleton({ locale }: { locale: Locale }) {
   return (
     <div
       className="sauh-skeleton"
@@ -2164,7 +2583,9 @@ function SauhSkeleton() {
       data-testid="home-sauh-skeleton"
     >
       <span className="sauh-skeleton-spinner" aria-hidden="true" />
-      <span className="sauh-skeleton-loading-text">Memuat Sauh Bagi Jiwa…</span>
+      <span className="sauh-skeleton-loading-text">
+        {translate(locale, "home.loadingSauh")}
+      </span>
     </div>
   );
 }
@@ -2361,7 +2782,10 @@ function HomePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "home.title")}</h1>
         </div>
       </section>
-      <section className="home-grid" aria-label="Daily overview">
+      <section
+        className="home-grid"
+        aria-label={translate(locale, "home.overview")}
+      >
         <article className="verse-panel">
           {selectedToday && (
             <div className="sauh-card-media">
@@ -2371,7 +2795,9 @@ function HomePage({ locale }: { locale: Locale }) {
                 src={selectedToday.imageUrl}
                 fallbackTitle={selectedToday.title}
                 fallbackCategory="renungan"
-                alt={`Ilustrasi ${selectedToday.title}`}
+                alt={translate(locale, "home.illustrationAlt", {
+                  title: selectedToday.title,
+                })}
                 loading="eager"
                 fetchPriority="high"
               />
@@ -2380,15 +2806,17 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           <div className="sauh-card-content">
             <div className="section-heading">
-              <span>Sauh hari ini</span>
+              <span>{translate(locale, "home.sauh")}</span>
               <small>
                 {selectedToday
                   ? (selectedToday.reference ??
                     translate(locale, "home.sauhNoReference"))
-                  : "Sumber langsung TJC"}
+                    : translate(locale, "home.directSource")}
               </small>
             </div>
-            {!selectedToday && sauhStatus !== "error" && <SauhSkeleton />}
+            {!selectedToday && sauhStatus !== "error" && (
+              <SauhSkeleton locale={locale} />
+            )}
             {sauhStatus === "error" && !selectedToday && (
               <div className="sauh-offline-state">
                 <strong>{translate(locale, "home.sauhUnavailable")}</strong>
@@ -2411,7 +2839,7 @@ function HomePage({ locale }: { locale: Locale }) {
             {selected && (
               <div className="verse-actions">
                 <Link className="quiet-button" to="/sauh">
-                  Baca Lebih Lanjut →
+                  {translate(locale, "home.readMore")}
                 </Link>
               </div>
             )}
@@ -2432,7 +2860,7 @@ function HomePage({ locale }: { locale: Locale }) {
                     <strong>
                       {activity.bible.book} {activity.bible.chapter}
                     </strong>
-                    <span>Alkitab Terjemahan Baru</span>
+                    <span>{translate(locale, "home.bibleVersion")}</span>
                   </div>
                   <Icon name="arrow" size={16} />
                 </Link>
@@ -2448,7 +2876,7 @@ function HomePage({ locale }: { locale: Locale }) {
                   <div style={{ minWidth: 0 }}>
                     <strong>{activity.hymn.title}</strong>
                     <span>
-                      Kidung Rohani ·{" "}
+                      {translate(locale, "home.hymnLabel")} ·{" "}
                       {String(activity.hymn.number).padStart(3, "0")}
                     </span>
                   </div>
@@ -2458,7 +2886,7 @@ function HomePage({ locale }: { locale: Locale }) {
             </div>
           ) : (
             <div className="empty-inline">
-              <p>Belum ada bacaan terakhir.</p>
+              <p>{translate(locale, "home.noRecent")}</p>
             </div>
           )}
         </article>
@@ -2468,27 +2896,29 @@ function HomePage({ locale }: { locale: Locale }) {
         >
           <div className="section-title-row">
             <div>
-              <p className="date-line">Kesaksian</p>
+              <p className="date-line">
+                {translate(locale, "home.testimony")}
+              </p>
               <h2 id="home-suara-heading">Suara Sejati</h2>
             </div>
             <Link className="text-button" to="/suara">
-              Lihat semua →
+              {translate(locale, "home.viewAll")}
             </Link>
           </div>
           {suaraStatus === "loading" && (
             <div className="loading-panel" role="status">
-              Mengambil Suara Sejati…
+              {translate(locale, "home.loadingSuara")}
             </div>
           )}
           {suaraStatus === "error" && (
             <div className="error-panel" role="alert">
-              <strong>Suara Sejati belum tersedia.</strong>
+              <strong>{translate(locale, "home.suaraUnavailable")}</strong>
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => loadSuara()}
               >
-                Coba lagi
+                {translate(locale, "home.retry")}
               </button>
             </div>
           )}
@@ -2507,7 +2937,9 @@ function HomePage({ locale }: { locale: Locale }) {
                       src={post.imageUrl}
                       fallbackTitle={post.title}
                       fallbackCategory="kesaksian"
-                      alt={`Cover ${post.title}`}
+                      alt={translate(locale, "home.coverAlt", {
+                        title: post.title,
+                      })}
                       loading={index < 3 ? "eager" : "lazy"}
                       fetchPriority={index === 0 ? "high" : "auto"}
                     />
@@ -2530,32 +2962,38 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
         </section>
         <section
-          className="home-media-section"
+          className="home-media-section home-literature-section"
           aria-labelledby="home-literature-heading"
         >
           <div className="section-title-row">
             <div>
-              <p className="date-line">Bacaan &amp; Pembinaan</p>
-              <h2 id="home-literature-heading">Literatur Terbaru</h2>
+              <p className="date-line">
+                {translate(locale, "home.reading")}
+              </p>
+              <h2 id="home-literature-heading">
+                {translate(locale, "home.literature")}
+              </h2>
             </div>
             <Link className="text-button" to="/literatur">
-              Lihat semua →
+              {translate(locale, "home.viewAll")}
             </Link>
           </div>
           {literatureStatus === "loading" && (
             <div className="loading-panel" role="status">
-              Mengambil literatur…
+              {translate(locale, "home.loadingLiterature")}
             </div>
           )}
           {literatureStatus === "error" && (
             <div className="error-panel" role="alert">
-              <strong>Literatur belum tersedia.</strong>
+              <strong>
+                {translate(locale, "home.literatureUnavailable")}
+              </strong>
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => loadLiterature()}
               >
-                Coba lagi
+                {translate(locale, "home.retry")}
               </button>
             </div>
           )}
@@ -2574,7 +3012,9 @@ function HomePage({ locale }: { locale: Locale }) {
                       src={item.imageUrl}
                       fallbackTitle={item.title}
                       fallbackCategory={item.category}
-                      alt={`Cover ${item.title}`}
+                      alt={translate(locale, "home.coverAlt", {
+                        title: item.title,
+                      })}
                       loading={index < 3 ? "eager" : "lazy"}
                       fetchPriority={index === 0 ? "high" : "auto"}
                     />
@@ -2593,7 +3033,7 @@ function HomePage({ locale }: { locale: Locale }) {
                               year: "numeric",
                             },
                           )
-                        : "Arsip TJC"}
+                        : translate(locale, "home.archiveTjc")}
                     </span>
                     <strong>{item.title}</strong>
                     {item.description ? (
@@ -2613,6 +3053,12 @@ function HomePage({ locale }: { locale: Locale }) {
 }
 
 function RoutedApp() {
+  if (
+    navigator.webdriver &&
+    new URLSearchParams(window.location.search).get("__gys_shell_error") === "1"
+  ) {
+    throw new Error("Injected shell render error for E2E recovery coverage");
+  }
   const settings = useAppSettings();
   const locale = settings.locale;
   useEffect(() => installMidiQueueCoordinator(), []);
@@ -2622,8 +3068,8 @@ function RoutedApp() {
     <Routes>
       <Route element={<Shell {...settings} />}>
         <Route path="/" element={<HomePage locale={locale} />} />
-        <Route path="/sauh" element={<SauhPage />} />
-        <Route path="/suara" element={<SuaraPage />} />
+        <Route path="/sauh" element={<SauhPage locale={locale} />} />
+        <Route path="/suara" element={<SuaraPage locale={locale} />} />
         <Route
           path="/suara/:postId"
           element={<SuaraDetailPage locale={locale} />}
@@ -2651,7 +3097,8 @@ function RoutedApp() {
             />
           }
         />
-        <Route path="*" element={<HomePage locale={locale} />} />
+        <Route path="/more" element={<Navigate to="/lainnya" replace />} />
+        <Route path="*" element={<NotFoundPage locale={locale} />} />
       </Route>
     </Routes>
   );

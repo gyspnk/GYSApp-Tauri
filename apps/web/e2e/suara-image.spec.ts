@@ -58,6 +58,20 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
       { timeout: 5_000 },
     )
     .toBeGreaterThan(0);
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".home-suara-shelf .suara-thumb-img")
+          .first()
+          .evaluate((image) => ({
+            naturalWidth: image.naturalWidth,
+            opacity: getComputedStyle(image).opacity,
+            visibility: getComputedStyle(image).visibility,
+          })),
+      { timeout: 5_000 },
+    )
+    .toMatchObject({ naturalWidth: 1, opacity: "1", visibility: "visible" });
   const firstSuaraImage = await page
     .locator(".home-suara-shelf .suara-thumb-img")
     .first()
@@ -75,4 +89,25 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
   // Verify literature covers
   const covers = page.locator(".literature-cover");
   await expect(covers.first()).toBeVisible({ timeout: 5_000 });
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".literature-page .literature-cover img")
+          .evaluateAll(
+            (images) =>
+              images.filter((image) => image.complete && image.naturalWidth > 0)
+                .length,
+          ),
+      { timeout: 5_000 },
+    )
+    .toBeGreaterThan(0);
+  const literatureSources = await page
+    .locator(".literature-page .literature-cover img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
+  expect(literatureSources.filter(Boolean).every((src) =>
+    /^https:\/\/(?:tjc\.org|www\.tjc\.org|tjcorguploads\.s3\.amazonaws\.com)\//i.test(
+      src,
+    ),
+  )).toBe(true);
 });

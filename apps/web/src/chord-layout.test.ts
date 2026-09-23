@@ -72,6 +72,43 @@ describe("canonical PDF chord layout", () => {
     expect(lines[0]?.chords[1]?.pos).toBeCloseTo(11 / 12);
   });
 
+  it("reuses one note row for every numbered lyric variant", () => {
+    const notes = extractPageNotes(
+      [item("1", 20, 100, 8), item("2", 60, 100, 8)],
+      100,
+      120,
+    );
+    const lyricLines = extractLyricLines(
+      [
+        item("1.", 20, 80, 8, 14),
+        item("Ku - dus,", 32, 80, 36, 14),
+        item("2.", 20, 70, 8, 14),
+        item("Ku - dus,", 32, 70, 36, 14),
+        item("3.", 20, 50, 8, 14),
+        item("Ku - dus,", 32, 50, 36, 14),
+      ],
+      100,
+    );
+
+    const lines = buildChordedLines(notes.notes, notes.noteRows, lyricLines, [
+      { noteIdx: 0, chord: "C" },
+      { noteIdx: 1, chord: "G" },
+    ]);
+
+    expect(lines.map((line) => line.text)).toEqual([
+      "Ku - dus,",
+      "Ku - dus,",
+      "Ku - dus,",
+    ]);
+    expect(lines.map((line) => line.chords.map((chord) => chord.chord))).toEqual(
+      [
+        ["C", "G"],
+        ["C", "G"],
+        ["C", "G"],
+      ],
+    );
+  });
+
   it("ignores digit-only text and rows with fewer than two notes", () => {
     const result = extractPageNotes(
       [item("1", 10, 90, 8), item("2", 20, 90, 8), item("9", 30, 70, 8)],

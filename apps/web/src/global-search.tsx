@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type RefObject,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -48,6 +49,15 @@ type FaithPack = {
 };
 
 let indexPromise: Promise<SearchEntry[]> | undefined;
+
+const FOCUSABLE_SELECTOR = [
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "a[href]",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
 
 async function readJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: "force-cache" });
@@ -229,10 +239,12 @@ export function GlobalSearch({
   locale,
   open,
   onClose,
+  returnFocusRef,
 }: {
   locale: Locale;
   open: boolean;
   onClose: () => void;
+  returnFocusRef?: RefObject<HTMLButtonElement | null>;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -242,6 +254,7 @@ export function GlobalSearch({
   const [entries, setEntries] = useState<SearchEntry[]>([]);
   const [bibleEntries, setBibleEntries] = useState<BibleSearchEntry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
   const bibleClientRef = useRef<BibleSearchClient | undefined>(undefined);
   const bibleSequenceRef = useRef(0);
   const deferredQuery = useDeferredValue(query);
@@ -288,6 +301,44 @@ export function GlobalSearch({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter(
+        (element) =>
+          !element.hidden &&
+          element.getClientRects().length > 0 &&
+          element.getAttribute("aria-hidden") !== "true",
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   // The Bible index is heavy, so it is loaded on demand and searched through
   // the same worker-backed client as the Bible screen. A stale search result
@@ -350,6 +401,24 @@ export function GlobalSearch({
     [results, bibleEntries],
   );
 
+  const searchStatus = useMemo(() => {
+    if (status === "loading") return translate(locale, "search.loading");
+    if (status !== "ready") return "";
+    const normalized = deferredQuery.trim();
+    if (normalized.length < 2) {
+      return translate(locale, "search.ready", {
+        count: entries.length.toLocaleString(locale),
+      });
+    }
+    if (!mergedResults.length) {
+      return translate(locale, "search.empty", { query: normalized });
+    }
+    return translate(locale, "search.resultCount", {
+      count: mergedResults.length.toLocaleString(locale),
+      query: normalized,
+    });
+  }, [deferredQuery, entries.length, locale, mergedResults.length, status]);
+
   const submit = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
   const openResult = (entry: SearchEntry | BibleSearchEntry) => {
     onClose();
@@ -366,10 +435,12 @@ export function GlobalSearch({
       }}
     >
       <section
+        ref={dialogRef}
         className="global-search"
         role="dialog"
         aria-modal="true"
         aria-labelledby="global-search-title"
+        aria-busy={status === "loading"}
       >
         <div className="global-search-heading">
           <div>
@@ -378,7 +449,15 @@ export function GlobalSearch({
               {translate(locale, "search.title")}
             </h2>
           </div>
-          <button className="text-button" type="button" onClick={onClose}>
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => {
+              onClose();
+              returnFocusRef?.current?.focus({ preventScroll: true });
+            }}
+            aria-label={translate(locale, "search.close")}
+          >
             {translate(locale, "search.close")} <kbd>Esc</kbd>
           </button>
         </div>
@@ -395,59 +474,55 @@ export function GlobalSearch({
             autoComplete="off"
           />
         </form>
-        {status === "loading" && (
-          <p className="global-search-status" role="status">
-            {translate(locale, "search.loading")}
+        {searchStatus && (
+          <p
+            id="global-search-status"
+            className="global-search-status"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {searchStatus}
           </p>
         )}
         {status === "error" && (
-          <p className="global-search-status is-error" role="alert">
+          <p
+            id="global-search-error"
+            className="global-search-status is-error"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
             {translate(locale, "search.error")}
           </p>
         )}
-        {status === "ready" && deferredQuery.trim().length < 2 && (
-          <p className="global-search-status">
-            {translate(locale, "search.ready", {
-              count: entries.length.toLocaleString(locale),
-            })}
-          </p>
-        )}
-        {status === "ready" &&
-          deferredQuery.trim().length >= 2 &&
-          !mergedResults.length && (
-            <p className="global-search-status">
-              {translate(locale, "search.empty", {
-                query: deferredQuery.trim(),
-              })}
-            </p>
-          )}
         {mergedResults.length > 0 && (
-          <div
+          <ul
             className="global-search-results"
-            role="listbox"
             aria-label={translate(locale, "search.results")}
           >
             {mergedResults.map((entry) => (
-              <button
-                type="button"
-                className="global-search-result"
-                key={`${entry.kind}-${entry.id}`}
-                onClick={() => openResult(entry)}
-              >
-                <span
-                  className={`search-result-mark is-${entry.kind}`}
-                  aria-hidden="true"
+              <li key={`${entry.kind}-${entry.id}`}>
+                <button
+                  type="button"
+                  className="global-search-result"
+                  onClick={() => openResult(entry)}
                 >
-                  {labels[entry.kind].slice(0, 1)}
-                </span>
-                <span>
-                  <strong>{entry.title}</strong>
-                  <small>{entry.detail}</small>
-                </span>
-                <span aria-hidden="true">↗</span>
-              </button>
+                  <span
+                    className={`search-result-mark is-${entry.kind}`}
+                    aria-hidden="true"
+                  >
+                    {labels[entry.kind].slice(0, 1)}
+                  </span>
+                  <span>
+                    <strong>{entry.title}</strong>
+                    <small>{entry.detail}</small>
+                  </span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </section>
     </div>

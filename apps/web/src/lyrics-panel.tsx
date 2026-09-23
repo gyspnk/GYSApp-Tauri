@@ -14,10 +14,11 @@ import {
   ChordCapability,
   type ChordTextLine,
 } from "./chord-viewer.js";
-import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
+import { GM_INSTRUMENTS } from "./midi-instruments.js";
 import { midiPlayer } from "./midi-player.js";
 import { Icon } from "./icons.js";
 import { autoFitFontSize } from "./hymn-autofit.js";
+import { translate, type Locale } from "./i18n.js";
 import type { HymnCatalogEntry } from "@gys/contracts";
 
 const FONT_SIZE_KEY = "gys-lyrics-font-size";
@@ -66,6 +67,7 @@ function formatMidiTime(seconds: number): string {
 }
 
 export type LyricsPanelProps = {
+  locale: Locale;
   item: HymnCatalogEntry;
   verses: string[];
   /** Resolve chord lines for a specific verse index so in-panel verse swipes
@@ -84,6 +86,7 @@ export type LyricsPanelProps = {
  * transpose controls, font and line-spacing steppers, and swipe gestures.
  */
 export function LyricsPanel({
+  locale,
   item,
   verses,
   getChordLinesForVerse,
@@ -322,7 +325,7 @@ export function LyricsPanel({
       className="lyrics-panel"
       role="dialog"
       aria-modal="true"
-      aria-label="Mode lirik"
+      aria-label={translate(locale, "kidung.lyrics.mode")}
     >
       <div className="lyrics-backdrop" onClick={onClose} aria-hidden="true" />
       <div className="lyrics-inner">
@@ -335,8 +338,8 @@ export function LyricsPanel({
                 type="button"
                 className="lyrics-hdr-btn"
                 onClick={() => onNavigateSong(-1)}
-                aria-label="Lagu sebelumnya"
-                title="Lagu sebelumnya"
+                aria-label={translate(locale, "kidung.lyrics.previousSong")}
+                title={translate(locale, "kidung.lyrics.previousSong")}
               >
                 <Icon name="skipPrevious" size={17} />
               </button>
@@ -344,7 +347,12 @@ export function LyricsPanel({
                 type="button"
                 className="lyrics-hdr-btn lyrics-play-toggle"
                 onClick={togglePlayback}
-                aria-label={midiState.status === "playing" ? "Jeda" : "Putar"}
+                aria-label={translate(
+                  locale,
+                  midiState.status === "playing"
+                    ? "kidung.lyrics.pause"
+                    : "kidung.lyrics.play",
+                )}
                 disabled={!midiPlayer.getCurrentMidiUrl()}
               >
                 <Icon
@@ -367,7 +375,7 @@ export function LyricsPanel({
                     .seek(Number(event.target.value))
                     .catch(() => undefined)
                 }
-                aria-label="Posisi lagu"
+                aria-label={translate(locale, "kidung.lyrics.songPosition")}
               />
               <span className="lyrics-midi-label">
                 {formatMidiTime(midiState.duration)}
@@ -376,8 +384,8 @@ export function LyricsPanel({
                 type="button"
                 className="lyrics-hdr-btn"
                 onClick={() => onNavigateSong(1)}
-                aria-label="Lagu berikutnya"
-                title="Lagu berikutnya"
+                aria-label={translate(locale, "kidung.lyrics.nextSong")}
+                title={translate(locale, "kidung.lyrics.nextSong")}
               >
                 <Icon name="skipNext" size={17} />
               </button>
@@ -394,10 +402,18 @@ export function LyricsPanel({
                 className={`lyrics-ctrl-btn${showChords ? " is-active" : ""}`}
                 onClick={() => setShowChords((current) => !current)}
                 aria-pressed={showChords}
-                aria-label={
-                  showChords ? "Sembunyikan chord" : "Tampilkan chord"
-                }
-                title={showChords ? "Sembunyikan chord" : "Tampilkan chord"}
+                aria-label={translate(
+                  locale,
+                  showChords
+                    ? "kidung.lyrics.hideChords"
+                    : "kidung.lyrics.showChords",
+                )}
+                title={translate(
+                  locale,
+                  showChords
+                    ? "kidung.lyrics.hideChords"
+                    : "kidung.lyrics.showChords",
+                )}
               >
                 <Icon name="music" size={16} />
               </button>
@@ -405,8 +421,8 @@ export function LyricsPanel({
                 type="button"
                 className="lyrics-ctrl-btn"
                 onClick={onClose}
-                aria-label="Tutup lirik"
-                title="Tutup lirik"
+                aria-label={translate(locale, "kidung.lyrics.close")}
+                title={translate(locale, "kidung.lyrics.close")}
               >
                 <Icon name="cross" size={16} />
               </button>
@@ -415,16 +431,18 @@ export function LyricsPanel({
                 className="lyrics-ctrl-btn"
                 onClick={() => setHeaderCollapsed((current) => !current)}
                 aria-expanded={!headerCollapsed}
-                aria-label={
+                aria-label={translate(
+                  locale,
                   headerCollapsed
-                    ? "Tampilkan kontrol lain"
-                    : "Sembunyikan kontrol lain"
-                }
-                title={
+                    ? "kidung.lyrics.showControls"
+                    : "kidung.lyrics.hideControls",
+                )}
+                title={translate(
+                  locale,
                   headerCollapsed
-                    ? "Tampilkan kontrol lain"
-                    : "Sembunyikan kontrol lain"
-                }
+                    ? "kidung.lyrics.showControls"
+                    : "kidung.lyrics.hideControls",
+                )}
               >
                 <Icon name="tune" size={16} />
               </button>
@@ -434,7 +452,9 @@ export function LyricsPanel({
             <div className="lyrics-extra">
               <div className="lyrics-tune-line">
                 <label className="lyrics-midi-group">
-                  <span className="sr-only">Instrumen</span>
+                  <span className="sr-only">
+                    {translate(locale, "kidung.lyrics.instrument")}
+                  </span>
                   <select
                     className="lyrics-instrument-select"
                     value={midiSettings.instrument}
@@ -443,9 +463,14 @@ export function LyricsPanel({
                         .setInstrument(Number(event.target.value))
                         .catch(() => undefined)
                     }
-                    aria-label="Pilih alat musik"
+                    aria-label={translate(
+                      locale,
+                      "kidung.lyrics.selectInstrument",
+                    )}
                   >
-                    <option value={-1}>{midiInstrumentLabel(-1)}</option>
+                    <option value={-1}>
+                      {translate(locale, "kidung.lyrics.instrumentFromFile")}
+                    </option>
                     {GM_INSTRUMENTS.map((name, program) => (
                       <option key={program} value={program}>
                         {String(program + 1).padStart(3, "0")} · {name}
@@ -460,7 +485,7 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTempo(midiSettings.tempo - 2)
                     }
-                    aria-label="Kurangi tempo"
+                    aria-label={translate(locale, "kidung.lyrics.decreaseTempo")}
                   >
                     −
                   </button>
@@ -480,8 +505,8 @@ export function LyricsPanel({
                       if (!Number.isFinite(value))
                         void midiPlayer.setTempo(midiSettings.tempo);
                     }}
-                    aria-label="Tempo dalam BPM"
-                    title="Ketik tempo (BPM)"
+                    aria-label={translate(locale, "kidung.lyrics.tempoBpm")}
+                    title={translate(locale, "kidung.lyrics.enterTempo")}
                   />
                   <button
                     type="button"
@@ -489,7 +514,7 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTempo(midiSettings.tempo + 2)
                     }
-                    aria-label="Tambah tempo"
+                    aria-label={translate(locale, "kidung.lyrics.increaseTempo")}
                   >
                     +
                   </button>
@@ -501,7 +526,7 @@ export function LyricsPanel({
                     onClick={() => setKeyMenuOpen((open) => !open)}
                     aria-haspopup="listbox"
                     aria-expanded={keyMenuOpen}
-                    aria-label="Pilih nada dasar"
+                    aria-label={translate(locale, "kidung.lyrics.selectKey")}
                   >
                     {chordKeyName(keyIndex, accidental)}
                   </button>
@@ -538,7 +563,7 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTranspose(midiSettings.transpose - 1)
                     }
-                    aria-label="Turunkan nada"
+                    aria-label={translate(locale, "kidung.lyrics.transposeDown")}
                   >
                     <Icon name="south" size={15} />
                   </button>
@@ -553,7 +578,7 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTranspose(midiSettings.transpose + 1)
                     }
-                    aria-label="Naikkan nada"
+                    aria-label={translate(locale, "kidung.lyrics.transposeUp")}
                   >
                     <Icon name="north" size={15} />
                   </button>
@@ -566,8 +591,8 @@ export function LyricsPanel({
                   onClick={() =>
                     setFontSize((current) => Math.max(14, current - 4))
                   }
-                  aria-label="Perkecil font"
-                  title="Perkecil font"
+                  aria-label={translate(locale, "kidung.lyrics.decreaseFont")}
+                  title={translate(locale, "kidung.lyrics.decreaseFont")}
                 >
                   <Icon name="textDecrease" size={16} />
                 </button>
@@ -577,8 +602,8 @@ export function LyricsPanel({
                   onClick={() =>
                     setFontSize((current) => Math.min(72, current + 4))
                   }
-                  aria-label="Perbesar font"
-                  title="Perbesar font"
+                  aria-label={translate(locale, "kidung.lyrics.increaseFont")}
+                  title={translate(locale, "kidung.lyrics.increaseFont")}
                 >
                   <Icon name="textIncrease" size={16} />
                 </button>
@@ -590,8 +615,11 @@ export function LyricsPanel({
                       Math.max(1, Math.round((current - 0.2) * 10) / 10),
                     )
                   }
-                  aria-label="Rapatkan teks"
-                  title="Rapatkan teks"
+                  aria-label={translate(
+                    locale,
+                    "kidung.lyrics.decreaseSpacing",
+                  )}
+                  title={translate(locale, "kidung.lyrics.decreaseSpacing")}
                 >
                   <Icon name="formatLineSpacing" size={16} />
                 </button>
@@ -603,8 +631,11 @@ export function LyricsPanel({
                       Math.min(3.5, Math.round((current + 0.2) * 10) / 10),
                     )
                   }
-                  aria-label="Renggangkan teks"
-                  title="Renggangkan teks"
+                  aria-label={translate(
+                    locale,
+                    "kidung.lyrics.increaseSpacing",
+                  )}
+                  title={translate(locale, "kidung.lyrics.increaseSpacing")}
                 >
                   <Icon name="lineWeight" size={16} />
                 </button>
@@ -615,13 +646,16 @@ export function LyricsPanel({
                     setVerseIndex((current) => Math.max(0, current - 1))
                   }
                   disabled={safeVerseIndex === 0}
-                  aria-label="Bait sebelumnya"
-                  title="Bait sebelumnya"
+                  aria-label={translate(locale, "kidung.lyrics.previousVerse")}
+                  title={translate(locale, "kidung.lyrics.previousVerse")}
                 >
                   <Icon name="chevronLeft" size={15} />
                 </button>
                 <span className="lyrics-verse-indicator">
-                  Bait {safeVerseIndex + 1} dari {verses.length}
+                  {translate(locale, "kidung.lyrics.verseCount", {
+                    current: safeVerseIndex + 1,
+                    total: verses.length,
+                  })}
                 </span>
                 <button
                   type="button"
@@ -632,8 +666,8 @@ export function LyricsPanel({
                     )
                   }
                   disabled={safeVerseIndex >= verses.length - 1}
-                  aria-label="Bait berikutnya"
-                  title="Bait berikutnya"
+                  aria-label={translate(locale, "kidung.lyrics.nextVerse")}
+                  title={translate(locale, "kidung.lyrics.nextVerse")}
                 >
                   <Icon name="chevronRight" size={15} />
                 </button>
@@ -666,6 +700,7 @@ export function LyricsPanel({
                         lines={[chordLine]}
                         transpose={midiSettings.transpose}
                         accidental={accidental}
+                        locale={locale}
                       />
                     ) : (
                       line || "\u00A0"

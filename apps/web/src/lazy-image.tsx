@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
 
-export function resolveProxiedImageUrl(src?: string): string | undefined {
+export type LazyImageState = "loading" | "loaded" | "missing" | "error";
+
+export function getLazyImageState(
+  src: string | undefined,
+  loaded: boolean,
+  error: boolean,
+): LazyImageState {
+  if (!src) return "missing";
+  if (error) return "error";
+  return loaded ? "loaded" : "loading";
+}
+
+function resolveOriginalImageUrl(src?: string): string | undefined {
   if (!src) return undefined;
   if (src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("/"))
     return src;
-  // <img> does not need CORS. Use the publisher's immutable S3 original
-  // directly so the BFF cannot add a network hop or leave a resized derivative.
   try {
     const url = new URL(src);
     const stripWordPressSize = (pathname: string) =>
@@ -27,6 +37,33 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
     return src;
   }
   return src;
+}
+
+function imageProxyBase(): string | undefined {
+  const configured = import.meta.env.VITE_BFF_BASE_URL?.trim();
+  const isCrossPortLocalhost =
+    typeof window !== "undefined" &&
+    Boolean(
+      configured &&
+        (configured.includes("127.0.0.1") || configured.includes("localhost")) &&
+        !configured.includes(`:${window.location.port}`),
+    );
+  if (configured && !isCrossPortLocalhost) return configured;
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return undefined;
+}
+
+export function resolveProxiedImageUrl(src?: string): string | undefined {
+  const original = resolveOriginalImageUrl(src);
+  if (!original || original.startsWith("data:") || original.startsWith("blob:"))
+    return original;
+  const proxyBase = imageProxyBase();
+  if (!proxyBase || !/^https:\/\//i.test(original)) return original;
+  const proxy = new URL("/api/v1/content/image", proxyBase);
+  proxy.searchParams.set("url", original);
+  return proxy.toString();
 }
 
 export function LazyImage({
@@ -68,8 +105,14 @@ export function LazyImage({
     setError(false);
   }, [effectiveSrc]);
 
+  const imageState = getLazyImageState(effectiveSrc, loaded, error);
+
   return (
-    <div className={`img-skeleton-wrapper ${wrapperClassName}`}>
+    <div
+      className={`img-skeleton-wrapper ${wrapperClassName}`}
+      data-image-state={imageState}
+      aria-busy={imageState === "loading"}
+    >
       {!loaded && !error && effectiveSrc && (
         <div className="img-skeleton-shimmer" aria-hidden="true">
           <div className="img-loading-bar" />
@@ -77,9 +120,9 @@ export function LazyImage({
       )}
       {!effectiveSrc || error ? (
         <div
-          className="img-fallback-placeholder"
+          className={`img-fallback-placeholder ${error ? "is-error" : "is-missing"}`}
           role="img"
-          aria-label={`Pratinjau tidak tersedia: ${alt}`}
+          aria-label={`${error ? "Gagal memuat pratinjau" : "Pratinjau tidak tersedia"}: ${alt}`}
         >
           <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
           {fallbackCategory && <small>{fallbackCategory}</small>}

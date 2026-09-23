@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 async function hasNoHorizontalOverflow(page: Page) {
@@ -151,6 +152,170 @@ test.describe("responsive reader navigation", () => {
     ).toBeVisible();
   });
 
+  test("Bible pack loading preserves reader geometry before the pack is ready", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.addInitScript(() => {
+      localStorage.setItem("gys-bible-book", "1");
+      localStorage.setItem("gys-bible-chapter", "1");
+      localStorage.setItem("gys-bible-split-v1", "1");
+      localStorage.setItem("gys-bible-secondary-version", "b_tb");
+    });
+    await page.route("**/offline/bible/tb-reader.json", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1_200));
+      await route.continue();
+    });
+
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/GYSApp-Tauri/bible");
+
+      const loading = page.getByTestId("bible-loading-reader");
+      await expect(loading).toBeVisible({ timeout: 5_000 });
+      await expect(page.getByRole("status")).toContainText(
+        "Membuka paket TB offline",
+      );
+
+      const loadingGeometry = await loading.evaluate((element) => {
+        const reader = element.getBoundingClientRect();
+        const layout = element
+          .querySelector<HTMLElement>(".bible-loading-layout")!
+          .getBoundingClientRect();
+        const panes = element.querySelectorAll<HTMLElement>(
+          ".bible-loading-pane",
+        );
+        return {
+          readerTop: reader.top,
+          readerHeight: reader.height,
+          layoutHeight: layout.height,
+          paneCount: panes.length,
+          paneHeights: [...panes].map(
+            (pane) => pane.getBoundingClientRect().height,
+          ),
+          paneWidths: [...panes].map(
+            (pane) => pane.getBoundingClientRect().width,
+          ),
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: document.documentElement.clientWidth,
+          animationName: getComputedStyle(
+            element.querySelector<HTMLElement>(".bible-loading-line")!,
+          ).animationName,
+        };
+      });
+
+      expect(loadingGeometry.paneCount).toBe(2);
+      expect(loadingGeometry.readerHeight).toBeGreaterThan(300);
+      expect(loadingGeometry.layoutHeight).toBeGreaterThan(280);
+      expect(loadingGeometry.paneHeights.every((height) => height > 120)).toBe(
+        true,
+      );
+      expect(
+        Math.abs(loadingGeometry.paneWidths[0]! - loadingGeometry.paneWidths[1]!),
+      ).toBeLessThanOrEqual(1);
+      expect(loadingGeometry.documentWidth).toBeLessThanOrEqual(
+        loadingGeometry.viewportWidth + 1,
+      );
+      expect(loadingGeometry.animationName).toBe("none");
+
+      await expect(
+        page.locator(".bible-reader:not(.bible-loading-reader)"),
+      ).toBeVisible({ timeout: 15_000 });
+      const settledGeometry = await page
+        .locator(".bible-reader:not(.bible-loading-reader)")
+        .evaluate((element) => {
+          const reader = element.getBoundingClientRect();
+          return {
+            readerTop: reader.top,
+            documentWidth: document.documentElement.scrollWidth,
+            viewportWidth: document.documentElement.clientWidth,
+          };
+        });
+      expect(
+        Math.abs(settledGeometry.readerTop - loadingGeometry.readerTop),
+      ).toBeLessThanOrEqual(4);
+      expect(settledGeometry.documentWidth).toBeLessThanOrEqual(
+        settledGeometry.viewportWidth + 1,
+      );
+    }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test("Bible split panes keep one surface across device classes", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("gys-bible-book", "1");
+      localStorage.setItem("gys-bible-chapter", "1");
+      localStorage.setItem("gys-bible-split-v1", "1");
+      localStorage.setItem("gys-bible-secondary-version", "b_tb");
+    });
+
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/GYSApp-Tauri/bible");
+      await expect(page.locator(".bible-reader.is-split")).toBeVisible({
+        timeout: 20_000,
+      });
+      const panes = page.locator(".bible-reader.is-split .bible-pane");
+      await expect(panes).toHaveCount(2);
+      const snapshot = await panes.evaluateAll((elements) => {
+        const read = (element: Element) => {
+          const node = element as HTMLElement;
+          const box = node.getBoundingClientRect();
+          const heading = node.querySelector<HTMLElement>(".reader-heading")!;
+          const list = node.querySelector<HTMLElement>(".verse-list")!;
+          return {
+            left: box.left,
+            top: box.top,
+            right: box.right,
+            bottom: box.bottom,
+            width: box.width,
+            background: getComputedStyle(node).backgroundColor,
+            headingFont: getComputedStyle(heading).fontFamily,
+            headingSize: getComputedStyle(heading).fontSize,
+            listPadding: getComputedStyle(list).padding,
+            listOverflow: getComputedStyle(list).overflowY,
+          };
+        };
+        return elements.map(read);
+      });
+
+      expect(snapshot[0]!.background).toBe(snapshot[1]!.background);
+      expect(snapshot[0]!.headingFont).toBe(snapshot[1]!.headingFont);
+      expect(snapshot[0]!.headingSize).toBe(snapshot[1]!.headingSize);
+      expect(snapshot[0]!.listPadding).toBe(snapshot[1]!.listPadding);
+      expect(snapshot[0]!.listOverflow).toBe(snapshot[1]!.listOverflow);
+      expect(snapshot[0]!.right).toBeGreaterThan(snapshot[0]!.left);
+      expect(snapshot[1]!.right).toBeGreaterThan(snapshot[1]!.left);
+
+      if (viewport.width <= 680) {
+        expect(Math.abs(snapshot[0]!.left - snapshot[1]!.left)).toBeLessThan(1);
+        expect(snapshot[1]!.top).toBeGreaterThan(snapshot[0]!.top);
+      } else {
+        expect(Math.abs(snapshot[0]!.top - snapshot[1]!.top)).toBeLessThan(1);
+        expect(snapshot[1]!.left).toBeGreaterThan(snapshot[0]!.left);
+        expect(Math.abs(snapshot[0]!.width - snapshot[1]!.width)).toBeLessThanOrEqual(1);
+      }
+      await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+    }
+  });
+
   test("dashboard uses an adaptive compact scale without wasting desktop space", async ({
     page,
   }) => {
@@ -214,6 +379,164 @@ test.describe("responsive reader navigation", () => {
     expect(desktop.mediaLeft).toBeGreaterThan(desktop.verseRight);
   });
 
+  test("faith rows keep the PDF action and Catatan action separated", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "gys-faith-pdf-1",
+        JSON.stringify({ page: 4, total: 10, updatedAt: Date.now() }),
+      );
+    });
+
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/GYSApp-Tauri/iman");
+      await expect(page.locator(".faith-row").first()).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect(page.getByText("Baca PDF", { exact: true })).toHaveCount(0);
+      await expect(page.locator(".faith-row-summary").first()).toContainText(
+        "Catatan",
+      );
+
+      const rows = await page.locator(".faith-row").evaluateAll((elements) =>
+        elements.slice(0, 6).map((element) => {
+          const row = element.getBoundingClientRect();
+          const heading = element
+            .querySelector<HTMLElement>(".faith-row-heading")!
+            .getBoundingClientRect();
+          const action = element
+            .querySelector<HTMLElement>(".faith-row-summary")!
+            .getBoundingClientRect();
+          return {
+            row: {
+              left: row.left,
+              right: row.right,
+              width: row.width,
+              scrollWidth: (element as HTMLElement).scrollWidth,
+              clientWidth: (element as HTMLElement).clientWidth,
+            },
+            heading: { left: heading.left, right: heading.right },
+            action: {
+              left: action.left,
+              right: action.right,
+              width: action.width,
+              height: action.height,
+            },
+          };
+        }),
+      );
+
+      for (const { row, heading, action } of rows) {
+        if (row.width === 0 || action.width === 0) continue;
+        expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth + 1);
+        expect(action.width).toBeGreaterThanOrEqual(44);
+        // CSS pixels can land at 43.99997 on device-pixel boundaries.
+        expect(action.height).toBeGreaterThanOrEqual(44 - 0.01);
+        expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
+        expect(action.right).toBeLessThanOrEqual(row.right + 1);
+        expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);
+        expect(heading.right).toBeLessThanOrEqual(action.left - 8);
+      }
+      await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+    }
+  });
+
+  test("legacy and unknown routes stay explicit across locales and devices", async ({
+    page,
+  }) => {
+    const copies = [
+      {
+        locale: "id",
+        more: "Lainnya",
+        title: "Halaman tidak ditemukan",
+        body: "Alamat ini tidak tersedia. Kembali ke Beranda untuk melanjutkan.",
+        home: "Kembali ke Beranda",
+      },
+      {
+        locale: "en",
+        more: "More",
+        title: "Page not found",
+        body: "This address is not available. Return home to continue.",
+        home: "Back to Home",
+      },
+      {
+        locale: "zh",
+        more: "更多",
+        title: "页面未找到",
+        body: "此地址不可用。返回主页以继续。",
+        home: "返回主页",
+      },
+    ] as const;
+    const viewports = [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1440, height: 900 },
+    ];
+    const runtimeErrors: string[] = [];
+    page.on("pageerror", (error) => runtimeErrors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") runtimeErrors.push(message.text());
+    });
+    await page.addInitScript(() => {
+      const locale = new URLSearchParams(window.location.search).get(
+        "__gys_locale",
+      );
+      if (!locale) return;
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale, theme: "light" }),
+      );
+      localStorage.setItem("gys-locale", locale);
+    });
+
+    for (const copy of copies) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`/GYSApp-Tauri/more?__gys_locale=${copy.locale}`);
+      await expect(page).toHaveURL(/\/lainnya$/);
+      await expect(
+        page.getByRole("heading", { name: copy.more, exact: true }),
+      ).toBeVisible({ timeout: 15_000 });
+
+      for (const viewport of viewports) {
+        await page.setViewportSize(viewport);
+        await page.goto(
+          `/GYSApp-Tauri/route-that-does-not-exist?__gys_locale=${copy.locale}`,
+        );
+        const notFound = page.getByTestId("not-found-page");
+        await expect(notFound).toBeVisible({ timeout: 15_000 });
+        await expect(
+          notFound.getByRole("heading", { name: copy.title, exact: true }),
+        ).toBeVisible();
+        await expect(notFound.getByText(copy.body, { exact: true })).toBeVisible();
+        const home = notFound.getByRole("link", {
+          name: copy.home,
+          exact: true,
+        });
+        await expect(home).toHaveCSS("min-height", "44px");
+        await home.focus();
+        await expect(home).toBeFocused();
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+        if (viewport.width === 390) {
+          const results = await new AxeBuilder({ page }).analyze();
+          expect(
+            results.violations,
+            JSON.stringify(results.violations, null, 2),
+          ).toEqual([]);
+        }
+      }
+    }
+
+    expect(runtimeErrors).toEqual([]);
+  });
+
   test("Kidung catalog keeps search and collection controls usable on mobile", async ({
     page,
   }) => {
@@ -222,8 +545,8 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator(".reader-context-bar")).toBeVisible();
-    await expect(page.locator(".brand-mark")).toHaveCount(0);
+    await expect(page.locator(".reader-context-bar")).toHaveCount(0);
+    await expect(page.locator(".brand-mark")).toBeVisible();
 
     const search = page.getByRole("textbox", { name: "Cari lagu" });
     await expect(search).toBeVisible();
@@ -244,6 +567,184 @@ test.describe("responsive reader navigation", () => {
         exact: true,
       }),
     ).toBeVisible();
+  });
+
+  test("Lainnya keeps primary settings ahead of compact resource and tool groups", async ({
+    page,
+  }) => {
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/GYSApp-Tauri/lainnya");
+      await expect(
+        page.getByRole("heading", { name: "Lainnya", exact: true }),
+      ).toBeVisible({ timeout: 15_000 });
+
+      const grid = page.locator(".more-grid");
+      const order = await grid.locator(":scope > *").evaluateAll((elements) =>
+        elements.map((element) => ({
+          account: element.classList.contains("account-card"),
+          appearance: element.classList.contains("appearance-card"),
+          resources: element.classList.contains("more-resource-group"),
+          secondary: element.classList.contains("more-secondary-group"),
+        })),
+      );
+      expect(order.map((item) => Object.values(item).indexOf(true))).toEqual([
+        0, 1, 2, 3,
+      ]);
+
+      const boxes = await page
+        .locator(
+          ".account-card, .appearance-card, .more-resource-group, .more-secondary-group",
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const box = element.getBoundingClientRect();
+            return { top: box.top, width: box.width };
+          }),
+        );
+      expect(boxes).toHaveLength(4);
+      expect(boxes[0]!.top).toBeLessThan(boxes[1]!.top);
+      expect(boxes[1]!.top).toBeLessThan(boxes[2]!.top);
+      expect(boxes[2]!.top).toBeLessThan(boxes[3]!.top);
+
+      const compactActions = await page
+        .locator(
+          ".more-secondary-grid > .more-action, .more-secondary-grid > .device-data-tools",
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const box = element.getBoundingClientRect();
+            return {
+              height: box.height,
+              right: box.right,
+              left: box.left,
+            };
+          }),
+        );
+      for (const action of compactActions) {
+        expect(action.height).toBeGreaterThanOrEqual(44);
+        expect(action.left).toBeGreaterThanOrEqual(-1);
+        expect(action.right).toBeLessThanOrEqual(viewport.width + 1);
+      }
+
+      await expect(page.locator(".more-resource-group")).toContainText(
+        "Paket lokal",
+      );
+      await expect(page.locator(".more-resource-group")).toContainText(
+        "Manajemen Aset",
+      );
+      await expect(page.locator(".more-secondary-group")).toContainText(
+        "Laporkan masalah",
+      );
+      await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+    }
+  });
+
+  test("non-reader route loading preserves shell geometry until the page arrives", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    let holdNextScript = false;
+    await page.route("**/*.js", async (route) => {
+      if (holdNextScript && route.request().url().includes("/assets/")) {
+        holdNextScript = false;
+        await new Promise((resolve) => setTimeout(resolve, 2_000));
+      }
+      await route.continue();
+    });
+
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.getByRole("heading", { name: "Selamat datang kembali" })).toBeVisible();
+    holdNextScript = true;
+    await page.locator('.navigation-shell .nav-item[aria-label="Iman"]').click();
+
+    const loading = page.getByTestId("non-reader-route-loading");
+    await expect(loading).toBeVisible({ timeout: 2_000 });
+    await expect(loading).toHaveAttribute("data-route", "faith");
+    await expect(loading).toHaveAttribute("aria-busy", "true");
+
+    for (const viewport of [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1440, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      const geometry = await page.evaluate(() => {
+        const skeleton = document.querySelector<HTMLElement>(
+          '[data-testid="non-reader-route-loading"]',
+        );
+        const nav = document.querySelector<HTMLElement>(".navigation-shell");
+        if (!skeleton || !nav) return null;
+        const skeletonBox = skeleton.getBoundingClientRect();
+        const navBox = nav.getBoundingClientRect();
+        return {
+          skeletonLeft: skeletonBox.left,
+          skeletonRight: skeletonBox.right,
+          navLeft: navBox.left,
+          navRight: navBox.right,
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: document.documentElement.clientWidth,
+        };
+      });
+      expect(geometry).not.toBeNull();
+      expect(geometry!.skeletonLeft).toBeGreaterThanOrEqual(0);
+      expect(geometry!.skeletonRight).toBeLessThanOrEqual(viewport.width + 1);
+      expect(geometry!.navLeft).toBeGreaterThanOrEqual(0);
+      expect(geometry!.navRight).toBeLessThanOrEqual(viewport.width + 1);
+      expect(geometry!.documentWidth).toBeLessThanOrEqual(
+        geometry!.viewportWidth + 1,
+      );
+    }
+
+    await expect(
+      page.getByRole("heading", { name: "Dasar Kepercayaan" }),
+    ).toBeVisible({ timeout: 15_000 });
+    expect(pageErrors).toEqual([]);
+  });
+
+  test("lazy route errors keep the shell and expose a working retry", async ({
+    page,
+  }) => {
+    let abortedFaithChunk = false;
+    let failFaithChunk = true;
+    await page.route("**/assets/faith-*.js", async (route) => {
+      if (failFaithChunk) {
+        abortedFaithChunk = true;
+        await route.abort();
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.getByRole("heading", { name: "Selamat datang kembali" })).toBeVisible();
+    await page.locator('.navigation-shell .nav-item[aria-label="Iman"]').click();
+    await expect.poll(() => abortedFaithChunk).toBe(true);
+
+    await expect(page.getByTestId("route-recovery")).toBeVisible({
+      timeout: 8_000,
+    });
+    await expect(page.locator(".topbar")).toBeVisible();
+    await expect(page.locator(".navigation-shell")).toBeVisible();
+    const retry = page.getByRole("button", { name: "Coba lagi" });
+    await expect(retry).toBeVisible();
+    await expect(retry).toHaveCSS("min-height", "44px");
+
+    failFaithChunk = false;
+    await retry.click();
+    await expect(
+      page.getByRole("heading", { name: "Dasar Kepercayaan" }),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test("focused hymn reader keeps navigation and actions accessible", async ({
@@ -570,6 +1071,122 @@ test.describe("responsive reader navigation", () => {
     ]);
   });
 
+  test("topbar theme and speech endpoint settings stay localized", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const copies = {
+      id: {
+        locale: "id",
+        theme: "Tema",
+        themes: ["Otomatis", "Terang", "Gelap", "AMOLED Gelap", "Sepia Hangat"],
+        engine: "Mesin",
+        endpoint: "https://... (bawaan)",
+      },
+      en: {
+        locale: "en",
+        theme: "Theme",
+        themes: ["Automatic", "Light", "Dark", "AMOLED Dark", "Warm Sepia"],
+        engine: "Engine",
+        endpoint: "https://... (default)",
+      },
+      zh: {
+        locale: "zh",
+        theme: "主题",
+        themes: ["自动", "明亮", "深色", "AMOLED 深色", "暖褐"],
+        engine: "引擎",
+        endpoint: "https://...（默认）",
+      },
+    } as const;
+    const viewports = [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+    ];
+
+    await page.addInitScript(() => {
+      const locale = new URLSearchParams(window.location.search).get(
+        "__gys_locale",
+      );
+      if (locale !== "id" && locale !== "en" && locale !== "zh") return;
+      localStorage.setItem("gys-locale", locale);
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale, theme: "light" }),
+      );
+      localStorage.setItem("gys-speech-engine-v1", "edge");
+    });
+
+    for (const selected of Object.values(copies)) {
+      for (const viewport of viewports) {
+        await page.setViewportSize(viewport);
+        await page.goto(`/GYSApp-Tauri/?__gys_locale=${selected.locale}`);
+
+        if (viewport.width >= 600) {
+          const themeTrigger = page.getByRole("button", {
+            name: selected.theme,
+            exact: true,
+          });
+          await themeTrigger.click();
+          const themeMenu = page.getByRole("listbox", {
+            name: selected.theme,
+            exact: true,
+          });
+          await expect(themeMenu).toBeVisible();
+          await expect(themeMenu.getByRole("option")).toHaveText(
+            selected.themes,
+          );
+          const themeBox = await themeMenu.boundingBox();
+          expect(themeBox).not.toBeNull();
+          expect(themeBox!.x).toBeGreaterThanOrEqual(0);
+          expect(themeBox!.x + themeBox!.width).toBeLessThanOrEqual(
+            viewport.width + 1,
+          );
+          await themeTrigger.click();
+        }
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+
+        await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${selected.locale}`);
+        await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+          timeout: 15_000,
+        });
+        await page.locator(".reader-hamburger-btn").click();
+        const speechToggle = page.locator(
+          ".reader-hamburger-drawer .speech-settings-toggle",
+        );
+        await speechToggle.click();
+        await expect(
+          page.getByRole("combobox", { name: selected.engine, exact: true }),
+        ).toBeVisible();
+        await expect(page.getByPlaceholder(selected.endpoint, { exact: true })).toBeVisible();
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+      }
+
+      for (const viewport of [
+        { width: 768, height: 1024 },
+        { width: 1440, height: 900 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await page.goto(`/GYSApp-Tauri/kidung?__gys_locale=${selected.locale}`);
+        const themeTrigger = page.getByRole("button", {
+          name: selected.theme,
+          exact: true,
+        });
+        await themeTrigger.click();
+        const themeMenu = page.getByRole("listbox", {
+          name: selected.theme,
+          exact: true,
+        });
+        await expect(themeMenu).toBeVisible();
+        await expect(themeMenu.getByRole("option")).toHaveText(selected.themes);
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+        await themeTrigger.click();
+      }
+    }
+  });
+
   test("Bible navigation dialog supports verse content search and scope filter", async ({
     page,
   }) => {
@@ -587,6 +1204,9 @@ test.describe("responsive reader navigation", () => {
       .click();
     const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
     await expect(dialog).toBeVisible();
+    await expect(
+      page.getByPlaceholder("Cari kitab atau isi ayat…"),
+    ).toBeFocused();
 
     // Verify scope pills: Semua, PL, PB, and active book (Kejadian Saja)
     await expect(
@@ -615,7 +1235,192 @@ test.describe("responsive reader navigation", () => {
     // Navigates and closes modal
     await expect(dialog).toBeHidden();
     await expect(
+      page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }),
+    ).toBeFocused();
+    await expect(
       page.getByRole("heading", { name: /Kejadian 1/ }),
     ).toBeVisible();
+  });
+
+  test("Bible picker traps keyboard focus and restores its trigger", async ({
+    page,
+  }) => {
+    const copy = {
+      id: {
+        locale: "id",
+        handle: "Geser judul untuk berpindah pasal",
+        picker: "Pilih Kitab & Pasal",
+      },
+      en: {
+        locale: "en",
+        handle: "Drag the title to change chapter",
+        picker: "Choose book & chapter",
+      },
+      zh: {
+        locale: "zh",
+        handle: "拖动标题切换章节",
+        picker: "选择书卷和章节",
+      },
+    } as const;
+
+    for (const selected of Object.values(copy)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.addInitScript((nextLocale) => {
+        localStorage.setItem("gys-locale", nextLocale);
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({ version: 1, locale: nextLocale, theme: "light" }),
+        );
+      }, selected.locale);
+      await page.goto("/GYSApp-Tauri/bible");
+      await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+        timeout: 15_000,
+      });
+
+      const trigger = page.getByRole("button", { name: selected.handle });
+      await trigger.focus();
+      await trigger.press("Enter");
+      const dialog = page.getByRole("dialog", { name: selected.picker });
+      await expect(dialog).toBeVisible();
+      await expect(
+        dialog.getByPlaceholder(
+          selected.locale === "id"
+            ? "Cari kitab atau isi ayat…"
+            : selected.locale === "en"
+              ? "Search books or verse text…"
+              : "搜索书卷或经文内容…",
+        ),
+      ).toBeFocused();
+
+      const focusable = dialog.locator(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      await focusable.last().focus();
+      await page.keyboard.press("Tab");
+      await expect(focusable.first()).toBeFocused();
+      await focusable.first().focus();
+      await page.keyboard.press("Shift+Tab");
+      await expect(focusable.last()).toBeFocused();
+
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+
+      await trigger.press("Enter");
+      await expect(dialog).toBeVisible();
+      await page
+        .locator(".bible-picker-backdrop")
+        .click({ position: { x: 1, y: 1 } });
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+    }
+  });
+
+  test("Bible quick picker and drag overlay keep locale and viewport contracts", async ({
+    page,
+  }) => {
+    const copy = {
+      id: {
+        locale: "id",
+        handle: "Geser judul untuk berpindah pasal",
+        quick: "Navigasi cepat Alkitab",
+        picker: "Pilih Kitab & Pasal",
+        close: "Tutup pemilih kitab",
+        steps: "Langkah pemilihan",
+        placeholder: "Cari kitab atau isi ayat…",
+        dragBook: "Menggeser Kitab",
+      },
+      en: {
+        locale: "en",
+        handle: "Drag the title to change chapter",
+        quick: "Bible quick navigation",
+        picker: "Choose book & chapter",
+        close: "Close book picker",
+        steps: "Selection steps",
+        placeholder: "Search books or verse text…",
+        dragBook: "Scrubbing Book",
+      },
+      zh: {
+        locale: "zh",
+        handle: "拖动标题切换章节",
+        quick: "圣经快速导航",
+        picker: "选择书卷和章节",
+        close: "关闭书卷选择器",
+        steps: "选择步骤",
+        placeholder: "搜索书卷或经文内容…",
+        dragBook: "正在滑动书卷",
+      },
+    } as const;
+    const viewports = [
+      { width: 320, height: 720 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+      { width: 1440, height: 900 },
+    ];
+
+    for (const selected of Object.values(copy)) {
+      for (const viewport of viewports) {
+        await page.setViewportSize(viewport);
+        await page.addInitScript((nextLocale) => {
+          localStorage.setItem("gys-locale", nextLocale);
+          localStorage.setItem(
+            "gys-shell-settings-v1",
+            JSON.stringify({ version: 1, locale: nextLocale, theme: "light" }),
+          );
+        }, selected.locale);
+        await page.goto("/GYSApp-Tauri/bible");
+        await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+          timeout: 15_000,
+        });
+
+        const handle = page.getByRole("button", { name: selected.handle });
+        await handle.click();
+        const dialog = page.getByRole("dialog", { name: selected.picker });
+        await expect(dialog).toBeVisible();
+        await expect(
+          dialog.getByRole("tablist", { name: selected.steps }),
+        ).toBeVisible();
+        await expect(
+          dialog.getByPlaceholder(selected.placeholder),
+        ).toBeVisible();
+        await expect(
+          dialog.getByRole("button", { name: selected.close }),
+        ).toBeVisible();
+        const dialogBox = await dialog.boundingBox();
+        expect(dialogBox).not.toBeNull();
+        expect(dialogBox!.x).toBeGreaterThanOrEqual(0);
+        expect(dialogBox!.y).toBeGreaterThanOrEqual(0);
+        expect(dialogBox!.x + dialogBox!.width).toBeLessThanOrEqual(
+          viewport.width + 1,
+        );
+        expect(dialogBox!.y + dialogBox!.height).toBeLessThanOrEqual(
+          viewport.height + 1,
+        );
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+        await dialog.getByRole("button", { name: selected.close }).click();
+        await expect(handle).toBeFocused();
+
+        const handleBox = await handle.boundingBox();
+        expect(handleBox).not.toBeNull();
+        await page.mouse.move(
+          handleBox!.x + handleBox!.width / 2,
+          handleBox!.y + handleBox!.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+          handleBox!.x + handleBox!.width / 2 + 8,
+          handleBox!.y + handleBox!.height / 2,
+        );
+        const overlay = page.locator(".quick-nav-drag-overlay");
+        await expect(overlay).toBeVisible();
+        await expect(overlay).toHaveAttribute("aria-label", selected.quick);
+        await expect(
+          overlay.locator(".quick-nav-column-header"),
+        ).toHaveText(selected.dragBook);
+        await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
+        await page.mouse.up();
+      }
+    }
   });
 });

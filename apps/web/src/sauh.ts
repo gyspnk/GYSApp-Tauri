@@ -244,10 +244,10 @@ function featuredImageUrl(value: unknown): string | undefined {
   const media = value as FeaturedMedia;
   const sizes = media.media_details?.sizes;
   return [
+    media.source_url,
+    sizes?.medium_large?.source_url,
     sizes?.medium?.source_url,
     sizes?.thumbnail?.source_url,
-    sizes?.medium_large?.source_url,
-    media.source_url,
   ].find(isTjcImageUrl);
 }
 

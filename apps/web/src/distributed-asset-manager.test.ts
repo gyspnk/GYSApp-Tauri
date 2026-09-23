@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DistributedAssetCatalog } from "@gys/contracts";
-import { DistributedAssetManager } from "./distributed-asset-manager.js";
+import {
+  distributedDownloadsConfigured,
+  DistributedAssetManager,
+} from "./distributed-asset-manager.js";
 import { DistributedAssetStore } from "./distributed-asset-store.js";
 
 function cacheStorage() {
@@ -78,6 +81,12 @@ const catalog: DistributedAssetCatalog = {
 
 describe("DistributedAssetManager", () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it("reports optional downloads only when a BFF is configured", () => {
+    expect(distributedDownloadsConfigured("")).toBe(false);
+    expect(distributedDownloadsConfigured("   ")).toBe(false);
+    expect(distributedDownloadsConfigured("https://bff.example")).toBe(true);
+  });
 
   it("uses the browser fetch receiver and BFF route when no fetcher is injected", async () => {
     const store = new DistributedAssetStore({

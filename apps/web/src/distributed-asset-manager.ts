@@ -49,7 +49,6 @@ export type DistributedAssetManagerOptions = {
 export function distributedDownloadsConfigured(
   baseUrl: string | undefined = import.meta.env.VITE_BFF_BASE_URL,
 ): boolean {
-  if (typeof window !== "undefined") return true;
   return Boolean(baseUrl?.trim());
 }
 

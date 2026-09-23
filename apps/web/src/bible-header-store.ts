@@ -10,7 +10,7 @@ export type BibleHeaderActionProps = {
   versionCode: string;
   versionOptions: { value: string; label: string; shortLabel?: string }[];
   onSelectVersion: (version: string) => void;
-  onOpenPicker: () => void;
+  onOpenPicker: (trigger?: HTMLElement | null) => void;
   startQuickNav?: (event: PointerEvent<HTMLElement>) => void;
   quickNavKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   // Typography

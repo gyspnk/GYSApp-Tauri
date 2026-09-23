@@ -35,6 +35,7 @@ export type PdfLyricLine = {
   text: string;
   startPct: number;
   widthPct: number;
+  variant?: number;
 };
 
 export type ChordLayoutEntry = {
@@ -79,6 +80,13 @@ export function resolveChordMarker(
 const NOTE_TEXT = /^[0-7.\s]+$/;
 const SINGLE_NOTE = /^[0-7.]$/;
 const DIGIT_NOTE = /^[1-7]$/;
+// Canonical rows place numbered lyric variants within this vertical span.
+const MAX_CHORD_VARIANT_GAP = 80;
+
+function lyricVariant(value: string): number | undefined {
+  const match = value.match(/^\s*(\d+)[.)]\s*$/);
+  return match ? Number(match[1]) : undefined;
+}
 
 function dominantFontSize(items: PdfTextItem[]): number | undefined {
   const candidates = items.filter(
@@ -179,7 +187,11 @@ export function extractLyricLines(
 ): PdfLyricLine[] {
   const lyricItems = items
     .map((item) => ({ ...item, str: item.str.trim() }))
-    .filter((item) => item.str.length > 0 && !NOTE_TEXT.test(item.str));
+    .filter(
+      (item) =>
+        item.str.length > 0 &&
+        (!NOTE_TEXT.test(item.str) || lyricVariant(item.str) !== undefined),
+    );
   const rows: Array<{ y: number; items: PdfTextItem[] }> = [];
   for (const item of [...lyricItems].sort((a, b) => b.y - a.y)) {
     const existing = rows.find((row) => Math.abs(row.y - item.y) < 2);
@@ -190,13 +202,22 @@ export function extractLyricLines(
     .filter((row) => row.items.some((item) => /[A-Za-z]/.test(item.str)))
     .map((row) => {
       const sorted = [...row.items].sort((a, b) => a.x - b.x);
-      const start = sorted[0]?.x ?? 0;
-      const end = Math.max(...sorted.map((item) => item.x + item.width));
+      const marker = sorted.find((item) => lyricVariant(item.str) !== undefined);
+      const content = marker
+        ? sorted.filter((item) => item !== marker)
+        : sorted;
+      const start = content[0]?.x ?? sorted[0]?.x ?? 0;
+      const end = Math.max(
+        ...(content.length > 0 ? content : sorted).map(
+          (item) => item.x + item.width,
+        ),
+      );
       return {
         y: row.y,
-        text: sorted.map((item) => item.str).join(" "),
+        text: content.map((item) => item.str).join(" "),
         startPct: (start / pageWidth) * 100,
         widthPct: Math.max(1, ((end - start) / pageWidth) * 100),
+        ...(marker ? { variant: lyricVariant(marker.str) } : {}),
       };
     });
 }
@@ -211,29 +232,44 @@ export function buildChordedLines(
   const output: ChordedLine[] = [];
   if (entries.length === 0) return output;
   for (const row of noteRows) {
-    const lyric = lyricLines
-      .filter((candidate) => candidate.y < row.y && row.y - candidate.y <= 45)
-      .sort((a, b) => row.y - a.y - (row.y - b.y))[0];
-    if (!lyric) continue;
-    const chords: Array<{ chord: string; pos: number }> = [];
-    for (const entry of entries) {
-      if (
-        !Number.isInteger(entry.noteIdx) ||
-        entry.noteIdx < row.firstIdx ||
-        entry.noteIdx > row.lastIdx
+    const candidates = lyricLines
+      .filter(
+        (candidate) =>
+          candidate.y < row.y && row.y - candidate.y <= MAX_CHORD_VARIANT_GAP,
       )
-        continue;
-      const note = notes[entry.noteIdx];
-      if (!note) continue;
-      chords.push({
-        chord: entry.chord,
-        pos: Math.max(
-          0,
-          Math.min(1, (note.xPct - lyric.startPct) / lyric.widthPct),
-        ),
-      });
+      .sort((a, b) => row.y - a.y - (row.y - b.y));
+    const nearest = candidates[0];
+    if (!nearest) continue;
+    const lyrics = nearest.variant !== undefined
+      ? candidates.filter(
+          (candidate) =>
+            candidate.variant !== undefined &&
+            candidate.y <= nearest.y &&
+            nearest.y - candidate.y <= MAX_CHORD_VARIANT_GAP &&
+            Math.abs(candidate.startPct - nearest.startPct) <= 1.5,
+        )
+      : [nearest];
+    for (const lyric of lyrics) {
+      const chords: Array<{ chord: string; pos: number }> = [];
+      for (const entry of entries) {
+        if (
+          !Number.isInteger(entry.noteIdx) ||
+          entry.noteIdx < row.firstIdx ||
+          entry.noteIdx > row.lastIdx
+        )
+          continue;
+        const note = notes[entry.noteIdx];
+        if (!note) continue;
+        chords.push({
+          chord: entry.chord,
+          pos: Math.max(
+            0,
+            Math.min(1, (note.xPct - lyric.startPct) / lyric.widthPct),
+          ),
+        });
+      }
+      if (chords.length > 0) output.push({ text: lyric.text, chords });
     }
-    if (chords.length > 0) output.push({ text: lyric.text, chords });
   }
   return output;
 }

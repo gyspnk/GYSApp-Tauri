@@ -9,6 +9,11 @@ import { htmlToText } from "./article.js";
 const SOURCE = "https://tjc.org/id/literatur/";
 const BOOK_SOURCE = "https://tjc.org/id/literatur/buku/";
 const UNDATED_RESOURCE_VERSION = "1970-01-01T00:00:00.000Z";
+const LITERATURE_HOSTS = new Set([
+  "tjc.org",
+  "www.tjc.org",
+  "tjcorguploads.s3.amazonaws.com",
+]);
 const sections: Array<[LiteratureCategory, string]> = [
   ["kesaksian", "posts-table-1"],
   ["warta", "posts-table-2"],
@@ -41,6 +46,15 @@ function sourceDate(value: string | undefined) {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
+function isLiteratureUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && LITERATURE_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function formatFor(url: string, title: string): LiteratureItem["format"] {
   if (/\.pdf(?:$|[?#])/i.test(url)) return "pdf";
   if (/\b(?:edisi|buletin|warta|pelita)\b/i.test(title)) return "issue";
@@ -57,9 +71,9 @@ function itemFrom(
 ): LiteratureItem | undefined {
   const url = absolute(href, base);
   const title = decode(rawTitle);
-  if (!title || !url.startsWith("https://tjc.org/")) return undefined;
+  if (!title || !isLiteratureUrl(url)) return undefined;
   return {
-    id: `${category}-${encodeURIComponent(url).replace(/%/g, "-").slice(0, 100)}`,
+    id: `${category}-${encodeURIComponent(url).replace(/%/g, "-")}`,
     category,
     title,
     description: "",

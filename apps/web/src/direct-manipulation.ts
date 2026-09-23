@@ -1,11 +1,17 @@
-function createZoomHud(stage: HTMLElement, value: string): HTMLElement {
+import { translate, type Locale } from "./i18n.js";
+
+function createZoomHud(
+  stage: HTMLElement,
+  value: string,
+  locale: Locale,
+): HTMLElement {
   const existing = stage.querySelector<HTMLElement>(".pdf-zoom-hud");
   if (existing) return existing;
   const hud = document.createElement("div");
   hud.className = "pdf-zoom-hud";
   hud.setAttribute("role", "status");
   hud.setAttribute("aria-live", "polite");
-  hud.setAttribute("aria-label", "Zoom PDF");
+  hud.setAttribute("aria-label", translate(locale, "pdf.zoomGroup"));
   hud.textContent = value;
   stage.append(hud);
   return hud;
@@ -20,10 +26,10 @@ function enhancePdfReader(reader: HTMLElement): void {
     ".pdf-advanced-toggle",
   );
   const zoomIn = reader.querySelector<HTMLButtonElement>(
-    '.pdf-zoom-controls button[aria-label="Perbesar zoom"]',
+    ".pdf-zoom-controls button:nth-child(3)",
   );
   const zoomOut = reader.querySelector<HTMLButtonElement>(
-    '.pdf-zoom-controls button[aria-label="Perkecil zoom"]',
+    ".pdf-zoom-controls button:first-child",
   );
   const zoomReset = reader.querySelector<HTMLButtonElement>(".pdf-zoom-reset");
   if (
@@ -44,19 +50,21 @@ function enhancePdfReader(reader: HTMLElement): void {
     "Control+= Meta+= Control+- Meta+- Control+0 Meta+0",
   );
 
-  advancedToggle.setAttribute("aria-label", "Opsi PDF");
-  advancedToggle.title = "Opsi PDF";
-  zoomIn.setAttribute("aria-label", "Perbesar PDF");
-  zoomIn.title = "Perbesar PDF";
-  zoomOut.setAttribute("aria-label", "Perkecil PDF");
-  zoomOut.title = "Perkecil PDF";
-  zoomReset.setAttribute("aria-label", "Reset zoom PDF");
-  zoomReset.title = "Reset zoom PDF";
+  const locale: Locale =
+    reader.dataset.pdfLocale === "en"
+      ? "en"
+      : reader.dataset.pdfLocale === "zh"
+        ? "zh"
+        : "id";
   if (advancedToggle.getAttribute("aria-expanded") === "true") {
     advancedToggle.click();
   }
 
-  const hud = createZoomHud(stage, indicator.textContent?.trim() || "100%");
+  const hud = createZoomHud(
+    stage,
+    indicator.textContent?.trim() || "100%",
+    locale,
+  );
   let hideHudTimer: number | undefined;
   const showZoomHud = () => {
     hud.textContent = indicator.textContent?.trim() || "100%";

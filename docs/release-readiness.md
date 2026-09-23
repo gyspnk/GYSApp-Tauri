@@ -27,6 +27,97 @@ claim GA parity until the remaining reports and platform artifacts exist.
   source-key inference, Bible retry/empty states, and accessible names on the
   tablet navigation/report form. Reports remain local until a durable report
   sink is provisioned.
+- **2026-09-22 UI audit receipt (dirty working tree):** the visual matrix now
+  covers seven primary routes at phone/tablet/desktop widths plus ID/EN/ZH and
+  light/dark/sepia/AMOLED states, with no containment, hierarchy, theme, or
+  console findings. The runtime baseline covers 21 isolated route/device
+  cases: every case had no duplicate image/PDF asset request, no page/console
+  error, no visible loading panel, and no horizontal overflow; the slowest
+  ready state was 1.737 s, maximum long task was 103 ms, and maximum observed
+  CLS was 0.2172 under the 0.35 audit threshold. The deterministic local PDF
+  check rendered a canvas with one document fetch. The selected browser gate
+  passed 54 cases after one retryable focus assertion; the isolated direct-PDF
+  file then passed 8/8 after its test selector was aligned with the runtime's
+  visible, non-hidden focusable contract. Forced upstream abort/404 checks are
+  classified as unavailable-source behavior, not upstream health claims. This
+  receipt is local evidence only; it does not merge, push, or claim GA/native
+  release readiness.
+- **2026-09-22 CF-057 Home shelf receipt:** the measured nested-overflow finding
+  was the negative inline gutter margin on the Suara and Literature shelves;
+  removing only those escaping margins while retaining contained padding,
+  scroll-padding, snap, and horizontal card scrolling kept the first and last
+  cards reachable. The focused shelf guard passed 1/1, the combined responsive,
+  visual, touch, and accessibility matrix passed 28/28, Home visual baselines
+  passed 3/3, and the local preview showed no document overflow or console
+  warning/error. No fetch, card data, route order, or global overflow rule
+  changed.
+- **2026-09-22 CF-058 Bible loading receipt:** the first-paint gap was the
+  generic `.loading-panel` rendered while the offline TB pack was loading. The
+  Bible now reserves reader-shaped single/split panes with localized status,
+  accessible busy semantics, responsive phone stacking, and reduced-motion
+  behavior; package fetch/version/retry behavior was untouched. The delayed
+  pack guard passed 1/1 at 320/390/768/1024/1440px; Bible smoke, accessibility,
+  and visual checks passed 12/12. Typecheck, build, and diff-check passed, and
+  CUA captured clean initial and settled localhost frames with no console
+  errors or horizontal overflow.
+- **2026-09-22 CF-059 audit closure:** the UI audit is complete for the current
+  Preview/Beta scope. Responsive visual coverage, the 21-case runtime baseline,
+  intentional shelf scrollers, and the Bible first-paint transition are now
+  recorded above; no measured UI defect remains that justifies speculative
+  production work. The global `pnpm format:check` failure remains a
+  pre-existing dirty-tree condition across 37 unrelated/concurrent files; this
+  ledger does not claim that the full working tree is formatted. Remaining
+  work is GA/native/provider readiness only: protected signed artifact/runtime
+  evidence, the canonical-vs-rewrite MIDI performance gate, durable release
+  reports, and any still-authorized live provider prerequisites. This closure
+  does not claim GA, merge, push, or deployment.
+- **2026-09-22 CF-060 Kidung media density receipt:** the desktop MIDI dock now
+  keeps identity in one band and volume, seek, and the closed advanced summary
+  in a second band at widths >=721px; the existing phone stacking and 44px
+  controls remain unchanged. The new guard was intentionally red at 191px
+  before the CSS-only change and passes at 1440/1024/768px with <=128px main
+  height, <=2 content bands, and no internal overflow. Kidung usability passed
+  37/37, media dock 5/5, responsive reader 4/4, accessibility 2/2, and no
+  playback, queue, loop, fetch, or persistence code changed.
+- **2026-09-22 CF-061 Kidung catalog density receipt:** the catalog-only
+  navigation and search/filter header now share one top row at >=1200px through
+  a semantic wrapper; <=1199px, playlist, settings, mobile filters, and
+  touch targets retain their prior composition. The guard covers 1440/1241/
+  1024/390/320px, aligned wide children, bounded wrapper height, >=44px
+  controls, and no horizontal overflow. The rendered desktop snapshot shows
+  the song list starting earlier without hiding labels or changing catalog
+  data. No further Faith/Bible density slice was justified by Jev's rendered
+  evidence review.
+- **2026-09-22 CF-062 Kidung text-reader density receipt:** the measured
+  desktop text-reader toolbar was 119px tall because its secondary controls
+  occupied a separate full-width row. The CSS-only fix keeps the title/mode
+  chrome and all reader controls in one compact desktop band at >=768px while
+  preserving the mobile stacked layout. The new red-green guard passes at
+  1440/1241/768px with <=88px toolbar height, no overlap or horizontal
+  overflow, and >=44px interactive controls; the full Kidung usability suite
+  passes 38/38. Reading-family passed 6/6, accessibility passed 15/15, and
+  the web typecheck/build passed. The navigation suite exited green with 22
+  first-attempt passes plus one retry-pass; its formerly flaky Kidung case was
+  then rerun without retries and passed 1/1. Jev found no evidence for extra
+  shell, Bible, Faith, or PDF patches, so no speculative loading or layout
+  code was added.
+- **2026-09-22 CF-063 reader-centering receipt:** the Kidung text reader now
+  centers its active verse sheet and every all-verses sheet; the Bible split
+  reader and its delayed loading skeleton now reserve the 12px divider
+  symmetrically, keeping desktop panes equal without changing content or PDF
+  sources. The red guards reproduced the former 192px Kidung offset and 12px
+  Bible imbalance before the CSS fixes. Kidung usability passed 39/39,
+  responsive layout 9/9, navigation 23/23, direct reading 8/8, visual
+  reading 26/26, and the focused delayed-loading guard 1/1 with retries
+  disabled. This remains local dirty-tree evidence and does not claim merge,
+  push, deployment, or GA readiness.
+- **2026-09-22 CF-064 chord-variant receipt:** canonical note-aligned PDF rows
+  now carry their numbered lyric variants into the text reader, so `Semua`
+  renders four chord layers in each of the three `hymn-001` verses. The
+  focused chord-layout unit tests passed 14/14, the new 390x844 Playwright
+  guard passed, and the existing centering guard passed across desktop,
+  wide-tablet, and tablet widths. The source remains canonical; no fallback
+  chord content or runtime PDF request was added.
 - CI uses one concurrency group per source branch so a push plus its pull
   request do not duplicate the native and browser release gates; newer source
   commits cancel older verification runs.

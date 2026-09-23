@@ -418,6 +418,7 @@ const EMPTY_BOOKMARKS = new Set<string>();
 const EMPTY_HIGHLIGHTS: Record<string, string> = {};
 
 function ChapterPane({
+  locale,
   book,
   chapter,
   verses,
@@ -439,6 +440,7 @@ function ChapterPane({
   onTouchStart,
   onTouchEnd,
 }: {
+  locale: Locale;
   book: BibleBook;
   chapter: number;
   verses: BibleVerse[];
@@ -525,7 +527,9 @@ function ChapterPane({
                           );
                         }
                       }}
-                      title={`Buka paralel ${par.text}`}
+                      title={translate(locale, "bible.parallelOpen", {
+                        text: par.text,
+                      })}
                     >
                       {par.text}
                     </button>
@@ -587,7 +591,9 @@ function ChapterPane({
                               );
                             }
                           }}
-                          title={`Buka paralel ${par.text}`}
+                          title={translate(locale, "bible.parallelOpen", {
+                            text: par.text,
+                          })}
                         >
                           {par.text}
                         </button>
@@ -605,7 +611,9 @@ function ChapterPane({
                   className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
                   type="button"
                   onClick={() => onBookmark(verse.id)}
-                  aria-label={`Tandai ayat ${verse.verse}`}
+                  aria-label={translate(locale, "bible.bookmarkVerse", {
+                    verse: verse.verse,
+                  })}
                   aria-pressed={bookmarks.has(verse.id)}
                 >
                   {verse.verse}
@@ -630,8 +638,17 @@ function ChapterPane({
                     <button
                       className="bible-crossref-inline"
                       type="button"
-                      aria-label={`Lihat ${verseRefs.length} rujukan silang untuk ${book.name} ${chapter}:${verse.verse}`}
-                      title={`${verseRefs.length} rujukan silang`}
+                      aria-label={translate(
+                        locale,
+                        "bible.crossReferenceAria",
+                        {
+                          count: verseRefs.length,
+                          reference: `${book.name} ${chapter}:${verse.verse}`,
+                        },
+                      )}
+                      title={translate(locale, "bible.crossReferenceTitle", {
+                        count: verseRefs.length,
+                      })}
                       onClick={() =>
                         onOpenCrossRefs(
                           verse.id,
@@ -649,7 +666,9 @@ function ChapterPane({
                 </div>
                 {speaking && (
                   <span className="sr-only" role="status">
-                    Sedang dibacakan: ayat {verse.verse}
+                    {translate(locale, "bible.speakingVerse", {
+                      verse: verse.verse,
+                    })}
                   </span>
                 )}
               </article>
@@ -740,6 +759,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const isSyncingRef = useRef(false);
 
   const [pickerModalOpen, setPickerModalOpen] = useState(false);
+  const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const [notesPopupOpen, setNotesPopupOpen] = useState(false);
   const [packAttempt, setPackAttempt] = useState(0);
   const [quickNavDrag, setQuickNavDrag] = useState<
@@ -770,6 +790,22 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [typography, setTypography] = useState<BibleTypography>(() =>
     readBibleTypography(),
   );
+  const openPickerModal = useCallback((trigger?: HTMLElement | null) => {
+    pickerTriggerRef.current =
+      trigger ??
+      (typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null);
+    setPickerModalOpen(true);
+  }, []);
+  const closePickerModal = useCallback(() => {
+    setPickerModalOpen(false);
+    window.requestAnimationFrame(() => {
+      const target = pickerTriggerRef.current;
+      if (target?.isConnected) target.focus({ preventScroll: true });
+    });
+  }, []);
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 600px)");
     const syncSearchFilters = () => setSearchFiltersOpen(mediaQuery.matches);
@@ -838,7 +874,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     if (!book) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setPickerModalOpen(true);
+      openPickerModal(event.currentTarget);
     } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
       event.preventDefault();
       setSelectedChapter((value) => Math.max(1, value - 1));
@@ -1492,7 +1528,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         setSearchError(
           error instanceof Error
             ? error.message
-            : "Pencarian Alkitab tidak tersedia.",
+            : translate(locale, "bible.searchUnavailable"),
         );
       }
     } finally {
@@ -1547,7 +1583,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
     speakVerses(chapterVerses);
   };
 
-  const copyText = async (text: string, message = "Tersalin") => {
+  const copyText = async (
+    text: string,
+    message = translate(locale, "bible.copied"),
+  ) => {
     try {
       await navigator.clipboard?.writeText(text);
       setCopied(true);
@@ -1589,12 +1628,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
         setSearchedQuery("");
         setSelectedVerseId(undefined);
       },
-      onOpenPicker: () => {
+      onOpenPicker: (trigger) => {
         if (suppressQuickNavClickRef.current) {
           suppressQuickNavClickRef.current = false;
           return;
         }
-        setPickerModalOpen(true);
+        openPickerModal(trigger);
       },
       startQuickNav,
       quickNavKeyDown,
@@ -1674,6 +1713,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     bibleVersionOptions,
     startQuickNav,
     quickNavKeyDown,
+    openPickerModal,
     typography.fontSize,
     splitView,
     syncScroll,
@@ -1709,7 +1749,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const copySelection = async () => {
     if (!selectionToolbar) return;
-    await copyText(selectionToolbar.text, "Teks tersalin");
+    await copyText(selectionToolbar.text, translate(locale, "bible.textCopied"));
     window.getSelection()?.removeAllRanges();
     setSelectionToolbar(undefined);
   };
@@ -1803,7 +1843,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         className="bible-notes-backdrop"
         role="dialog"
         aria-modal="true"
-        aria-label="Catatan ayat"
+        aria-label={translate(locale, "bible.notes")}
         onClick={() => setNotesPopupOpen(false)}
       >
         <div
@@ -1812,17 +1852,23 @@ export function BiblePage({ locale }: { locale: Locale }) {
         >
           <div className="bible-notes-header">
             <div>
-              <small>Bacaan tersimpan</small>
-              <strong>Catatan ayat</strong>
+              <small>{translate(locale, "bible.savedReading")}</small>
+              <strong>{translate(locale, "bible.notes")}</strong>
             </div>
             <span className="bible-notes-count">
-              {savedNotesList.length} catatan
-              {bookmarks.size > 0 ? ` · ${bookmarks.size} tandai` : ""}
+              {translate(locale, "bible.noteCount", {
+                count: savedNotesList.length,
+              })}
+              {bookmarks.size > 0
+                ? ` · ${translate(locale, "bible.bookmarkCount", {
+                    count: bookmarks.size,
+                  })}`
+                : ""}
             </span>
             <button
               className="bible-notes-close"
               type="button"
-              aria-label="Tutup catatan ayat"
+              aria-label={translate(locale, "bible.closeNotes")}
               onClick={() => setNotesPopupOpen(false)}
             >
               ×
@@ -1837,12 +1883,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 </strong>
                 <p>{cleanVerse(selectedVerse)}</p>
                 <label className="bible-note-field">
-                  <span>Catatan pribadi</span>
+                  <span>{translate(locale, "bible.personalNote")}</span>
                   <textarea
                     value={noteDraft}
                     rows={3}
                     onChange={(event) => setNoteDraft(event.target.value)}
-                    placeholder="Tulis renungan singkat…"
+                    placeholder={translate(locale, "bible.notePlaceholder")}
                   />
                 </label>
                 <button
@@ -1850,20 +1896,20 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   type="button"
                   onClick={saveNote}
                 >
-                  Simpan catatan
+                  {translate(locale, "bible.saveNote")}
                 </button>
               </div>
             )}
 
             <div className="bible-notes-section-label">
-              <span>Catatan tersimpan</span>
+              <span>{translate(locale, "bible.savedNotes")}</span>
               {savedNotesList.length > 0 && (
                 <button
                   className="text-button"
                   type="button"
                   onClick={addNoteForNewVerse}
                 >
-                  + Tambah catatan
+                  {translate(locale, "bible.addNote")}
                 </button>
               )}
             </div>
@@ -1887,7 +1933,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     <button
                       className="bible-notes-item-delete"
                       type="button"
-                      aria-label={`Hapus catatan ${entry.label}`}
+                      aria-label={translate(locale, "bible.deleteNote", {
+                        label: entry.label,
+                      })}
                       onClick={() =>
                         setNotes((current) => {
                           const next = { ...current };
@@ -1904,8 +1952,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
             ) : (
               <p className="bible-side-empty">
                 {selectedVerse
-                  ? "Belum ada catatan untuk ayat lain. Pilih ayat atau tambahkan via tombol di toolbar."
-                  : "Pilih ayat lalu tekan tombol “Catatan” untuk menyimpan renungan."}
+                  ? translate(locale, "bible.noOtherNotes")
+                  : translate(locale, "bible.noNotesPrompt")}
               </p>
             )}
           </div>
@@ -1962,16 +2010,25 @@ export function BiblePage({ locale }: { locale: Locale }) {
             }
             onToggle={(event) => setSearchFiltersOpen(event.currentTarget.open)}
           >
-            <summary>Filter pencarian</summary>
+            <summary>{translate(locale, "bible.searchFilters")}</summary>
             <div className="bible-search-options">
               <Select
                 value={searchBook}
                 onChange={setSearchBook}
-                label="Kitab"
+                label={translate(locale, "bible.book")}
                 options={[
-                  { value: "all", label: "Semua kitab" },
-                  { value: "old", label: "Perjanjian Lama (39)" },
-                  { value: "new", label: "Perjanjian Baru (27)" },
+                  {
+                    value: "all",
+                    label: translate(locale, "bible.allBooks"),
+                  },
+                  {
+                    value: "old",
+                    label: translate(locale, "bible.oldTestament"),
+                  },
+                  {
+                    value: "new",
+                    label: translate(locale, "bible.newTestament"),
+                  },
                   ...books.map((candidate) => ({
                     value: String(candidate.id),
                     label: candidate.name,
@@ -1984,7 +2041,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   checked={exactPhrase}
                   onChange={(event) => setExactPhrase(event.target.checked)}
                 />{" "}
-                Frasa tepat
+                {translate(locale, "bible.exactPhrase")}
               </label>
               <label className="check-option">
                 <input
@@ -1992,7 +2049,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   checked={wholeWord}
                   onChange={(event) => setWholeWord(event.target.checked)}
                 />{" "}
-                Kata utuh
+                {translate(locale, "bible.wholeWord")}
               </label>
             </div>
           </details>
@@ -2001,9 +2058,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
               className="quiet-button"
               type="button"
               onClick={() => setNotesPopupOpen(true)}
-              aria-label={`Buka catatan ayat (${Object.keys(notes).length})`}
+               aria-label={translate(locale, "bible.openNotes", {
+                 count: Object.keys(notes).length,
+               })}
             >
-              Catatan ayat
+              {translate(locale, "bible.notes")}
               {Object.keys(notes).length > 0
                 ? ` (${Object.keys(notes).length})`
                 : ""}
@@ -2018,14 +2077,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 onClick={() => void runSearch(undefined, query)}
                 disabled={searching || !query.trim()}
               >
-                Coba lagi
+                {translate(locale, "bible.retrySearch")}
               </button>
             </div>
           )}
           {searchHistory.length > 0 && !query && (
             <div
               className="bible-search-history"
-              aria-label="Pencarian terakhir"
+              aria-label={translate(locale, "bible.searchHistory")}
             >
               {searchHistory.map((entry) => (
                 <button
@@ -2101,9 +2160,60 @@ export function BiblePage({ locale }: { locale: Locale }) {
         )}
 
       {packState.status === "loading" && (
-        <div className="loading-panel" role="status">
-          {translate(locale, "bible.loading")}
-        </div>
+        <section
+          className={`bible-reader bible-loading-reader${
+            splitView ? " is-split" : ""
+          }`}
+          aria-label={translate(locale, "page.bibleTitle")}
+          aria-busy="true"
+          data-testid="bible-loading-reader"
+        >
+          <div
+            className="bible-loading-status"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="bible-loading-spinner" aria-hidden="true" />
+            <span>{translate(locale, "bible.loading")}</span>
+          </div>
+          <div
+            className={`bible-loading-layout${splitView ? " is-split" : ""}`}
+            style={splitStyle}
+          >
+            {Array.from({ length: splitView ? 2 : 1 }, (_, paneIndex) => (
+              <div
+                className={`bible-loading-pane ${
+                  paneIndex === 0 ? "is-primary" : "is-secondary"
+                }`}
+                key={paneIndex}
+                aria-hidden="true"
+              >
+                <div className="bible-loading-heading">
+                  <span className="bible-loading-line is-kicker" />
+                  <span className="bible-loading-line is-title" />
+                </div>
+                <div className="bible-loading-verse-list">
+                  {Array.from({ length: 7 }, (_, verseIndex) => (
+                    <div className="bible-loading-verse" key={verseIndex}>
+                      <span className="bible-loading-number" />
+                      <span className="bible-loading-copy">
+                        <span className="bible-loading-line" />
+                        <span
+                          className={`bible-loading-line${
+                            verseIndex % 3 === 0 ? " is-short" : ""
+                          }`}
+                        />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {splitView && (
+              <div className="bible-loading-divider" aria-hidden="true" />
+            )}
+          </div>
+        </section>
       )}
       {packState.status === "error" && (
         <div className="error-panel" role="alert">
@@ -2133,6 +2243,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             style={splitStyle}
           >
             <ChapterPane
+              locale={locale}
               book={book}
               chapter={chapter}
               verses={chapterVerses}
@@ -2163,7 +2274,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               <div
                 className="bible-split-divider"
                 role="separator"
-                aria-label="Atur lebar kolom bacaan"
+                aria-label={translate(locale, "bible.splitResize")}
                 aria-orientation="vertical"
                 aria-valuemin={20}
                 aria-valuemax={80}
@@ -2185,15 +2296,17 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 if (secondaryPackState.status === "loading") {
                   return (
                     <div className="bible-pane-secondary bible-side-empty">
-                      Memuat versi kedua…
+                      {translate(locale, "bible.secondaryLoading")}
                     </div>
                   );
                 }
                 if (secondaryPackState.status === "error") {
                   return (
                     <div className="bible-pane-secondary bible-side-empty">
-                      Gagal memuat {secondaryVersionCode}:{" "}
-                      {secondaryPackState.message}
+                      {translate(locale, "bible.secondaryError", {
+                        version: secondaryVersionCode,
+                        message: secondaryPackState.message,
+                      })}
                     </div>
                   );
                 }
@@ -2207,6 +2320,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 );
                 return (
                   <ChapterPane
+                    locale={locale}
                     book={secBook}
                     chapter={chapter}
                     verses={secVerses}
@@ -2237,7 +2351,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
           {quickNavDrag &&
             createPortal(
-              <BibleQuickNavOverlay books={books} dragState={quickNavDrag} />,
+              <BibleQuickNavOverlay
+                books={books}
+                dragState={quickNavDrag}
+                locale={locale}
+              />,
               document.body,
             )}
           {quickNavDrag &&
@@ -2247,16 +2365,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 data-step={quickNavDrag.activeColumn}
               >
                 <span>
-                  Langkah{" "}
+                  {translate(locale, "bible.quickStep")} {" "}
                   {quickNavDrag.activeColumn === "book"
-                    ? "1/3 · Kitab"
+                    ? `1/3 · ${translate(locale, "bible.quickBook")}`
                     : quickNavDrag.activeColumn === "chapter"
-                      ? "2/3 · Pasal"
-                      : "3/3 · Ayat"}{" "}
+                      ? `2/3 · ${translate(locale, "bible.quickChapter")}`
+                      : `3/3 · ${translate(locale, "bible.quickVerse")}`}{" "}
                   —{" "}
                   {quickNavDrag.activeColumn === "verse"
-                    ? "lepas untuk pilih"
-                    : "lepas ke ayat 1 · diam 1 detik untuk lanjut"}
+                    ? translate(locale, "bible.quickRelease")
+                    : translate(locale, "bible.quickContinue")}
                 </span>
               </div>,
               document.body,
@@ -2268,7 +2386,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onClick={() => navigateBy(-1)}
               disabled={!findNextTarget(books, book, chapter, -1)}
             >
-              ← Sebelumnya
+              {translate(locale, "bible.previous")}
             </button>
             <span>
               {book.name} {chapter}
@@ -2279,7 +2397,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onClick={() => navigateBy(1)}
               disabled={!nextTarget}
             >
-              Berikutnya →
+              {translate(locale, "bible.next")}
             </button>
           </div>
         </section>
@@ -2290,7 +2408,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
         createPortal(
           <BiblePickerModal
             open={pickerModalOpen}
-            onClose={() => setPickerModalOpen(false)}
+            onClose={closePickerModal}
+            restoreFocusTarget={pickerTriggerRef.current}
             books={books}
             currentBookId={book.id}
             currentChapter={chapter}
@@ -2318,7 +2437,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             className={`selected-verse-toolbar${exitingVerse ? " is-exiting" : ""}`}
             data-testid="selected-verse-toolbar"
             role="toolbar"
-            aria-label="Aksi ayat terpilih"
+            aria-label={translate(locale, "bible.selectedVerseActions")}
           >
             <div className="selected-verse-context">
               <strong>
@@ -2332,14 +2451,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => void copySelected()}
               >
-                Salin
+                {translate(locale, "bible.copy")}
               </button>
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => void shareSelected()}
               >
-                Bagikan
+                {translate(locale, "bible.share")}
               </button>
               <button
                 className="quiet-button"
@@ -2347,18 +2466,31 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 disabled={!speechAvailable}
                 onClick={() => speakVerses([activeToolbarVerse])}
               >
-                Baca ayat
+                {translate(locale, "bible.readVerse")}
               </button>
               <div
                 className="selected-verse-highlights"
-                aria-label="Warna sorotan"
+                aria-label={translate(locale, "bible.highlightColor")}
               >
                 {(["yellow", "blue", "green"] as const).map((color) => (
                   <button
                     className={`highlight-dot is-${color}${highlights[activeToolbarVerse.id] === color ? " is-active" : ""}`}
                     key={color}
                     type="button"
-                    aria-label={`Sorot ${color}`}
+                    aria-label={translate(
+                      locale,
+                      "bible.highlight",
+                      {
+                        color: translate(
+                          locale,
+                          color === "yellow"
+                            ? "bible.colorYellow"
+                            : color === "blue"
+                              ? "bible.colorBlue"
+                              : "bible.colorGreen",
+                        ),
+                      },
+                    )}
                     aria-pressed={highlights[activeToolbarVerse.id] === color}
                     onClick={() =>
                       setHighlights((current) => ({
@@ -2374,12 +2506,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={focusSelectedVerseNote}
               >
-                Catatan
+                {translate(locale, "bible.notes")}
               </button>
               <button
                 className="selected-verse-close"
                 type="button"
-                aria-label="Tutup ayat terpilih"
+                aria-label={translate(locale, "bible.closeSelectedVerse")}
                 onClick={handleCloseSelectedVerse}
               >
                 ×
@@ -2392,24 +2524,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
         <div
           className="selection-toolbar"
           role="toolbar"
-          aria-label="Tindakan teks terpilih"
+          aria-label={translate(locale, "bible.textActions")}
           style={{ left: selectionToolbar.left, top: selectionToolbar.top }}
           onMouseDown={(event) => event.preventDefault()}
         >
           <button type="button" onClick={() => void copySelection()}>
-            Salin
+            {translate(locale, "bible.copy")}
           </button>
           <button type="button" onClick={() => void shareSelection()}>
-            Bagikan
+            {translate(locale, "bible.share")}
           </button>
           {selectionToolbar.verseId && (
             <button type="button" onClick={noteSelection}>
-              Catat
+              {translate(locale, "bible.noteAction")}
             </button>
           )}
           <button
             type="button"
-            aria-label="Tutup tindakan teks"
+            aria-label={translate(locale, "bible.closeTextActions")}
             onClick={() => {
               window.getSelection()?.removeAllRanges();
               setSelectionToolbar(undefined);
@@ -2425,7 +2557,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             className="bible-crossref-backdrop"
             role="dialog"
             aria-modal="true"
-            aria-label={`Rujukan untuk ${crossRefModal.title}`}
+            aria-label={`${translate(locale, "bible.crossReferences")}: ${crossRefModal.title}`}
             onClick={() => setCrossRefModal(undefined)}
           >
             <div
@@ -2434,12 +2566,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
             >
               <div className="bible-crossref-header">
                 <div>
-                  <small>Rujukan silang</small>
+                  <small>{translate(locale, "bible.crossReferences")}</small>
                   <strong>{crossRefModal.title}</strong>
                 </div>
                 <button
                   type="button"
-                  aria-label="Tutup rujukan"
+                  aria-label={translate(locale, "bible.closeCrossReferences")}
                   onClick={() => setCrossRefModal(undefined)}
                 >
                   ×
@@ -2513,7 +2645,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 })}
               </div>
               <p className="bible-crossref-hint">
-                {crossRefModal.refs.length} ayat terkait — ketuk untuk membuka
+                {translate(locale, "bible.crossReferenceHint", {
+                  count: crossRefModal.refs.length,
+                })}
               </p>
             </div>
           </div>,

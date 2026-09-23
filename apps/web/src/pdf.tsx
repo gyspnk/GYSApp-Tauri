@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -21,6 +22,7 @@ import {
   disposePdfDocument,
   isPdfLayout,
   pdfDocumentSourceOptions,
+  pdfHttpStatus,
   pdfPageWindow,
   pdfLayoutForViewport,
   pdfPercentScale,
@@ -39,6 +41,9 @@ import {
 } from "./chord-ui-prefs.js";
 import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
 import { Icon } from "./icons.js";
+import { translate, type Locale } from "./i18n.js";
+
+const PDF_SLOW_LOAD_DELAY_MS = 2500;
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -52,11 +57,13 @@ export type PdfChordOverlayMarker = {
 function PdfChordLayer({
   markers,
   visible,
+  locale,
   editorEnabled = false,
   onEditChord,
 }: {
   markers: PdfChordOverlayMarker[] | undefined;
   visible: boolean;
+  locale: Locale;
   editorEnabled?: boolean;
   onEditChord?: (noteIdx: number, current: string) => void;
 }) {
@@ -91,7 +98,7 @@ function PdfChordLayer({
     return (
       <div
         className="pdf-chord-layer is-editor"
-        aria-label="Editor chord"
+        aria-label={translate(locale, "pdf.chordEditor")}
         style={chordStyle}
       >
         {markers.map((marker) => (
@@ -101,14 +108,16 @@ function PdfChordLayer({
             key={`${marker.noteIdx}-${marker.xPct}-${marker.yPct}`}
             style={{ left: `${marker.xPct}%`, top: `${marker.yPct}%` }}
             data-note-index={marker.noteIdx}
-            title={`Chord ${marker.chord} - klik untuk edit`}
+            title={translate(locale, "pdf.chordEditTitle", {
+              chord: marker.chord,
+            })}
             onClick={() => onEditChord(marker.noteIdx, marker.chord)}
           >
             {targetLabel(marker)}
           </button>
         ))}
         <span className="pdf-editor-hint">
-          Klik penanda untuk mengedit chord
+          {translate(locale, "pdf.chordHint")}
         </span>
       </div>
     );
@@ -116,7 +125,7 @@ function PdfChordLayer({
   return (
     <div
       className="pdf-chord-layer"
-      aria-label="Chord overlay"
+      aria-label={translate(locale, "pdf.chordOverlay")}
       style={chordStyle}
     >
       {markers.map((marker) => (
@@ -173,24 +182,30 @@ function VerticalPdfPage({
   zoomPercent,
   baseScale,
   stageRef,
+  locale,
   onActive,
   chordMarkers,
   chordsVisible,
   editorEnabled = false,
   onEditChord,
   horizontal = false,
+  onReady,
+  onError,
 }: {
   documentProxy: PDFDocumentProxy;
   pageNumber: number;
   zoomPercent: number;
   baseScale: number | undefined;
   stageRef: RefObject<HTMLDivElement | null>;
+  locale: Locale;
   onActive: (page: number) => void;
   chordMarkers?: PdfChordOverlayMarker[];
   chordsVisible: boolean;
   editorEnabled?: boolean;
   onEditChord?: (noteIdx: number, current: string) => void;
   horizontal?: boolean;
+  onReady?: () => void;
+  onError?: () => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -277,11 +292,17 @@ function VerticalPdfPage({
         return renderTask.promise;
       })
       .then(() => {
-        if (!disposed) setStatus("ready");
+        if (!disposed) {
+          setStatus("ready");
+          onReady?.();
+        }
       })
       .catch((error: unknown) => {
-        if (!disposed) setStatus("error");
-        if (!disposed) recordDiagnostic("error", "pdf.page", error);
+        if (!disposed) {
+          setStatus("error");
+          onError?.();
+          recordDiagnostic("error", "pdf.page", error);
+        }
       });
     return () => {
       disposed = true;
@@ -299,6 +320,8 @@ function VerticalPdfPage({
     horizontal,
     nearViewport,
     pageNumber,
+    onReady,
+    onError,
   ]);
 
   return (
@@ -307,7 +330,7 @@ function VerticalPdfPage({
       data-pdf-page={pageNumber}
       ref={hostRef}
       tabIndex={0}
-      aria-label={`PDF page ${pageNumber}`}
+      aria-label={translate(locale, "pdf.pageAria", { page: pageNumber })}
       onFocus={() => onActive(pageNumber)}
     >
       <div
@@ -321,6 +344,7 @@ function VerticalPdfPage({
         <PdfChordLayer
           markers={chordMarkers}
           visible={chordsVisible}
+          locale={locale}
           editorEnabled={editorEnabled}
           {...(onEditChord
             ? {
@@ -333,8 +357,8 @@ function VerticalPdfPage({
       {status !== "ready" && (
         <span className="pdf-page-placeholder" aria-live="polite">
           {status === "error"
-            ? "Halaman gagal dimuat"
-            : `Halaman ${pageNumber}`}
+            ? translate(locale, "pdf.pageError")
+            : translate(locale, "pdf.pageLoading", { page: pageNumber })}
         </span>
       )}
     </div>
@@ -347,7 +371,8 @@ export function PdfReader({
   initialPage = 1,
   pageRange,
   downloadUrl,
-  title = "PDF reader",
+  title,
+  locale = "id",
   progressKey,
   onPageChange,
   chordOverlays,
@@ -362,6 +387,7 @@ export function PdfReader({
   pageRange?: { start: number; count: number };
   downloadUrl?: string;
   title?: string;
+  locale?: Locale;
   progressKey?: string;
   onPageChange?: (page: number, totalPages: number) => void;
   chordOverlays?: Record<string, PdfChordOverlayMarker[]>;
@@ -454,7 +480,19 @@ export function PdfReader({
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  const [loadErrorStatus, setLoadErrorStatus] = useState<number | undefined>();
   const [loadProgress, setLoadProgress] = useState(0);
+  const [loadPhase, setLoadPhase] = useState<
+    "loading" | "slow" | "ready" | "error"
+  >("loading");
+  const markPageReady = useCallback(() => {
+    setLoadPhase("ready");
+    setStatus("ready");
+  }, []);
+  const markPageError = useCallback(() => {
+    setLoadPhase("error");
+    setStatus("error");
+  }, []);
   const [stageState, setStageState] = useState<{
     centered: boolean;
     overflowing: boolean;
@@ -621,19 +659,36 @@ export function PdfReader({
     setTotal(0);
     setPageStart(Math.max(1, pageRange?.start ?? 1));
     setStatus("loading");
+    setLoadErrorStatus(undefined);
+    setLoadPhase("loading");
+    setLoadProgress(8);
+    let slowTimer: number | undefined;
+    let lastProgress = 8;
+    const clearSlowTimer = () => {
+      if (slowTimer !== undefined) window.clearTimeout(slowTimer);
+      slowTimer = undefined;
+    };
+    const scheduleSlowNotice = () => {
+      clearSlowTimer();
+      slowTimer = window.setTimeout(() => {
+        if (!disposed) setLoadPhase("slow");
+      }, PDF_SLOW_LOAD_DELAY_MS);
+    };
     const cleanup = () => {
       disposed = true;
+      clearSlowTimer();
       const loadedDocument = documentRef.current;
       documentRef.current = null;
       void disposePdfDocument(loadedDocument);
       setDocumentProxy(null);
     };
     if (!src && !data) {
+      setLoadPhase("error");
       setStatus("error");
       return cleanup;
     }
     const loadingTask = getDocument(pdfDocumentSourceOptions(src, data));
-    setLoadProgress(8);
+    scheduleSlowNotice();
     // gyschordweb viewer-loader 0-100% progress via onProgress
     (
       loadingTask as unknown as {
@@ -645,7 +700,13 @@ export function PdfReader({
         progress.total > 0
           ? Math.round((progress.loaded / progress.total) * 100)
           : 0;
-      setLoadProgress(Math.max(8, Math.min(96, pct)));
+      const nextProgress = Math.max(8, Math.min(96, pct));
+      setLoadProgress((current) => Math.max(current, nextProgress));
+      if (nextProgress > lastProgress) {
+        lastProgress = nextProgress;
+        setLoadPhase("loading");
+        scheduleSlowNotice();
+      }
     };
     void loadingTask.promise
       .then((document) => {
@@ -671,10 +732,16 @@ export function PdfReader({
         );
         setDocumentProxy(document);
         setLoadProgress(100);
-        setStatus("ready");
+        setLoadPhase("ready");
+        clearSlowTimer();
       })
       .catch((error: unknown) => {
-        if (!disposed) setStatus("error");
+        if (!disposed) {
+          clearSlowTimer();
+          setLoadPhase("error");
+          setStatus("error");
+        }
+        if (!disposed) setLoadErrorStatus(pdfHttpStatus(error));
         if (!disposed) recordDiagnostic("error", "pdf.document", error);
         consecutiveFailures.current += 1;
         if (
@@ -828,6 +895,7 @@ export function PdfReader({
     const stageBox = pdfStageRef.current;
     const stageWidth = stageBox?.clientWidth ?? window.innerWidth;
     const stageHeight = stageBox?.clientHeight ?? window.innerHeight;
+    setStatus("loading");
     void Promise.all(
       pageNumbers.map(async (pageNumber, index) => {
         const canvas = canvases[index];
@@ -877,16 +945,26 @@ export function PdfReader({
       }),
     )
       .then(() => {
-        if (!disposed) setStatus("ready");
+        if (!disposed) {
+          setLoadPhase("ready");
+          setStatus("ready");
+        }
       })
       .catch((error: unknown) => {
-        if (!disposed) setStatus("error");
+        if (!disposed) {
+          setLoadPhase("error");
+          setStatus("error");
+        }
         if (!disposed) recordDiagnostic("error", "pdf.page", error);
       });
     return () => {
       disposed = true;
       for (const renderTask of renderTasks) renderTask.cancel();
       for (const pdfPage of pdfPages) cleanupPdfPage(pdfPage);
+      if (canvasRef.current) {
+        canvasRef.current.width = 0;
+        canvasRef.current.height = 0;
+      }
       if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
   }, [documentProxy, effectiveLayout, page, pageStart, total, zoomPercent]);
@@ -951,28 +1029,46 @@ export function PdfReader({
   const retry = () => {
     consecutiveFailures.current = 0;
     setStatus("loading");
+    setLoadErrorStatus(undefined);
+    setLoadPhase("loading");
+    setLoadProgress(8);
     setLoadAttempt((attempt) => attempt + 1);
   };
+  const readerTitle = title ?? translate(locale, "pdf.readerTitle");
 
   return (
     <section
       className={`pdf-reader${variant === "hymn" ? " pdf-reader-hymn" : ""}`}
-      aria-label={title}
+      aria-label={readerTitle}
+      data-pdf-locale={locale}
+      data-pdf-loading-phase={loadPhase}
+      data-pdf-loading-progress={loadProgress}
     >
       <div className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}>
         <div className="pdf-page-navigation">
           <button
             type="button"
+            aria-label={translate(locale, "pdf.previous")}
+            title={translate(locale, "pdf.previous")}
             onClick={() =>
               goToPage(page + (effectiveLayout === "two" ? -2 : -1))
             }
             disabled={page <= pageStart}
           >
-            Sebelumnya
+            <Icon name="chevronLeft" size={18} />
+            <span className="sr-only">
+              {translate(locale, "pdf.previous")}
+            </span>
           </button>
           <span>
-            Page {pageStart > 1 ? page - pageStart + 1 : page}
-            {total ? ` / ${total}` : ""}
+            {total
+              ? translate(locale, "pdf.pageCounter", {
+                  page: pageStart > 1 ? page - pageStart + 1 : page,
+                  total,
+                })
+              : translate(locale, "pdf.pageCurrent", {
+                  page: pageStart > 1 ? page - pageStart + 1 : page,
+                })}
           </span>
           {canResume && (
             <button
@@ -981,18 +1077,18 @@ export function PdfReader({
               data-pdf-resume="true"
               onClick={() => goToPage(resumePage)}
             >
-              Kembali ke halaman {resumePage}
+              {translate(locale, "pdf.resume", { page: resumePage })}
             </button>
           )}
           {total > 1 && (
             <label className="pdf-page-jump">
-              Ke halaman
+              {translate(locale, "pdf.jumpLabel")}
               <input
                 type="number"
                 min={pageStart}
                 max={pageStart + Math.max(0, total - 1)}
                 value={page}
-                aria-label="Lompat ke halaman PDF"
+                aria-label={translate(locale, "pdf.jumpAria")}
                 onChange={(event) =>
                   setPage(
                     Math.max(
@@ -1013,53 +1109,72 @@ export function PdfReader({
           )}
           <button
             type="button"
+            aria-label={translate(locale, "pdf.next")}
+            title={translate(locale, "pdf.next")}
             onClick={() => goToPage(page + (effectiveLayout === "two" ? 2 : 1))}
             disabled={total === 0 || page >= pageStart + total - 1}
           >
-            Berikutnya
+            <Icon name="chevronRight" size={18} />
+            <span className="sr-only">{translate(locale, "pdf.next")}</span>
           </button>
         </div>
         {variant === "hymn" && total > 1 && (
           <div
             className="pdf-view-scroll-toggle"
             role="group"
-            aria-label="Mode tampilan PDF"
+            aria-label={translate(locale, "pdf.viewModeGroup")}
           >
             <button
               type="button"
               className={layout === "two" ? "is-active" : ""}
               aria-pressed={layout === "two"}
+              aria-label={translate(locale, "pdf.layout.two")}
               onClick={() => setLayout("two")}
-              title="Tampilan 2 halaman"
+              title={translate(locale, "pdf.layout.two")}
             >
-              2 pg
+              <Icon name="columns" size={15} />
+              <span className="sr-only">
+                {translate(locale, "pdf.layout.two")}
+              </span>
             </button>
             <button
               type="button"
               className={layout === "single" ? "is-active" : ""}
               aria-pressed={layout === "single"}
+              aria-label={translate(locale, "pdf.layout.single")}
               onClick={() => setLayout("single")}
-              title="Tampilan 1 halaman"
+              title={translate(locale, "pdf.layout.single")}
             >
-              1 pg
+              <Icon name="file" size={15} />
+              <span className="sr-only">
+                {translate(locale, "pdf.layout.single")}
+              </span>
             </button>
             <button
               type="button"
               className={layout === "vertical" ? "is-active" : ""}
               aria-pressed={layout === "vertical"}
+              aria-label={translate(locale, "pdf.layout.vertical")}
               onClick={() => setLayout("vertical")}
-              title="Gulir vertikal"
+              title={translate(locale, "pdf.layout.verticalTitle")}
             >
               <Icon name="swapVert" size={15} />
+              <span className="sr-only">
+                {translate(locale, "pdf.layout.vertical")}
+              </span>
             </button>
             <button
               type="button"
               className={layout === "horizontal" ? "is-active" : ""}
               aria-pressed={layout === "horizontal"}
+              aria-label={translate(locale, "pdf.layout.horizontal")}
               onClick={() => setLayout("horizontal")}
-              title="Gulir mendatar"
+              title={translate(locale, "pdf.layout.horizontalTitle")}
             >
               <Icon name="book" size={15} />
+              <span className="sr-only">
+                {translate(locale, "pdf.layout.horizontal")}
+              </span>
             </button>
           </div>
         )}
@@ -1068,9 +1183,23 @@ export function PdfReader({
             className="pdf-advanced-toggle"
             type="button"
             aria-expanded={advancedOpen}
+            aria-label={translate(
+              locale,
+              advancedOpen ? "pdf.settingsClose" : "pdf.settings",
+            )}
+            title={translate(
+              locale,
+              advancedOpen ? "pdf.settingsClose" : "pdf.settings",
+            )}
             onClick={() => setAdvancedOpen((value) => !value)}
           >
-            {advancedOpen ? "Tutup alat PDF" : "Pengaturan PDF"}
+            <Icon name="settings" size={16} />
+            <span className="sr-only">
+              {translate(
+                locale,
+                advancedOpen ? "pdf.settingsClose" : "pdf.settings",
+              )}
+            </span>
           </button>
         )}
         {variant === "hymn" && (
@@ -1078,23 +1207,39 @@ export function PdfReader({
             className="pdf-fullscreen-toggle"
             type="button"
             onClick={toggleFullscreen}
-            aria-label={fullscreenActive ? "Keluar layar penuh" : "Layar penuh"}
-            title={fullscreenActive ? "Keluar layar penuh" : "Layar penuh"}
+            aria-label={translate(
+              locale,
+              fullscreenActive ? "pdf.exitFullscreen" : "pdf.fullscreen",
+            )}
+            title={translate(
+              locale,
+              fullscreenActive ? "pdf.exitFullscreen" : "pdf.fullscreen",
+            )}
           >
-            {fullscreenActive ? "Keluar" : "Fullscreen"}
+            {translate(
+              locale,
+              fullscreenActive
+                ? "pdf.exitFullscreenShort"
+                : "pdf.fullscreenShort",
+            )}
           </button>
         )}
         <div
           className={`pdf-advanced-controls${advancedOpen ? " is-open" : ""}`}
         >
-          <div className="pdf-zoom-controls" role="group" aria-label="Zoom PDF">
+          <div
+            className="pdf-zoom-controls"
+            role="group"
+            aria-label={translate(locale, "pdf.zoomGroup")}
+          >
             <button
               type="button"
               onClick={() =>
                 setZoomPercent((value) => clampPdfZoomPercent(value - 25))
               }
               disabled={zoomPercent <= 100}
-              aria-label="Perkecil zoom"
+              aria-label={translate(locale, "pdf.zoomOut")}
+              title={translate(locale, "pdf.zoomOut")}
             >
               −
             </button>
@@ -1102,7 +1247,8 @@ export function PdfReader({
               type="button"
               className="pdf-zoom-indicator"
               data-pdf-zoom-indicator="true"
-              title="Klik dua kali untuk reset ke 100%"
+              aria-label={`${zoomPercent}%`}
+              title={translate(locale, "pdf.zoomResetTitle")}
               onDoubleClick={() => setZoomPercent(100)}
               onTouchEnd={(event) => {
                 // Double-tap on the indicator resets zoom (gyschordweb parity)
@@ -1135,7 +1281,8 @@ export function PdfReader({
                 setZoomPercent((value) => clampPdfZoomPercent(value + 25))
               }
               disabled={zoomPercent >= 800}
-              aria-label="Perbesar zoom"
+              aria-label={translate(locale, "pdf.zoomIn")}
+              title={translate(locale, "pdf.zoomIn")}
             >
               +
             </button>
@@ -1144,12 +1291,14 @@ export function PdfReader({
               className="pdf-zoom-reset"
               onClick={() => setZoomPercent(100)}
               disabled={zoomPercent === 100}
+              aria-label={translate(locale, "pdf.zoomReset")}
+              title={translate(locale, "pdf.zoomReset")}
             >
-              Reset
+              {translate(locale, "pdf.zoomReset")}
             </button>
           </div>
           <label>
-            Zoom{" "}
+            {translate(locale, "pdf.zoomLabel")} {" "}
             <input
               type="range"
               min="100"
@@ -1164,7 +1313,7 @@ export function PdfReader({
           <div
             className="pdf-layout-toggle"
             role="group"
-            aria-label="Layout PDF"
+            aria-label={translate(locale, "pdf.layoutGroup")}
           >
             {(["single", "two", "vertical", "horizontal"] as const).map(
               (value) => (
@@ -1174,30 +1323,76 @@ export function PdfReader({
                   className={layout === value ? "is-active" : ""}
                   onClick={() => setLayout(value)}
                   aria-pressed={layout === value}
+                  aria-label={
+                    translate(
+                      locale,
+                      value === "single"
+                        ? "pdf.layout.single"
+                        : value === "two"
+                          ? "pdf.layout.two"
+                          : value === "vertical"
+                            ? "pdf.layout.vertical"
+                            : "pdf.layout.horizontal",
+                    )
+                  }
+                  title={
+                    translate(
+                      locale,
+                      value === "single"
+                        ? "pdf.layout.single"
+                        : value === "two"
+                          ? "pdf.layout.two"
+                          : value === "vertical"
+                            ? "pdf.layout.verticalTitle"
+                            : "pdf.layout.horizontalTitle",
+                    )
+                  }
                 >
-                  {value === "single"
-                    ? "1 halaman"
-                    : value === "two"
-                      ? "2 halaman"
-                      : value === "vertical"
-                        ? "Vertikal"
-                        : "Mendatar"}
+                  <Icon
+                    name={
+                      value === "single"
+                        ? "file"
+                        : value === "two"
+                          ? "columns"
+                          : value === "vertical"
+                            ? "swapVert"
+                            : "book"
+                    }
+                    size={15}
+                  />
+                  <span className="sr-only">
+                    {translate(
+                      locale,
+                      value === "single"
+                        ? "pdf.layout.single"
+                        : value === "two"
+                          ? "pdf.layout.two"
+                          : value === "vertical"
+                            ? "pdf.layout.vertical"
+                            : "pdf.layout.horizontal",
+                    )}
+                  </span>
                 </button>
               ),
             )}
           </div>
           {layout === "two" && effectiveLayout === "single" && (
             <small className="pdf-layout-note">
-              Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.
+              {translate(locale, "pdf.layoutNarrowNote")}
             </small>
           )}
           {downloadUrl && (
             <a
               className="pdf-download"
               href={downloadUrl}
-              download={`${title}.pdf`}
+              download={`${readerTitle}.pdf`}
+              aria-label={translate(locale, "pdf.download")}
+              title={translate(locale, "pdf.download")}
             >
-              Unduh
+              <Icon name="download" size={16} />
+              <span className="sr-only">
+                {translate(locale, "pdf.download")}
+              </span>
             </a>
           )}
         </div>
@@ -1215,7 +1410,7 @@ export function PdfReader({
       >
         {status === "loading" && (
           <div
-            className="pdf-loading"
+            className={`pdf-loading${loadPhase === "slow" ? " is-slow" : ""}`}
             role="status"
             aria-live="polite"
             style={{
@@ -1226,24 +1421,55 @@ export function PdfReader({
               padding: 16,
             }}
           >
-            <p>Memuat PDF… {loadProgress}%</p>
-            <div
-              style={{
-                width: 160,
-                height: 4,
-                background: "rgba(141,110,63,0.18)",
-                borderRadius: 999,
-                overflow: "hidden",
-              }}
-            >
+            <div className="pdf-loading-page">
+              <p>
+                {translate(locale, "pdf.loading", { percent: loadProgress })}
+              </p>
               <div
                 style={{
-                  width: `${loadProgress}%`,
-                  height: "100%",
-                  background: "var(--accent, #8d6e3f)",
-                  transition: "width 0.2s ease",
+                  width: 160,
+                  height: 4,
+                  background: "rgba(141,110,63,0.18)",
+                  borderRadius: 999,
+                  overflow: "hidden",
                 }}
-              />
+              >
+                <div
+                  style={{
+                    width: `${loadProgress}%`,
+                    height: "100%",
+                    background: "var(--accent, #8d6e3f)",
+                    transition: "width 0.2s ease",
+                  }}
+                />
+              </div>
+              {loadPhase === "slow" && (
+                <div className="pdf-loading-slow">
+                  <p>{translate(locale, "pdf.loadingSlow")}</p>
+                  <div className="pdf-loading-actions">
+                    <button
+                      className="quiet-button"
+                      type="button"
+                      data-pdf-retry="true"
+                      onClick={retry}
+                    >
+                      {translate(locale, "pdf.retry")}
+                    </button>
+                    {downloadUrl && (
+                      <a
+                        className="quiet-button pdf-loading-source"
+                        href={downloadUrl}
+                        download={`${readerTitle}.pdf`}
+                        aria-label={translate(locale, "pdf.download")}
+                        title={translate(locale, "pdf.download")}
+                      >
+                        <Icon name="download" size={15} />
+                        <span>{translate(locale, "pdf.download")}</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1261,14 +1487,20 @@ export function PdfReader({
                 textAlign: "center",
               }}
             >
-              Tampilan 2 halaman lebih nyaman dalam landscape
+              {translate(locale, "pdf.orientation")}
             </div>
           )}
         {status === "error" && (
-          <div className="pdf-error-state" role="alert">
+          <div
+            className="pdf-error-state"
+            role="alert"
+            data-pdf-error-status={loadErrorStatus ?? "unknown"}
+          >
             <p>
-              PDF gagal dimuat. PDF belum tersedia offline; simpan dulu saat
-              tersambung internet.
+              {translate(
+                locale,
+                loadErrorStatus === 404 ? "pdf.error404" : "pdf.error",
+              )}
             </p>
             <button
               className="quiet-button"
@@ -1276,7 +1508,7 @@ export function PdfReader({
               data-pdf-retry="true"
               onClick={retry}
             >
-              Coba lagi
+              {translate(locale, "pdf.retry")}
             </button>
           </div>
         )}
@@ -1295,6 +1527,7 @@ export function PdfReader({
                   zoomPercent={zoomPercent}
                   baseScale={initialScaleRef.current}
                   stageRef={verticalStageRef}
+                  locale={locale}
                   onActive={(nextPage) => {
                     setPage((current) =>
                       current === nextPage ? current : nextPage,
@@ -1309,6 +1542,8 @@ export function PdfReader({
                     onEditChord?.(String(pageNumber), noteIdx, current)
                   }
                   horizontal={effectiveLayout === "horizontal"}
+                  onReady={markPageReady}
+                  onError={markPageError}
                 />
               );
             })}
@@ -1321,11 +1556,14 @@ export function PdfReader({
               <canvas
                 className={zoomPercent === 100 ? "is-fit" : ""}
                 ref={canvasRef}
-                aria-label={`PDF page ${page}`}
+                aria-label={translate(locale, "pdf.pageAria", { page })}
+                aria-hidden={status !== "ready"}
+                data-pdf-rendered={status === "ready" ? "true" : "false"}
               />
               <PdfChordLayer
                 markers={chordOverlays?.[String(page)]}
                 visible={chordsVisible}
+                locale={locale}
                 editorEnabled={editorEnabled}
                 onEditChord={(noteIdx, current) =>
                   onEditChord?.(String(page), noteIdx, current)
@@ -1338,11 +1576,16 @@ export function PdfReader({
               <canvas
                 className={zoomPercent === 100 ? "is-fit" : ""}
                 ref={secondaryCanvasRef}
-                aria-label={`PDF page ${page + 1}`}
+                aria-label={translate(locale, "pdf.pageAria", {
+                  page: page + 1,
+                })}
+                aria-hidden={status !== "ready"}
+                data-pdf-rendered={status === "ready" ? "true" : "false"}
               />
               <PdfChordLayer
                 markers={chordOverlays?.[String(page + 1)]}
                 visible={chordsVisible}
+                locale={locale}
                 editorEnabled={editorEnabled}
                 onEditChord={(noteIdx, current) =>
                   onEditChord?.(String(page + 1), noteIdx, current)

@@ -372,14 +372,16 @@ function HymnPlaylistPage({
       importMidiPlaylist(await file.text());
       setImportError(undefined);
     } catch {
-      setImportError("File playlist tidak dapat dibaca.");
+      setImportError(translate(locale, "kidung.playlistImportError"));
     }
   };
 
   const saveQueueAsPlaylist = () => {
     const name = window.prompt(
-      "Nama playlist:",
-      `Playlist ${savedPlaylists.length + 1}`,
+      translate(locale, "kidung.playlistNamePrompt"),
+      translate(locale, "kidung.playlistNameDefault", {
+        count: savedPlaylists.length + 1,
+      }),
     );
     if (!name?.trim()) return;
     const saved = createSavedPlaylist(name);
@@ -390,7 +392,11 @@ function HymnPlaylistPage({
     window.dispatchEvent(new CustomEvent("gys-kidung-playlists-change"));
   };
   const showToastLike = (name: string) => {
-    window.setTimeout(() => setNoticeLocal(`Playlist "${name}" tersimpan`), 0);
+    window.setTimeout(
+      () =>
+        setNoticeLocal(translate(locale, "kidung.playlistSaved", { name })),
+      0,
+    );
   };
   const [noticeLocal, setNoticeLocal] = useState("");
   const loadSavedPlaylist = (saved: SavedPlaylist) => {
@@ -402,7 +408,12 @@ function HymnPlaylistPage({
       if (!entry) continue;
       if (addMidiPlaylistItem({ songId, title: entry.title })) added += 1;
     }
-    setNoticeLocal(`Dimuat: ${saved.name} (${added} lagu)`);
+    setNoticeLocal(
+      translate(locale, "kidung.playlistLoaded", {
+        name: saved.name,
+        count: added,
+      }),
+    );
   };
 
   return (
@@ -410,7 +421,7 @@ function HymnPlaylistPage({
       <KidungLocalNav active="playlist" locale={locale} />
       <header className="kidung-tool-heading">
         <div>
-          <h1>Playlist</h1>
+          <h1>{translate(locale, "kidung.playlist")}</h1>
         </div>
         <div className="kidung-tool-heading-actions">
           <button
@@ -418,7 +429,7 @@ function HymnPlaylistPage({
             type="button"
             onClick={() => fileInputRef.current?.click()}
           >
-            Impor
+            {translate(locale, "kidung.import")}
           </button>
           <button
             className="text-button"
@@ -426,7 +437,7 @@ function HymnPlaylistPage({
             onClick={() => downloadMidiPlaylist()}
             disabled={playlist.items.length === 0}
           >
-            Ekspor
+            {translate(locale, "kidung.export")}
           </button>
           <input
             ref={fileInputRef}
@@ -440,20 +451,44 @@ function HymnPlaylistPage({
           />
         </div>
       </header>
-      <section className="kidung-queue-surface" aria-label="Playlist MIDI">
+      <section
+        className="kidung-queue-surface"
+        aria-label={translate(locale, "kidung.midiPlaylist")}
+      >
         <div className="kidung-queue-options">
           <Select
             value={getAutoNextMode()}
             onChange={(mode) => applyAutoNextMode(mode)}
-            label="Putar berikutnya"
+            label={translate(locale, "kidung.playNext")}
             options={[
-              { value: "off", label: "Tidak ada (stop di akhir)" },
-              { value: "number", label: "Sesuai Nomor (urutan)" },
-              { value: "playlist", label: "Sesuai Playlist" },
-              { value: "one", label: "Ulangi lagu ini" },
-              { value: "all", label: "Ulangi semua" },
-              { value: "shuffle-all", label: "Acak semua lagu" },
-              { value: "shuffle-playlist", label: "Acak dalam playlist" },
+              {
+                value: "off",
+                label: translate(locale, "kidung.playNext.off"),
+              },
+              {
+                value: "number",
+                label: translate(locale, "kidung.playNext.number"),
+              },
+              {
+                value: "playlist",
+                label: translate(locale, "kidung.playNext.playlist"),
+              },
+              {
+                value: "one",
+                label: translate(locale, "kidung.playNext.one"),
+              },
+              {
+                value: "all",
+                label: translate(locale, "kidung.playNext.all"),
+              },
+              {
+                value: "shuffle-all",
+                label: translate(locale, "kidung.playNext.shuffleAll"),
+              },
+              {
+                value: "shuffle-playlist",
+                label: translate(locale, "kidung.playNext.shufflePlaylist"),
+              },
             ]}
           />
           <button
@@ -462,7 +497,7 @@ function HymnPlaylistPage({
             onClick={() => clearMidiPlaylist()}
             disabled={playlist.items.length === 0}
           >
-            Kosongkan
+            {translate(locale, "kidung.clearPlaylist")}
           </button>
           <button
             className="text-button"
@@ -470,7 +505,7 @@ function HymnPlaylistPage({
             onClick={saveQueueAsPlaylist}
             disabled={playlist.items.length === 0}
           >
-            Simpan sebagai playlist
+            {translate(locale, "kidung.saveAsPlaylist")}
           </button>
         </div>
         {noticeLocal && (
@@ -481,9 +516,9 @@ function HymnPlaylistPage({
         {savedPlaylists.length > 0 && (
           <section
             className="kidung-saved-playlists"
-            aria-label="Playlist tersimpan"
+            aria-label={translate(locale, "kidung.savedPlaylists")}
           >
-            <h2>Playlist tersimpan</h2>
+            <h2>{translate(locale, "kidung.savedPlaylists")}</h2>
             {savedPlaylists.map((saved) => {
               return (
                 <div className="kidung-saved-playlist-row" key={saved.id}>
@@ -498,16 +533,24 @@ function HymnPlaylistPage({
                     <span>
                       <strong>{saved.name}</strong>
                       <small>
-                        {saved.songIds.length} lagu
-                        {getActivePlaylistId() === saved.id ? " · Aktif" : ""}
+                        {translate(locale, "kidung.settingsSongCount", {
+                          count: saved.songIds.length,
+                        })}
+                        {getActivePlaylistId() === saved.id
+                          ? ` · ${translate(locale, "kidung.active")}`
+                          : ""}
                       </small>
                     </span>
                   </button>
                   <div className="kidung-playlist-actions">
                     <details className="kidung-row-menu">
                       <summary
-                        aria-label={`Opsi ${saved.name}`}
-                        title="Opsi playlist"
+                        aria-label={translate(locale, "kidung.playlistOptions", {
+                          name: saved.name,
+                        })}
+                        title={translate(locale, "kidung.playlistOptions", {
+                          name: saved.name,
+                        })}
                       >
                         <Icon name="more" size={18} />
                       </summary>
@@ -517,7 +560,7 @@ function HymnPlaylistPage({
                           className="text-button"
                           onClick={(event) => {
                             const name = window.prompt(
-                              "Ubah nama:",
+                              translate(locale, "kidung.renamePlaylistPrompt"),
                               saved.name,
                             );
                             if (name?.trim())
@@ -527,12 +570,14 @@ function HymnPlaylistPage({
                               ?.removeAttribute("open");
                           }}
                         >
-                          Ubah nama
+                          {translate(locale, "kidung.renamePlaylist")}
                         </button>
                         {saved.songIds.length > 0 && (
                           <details className="kidung-manage-saved-items">
                             <summary>
-                              Kelola isi · {saved.songIds.length}
+                              {translate(locale, "kidung.managePlaylistContents", {
+                                count: saved.songIds.length,
+                              })}
                             </summary>
                             <div>
                               {saved.songIds.map((songId) => (
@@ -544,7 +589,11 @@ function HymnPlaylistPage({
                                     removeSongFromPlaylist(saved.id, songId)
                                   }
                                 >
-                                  Hapus {songId}
+                                  {translate(
+                                    locale,
+                                    "kidung.removeSongFromPlaylist",
+                                    { title: songId },
+                                  )}
                                 </button>
                               ))}
                             </div>
@@ -560,7 +609,7 @@ function HymnPlaylistPage({
                               ?.removeAttribute("open");
                           }}
                         >
-                          Hapus playlist
+                          {translate(locale, "kidung.deletePlaylist")}
                         </button>
                       </div>
                     </details>
@@ -577,13 +626,12 @@ function HymnPlaylistPage({
         )}
         {playlist.items.length === 0 ? (
           <div className="kidung-empty-state">
-            <strong>Playlist masih kosong.</strong>
+            <strong>{translate(locale, "kidung.emptyPlaylistTitle")}</strong>
             <p>
-              Tambahkan lagu dari detail Kidung, lalu putar dan atur urutannya
-              di sini.
+              {translate(locale, "kidung.emptyPlaylistBody")}
             </p>
             <Link className="text-button" to="/kidung">
-              Kembali ke daftar Kidung →
+              {translate(locale, "kidung.backToCatalog")}
             </Link>
           </div>
         ) : (
@@ -612,16 +660,20 @@ function HymnPlaylistPage({
                     <strong>{item.title}</strong>
                     <small>
                       {index === playlist.currentIndex
-                        ? "Sedang dipilih"
-                        : "Siap diputar"}
+                        ? translate(locale, "kidung.selected")
+                        : translate(locale, "kidung.readyToPlay")}
                     </small>
                   </span>
                 </button>
                 <div className="kidung-playlist-actions">
                   <details className="kidung-row-menu">
                     <summary
-                      aria-label={`Opsi ${item.title}`}
-                      title="Opsi lagu"
+                      aria-label={translate(locale, "kidung.songOptions", {
+                        title: item.title,
+                      })}
+                      title={translate(locale, "kidung.songOptions", {
+                        title: item.title,
+                      })}
                     >
                       <Icon name="more" size={18} />
                     </summary>
@@ -629,35 +681,47 @@ function HymnPlaylistPage({
                       <button
                         className="text-button"
                         type="button"
-                        aria-label={`Naikkan ${item.title}`}
+                        aria-label={translate(locale, "kidung.moveUp", {
+                          title: item.title,
+                        })}
                         onClick={() => moveMidiPlaylistItem(index, index - 1)}
                         disabled={index === 0}
                       >
-                        Naikkan
+                        {translate(locale, "kidung.moveUp", {
+                          title: item.title,
+                        })}
                       </button>
                       <button
                         className="text-button"
                         type="button"
-                        aria-label={`Turunkan ${item.title}`}
+                        aria-label={translate(locale, "kidung.moveDown", {
+                          title: item.title,
+                        })}
                         onClick={() => moveMidiPlaylistItem(index, index + 1)}
                         disabled={index === playlist.items.length - 1}
                       >
-                        Turunkan
+                        {translate(locale, "kidung.moveDown", {
+                          title: item.title,
+                        })}
                       </button>
                       <button
                         className="text-button kidung-open-song"
                         type="button"
                         onClick={() => navigate(`/kidung/${item.songId}`)}
                       >
-                        Buka kidung
+                        {translate(locale, "kidung.openSong")}
                       </button>
                       <button
                         className="text-button kidung-danger-action"
                         type="button"
-                        aria-label={`Hapus ${item.title} dari playlist`}
+                        aria-label={translate(
+                          locale,
+                          "kidung.removeSongFromPlaylist",
+                          { title: item.title },
+                        )}
                         onClick={() => removeMidiPlaylistItem(item.songId)}
                       >
-                        Hapus dari playlist
+                        {translate(locale, "kidung.removeFromPlaylist")}
                       </button>
                     </div>
                   </details>
@@ -734,7 +798,7 @@ function HymnSettingsPage({
       <KidungLocalNav active="settings" locale={locale} />
       <header className="kidung-tool-heading">
         <div>
-          <h1>Pengaturan</h1>
+          <h1>{translate(locale, "kidung.settings")}</h1>
         </div>
       </header>
       <div className="kidung-settings-layout">
@@ -742,30 +806,52 @@ function HymnSettingsPage({
           className="kidung-settings-section"
           aria-labelledby="kidung-appearance-heading"
         >
-          <p className="date-line">Tampilan</p>
-          <h2 id="kidung-appearance-heading">Bahasa dan tema</h2>
+          <p className="date-line">
+            {translate(locale, "kidung.settingsAppearance")}
+          </p>
+          <h2 id="kidung-appearance-heading">
+            {translate(locale, "kidung.settingsLanguageTheme")}
+          </h2>
           <div className="kidung-settings-controls">
             <Select
               value={locale}
               onChange={(value) => setLocale?.(value)}
-              label="Bahasa"
+              label={translate(locale, "kidung.settingsLanguage")}
               options={[
-                { value: "id", label: "Indonesia" },
-                { value: "en", label: "English" },
-                { value: "zh", label: "ä¸­æ–‡" },
+                {
+                  value: "id",
+                  label: translate(locale, "kidung.settingsLanguage.id"),
+                },
+                {
+                  value: "en",
+                  label: translate(locale, "kidung.settingsLanguage.en"),
+                },
+                {
+                  value: "zh",
+                  label: translate(locale, "kidung.settingsLanguage.zh"),
+                },
               ]}
               disabled={!setLocale}
             />
             <Select
               value={theme}
               onChange={(value) => setTheme?.(value)}
-              label="Tema"
+              label={translate(locale, "kidung.settingsTheme")}
               options={[
-                { value: "light", label: "Terang" },
-                { value: "dark", label: "Gelap" },
-                { value: "system", label: "Sistem" },
-                { value: "sepia", label: "Sepia" },
-                { value: "amoled", label: "AMOLED" },
+                {
+                  value: "light",
+                  label: translate(locale, "theme.light"),
+                },
+                { value: "dark", label: translate(locale, "theme.dark") },
+                {
+                  value: "system",
+                  label: translate(locale, "theme.system"),
+                },
+                { value: "sepia", label: translate(locale, "theme.sepia") },
+                {
+                  value: "amoled",
+                  label: translate(locale, "theme.amoled"),
+                },
               ]}
               disabled={!setTheme}
             />
@@ -775,8 +861,12 @@ function HymnSettingsPage({
           className="kidung-settings-section"
           aria-labelledby="kidung-player-heading"
         >
-          <p className="date-line">Audio</p>
-          <h2 id="kidung-player-heading">Pemutar MIDI</h2>
+          <p className="date-line">
+            {translate(locale, "kidung.settingsAudio")}
+          </p>
+          <h2 id="kidung-player-heading">
+            {translate(locale, "kidung.settingsMidiPlayer")}
+          </h2>
           <label className="kidung-settings-switch">
             <input
               type="checkbox"
@@ -784,10 +874,11 @@ function HymnSettingsPage({
               onChange={(event) => setPlayerPreference(event.target.checked)}
             />
             <span>
-              <strong>Mulai dalam mode ringkas</strong>
+              <strong>
+                {translate(locale, "kidung.settingsCompactPlayer")}
+              </strong>
               <small>
-                Player tetap tersedia sebagai dock tipis dan dapat dibuka kapan
-                saja.
+                {translate(locale, "kidung.settingsCompactPlayerDescription")}
               </small>
             </span>
           </label>
@@ -797,12 +888,24 @@ function HymnSettingsPage({
               onChange={(value) =>
                 updateMidiPlaylistOptions({ crossfadeMs: value })
               }
-              label="Fade lintas saat ganti lagu"
+              label={translate(locale, "kidung.settingsCrossfade")}
               options={[
-                { value: 0, label: "Mati (potong langsung)" },
-                { value: 2000, label: "2 detik (lembut)" },
-                { value: 3000, label: "3 detik (gapless)" },
-                { value: 5000, label: "5 detik (dramatis)" },
+                {
+                  value: 0,
+                  label: translate(locale, "kidung.settingsCrossfade.off"),
+                },
+                {
+                  value: 2000,
+                  label: translate(locale, "kidung.settingsCrossfade.gentle"),
+                },
+                {
+                  value: 3000,
+                  label: translate(locale, "kidung.settingsCrossfade.gapless"),
+                },
+                {
+                  value: 5000,
+                  label: translate(locale, "kidung.settingsCrossfade.dramatic"),
+                },
               ]}
             />
           </div>
@@ -817,10 +920,11 @@ function HymnSettingsPage({
               }}
             />
             <span>
-              <strong>Nada dasar alami (chord natural)</strong>
+              <strong>
+                {translate(locale, "kidung.settingsNaturalChords")}
+              </strong>
               <small>
-                Lagu ber-kunci mol otomatis naik 1 nada agar chord tetap
-                natural.
+                {translate(locale, "kidung.settingsNaturalChordsDescription")}
               </small>
             </span>
           </label>
@@ -836,10 +940,11 @@ function HymnSettingsPage({
               }
             />
             <span>
-              <strong>Preload lagu berikutnya</strong>
+              <strong>
+                {translate(locale, "kidung.settingsPreloadNext")}
+              </strong>
               <small>
-                MIDI + PDF lagu tetangga di-render di latar agar pindah lagu
-                instan.
+                {translate(locale, "kidung.settingsPreloadNextDescription")}
               </small>
             </span>
           </label>
@@ -849,11 +954,26 @@ function HymnSettingsPage({
               onChange={(value) =>
                 applyViewPrefs({ ...viewPrefs, preloadCount: value })
               }
-              label="Jumlah preload"
+              label={translate(locale, "kidung.settingsPreloadCount")}
               options={[
-                { value: 1, label: "1 lagu sebelum & sesudah" },
-                { value: 2, label: "2 lagu sebelum & sesudah" },
-                { value: 3, label: "3 lagu sebelum & sesudah" },
+                {
+                  value: 1,
+                  label: translate(locale, "kidung.settingsPreloadCountOption", {
+                    count: 1,
+                  }),
+                },
+                {
+                  value: 2,
+                  label: translate(locale, "kidung.settingsPreloadCountOption", {
+                    count: 2,
+                  }),
+                },
+                {
+                  value: 3,
+                  label: translate(locale, "kidung.settingsPreloadCountOption", {
+                    count: 3,
+                  }),
+                },
               ]}
             />
             <Select
@@ -862,28 +982,45 @@ function HymnSettingsPage({
                 setDefaultPdfLayout(value);
                 setDefaultPdfLayoutState(value);
               }}
-              label="Tampilan PDF default"
+              label={translate(locale, "kidung.settingsPdfLayout")}
               options={[
-                { value: "single", label: "1 halaman" },
-                { value: "double", label: "2 halaman" },
-                { value: "vertical", label: "Gulir vertikal" },
+                {
+                  value: "single",
+                  label: translate(locale, "kidung.settingsPdfSingle"),
+                },
+                {
+                  value: "double",
+                  label: translate(locale, "kidung.settingsPdfDouble"),
+                },
+                {
+                  value: "vertical",
+                  label: translate(locale, "kidung.settingsPdfVertical"),
+                },
               ]}
             />
           </div>
           <div className="kidung-settings-summary">
-            <span>Playlist tersimpan</span>
-            <strong>{playlist.items.length} lagu</strong>
+            <span>{translate(locale, "kidung.settingsSavedPlaylist")}</span>
+            <strong>
+              {translate(locale, "kidung.settingsSongCount", {
+                count: playlist.items.length,
+              })}
+            </strong>
           </div>
           <Link className="text-button" to="/kidung?section=playlist">
-            Kelola playlist →
+            {translate(locale, "kidung.settingsManagePlaylist")}
           </Link>
         </section>
         <section
           className="kidung-settings-section"
           aria-labelledby="kidung-chord-heading"
         >
-          <p className="date-line">Chord</p>
-          <h2 id="kidung-chord-heading">Tampilan chord</h2>
+          <p className="date-line">
+            {translate(locale, "kidung.settingsChord")}
+          </p>
+          <h2 id="kidung-chord-heading">
+            {translate(locale, "kidung.settingsChordAppearance")}
+          </h2>
           <div className="kidung-settings-controls">
             <label className="kidung-settings-switch">
               <input
@@ -896,26 +1033,38 @@ function HymnSettingsPage({
                 }
               />
               <span>
-                <strong>Samakan huruf chord ke warna utama</strong>
+                <strong>
+                  {translate(locale, "kidung.settingsSyncChordTheme")}
+                </strong>
               </span>
             </label>
             <div
               className="chord-ui-palette"
               role="group"
-              aria-label="Tema huruf chord"
+              aria-label={translate(locale, "kidung.settingsChordThemeGroup")}
             >
-              {CHORD_THEME_PRESETS.map((preset) => (
-                <button
-                  key={preset.key}
-                  type="button"
-                  className={`chord-ui-swatch${chordUiPrefs.theme === preset.key ? " is-selected" : ""}${chordUiPrefs.syncThemeWithAccent ? " is-disabled" : ""}`}
-                  disabled={chordUiPrefs.syncThemeWithAccent}
-                  style={{ background: preset.color }}
-                  aria-label={`Tema chord ${preset.label}`}
-                  title={preset.label}
-                  onClick={() => updateChordUiPrefs({ theme: preset.key })}
-                />
-              ))}
+              {CHORD_THEME_PRESETS.map((preset) => {
+                const colorLabel = translate(
+                  locale,
+                  `kidung.chordColor.${preset.key}`,
+                );
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    className={`chord-ui-swatch${chordUiPrefs.theme === preset.key ? " is-selected" : ""}${chordUiPrefs.syncThemeWithAccent ? " is-disabled" : ""}`}
+                    disabled={chordUiPrefs.syncThemeWithAccent}
+                    style={{ background: preset.color }}
+                    aria-label={translate(
+                      locale,
+                      "kidung.settingsChordThemeSwatch",
+                      { color: colorLabel },
+                    )}
+                    title={colorLabel}
+                    onClick={() => updateChordUiPrefs({ theme: preset.key })}
+                  />
+                );
+              })}
             </div>
             <label className="kidung-settings-switch">
               <input
@@ -928,7 +1077,9 @@ function HymnSettingsPage({
                 }
               />
               <span>
-                <strong>Samakan fill chord ke warna utama</strong>
+                <strong>
+                  {translate(locale, "kidung.settingsSyncChordFill")}
+                </strong>
               </span>
             </label>
             <Select
@@ -938,34 +1089,55 @@ function HymnSettingsPage({
                   fill: value as "none" | "soft" | "solid",
                 })
               }
-              label="Fill chord"
+              label={translate(locale, "kidung.settingsFillStyle")}
               options={[
-                { value: "none", label: "Tanpa Fill" },
-                { value: "soft", label: "Soft Rounded" },
-                { value: "solid", label: "Solid Rounded" },
+                {
+                  value: "none",
+                  label: translate(locale, "kidung.settingsFillNone"),
+                },
+                {
+                  value: "soft",
+                  label: translate(locale, "kidung.settingsFillSoft"),
+                },
+                {
+                  value: "solid",
+                  label: translate(locale, "kidung.settingsFillSolid"),
+                },
               ]}
             />
             <div
               className="chord-ui-palette"
               role="group"
-              aria-label="Warna fill chord"
+              aria-label={translate(locale, "kidung.settingsChordFillGroup")}
             >
-              {CHORD_FILL_PRESETS.map((preset) => (
-                <button
-                  key={preset.key}
-                  type="button"
-                  className={`chord-ui-swatch is-fill${chordUiPrefs.fillColor === preset.key ? " is-selected" : ""}${chordUiPrefs.syncFillWithAccent ? " is-disabled" : ""}`}
-                  disabled={chordUiPrefs.syncFillWithAccent}
-                  style={{ background: preset.color }}
-                  aria-label={`Warna fill ${preset.label}`}
-                  title={preset.label}
-                  onClick={() => updateChordUiPrefs({ fillColor: preset.key })}
-                />
-              ))}
+              {CHORD_FILL_PRESETS.map((preset) => {
+                const colorLabel = translate(
+                  locale,
+                  `kidung.chordColor.${preset.key}`,
+                );
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    className={`chord-ui-swatch is-fill${chordUiPrefs.fillColor === preset.key ? " is-selected" : ""}${chordUiPrefs.syncFillWithAccent ? " is-disabled" : ""}`}
+                    disabled={chordUiPrefs.syncFillWithAccent}
+                    style={{ background: preset.color }}
+                    aria-label={translate(
+                      locale,
+                      "kidung.settingsChordFillSwatch",
+                      { color: colorLabel },
+                    )}
+                    title={colorLabel}
+                    onClick={() => updateChordUiPrefs({ fillColor: preset.key })}
+                  />
+                );
+              })}
             </div>
             <label className="chord-ui-slider">
               <span>
-                Opacity latar chord ({chordUiPrefs.fillOpacityPercent}%)
+                {translate(locale, "kidung.settingsOpacity", {
+                  percent: chordUiPrefs.fillOpacityPercent,
+                })}
               </span>
               <input
                 type="range"
@@ -982,7 +1154,9 @@ function HymnSettingsPage({
             </label>
             <label className="chord-ui-slider">
               <span>
-                Ukuran font chord ({chordUiPrefs.fontOverridePercent}%)
+                {translate(locale, "kidung.settingsFontSize", {
+                  percent: chordUiPrefs.fontOverridePercent,
+                })}
               </span>
               <input
                 type="range"
@@ -998,7 +1172,11 @@ function HymnSettingsPage({
               />
             </label>
             <label className="chord-ui-slider">
-              <span>Padding chord ({chordUiPrefs.fillPaddingPercent}%)</span>
+              <span>
+                {translate(locale, "kidung.settingsPadding", {
+                  percent: chordUiPrefs.fillPaddingPercent,
+                })}
+              </span>
               <input
                 type="range"
                 min={0}
@@ -1018,10 +1196,14 @@ function HymnSettingsPage({
           className="kidung-settings-section"
           aria-labelledby="kidung-info-heading"
         >
-          <p className="date-line">Informasi</p>
-          <h2 id="kidung-info-heading">Versi dan penyimpanan</h2>
+          <p className="date-line">
+            {translate(locale, "kidung.settingsInfo")}
+          </p>
+          <h2 id="kidung-info-heading">
+            {translate(locale, "kidung.settingsVersionStorage")}
+          </h2>
           <div className="kidung-settings-summary">
-            <span>Versi aplikasi</span>
+            <span>{translate(locale, "kidung.settingsAppVersion")}</span>
             <strong>0.1.0</strong>
           </div>
           <button
@@ -1034,16 +1216,15 @@ function HymnSettingsPage({
                 )
                 .catch(() => {
                   window.alert(
-                    "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+                    translate(locale, "more.resetIncomplete"),
                   );
                 });
             }}
           >
-            Bersihkan cache & reset preferensi
+            {translate(locale, "kidung.settingsReset")}
           </button>
           <small className="kidung-settings-note">
-            Menghapus preferensi, cache aset, dan data lokal Kidung. Data yang
-            tersinkronisasi dengan akun tidak terpengaruh.
+            {translate(locale, "kidung.settingsResetDescription")}
           </small>
         </section>
       </div>
@@ -1080,13 +1261,13 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
     applyAutoNextMode(next);
   };
   const loopLabel = {
-    off: "Off",
-    one: "1×",
-    all: "Semua",
-    number: "Nomor",
-    playlist: "Playlist",
-    "shuffle-all": "Acak",
-    "shuffle-playlist": "Acak Playlist",
+    off: translate(locale, "media.loopOff"),
+    one: translate(locale, "media.loopOne"),
+    all: translate(locale, "media.loopAll"),
+    number: translate(locale, "media.loopNumber"),
+    playlist: translate(locale, "media.loopPlaylist"),
+    "shuffle-all": translate(locale, "media.loopShuffleAll"),
+    "shuffle-playlist": translate(locale, "media.loopShufflePlaylist"),
   }[midiLoopMode];
   return (
     <div className="hymn-midi-controls-panel">
@@ -1134,7 +1315,7 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
                   .seek(Number(event.target.value))
                   .catch(() => undefined)
               }
-              aria-label="Posisi MIDI"
+              aria-label={translate(locale, "media.positionMidi")}
             />
             <span className="hymn-midi-time">
               {formatMidiTime(midiState.duration)}
@@ -1191,12 +1372,12 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
               if (event.key === "Enter")
                 (event.target as HTMLInputElement).blur();
             }}
-            aria-label="Tempo BPM"
+            aria-label={translate(locale, "media.tempoInput")}
           />
           <span>BPM</span>
         </label>
         <label>
-          <span>Volume</span>
+          <span>{translate(locale, "media.volumeShort")}</span>
           <input
             type="range"
             min={0}
@@ -1208,7 +1389,7 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
                 .setVolume(Number(event.target.value))
                 .catch(() => undefined)
             }
-            aria-label="Volume MIDI"
+            aria-label={translate(locale, "media.volumeMidi")}
           />
         </label>
         <button
@@ -1216,8 +1397,10 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
           className="quiet-button hymn-midi-loop"
           onClick={cycleLoopMode}
           aria-pressed={midiLoopMode !== "off"}
-          aria-label={`Mode ulang: ${loopLabel}`}
-          title={`Ulang · ${loopLabel}`}
+          aria-label={translate(locale, "media.loopControl", {
+            mode: loopLabel,
+          })}
+          title={translate(locale, "media.loopTitle", { mode: loopLabel })}
         >
           <Icon name="repeat" size={16} />
           <span className="hymn-loop-label">{loopLabel}</span>
@@ -1228,9 +1411,15 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
           onClick={() =>
             void midiPlayer.setMuted(!midiState.muted).catch(() => undefined)
           }
-          aria-label={midiState.muted ? "Unmute" : "Mute"}
+          aria-label={translate(
+            locale,
+            midiState.muted ? "media.unmuteMidi" : "media.muteMidi",
+          )}
           aria-pressed={midiState.muted}
-          title={midiState.muted ? "Bunyikan" : "Bisukan"}
+          title={translate(
+            locale,
+            midiState.muted ? "media.unmuteMidi" : "media.muteMidi",
+          )}
         >
           <Icon name={midiState.muted ? "volumeOff" : "volume"} size={16} />
         </button>
@@ -1265,20 +1454,6 @@ function HymnCatalog({
       return allItems.filter((item) => !item.assetCode);
     return searchHymns(searchIndex, deferredQuery, book);
   }, [allItems, book, deferredQuery, searchIndex]);
-  // gyschordweb GysLastPlayedSongIndex: restore the last opened hymn once per
-  // session so a fresh app launch lands directly on the previous song.
-  useEffect(() => {
-    if (state.status !== "ready" || typeof sessionStorage === "undefined")
-      return;
-    if (sessionStorage.getItem("gys-hymn-autoopen-done")) return;
-    const last = getActivity().hymn;
-    if (last && allItems.some((candidate) => candidate.id === last.id)) {
-      sessionStorage.setItem("gys-hymn-autoopen-done", "1");
-      navigate(`/kidung/${last.id}`);
-    } else {
-      sessionStorage.setItem("gys-hymn-autoopen-done", "1");
-    }
-  }, [state, allItems, navigate]);
   const listRef = useRef<HTMLOListElement>(null);
   const queueIds = useMemo(
     () => new Set(getMidiPlaylist().items.map((entry) => entry.songId)),
@@ -1290,14 +1465,6 @@ function HymnCatalog({
     [],
   );
   void queueTick;
-  // gyschordweb fitListTitles: single-line auto-fit per row + web font refit.
-  useEffect(() => {
-    if (state.status !== "ready") return;
-    return observeSingleLineFit(listRef.current, ".pujian-title", {
-      maxPx: 16,
-      minPx: 10,
-    });
-  }, [state, filtered]);
   const onRowClick = (
     event: ReactMouseEvent<HTMLButtonElement>,
     songId: string,
@@ -1322,54 +1489,24 @@ function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      <KidungLocalNav active="songs" locale={locale} />
-      <header className="hymn-page-header">
-        <div className="hymn-page-heading">
-          <h1>{translate(locale, "page.kidungTitle")}</h1>
-        </div>
-        {state.status === "ready" && (
-          <div className="catalog-toolbar hymn-catalog-controls">
-            <label className="search-field">
-              <span>{translate(locale, "kidung.search")}</span>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={translate(locale, "kidung.searchPlaceholder")}
-              />
-            </label>
-            <div className="kidung-desktop-filter">
-              <Select
-                value={book}
-                onChange={setBook}
-                label={translate(locale, "kidung.collection")}
-                options={[
-                  {
-                    value: "all",
-                    label: translate(locale, "kidung.allCollections"),
-                  },
-                  ...books.map((value) => ({ value, label: value })),
-                ]}
-              />
-            </div>
-            <details className="kidung-mobile-filter" ref={mobileFilterRef}>
-              <summary
-                className="kidung-filter-summary"
-                aria-label={translate(locale, "kidung.collection")}
-              >
-                <span>{translate(locale, "kidung.collection")}</span>
-                <strong>
-                  {book === "all"
-                    ? translate(locale, "kidung.allCollections")
-                    : book}
-                </strong>
-              </summary>
-              <div className="kidung-mobile-filter-panel">
+      <div className="kidung-catalog-topbar">
+        <KidungLocalNav active="songs" locale={locale} />
+        <header className="hymn-page-header">
+          <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
+          {state.status === "ready" && (
+            <div className="catalog-toolbar hymn-catalog-controls">
+              <label className="search-field">
+                <span>{translate(locale, "kidung.search")}</span>
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={translate(locale, "kidung.searchPlaceholder")}
+                />
+              </label>
+              <div className="kidung-desktop-filter">
                 <Select
                   value={book}
-                  onChange={(value) => {
-                    setBook(value);
-                    mobileFilterRef.current?.removeAttribute("open");
-                  }}
+                  onChange={setBook}
                   label={translate(locale, "kidung.collection")}
                   options={[
                     {
@@ -1380,10 +1517,40 @@ function HymnCatalog({
                   ]}
                 />
               </div>
-            </details>
-          </div>
-        )}
-      </header>
+              <details className="kidung-mobile-filter" ref={mobileFilterRef}>
+                <summary
+                  className="kidung-filter-summary"
+                  aria-label={translate(locale, "kidung.collection")}
+                >
+                  <span>{translate(locale, "kidung.collection")}</span>
+                  <strong>
+                    {book === "all"
+                      ? translate(locale, "kidung.allCollections")
+                      : book}
+                  </strong>
+                </summary>
+                <div className="kidung-mobile-filter-panel">
+                  <Select
+                    value={book}
+                    onChange={(value) => {
+                      setBook(value);
+                      mobileFilterRef.current?.removeAttribute("open");
+                    }}
+                    label={translate(locale, "kidung.collection")}
+                    options={[
+                      {
+                        value: "all",
+                        label: translate(locale, "kidung.allCollections"),
+                      },
+                      ...books.map((value) => ({ value, label: value })),
+                    ]}
+                  />
+                </div>
+              </details>
+            </div>
+          )}
+        </header>
+      </div>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
           {translate(locale, "kidung.catalogLoading")}
@@ -1423,8 +1590,8 @@ function HymnCatalog({
                       className={`chord-indicator${item.chordRef ? " has-chord" : " no-chord"}`}
                       title={
                         item.chordRef
-                          ? "Chord tersedia"
-                          : "Chord belum tersedia"
+                          ? translate(locale, "kidung.chordAvailable")
+                          : translate(locale, "kidung.chordUnavailable")
                       }
                       aria-hidden="true"
                     >
@@ -1442,12 +1609,22 @@ function HymnCatalog({
                       aria-pressed={inQueue}
                       onClick={(event) => onRowQueue(event, item)}
                       title={
-                        inQueue ? "Sudah di antrean" : "Tambah ke Playlist"
+                        translate(
+                          locale,
+                          inQueue
+                            ? "kidung.queueSongExists"
+                            : "kidung.queueSongAdd",
+                          { title: item.title },
+                        )
                       }
                       aria-label={
-                        inQueue
-                          ? `${item.title} sudah di antrean`
-                          : `Tambah ${item.title} ke Playlist`
+                        translate(
+                          locale,
+                          inQueue
+                            ? "kidung.queueSongExists"
+                            : "kidung.queueSongAdd",
+                          { title: item.title },
+                        )
                       }
                     >
                       <Icon
@@ -2518,7 +2695,7 @@ function HymnDetail({
     }
     if (midiState.songId === item.id) {
       if (midiState.status === "playing") {
-        await speechPlayer.stop();
+        await speechPlayer.pause();
         await midiPlayer.pause();
         setMidiStatus("ready");
         show(translate(locale, "kidung.midiReadyHint"));
@@ -2530,7 +2707,7 @@ function HymnDetail({
         midiState.status === "stopped"
       ) {
         try {
-          await speechPlayer.stop();
+          await speechPlayer.pause();
           await midiPlayer.resumeContext();
           await midiPlayer.play();
           setMidiStatus("ready");
@@ -2745,6 +2922,9 @@ function HymnDetail({
                 <details
                   className="pdf-music-menu"
                   name="hymn-pdf-toolbar-menu"
+                  onToggle={(event) => {
+                    if (event.currentTarget.open) setNotice("");
+                  }}
                 >
                   <summary
                     className="viewer-chrome-button pdf-music-summary"
@@ -2997,6 +3177,7 @@ function HymnDetail({
                   src={pdfUrl ?? ""}
                   {...(pdfBytes ? { data: pdfBytes } : {})}
                   initialPage={pdfInitialPage}
+                  locale={locale}
                   {...(pdfSource === "fork" && pdfPageCount
                     ? {
                         pageRange: {
@@ -3509,7 +3690,7 @@ function HymnDetail({
                                     .catch(() => undefined);
                               }}
                               style={{ flex: 1 }}
-                              aria-label="Posisi MIDI"
+                              aria-label={translate(locale, "media.positionMidi")}
                               disabled={
                                 midiState.status === "loading" ||
                                 isMidiSwitchingRef.current
@@ -3593,7 +3774,7 @@ function HymnDetail({
                             if (event.key === "Enter")
                               (event.target as HTMLInputElement).blur();
                           }}
-                          aria-label="Tempo BPM"
+                          aria-label={translate(locale, "media.tempoInput")}
                           style={{ width: 56, textAlign: "center" }}
                         />
                         <span style={{ fontSize: "0.8rem" }}>BPM</span>
@@ -3629,7 +3810,7 @@ function HymnDetail({
                         }}
                       >
                         <span style={{ fontSize: "0.75rem", minWidth: 48 }}>
-                          Volume
+                          {translate(locale, "media.volumeShort")}
                         </span>
                         <input
                           type="range"
@@ -3643,7 +3824,7 @@ function HymnDetail({
                               .catch(() => undefined)
                           }
                           style={{ flex: 1 }}
-                          aria-label="Volume MIDI"
+                          aria-label={translate(locale, "media.volumeMidi")}
                         />
                         <button
                           type="button"
@@ -3652,7 +3833,12 @@ function HymnDetail({
                               .setMuted(!midiState.muted)
                               .catch(() => undefined)
                           }
-                          aria-label={midiState.muted ? "Unmute" : "Mute"}
+                          aria-label={translate(
+                            locale,
+                            midiState.muted
+                              ? "media.unmuteMidi"
+                              : "media.muteMidi",
+                          )}
                           style={{ fontSize: "0.8rem" }}
                         >
                           <Icon
@@ -3694,9 +3880,18 @@ function HymnDetail({
                   />
                   <div className="transpose-control">
                     <span>
-                      Nada tampil · {renderedKey}
+                      {translate(locale, "kidung.displayedKey", {
+                        key: renderedKey,
+                      })}
                       {capo > 0
-                        ? ` (Bentuk: ${chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental)})`
+                        ? ` (${translate(locale, "kidung.shapeKey", {
+                            key: chordKeyName(
+                              (((sourceKeyIndex + transpose - capo) % 12) +
+                                12) %
+                                12,
+                              accidental,
+                            ),
+                          })})`
                         : ""}
                     </span>
                     <div className="transpose-btn-group">
@@ -3734,16 +3929,23 @@ function HymnDetail({
                           type="button"
                           className="transpose-reset-btn"
                           onClick={() => updateTranspose(0)}
-                          title="Reset Transpose"
+                          title={translate(locale, "kidung.resetTranspose")}
                         >
-                          Reset
+                          {translate(locale, "kidung.resetTranspose")}
                         </button>
                       )}
                     </div>
                   </div>
                   <div className="capo-control">
                     <span>
-                      Capo · {capo === 0 ? "Tanpa Capo" : `Fret ${capo}`}
+                      {translate(locale, "kidung.capo", {
+                        value:
+                          capo === 0
+                            ? translate(locale, "kidung.noCapo")
+                            : translate(locale, "kidung.fret", {
+                                count: capo,
+                              }),
+                      })}
                     </span>
                     <div className="capo-btn-group">
                       <button
@@ -3758,7 +3960,7 @@ function HymnDetail({
                           setCapo((c) => Math.max(0, c - 1)),
                         )}
                         disabled={capo <= 0}
-                        aria-label="Turunkan Capo"
+                        aria-label={translate(locale, "kidung.capoDown")}
                       >
                         −
                       </button>
@@ -3775,7 +3977,7 @@ function HymnDetail({
                           setCapo((c) => Math.min(11, c + 1)),
                         )}
                         disabled={capo >= 11}
-                        aria-label="Naikkan Capo"
+                        aria-label={translate(locale, "kidung.capoUp")}
                       >
                         +
                       </button>
@@ -3784,9 +3986,9 @@ function HymnDetail({
                           type="button"
                           className="transpose-reset-btn"
                           onClick={() => setCapo(0)}
-                          title="Matikan Capo"
+                          title={translate(locale, "kidung.resetCapo")}
                         >
-                          Reset
+                          {translate(locale, "kidung.resetCapo")}
                         </button>
                       )}
                     </div>
@@ -3823,10 +4025,11 @@ function HymnDetail({
                       return (
                         <p key={`${index}-${line}`}>
                           {chordLine && chordLine.chords.length > 0 ? (
-                            <ChordCapability
-                              lines={[chordLine]}
-                              transpose={transpose - capo}
-                              accidental={accidental}
+                              <ChordCapability
+                                lines={[chordLine]}
+                                transpose={transpose - capo}
+                                accidental={accidental}
+                                locale={locale}
                             />
                           ) : (
                             line || "\u00A0"
@@ -3863,6 +4066,7 @@ function HymnDetail({
                         lines={[chordLine]}
                         transpose={transpose - capo}
                         accidental={accidental}
+                        locale={locale}
                       />
                     ) : (
                       line || "\u00A0"
@@ -3955,6 +4159,7 @@ function HymnDetail({
       )}
       {lyricsPanelOpen && (
         <LyricsPanel
+          locale={locale}
           item={item}
           verses={verses}
           getChordLinesForVerse={(verseIdx) =>

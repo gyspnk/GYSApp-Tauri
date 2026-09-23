@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
-import type { Locale } from "./i18n.js";
+import { translate, type Locale } from "./i18n.js";
 import {
   fetchSauh,
   getCachedSauh,
@@ -92,18 +92,25 @@ function SuaraParagraphs({ text }: { text: string }) {
   );
 }
 
-function SourceLink({ href }: { href: string }) {
+function SourceLink({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
   return (
     <a className="quiet-button" href={href} target="_blank" rel="noreferrer">
-      Sumber resmi ↗
+      {label}
     </a>
   );
 }
 
-export function SauhPage() {
+export function SauhPage({ locale }: { locale: Locale }) {
   const [state, setState] = useState<
     | { status: "loading" }
     | { status: "ready"; post: SauhPost }
+    | { status: "empty" }
     | { status: "error"; message: string }
   >(() => {
     const cached = getCachedSauh();
@@ -118,7 +125,10 @@ export function SauhPage() {
     void fetchSauh(signal)
       .then(([post]) => {
         if (signal?.aborted) return;
-        if (!post) throw new Error("Sauh untuk hari ini belum tersedia");
+        if (!post) {
+          setState({ status: "empty" });
+          return;
+        }
         setState({ status: "ready", post });
       })
       .catch((error: unknown) => {
@@ -138,7 +148,7 @@ export function SauhPage() {
     load(controller.signal);
     const unsubscribe = subscribeSauh((items) => {
       const [post] = selectTodaySauh(items);
-      if (post) setState({ status: "ready", post });
+      setState(post ? { status: "ready", post } : { status: "empty" });
     });
     return () => {
       controller.abort();
@@ -150,9 +160,11 @@ export function SauhPage() {
     <div className="page online-content-page sauh-page" data-testid="sauh-page">
       <div className="detail-back">
         <Link className="text-button" to="/">
-          ← Beranda
+          {translate(locale, "sauh.backHome")}
         </Link>
-        <span>Sauh Bagi Jiwa · hari ini</span>
+        <span>
+          {translate(locale, "sauh.title")} · {translate(locale, "sauh.today")}
+        </span>
       </div>
       <article
         className={`online-article-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
@@ -162,22 +174,30 @@ export function SauhPage() {
           <div className="sauh-inline-loading" role="status" aria-live="polite">
             <span className="sauh-inline-spinner" aria-hidden="true" />
             <div>
-              <strong>Mengambil Sauh Bagi Jiwa…</strong>
-              <small>Menunggu renungan resmi hari ini dari TJC.</small>
+              <strong>{translate(locale, "sauh.loadingTitle")}</strong>
+              <small>{translate(locale, "sauh.loadingBody")}</small>
             </div>
           </div>
         )}
-        {state.status === "error" && (
-          <div className="sauh-inline-error" role="alert">
-            <strong>Renungan hari ini belum tersedia.</strong>
-            <span>{state.message}</span>
+        {(state.status === "empty" || state.status === "error") && (
+          <div
+            className="sauh-inline-error"
+            role={state.status === "error" ? "alert" : "status"}
+          >
+            <strong>{translate(locale, "sauh.unavailableTitle")}</strong>
+            <span>{translate(locale, "sauh.unavailableBody")}</span>
+            {state.status === "error" && (
+              <small className="online-error-detail">
+                {translate(locale, "sauh.errorDetails")}: {state.message}
+              </small>
+            )}
             <div className="detail-actions">
               <button
                 className="quiet-button"
                 type="button"
                 onClick={() => load()}
               >
-                Coba lagi
+                {translate(locale, "sauh.retry")}
               </button>
               <a
                 className="quiet-button"
@@ -185,7 +205,7 @@ export function SauhPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Buka di tjc.org →
+                {translate(locale, "sauh.officialSource")}
               </a>
             </div>
           </div>
@@ -198,11 +218,15 @@ export function SauhPage() {
               src={state.post.imageUrl}
               fallbackTitle={state.post.title}
               fallbackCategory="renungan"
-              alt={`Ilustrasi ${state.post.title}`}
+              alt={translate(locale, "sauh.imageAlt", {
+                title: state.post.title,
+              })}
               loading="eager"
               fetchPriority="high"
             />
-            <p className="date-line">Sauh Bagi Jiwa · sumber langsung TJC</p>
+            <p className="date-line">
+              {translate(locale, "sauh.title")} · {translate(locale, "sauh.directSource")}
+            </p>
             <h1>{state.post.title}</h1>
             {state.post.reference && (
               <p className="online-article-reference">{state.post.reference}</p>
@@ -210,9 +234,12 @@ export function SauhPage() {
             {state.post.verse && <blockquote>“{state.post.verse}”</blockquote>}
             <Paragraphs text={state.post.body} />
             <div className="detail-actions">
-              <SourceLink href={state.post.url} />
+              <SourceLink
+                href={state.post.url}
+                label={translate(locale, "sauh.officialSource")}
+              />
               <Link className="quiet-button" to="/">
-                Kembali ke beranda
+                {translate(locale, "sauh.backHomePlain")}
               </Link>
             </div>
           </>
@@ -222,7 +249,7 @@ export function SauhPage() {
   );
 }
 
-export function SuaraPage() {
+export function SuaraPage({ locale }: { locale: Locale }) {
   const [state, setState] = useState<
     | { status: "loading" }
     | { status: "ready"; posts: SuaraSejatiPost[] }
@@ -256,34 +283,41 @@ export function SuaraPage() {
     >
       <div className="detail-back">
         <Link className="text-button" to="/">
-          ← Beranda
+          {translate(locale, "suara.backHome")}
         </Link>
-        <span>Suara Sejati</span>
+        <span>{translate(locale, "suara.title")}</span>
       </div>
       <section className="page-intro">
         <div>
-          <p className="date-line">Cerita dan kesaksian</p>
-          <h1>Suara Sejati</h1>
-          <p className="intro-copy">
-            Kesaksian nyata dari arsip resmi Gereja Yesus Sejati.
-          </p>
+          <p className="date-line">{translate(locale, "suara.eyebrow")}</p>
+          <h1>{translate(locale, "suara.title")}</h1>
+          <p className="intro-copy">{translate(locale, "suara.intro")}</p>
         </div>
       </section>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          Mengambil Suara Sejati…
+          {translate(locale, "suara.loading")}
         </div>
       )}
       {state.status === "error" && (
         <div className="error-panel" role="alert">
-          <strong>Suara Sejati belum tersedia.</strong>
-          <span>Periksa koneksi lalu coba lagi.</span>
+          <strong>{translate(locale, "suara.errorTitle")}</strong>
+          <span>{translate(locale, "suara.errorBody")}</span>
           <button className="quiet-button" type="button" onClick={() => load()}>
-            Coba lagi
+            {translate(locale, "suara.retry")}
           </button>
         </div>
       )}
-      {state.status === "ready" && (
+      {state.status === "ready" && state.posts.length === 0 && (
+        <div className="empty-panel" role="status">
+          <strong>{translate(locale, "suara.emptyTitle")}</strong>
+          <span>{translate(locale, "suara.emptyBody")}</span>
+          <button className="quiet-button" type="button" onClick={() => load()}>
+            {translate(locale, "suara.retry")}
+          </button>
+        </div>
+      )}
+      {state.status === "ready" && state.posts.length > 0 && (
         <div className="suara-library-grid">
           {state.posts.map((post, index) => (
             <Link
@@ -298,7 +332,9 @@ export function SuaraPage() {
                   src={post.imageUrl}
                   fallbackTitle={post.title}
                   fallbackCategory="kesaksian"
-                  alt={`Cover ${post.title}`}
+                  alt={translate(locale, "suara.coverAlt", {
+                    title: post.title,
+                  })}
                   loading={index < 4 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                 />
@@ -306,7 +342,7 @@ export function SuaraPage() {
               </div>
               <div className="suara-card-content">
                 <span className="suara-date">
-                  {new Date(post.publishedAt).toLocaleDateString(undefined, {
+                  {new Date(post.publishedAt).toLocaleDateString(locale, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
@@ -381,32 +417,40 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
     >
       <div className="detail-back">
         <Link className="text-button" to="/">
-          ← Beranda
+          {translate(locale, "suara.backHome")}
         </Link>
-        <span>Suara Sejati</span>
+        <span>{translate(locale, "suara.title")}</span>
       </div>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          Membuka kesaksian…
+          {translate(locale, "suara.detailLoading")}
         </div>
       )}
       {state.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>
-            {state.post?.title ?? "Kesaksian belum dapat dibuka di aplikasi."}
+            {state.post?.title ?? translate(locale, "suara.detailErrorTitle")}
           </strong>
-          <span>{state.message}</span>
+          <span>{translate(locale, "suara.detailErrorBody")}</span>
+          <small className="online-error-detail">
+            {translate(locale, "suara.detailErrorDetails")}: {state.message}
+          </small>
           {state.post && <Paragraphs text={state.post.excerpt} />}
-          {state.post && <SourceLink href={state.post.url} />}
+          {state.post && (
+            <SourceLink
+              href={state.post.url}
+              label={translate(locale, "suara.officialSource")}
+            />
+          )}
           <button className="quiet-button" type="button" onClick={load}>
-            Coba lagi
+            {translate(locale, "suara.detailRetry")}
           </button>
         </div>
       )}
       {state.status === "ready" && (
         <article className="online-article-card suara-article-card">
           <p className="date-line">
-            Suara Sejati ·{" "}
+            {translate(locale, "suara.title")} ·{" "}
             {new Date(state.post.publishedAt).toLocaleDateString(locale)}
           </p>
           <h1>{state.post.title}</h1>
@@ -416,15 +460,20 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             src={state.post.imageUrl}
             fallbackTitle={state.post.title}
             fallbackCategory="kesaksian"
-            alt={`Thumbnail ${state.post.title}`}
+            alt={translate(locale, "suara.detailCoverAlt", {
+              title: state.post.title,
+            })}
             loading="eager"
             fetchPriority="high"
           />
           <SuaraParagraphs text={state.body ?? state.post.excerpt} />
           <div className="detail-actions">
-            <SourceLink href={state.post.url} />
+            <SourceLink
+              href={state.post.url}
+              label={translate(locale, "suara.officialSource")}
+            />
             <Link className="quiet-button" to="/">
-              Kembali ke beranda
+              {translate(locale, "suara.returnHome")}
             </Link>
           </div>
         </article>

@@ -366,8 +366,10 @@ a:focus-visible {
 }
 .global-search {
   width: min(720px, 100%);
+  min-width: 0;
   max-height: min(720px, 80vh);
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -426,9 +428,16 @@ a:focus-visible {
   display: grid;
   gap: 5px;
   margin-top: 16px;
+  min-width: 0;
+  padding: 0;
+  list-style: none;
+}
+.global-search-results li {
+  min-width: 0;
 }
 .global-search-result {
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 12px;
   padding: 11px 10px;
@@ -636,6 +645,317 @@ a:focus-visible {
   margin: 18vh auto 0;
 }
 
+/* Non-reader route chunks keep the shell in place while their page-shaped
+   content arrives. The same skeleton is intentionally reused so the fallback
+   stays light without introducing a second page implementation. */
+.non-reader-route-loading {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  width: 100%;
+  max-width: 1080px;
+  min-height: min(680px, calc(100dvh - 170px));
+  margin: 0 auto;
+  padding: 2px 0 24px;
+  background: transparent;
+  color: var(--muted);
+}
+.route-loading-label {
+  display: block;
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+.route-loading-heading {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.route-loading-kicker,
+.route-loading-title,
+.route-loading-line,
+.route-loading-media {
+  display: block;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    color-mix(in srgb, var(--surface-soft) 72%, var(--surface) 28%) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: gys-shimmer 1.6s ease-in-out infinite;
+}
+.route-loading-kicker {
+  width: 96px;
+  height: 10px;
+  border-radius: 999px;
+}
+.route-loading-title {
+  width: min(360px, 58%);
+  height: 36px;
+  border-radius: 7px;
+}
+.route-loading-grid {
+  display: grid;
+  grid-template-areas:
+    "feature stack"
+    "feature list";
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-rows: repeat(2, minmax(150px, 1fr));
+  gap: 14px;
+}
+.route-loading-card {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  min-width: 0;
+  min-height: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.route-loading-card.is-feature {
+  grid-area: feature;
+}
+.route-loading-card.is-stack {
+  grid-area: stack;
+}
+.route-loading-card.is-list {
+  grid-area: list;
+}
+.route-loading-media {
+  width: 100%;
+  min-height: 150px;
+  border-radius: var(--radius-md);
+}
+.route-loading-line {
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+}
+.route-loading-line.is-title {
+  width: 68%;
+  height: 24px;
+  margin-top: 2px;
+}
+.route-loading-line.is-medium {
+  width: 78%;
+}
+.route-loading-line.is-short {
+  width: 48%;
+}
+.non-reader-route-loading.is-faith .route-loading-media,
+.non-reader-route-loading.is-more .route-loading-media {
+  min-height: 78px;
+}
+.non-reader-route-loading.is-faith .route-loading-grid,
+.non-reader-route-loading.is-more .route-loading-grid {
+  grid-template-areas:
+    "feature feature"
+    "stack list";
+  grid-template-rows: repeat(2, minmax(150px, 1fr));
+}
+.non-reader-route-loading.is-literature .route-loading-media {
+  min-height: 110px;
+}
+.route-recovery {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  min-height: min(560px, calc(100dvh - 170px));
+  padding: 32px;
+  border: 1px solid color-mix(in srgb, #b98132 42%, var(--line));
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: center;
+}
+.route-recovery-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #b98132 14%, var(--surface));
+  color: #9a671c;
+}
+.route-recovery h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -0.03em;
+}
+.route-recovery p {
+  max-width: 440px;
+  margin: 0 0 6px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.route-recovery .primary-button {
+  min-height: 44px;
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--surface);
+}
+
+/* Reader chunks need a shape that matches the content they are about to
+   reveal. Reuse the existing shimmer instead of presenting a blank card. */
+.reader-route-loading {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.reader-route-loading-label {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+.reader-route-loading-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.reader-route-loading-control,
+.reader-route-loading-line {
+  display: block;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    color-mix(in srgb, var(--surface-soft) 72%, var(--surface) 28%) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: gys-shimmer 1.6s ease-in-out infinite;
+}
+.reader-route-loading-control {
+  width: 76px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.reader-route-loading-control.is-wide {
+  width: 148px;
+}
+.reader-route-loading-surface {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: clamp(320px, 58vh, 620px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.reader-route-loading-pane {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+  padding: clamp(24px, 4vw, 56px);
+}
+.reader-route-loading-pane + .reader-route-loading-pane {
+  border-left: 1px solid var(--line);
+}
+.reader-route-loading-line {
+  width: 100%;
+  height: 18px;
+  border-radius: 5px;
+}
+.reader-route-loading-line.is-kicker {
+  width: 40px;
+  height: 10px;
+  margin: 0 auto;
+}
+.reader-route-loading-line.is-title {
+  width: 62%;
+  height: 28px;
+  margin: 0 auto 8px;
+}
+.reader-route-loading-line.is-medium {
+  width: 78%;
+}
+.reader-route-loading-line.is-short {
+  width: 54%;
+}
+
+@media (max-width: 599px) {
+  .non-reader-route-loading {
+    min-height: calc(100dvh - 210px);
+    gap: 12px;
+    padding: 0 0 14px;
+  }
+  .route-loading-title {
+    width: 74%;
+    height: 30px;
+  }
+  .route-loading-grid,
+  .non-reader-route-loading.is-faith .route-loading-grid,
+  .non-reader-route-loading.is-more .route-loading-grid {
+    grid-template-areas:
+      "feature"
+      "stack"
+      "list";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 10px;
+  }
+  .route-loading-card {
+    gap: 11px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+  .route-loading-media {
+    min-height: 118px;
+  }
+  .non-reader-route-loading.is-faith .route-loading-media,
+  .non-reader-route-loading.is-more .route-loading-media {
+    min-height: 72px;
+  }
+  .route-recovery {
+    min-height: calc(100dvh - 210px);
+    padding: 24px 16px;
+  }
+  .app-frame.is-reader-route .reader-route-loading {
+    margin: 0;
+  }
+  .reader-route-loading-label {
+    margin-bottom: 10px;
+  }
+  .reader-route-loading-toolbar {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .reader-route-loading-control {
+    width: 56px;
+    height: 36px;
+  }
+  .reader-route-loading-control.is-wide {
+    width: 108px;
+  }
+  .reader-route-loading-surface {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 420px;
+  }
+  .reader-route-loading-pane {
+    gap: 14px;
+    padding: 22px 18px;
+  }
+  .reader-route-loading-pane + .reader-route-loading-pane {
+    display: none;
+  }
+}
+
 .page {
   width: 100%;
 }
@@ -808,7 +1128,7 @@ h1 {
   grid-template-areas:
     "verse continue"
     "verse suara"
-    "verse literature";
+    "literature literature";
   grid-template-columns: minmax(0, 1.1fr) minmax(min(320px, 36vw), 0.9fr);
   grid-template-rows: auto auto auto;
   align-items: start;
@@ -832,9 +1152,6 @@ h1 {
 }
 .home-grid > * {
   animation: soft-rise 420ms var(--ease-out) both;
-}
-.home-grid > :nth-child(2) {
-  animation-delay: 70ms;
 }
 @keyframes soft-rise {
   from {
@@ -891,7 +1208,7 @@ h1 {
   );
   background-size: 200% 100%;
   animation: gys-shimmer 1.6s ease-in-out infinite;
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -924,7 +1241,9 @@ h1 {
 }
 
 .img-with-skeleton {
-  opacity: 0;
+  position: relative;
+  z-index: 1;
+  opacity: 1;
   transition: opacity 0.35s var(--ease-out);
 }
 
@@ -1092,7 +1411,7 @@ blockquote {
 }
 .verse-actions button,
 .verse-actions a {
-  min-height: 36px;
+  min-height: var(--control-hit, 44px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1169,7 +1488,7 @@ blockquote {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   padding: 6px 8px 16px;
-  margin: -6px -8px 0;
+  margin: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
 }
@@ -1796,7 +2115,9 @@ blockquote {
 }
 
 .suara-library-grid .suara-library-item {
-  min-height: 290px;
+  height: 290px;
+  min-height: 0;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -1817,6 +2138,10 @@ blockquote {
   transform: translateY(-3px);
   border-color: var(--line-strong);
   box-shadow: var(--shadow-lift);
+}
+
+.suara-library-grid .suara-card-content {
+  min-width: 0;
 }
 
 .section-title-row {
@@ -1972,6 +2297,7 @@ blockquote {
   font-size: 11px;
 }
 .pdf-stage {
+  position: relative;
   min-height: 280px;
   display: grid;
   place-items: start center;
@@ -1980,6 +2306,70 @@ blockquote {
   padding: 22px;
   background: var(--surface-soft);
   border: 1px solid var(--line);
+}
+.pdf-loading {
+  position: absolute;
+  inset: clamp(10px, 2.5vw, 22px);
+  z-index: 2;
+  box-sizing: border-box;
+  justify-content: center;
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, var(--surface));
+}
+.pdf-loading-page {
+  display: flex;
+  width: min(100%, 680px);
+  min-height: 220px;
+  max-height: 100%;
+  aspect-ratio: 1 / 1.414;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 8px 26px rgba(31, 66, 112, 0.08);
+}
+.pdf-loading-page p {
+  margin: 0;
+}
+.pdf-loading-slow {
+  display: grid;
+  gap: 8px;
+  max-width: 34rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+.pdf-loading-slow p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.pdf-loading.is-slow {
+  pointer-events: auto;
+}
+.pdf-loading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pdf-loading-actions :is(button, a) {
+  min-height: var(--control-hit);
+}
+.pdf-loading-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .pdf-stage[data-pdf-layout="horizontal"] {
   justify-items: start;
@@ -2350,6 +2740,24 @@ blockquote {
   color: var(--muted);
   font-size: 13px;
 }
+.suara-page .loading-panel,
+.suara-page .error-panel,
+.suara-page .empty-panel {
+  min-height: 290px;
+  align-content: center;
+  justify-items: start;
+}
+.suara-detail-page .loading-panel,
+.suara-detail-page .error-panel {
+  min-height: 290px;
+  align-content: center;
+  justify-items: start;
+}
+.suara-detail-page .online-error-detail {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
 .loading-panel {
   animation: loading-pulse 1.8s ease-in-out infinite;
 }
@@ -2381,9 +2789,9 @@ blockquote {
 }
 .bible-reader.is-split .bible-reader-layout {
   display: grid;
-  grid-template-columns: minmax(0, var(--bible-split, 50%)) 12px minmax(
+  grid-template-columns: minmax(0, calc(var(--bible-split, 50%) - 6px)) 12px minmax(
       0,
-      calc(100% - var(--bible-split, 50%) - 12px)
+      calc(100% - var(--bible-split, 50%) - 6px)
     );
   grid-template-rows: 1fr;
   width: 100%;
@@ -2396,10 +2804,11 @@ blockquote {
 }
 .bible-pane {
   min-width: 0;
+  background: var(--surface);
 }
 .bible-pane-secondary {
   border-left: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-soft) 42%, var(--surface));
+  background: var(--surface);
 }
 .bible-split-divider {
   position: relative;
@@ -3760,7 +4169,7 @@ body.is-resizing-bible {
   min-width: 140px;
 }
 .split-version-select .control-select-trigger {
-  min-height: 36px;
+  min-height: var(--control-hit, 44px);
 }
 
 .verse-text {
@@ -4371,15 +4780,15 @@ body.is-resizing-bible {
 .more-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 10px;
+  gap: 14px;
+  margin-top: 0;
 }
 .distributed-assets-card {
-  order: -1;
+  order: initial;
 }
 .more-card {
   min-width: 0;
-  padding: 23px;
+  padding: 20px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
@@ -4391,7 +4800,49 @@ body.is-resizing-bible {
 .appearance-card {
   grid-column: span 2;
   display: grid;
-  gap: 20px;
+  gap: 16px;
+}
+.more-resource-group,
+.more-secondary-group {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.more-resource-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 2px;
+}
+.more-resource-group > .more-card {
+  grid-column: 1;
+}
+.more-secondary-group {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.more-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+.more-secondary-grid > .more-card {
+  min-width: 0;
+}
+.more-secondary-grid > .device-data-tools {
+  grid-column: span 1;
+}
+.more-secondary-grid > .report-card {
+  grid-column: span 2;
+}
+@media (max-width: 959px) and (min-width: 600px) {
+  .more-secondary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .more-secondary-grid > .device-data-tools,
+  .more-secondary-grid > .report-card {
+    grid-column: 1 / -1;
+  }
 }
 
 /* e-GYS Member Badge & Card Styles */
@@ -4775,10 +5226,15 @@ body.is-resizing-bible {
 }
 .more-card > p {
   max-width: 650px;
-  margin: 20px 0 23px;
+  margin: 12px 0 16px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.6;
+}
+.more-page .pack-manager-actions > button,
+.more-page .more-secondary-grid button,
+.more-page .device-data-summary {
+  min-height: 44px;
 }
 .pack-stats {
   display: flex;
@@ -5578,6 +6034,18 @@ body.is-resizing-bible {
   .report-card {
     grid-column: auto;
   }
+  .more-resource-group,
+  .more-secondary-group {
+    grid-column: auto;
+  }
+  .more-secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .more-secondary-grid > .device-data-tools,
+  .more-secondary-grid > .report-card {
+    grid-column: auto;
+  }
   .distributed-asset-row {
     align-items: flex-start;
     flex-direction: column;
@@ -6198,8 +6666,8 @@ body.is-resizing-bible {
     gap: 4px;
   }
   .reader-version-select-wrap .reader-context-select .control-select-trigger {
-    min-height: 38px;
-    min-width: 38px;
+    min-height: var(--control-hit, 44px);
+    min-width: var(--control-hit, 44px);
     padding-inline: 6px;
     font-size: 12px;
   }
@@ -6308,11 +6776,6 @@ body.is-resizing-bible {
   font-weight: 700;
   font-size: 13px;
 }
-.reader-version-select-wrap .secondary-version-select .control-select-trigger {
-  background: color-mix(in srgb, var(--surface-soft) 80%, var(--blue-soft));
-  border-color: color-mix(in srgb, var(--blue) 30%, var(--line));
-}
-
 .reader-typography-wrapper {
   position: relative;
   display: inline-flex;
@@ -6586,13 +7049,13 @@ body.is-resizing-bible {
     min-width: 44px;
   }
   .reader-version-select-wrap .reader-context-select .control-select-trigger {
-    min-height: 36px;
+    min-height: var(--control-hit, 44px);
     padding-inline: 4px;
     font-size: 11px;
   }
   .reader-context-button {
-    min-width: 36px;
-    min-height: 36px;
+    min-width: var(--control-hit, 44px);
+    min-height: var(--control-hit, 44px);
     padding-inline: 6px;
     font-size: 11px;
   }
@@ -6671,7 +7134,7 @@ body.is-resizing-bible {
 }
 .control-select-trigger {
   width: 100%;
-  min-height: 40px;
+  min-height: var(--control-hit, 44px);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -6765,16 +7228,22 @@ body.is-resizing-bible {
   animation: menu-popup-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: top center;
 }
+.control-select-menu.is-open-up {
+  top: auto;
+  bottom: calc(100% + 7px);
+  transform-origin: bottom center;
+}
 .control-select-option {
   width: 100%;
   display: grid;
+  min-height: var(--control-hit, 44px);
   gap: 2px;
   border: 0;
   border-radius: 7px;
   background: transparent;
   color: var(--ink);
   text-align: left;
-  padding: 8px 10px;
+  padding: 10px;
   cursor: pointer;
   transition:
     background var(--motion-fast) var(--ease-out),
@@ -6785,7 +7254,12 @@ body.is-resizing-bible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   line-height: 1.2;
+}
+.control-select-option-content > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .control-select-option small {
   color: var(--muted);
@@ -6795,6 +7269,10 @@ body.is-resizing-bible {
 .control-select-option.is-active {
   background: var(--blue-soft);
   color: var(--blue);
+}
+.control-select-option:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline-offset: -3px;
 }
 .control-select-option:active {
   transform: scale(0.98);
@@ -6814,8 +7292,8 @@ body.is-resizing-bible {
   clip: rect(0 0 0 0);
 }
 .topbar-select .control-select-trigger {
-  min-height: 36px;
-  height: 36px;
+  min-height: var(--control-hit, 44px);
+  height: var(--control-hit, 44px);
   padding: 0 10px;
   font-size: 12px;
   font-weight: 550;
@@ -8865,7 +9343,7 @@ body.gys-viewer-active {
 .kidung-local-nav {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 22px;
   border-bottom: 0;
@@ -9389,21 +9867,6 @@ body.gys-viewer-active {
   font-size: 11px;
 }
 
-.media-queue-link {
-  justify-self: start;
-  width: fit-content;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--blue);
-  font: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.media-queue-link:hover {
-  text-decoration: underline;
-}
 @media (max-width: 720px) {
   .home-grid {
     grid-template-areas:
@@ -9563,7 +10026,7 @@ body.gys-viewer-active {
   }
   .search-trigger,
   .topbar-select .control-select-trigger {
-    min-height: 40px;
+    min-height: var(--control-hit, 44px);
   }
   .topbar-select {
     min-width: 50px;
@@ -9922,8 +10385,8 @@ body.gys-viewer-active {
     padding-inline: 10px;
   }
   .control-select-option {
-    min-height: 40px;
-    padding: 8px;
+    min-height: var(--control-hit, 44px);
+    padding: 10px;
   }
   input,
   select,
@@ -10254,6 +10717,13 @@ body.gys-viewer-active {
     font-size 160ms var(--ease-out),
     line-height 160ms var(--ease-out);
 }
+.hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+  width: 100%;
+  max-width: none;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet.is-continuous {
+  margin-inline: auto;
+}
 .hymn-detail-page.is-text-viewer .lyrics-sheet p {
   width: fit-content;
   max-width: min(100%, 44rem);
@@ -10471,51 +10941,52 @@ body.gys-viewer-active {
     grid-template-areas:
       "verse continue"
       "verse suara"
-      "verse literature";
+      "literature literature";
     grid-template-columns: minmax(0, 1.15fr) minmax(min(320px, 42vw), 1fr);
     grid-template-rows: auto auto auto;
-    align-items: stretch;
+    align-items: start;
     gap: 22px;
     padding-top: 16px;
     max-height: none;
     overflow: visible;
   }
-  /* Sauh Bagi Jiwa: Full-Cover Hero Poster with rich visual coverage & bottom-anchored content */
+  /* Sauh Bagi Jiwa: preserve the publisher image ratio on desktop. */
   .home-grid .verse-panel {
     grid-area: verse;
-    height: 100%;
-    min-height: 520px;
+    align-self: start;
+    height: auto;
+    min-height: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
   .sauh-card-media {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    inset: auto;
     width: 100%;
-    height: 100%;
-    max-height: none;
+    height: auto;
+    aspect-ratio: 782 / 380;
+    flex: 0 0 auto;
   }
   .sauh-card-media .sauh-image {
-    object-position: center 20%;
+    object-fit: contain;
+    object-position: center;
+    background: var(--surface-soft);
+  }
+  .sauh-card-media .sauh-media-overlay {
+    display: none;
   }
   .sauh-card-content {
-    margin-top: auto;
+    margin-top: 0;
     flex: 0 0 auto;
     padding: 24px 28px 22px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: linear-gradient(
-      180deg,
-      rgba(var(--surface-rgb), 0) 0%,
-      rgba(var(--surface-rgb), 0.7) 22%,
-      rgba(var(--surface-rgb), 0.95) 55%,
-      var(--surface) 100%
-    );
-    backdrop-filter: blur(10px) saturate(140%);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
   .sauh-card-body {
     gap: 8px;
@@ -10532,7 +11003,13 @@ body.gys-viewer-active {
   /* Kolom Lanjutkan: Compact & clean */
   .home-grid .continue-panel {
     min-height: 0;
-    padding: 16px 20px 14px;
+    padding: 10px 20px;
+  }
+  .home-grid .continue-panel .section-heading {
+    margin-bottom: 12px;
+  }
+  .home-grid .continue-item {
+    padding-block: 6px;
   }
   .continue-grid {
     gap: 10px;
@@ -10694,7 +11171,7 @@ body.gys-viewer-active {
     display: none;
   }
   .reader-context-button {
-    flex: 0 0 36px;
+    flex: 0 0 var(--control-hit, 44px);
   }
   .reader-typography-wrapper {
     position: static;
@@ -10750,8 +11227,8 @@ body.gys-viewer-active {
     gap: 3px;
   }
   .reader-context-button {
-    min-width: 32px;
-    width: 32px;
+    min-width: var(--control-hit, 44px);
+    width: var(--control-hit, 44px);
   }
   .reader-context-book-picker {
     padding-inline: 6px;
@@ -11098,6 +11575,19 @@ body:has(.home-page)::-webkit-scrollbar {
   flex-direction: column;
   gap: 24px;
   width: 100%;
+}
+.hymn-detail-page.is-text-viewer .hymn-all-verses-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-all-verses-container > .lyrics-sheet.is-continuous {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  place-content: initial;
 }
 .lyrics-sheet.is-continuous {
   padding: 16px 20px;
@@ -11622,8 +12112,10 @@ body:has(.home-page)::-webkit-scrollbar {
 .lyrics-hdr-btn {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
   flex-shrink: 0;
   border: 0;
   border-radius: 10px;
@@ -11647,6 +12139,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .lyrics-seek {
   flex: 1;
   min-width: 60px;
+  min-height: 44px;
   accent-color: var(--blue);
 }
 .lyrics-title {
@@ -11681,8 +12174,10 @@ body:has(.home-page)::-webkit-scrollbar {
 .lyrics-ctrl-btn {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
   border: 0;
   border-radius: 10px;
   background: transparent;
@@ -11704,6 +12199,7 @@ body:has(.home-page)::-webkit-scrollbar {
   display: flex;
   align-items: center;
   gap: 10px;
+  row-gap: 8px;
   flex-wrap: wrap;
 }
 .lyrics-midi-group {
@@ -11714,7 +12210,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .lyrics-instrument-select {
   max-width: 180px;
-  min-height: 28px;
+  min-height: 44px;
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -11725,7 +12221,8 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .lyrics-tempo-input {
   width: 52px;
-  min-height: 28px;
+  min-width: 52px;
+  min-height: 44px;
   padding: 0 6px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -11763,7 +12260,9 @@ body:has(.home-page)::-webkit-scrollbar {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 }
 .lyrics-key-dropdown button {
-  height: 30px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -11804,6 +12303,10 @@ body:has(.home-page)::-webkit-scrollbar {
   overflow-x: hidden;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
+}
+.lyrics-panel :is(input, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline-offset: 3px;
 }
 .lyrics-verse-container {
   text-align: center;
@@ -11865,13 +12368,19 @@ body:has(.home-page)::-webkit-scrollbar {
 /* Long-horizon shell refinement: desktop sidebar collapse */
 @media (min-width: 960px) {
   .workspace {
-    transition: grid-template-columns var(--motion-normal, 220ms)
-      var(--ease-out, ease-out);
+    --sidebar-motion-duration: 240ms;
+    --sidebar-motion-ease: var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+    --sidebar-expanded-width: 256px;
+    --sidebar-collapsed-width: 80px;
+    grid-template-columns: var(--sidebar-expanded-width) minmax(0, 1fr);
+    transition: grid-template-columns var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
   }
   .navigation-shell {
     position: relative;
     top: 0;
-    transition: padding var(--motion-normal, 220ms) var(--ease-out, ease-out);
+    padding-inline: 20px;
+    transition: padding var(--sidebar-motion-duration) var(--sidebar-motion-ease);
   }
   .app-frame.is-reader-route .navigation-shell {
     top: 0;
@@ -11879,7 +12388,7 @@ body:has(.home-page)::-webkit-scrollbar {
   .sidebar-collapse-toggle {
     position: absolute;
     top: 0;
-    right: -22px;
+    right: -44px;
     z-index: 3;
     display: inline-grid;
     width: 44px;
@@ -11887,7 +12396,8 @@ body:has(.home-page)::-webkit-scrollbar {
     place-items: center;
     padding: 0;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-inline-start: 0;
+    border-radius: 0 10px 10px 0;
     background: var(--surface);
     color: var(--text);
     cursor: pointer;
@@ -11911,8 +12421,23 @@ body:has(.home-page)::-webkit-scrollbar {
     outline: 2px solid var(--accent, var(--blue));
     outline-offset: 3px;
   }
+  .navigation-shell .nav-item {
+    transition:
+      color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      transform var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      gap var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      padding var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+  }
+  .navigation-shell .nav-item.is-active {
+    background: var(--blue-soft);
+    border-color: color-mix(in srgb, var(--blue) 18%, transparent);
+  }
+  .navigation-shell .nav-active-indicator {
+    display: none;
+  }
   .workspace.is-sidebar-collapsed {
-    grid-template-columns: 80px minmax(0, 1fr);
+    grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
   }
   .workspace.is-sidebar-collapsed .navigation-shell {
     padding-inline: 12px;
@@ -11921,6 +12446,14 @@ body:has(.home-page)::-webkit-scrollbar {
     justify-content: center;
     gap: 0;
     padding-inline: 0;
+    width: 44px;
+    min-width: 44px;
+    justify-self: center;
+  }
+  .workspace:not(.is-sidebar-collapsed) .nav-item {
+    width: 100%;
+    min-width: 44px;
+    justify-self: stretch;
   }
   .workspace.is-sidebar-collapsed .nav-copy,
   .workspace.is-sidebar-collapsed .sidebar-foot {
@@ -11931,16 +12464,22 @@ body:has(.home-page)::-webkit-scrollbar {
     pointer-events: none;
     transform: translateX(-6px);
     white-space: nowrap;
+    max-width: 0;
     transition:
-      opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
-      transform var(--motion-normal, 220ms) var(--ease-out, ease-out),
-      width var(--motion-normal, 220ms) var(--ease-out, ease-out);
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
   }
   .workspace:not(.is-sidebar-collapsed) .nav-copy,
   .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
+    width: 180px;
+    max-width: 180px;
     transition:
-      opacity var(--motion-fast, 150ms) var(--ease-out, ease-out),
-      transform var(--motion-normal, 220ms) var(--ease-out, ease-out);
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
   }
 }
 @media (max-width: 959px) {
@@ -12232,5 +12771,562 @@ body:has(.home-page)::-webkit-scrollbar {
 
   .danger-button {
     width: 100%;
+  }
+}
+
+/* MIDI dock: compact status badges and one consistent control rhythm. */
+.media-surface.is-kidung-media:not(.is-minimized) {
+  grid-template-columns: 40px minmax(220px, 1fr) 144px repeat(3, 44px);
+  grid-template-areas: "art main transport stop mute minimize";
+  grid-template-rows: auto;
+  align-items: end;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-art {
+  grid-area: art;
+  align-self: start;
+  margin-top: 0;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-main {
+  grid-area: main;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-transport-controls {
+  display: flex;
+  grid-area: transport;
+  width: auto;
+  min-width: 0;
+  justify-self: stretch;
+  align-self: end;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-stop-control {
+  grid-area: stop;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-mute-control {
+  grid-area: mute;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
+  grid-area: minimize;
+}
+
+.media-surface.is-kidung-media .media-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.media-queue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 32px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.media-queue-badge:hover {
+  border-color: color-mix(in srgb, var(--blue) 55%, var(--line));
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface-soft));
+}
+
+.media-queue-badge span {
+  color: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 8px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-volume-control {
+  grid-column: 1 / -1;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-midi-actions {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  > .media-control:not(.media-loop-control),
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-key-control
+  .media-control {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-loop-control {
+  width: auto;
+  min-width: 48px;
+  padding-inline: 8px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  .media-transpose {
+  gap: 2px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  .media-transpose
+  button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-instrument-control
+  > span {
+  display: none;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-tempo-control,
+.media-surface.is-kidung-media:not(.is-minimized) .media-instrument-control {
+  align-self: end;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-stop-control,
+.media-surface.is-kidung-media:not(.is-minimized) > .media-mute-control {
+  width: 44px;
+  min-width: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-minimize {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-transport-controls
+  .media-control {
+  flex: 0 0 44px;
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    display: grid;
+  }
+}
+
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: 32px minmax(0, 1fr) 44px 44px 44px;
+    grid-template-areas:
+      "art main main main main"
+      "art transport stop mute minimize";
+    grid-template-rows: auto auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-midi-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 359px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-areas:
+      "art main main main main"
+      "art transport transport transport transport"
+      "art stop mute minimize .";
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized)
+    > .media-transport-controls {
+    width: 144px;
+    min-width: 144px;
+    justify-self: center;
+  }
+}
+
+/* JEV media decision: keep the Kidung dock task-first and disclose the
+   low-frequency MIDI controls without removing them. */
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  display: grid;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta small,
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta span {
+  display: block;
+}
+
+.media-surface.is-kidung-media .media-queue-badge {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary::after {
+  flex: 0 0 auto;
+  color: var(--muted);
+  content: "⌄";
+  font-size: 16px;
+  line-height: 1;
+}
+
+.media-surface.is-kidung-media .media-advanced-controls[open]
+  > .media-advanced-summary::after {
+  content: "⌃";
+}
+
+.media-surface.is-kidung-media .media-advanced-summary > span {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary > small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-control {
+  grid-column: 1;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-column: 2;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-toggle,
+.media-surface.is-kidung-media .media-advanced-panel
+  .media-instrument-control select {
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel
+  .media-midi-actions
+  .media-transpose
+  button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 420px) {
+  .media-surface.is-kidung-media .media-advanced-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .media-surface.is-kidung-media .media-advanced-panel .media-tempo-control,
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    grid-column: 1;
+  }
+}
+
+/* Keep the desktop dock to two intentional bands: identity, then the
+   volume/seek/advanced controls. Mobile keeps the existing stacked rhythm. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-main {
+    grid-template-rows: auto auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta-top {
+    min-height: 44px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    grid-template-columns: minmax(68px, 0.7fr) minmax(0, 1.15fr) minmax(
+        112px,
+        auto
+      );
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-volume-control {
+    grid-column: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-volume-control span {
+    flex: 0 0 auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+    grid-column: auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+    grid-column: auto;
+  }
+}
+
+/* Bible pack loading: keep the first paint shaped like the reader instead of
+   reserving an unstructured generic status card. */
+.bible-loading-reader {
+  overflow: hidden;
+}
+
+.bible-loading-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bible-loading-spinner {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 2px solid color-mix(in srgb, var(--blue) 26%, var(--line));
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: bible-loading-spin 900ms linear infinite;
+}
+
+@keyframes bible-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bible-loading-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: clamp(420px, 62vh, 700px);
+  overflow: hidden;
+}
+
+.bible-loading-layout.is-split {
+  grid-template-columns: minmax(0, calc(var(--bible-split, 50%) - 6px)) 12px minmax(
+      0,
+      calc(100% - var(--bible-split, 50%) - 6px)
+    );
+  grid-template-rows: 1fr;
+}
+
+.bible-loading-pane {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.bible-loading-layout.is-split .bible-loading-pane.is-primary {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+  grid-column: 3;
+  grid-row: 1;
+  border-left: 1px solid var(--line);
+}
+
+.bible-loading-divider {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 100%;
+  background: var(--surface);
+}
+
+.bible-loading-heading {
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  padding: 26px 24px 18px;
+}
+
+.bible-loading-line,
+.bible-loading-number {
+  display: block;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    color-mix(in srgb, var(--surface-soft) 72%, var(--surface) 28%) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: gys-shimmer 1.6s ease-in-out infinite;
+}
+
+.bible-loading-line {
+  width: 100%;
+  height: 16px;
+  border-radius: 5px;
+}
+
+.bible-loading-line.is-kicker {
+  width: 42px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.bible-loading-line.is-title {
+  width: min(220px, 62%);
+  height: 28px;
+}
+
+.bible-loading-line.is-short {
+  width: 72%;
+}
+
+.bible-loading-verse-list {
+  display: grid;
+  padding: 0 30px 26px;
+}
+
+.bible-loading-verse {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.bible-loading-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.bible-loading-copy {
+  display: grid;
+  align-content: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+@media (max-width: 680px) {
+  .bible-loading-layout {
+    min-height: 420px;
+  }
+
+  .bible-loading-layout.is-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(320px, min(70vh, 640px)));
+  }
+
+  .bible-loading-layout.is-split .bible-loading-pane.is-primary,
+  .bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .bible-loading-divider {
+    display: none;
+  }
+
+  .bible-loading-heading {
+    padding: 22px 19px 14px;
+  }
+
+  .bible-loading-verse-list {
+    padding-inline: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bible-loading-spinner,
+  .bible-loading-line,
+  .bible-loading-number {
+    animation: none;
   }
 }

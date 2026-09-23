@@ -97,32 +97,40 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function distributedAssetStateLabel(asset: ManagedDistributedAsset): string {
+function distributedAssetStateLabel(
+  locale: Locale,
+  asset: ManagedDistributedAsset,
+): string {
   switch (asset.state) {
     case "bundled":
-      return "Termasuk paket inti";
+      return translate(locale, "more.assetIncluded");
     case "available":
-      return "Belum diunduh";
+      return translate(locale, "more.assetNotDownloaded");
     case "installed":
-      return `Tersimpan · v${asset.installedVersion ?? asset.item?.version ?? "?"}`;
+      return translate(locale, "more.assetStored", {
+        version: asset.installedVersion ?? asset.item?.version ?? "?",
+      });
     case "update":
-      return `Pembaruan tersedia · v${asset.item?.version ?? "?"}`;
+      return translate(locale, "more.assetUpdateAvailable", {
+        version: asset.item?.version ?? "?",
+      });
     case "unavailable":
-      return "Belum tersedia";
+      return translate(locale, "more.assetUnavailable");
   }
 }
 
 const ASSET_GROUPS: {
   key: DistributedAssetKind;
-  label: string;
+  labelKey: string;
   icon: IconName;
 }[] = [
-  { key: "bible", label: "Alkitab", icon: "book" },
-  { key: "hymnal", label: "Kidung Rohani", icon: "music" },
-  { key: "soundfont", label: "Soundfont", icon: "music" },
+  { key: "bible", labelKey: "more.assetBible", icon: "book" },
+  { key: "hymnal", labelKey: "more.assetHymns", icon: "music" },
+  { key: "soundfont", labelKey: "more.assetSoundfont", icon: "music" },
 ];
 
 function DistributedAssetPanel({
+  locale,
   assets,
   busyCode,
   progress,
@@ -132,6 +140,7 @@ function DistributedAssetPanel({
   onInstall,
   onRemove,
 }: {
+  locale: Locale;
   assets: ManagedDistributedAsset[];
   busyCode?: string;
   progress?: { received: number; total: number };
@@ -149,29 +158,30 @@ function DistributedAssetPanel({
     <article className="more-card more-card-wide distributed-assets-card">
       <div className="more-card-heading">
         <div>
-          <h2>Manajemen Aset</h2>
+          <h2>{translate(locale, "more.assetManagement")}</h2>
         </div>
       </div>
       {!downloadAvailable && (
         <div className="inline-error" role="status">
-          Layanan unduhan belum dikonfigurasi. Aset inti tetap dapat digunakan
-          offline.
+          {translate(locale, "more.downloadUnavailable")}
         </div>
       )}
       <div className="distributed-assets-list">
         {loading && (
-          <small className="account-sync-note">Memuat katalog aset…</small>
+          <small className="account-sync-note">
+            {translate(locale, "more.loadingAssets")}
+          </small>
         )}
         {!loading && assets.length === 0 && (
           <small className="account-sync-note">
-            Belum ada aset tambahan yang tersedia.
+            {translate(locale, "more.noAdditionalAssets")}
           </small>
         )}
         {groups.map((group) => (
           <section className="distributed-asset-group" key={group.key}>
             <div className="distributed-asset-group-label">
               <Icon name={group.icon} size={15} />
-              <strong>{group.label}</strong>
+              <strong>{translate(locale, group.labelKey)}</strong>
               <span>{group.items.length}</span>
             </div>
             {group.items.map((asset) => {
@@ -188,7 +198,7 @@ function DistributedAssetPanel({
                   <div className="distributed-asset-copy">
                     <strong>{asset.title}</strong>
                     <small>
-                      {distributedAssetStateLabel(asset)}
+                      {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
                         ? ` · ${formatBytes(asset.sizeBytes)}`
                         : ""}
@@ -197,18 +207,20 @@ function DistributedAssetPanel({
                       <progress
                         value={percent}
                         max={100}
-                        aria-label={`Mengunduh ${asset.title}`}
+                        aria-label={translate(locale, "more.assetDownloadAction", {
+                          title: asset.title,
+                        })}
                       />
                     )}
                   </div>
                   <div className="distributed-asset-actions">
                     {busy ? (
                       <span className="account-sync-note">
-                        Mengunduh {percent}%…
+                        {translate(locale, "more.downloadProgress", { percent })}
                       </span>
                     ) : asset.state === "bundled" ? (
                       <span className="pack-badge is-verified">
-                        Siap offline
+                        {translate(locale, "more.readyOffline")}
                       </span>
                     ) : asset.state === "installed" ||
                       asset.state === "update" ? (
@@ -218,14 +230,26 @@ function DistributedAssetPanel({
                           type="button"
                           disabled={!downloadAvailable}
                           onClick={() => onInstall(asset.code)}
-                          aria-label={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
-                          title={`${asset.state === "update" ? "Perbarui" : "Unduh ulang"} ${asset.title}`}
+                          aria-label={translate(
+                            locale,
+                            asset.state === "update"
+                              ? "more.assetUpdateAction"
+                              : "more.assetRedownloadAction",
+                            { title: asset.title },
+                          )}
+                          title={translate(
+                            locale,
+                            asset.state === "update"
+                              ? "more.assetUpdateAction"
+                              : "more.assetRedownloadAction",
+                            { title: asset.title },
+                          )}
                         >
                           <Icon name="download" size={17} />
                           <span className="asset-action-copy">
                             {asset.state === "update"
-                              ? "Perbarui"
-                              : "Unduh ulang"}
+                              ? translate(locale, "more.update")
+                              : translate(locale, "more.redownload")}
                           </span>
                         </button>
                         <button
@@ -233,7 +257,7 @@ function DistributedAssetPanel({
                           type="button"
                           onClick={() => onRemove(asset.code)}
                         >
-                          Hapus
+                          {translate(locale, "more.delete")}
                         </button>
                       </>
                     ) : asset.state === "available" ? (
@@ -242,14 +266,22 @@ function DistributedAssetPanel({
                         type="button"
                         disabled={!downloadAvailable}
                         onClick={() => onInstall(asset.code)}
-                        aria-label={`Unduh ${asset.title}`}
-                        title={`Unduh ${asset.title}`}
+                        aria-label={translate(locale, "more.assetDownloadAction", {
+                          title: asset.title,
+                        })}
+                        title={translate(locale, "more.assetDownloadAction", {
+                          title: asset.title,
+                        })}
                       >
                         <Icon name="download" size={17} />
-                        <span className="asset-action-copy">Unduh</span>
+                        <span className="asset-action-copy">
+                          {translate(locale, "more.download")}
+                        </span>
                       </button>
                     ) : (
-                      <span className="account-sync-note">Tidak tersedia</span>
+                      <span className="account-sync-note">
+                        {translate(locale, "more.assetUnavailable")}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -391,8 +423,8 @@ export function MorePage({
             "Notification" in window &&
             Notification.permission === "granted"
           ) {
-            new Notification("Waktu teduh GYS", {
-              body: "Saatnya membaca firman dan renungan hari ini.",
+            new Notification(translate(locale, "more.notificationTitle"), {
+              body: translate(locale, "more.notificationBody"),
             });
           }
           schedule();
@@ -478,7 +510,7 @@ export function MorePage({
         if (active) {
           recordDiagnostic("warn", "assets.distributed.catalog", error);
           setDistributedAssetsLoading(false);
-          setDistributedError("Katalog aset tambahan belum dapat dimuat.");
+           setDistributedError(translate(locale, "more.catalogUnavailable"));
         }
       }
     };
@@ -508,15 +540,17 @@ export function MorePage({
             setEgysSession(trackEgysProfileSeen(profile));
           }
           show(
-            profile
-              ? `Selamat datang, ${profile.displayName}.`
-              : "Login e-GYS berhasil, tetapi profil belum tersedia.",
+             profile
+               ? translate(locale, "more.greeting", {
+                   name: profile.displayName,
+                 })
+               : translate(locale, "more.loginProfileUnavailable"),
           );
         })
         .catch((error: unknown) => {
           recordDiagnostic("error", "egys.native-login.profile", error);
           show(
-            "Login e-GYS selesai, tetapi profil belum dapat dibaca. Coba muat ulang.",
+             translate(locale, "more.profileReadFailed"),
           );
         })
         .finally(() => {
@@ -594,16 +628,18 @@ export function MorePage({
       setAccountProfile(profile);
       saveEgysProfile(profile);
       setEgysSession(trackEgysProfileSeen(profile));
-      show(`Selamat datang, ${profile.displayName}.`);
+       show(
+         translate(locale, "more.greeting", { name: profile.displayName }),
+       );
       closeEgysLogin();
     } catch (error) {
       recordDiagnostic("error", "egys.google-login.complete", error);
       setEgysGoogleError(
         error instanceof Error && error.message
           ? error.message
-          : "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
+           : translate(locale, "more.googleDetectFailed"),
       );
-      show("Login e-GYS belum berhasil. Coba lagi.");
+      show(translate(locale, "more.loginFailed"));
     } finally {
       setAuthBusy(false);
     }
@@ -626,7 +662,7 @@ export function MorePage({
         if (disposed) return;
         recordDiagnostic("warn", "egys.google-script", error);
         setEgysGoogleError(
-          "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+           translate(locale, "more.googleButtonFailed"),
         );
       });
     return () => {
@@ -659,11 +695,11 @@ export function MorePage({
       setReport("");
       localStorage.removeItem("gys-report-draft");
       setReportStatus("idle");
-      show("Laporan diterima. Terima kasih.");
+       show(translate(locale, "more.reportReceived"));
     } catch (error) {
       recordDiagnostic("warn", "feedback.submit", error);
       setReportStatus("error");
-      show("Laporan disimpan sebagai draft; kirim kembali saat online.");
+       show(translate(locale, "more.reportDraftSaved"));
       localStorage.setItem("gys-report-draft", message);
     } finally {
       window.clearTimeout(timer);
@@ -672,7 +708,7 @@ export function MorePage({
 
   const exportBackup = async () => {
     if (backupPassword.length < 8) {
-      show("Gunakan kata sandi backup minimal 8 karakter.");
+      show(translate(locale, "more.backupPasswordTooShort"));
       return;
     }
     try {
@@ -684,22 +720,22 @@ export function MorePage({
       downloadBackup(envelope);
       setBackupPassword("");
       setBackupOpen(false);
-      show("Backup terenkripsi berhasil diunduh.");
+      show(translate(locale, "more.backupExported"));
     } catch (error) {
       recordDiagnostic("warn", "backup.export", error);
       show(
-        "Backup gagal dibuat. Coba lagi di perangkat yang mendukung AES-GCM.",
+        translate(locale, "more.backupExportFailed"),
       );
     }
   };
 
   const importBackup = async () => {
     if (!backupFile) {
-      show("Pilih file .gysbk terlebih dahulu.");
+      show(translate(locale, "more.chooseBackupFile"));
       return;
     }
     if (backupPassword.length < 8) {
-      show("Masukkan kata sandi backup untuk membuka file.");
+      show(translate(locale, "more.backupPasswordRequired"));
       return;
     }
     try {
@@ -715,17 +751,17 @@ export function MorePage({
       setBackupFile(undefined);
       setBackupOpen(false);
       show(
-        "Backup berhasil dipulihkan. Muat ulang untuk menerapkan semua preferensi.",
+        translate(locale, "more.backupRestored"),
       );
     } catch {
       try {
         const legacy = await importLegacyGysbk(await backupFile.text());
         localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
         show(
-          "Backup lama berhasil diimpor dan disimpan untuk migrasi satu arah.",
+          translate(locale, "more.legacyImported"),
         );
       } catch {
-        show("Backup tidak valid atau kata sandi salah.");
+        show(translate(locale, "more.invalidBackup"));
       }
     }
   };
@@ -734,7 +770,7 @@ export function MorePage({
     if (!reminderTime) {
       localStorage.removeItem("gys-reminder-time-v1");
       setReminderOpen(false);
-      show("Pengingat dinonaktifkan.");
+      show(translate(locale, "more.reminderDisabled"));
       return;
     }
     if ("Notification" in window && Notification.permission === "default") {
@@ -746,8 +782,8 @@ export function MorePage({
       "Notification" in window && Notification.permission === "granted";
     show(
       notificationGranted
-        ? `Pengingat aktif setiap hari pukul ${reminderTime}.`
-        : "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
+        ? translate(locale, "more.reminderSaved", { time: reminderTime })
+        : translate(locale, "more.reminderNotificationPrompt"),
     );
   };
 
@@ -755,7 +791,7 @@ export function MorePage({
     setReminderTime("");
     localStorage.removeItem("gys-reminder-time-v1");
     setReminderOpen(false);
-    show("Pengingat dinonaktifkan.");
+    show(translate(locale, "more.reminderDisabled"));
   };
 
   const checkOfflinePack = async () => {
@@ -780,7 +816,7 @@ export function MorePage({
     } catch (error) {
       recordDiagnostic("warn", "assets.manifest.check", error);
       setAssetCheck({ status: "error" });
-      show("Versi paket belum dapat diperiksa. Coba lagi saat online.");
+       show(translate(locale, "more.packCheckUnavailable"));
     }
   };
 
@@ -804,14 +840,16 @@ export function MorePage({
       show(
         diff.hasUpdate
           ? localUpdateCount(diff) > 0
-            ? `Paket diperbarui: ${localUpdateCount(diff)} aset baru.`
-            : "Metadata paket diperbarui."
-          : "Paket offline berhasil diverifikasi dan disimpan.",
+             ? translate(locale, "more.packUpdated", {
+                 count: localUpdateCount(diff),
+               })
+             : translate(locale, "more.packMetadataUpdated")
+           : translate(locale, "more.packVerified"),
       );
     } catch (error) {
       recordDiagnostic("warn", "assets.pack", error);
       show(
-        "Paket offline gagal diperbarui. Periksa koneksi dan ruang penyimpanan.",
+        translate(locale, "more.packUpdateFailed"),
       );
     } finally {
       setPackBusy(false);
@@ -830,13 +868,13 @@ export function MorePage({
           setDistributedProgress({ received, total }),
       });
       setDistributedAssets(await manager.loadStatuses());
-      show("Aset berhasil diunduh dan disimpan offline.");
+      show(translate(locale, "more.assetInstalled"));
     } catch (error) {
       recordDiagnostic("warn", "assets.distributed.install", error);
       setDistributedError(
         error instanceof Error
           ? error.message
-          : "Aset gagal diunduh. Coba lagi saat online.",
+          : translate(locale, "more.assetInstallFailed"),
       );
     } finally {
       setDistributedBusyCode(undefined);
@@ -847,18 +885,20 @@ export function MorePage({
   const removeDistributedAsset = async (code: string) => {
     if (
       distributedBusyCode ||
-      !window.confirm("Hapus aset offline ini dari perangkat?")
+      !window.confirm(translate(locale, "more.confirmRemoveAsset"))
     )
       return;
     try {
       const manager = getDistributedAssetManager();
       await manager.remove(code);
       setDistributedAssets(await manager.loadStatuses());
-      show("Aset dihapus dari penyimpanan offline.");
+      show(translate(locale, "more.assetRemoved"));
     } catch (error) {
       recordDiagnostic("warn", "assets.distributed.remove", error);
       setDistributedError(
-        error instanceof Error ? error.message : "Aset gagal dihapus.",
+        error instanceof Error
+          ? error.message
+          : translate(locale, "more.assetRemoveFailed"),
       );
     }
   };
@@ -867,10 +907,10 @@ export function MorePage({
     setAuthBusy(true);
     try {
       await openNativeEgysLogin();
-      show("Halaman login resmi e-GYS sudah dibuka.");
+      show(translate(locale, "more.nativeLoginOpened"));
     } catch (error) {
       recordDiagnostic("error", "egys.native-login.open", error);
-      show("Halaman login e-GYS belum dapat dibuka. Coba lagi.");
+      show(translate(locale, "more.nativeLoginFailed"));
     } finally {
       setAuthBusy(false);
     }
@@ -890,8 +930,9 @@ export function MorePage({
             <div>
               <h2>
                 {accountProfile
-                  ? (accountProfile.displayName ?? "Akun Jemaat")
-                  : "Akun e-GYS"}
+                  ? (accountProfile.displayName ??
+                    translate(locale, "more.accountMember"))
+                  : translate(locale, "more.accountEgys")}
               </h2>
             </div>
             {accountProfile || nativeShell ? (
@@ -899,17 +940,17 @@ export function MorePage({
                 className={`pack-badge${accountProfile ? " is-verified" : ""}`}
               >
                 {accountProfile
-                  ? "Terhubung"
+                  ? translate(locale, "more.connected")
                   : egysUnavailable
-                    ? "Tidak tersedia"
-                    : "Tamu"}
+                    ? translate(locale, "more.assetUnavailable")
+                    : translate(locale, "more.guest")}
               </span>
             ) : null}
           </div>
 
           {accountLoading || authBusy ? (
             <div className="account-loading-box" role="status">
-              <p>Memeriksa status akun e-GYS…</p>
+              <p>{translate(locale, "more.checkingAccount")}</p>
             </div>
           ) : accountProfile ? (
             <div className="egys-member-badge">
@@ -917,29 +958,35 @@ export function MorePage({
                 <span className="member-church-title">Gereja Yesus Sejati</span>
                 <span className="member-status-pill">
                   {accountProfile.isMember === true
-                    ? "Jemaat Resmi ✓"
-                    : "Anggota Terdaftar"}
+                    ? translate(locale, "more.memberOfficial")
+                    : translate(locale, "more.memberRegistered")}
                 </span>
               </div>
               <div className="member-badge-body">
                 <div className="member-info-row">
-                  <span className="info-label">Nama Lengkap</span>
+                  <span className="info-label">
+                    {translate(locale, "more.fullName")}
+                  </span>
                   <strong className="info-value member-name">
                     {accountProfile.displayName}
                   </strong>
                 </div>
                 <div className="member-info-grid">
                   <div>
-                    <span className="info-label">Daerah / Cabang</span>
+                    <span className="info-label">
+                      {translate(locale, "more.branch")}
+                    </span>
                     <strong className="info-value">
                       {accountProfile.branchName ??
                         accountProfile.branchCode ??
-                        "Pusat"}
+                        translate(locale, "more.center")}
                     </strong>
                   </div>
                   {accountProfile.membershipNo && (
                     <div>
-                      <span className="info-label">No. Anggota</span>
+                      <span className="info-label">
+                        {translate(locale, "more.memberNumber")}
+                      </span>
                       <strong className="info-value">
                         {accountProfile.membershipNo}
                       </strong>
@@ -948,7 +995,9 @@ export function MorePage({
                 </div>
                 {accountProfile.memberStatus && (
                   <div className="member-info-row">
-                    <span className="info-label">Status Keanggotaan</span>
+                    <span className="info-label">
+                      {translate(locale, "more.membershipStatus")}
+                    </span>
                     <span className="info-value-text">
                       {accountProfile.memberStatus}
                     </span>
@@ -964,9 +1013,9 @@ export function MorePage({
                 )}
                 {egysSession?.userId === accountProfile.id && (
                   <small className="egys-login-trace">
-                    Login terakhir{" "}
+                    {translate(locale, "more.lastLogin")} {" "}
                     {new Date(egysSession.lastSeenAt).toLocaleString(locale)} ·
-                    terdeteksi sejak{" "}
+                    {translate(locale, "more.detectedSince")} {" "}
                     {new Date(egysSession.firstLoginAt).toLocaleDateString(
                       locale,
                     )}
@@ -981,11 +1030,11 @@ export function MorePage({
                     void signOutEgys().then(() => {
                       setAccountProfile(undefined);
                       setEgysSession(undefined);
-                      show("Sesi e-GYS sudah dikeluarkan dari perangkat ini.");
+                      show(translate(locale, "more.sessionSignedOut"));
                     });
                   }}
                 >
-                  Keluar dari Akun Ini
+                  {translate(locale, "more.signOut")}
                 </button>
               </div>
             </div>
@@ -993,8 +1042,8 @@ export function MorePage({
             <div className="egys-login-box">
               <p className="egys-login-desc">
                 {nativeShell
-                  ? "Masuk melalui halaman resmi e-GYS."
-                  : "Login dengan Google; akun e-GYS akan terdeteksi otomatis setelah berhasil."}
+                  ? translate(locale, "more.officialLoginDescription")
+                  : translate(locale, "more.googleLoginDescription")}
               </p>
               <div className="egys-login-actions">
                 {nativeShell ? (
@@ -1005,11 +1054,12 @@ export function MorePage({
                       onClick={() => void openNativeEgysLoginFlow()}
                     >
                       <Icon name="person" size={16} />
-                      <span>Buka login e-GYS resmi</span>
+                      <span>
+                        {translate(locale, "more.openOfficialLogin")}
+                      </span>
                     </button>
                     <small className="account-sync-note">
-                      Google, Apple, dan WhatsApp OTP diproses langsung di
-                      halaman resmi e-GYS.
+                      {translate(locale, "more.nativeLoginMethods")}
                     </small>
                   </>
                 ) : (
@@ -1022,7 +1072,9 @@ export function MorePage({
                     }}
                   >
                     <Icon name="person" size={16} />
-                    <span>Buka login e-GYS resmi</span>
+                    <span>
+                      {translate(locale, "more.openOfficialLogin")}
+                    </span>
                   </a>
                 )}
               </div>
@@ -1033,23 +1085,45 @@ export function MorePage({
         <article className="more-card more-card-wide appearance-card">
           <div className="more-card-heading">
             <div>
-              <h2>Tampilan & Bahasa</h2>
+              <h2>{translate(locale, "more.appearance")}</h2>
             </div>
           </div>
 
           <div className="appearance-section">
-            <label className="section-subtitle">Tema Layar</label>
+            <label className="section-subtitle">
+              {translate(locale, "more.screenTheme")}
+            </label>
             <div
               className="theme-pill-grid"
               role="radiogroup"
-              aria-label="Pilih Tema"
+              aria-label={translate(locale, "more.chooseTheme")}
             >
               {[
-                { key: "light", icon: "sun" as const, label: "Terang" },
-                { key: "dark", icon: "moon" as const, label: "Gelap" },
-                { key: "amoled", icon: "amoled" as const, label: "AMOLED" },
-                { key: "sepia", icon: "sepia" as const, label: "Sepia" },
-                { key: "system", icon: "system" as const, label: "Otomatis" },
+                {
+                  key: "light",
+                  icon: "sun" as const,
+                  label: translate(locale, "more.themeLight"),
+                },
+                {
+                  key: "dark",
+                  icon: "moon" as const,
+                  label: translate(locale, "more.themeDark"),
+                },
+                {
+                  key: "amoled",
+                  icon: "amoled" as const,
+                  label: translate(locale, "more.themeAmoled"),
+                },
+                {
+                  key: "sepia",
+                  icon: "sepia" as const,
+                  label: translate(locale, "more.themeSepia"),
+                },
+                {
+                  key: "system",
+                  icon: "system" as const,
+                  label: translate(locale, "more.themeAutomatic"),
+                },
               ].map((item) => (
                 <button
                   key={item.key}
@@ -1071,14 +1145,20 @@ export function MorePage({
           </div>
 
           <div className="appearance-section">
-            <label className="section-subtitle">Warna Aksen</label>
+            <label className="section-subtitle">
+              {translate(locale, "more.accent")}
+            </label>
             <div
               className="accent-palette-grid"
               role="radiogroup"
-              aria-label="Pilih Warna Aksen"
+              aria-label={translate(locale, "more.chooseAccent")}
             >
               {ACCENT_PRESETS.map((preset) => {
                 const active = accentColor === preset.color;
+                const presetName = translate(
+                  locale,
+                  `more.accent.${preset.id}`,
+                );
                 return (
                   <button
                     key={preset.id}
@@ -1087,27 +1167,29 @@ export function MorePage({
                     aria-checked={active}
                     className={`accent-palette-item${active ? " is-active" : ""}`}
                     onClick={() => setAccentColor(preset.color)}
-                    aria-label={`Warna aksen ${preset.name}`}
-                    title={preset.name}
+                    aria-label={translate(locale, "more.accentLabel", {
+                      name: presetName,
+                    })}
+                    title={presetName}
                   >
                     <span
                       className="accent-swatch-circle"
                       style={{ backgroundColor: preset.color }}
                     />
-                    <span className="accent-swatch-name">{preset.name}</span>
+                    <span className="accent-swatch-name">{presetName}</span>
                   </button>
                 );
               })}
               <label
                 className={`accent-palette-item is-custom${!ACCENT_PRESETS.some((p) => p.color === accentColor) ? " is-active" : ""}`}
-                title="Pilih Warna Kustom"
+                title={translate(locale, "more.customAccent")}
               >
                 <input
                   type="color"
                   value={accentColor}
                   onChange={(e) => setAccentColor(e.target.value)}
                   className="sr-only"
-                  aria-label="Pilih warna aksen kustom"
+                  aria-label={translate(locale, "more.customAccent")}
                 />
                 <span
                   className="accent-swatch-circle is-custom-circle"
@@ -1121,13 +1203,17 @@ export function MorePage({
                 >
                   🎨
                 </span>
-                <span className="accent-swatch-name">Kustom</span>
+                <span className="accent-swatch-name">
+                  {translate(locale, "more.custom")}
+                </span>
               </label>
             </div>
           </div>
 
           <div className="appearance-section">
-            <label className="section-subtitle">Bahasa Aplikasi</label>
+            <label className="section-subtitle">
+              {translate(locale, "more.appLanguage")}
+            </label>
             <div className="lang-pill-grid">
               <Select
                 value={locale}
@@ -1135,7 +1221,7 @@ export function MorePage({
                   const next = val as Locale;
                   setLocale(next);
                 }}
-                label="Pilih Bahasa"
+                label={translate(locale, "more.chooseLanguage")}
                 options={[
                   { value: "id", label: "🇮🇩 Bahasa Indonesia (Utama)" },
                   { value: "en", label: "🇬🇧 English" },
@@ -1146,227 +1232,254 @@ export function MorePage({
           </div>
         </article>
 
-        <article className="more-card more-card-wide">
-          <div className="more-card-heading">
-            <div>
-              <h2>Paket lokal</h2>
+        <div
+          className="more-resource-group"
+          data-testid="more-resource-group"
+        >
+          <article className="more-card more-card-wide">
+            <div className="more-card-heading">
+              <div>
+                <h2>{translate(locale, "more.localPack")}</h2>
+              </div>
+              <span className="pack-badge">
+                {translate(locale, "more.ready")}
+              </span>
             </div>
-            <span className="pack-badge">Siap</span>
-          </div>
-          <p>
-            Alkitab TB dan metadata inti tersedia tanpa koneksi. Versi tambahan,
-            PDF, partitur, dan SoundFont diunduh sesuai kebutuhan.
-          </p>
-          <div className="pack-stats">
-            <span>
-              <strong>{manifest?.bible ?? "TB"}</strong>
-              <small>terjemahan</small>
-            </span>
-            <span>
-              <strong>{manifest?.hymns ?? "—"}</strong>
-              <small>lagu</small>
-            </span>
-            <span>
-              <strong>
-                {manifest
-                  ? formatBytes(
-                      manifest.items.reduce((sum, item) => sum + item.bytes, 0),
-                    )
-                  : "—"}
-              </strong>
-              <small>paket inti</small>
-            </span>
-          </div>
-          <div className="pack-manager-actions">
-            <button
-              className="quiet-button"
-              type="button"
-              disabled={!manifest || packBusy}
-              onClick={() => void updateOfflinePack()}
-            >
-              {packBusy
-                ? `Menyimpan ${packProgress}%…`
-                : assetCheck.status === "update"
-                  ? localUpdateCount(assetCheck.diff) > 0
-                    ? `Unduh ${localUpdateCount(assetCheck.diff)} pembaruan`
-                    : "Perbarui metadata paket"
-                  : "Verifikasi & simpan paket"}
-            </button>
-            <button
-              className="text-button"
-              type="button"
-              disabled={
-                !assetManifest || packBusy || assetCheck.status === "checking"
-              }
-              onClick={() => void checkOfflinePack()}
-            >
-              {assetCheck.status === "checking"
-                ? "Memeriksa…"
-                : "Periksa versi"}
-            </button>
-            <small>
-              Manifest v{manifest?.version ?? 1} ·{" "}
-              {manifest
-                ? new Date(manifest.generatedAt).toLocaleDateString(locale)
-                : "memuat"}
-              {assetCheck.status === "update" &&
-                ` · ${localUpdateCount(assetCheck.diff)} pembaruan tersedia`}
-              {assetCheck.status === "current" && " · terbaru"}
-              {assetCheck.status === "error" && " · belum diperiksa"}
-            </small>
-          </div>
-        </article>
-
-        <DistributedAssetPanel
-          assets={distributedAssets}
-          loading={distributedAssetsLoading}
-          downloadAvailable={distributedDownloadsConfigured()}
-          {...(distributedBusyCode ? { busyCode: distributedBusyCode } : {})}
-          {...(distributedProgress ? { progress: distributedProgress } : {})}
-          {...(distributedError ? { error: distributedError } : {})}
-          onInstall={(code) => void installDistributedAsset(code)}
-          onRemove={(code) => void removeDistributedAsset(code)}
-        />
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setBackupOpen((open) => !open)}
-        >
-          <span className="more-icon">↥</span>
-          <strong>Backup & import</strong>
-          <small>
-            Simpan atau pulihkan catatan, progres baca, dan preferensi
-          </small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setReminderOpen((open) => !open)}
-        >
-          <span className="more-icon">◷</span>
-          <strong>Pengingat</strong>
-          <small>Atur waktu teduh membaca firman harian</small>
-        </button>
-
-        <button
-          className="more-card more-action"
-          type="button"
-          onClick={() => setPlaylistOpen((open) => !open)}
-        >
-          <span className="more-icon">♫</span>
-          <strong>Antrean MIDI</strong>
-          <small>
-            {playlist.items.length
-              ? `${playlist.items.length} lagu tersimpan · ${playlist.autoNext ? "lanjut otomatis" : "manual"}`
-              : "Susun lagu untuk kebaktian atau latihan"}
-          </small>
-        </button>
-
-        <details
-          className="more-card more-card-wide device-data-tools"
-          data-testid="device-data-tools"
-        >
-          <summary className="device-data-summary">
-            <span>
-              <strong>Perangkat & data</strong>
-              <small>Alat lanjutan untuk penyimpanan lokal</small>
-            </span>
-            <span className="device-data-chevron" aria-hidden="true">
-              ›
-            </span>
-          </summary>
-          <div className="device-data-body">
-            <div>
-              <strong>Reset perangkat</strong>
+            <p>
+              {translate(locale, "more.localPackDescription")}
+            </p>
+            <div className="pack-stats">
+              <span>
+                <strong>{manifest?.bible ?? "TB"}</strong>
+                <small>{translate(locale, "more.translations")}</small>
+              </span>
+              <span>
+                <strong>{manifest?.hymns ?? "—"}</strong>
+                <small>{translate(locale, "more.songs")}</small>
+              </span>
+              <span>
+                <strong>
+                  {manifest
+                    ? formatBytes(
+                        manifest.items.reduce((sum, item) => sum + item.bytes, 0),
+                      )
+                    : "—"}
+                </strong>
+                <small>{translate(locale, "more.corePack")}</small>
+              </span>
+            </div>
+            <div className="pack-manager-actions">
+              <button
+                className="quiet-button"
+                type="button"
+                disabled={!manifest || packBusy}
+                onClick={() => void updateOfflinePack()}
+              >
+                {packBusy
+                  ? translate(locale, "more.saving", { percent: packProgress })
+                  : assetCheck.status === "update"
+                    ? localUpdateCount(assetCheck.diff) > 0
+                      ? translate(locale, "more.downloadUpdates", {
+                          count: localUpdateCount(assetCheck.diff),
+                        })
+                      : translate(locale, "more.updateMetadata")
+                    : translate(locale, "more.verifySave")}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                disabled={
+                  !assetManifest || packBusy || assetCheck.status === "checking"
+                }
+                onClick={() => void checkOfflinePack()}
+              >
+                {assetCheck.status === "checking"
+                  ? translate(locale, "more.checking")
+                  : translate(locale, "more.checkVersion")}
+              </button>
               <small>
-                Hapus preferensi, cache, progres lokal, dan data offline
-                aplikasi dari perangkat ini. Gunakan hanya bila diperlukan.
+                Manifest v{manifest?.version ?? 1} ·{" "}
+                {manifest
+                  ? new Date(manifest.generatedAt).toLocaleDateString(locale)
+                  : translate(locale, "more.loading")}
+                {assetCheck.status === "update" &&
+                  ` · ${translate(locale, "more.updatesAvailable", {
+                    count: localUpdateCount(assetCheck.diff),
+                  })}`}
+                {assetCheck.status === "current" &&
+                  ` · ${translate(locale, "more.latest")}`}
+                {assetCheck.status === "error" &&
+                  ` · ${translate(locale, "more.notChecked")}`}
               </small>
             </div>
-            <button
-              className="quiet-button danger-button"
-              type="button"
-              onClick={() => {
-                const confirmed = window.confirm(
-                  "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
-                );
-                if (!confirmed) return;
-                void clearAppData()
-                  .then(() =>
-                    show(
-                      "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
-                    ),
-                  )
-                  .catch(() =>
-                    show(
-                      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-                    ),
-                  );
-              }}
-            >
-              Reset perangkat
-            </button>
-          </div>
-        </details>
+          </article>
 
-        <form className="more-card report-card" onSubmit={submitReport}>
-          <div className="more-card-heading">
-            <div>
-              <h2>Laporkan masalah</h2>
-            </div>
-          </div>
-          <label className="sr-only" htmlFor="report-message">
-            {translate(locale, "more.reportMessage")}
-          </label>
-          <textarea
-            id="report-message"
-            value={report}
-            maxLength={2_000}
-            onChange={(event) => {
-              setReport(event.target.value);
-              if (reportStatus === "error") setReportStatus("idle");
-            }}
-            rows={3}
-            placeholder="Tuliskan kendala atau saran perbaikan di sini…"
+          <DistributedAssetPanel
+            locale={locale}
+            assets={distributedAssets}
+            loading={distributedAssetsLoading}
+            downloadAvailable={distributedDownloadsConfigured()}
+            {...(distributedBusyCode ? { busyCode: distributedBusyCode } : {})}
+            {...(distributedProgress ? { progress: distributedProgress } : {})}
+            {...(distributedError ? { error: distributedError } : {})}
+            onInstall={(code) => void installDistributedAsset(code)}
+            onRemove={(code) => void removeDistributedAsset(code)}
           />
-          <button
-            className="primary-button"
-            type="submit"
-            disabled={!report.trim() || reportStatus === "sending"}
-          >
-            {reportStatus === "sending" ? "Mengirim…" : "Kirim laporan"}
-          </button>
-          <small className="form-status" aria-live="polite">
-            {reportStatus === "error"
-              ? "Draft tersimpan di perangkat."
-              : `${report.length}/2.000 karakter`}
-          </small>
-        </form>
+        </div>
+
+        <div
+          className="more-secondary-group"
+          data-testid="more-secondary-group"
+        >
+          <div className="more-secondary-grid">
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setBackupOpen((open) => !open)}
+            >
+              <span className="more-icon">↥</span>
+              <strong>{translate(locale, "more.backupImport")}</strong>
+              <small>
+                {translate(locale, "more.backupImportDesc")}
+              </small>
+            </button>
+
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setReminderOpen((open) => !open)}
+            >
+              <span className="more-icon">◷</span>
+              <strong>{translate(locale, "more.reminder")}</strong>
+              <small>{translate(locale, "more.reminderDesc")}</small>
+            </button>
+
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setPlaylistOpen((open) => !open)}
+            >
+              <span className="more-icon">♫</span>
+              <strong>{translate(locale, "more.midiQueue")}</strong>
+              <small>
+                {playlist.items.length
+                  ? translate(locale, "more.queueStatus", {
+                      count: playlist.items.length,
+                      mode: playlist.autoNext
+                        ? translate(locale, "more.queueAutomatic")
+                        : translate(locale, "more.queueManual"),
+                    })
+                  : translate(locale, "more.prepareQueue")}
+              </small>
+            </button>
+
+            <details
+              className="more-card more-card-wide device-data-tools"
+              data-testid="device-data-tools"
+            >
+              <summary className="device-data-summary">
+                <span>
+                  <strong>{translate(locale, "more.deviceData")}</strong>
+                  <small>{translate(locale, "more.deviceDataDesc")}</small>
+                </span>
+                <span className="device-data-chevron" aria-hidden="true">
+                  ›
+                </span>
+              </summary>
+              <div className="device-data-body">
+                <div>
+                  <strong>{translate(locale, "more.resetDevice")}</strong>
+                  <small>{translate(locale, "more.resetDeviceDesc")}</small>
+                </div>
+                <button
+                  className="quiet-button danger-button"
+                  type="button"
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      translate(locale, "more.confirmDeleteData"),
+                    );
+                    if (!confirmed) return;
+                    void clearAppData()
+                      .then(() =>
+                        show(
+                          translate(locale, "more.dataReset"),
+                        ),
+                      )
+                      .catch(() =>
+                        show(
+                          translate(locale, "more.resetIncomplete"),
+                        ),
+                      );
+                  }}
+                >
+                  {translate(locale, "more.resetDevice")}
+                </button>
+              </div>
+            </details>
+
+            <form className="more-card report-card" onSubmit={submitReport}>
+              <div className="more-card-heading">
+                <div>
+                  <h2>{translate(locale, "more.reportProblem")}</h2>
+                </div>
+              </div>
+              <label className="sr-only" htmlFor="report-message">
+                {translate(locale, "more.reportMessage")}
+              </label>
+              <textarea
+                id="report-message"
+                value={report}
+                maxLength={2_000}
+                onChange={(event) => {
+                  setReport(event.target.value);
+                  if (reportStatus === "error") setReportStatus("idle");
+                }}
+                rows={3}
+                placeholder={translate(locale, "more.reportPlaceholder")}
+              />
+              <button
+                className="primary-button"
+                type="submit"
+                disabled={!report.trim() || reportStatus === "sending"}
+              >
+                {reportStatus === "sending"
+                  ? translate(locale, "more.sending")
+                  : translate(locale, "more.sendReport")}
+              </button>
+              <small className="form-status" aria-live="polite">
+                {reportStatus === "error"
+                  ? translate(locale, "more.draftSaved")
+                  : translate(locale, "more.characterCount", {
+                      count: report.length,
+                    })}
+              </small>
+            </form>
+          </div>
+        </div>
       </section>
       {backupOpen && (
-        <section className="utility-panel" aria-label="Backup dan import">
+        <section
+          className="utility-panel"
+          aria-label={translate(locale, "more.backupPanel")}
+        >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">Data lokal</p>
-              <h2>Backup terenkripsi</h2>
+              <p className="date-line">
+                {translate(locale, "more.localData")}
+              </p>
+              <h2>{translate(locale, "more.encryptedBackup")}</h2>
             </div>
             <button
               className="text-button"
               type="button"
               onClick={() => setBackupOpen(false)}
             >
-              Tutup
+              {translate(locale, "more.close")}
             </button>
           </div>
-          <p>
-            Backup memuat preferensi, progres baca, bookmark, dan catatan. Sesi
-            akun, data perangkat, serta cache tidak ikut disalin. Kata sandi
-            tidak dikirim ke server.
-          </p>
+          <p>{translate(locale, "more.backupDescription")}</p>
           <label className="search-field">
-            <span>Kata sandi backup</span>
+            <span>{translate(locale, "more.backupPassword")}</span>
             <input
               type="password"
               value={backupPassword}
@@ -1381,10 +1494,10 @@ export function MorePage({
               type="button"
               onClick={() => void exportBackup()}
             >
-              Ekspor .gysbk
+              {translate(locale, "more.exportBackup")}
             </button>
             <label className="quiet-button file-button">
-              Pilih file
+              {translate(locale, "more.chooseFile")}
               <input
                 type="file"
                 accept=".gysbk,.json"
@@ -1397,32 +1510,34 @@ export function MorePage({
               onClick={() => void importBackup()}
               disabled={!backupFile}
             >
-              Impor
+              {translate(locale, "more.import")}
             </button>
           </div>
         </section>
       )}
       {reminderOpen && (
-        <section className="utility-panel" aria-label="Pengingat harian">
+        <section
+          className="utility-panel"
+          aria-label={translate(locale, "more.reminderPanel")}
+        >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">Notifikasi perangkat</p>
-              <h2>Pengingat harian</h2>
+              <p className="date-line">
+                {translate(locale, "more.deviceNotifications")}
+              </p>
+              <h2>{translate(locale, "more.reminderPanel")}</h2>
             </div>
             <button
               className="text-button"
               type="button"
               onClick={() => setReminderOpen(false)}
             >
-              Tutup
+              {translate(locale, "more.close")}
             </button>
           </div>
-          <p>
-            Pilih waktu untuk pengingat membaca. Jadwal disimpan lokal dan tidak
-            memerlukan akun.
-          </p>
+          <p>{translate(locale, "more.reminderDescription")}</p>
           <label className="search-field">
-            <span>Waktu</span>
+            <span>{translate(locale, "more.time")}</span>
             <input
               type="time"
               value={reminderTime}
@@ -1435,31 +1550,36 @@ export function MorePage({
               type="button"
               onClick={() => void saveReminder()}
             >
-              Simpan pengingat
+              {translate(locale, "more.saveReminder")}
             </button>
             <button
               className="quiet-button"
               type="button"
               onClick={disableReminder}
             >
-              Nonaktifkan
+              {translate(locale, "more.disable")}
             </button>
           </div>
         </section>
       )}
       {playlistOpen && (
-        <section className="utility-panel" aria-label="Antrean MIDI">
+        <section
+          className="utility-panel"
+          aria-label={translate(locale, "more.playlist")}
+        >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">Kidung Rohani</p>
-              <h2>Antrean MIDI</h2>
+              <p className="date-line">
+                {translate(locale, "more.hymnLabel")}
+              </p>
+              <h2>{translate(locale, "more.playlist")}</h2>
             </div>
             <button
               className="text-button"
               type="button"
               onClick={() => setPlaylistOpen(false)}
             >
-              Tutup
+              {translate(locale, "more.close")}
             </button>
           </div>
           <div className="playlist-settings">
@@ -1471,7 +1591,7 @@ export function MorePage({
                   updateMidiPlaylistOptions({ autoNext: event.target.checked })
                 }
               />
-              <span>Lanjut otomatis</span>
+              <span>{translate(locale, "more.autoNext")}</span>
             </label>
             <label className="control-check">
               <input
@@ -1481,16 +1601,25 @@ export function MorePage({
                   updateMidiPlaylistOptions({ shuffle: event.target.checked })
                 }
               />
-              <span>Acak</span>
+              <span>{translate(locale, "more.shuffle")}</span>
             </label>
             <Select
               value={playlist.loop}
               onChange={(value) => updateMidiPlaylistOptions({ loop: value })}
-              label="Ulangi"
+              label={translate(locale, "more.repeat")}
               options={[
-                { value: "off" as const, label: "Tidak mengulang" },
-                { value: "one" as const, label: "Lagu ini" },
-                { value: "all" as const, label: "Seluruh antrean" },
+                {
+                  value: "off" as const,
+                  label: translate(locale, "more.noRepeat"),
+                },
+                {
+                  value: "one" as const,
+                  label: translate(locale, "more.currentSong"),
+                },
+                {
+                  value: "all" as const,
+                  label: translate(locale, "more.allQueue"),
+                },
               ]}
             />
           </div>
@@ -1517,7 +1646,9 @@ export function MorePage({
                       type="button"
                       disabled={index === 0}
                       onClick={() => moveMidiPlaylistItem(index, index - 1)}
-                      aria-label={`Naikkan ${item.title}`}
+                      aria-label={translate(locale, "more.raise", {
+                        title: item.title,
+                      })}
                     >
                       ↑
                     </button>
@@ -1526,7 +1657,9 @@ export function MorePage({
                       type="button"
                       disabled={index === playlist.items.length - 1}
                       onClick={() => moveMidiPlaylistItem(index, index + 1)}
-                      aria-label={`Turunkan ${item.title}`}
+                      aria-label={translate(locale, "more.lower", {
+                        title: item.title,
+                      })}
                     >
                       ↓
                     </button>
@@ -1534,9 +1667,9 @@ export function MorePage({
                       className="text-button"
                       type="button"
                       onClick={() => removeMidiPlaylistItem(item.songId)}
-                      aria-label={`Hapus ${item.title}`}
+                      aria-label={`${translate(locale, "more.delete")} ${item.title}`}
                     >
-                      Hapus
+                      {translate(locale, "more.delete")}
                     </button>
                   </div>
                 </li>
@@ -1544,7 +1677,7 @@ export function MorePage({
             </ol>
           ) : (
             <div className="empty-inline">
-              <p>Belum ada lagu. Tambahkan dari detail Kidung.</p>
+                <p>{translate(locale, "more.emptyPlaylist")}</p>
             </div>
           )}
           <div className="utility-actions">
@@ -1554,10 +1687,10 @@ export function MorePage({
               onClick={downloadMidiPlaylist}
               disabled={!playlist.items.length}
             >
-              Ekspor antrean
+              {translate(locale, "more.exportQueue")}
             </button>
             <label className="quiet-button file-button">
-              Impor antrean
+              {translate(locale, "more.importQueue")}
               <input
                 type="file"
                 accept="application/json,.json"
@@ -1575,12 +1708,12 @@ export function MorePage({
                   .then((value) => importMidiPlaylist(value))
                   .then(() => {
                     setPlaylistFile(undefined);
-                    show("Antrean MIDI berhasil diimpor.");
+                    show(translate(locale, "more.playlistImported"));
                   })
-                  .catch(() => show("File antrean tidak valid."));
+                  .catch(() => show(translate(locale, "more.invalidPlaylist")));
               }}
             >
-              Terapkan
+              {translate(locale, "more.apply")}
             </button>
             <button
               className="text-button"
@@ -1588,15 +1721,14 @@ export function MorePage({
               disabled={!playlist.items.length}
               onClick={() => {
                 clearMidiPlaylist();
-                show("Antrean MIDI dikosongkan.");
+                show(translate(locale, "more.playlistCleared"));
               }}
             >
-              Kosongkan
+              {translate(locale, "more.clear")}
             </button>
           </div>
           <small>
-            Format antrean tervalidasi dan dapat dipulihkan melalui backup
-            aplikasi.
+            {translate(locale, "more.playlistNote")}
           </small>
         </section>
       )}
@@ -1606,7 +1738,7 @@ export function MorePage({
             className={`egys-login-backdrop${isEgysLoginClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"
-            aria-label="Login e-GYS resmi"
+            aria-label={translate(locale, "more.loginDialog")}
             onClick={closeEgysLogin}
           >
             <div
@@ -1616,31 +1748,28 @@ export function MorePage({
               <div className="egys-login-head">
                 <div className="egys-login-title">
                   <Icon name="person" size={18} />
-                  <strong>Login e-GYS Resmi</strong>
+                  <strong>{translate(locale, "more.loginTitle")}</strong>
                   <small>Gereja Yesus Sejati</small>
                 </div>
                 <button
                   className="egys-login-close"
                   type="button"
-                  aria-label="Tutup login e-GYS"
+                  aria-label={translate(locale, "more.close")}
                   onClick={closeEgysLogin}
                 >
                   ×
                 </button>
               </div>
               <div className="egys-login-frame-container egys-login-google-container">
-                <p>
-                  Login dengan akun Google. Setelah berhasil, aplikasi akan
-                  langsung memeriksa dan menampilkan akun e-GYS Anda.
-                </p>
+                <p>{translate(locale, "more.googleModalDescription")}</p>
                 <div
                   ref={googleButtonRef}
                   className="egys-google-button"
-                  aria-label="Login dengan Google"
+                  aria-label={translate(locale, "more.googleLogin")}
                 />
                 {authBusy && (
                   <p className="egys-google-status" role="status">
-                    Memeriksa akun e-GYS…
+                    {translate(locale, "more.checkingLogin")}
                   </p>
                 )}
                 {egysGoogleError && (
@@ -1649,15 +1778,13 @@ export function MorePage({
                   </p>
                 )}
                 <p className="egys-google-fallback">
-                  Untuk Apple atau WhatsApp OTP, lanjutkan melalui portal resmi
-                  e-GYS. Login tersebut belum bisa dibaca lintas situs oleh
-                  browser.
+                  {translate(locale, "more.googleFallback")}
                 </p>
               </div>
               <div className="egys-login-footer">
                 <span>
                   <Icon name="checkCircle" size={14} />
-                  Credential Google diproses melalui koneksi aman aplikasi
+                  {translate(locale, "more.secureCredentials")}
                 </span>
                 <div className="egys-login-footer-actions">
                   <a
@@ -1667,14 +1794,14 @@ export function MorePage({
                     rel="noreferrer noopener"
                     style={{ textDecoration: "none" }}
                   >
-                    Portal resmi e-GYS ↗
+                    {translate(locale, "more.officialPortal")}
                   </a>
                   <button
                     type="button"
                     className="quiet-button"
                     onClick={closeEgysLogin}
                   >
-                    Tutup
+                    {translate(locale, "more.close")}
                   </button>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { LiteratureItem } from "@gys/contracts";
 
-const PERSIST_KEY = "gys_literature_catalog_v4";
+const PERSIST_KEY = "gys_literature_catalog_v5";
 
 function item(partial: Partial<LiteratureItem>): LiteratureItem {
   return {
@@ -160,5 +160,43 @@ describe("Literature persistent + incremental catalog", () => {
       expect(cached).toHaveLength(1);
       expect(cached?.[0]?.imageUrl).toContain("cover.png");
     });
+  });
+
+  it("sorts the offline snapshot before Home renders the latest shelf", async () => {
+    const older = item({
+      id: "older-entry",
+      title: "Kesaksian lama",
+      publishedAt: "2025-03-05T00:00:00.000Z",
+    });
+    const newer = item({
+      id: "newer-entry",
+      title: "Warta terbaru",
+      category: "warta",
+      publishedAt: "2026-07-30T00:00:00.000Z",
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              source: "tjc.org",
+              generatedAt: new Date().toISOString(),
+              items: [older, newer],
+            }),
+            { status: 200 },
+          ),
+        ),
+      ),
+    );
+
+    const { fetchLiteratureCatalog } =
+      await import("./literature-catalog.js");
+    const items = await fetchLiteratureCatalog();
+
+    expect(items.map((entry) => entry.id)).toEqual([
+      "newer-entry",
+      "older-entry",
+    ]);
   });
 });

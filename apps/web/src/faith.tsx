@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
-import { bffPdfUrl, loadPdfBytes } from "./pdf-source.js";
+import { bffPdfUrl } from "./pdf-source.js";
+import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
 type FaithItem = { number: string; text: string };
 type FaithGroup = { language: string; title: string; content: FaithItem[] };
@@ -177,9 +178,8 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const [pdfProgress, setPdfProgress] = useState<FaithPdfProgress | undefined>(
     undefined,
   );
-  const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
-  const [pdfError, setPdfError] = useState(false);
-  const [pdfLoadKey, setPdfLoadKey] = useState(0);
+  const pdfDialogRef = useRef<HTMLDivElement | null>(null);
+  const pdfOpenerRef = useRef<HTMLElement | null>(null);
 
   const closeModal = () => {
     if (isModalClosing) return;
@@ -198,21 +198,6 @@ export function FaithPage({ locale }: { locale: Locale }) {
       setIsNoteClosing(false);
     }, 200);
   };
-
-  useEffect(() => {
-    if (!pdfRead) return;
-    let cancelled = false;
-    setPdfBytes(undefined);
-    setPdfError(false);
-    void loadPdfBytes(pdfRead.url).then((bytes) => {
-      if (cancelled) return;
-      if (bytes) setPdfBytes(bytes);
-      else setPdfError(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [pdfRead, pdfLoadKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -272,7 +257,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
   };
   const share = async () => {
     if (!active) return;
-    const title = group?.title ?? "Iman";
+    const title = group?.title ?? translate(locale, "nav.iman");
     const text = `${title} ${active.number}\n${active.text}`;
     try {
       if (navigator.share) await navigator.share({ title, text });
@@ -287,7 +272,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const copySection = async () => {
     if (!active) return;
     await navigator.clipboard?.writeText(
-      `${group?.title ?? "Iman"} ${active.number}\n${active.text}`,
+      `${group?.title ?? translate(locale, "nav.iman")} ${active.number}\n${active.text}`,
     );
     flash(translate(locale, "faith.copyDone"));
   };
@@ -316,26 +301,35 @@ export function FaithPage({ locale }: { locale: Locale }) {
     if (item) setNotePopupOpen(true);
   };
 
-  const openFaithPdf = (item: FaithItem) => {
+  const openFaithPdf = (item: FaithItem, trigger?: HTMLElement | null) => {
     const entry = DK_READ_MORE.get(item.number);
     if (!entry) return;
+    rememberDialogOpener(pdfOpenerRef, trigger);
     setSelected("");
     setPdfProgress(readFaithPdfProgress(item.number));
     setPdfRead({
       number: item.number,
-      title: `${item.text.split(/[.!?]/)[0] ?? item.text} (PDF)`,
+      title: translate(locale, "faith.pdfTitle", {
+        title: item.text.split(/[.!?]/)[0] ?? item.text,
+      }),
       url: entry.pdf,
     });
   };
-  const openReadMore = () => {
-    if (active) openFaithPdf(active);
+  const openReadMore = (trigger?: HTMLElement | null) => {
+    if (active) openFaithPdf(active, trigger);
   };
   const closeReadMore = () => {
     setPdfRead(undefined);
     setPdfProgress(undefined);
-    setPdfBytes(undefined);
-    setPdfError(false);
   };
+
+  useDialogFocus({
+    open: Boolean(pdfRead),
+    dialogRef: pdfDialogRef,
+    openerRef: pdfOpenerRef,
+    onClose: closeReadMore,
+    initialFocusSelector: ".faith-pdf-close",
+  });
 
   const onPageChange = (page: number, totalPages: number) => {
     if (!pdfRead || totalPages < 1) return;
@@ -354,7 +348,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page faith-page">
-      <h1 className="faith-page-title">{group?.title ?? "Iman"}</h1>
+      <h1 className="faith-page-title">
+        {group?.title ?? translate(locale, "nav.iman")}
+      </h1>
       {!pack && (
         <div className="loading-panel" role="status">
           {translate(locale, "faith.loading")}
@@ -388,49 +384,59 @@ export function FaithPage({ locale }: { locale: Locale }) {
               const note = hasNote(item.number);
               const progress = readFaithPdfProgress(item.number);
               return (
-                <div role="listitem" key={item.number}>
+                <div className="faith-row" role="listitem" key={item.number}>
                   <button
                     className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
                     type="button"
-                    onClick={() => openFaithPdf(item)}
-                    aria-label={`Baca PDF pokok iman ${item.number}`}
+                    onClick={(event) =>
+                      openFaithPdf(item, event.currentTarget)
+                    }
+                    aria-label={translate(locale, "faith.pdfLabel", {
+                      number: item.number,
+                    })}
                   >
                     <span className="faith-number">
                       {item.number.padStart(2, "0")}
                     </span>
-                    <strong>
-                      {item.text.split(/[.!?]/)[0]}
-                      {note && (
+                    <span className="faith-row-copy">
+                      <strong>
+                        {item.text.split(/[.!?]/)[0]}
+                        {note && (
+                          <span
+                            className="faith-row-note-dot"
+                            aria-label={translate(locale, "faith.hasNote")}
+                          >
+                            ✎
+                          </span>
+                        )}
+                      </strong>
+                      {progress && (
                         <span
-                          className="faith-row-note-dot"
-                          aria-label="Ada catatan"
+                          className="faith-row-progress"
+                          title={translate(locale, "faith.progressTitle", {
+                            percent: progress.percent,
+                          })}
                         >
-                          ✎
+                          {translate(locale, "faith.progress", {
+                            page: progress.page,
+                          })}
                         </span>
                       )}
-                    </strong>
-                    <span
-                      className="faith-row-progress"
-                      title={
-                        progress
-                          ? `Progres ${progress.percent}%`
-                          : "Belum dibaca"
-                      }
-                    >
-                      {progress
-                        ? `Lanjut · halaman ${progress.page}`
-                        : "Baca PDF"}
                     </span>
-                    <span aria-hidden="true">›</span>
                   </button>
-                  <button
-                    className="faith-row-summary"
-                    type="button"
-                    onClick={() => toggleSelected(item.number)}
-                    aria-label={`Buka ringkasan dan catatan pokok iman ${item.number}`}
-                  >
-                    Ringkasan & catatan
-                  </button>
+                  <div className="faith-row-actions">
+                    <button
+                      className="faith-row-summary"
+                      type="button"
+                      onClick={() => toggleSelected(item.number)}
+                      aria-label={translate(locale, "faith.noteLabel", {
+                        number: item.number,
+                      })}
+                    >
+                      <Icon name="bookmark" size={14} />
+                      <span>{translate(locale, "faith.noteShort")}</span>
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -463,7 +469,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                     <button
                       className="faith-selection-close"
                       type="button"
-                      aria-label="Tutup pokok iman"
+                      aria-label={translate(locale, "faith.closeTopic")}
                       onClick={closeModal}
                     >
                       ×
@@ -497,9 +503,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
                       <button
                         className="primary-button faith-read-more"
                         type="button"
-                        onClick={openReadMore}
+                        onClick={(event) =>
+                          openReadMore(event.currentTarget)
+                        }
                       >
-                        Baca lebih lanjut ↗
+                        {translate(locale, "faith.readMore")}
                       </button>
                     )}
                   </div>
@@ -521,7 +529,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
             className={`bible-notes-backdrop${isNoteClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"
-            aria-label="Catatan pokok iman"
+            aria-label={translate(locale, "faith.notesDialog")}
             onClick={closeNote}
           >
             <div
@@ -538,12 +546,14 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   </strong>
                 </div>
                 <span className="bible-notes-count">
-                  {savedNotes.length} catatan
+                  {translate(locale, "faith.noteCount", {
+                    count: savedNotes.length,
+                  })}
                 </span>
                 <button
                   className="bible-notes-close"
                   type="button"
-                  aria-label="Tutup catatan"
+                  aria-label={translate(locale, "faith.closeNotes")}
                   onClick={closeNote}
                 >
                   ×
@@ -584,14 +594,14 @@ export function FaithPage({ locale }: { locale: Locale }) {
                             deleteNote(active.number);
                           }}
                         >
-                          Hapus catatan
+                          {translate(locale, "faith.deleteNote")}
                         </button>
                       )}
                     </div>
                   </div>
                 )}
                 <div className="bible-notes-section-label">
-                  <span>Catatan tersimpan</span>
+                  <span>{translate(locale, "faith.savedNotes")}</span>
                 </div>
                 {savedNotes.length > 0 ? (
                   <div className="bible-notes-list">
@@ -613,7 +623,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
                         <button
                           className="bible-notes-item-delete"
                           type="button"
-                          aria-label={`Hapus catatan pokok ${entry.item.number}`}
+                          aria-label={translate(locale, "faith.deleteNoteLabel", {
+                            number: entry.item.number,
+                          })}
                           onClick={() => deleteNote(entry.item.number)}
                         >
                           ×
@@ -636,6 +648,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
         createPortal(
           <div
             className="faith-pdf-backdrop"
+            ref={pdfDialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={pdfRead.title}
@@ -647,31 +660,45 @@ export function FaithPage({ locale }: { locale: Locale }) {
             >
               <div className="faith-pdf-head">
                 <div className="faith-pdf-title">
-                  <small>Baca lebih lanjut</small>
+                  <small>{translate(locale, "faith.readMoreTitle")}</small>
                   <strong>{pdfRead.title}</strong>
                 </div>
                 {pdfProgress && (
                   <span className="faith-pdf-stats">
-                    Halaman {pdfProgress.page}/{pdfProgress.totalPages} ·{" "}
-                    {pdfProgress.percent}% · Terakhir dibuka{" "}
-                    {new Date(pdfProgress.lastOpenedAt).toLocaleDateString(
-                      locale,
-                    )}
+                    {translate(locale, "faith.pdfStats", {
+                      page: pdfProgress.page,
+                      totalPages: pdfProgress.totalPages,
+                      percent: pdfProgress.percent,
+                      date: new Date(
+                        pdfProgress.lastOpenedAt,
+                      ).toLocaleDateString(locale),
+                    })}
                   </span>
                 )}
                 <div className="faith-pdf-head-actions">
                   <a
                     className="quiet-button"
-                    href={DK_READ_MORE.get(pdfRead.number)?.source}
+                    href={pdfRead.url}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Sumber resmi ↗
+                    {translate(locale, "faith.pdfOfficial")}
                   </a>
+                  {DK_READ_MORE.get(pdfRead.number)?.source && (
+                    <a
+                      className="quiet-button"
+                      href={DK_READ_MORE.get(pdfRead.number)?.source}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {translate(locale, "faith.openOfficialSource")}
+                    </a>
+                  )}
                   <button
-                    className="bible-notes-close"
+                    className="bible-notes-close faith-pdf-close"
                     type="button"
-                    aria-label="Tutup bacaan"
+                    aria-label={translate(locale, "faith.closeReading")}
+                    title={translate(locale, "faith.closeReading")}
                     onClick={closeReadMore}
                   >
                     ×
@@ -682,66 +709,27 @@ export function FaithPage({ locale }: { locale: Locale }) {
                 className="faith-pdf-progress"
                 value={pdfProgress?.percent ?? 0}
                 max={100}
-                aria-label={`Kemajuan bacaan ${pdfProgress?.percent ?? 0}%`}
+                aria-label={translate(locale, "faith.progressLabel", {
+                  percent: pdfProgress?.percent ?? 0,
+                })}
               />
               <div className="faith-pdf-body">
-                {pdfError && (
-                  <div className="error-panel" role="alert">
-                    <strong>Dokumen PDF belum dapat dimuat langsung.</strong>
-                    <span>
-                      Server sumber dokumen sedang mengalami kendala CORS atau
-                      offline. Anda dapat membaca artikel lengkapnya langsung di
-                      situs resmi TJC.
-                    </span>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        marginTop: "10px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {DK_READ_MORE.get(pdfRead.number)?.source && (
-                        <a
-                          className="primary-button"
-                          href={DK_READ_MORE.get(pdfRead.number)?.source}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Buka Artikel di Situs Resmi ↗
-                        </a>
-                      )}
-                      <button
-                        className="quiet-button"
-                        type="button"
-                        onClick={() => setPdfLoadKey((key) => key + 1)}
-                      >
-                        Coba lagi
-                      </button>
+                <Suspense
+                  fallback={
+                    <div className="loading-panel" role="status">
+                      {translate(locale, "faith.loadingPdfViewer")}
                     </div>
-                  </div>
-                )}
-                {!pdfError && !pdfBytes && (
-                  <div className="loading-panel" role="status">
-                    Memuat PDF… (berkas bisa beberapa MB)
-                  </div>
-                )}
-                {pdfBytes && (
-                  <Suspense
-                    fallback={
-                      <div className="loading-panel">Memuat viewer PDF…</div>
-                    }
-                  >
-                    <FaithPdfReader
-                      src={faithPdfUrl(pdfRead.url)}
-                      data={pdfBytes}
-                      initialPage={pdfProgress?.page ?? 1}
-                      title={pdfRead.title}
-                      progressKey={`faith:dk-${pdfRead.number}`}
-                      onPageChange={onPageChange}
-                    />
-                  </Suspense>
-                )}
+                  }
+                >
+                  <FaithPdfReader
+                    src={faithPdfUrl(pdfRead.url)}
+                    initialPage={pdfProgress?.page ?? 1}
+                    locale={locale}
+                    title={pdfRead.title}
+                    progressKey={`faith:dk-${pdfRead.number}`}
+                    onPageChange={onPageChange}
+                  />
+                </Suspense>
               </div>
             </div>
           </div>,

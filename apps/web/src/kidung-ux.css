@@ -7,6 +7,30 @@
   margin-bottom: 18px;
 }
 
+.kidung-catalog-topbar {
+  min-width: 0;
+}
+
+@media (min-width: 1200px) {
+  .kidung-catalog-topbar {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .kidung-catalog-topbar > .kidung-local-nav,
+  .kidung-catalog-topbar > .hymn-page-header {
+    min-width: 0;
+    margin-bottom: 0;
+  }
+
+  .kidung-catalog-topbar > .kidung-local-nav .kidung-local-nav-links {
+    max-width: 100%;
+  }
+}
+
 .kidung-local-nav-links {
   gap: 3px;
   padding: 3px;
@@ -46,12 +70,49 @@
 .hymn-page-header .hymn-catalog-controls {
   grid-template-columns: minmax(0, 1fr) minmax(190px, 240px);
   gap: 12px;
-  padding-top: 14px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .hymn-catalog-controls .search-field input,
 .hymn-catalog-controls .control-select-trigger {
   min-height: var(--control-hit, 44px);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--navy) 4%, transparent);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.hymn-catalog-controls .search-field,
+.hymn-catalog-controls .control-select {
+  gap: 6px;
+}
+
+.hymn-catalog-controls .search-field > span,
+.hymn-catalog-controls .control-select-label {
+  display: block;
+  margin: 0;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.hymn-catalog-controls .search-field input {
+  padding-inline: 14px;
+}
+
+.hymn-catalog-controls .search-field input:focus,
+.hymn-catalog-controls .control-select-trigger:focus-visible {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 14%, transparent);
+  outline: none;
 }
 
 .hymn-catalog-shell {
@@ -99,6 +160,9 @@
   border-radius: 0;
   background: transparent;
   color: var(--ink);
+  /* Keep catalog metrics local and deterministic; reader headings may use the
+     optional display font, but a 533-row index must not reflow after it loads. */
+  font-family: Georgia, "Times New Roman", serif;
   text-align: left;
   font-weight: 650;
   line-height: 1.35;
@@ -160,13 +224,13 @@
 
 .hymn-text-toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px 44px;
+  grid-template-columns: auto minmax(0, 1fr) 44px 44px;
   align-items: center;
   justify-content: stretch;
   gap: 8px;
   width: 100%;
   min-width: 0;
-  padding: 10px 0;
+  padding: 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -214,25 +278,30 @@
   line-height: 1.15;
 }
 
+.hymn-text-toolbar .hymn-scope-pill-btn {
+  min-height: var(--control-hit, 44px);
+}
+
 .hymn-text-toolbar .hymn-segmented-toolbar {
-  grid-column: 1 / -1;
-  grid-row: 2;
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
-  flex: none;
-  width: 100%;
+  flex: 1 1 auto;
+  width: auto;
   min-width: 0;
   align-items: center;
   gap: 10px;
-  padding-top: 2px;
+  flex-wrap: nowrap;
+  padding-top: 0;
 }
 
 .hymn-text-toolbar .hymn-more-actions {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 1;
 }
 
 .hymn-text-toolbar .hymn-reader-settings {
-  grid-column: 3;
+  grid-column: 4;
   grid-row: 1;
 }
 
@@ -277,6 +346,10 @@
 .hymn-more-actions-panel,
 .hymn-reader-settings > .song-controls {
   box-sizing: border-box;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
   width: min(390px, calc(100vw - 32px));
   max-width: calc(100vw - 24px);
   max-height: min(620px, calc(100dvh - 120px));
@@ -402,6 +475,8 @@
     min-width: 0;
     gap: 6px;
     align-items: center;
+    width: 100%;
+    flex: none;
     flex-wrap: nowrap;
   }
 
