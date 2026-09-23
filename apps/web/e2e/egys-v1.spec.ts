@@ -57,7 +57,7 @@ test("clicking e-GYS login opens the login flow in an overlay modal without redi
   await expect(officialPortal).toHaveAttribute("target", "_blank");
 
   // Close overlay
-  const closeBtn = overlay.getByRole("button", { name: /Tutup login e-GYS/i });
+  const closeBtn = overlay.locator(".egys-login-close");
   await closeBtn.click();
   await expect(overlay).toBeHidden();
 });

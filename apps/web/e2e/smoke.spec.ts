@@ -633,7 +633,7 @@ test("Bible text selection exposes contextual copy/share/note actions", async ({
   await page.getByRole("button", { name: "Catat", exact: true }).click();
   await page
     .getByRole("toolbar", { name: "Aksi ayat terpilih" })
-    .getByRole("button", { name: "Catatan", exact: true })
+    .getByRole("button", { name: "Catatan ayat", exact: true })
     .click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
 });

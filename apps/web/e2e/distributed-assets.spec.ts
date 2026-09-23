@@ -119,7 +119,21 @@ test("default browser download installs KJV and exposes it in the Bible selector
     });
   });
   await page.goto("/GYSApp-Tauri/lainnya?section=data");
-  await page.getByRole("button", { name: "Unduh King James Version" }).click();
+  const downloadButton = page.getByRole("button", {
+    name: "Unduh King James Version",
+  });
+  await expect(downloadButton).toBeVisible();
+  if (await downloadButton.isDisabled()) {
+    await expect(
+      page.locator(".distributed-assets-card > .inline-error"),
+    ).toContainText("Layanan unduhan belum dikonfigurasi");
+    await expect(downloadButton).toBeDisabled();
+    test.skip(
+      true,
+      "The static preview has no configured BFF download service.",
+    );
+  }
+  await downloadButton.click();
   await expect(page.getByText(/Tersimpan · v2026\.05\.21/)).toBeVisible({
     timeout: 45_000,
   });
