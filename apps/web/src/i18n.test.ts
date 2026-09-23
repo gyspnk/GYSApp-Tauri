@@ -144,7 +144,9 @@ const sources = import.meta.glob("./*.{ts,tsx}", {
 const literalKeys = new Set<string>();
 for (const [path, text] of Object.entries(sources)) {
   if (path === "./i18n.ts" || path.endsWith(".test.ts")) continue;
-  for (const match of text.matchAll(/translate\(locale,\s*["']([^"']+)["']/g)) {
+  for (const match of text.matchAll(
+    /translate\(\s*locale,\s*["']([^"']+)["']/g,
+  )) {
     literalKeys.add(match[1] ?? "");
   }
 }
