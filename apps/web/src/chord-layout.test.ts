@@ -100,13 +100,13 @@ describe("canonical PDF chord layout", () => {
       "Ku - dus,",
       "Ku - dus,",
     ]);
-    expect(lines.map((line) => line.chords.map((chord) => chord.chord))).toEqual(
-      [
-        ["C", "G"],
-        ["C", "G"],
-        ["C", "G"],
-      ],
-    );
+    expect(
+      lines.map((line) => line.chords.map((chord) => chord.chord)),
+    ).toEqual([
+      ["C", "G"],
+      ["C", "G"],
+      ["C", "G"],
+    ]);
   });
 
   it("ignores digit-only text and rows with fewer than two notes", () => {

@@ -59,127 +59,129 @@ async function assertThemePdfChrome(
     content: string;
   },
 ): Promise<void> {
-  const metrics = await page.locator(selectors.root).evaluate(
-    (root, query) => {
-      const parseColor = (value: string) => {
-        const channels = value.match(/[\d.]+/g)?.map(Number) ?? [];
-        return {
-          r: channels[0] ?? 0,
-          g: channels[1] ?? 0,
-          b: channels[2] ?? 0,
-          a: channels[3] ?? 1,
-        };
-      };
-      const over = (
-        foreground: ReturnType<typeof parseColor>,
-        background: ReturnType<typeof parseColor>,
-      ) => ({
-        r: foreground.r * foreground.a + background.r * (1 - foreground.a),
-        g: foreground.g * foreground.a + background.g * (1 - foreground.a),
-        b: foreground.b * foreground.a + background.b * (1 - foreground.a),
-      });
-      const luminance = (color: { r: number; g: number; b: number }) =>
-        [color.r, color.g, color.b]
-          .map((channel) => channel / 255)
-          .map((channel) =>
-            channel <= 0.03928
-              ? channel / 12.92
-              : ((channel + 0.055) / 1.055) ** 2.4,
-          )
-          .reduce((sum, channel, index) =>
-            sum + channel * [0.2126, 0.7152, 0.0722][index],
-          0);
-      const contrast = (
-        foreground: { r: number; g: number; b: number },
-        background: { r: number; g: number; b: number },
-      ) => {
-        const foregroundLuminance = luminance(foreground);
-        const backgroundLuminance = luminance(background);
-        const lighter = Math.max(foregroundLuminance, backgroundLuminance);
-        const darker = Math.min(foregroundLuminance, backgroundLuminance);
-        return (lighter + 0.05) / (darker + 0.05);
-      };
-      const rect = (element: Element | null) => {
-        const box = element?.getBoundingClientRect();
-        return box
-          ? {
-              left: box.left,
-              top: box.top,
-              right: box.right,
-              bottom: box.bottom,
-              width: box.width,
-              height: box.height,
-            }
-          : null;
-      };
-      const overlaps = (
-        first: ReturnType<typeof rect>,
-        second: ReturnType<typeof rect>,
-      ) =>
-        Boolean(
-          first &&
-            second &&
-            first.left < second.right &&
-            first.right > second.left &&
-            first.top < second.bottom &&
-            first.bottom > second.top,
-        );
-      const rootStyle = getComputedStyle(root);
-      const rootBackground = over(
-        parseColor(rootStyle.backgroundColor),
-        { r: 255, g: 255, b: 255, a: 1 },
-      );
-      const header = root.querySelector(query.header);
-      const title = root.querySelector(query.title);
-      const actions = root.querySelector(query.actions);
-      const content = root.querySelector(query.content);
-      const headerStyle = header ? getComputedStyle(header) : null;
-      const headerBackground = headerStyle
-        ? over(parseColor(headerStyle.backgroundColor), {
-            ...rootBackground,
-            a: 1,
-          })
-        : rootBackground;
-      const textContrast = (element: Element | null, background = headerBackground) => {
-        if (!element) return 0;
-        const style = getComputedStyle(element);
-        return contrast(
-          over(parseColor(style.color), { ...background, a: 1 }),
-          background,
-        );
-      };
-      const actionElements = actions
-        ? Array.from(actions.querySelectorAll("a, button"))
-        : [];
-      const actionRects = actionElements.map((element) => rect(element));
-      const rootRect = rect(root);
-      const headerRect = rect(header);
-      const titleRect = rect(title);
-      const actionsRect = rect(actions);
-      const contentRect = rect(content);
-
+  const metrics = await page.locator(selectors.root).evaluate((root, query) => {
+    const parseColor = (value: string) => {
+      const channels = value.match(/[\d.]+/g)?.map(Number) ?? [];
       return {
-        rootRect,
-        headerRect,
-        contentRect,
-        titleRect,
-        actionsRect,
-        actionRects,
-        titleContrast: textContrast(title),
-        actionsContrast: actionElements.map((element) =>
-          textContrast(element),
-        ),
-        toolbarContrast: textContrast(
-          root.querySelector(".pdf-toolbar"),
-          rootBackground,
-        ),
-        titleActionsOverlap: overlaps(titleRect, actionsRect),
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
+        r: channels[0] ?? 0,
+        g: channels[1] ?? 0,
+        b: channels[2] ?? 0,
+        a: channels[3] ?? 1,
       };
-    },
-    selectors,
-  );
+    };
+    const over = (
+      foreground: ReturnType<typeof parseColor>,
+      background: ReturnType<typeof parseColor>,
+    ) => ({
+      r: foreground.r * foreground.a + background.r * (1 - foreground.a),
+      g: foreground.g * foreground.a + background.g * (1 - foreground.a),
+      b: foreground.b * foreground.a + background.b * (1 - foreground.a),
+    });
+    const luminance = (color: { r: number; g: number; b: number }) =>
+      [color.r, color.g, color.b]
+        .map((channel) => channel / 255)
+        .map((channel) =>
+          channel <= 0.03928
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4,
+        )
+        .reduce(
+          (sum, channel, index) =>
+            sum + channel * [0.2126, 0.7152, 0.0722][index],
+          0,
+        );
+    const contrast = (
+      foreground: { r: number; g: number; b: number },
+      background: { r: number; g: number; b: number },
+    ) => {
+      const foregroundLuminance = luminance(foreground);
+      const backgroundLuminance = luminance(background);
+      const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+      const darker = Math.min(foregroundLuminance, backgroundLuminance);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
+    const rect = (element: Element | null) => {
+      const box = element?.getBoundingClientRect();
+      return box
+        ? {
+            left: box.left,
+            top: box.top,
+            right: box.right,
+            bottom: box.bottom,
+            width: box.width,
+            height: box.height,
+          }
+        : null;
+    };
+    const overlaps = (
+      first: ReturnType<typeof rect>,
+      second: ReturnType<typeof rect>,
+    ) =>
+      Boolean(
+        first &&
+        second &&
+        first.left < second.right &&
+        first.right > second.left &&
+        first.top < second.bottom &&
+        first.bottom > second.top,
+      );
+    const rootStyle = getComputedStyle(root);
+    const rootBackground = over(parseColor(rootStyle.backgroundColor), {
+      r: 255,
+      g: 255,
+      b: 255,
+      a: 1,
+    });
+    const header = root.querySelector(query.header);
+    const title = root.querySelector(query.title);
+    const actions = root.querySelector(query.actions);
+    const content = root.querySelector(query.content);
+    const headerStyle = header ? getComputedStyle(header) : null;
+    const headerBackground = headerStyle
+      ? over(parseColor(headerStyle.backgroundColor), {
+          ...rootBackground,
+          a: 1,
+        })
+      : rootBackground;
+    const textContrast = (
+      element: Element | null,
+      background = headerBackground,
+    ) => {
+      if (!element) return 0;
+      const style = getComputedStyle(element);
+      return contrast(
+        over(parseColor(style.color), { ...background, a: 1 }),
+        background,
+      );
+    };
+    const actionElements = actions
+      ? Array.from(actions.querySelectorAll("a, button"))
+      : [];
+    const actionRects = actionElements.map((element) => rect(element));
+    const rootRect = rect(root);
+    const headerRect = rect(header);
+    const titleRect = rect(title);
+    const actionsRect = rect(actions);
+    const contentRect = rect(content);
+
+    return {
+      rootRect,
+      headerRect,
+      contentRect,
+      titleRect,
+      actionsRect,
+      actionRects,
+      titleContrast: textContrast(title),
+      actionsContrast: actionElements.map((element) => textContrast(element)),
+      toolbarContrast: textContrast(
+        root.querySelector(".pdf-toolbar"),
+        rootBackground,
+      ),
+      titleActionsOverlap: overlaps(titleRect, actionsRect),
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    };
+  }, selectors);
 
   expect(metrics.rootRect?.left ?? Infinity).toBeLessThanOrEqual(1);
   expect(metrics.rootRect?.top ?? Infinity).toBeLessThanOrEqual(1);
@@ -200,8 +202,7 @@ async function assertThemePdfChrome(
   expect(metrics.actionsContrast.every((ratio) => ratio >= 3)).toBe(true);
   expect(
     metrics.actionRects.every(
-      (action) =>
-        action !== null && action.width >= 44 && action.height >= 44,
+      (action) => action !== null && action.width >= 44 && action.height >= 44,
     ),
   ).toBe(true);
 }

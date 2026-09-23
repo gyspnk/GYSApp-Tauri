@@ -32,23 +32,17 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   await expect(
     page.getByRole("heading", { name: "Appearance & language" }),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Local pack" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Local pack" }),
-  ).toBeVisible();
-  await expect(page.getByText("Tampilan & Bahasa", { exact: true })).toHaveCount(
-    0,
-  );
+    page.getByText("Tampilan & Bahasa", { exact: true }),
+  ).toHaveCount(0);
 
   await page.getByRole("button", { name: "Language", exact: true }).click();
   await page.getByRole("option", { name: "中文" }).click();
-  await expect(
-    page.getByRole("heading", { name: "外观与语言" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "外观与语言" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
   await page.reload();
-  await expect(
-    page.getByRole("heading", { name: "外观与语言" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "外观与语言" })).toBeVisible();
 });
 
 test("feature-critical hymn actions follow the selected locale", async ({

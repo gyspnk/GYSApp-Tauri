@@ -209,7 +209,9 @@ test("dashboard composition keeps its intended order at every device class", asy
 
     const layout = await page.evaluate(() => {
       const read = (selector: string) => {
-        const box = document.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+        const box = document
+          .querySelector<HTMLElement>(selector)!
+          .getBoundingClientRect();
         return { x: box.x, y: box.y, right: box.right, bottom: box.bottom };
       };
       return {
@@ -333,7 +335,10 @@ test("Home media shelves stay inside their sections while scrolling cards", asyn
         shelf.shelfClientWidth,
       );
     }
-    await expectNoHorizontalOverflow(page, `Home shelves @ ${viewport.width}px`);
+    await expectNoHorizontalOverflow(
+      page,
+      `Home shelves @ ${viewport.width}px`,
+    );
   }
 });
 
@@ -362,7 +367,9 @@ test("Kidung stays contained around both breakpoints", async ({ page }) => {
   }
 });
 
-test("Kidung settings stays readable from phone to desktop", async ({ page }) => {
+test("Kidung settings stays readable from phone to desktop", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 320, height: 720 },
     { width: 390, height: 844 },

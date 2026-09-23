@@ -207,16 +207,22 @@ function DistributedAssetPanel({
                       <progress
                         value={percent}
                         max={100}
-                        aria-label={translate(locale, "more.assetDownloadAction", {
-                          title: asset.title,
-                        })}
+                        aria-label={translate(
+                          locale,
+                          "more.assetDownloadAction",
+                          {
+                            title: asset.title,
+                          },
+                        )}
                       />
                     )}
                   </div>
                   <div className="distributed-asset-actions">
                     {busy ? (
                       <span className="account-sync-note">
-                        {translate(locale, "more.downloadProgress", { percent })}
+                        {translate(locale, "more.downloadProgress", {
+                          percent,
+                        })}
                       </span>
                     ) : asset.state === "bundled" ? (
                       <span className="pack-badge is-verified">
@@ -266,9 +272,13 @@ function DistributedAssetPanel({
                         type="button"
                         disabled={!downloadAvailable}
                         onClick={() => onInstall(asset.code)}
-                        aria-label={translate(locale, "more.assetDownloadAction", {
-                          title: asset.title,
-                        })}
+                        aria-label={translate(
+                          locale,
+                          "more.assetDownloadAction",
+                          {
+                            title: asset.title,
+                          },
+                        )}
                         title={translate(locale, "more.assetDownloadAction", {
                           title: asset.title,
                         })}
@@ -510,7 +520,7 @@ export function MorePage({
         if (active) {
           recordDiagnostic("warn", "assets.distributed.catalog", error);
           setDistributedAssetsLoading(false);
-           setDistributedError(translate(locale, "more.catalogUnavailable"));
+          setDistributedError(translate(locale, "more.catalogUnavailable"));
         }
       }
     };
@@ -540,18 +550,16 @@ export function MorePage({
             setEgysSession(trackEgysProfileSeen(profile));
           }
           show(
-             profile
-               ? translate(locale, "more.greeting", {
-                   name: profile.displayName,
-                 })
-               : translate(locale, "more.loginProfileUnavailable"),
+            profile
+              ? translate(locale, "more.greeting", {
+                  name: profile.displayName,
+                })
+              : translate(locale, "more.loginProfileUnavailable"),
           );
         })
         .catch((error: unknown) => {
           recordDiagnostic("error", "egys.native-login.profile", error);
-          show(
-             translate(locale, "more.profileReadFailed"),
-          );
+          show(translate(locale, "more.profileReadFailed"));
         })
         .finally(() => {
           controller.abort();
@@ -628,16 +636,14 @@ export function MorePage({
       setAccountProfile(profile);
       saveEgysProfile(profile);
       setEgysSession(trackEgysProfileSeen(profile));
-       show(
-         translate(locale, "more.greeting", { name: profile.displayName }),
-       );
+      show(translate(locale, "more.greeting", { name: profile.displayName }));
       closeEgysLogin();
     } catch (error) {
       recordDiagnostic("error", "egys.google-login.complete", error);
       setEgysGoogleError(
         error instanceof Error && error.message
           ? error.message
-           : translate(locale, "more.googleDetectFailed"),
+          : translate(locale, "more.googleDetectFailed"),
       );
       show(translate(locale, "more.loginFailed"));
     } finally {
@@ -661,9 +667,7 @@ export function MorePage({
       .catch((error: unknown) => {
         if (disposed) return;
         recordDiagnostic("warn", "egys.google-script", error);
-        setEgysGoogleError(
-           translate(locale, "more.googleButtonFailed"),
-        );
+        setEgysGoogleError(translate(locale, "more.googleButtonFailed"));
       });
     return () => {
       disposed = true;
@@ -695,11 +699,11 @@ export function MorePage({
       setReport("");
       localStorage.removeItem("gys-report-draft");
       setReportStatus("idle");
-       show(translate(locale, "more.reportReceived"));
+      show(translate(locale, "more.reportReceived"));
     } catch (error) {
       recordDiagnostic("warn", "feedback.submit", error);
       setReportStatus("error");
-       show(translate(locale, "more.reportDraftSaved"));
+      show(translate(locale, "more.reportDraftSaved"));
       localStorage.setItem("gys-report-draft", message);
     } finally {
       window.clearTimeout(timer);
@@ -723,9 +727,7 @@ export function MorePage({
       show(translate(locale, "more.backupExported"));
     } catch (error) {
       recordDiagnostic("warn", "backup.export", error);
-      show(
-        translate(locale, "more.backupExportFailed"),
-      );
+      show(translate(locale, "more.backupExportFailed"));
     }
   };
 
@@ -750,16 +752,12 @@ export function MorePage({
       setBackupPassword("");
       setBackupFile(undefined);
       setBackupOpen(false);
-      show(
-        translate(locale, "more.backupRestored"),
-      );
+      show(translate(locale, "more.backupRestored"));
     } catch {
       try {
         const legacy = await importLegacyGysbk(await backupFile.text());
         localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
-        show(
-          translate(locale, "more.legacyImported"),
-        );
+        show(translate(locale, "more.legacyImported"));
       } catch {
         show(translate(locale, "more.invalidBackup"));
       }
@@ -816,7 +814,7 @@ export function MorePage({
     } catch (error) {
       recordDiagnostic("warn", "assets.manifest.check", error);
       setAssetCheck({ status: "error" });
-       show(translate(locale, "more.packCheckUnavailable"));
+      show(translate(locale, "more.packCheckUnavailable"));
     }
   };
 
@@ -840,17 +838,15 @@ export function MorePage({
       show(
         diff.hasUpdate
           ? localUpdateCount(diff) > 0
-             ? translate(locale, "more.packUpdated", {
-                 count: localUpdateCount(diff),
-               })
-             : translate(locale, "more.packMetadataUpdated")
-           : translate(locale, "more.packVerified"),
+            ? translate(locale, "more.packUpdated", {
+                count: localUpdateCount(diff),
+              })
+            : translate(locale, "more.packMetadataUpdated")
+          : translate(locale, "more.packVerified"),
       );
     } catch (error) {
       recordDiagnostic("warn", "assets.pack", error);
-      show(
-        translate(locale, "more.packUpdateFailed"),
-      );
+      show(translate(locale, "more.packUpdateFailed"));
     } finally {
       setPackBusy(false);
     }
@@ -1013,9 +1009,9 @@ export function MorePage({
                 )}
                 {egysSession?.userId === accountProfile.id && (
                   <small className="egys-login-trace">
-                    {translate(locale, "more.lastLogin")} {" "}
+                    {translate(locale, "more.lastLogin")}{" "}
                     {new Date(egysSession.lastSeenAt).toLocaleString(locale)} ·
-                    {translate(locale, "more.detectedSince")} {" "}
+                    {translate(locale, "more.detectedSince")}{" "}
                     {new Date(egysSession.firstLoginAt).toLocaleDateString(
                       locale,
                     )}
@@ -1054,9 +1050,7 @@ export function MorePage({
                       onClick={() => void openNativeEgysLoginFlow()}
                     >
                       <Icon name="person" size={16} />
-                      <span>
-                        {translate(locale, "more.openOfficialLogin")}
-                      </span>
+                      <span>{translate(locale, "more.openOfficialLogin")}</span>
                     </button>
                     <small className="account-sync-note">
                       {translate(locale, "more.nativeLoginMethods")}
@@ -1072,9 +1066,7 @@ export function MorePage({
                     }}
                   >
                     <Icon name="person" size={16} />
-                    <span>
-                      {translate(locale, "more.openOfficialLogin")}
-                    </span>
+                    <span>{translate(locale, "more.openOfficialLogin")}</span>
                   </a>
                 )}
               </div>
@@ -1232,10 +1224,7 @@ export function MorePage({
           </div>
         </article>
 
-        <div
-          className="more-resource-group"
-          data-testid="more-resource-group"
-        >
+        <div className="more-resource-group" data-testid="more-resource-group">
           <article className="more-card more-card-wide">
             <div className="more-card-heading">
               <div>
@@ -1245,9 +1234,7 @@ export function MorePage({
                 {translate(locale, "more.ready")}
               </span>
             </div>
-            <p>
-              {translate(locale, "more.localPackDescription")}
-            </p>
+            <p>{translate(locale, "more.localPackDescription")}</p>
             <div className="pack-stats">
               <span>
                 <strong>{manifest?.bible ?? "TB"}</strong>
@@ -1261,7 +1248,10 @@ export function MorePage({
                 <strong>
                   {manifest
                     ? formatBytes(
-                        manifest.items.reduce((sum, item) => sum + item.bytes, 0),
+                        manifest.items.reduce(
+                          (sum, item) => sum + item.bytes,
+                          0,
+                        ),
                       )
                     : "—"}
                 </strong>
@@ -1339,9 +1329,7 @@ export function MorePage({
             >
               <span className="more-icon">↥</span>
               <strong>{translate(locale, "more.backupImport")}</strong>
-              <small>
-                {translate(locale, "more.backupImportDesc")}
-              </small>
+              <small>{translate(locale, "more.backupImportDesc")}</small>
             </button>
 
             <button
@@ -1400,15 +1388,9 @@ export function MorePage({
                     );
                     if (!confirmed) return;
                     void clearAppData()
-                      .then(() =>
-                        show(
-                          translate(locale, "more.dataReset"),
-                        ),
-                      )
+                      .then(() => show(translate(locale, "more.dataReset")))
                       .catch(() =>
-                        show(
-                          translate(locale, "more.resetIncomplete"),
-                        ),
+                        show(translate(locale, "more.resetIncomplete")),
                       );
                   }}
                 >
@@ -1464,9 +1446,7 @@ export function MorePage({
         >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">
-                {translate(locale, "more.localData")}
-              </p>
+              <p className="date-line">{translate(locale, "more.localData")}</p>
               <h2>{translate(locale, "more.encryptedBackup")}</h2>
             </div>
             <button
@@ -1569,9 +1549,7 @@ export function MorePage({
         >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">
-                {translate(locale, "more.hymnLabel")}
-              </p>
+              <p className="date-line">{translate(locale, "more.hymnLabel")}</p>
               <h2>{translate(locale, "more.playlist")}</h2>
             </div>
             <button
@@ -1677,7 +1655,7 @@ export function MorePage({
             </ol>
           ) : (
             <div className="empty-inline">
-                <p>{translate(locale, "more.emptyPlaylist")}</p>
+              <p>{translate(locale, "more.emptyPlaylist")}</p>
             </div>
           )}
           <div className="utility-actions">
@@ -1727,9 +1705,7 @@ export function MorePage({
               {translate(locale, "more.clear")}
             </button>
           </div>
-          <small>
-            {translate(locale, "more.playlistNote")}
-          </small>
+          <small>{translate(locale, "more.playlistNote")}</small>
         </section>
       )}
       {egysLoginOpen &&

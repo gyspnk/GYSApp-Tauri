@@ -1749,7 +1749,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const copySelection = async () => {
     if (!selectionToolbar) return;
-    await copyText(selectionToolbar.text, translate(locale, "bible.textCopied"));
+    await copyText(
+      selectionToolbar.text,
+      translate(locale, "bible.textCopied"),
+    );
     window.getSelection()?.removeAllRanges();
     setSelectionToolbar(undefined);
   };
@@ -2058,9 +2061,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
               className="quiet-button"
               type="button"
               onClick={() => setNotesPopupOpen(true)}
-               aria-label={translate(locale, "bible.openNotes", {
-                 count: Object.keys(notes).length,
-               })}
+              aria-label={translate(locale, "bible.openNotes", {
+                count: Object.keys(notes).length,
+              })}
             >
               {translate(locale, "bible.notes")}
               {Object.keys(notes).length > 0
@@ -2365,7 +2368,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 data-step={quickNavDrag.activeColumn}
               >
                 <span>
-                  {translate(locale, "bible.quickStep")} {" "}
+                  {translate(locale, "bible.quickStep")}{" "}
                   {quickNavDrag.activeColumn === "book"
                     ? `1/3 · ${translate(locale, "bible.quickBook")}`
                     : quickNavDrag.activeColumn === "chapter"
@@ -2477,20 +2480,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     className={`highlight-dot is-${color}${highlights[activeToolbarVerse.id] === color ? " is-active" : ""}`}
                     key={color}
                     type="button"
-                    aria-label={translate(
-                      locale,
-                      "bible.highlight",
-                      {
-                        color: translate(
-                          locale,
-                          color === "yellow"
-                            ? "bible.colorYellow"
-                            : color === "blue"
-                              ? "bible.colorBlue"
-                              : "bible.colorGreen",
-                        ),
-                      },
-                    )}
+                    aria-label={translate(locale, "bible.highlight", {
+                      color: translate(
+                        locale,
+                        color === "yellow"
+                          ? "bible.colorYellow"
+                          : color === "blue"
+                            ? "bible.colorBlue"
+                            : "bible.colorGreen",
+                      ),
+                    })}
                     aria-pressed={highlights[activeToolbarVerse.id] === color}
                     onClick={() =>
                       setHighlights((current) => ({

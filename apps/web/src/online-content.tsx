@@ -92,13 +92,7 @@ function SuaraParagraphs({ text }: { text: string }) {
   );
 }
 
-function SourceLink({
-  href,
-  label,
-}: {
-  href: string;
-  label: string;
-}) {
+function SourceLink({ href, label }: { href: string; label: string }) {
   return (
     <a className="quiet-button" href={href} target="_blank" rel="noreferrer">
       {label}
@@ -225,7 +219,8 @@ export function SauhPage({ locale }: { locale: Locale }) {
               fetchPriority="high"
             />
             <p className="date-line">
-              {translate(locale, "sauh.title")} · {translate(locale, "sauh.directSource")}
+              {translate(locale, "sauh.title")} ·{" "}
+              {translate(locale, "sauh.directSource")}
             </p>
             <h1>{state.post.title}</h1>
             {state.post.reference && (

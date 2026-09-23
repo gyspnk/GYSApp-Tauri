@@ -207,12 +207,7 @@ class AppErrorBoundary extends Component<
 }
 
 type NonReaderRouteId =
-  | "home"
-  | "sauh"
-  | "suara"
-  | "faith"
-  | "literature"
-  | "more";
+  "home" | "sauh" | "suara" | "faith" | "literature" | "more";
 
 function getNonReaderRouteId(pathname: string): NonReaderRouteId {
   if (pathname === "/sauh") return "sauh";
@@ -602,7 +597,9 @@ function Header({
                     className="topbar-select reader-context-select version-select"
                     label={translate(
                       locale,
-                      bibleHeader.splitView ? "bible.versionOne" : "bible.version",
+                      bibleHeader.splitView
+                        ? "bible.versionOne"
+                        : "bible.version",
                     )}
                     options={bibleHeader.versionOptions}
                   />
@@ -643,7 +640,7 @@ function Header({
                       bibleHeader.speechStatus === "paused"
                         ? translate(locale, "bible.resumeReading")
                         : bibleHeader.speechStatus === "speaking"
-                        ? translate(locale, "bible.pauseReading")
+                          ? translate(locale, "bible.pauseReading")
                           : bibleHeader.speaking
                             ? translate(locale, "bible.stopReading")
                             : translate(locale, "bible.readAloud")
@@ -701,7 +698,9 @@ function Header({
                         <div className="hamburger-drawer-header">
                           <div className="hamburger-drawer-title">
                             <Icon name="book" size={16} />
-                            <strong>{translate(locale, "bible.menuTitle")}</strong>
+                            <strong>
+                              {translate(locale, "bible.menuTitle")}
+                            </strong>
                           </div>
                           <button
                             className="hamburger-drawer-close"
@@ -734,10 +733,15 @@ function Header({
                                   bibleHeader.fontSize <=
                                   bibleHeader.minFontSize
                                 }
-                                aria-label={translate(locale, "bible.decreaseText")}
+                                aria-label={translate(
+                                  locale,
+                                  "bible.decreaseText",
+                                )}
                               >
                                 <span className="step-label">A−</span>
-                                <small>{translate(locale, "bible.small")}</small>
+                                <small>
+                                  {translate(locale, "bible.small")}
+                                </small>
                               </button>
                               <div className="typography-size-indicator">
                                 <strong>{bibleHeader.fontSize}</strong>
@@ -751,10 +755,15 @@ function Header({
                                   bibleHeader.fontSize >=
                                   bibleHeader.maxFontSize
                                 }
-                                aria-label={translate(locale, "bible.increaseText")}
+                                aria-label={translate(
+                                  locale,
+                                  "bible.increaseText",
+                                )}
                               >
                                 <span className="step-label">A+</span>
-                                <small>{translate(locale, "bible.large")}</small>
+                                <small>
+                                  {translate(locale, "bible.large")}
+                                </small>
                               </button>
                             </div>
                           </div>
@@ -776,8 +785,12 @@ function Header({
                                   <Icon name="columns" size={16} />
                                 </div>
                                 <div className="hamburger-item-text">
-                                  <strong>{translate(locale, "bible.splitView")}</strong>
-                                  <small>{translate(locale, "bible.splitViewHint")}</small>
+                                  <strong>
+                                    {translate(locale, "bible.splitView")}
+                                  </strong>
+                                  <small>
+                                    {translate(locale, "bible.splitViewHint")}
+                                  </small>
                                 </div>
                                 <div
                                   className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
@@ -798,8 +811,15 @@ function Header({
                                     <Icon name="arrow" size={16} />
                                   </div>
                                   <div className="hamburger-item-text">
-                                    <strong>{translate(locale, "bible.syncScroll")}</strong>
-                                    <small>{translate(locale, "bible.syncScrollHint")}</small>
+                                    <strong>
+                                      {translate(locale, "bible.syncScroll")}
+                                    </strong>
+                                    <small>
+                                      {translate(
+                                        locale,
+                                        "bible.syncScrollHint",
+                                      )}
+                                    </small>
                                   </div>
                                   <div
                                     className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
@@ -838,12 +858,17 @@ function Header({
                                   />
                                 </div>
                                 <div className="hamburger-item-text">
-                                  <strong>{translate(locale, "bible.audioPlayer")}</strong>
+                                  <strong>
+                                    {translate(locale, "bible.audioPlayer")}
+                                  </strong>
                                   <small>
                                     {speechSnapshot.playerOpen ||
                                     bibleHeader.speaking
                                       ? translate(locale, "bible.audioActive")
-                                      : translate(locale, "bible.showAudioPlayer")}
+                                      : translate(
+                                          locale,
+                                          "bible.showAudioPlayer",
+                                        )}
                                   </small>
                                 </div>
                                 <span
@@ -852,7 +877,10 @@ function Header({
                                   {speechSnapshot.playerOpen ||
                                   bibleHeader.speaking
                                     ? translate(locale, "bible.active")
-                                    : translate(locale, "bible.showAudioPlayer")}
+                                    : translate(
+                                        locale,
+                                        "bible.showAudioPlayer",
+                                      )}
                                 </span>
                               </button>
 
@@ -866,11 +894,19 @@ function Header({
                                   <Icon name="settings" size={16} />
                                 </div>
                                 <div className="hamburger-item-text">
-                                    <strong>{translate(locale, "bible.audioSettings")}</strong>
+                                  <strong>
+                                    {translate(locale, "bible.audioSettings")}
+                                  </strong>
                                   <small>
                                     {bibleHeader.speechControlsOpen
-                                      ? translate(locale, "bible.closeAudioOptions")
-                                      : translate(locale, "bible.configureAudio")}
+                                      ? translate(
+                                          locale,
+                                          "bible.closeAudioOptions",
+                                        )
+                                      : translate(
+                                          locale,
+                                          "bible.configureAudio",
+                                        )}
                                   </small>
                                 </div>
                                 <div className="hamburger-expand-badge">
@@ -890,7 +926,9 @@ function Header({
                             {bibleHeader.speechControlsOpen && (
                               <div className="drawer-speech-card">
                                 <label className="drawer-speech-row">
-                                  <span>{translate(locale, "bible.engine")}</span>
+                                  <span>
+                                    {translate(locale, "bible.engine")}
+                                  </span>
                                   <select
                                     className="drawer-speech-select"
                                     value={speechSnapshot.engine}
@@ -915,7 +953,9 @@ function Header({
                                 </label>
 
                                 <label className="drawer-speech-row">
-                                  <span>{translate(locale, "bible.voice")}</span>
+                                  <span>
+                                    {translate(locale, "bible.voice")}
+                                  </span>
                                   <select
                                     className="drawer-speech-select"
                                     value={
@@ -956,8 +996,11 @@ function Header({
                                 {speechSnapshot.engine === "edge" && (
                                   <label className="drawer-speech-row">
                                     <span className="drawer-speech-label">
-                                      {translate(locale, "bible.gatewayEndpoint")} (
-                                      {translate(locale, "bible.optional")})
+                                      {translate(
+                                        locale,
+                                        "bible.gatewayEndpoint",
+                                      )}{" "}
+                                      ({translate(locale, "bible.optional")})
                                     </span>
                                     <input
                                       type="url"
@@ -987,7 +1030,10 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label={translate(locale, "bible.voiceRate")}
+                                    aria-label={translate(
+                                      locale,
+                                      "bible.voiceRate",
+                                    )}
                                     min="0.5"
                                     max="2"
                                     step="0.1"
@@ -1012,7 +1058,10 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label={translate(locale, "bible.voicePitch")}
+                                    aria-label={translate(
+                                      locale,
+                                      "bible.voicePitch",
+                                    )}
                                     min="0.5"
                                     max="2"
                                     step="0.1"
@@ -1037,7 +1086,10 @@ function Header({
                                   <input
                                     type="range"
                                     className="drawer-speech-range"
-                                    aria-label={translate(locale, "bible.voiceVolume")}
+                                    aria-label={translate(
+                                      locale,
+                                      "bible.voiceVolume",
+                                    )}
                                     min="0"
                                     max="1"
                                     step="0.05"
@@ -1229,10 +1281,10 @@ function Header({
           className="search-trigger"
           type="button"
           onClick={onOpenSearch}
-           aria-label={translate(locale, "shell.searchAll")}
-         >
-           <Icon name="search" size={18} />
-           <span>{translate(locale, "shell.search")}</span>
+          aria-label={translate(locale, "shell.searchAll")}
+        >
+          <Icon name="search" size={18} />
+          <span>{translate(locale, "shell.search")}</span>
           <kbd>⌘K</kbd>
         </button>
         <span
@@ -1320,17 +1372,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
     getMidiPlaylist,
     getMidiPlaylist,
   );
-  const midiHasSession = Boolean(
-    snapshot.songId && snapshot.status !== "idle",
-  );
+  const midiHasSession = Boolean(snapshot.songId && snapshot.status !== "idle");
   const speechHasSession =
     (speechSnapshot.total > 0 && speechSnapshot.status !== "idle") ||
     speechSnapshot.playerOpen;
   type MediaKind = "midi" | "speech";
-  const [activeMediaKind, setActiveMediaKind] = useState<
-    MediaKind | undefined
-  >(() =>
-    speechHasSession ? "speech" : midiHasSession ? "midi" : undefined,
+  const [activeMediaKind, setActiveMediaKind] = useState<MediaKind | undefined>(
+    () => (speechHasSession ? "speech" : midiHasSession ? "midi" : undefined),
   );
   const previousMediaRef = useRef({
     midiSongId: snapshot.songId,
@@ -1378,7 +1426,11 @@ function MediaSurface({ locale }: { locale: Locale }) {
       if (current === "midi" && !midiHasSession)
         return speechHasSession ? "speech" : undefined;
       if (!current)
-        return speechHasSession ? "speech" : midiHasSession ? "midi" : undefined;
+        return speechHasSession
+          ? "speech"
+          : midiHasSession
+            ? "midi"
+            : undefined;
       return current;
     });
   }, [midiHasSession, speechHasSession]);
@@ -1442,8 +1494,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
   const autoNextSubtitle = (() => {
     if (midiLoopMode === "one")
       return translate(locale, "media.singleLoopMode");
-    if (midiLoopMode === "off")
-      return translate(locale, "media.loopModeOff");
+    if (midiLoopMode === "off") return translate(locale, "media.loopModeOff");
     const currentIndex = playlist.items.findIndex(
       (entry) => entry.songId === snapshot.songId,
     );
@@ -1592,8 +1643,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
     return () => window.cancelAnimationFrame(frame);
   }, [minimized, snapshot.songId, speechActive]);
   useEffect(() => {
-    if (!hasMediaSession || !("mediaSession" in navigator))
-      return;
+    if (!hasMediaSession || !("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: mediaTitle ?? "GYS",
       artist: "Gereja Yesus Sejati",
@@ -1842,9 +1892,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
         <div className="media-transpose">
           <button
             type="button"
-            onClick={() =>
-              void midiPlayer.setTranspose(snapshot.transpose - 1)
-            }
+            onClick={() => void midiPlayer.setTranspose(snapshot.transpose - 1)}
             aria-label={translate(locale, "media.transposeDown")}
           >
             −
@@ -1856,9 +1904,7 @@ function MediaSurface({ locale }: { locale: Locale }) {
           </strong>
           <button
             type="button"
-            onClick={() =>
-              void midiPlayer.setTranspose(snapshot.transpose + 1)
-            }
+            onClick={() => void midiPlayer.setTranspose(snapshot.transpose + 1)}
             aria-label={translate(locale, "media.transposeUp")}
           >
             +
@@ -2185,7 +2231,8 @@ function MediaSurface({ locale }: { locale: Locale }) {
                     <summary className="media-advanced-summary">
                       <span>{translate(locale, "media.advanced")}</span>
                       <small>
-                        {chordKeyName(keyIndex, keyAccidental)} · {snapshot.tempo} BPM
+                        {chordKeyName(keyIndex, keyAccidental)} ·{" "}
+                        {snapshot.tempo} BPM
                       </small>
                     </summary>
                     <div className="media-advanced-panel">
@@ -2216,12 +2263,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 ? void speechPlayer.previous().catch(() => undefined)
                 : void playPreviousMidiPlaylistItem().catch(() => undefined)
             }
-            aria-label={
-              translate(
-                locale,
-                speechActive ? "media.previousVerse" : "media.previousSong",
-              )
-            }
+            aria-label={translate(
+              locale,
+              speechActive ? "media.previousVerse" : "media.previousSong",
+            )}
             disabled={
               speechActive ? speechSnapshot.currentIndex <= 0 : !canPlayPrevious
             }
@@ -2248,12 +2293,10 @@ function MediaSurface({ locale }: { locale: Locale }) {
                 ? void speechPlayer.next().catch(() => undefined)
                 : void playNextMidiPlaylistItem().catch(() => undefined)
             }
-            aria-label={
-              translate(
-                locale,
-                speechActive ? "media.nextVerse" : "media.nextSong",
-              )
-            }
+            aria-label={translate(
+              locale,
+              speechActive ? "media.nextVerse" : "media.nextSong",
+            )}
             disabled={
               speechActive
                 ? speechSnapshot.currentIndex < 0 ||
@@ -2811,7 +2854,7 @@ function HomePage({ locale }: { locale: Locale }) {
                 {selectedToday
                   ? (selectedToday.reference ??
                     translate(locale, "home.sauhNoReference"))
-                    : translate(locale, "home.directSource")}
+                  : translate(locale, "home.directSource")}
               </small>
             </div>
             {!selectedToday && sauhStatus !== "error" && (
@@ -2896,9 +2939,7 @@ function HomePage({ locale }: { locale: Locale }) {
         >
           <div className="section-title-row">
             <div>
-              <p className="date-line">
-                {translate(locale, "home.testimony")}
-              </p>
+              <p className="date-line">{translate(locale, "home.testimony")}</p>
               <h2 id="home-suara-heading">Suara Sejati</h2>
             </div>
             <Link className="text-button" to="/suara">
@@ -2967,9 +3008,7 @@ function HomePage({ locale }: { locale: Locale }) {
         >
           <div className="section-title-row">
             <div>
-              <p className="date-line">
-                {translate(locale, "home.reading")}
-              </p>
+              <p className="date-line">{translate(locale, "home.reading")}</p>
               <h2 id="home-literature-heading">
                 {translate(locale, "home.literature")}
               </h2>
@@ -2985,9 +3024,7 @@ function HomePage({ locale }: { locale: Locale }) {
           )}
           {literatureStatus === "error" && (
             <div className="error-panel" role="alert">
-              <strong>
-                {translate(locale, "home.literatureUnavailable")}
-              </strong>
+              <strong>{translate(locale, "home.literatureUnavailable")}</strong>
               <button
                 className="quiet-button"
                 type="button"

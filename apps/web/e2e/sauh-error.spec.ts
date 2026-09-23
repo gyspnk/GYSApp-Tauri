@@ -78,7 +78,8 @@ test("Sauh route keeps semantic chrome localized and contained", async ({
             verse: "Karena begitu besar kasih Allah akan dunia ini.",
             body: "Konten renungan untuk memeriksa tampilan route.",
             url: "https://tjc.org/id/gerakan-baca-alkitab/sauh-locale-check/",
-            imageUrl: "https://tjc.org/wp-content/uploads/sauh-locale-check.jpg",
+            imageUrl:
+              "https://tjc.org/wp-content/uploads/sauh-locale-check.jpg",
             updatedAt: new Date().toISOString(),
             source: "tjc.org",
           },
@@ -102,7 +103,9 @@ test("Sauh route keeps semantic chrome localized and contained", async ({
     await expect(
       page.getByText(`${copy.title} · ${copy.direct}`, { exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Renungan lintas bahasa" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Renungan lintas bahasa" }),
+    ).toBeVisible();
     await expect(page.getByRole("img", { name: copy.alt })).toBeVisible();
     await expect(page.getByRole("link", { name: copy.source })).toBeVisible();
 

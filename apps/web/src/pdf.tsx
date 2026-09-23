@@ -1056,9 +1056,7 @@ export function PdfReader({
             disabled={page <= pageStart}
           >
             <Icon name="chevronLeft" size={18} />
-            <span className="sr-only">
-              {translate(locale, "pdf.previous")}
-            </span>
+            <span className="sr-only">{translate(locale, "pdf.previous")}</span>
           </button>
           <span>
             {total
@@ -1298,7 +1296,7 @@ export function PdfReader({
             </button>
           </div>
           <label>
-            {translate(locale, "pdf.zoomLabel")} {" "}
+            {translate(locale, "pdf.zoomLabel")}{" "}
             <input
               type="range"
               min="100"
@@ -1323,30 +1321,26 @@ export function PdfReader({
                   className={layout === value ? "is-active" : ""}
                   onClick={() => setLayout(value)}
                   aria-pressed={layout === value}
-                  aria-label={
-                    translate(
-                      locale,
-                      value === "single"
-                        ? "pdf.layout.single"
-                        : value === "two"
-                          ? "pdf.layout.two"
-                          : value === "vertical"
-                            ? "pdf.layout.vertical"
-                            : "pdf.layout.horizontal",
-                    )
-                  }
-                  title={
-                    translate(
-                      locale,
-                      value === "single"
-                        ? "pdf.layout.single"
-                        : value === "two"
-                          ? "pdf.layout.two"
-                          : value === "vertical"
-                            ? "pdf.layout.verticalTitle"
-                            : "pdf.layout.horizontalTitle",
-                    )
-                  }
+                  aria-label={translate(
+                    locale,
+                    value === "single"
+                      ? "pdf.layout.single"
+                      : value === "two"
+                        ? "pdf.layout.two"
+                        : value === "vertical"
+                          ? "pdf.layout.vertical"
+                          : "pdf.layout.horizontal",
+                  )}
+                  title={translate(
+                    locale,
+                    value === "single"
+                      ? "pdf.layout.single"
+                      : value === "two"
+                        ? "pdf.layout.two"
+                        : value === "vertical"
+                          ? "pdf.layout.verticalTitle"
+                          : "pdf.layout.horizontalTitle",
+                  )}
                 >
                   <Icon
                     name={

@@ -219,7 +219,9 @@ test.describe("responsive reader navigation", () => {
         true,
       );
       expect(
-        Math.abs(loadingGeometry.paneWidths[0]! - loadingGeometry.paneWidths[1]!),
+        Math.abs(
+          loadingGeometry.paneWidths[0]! - loadingGeometry.paneWidths[1]!,
+        ),
       ).toBeLessThanOrEqual(1);
       expect(loadingGeometry.documentWidth).toBeLessThanOrEqual(
         loadingGeometry.viewportWidth + 1,
@@ -310,7 +312,9 @@ test.describe("responsive reader navigation", () => {
       } else {
         expect(Math.abs(snapshot[0]!.top - snapshot[1]!.top)).toBeLessThan(1);
         expect(snapshot[1]!.left).toBeGreaterThan(snapshot[0]!.left);
-        expect(Math.abs(snapshot[0]!.width - snapshot[1]!.width)).toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(snapshot[0]!.width - snapshot[1]!.width),
+        ).toBeLessThanOrEqual(1);
       }
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
@@ -515,7 +519,9 @@ test.describe("responsive reader navigation", () => {
         await expect(
           notFound.getByRole("heading", { name: copy.title, exact: true }),
         ).toBeVisible();
-        await expect(notFound.getByText(copy.body, { exact: true })).toBeVisible();
+        await expect(
+          notFound.getByText(copy.body, { exact: true }),
+        ).toBeVisible();
         const home = notFound.getByRole("link", {
           name: copy.home,
           exact: true,
@@ -662,9 +668,13 @@ test.describe("responsive reader navigation", () => {
 
     await page.setViewportSize({ width: 320, height: 720 });
     await page.goto("/GYSApp-Tauri/");
-    await expect(page.getByRole("heading", { name: "Selamat datang kembali" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Selamat datang kembali" }),
+    ).toBeVisible();
     holdNextScript = true;
-    await page.locator('.navigation-shell .nav-item[aria-label="Iman"]').click();
+    await page
+      .locator('.navigation-shell .nav-item[aria-label="Iman"]')
+      .click();
 
     const loading = page.getByTestId("non-reader-route-loading");
     await expect(loading).toBeVisible({ timeout: 2_000 });
@@ -727,8 +737,12 @@ test.describe("responsive reader navigation", () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/");
-    await expect(page.getByRole("heading", { name: "Selamat datang kembali" })).toBeVisible();
-    await page.locator('.navigation-shell .nav-item[aria-label="Iman"]').click();
+    await expect(
+      page.getByRole("heading", { name: "Selamat datang kembali" }),
+    ).toBeVisible();
+    await page
+      .locator('.navigation-shell .nav-item[aria-label="Iman"]')
+      .click();
     await expect.poll(() => abortedFaithChunk).toBe(true);
 
     await expect(page.getByTestId("route-recovery")).toBeVisible({
@@ -1149,7 +1163,9 @@ test.describe("responsive reader navigation", () => {
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
         await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${selected.locale}`);
-        await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+        await expect(
+          page.getByRole("heading", { name: /Kejadian 1/ }),
+        ).toBeVisible({
           timeout: 15_000,
         });
         await page.locator(".reader-hamburger-btn").click();
@@ -1160,7 +1176,9 @@ test.describe("responsive reader navigation", () => {
         await expect(
           page.getByRole("combobox", { name: selected.engine, exact: true }),
         ).toBeVisible();
-        await expect(page.getByPlaceholder(selected.endpoint, { exact: true })).toBeVisible();
+        await expect(
+          page.getByPlaceholder(selected.endpoint, { exact: true }),
+        ).toBeVisible();
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
       }
 
@@ -1273,7 +1291,9 @@ test.describe("responsive reader navigation", () => {
         );
       }, selected.locale);
       await page.goto("/GYSApp-Tauri/bible");
-      await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+      await expect(
+        page.getByRole("heading", { name: /Kejadian 1/ }),
+      ).toBeVisible({
         timeout: 15_000,
       });
 
@@ -1370,7 +1390,9 @@ test.describe("responsive reader navigation", () => {
           );
         }, selected.locale);
         await page.goto("/GYSApp-Tauri/bible");
-        await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+        await expect(
+          page.getByRole("heading", { name: /Kejadian 1/ }),
+        ).toBeVisible({
           timeout: 15_000,
         });
 
@@ -1415,9 +1437,9 @@ test.describe("responsive reader navigation", () => {
         const overlay = page.locator(".quick-nav-drag-overlay");
         await expect(overlay).toBeVisible();
         await expect(overlay).toHaveAttribute("aria-label", selected.quick);
-        await expect(
-          overlay.locator(".quick-nav-column-header"),
-        ).toHaveText(selected.dragBook);
+        await expect(overlay.locator(".quick-nav-column-header")).toHaveText(
+          selected.dragBook,
+        );
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
         await page.mouse.up();
       }

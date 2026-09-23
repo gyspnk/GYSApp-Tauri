@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  getLazyImageState,
-  resolveProxiedImageUrl,
-} from "./lazy-image.js";
+import { getLazyImageState, resolveProxiedImageUrl } from "./lazy-image.js";
 
 describe("getLazyImageState", () => {
   it.each([

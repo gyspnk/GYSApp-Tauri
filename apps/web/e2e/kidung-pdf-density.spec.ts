@@ -38,7 +38,13 @@ test("single-page hymn PDF hides unavailable pager buttons", async ({
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["class", "data-pdf-rendered", "height", "style", "width"],
+      attributeFilter: [
+        "class",
+        "data-pdf-rendered",
+        "height",
+        "style",
+        "width",
+      ],
     });
     (window as unknown as { __gysPdfReadiness?: unknown }).__gysPdfReadiness = {
       samples,
@@ -55,7 +61,9 @@ test("single-page hymn PDF hides unavailable pager buttons", async ({
   await page.getByRole("tab", { name: "PDF" }).click();
   const reader = page.locator(".pdf-reader-hymn");
   await expect(reader).toBeVisible({ timeout: 30_000 });
-  const renderedPage = reader.locator('canvas[data-pdf-rendered="true"]').first();
+  const renderedPage = reader
+    .locator('canvas[data-pdf-rendered="true"]')
+    .first();
   await expect(renderedPage).toBeVisible({ timeout: 30_000 });
   await expect
     .poll(
@@ -69,19 +77,21 @@ test("single-page hymn PDF hides unavailable pager buttons", async ({
     .toBe(true);
   await expect(renderedPage).toHaveAttribute("data-pdf-rendered", "true");
   const readinessSamples = await page.evaluate(() => {
-    const state = (window as unknown as {
-      __gysPdfReadiness?: {
-        samples: Array<{
-          rendered: string | null;
-          width: number;
-          height: number;
-          styleWidth: string;
-          styleHeight: string;
-        }>;
-        record: () => void;
-        stop: () => void;
-      };
-    }).__gysPdfReadiness;
+    const state = (
+      window as unknown as {
+        __gysPdfReadiness?: {
+          samples: Array<{
+            rendered: string | null;
+            width: number;
+            height: number;
+            styleWidth: string;
+            styleHeight: string;
+          }>;
+          record: () => void;
+          stop: () => void;
+        };
+      }
+    ).__gysPdfReadiness;
     state?.record();
     state?.stop();
     return state?.samples ?? [];
@@ -130,7 +140,9 @@ test("single-page hymn PDF hides unavailable pager buttons", async ({
     "data-pdf-layout",
     "horizontal",
   );
-  await expect(
-    reader.locator(".pdf-pages canvas").first(),
-  ).toHaveAttribute("data-pdf-rendered", "true", { timeout: 30_000 });
+  await expect(reader.locator(".pdf-pages canvas").first()).toHaveAttribute(
+    "data-pdf-rendered",
+    "true",
+    { timeout: 30_000 },
+  );
 });

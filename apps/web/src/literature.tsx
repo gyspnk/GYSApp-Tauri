@@ -351,9 +351,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
     <div className="page literature-page">
       <section className="page-intro literature-intro">
         <div>
-          <p className="date-line">
-            {translate(locale, "literature.eyebrow")}
-          </p>
+          <p className="date-line">{translate(locale, "literature.eyebrow")}</p>
           <h1>{translate(locale, "literature.title")}</h1>
           <p className="intro-copy">{translate(locale, "literature.intro")}</p>
         </div>
@@ -423,7 +421,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           aria-labelledby="literature-recent-title"
         >
           <div className="section-title-row">
-              <div>
+            <div>
               <p className="date-line">
                 {translate(locale, "literature.thisDevice")}
               </p>
@@ -473,9 +471,13 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                       <progress
                         value={percent}
                         max={100}
-                        aria-label={translate(locale, "literature.progressAria", {
-                          title: item.title,
-                        })}
+                        aria-label={translate(
+                          locale,
+                          "literature.progressAria",
+                          {
+                            title: item.title,
+                          },
+                        )}
                       />
                     </span>
                     <span aria-hidden="true">›</span>
@@ -895,11 +897,14 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   }, [item, updateProgress]);
 
-  const openReader = useCallback((trigger?: HTMLElement | null) => {
-    if (!item || !pdfAsset) return;
-    rememberDialogOpener(readerOpenerRef, trigger);
-    setReaderOpen(true);
-  }, [item, pdfAsset]);
+  const openReader = useCallback(
+    (trigger?: HTMLElement | null) => {
+      if (!item || !pdfAsset) return;
+      rememberDialogOpener(readerOpenerRef, trigger);
+      setReaderOpen(true);
+    },
+    [item, pdfAsset],
+  );
 
   useDialogFocus({
     open: readerOpen && isPdfItem,
@@ -910,8 +915,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   });
 
   useEffect(() => {
-    if (!directRead || !isPdfItem || !pdfAsset || readerOpen)
-      return;
+    if (!directRead || !isPdfItem || !pdfAsset || readerOpen) return;
     openReader();
   }, [directRead, isPdfItem, pdfAsset, readerOpen, openReader]);
 
@@ -1023,7 +1027,8 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         />
         <div className="literature-detail-copy">
           <p className="date-line">
-            {translate(locale, "literature.detailEyebrow")} · {itemCategoryLabel}
+            {translate(locale, "literature.detailEyebrow")} ·{" "}
+            {itemCategoryLabel}
           </p>
           <h1>{item.title}</h1>
           <p className="intro-copy">
@@ -1086,17 +1091,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
-      {directRead &&
-        isPdfItem &&
-        !readerOpen &&
-        !isPdfUnavailable && (
-          <div
-            className="loading-panel literature-direct-loading"
-            role="status"
-          >
-            {translate(locale, "literature.preparePdf")}
-          </div>
-        )}
+      {directRead && isPdfItem && !readerOpen && !isPdfUnavailable && (
+        <div className="loading-panel literature-direct-loading" role="status">
+          {translate(locale, "literature.preparePdf")}
+        </div>
+      )}
       {isPdfUnavailable && (
         <div className="error-panel literature-reader-error" role="alert">
           <strong>{translate(locale, "literature.pdfUnavailableTitle")}</strong>
@@ -1134,7 +1133,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               <button
                 className="quiet-button"
                 type="button"
-                  onClick={(event) => openReader(event.currentTarget)}
+                onClick={(event) => openReader(event.currentTarget)}
               >
                 {hasResume
                   ? translate(locale, "literature.resumeFromPage", {
@@ -1203,7 +1202,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             })}
           {progress?.lastOpenedAt
             ? ` ${translate(locale, "literature.lastOpened", {
-                date: new Date(progress.lastOpenedAt).toLocaleDateString(locale),
+                date: new Date(progress.lastOpenedAt).toLocaleDateString(
+                  locale,
+                ),
               })}`
             : !progress?.location &&
               translate(locale, "literature.progressStored")}
@@ -1239,9 +1240,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       title={translate(locale, "literature.officialPdf")}
                     >
                       <Icon name="file" size={16} />
-                      <span>
-                        {translate(locale, "literature.officialPdf")}
-                      </span>
+                      <span>{translate(locale, "literature.officialPdf")}</span>
                     </a>
                     <button
                       className="text-button literature-pdf-close"
@@ -1251,9 +1250,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       title={translate(locale, "literature.closeReader")}
                     >
                       <Icon name="cross" size={16} />
-                      <span>
-                        {translate(locale, "literature.closeReader")}
-                      </span>
+                      <span>{translate(locale, "literature.closeReader")}</span>
                     </button>
                   </div>
                 </div>
@@ -1308,7 +1305,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           )}
           {articleStatus === "error" && (
             <div className="error-panel" role="alert">
-              <strong>{translate(locale, "literature.articleErrorTitle")}</strong>
+              <strong>
+                {translate(locale, "literature.articleErrorTitle")}
+              </strong>
               <span>{translate(locale, "literature.articleErrorBody")}</span>
               <button
                 className="quiet-button"

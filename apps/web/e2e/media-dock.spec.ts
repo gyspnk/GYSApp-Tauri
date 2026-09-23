@@ -230,7 +230,9 @@ test("speech session keeps its source and state across reader routes", async ({
     window.history.pushState({}, "", "/GYSApp-Tauri/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
-  await expect(page.getByRole("heading", { name: /Selamat datang/i })).toBeVisible({
+  await expect(
+    page.getByRole("heading", { name: /Selamat datang/i }),
+  ).toBeVisible({
     timeout: 15_000,
   });
   await expect(media).toHaveCount(1);
@@ -266,14 +268,18 @@ test("shared speech dock localizes its semantic chrome for every locale", async 
       media.getByRole("button", { name: copy.previous }),
     ).toHaveCount(1);
     await expect(media.getByRole("button", { name: copy.next })).toHaveCount(1);
-    await expect(media.getByRole("slider", { name: copy.volume })).toHaveCount(1);
+    await expect(media.getByRole("slider", { name: copy.volume })).toHaveCount(
+      1,
+    );
     await expect(media.getByRole("combobox", { name: copy.speed })).toHaveCount(
       1,
     );
     await expect(
       media.getByRole("button", { name: copy.minimize }),
     ).toHaveCount(1);
-    await expect(media.getByRole("button", { name: copy.close })).toHaveCount(1);
+    await expect(media.getByRole("button", { name: copy.close })).toHaveCount(
+      1,
+    );
 
     await media.getByRole("button", { name: copy.close }).click();
     await expect(media).toHaveCount(0);

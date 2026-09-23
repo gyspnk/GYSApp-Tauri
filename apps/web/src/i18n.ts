@@ -34,14 +34,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     "suara.backHome": "← Beranda",
     "suara.eyebrow": "Cerita dan kesaksian",
     "suara.title": "Suara Sejati",
-    "suara.intro":
-      "Kesaksian nyata dari arsip resmi Gereja Yesus Sejati.",
+    "suara.intro": "Kesaksian nyata dari arsip resmi Gereja Yesus Sejati.",
     "suara.loading": "Mengambil Suara Sejati…",
     "suara.errorTitle": "Suara Sejati belum tersedia.",
     "suara.errorBody": "Periksa koneksi lalu coba lagi.",
     "suara.emptyTitle": "Belum ada kesaksian tersedia.",
-    "suara.emptyBody":
-      "Coba lagi nanti untuk mengambil arsip resmi terbaru.",
+    "suara.emptyBody": "Coba lagi nanti untuk mengambil arsip resmi terbaru.",
     "suara.retry": "Coba lagi",
     "suara.coverAlt": "Sampul {title}",
     "suara.detailLoading": "Membuka kesaksian…",
@@ -169,7 +167,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voice": "Pilihan Suara",
     "bible.defaultVoice": "Otomatis (Default)",
     "bible.localTts": "TTS lokal",
-    "bible.edgeHint": "Edge TTS tanpa API key tersedia di aplikasi desktop. Pilih TTS lokal untuk preview browser.",
+    "bible.edgeHint":
+      "Edge TTS tanpa API key tersedia di aplikasi desktop. Pilih TTS lokal untuk preview browser.",
     "bible.gatewayEndpoint": "Endpoint Gateway",
     "bible.edgeEndpointPlaceholder": "https://... (bawaan)",
     "bible.optional": "Opsional",
@@ -184,7 +183,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.routeLoading": "Memuat {title}…",
     "bible.parallelOpen": "Buka paralel {text}",
     "bible.bookmarkVerse": "Tandai ayat {verse}",
-    "bible.crossReferenceAria": "Lihat {count} rujukan silang untuk {reference}",
+    "bible.crossReferenceAria":
+      "Lihat {count} rujukan silang untuk {reference}",
     "bible.crossReferenceTitle": "{count} rujukan silang",
     "bible.speakingVerse": "Sedang dibacakan: ayat {verse}",
     "bible.searchUnavailable": "Pencarian Alkitab tidak tersedia.",
@@ -201,8 +201,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.savedNotes": "Catatan tersimpan",
     "bible.addNote": "+ Tambah catatan",
     "bible.deleteNote": "Hapus catatan {label}",
-    "bible.noOtherNotes": "Belum ada catatan untuk ayat lain. Pilih ayat atau tambahkan via tombol di toolbar.",
-    "bible.noNotesPrompt": "Pilih ayat lalu tekan tombol “Catatan” untuk menyimpan renungan.",
+    "bible.noOtherNotes":
+      "Belum ada catatan untuk ayat lain. Pilih ayat atau tambahkan via tombol di toolbar.",
+    "bible.noNotesPrompt":
+      "Pilih ayat lalu tekan tombol “Catatan” untuk menyimpan renungan.",
     "bible.searchFilters": "Filter pencarian",
     "bible.allBooks": "Semua kitab",
     "bible.oldTestament": "Perjanjian Lama (39)",
@@ -277,8 +279,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "suara.errorTitle": "True Voice is unavailable.",
     "suara.errorBody": "Check your connection and try again.",
     "suara.emptyTitle": "No testimonies are available yet.",
-    "suara.emptyBody":
-      "Try again later to fetch the latest official archive.",
+    "suara.emptyBody": "Try again later to fetch the latest official archive.",
     "suara.retry": "Try again",
     "suara.coverAlt": "Cover of {title}",
     "suara.detailLoading": "Opening testimony…",
@@ -406,7 +407,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voice": "Voice",
     "bible.defaultVoice": "Automatic (Default)",
     "bible.localTts": "Local TTS",
-    "bible.edgeHint": "Edge TTS without an API key is available in the desktop app. Choose local TTS for browser preview.",
+    "bible.edgeHint":
+      "Edge TTS without an API key is available in the desktop app. Choose local TTS for browser preview.",
     "bible.gatewayEndpoint": "Gateway endpoint",
     "bible.edgeEndpointPlaceholder": "https://... (default)",
     "bible.optional": "Optional",
@@ -438,8 +440,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.savedNotes": "Saved notes",
     "bible.addNote": "+ Add note",
     "bible.deleteNote": "Delete note {label}",
-    "bible.noOtherNotes": "No notes for other verses yet. Select a verse or add one from the toolbar.",
-    "bible.noNotesPrompt": "Select a verse, then press “Notes” to save a reflection.",
+    "bible.noOtherNotes":
+      "No notes for other verses yet. Select a verse or add one from the toolbar.",
+    "bible.noNotesPrompt":
+      "Select a verse, then press “Notes” to save a reflection.",
     "bible.searchFilters": "Search filters",
     "bible.allBooks": "All books",
     "bible.oldTestament": "Old Testament (39)",
@@ -636,7 +640,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voice": "声音",
     "bible.defaultVoice": "自动（默认）",
     "bible.localTts": "本地 TTS",
-    "bible.edgeHint": "桌面应用可在没有 API 密钥时使用 Edge TTS。浏览器预览请选择本地 TTS。",
+    "bible.edgeHint":
+      "桌面应用可在没有 API 密钥时使用 Edge TTS。浏览器预览请选择本地 TTS。",
     "bible.gatewayEndpoint": "网关端点",
     "bible.edgeEndpointPlaceholder": "https://...（默认）",
     "bible.optional": "可选",
@@ -869,7 +874,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.playlistImportError": "File playlist tidak dapat dibaca.",
     "kidung.playlistNamePrompt": "Nama playlist:",
     "kidung.playlistNameDefault": "Playlist {count}",
-    "kidung.playlistSaved": "Playlist \"{name}\" tersimpan",
+    "kidung.playlistSaved": 'Playlist "{name}" tersimpan',
     "kidung.playlistLoaded": "Dimuat: {name} ({count} lagu)",
     "kidung.midiPlaylist": "Playlist MIDI",
     "kidung.playNext": "Putar berikutnya",
@@ -1256,7 +1261,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.resultCount": "{count} hasil ditemukan untuk “{query}”.",
     "search.results": "Hasil pencarian",
     "more.assetManagement": "Manajemen Aset",
-    "more.downloadUnavailable": "Layanan unduhan belum dikonfigurasi. Aset inti tetap dapat digunakan offline.",
+    "more.downloadUnavailable":
+      "Layanan unduhan belum dikonfigurasi. Aset inti tetap dapat digunakan offline.",
     "more.loadingAssets": "Memuat katalog aset…",
     "more.noAdditionalAssets": "Belum ada aset tambahan yang tersedia.",
     "more.assetBible": "Alkitab",
@@ -1293,9 +1299,11 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.detectedSince": "terdeteksi sejak",
     "more.signOut": "Keluar dari Akun Ini",
     "more.officialLoginDescription": "Masuk melalui halaman resmi e-GYS.",
-    "more.googleLoginDescription": "Login dengan Google; akun e-GYS akan terdeteksi otomatis setelah berhasil.",
+    "more.googleLoginDescription":
+      "Login dengan Google; akun e-GYS akan terdeteksi otomatis setelah berhasil.",
     "more.openOfficialLogin": "Buka login e-GYS resmi",
-    "more.nativeLoginMethods": "Google, Apple, dan WhatsApp OTP diproses langsung di halaman resmi e-GYS.",
+    "more.nativeLoginMethods":
+      "Google, Apple, dan WhatsApp OTP diproses langsung di halaman resmi e-GYS.",
     "more.sessionSignedOut": "Sesi e-GYS sudah dikeluarkan dari perangkat ini.",
     "more.appearance": "Tampilan & Bahasa",
     "more.screenTheme": "Tema Layar",
@@ -1322,7 +1330,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.chooseLanguage": "Pilih Bahasa",
     "more.localPack": "Paket lokal",
     "more.ready": "Siap",
-    "more.localPackDescription": "Alkitab TB dan metadata inti tersedia tanpa koneksi. Versi tambahan, PDF, partitur, dan SoundFont diunduh sesuai kebutuhan.",
+    "more.localPackDescription":
+      "Alkitab TB dan metadata inti tersedia tanpa koneksi. Versi tambahan, PDF, partitur, dan SoundFont diunduh sesuai kebutuhan.",
     "more.translations": "terjemahan",
     "more.songs": "lagu",
     "more.corePack": "paket inti",
@@ -1337,7 +1346,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.latest": "terbaru",
     "more.notChecked": "belum diperiksa",
     "more.backupImport": "Backup & import",
-    "more.backupImportDesc": "Simpan atau pulihkan catatan, progres baca, dan preferensi",
+    "more.backupImportDesc":
+      "Simpan atau pulihkan catatan, progres baca, dan preferensi",
     "more.reminder": "Pengingat",
     "more.reminderDesc": "Atur waktu teduh membaca firman harian",
     "more.midiQueue": "Antrean MIDI",
@@ -1348,7 +1358,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.deviceData": "Perangkat & data",
     "more.deviceDataDesc": "Alat lanjutan untuk penyimpanan lokal",
     "more.resetDevice": "Reset perangkat",
-    "more.resetDeviceDesc": "Hapus preferensi, cache, progres lokal, dan data offline aplikasi dari perangkat ini. Gunakan hanya bila diperlukan.",
+    "more.resetDeviceDesc":
+      "Hapus preferensi, cache, progres lokal, dan data offline aplikasi dari perangkat ini. Gunakan hanya bila diperlukan.",
     "more.reportProblem": "Laporkan masalah",
     "more.reportPlaceholder": "Tuliskan kendala atau saran perbaikan di sini…",
     "more.sending": "Mengirim…",
@@ -1358,14 +1369,16 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.backupPanel": "Backup dan import",
     "more.localData": "Data lokal",
     "more.encryptedBackup": "Backup terenkripsi",
-    "more.backupDescription": "Backup memuat preferensi, progres baca, bookmark, dan catatan. Sesi akun, data perangkat, serta cache tidak ikut disalin. Kata sandi tidak dikirim ke server.",
+    "more.backupDescription":
+      "Backup memuat preferensi, progres baca, bookmark, dan catatan. Sesi akun, data perangkat, serta cache tidak ikut disalin. Kata sandi tidak dikirim ke server.",
     "more.backupPassword": "Kata sandi backup",
     "more.exportBackup": "Ekspor .gysbk",
     "more.chooseFile": "Pilih file",
     "more.import": "Impor",
     "more.reminderPanel": "Pengingat harian",
     "more.deviceNotifications": "Notifikasi perangkat",
-    "more.reminderDescription": "Pilih waktu untuk pengingat membaca. Jadwal disimpan lokal dan tidak memerlukan akun.",
+    "more.reminderDescription":
+      "Pilih waktu untuk pengingat membaca. Jadwal disimpan lokal dan tidak memerlukan akun.",
     "more.time": "Waktu",
     "more.saveReminder": "Simpan pengingat",
     "more.disable": "Nonaktifkan",
@@ -1384,74 +1397,102 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.importQueue": "Impor antrean",
     "more.apply": "Terapkan",
     "more.clear": "Kosongkan",
-    "more.playlistNote": "Format antrean tervalidasi dan dapat dipulihkan melalui backup aplikasi.",
+    "more.playlistNote":
+      "Format antrean tervalidasi dan dapat dipulihkan melalui backup aplikasi.",
     "more.loginDialog": "Login e-GYS resmi",
     "more.loginTitle": "Login e-GYS Resmi",
-    "more.googleModalDescription": "Login dengan akun Google. Setelah berhasil, aplikasi akan langsung memeriksa dan menampilkan akun e-GYS Anda.",
+    "more.googleModalDescription":
+      "Login dengan akun Google. Setelah berhasil, aplikasi akan langsung memeriksa dan menampilkan akun e-GYS Anda.",
     "more.googleLogin": "Login dengan Google",
     "more.checkingLogin": "Memeriksa akun e-GYS…",
-    "more.googleFallback": "Untuk Apple atau WhatsApp OTP, lanjutkan melalui portal resmi e-GYS. Login tersebut belum bisa dibaca lintas situs oleh browser.",
-    "more.secureCredentials": "Credential Google diproses melalui koneksi aman aplikasi",
+    "more.googleFallback":
+      "Untuk Apple atau WhatsApp OTP, lanjutkan melalui portal resmi e-GYS. Login tersebut belum bisa dibaca lintas situs oleh browser.",
+    "more.secureCredentials":
+      "Credential Google diproses melalui koneksi aman aplikasi",
     "more.officialPortal": "Portal resmi e-GYS ↗",
     "more.close": "Tutup",
-    "more.confirmDeleteData": "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
-    "more.dataReset": "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
-    "more.resetIncomplete": "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
-    "more.packCheckUnavailable": "Versi paket belum dapat diperiksa. Coba lagi saat online.",
+    "more.confirmDeleteData":
+      "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
+    "more.dataReset":
+      "Data lokal GYS sudah direset. Muat ulang bila diperlukan.",
+    "more.resetIncomplete":
+      "Reset belum selesai sepenuhnya. Periksa izin penyimpanan lalu coba lagi.",
+    "more.packCheckUnavailable":
+      "Versi paket belum dapat diperiksa. Coba lagi saat online.",
     "more.packUpdated": "Paket diperbarui: {count} aset baru.",
     "more.packMetadataUpdated": "Metadata paket diperbarui.",
     "more.packVerified": "Paket offline berhasil diverifikasi dan disimpan.",
-    "more.packUpdateFailed": "Paket offline gagal diperbarui. Periksa koneksi dan ruang penyimpanan.",
+    "more.packUpdateFailed":
+      "Paket offline gagal diperbarui. Periksa koneksi dan ruang penyimpanan.",
     "more.assetInstalled": "Aset berhasil diunduh dan disimpan offline.",
     "more.assetInstallFailed": "Aset gagal diunduh. Coba lagi saat online.",
     "more.confirmRemoveAsset": "Hapus aset offline ini dari perangkat?",
     "more.assetRemoved": "Aset dihapus dari penyimpanan offline.",
     "more.assetRemoveFailed": "Aset gagal dihapus.",
     "more.nativeLoginOpened": "Halaman login resmi e-GYS sudah dibuka.",
-    "more.nativeLoginFailed": "Halaman login e-GYS belum dapat dibuka. Coba lagi.",
+    "more.nativeLoginFailed":
+      "Halaman login e-GYS belum dapat dibuka. Coba lagi.",
     "more.reportReceived": "Laporan diterima. Terima kasih.",
-    "more.reportDraftSaved": "Laporan disimpan sebagai draft; kirim kembali saat online.",
-    "more.backupPasswordTooShort": "Gunakan kata sandi backup minimal 8 karakter.",
+    "more.reportDraftSaved":
+      "Laporan disimpan sebagai draft; kirim kembali saat online.",
+    "more.backupPasswordTooShort":
+      "Gunakan kata sandi backup minimal 8 karakter.",
     "more.backupExported": "Backup terenkripsi berhasil diunduh.",
-    "more.backupExportFailed": "Backup gagal dibuat. Coba lagi di perangkat yang mendukung AES-GCM.",
+    "more.backupExportFailed":
+      "Backup gagal dibuat. Coba lagi di perangkat yang mendukung AES-GCM.",
     "more.chooseBackupFile": "Pilih file .gysbk terlebih dahulu.",
-    "more.backupPasswordRequired": "Masukkan kata sandi backup untuk membuka file.",
-    "more.backupRestored": "Backup berhasil dipulihkan. Muat ulang untuk menerapkan semua preferensi.",
-    "more.legacyImported": "Backup lama berhasil diimpor dan disimpan untuk migrasi satu arah.",
+    "more.backupPasswordRequired":
+      "Masukkan kata sandi backup untuk membuka file.",
+    "more.backupRestored":
+      "Backup berhasil dipulihkan. Muat ulang untuk menerapkan semua preferensi.",
+    "more.legacyImported":
+      "Backup lama berhasil diimpor dan disimpan untuk migrasi satu arah.",
     "more.invalidBackup": "Backup tidak valid atau kata sandi salah.",
     "more.reminderDisabled": "Pengingat dinonaktifkan.",
     "more.reminderSaved": "Pengingat aktif setiap hari pukul {time}.",
-    "more.reminderNotificationPrompt": "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
+    "more.reminderNotificationPrompt":
+      "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
     "more.playlistImported": "Antrean MIDI berhasil diimpor.",
     "more.invalidPlaylist": "File antrean tidak valid.",
     "more.playlistCleared": "Antrean MIDI dikosongkan.",
     "more.notificationTitle": "Waktu teduh GYS",
     "more.notificationBody": "Saatnya membaca firman dan renungan hari ini.",
     "more.greeting": "Selamat datang, {name}.",
-    "more.loginProfileUnavailable": "Login e-GYS berhasil, tetapi profil belum tersedia.",
-    "more.profileReadFailed": "Login e-GYS selesai, tetapi profil belum dapat dibaca. Coba muat ulang.",
-    "more.googleDetectFailed": "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
+    "more.loginProfileUnavailable":
+      "Login e-GYS berhasil, tetapi profil belum tersedia.",
+    "more.profileReadFailed":
+      "Login e-GYS selesai, tetapi profil belum dapat dibaca. Coba muat ulang.",
+    "more.googleDetectFailed":
+      "Login Google belum terdeteksi. Pastikan akun Google sudah selesai dipilih, lalu coba lagi.",
     "more.loginFailed": "Login e-GYS belum berhasil. Coba lagi.",
-    "more.googleButtonFailed": "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+    "more.googleButtonFailed":
+      "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
     "more.readabilityTitle": "Tampilan & keterbacaan",
-    "more.readabilityDescription": "Sesuaikan ukuran ruang dan karakter tipografi untuk cara membaca Anda.",
+    "more.readabilityDescription":
+      "Sesuaikan ukuran ruang dan karakter tipografi untuk cara membaca Anda.",
     "more.closeAppearance": "Tutup pengaturan tampilan",
     "more.appearanceEyebrow": "Akses & kenyamanan",
-    "more.appearanceDescription": "Pengaturan ini berlaku di seluruh GYSApp dan tersimpan di perangkat ini.",
+    "more.appearanceDescription":
+      "Pengaturan ini berlaku di seluruh GYSApp dan tersimpan di perangkat ini.",
     "more.densityTitle": "Kepadatan antarmuka",
-    "more.densityDescription": "Pilih ruang yang paling nyaman tanpa menyembunyikan fitur.",
+    "more.densityDescription":
+      "Pilih ruang yang paling nyaman tanpa menyembunyikan fitur.",
     "more.density.comfortable": "Nyaman",
-    "more.density.comfortableDescription": "Teks dan kontrol lebih lapang untuk membaca lebih lama.",
+    "more.density.comfortableDescription":
+      "Teks dan kontrol lebih lapang untuk membaca lebih lama.",
     "more.density.standard": "Standar",
-    "more.density.standardDescription": "Seimbang untuk penggunaan sehari-hari di semua perangkat.",
+    "more.density.standardDescription":
+      "Seimbang untuk penggunaan sehari-hari di semua perangkat.",
     "more.density.compact": "Ringkas",
-    "more.density.compactDescription": "Lebih banyak konten di desktop tanpa mengecilkan target sentuh.",
+    "more.density.compactDescription":
+      "Lebih banyak konten di desktop tanpa mengecilkan target sentuh.",
     "more.fontTitle": "Gaya huruf",
     "more.fontDescription": "Jaga keterbacaan sambil memilih karakter visual.",
     "more.font.auto": "Otomatis",
     "more.font.autoDescription": "Mengikuti tipografi utama aplikasi.",
     "more.font.hymnal": "Himne",
-    "more.font.hymnalDescription": "Judul bernuansa buku himne, isi tetap mudah dibaca.",
+    "more.font.hymnalDescription":
+      "Judul bernuansa buku himne, isi tetap mudah dibaca.",
     "more.font.sans": "Sans modern",
     "more.font.sansDescription": "Tipografi sistem yang bersih dan familier.",
     "more.touchTargetHint": "Target sentuh tetap aman pada mode Ringkas.",
@@ -1610,7 +1651,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.playlistImportError": "The playlist file could not be read.",
     "kidung.playlistNamePrompt": "Playlist name:",
     "kidung.playlistNameDefault": "Playlist {count}",
-    "kidung.playlistSaved": "Playlist \"{name}\" saved",
+    "kidung.playlistSaved": 'Playlist "{name}" saved',
     "kidung.playlistLoaded": "Loaded: {name} ({count} songs)",
     "kidung.midiPlaylist": "MIDI playlist",
     "kidung.playNext": "Play next",
@@ -1816,8 +1857,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.settingsManagePlaylist": "Manage playlist →",
     "kidung.settingsChord": "Chords",
     "kidung.settingsChordAppearance": "Chord appearance",
-    "kidung.settingsSyncChordTheme":
-      "Match chord letters to the accent color",
+    "kidung.settingsSyncChordTheme": "Match chord letters to the accent color",
     "kidung.settingsChordThemeGroup": "Chord letter theme",
     "kidung.settingsSyncChordFill": "Match chord fill to the accent color",
     "kidung.settingsFillStyle": "Chord fill",
@@ -1979,7 +2019,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "literature.pdfViewerLoading": "Loading PDF viewer…",
     "literature.articleReaderTitle": "Reading {title}",
     "literature.articleLoading": "Loading the official reading in app…",
-    "literature.articleErrorTitle": "This reading could not be loaded in the app.",
+    "literature.articleErrorTitle":
+      "This reading could not be loaded in the app.",
     "literature.articleErrorBody":
       "The official source or its connector is unreachable. Use the official source if you want to open the original site.",
     "literature.pdfSaved": "PDF saved for offline reading.",
@@ -1997,7 +2038,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.resultCount": "{count} results found for “{query}”.",
     "search.results": "Search results",
     "more.assetManagement": "Asset management",
-    "more.downloadUnavailable": "Download service is not configured. Core assets remain available offline.",
+    "more.downloadUnavailable":
+      "Download service is not configured. Core assets remain available offline.",
     "more.loadingAssets": "Loading asset catalog…",
     "more.noAdditionalAssets": "No additional assets are available.",
     "more.assetBible": "Bible",
@@ -2017,7 +2059,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.assetUpdateAction": "Update {title}",
     "more.assetRedownloadAction": "Download {title} again",
     "more.assetDownloadAction": "Download {title}",
-    "more.catalogUnavailable": "The additional asset catalog could not be loaded.",
+    "more.catalogUnavailable":
+      "The additional asset catalog could not be loaded.",
     "more.accountMember": "Member account",
     "more.accountEgys": "e-GYS account",
     "more.connected": "Connected",
@@ -2034,9 +2077,11 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.detectedSince": "detected since",
     "more.signOut": "Sign out of this account",
     "more.officialLoginDescription": "Sign in through the official e-GYS page.",
-    "more.googleLoginDescription": "Sign in with Google; your e-GYS account will be detected automatically after success.",
+    "more.googleLoginDescription":
+      "Sign in with Google; your e-GYS account will be detected automatically after success.",
     "more.openOfficialLogin": "Open official e-GYS login",
-    "more.nativeLoginMethods": "Google, Apple, and WhatsApp OTP are handled directly on the official e-GYS page.",
+    "more.nativeLoginMethods":
+      "Google, Apple, and WhatsApp OTP are handled directly on the official e-GYS page.",
     "more.sessionSignedOut": "The e-GYS session was signed out on this device.",
     "more.appearance": "Appearance & language",
     "more.screenTheme": "Screen theme",
@@ -2063,7 +2108,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.chooseLanguage": "Choose language",
     "more.localPack": "Local pack",
     "more.ready": "Ready",
-    "more.localPackDescription": "The TB Bible and core metadata are available offline. Additional versions, PDFs, scores, and SoundFont files download as needed.",
+    "more.localPackDescription":
+      "The TB Bible and core metadata are available offline. Additional versions, PDFs, scores, and SoundFont files download as needed.",
     "more.translations": "translations",
     "more.songs": "songs",
     "more.corePack": "core pack",
@@ -2078,7 +2124,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.latest": "up to date",
     "more.notChecked": "not checked",
     "more.backupImport": "Backup & import",
-    "more.backupImportDesc": "Save or restore notes, reading progress, and preferences",
+    "more.backupImportDesc":
+      "Save or restore notes, reading progress, and preferences",
     "more.reminder": "Reminder",
     "more.reminderDesc": "Set a daily quiet time for reading Scripture",
     "more.midiQueue": "MIDI queue",
@@ -2089,7 +2136,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.deviceData": "Device & data",
     "more.deviceDataDesc": "Advanced tools for local storage",
     "more.resetDevice": "Reset device",
-    "more.resetDeviceDesc": "Delete preferences, cache, local progress, and offline app data from this device. Use only when needed.",
+    "more.resetDeviceDesc":
+      "Delete preferences, cache, local progress, and offline app data from this device. Use only when needed.",
     "more.reportProblem": "Report a problem",
     "more.reportPlaceholder": "Describe the problem or suggestion here…",
     "more.sending": "Sending…",
@@ -2099,14 +2147,16 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.backupPanel": "Backup and import",
     "more.localData": "Local data",
     "more.encryptedBackup": "Encrypted backup",
-    "more.backupDescription": "Backups include preferences, reading progress, bookmarks, and notes. Account sessions, device data, and cache are not copied. Your password is never sent to the server.",
+    "more.backupDescription":
+      "Backups include preferences, reading progress, bookmarks, and notes. Account sessions, device data, and cache are not copied. Your password is never sent to the server.",
     "more.backupPassword": "Backup password",
     "more.exportBackup": "Export .gysbk",
     "more.chooseFile": "Choose file",
     "more.import": "Import",
     "more.reminderPanel": "Daily reminder",
     "more.deviceNotifications": "Device notifications",
-    "more.reminderDescription": "Choose a reading reminder time. The schedule is stored locally and does not require an account.",
+    "more.reminderDescription":
+      "Choose a reading reminder time. The schedule is stored locally and does not require an account.",
     "more.time": "Time",
     "more.saveReminder": "Save reminder",
     "more.disable": "Disable",
@@ -2125,74 +2175,102 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.importQueue": "Import queue",
     "more.apply": "Apply",
     "more.clear": "Clear",
-    "more.playlistNote": "The queue format is validated and can be restored through an app backup.",
+    "more.playlistNote":
+      "The queue format is validated and can be restored through an app backup.",
     "more.loginDialog": "Official e-GYS login",
     "more.loginTitle": "Official e-GYS Login",
-    "more.googleModalDescription": "Sign in with your Google account. After success, the app will check and display your e-GYS account.",
+    "more.googleModalDescription":
+      "Sign in with your Google account. After success, the app will check and display your e-GYS account.",
     "more.googleLogin": "Sign in with Google",
     "more.checkingLogin": "Checking e-GYS account…",
-    "more.googleFallback": "For Apple or WhatsApp OTP, continue through the official e-GYS portal. The browser cannot read those cross-site logins.",
-    "more.secureCredentials": "Google credentials are processed through the app's secure connection",
+    "more.googleFallback":
+      "For Apple or WhatsApp OTP, continue through the official e-GYS portal. The browser cannot read those cross-site logins.",
+    "more.secureCredentials":
+      "Google credentials are processed through the app's secure connection",
     "more.officialPortal": "Official e-GYS portal ↗",
     "more.close": "Close",
-    "more.confirmDeleteData": "Delete all GYS data on this device? Notes, reading progress, preferences, and local cache will be deleted.",
+    "more.confirmDeleteData":
+      "Delete all GYS data on this device? Notes, reading progress, preferences, and local cache will be deleted.",
     "more.dataReset": "Local GYS data was reset. Reload if needed.",
-    "more.resetIncomplete": "The reset did not finish completely. Check storage permissions and try again.",
-    "more.packCheckUnavailable": "The pack version could not be checked. Try again online.",
+    "more.resetIncomplete":
+      "The reset did not finish completely. Check storage permissions and try again.",
+    "more.packCheckUnavailable":
+      "The pack version could not be checked. Try again online.",
     "more.packUpdated": "Pack updated: {count} new assets.",
     "more.packMetadataUpdated": "Pack metadata updated.",
     "more.packVerified": "Offline pack verified and saved.",
-    "more.packUpdateFailed": "Offline pack update failed. Check your connection and storage space.",
+    "more.packUpdateFailed":
+      "Offline pack update failed. Check your connection and storage space.",
     "more.assetInstalled": "Asset downloaded and saved offline.",
     "more.assetInstallFailed": "Asset download failed. Try again online.",
     "more.confirmRemoveAsset": "Remove this offline asset from the device?",
     "more.assetRemoved": "Asset removed from offline storage.",
     "more.assetRemoveFailed": "Asset removal failed.",
     "more.nativeLoginOpened": "The official e-GYS login page was opened.",
-    "more.nativeLoginFailed": "The e-GYS login page could not be opened. Try again.",
+    "more.nativeLoginFailed":
+      "The e-GYS login page could not be opened. Try again.",
     "more.reportReceived": "Report received. Thank you.",
-    "more.reportDraftSaved": "Report saved as a draft; send it again when online.",
-    "more.backupPasswordTooShort": "Use a backup password of at least 8 characters.",
+    "more.reportDraftSaved":
+      "Report saved as a draft; send it again when online.",
+    "more.backupPasswordTooShort":
+      "Use a backup password of at least 8 characters.",
     "more.backupExported": "Encrypted backup downloaded.",
-    "more.backupExportFailed": "Backup could not be created. Try again on a device that supports AES-GCM.",
+    "more.backupExportFailed":
+      "Backup could not be created. Try again on a device that supports AES-GCM.",
     "more.chooseBackupFile": "Choose a .gysbk file first.",
-    "more.backupPasswordRequired": "Enter the backup password to open the file.",
+    "more.backupPasswordRequired":
+      "Enter the backup password to open the file.",
     "more.backupRestored": "Backup restored. Reload to apply all preferences.",
-    "more.legacyImported": "Legacy backup imported and saved for one-way migration.",
+    "more.legacyImported":
+      "Legacy backup imported and saved for one-way migration.",
     "more.invalidBackup": "Backup is invalid or the password is incorrect.",
     "more.reminderDisabled": "Reminder disabled.",
     "more.reminderSaved": "Reminder active daily at {time}.",
-    "more.reminderNotificationPrompt": "Reminder time saved; allow notifications for alerts.",
+    "more.reminderNotificationPrompt":
+      "Reminder time saved; allow notifications for alerts.",
     "more.playlistImported": "MIDI queue imported.",
     "more.invalidPlaylist": "Queue file is invalid.",
     "more.playlistCleared": "MIDI queue cleared.",
     "more.notificationTitle": "GYS quiet time",
-    "more.notificationBody": "It is time to read Scripture and today's reflection.",
+    "more.notificationBody":
+      "It is time to read Scripture and today's reflection.",
     "more.greeting": "Welcome, {name}.",
-    "more.loginProfileUnavailable": "e-GYS sign-in succeeded, but the profile is not available.",
-    "more.profileReadFailed": "e-GYS sign-in finished, but the profile could not be read. Reload and try again.",
-    "more.googleDetectFailed": "Google sign-in was not detected. Finish choosing your Google account, then try again.",
+    "more.loginProfileUnavailable":
+      "e-GYS sign-in succeeded, but the profile is not available.",
+    "more.profileReadFailed":
+      "e-GYS sign-in finished, but the profile could not be read. Reload and try again.",
+    "more.googleDetectFailed":
+      "Google sign-in was not detected. Finish choosing your Google account, then try again.",
     "more.loginFailed": "e-GYS sign-in was not successful. Try again.",
-    "more.googleButtonFailed": "The Google button could not be loaded. Check your connection and try again.",
+    "more.googleButtonFailed":
+      "The Google button could not be loaded. Check your connection and try again.",
     "more.readabilityTitle": "Appearance & readability",
-    "more.readabilityDescription": "Adjust spacing and typography for the way you read.",
+    "more.readabilityDescription":
+      "Adjust spacing and typography for the way you read.",
     "more.closeAppearance": "Close appearance settings",
     "more.appearanceEyebrow": "Access & comfort",
-    "more.appearanceDescription": "These settings apply across GYSApp and are saved on this device.",
+    "more.appearanceDescription":
+      "These settings apply across GYSApp and are saved on this device.",
     "more.densityTitle": "Interface density",
-    "more.densityDescription": "Choose the most comfortable spacing without hiding features.",
+    "more.densityDescription":
+      "Choose the most comfortable spacing without hiding features.",
     "more.density.comfortable": "Comfortable",
-    "more.density.comfortableDescription": "Roomier text and controls for longer reading.",
+    "more.density.comfortableDescription":
+      "Roomier text and controls for longer reading.",
     "more.density.standard": "Standard",
-    "more.density.standardDescription": "Balanced for everyday use on every device.",
+    "more.density.standardDescription":
+      "Balanced for everyday use on every device.",
     "more.density.compact": "Compact",
-    "more.density.compactDescription": "More desktop content without shrinking touch targets.",
+    "more.density.compactDescription":
+      "More desktop content without shrinking touch targets.",
     "more.fontTitle": "Font style",
-    "more.fontDescription": "Keep text readable while choosing a visual character.",
+    "more.fontDescription":
+      "Keep text readable while choosing a visual character.",
     "more.font.auto": "Automatic",
     "more.font.autoDescription": "Follow the app's primary typography.",
     "more.font.hymnal": "Hymnal",
-    "more.font.hymnalDescription": "Hymnal-inspired headings with easy-to-read body text.",
+    "more.font.hymnalDescription":
+      "Hymnal-inspired headings with easy-to-read body text.",
     "more.font.sans": "Modern sans",
     "more.font.sansDescription": "Clean, familiar system typography.",
     "more.touchTargetHint": "Touch targets remain safe in Compact mode.",
@@ -2237,8 +2315,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.orientation": "双页显示在横向屏幕更舒适",
     "pdf.error404":
       "官方 PDF 不可用（HTTP 404）。请打开官方来源页面检查最新文档。",
-    "pdf.error":
-      "PDF 加载失败。PDF 尚未离线可用；请在联网时先保存。",
+    "pdf.error": "PDF 加载失败。PDF 尚未离线可用；请在联网时先保存。",
     "pdf.retry": "重试",
     "pdf.chordEditor": "和弦编辑器",
     "pdf.chordEditTitle": "和弦 {chord} - 点击编辑",
@@ -2371,7 +2448,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.removeSongFromPlaylist": "从播放列表移除 {title}",
     "kidung.deletePlaylist": "删除播放列表",
     "kidung.emptyPlaylistTitle": "播放列表为空。",
-    "kidung.emptyPlaylistBody": "从诗歌详情添加歌曲，然后在这里播放并调整顺序。",
+    "kidung.emptyPlaylistBody":
+      "从诗歌详情添加歌曲，然后在这里播放并调整顺序。",
     "kidung.backToCatalog": "返回诗歌列表 →",
     "kidung.selected": "当前选中",
     "kidung.readyToPlay": "准备播放",
@@ -2764,9 +2842,11 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.detectedSince": "检测自",
     "more.signOut": "退出此账户",
     "more.officialLoginDescription": "通过 e-GYS 官方页面登录。",
-    "more.googleLoginDescription": "使用 Google 登录；成功后将自动检测您的 e-GYS 账户。",
+    "more.googleLoginDescription":
+      "使用 Google 登录；成功后将自动检测您的 e-GYS 账户。",
     "more.openOfficialLogin": "打开 e-GYS 官方登录",
-    "more.nativeLoginMethods": "Google、Apple 和 WhatsApp OTP 直接在 e-GYS 官方页面处理。",
+    "more.nativeLoginMethods":
+      "Google、Apple 和 WhatsApp OTP 直接在 e-GYS 官方页面处理。",
     "more.sessionSignedOut": "此设备上的 e-GYS 会话已退出。",
     "more.appearance": "外观与语言",
     "more.screenTheme": "屏幕主题",
@@ -2793,7 +2873,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.chooseLanguage": "选择语言",
     "more.localPack": "本地包",
     "more.ready": "已就绪",
-    "more.localPackDescription": "TB 圣经和核心元数据可离线使用。其他版本、PDF、乐谱和 SoundFont 将按需下载。",
+    "more.localPackDescription":
+      "TB 圣经和核心元数据可离线使用。其他版本、PDF、乐谱和 SoundFont 将按需下载。",
     "more.translations": "译本",
     "more.songs": "歌曲",
     "more.corePack": "核心包",
@@ -2819,7 +2900,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.deviceData": "设备与数据",
     "more.deviceDataDesc": "本地存储的高级工具",
     "more.resetDevice": "重置设备",
-    "more.resetDeviceDesc": "删除此设备上的偏好、缓存、本地进度和离线应用数据。仅在需要时使用。",
+    "more.resetDeviceDesc":
+      "删除此设备上的偏好、缓存、本地进度和离线应用数据。仅在需要时使用。",
     "more.reportProblem": "报告问题",
     "more.reportPlaceholder": "请在此描述问题或建议…",
     "more.sending": "正在发送…",
@@ -2829,7 +2911,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.backupPanel": "备份和导入",
     "more.localData": "本地数据",
     "more.encryptedBackup": "加密备份",
-    "more.backupDescription": "备份包括偏好、阅读进度、书签和笔记。账户会话、设备数据和缓存不会复制。密码不会发送到服务器。",
+    "more.backupDescription":
+      "备份包括偏好、阅读进度、书签和笔记。账户会话、设备数据和缓存不会复制。密码不会发送到服务器。",
     "more.backupPassword": "备份密码",
     "more.exportBackup": "导出 .gysbk",
     "more.chooseFile": "选择文件",
@@ -2858,14 +2941,17 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.playlistNote": "队列格式经过验证，可通过应用备份恢复。",
     "more.loginDialog": "e-GYS 官方登录",
     "more.loginTitle": "e-GYS 官方登录",
-    "more.googleModalDescription": "使用 Google 账户登录。成功后，应用将检查并显示您的 e-GYS 账户。",
+    "more.googleModalDescription":
+      "使用 Google 账户登录。成功后，应用将检查并显示您的 e-GYS 账户。",
     "more.googleLogin": "使用 Google 登录",
     "more.checkingLogin": "正在检查 e-GYS 账户…",
-    "more.googleFallback": "如需使用 Apple 或 WhatsApp OTP，请通过 e-GYS 官方门户继续。浏览器无法读取跨网站登录状态。",
+    "more.googleFallback":
+      "如需使用 Apple 或 WhatsApp OTP，请通过 e-GYS 官方门户继续。浏览器无法读取跨网站登录状态。",
     "more.secureCredentials": "Google 凭据通过应用的安全连接处理",
     "more.officialPortal": "e-GYS 官方门户 ↗",
     "more.close": "关闭",
-    "more.confirmDeleteData": "删除此设备上的所有 GYS 数据？笔记、阅读进度、偏好和本地缓存将被删除。",
+    "more.confirmDeleteData":
+      "删除此设备上的所有 GYS 数据？笔记、阅读进度、偏好和本地缓存将被删除。",
     "more.dataReset": "本地 GYS 数据已重置。如有需要请重新加载。",
     "more.resetIncomplete": "重置未完全完成。请检查存储权限后重试。",
     "more.packCheckUnavailable": "无法检查数据包版本。请联网后重试。",
@@ -2900,19 +2986,23 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.notificationBody": "现在是阅读圣经和今日灵修的时间。",
     "more.greeting": "欢迎，{name}。",
     "more.loginProfileUnavailable": "e-GYS 登录成功，但个人资料不可用。",
-    "more.profileReadFailed": "e-GYS 登录已完成，但无法读取个人资料。请重新加载后重试。",
-    "more.googleDetectFailed": "未检测到 Google 登录。请完成 Google 账户选择后重试。",
+    "more.profileReadFailed":
+      "e-GYS 登录已完成，但无法读取个人资料。请重新加载后重试。",
+    "more.googleDetectFailed":
+      "未检测到 Google 登录。请完成 Google 账户选择后重试。",
     "more.loginFailed": "e-GYS 登录未成功。请重试。",
     "more.googleButtonFailed": "无法加载 Google 按钮。请检查网络后重试。",
     "more.readabilityTitle": "外观与可读性",
     "more.readabilityDescription": "调整间距和字体风格，以适应您的阅读方式。",
     "more.closeAppearance": "关闭外观设置",
     "more.appearanceEyebrow": "易用与舒适",
-    "more.appearanceDescription": "这些设置适用于整个 GYSApp，并保存在此设备上。",
+    "more.appearanceDescription":
+      "这些设置适用于整个 GYSApp，并保存在此设备上。",
     "more.densityTitle": "界面密度",
     "more.densityDescription": "选择最舒适的间距，同时保留所有功能。",
     "more.density.comfortable": "舒适",
-    "more.density.comfortableDescription": "更宽松的文字和控件，适合长时间阅读。",
+    "more.density.comfortableDescription":
+      "更宽松的文字和控件，适合长时间阅读。",
     "more.density.standard": "标准",
     "more.density.standardDescription": "适合所有设备日常使用的平衡设置。",
     "more.density.compact": "紧凑",

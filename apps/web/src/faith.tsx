@@ -388,9 +388,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   <button
                     className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
                     type="button"
-                    onClick={(event) =>
-                      openFaithPdf(item, event.currentTarget)
-                    }
+                    onClick={(event) => openFaithPdf(item, event.currentTarget)}
                     aria-label={translate(locale, "faith.pdfLabel", {
                       number: item.number,
                     })}
@@ -503,9 +501,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                       <button
                         className="primary-button faith-read-more"
                         type="button"
-                        onClick={(event) =>
-                          openReadMore(event.currentTarget)
-                        }
+                        onClick={(event) => openReadMore(event.currentTarget)}
                       >
                         {translate(locale, "faith.readMore")}
                       </button>
@@ -623,9 +619,13 @@ export function FaithPage({ locale }: { locale: Locale }) {
                         <button
                           className="bible-notes-item-delete"
                           type="button"
-                          aria-label={translate(locale, "faith.deleteNoteLabel", {
-                            number: entry.item.number,
-                          })}
+                          aria-label={translate(
+                            locale,
+                            "faith.deleteNoteLabel",
+                            {
+                              number: entry.item.number,
+                            },
+                          )}
                           onClick={() => deleteNote(entry.item.number)}
                         >
                           ×

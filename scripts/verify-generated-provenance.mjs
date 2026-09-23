@@ -168,7 +168,7 @@ const literatureMissingCovers = literature.items.filter(
   (item) => !item.imageUrl,
 );
 for (const item of literature.items) {
-if (
+  if (
     item.imageUrl &&
     (!(
       item.imageUrl.startsWith("https://tjc.org/") ||

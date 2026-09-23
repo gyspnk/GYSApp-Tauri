@@ -2789,10 +2789,9 @@ blockquote {
 }
 .bible-reader.is-split .bible-reader-layout {
   display: grid;
-  grid-template-columns: minmax(0, calc(var(--bible-split, 50%) - 6px)) 12px minmax(
-      0,
-      calc(100% - var(--bible-split, 50%) - 6px)
-    );
+  grid-template-columns:
+    minmax(0, calc(var(--bible-split, 50%) - 6px))
+    12px minmax(0, calc(100% - var(--bible-split, 50%) - 6px));
   grid-template-rows: 1fr;
   width: 100%;
 }
@@ -11583,7 +11582,8 @@ body:has(.home-page)::-webkit-scrollbar {
   overscroll-behavior: contain;
 }
 .hymn-detail-page.is-text-viewer
-  .hymn-all-verses-container > .lyrics-sheet.is-continuous {
+  .hymn-all-verses-container
+  > .lyrics-sheet.is-continuous {
   flex: 0 0 auto;
   min-height: auto;
   overflow: visible;
@@ -12380,7 +12380,8 @@ body:has(.home-page)::-webkit-scrollbar {
     position: relative;
     top: 0;
     padding-inline: 20px;
-    transition: padding var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+    transition: padding var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
   }
   .app-frame.is-reader-route .navigation-shell {
     top: 0;
@@ -12792,8 +12793,7 @@ body:has(.home-page)::-webkit-scrollbar {
   grid-area: main;
 }
 
-.media-surface.is-kidung-media:not(.is-minimized)
-  > .media-transport-controls {
+.media-surface.is-kidung-media:not(.is-minimized) > .media-transport-controls {
   display: flex;
   grid-area: transport;
   width: auto;
@@ -12917,8 +12917,7 @@ body:has(.home-page)::-webkit-scrollbar {
   min-width: 44px;
 }
 
-.media-surface.is-kidung-media:not(.is-minimized)
-  > .media-minimize {
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
   width: 44px;
   min-width: 44px;
   height: 44px;
@@ -13022,7 +13021,8 @@ body:has(.home-page)::-webkit-scrollbar {
   line-height: 1;
 }
 
-.media-surface.is-kidung-media .media-advanced-controls[open]
+.media-surface.is-kidung-media
+  .media-advanced-controls[open]
   > .media-advanced-summary::after {
   content: "⌃";
 }
@@ -13070,12 +13070,15 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 
 .media-surface.is-kidung-media .media-advanced-panel .media-tempo-toggle,
-.media-surface.is-kidung-media .media-advanced-panel
-  .media-instrument-control select {
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-instrument-control
+  select {
   min-height: 44px;
 }
 
-.media-surface.is-kidung-media .media-advanced-panel
+.media-surface.is-kidung-media
+  .media-advanced-panel
   .media-midi-actions
   .media-transpose
   button {
@@ -13188,10 +13191,9 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 
 .bible-loading-layout.is-split {
-  grid-template-columns: minmax(0, calc(var(--bible-split, 50%) - 6px)) 12px minmax(
-      0,
-      calc(100% - var(--bible-split, 50%) - 6px)
-    );
+  grid-template-columns:
+    minmax(0, calc(var(--bible-split, 50%) - 6px))
+    12px minmax(0, calc(100% - var(--bible-split, 50%) - 6px));
   grid-template-rows: 1fr;
 }
 

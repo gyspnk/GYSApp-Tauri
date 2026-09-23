@@ -105,9 +105,13 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
   const literatureSources = await page
     .locator(".literature-page .literature-cover img")
     .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
-  expect(literatureSources.filter(Boolean).every((src) =>
-    /^https:\/\/(?:tjc\.org|www\.tjc\.org|tjcorguploads\.s3\.amazonaws\.com)\//i.test(
-      src,
-    ),
-  )).toBe(true);
+  expect(
+    literatureSources
+      .filter(Boolean)
+      .every((src) =>
+        /^https:\/\/(?:tjc\.org|www\.tjc\.org|tjcorguploads\.s3\.amazonaws\.com)\//i.test(
+          src,
+        ),
+      ),
+  ).toBe(true);
 });

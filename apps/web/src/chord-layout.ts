@@ -202,7 +202,9 @@ export function extractLyricLines(
     .filter((row) => row.items.some((item) => /[A-Za-z]/.test(item.str)))
     .map((row) => {
       const sorted = [...row.items].sort((a, b) => a.x - b.x);
-      const marker = sorted.find((item) => lyricVariant(item.str) !== undefined);
+      const marker = sorted.find(
+        (item) => lyricVariant(item.str) !== undefined,
+      );
       const content = marker
         ? sorted.filter((item) => item !== marker)
         : sorted;
@@ -240,15 +242,16 @@ export function buildChordedLines(
       .sort((a, b) => row.y - a.y - (row.y - b.y));
     const nearest = candidates[0];
     if (!nearest) continue;
-    const lyrics = nearest.variant !== undefined
-      ? candidates.filter(
-          (candidate) =>
-            candidate.variant !== undefined &&
-            candidate.y <= nearest.y &&
-            nearest.y - candidate.y <= MAX_CHORD_VARIANT_GAP &&
-            Math.abs(candidate.startPct - nearest.startPct) <= 1.5,
-        )
-      : [nearest];
+    const lyrics =
+      nearest.variant !== undefined
+        ? candidates.filter(
+            (candidate) =>
+              candidate.variant !== undefined &&
+              candidate.y <= nearest.y &&
+              nearest.y - candidate.y <= MAX_CHORD_VARIANT_GAP &&
+              Math.abs(candidate.startPct - nearest.startPct) <= 1.5,
+          )
+        : [nearest];
     for (const lyric of lyrics) {
       const chords: Array<{ chord: string; pos: number }> = [];
       for (const entry of entries) {

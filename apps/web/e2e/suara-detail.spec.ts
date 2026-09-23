@@ -71,7 +71,11 @@ async function installSuaraFixtures(
   } = {},
 ) {
   const fixturePost = options.post ?? post;
-  const fixtureArticle = { ...article, id: fixturePost.id, url: fixturePost.url };
+  const fixtureArticle = {
+    ...article,
+    id: fixturePost.id,
+    url: fixturePost.url,
+  };
   await page.route("**/offline/suara-sejati.json", async (route) => {
     if (options.feedDelayMs) {
       await new Promise((resolve) => setTimeout(resolve, options.feedDelayMs));
@@ -135,9 +139,7 @@ test("Suara detail localizes ready state and stays contained across devices", as
   for (const locale of ["id", "en", "zh"] as const) {
     for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 844 });
-      await page.goto(
-        `/GYSApp-Tauri/suara/${post.id}?__gys_locale=${locale}`,
-      );
+      await page.goto(`/GYSApp-Tauri/suara/${post.id}?__gys_locale=${locale}`);
       const detail = page.getByTestId("suara-detail-page");
       await expect(detail).toBeVisible();
       await expect(
@@ -172,9 +174,7 @@ test("Suara detail localizes ready state and stays contained across devices", as
         .toEqual({ complete: true, naturalWidth: 1 });
 
       const metrics = await detail.evaluate(() => {
-        const card = document.querySelector<HTMLElement>(
-          ".suara-article-card",
-        );
+        const card = document.querySelector<HTMLElement>(".suara-article-card");
         const actions = [
           ...document.querySelectorAll<HTMLElement>(
             ".suara-article-card .detail-actions > a",
@@ -182,14 +182,18 @@ test("Suara detail localizes ready state and stays contained across devices", as
         ];
         return {
           cardWidth: card?.getBoundingClientRect().width ?? 0,
-          actionHeights: actions.map((action) => action.getBoundingClientRect().height),
+          actionHeights: actions.map(
+            (action) => action.getBoundingClientRect().height,
+          ),
           scrollWidth: document.documentElement.scrollWidth,
           viewportWidth: window.innerWidth,
         };
       });
       expect(metrics.cardWidth).toBeGreaterThan(0);
       expect(metrics.actionHeights.every((height) => height >= 44)).toBe(true);
-      expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
+      expect(metrics.scrollWidth).toBeLessThanOrEqual(
+        metrics.viewportWidth + 1,
+      );
     }
   }
 
@@ -228,7 +232,9 @@ test("Suara detail exposes localized loading and retryable missing-post state", 
   await expect(
     detail.getByText(localeCopy.en.error, { exact: false }),
   ).toBeVisible();
-  await expect(detail.getByRole("button", { name: localeCopy.en.retry })).toBeVisible();
+  await expect(
+    detail.getByRole("button", { name: localeCopy.en.retry }),
+  ).toBeVisible();
   await detail.getByRole("button", { name: localeCopy.en.retry }).click();
   await expect(detail.getByRole("alert")).toBeVisible({ timeout: 10_000 });
 

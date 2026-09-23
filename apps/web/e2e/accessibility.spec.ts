@@ -136,7 +136,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       await expect(
         recovery.getByRole("heading", { name: copy.title, exact: true }),
       ).toBeVisible();
-      await expect(recovery.getByText(copy.body, { exact: true })).toBeVisible();
+      await expect(
+        recovery.getByText(copy.body, { exact: true }),
+      ).toBeVisible();
       const reload = recovery.getByRole("button", {
         name: copy.reload,
         exact: true,
@@ -206,9 +208,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
 
     await page.getByRole("button", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
-    await expect(
-      page.getByRole("dialog", { name: "阅读菜单" }),
-    ).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "阅读菜单" })).toBeVisible();
     await expect(page.getByText("Menu Bacaan", { exact: true })).toHaveCount(0);
     await expect(page.getByText("阅读菜单", { exact: true })).toBeVisible();
   });
@@ -244,7 +244,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     ).toBeVisible();
 
     await settings.getByRole("button", { name: "Bahasa", exact: true }).click();
-    await settings.getByRole("option", { name: "English", exact: true }).click();
+    await settings
+      .getByRole("option", { name: "English", exact: true })
+      .click();
     await expect(
       page.getByRole("heading", { name: "Settings", exact: true }),
     ).toBeVisible();
@@ -266,10 +268,16 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
         exact: true,
       }),
     ).toBeVisible();
-    await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(
+      0,
+    );
 
-    await settings.getByRole("button", { name: "Language", exact: true }).click();
-    await settings.getByRole("option", { name: "Chinese", exact: true }).click();
+    await settings
+      .getByRole("button", { name: "Language", exact: true })
+      .click();
+    await settings
+      .getByRole("option", { name: "Chinese", exact: true })
+      .click();
     await expect(
       page.getByRole("heading", { name: "设置", exact: true }),
     ).toBeVisible();
@@ -282,7 +290,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("slider", { name: /和弦背景不透明度/ }),
     ).toBeVisible();
-    await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(
+      0,
+    );
   });
 
   test("report form exposes an accessible message field", async ({ page }) => {
@@ -452,13 +462,17 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("button", { name: "Close faith topic" }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Read more ↗" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Read more ↗" }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Personal note" }).click();
     await expect(
       page.getByRole("dialog", { name: "Faith topic notes" }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Close notes" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Close notes" }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Close notes" }).click();
     await page.getByRole("button", { name: "Read more ↗" }).click();
     await expect(page.getByRole("alert")).toContainText("HTTP 404", {
@@ -477,9 +491,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("button", { name: "打开信仰要点 1笔记" }),
     ).toBeVisible();
-    await page
-      .getByRole("button", { name: "打开信仰要点 1笔记" })
-      .click();
+    await page.getByRole("button", { name: "打开信仰要点 1笔记" }).click();
     await expect(page.getByRole("dialog", { name: "要点 1" })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "关闭信仰要点" }),
@@ -513,9 +525,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Category", exact: true }).click();
-    await expect(
-      page.getByRole("listbox", { name: "Category" }),
-    ).toBeVisible();
+    await expect(page.getByRole("listbox", { name: "Category" })).toBeVisible();
     await expect(
       page.getByRole("option", { name: "All collections", exact: true }),
     ).toBeVisible();
@@ -525,16 +535,16 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("option", { name: "Newest", exact: true }),
     ).toBeVisible();
     await page.getByRole("option", { name: "Newest", exact: true }).click();
-    await expect(page.getByRole("link", { name: /Open reading/ })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Open reading/ }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "文献", exact: true }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("textbox", { name: "搜索文献" }),
-    ).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "搜索文献" })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "分类", exact: true }),
     ).toBeVisible();
@@ -571,12 +581,16 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("button", { name: "☆ Save to favorites", exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Start reading" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Start reading" }),
+    ).toBeVisible();
     await expect(
       page.getByText("Manage progress & offline", { exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Read in app", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Read in app", exact: true })
+      .click();
     await expect(
       page.getByText("This reading could not be loaded in the app.", {
         exact: true,
@@ -598,7 +612,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByText("无法在应用中加载此读物。", { exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "重试", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "重试", exact: true }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "语言", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();

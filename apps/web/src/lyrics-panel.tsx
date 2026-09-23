@@ -485,7 +485,10 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTempo(midiSettings.tempo - 2)
                     }
-                    aria-label={translate(locale, "kidung.lyrics.decreaseTempo")}
+                    aria-label={translate(
+                      locale,
+                      "kidung.lyrics.decreaseTempo",
+                    )}
                   >
                     −
                   </button>
@@ -514,7 +517,10 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTempo(midiSettings.tempo + 2)
                     }
-                    aria-label={translate(locale, "kidung.lyrics.increaseTempo")}
+                    aria-label={translate(
+                      locale,
+                      "kidung.lyrics.increaseTempo",
+                    )}
                   >
                     +
                   </button>
@@ -563,7 +569,10 @@ export function LyricsPanel({
                     onClick={() =>
                       void midiPlayer.setTranspose(midiSettings.transpose - 1)
                     }
-                    aria-label={translate(locale, "kidung.lyrics.transposeDown")}
+                    aria-label={translate(
+                      locale,
+                      "kidung.lyrics.transposeDown",
+                    )}
                   >
                     <Icon name="south" size={15} />
                   </button>

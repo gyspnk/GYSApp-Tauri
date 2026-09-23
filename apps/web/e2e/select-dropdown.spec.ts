@@ -144,7 +144,9 @@ test("shared Select keeps touch, keyboard, locale, and viewport contracts", asyn
         clientWidth: document.documentElement.clientWidth,
         scrollWidth: document.documentElement.scrollWidth,
       }));
-      expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+      expect(overflow.scrollWidth).toBeLessThanOrEqual(
+        overflow.clientWidth + 1,
+      );
     }
   }
 });

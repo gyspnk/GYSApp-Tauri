@@ -393,8 +393,7 @@ function HymnPlaylistPage({
   };
   const showToastLike = (name: string) => {
     window.setTimeout(
-      () =>
-        setNoticeLocal(translate(locale, "kidung.playlistSaved", { name })),
+      () => setNoticeLocal(translate(locale, "kidung.playlistSaved", { name })),
       0,
     );
   };
@@ -545,9 +544,13 @@ function HymnPlaylistPage({
                   <div className="kidung-playlist-actions">
                     <details className="kidung-row-menu">
                       <summary
-                        aria-label={translate(locale, "kidung.playlistOptions", {
-                          name: saved.name,
-                        })}
+                        aria-label={translate(
+                          locale,
+                          "kidung.playlistOptions",
+                          {
+                            name: saved.name,
+                          },
+                        )}
                         title={translate(locale, "kidung.playlistOptions", {
                           name: saved.name,
                         })}
@@ -575,9 +578,13 @@ function HymnPlaylistPage({
                         {saved.songIds.length > 0 && (
                           <details className="kidung-manage-saved-items">
                             <summary>
-                              {translate(locale, "kidung.managePlaylistContents", {
-                                count: saved.songIds.length,
-                              })}
+                              {translate(
+                                locale,
+                                "kidung.managePlaylistContents",
+                                {
+                                  count: saved.songIds.length,
+                                },
+                              )}
                             </summary>
                             <div>
                               {saved.songIds.map((songId) => (
@@ -627,9 +634,7 @@ function HymnPlaylistPage({
         {playlist.items.length === 0 ? (
           <div className="kidung-empty-state">
             <strong>{translate(locale, "kidung.emptyPlaylistTitle")}</strong>
-            <p>
-              {translate(locale, "kidung.emptyPlaylistBody")}
-            </p>
+            <p>{translate(locale, "kidung.emptyPlaylistBody")}</p>
             <Link className="text-button" to="/kidung">
               {translate(locale, "kidung.backToCatalog")}
             </Link>
@@ -940,9 +945,7 @@ function HymnSettingsPage({
               }
             />
             <span>
-              <strong>
-                {translate(locale, "kidung.settingsPreloadNext")}
-              </strong>
+              <strong>{translate(locale, "kidung.settingsPreloadNext")}</strong>
               <small>
                 {translate(locale, "kidung.settingsPreloadNextDescription")}
               </small>
@@ -958,21 +961,33 @@ function HymnSettingsPage({
               options={[
                 {
                   value: 1,
-                  label: translate(locale, "kidung.settingsPreloadCountOption", {
-                    count: 1,
-                  }),
+                  label: translate(
+                    locale,
+                    "kidung.settingsPreloadCountOption",
+                    {
+                      count: 1,
+                    },
+                  ),
                 },
                 {
                   value: 2,
-                  label: translate(locale, "kidung.settingsPreloadCountOption", {
-                    count: 2,
-                  }),
+                  label: translate(
+                    locale,
+                    "kidung.settingsPreloadCountOption",
+                    {
+                      count: 2,
+                    },
+                  ),
                 },
                 {
                   value: 3,
-                  label: translate(locale, "kidung.settingsPreloadCountOption", {
-                    count: 3,
-                  }),
+                  label: translate(
+                    locale,
+                    "kidung.settingsPreloadCountOption",
+                    {
+                      count: 3,
+                    },
+                  ),
                 },
               ]}
             />
@@ -1128,7 +1143,9 @@ function HymnSettingsPage({
                       { color: colorLabel },
                     )}
                     title={colorLabel}
-                    onClick={() => updateChordUiPrefs({ fillColor: preset.key })}
+                    onClick={() =>
+                      updateChordUiPrefs({ fillColor: preset.key })
+                    }
                   />
                 );
               })}
@@ -1215,9 +1232,7 @@ function HymnSettingsPage({
                   window.setTimeout(() => window.location.reload(), 400),
                 )
                 .catch(() => {
-                  window.alert(
-                    translate(locale, "more.resetIncomplete"),
-                  );
+                  window.alert(translate(locale, "more.resetIncomplete"));
                 });
             }}
           >
@@ -1608,24 +1623,20 @@ function HymnCatalog({
                       data-id={item.id}
                       aria-pressed={inQueue}
                       onClick={(event) => onRowQueue(event, item)}
-                      title={
-                        translate(
-                          locale,
-                          inQueue
-                            ? "kidung.queueSongExists"
-                            : "kidung.queueSongAdd",
-                          { title: item.title },
-                        )
-                      }
-                      aria-label={
-                        translate(
-                          locale,
-                          inQueue
-                            ? "kidung.queueSongExists"
-                            : "kidung.queueSongAdd",
-                          { title: item.title },
-                        )
-                      }
+                      title={translate(
+                        locale,
+                        inQueue
+                          ? "kidung.queueSongExists"
+                          : "kidung.queueSongAdd",
+                        { title: item.title },
+                      )}
+                      aria-label={translate(
+                        locale,
+                        inQueue
+                          ? "kidung.queueSongExists"
+                          : "kidung.queueSongAdd",
+                        { title: item.title },
+                      )}
                     >
                       <Icon
                         name={inQueue ? "playlistAddCheck" : "playlistAdd"}
@@ -3690,7 +3701,10 @@ function HymnDetail({
                                     .catch(() => undefined);
                               }}
                               style={{ flex: 1 }}
-                              aria-label={translate(locale, "media.positionMidi")}
+                              aria-label={translate(
+                                locale,
+                                "media.positionMidi",
+                              )}
                               disabled={
                                 midiState.status === "loading" ||
                                 isMidiSwitchingRef.current
@@ -4025,11 +4039,11 @@ function HymnDetail({
                       return (
                         <p key={`${index}-${line}`}>
                           {chordLine && chordLine.chords.length > 0 ? (
-                              <ChordCapability
-                                lines={[chordLine]}
-                                transpose={transpose - capo}
-                                accidental={accidental}
-                                locale={locale}
+                            <ChordCapability
+                              lines={[chordLine]}
+                              transpose={transpose - capo}
+                              accidental={accidental}
+                              locale={locale}
                             />
                           ) : (
                             line || "\u00A0"

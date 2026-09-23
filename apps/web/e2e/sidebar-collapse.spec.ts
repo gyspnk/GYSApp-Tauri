@@ -13,13 +13,15 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(expanded!.width).toBeGreaterThan(200);
   expect(expanded!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
 
-  const motionContract = await page.locator(".workspace").evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      duration: style.getPropertyValue("--sidebar-motion-duration").trim(),
-      easing: style.getPropertyValue("--sidebar-motion-ease").trim(),
-    };
-  });
+  const motionContract = await page
+    .locator(".workspace")
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        duration: style.getPropertyValue("--sidebar-motion-duration").trim(),
+        easing: style.getPropertyValue("--sidebar-motion-ease").trim(),
+      };
+    });
   expect(Number.parseFloat(motionContract.duration)).toBeCloseTo(0.24, 2);
   expect(motionContract.easing).toContain("cubic-bezier(.22, 1, .36, 1)");
 

@@ -51,7 +51,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     ".pdf-reader-hymn .pdf-layout-toggle button",
   );
   await expect(layoutButtons).toHaveCount(4);
-  for (let index = 0; index < await layoutButtons.count(); index += 1) {
+  for (let index = 0; index < (await layoutButtons.count()); index += 1) {
     const button = layoutButtons.nth(index);
     await expect(button.locator("svg")).toHaveCount(1);
     const box = await button.boundingBox();
@@ -62,7 +62,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   const advancedButtons = page.locator(
     ".pdf-reader-hymn .pdf-advanced-controls button",
   );
-  for (let index = 0; index < await advancedButtons.count(); index += 1) {
+  for (let index = 0; index < (await advancedButtons.count()); index += 1) {
     const box = await advancedButtons.nth(index).boundingBox();
     expect(box, "PDF advanced control should be measurable").not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);
@@ -158,9 +158,7 @@ test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
     }
     await expect(reader).toBeVisible({ timeout: 30_000 });
     await expect(reader).toHaveAttribute("data-pdf-locale", locale);
-    const pagerButtons = reader.locator(
-      ".pdf-page-navigation > button",
-    );
+    const pagerButtons = reader.locator(".pdf-page-navigation > button");
     await expect(pagerButtons).toHaveCount(2);
     await expect(pagerButtons.nth(0)).toHaveAttribute(
       "aria-label",

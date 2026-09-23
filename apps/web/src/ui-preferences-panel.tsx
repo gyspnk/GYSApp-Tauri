@@ -252,7 +252,7 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
                   type="button"
                   className="ui-preferences-close"
                   onClick={close}
-                   aria-label={translate(locale, "more.closeAppearance")}
+                  aria-label={translate(locale, "more.closeAppearance")}
                 >
                   <span aria-hidden="true">×</span>
                 </button>
@@ -261,8 +261,8 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
                   <div>
-                        <h3>{translate(locale, "more.densityTitle")}</h3>
-                        <p>{translate(locale, "more.densityDescription")}</p>
+                    <h3>{translate(locale, "more.densityTitle")}</h3>
+                    <p>{translate(locale, "more.densityDescription")}</p>
                   </div>
                   <span className="ui-preferences-current">
                     {densityOptions.find(
@@ -273,7 +273,7 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
                 <div
                   className="ui-preference-grid"
                   role="radiogroup"
-                   aria-label={translate(locale, "more.densityTitle")}
+                  aria-label={translate(locale, "more.densityTitle")}
                 >
                   {densityOptions.map((option) => (
                     <PreferenceChoice
@@ -289,8 +289,8 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
                   <div>
-                        <h3>{translate(locale, "more.fontTitle")}</h3>
-                        <p>{translate(locale, "more.fontDescription")}</p>
+                    <h3>{translate(locale, "more.fontTitle")}</h3>
+                    <p>{translate(locale, "more.fontDescription")}</p>
                   </div>
                   <span className="ui-preferences-current">
                     {fontOptions.find(
@@ -301,7 +301,7 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
                 <div
                   className="ui-preference-grid"
                   role="radiogroup"
-                   aria-label={translate(locale, "more.fontTitle")}
+                  aria-label={translate(locale, "more.fontTitle")}
                 >
                   {fontOptions.map((option) => (
                     <PreferenceChoice

@@ -820,7 +820,8 @@
   line-height: 1;
 }
 
-.literature-cover[data-image-state="missing"] .img-fallback-placeholder::before {
+.literature-cover[data-image-state="missing"]
+  .img-fallback-placeholder::before {
   content: "∅";
 }
 
@@ -833,7 +834,9 @@
   content: "!";
 }
 
-.literature-cover[data-image-state="missing"] .img-fallback-placeholder > strong,
+.literature-cover[data-image-state="missing"]
+  .img-fallback-placeholder
+  > strong,
 .literature-cover[data-image-state="error"] .img-fallback-placeholder > strong {
   display: none;
 }

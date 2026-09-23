@@ -487,17 +487,21 @@ test("faith PDF overlay keeps both official links reachable across locales and w
             ".faith-pdf-head-actions",
           ]
             .map((selector) =>
-              element.querySelector<HTMLElement>(selector)?.getBoundingClientRect(),
+              element
+                .querySelector<HTMLElement>(selector)
+                ?.getBoundingClientRect(),
             )
             .filter((box): box is DOMRect => Boolean(box));
           const overlaps = boxes.some((first, firstIndex) =>
-            boxes.slice(firstIndex + 1).some(
-              (second) =>
-                first.left < second.right &&
-                first.right > second.left &&
-                first.top < second.bottom &&
-                first.bottom > second.top,
-            ),
+            boxes
+              .slice(firstIndex + 1)
+              .some(
+                (second) =>
+                  first.left < second.right &&
+                  first.right > second.left &&
+                  first.top < second.bottom &&
+                  first.bottom > second.top,
+              ),
           );
           return {
             overflow: element.scrollWidth - element.clientWidth,
@@ -543,7 +547,11 @@ test("faith PDF 404 keeps the official source and exposes a quiet retry", async 
   page.on("console", (message) => {
     if (
       message.type() === "error" &&
-      !message.text().includes("Failed to load resource: the server responded with a status of 404")
+      !message
+        .text()
+        .includes(
+          "Failed to load resource: the server responded with a status of 404",
+        )
     )
       consoleErrors.push(message.text());
   });

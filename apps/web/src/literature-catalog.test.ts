@@ -190,8 +190,7 @@ describe("Literature persistent + incremental catalog", () => {
       ),
     );
 
-    const { fetchLiteratureCatalog } =
-      await import("./literature-catalog.js");
+    const { fetchLiteratureCatalog } = await import("./literature-catalog.js");
     const items = await fetchLiteratureCatalog();
 
     expect(items.map((entry) => entry.id)).toEqual([

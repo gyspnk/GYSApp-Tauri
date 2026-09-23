@@ -330,7 +330,10 @@ export function GlobalSearch({
       if (event.shiftKey && (active === first || !dialog.contains(active))) {
         event.preventDefault();
         last.focus({ preventScroll: true });
-      } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+      } else if (
+        !event.shiftKey &&
+        (active === last || !dialog.contains(active))
+      ) {
         event.preventDefault();
         first.focus({ preventScroll: true });
       }

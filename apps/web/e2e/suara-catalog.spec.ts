@@ -101,16 +101,24 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
       await page.goto(`/GYSApp-Tauri/suara?__gys_locale=${locale}`);
       const catalog = page.getByTestId("suara-page");
       await expect(catalog).toBeVisible();
-      await expect(page.getByRole("link", { name: localeCopy[locale].back })).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: localeCopy[locale].back }),
+      ).toBeVisible();
       await expect(
         catalog.getByRole("heading", { name: localeCopy[locale].title }),
       ).toBeVisible();
-      await expect(catalog.getByText(localeCopy[locale].eyebrow, { exact: true })).toBeVisible();
-      await expect(catalog.getByText(localeCopy[locale].intro, { exact: true })).toBeVisible();
+      await expect(
+        catalog.getByText(localeCopy[locale].eyebrow, { exact: true }),
+      ).toBeVisible();
+      await expect(
+        catalog.getByText(localeCopy[locale].intro, { exact: true }),
+      ).toBeVisible();
 
       const firstCard = catalog.locator(".suara-library-item").first();
       await expect(firstCard).toBeVisible();
-      await expect(firstCard.locator(".suara-date")).toHaveText(localeCopy[locale].date);
+      await expect(firstCard.locator(".suara-date")).toHaveText(
+        localeCopy[locale].date,
+      );
       await expect(firstCard.locator("img")).toHaveAttribute(
         "alt",
         localeCopy[locale].alt,
@@ -128,8 +136,9 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
         /^https:\/\/tjcorguploads\.s3\.amazonaws\.com\//,
       );
 
-      const geometry = await catalog.locator(".suara-library-item").evaluateAll(
-        (cards) => {
+      const geometry = await catalog
+        .locator(".suara-library-item")
+        .evaluateAll((cards) => {
           const boxes = cards.map((card) => card.getBoundingClientRect());
           return {
             heights: boxes.map((box) => box.height),
@@ -137,13 +146,14 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
             scrollWidth: document.documentElement.scrollWidth,
             viewportWidth: window.innerWidth,
           };
-        },
-      );
-      expect(geometry.heights.every((height) => Math.abs(height - 290) < 1)).toBe(
-        true,
-      );
+        });
+      expect(
+        geometry.heights.every((height) => Math.abs(height - 290) < 1),
+      ).toBe(true);
       expect(geometry.widths.every((cardWidth) => cardWidth > 0)).toBe(true);
-      expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+      expect(geometry.scrollWidth).toBeLessThanOrEqual(
+        geometry.viewportWidth + 1,
+      );
 
       await firstCard.focus();
       await expect(firstCard).toBeFocused();

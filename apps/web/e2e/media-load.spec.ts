@@ -111,12 +111,9 @@ test("literature PDF failure exposes retry inside the application reader shell",
   });
   await pdfLink.click();
   await expect(page).toHaveURL(/\/literatur\/.+\?read=1$/);
-  await expect(page.getByRole("alert")).toContainText(
-    "PDF gagal dimuat",
-    {
-      timeout: 20_000,
-    },
-  );
+  await expect(page.getByRole("alert")).toContainText("PDF gagal dimuat", {
+    timeout: 20_000,
+  });
   await expect(
     page.getByRole("alert").getByRole("button", { name: "Coba lagi" }),
   ).toBeVisible();
@@ -227,11 +224,15 @@ test("literature cover states stay honest without per-card fallback requests", a
     ),
   ).toHaveAttribute("aria-label", /Gagal memuat pratinjau/);
 
-  const rowHeights = await page.locator(".literature-row").evaluateAll((rows) =>
-    rows.map((row) => Math.round(row.getBoundingClientRect().height)),
-  );
+  const rowHeights = await page
+    .locator(".literature-row")
+    .evaluateAll((rows) =>
+      rows.map((row) => Math.round(row.getBoundingClientRect().height)),
+    );
   expect(new Set(rowHeights).size).toBe(1);
-  expect(imageRequests.filter((url) => /official-cover|broken-cover/.test(url))).toHaveLength(2);
+  expect(
+    imageRequests.filter((url) => /official-cover|broken-cover/.test(url)),
+  ).toHaveLength(2);
   expect(imageRequests.some((url) => /coverless/.test(url))).toBe(false);
 });
 

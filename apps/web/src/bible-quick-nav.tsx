@@ -10,7 +10,7 @@ const FOCUSABLE_SELECTOR = [
   "select:not([disabled])",
   "textarea:not([disabled])",
   "a[href]",
-  "[tabindex]:not([tabindex=\"-1\"])",
+  '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -296,7 +296,10 @@ export function BiblePickerModal({
   useEffect(() => {
     if (!open) return;
 
-    if (!restoreFocusTargetRef.current && document.activeElement instanceof HTMLElement) {
+    if (
+      !restoreFocusTargetRef.current &&
+      document.activeElement instanceof HTMLElement
+    ) {
       restoreFocusTargetRef.current = document.activeElement;
     }
 
@@ -419,7 +422,8 @@ export function BiblePickerModal({
 
         const b = bookMap.get(String(v.book));
         const bookName =
-          b?.name ?? translate(locale, "bible.pickerBookFallback", { book: v.book });
+          b?.name ??
+          translate(locale, "bible.pickerBookFallback", { book: v.book });
         const cleanText = sanitizeBibleText(v.text);
         const targetText =
           `${bookName} ${v.chapter}:${v.verse} ${cleanText}`.toLowerCase();
@@ -559,10 +563,7 @@ export function BiblePickerModal({
               <input
                 type="search"
                 className="bible-picker-search"
-                placeholder={translate(
-                  locale,
-                  "bible.pickerSearchPlaceholder",
-                )}
+                placeholder={translate(locale, "bible.pickerSearchPlaceholder")}
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 aria-label={translate(locale, "bible.pickerSearchAria")}
@@ -664,7 +665,7 @@ export function BiblePickerModal({
                   </div>
                 )}
 
-                  {searchResults.matchingBooks.length === 0 &&
+                {searchResults.matchingBooks.length === 0 &&
                   searchResults.matchingVerses.length === 0 && (
                     <p className="bible-side-empty">
                       {translate(locale, "bible.pickerNoResults", {
@@ -739,7 +740,7 @@ export function BiblePickerModal({
               <strong>
                 {currentBook.name} {selectedChapter}
               </strong>{" "}
-              · {" "}
+              ·{" "}
               {translate(locale, "bible.pickerVerseCount", {
                 count: verseCountForChapter,
               })}

@@ -45,8 +45,8 @@ function imageProxyBase(): string | undefined {
     typeof window !== "undefined" &&
     Boolean(
       configured &&
-        (configured.includes("127.0.0.1") || configured.includes("localhost")) &&
-        !configured.includes(`:${window.location.port}`),
+      (configured.includes("127.0.0.1") || configured.includes("localhost")) &&
+      !configured.includes(`:${window.location.port}`),
     );
   if (configured && !isCrossPortLocalhost) return configured;
   if (import.meta.env.DEV && typeof window !== "undefined") {
