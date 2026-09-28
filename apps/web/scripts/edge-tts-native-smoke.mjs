@@ -104,7 +104,7 @@ async function waitForDevTools(app, port) {
         [
           "-NoProfile",
           "-Command",
-          "$ErrorActionPreference = 'SilentlyContinue'; Get-ItemProperty -LiteralPath 'HKCU:\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments' | Format-List *; Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('gysapp-native.exe', 'msedgewebview2.exe') } | Select-Object Name, CommandLine | Format-List",
+          "$ErrorActionPreference = 'SilentlyContinue'; Get-ItemProperty -LiteralPath 'HKLM:\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments' | Format-List *; Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('gysapp-native.exe', 'msedgewebview2.exe') } | Select-Object Name, CommandLine | Format-List",
         ],
         { encoding: "utf8", timeout: 5_000, windowsHide: true },
       );

@@ -66,7 +66,7 @@ jobs:
           $listener.Start()
           $port = $listener.LocalEndpoint.Port
           $listener.Stop()
-          $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          $policyPath = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
           New-Item -Path $policyPath -Force | Out-Null
           $arguments = "--remote-debugging-port=$port --remote-allow-origins=*"
           New-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -PropertyType String -Value $arguments -Force | Out-Null
@@ -78,5 +78,5 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          $policyPath = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
           Remove-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -ErrorAction SilentlyContinue
