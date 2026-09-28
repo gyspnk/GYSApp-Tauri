@@ -56,6 +56,34 @@ async function allocatePort() {
   return address.port;
 }
 
+const policyDebugPort = Number(process.env.GYS_WEBVIEW2_POLICY_DEBUG_PORT);
+const useWebView2PolicyDebugging =
+  Number.isInteger(policyDebugPort) &&
+  policyDebugPort > 0 &&
+  policyDebugPort <= 65_535;
+
+async function allocateDevToolsPort() {
+  return useWebView2PolicyDebugging ? policyDebugPort : allocatePort();
+}
+
+function webView2LaunchEnvironment(profile, port) {
+  const env = { ...process.env };
+  if (useWebView2PolicyDebugging) {
+    for (const name of [
+      "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER",
+      "WEBVIEW2_USER_DATA_FOLDER",
+      "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+      "WEBVIEW2_CHANNEL_SEARCH_KIND",
+      "WEBVIEW2_RELEASE_CHANNELS",
+    ])
+      delete env[name];
+  } else {
+    env.WEBVIEW2_USER_DATA_FOLDER = profile;
+    env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = `--remote-debugging-port=${port} --remote-allow-origins=*`;
+  }
+  return env;
+}
+
 async function waitForDevTools(app, port) {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
@@ -413,14 +441,10 @@ try {
     midiFiles.set(item.path, destination);
   }
 
-  port = await allocatePort();
+  port = await allocateDevToolsPort();
   app = spawn(executable, [], {
     stdio: ["ignore", "pipe", "pipe"],
-    env: {
-      ...process.env,
-      WEBVIEW2_USER_DATA_FOLDER: profile,
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-allow-origins=*`,
-    },
+    env: webView2LaunchEnvironment(profile, port),
   });
   let appStdout = "";
   let appStderr = "";
@@ -2740,14 +2764,10 @@ try {
     "Tauri did not exit after Windows requested a graceful close",
   );
 
-  port = await allocatePort();
+  port = await allocateDevToolsPort();
   app = spawn(executable, [], {
     stdio: "ignore",
-    env: {
-      ...process.env,
-      WEBVIEW2_USER_DATA_FOLDER: profile,
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-allow-origins=*`,
-    },
+    env: webView2LaunchEnvironment(profile, port),
   });
   const restoredDevTools = await waitForDevTools(app, port);
   browser = await chromium.connectOverCDP(
@@ -3007,8 +3027,8 @@ try {
     (
       await restoredMidiSurface.locator(".media-transpose strong").innerText()
     ).trim(),
-    // Loading hymn-001 reapplies its canonical PDF/natural-chord target.
-    "0",
+    String(routeMidiPreferences.transpose),
+    "MIDI transpose preference did not survive restarting packaged Tauri",
   );
   const restoredTempoToggle = restoredMidiSurface.locator(
     ".media-tempo-toggle",

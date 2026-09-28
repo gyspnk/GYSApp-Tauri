@@ -59,5 +59,24 @@ jobs:
             Get-ChildItem -Path (Join-Path $_ "*\msedgewebview2.exe") -File -ErrorAction SilentlyContinue
           } | Select-Object -First 1
           if (-not $runtime) { throw "WebView2 runtime is not installed" }
+      - name: Configure temporary WebView2 debugging policy
+        shell: pwsh
+        run: |
+          $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+          $listener.Start()
+          $port = $listener.LocalEndpoint.Port
+          $listener.Stop()
+          $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          New-Item -Path $policyPath -Force | Out-Null
+          $arguments = "--remote-debugging-port=$port --remote-allow-origins=*"
+          New-ItemProperty -Path $policyPath -Name "*" -PropertyType String -Value $arguments -Force | Out-Null
+          Add-Content -Path $env:GITHUB_ENV -Value "GYS_WEBVIEW2_POLICY_DEBUG_PORT=$port" -Encoding utf8
+          Write-Host "Configured temporary loopback-only WebView2 debugging policy."
       - name: Exercise keyless Edge through WebView2 and the Tauri plugin
         run: pnpm --filter @gys/web test:e2e:native-edge
+      - name: Remove temporary WebView2 debugging policy
+        if: always()
+        shell: pwsh
+        run: |
+          $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          Remove-ItemProperty -Path $policyPath -Name "*" -ErrorAction SilentlyContinue

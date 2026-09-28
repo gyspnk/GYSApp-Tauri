@@ -421,16 +421,9 @@ for (const viewport of readerViewports) {
     const reader = page.locator(".literature-reader-panel");
     await expect(reader).toBeVisible({ timeout: 20_000 });
     await expect(page.locator(".literature-detail-hero")).toBeHidden();
-    await expect
-      .poll(
-        () =>
-          page
-            .locator(".pdf-pages canvas")
-            .first()
-            .evaluate((canvas) => canvas.width),
-        { timeout: 20_000 },
-      )
-      .toBeGreaterThan(0);
+    await expect(
+      page.locator('.pdf-pages canvas[data-pdf-rendered="true"]').first(),
+    ).toBeVisible({ timeout: 20_000 });
     await assertViewportIntegrity(page);
 
     await expect(page).toHaveScreenshot(
@@ -468,16 +461,13 @@ for (const viewport of readerViewports) {
     await expect(page.locator(".faith-pdf-backdrop")).toBeVisible({
       timeout: 20_000,
     });
-    await expect
-      .poll(
-        () =>
-          page
-            .locator(".faith-pdf-overlay .pdf-pages canvas")
-            .first()
-            .evaluate((canvas) => canvas.width),
-        { timeout: 20_000 },
-      )
-      .toBeGreaterThan(0);
+    await expect(
+      page
+        .locator(
+          '.faith-pdf-overlay .pdf-pages canvas[data-pdf-rendered="true"]',
+        )
+        .first(),
+    ).toBeVisible({ timeout: 20_000 });
     await assertViewportIntegrity(page);
 
     await expect(page).toHaveScreenshot(
@@ -547,16 +537,9 @@ test("sepia literature direct reader theme sample", async ({ page }) => {
     timeout: 20_000,
   });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "sepia");
-  await expect
-    .poll(
-      () =>
-        page
-          .locator(".pdf-pages canvas")
-          .first()
-          .evaluate((canvas) => canvas.width),
-      { timeout: 20_000 },
-    )
-    .toBeGreaterThan(0);
+  await expect(
+    page.locator('.pdf-pages canvas[data-pdf-rendered="true"]').first(),
+  ).toBeVisible({ timeout: 20_000 });
   await assertViewportIntegrity(page);
   await assertThemePdfChrome(page, {
     root: ".literature-pdf-backdrop",
@@ -596,16 +579,11 @@ test("AMOLED faith overlay theme sample", async ({ page }) => {
     timeout: 20_000,
   });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "amoled");
-  await expect
-    .poll(
-      () =>
-        page
-          .locator(".faith-pdf-overlay .pdf-pages canvas")
-          .first()
-          .evaluate((canvas) => canvas.width),
-      { timeout: 20_000 },
-    )
-    .toBeGreaterThan(0);
+  await expect(
+    page
+      .locator('.faith-pdf-overlay .pdf-pages canvas[data-pdf-rendered="true"]')
+      .first(),
+  ).toBeVisible({ timeout: 20_000 });
   await assertViewportIntegrity(page);
   await assertThemePdfChrome(page, {
     root: ".faith-pdf-backdrop",
