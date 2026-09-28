@@ -39,5 +39,25 @@ jobs:
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable
         run: pnpm --filter @gys/native exec tauri build --no-bundle
+      - name: Ensure the WebView2 Evergreen Runtime
+        shell: pwsh
+        run: |
+          $runtimeRoots = @(
+            (Join-Path ${env:ProgramFiles(x86)} "Microsoft\EdgeWebView\Application"),
+            (Join-Path $env:LOCALAPPDATA "Microsoft\EdgeWebView\Application")
+          )
+          $runtime = $runtimeRoots | ForEach-Object {
+            Get-ChildItem -Path (Join-Path $_ "*\msedgewebview2.exe") -File -ErrorAction SilentlyContinue
+          } | Select-Object -First 1
+          if (-not $runtime) {
+            $installer = Join-Path $env:RUNNER_TEMP "MicrosoftEdgeWebView2Setup.exe"
+            Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile $installer
+            $result = Start-Process -FilePath $installer -ArgumentList "/silent", "/install" -Wait -PassThru
+            if ($result.ExitCode -ne 0) { throw "WebView2 runtime installer exited with $($result.ExitCode)" }
+          }
+          $runtime = $runtimeRoots | ForEach-Object {
+            Get-ChildItem -Path (Join-Path $_ "*\msedgewebview2.exe") -File -ErrorAction SilentlyContinue
+          } | Select-Object -First 1
+          if (-not $runtime) { throw "WebView2 runtime is not installed" }
       - name: Exercise keyless Edge through WebView2 and the Tauri plugin
         run: pnpm --filter @gys/web test:e2e:native-edge

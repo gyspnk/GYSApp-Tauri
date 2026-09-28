@@ -1117,6 +1117,7 @@ h1 {
   border-color: var(--blue);
   background: var(--blue);
   color: #fff;
+  min-width: 44px;
 }
 .primary-button:hover {
   transform: translateY(-1px);
@@ -10235,9 +10236,6 @@ body.gys-viewer-active {
     gap: 8px;
     padding-inline: 11px;
     font-size: 12px;
-  }
-  .primary-button {
-    min-width: 44px;
   }
   .text-button {
     min-height: 40px;
