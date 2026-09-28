@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type TouchEvent,
   type WheelEvent as ReactWheelEvent,
   type RefObject,
@@ -416,8 +417,32 @@ export function PdfReader({
   const [zoomPercent, setZoomPercent] = useState(100);
   const [advancedOpen, setAdvancedOpen] = useState(variant === "hymn");
   const [fullscreenActive, setFullscreenActive] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
+  const downloadPdf = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    try {
+      const currentPdf = data ?? (await documentProxy?.getData());
+      const blob = currentPdf
+        ? new Blob([Uint8Array.from(currentPdf).buffer], {
+            type: "application/pdf",
+          })
+        : await fetch(downloadUrl ?? src).then((response) => {
+            if (!response.ok) throw new Error("PDF download failed");
+            return response.blob();
+          });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${readerTitle}.pdf`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+      setDownloadError(false);
+    } catch {
+      setDownloadError(true);
+    }
+  };
   const toggleFullscreen = () => {
-    const target = pdfStageRef.current;
+    const target = pdfReaderRef.current;
     if (!target) return;
     const doc = target.ownerDocument as Document & {
       webkitFullscreenElement?: Element | null;
@@ -445,7 +470,7 @@ export function PdfReader({
   };
   useEffect(() => {
     const onFullscreenChange = () => {
-      const target = pdfStageRef.current;
+      const target = pdfReaderRef.current;
       const doc = target?.ownerDocument as
         (Document & { webkitFullscreenElement?: Element | null }) | undefined;
       setFullscreenActive(
@@ -499,6 +524,7 @@ export function PdfReader({
   }>({ centered: false, overflowing: false });
   const verticalStageRef = useRef<HTMLDivElement>(null);
   const pdfStageRef = useRef<HTMLDivElement>(null);
+  const pdfReaderRef = useRef<HTMLElement>(null);
   const hydratingLayout = useRef(true);
   const initialScaleRef = useRef<number | undefined>(undefined);
   const zoomAnchorRef = useRef<{ x: number; y: number } | undefined>(undefined);
@@ -524,6 +550,10 @@ export function PdfReader({
     window.addEventListener("resize", onResize, { passive: true });
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    if (status === "ready") restoreToolbar();
+  }, [restoreToolbar, status]);
 
   useEffect(() => {
     hydratingLayout.current = true;
@@ -808,6 +838,7 @@ export function PdfReader({
   };
   /** gyschordweb parity: wheel zoom (±25%), anchored at cursor, single/two only. */
   const onStageWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    restoreToolbar();
     if (effectiveLayout !== "single" && effectiveLayout !== "two") return;
     const zooming = event.ctrlKey || event.metaKey;
     // Without a modifier the wheel pans vertically when zoomed past fit.
@@ -1038,11 +1069,13 @@ export function PdfReader({
 
   return (
     <section
+      ref={pdfReaderRef}
       className={`pdf-reader${variant === "hymn" ? " pdf-reader-hymn" : ""}`}
       aria-label={readerTitle}
       data-pdf-locale={locale}
       data-pdf-loading-phase={loadPhase}
       data-pdf-loading-progress={loadProgress}
+      onPointerMove={restoreToolbar}
     >
       <div className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}>
         <div className="pdf-page-navigation">
@@ -1380,6 +1413,7 @@ export function PdfReader({
               className="pdf-download"
               href={downloadUrl}
               download={`${readerTitle}.pdf`}
+              onClick={downloadPdf}
               aria-label={translate(locale, "pdf.download")}
               title={translate(locale, "pdf.download")}
             >
@@ -1388,6 +1422,9 @@ export function PdfReader({
                 {translate(locale, "pdf.download")}
               </span>
             </a>
+          )}
+          {downloadError && (
+            <span role="status">{translate(locale, "pdf.downloadError")}</span>
           )}
         </div>
       </div>

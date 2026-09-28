@@ -10,6 +10,7 @@ async function openAppearance(
   page: Page,
 ): Promise<{ dialog: Locator; opener: Locator }> {
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="appearance"] > summary').click();
   const opener = page.getByRole("button", { name: "Tampilan & keterbacaan" });
   await opener.click();
   const dialog = page.getByRole("dialog", { name: "Tampilan & keterbacaan" });
@@ -259,4 +260,123 @@ test("preferences contain enlarged text without document overflow", async ({
       page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     )
     .toBe(true);
+});
+
+test("Bible and Kidung stay within a phone viewport for every locale and theme at 200% text", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const locales = [
+    { value: "id", bible: "Alkitab", kidung: "Kidung" },
+    { value: "en", bible: "Bible", kidung: "Hymns" },
+    { value: "zh", bible: "圣经", kidung: "诗歌" },
+  ] as const;
+  const themes = ["light", "dark", "system", "amoled", "sepia"] as const;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/lainnya");
+
+  for (const locale of locales) {
+    for (const theme of themes) {
+      await page.evaluate(
+        ({ locale: nextLocale, theme: nextTheme }) => {
+          const settings = JSON.stringify({
+            version: 1,
+            locale: nextLocale,
+            theme: nextTheme,
+          });
+          localStorage.setItem("gys-shell-settings-v1", settings);
+          localStorage.setItem("gys-locale", nextLocale);
+          localStorage.setItem("gys-theme", nextTheme);
+        },
+        { locale: locale.value, theme },
+      );
+
+      for (const route of [
+        { path: "/GYSApp-Tauri/bible", title: locale.bible },
+        { path: "/GYSApp-Tauri/kidung", title: locale.kidung },
+      ]) {
+        await page.goto(route.path);
+        await expect(page.locator("html")).toHaveAttribute(
+          "lang",
+          locale.value,
+        );
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        const heading = page.getByRole("heading", {
+          level: 1,
+          name: route.title,
+          exact: true,
+        });
+        await expect(heading).toBeVisible();
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = "200%";
+        });
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () =>
+                document.documentElement.scrollWidth <=
+                document.documentElement.clientWidth,
+            ),
+          )
+          .toBe(true);
+        await expect(heading).toBeVisible();
+      }
+    }
+  }
+});
+
+test("content routes stay contained across every locale and theme at 200% text", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const locales = ["id", "en", "zh"] as const;
+  const themes = ["light", "dark", "system", "amoled", "sepia"] as const;
+  const routes = [
+    { path: "/GYSApp-Tauri/", selector: ".home-grid" },
+    { path: "/GYSApp-Tauri/iman", selector: ".faith-page" },
+    { path: "/GYSApp-Tauri/literatur", selector: ".literature-page" },
+    { path: "/GYSApp-Tauri/sauh", selector: "[data-testid='sauh-page']" },
+    { path: "/GYSApp-Tauri/suara", selector: ".suara-page" },
+    { path: "/GYSApp-Tauri/lainnya", selector: ".more-page" },
+  ] as const;
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/lainnya");
+
+  for (const locale of locales) {
+    for (const theme of themes) {
+      await page.evaluate(
+        ({ nextLocale, nextTheme }) => {
+          const settings = JSON.stringify({
+            version: 1,
+            locale: nextLocale,
+            theme: nextTheme,
+          });
+          localStorage.setItem("gys-shell-settings-v1", settings);
+          localStorage.setItem("gys-locale", nextLocale);
+          localStorage.setItem("gys-theme", nextTheme);
+        },
+        { nextLocale: locale, nextTheme: theme },
+      );
+
+      for (const route of routes) {
+        await page.goto(route.path);
+        await expect(page.locator(route.selector)).toBeVisible();
+        await expect(page.locator("html")).toHaveAttribute("lang", locale);
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = "200%";
+        });
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () =>
+                document.documentElement.scrollWidth <=
+                document.documentElement.clientWidth,
+            ),
+          )
+          .toBe(true);
+      }
+    }
+  }
 });

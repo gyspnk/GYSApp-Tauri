@@ -19,6 +19,7 @@ import {
   playPreviousMidiPlaylistItem,
 } from "./midi-queue.js";
 import { getMidiPlaylist } from "./midi-playlist.js";
+import { speechPlayer } from "./speech-player.js";
 
 const SKIP_SECONDS = 10;
 const POLL_MS = 1000;
@@ -56,6 +57,7 @@ export class MediaSessionBridge {
   private wakeLockSentinel: WakeLockSentinel | undefined;
   private poll: number | undefined;
   private installed = false;
+  private speechActive = false;
 
   public install(): void {
     if (this.installed) return;
@@ -89,13 +91,25 @@ export class MediaSessionBridge {
   }
 
   public sync(): void {
-    this.updateMetadata();
+    const isPlaying = this.isActiveMediaPlaying();
+    if (!this.speechActive) this.updateMetadata();
     this.updatePlaybackState();
     this.updatePositionState();
-    if (midiPlayer.isPlaying()) this.playSilentAudio();
+    if (isPlaying) this.playSilentAudio();
     else this.pauseSilentAudio();
-    if (midiPlayer.isPlaying()) void this.requestWakeLock();
+    if (isPlaying) void this.requestWakeLock();
     else this.releaseWakeLock();
+  }
+
+  public setSpeechActive(active: boolean): void {
+    this.speechActive = active;
+    this.sync();
+  }
+
+  private isActiveMediaPlaying(): boolean {
+    return this.speechActive
+      ? speechPlayer.snapshot().status === "speaking"
+      : midiPlayer.isPlaying();
   }
 
   private hasSong(): boolean {
@@ -189,13 +203,20 @@ export class MediaSessionBridge {
     const session = this.mediaSession();
     if (!session) return;
     try {
+      const speechStatus = speechPlayer.snapshot().status;
       session.playbackState =
         explicit ??
-        (midiPlayer.isPlaying()
-          ? "playing"
-          : this.hasSong()
-            ? "paused"
-            : "none");
+        (this.speechActive
+          ? speechStatus === "speaking"
+            ? "playing"
+            : speechStatus === "idle"
+              ? "none"
+              : "paused"
+          : midiPlayer.isPlaying()
+            ? "playing"
+            : this.hasSong()
+              ? "paused"
+              : "none");
     } catch {
       // Playback state is optional.
     }
@@ -204,6 +225,14 @@ export class MediaSessionBridge {
   private updatePositionState(): void {
     const session = this.mediaSession();
     if (!session || typeof session.setPositionState !== "function") return;
+    if (this.speechActive) {
+      try {
+        session.setPositionState();
+      } catch {
+        // Position state is optional.
+      }
+      return;
+    }
     const duration = midiPlayer.getDuration();
     if (duration <= 0) return;
     const position = Math.min(Math.max(midiPlayer.getTime(), 0), duration);
@@ -215,17 +244,17 @@ export class MediaSessionBridge {
   }
 
   private pollTick(): void {
-    if (document.hidden && !midiPlayer.isPlaying()) return;
-    if (!this.hasSong()) return;
-    this.updatePositionState();
+    const isPlaying = this.isActiveMediaPlaying();
+    if (document.hidden && !isPlaying) return;
+    if (!this.speechActive && !this.hasSong()) return;
+    if (!this.speechActive) this.updatePositionState();
     this.updatePlaybackState();
-    if (midiPlayer.isPlaying() && this.silentAudio?.paused)
-      this.playSilentAudio();
+    if (isPlaying && this.silentAudio?.paused) this.playSilentAudio();
   }
 
   private onVisibilityChange(): void {
     if (document.visibilityState !== "visible") return;
-    if (midiPlayer.isPlaying()) {
+    if (this.isActiveMediaPlaying()) {
       void this.requestWakeLock();
       if (this.silentAudio?.paused) this.playSilentAudio();
     }

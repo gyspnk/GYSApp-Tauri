@@ -89,6 +89,7 @@ describe("canonical PDF chord layout", () => {
       ],
       100,
     );
+    expect(lyricLines.map((line) => line.variant)).toEqual([1, 2, 3]);
 
     const lines = buildChordedLines(notes.notes, notes.noteRows, lyricLines, [
       { noteIdx: 0, chord: "C" },

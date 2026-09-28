@@ -132,9 +132,10 @@
 .hymn-page .pujian-item {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 30px 48px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   align-items: center;
   min-height: 64px;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -154,8 +155,13 @@
   grid-row: 1;
   width: 100%;
   min-width: 0;
-  min-height: 64px;
-  padding: 10px 10px 10px 64px;
+  min-height: 44px;
+  padding: 6px 10px 6px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -170,6 +176,19 @@
   transition: color var(--motion-fast) var(--ease-out);
 }
 
+.hymn-page .pujian-title-label {
+  min-width: 0;
+}
+
+.hymn-page .pujian-metadata {
+  color: var(--muted);
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
 .hymn-page .pujian-title:hover,
 .hymn-page .pujian-title:focus-visible {
   background: transparent;
@@ -182,25 +201,22 @@
   z-index: 2;
   justify-self: start;
   width: 48px;
+  height: auto;
   margin-left: 8px;
+  display: block;
+  border-radius: 0;
+  background: transparent;
   color: var(--blue);
   font-size: 12px;
   font-weight: 760;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
-  pointer-events: none;
-}
-
-.hymn-page .chord-indicator {
-  grid-column: 2;
-  grid-row: 1;
-  z-index: 2;
-  justify-self: center;
+  text-align: left;
   pointer-events: none;
 }
 
 .hymn-page .add-to-playlist-btn {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
   z-index: 3;
   width: 44px;
@@ -224,7 +240,7 @@
 
 .hymn-text-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 44px 44px;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
   justify-content: stretch;
   gap: 8px;
@@ -242,7 +258,7 @@
   grid-column: 1;
   grid-row: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
   width: auto;
   min-width: 0;
@@ -282,9 +298,7 @@
   min-height: var(--control-hit, 44px);
 }
 
-.hymn-text-toolbar .hymn-segmented-toolbar {
-  grid-column: 2;
-  grid-row: 1;
+.hymn-more-actions-panel .hymn-segmented-toolbar {
   display: flex;
   flex: 1 1 auto;
   width: auto;
@@ -296,13 +310,9 @@
 }
 
 .hymn-text-toolbar .hymn-more-actions {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
-}
-
-.hymn-text-toolbar .hymn-reader-settings {
-  grid-column: 4;
-  grid-row: 1;
+  justify-self: end;
 }
 
 .hymn-more-actions,
@@ -362,6 +372,11 @@
   box-shadow: var(--calm-shadow-raised, var(--shadow-lift));
 }
 
+.hymn-more-actions[open] > .hymn-more-actions-panel,
+.hymn-reader-settings[open] > .song-controls {
+  animation: kidung-sheet-in var(--motion-fast) var(--ease-out) both;
+}
+
 .hymn-more-actions-panel {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
@@ -386,6 +401,47 @@
   clip: auto;
   white-space: normal;
   text-align: left;
+}
+.hymn-more-actions-panel .hymn-segmented-toolbar,
+.hymn-more-actions-panel > .hymn-reader-settings {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.hymn-more-actions-panel .hymn-segmented-toolbar {
+  flex: 1 1 100%;
+}
+.hymn-more-actions-panel > .hymn-reader-settings {
+  flex: 1 0 100%;
+}
+.hymn-more-actions-panel .hymn-reader-settings-summary {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 10px;
+}
+.hymn-more-actions-panel .hymn-autoscroll-btn {
+  width: auto;
+  min-width: 44px;
+  padding-inline: 10px;
+  gap: 7px;
+}
+.hymn-more-actions-panel .hymn-autoscroll-btn .hymn-action-label {
+  display: inline;
+}
+.hymn-more-actions-panel .hymn-autoscroll-control {
+  justify-self: end;
+}
+.hymn-more-actions-panel .hymn-reader-settings > .song-controls {
+  position: static;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  animation: none;
 }
 
 @keyframes kidung-sheet-in {
@@ -426,31 +482,31 @@
   }
 
   .hymn-text-toolbar {
-    grid-template-columns: minmax(0, 1fr) 44px 44px;
+    grid-template-columns: minmax(0, 1fr) 44px;
     gap: 6px;
     padding: 4px 0;
   }
 
   .hymn-text-toolbar .detail-actions {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     flex-wrap: nowrap;
     gap: 6px;
-    width: 100%;
+    width: auto;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action {
-    flex: 1 1 0;
-    width: auto;
+    flex: 0 0 44px;
+    width: 44px;
     min-width: 0;
-    min-height: 44px;
-    padding: 0 8px;
-    flex-direction: row;
-    gap: 6px;
+    min-height: 45px;
+    padding: 0;
+    gap: 0;
   }
 
   .hymn-text-toolbar .detail-actions .hymn-action-label {
-    display: block;
+    display: none;
     position: static;
     width: auto;
     height: auto;
@@ -467,11 +523,9 @@
     line-height: 1.1;
   }
 
-  .hymn-text-toolbar .hymn-segmented-toolbar {
-    grid-column: 1;
-    grid-row: 2;
+  .hymn-more-actions-panel .hymn-segmented-toolbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(44px, max-content);
+    grid-template-columns: minmax(0, 1fr) max-content;
     min-width: 0;
     gap: 6px;
     align-items: center;
@@ -498,20 +552,10 @@
     justify-self: end;
   }
 
-  .hymn-text-toolbar .hymn-autoscroll-btn {
-    width: 44px;
-    min-width: 44px;
-    padding-inline: 0;
-  }
-
   .hymn-text-toolbar .hymn-more-actions {
     grid-column: 2;
-    grid-row: 2;
-  }
-
-  .hymn-text-toolbar .hymn-reader-settings {
-    grid-column: 3;
-    grid-row: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .hymn-more-actions-panel,
@@ -531,10 +575,6 @@
 
   .hymn-more-actions-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .hymn-more-actions[open] > .hymn-more-actions-panel {
-    padding-bottom: 70px;
   }
 
   .hymn-reader-settings > .song-controls {
@@ -681,6 +721,33 @@
 
 .kidung-row-menu {
   position: relative;
+}
+
+.kidung-saved-playlists:has(.kidung-row-menu[open]) {
+  position: relative;
+  z-index: var(--z-popover);
+}
+
+.kidung-saved-playlist-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, 36px);
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kidung-saved-playlist-item > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kidung-saved-playlist-item > .text-button {
+  width: 36px;
+  min-width: 36px;
+  min-height: var(--control-hit, 44px);
+  justify-content: center;
+  padding: 0;
 }
 
 .kidung-row-menu > summary {

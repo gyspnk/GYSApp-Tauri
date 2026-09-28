@@ -15,6 +15,8 @@
     "test:e2e:hymn": "playwright test -g \"hymn|Kidung\"",
     "test:e2e:home": "playwright test -g \"home|Sauh|Suara|literature\"",
     "test:e2e:visual": "playwright test e2e/visual.spec.ts",
+    "test:e2e:native-edge": "node scripts/edge-tts-native-smoke.mjs",
+    "test:e2e:native-assets": "node scripts/distributed-assets-native-smoke.mjs",
     "audit:workspace-export": "node ../../scripts/export-workspace-audit.mjs",
     "lint": "tsc -b --pretty false",
     "dev": "vite --host 127.0.0.1 --port 5173",

@@ -127,6 +127,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
   private active: HTMLAudioElement | undefined;
   private activeUrl: string | undefined;
   private activeCancel: ((error: Error) => void) | undefined;
+  private paused = false;
   private advertisedVoices: SpeechVoice[] = [];
   private voicesExpiresAt = 0;
   private voicesRequest: Promise<SpeechVoice[]> | undefined;
@@ -187,6 +188,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     signal?: AbortSignal,
   ): Promise<void> {
     if (signal?.aborted) throw abortError();
+    this.paused = false;
     await this.stop();
     const parsed = EdgeTtsRequestSchema.parse({
       text: text.slice(0, 8_000),
@@ -195,6 +197,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
       pitch: clamp(options.pitch ?? 1, 0.5, 2),
       volume: clamp(options.volume ?? 1, 0, 1),
     });
+    recordDiagnostic("info", "tts.edge.voice", parsed.voice);
 
     let blob: Blob;
     const endpoint = getEdgeEndpoint();
@@ -218,14 +221,21 @@ export class EdgeSpeechProvider implements SpeechProvider {
       );
     }
 
+    if (blob.size === 0) {
+      const error = new Error("Edge speech returned empty audio");
+      recordDiagnostic("error", "tts.edge.audio", error);
+      throw error;
+    }
     await this.playAudioBlob(blob, parsed.rate, parsed.volume, signal);
   }
 
   public async pause(): Promise<void> {
+    this.paused = true;
     this.active?.pause();
   }
 
   public async resume(): Promise<void> {
+    this.paused = false;
     if (this.active) await this.active.play();
   }
 
@@ -289,6 +299,11 @@ export class EdgeSpeechProvider implements SpeechProvider {
     audio.playbackRate = clamp(rate, 0.5, 2);
     this.active = audio;
     this.activeUrl = url;
+    recordDiagnostic(
+      "info",
+      "tts.edge.playback",
+      `Playing ${blob.size} audio bytes`,
+    );
 
     await new Promise<void>((resolve, reject) => {
       let settled = false;
@@ -319,16 +334,21 @@ export class EdgeSpeechProvider implements SpeechProvider {
       this.activeCancel = fail;
       signal?.addEventListener("abort", abort, { once: true });
       audio.onended = finish;
-      audio.onerror = () => fail(new Error("Edge audio playback failed"));
-      void audio
-        .play()
-        .catch((error: unknown) =>
-          fail(
+      audio.onerror = () => {
+        const error = new Error("Edge audio playback failed");
+        recordDiagnostic("error", "tts.edge.playback", error);
+        fail(error);
+      };
+      if (!this.paused) {
+        void audio.play().catch((error: unknown) => {
+          const failure =
             error instanceof Error
               ? error
-              : new Error("Edge audio playback failed"),
-          ),
-        );
+              : new Error("Edge audio playback failed");
+          recordDiagnostic("error", "tts.edge.playback", failure);
+          fail(failure);
+        });
+      }
     });
   }
 

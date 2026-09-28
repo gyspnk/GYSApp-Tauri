@@ -1,7 +1,9 @@
 import {
+  DistributedAssetTrackManifestSchema,
   HymnalPdfManifestSchema,
   type HymnalPdfManifest,
 } from "@gys/contracts";
+import { assertTrustedPackageUrl } from "./distributed-assets.js";
 
 const RELEASE_MANIFEST =
   "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json";
@@ -136,28 +138,53 @@ async function fetchPdf(url: string, expected: PdfIntegrity = {}) {
 }
 
 async function loadDataPackage() {
-  const releaseResponse = await fetch(RELEASE_MANIFEST, {
-    cache: "no-cache",
-  });
-  if (!releaseResponse.ok)
-    throw new Error("GYSApp-Data PDF release unavailable");
-  const release = (await releaseResponse.json()) as {
-    packages?: Array<{
-      code?: string;
-      downloadUrl?: string;
-      sizeBytes?: number;
-      checksumSha256?: string;
-    }>;
+  const cache =
+    typeof caches === "undefined"
+      ? undefined
+      : await caches.open(PACKAGE_CACHE);
+  const parseRelease = async (response: Response) => {
+    const release = DistributedAssetTrackManifestSchema.parse(
+      await response.json(),
+    );
+    if (release.track !== "hymnals")
+      throw new Error("GYSApp-Data PDF release track mismatch");
+    const pkg = release.packages.find((candidate) => candidate.code === "KR");
+    if (!pkg) throw new Error("KR PDF package unavailable");
+    assertTrustedPackageUrl(pkg.downloadUrl);
+    return { pkg, release };
   };
-  const pkg = release.packages?.find((candidate) => candidate.code === "KR");
-  if (!pkg?.downloadUrl) throw new Error("KR PDF package unavailable");
+  let parsed: Awaited<ReturnType<typeof parseRelease>>;
+  try {
+    const response = await fetch(RELEASE_MANIFEST, { cache: "no-cache" });
+    if (!response.ok) throw new Error("GYSApp-Data PDF release unavailable");
+    parsed = await parseRelease(response.clone());
+    await cache?.put(RELEASE_MANIFEST, response);
+  } catch (error) {
+    const cached = await cache?.match(RELEASE_MANIFEST);
+    if (!cached) throw error;
+    parsed = await parseRelease(cached);
+  }
+  const { pkg } = parsed;
   const downloadUrl = pkg.downloadUrl;
+  const matchesIntegrity = async (candidate: Uint8Array) => {
+    if (candidate.byteLength !== pkg.sizeBytes) return false;
+    return (
+      (await sha256(candidate)).toLowerCase() ===
+      pkg.checksumSha256.toLowerCase()
+    );
+  };
   let bytes: Uint8Array | undefined = await readCached(downloadUrl);
+  if (bytes && !(await matchesIntegrity(bytes))) {
+    await caches.open(PACKAGE_CACHE).then((cache) => cache.delete(downloadUrl));
+    bytes = undefined;
+  }
   if (!bytes) {
     const response = await fetch(downloadUrl, { cache: "force-cache" });
     if (!response.ok)
       throw new Error(`KR PDF package request failed: ${response.status}`);
     bytes = new Uint8Array(await response.arrayBuffer());
+    if (!(await matchesIntegrity(bytes)))
+      throw new Error("KR PDF package integrity mismatch");
     if (typeof caches !== "undefined")
       await caches.open(PACKAGE_CACHE).then((cache) =>
         cache.put(
@@ -168,13 +195,6 @@ async function loadDataPackage() {
         ),
       );
   }
-  if (pkg.sizeBytes && bytes.byteLength !== pkg.sizeBytes)
-    throw new Error("KR PDF package size mismatch");
-  if (
-    pkg.checksumSha256 &&
-    (await sha256(bytes)).toLowerCase() !== pkg.checksumSha256.toLowerCase()
-  )
-    throw new Error("KR PDF package integrity mismatch");
   return decodePackage(bytes);
 }
 

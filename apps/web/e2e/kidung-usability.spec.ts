@@ -3,6 +3,14 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+type TestMediaSessionWindow = Window & {
+  __gysMediaSession?: {
+    handlers: Record<string, (details?: unknown) => unknown>;
+    metadata: { album?: string; title?: string } | null;
+    playbackState: string;
+  };
+};
+
 // Contextual Kidung menus share the same 44px minimum target as primary chrome.
 async function expectTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
@@ -22,7 +30,9 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 async function expectLyricsGeometry(panel: Locator, page: Page) {
-  const controls = panel.locator("button:visible, input:visible, select:visible");
+  const controls = panel.locator(
+    "button:visible, input:visible, select:visible",
+  );
   const controlCount = await controls.count();
   expect(controlCount).toBeGreaterThan(15);
   for (let index = 0; index < controlCount; index += 1)
@@ -50,7 +60,12 @@ async function expectLyricsGeometry(panel: Locator, page: Page) {
     .evaluateAll((elements) =>
       elements.map((element) => {
         const box = element.getBoundingClientRect();
-        return { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
+        return {
+          left: box.left,
+          top: box.top,
+          right: box.right,
+          bottom: box.bottom,
+        };
       }),
     );
   for (let left = 0; left < headerRegions.length; left += 1) {
@@ -67,10 +82,7 @@ async function expectLyricsGeometry(panel: Locator, page: Page) {
   }
 }
 
-async function expectMediaDockGeometry(
-  media: Locator,
-  viewportWidth: number,
-) {
+async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
   const geometry = await media.evaluate((element) => {
     const rect = (selector: string) => {
       const node =
@@ -85,7 +97,9 @@ async function expectMediaDockGeometry(
     return {
       media: rect(":scope"),
       transport: rect(":scope > .media-transport-controls"),
-      previous: rect(":scope > .media-transport-controls .media-previous-control"),
+      previous: rect(
+        ":scope > .media-transport-controls .media-previous-control",
+      ),
       play: rect(":scope > .media-transport-controls .media-primary-control"),
       next: rect(":scope > .media-transport-controls .media-next-control"),
       stop: rect(":scope > .media-stop-control"),
@@ -122,10 +136,16 @@ async function expectMediaDockGeometry(
     geometry.minimize!,
   ];
   if (viewportWidth >= 360) {
-    expect(Math.max(...controls.map((box) => box.y)) - Math.min(...controls.map((box) => box.y))).toBeLessThan(1.5);
+    expect(
+      Math.max(...controls.map((box) => box.y)) -
+        Math.min(...controls.map((box) => box.y)),
+    ).toBeLessThan(1.5);
   } else {
     expect(geometry.transport!.y).toBeLessThan(geometry.stop!.y - 10);
-    expect(Math.max(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y) - Math.min(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y)).toBeLessThan(1.5);
+    expect(
+      Math.max(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y) -
+        Math.min(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y),
+    ).toBeLessThan(1.5);
   }
 }
 
@@ -170,7 +190,9 @@ async function openFirstHymnPdf(page: Page) {
     timeout: 30_000,
   });
 
-  const renderedPage = page.locator('.pdf-reader canvas[data-pdf-rendered="true"]').first();
+  const renderedPage = page
+    .locator('.pdf-reader canvas[data-pdf-rendered="true"]')
+    .first();
   await expect(renderedPage).toBeVisible({ timeout: 30_000 });
   await expect
     .poll(
@@ -182,20 +204,52 @@ async function openFirstHymnPdf(page: Page) {
       { timeout: 30_000 },
     )
     .toBe(true);
-  await expect(page.locator(".gys-pdf-overlay > .loading-panel")).toHaveCount(0);
+  await expect(page.locator(".gys-pdf-overlay > .loading-panel")).toHaveCount(
+    0,
+  );
 }
 
 const MIDI_FIXTURE = Buffer.from([
-  0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01,
-  0x01, 0xe0, 0x4d, 0x54, 0x72, 0x6b, 0x00, 0x00, 0x00, 0x17, 0x00, 0xff,
-  0x51, 0x03, 0x07, 0xa1, 0x20, 0x00, 0xc0, 0x00, 0x00, 0x90, 0x3c, 0x64,
-  0x83, 0x60, 0x80, 0x3c, 0x40, 0x00, 0xff, 0x2f, 0x00,
+  0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, 0x01,
+  0xe0, 0x4d, 0x54, 0x72, 0x6b, 0x00, 0x00, 0x00, 0x17, 0x00, 0xff, 0x51, 0x03,
+  0x07, 0xa1, 0x20, 0x00, 0xc0, 0x00, 0x00, 0x90, 0x3c, 0x64, 0x83, 0x60, 0x80,
+  0x3c, 0x40, 0x00, 0xff, 0x2f, 0x00,
 ]);
 const MIDI_FIXTURE_HASH = createHash("sha256")
   .update(MIDI_FIXTURE)
   .digest("hex");
+const MIDI_NEXT_FIXTURE = Buffer.from([
+  0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, 0x01,
+  0xe0, 0x4d, 0x54, 0x72, 0x6b, 0x00, 0x00, 0x00, 0x17, 0x00, 0xff, 0x51, 0x03,
+  0x07, 0xa1, 0x20, 0x00, 0xc0, 0x00, 0x00, 0x90, 0x3c, 0x64, 0xcb, 0x00, 0x80,
+  0x3c, 0x40, 0x00, 0xff, 0x2f, 0x00,
+]);
+const MIDI_NEXT_FIXTURE_HASH = createHash("sha256")
+  .update(MIDI_NEXT_FIXTURE)
+  .digest("hex");
 
 async function prepareMidiDockFixture(page: Page) {
+  await page.addInitScript(() => {
+    const handlers: Record<string, (details?: unknown) => unknown> = {};
+    const mediaSession = {
+      handlers,
+      metadata: null as { album?: string; title?: string } | null,
+      playbackState: "none",
+      setActionHandler(action: string, handler: ((details?: unknown) => unknown) | null) {
+        if (handler) handlers[action] = handler;
+        else delete handlers[action];
+      },
+      setPositionState() {},
+    };
+    Object.defineProperty(window, "__gysMediaSession", {
+      configurable: true,
+      value: mediaSession,
+    });
+    Object.defineProperty(navigator, "mediaSession", {
+      configurable: true,
+      value: mediaSession,
+    });
+  });
   await page.route("**/*", async (route) => {
     const url = route.request().url();
     if (url.endsWith("/offline/music-lock.json")) {
@@ -209,26 +263,35 @@ async function prepareMidiDockFixture(page: Page) {
             sha256: string;
           }>;
         };
-        const firstMidi = lock.items.find(
-          (item) =>
-            item.kind === "midi" &&
-            item.path === "assets/midi/001_Pujilah Allah Yang Maha Esa.mid",
-        );
-        if (!firstMidi) throw new Error("MIDI fixture target is missing");
-        firstMidi.size = MIDI_FIXTURE.byteLength;
-        firstMidi.sha256 = MIDI_FIXTURE_HASH;
+        const fixtures = new Map([
+          [
+            "assets/midi/001_Pujilah Allah Yang Maha Esa.mid",
+            { bytes: MIDI_FIXTURE, hash: MIDI_FIXTURE_HASH },
+          ],
+          [
+            "assets/midi/002_Pujilah Allah Yang Mahakudus.mid",
+            { bytes: MIDI_NEXT_FIXTURE, hash: MIDI_NEXT_FIXTURE_HASH },
+          ],
+        ]);
+        for (const item of lock.items) {
+          if (item.kind !== "midi") continue;
+          const fixture = fixtures.get(item.path);
+          if (!fixture) continue;
+          item.size = fixture.bytes.byteLength;
+          item.sha256 = fixture.hash;
+        }
         await route.fulfill({ json: lock });
       } catch {
         await route.continue().catch(() => undefined);
       }
       return;
     }
-    if (
-      /\.mid(?:\?|$)/i.test(url) ||
-      url.includes("/api/v1/content/music")
-    ) {
+    if (/\.mid(?:\?|$)/i.test(url) || url.includes("/api/v1/content/music")) {
+      const bytes = url.includes("002_Pujilah")
+        ? MIDI_NEXT_FIXTURE
+        : MIDI_FIXTURE;
       await route.fulfill({
-        body: MIDI_FIXTURE,
+        body: bytes,
         headers: { "content-type": "application/octet-stream" },
       });
       return;
@@ -287,7 +350,8 @@ test("Kidung MIDI dock keeps core playback visible and discloses advanced contro
     await page.setViewportSize(viewport);
     const media = page.locator(".media-surface.is-kidung-media");
     const advanced = media.locator(".media-advanced-controls");
-    await expect(media.locator(".media-queue-badge")).toBeVisible();
+    const queueBadge = media.locator(".media-queue-badge");
+    await expect(queueBadge).toBeHidden();
     await expect(media.locator(".media-transport-controls")).toBeVisible();
     await expect(media.locator(".media-stop-control")).toBeVisible();
     await expect(media.locator(".media-mute-control")).toBeVisible();
@@ -306,6 +370,7 @@ test("Kidung MIDI dock keeps core playback visible and discloses advanced contro
     const summary = media.locator(".media-advanced-summary");
     await summary.click();
     await expect(advanced).toHaveAttribute("open", "");
+    await expect(queueBadge).toBeVisible();
     await expect(media.getByLabel("Instrumen MIDI")).toBeVisible();
     for (const control of await media
       .locator(".media-advanced-panel button, .media-advanced-panel select")
@@ -314,7 +379,214 @@ test("Kidung MIDI dock keeps core playback visible and discloses advanced contro
     }
     await expectNoHorizontalOverflow(page);
     await summary.click();
+    await expect(queueBadge).toBeHidden();
   }
+});
+
+test("MIDI auto-advance loads the next queued song when playback ends", async ({
+  page,
+}) => {
+  test.setTimeout(30_000);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-midi-playlist-v1",
+      JSON.stringify({
+        version: 1,
+        items: [
+          { songId: "hymn-001", title: "Pujilah Allah Yang Maha Esa" },
+          { songId: "hymn-002", title: "Pujilah Allah Yang Mahakudus" },
+        ],
+        currentIndex: 0,
+        loop: "all",
+        shuffle: false,
+        autoNext: true,
+        autoNextMode: "playlist",
+        crossfadeMs: 0,
+      }),
+    );
+  });
+  await prepareMidiDockFixture(page);
+
+  const title = page.locator(
+    ".media-surface.is-kidung-media .media-context-link strong",
+  );
+  await expect(title).toHaveText("Pujilah Allah Yang Maha Esa");
+  await page
+    .locator(".media-surface.is-kidung-media .media-primary-control")
+    .click();
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const stored = localStorage.getItem("gys-midi-playlist-v1");
+          return stored ? JSON.parse(stored).currentIndex : -1;
+        }),
+      { timeout: 15_000 },
+    )
+    .toBe(1);
+  await expect(title).toHaveText("Pujilah Allah Yang Mahakudus", {
+    timeout: 15_000,
+  });
+});
+
+test("MIDI dock transport and sound controls update playback state", async ({
+  page,
+}) => {
+  test.setTimeout(35_000);
+  await prepareMidiDockFixture(page);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-002");
+  await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
+
+  const media = page.locator(".media-surface.is-kidung-media");
+  const play = media.locator(".media-primary-control");
+  const position = media.getByLabel("Posisi MIDI");
+  await expect(position).toHaveAttribute("max", "10");
+  await play.click();
+  await expect(play).toHaveAttribute("aria-label", "Jeda");
+  await position.focus();
+  await position.press("ArrowRight");
+  await expect
+    .poll(() => position.inputValue().then(Number))
+    .toBeGreaterThan(0);
+
+  const volume = media.getByLabel("Volume MIDI");
+  await volume.focus();
+  await volume.press("ArrowLeft");
+  await expect(volume).toHaveValue("0.69");
+  const mute = media.locator(".media-mute-control");
+  await mute.click();
+  await expect(mute).toHaveAttribute("aria-pressed", "true");
+  await mute.click();
+  await expect(mute).toHaveAttribute("aria-pressed", "false");
+
+  await media.locator(".media-advanced-summary").click();
+  const transpose = media.locator(".media-transpose");
+  await transpose.locator("button").last().click();
+  await expect(transpose.locator("strong")).toHaveText("+1");
+  const instrument = media.locator(".media-instrument-control select");
+  await instrument.selectOption("40");
+  await expect(instrument).toHaveValue("40");
+  await media.locator(".media-tempo-toggle").click();
+  const tempo = media.locator(".media-tempo-popover input");
+  const currentTempo = Number(await tempo.inputValue());
+  await tempo.focus();
+  await tempo.press("ArrowRight");
+  await expect(tempo).toHaveValue(String(currentTempo + 1));
+  await expect(media.locator(".media-tempo-popover")).toContainText(
+    `${currentTempo + 1} BPM`,
+  );
+
+  await media.locator(".media-stop-control").click();
+  await expect(play).toHaveAttribute("aria-label", "Putar");
+});
+
+test("MIDI Media Session publishes metadata and routes system transport actions", async ({
+  page,
+}) => {
+  test.setTimeout(35_000);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-midi-playlist-v1",
+      JSON.stringify({
+        version: 1,
+        items: [
+          { songId: "hymn-001", title: "Pujilah Allah Yang Maha Esa" },
+          { songId: "hymn-002", title: "Pujilah Allah Yang Mahakudus" },
+        ],
+        currentIndex: 0,
+        loop: "all",
+        shuffle: false,
+        autoNext: true,
+        autoNextMode: "playlist",
+        crossfadeMs: 0,
+      }),
+    );
+  });
+  await prepareMidiDockFixture(page);
+
+  const title = page.locator(
+    ".media-surface.is-kidung-media .media-context-link strong",
+  );
+  await expect(title).toHaveText("Pujilah Allah Yang Maha Esa");
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const session = (window as TestMediaSessionWindow).__gysMediaSession;
+        return {
+          album: session?.metadata?.album,
+          handlers: Object.keys(session?.handlers ?? {}).sort(),
+          title: session?.metadata?.title,
+        };
+      }),
+    )
+    .toMatchObject({
+      album: "Kidung Rohani",
+      title: "Pujilah Allah Yang Maha Esa",
+    });
+  const actions = await page.evaluate(() =>
+    Object.keys(
+      (window as TestMediaSessionWindow).__gysMediaSession?.handlers ?? {},
+    ),
+  );
+  expect(actions).toEqual(
+    expect.arrayContaining([
+      "play",
+      "pause",
+      "stop",
+      "previoustrack",
+      "nexttrack",
+      "seekto",
+      "seekbackward",
+      "seekforward",
+    ]),
+  );
+
+  const runAction = async (action: string) =>
+    page.evaluate(async (actionName) => {
+      const handler = (window as TestMediaSessionWindow).__gysMediaSession
+        ?.handlers[actionName];
+      await handler?.();
+    }, action);
+  await runAction("play");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as TestMediaSessionWindow).__gysMediaSession?.playbackState,
+      ),
+    )
+    .toBe("playing");
+  await runAction("pause");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as TestMediaSessionWindow).__gysMediaSession?.playbackState,
+      ),
+    )
+    .toBe("paused");
+  await runAction("play");
+  await runAction("nexttrack");
+  await expect(title).toHaveText("Pujilah Allah Yang Mahakudus", {
+    timeout: 15_000,
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as TestMediaSessionWindow).__gysMediaSession?.metadata?.title,
+      ),
+    )
+    .toBe("Pujilah Allah Yang Mahakudus");
+  await runAction("stop");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as TestMediaSessionWindow).__gysMediaSession?.playbackState,
+      ),
+    )
+    .toBe("paused");
 });
 
 test("Kidung desktop dock keeps metadata and adjustments in compact bands", async ({
@@ -347,9 +619,18 @@ test("Kidung desktop dock keeps metadata and adjustments in compact bands", asyn
       };
     });
 
-    expect(geometry.height, `${viewport.width}px dock height`).toBeLessThanOrEqual(128);
-    expect(geometry.bands, `${viewport.width}px content bands`).toBeLessThanOrEqual(2);
-    expect(geometry.scrollWidth, `${viewport.width}px dock content width`).toBeLessThanOrEqual(geometry.clientWidth);
+    expect(
+      geometry.height,
+      `${viewport.width}px dock height`,
+    ).toBeLessThanOrEqual(128);
+    expect(
+      geometry.bands,
+      `${viewport.width}px content bands`,
+    ).toBeLessThanOrEqual(2);
+    expect(
+      geometry.scrollWidth,
+      `${viewport.width}px dock content width`,
+    ).toBeLessThanOrEqual(geometry.clientWidth);
   }
 });
 
@@ -391,12 +672,16 @@ test("wide Kidung catalog shares navigation and filters in one top row", async (
     });
 
     if (viewport.width >= 1200) {
-      expect(Math.abs(geometry.nav.top - geometry.header.top)).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(geometry.nav.top - geometry.header.top),
+      ).toBeLessThanOrEqual(2);
       expect(geometry.wrapper.height).toBeLessThanOrEqual(
         Math.max(geometry.nav.height, geometry.header.height) + 2,
       );
     } else {
-      expect(geometry.header.top).toBeGreaterThanOrEqual(geometry.nav.bottom - 1);
+      expect(geometry.header.top).toBeGreaterThanOrEqual(
+        geometry.nav.bottom - 1,
+      );
     }
 
     for (const control of await topbar
@@ -421,7 +706,12 @@ test("MIDI session keeps its source, queue, and minimized state across routes", 
   const media = page.locator(".media-surface");
   await expect(media).toHaveCount(1);
   await expect(media).toHaveClass(/is-kidung-media/);
-  await expect(media.locator(".media-queue-badge")).toBeVisible();
+  const queueBadge = media.locator(".media-queue-badge");
+  await expect(queueBadge).toBeHidden();
+  await media.locator(".media-advanced-summary").click();
+  await expect(queueBadge).toBeVisible();
+  await queueBadge.click();
+  await expect(page).toHaveURL(/\/kidung\?section=playlist$/);
   const title = await media.locator(".media-context-link strong").textContent();
   expect(title).toBe("Pujilah Allah Yang Maha Esa");
 
@@ -429,7 +719,9 @@ test("MIDI session keeps its source, queue, and minimized state across routes", 
     window.history.pushState({}, "", "/GYSApp-Tauri/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
-  await expect(page.getByRole("heading", { name: /Selamat datang/i })).toBeVisible({
+  await expect(
+    page.getByRole("heading", { name: /Selamat datang/i }),
+  ).toBeVisible({
     timeout: 15_000,
   });
   await expect(media).toHaveCount(1);
@@ -448,55 +740,96 @@ test("MIDI session keeps its source, queue, and minimized state across routes", 
   await expect(media).toHaveCount(1);
   await expect(media).toHaveClass(/is-kidung-media/);
   await expect(media.locator(".media-mini-context strong")).toHaveText(title!);
-  await media.getByRole("button", { name: /Buka Pujilah Allah Yang Maha Esa/ }).click();
+  await media
+    .getByRole("button", { name: /Buka Pujilah Allah Yang Maha Esa/ })
+    .click();
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
 });
 
-test(
-  "phone Kidung catalog prioritizes search, compact filtering, and large library rows",
-  async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openCatalog(page);
+test("phone Kidung catalog prioritizes search, compact filtering, and large library rows", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
 
-    const localLinks = page.locator(".kidung-local-nav a");
-    for (let index = 0; index < (await localLinks.count()); index += 1) {
-      await expectTarget(localLinks.nth(index));
-    }
+  const localLinks = page.locator(".kidung-local-nav a");
+  for (let index = 0; index < (await localLinks.count()); index += 1) {
+    await expectTarget(localLinks.nth(index));
+  }
 
-    const search = page.locator(".hymn-catalog-controls .search-field");
-    const searchBox = await search.boundingBox();
-    expect(searchBox).not.toBeNull();
-    expect(searchBox!.width).toBeGreaterThanOrEqual(340);
+  const search = page.locator(".hymn-catalog-controls .search-field");
+  const searchBox = await search.boundingBox();
+  expect(searchBox).not.toBeNull();
+  expect(searchBox!.width).toBeGreaterThanOrEqual(340);
 
-    await expect(page.locator(".kidung-desktop-filter")).toBeHidden();
-    const filterTrigger = page.locator(
-      'summary[aria-label="Koleksi"]',
+  await expect(page.locator(".kidung-desktop-filter")).toBeHidden();
+  const filterTrigger = page.locator('summary[aria-label="Koleksi"]');
+  await expectTarget(filterTrigger);
+  await filterTrigger.click();
+  const filterPanel = page.locator(".kidung-mobile-filter-panel");
+  await expect(filterPanel).toBeVisible();
+  await expectTarget(filterPanel.locator(".control-select-trigger"));
+
+  const firstOpen = page.locator(".pujian-title").first();
+  const firstNumber = page.locator(".pujian-nomor").first();
+  await expect(firstOpen).toBeVisible();
+  const openBox = await firstOpen.boundingBox();
+  const numberBox = await firstNumber.boundingBox();
+  expect(openBox).not.toBeNull();
+  expect(numberBox).not.toBeNull();
+  expect(openBox!.height).toBeGreaterThanOrEqual(56);
+  expect(openBox!.width).toBeGreaterThanOrEqual(230);
+  expect(openBox!.x).toBeLessThanOrEqual(numberBox!.x);
+  expect(openBox!.x + openBox!.width).toBeGreaterThanOrEqual(
+    numberBox!.x + numberBox!.width,
+  );
+  await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
+
+  await expectTarget(page.locator(".add-to-playlist-btn").first());
+  await expectNoHorizontalOverflow(page);
+});
+
+test("Kidung number search returns the same song in all supported locales", async ({
+  page,
+}) => {
+  const copies = {
+    id: { search: "Cari lagu", placeholder: "Nomor atau judul…" },
+    en: { search: "Search hymns", placeholder: "Number or title…" },
+    zh: { search: "搜索诗歌", placeholder: "编号或标题…" },
+  } as const;
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    const locale = new URLSearchParams(window.location.search).get(
+      "__gys_locale",
     );
-    await expectTarget(filterTrigger);
-    await filterTrigger.click();
-    const filterPanel = page.locator(".kidung-mobile-filter-panel");
-    await expect(filterPanel).toBeVisible();
-    await expectTarget(filterPanel.locator(".control-select-trigger"));
-
-    const firstOpen = page.locator(".pujian-title").first();
-    const firstNumber = page.locator(".pujian-nomor").first();
-    await expect(firstOpen).toBeVisible();
-    const openBox = await firstOpen.boundingBox();
-    const numberBox = await firstNumber.boundingBox();
-    expect(openBox).not.toBeNull();
-    expect(numberBox).not.toBeNull();
-    expect(openBox!.height).toBeGreaterThanOrEqual(56);
-    expect(openBox!.width).toBeGreaterThanOrEqual(230);
-    expect(openBox!.x).toBeLessThanOrEqual(numberBox!.x);
-    expect(openBox!.x + openBox!.width).toBeGreaterThanOrEqual(
-      numberBox!.x + numberBox!.width,
+    if (locale !== "id" && locale !== "en" && locale !== "zh") return;
+    localStorage.setItem("gys-locale", locale);
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale, theme: "light" }),
     );
-    await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
+  });
 
-    await expectTarget(page.locator(".add-to-playlist-btn").first());
-    await expectNoHorizontalOverflow(page);
-  },
-);
+  for (const locale of ["id", "en", "zh"] as const) {
+    await page.goto(`/GYSApp-Tauri/kidung?__gys_locale=${locale}`);
+    await expect(page.locator(".pujian-list > li").first()).toBeVisible({
+      timeout: 20_000,
+    });
+
+    const search = page.getByLabel(copies[locale].search, { exact: true });
+    await expect(search).toHaveAttribute("placeholder", copies[locale].placeholder);
+    await search.fill("001");
+
+    const results = page.locator(".pujian-list > li");
+    await expect(results).toHaveCount(1);
+    await expect(results.first()).toContainText("Pujilah Allah Yang Maha Esa");
+
+    await search.fill("setianya berubah");
+    await expect(results).toHaveCount(1);
+    await expect(results.first()).toContainText("Pujilah Allah Yang Maha Esa");
+  }
+});
 
 test("fullscreen lyrics keeps its controls localized and contained", async ({
   page,
@@ -606,9 +939,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
       page.getByRole("heading", { name: /Pujilah Allah/ }),
     ).toBeVisible({ timeout: 20_000 });
     await page.locator(".hymn-more-actions-summary").click();
-    await page
-      .getByRole("button", { name: copies.en.open })
-      .click();
+    await page.getByRole("button", { name: copies.en.open }).click();
     const panel = page.getByRole("dialog", { name: copies.en.mode });
     await expect(panel).toBeVisible();
     await expectNoHorizontalOverflow(page);
@@ -629,9 +960,7 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
     await page.setViewportSize(viewport);
     await openFirstHymn(page);
     await page.locator(".hymn-more-actions-summary").click();
-    await page
-      .getByRole("button", { name: "Mode lirik layar penuh" })
-      .click();
+    await page.getByRole("button", { name: "Mode lirik layar penuh" }).click();
 
     const panel = page.getByRole("dialog", { name: "Mode lirik" });
     await expect(panel).toBeVisible();
@@ -641,11 +970,107 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
     await panel.getByRole("button", { name: "Pilih nada dasar" }).click();
     const keyOptions = panel.locator(".lyrics-key-dropdown [role=option]");
     await expect(keyOptions).toHaveCount(12);
-    for (let index = 0; index < await keyOptions.count(); index += 1)
+    for (let index = 0; index < (await keyOptions.count()); index += 1)
       await expectTarget(keyOptions.nth(index));
     await expectNoHorizontalOverflow(page);
 
     await panel.getByRole("button", { name: "Pilih nada dasar" }).click();
+    await panel.getByRole("button", { name: "Tutup lirik" }).click();
+  }
+});
+
+test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.addInitScript(() =>
+    localStorage.setItem("gys-lyrics-font-size", "28"),
+  );
+
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openFirstHymn(page);
+    await page.locator(".hymn-more-actions-summary").click();
+    await page.getByRole("button", { name: "Mode lirik layar penuh" }).click();
+
+    const panel = page.getByRole("dialog", { name: "Mode lirik" });
+    const content = panel.locator(".lyrics-content");
+    const verse = panel.locator(".lyrics-verse-indicator");
+    await expect(verse).toHaveText(/^Bait 1 dari/);
+
+    await content.hover();
+    await page.mouse.wheel(0, 80);
+    await expect(verse).toHaveText(/^Bait 2 dari/);
+
+    await content.dispatchEvent("pointerdown", {
+      pointerId: 1,
+      pointerType: "touch",
+      clientX: 100,
+      clientY: 280,
+      isPrimary: true,
+    });
+    await content.dispatchEvent("pointerup", {
+      pointerId: 1,
+      pointerType: "touch",
+      clientX: 100,
+      clientY: 200,
+      isPrimary: true,
+    });
+    await expect(verse).toHaveText(/^Bait 3 dari/);
+
+    const fontBefore = Number(
+      await page.evaluate(() => localStorage.getItem("gys-lyrics-font-size")),
+    );
+    await content.dispatchEvent("pointerdown", {
+      pointerId: 2,
+      pointerType: "touch",
+      clientX: 100,
+      clientY: 280,
+      isPrimary: true,
+    });
+    await content.dispatchEvent("pointerdown", {
+      pointerId: 3,
+      pointerType: "touch",
+      clientX: 200,
+      clientY: 280,
+      isPrimary: false,
+    });
+    await content.dispatchEvent("pointermove", {
+      pointerId: 3,
+      pointerType: "touch",
+      clientX: 250,
+      clientY: 280,
+      isPrimary: false,
+    });
+    await content.dispatchEvent("pointerup", {
+      pointerId: 2,
+      pointerType: "touch",
+      clientX: 100,
+      clientY: 280,
+      isPrimary: true,
+    });
+    await content.dispatchEvent("pointerup", {
+      pointerId: 3,
+      pointerType: "touch",
+      clientX: 250,
+      clientY: 280,
+      isPrimary: false,
+    });
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Number(localStorage.getItem("gys-lyrics-font-size")),
+        ),
+      )
+      .toBeGreaterThan(fontBefore);
+    await expectNoHorizontalOverflow(page);
+
     await panel.getByRole("button", { name: "Tutup lirik" }).click();
   }
 });
@@ -658,6 +1083,8 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
       playlist: "Playlist",
       import: "Impor",
       export: "Ekspor",
+      exportQueue: "Ekspor antrean",
+      playlistTools: "Opsi playlist",
       midiPlaylist: "Playlist MIDI",
       playNext: "Putar berikutnya",
       off: "Tidak ada (stop di akhir)",
@@ -671,6 +1098,8 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
       playlist: "Playlist",
       import: "Import",
       export: "Export",
+      exportQueue: "Export queue",
+      playlistTools: "Playlist tools",
       midiPlaylist: "MIDI playlist",
       playNext: "Play next",
       off: "None (stop at end)",
@@ -684,6 +1113,8 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
       playlist: "播放列表",
       import: "导入",
       export: "导出",
+      exportQueue: "导出队列",
+      playlistTools: "播放列表选项",
       midiPlaylist: "MIDI 播放列表",
       playNext: "播放下一首",
       off: "无（结束时停止）",
@@ -716,17 +1147,37 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
     await expect(
       page.getByRole("heading", { name: copy.playlist, exact: true }),
     ).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("button", { name: copy.import })).toBeVisible();
-    await expect(page.getByRole("button", { name: copy.export })).toBeVisible();
+    const playlistTools = page.locator(
+      ".kidung-tool-heading-actions .kidung-row-menu",
+    );
+    await expect(
+      playlistTools.getByRole("button", { name: copy.import, exact: true }),
+    ).toBeHidden();
+    await expect(
+      playlistTools.getByRole("button", {
+        name: copy.exportQueue,
+        exact: true,
+      }),
+    ).toBeHidden();
+    await playlistTools
+      .locator(`summary[aria-label="${copy.playlistTools}"]`)
+      .click();
+    await expect(
+      playlistTools.getByRole("button", { name: copy.import, exact: true }),
+    ).toBeVisible();
+    await expect(
+      playlistTools.getByRole("button", {
+        name: copy.exportQueue,
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(
       page.getByRole("region", { name: copy.midiPlaylist }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: copy.playNext, exact: true }),
     ).toBeVisible();
-    await expect(
-      page.getByText(copy.off, { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText(copy.off, { exact: true })).toBeVisible();
 
     await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
     await expect(
@@ -743,6 +1194,7 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
       { timeout: 20_000 },
     );
 
+    await page.locator(".hymn-more-actions-summary").click();
     await page.locator(".hymn-reader-settings-summary").click();
     await page.locator(".hymn-music-settings > summary").click();
     await expect(
@@ -758,74 +1210,81 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
   }
 });
 
-test(
-  "small-phone hymn titles stay readable instead of shrinking to fit one line",
-  async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
-    await openCatalog(page);
+test("small-phone hymn titles stay readable instead of shrinking to fit one line", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await openCatalog(page);
 
-    const titles = page.locator(".pujian-title");
-    for (let index = 0; index < Math.min(5, await titles.count()); index += 1) {
-      const title = titles.nth(index);
-      const computed = await title.evaluate((element) => {
-        const style = getComputedStyle(element);
-        return {
-          fontSize: Number.parseFloat(style.fontSize),
-          lineHeight: Number.parseFloat(style.lineHeight),
-          whiteSpace: style.whiteSpace,
-        };
-      });
-      expect(computed.fontSize).toBeGreaterThanOrEqual(13);
-      expect(computed.lineHeight).toBeGreaterThanOrEqual(16);
-      expect(computed.whiteSpace).not.toBe("nowrap");
-      await expectTarget(title, 44);
-    }
-    await expectNoHorizontalOverflow(page);
-  },
-);
-
-test(
-  "catalog branding and title metrics stay stable through font readiness",
-  async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await openCatalog(page);
-
-    await expect(page.locator(".brand-mark")).toBeVisible();
-    await expect(page.locator(".reader-context-title")).toHaveCount(0);
-
-    const before = await page.locator(".pujian-title").evaluateAll((elements) =>
-      elements.slice(0, 8).map((element) => {
-        const style = getComputedStyle(element);
-        const box = element.getBoundingClientRect();
-        return {
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
-          lineHeight: style.lineHeight,
-          height: box.height,
-        };
-      }),
-    );
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  const titles = page.locator(".pujian-title");
+  for (let index = 0; index < Math.min(5, await titles.count()); index += 1) {
+    const title = titles.nth(index);
+    const computed = await title.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        fontSize: Number.parseFloat(style.fontSize),
+        lineHeight: Number.parseFloat(style.lineHeight),
+        whiteSpace: style.whiteSpace,
+      };
     });
-    const after = await page.locator(".pujian-title").evaluateAll((elements) =>
-      elements.slice(0, 8).map((element) => {
-        const style = getComputedStyle(element);
-        const box = element.getBoundingClientRect();
-        return {
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
-          lineHeight: style.lineHeight,
-          height: box.height,
-        };
-      }),
-    );
-    expect(after).toEqual(before);
+    expect(computed.fontSize).toBeGreaterThanOrEqual(13);
+    expect(computed.lineHeight).toBeGreaterThanOrEqual(16);
+    expect(computed.whiteSpace).not.toBe("nowrap");
+    await expectTarget(title, 44);
+  }
+  await expectNoHorizontalOverflow(page);
+});
 
-    const controls = await page.locator(".hymn-catalog-controls").evaluate((element) => {
-      const search = element.querySelector<HTMLInputElement>(".search-field input")!;
-      const collection = element.querySelector<HTMLElement>(".control-select-trigger")!;
+test("catalog branding and title metrics stay stable through font readiness", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openCatalog(page);
+
+  await expect(page.locator(".brand-mark")).toBeVisible();
+  await expect(page.locator(".reader-context-title")).toHaveCount(0);
+
+  const before = await page.locator(".pujian-title").evaluateAll((elements) =>
+    elements.slice(0, 8).map((element) => {
+      const style = getComputedStyle(element);
+      const box = element.getBoundingClientRect();
+      return {
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        lineHeight: style.lineHeight,
+        height: box.height,
+      };
+    }),
+  );
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
+  });
+  const after = await page.locator(".pujian-title").evaluateAll((elements) =>
+    elements.slice(0, 8).map((element) => {
+      const style = getComputedStyle(element);
+      const box = element.getBoundingClientRect();
+      return {
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        lineHeight: style.lineHeight,
+        height: box.height,
+      };
+    }),
+  );
+  expect(after).toEqual(before);
+
+  const controls = await page
+    .locator(".hymn-catalog-controls")
+    .evaluate((element) => {
+      const search = element.querySelector<HTMLInputElement>(
+        ".search-field input",
+      )!;
+      const collection = element.querySelector<HTMLElement>(
+        ".control-select-trigger",
+      )!;
       const labels = [
         element.querySelector<HTMLElement>(".search-field > span"),
         element.querySelector<HTMLElement>(
@@ -842,79 +1301,77 @@ test(
         })),
       };
     });
-    expect(controls.searchHeight).toBe(controls.collectionHeight);
-    expect(controls.labels).toHaveLength(2);
-    expect(new Set(controls.labels.map((label) => label.fontSize)).size).toBe(1);
-    expect(new Set(controls.labels.map((label) => label.fontWeight)).size).toBe(1);
-    expect(new Set(controls.labels.map((label) => label.textTransform)).size).toBe(1);
-    await expectNoHorizontalOverflow(page);
-  },
-);
+  expect(controls.searchHeight).toBe(controls.collectionHeight);
+  expect(controls.labels).toHaveLength(2);
+  expect(new Set(controls.labels.map((label) => label.fontSize)).size).toBe(1);
+  expect(new Set(controls.labels.map((label) => label.fontWeight)).size).toBe(
+    1,
+  );
+  expect(
+    new Set(controls.labels.map((label) => label.textTransform)).size,
+  ).toBe(1);
+  await expectNoHorizontalOverflow(page);
+});
 
-test(
-  "phone hymn reader keeps only contextual primary actions on the surface",
-  async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openFirstHymn(page);
+test("phone hymn reader keeps only contextual primary actions on the surface", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openFirstHymn(page);
 
-    const actions = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action",
-    );
-    const actionCount = await actions.count();
-    expect(actionCount).toBeGreaterThan(0);
-    expect(actionCount).toBeLessThanOrEqual(2);
-    for (let index = 0; index < actionCount; index += 1) {
-      await expectTarget(actions.nth(index));
-    }
+  const actions = page.locator(
+    ".hymn-text-toolbar .detail-actions .hymn-action:visible",
+  );
+  const actionCount = await actions.count();
+  expect(actionCount).toBeGreaterThan(0);
+  expect(actionCount).toBeLessThanOrEqual(2);
+  for (let index = 0; index < actionCount; index += 1) {
+    await expectTarget(actions.nth(index));
+  }
 
-    const labels = page.locator(
-      ".hymn-text-toolbar .detail-actions .hymn-action-label",
-    );
-    for (let index = 0; index < (await labels.count()); index += 1) {
-      await expect(labels.nth(index)).toBeVisible();
-    }
+  const labels = actions.locator(".hymn-action-label");
+  for (let index = 0; index < (await labels.count()); index += 1) {
+    await expect(actions.nth(index)).toHaveAccessibleName(/\S/);
+    await expect(labels.nth(index)).toBeHidden();
+  }
 
-    const more = page.locator(".hymn-more-actions-summary");
-    await expectTarget(more);
-    await more.click();
-    await expect(
-      page.getByRole("button", { name: "Mode lirik layar penuh" }),
-    ).toBeVisible();
+  const more = page.locator(".hymn-more-actions-summary");
+  await expectTarget(more);
+  await more.click();
+  await expect(
+    page.getByRole("button", { name: "Mode lirik layar penuh" }),
+  ).toBeVisible();
 
-    await expectTarget(page.locator(".hymn-reader-settings-summary"));
-    await expectNoHorizontalOverflow(page);
-  },
-);
+  await expectTarget(page.locator(".hymn-reader-settings-summary"));
+  await expectNoHorizontalOverflow(page);
+});
 
-test(
-  "playlist rows keep low-frequency actions behind one touch-friendly menu",
-  async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openPlaylistWithSong(page);
+test("playlist rows keep low-frequency actions behind one touch-friendly menu", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPlaylistWithSong(page);
 
-    const row = page.locator(".kidung-playlist-list > li").first();
-    const menu = row.locator('summary[aria-label^="Opsi"]');
-    await expectTarget(menu);
-    await menu.click();
-    const panel = row.locator(".kidung-row-menu-panel");
-    await expect(panel).toBeVisible();
+  const row = page.locator(".kidung-playlist-list > li").first();
+  const menu = row.locator('summary[aria-label^="Opsi"]');
+  await expectTarget(menu);
+  await menu.click();
+  const panel = row.locator(".kidung-row-menu-panel");
+  await expect(panel).toBeVisible();
 
-    const buttons = panel.getByRole("button");
-    expect(await buttons.count()).toBeGreaterThanOrEqual(4);
-    for (let index = 0; index < (await buttons.count()); index += 1) {
-      await expectTarget(buttons.nth(index));
-    }
+  const buttons = panel.getByRole("button");
+  expect(await buttons.count()).toBeGreaterThanOrEqual(4);
+  for (let index = 0; index < (await buttons.count()); index += 1) {
+    await expectTarget(buttons.nth(index));
+  }
 
-    await expect(panel.getByRole("button", { name: "Naikkan" })).toBeVisible();
-    await expect(
-      panel.getByRole("button", { name: "Turunkan" }),
-    ).toBeVisible();
-    await expect(
-      panel.getByRole("button", { name: "Buka kidung" }),
-    ).toBeVisible();
-    await expectNoHorizontalOverflow(page);
-  },
-);
+  await expect(panel.getByRole("button", { name: "Naikkan" })).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Turunkan" })).toBeVisible();
+  await expect(
+    panel.getByRole("button", { name: "Buka kidung" }),
+  ).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
 
 test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
   page,
@@ -974,6 +1431,8 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
         ".hymn-reader-settings > .song-controls",
       ],
     ] as const) {
+      if (summary === ".hymn-reader-settings-summary")
+        await page.locator(".hymn-more-actions-summary").click();
       await page.locator(summary).click();
       const surface = page.locator(panel);
       await expect(surface).toBeVisible();
@@ -984,6 +1443,8 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
       expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width + 1);
       expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height + 1);
       await page.locator(summary).click();
+      if (summary === ".hymn-reader-settings-summary")
+        await page.locator(".hymn-more-actions-summary").click();
     }
 
     await openPlaylistWithSong(page);
@@ -1001,271 +1462,314 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
   }
 });
 
-test(
-  "PDF reader exposes contextual music controls with direct song navigation",
-  async ({ page }) => {
-    test.setTimeout(75_000);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openFirstHymnPdf(page);
+test("PDF reader exposes contextual music controls with direct song navigation", async ({
+  page,
+}) => {
+  test.setTimeout(75_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openFirstHymnPdf(page);
 
-    const chrome = page.locator(".hymn-pdf-viewer-chrome");
-    await expect(
-      chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
-    ).toBeVisible();
-    await expect(
-      chrome.getByRole("button", { name: "Berikutnya", exact: true }),
-    ).toBeVisible();
+  const chrome = page.locator(".hymn-pdf-viewer-chrome");
+  await expect(
+    chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
+  ).toBeVisible();
+  await expect(
+    chrome.getByRole("button", { name: "Berikutnya", exact: true }),
+  ).toBeVisible();
 
-    const music = chrome.locator('summary[aria-label="Opsi musik"]');
-    await expectTarget(music);
-    await music.click();
-    const panel = chrome.locator(".pdf-music-menu-panel");
+  const music = chrome.locator('summary[aria-label="Opsi musik"]');
+  await expectTarget(music);
+  await music.click();
+  const panel = chrome.locator(".pdf-music-menu-panel");
+  await expect(panel).toBeVisible();
+  await expect(page.locator(".hymn-detail-page > .toast")).toHaveCount(0);
+  await expect(panel.locator(".pdf-transpose-inline")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
+test("phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openFirstHymn(page);
+
+    for (const tab of await page.getByRole("tab").all()) {
+      await expectTarget(tab);
+    }
+
+    const actions = page.locator(
+      ".hymn-text-toolbar .detail-actions .hymn-action:visible",
+    );
+    // MIDI is intentionally hidden until the optional SoundFont is
+    // installed. The chord control remains available, so the compact
+    // toolbar should expose one or two contextual primary actions depending
+    // on the device's installed capabilities.
+    const actionCount = await actions.count();
+    expect(actionCount).toBeGreaterThanOrEqual(1);
+    expect(actionCount).toBeLessThanOrEqual(2);
+    for (let index = 0; index < actionCount; index += 1) {
+      await expectTarget(actions.nth(index));
+    }
+
+    const labels = actions.locator(".hymn-action-label");
+    await expect(labels).toHaveCount(actionCount);
+    for (let index = 0; index < (await labels.count()); index += 1) {
+      await expect(actions.nth(index)).toHaveAccessibleName(/\S/);
+      await expect(labels.nth(index)).toBeHidden();
+    }
+
+    const toolbarBox = await page.locator(".hymn-text-toolbar").boundingBox();
+    expect(toolbarBox).not.toBeNull();
+    expect(toolbarBox!.height).toBeLessThanOrEqual(118);
+
+    const fullscreenLyrics = page.getByRole("button", {
+      name: "Mode lirik layar penuh",
+    });
+    await expect(fullscreenLyrics).toBeHidden();
+
+    const overflow = page.locator(".hymn-more-actions-summary");
+    await expectTarget(overflow);
+    await overflow.click();
+    await expect(fullscreenLyrics).toBeVisible();
+    await expectTarget(fullscreenLyrics);
+
+    const panel = page.locator(".hymn-more-actions-panel");
     await expect(panel).toBeVisible();
-    await expect(page.locator(".hymn-detail-page > .toast")).toHaveCount(0);
-    await expect(panel.locator(".pdf-transpose-inline")).toBeVisible();
+    const panelBox = await panel.boundingBox();
+    const fullscreenBox = await fullscreenLyrics.boundingBox();
+    expect(panelBox).not.toBeNull();
+    expect(fullscreenBox).not.toBeNull();
+    expect(fullscreenBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
+    expect(fullscreenBox!.x + fullscreenBox!.width).toBeLessThanOrEqual(
+      panelBox!.x + panelBox!.width,
+    );
+    expect(fullscreenBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
+    expect(fullscreenBox!.y + fullscreenBox!.height).toBeLessThanOrEqual(
+      panelBox!.y + panelBox!.height,
+    );
+
+    await expectTarget(page.locator(".hymn-reader-settings-summary"));
     await expectNoHorizontalOverflow(page);
-  },
-);
+  }
+});
 
-test(
-  "phone hymn reader keeps only frequent actions visible and moves fullscreen lyrics into overflow",
-  async ({ page }) => {
-    for (const viewport of [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-    ]) {
-      await page.setViewportSize(viewport);
-      await openFirstHymn(page);
-
-      for (const tab of await page.getByRole("tab").all()) {
-        await expectTarget(tab);
-      }
-
-      const actions = page.locator(
-        ".hymn-text-toolbar .detail-actions .hymn-action:visible",
-      );
-      // MIDI is intentionally hidden until the optional SoundFont is
-      // installed. The chord control remains available, so the compact
-      // toolbar should expose one or two contextual primary actions depending
-      // on the device's installed capabilities.
-      const actionCount = await actions.count();
-      expect(actionCount).toBeGreaterThanOrEqual(1);
-      expect(actionCount).toBeLessThanOrEqual(2);
-      for (let index = 0; index < actionCount; index += 1) {
-        await expectTarget(actions.nth(index));
-      }
-
-      const labels = actions.locator(".hymn-action-label");
-      await expect(labels).toHaveCount(actionCount);
-      for (let index = 0; index < (await labels.count()); index += 1) {
-        await expect(labels.nth(index)).toBeVisible();
-      }
-
-      const toolbarBox = await page
-        .locator(".hymn-text-toolbar")
-        .boundingBox();
-      expect(toolbarBox).not.toBeNull();
-      expect(toolbarBox!.height).toBeLessThanOrEqual(118);
-
-      const fullscreenLyrics = page.getByRole("button", {
-        name: "Mode lirik layar penuh",
-      });
-      await expect(fullscreenLyrics).toBeHidden();
-
-      const overflow = page.locator(".hymn-more-actions-summary");
-      await expectTarget(overflow);
-      await overflow.click();
-      await expect(fullscreenLyrics).toBeVisible();
-      await expectTarget(fullscreenLyrics);
-
-      const panel = page.locator(".hymn-more-actions-panel");
-      await expect(panel).toBeVisible();
-      const panelBox = await panel.boundingBox();
-      const fullscreenBox = await fullscreenLyrics.boundingBox();
-      expect(panelBox).not.toBeNull();
-      expect(fullscreenBox).not.toBeNull();
-      expect(fullscreenBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
-      expect(fullscreenBox!.x + fullscreenBox!.width).toBeLessThanOrEqual(
-        panelBox!.x + panelBox!.width,
-      );
-      expect(fullscreenBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
-      expect(fullscreenBox!.y + fullscreenBox!.height).toBeLessThanOrEqual(
-        panelBox!.y + panelBox!.height,
-      );
-
-      await expectTarget(page.locator(".hymn-reader-settings-summary"));
-      await expectNoHorizontalOverflow(page);
+test("tablet and desktop hymn actions preserve labels without crowding", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openFirstHymn(page);
+    const labels = page.locator(
+      ".hymn-text-toolbar .detail-actions .hymn-action-label",
+    );
+    for (let index = 0; index < (await labels.count()); index += 1) {
+      await expect(labels.nth(index)).toBeVisible();
     }
-  },
-);
+    await expectNoHorizontalOverflow(page);
+  }
+});
 
-test(
-  "tablet and desktop hymn actions preserve labels without crowding",
-  async ({ page }) => {
-    for (const viewport of [
-      { width: 768, height: 1024 },
-      { width: 1440, height: 900 },
-    ]) {
-      await page.setViewportSize(viewport);
-      await openFirstHymn(page);
-      const labels = page.locator(
-        ".hymn-text-toolbar .detail-actions .hymn-action-label",
-      );
-      for (let index = 0; index < (await labels.count()); index += 1) {
-        await expect(labels.nth(index)).toBeVisible();
-      }
-      await expectNoHorizontalOverflow(page);
-    }
-  },
-);
+test("wide hymn text reader keeps controls in a compact, non-overlapping toolbar", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1241, height: 958 },
+    { width: 768, height: 1024 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openFirstHymn(page);
 
-test(
-  "wide hymn text reader keeps controls in a compact, non-overlapping toolbar",
-  async ({ page }) => {
-    for (const viewport of [
-      { width: 1440, height: 900 },
-      { width: 1241, height: 958 },
-      { width: 768, height: 1024 },
-    ]) {
-      await page.setViewportSize(viewport);
-      await openFirstHymn(page);
+    const toolbar = page.locator(".hymn-text-toolbar");
+    const box = await toolbar.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeLessThanOrEqual(88);
 
-      const toolbar = page.locator(".hymn-text-toolbar");
-      const box = await toolbar.boundingBox();
-      expect(box).not.toBeNull();
-      expect(box!.height).toBeLessThanOrEqual(88);
-
-      const geometry = await toolbar.evaluate((element) => {
-        const controls = [
-          ...element.querySelectorAll<HTMLElement>(
-            "button:where(:not([hidden])), select:where(:not([hidden]))",
-          ),
-        ].filter((control) => {
-          const style = getComputedStyle(control);
-          const rect = control.getBoundingClientRect();
-          return (
-            style.display !== "none" &&
-            style.visibility !== "hidden" &&
-            rect.width > 0 &&
-            rect.height > 0
-          );
-        });
-        const boxes = controls.map((control) => {
-          const rect = control.getBoundingClientRect();
-          return {
-            x: rect.x,
-            y: rect.y,
-            right: rect.right,
-            bottom: rect.bottom,
-            width: rect.width,
-            height: rect.height,
-          };
-        });
-        const rowTops = [...new Set(boxes.map((control) => Math.round(control.y)))];
-        const overlaps = boxes.some((left, leftIndex) =>
-          boxes.some((right, rightIndex) => {
-            if (leftIndex >= rightIndex) return false;
-            return (
-              Math.min(left.right, right.right) - Math.max(left.x, right.x) > 1 &&
-              Math.min(left.bottom, right.bottom) - Math.max(left.y, right.y) > 1
-            );
-          }),
+    const geometry = await toolbar.evaluate((element) => {
+      const controls = [
+        ...element.querySelectorAll<HTMLElement>(
+          "button:where(:not([hidden])), select:where(:not([hidden]))",
+        ),
+      ].filter((control) => {
+        const style = getComputedStyle(control);
+        const rect = control.getBoundingClientRect();
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0
         );
-        return { boxes, rowTops, overlaps };
       });
-
-      expect(geometry.rowTops.length).toBeLessThanOrEqual(2);
-      expect(geometry.overlaps).toBe(false);
-      for (const control of geometry.boxes) {
-        expect(control.width).toBeGreaterThanOrEqual(44 - 0.5);
-        expect(control.height).toBeGreaterThanOrEqual(44 - 0.5);
-      }
-      await expectNoHorizontalOverflow(page);
-    }
-  },
-);
-
-test(
-  "hymn lyric sheets stay centered in verse and all-verses modes",
-  async ({ page }) => {
-    for (const viewport of [
-      { width: 1440, height: 900 },
-      { width: 1241, height: 958 },
-      { width: 768, height: 1024 },
-    ]) {
-      await page.setViewportSize(viewport);
-      await openFirstHymn(page);
-      await page.evaluate(() =>
-        localStorage.setItem("gys-hymn-view-scope", "verse"),
+      const boxes = controls.map((control) => {
+        const rect = control.getBoundingClientRect();
+        return {
+          x: rect.x,
+          y: rect.y,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+      const rowTops = [
+        ...new Set(boxes.map((control) => Math.round(control.y))),
+      ];
+      const overlaps = boxes.some((left, leftIndex) =>
+        boxes.some((right, rightIndex) => {
+          if (leftIndex >= rightIndex) return false;
+          return (
+            Math.min(left.right, right.right) - Math.max(left.x, right.x) > 1 &&
+            Math.min(left.bottom, right.bottom) - Math.max(left.y, right.y) > 1
+          );
+        }),
       );
-      await page.reload();
-      await expect(
-        page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
-      ).toBeVisible({ timeout: 20_000 });
-      await page.waitForTimeout(300);
+      return { boxes, rowTops, overlaps };
+    });
 
-      const verseGeometry = await page.evaluate(() => {
-        const surface = document.querySelector<HTMLElement>(
-          ".hymn-detail-page.is-text-viewer .hymn-detail-surface",
-        )!;
-        const sheet = document.querySelector<HTMLElement>(
-          ".hymn-detail-page.is-text-viewer .lyrics-sheet",
-        )!;
-        const surfaceBox = surface.getBoundingClientRect();
+    expect(geometry.rowTops.length).toBeLessThanOrEqual(2);
+    expect(geometry.overlaps).toBe(false);
+    for (const control of geometry.boxes) {
+      expect(control.width).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(control.height).toBeGreaterThanOrEqual(44 - 0.5);
+    }
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
+test("hymn lyric sheets stay centered in verse and all-verses modes", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1241, height: 958 },
+    { width: 768, height: 1024 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openFirstHymn(page);
+    await page.evaluate(() =>
+      localStorage.setItem("gys-hymn-view-scope", "verse"),
+    );
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
+    ).toBeVisible({ timeout: 20_000 });
+    await page.waitForTimeout(300);
+
+    const verseGeometry = await page.evaluate(() => {
+      const surface = document.querySelector<HTMLElement>(
+        ".hymn-detail-page.is-text-viewer .hymn-detail-surface",
+      )!;
+      const sheet = document.querySelector<HTMLElement>(
+        ".hymn-detail-page.is-text-viewer .lyrics-sheet",
+      )!;
+      const surfaceBox = surface.getBoundingClientRect();
+      const sheetBox = sheet.getBoundingClientRect();
+      return {
+        surfaceCenter: (surfaceBox.left + surfaceBox.right) / 2,
+        sheetCenter: (sheetBox.left + sheetBox.right) / 2,
+      };
+    });
+    expect(
+      Math.abs(verseGeometry.surfaceCenter - verseGeometry.sheetCenter),
+    ).toBeLessThanOrEqual(1);
+
+    await page.locator(".hymn-more-actions-summary").click();
+    await page.getByRole("button", { name: "Semua", exact: true }).click();
+    const allVersesGeometry = await page.evaluate(() => {
+      const surface = document.querySelector<HTMLElement>(
+        ".hymn-detail-page.is-text-viewer .hymn-detail-surface",
+      )!;
+      const surfaceBox = surface.getBoundingClientRect();
+      return Array.from(
+        document.querySelectorAll<HTMLElement>(
+          ".hymn-detail-page.is-text-viewer .lyrics-sheet.is-continuous",
+        ),
+      ).map((sheet) => {
         const sheetBox = sheet.getBoundingClientRect();
         return {
           surfaceCenter: (surfaceBox.left + surfaceBox.right) / 2,
           sheetCenter: (sheetBox.left + sheetBox.right) / 2,
         };
       });
-      expect(Math.abs(verseGeometry.surfaceCenter - verseGeometry.sheetCenter)).toBeLessThanOrEqual(1);
-
-      await page.getByRole("button", { name: "Semua", exact: true }).click();
-      const allVersesGeometry = await page.evaluate(() => {
-        const surface = document.querySelector<HTMLElement>(
-          ".hymn-detail-page.is-text-viewer .hymn-detail-surface",
-        )!;
-        const surfaceBox = surface.getBoundingClientRect();
-        return Array.from(
-          document.querySelectorAll<HTMLElement>(
-            ".hymn-detail-page.is-text-viewer .lyrics-sheet.is-continuous",
-          ),
-        ).map((sheet) => {
-          const sheetBox = sheet.getBoundingClientRect();
-          return {
-            surfaceCenter: (surfaceBox.left + surfaceBox.right) / 2,
-            sheetCenter: (sheetBox.left + sheetBox.right) / 2,
-          };
-        });
-      });
-      expect(allVersesGeometry.length).toBeGreaterThan(0);
-      for (const geometry of allVersesGeometry) {
-        expect(Math.abs(geometry.surfaceCenter - geometry.sheetCenter)).toBeLessThanOrEqual(1);
-      }
-      await expectNoHorizontalOverflow(page);
+    });
+    expect(allVersesGeometry.length).toBeGreaterThan(0);
+    for (const geometry of allVersesGeometry) {
+      expect(
+        Math.abs(geometry.surfaceCenter - geometry.sheetCenter),
+      ).toBeLessThanOrEqual(1);
     }
-  },
-);
+    await expectNoHorizontalOverflow(page);
+  }
+});
 
 test("all-verses text mode renders canonical chords for every verse", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
-  await page.getByRole("button", { name: "Tampilkan chord", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Tampilkan chord", exact: true })
+    .click();
+  await page.locator(".hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Semua", exact: true }).click();
 
   await expect
     .poll(
       () =>
-        page.locator(".hymn-all-verses-container article").evaluateAll((articles) =>
-          articles.map((article) => article.querySelectorAll(".chord-capability").length),
-        ),
+        page
+          .locator(".hymn-all-verses-container article")
+          .evaluateAll((articles) =>
+            articles.map(
+              (article) => article.querySelectorAll(".chord-capability").length,
+            ),
+          ),
       { timeout: 30_000 },
     )
     .toEqual([4, 4, 4]);
-  await expect(page.locator(".hymn-all-verses-container .chord-visual-row")).toHaveCount(12);
+  await expect(
+    page.locator(".hymn-all-verses-container .chord-visual-row"),
+  ).toHaveCount(12);
   await expectNoHorizontalOverflow(page);
+});
+
+test("Kidung default chord markers have clear space above their lyric lines", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openFirstHymn(page);
+  await page
+    .getByRole("button", { name: "Tampilkan chord", exact: true })
+    .click();
+  await expect(page.locator(".chord-capability").first()).toBeVisible({
+    timeout: 20_000,
+  });
+
+  const gaps = await page
+    .locator(".chord-capability")
+    .evaluateAll((capabilities) =>
+      capabilities.map((capability) => {
+        const lyrics = capability.querySelector(".chord-text-layer");
+        const markers = [
+          ...capability.querySelectorAll(".chord-visual-marker"),
+        ];
+        if (!lyrics || markers.length === 0) return Number.NaN;
+        const lyricTop = lyrics.getBoundingClientRect().top;
+        const markerBottom = Math.max(
+          ...markers.map((marker) => marker.getBoundingClientRect().bottom),
+        );
+        return lyricTop - markerBottom;
+      }),
+    );
+
+  expect(gaps.length).toBeGreaterThan(0);
+  for (const gap of gaps) expect(gap).toBeGreaterThanOrEqual(9);
 });
 
 test("all-verses mode uses one scroll surface for every complete stanza", async ({
@@ -1344,7 +1848,9 @@ const visualCases = [
 
 for (const [name, width, height, surface, theme] of visualCases) {
   test(`Kidung visual ${name}`, async ({ page }) => {
-    test.setTimeout(surface === "pdf" || surface === "pdf-music" ? 75_000 : 45_000);
+    test.setTimeout(
+      surface === "pdf" || surface === "pdf-music" ? 75_000 : 45_000,
+    );
     await page.setViewportSize({ width, height });
 
     if (surface === "catalog") await openCatalog(page);
@@ -1364,6 +1870,7 @@ for (const [name, width, height, surface, theme] of visualCases) {
     }
     if (surface === "reader-settings") {
       await openFirstHymn(page);
+      await page.locator(".hymn-more-actions-summary").click();
       await page.locator(".hymn-reader-settings-summary").click();
       await expect(
         page.locator(".hymn-reader-settings > .song-controls"),

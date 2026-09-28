@@ -45,6 +45,7 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
       fontSize: 21,
       lineHeight: 1.8,
     }),
+    "gys-bible-highlight-palette-v1": JSON.stringify(["#ca7231"]),
     "gys-chord-ui-prefs": JSON.stringify({ theme: "red", fill: "soft" }),
     "gys-hymn-natural-chords": "0",
     "gys-hymn-view-scope": "favorites",
@@ -93,6 +94,9 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     { durableSettings, excludedSettings },
   );
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
   await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await expect(panel).toBeVisible();
@@ -108,6 +112,104 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
   expect(restored.settings).toMatchObject(durableSettings);
   for (const key of Object.keys(excludedSettings))
     expect(restored.settings).not.toHaveProperty(key);
+});
+
+test("encrypted backup round-trips Bible notes, highlights, and bookmarks", async ({
+  page,
+}) => {
+  const password = "bible-backup-1234";
+  const annotations = {
+    "gys-bible-bookmarks": JSON.stringify(["1:1:1"]),
+    "gys-bible-notes-v1": JSON.stringify({
+      "1:1:1": [{ id: "roundtrip-note", text: "Catatan pulih dari backup." }],
+    }),
+    "gys-bible-highlights-v1": JSON.stringify({ "1:1:1": "#ca7231" }),
+    "gys-bible-highlight-palette-v1": JSON.stringify(["#ca7231"]),
+  };
+  await page.addInitScript((values) => {
+    for (const [key, value] of Object.entries(values))
+      localStorage.setItem(key, value);
+  }, annotations);
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
+  await page.getByRole("button", { name: /Backup & import/ }).click();
+  const panel = page.getByRole("region", { name: "Backup dan import" });
+  await panel.getByLabel("Kata sandi backup").fill(password);
+  const downloadPromise = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Ekspor .gysbk" }).click();
+  const path = await (await downloadPromise).path();
+  expect(path).toBeTruthy();
+  const backupBytes = await readFile(path!);
+  const envelope = JSON.parse(backupBytes.toString("utf8"));
+  const exported = await decryptBackupV2(envelope, password);
+  expect(exported.settings).toMatchObject(annotations);
+
+  await page.evaluate(
+    (keys) => keys.forEach((key) => localStorage.removeItem(key)),
+    Object.keys(annotations),
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (keys) => keys.map((key) => localStorage.getItem(key)),
+        Object.keys(annotations),
+      ),
+    )
+    .toEqual(Object.values(annotations).map(() => null));
+  await page.getByRole("button", { name: /Backup & import/ }).click();
+  const importPanel = page.getByRole("region", { name: "Backup dan import" });
+  await importPanel.getByLabel("Kata sandi backup").fill(password);
+  const chooserPromise = page.waitForEvent("filechooser");
+  await importPanel.getByRole("button", { name: "Pilih file" }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    name: "bible-annotations.gysbk",
+    mimeType: "application/json",
+    buffer: backupBytes,
+  });
+  await importPanel.getByRole("button", { name: "Impor" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (keys) =>
+          Object.fromEntries(
+            keys.map((key) => [key, localStorage.getItem(key)]),
+          ),
+        Object.keys(annotations),
+      ),
+    )
+    .toEqual(annotations);
+
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const verse = page.locator(".verse-row").first();
+  await expect(verse).toHaveClass(/is-highlight-custom/);
+  await expect(verse.locator(".verse-number")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect
+    .poll(() =>
+      verse.evaluate((element) =>
+        getComputedStyle(element).getPropertyValue("--verse-highlight-color"),
+      ),
+    )
+    .toBe("#ca7231");
+  await verse.locator(".verse-text").click();
+  await page
+    .getByRole("toolbar", { name: "Aksi ayat terpilih" })
+    .getByRole("button", { name: "Catatan ayat" })
+    .click();
+  await expect(
+    page
+      .getByRole("dialog", { name: "Catatan ayat" })
+      .locator(".bible-notes-list .bible-notes-item-open")
+      .filter({ hasText: "Catatan pulih dari backup." }),
+  ).toBeVisible();
 });
 
 test("backup import restores only portable settings from a valid envelope", async ({
@@ -138,10 +240,16 @@ test("backup import restores only portable settings from a valid envelope", asyn
     for (const key of blockedKeys) localStorage.removeItem(key);
   }, Object.keys(blockedSettings));
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
   await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await panel.getByLabel("Kata sandi backup").fill(password);
-  await panel.locator('input[type="file"]').setInputFiles({
+  const chooserPromise = page.waitForEvent("filechooser");
+  await panel.getByRole("button", { name: "Pilih file" }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
     name: "portable-policy.gysbk",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(envelope)),
@@ -173,6 +281,103 @@ test("backup import restores only portable settings from a valid envelope", asyn
     });
 });
 
+test("legacy backup imports portable settings without a password", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-accent-color", "#556677");
+    localStorage.setItem("gys-live-v1-token", "keep-current-token");
+  });
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
+  await page.getByRole("button", { name: /Backup & import/ }).click();
+  const panel = page.getByRole("region", { name: "Backup dan import" });
+  const chooserPromise = page.waitForEvent("filechooser");
+  await panel.getByRole("button", { name: "Pilih file" }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    name: "legacy-settings.gysbk",
+    mimeType: "application/octet-stream",
+    buffer: await readFile(
+      new URL("./fixtures/legacy-settings.gysbk", import.meta.url),
+    ),
+  });
+  await panel.getByRole("button", { name: "Impor" }).click();
+
+  await expect(
+    page.getByText(/Backup lama diimpor/, { exact: false }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        accent: localStorage.getItem("gys-accent-color"),
+        token: localStorage.getItem("gys-live-v1-token"),
+        legacy: JSON.parse(
+          localStorage.getItem("gys-legacy-import-v1") ?? "null",
+        ),
+      })),
+    )
+    .toMatchObject({
+      accent: "#355c9a",
+      token: "keep-current-token",
+      legacy: {
+        bible: { lastReading: "John 3" },
+        songs: { favorites: ["001"] },
+      },
+    });
+});
+
+test("malformed backup import preserves existing local data", async ({
+  page,
+}) => {
+  const existingSettings = {
+    "gys-accent-color": "#556677",
+    "gys-bible-notes-v1": JSON.stringify({
+      "1:1:1": [{ id: "existing-note", text: "Catatan yang harus tetap ada." }],
+    }),
+    "gys-live-v1-token": "keep-existing-token",
+  };
+  await page.addInitScript((settings) => {
+    for (const [key, value] of Object.entries(settings))
+      localStorage.setItem(key, value);
+  }, existingSettings);
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
+  await page.getByRole("button", { name: /Backup & import/ }).click();
+  const panel = page.getByRole("region", { name: "Backup dan import" });
+  await panel.getByLabel("Kata sandi backup").fill("malformed-import-123");
+  const chooserPromise = page.waitForEvent("filechooser");
+  await panel.getByRole("button", { name: "Pilih file" }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    name: "broken.gysbk",
+    mimeType: "application/json",
+    buffer: Buffer.from("not-a-backup"),
+  });
+  await panel.getByRole("button", { name: "Impor" }).click();
+
+  await expect(
+    page.getByText("Backup tidak valid atau kata sandi salah.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (keys) =>
+          Object.fromEntries(
+            keys.map((key) => [key, localStorage.getItem(key)]),
+          ),
+        Object.keys(existingSettings),
+      ),
+    )
+    .toEqual(existingSettings);
+});
+
 test("disabling the daily reminder removes the persisted reminder immediately", async ({
   page,
 }) => {
@@ -180,6 +385,9 @@ test("disabling the daily reminder removes the persisted reminder immediately", 
     localStorage.setItem("gys-reminder-time-v1", "20:00");
   });
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="hymns"] > summary')
+    .click();
   await page.getByRole("button", { name: /Pengingat/ }).click();
   const panel = page.getByRole("region", { name: "Pengingat harian" });
   await expect(panel.getByLabel("Waktu")).toHaveValue("20:00");

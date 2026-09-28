@@ -1,10 +1,107 @@
-import { describe, expect, it } from "vitest";
-import { chordSongIdFromPath } from "./chords.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-describe("fallback chord identity", () => {
-  it("keeps suffixed hymn keys available when the BFF is absent", () => {
-    expect(chordSongIdFromPath("assets/chord/051A_Batu Zaman.json")).toBe(
-      "hymn-051A",
-    );
+const sourceRepo = "gyspnk/gyschordweb";
+const sourceCommit = "e8e7efe1189b5746a2bb542348e221844091c8d1";
+const generatedAt = "2026-09-24T01:54:54.299Z";
+const chordRef = {
+  songId: "hymn-001",
+  path: "assets/chord/001_Pujilah Allah Yang Maha Esa.chord.json",
+  sourceCommit,
+  size: 0,
+  sha256: "a".repeat(64),
+};
+const musicLock = {
+  sourceRepo,
+  sourceCommit,
+  generatedAt,
+  items: [
+    {
+      id: chordRef.path,
+      kind: "chord",
+      path: chordRef.path,
+      size: chordRef.size,
+      sha256: chordRef.sha256,
+    },
+  ],
+};
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { "content-type": "application/json" },
   });
+}
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.resetModules();
+});
+
+describe("chord manifest source compatibility", () => {
+  it.each([
+    {
+      name: "manifest commit",
+      manifest: {
+        version: 1,
+        sourceRepo,
+        sourceCommit: "deadbee",
+        generatedAt,
+        entries: [{ ...chordRef, sourceCommit: "deadbee" }],
+      },
+    },
+    {
+      name: "entry commit",
+      manifest: {
+        version: 1,
+        sourceRepo,
+        sourceCommit,
+        generatedAt,
+        entries: [{ ...chordRef, sourceCommit: "deadbee" }],
+      },
+    },
+    {
+      name: "missing locked chord",
+      manifest: {
+        version: 1,
+        sourceRepo,
+        sourceCommit,
+        generatedAt,
+        entries: [],
+      },
+    },
+    {
+      name: "misattributed chord",
+      manifest: {
+        version: 1,
+        sourceRepo,
+        sourceCommit,
+        generatedAt,
+        entries: [{ ...chordRef, songId: "hymn-002" }],
+      },
+    },
+  ])(
+    "uses the bundled lock when the BFF $name differs",
+    async ({ manifest }) => {
+      vi.resetModules();
+      vi.stubEnv("VITE_BFF_BASE_URL", "https://bff.example");
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL) => {
+          const url = String(input);
+          if (url.endsWith("/api/v1/chords/manifest"))
+            return jsonResponse(manifest);
+          if (url.endsWith("/offline/music-lock.json"))
+            return jsonResponse(musicLock);
+          throw new Error(`Unexpected request: ${url}`);
+        }),
+      );
+
+      const { createBrowserChordRepository } = await import("./chords.js");
+      const result = await createBrowserChordRepository().refreshManifest();
+
+      expect(result.sourceCommit).toBe(sourceCommit);
+      expect(result.entries.map((entry) => entry.songId)).toEqual(["hymn-001"]);
+      expect(result.entries[0]?.sourceCommit).toBe(sourceCommit);
+    },
+  );
 });

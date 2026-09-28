@@ -138,6 +138,20 @@ function parseSearchQuery(value: string): {
   return { terms, phrases };
 }
 
+function parseTypedReference(
+  value: string,
+): { book?: string; chapter: number; verse: number } | undefined {
+  const match = /^(?:(.+?)\s+)?(\d+):(\d+)$/u.exec(
+    normalizeSearchText(value.trim()),
+  );
+  if (!match) return undefined;
+  const chapter = Number(match[2]);
+  const verse = Number(match[3]);
+  if (!Number.isSafeInteger(chapter) || !Number.isSafeInteger(verse))
+    return undefined;
+  return { ...(match[1] ? { book: match[1] } : {}), chapter, verse };
+}
+
 export class BibleRepository {
   private readonly pack: readonly BibleVerse[];
   private readonly byId = new Map<string, BibleVerse>();
@@ -219,8 +233,9 @@ export class BibleRepository {
       typeof options === "string" ? { book: options } : options;
     const { terms, phrases } = parseSearchQuery(query);
     if (!terms.length && !phrases.length) return [];
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
-    const matches = this.pack.filter((verse) => {
+    const typedReference =
+      phrases.length === 0 ? parseTypedReference(query) : undefined;
+    const passesSearchOptions = (verse: BibleVerse) => {
       if (searchOptions.book && verse.book !== searchOptions.book) return false;
       if (
         searchOptions.testament === "old" &&
@@ -232,6 +247,28 @@ export class BibleRepository {
         verse.bookOrder <= OLD_TESTAMENT_BOOKS
       )
         return false;
+      return true;
+    };
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    if (typedReference) {
+      return this.pack.filter((verse) => {
+        if (!passesSearchOptions(verse)) return false;
+        if (
+          verse.chapter !== typedReference.chapter ||
+          verse.verse !== typedReference.verse
+        )
+          return false;
+        if (!typedReference.book) return true;
+        const requestedBook = typedReference.book;
+        return (
+          normalizeSearchText(verse.book) === requestedBook ||
+          normalizeSearchText(this.bookNames[verse.book] ?? "") ===
+            requestedBook
+        );
+      });
+    }
+    const matches = this.pack.filter((verse) => {
+      if (!passesSearchOptions(verse)) return false;
       const bookName = this.bookNames[verse.book];
       const searchable =
         this.normalizedText.get(verse.id) ??

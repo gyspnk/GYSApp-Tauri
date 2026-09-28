@@ -16,6 +16,8 @@ async function openHymnPdf(page: Page) {
 
 test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await openHymnPdf(page);
+  // CDP may report an exact 44px CSS target a few millionths short.
+  const minTouchTargetHeight = 44 - 0.001;
 
   // Primary reading chrome stays focused on the document itself: zoom and
   // layout configuration belong to direct manipulation / the options surface.
@@ -57,7 +59,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     const box = await button.boundingBox();
     expect(box, "PDF layout control should be measurable").not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
   }
   const advancedButtons = page.locator(
     ".pdf-reader-hymn .pdf-advanced-controls button",
@@ -66,7 +68,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     const box = await advancedButtons.nth(index).boundingBox();
     expect(box, "PDF advanced control should be measurable").not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
   }
   await expect
     .poll(() =>

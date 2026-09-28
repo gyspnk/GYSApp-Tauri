@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Message as TauriWebSocketMessage } from "@tauri-apps/plugin-websocket";
 import {
   buildEdgeSpeechConfig,
   buildEdgeSsml,
   generateSecMsGec,
   parseEdgeAudioFrame,
   synthesizeEdgeDirect,
+  TauriEdgeSocketAdapter,
   type EdgeSocket,
   type EdgeSocketMessage,
 } from "./edge-direct.js";
@@ -18,6 +20,44 @@ const REQUEST = {
 };
 
 describe("direct Edge-compatible TTS protocol", () => {
+  it("maps Tauri WebSocket events and failures to the Edge socket interface", async () => {
+    const listeners = new Set<(message: TauriWebSocketMessage) => void>();
+    const sendError = new Error("send failed");
+    const socket = {
+      addListener(listener: (message: TauriWebSocketMessage) => void) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      send: vi.fn(async () => {
+        throw sendError;
+      }),
+      disconnect: vi.fn(async () => undefined),
+    };
+    const adapter = new TauriEdgeSocketAdapter(socket);
+    const received: EdgeSocketMessage[] = [];
+    adapter.addListener((message) => received.push(message));
+
+    for (const message of [
+      { type: "Text", data: "hello" },
+      { type: "Binary", data: [1, 2] },
+      { type: "Ping", data: [3] },
+      { type: "Pong", data: [4] },
+      { type: "Close", data: { code: 1000, reason: "done" } },
+    ] satisfies TauriWebSocketMessage[]) {
+      for (const listener of listeners) listener(message);
+    }
+    await expect(adapter.send("speech.config")).rejects.toBe(sendError);
+
+    expect(received).toEqual([
+      { type: "Text", data: "hello" },
+      { type: "Binary", data: [1, 2] },
+      { type: "Ping", data: [3] },
+      { type: "Pong", data: [4] },
+      { type: "Close", data: { code: 1000, reason: "done" } },
+      { type: "Error", data: sendError },
+    ]);
+  });
+
   it("generates the current Sec-MS-GEC token deterministically", async () => {
     await expect(generateSecMsGec(1_789_084_800_000)).resolves.toBe(
       "2ADBFD1C94E1128BE5862C357DB61D730535143AE72A42D52313FB30EB038DB5",
@@ -25,16 +65,20 @@ describe("direct Edge-compatible TTS protocol", () => {
   });
 
   it("builds CRLF-delimited speech configuration and escaped SSML", () => {
-    const config = buildEdgeSpeechConfig("Fri Sep 11 2026 00:00:00 GMT+0000");
+    const timestamp =
+      "Fri Sep 11 2026 00:00:00 GMT+0000 (Coordinated Universal Time)";
+    const config = buildEdgeSpeechConfig(timestamp);
     expect(config).toContain("Path:speech.config\r\n\r\n");
     expect(config).toContain("audio-24khz-48kbitrate-mono-mp3");
 
     const ssml = buildEdgeSsml(
       REQUEST,
       "0123456789abcdef0123456789abcdef",
-      "Fri Sep 11 2026 00:00:00 GMT+0000",
+      timestamp,
     );
     expect(ssml).toContain("Path:ssml\r\n\r\n");
+    expect(ssml).toContain(`X-Timestamp:${timestamp}Z`);
+    expect(ssml).toContain("xmlns='http://www.w3.org/2001/10/synthesis'");
     expect(ssml).toContain("xml:lang='id-ID'");
     expect(ssml).toContain("voice name='id-ID-GadisNeural'");
     expect(ssml).toContain("Kasih &lt; Tuhan &amp; sesama");
@@ -72,6 +116,12 @@ describe("direct Edge-compatible TTS protocol", () => {
       randomId: () => "0123456789abcdef0123456789abcdef",
     });
     await vi.waitFor(() => expect(connect).toHaveBeenCalledOnce());
+    expect(socket.send).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(
+        /X-Timestamp:\w{3} \w{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT\+0000 \(Coordinated Universal Time\)Z\r\nPath:ssml/,
+      ),
+    );
     const header = new TextEncoder().encode(
       "Path:audio\r\nContent-Type:audio/mpeg\r\n\r\n",
     );

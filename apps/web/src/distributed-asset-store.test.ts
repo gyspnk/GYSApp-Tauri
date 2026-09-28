@@ -59,7 +59,38 @@ describe("DistributedAssetStore", () => {
       code: "b_kjv",
       version: "2026.05.21",
       payloadBytes: 3,
+      payloadChecksumSha256:
+        "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
     });
+  });
+
+  it("backfills a payload checksum for an existing compatible record", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const registry = memoryStorage();
+    const store = new DistributedAssetStore({ cacheStorage, registry });
+    await store.put(input, new Uint8Array([1, 2, 3]));
+    const record = await store.getRecord("b_kjv");
+    const legacyRecord = { ...record! };
+    delete legacyRecord.payloadChecksumSha256;
+    registry.setItem(
+      "gys-distributed-assets-v1",
+      JSON.stringify({ b_kjv: legacyRecord }),
+    );
+
+    await expect(store.getBytes("b_kjv")).resolves.toEqual(
+      new Uint8Array([1, 2, 3]),
+    );
+    await expect(store.getRecord("b_kjv")).resolves.toMatchObject({
+      payloadChecksumSha256:
+        "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+    });
+    const upgradedRecord = await store.getRecord("b_kjv");
+    const cache = await cacheStorage.open(upgradedRecord!.cacheName);
+    await cache.put(
+      upgradedRecord!.cacheKey,
+      new Response(new Uint8Array([9, 2, 3])),
+    );
+    await expect(store.getBytes("b_kjv")).resolves.toBeUndefined();
   });
 
   it("stores an optional verified catalog beside the payload", async () => {
@@ -70,13 +101,15 @@ describe("DistributedAssetStore", () => {
 
     await store.put(input, new Uint8Array([1, 2, 3]), {
       bytes: catalog,
-      checksumSha256: "b".repeat(64),
+      checksumSha256:
+        "90fabd2725bd525183b60f11c90306f09cbf961c7bc6a5df42be5f13afdd0ebd",
     });
 
     expect(await store.getMetadataBytes("b_kjv")).toEqual(catalog);
     expect(await store.getRecord("b_kjv")).toMatchObject({
       metadataBytes: catalog.byteLength,
-      metadataChecksumSha256: "b".repeat(64),
+      metadataChecksumSha256:
+        "90fabd2725bd525183b60f11c90306f09cbf961c7bc6a5df42be5f13afdd0ebd",
     });
   });
 
@@ -117,6 +150,41 @@ describe("DistributedAssetStore", () => {
     const cache = await cacheStorage.open(record!.cacheName);
     await cache.put(record!.cacheKey, new Response(new Uint8Array([1, 2])));
 
+    await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
+  });
+
+  it("rejects a cached payload corrupted without changing its byte length", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const store = new DistributedAssetStore({
+      cacheStorage,
+      registry: memoryStorage(),
+    });
+    await store.put(input, new Uint8Array([1, 2, 3]));
+    const record = await store.getRecord("b_kjv");
+    const cache = await cacheStorage.open(record!.cacheName);
+    await cache.put(record!.cacheKey, new Response(new Uint8Array([9, 2, 3])));
+
+    await expect(store.getBytes("b_kjv")).resolves.toBeUndefined();
+    await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
+  });
+
+  it("rejects cached catalog bytes corrupted without changing their length", async () => {
+    const cacheStorage = memoryCacheStorage();
+    const store = new DistributedAssetStore({
+      cacheStorage,
+      registry: memoryStorage(),
+    });
+    const catalog = new TextEncoder().encode("[]");
+    await store.put(input, new Uint8Array([1, 2, 3]), {
+      bytes: catalog,
+      checksumSha256:
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    });
+    const record = await store.getRecord("b_kjv");
+    const cache = await cacheStorage.open(record!.cacheName);
+    await cache.put(record!.metadataCacheKey!, new Response("}{"));
+
+    await expect(store.getMetadataBytes("b_kjv")).resolves.toBeUndefined();
     await expect(store.hasCachedPayload("b_kjv")).resolves.toBe(false);
   });
 

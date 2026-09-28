@@ -60,6 +60,7 @@ export type BibleSearchEntry = {
 export function bibleVerseEntries(
   pack: BibleReaderPack,
   verses: readonly BibleVerse[],
+  versionCode = "b_tb",
 ): BibleSearchEntry[] {
   return verses.slice(0, 6).map((verse) => {
     const book = bibleBookName(pack, verse.book);
@@ -70,17 +71,25 @@ export function bibleVerseEntries(
       title: `${book} ${verse.chapter}:${verse.verse}`,
       detail: text.slice(0, 110),
       searchText: `${book} ${verse.chapter}:${verse.verse} ${text}`,
-      href: bibleVerseHref(verse),
+      href: bibleVerseHref(verse, versionCode),
     };
   });
 }
 
 /** Internal deep link that keeps the reader inside the application shell. */
-export function bibleVerseHref(verse: BibleVerse): string {
-  return `/bible?book=${encodeURIComponent(String(verse.book))}&chapter=${verse.chapter}&verse=${verse.verse}`;
+export function bibleVerseHref(
+  verse: BibleVerse,
+  versionCode = "b_tb",
+): string {
+  return `/bible?book=${encodeURIComponent(String(verse.book))}&chapter=${verse.chapter}&verse=${verse.verse}&version=${encodeURIComponent(versionCode)}`;
 }
 
-export type BibleDeepLink = { book: string; chapter: number; verse: number };
+export type BibleDeepLink = {
+  book: string;
+  chapter: number;
+  verse: number;
+  version?: string;
+};
 
 /** Parse the deep-link query parameters with strict integer bounds. */
 export function parseBibleDeepLink(
@@ -88,17 +97,28 @@ export function parseBibleDeepLink(
 ): BibleDeepLink | undefined {
   if (!params) return undefined;
   const book = params.get("book");
-  const chapter = Number(params.get("chapter"));
-  const verse = Number(params.get("verse"));
+  const chapterValue = params.get("chapter");
+  const verseValue = params.get("verse");
+  const version = params.get("version") ?? undefined;
   if (
     !book ||
+    !chapterValue ||
+    !verseValue ||
+    !/^\d+$/u.test(chapterValue) ||
+    !/^\d+$/u.test(verseValue) ||
+    (version !== undefined && !/^b_[a-z0-9]{1,16}$/u.test(version))
+  )
+    return undefined;
+  const chapter = Number(chapterValue);
+  const verse = Number(verseValue);
+  if (
     !Number.isInteger(chapter) ||
     chapter < 1 ||
     !Number.isInteger(verse) ||
     verse < 1
   )
     return undefined;
-  return { book, chapter, verse };
+  return { book, chapter, verse, ...(version ? { version } : {}) };
 }
 
 /** Clamp a deep link to the actual book/chapter bounds of the loaded pack. */

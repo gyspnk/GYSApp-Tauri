@@ -1,7 +1,7 @@
 {
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
-  "generatedAt": "2026-09-11T18:10:20.191Z",
+  "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+  "generatedAt": "2026-09-26T03:39:10.059Z",
   "books": [
     "rohani",
     "kidung-jemaat",
@@ -23,7 +23,14 @@
       ],
       "lyrics": "Kudus, kudus, kudus, Allah Yang Kuasa!\nLangit, bumi, dan sgala makhluk puji Dia;\nKasih setiaNya tak akan berubah,\nAllah Yang Esa, patut dipuji.\n\nKudus, kudus, kudus, semua bersujud,\nPersembahkan mahkota depan tahtaNya;\nKuasa, kemuliaan, bagi Anak Domba,\nDulu dan kini, sampai slamanya.\n\nKudus, kudus, kudus, besar rahmatNya !\nUmat tebusan 'kan memandang muliaNya;\nAdil serta benar penghakiman Allah,\nHikmat dan bijak, Roh Penolongku.",
       "midiPath": "assets/midi/001_Pujilah Allah Yang Maha Esa.mid",
-      "pdfPath": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf"
+      "pdfPath": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
+      "chordRef": {
+        "songId": "hymn-001",
+        "path": "assets/chord/001_Pujilah Allah Yang Maha Esa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1435,
+        "sha256": "af73bbe941833964e7b250bfe4b6f2014f42295000495343d4f3043ba5dd0028"
+      }
     },
     {
       "id": "hymn-002",
@@ -38,7 +45,14 @@
       ],
       "lyrics": "Haleluya, puji Allah! Amin, amin, Haleluya!\nPuji Allah Mahakasih, sorak: \"Haleluya!\"\n\nHaleluya, puji Yesus! Amin, amin, Haleluya!\nPuji Yesus, Juru slamat, sorak: \"Haleluya!\"\n\nHaleluya, puji RohNya! Amin, amin, Haleluya!\nPuji Roh Kudus yang kuasa, sorak: \"Haleluya!\"\n\nMulia, mulia, Haleluya! Mulia, mulia, Haleluya!\nPuji dengan sukaria: \"Puji, terus puji!\"",
       "midiPath": "assets/midi/002_Pujilah Allah Yang Mahakudus.mid",
-      "pdfPath": "assets/pdf/002_Pujilah Allah Yang Mahakudus.pdf"
+      "pdfPath": "assets/pdf/002_Pujilah Allah Yang Mahakudus.pdf",
+      "chordRef": {
+        "songId": "hymn-002",
+        "path": "assets/chord/002_Pujilah Allah Yang Mahakudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 627,
+        "sha256": "aa8fce17767f33e0f626c6b0d26ec141dd8f3af2c85a1e1d6ff36a3ac3591b76"
+      }
     },
     {
       "id": "hymn-003",
@@ -52,7 +66,14 @@
       ],
       "lyrics": "Haleluya, puji Allah! Haleluya, amin.\nHaleluya, puji Allah! Tambah kasihku.\n\nHaleluya, puji Yesus! Haleluya, amin.\nHaleluya, puji Yesus! Tambah imanku.\n\nHaleluya, puji RohNya! Haleluya, amin.\nHaleluya, puji RohNya! Tambah kuasaku.",
       "midiPath": "assets/midi/003_Pujilah Allah Yang Benar.mid",
-      "pdfPath": "assets/pdf/003_Pujilah Allah Yang Benar.pdf"
+      "pdfPath": "assets/pdf/003_Pujilah Allah Yang Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-003",
+        "path": "assets/chord/003_Pujilah Allah Yang Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 572,
+        "sha256": "32cc4542f286b91022ba59c0831a3c8146e13c358a61ad683d6dc908e80d3072"
+      }
     },
     {
       "id": "hymn-004",
@@ -69,7 +90,14 @@
       ],
       "lyrics": "Hatiku memuji Bapa yang di surga;\nKu mau memuji namaNya dengan segnap hati.\n\nHatiku memuji Bapa sumber berkat;\nKu tak akan melupakan kasih karuniaNya.\n\nBapa Yang Pengasih hapuskan dosaku;\nSembuhkan sgala penyakit dan briku sejahtra.\n\nDalam kesusahan, siapa yang jagaku?\nTuhan ulurkan tanganNya, lepaskan dritaku.\n\nBagai ayah bunda menjaga anaknya,\nBapa Pengasih di surga selalu menjaga.\n\nMalaikat di surga, manusia di dunia;\nBersama sujud menyembah, memuliakan Allah.",
       "midiPath": "assets/midi/004_Pujilah Bapa Yang di Surga.mid",
-      "pdfPath": "assets/pdf/004_Pujilah Bapa Yang di Surga.pdf"
+      "pdfPath": "assets/pdf/004_Pujilah Bapa Yang di Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-004",
+        "path": "assets/chord/004_Pujilah Bapa Yang di Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 812,
+        "sha256": "60c8fb6af600cf4ec1ab3c2e93097b70623218154d10cee1fa754415d9de5e26"
+      }
     },
     {
       "id": "hymn-005",
@@ -83,7 +111,14 @@
       ],
       "lyrics": "Semua ciptaanNya memuliakan Allah;\nLangit bumi bersahutan, memuji namaNya;\nPohon, bunga, gunung, lautan, cakrawala,\nMenceritakan kuasaNya, nyatakan kasihNya.\n\nSemua ciptaanNya memuliakan Allah;\nMakhluk hidup pun bernyanyi, memuji namaNya;\nBurung, ikan, srangga, ternak, margasatwa,\nDiciptakan, diplihara, oleh Allah Bapa.\n\nJiwaku selalu memuliakan Allah;\nWalau manusia berdosa, nugrah Allah tetap;\nDia utus AnakNya turun ke dunia,\nManusia dibenarkan, masuk surga mulia.",
       "midiPath": "assets/midi/005_Segala Sesuatu Memuji Allah.mid",
-      "pdfPath": "assets/pdf/005_Segala Sesuatu Memuji Allah.pdf"
+      "pdfPath": "assets/pdf/005_Segala Sesuatu Memuji Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-005",
+        "path": "assets/chord/005_Segala Sesuatu Memuji Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1560,
+        "sha256": "e5b89854986f33e90b754f9c4382ac34bc39eb6581c5c1f98e7edd5f4e485a5d"
+      }
     },
     {
       "id": "hymn-006",
@@ -97,7 +132,14 @@
       ],
       "lyrics": "Sungguh besar alam smesta, dihiasi tata surya;\nBintang-bintang gemerlapan, surya terbit dan terbenam.\nNyata benar kuasa Allah, yang mengatur segalanya;\nTak terhingga hikmat Allah, patut kita memujiNya.\n\nSinar surya dan rembulan bergantian menyinari,\nBintang-bintang berkeliling dalam orbit yang teratur.\nAlam smesta diaturNya, tampak damai dan sempurna;\nTata surya memuji Dia, kita lebih memujiNya.\n\nMakhluk hidup di dunia diciptakan oleh Tuhan,\nDan berkembang seutuhnya, berkat Tuhan sejak awal.\nWalau Allah tidak tampak, alam smesta membuktikan\nSemua makhluk dari Allah, ‘kan kembali kepadaNya.",
       "midiPath": "assets/midi/006_Pujilah CiptaanNya.mid",
-      "pdfPath": "assets/pdf/006_Pujilah CiptaanNya.pdf"
+      "pdfPath": "assets/pdf/006_Pujilah CiptaanNya.pdf",
+      "chordRef": {
+        "songId": "hymn-006",
+        "path": "assets/chord/006_Pujilah Ciptaan-Nya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2023,
+        "sha256": "5cfa4a81aea5e80efc8de3b496b7dd9f0b048e1490ea0a40bcc6cf688de50d6c"
+      }
     },
     {
       "id": "hymn-007",
@@ -112,7 +154,14 @@
       ],
       "lyrics": "Girang, girang, umat Tuhan memuji Allah Esa,\nHidup yang dibaharui sebarkan keharuman.\nSemua dosa dan derita tlah dihapus olehNya,\nPatut kita memujiNya, berbuah bibir yang baik.\n\nAlam smesta, segalanya, menyatakan muliaNya,\nBintang-bintang gemerlapan, bersorak memujiNya.\nGunung, rimba, angin, bulan, burung, bunga nan wangi,\nPercik air, debur ombak, semuanya memujiNya.\n\nAnugrah dan penebusan, sgala berkat, dari Dia,\nAllah sumber keslamatan, berkat, dan sukacita.\nSgala makhluk diplihara dalam kasih setiaNya,\nKita, umat tebusanNya, penuh berkat rohani.\n\nSinar surya, air hujan, menyatakan kasihNya,\nAlam smesta bersukaria, memuliakan namaNya.\nSemua makhluk ciptaanNya mengeluh sampai kini,\nBerharap kedatanganNya, beroleh pembebasan.",
       "midiPath": "assets/midi/007_Segala Sesuatu Memuji Tuhan.mid",
-      "pdfPath": "assets/pdf/007_Segala Sesuatu Memuji Tuhan.pdf"
+      "pdfPath": "assets/pdf/007_Segala Sesuatu Memuji Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-007",
+        "path": "assets/chord/007_Segala Sesuatu Memuji Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1438,
+        "sha256": "225b0dd6d26040449476ace338c9bbb1d66d2b00d333ef2199a50ae7f51520d0"
+      }
     },
     {
       "id": "hymn-008",
@@ -125,7 +174,14 @@
       ],
       "lyrics": "Raja atas sgala raja, patut diagungkan;\nPenguasa alam semesta, patut dimuliakan.\n\nMari kita sembah Allah dalam kebenaran,\nDengan syair, kidung, mazmur, memuji kasihNya.",
       "midiPath": "assets/midi/008_Pujilah Allah.mid",
-      "pdfPath": "assets/pdf/008_Pujilah Allah.pdf"
+      "pdfPath": "assets/pdf/008_Pujilah Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-008",
+        "path": "assets/chord/008_Pujilah Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 947,
+        "sha256": "f8359b5fb800a913cbba245dfc071ee71cfb852c9650a1118422361e3c117c0b"
+      }
     },
     {
       "id": "hymn-009",
@@ -139,7 +195,14 @@
       ],
       "lyrics": "Semua bangsa bersorak, bersyukur kepada Tuhan;\nDatang kehadirat Allah, dalam Roh, sujud menyembah.\n\nMasuk dalam Bait Kudus, memuji kemuliaanNya;\nDan mendengarkan firmanNya dengan segenap hatiku .\n\nAllah Bapa Mahakasih, rahmatNya tetap slamanya;\nJanjiNya teguh, tak ubah, adil, kuasa, selamanya.",
       "midiPath": "assets/midi/009_Bersorak Bagi Tuhan.mid",
-      "pdfPath": "assets/pdf/009_Bersorak Bagi Tuhan.pdf"
+      "pdfPath": "assets/pdf/009_Bersorak Bagi Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-009",
+        "path": "assets/chord/009_Bersorak Bagi Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 935,
+        "sha256": "dab9eb65248d2b39f77dff27988f21dd766eb44948d11a40c41e1b84113845c5"
+      }
     },
     {
       "id": "hymn-010",
@@ -153,7 +216,14 @@
       ],
       "lyrics": "Muliakan Yesus, yang Mahakuasa;\nMuliakan Yesus, Tuhanku; Haleluya,\nHaleluya! Muliakan Yesus, Tuhanku.\n\nMuliakan Yesus, yang tak berubah;\nMuliakan Yesus, Tuhanku; Haleluya,\nHaleluya! Muliakan Yesus, Tuhanku.\n\nMuliakan Yesus, yang segra datang;\nMuliakan Yesus, Tuhanku; Haleluya,\nHaleluya! Muliakan Yesus, Tuhanku.",
       "midiPath": "assets/midi/010_Muliakanlah Yesus.mid",
-      "pdfPath": "assets/pdf/010_Muliakanlah Yesus.pdf"
+      "pdfPath": "assets/pdf/010_Muliakanlah Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-010",
+        "path": "assets/chord/010_Muliakanlah Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1002,
+        "sha256": "459175b0acb2d8dbe825098aadbf5eaf56cdb6b7bd8e468dd7208e12205918ce"
+      }
     },
     {
       "id": "hymn-011",
@@ -168,7 +238,14 @@
       ],
       "lyrics": "Dalam Yesus aku sungguh gembira, gembira,\nJalan denganNya hatiku puaslah, Puaslah,\nHaleluya, Haleluya!\nJalan denganNya hatiku puaslah. puaslah.\n\nTuhan briku minum air hayatNya, air hayat,\nYesus berkati, hatiku puaslah, Puaslah,\nHaleluya, Haleluya!\nYesus berkati, hatiku puaslah. puaslah.\n\nTuhan sudah sembuhkan penyakitku, sembuhkan,\nPuji Dia! Rohku bertaut denganNya, puji Dia!\nHaleluya, Haleluya!\nPuji Dia! Rohku bertaut denganNya. Puji Dia!\n\nTuhan janji akan pimpin jalanku, pimpinku,\nBerharap kelak masuk surga permai, ke surga,\nHaleluya, Haleluya!\nBerharap kelak masuk surga permai. Ke surga.",
       "midiPath": "assets/midi/011_Gembira di Dalam Tuhan.mid",
-      "pdfPath": "assets/pdf/011_Gembira di Dalam Tuhan.pdf"
+      "pdfPath": "assets/pdf/011_Gembira di Dalam Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-011",
+        "path": "assets/chord/011_Gembira di Dalam Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 823,
+        "sha256": "0dc1ed474bd8be5438e08d80e99e2781eb9d85a6f1876303dea915aaece0163e"
+      }
     },
     {
       "id": "hymn-012",
@@ -183,7 +260,14 @@
       ],
       "lyrics": "Nama Yesus amat indah, bagai lagu merdu syahdu;\nKu mau siarkan nama Yesus, ke sgala penjuru.\n\nSungguh mulia nama Yesus, Almasih yang Mahakuasa,\nAlmasih turun ke dunia, mati ganti kita.\n\nNama Yesus amat agung, lebih dari segalanya;\nBrikan berkat kesembuhan, kekal selamanya.\n\nSungguh mulia nama Yesus, Almasih yang Mahakuasa,\nAlmasih turun ke dunia, mati ganti kita.\n\nNama Yesus amat mulia, lebih dari harta dunia;\nMengampuni sgala dosa, beri hidup kekal.\n\nSungguh mulia nama Yesus, Almasih yang Mahakuasa,\nAlmasih turun ke dunia, mati ganti kita.\n\nNama Yesus amat kudus, bagai bakung putih bersih;\nLepaskan sgala derita, hibur hati duka.\n\nSungguh mulia nama Yesus, Almasih yang Mahakuasa,\nAlmasih turun ke dunia, mati ganti kita.",
       "midiPath": "assets/midi/012_Mulia Nama Yesus.mid",
-      "pdfPath": "assets/pdf/012_Mulia Nama Yesus.pdf"
+      "pdfPath": "assets/pdf/012_Mulia Nama Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-012",
+        "path": "assets/chord/012_Mulia Nama Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1691,
+        "sha256": "424106f99693948134752be84de145b7957a7999f41206816ec34d04318c24d6"
+      }
     },
     {
       "id": "hymn-013",
@@ -198,7 +282,14 @@
       ],
       "lyrics": "Tiada orang kuasa sperti Yesus, tiada, tiada;\nTiada orang dapat sembuhkanku, tiada, tiada.\n\nAlmasihku Mahakuasa, Dia mau dekatku slamanya;\nTiada yang sempurna sperti Yesus, tiada, tiada.\n\nTiada orang kudus sperti Yesus, tiada, tiada;\nTiada orang lembut sperti Yesus, tiada, tiada.\n\nAlmasihku Mahakuasa, Dia mau dekatku slamanya;\nTiada yang sempurna sperti Yesus, tiada, tiada.\n\nTiada orang kasih sperti Yesus, tiada, tiada;\nAdakah dosa tak terhapuskan? tiada, tiada.\n\nAlmasihku Mahakuasa, Dia mau dekatku slamanya;\nTiada yang sempurna sperti Yesus, tiada, tiada.\n\nTiada orang korban sperti Yesus, tiada, tiada;\nAdakah umat suci binasa? tiada, tiada.\n\nAlmasihku Mahakuasa, Dia mau dekatku slamanya;\nTiada yang sempurna sperti Yesus, tiada, tiada.",
       "midiPath": "assets/midi/013_Tiada yang Seperti Yesus.mid",
-      "pdfPath": "assets/pdf/013_Tiada yang Seperti Yesus.pdf"
+      "pdfPath": "assets/pdf/013_Tiada yang Seperti Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-013",
+        "path": "assets/chord/013_Tiada yang Seperti Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1561,
+        "sha256": "d3d6bd5aca7b920193c5d02950ee39ca89678ee9f27d8246a171409b6ee21f63"
+      }
     },
     {
       "id": "hymn-014",
@@ -213,7 +304,14 @@
       ],
       "lyrics": "Kristus Maharaja, mendrita karnaku;\nKini naik tahta, patutlah dipuji.\n\nTahun Yobel telah tiba, Roh Kudus tlah dicurahkan;\nUmat bangkit, hidup bahgia.\n\nKristus Maharaja, tlah bangkit kembali;\nHidup selamanya, mengalahkan maut.\n\nTahun Yobel telah tiba, Roh Kudus tlah dicurahkan;\nUmat bangkit, hidup bahgia.\n\nKristus Maharaja, terangi dunia;\nDarahNya tercurah, firmanNya tersebar.\n\nTahun Yobel telah tiba, Roh Kudus tlah dicurahkan;\nUmat bangkit, hidup bahgia.\n\nKristus Maharaja, buka tujuh metrai;\nHikmat, kemuliaan, bagi Anak Domba.\n\nTahun Yobel telah tiba, Roh Kudus tlah dicurahkan;\nUmat bangkit, hidup bahgia.",
       "midiPath": "assets/midi/014_Kristus Maharaja.mid",
-      "pdfPath": "assets/pdf/014_Kristus Maharaja.pdf"
+      "pdfPath": "assets/pdf/014_Kristus Maharaja.pdf",
+      "chordRef": {
+        "songId": "hymn-014",
+        "path": "assets/chord/014_Kristus Maharaja.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1388,
+        "sha256": "ace7d6201c0dc8110d9e76341d2345ce2a769f331449ec47b3333acd4d3b4c02"
+      }
     },
     {
       "id": "hymn-015",
@@ -228,7 +326,14 @@
       ],
       "lyrics": "Hai, umat Allah, puji namaNya;\nBritakan Firman ke sgala tempat;\nPujilah Yesus, Sang Pemenang kita;\nDia berkuasa mengatur sgala bangsa.\n\nYesus berkuasa menolong kita;\nNyatakan kasih ke sgala bangsa;\nSemua bangsa girang memujiNya;\nMulia dan tahta bagi Domba Kudus.\n\nKarna nugrahNya, ku hidup baru;\nKu Puji Yesus yang Mahamulia;\nMalak disurga memuji kasihNya;\nSujud menyembah Anak Domba Allah.\n\nKita pun sujud di hadiratNya;\nDia Mahakasih dan Mahakuasa;\nAnugerahNya tak berkesudahan;\nKu mau bersyukur seumur hidupku.",
       "midiPath": "assets/midi/015_Pujilah Yesus.mid",
-      "pdfPath": "assets/pdf/015_Pujilah Yesus.pdf"
+      "pdfPath": "assets/pdf/015_Pujilah Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-015",
+        "path": "assets/chord/015_Pujilah Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1130,
+        "sha256": "e74167f23d5a2ac19b526c81aed1c739f1b986954243af76862e28c7d80f007e"
+      }
     },
     {
       "id": "hymn-016",
@@ -243,7 +348,14 @@
       ],
       "lyrics": "Nama Yesus ditinggikan di seluruh dunia;\nYang diagungkan sebagai Tuhan langit bumi;\nYang diagungkan sebagai Tuhan langit bumi.\n\nKarna kemurahan Tuhan, kita dislamatkan;\nPujilah Yesus sebagai Tuhan langit bumi;\nPujilah Yesus sebagai Tuhan langit bumi.\n\nDia jadikan semua bangsa dari satu orang;\nYesus disembah sebagai Tuhan langit bumi;\nYesus disembah sebagai Tuhan langit bumi.\n\nUmat suci siang malam sujud sembah Yesus;\nDia dimuliakan sebagai Tuhan langit bumi;\nDia dimuliakan sebagai Tuhan langit bumi.",
       "midiPath": "assets/midi/016_Sembahlah Tuhan Langit dan Bumi.mid",
-      "pdfPath": "assets/pdf/016_Sembahlah Tuhan Langit dan Bumi.pdf"
+      "pdfPath": "assets/pdf/016_Sembahlah Tuhan Langit dan Bumi.pdf",
+      "chordRef": {
+        "songId": "hymn-016",
+        "path": "assets/chord/016_Sembahlah Tuhan Langit dan Bumi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1497,
+        "sha256": "9db64a9500eb7cdfa40d5524bad22f6b80fb49eb80a62009c8812eca42a74cb6"
+      }
     },
     {
       "id": "hymn-017",
@@ -257,7 +369,14 @@
       ],
       "lyrics": "Ku tahu sungguh kasih Yesus, melebihi semua;\nDia menyerahkan nyawaNya, agar ku merdeka.\n\nKasih Yesus tak terhingga, kekal dan abadi;\nKasih Yesus tak terhingga, patutlah diPuji.\n\nKu tahu sungguh kasih Yesus, briku penghiburan;\nDia membuatku sukacita, patut ku bersyukur.\n\nKasih Yesus tak terhingga, kekal dan abadi;\nKasih Yesus tak terhingga, patutlah diPuji.\n\nKu tahu hidup di dunia penuh pendritaan;\nBila ingat kasih Tuhan, damailah hatiku.\n\nKasih Yesus tak terhingga, kekal dan abadi;\nKasih Yesus tak terhingga, patutlah diPuji.",
       "midiPath": "assets/midi/017_Pujilah Kasih Tuhan.mid",
-      "pdfPath": "assets/pdf/017_Pujilah Kasih Tuhan.pdf"
+      "pdfPath": "assets/pdf/017_Pujilah Kasih Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-017",
+        "path": "assets/chord/017_Pujilah Kasih Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "29ffdf2166c5bc2c874b2a59f401f80d95621d1f11234f1aa35271337f6327d0"
+      }
     },
     {
       "id": "hymn-018",
@@ -271,7 +390,14 @@
       ],
       "lyrics": "Tuhan Yesus Mahakasih, bukakan pintu surga;\nDi negri yang trang dan mulia Dia tlah sediakan tempat\n\nKita semua mau pulang ke surga yang amat mulia\nBersama dengan Tuhan, hidup bahgia selamaNya\n\nDi dunia bagai tamu, tiada pengharapan;\nBila masuk surga permai keluh kesahpun hilang\n\nKita semua mau pulang ke surga yang amat mulia\nBersama dengan Tuhan, hidup bahgia selamaNya\n\nMari kita giat dan tekun, bekerja untuk Tuhan;\nBila Tuhan datang lagi, kita'kan disambutNya\n\nKita semua mau pulang ke surga yang amat mulia\nBersama dengan Tuhan, hidup bahgia selamaNya",
       "midiPath": "assets/midi/018_Pujilah Anugerah Tuhan.mid",
-      "pdfPath": "assets/pdf/018_Pujilah Anugerah Tuhan.pdf"
+      "pdfPath": "assets/pdf/018_Pujilah Anugerah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-018",
+        "path": "assets/chord/018_Pujilah Anugerah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1460,
+        "sha256": "ca17a8cd15f3d2a609d4a436a3a2d4341048ab30e7a5e812d77c7a7fbd3d1995"
+      }
     },
     {
       "id": "hymn-019",
@@ -285,7 +411,14 @@
       ],
       "lyrics": "Mari bersorak, puji namaNya\nSemua umat Tuhan dan putri Sion\nYesus Raja Damai dan Juru Slamat\nNaik kledai muda, amatlah mulia.\nMari bersorak, puji namaNya\nSemua umat Tuhan dan putri Sion\n\nBerkat berlimpah, bagi umatNya\nHosana, Hosana, bagi anak Daud.\nNegri bahagia yang dijanjikan\nKini telah tiba, kekal tak ubah.\nBerkat berlimpah, bagi umatNya\nHosana, Hosana, bagi anak Daud.\n\nMari menyambut, Raja yang Mulia\nHosana, Hosana, bagi anak Daud.\nTakhta kemuliaan bagi sang Raja\nDamai sejahtera, bagi umatNya.\nMari menyambut, Raja yang Mulia\nHosana, Hosana, bagi anak Daud.",
       "midiPath": "assets/midi/019_Hosana.mid",
-      "pdfPath": "assets/pdf/019_Hosana.pdf"
+      "pdfPath": "assets/pdf/019_Hosana.pdf",
+      "chordRef": {
+        "songId": "hymn-019",
+        "path": "assets/chord/019_Hosana.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2156,
+        "sha256": "01783c6e7cd6d17e24bb4f537fc98ec70faefb31e566a36dceb0db95dfde5760"
+      }
     },
     {
       "id": "hymn-020",
@@ -299,7 +432,14 @@
       ],
       "lyrics": "Sungguh besar nama Yesus, Malaikat memuji,\nMalaikat memuji; Mempersembahkan mahkota,\n\nPuji Dia, \nPuji, puji, puji Dia, puji Dia Sang Raja.\n\nNama Yesus Mahatinggi, Patutlah dipuji,\nPatutlah dipuji; Semua bangsa menyembahNya,\n\nPuji Dia, \nPuji, puji, puji Dia, puji Dia Sang Raja.\n\nHikmat, kuasa, agung, mulia, Bagi Domba Allah,\nBagi Domba Allah; Umat, malak, memuji Nya,\n\nPuji Dia, \nPuji, puji, puji Dia, puji Dia Sang Raja.",
       "midiPath": "assets/midi/020_Pujilah Tuhan Sang Raja.mid",
-      "pdfPath": "assets/pdf/020_Pujilah Tuhan Sang Raja.pdf"
+      "pdfPath": "assets/pdf/020_Pujilah Tuhan Sang Raja.pdf",
+      "chordRef": {
+        "songId": "hymn-020",
+        "path": "assets/chord/020_Pujilah Tuhan Sang Raja.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1311,
+        "sha256": "0daa6eff920668598ae39b2b3f9bea22bcafe0276656d9823339736439b18837"
+      }
     },
     {
       "id": "hymn-021",
@@ -314,7 +454,14 @@
       ],
       "lyrics": "Yesus terelok, plihara sgalanya;\nDia Allah jadi manusia\nRendahkan diri,tolong manusia.\nSungguh besar anugrahNya\n\nYesus terelok, lebih dari bunga;\nDia buat Rohku bergembira\nWalau rembulan terang dan indah,\nLebih indah trang Yesusku\n\nYesus terelok. lebih dari angin;\nSejuk segarkan hatiku\nSalju nan putih menghiasi bumi,\nNamun Yesus lebih kudus\n\nYesus terelok, plihara sgalanya;\nDia Allah jadi manusia\nDia yang kurindu, Dia yang kusembah,\nDialah mahkota muliaku",
       "midiPath": "assets/midi/021_Yesus Terelok.mid",
-      "pdfPath": "assets/pdf/021_Yesus Terelok.pdf"
+      "pdfPath": "assets/pdf/021_Yesus Terelok.pdf",
+      "chordRef": {
+        "songId": "hymn-021",
+        "path": "assets/chord/021_Yesus Terelok.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1266,
+        "sha256": "13a4f07f2511beb81501f96676d2f9f136f2ccde43ede526b400049c826c57f0"
+      }
     },
     {
       "id": "hymn-022",
@@ -330,7 +477,14 @@
       ],
       "lyrics": "Ku punya sumber air, yang manis dan jernih\nDi tepinya aku tentram, minum air hayatNya;\nJauh dari hal duniawi, mendengar gemercik air.\n\nKu punya sahabat, sahabat terbaik\nSetiap hari berjumpa Dia, bimbingku selalu;\nAgar ku tetap berjaga, menuruti nasihatNya.\n\nAku memiliki, senjata rohani\nSetiap hari ku berlatih, 'tuk kalahkan iblis;\nSlalu pegang pedang firman, singkirkan semua musuh.\n\nAku memiliki, cermin terang, indah\nSetiap hari Dia tampakkan, semua nodaku;\nKu tak lupa menghapusnya, bersihlah jiwa dan rohku.\n\nTuhan, ku memohon, RohMu penuhiku\nSiang malam baca firman, semakin kurindu;\nRohaniku makin kuat, ikut Tuhan sampai surga.",
       "midiPath": "assets/midi/022_Pujilah Alkitab.mid",
-      "pdfPath": "assets/pdf/022_Pujilah Alkitab.pdf"
+      "pdfPath": "assets/pdf/022_Pujilah Alkitab.pdf",
+      "chordRef": {
+        "songId": "hymn-022",
+        "path": "assets/chord/022_Pujilah Alkitab.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 948,
+        "sha256": "9684eefd3011512950780ffe9885593832544d48a494ede4807c9da385c3a4cb"
+      }
     },
     {
       "id": "hymn-023",
@@ -346,7 +500,14 @@
       ],
       "lyrics": "Orang muda, dapatkah kau luput dari dosa?\nHanya Firman membuat hati bersih tak bernoda\n\nFirman Tuhan penuh kuasa di hati manusia;\nWalau aku amat bodoh, Roh Kudus bri hikmat\n\nKitab Suci bagai surya memancarkan cahya;\nBagai plita dimalam glap, hindarkan bahaya\n\nFirman Tuhan briku hikmat, 'tuk membenci dosa;\nMenaklukan nafsu jahat, jadi orang benar\n\nKitab suci indah kekal, patut dihormati;\nSiapa taat kepadaNya, rohNya terplihara",
       "midiPath": "assets/midi/023_Firman Tuhan Sungguh Indah.mid",
-      "pdfPath": "assets/pdf/023_Firman Tuhan Sungguh Indah.pdf"
+      "pdfPath": "assets/pdf/023_Firman Tuhan Sungguh Indah.pdf",
+      "chordRef": {
+        "songId": "hymn-023",
+        "path": "assets/chord/023_Firman Tuhan Sungguh Indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 951,
+        "sha256": "a261122495e0ab1069c0649ed1ad58a2db59abba0384df1c44456fe0b0b0dd21"
+      }
     },
     {
       "id": "hymn-024",
@@ -361,7 +522,14 @@
       ],
       "lyrics": "Kitab suci menyaksikan, tentang Yesus Kristus;\nDia telah disalibkan, menebus dosaku\n\nFirman kehidupan, sungguh ku percaya\nSungguh indah firman Tuhan, alasku yang kekal\nSungguh indah firman Tuhan, alasku yang kekal\n\nJanji Allah di Alkitab, tetap selamanya;\nIa pusaka dan mazmurku, pelita dalam glap\n\nFirman kehidupan, sungguh ku percaya\nSungguh indah firman Tuhan, alasku yang kekal\nSungguh indah firman Tuhan, alasku yang kekal\n\nFirman Allah penuh nugrah, pasti digenapi;\nLebih manis dari madu, kekal dalam surga\n\nFirman kehidupan, sungguh ku percaya\nSungguh indah firman Tuhan, alasku yang kekal\nSungguh indah firman Tuhan, alasku yang kekal\n\nTiap hari baca Alkitab, ingat dan jalankan;\nRoh Kudus slalu bimbingku, lebih mengenalNya\n\nFirman kehidupan, sungguh ku percaya\nSungguh indah firman Tuhan, alasku yang kekal\nSungguh indah firman Tuhan, alasku yang kekal",
       "midiPath": "assets/midi/024_Firman Kehidupan.mid",
-      "pdfPath": "assets/pdf/024_Firman Kehidupan.pdf"
+      "pdfPath": "assets/pdf/024_Firman Kehidupan.pdf",
+      "chordRef": {
+        "songId": "hymn-024",
+        "path": "assets/chord/024_Firman Kehidupan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1945,
+        "sha256": "b05beaedfb4a5db1332cf5b6d6c9bcd625b9937c49497f547f6b0c99a153b3ef"
+      }
     },
     {
       "id": "hymn-025",
@@ -375,7 +543,14 @@
       ],
       "lyrics": "Taurat Tuhan ku sempurna, menyegarkan jiwa;\nKetentuan Tuhan tegas, membuat orang berhikmat.\n\nLebih indah dari mas, bahkan dari mas tua\nLebih manis daripada madu sarang lebah\n\nTitah Tuhan itu tepat, menyukakan hati;\nPrintah Tuhan itu murni, membuat mata bercahya.\n\nLebih indah dari mas, bahkan dari mas tua\nLebih manis daripada madu sarang lebah\n\nFirman Tuhan itu suci, tetap selamanya;\nHukum Tuhan itu benar, sungguh adil semuanya.\n\nLebih indah dari mas, bahkan dari mas tua\nLebih manis daripada madu sarang lebah",
       "midiPath": "assets/midi/025_Firman Allah Murni.mid",
-      "pdfPath": "assets/pdf/025_Firman Allah Murni.pdf"
+      "pdfPath": "assets/pdf/025_Firman Allah Murni.pdf",
+      "chordRef": {
+        "songId": "hymn-025",
+        "path": "assets/chord/025_Firman Allah Murni.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "1d4f21a104b49c634c37542c2d2e95b3cc34aaa205dc0fd2f69698b265a4defd"
+      }
     },
     {
       "id": "hymn-026",
@@ -389,7 +564,14 @@
       ],
       "lyrics": "Tuhan, sampaikanlah, firman padaku!\nKu setia menunggu, sabda firmanMu.\n\nBerilah nasihat, hamba 'kan trima;\nRohku mengharapkan, kalam yang hidup.\n\nTuhan, kuatkan rohku, hari ke hari;\nAgar menyebarkan, keharumanMu.",
       "midiPath": "assets/midi/026_Tuhan! Berfirmanlah Padaku.mid",
-      "pdfPath": "assets/pdf/026_Tuhan! Berfirmanlah Padaku.pdf"
+      "pdfPath": "assets/pdf/026_Tuhan! Berfirmanlah Padaku.pdf",
+      "chordRef": {
+        "songId": "hymn-026",
+        "path": "assets/chord/026_Tuhan! Berfirmanlah Padaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 889,
+        "sha256": "864243805a4803c8f1197dad73bbffff2e015723e6ba644fa36899af519ddcb5"
+      }
     },
     {
       "id": "hymn-027",
@@ -404,7 +586,14 @@
       ],
       "lyrics": "Ku girang karna Yesus tlah lahir, menjadi Juru slamat manusia;\nSungguh heran kasih Tuhan Yesus, serahkan nyawaNya slamatkan ku\n\nKu bergirang Yesus cintaku. Dia cintaku, Dia cintaku\nKu bergirang Yesus cintaku. Heran! Dia cintaku\n\nAdakah orang seperti Yesus, tinggalkan kemuliaan yang besar;\nTurun ke dunia terima hina, korbankan jiwa tolong manusia\n\nKu bergirang Yesus cintaku. Dia cintaku, Dia cintaku\nKu bergirang Yesus cintaku. Heran! Dia cintaku\n\nWalauku sperti domba tersesat, Yesus mencari karna kasihNya;\nTanganNya menyambut dan memeluk, dalam ribaanNya ku terlindung\n\nKu bergirang Yesus cintaku. Dia cintaku, Dia cintaku\nKu bergirang Yesus cintaku. Heran! Dia cintaku\n\nDikala Yesus datang kembali, umat suci diangkat ke surga;\nPatutlah kita slalu puji Dia, sekarang atau kelak di surga\n\nKu bergirang Yesus cintaku. Dia cintaku, Dia cintaku\nKu bergirang Yesus cintaku. Heran! Dia cintaku",
       "midiPath": "assets/midi/027_Yesus Cintaku.mid",
-      "pdfPath": "assets/pdf/027_Yesus Cintaku.pdf"
+      "pdfPath": "assets/pdf/027_Yesus Cintaku.pdf",
+      "chordRef": {
+        "songId": "hymn-027",
+        "path": "assets/chord/027_Yesus Cintaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1709,
+        "sha256": "fed5396cd6c4eadac2f28265ac750923e80cbb01611955f2f6c9ec5b717c602c"
+      }
     },
     {
       "id": "hymn-028",
@@ -419,7 +608,14 @@
       ],
       "lyrics": "Kasih Yesus amat besar, Haleluya!\nLebih dari kasih dunia, Haleluya!\nTeman dunia tak menentu, skarang dekat, esok jauh,\nHanya kasih Yesus kekal, Haleluya!\n\nPercaya Dia broleh hidup, Haleluya!\nAnugrahNya tak terhingga, Haleluya!\nDarahNya menebus dosa, ku tersesat, Dia mencari,\nBawaku pulang ke kandang, Haleluya!\n\nYesus sahabat terbaik, Haleluya!\nBerkatNya slalu berlimpah, Haleluya!\nDengar suaraNya ku girang, sbab memberi penghiburan,\nIman lemah diteguhkan, Haleluya!\n\nTanganNya pimpin hidupku, Haleluya!\nKasihNya slalu sertaku, Haleluya!\nKemanapun Dia memimpin, kapanpun Dia memberkati,\nSampai masuk tempat mulia, Haleluya!",
       "midiPath": "assets/midi/028_Yesus Pengasih.mid",
-      "pdfPath": "assets/pdf/028_Yesus Pengasih.pdf"
+      "pdfPath": "assets/pdf/028_Yesus Pengasih.pdf",
+      "chordRef": {
+        "songId": "hymn-028",
+        "path": "assets/chord/028_Yesus Pengasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1079,
+        "sha256": "88dea92d9db082e4cec58252661bff86b7ec2f6a8dc0a5bcdb38649fb2aa2b9b"
+      }
     },
     {
       "id": "hymn-029",
@@ -435,7 +631,14 @@
       ],
       "lyrics": "Sratus domba kini tinggal sembilan puluh sembilan,\nYang satu lagi tersesat dalam lembah gunung\nAmat jauh meninggalkan gembala yang penuh kasih,\nGembala yang penuh kasih.\n\nWalau masih ada domba sembilan puluh sembilan,\n\"Satu domba yang tersesat, itupun milikKu,\nWalau jauh penuh bahya, Aku tetap mencariNya,\nAku tetap mencariNya.\"\n\nDomba sesat tidak tahu gembala mendrita\nSusah payah mencarinya di malam yang gelap\nDalam hutan Dia mendengar, suara tangis domba sesat,\nSuara tangis domba sesat.\n\n\"Tuhan, darah yang dilereng, darah siapakah?\"\nDarah Gembala mengalir demi domba sesat\n\"Mengapa tanganMu luka?\", sebab lereng penuh duri,\nSebab lereng penuh duri.\n\nLalui lembah serta gunung, jurang, tebing tinggi,\nGembala berseru nyaring : \"Domba tlah Ku dapat!\"\nMalak surga nyanyi merdu : \"Domba sesat tlah kembali,\nDomba sesat tlah kembali.\"",
       "midiPath": "assets/midi/029_Tuhan Mencari Domba yang Hilang.mid",
-      "pdfPath": "assets/pdf/029_Tuhan Mencari Domba yang Hilang.pdf"
+      "pdfPath": "assets/pdf/029_Tuhan Mencari Domba yang Hilang.pdf",
+      "chordRef": {
+        "songId": "hymn-029",
+        "path": "assets/chord/029_Tuhan Mencari Domba yang Hilang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1658,
+        "sha256": "8cca2082a97c00d9f2400ce0436cfe410aac2d1ad6b1c6a32d08d2b4da9e4096"
+      }
     },
     {
       "id": "hymn-030",
@@ -450,7 +653,14 @@
       ],
       "lyrics": "Kasih Tuhan cariku, orang yang berdosa;\nKu dipeluk olehNya, bawa kekandangNya;\nMalak di surga bergirang, bernyanyi dan memuji Dia\n\nKasihNya cariku, darahNya tebusku;\nKu diperdamaikan denganNya\nDalam Dia ku tak akan takut.\n\nKalau aku terluka, Dia balut obati;\nDengan kasih hiburku, \"Kau tetap milikku\"\nKu tak pernah dengar suara yang sungguh puaskan hatiku\n\nKasihNya cariku, darahNya tebusku;\nKu diperdamaikan denganNya\nDalam Dia ku tak akan takut.\n\nTangan Tuhan di paku, darahNya mengalir;\nDia bermahkota duri, disiksa, dihina;\nTuhan kasihi yang dosa rela mati ganti kita\n\nKasihNya cariku, darahNya tebusku;\nKu diperdamaikan denganNya\nDalam Dia ku tak akan takut.\n\nKu bertamu di dunia, tak merasa cemas;\nMelakukan firmanNya, sampai Tuhan datang;\nKelak ku akan diangkat, hidup kekal bersamaNya\n\nKasihNya cariku,darahNya tebusku;\nKu diperdamaikan denganNya\nDalam Dia ku tak akan takut.",
       "midiPath": "assets/midi/030_Kasih Tuhan Mencariku.mid",
-      "pdfPath": "assets/pdf/030_Kasih Tuhan Mencariku.pdf"
+      "pdfPath": "assets/pdf/030_Kasih Tuhan Mencariku.pdf",
+      "chordRef": {
+        "songId": "hymn-030",
+        "path": "assets/chord/030_Kasih Tuhan Mencariku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2224,
+        "sha256": "63c34defbab1a82c06023d4103f4df0253b61ffe6b9864fe22a84a10fdedab12"
+      }
     },
     {
       "id": "hymn-031",
@@ -465,7 +675,14 @@
       ],
       "lyrics": "Yesus Tuhanku turun ke dunia, tinggalkan kemuliaan yang besar;\nKasihNya mengharukan hatiku, Dia mencariku.\nDia mencariku, Dia mencariku\nKasihNya mengharukan hatiku, Dia mencariku.\n\nYesus Tuhanku mati disalib, untuk menebus sgala dosaku;\nLangit dan bumi goncang dan gentar, Dia mati untukku.\nDia mati untuk ku, Dia mati untuk ku\nLangit dan bumi goncang dan gentar, Dia mati untukku.\n\nKala ku tinggalkan padang Tuhan, Yesus cariku domba yang sesat;\nMemanggil namaku dengan lembut, Dia memanggilku.\nDia memanggilku, Dia memanggilku\nMemanggil namaku dengan lembut, Dia memanggilku.\n\nYesus Tuhanku telah berjanji, di akhir zaman datang kembali;\nItulah kabar yang paling baik, Dia datang sambutku.\nDia datang sambutku, Dia datang sambutku\nItulah kabar yang paling baik, Dia datang sambutku.",
       "midiPath": "assets/midi/031_Semuanya Demiku.mid",
-      "pdfPath": "assets/pdf/031_Semuanya Demiku.pdf"
+      "pdfPath": "assets/pdf/031_Semuanya Demiku.pdf",
+      "chordRef": {
+        "songId": "hymn-031",
+        "path": "assets/chord/031_Semuanya Demiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1577,
+        "sha256": "cf952172ed76da5b13a062c1d43a64cc415750fde951043f4896d64902c62061"
+      }
     },
     {
       "id": "hymn-032",
@@ -495,7 +712,14 @@
       ],
       "lyrics": "Siapakah dia yang kabarkan Injil, bernyanyi dan berdoa setiap hari?\nDialah umat Yesus, berbuat dalam namaNya.\nYesus panggilku ke Yerusalem baru, Dia 'kan pimpin ke surga;\nYesus panggilku ke Yerusalem baru, Dia 'kan pimpin ke surga.\n\nSiapakah dia yang ingin ke surga, tiada cela dan tak berdosa?\nDialah umat Yesus, yang tlah dikuduskanNya.\nYesus panggilku ke Yerusalem baru, Dia ‘kan membrikan berkat;\nYesus panggilku ke Yerusalem baru, Dia ‘kan membrikan berkat.\n\nSiapakah dia yang berbudi luhur, ada kuasa kalahkan Iblis?\nDialah umat Yesus, yang beroleh Roh Kudus.\nYesus panggilku ke Yerusalem baru, Dia brikan kemenangan;\nYesus panggilku ke Yerusalem baru, Dia brikan kemenangan.\n\nSiapakah dia yang tak takut bahya, hadapi maut, tetap sentosa?\nDialah umat Yesus, yang beroleh janjiNya.\nYesus panggilku ke Yerusalem baru, Dia brikan sukacita;\nYesus panggilku ke Yerusalem baru, Dia brikan sukacita.",
       "midiPath": "assets/midi/033_Ke Yerusalem Baru.mid",
-      "pdfPath": "assets/pdf/033_Ke Yerusalem Baru.pdf"
+      "pdfPath": "assets/pdf/033_Ke Yerusalem Baru.pdf",
+      "chordRef": {
+        "songId": "hymn-033",
+        "path": "assets/chord/033_Ke Yerusalem Baru.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1769,
+        "sha256": "3a803e4bd58e47534ef9416c9247d299efa9238f37f468a982ed294aba858a43"
+      }
     },
     {
       "id": "hymn-034",
@@ -537,7 +761,14 @@
       ],
       "lyrics": "Hidup dalam kesibukan, banyak keluh dan kesah,\nRohmu dahaga dan hampa, tak 'kan dapat terhibur;\nHai, dengarlah suara ini, yang lembut serta merdu;\nHai, kasihNya memanggilmu, brimu kabar gembira.\n\nSuara h'rapan, ku dengar suara Tuhan;\nRoh yang susah beroleh sentosa.\n\nSgala kemewahan dunia hanyalah tipu jerat,\nMustika yang tak berubah tak 'kan ada di dunia;\nHai, pandanglah gunung tinggi,kau akan di puaskan;\nHai, minumlah air hayat, kau 'kan dapat sentosa.\n\nSuara h'rapan, ku dengar suara Tuhan;\nRoh yang susah beroleh sentosa.",
       "midiPath": "assets/midi/036_Suara Pengharapan.mid",
-      "pdfPath": "assets/pdf/036_Suara Pengharapan.pdf"
+      "pdfPath": "assets/pdf/036_Suara Pengharapan.pdf",
+      "chordRef": {
+        "songId": "hymn-036",
+        "path": "assets/chord/036_Suara Pengharapan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2401,
+        "sha256": "596da989a6b56060835994db6c229df465840ea1736b09bf0133d6bbe12bc61f"
+      }
     },
     {
       "id": "hymn-037",
@@ -811,7 +1042,14 @@
       ],
       "lyrics": "Haleluya, Puji Hu! Haleluya, Puji Hu!\nKu dibebaskan dari glap ke dalam trang.\nMasuk Greja Sejati, hatiku  bergirang;\nTuhan briku Kanaan, sungguh heran Dia mengasihiku,\nBeriku Roh penolong, penuhiku\n\nHaleluya, Puji Hu! Haleluya, Puji Hu!\nKu di pimpinNya, terlepas dari Babel.\nMenerima Roh Kudus, hatiku terhibur;\nKu dapat nugrah ini, Dia memanggil, ku mau berkorban,\nKemanapun britakan, kebenaran\n\nHaleluya, Puji Hu! Haleluya, Puji Hu!\nTuhan bimbingku lalui jalan yang benar.\nBerharap akan Surga, segera bersiap;\nSlalu berjaga jaga, dengan pelita yang penuh minyak,\nMenyongsong Tuhan Yesus, di angkasa",
       "midiPath": "assets/midi/054_Bebas Dari Gelap Menuju Terang.mid",
-      "pdfPath": "assets/pdf/054_Bebas Dari Gelap Menuju Terang.pdf"
+      "pdfPath": "assets/pdf/054_Bebas Dari Gelap Menuju Terang.pdf",
+      "chordRef": {
+        "songId": "hymn-054",
+        "path": "assets/chord/054_Bebas Dari Gelap Menuju Terang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1882,
+        "sha256": "e2afe304748e0bde3479a1c3ad701ee4846d24589f98d751c97a4722f95409df"
+      }
     },
     {
       "id": "hymn-055",
@@ -884,7 +1122,14 @@
       ],
       "lyrics": "Mohon Tuhan pimpin daku, lalui jalan dunia;\nAku lemah, Kau berkuasa pimpinku terus maju.\nManna surga, manna surga, Tuhan, berilah daku.\nManna surga, manna surga, Tuhan, berilah daku.\n\nTuhan brilah air hayat, agar ku tak dahaga;\nBri tiang awan dan tiang api, agar ku tak tersesat.\nJuru Slamat, Juru Slamat, menjadi perisaiku.\nJuru Slamat, Juru Slamat, menjadi perisaiku.\n\nKala sampai tepi Yordan, hatiku pun tenteram;\nKuasa maut Dia kalahkan, sandar Dia ku menanglah.\nDi Kanaan, di Kanaan, ku'kan slalu PujiHu.\nDi Kanaan, di Kanaan, ku'kan slalu PujiHu.",
       "midiPath": "assets/midi/059_Mohon Pimpinan Tuhan.mid",
-      "pdfPath": "assets/pdf/059_Mohon Pimpinan Tuhan.pdf"
+      "pdfPath": "assets/pdf/059_Mohon Pimpinan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-059",
+        "path": "assets/chord/059_Mohon Pimpinan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1830,
+        "sha256": "114345ce1010606ac659e48bb18dfee5f61d0958bb559129e37499bd966d70ef"
+      }
     },
     {
       "id": "hymn-060",
@@ -999,7 +1244,14 @@
       ],
       "lyrics": "Mohon Tuhan slalu menuntunku,\nBrilah berkat, bantu, menuntunku;\nAgar ku berjalan penuh dengan iman,\nTiang awan, tiang api, menuntunku.\n\nKala bimbang, takut; Kau tuntunku,\nKala badai hujan, Kau tuntunku;\nSiang atau malam, cerah atau mendung,\nJalanku slalu trang, Kau tuntunku.\n\nKala ku didunia, Kau tuntunku,\nApapun terjadi, Kau tuntunku;\nSampai akhir hidup dapat kemenangan,\nTerima mahkota, Kau tuntunku.",
       "midiPath": "assets/midi/067_Tuhan Tuntunlah Aku.mid",
-      "pdfPath": "assets/pdf/067_Tuhan Tuntunlah Aku.pdf"
+      "pdfPath": "assets/pdf/067_Tuhan Tuntunlah Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-067",
+        "path": "assets/chord/067_Tuhan Tuntunlah Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1001,
+        "sha256": "231399717b0698ff194051e1a728f802705bfd4e688f463e887e285cb599a5fa"
+      }
     },
     {
       "id": "hymn-068",
@@ -1245,7 +1497,14 @@
       ],
       "lyrics": "Sungguh girang, tak lama lagi Raja ku segra datang;\nTiba fajar muliaNya, pasti ku ‘kan bernyanyi girang.\n\nO, Haleluya, sungguh mulia kala Rajaku datang;\nDengan plita menyala, menantikan Tuhanku datang.\nSungguh girang, tak lama lagi Rajaku segra datang;\nTiba fajar muliaNya, pasti ku ‘kan bernyanyi girang.\n\nSungguh girang menanti Rajaku datang dari surga;\nBersama semua umat suci, bertemu di angkasa.\n\nO, Haleluya, sungguh mulia kala Rajaku datang;\nDengan plita menyala, menantikan Tuhanku datang.\nSungguh girang, tak lama lagi Rajaku segra datang;\nTiba fajar muliaNya, pasti ku ‘kan bernyanyi girang.\n\nKu 'kan slalu berjaga-jaga menantikan datangNya;\nSaat Dia datang, ku 'kan trima mahkota yang mulia.\n\nO, Haleluya, sungguh mulia kala Rajaku datang;\nDengan plita menyala, menantikan Tuhanku datang.\nSungguh girang, tak lama lagi Rajaku segra datang;\nTiba fajar muliaNya, pasti ku ‘kan bernyanyi girang.",
       "midiPath": "assets/midi/084_Menyambut Rajaku.mid",
-      "pdfPath": "assets/pdf/084_Menyambut Rajaku.pdf"
+      "pdfPath": "assets/pdf/084_Menyambut Rajaku.pdf",
+      "chordRef": {
+        "songId": "hymn-084",
+        "path": "assets/chord/084_Menyambut Rajaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1962,
+        "sha256": "914459608edee4c449a952c6cac733fa4c3366f3c16517ce8b7564b535bb1b15"
+      }
     },
     {
       "id": "hymn-085",
@@ -1260,7 +1519,14 @@
       ],
       "lyrics": "Malam yang glap hampir lalu, bawa pengharapan yang mulia;\nRaja atas sgala Raja akan segra datang dari surga.\n\nSegra datang, segra datang, berharap sambut Tuhan datang;\nBerjaga dan bersabarlah, Tuhan segra datang;\n\nTanda kiamat sudah nyata, ku di dunia harapkan surga;\nFirman Tuhan meneguhkan: hari kedatanganNya tlah dekat.\n\nSegra datang, segra datang, berharap sambut Tuhan datang;\nBerjaga dan bersabarlah, Tuhan segra datang;\n\nUmat yang mati dalam Dia bangkit dulu saat Dia datang;\nTuhan turun dari langit, menyambut umatNya masuk surga.\n\nSegra datang, segra datang, berharap sambut Tuhan datang;\nBerjaga dan bersabarlah, Tuhan segra datang;\n\nUmatNya yang masih hidup, diubah, diangkat, olehNya;\nBersatu di dalam surga, bersama memuji, menyembahNya.\n\nSegra datang, segra datang, berharap sambut Tuhan datang;\nBerjaga dan bersabarlah, Tuhan segra datang;",
       "midiPath": "assets/midi/085_Tuhan Segera Datang.mid",
-      "pdfPath": "assets/pdf/085_Tuhan Segera Datang.pdf"
+      "pdfPath": "assets/pdf/085_Tuhan Segera Datang.pdf",
+      "chordRef": {
+        "songId": "hymn-085",
+        "path": "assets/chord/085_Tuhan Segera Datang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1590,
+        "sha256": "8164ca191416afbaf58efc660c700cdc610577f640cf8f8e22bc1e27a049b262"
+      }
     },
     {
       "id": "hymn-086",
@@ -1320,7 +1586,14 @@
       ],
       "lyrics": "Juru slamat mengherankan, Dia tinggalkan kemuliaan;\nWalau aku banyak dosa, nugrahNya tetap melimpah.\n\nNugrahNya berlimpah, nugrahNya berlimpah;\nWalau aku penuh dosa, nugrahNya berlimpah;\n\nDi kala Tuhan memanggil, ku masih didalam dosa;\nNamun oleh darah Yesus, bersihlah semua dosaku.\n\nNugrahNya berlimpah, nugrahNya berlimpah;\nWalau aku penuh dosa, nugrahNya berlimpah;\n\nYesuslah Juru Slamatku, Nabi, Imam dan Rajaku;\nNugrah pengampunan dosa, diberikan oleh Yesus.\n\nNugrahNya berlimpah, nugrahNya berlimpah;\nWalau aku penuh dosa, nugrahNya berlimpah;\n\nBolehkah ku tak puji Dia? Rohku slalu nyanyi girang;\nPuji kasihNya yang besar, sampai selama lamaNya.\n\nNugrahNya berlimpah, nugrahNya berlimpah;\nWalau aku penuh dosa, nugrahNya berlimpah;",
       "midiPath": "assets/midi/089_AnugerahNya Berlimpah.mid",
-      "pdfPath": "assets/pdf/089_AnugerahNya Berlimpah.pdf"
+      "pdfPath": "assets/pdf/089_AnugerahNya Berlimpah.pdf",
+      "chordRef": {
+        "songId": "hymn-089",
+        "path": "assets/chord/089_AnugerahNya Berlimpah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1566,
+        "sha256": "4367ae05b7abeaf316aa2b6052fb4e3f3c29e41fa67062986021ce2bf903c99d"
+      }
     },
     {
       "id": "hymn-090",
@@ -1335,7 +1608,14 @@
       ],
       "lyrics": "Ada kala kesusahan menimpa, ada kala cemas putus harapan;\nBila kau menghitung semua berkatNya, pasti kau terhibur dan slalu girang.\n\nHitunglah semua berkatNya, ingatlah semua berkatNya;\nBerkat Tuhan hitunglah semua pastilah kau terhibur slalu girang.\n\nAda kala kuatir bagai beban brat, ada kala pikul salib tak kuat;\nHitung berkat Tuhan, sangsipun hilang, pasti kau bersuka ria dan tentram.\n\nHitunglah semua berkatNya, ingatlah semua berkatNya;\nBerkat Tuhan hitunglah semua pastilah kau terhibur slalu girang.\n\nAda kala gagal hidup mendrita, namun yakin janji Tuhan tak hampa;\nBerkat Tuhan pasti cukup bagimu, carilah dahulu Krajaan Tuhan.\n\nHitunglah semua berkatNya, ingatlah semua berkatNya;\nBerkat Tuhan hitunglah semua pastilah kau terhibur slalu girang.\n\nAda kala mara bahya menimpa, janganlah kau takut, sandar kuasaNya;\nDi bawah sayapNya pasti Dia jaga, pimpin jalan sampai masuk kesurga.\n\nHitunglah semua berkatNya, ingatlah semua berkatNya;\nBerkat Tuhan hitunglah semua pastilah kau terhibur slalu girang.",
       "midiPath": "assets/midi/090_Hitunglah BerkatNya.mid",
-      "pdfPath": "assets/pdf/090_Hitunglah BerkatNya.pdf"
+      "pdfPath": "assets/pdf/090_Hitunglah BerkatNya.pdf",
+      "chordRef": {
+        "songId": "hymn-090",
+        "path": "assets/chord/090_Hitunglah BerkatNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1399,
+        "sha256": "70fdece436fd433186c58896b6f7b9f5adc740b765615f4fd9ba72bef6c80b2c"
+      }
     },
     {
       "id": "hymn-091",
@@ -1349,7 +1629,14 @@
       ],
       "lyrics": "Siang malam ku kenang kasihMu, Yesus, betapa tinggi dan dalam,\nKasihMu slamanya sertaku, Yesus, melimpah dalam hatiku;\nKau rela turun ke dunia, Yesus, tinggalkan tahta yang mulia.\nMenjadi Anak Manusia, Yesus, rela terima sengsara;\n\nKasihku sembahkan PadaMu, Yesus, sebab Kau puaskan hatiku;\nKau slamanya indah dan baik, Yesus, ku snang tinggal didalamMu.\n\nKasihMu bagai perjamuan, Yesus, harum dan memuaskanku,\nKau mati disalib gantiku, Yesus, rela dilaknat, digantung;\nTebusku lepas dari maut, Yesus, darahMu sucikan daku.\nKau pun mengutus Roh Penolong, Yesus, kasihMu slalu Padaku;\n\nKasihku sembahkan PadaMu, Yesus, sebab Kau puaskan hatiku;\nKau slamanya indah dan baik, Yesus, ku snang tinggal didalamMu.\n\nSiang malam ku rindu rumahMu, Yesus, tersedia bagi umatMu,\nNegri yang indah dan bahagia, Yesus, tiada cemas, duka lara;\nKu slalu nikmati kasihMu, Yesus, berkatMu tiada taranya.\nKasihMu slamanya tak ubah, Yesus, sampai aku dimuliakan;\n\nKasihku sembahkan PadaMu, Yesus, sebab Kau puaskan hatiku;\nKau slamanya indah dan baik, Yesus, ku snang tinggal didalamMu.",
       "midiPath": "assets/midi/091_Tuhan Pimpin Jalanku.mid",
-      "pdfPath": "assets/pdf/091_Tuhan Pimpin Jalanku.pdf"
+      "pdfPath": "assets/pdf/091_Tuhan Pimpin Jalanku.pdf",
+      "chordRef": {
+        "songId": "hymn-091",
+        "path": "assets/chord/091_Tuhan Pimpin Jalanku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2281,
+        "sha256": "b0df0bd40bfd8dc7d23ab792ae66f35d15e62251874f4671be4c7114b916d36f"
+      }
     },
     {
       "id": "hymn-092",
@@ -1498,7 +1785,14 @@
       ],
       "lyrics": "Kasihan orang berdosa, durhaka amat bodoh!\nHati sombong dan berkata : \"Ku tak kancinta Yesus,\nHanya cinta diriku, ku takkan cinta Yesus.\"\nHati sombong dan berkata : \"Ku takkan cinta Yesus,\n\nSungguh heran, percaya Dia, dosaku diampuni!\nTergerak hati berbisik : \"Ku juga cinta Yesus,\nWalau cinta diriku, ku juga cinta Yesus.\"\nTergerak hati berbisik : \"Ku juga cinta Yesus,\n\nSungguh besar kasih Tuhan, menghibur dan bantuku!\nTerharu hati berbisik : \"Ku lebih cinta Yesus,\nKurang cinta diriku, ku lebih cinta Yesus.\"\nTerharu hati berbisik : \"Ku lebih cinta Yesus,\n\nSungguh setia kasih Tuhan, bri Roh Kudus pimpinku!\nHati hancur dan berkata : \"Ku hanya cinta Yesus,\nTidak cinta diriku, ku hanya cinta Yesus.\"\nHati hancur dan berkata : \"Ku hanya cinta Yesus,",
       "midiPath": "assets/midi/101_Hanya Cinta Yesus.mid",
-      "pdfPath": "assets/pdf/101_Hanya Cinta Yesus.pdf"
+      "pdfPath": "assets/pdf/101_Hanya Cinta Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-101",
+        "path": "assets/chord/101_Hanya Cinta Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1063,
+        "sha256": "f05505929278eabb3e2abe6a8c4db18ea2fdbaa4548cca933459f54e7b3c50c8"
+      }
     },
     {
       "id": "hymn-102",
@@ -1527,7 +1821,14 @@
       ],
       "lyrics": "Lebih baik Yesus, tak mau emas, jadi milikNya tak mau kekayaan;\nLebih baik Yesus, tak mau harta; ku mau tanganNya slalu pimpinku.\n\nTak mau jadi raja dunia, di bawah kuasa dosa;\nLebih baik Yesus, tak mau dunia, dan kemewahannya.\n\nLebih baik Yesus, tak mau mewah, ku mau setia bekerja untukNya;\nLebih baik Yesus, tak mau nama; Ku mau setia siarkan namaNya.\n\nTak mau jadi raja dunia, di bawah kuasa dosa;\nLebih baik Yesus, tak mau dunia, dan kemewahannya.\n\nYesus lebih elok dari bakung, dan lebih manis dari madu segar;\nHatiku dahaga, perlu Tuhan; Ku mau ikut Dia spanjang hidupku.\n\nTak mau jadi raja dunia, di bawah kuasa dosa;\nLebih baik Yesus, tak mau dunia, dan kemewahannya.",
       "midiPath": "assets/midi/103_Lebih Baik Ada Yesus.mid",
-      "pdfPath": "assets/pdf/103_Lebih Baik Ada Yesus.pdf"
+      "pdfPath": "assets/pdf/103_Lebih Baik Ada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-103",
+        "path": "assets/chord/103_Lebih Baik Ada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1690,
+        "sha256": "f4105afac7318f63e0e4bcb203f08134f399c527c0e612de65a2ca243ff9548e"
+      }
     },
     {
       "id": "hymn-104",
@@ -1572,7 +1873,14 @@
       ],
       "lyrics": "Aku murid Yesus, Dia Almasihku, dulu ku berdosa, sengsara;\nDia mati untukku, tebus dosaku, kini ku slalu girang.\n\nYesus jadikanku muridNya, ku mau pikul salibNya;\nTurut printah Tuhan dan pimpinan Roh, Dia bri bahagia kekal.\n\nAku murid Yesus, turut printahNya, segala pesanNya ku dengar;\nKarena semuanya baik bagiku, maka ku slalu giat.\n\nYesus jadikanku muridNya, ku mau pikul salibNya;\nTurut printah Tuhan dan pimpinan Roh, Dia bri bahagia kekal.\n\nAku murid Yesus, Dia pasti bantu, bila bahya datang, Dia jaga;\nKu dicelakai ataupun sakit, Tuhan pasti jagaku.\n\nYesus jadikanku muridNya, ku mau pikul salibNya;\nTurut printah Tuhan dan pimpinan Roh, Dia bri bahagia kekal.\n\nAku murid Yesus, britakan Injil, sandar pada kuasa Roh Kudus;\nKu mau giat bekerja siang dan malam, sampai masuk ke surga.\n\nYesus jadikanku muridNya, ku mau pikul salibNya;\nTurut printah Tuhan dan pimpinan Roh, Dia bri bahagia kekal.",
       "midiPath": "assets/midi/106_Aku Murid Yesus.mid",
-      "pdfPath": "assets/pdf/106_Aku Murid Yesus.pdf"
+      "pdfPath": "assets/pdf/106_Aku Murid Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-106",
+        "path": "assets/chord/106_Aku Murid Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1691,
+        "sha256": "16721dbf3cd417cd72bb4523a419d21618778fb4c935040a549916010d56c1d1"
+      }
     },
     {
       "id": "hymn-107",
@@ -1602,7 +1910,14 @@
       ],
       "lyrics": "Ku turut printah Almasih, pikul salib ikut Dia;\nBertekad dekat padaNya, tak takut orang cela.\n\nKu mau ikut Tuhan Yesus, sbab darahNya tebusku;\nWalau orang merintangi, ku tetap ikut Yesus.\n\nKu dihina orang dunia, Yesus pun tlah dihina;\nKu tak rindu bahgia fana, hanya rindu Almasih.\n\nKu mau ikut Tuhan Yesus, sbab darahNya tebusku;\nWalau orang merintangi, ku tetap ikut Yesus.\n\nWalau ku tinggalkan harta, dan kemuliaan dunia;\nMenderita untuk Tuhan, berkatNya lebih banyak.\n\nKu mau ikut Tuhan Yesus, sbab darahNya tebusku;\nWalau orang merintangi, ku tetap ikut Yesus.\n\nWalau susah ku tak duka, karna Tuhan cintaku;\nWalau kaya ku tak bahgia, bila Dia tinggalkanku.\n\nKu mau ikut Tuhan Yesus, sbab darahNya tebusku;\nWalau orang merintangi, ku tetap ikut Yesus.",
       "midiPath": "assets/midi/108_Ikut Almasih.mid",
-      "pdfPath": "assets/pdf/108_Ikut Almasih.pdf"
+      "pdfPath": "assets/pdf/108_Ikut Almasih.pdf",
+      "chordRef": {
+        "songId": "hymn-108",
+        "path": "assets/chord/108_Ikut Almasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1946,
+        "sha256": "636277276d21840202e3fed796a70c0f169ca69e53f0560d585aabaea6ddd16f"
+      }
     },
     {
       "id": "hymn-109",
@@ -1803,7 +2118,14 @@
       ],
       "lyrics": "Saling mengasihi, dengan tulus hati;\nSehati jadi anggota keluarga Allah.\n\nDi hadirat Allah, trima karuniaNya;\nSaling maaf dan mendoakan, bagaikan di surga.\n\nKu memaklumimu, kau pun membantuku;\nJika ada yang mendrita, kita turut duka.\n\nHidup di dunia, kita saling bantu;\nSampai Tuhan sambut kita, kembali ke surga.",
       "midiPath": "assets/midi/122_Saling Mengasihi.mid",
-      "pdfPath": "assets/pdf/122_Saling Mengasihi.pdf"
+      "pdfPath": "assets/pdf/122_Saling Mengasihi.pdf",
+      "chordRef": {
+        "songId": "hymn-122",
+        "path": "assets/chord/122_Saling Mengasihi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1005,
+        "sha256": "557abeb6a3dcb9027472d9b5a4374159637c62f9a0b092a8ff7f832137080529"
+      }
     },
     {
       "id": "hymn-123",
@@ -1876,7 +2198,14 @@
       ],
       "lyrics": "Saudara di dalam Tuhan saling bersekutu;\nBersatu karna kasihNya, jadi satu tubuh.\n\nRoh pengasih, diam di hati,\nBuah Roh amat wangi, bersama nikmati.\n\nSatu Tuhan, satu iman dan satu baptisan;\nKita semua umat Allah tlah menjadi satu.\n\nRoh pengasih, diam di hati,\nBuah Roh amat wangi, bersama nikmati.\n\nSaling kasih menunjukkan smangat kekluargaan;\nSaling bantu dan percaya, hidup rukun slalu.\n\nRoh pengasih, diam di hati,\nBuah Roh amat wangi, bersama nikmati.\n\nBerkumpul di dalam RohNya tak akan terpisah;\nBahagia bagai di surga, penuh berkat Tuhan.\n\nRoh pengasih, diam di hati,\nBuah Roh amat wangi, bersama nikmati.",
       "midiPath": "assets/midi/126_Mengasihi Sesama Saudara.mid",
-      "pdfPath": "assets/pdf/126_Mengasihi Sesama Saudara.pdf"
+      "pdfPath": "assets/pdf/126_Mengasihi Sesama Saudara.pdf",
+      "chordRef": {
+        "songId": "hymn-126",
+        "path": "assets/chord/126_Mengasihi Sesama Saudara.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1434,
+        "sha256": "6c89e261433dfe74bdbd4f90842e1b96683e4585cdf80f9b5d1bd7ce01b9a806"
+      }
     },
     {
       "id": "hymn-127",
@@ -1905,7 +2234,14 @@
       ],
       "lyrics": "Peringati hari kudus, Tuhan berkat sejahtralah;\nYesus, rasul pegang Sabat, sperti biasa masuk BaitNya.\n\nBahagia, bahagia, darah Yesus hapus dosa;\nHari Sabat Dia berkati, RohNya penuh di hatiku;\nBahagia, bahagia, pegang Sabat sejahtralah.\n\nPada hari sabat kudus, kita girang beribadah;\nDengar firman tekun berdoa, roh dan jiwa dipuaskan.\n\nBahagia, bahagia, darah Yesus hapus dosa;\nHari Sabat Dia berkati, RohNya penuh di hatiku;\nBahagia, bahagia, pegang Sabat sejahtralah.\n\nSatu hati menyembahNya, Haleluya, Puji Tuhan;\nDi dunia pegang Sabat, dalam surga Sabat kekal.\n\nBahagia, bahagia, darah Yesus hapus dosa;\nHari Sabat Dia berkati, RohNya penuh di hatiku;\nBahagia, bahagia, pegang Sabat sejahtralah.",
       "midiPath": "assets/midi/128_Hari Kudus Nan Bahagia.mid",
-      "pdfPath": "assets/pdf/128_Hari Kudus Nan Bahagia.pdf"
+      "pdfPath": "assets/pdf/128_Hari Kudus Nan Bahagia.pdf",
+      "chordRef": {
+        "songId": "hymn-128",
+        "path": "assets/chord/128_Hari Kudus Nan Bahagia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2153,
+        "sha256": "06cdeba2cb048594e181ffe6b312fab7c4d955bd01e31eefc670d349ce9be6e5"
+      }
     },
     {
       "id": "hymn-129",
@@ -1920,7 +2256,14 @@
       ],
       "lyrics": "Enam hari tlah lalu, tibalah Hari Sabat;\nSingkirkan hal duniawi, peringati SabatNya,\nPeringati SabatNya.\n\nKu lemah berbeban brat, Tuhan bri istirahat;\nDia brikan manna surga untuk plihara Rohku,\nUntuk plihara Rohku.\n\nPuji syukur dan berdoa, ku panjatkan padaNya;\nTuhan brikan sentosa memenuhi hatiku,\nMemenuhi hatiku.\n\nKini kerja untukNya, suka cita di hati;\nBahgia pringati Sabat apalagi di surga,\nPasti lebih bahagia.",
       "midiPath": "assets/midi/129_Peringati Hari Kudus.mid",
-      "pdfPath": "assets/pdf/129_Peringati Hari Kudus.pdf"
+      "pdfPath": "assets/pdf/129_Peringati Hari Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-129",
+        "path": "assets/chord/129_Peringati Hari Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1247,
+        "sha256": "87d1738fbb580d161f517d011d1c11bd5afa65f68c39ca72eeef40d088e9bb67"
+      }
     },
     {
       "id": "hymn-130",
@@ -1935,7 +2278,14 @@
       ],
       "lyrics": "Allah tetapkan SabatNya, di dalam printahNya;\nSediakan Sabat kekal,\nDalam surga mulia, dalam surga mulia;\nPrintah Tuhan tak berubah.\n\nTuhan Yesus dan muridNya, pegang Hari Sabat;\nKuduskanlah hati kita,\nPegang Hari Sabat, pegang Hari Sabat;\nPegang Hari Sabat Kudus.\n\nHari Sabat diberkati, bagai dalam Eden;\nOrang hina jadi mulia,\nNikmati SabatNya, nikmati SabatNya;\nNikmat, nikmati SabatNya.\n\nOrang berdosa tak layak nikmati SabatNya;\nTuhan serta gerejaNya,\nSabat didunia, Sabat didunia;\nSperti Sabat dalam surga.",
       "midiPath": "assets/midi/130_Sabat Kudus.mid",
-      "pdfPath": "assets/pdf/130_Sabat Kudus.pdf"
+      "pdfPath": "assets/pdf/130_Sabat Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-130",
+        "path": "assets/chord/130_Sabat Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1015,
+        "sha256": "de9fe74a7c987a57e71b1d37989af88c9cd9496e0570ba71dfcccd5afd9e69bc"
+      }
     },
     {
       "id": "hymn-131",
@@ -1949,7 +2299,14 @@
       ],
       "lyrics": "Berkumpul pada Hari Sabat, tubuh, roh sentosa dalamNya;\nSehati berbakti pada Tuhan, setiap Sabat hatiku girang.\n\nMarilah datang kumpul dihadiratNya, bernyanyi berbakti berdoa!\nUmat suci semua menyembahNya, tubuh, roh sentosa dalamNya.\n\nMarilah kuduskan SabatNya, jangan kerjakan hal duniawi;\nJagalah langkah dan perkataan, sgala hal turutlah printahNya.\n\nMarilah datang kumpul dihadiratNya, bernyanyi berbakti berdoa!\nUmat suci semua menyembahNya, tubuh, roh sentosa dalamNya.\n\nGiatlah bekerja untukNya, bersandar pada kuasaNya;\nBritakan Injil keslamatanNya, dengan snang memuji namaNya.\n\nMarilah datang kumpul dihadiratNya, bernyanyi berbakti berdoa!\nUmat suci semua menyembahNya, tubuh, roh sentosa dalamNya.",
       "midiPath": "assets/midi/131_Girang Berhari Sabat.mid",
-      "pdfPath": "assets/pdf/131_Girang Berhari Sabat.pdf"
+      "pdfPath": "assets/pdf/131_Girang Berhari Sabat.pdf",
+      "chordRef": {
+        "songId": "hymn-131",
+        "path": "assets/chord/131_Girang Berhari Sabat.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1570,
+        "sha256": "13dcd0ba05749bbb8f9f0749038d9e1f31e2b33a2d6ac170c6b6e11bbd9043e9"
+      }
     },
     {
       "id": "hymn-132A",
@@ -1990,7 +2347,14 @@
       ],
       "lyrics": "Allah kasihi manusia mengutus Yesus,\nDia disiksa dan disalib, tebus yang dosa;\nSiapa pun yang mau bertobat, Dia ampuni;\nMarilah datang padaNya, trima anugrah.\n\nDulu skarang, dan slamaNya Yesus tak ubah;\nAyah bunda dan saudara dapat terpisah;\nYesus tak pisah. Yesus tak pisah;\nLangit bumi 'kan berubah, Yesus tak ubah.\n\nYesus kuasa menyembuhkan orang yang sakit,\nBaik jasmani atau roh pun, dipulihkanNya;\nSiapa pun yang mau percaya, Dia kasihani;\nKarna kasihNya tak ubah, sampai slamanya.\n\nDulu skarang, dan slamaNya Yesus tak ubah;\nAyah bunda dan saudara dapat terpisah;\nYesus tak pisah. Yesus tak pisah;\nLangit bumi 'kan berubah, Yesus tak ubah.",
       "midiPath": "assets/midi/133_Yesus Takkan Berubah.mid",
-      "pdfPath": "assets/pdf/133_Yesus Takkan Berubah.pdf"
+      "pdfPath": "assets/pdf/133_Yesus Takkan Berubah.pdf",
+      "chordRef": {
+        "songId": "hymn-133",
+        "path": "assets/chord/133_Yesus Takkan Berubah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2754,
+        "sha256": "a6a91e1a1892d3c0286d439469de56262310b0e71d06adcc37fe42937212975f"
+      }
     },
     {
       "id": "hymn-134",
@@ -2005,7 +2369,14 @@
       ],
       "lyrics": "Pandanglah Tuhan di surga, bermahkota indah dan mulia;\nMalaikat serta umat suci, tiap hari naikkan pujian.\n\nDi surga, di surga, pandanglah Tuhan di surga;\nDi surga di surga, di surga, pandanglah Tuhan di surga.\n\nPandanglah Tuhan di surga, yang mempersembahkan darahNya;\nJadi Pengantara yang Esa, berdoa untuk manusia.\n\nDi surga, di surga, pandanglah Tuhan di surga;\nDi surga di surga, di surga, pandanglah Tuhan di surga.\n\nPandanglah Tuhan di surga, yang tlah mencurahkan Roh Kudus;\nAgar Kristus tinggal di hati, kuatkan iman dan kasihku.\n\nDi surga, di surga, pandanglah Tuhan di surga;\nDi surga di surga, di surga, pandanglah Tuhan di surga.\n\nPandanglah Tuhan di surga, yang sudah sediakan tempatku;\nDia akan datang menyambutku, hidup bahagia disana.\n\nDi surga, di surga, pandanglah Tuhan di surga;\nDi surga di surga, di surga, pandanglah Tuhan di surga.",
       "midiPath": "assets/midi/134_Pandanglah Tuhan.mid",
-      "pdfPath": "assets/pdf/134_Pandanglah Tuhan.pdf"
+      "pdfPath": "assets/pdf/134_Pandanglah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-134",
+        "path": "assets/chord/134_Pandanglah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1332,
+        "sha256": "dd80bce3bb42f60af565509a3328d25d5a1d4fab763a1937e34a9267c1b4e46d"
+      }
     },
     {
       "id": "hymn-135",
@@ -2048,7 +2419,14 @@
       ],
       "lyrics": "Yesuslah sahabatku yang paling setia; terbesar dan mulia dalam hatiku.\nJiwaku merindukan Yesus Juru slamat, bagai rusa merindukan air sungai.\nBila duka Dia hibur, susahpun Dia tolong, semua kekuatiranku ditanggungNya.\n\nTuhan Bintang Fajar terang, Bunga Bakung indah, Dialah yang terbesar dalam hatiku.\n\nYesus pikul dritaku dan tanggung dosaku; Dialah bentengku dalam kesesakan.\nKu usir Allah palsu, sambut Allah Benar, sandar kuasaNya ku terpelihara.\nWalau orang menjauh, setan banyak siasat, Yesus menjaga ku damai sejahtra.\n\nTuhan Bintang Fajar terang, Bunga Bakung indah, Dialah yang terbesar dalam hatiku.\n\nYesus Maha Pengasih, tak 'kan tinggalkanku! Ku 'kan tekun lakukan kehendakNya.\nYesus perlindunganku, sandaran bagiku, tiap hari bri manna rohku puaslah.\nSuatu hari kelak, Dia akan datang, sambutku tinggal denganNya di surga.\n\nTuhan Bintang Fajar terang, Bunga Bakung indah, Dialah yang terbesar dalam hatiku.",
       "midiPath": "assets/midi/137_Yesus Sahabatku.mid",
-      "pdfPath": "assets/pdf/137_Yesus Sahabatku.pdf"
+      "pdfPath": "assets/pdf/137_Yesus Sahabatku.pdf",
+      "chordRef": {
+        "songId": "hymn-137",
+        "path": "assets/chord/137_Yesus Sahabatku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1526,
+        "sha256": "75059673838a8cbd9dcb23aa46258ab920ddaae2e033441ccfa84ccf978b2822"
+      }
     },
     {
       "id": "hymn-138",
@@ -2062,7 +2440,14 @@
       ],
       "lyrics": "Apabila kita menolak Almasih,\nDan tak mau dengar RohNya panggil;\nBila ikut zaman, dan kesnangan dunia,\nTerjrat duka apakah gunanya?\n\nFirman Allah tegas, tak ubah slamanya,\nBila langgar pasti ke nraka;\nBila roh binasa, apa untung kita?\nTimbangkanlah dan pilih yang tepat.\n\nBersenang sejenak, mendrita slamanya,\nLautan dosa ganas, baliklah;\nBerdosa sedikit, berkat kekal hilang,\nTamak fana apakah gunanya?\n\nFirman Allah tegas, tak ubah slamanya,\nBila langgar pasti ke nraka;\nBila roh binasa, apa untung kita?\nTimbangkanlah dan pilih yang tepat.\n\nSlagi pintu nugrah, masih buka lebar,\nJangan lari ke tepi nraka;\nDengarlah seruanNya dan percaya Yesus,\nLepas maut masuk dalam hidup\n\nFirman Allah tegas, tak ubah slamanya,\nBila langgar pasti ke nraka;\nBila roh binasa, apa untung kita?\nTimbangkanlah dan pilih yang tepat.",
       "midiPath": "assets/midi/138_Bila Menolak Almasih.mid",
-      "pdfPath": "assets/pdf/138_Bila Menolak Almasih.pdf"
+      "pdfPath": "assets/pdf/138_Bila Menolak Almasih.pdf",
+      "chordRef": {
+        "songId": "hymn-138",
+        "path": "assets/chord/138_Bila Menolak Almasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1834,
+        "sha256": "a91960ad142d6042fe58f35f50309d1cda3446de8578017dae71530c89e8b59e"
+      }
     },
     {
       "id": "hymn-139",
@@ -2163,7 +2548,14 @@
       ],
       "lyrics": "Sandar Yesus tiap hari, baik susah atau senang;\nDikala iman lemah, ku sandar pada Yesus.\n\nSlalu bersandar Yesus, tiap hari Dia jagaku;\nSusah atau pun senang, bersandar pada Yesus.\n\nRoh Kudus di hatiku, membimbing dan menjaga;\nDi mana pun sentosa, ku sandar pada Yesus.\n\nSlalu bersandar Yesus, tiap hari Dia jagaku;\nSusah atau pun senang, bersandar pada Yesus.\n\nKala girang, bernyanyi, kala susah bri tau Dia;\nDia beriku sejahtra, ku sandar pada Yesus.\n\nSlalu bersandar Yesus, tiap hari Dia jagaku;\nSusah atau pun senang, bersandar pada Yesus.\n\nSandar Yesus di dunia, ajal tiba ke surga;\nHidup bahgia denganNya, sampai slama lamanya.\n\nSlalu bersandar Yesus, tiap hari Dia jagaku;\nSusah atau pun senang, bersandar pada Yesus.",
       "midiPath": "assets/midi/145_Bersandar Pada Yesus.mid",
-      "pdfPath": "assets/pdf/145_Bersandar Pada Yesus.pdf"
+      "pdfPath": "assets/pdf/145_Bersandar Pada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-145",
+        "path": "assets/chord/145_Bersandar Pada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1936,
+        "sha256": "061d0d06b7a079cfa363281e724b66e140e642a4a6eb85c0103197dc911cca86"
+      }
     },
     {
       "id": "hymn-146",
@@ -2177,7 +2569,14 @@
       ],
       "lyrics": "Ku sandar padaNya, setiap waktu;\nYa, Tuhan janganlah tinggalkanku.\n\nKu sandar pada Yesus, sandar pada Yesus;\nTuhan, mohon bantu dan berkatiku.\n\nKu sandar padaNya, setiap waktu;\nRoh Kudus di hati membantuku.\n\nKu sandar pada Yesus, sandar pada Yesus;\nTuhan, mohon bantu dan berkatiku.\n\nKu sandar padaNya, setiap waktu;\nTurut pimpinan Roh, siang dan malam.\n\nKu sandar pada Yesus, sandar pada Yesus;\nTuhan, mohon bantu dan berkatiku.",
       "midiPath": "assets/midi/146_Sandar Tuhan Setiap Waktu.mid",
-      "pdfPath": "assets/pdf/146_Sandar Tuhan Setiap Waktu.pdf"
+      "pdfPath": "assets/pdf/146_Sandar Tuhan Setiap Waktu.pdf",
+      "chordRef": {
+        "songId": "hymn-146",
+        "path": "assets/chord/146_Sandar Tuhan Setiap Waktu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1064,
+        "sha256": "3eb1da586c7e9f1ae1b0b37c7d785176769daa62e1a6ceae83470a65dab7de0e"
+      }
     },
     {
       "id": "hymn-147",
@@ -2220,7 +2619,14 @@
       ],
       "lyrics": "Betapa indah persekutuan roh, tentram di bawah lengan Tuhan;\nBetapa baik damai sejahtra, tentram di bawah lengan Tuhan.\n\nTentram, tentram, baik susah atau senang;\nTentram, tentram, tentram di bawah lengan Tuhan.\n\nJalan di dunia banyak bahaya, tentram di bawah lengan Tuhan;\nDi jalan Tuhan semakin damai, tentram di bawah lengan Tuhan.\n\nTentram, tentram, baik susah atau senang;\nTentram, tentram, tentram di bawah lengan Tuhan.\n\nTak kuatir miskin dan kekurangan, tentram di bawah lengan Tuhan;\nTuhan beserta aku bahagia, tentram di bawah lengan Tuhan.\n\nTentram, tentram, baik susah atau senang;\nTentram, tentram, tentram di bawah lengan Tuhan.",
       "midiPath": "assets/midi/149_Tenteram di Bawah Lengan Tuhan.mid",
-      "pdfPath": "assets/pdf/149_Tenteram di Bawah Lengan Tuhan.pdf"
+      "pdfPath": "assets/pdf/149_Tenteram di Bawah Lengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-149",
+        "path": "assets/chord/149_Tenteram di Bawah Lengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "efe72283ba1c08638f6b9512541aab918dd89126a3393328a59835a5641bc470"
+      }
     },
     {
       "id": "hymn-150",
@@ -2279,7 +2685,14 @@
       ],
       "lyrics": "Tuhan menjagamu, jangan takut, Siang malam Tuhan slalu serta;\nTaat padaNya, ku dimuliakan, setiap waktu ku dekat denganNya.\n\nSetiap waktu Tuhan menjagaku, setiap waktu Tuhan besertaku,\nSetiap waktu ku jadi umatNya, Taat padaNya, ku dimuliakan.\n\nSetiap pencobaan, Tuhan tolong, setiap beban berat, Tuhan tanggung;\nSetiap kuatir, Tuhan turut rasa, setiap waktu ku dapat berkatNya.\n\nSetiap waktu Tuhan menjagaku, setiap waktu Tuhan besertaku,\nSetiap waktu ku jadi umatNya, Taat padaNya, ku dimuliakan.\n\nSetiap kedukaan, Tuhan hibur, setiap air mata, Tuhan indahkan;\nSetiap bahaya Tuhan halaukan, setiap waktu ku tentram dalam Dia.\n\nSetiap waktu Tuhan menjagaku, setiap waktu Tuhan besertaku,\nSetiap waktu ku jadi umatNya, Taat padaNya, ku dimuliakan.\n\nSetiap kelemahan, Tuhan bantu, setiap penyakit, Tuhan sembuhkan;\nBaik susah ataupun bahagia, Yesus slalu bersama denganku.\n\nSetiap waktu Tuhan menjagaku, setiap waktu Tuhan besertaku,\nSetiap waktu ku jadi umatNya, Taat padaNya, ku dimuliakan.\n",
       "midiPath": "assets/midi/153_Setiap Waktu Berserah Pada Tuhan.mid",
-      "pdfPath": "assets/pdf/153_Setiap Waktu Berserah Pada Tuhan.pdf"
+      "pdfPath": "assets/pdf/153_Setiap Waktu Berserah Pada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-153",
+        "path": "assets/chord/153_Setiap Waktu Berserah Pada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1772,
+        "sha256": "738d0bf08a6281aa9a3a2b7898a14df675cb3d1bf4f89a67fbda78a996bea4e8"
+      }
     },
     {
       "id": "hymn-154",
@@ -2308,7 +2721,14 @@
       ],
       "lyrics": "Ku sandar Yesus di mana saja, di daratan atau di lautan,\nKu bersandar, tak gelisah;\nTuhan Penyayang pasti jagaku.\nDalam rumah ataupun di luar, ku sandar Dia, tahu Dia jagaku;\nSenantiasa dijagaNya, maka ku banyak berdoa padaNya.\n\nBakung di padang, Tuhan hiasi, burung terbang, Tuhan pun plihara,\nDia berkatku lebih banyak;\nTuhan Penyayang pasti jagaku.\nDalam rumah ataupun di luar, ku sandar Dia, tahu Dia jagaku;\nSenantiasa dijagaNya, maka ku banyak berdoa padaNya.\n\nNabi dilempar ke gua singa, rasul ditahan dalam penjara,\nWalau drita, dapat nugrah;\nTuhan Penyayang pasti jagaku.\nDalam rumah ataupun di luar, ku sandar Dia, tahu Dia jagaku;\nSenantiasa dijagaNya, maka ku banyak berdoa padaNya.\n\nWalau lalui lembah yang kelam, Gembala baik hiburku, tak sunyi,\nTongkat Tuhan briku berkat;\nTuhan Penyayang pasti jagaku.\nDalam rumah ataupun di luar, ku sandar Dia, tahu Dia jagaku;\nSenantiasa dijagaNya, maka ku banyak berdoa padaNya.",
       "midiPath": "assets/midi/155_Tuhan Selalu Menjagaku.mid",
-      "pdfPath": "assets/pdf/155_Tuhan Selalu Menjagaku.pdf"
+      "pdfPath": "assets/pdf/155_Tuhan Selalu Menjagaku.pdf",
+      "chordRef": {
+        "songId": "hymn-155",
+        "path": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1430,
+        "sha256": "e0d8f67e0cc10983c6d6e4b8285d66a7dc5fc93a1484c0496976813713347f2d"
+      }
     },
     {
       "id": "hymn-156",
@@ -2322,7 +2742,14 @@
       ],
       "lyrics": "Slalu di dalamNya, susah ataupun senang,\nBerserah padaNya, penuhlah suka cita;\nBila Tuhan jaga, ku tak takut melangkah,\nWalau jalan sukar, pasti sampai tujuan.\n\nMohon Tuhan pimpin lalui hidup ini,\nTuhan di sisiku, bahaya jadi aman;\nBila Dia bri kuasa, lemah pun jadi kuat,\nSandar pada Tuhan, slamat sepanjang jalan.\n\nTampak negri terang, sejuk, nyaman, tenteram,\nBunga rumput mekar, burung burung berkicau;\nMalak dan umatNya bermazmur dan memuji,\nKu mau ikut Tuhan, masuk surga bahagia.",
       "midiPath": "assets/midi/156_Jalan Bersama Tuhan.mid",
-      "pdfPath": "assets/pdf/156_Jalan Bersama Tuhan.pdf"
+      "pdfPath": "assets/pdf/156_Jalan Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-156",
+        "path": "assets/chord/156_Jalan Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1685,
+        "sha256": "52742d0f17b708e7e61d562e57240825dc0e42139799e0afdc84ac89d28b4ec9"
+      }
     },
     {
       "id": "hymn-157",
@@ -2350,7 +2777,14 @@
       ],
       "lyrics": "Gurun bagaikan Taman Allah, sebab turut jalanNya;\nTuhan berikan suka cita, sebab turut jalanNya.\n\nBerjalan di dalam Tuhan, tiada kuatir, cemas;\nTerang bagaikan sang surya, sebab turut jalanNya.\n\nHujan turun, benih bertunas, sebab turut jalanNya;\nAir hayat terus mengalir, sebab turut jalanNya.\n\nBerjalan di dalam Tuhan, tiada kuatir, cemas;\nTerang bagaikan sang surya, sebab turut jalanNya.\n\nJangan takut binatang buas, sebab turut jalanNya;\nUmat suci girang bernyanyi, sebab turut jalanNya.\n\nBerjalan di dalam Tuhan, tiada kuatir, cemas;\nTerang bagaikan sang surya, sebab turut jalanNya.",
       "midiPath": "assets/midi/158_Berjalan di Jalan Tuhan.mid",
-      "pdfPath": "assets/pdf/158_Berjalan di Jalan Tuhan.pdf"
+      "pdfPath": "assets/pdf/158_Berjalan di Jalan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-158",
+        "path": "assets/chord/158_Berjalan di Jalan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1399,
+        "sha256": "9688460131393f2efb15b6c1e6ad8a4032f827d189ce07e88414d740c8362045"
+      }
     },
     {
       "id": "hymn-159",
@@ -2392,7 +2826,14 @@
       ],
       "lyrics": "Di naungan Yang Mahatinggi, di naungan Yang Mahakuasa;\nAllah yang ku percayai, Perlindungan dan Kubuku.\n\nLepaskanku dari jerat, bebaskanku dari sampar;\nSayapNya melindungiku, kasih setiaNya prisaiku.\n\nKu tak takut gelap malam, ku tak takut marabahya;\nWalau banyak orang rebah, namun tak 'kan menimpaku.",
       "midiPath": "assets/midi/161_Di Bawah Naungan Tuhan.mid",
-      "pdfPath": "assets/pdf/161_Di Bawah Naungan Tuhan.pdf"
+      "pdfPath": "assets/pdf/161_Di Bawah Naungan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-161",
+        "path": "assets/chord/161_Di Bawah Naungan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1006,
+        "sha256": "27d1817e50f71efc7bde69c46bcfac463d52c80d794c01ae90823c47d7227a88"
+      }
     },
     {
       "id": "hymn-162",
@@ -2437,7 +2878,14 @@
       ],
       "lyrics": "Tuhan teman orang dosa, umat lemah Tuhan tolong;\nKu mau sandar pimpinanNya, slalu dijagaNya.\n\nDia briku berkat rohani, walau miskin ku tak cemas;\nKasih karunia Tuhan, cukuplah bagiku.\n\nKadangkala hati risau, bagai pikul beban berat;\nBila srahkan pada Tuhan, hati pun tentramlah.\n\nBila Tuhan mengujiku, marabahya menimpaku;\nWalaupun teman menjauh, sandar Dia, ku tabah.\n\nWalau lalui jalan bahya, penuh dengan semak duri;\nRoh Kudus selalu jaga, tetap sejahtralah.",
       "midiPath": "assets/midi/164_Cukuplah Kasih Karunia Tuhan.mid",
-      "pdfPath": "assets/pdf/164_Cukuplah Kasih Karunia Tuhan.pdf"
+      "pdfPath": "assets/pdf/164_Cukuplah Kasih Karunia Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-164",
+        "path": "assets/chord/164_Cukuplah Kasih Karunia Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 827,
+        "sha256": "57a483696688bdd8dd471ff996afcf705ceb9da96603008c849399c246a99d47"
+      }
     },
     {
       "id": "hymn-165",
@@ -2451,7 +2899,14 @@
       ],
       "lyrics": "Yesus memeluk aku, aman di dadaNya,\nRahmatNya slalu jaga, hati tak gelisah;\nDengar malak memuji, ku riang berdendang,\nKabarkan kasih Tuhan, ke segala bangsa.\n\nYesus memeluk aku, hatiku tenteram;\nRahmatNya slalu jaga, sampai selamanya.\n\nYesus memeluk aku, susah jadi senang,\nKalahkan pencobaan, hatiku tak bimbang;\nSusah tak lagi ganggu, cemas, takut hilang,\nBarang siapa yang menang, bermahkota terang.\n\nYesus memeluk aku, hatiku tenteram;\nRahmatNya slalu jaga, sampai selamanya.\n\nYesus memeluk aku, aman dijagaNya,\nWalau dunia bergoncang, hatiku tak gentar;\nTuhan Gunung Batuku, slalu bersandar Dia,\nWaktu Dia datang lagi, sambutku ke surga.\n\nYesus memeluk aku, hatiku tenteram;\nRahmatNya slalu jaga, sampai selamanya.",
       "midiPath": "assets/midi/165_Yesus Memeluk Aku.mid",
-      "pdfPath": "assets/pdf/165_Yesus Memeluk Aku.pdf"
+      "pdfPath": "assets/pdf/165_Yesus Memeluk Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-165",
+        "path": "assets/chord/165_Yesus Memeluk Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1640,
+        "sha256": "374f2717e3f602d6c74bb9c6702e1d8e7d50efbe7a6c88baf96f4b0b382ea8ab"
+      }
     },
     {
       "id": "hymn-166",
@@ -2651,7 +3106,14 @@
       ],
       "lyrics": "Wahai sahabat terkasih! Bertobatlah segera;\nPercaya serta dibaptis, akan diselamatkan.\n\nUmatNya, berharap, Yesus segera datang;\nKu mau bersiap masuk ke surga mulia.\n\nWahai saudara seiman! Kuduskanlah dirimu;\nMatikanlah nafsu dunia, berjaga di dalam Roh.\n\nUmatNya, berharap, Yesus segera datang;\nKu mau bersiap masuk ke surga mulia.\n\nWahai semua umat dunia! Berbaliklah ke surga;\nDi dunia hanya bertamu, hidup tak akan lama.\n\nUmatNya, berharap, Yesus segera datang;\nKu mau bersiap masuk ke surga mulia.",
       "midiPath": "assets/midi/179_Bersiap Masuk Surga.mid",
-      "pdfPath": "assets/pdf/179_Bersiap Masuk Surga.pdf"
+      "pdfPath": "assets/pdf/179_Bersiap Masuk Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-179",
+        "path": "assets/chord/179_Bersiap Masuk Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1499,
+        "sha256": "4c4628e8413cb1f9599a2bedff9a9b6c0ea47d842258d38783064b44fbb8c369"
+      }
     },
     {
       "id": "hymn-180",
@@ -2893,7 +3355,14 @@
       ],
       "lyrics": "Dulu bagaikan di Mesir jadi hamba dosa,\nBagai dalam perapian, sangat sengsara!\nSetiap saat ada dalam kuasa kegelapan,\nBelum pernah kenal surga indah.\n\nKu tinggal di bukit Sion, terang Allah bercahya,\nKu minum air hayat yang terus mengalir; Makan perjamuan manna surga.\nYang tak habis diambil, ku snang tinggal di dalam surga.\n\nOleh darah domba Allah keluar dari Mesir,\nMengembara tak menentu di Padang gurun!\nAda kala iman lemah, bersungut padaNya,\nKarna belum masuk surga indah.\n\nKu tinggal di bukit Sion, terang Allah bercahya,\nKu minum air hayat yang terus mengalir; Makan perjamuan manna surga.\nYang tak habis diambil, ku snang tinggal di dalam surga.\n\nKala sampai tepi Yordan di sebrang Kanaan,\nAir terbelah karna iman, dan ku menyebrang!\nMasuk negri yang mengalir susu serta madu,\nHaleluya, ku tinggal di surga.\n\nKu tinggal di bukit Sion, terang Allah bercahya,\nKu minum air hayat yang terus mengalir; Makan perjamuan manna surga.\nYang tak habis diambil, ku snang tinggal di dalam surga.",
       "midiPath": "assets/midi/196_Surga Indah.mid",
-      "pdfPath": "assets/pdf/196_Surga Indah.pdf"
+      "pdfPath": "assets/pdf/196_Surga Indah.pdf",
+      "chordRef": {
+        "songId": "hymn-196",
+        "path": "assets/chord/196_Surga Indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3246,
+        "sha256": "85fbfa404966200fd59370cf2d2c77fd43a94035fdf5e4a573add0e3dc5d2d30"
+      }
     },
     {
       "id": "hymn-197",
@@ -2950,7 +3419,14 @@
       ],
       "lyrics": "Slalu ku rindukan rumah yang di surga;\nBanyak tempat indah, mulia, yang Allah sediakan.\n\nSurga mulia, surga mulia, rumah yang slalu\nKu rindu, tak lama sampailah.\n\nPikul salib Tuhan slagi di dunia;\nKelakku trima mahkota, Puji: \"Haleluya!\"\n\nSurga mulia, surga mulia, rumah yang slalu\nKu rindu, tak lama sampailah.\n\nHidup bagai embun, surya datang, sirna;\nWalau banyak badai bahya, tak lama tentramlah.\n\nSurga mulia, surga mulia, rumah yang slalu\nKu rindu, tak lama sampailah.\n\nBila lembah kelam telah ku lalui;\nTuhan pasti menuntunku, masuk surga mulia.\n\nSurga mulia, surga mulia, rumah yang slalu\nKu rindu, tak lama sampailah.",
       "midiPath": "assets/midi/200_Merindukan Rumah di Surga.mid",
-      "pdfPath": "assets/pdf/200_Merindukan Rumah di Surga.pdf"
+      "pdfPath": "assets/pdf/200_Merindukan Rumah di Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-200",
+        "path": "assets/chord/200_Merindukan Rumah di Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1498,
+        "sha256": "435b4e212b3ca9df6410141ecf549e3c32a52271d6798a426d97d366fa646a3f"
+      }
     },
     {
       "id": "hymn-201",
@@ -2964,7 +3440,14 @@
       ],
       "lyrics": "Penderitaan dulu tlah sirna, ku akan masuk ke surga mulia;\nBerada di sisi Juruslamat, inilah kemuliaan yang kekal.\n\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal;\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal,\nKarna kemurahan kasih Tuhan, ku dapat kemuliaan yang kekal.\n\nDi dunia ku bersinar bagiNya, di surga ku 'kan mendapat upah;\nSetiap hari melihat wajahNya, inilah yang slalu kuharapkan.\n\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal;\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal,\nKarna kemurahan kasih Tuhan, ku dapat kemuliaan yang kekal.\n\nDi sana berjumpa umat Tuhan, semua memakai mahkota terang;\nBernyanyi di hadapan tahtaNya, puji syukur, Dia bri kemuliaan.\n\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal;\nMulia kekal, mulia kekal, Tuhan brikan mulia kekal,\nKarna kemurahan kasih Tuhan, ku dapat kemuliaan yang kekal.",
       "midiPath": "assets/midi/201_Kemuliaan Kekal.mid",
-      "pdfPath": "assets/pdf/201_Kemuliaan Kekal.pdf"
+      "pdfPath": "assets/pdf/201_Kemuliaan Kekal.pdf",
+      "chordRef": {
+        "songId": "hymn-201",
+        "path": "assets/chord/201_Kemuliaan Kekal.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1703,
+        "sha256": "9b43c87c16110799d24d3802d6fca7014ef53e29c69ce981f2a77a9116fb47e6"
+      }
     },
     {
       "id": "hymn-202",
@@ -2978,7 +3461,14 @@
       ],
       "lyrics": "Di surga amatlah senang, bahagia, bahagia,\nDi sana tiada dosa, bahagia, bahagia;\nAngin harum bertiup lembut, malak terang senyum riang,\nBergemalah Pujian surga, bahagia, bahagia!\n\nDi sana tiada susah, giranglah, giranglah,\nTiada tangis duka cita, giranglah, giranglah;\nWajah Tuhan pun terlihat, umat suci berbahagia,\nSurga penuh kemuliaan, giranglah, giranglah!\n\nHai, sahabat dan saudara, marilah percaya,\nTempuh jalanmu ke surga, marilah percaya;\nMusik surga amat merdu, malak surga memainkannya,\nUmat surga hidup bahgia, marilah percaya.",
       "midiPath": "assets/midi/202_Surga Tempat Bahagia.mid",
-      "pdfPath": "assets/pdf/202_Surga Tempat Bahagia.pdf"
+      "pdfPath": "assets/pdf/202_Surga Tempat Bahagia.pdf",
+      "chordRef": {
+        "songId": "hymn-202",
+        "path": "assets/chord/202_Surga Tempat Bahagia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1515,
+        "sha256": "c95c5dcd935c17fc6507925adc5cbec61362dd722823ef7d2b65cfe40a451cbc"
+      }
     },
     {
       "id": "hymn-203",
@@ -2992,7 +3482,14 @@
       ],
       "lyrics": "Bakung di lembah, indah, harum, Allah plihara, ia milikNya;\nWalau hidup di tengah duri, tetaplah mekar tanpa cela.\n\nBakung yang indah, suci bersih, tanda nyata janji Tuhan ku;\nBetapa dalam kasih Tuhan ku, ku mau serahkan sluruh hidup ku.\n\nBakung di padang Dia plihara, tidak bekerja dan memintal;\nRaja Salomo, walau mulia, tidak seindah bunga ini.\n\nBakung yang indah, suci bersih, tanda nyata janji Tuhan ku;\nBetapa dalam kasih Tuhan ku, ku mau serahkan sluruh hidup ku.\n\nTiba saatnya musim semi, tampak hamparan bakung mekar;\nTiba saatNya kita bangkit, bertemu Tuhan, naik ke surga.\n\nBakung yang indah, suci bersih, tanda nyata janji Tuhan ku;\nBetapa dalam kasih Tuhan ku, ku mau serahkan sluruh hidup ku.",
       "midiPath": "assets/midi/203_Bunga Bakung.mid",
-      "pdfPath": "assets/pdf/203_Bunga Bakung.pdf"
+      "pdfPath": "assets/pdf/203_Bunga Bakung.pdf",
+      "chordRef": {
+        "songId": "hymn-203",
+        "path": "assets/chord/203_Bunga Bakung.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3158,
+        "sha256": "ae83d68273b6fc2ddad849bab42ff3c52e6936905d4f7c4e761fac9440f41556"
+      }
     },
     {
       "id": "hymn-204",
@@ -3006,7 +3503,14 @@
       ],
       "lyrics": "UmatNya berpengharapan, sebab iman yang hidup;\nKu dilahirkan kembali, karna Tuhan tlah bangkit.\nBila hari akhir tiba, ku bangkit dan diubah,\nBeroleh tubuh rohani, diangkat, masuk surga.\n\nUmatNya berpengharapan, bukan hanya di dunia;\nDi dunia hanya bertamu, bagai angin yang lalu.\nPengharapan yang terbesar: pulang ke surga mulia,\nDi sana hidup bahagia dengan Tuhan slamanya.\n\nUmatNya berpengharapan, dalam dunia yang baru;\nDi dunia penuh sengsara, penyakit, dan musibah.\nBerharap jumpa Tuhan ku, Dia hapus air mataku,\nJanjiNya tak ‘kan berubah, pasti ‘kan tergenapi.",
       "midiPath": "assets/midi/204_Berpengharapan Karena Iman.mid",
-      "pdfPath": "assets/pdf/204_Berpengharapan Karena Iman.pdf"
+      "pdfPath": "assets/pdf/204_Berpengharapan Karena Iman.pdf",
+      "chordRef": {
+        "songId": "hymn-204",
+        "path": "assets/chord/204_Berpengharapan Karena Iman.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1063,
+        "sha256": "9615bebfe6be3f53bb1fd4ea539e3bb980dee4a12aae33ca6f631864ee52d2f5"
+      }
     },
     {
       "id": "hymn-205",
@@ -3021,7 +3525,14 @@
       ],
       "lyrics": "Tuhan mati demi kita, tubuhNya dimakamkan,\nPada hari yang ketiga, Dia bangkit kalahkan maut;\nSlama empat puluh hari menampakkan diriNya,\nDia bersabda tentang surga, lalu naik ke surga.\n\nKarna kuasa kebangkitan, keslamatan tersebar,\nJiwa orang yang beriman tak 'kan mati slamanya;\nAkhir zaman, umat Tuhan 'kan bangkit dengan mulia,\nMengenakan tubuh mulia, terangkat, jumpa Tuhan.\n\nBila suara sangkakala yang terakhir berbunyi,\nSemua umat Tuhan bangkit, berkumpul di tahtaNya;\nTubuh fana jadi kekal, tak ‘kan mati slamanya,\nAmat kudus dan mulia, melebihi Malaikat.\n\nUmat Tuhan di dunia persembahkan tubuhnya,\nKabarkan Injil yang benar, hidup dalam kasihNya;\nTuhan akan mengubahku jadi tubuh rohani,\nBersamaNya selamanya, hidup damai di surga.",
       "midiPath": "assets/midi/205_Di Dalam Kristus Pasti Bangkit.mid",
-      "pdfPath": "assets/pdf/205_Di Dalam Kristus Pasti Bangkit.pdf"
+      "pdfPath": "assets/pdf/205_Di Dalam Kristus Pasti Bangkit.pdf",
+      "chordRef": {
+        "songId": "hymn-205",
+        "path": "assets/chord/205_Di Dalam Kristus Pasti Bangkit.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2055,
+        "sha256": "da41b938a6486b271631800afcb2bc4448d433913923c02876b051b863a57b6f"
+      }
     },
     {
       "id": "hymn-206",
@@ -3036,7 +3547,14 @@
       ],
       "lyrics": "Sandar Tuhan, ku merdeka, bebas dari pendritaan;\nJiwa tenang dan tenteram, bernyanyi girang di surga,\n\nKu jumpa Dia dalam surga, slalu Puji anugrahNya;\nKu jumpa Dia dalam surga, slalu Puji anugrahNya.\n\nKemah dunia tak ‘kan kekal, tak tahu bila 'kan sirna;\nDia tlah sediakan bagiku tempat kediaman yang kekal,\n\nKu jumpa Dia dalam surga, slalu Puji anugrahNya;\nKu jumpa Dia dalam surga, slalu Puji anugrahNya.\n\nUnsur dunia akan musnah, masa fana pun berlalu;\nTuhan janji bahgia kekal bagi hambaNya yang setia,\n\nKu jumpa Dia dalam surga, slalu Puji anugrahNya;\nKu jumpa Dia dalam surga, slalu Puji anugrahNya.\n\nKu harus berjaga jaga, siapkan minyak dalam plita;\nKala Tuhan datang lagi, ku 'kan menyembah, puji Dia,\n\nKu jumpa Dia dalam surga, slalu Puji anugrahNya;\nKu jumpa Dia dalam surga, slalu Puji anugrahNya.",
       "midiPath": "assets/midi/206_Aku Pasti Berjumpa Dengan Tuhan.mid",
-      "pdfPath": "assets/pdf/206_Aku Pasti Berjumpa Dengan Tuhan.pdf"
+      "pdfPath": "assets/pdf/206_Aku Pasti Berjumpa Dengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-206",
+        "path": "assets/chord/206_Aku Pasti Berjumpa Dengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1492,
+        "sha256": "a9c8a882880180d3dd0640bf2073a3ebb24b235fd1e908b5334a170c1e2503f2"
+      }
     },
     {
       "id": "hymn-207",
@@ -3050,7 +3568,14 @@
       ],
       "lyrics": "Tak tahu kapan Tuhan akan datang, membawa aku ke surga indah;\nNamun ku tahu Tuhan datang dengan mulia, mulia yang puaskan hatiku.\n\nBahgia yang puaskan hatiku, bahgia yang puaskan hatiku;\nKu tahu Tuhan di sana amat mulia, mulia yang puaskan hatiku.\n\nTak tahu malak bermazmur yang mana, dengan irama lagu yang mana;\nNamun ku tahu mereka memuji Kristus, pujian yang puaskan hatiku.\n\nBahgia yang puaskan hatiku, bahgia yang puaskan hatiku;\nKu tahu Tuhan di sana amat mulia, mulia yang puaskan hatiku.\n\nTak tahu bagaimana megah surga, betapa dalam arti namanya;\nNamun ku tahu Tuhan sediakan tempat, surga yang puaskan hatiku.\n\nBahgia yang puaskan hatiku, bahgia yang puaskan hatiku;\nKu tahu Tuhan di sana amat mulia, mulia yang puaskan hatiku.",
       "midiPath": "assets/midi/207_Merindukan Kedatangan Tuhan.mid",
-      "pdfPath": "assets/pdf/207_Merindukan Kedatangan Tuhan.pdf"
+      "pdfPath": "assets/pdf/207_Merindukan Kedatangan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-207",
+        "path": "assets/chord/207_Merindukan Kedatangan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1586,
+        "sha256": "e8b4eccbe5ca73d722fc846c44d92a57ad44543b5315f84cfa1f6fa9729f39df"
+      }
     },
     {
       "id": "hymn-208",
@@ -3064,7 +3589,14 @@
       ],
       "lyrics": "Di hari Yesus datang malak meniup sangkakala,\nAmatlah mulia Tuhan di angkasa;\nUmatNya yang dislamatkan akan datang berkumpul,\nDi sana waktu dipanggil, ku ada.\n\nDi sana waktu dipanggil, di sana waktu dipanggil,\nDi sana waktu dipanggil, di sana waktu dipanggil ku ada.\n\nYang mati dalam Tuhan dibangkitkan lebih dulu,\nYang masih hidup pun akan diubah;\nBersama sama diangkat, jumpa Dia di angkasa,\nDi sana waktu dipanggil, ku ada.\n\nDi sana waktu dipanggil, di sana waktu dipanggil,\nDi sana waktu dipanggil, di sana waktu dipanggil ku ada.\n\nPatutlah kita kerja siang malam untuk Tuhan,\nKabarkan anugrah keslamatanNya;\nBanyak mencari jiwa, pasti terima pahala,\nDi sana waktu dipanggil, ku ada.\n\nDi sana waktu dipanggil, di sana waktu dipanggil,\nDi sana waktu dipanggil, di sana waktu dipanggil ku ada.",
       "midiPath": "assets/midi/208_Umat Kudus Diangkat.mid",
-      "pdfPath": "assets/pdf/208_Umat Kudus Diangkat.pdf"
+      "pdfPath": "assets/pdf/208_Umat Kudus Diangkat.pdf",
+      "chordRef": {
+        "songId": "hymn-208",
+        "path": "assets/chord/208_Umat Kudus Diangkat.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1474,
+        "sha256": "e09acc00396ec2985f8210f36e1055a591c569e764dbdf6c824dfca06a6bedc9"
+      }
     },
     {
       "id": "hymn-209",
@@ -3079,7 +3611,14 @@
       ],
       "lyrics": "Almasih mati untuk ku, dan bangkit, naik ke surga;\nBila ku tlah disucikan, pasti ku 'kan jumpa Dia.\n\nUmat suci 'kan diangkat ke sisi Tuhan mulia;\nSujud di hadapan tahta Raja Yang Mahakuasa.\n\nTuhan kini tlah di surga, ku tak jelas lihat Dia;\nBila nanti berhadapan, ku 'kan jelas lihat Dia.\n\nUmat suci 'kan diangkat ke sisi Tuhan mulia;\nSujud di hadapan tahta Raja Yang Mahakuasa.\n\nLihat tubuhNya yang mulia, bagai surya bersinar;\nLenyaplah awan yang gelap, dan kesusahan sirna.\n\nUmat suci 'kan diangkat ke sisi Tuhan mulia;\nSujud di hadapan tahta Raja Yang Mahakuasa.\n\nHatiku  sangat berharap Tuhan segera datang;\nSambutku ke surga mulia, ikut perjamuanNya.\n\nUmat suci 'kan diangkat ke sisi Tuhan mulia;\nSujud di hadapan tahta Raja Yang Mahakuasa.",
       "midiPath": "assets/midi/209_Aku Akan Melihat Tuhan.mid",
-      "pdfPath": "assets/pdf/209_Aku Akan Melihat Tuhan.pdf"
+      "pdfPath": "assets/pdf/209_Aku Akan Melihat Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-209",
+        "path": "assets/chord/209_Aku Akan Melihat Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1687,
+        "sha256": "066c20f986eb756839f2520365db54bbf08d1ccdb1458f32e3e9222a93f457f5"
+      }
     },
     {
       "id": "hymn-210",
@@ -3093,7 +3632,14 @@
       ],
       "lyrics": "Di kala perjalanan hidup ini berakhir, ku ‘kan dibawa ke langit ke tiga;\nDi sana Tuhan Yesus senyum riang sambutku, ku bersyukur pulang keribaanNya.\n\nDi kalaku jumpa Tuhan, ku girang dalam ribaanNya;\nDi kalaku jumpa Tuhan, kekallah tinggal bersamaNya.\n\nDahulu banyak roh yang seiman sudah naik, kini sedang bersorak memanggilku;\nBernyanyi dengan riang, menantikanku datang, ku mau segra bertemu dengan Tuhan.\n\nDi kalaku jumpa Tuhan, ku girang dalam ribaanNya;\nDi kalaku jumpa Tuhan, kekallah tinggal bersamaNya.\n\nDi hari Tuhan datang, ku diangkat oleh Dia, dengan jubah putih, naik ke surga;\nDi sana tiada duka, bergembira slamanya, Haleluya, kemuliaan bagiNya.\n\nDi kalaku jumpa Tuhan, ku girang dalam ribaanNya;\nDi kalaku jumpa Tuhan, kekallah tinggal bersamaNya.",
       "midiPath": "assets/midi/210_Di Kala Hidup Ini Berakhir.mid",
-      "pdfPath": "assets/pdf/210_Di Kala Hidup Ini Berakhir.pdf"
+      "pdfPath": "assets/pdf/210_Di Kala Hidup Ini Berakhir.pdf",
+      "chordRef": {
+        "songId": "hymn-210",
+        "path": "assets/chord/210_Di Kala Hidup Ini Berakhir.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1592,
+        "sha256": "b329edebc28613247e4f97b97decad41b29dc2e910918374a088b9ed4a480481"
+      }
     },
     {
       "id": "hymn-211",
@@ -3108,7 +3654,14 @@
       ],
       "lyrics": "Allah mengawasi segala perkara, di mana pun;\nKu di depan umum, ataupun sendiri,\nDi rumah, di luar, Dia melihat.\n\nSiang giat kerja, malam istirahat, Dia melihat;\nKu turut printahNya, ku junjung namaNya,\nBila berbuat dosa, Dia melihat.\n\nKala ku berduka atau ku gembira, Dia melihat;\nKu mengaku dosa, hatiku bertobat,\nPerbuatan berubah, Dia melihat.\n\nKu harus waspada, mataNya melihat, slalu lihat;\nKu turut jalanNya, ku mengasihiNya,\nKu pegang firmanNya, Dia melihat.",
       "midiPath": "assets/midi/211_Allah Mengawasi.mid",
-      "pdfPath": "assets/pdf/211_Allah Mengawasi.pdf"
+      "pdfPath": "assets/pdf/211_Allah Mengawasi.pdf",
+      "chordRef": {
+        "songId": "hymn-211",
+        "path": "assets/chord/211_Allah Mengawasi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1267,
+        "sha256": "74903066363ca4cf11e132914b6fbf16eb49f394a5338addcf4fcf5fad1bbe97"
+      }
     },
     {
       "id": "hymn-212",
@@ -3122,7 +3675,14 @@
       ],
       "lyrics": "Tuhan suruhku bersinar terang, seperti pelita menrangi malam,\nBersinar di dunia yang gelap; Giatlah beramal di mana pun.\n\nTuhan suruhku bersinar terang, terang atau tidak Tuhan pun tahu,\nDia lihat jelas dari surga; Muliakanlah Dia di mana pun.\n\nTuhan suruhku bersinar terang, britakan InjilNya ke sgala bangsa,\nSelamatkan orang berdosa; Giatlah bersaksi di mana pun.",
       "midiPath": "assets/midi/212_Bersinar Bagi Tuhan.mid",
-      "pdfPath": "assets/pdf/212_Bersinar Bagi Tuhan.pdf"
+      "pdfPath": "assets/pdf/212_Bersinar Bagi Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-212",
+        "path": "assets/chord/212_Bersinar Bagi Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 816,
+        "sha256": "116981f9785fe29da8142bdd02b12939807c55b68a3397111881aecf86d91a66"
+      }
     },
     {
       "id": "hymn-213",
@@ -3137,7 +3697,14 @@
       ],
       "lyrics": "Tetes air berkumpul, menjadi sungai;\nPasir laut bertimbun, menjadi bukit,\njadi bukit.\n\nWaktu bagai panah, cepat berlalu;\nSedetik, sedetik, menjadi abad,\njadi abad.\n\nBerbuat dosa kecil, menjadi jerat;\nSedikit menyimpang, dosalah sudah,\ndosa sudah.\n\nBerbuat amal kecil, berjasa juga;\nMembuat gerejaNya berlimpah kasih,\nlimpah kasih.",
       "midiPath": "assets/midi/213_Walau Sedikit Namun Berarti.mid",
-      "pdfPath": "assets/pdf/213_Walau Sedikit Namun Berarti.pdf"
+      "pdfPath": "assets/pdf/213_Walau Sedikit Namun Berarti.pdf",
+      "chordRef": {
+        "songId": "hymn-213",
+        "path": "assets/chord/213_Walau Sedikit Namun Berarti.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 881,
+        "sha256": "fd2fda666ff93cffa4ae66cb892d0bc6da45d2ceb89034e24a4c2ac1b24e4566"
+      }
     },
     {
       "id": "hymn-214",
@@ -3152,7 +3719,14 @@
       ],
       "lyrics": "Berbahagialah orang yang miskin hatinya,\nkarna mreka yang empunya kerajaan surga;\nBerbahagialah orang yang berduka cita,\nKarena mereka akan dihibur olehNya.\n\nBerbahagialah orang yang lembut hatinya,\nkarena mreka yang akan memiliki bumi;\nBerbahagialah orang yang lapar kebenaran,\nKarena mereka akan dipuaskan olehNya.\n\nBerbahagialah orang yang murah hatinya,\nkarena mreka akan beroleh kemurahan;\nBerbahagialah orang yang suci hatinya,\nKarena mereka akan lihat wajah Allah.\n\nBerbahagialah orang yang membawa damai,\nKarena mreka akan disebut anak Allah;\nBerbahagialah orang yang drita karna Dia,\nKarna mreka yang empunya kerajaan surga.",
       "midiPath": "assets/midi/214_Delapan Kebahagiaan.mid",
-      "pdfPath": "assets/pdf/214_Delapan Kebahagiaan.pdf"
+      "pdfPath": "assets/pdf/214_Delapan Kebahagiaan.pdf",
+      "chordRef": {
+        "songId": "hymn-214",
+        "path": "assets/chord/214_Delapan Kebahagiaan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1374,
+        "sha256": "42dba98ed7a39ed928c3771d50e7b2b629c59a9a49a95db83c80339ae6364470"
+      }
     },
     {
       "id": "hymn-215",
@@ -3167,7 +3741,14 @@
       ],
       "lyrics": "Gereja yang benar, ditebus darahNya;\nSungguh mulia! Dasarnya dibangun dari batu zaman,\nyang tlah mengalahkan kuasa maut.\n\nGereja yang benar, menurut Alkitab;\nSungguh indah! Dilahirkan oleh kuasa Roh Kudus,\nBerbuat sesuai dengan kehendakNya.\n\nGereja yang benar, jadi memplai Allah;\nSungguh kudus! Tidak memasukkan ajaran manusia,\ntak bercacat cela, sangat mulia.\n\nGereja yang benar, penuh kuasa iman;\nSungguh heran! Tidak sandar uang hanya sandar RohNya,\nmujizat teguhkan kebenaran.",
       "midiPath": "assets/midi/215_Akhlak Gereja Benar.mid",
-      "pdfPath": "assets/pdf/215_Akhlak Gereja Benar.pdf"
+      "pdfPath": "assets/pdf/215_Akhlak Gereja Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-215",
+        "path": "assets/chord/215_Akhlak Gereja Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 935,
+        "sha256": "7555d1fc607c0c5ed9a8b474ab9a96bcb55c951283774227a154f19c0e6778fb"
+      }
     },
     {
       "id": "hymn-216",
@@ -3182,7 +3763,14 @@
       ],
       "lyrics": "Kebenaran gerejaNya harus ku pegang selalu,\nBerdoa priksa firmanNya, akan masuk surga;\n\nHaleluya, puji Tuhan! Sandar RohNya, menladan Dia;\nTurut printah Dia berkenan, bahagia di surga.\n\nGereja jadi kluargaku, semua anggota rukun,\nSaling bantu mengasihi, akan masuk surga;\n\nHaleluya, puji Tuhan! Sandar RohNya, menladan Dia;\nTurut printah Dia berkenan, bahagia di surga.\n\nGiat membri persembahan, demi pembritaan Injil,\nMembantu yang kekurangan, akan masuk surga;\n\nHaleluya, puji Tuhan! Sandar RohNya, menladan Dia;\nTurut printah Dia berkenan, bahagia di surga.\n\nCinta Allah dan saudara, dengan segnap jiwa raga,\nBuang perbuatan dosa, akan masuk surga;\n\nHaleluya, puji Tuhan! Sandar RohNya, menladan Dia;\nTurut printah Dia berkenan, bahagia di surga.",
       "midiPath": "assets/midi/216_Budi Pekerti Umat Suci.mid",
-      "pdfPath": "assets/pdf/216_Budi Pekerti Umat Suci.pdf"
+      "pdfPath": "assets/pdf/216_Budi Pekerti Umat Suci.pdf",
+      "chordRef": {
+        "songId": "hymn-216",
+        "path": "assets/chord/216_Budi Pekerti Umat Suci.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1003,
+        "sha256": "f5ae2aa8797526ae316f3847d77026f8dd61ec789e9598eb105b6307f8d295fd"
+      }
     },
     {
       "id": "hymn-217",
@@ -3196,7 +3784,14 @@
       ],
       "lyrics": "Istri tunduk pada suami, suami kasihi istri,\nanak hormat ibu bapa, orang tua sayang anak,\nHamba kerja dengan setia, tuan berlaku kasih,\nyang muda bersikap hormat, yang tua ramah pnuh kasih.\n\nPerempuan slalu rajin mengatur rumah tangga,\nlaki laki hidup kudus, panjang sabar, tak marah,\nIbu mertua dan menantu hidup rukun dan damai,\nantar sesama saudara tiada iri hati.\n\nRekan kerja dalam greja saling bantu dan kasih,\nsemua pekerja kudus giat melayani Tuhan,\nUmat Tuhan satu tubuh, susah senang bersama,\nbila greja satu hati, Tuhan pasti berkati.",
       "midiPath": "assets/midi/217_Melakukan Firman Tuhan.mid",
-      "pdfPath": "assets/pdf/217_Melakukan Firman Tuhan.pdf"
+      "pdfPath": "assets/pdf/217_Melakukan Firman Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-217",
+        "path": "assets/chord/217_Melakukan Firman Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1265,
+        "sha256": "499ed5edb75b0843bbaf6b0e27666889bcbe15cb78f28e8abf69f3bf99f1bc10"
+      }
     },
     {
       "id": "hymn-218",
@@ -3210,7 +3805,14 @@
       ],
       "lyrics": "Sangat indah dan sempurna buah dari Roh Kudus,\nkasih serta suka cita, juga damai sejahtra,\nkesabaran, kemurahan, kebaikan, kesetiaan,\npenuh kelemah lembutan, dan penguasaan diri.\n\nKu mau seumur hidup ku taat pada firmanNya,\ntrima RohNya diam di hati bagai plita berminyak,\nKu akan bersinar terang, menghasilkan buah Roh,\nbila tidak berbuah Roh, mendukakan Roh Kudus.\n\nTuhan ingin kita berbuah memuliakan namaNya,\nsemak duri tidak akan menghasilkan buah anggur,\nKita taat pada RohNya, jadi manusia baru,\nrohani kuat, banyak berbuah, nama Tuhan dipuji.",
       "midiPath": "assets/midi/218_Buah Roh Kudus.mid",
-      "pdfPath": "assets/pdf/218_Buah Roh Kudus.pdf"
+      "pdfPath": "assets/pdf/218_Buah Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-218",
+        "path": "assets/chord/218_Buah Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1575,
+        "sha256": "c2922ecf8af16895f3229dffef019aa73c06b19b2924df5e7ff449b9b6b7f49e"
+      }
     },
     {
       "id": "hymn-219",
@@ -3224,7 +3826,14 @@
       ],
       "lyrics": "Jangan tunggu Tuhan srahkan perkara besar, sebab karunia berbeda;\nHal yang kecil juga harus setia kerjakan, di manapun bersinarlah.\n\nDi manapun bersinarlah, di manapun bersinarlah;\norang sesat tunggumu bimbing dia ke surga, di manapun bersinarlah;\n\nTerang dapat pimpin orang ke jalan benar, tunjukkan jalan kehidupan;\nTerang pimpin orang masuk pintu anugrah, di manapun bersinarlah.\n\nDi manapun bersinarlah, di manapun bersinarlah;\norang sesat tunggumu bimbing dia ke surga, di manapun bersinarlah;\n\nPersembahkan semua karunia untukNya, Dia pakaimu trangi yang gelap;\nBanyak orang tlah meninggalkan jalan Tuhan, di manapun bersinarlah.\n\nDi manapun bersinarlah, di manapun bersinarlah;\norang sesat tunggumu bimbing dia ke surga, di manapun bersinarlah;",
       "midiPath": "assets/midi/219_Di mana Saja Bersinar.mid",
-      "pdfPath": "assets/pdf/219_Di mana Saja Bersinar.pdf"
+      "pdfPath": "assets/pdf/219_Di mana Saja Bersinar.pdf",
+      "chordRef": {
+        "songId": "hymn-219",
+        "path": "assets/chord/219_Di mana Saja Bersinar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1513,
+        "sha256": "7a8c2ee8840b96773ea64d216ebc217f02b13d3143936b5b7c76402486a65487"
+      }
     },
     {
       "id": "hymn-220",
@@ -3239,7 +3848,14 @@
       ],
       "lyrics": "Baca Alkitab mengerti nugrahNya, iman tlah teguh,\ntidak akan goyah; Allah berjanji briku hidup kekal,\nKu tlah terima, tak akan berubah,\nKu tlah terima, tak akan berubah.\n\nWalau alami sakit maupun sehat, hidup berlimpah,\natau kekurangan; Di daratan ataupun di lautan,\nTuhan besertaku tak sendirian,\nTuhan besertaku tak sendirian.\n\nWalau alami badai pendritaan, ombak menerjang,\nku tetap tak hanyut; Tuhan menjaga, sengsara jadi snang,\nPenderitaan buatku dekat Tuhan,\nPenderitaan buatku dekat Tuhan.\n\nWalau diuji bagai lalui api, anugrah Tuhan\ntetaplah berlimpah; Api tak akan lukai diriku,\nTuhan menguji, ku jadi mas murni,\nTuhan menguji, ku jadi mas murni.",
       "midiPath": "assets/midi/220_Api Pengujian.mid",
-      "pdfPath": "assets/pdf/220_Api Pengujian.pdf"
+      "pdfPath": "assets/pdf/220_Api Pengujian.pdf",
+      "chordRef": {
+        "songId": "hymn-220",
+        "path": "assets/chord/220_Api Pengujian.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1450,
+        "sha256": "7227b349511eaf59de43d6aa025219c4d7fe082e1165eaff51612aaa2d499594"
+      }
     },
     {
       "id": "hymn-221",
@@ -3254,7 +3870,14 @@
       ],
       "lyrics": "Menuju ke surga mulia, jalan sempit banyak aral,\nJangan takut kesukaran, menempuhnya harus tekad.\n\nBila ingin masuk surga, harus buang sgala dosa,\nMelakukan printah Tuhan, kendalikan sgala bangsa.\n\nJangan tamak harta dunia, merugikan orang lain,\nJangan ada kata dusta, tak bersungut pada Tuhan.\n\nIngin tempuh jalan surga, sering lemah tak berdaya,\nMohon RohNya slalu bantu, agar aku sampai surga.",
       "midiPath": "assets/midi/221_Taklukkan Keinginan Daging.mid",
-      "pdfPath": "assets/pdf/221_Taklukkan Keinginan Daging.pdf"
+      "pdfPath": "assets/pdf/221_Taklukkan Keinginan Daging.pdf",
+      "chordRef": {
+        "songId": "hymn-221",
+        "path": "assets/chord/221_Taklukkan Keinginan Daging.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1071,
+        "sha256": "88b53c58014256f12a897fd88798d0a562ffacc0009e3c65b56db1460c065883"
+      }
     },
     {
       "id": "hymn-222",
@@ -3269,7 +3892,14 @@
       ],
       "lyrics": "Berbahagialah yang suci hatinya;\nKarena mereka akan melihat Allahnya.\n\nTuhan bri Roh Kudus, sucikan hatiku;\nDi dunia yang penuh dosa, sandar Dia, sucilah.\n\nHatiku yang bersih, sebagai takhtanya;\nTuhan tinggal di dalamnya, slalu bersekutu.\n\nDi hadirat Tuhan, ku memohon berkat;\nTuhan sucikan hatiku, ku jadi sempurna.",
       "midiPath": "assets/midi/222_Berbahagialah Yang Suci Hatinya.mid",
-      "pdfPath": "assets/pdf/222_Berbahagialah Yang Suci Hatinya.pdf"
+      "pdfPath": "assets/pdf/222_Berbahagialah Yang Suci Hatinya.pdf",
+      "chordRef": {
+        "songId": "hymn-222",
+        "path": "assets/chord/222_Berbahagialah Yang Suci Hatinya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 630,
+        "sha256": "888b4e2e5e395055414d6381c30ae4a20a0b5890c09f83e656856b6de8f407d8"
+      }
     },
     {
       "id": "hymn-223",
@@ -3283,7 +3913,14 @@
       ],
       "lyrics": "Haleluya, Amin, Puji Tuhan, Sion bercahaya sungguh indah,\nDaud main kecapi, Musa nyanyi, Miriam berdendang dan menari.\n\nUmat pilihanNya riang berkumpul, bernyanyi kidung merdu di surga;\nMalakpun bersorak puji Allah, \"Haleluya!\" bergema di surga.\n\nHaleluya, Amin, Puji Tuhan, Bagai anak gadis bercahaya,\nKita memplai Kristus harus kudus, penuh dengan RohNya menyambut Dia.\n\nUmat pilihanNya riang berkumpul, bernyanyi kidung merdu di surga;\nMalakpun bersorak puji Allah, \"Haleluya!\" bergema di surga.\n\nHaleluya, Amin, Puji Tuhan, Memplai bercahaya dan sempurna,\nGrejaNya yang benar 'kan diangkat, masuk keperjamuan Anak Domba.\n\nUmat pilihanNya riang berkumpul, bernyanyi kidung merdu di surga;\nMalakpun bersorak puji Allah, \"Haleluya!\" bergema di surga.",
       "midiPath": "assets/midi/223_Kidung Umat Pilihan.mid",
-      "pdfPath": "assets/pdf/223_Kidung Umat Pilihan.pdf"
+      "pdfPath": "assets/pdf/223_Kidung Umat Pilihan.pdf",
+      "chordRef": {
+        "songId": "hymn-223",
+        "path": "assets/chord/223_Kidung Umat Pilihan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1998,
+        "sha256": "be63630c8c78db4601b8e2e4d7fe78f69a023f38eda9592093fd6a4168c6a52e"
+      }
     },
     {
       "id": "hymn-224",
@@ -3297,7 +3934,14 @@
       ],
       "lyrics": "Mohon Tuhan selidiki daku,\nUji dan kenalilah hatiku;\nTelitilah, jangan ku menyimpang,\nJangan biarkan ada akar dosa.\n\nKau melihat segala perkara,\nTrangilah hati sanubariku;\nAgar aku bertaut denganMu,\nSlalu takut, hormat, kepadaMu.\n\nBiarlah RohMu penuhi hatiku,\nBagaikan api kobarkan rohku;\nTidak turut keinginan tubuh,\nMohon Tuhan pimpin sampai surga.",
       "midiPath": "assets/midi/224_Mohon Tuhan Selidiki.mid",
-      "pdfPath": "assets/pdf/224_Mohon Tuhan Selidiki.pdf"
+      "pdfPath": "assets/pdf/224_Mohon Tuhan Selidiki.pdf",
+      "chordRef": {
+        "songId": "hymn-224",
+        "path": "assets/chord/224_Mohon Tuhan Selidiki.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1635,
+        "sha256": "5ae30f7df114959b80657fcf7afacdceecbd450f78edf14e95302fcb41ec1c1f"
+      }
     },
     {
       "id": "hymn-225",
@@ -3312,7 +3956,14 @@
       ],
       "lyrics": "Ku harus mohon karunia Roh, kuasaNya besar di hatiku ;\nDia menguatkan rohaniku, berbuah bagiNya.\n\nKu 'kan girang kumpul di surga, trima kemuliaan yang besar;\nHati bersih tiada dosa, karna turut RohNya.\n\nKu harus dengar suara RohNya, taati semua kehendakNya;\nRajin dan setia layani Dia, slesaikan tugasku.\n\nKu 'kan girang kumpul di surga, trima kemuliaan yang besar;\nHati bersih tiada dosa, karna turut RohNya.\n\nJangan padamkan gerakan Roh, Dia membantuku saat lemah;\nSelalu briku kekuatan, memegang firmanNya.\n\nKu 'kan girang kumpul di surga, trima kemuliaan yang besar;\nHati bersih tiada dosa, karna turut RohNya.\n\nKu harus taat pimpinan Roh, singkirkan semua hawa nafsu;\nKuasai tubuh, melatihnya menjadi alatNya.\n\nKu 'kan girang kumpul di surga, trima kemuliaan yang besar;\nHati bersih tiada dosa, karna turut RohNya.",
       "midiPath": "assets/midi/225_Turut Roh Kudus.mid",
-      "pdfPath": "assets/pdf/225_Turut Roh Kudus.pdf"
+      "pdfPath": "assets/pdf/225_Turut Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-225",
+        "path": "assets/chord/225_Turut Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1500,
+        "sha256": "e180c756e96d6a6d7506780ee671506d886f5c7bb715173e34e42c5cb5e6a44e"
+      }
     },
     {
       "id": "hymn-226",
@@ -3327,7 +3978,14 @@
       ],
       "lyrics": "Tuhan, ku hidup bertamu, hati rindu pulang surga;\nTekun, trus maju; jadilah kehendakMu;\nTurut Firman, terus maju,\nTekun, trus maju, jadilah kehendakMu;\n\nMenderita pikul salib, hatiku tetap sejahtra,\nKlak bermahkota; jadilah kehendakMu;\nKu 'kan taat sampai mati,\nKlak bermahkota, jadilah kehendakMu;\n\nBila mati demi Injil, akan trima hidup kekal,\nKu rela mati, jadilah kehendakMu;\nKu 'kan trima pahla besar,\nKu rela mati, jadilah kehendakMu;\n\nBila tinggalkan semua, akan masuk surga mulia,\nKu rela buangkan, jadilah kehendakMu;\nPersembahkan Semuanya,\nKu rela buangkan, jadilah kehendakMu;",
       "midiPath": "assets/midi/226_Jadilah Kehendak Tuhan.mid",
-      "pdfPath": "assets/pdf/226_Jadilah Kehendak Tuhan.pdf"
+      "pdfPath": "assets/pdf/226_Jadilah Kehendak Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-226",
+        "path": "assets/chord/226_Jadilah Kehendak Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1437,
+        "sha256": "1a2d20bcc8831cdbde224a7e1bebbb64a775e3f8f0a87c2ba3fb1207f76160d0"
+      }
     },
     {
       "id": "hymn-227",
@@ -3342,7 +4000,14 @@
       ],
       "lyrics": "Dengarlah printahNya, camkan dalam hati, bahgialah orang yang lakukan;\nFirmanNya bagaikan pelita bagiku, pimpinku berjalan ke surga.\n\nSiapa yang lakukan seluruh firmanNya, bagai rumah diatas batu;\nAir bah melanda dan badai menerjang, dia tetap berdiri, teguhlah.\n\nPrintah Tuhan kudus, adil, sungguh benar, peganglah, hai semua umatNya!\nYang turut firmanNya 'kan trima janjiNya, mengecap bahagia slamanya.\n\nTatkala di surga, ku terus puji Dia karena berkatNya berlimpah;\nBerharap umatNya jalankan printahNya, bertekun, bergiat, slamanya.",
       "midiPath": "assets/midi/227_Berbahagialah Yang Mendengar PerintahNya.mid",
-      "pdfPath": "assets/pdf/227_Berbahagialah Yang Mendengar PerintahNya.pdf"
+      "pdfPath": "assets/pdf/227_Berbahagialah Yang Mendengar PerintahNya.pdf",
+      "chordRef": {
+        "songId": "hymn-227",
+        "path": "assets/chord/227_Berbahagialah Yang Mendengar PerintahNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1009,
+        "sha256": "16b309cd60dcddb2f3e61a8b8d5ed228e25c0fff2c30f4a4ac80c2621fad6d78"
+      }
     },
     {
       "id": "hymn-228",
@@ -3356,7 +4021,14 @@
       ],
       "lyrics": "Dengarlah printah Almasih, printahNya tak berubah,\nIngatlah pada firmanNya: \"Bahgia bagi yang setia.\"\n\nBerbahgia yang turut printah, dia sungguh berbahagia;\nBerbahgia yang turut printah, bahgia bagi yang setia.\n\nBila dengar tak lakukan, tak 'kan dapat janjiNya,\nYang giat lakukan firmanNya pastilah berbahagia.\n\nBerbahgia yang turut printah, dia sungguh berbahagia;\nBerbahgia yang turut printah, bahgia bagi yang setia.\n\nSemua yang turut printahNya akan masuk ke surga,\nDi sana kudus dan mulia, hidup bahgia slamanya.\n\nBerbahgia yang turut printah, dia sungguh berbahagia;\nBerbahgia yang turut printah, bahgia bagi yang setia.",
       "midiPath": "assets/midi/228_Berbahagialah Yang Turut PerintahNya.mid",
-      "pdfPath": "assets/pdf/228_Berbahagialah Yang Turut PerintahNya.pdf"
+      "pdfPath": "assets/pdf/228_Berbahagialah Yang Turut PerintahNya.pdf",
+      "chordRef": {
+        "songId": "hymn-228",
+        "path": "assets/chord/228_Berbahagialah Yang Turut PerintahNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1583,
+        "sha256": "cc4ee44fd76190eaf31d9e4951c458dea6ae715ddc716fa5e17ff63a202a7c14"
+      }
     },
     {
       "id": "hymn-229",
@@ -3371,7 +4043,14 @@
       ],
       "lyrics": "Perintah yang pertama; \"Sembahlah Allah Esa.\"\nPerintah yang kedua; \"Jangan sembah berhala.\"\n\nPerintah yang ketiga; \"Hormati nama Allah.\"\nPerintah yang keempat; \"Kuduskan hari Sabat.\"\n\nPerintah yang kelima; \"Hormati Ibu, bapa.\"\nPerintah yang keenam; \"Jangan membunuh orang.\"\n\nPerintah ke sembilan; \"Jangan bersaksi dusta.\"\nPerintah ke sepuluh; \"Jangan menjadi tamak.\"",
       "midiPath": "assets/midi/229_Sepuluh Perintah Allah.mid",
-      "pdfPath": "assets/pdf/229_Sepuluh Perintah Allah.pdf"
+      "pdfPath": "assets/pdf/229_Sepuluh Perintah Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-229",
+        "path": "assets/chord/229_Sepuluh Perintah Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1293,
+        "sha256": "e7d3a532386999f082c4c6203faaa570fd33552dd2ad3193f79814fc88594a43"
+      }
     },
     {
       "id": "hymn-230",
@@ -3385,7 +4064,14 @@
       ],
       "lyrics": "Tak turut orang fasik, menjauhkan jalan dosa;\nTak ikut pencemooh; Berbahagialah dia.\n\nHanya suka TauratNya, renungkan siang, malam;\nIngat dan menjalankan; Berbahagialah dia.\n\nHidup orang yang benar bagai pohon tepi air;\nBerbuah pada musimnya; Berbahagialah dia.",
       "midiPath": "assets/midi/230_Berbahagialah Orang yang Benar.mid",
-      "pdfPath": "assets/pdf/230_Berbahagialah Orang yang Benar.pdf"
+      "pdfPath": "assets/pdf/230_Berbahagialah Orang yang Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-230",
+        "path": "assets/chord/230_Berbahagialah Orang yang Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1006,
+        "sha256": "8551923623bcae42cfb3b90419fb4abc37051577d1b2888d281da56ca466fea4"
+      }
     },
     {
       "id": "hymn-231",
@@ -3399,7 +4085,14 @@
       ],
       "lyrics": "Sperti kehendakMu, di dalam hidupku;\nKarna kehendakMu benar dan sempurna;\nSusah atau senang, ku srahkan padaMu,\nSlalu ku berkata: \"Jadilah kehendakMu.\"\n\nSperti kehendakMu, Kaulah Penolongku;\nKasihMu tak ubah, hapus air mataku;\nDulu Engkau pernah mendrita sengsara,\nBila harus susah, jadilah kehendakMu.\n\nSperti kehendakMu, Kaulah sandaranku;\nKarna di dalamMu hatiku tenteram;\nDi dunia bertamu, rumahku di surga,\nHidup atau mati, jadilah kehendakMu.",
       "midiPath": "assets/midi/231_Jadilah Seperti KehendakMu.mid",
-      "pdfPath": "assets/pdf/231_Jadilah Seperti KehendakMu.pdf"
+      "pdfPath": "assets/pdf/231_Jadilah Seperti KehendakMu.pdf",
+      "chordRef": {
+        "songId": "hymn-231",
+        "path": "assets/chord/231_Jadilah Seperti Kehendak-Mu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1436,
+        "sha256": "2165a9ac3e0a3102ab5dbb4a99bd8d6659cdc2038576e668c84f8edc6b4976db"
+      }
     },
     {
       "id": "hymn-232",
@@ -3413,7 +4106,14 @@
       ],
       "lyrics": "Heranlah, heranlah anugrah Allah! Dia inginku sperti Yesus.\nPenuh kasih, setia, dan kekudusan, Dia inginku sperti Yesus.\n\nHeranlah, sungguh heran! Dapat nyatakan rupaNya;\nKu harus lakukan kehendak Allah, Dia inginku sperti Yesus.\n\nKu harus kudus karna Yesus kudus, Dia inginku sperti Yesus.\nKu akan taat karna Kuasa RohNya, Dia inginku sperti Yesus.\n\nHeranlah, sungguh heran! Dapat nyatakan rupaNya;\nKu harus lakukan kehendak Allah, Dia inginku sperti Yesus.\n\nLembut, rendah hati, dan panjang sabar, Dia inginku sperti Yesus.\nTemui pencobaan, ku pasti menang, Dia inginku sperti Yesus.\n\nHeranlah, sungguh heran! Dapat nyatakan rupaNya;\nKu harus lakukan kehendak Allah, Dia inginku sperti Yesus.",
       "midiPath": "assets/midi/232_Seperti Yesus.mid",
-      "pdfPath": "assets/pdf/232_Seperti Yesus.pdf"
+      "pdfPath": "assets/pdf/232_Seperti Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-232",
+        "path": "assets/chord/232_Seperti Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1757,
+        "sha256": "5ae41523e75717057225a26eed6983167b0ca07df9067495b9cff322ef2c06c9"
+      }
     },
     {
       "id": "hymn-233",
@@ -3430,7 +4130,14 @@
       ],
       "lyrics": "Aku milik Yesus, ku ditebusNya;\nDia Tuhan ku yang kekal, ku amat girang.\n\nAku milik Yesus, ku dislamatkan;\nDarahNya dicurahkan, menebus Rohku.\n\nAku milik Yesus, ku dibeliNya;\nSegenap jiwa raga, bukan milikku.\n\nAku milik Yesus, Dialah Rajaku;\nKuasai hatiku , tinggal dalamku.\n\nAku milik Yesus, kalahkan musuh;\nTanganNya lindungiku, jagaku slalu.\n\nAku milik Yesus, kasihNya kekal;\nDia akan mengantarku sampai ke surga.",
       "midiPath": "assets/midi/233_Milik Yesus.mid",
-      "pdfPath": "assets/pdf/233_Milik Yesus.pdf"
+      "pdfPath": "assets/pdf/233_Milik Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-233",
+        "path": "assets/chord/233_Milik Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 751,
+        "sha256": "e253b41ff1cb91c475610af3aa7339b1aa8581391f5861d2d268dbd2c329d8ac"
+      }
     },
     {
       "id": "hymn-234",
@@ -3445,7 +4152,14 @@
       ],
       "lyrics": "Ingin hampiri Dia, lebih dekat,\nWalau banyak susah, tetap maju;\nKu panjatkan doa, ingin hampiri Dia,\nIngin hampiri Dia lebih dekat.\n\nHidup bagai tamu, di dunia,\nDi padang yang gelap, ku tertidur;\nMalam sunyi sepi, ingin hampiri Dia,\nIngin hampiri Dia lebih dekat.\n\nMimpi sebuah tangga yang ke surga,\nAllah di sisiku, ku terhibur;\nMendengar janjiNya, ingin hampiri Dia,\nIngin hampiri Dia lebih dekat.\n\nKala ku terbangun, ku bersyukur,\nKu dirikan batu, muliakan Dia;\nBila hati susah, ingin hampiri Dia,\nIngin hampiri Dia lebih dekat.",
       "midiPath": "assets/midi/234_Ingin Lebih Dekat Tuhan.mid",
-      "pdfPath": "assets/pdf/234_Ingin Lebih Dekat Tuhan.pdf"
+      "pdfPath": "assets/pdf/234_Ingin Lebih Dekat Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-234",
+        "path": "assets/chord/234_Ingin Lebih Dekat Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1703,
+        "sha256": "5216795fb7b2ab762bb356ad0fb3d162adff6faaccdb78416c60521a75f6e0c1"
+      }
     },
     {
       "id": "hymn-235",
@@ -3459,7 +4173,14 @@
       ],
       "lyrics": "Tuhan Yesus, ku mau dekatMu!\nKarna cintaMu amat manis;\nMinyakMu wangi, namaMu harum,\nKu mau menari, iring cintaMu.\n\nDia berkata, \"Ku mau lihatmu,\nKarna wajahmu amat elok;\nDengar suaramu yang lembut merdu,\nBila jumpamu, rianglah hatiKu.”\n\nKu milikMu, Engkau milikku,\nEngkau dan aku satu tubuh;\nKristus kepala, greja tubuhNya,\nGreja milikNya, sangat rahasia.",
       "midiPath": "assets/midi/235_Tuhan dan Aku Satu Tubuh.mid",
-      "pdfPath": "assets/pdf/235_Tuhan dan Aku Satu Tubuh.pdf"
+      "pdfPath": "assets/pdf/235_Tuhan dan Aku Satu Tubuh.pdf",
+      "chordRef": {
+        "songId": "hymn-235",
+        "path": "assets/chord/235_Tuhan dan Aku Satu Tubuh.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1756,
+        "sha256": "3e7d53b5c6d155200a1d46eff4c65a26b33e2dd8a0e7f7b5998acd9c54c49596"
+      }
     },
     {
       "id": "hymn-236",
@@ -3473,7 +4194,14 @@
       ],
       "lyrics": "Berkat terbesar: ku milikNya, Dia tlah menebus, hapus dosaku;\nRoh Kudus tinggal di hatiku, ku 'kan berseru: \"Ya Bapaku.\"\n\nKabar yang heran: ku milikNya! Ku puji Tuhan, nyanyi girang;\nSaksikan kasih anugrahNya, syukur ku jadi milik Yesus.\n\nTaat padaNya, ku sejahtra, kini tampaklah surga yang mulia;\nTerdengar suara malak nyanyi dan mengabarkan keslamatan.\n\nKabar yang heran: ku milikNya! Ku puji Tuhan, nyanyi girang;\nSaksikan kasih anugrahNya, syukur ku jadi milik Yesus.\n\nBersyukur dalam segala hal, kelak beroleh hidup yang kekal;\nSlalu berharap dan berjaga, berdoa sampai Tuhan datang.\n\nKabar yang heran: ku milikNya! Ku puji Tuhan, nyanyi girang;\nSaksikan kasih anugrahNya, syukur ku jadi milik Yesus.",
       "midiPath": "assets/midi/236_Aku Milik Yesus.mid",
-      "pdfPath": "assets/pdf/236_Aku Milik Yesus.pdf"
+      "pdfPath": "assets/pdf/236_Aku Milik Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-236",
+        "path": "assets/chord/236_Aku Milik Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1772,
+        "sha256": "0de272023089325bebc4a4624d1c2b94402d0e286e67fe2ea5782ec3840e8203"
+      }
     },
     {
       "id": "hymn-237",
@@ -3488,7 +4216,14 @@
       ],
       "lyrics": "Hidupku tlah ada perubahan heran, sejak Yesus di hatiku;\nTerang yang sejati terangi hatiku, sejak Yesus di hatiku.\n\nSejak Yesus di hatiku , Sejak Yesus di hatiku ;\nGembira di hati bagai laut berglora, sejak Yesus di hatiku.\n\nHidupku tak lagi berklana, tersesat, sejak Yesus di hatiku;\nSemua dosaku ditebus darahNya, sejak Yesus di hatiku.\n\nSejak Yesus di hatiku , Sejak Yesus di hatiku ;\nGembira di hati bagai laut berglora, sejak Yesus di hatiku.\n\nKini ku miliki harapan yang teguh, sejak Yesus di hatiku;\nKarena beriman, tampaklah surgaNya, sejak Yesus di hatiku.\n\nSejak Yesus di hatiku , Sejak Yesus di hatiku ;\nGembira di hati bagai laut berglora, sejak Yesus di hatiku.\n\nKu tahu ku akan masuk dalam surga, sejak Yesus di hatiku;\nTiap hari ku girang, maju dan bergiat, sejak Yesus di hatiku.\n\nSejak Yesus di hatiku , Sejak Yesus di hatiku ;\nGembira di hati bagai laut berglora, sejak Yesus di hatiku.",
       "midiPath": "assets/midi/237_Sejak Yesus di hatiku.mid",
-      "pdfPath": "assets/pdf/237_Sejak Yesus di hatiku.pdf"
+      "pdfPath": "assets/pdf/237_Sejak Yesus di hatiku.pdf",
+      "chordRef": {
+        "songId": "hymn-237",
+        "path": "assets/chord/237_Sejak Yesus di Hatiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1506,
+        "sha256": "b650adc7c1683162ec103f69b779a185ea11bb39ac0d1e2cbb51cc92307532b4"
+      }
     },
     {
       "id": "hymn-238",
@@ -3503,7 +4238,14 @@
       ],
       "lyrics": "Yesus, Tuhanku, turun kedunia, tinggalkan kemuliaanNya;\nDi kota Daud Dia dilahirkan, dibaringkan di palungan.\nYesus tinggal di hatiku , hatiku tempat bagiMu;\nYesus tinggallah di hatiku , hatiku tempat bagiMu.\n\nRubah berlubang, burung bersarang, dapat tinggal dengan tenang;\nTapi Yesusku penuh sengsara, tidak ada tempat tidur.\nYesus tinggal di hatiku , hatiku tempat bagiMu;\nYesus tinggallah di hatiku , hatiku tempat bagiMu.\n\nTuhan slamatkan semua manusia, lepas dari kuasa dosa;\nTapi manusia menghina Tuhan, gantung Dia diatas salib.\nYesus tinggal di hatiku , hatiku tempat bagiMu;\nYesus tinggallah di hatiku , hatiku tempat bagiMu.\n\nBilakah kita bernyanyi girang, sambut Raja Kemenangan?\nSemua orang yang trima nugrah, disambut disisi Tuhan.\nKu 'kan lihat Tuhan Yesus, dengan umatNya puji Hu;\nKu 'kan berjum pa dengan Tuhan, dengan umatNya puji Hu.",
       "midiPath": "assets/midi/238_Yesus, Tinggallah di hatiku.mid",
-      "pdfPath": "assets/pdf/238_Yesus, Tinggallah di hatiku.pdf"
+      "pdfPath": "assets/pdf/238_Yesus, Tinggallah di hatiku.pdf",
+      "chordRef": {
+        "songId": "hymn-238",
+        "path": "assets/chord/238_Yesus, Tinggallah di Hatiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1681,
+        "sha256": "f94fd10f4733ea9f1606f91cd9f9ef625c04381885e11b552d9533ad8cbe6c96"
+      }
     },
     {
       "id": "hymn-239",
@@ -3518,7 +4260,14 @@
       ],
       "lyrics": "Surya terbenam, malam pun tiba,\nKu mohon Tuhan tinggal denganku;\nKawan di dunia menjauh semua,\nHanya Tuhan tetap bersamaku.\n\nHidup di dunia bagaikan mimpi,\nBahagia dunia bagaikan asap;\nSekejap saja akan berlalu,\nHanya Tuhan kekal bersamaku.\n\nKu perlu Tuhan menyertaiku,\nSandar rahmatNya, setan pun mundur;\nTuhan tuntunku, tak 'kan tersesat,\nSenantiasa Tuhan bersamaku.\n\nDi kala ku meninggalkan dunia,\nKu mengarahkan mata ke surga;\nTampaklah sinar kemuliaanNya,\nHidup, mati, Tuhan bersamaku.",
       "midiPath": "assets/midi/239_Tuhan, Tinggallah Bersamaku.mid",
-      "pdfPath": "assets/pdf/239_Tuhan, Tinggallah Bersamaku.pdf"
+      "pdfPath": "assets/pdf/239_Tuhan, Tinggallah Bersamaku.pdf",
+      "chordRef": {
+        "songId": "hymn-239",
+        "path": "assets/chord/239_Tuhan, Tinggallah Bersamaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1634,
+        "sha256": "7cc240243098b5bc0667edb61537afaa17bb6bd720108dbc29f1b86a9c5e02f2"
+      }
     },
     {
       "id": "hymn-240",
@@ -3532,7 +4281,14 @@
       ],
       "lyrics": "Saat yang terindah dalam rohku: tiada kuatir, selalu berdoa;\nHubungan roh semakin mendalam, hati suci, damai dan sejahtra.\n\nSungguh girang bersama Tuhan,\nJiwa ku slalu berpadu dengan Tuhan ku, girang slamanya dengan Tuhan.\n\nSaat yang terindah dalam rohku: baca kitab, dengar suara Tuhan;\nRohani yang lapar dan dahaga dipuaskan oleh kebenaran.\n\nSungguh girang bersama Tuhan,\nJiwa ku slalu berpadu dengan Tuhan ku, girang slamanya dengan Tuhan.\n\nSaat yang terindah dalam rohku: membritakan Injil Keslamatan;\nSelamatkan orang dari dosa, menangkan banyak jiwa untukNya.\n\nSungguh girang bersama Tuhan,\nJiwa ku slalu berpadu dengan Tuhan ku, girang slamanya dengan Tuhan.",
       "midiPath": "assets/midi/240_Girang Bersama Tuhan.mid",
-      "pdfPath": "assets/pdf/240_Girang Bersama Tuhan.pdf"
+      "pdfPath": "assets/pdf/240_Girang Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-240",
+        "path": "assets/chord/240_Girang Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1754,
+        "sha256": "ff71148f0cfe80891d518433b3cb224fbdb7e73eaf2ed05c095a718a872f9572"
+      }
     },
     {
       "id": "hymn-241",
@@ -3546,7 +4302,14 @@
       ],
       "lyrics": "Yang ku senangi dan yang ku harapkan ialah Raja roh jiwaku;\nWalau selalu memuji Engkau, belumlah puas hatiku.\n\nYang ku sayangi, Tuhan kekasihku, suaraNya lembut dan merdu;\nMalak nyanyikan kidung Pujian, berpadu dengan mazmurku.\n\nYang ku rindukan, naungan jiwaku, Kaulah Rajaku di kalbu;\nHidup, harapan, ada padaMu, ku mau bersandar padaMu.",
       "midiPath": "assets/midi/241_Raja Jiwaku.mid",
-      "pdfPath": "assets/pdf/241_Raja Jiwaku.pdf"
+      "pdfPath": "assets/pdf/241_Raja Jiwaku.pdf",
+      "chordRef": {
+        "songId": "hymn-241",
+        "path": "assets/chord/241_Raja Jiwaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 952,
+        "sha256": "8fbee6c2f0b125e9152dd109ff8a3682fc8d0672fbe875ad16a85887959422ee"
+      }
     },
     {
       "id": "hymn-242",
@@ -3560,7 +4323,14 @@
       ],
       "lyrics": "Ada tamu di luar; undang Dia!\nMenanti dengan sabar, undang Dia!\nDia Anak Tunggal Allah, kudus lagi penyayang;\nJangan biarkan Dia pergi, undang Dia!\n\nSkarang bukalah hati, undang Dia!\nJangan menunda lagi, undang Dia!\nDia jadi teman karib, pelihara jiwamu;\nSandar Dia sejahtera, undang Dia!\n\nKau dengarkah suaraNya? undang Dia!\nAmbillah keputusan, undang Dia!\nDia masih menantimu, hendak brimu sejahtra;\nAgar kau suka cita, undang Dia!",
       "midiPath": "assets/midi/242_Tuhan Menanti di Luar Pintu.mid",
-      "pdfPath": "assets/pdf/242_Tuhan Menanti di Luar Pintu.pdf"
+      "pdfPath": "assets/pdf/242_Tuhan Menanti di Luar Pintu.pdf",
+      "chordRef": {
+        "songId": "hymn-242",
+        "path": "assets/chord/242_Tuhan Menanti di Luar Pintu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1511,
+        "sha256": "96680731f1fda1e684dad0425987f4f1bd1d50c2183732d6a3f2a361f4c4c30b"
+      }
     },
     {
       "id": "hymn-243",
@@ -3575,7 +4345,14 @@
       ],
       "lyrics": "Yesus Tuhanku, aku milikMu, kasihMu puaskanku;\nKu mengharapkan imanku teguh, makin dekat padaMu.\n\nDekatkanlah aku padaMu, dekat pada salibMu;\nDekatkanlah, dekat, dekat padaMu, slalu dekat sisiMu.\n\nOleh rahmatMu, ku dikuduskan, jadi alat yang mulia;\nKini ku ada harapan baru, jiwaku junjung Tuhan.\n\nDekatkanlah aku padaMu, dekat pada salibMu;\nDekatkanlah, dekat, dekat padaMu, slalu dekat sisiMu.\n\nBanyak bertelut di hadiratMu, roh girang tak terkira;\nRoh dan jiwaku akan bersatu denganMu di Firdaus.\n\nDekatkanlah aku padaMu, dekat pada salibMu;\nDekatkanlah, dekat, dekat padaMu, slalu dekat sisiMu.\n\nKasihMu dalam, tak terlukiskan, sampai akhir hidupku;\nBahagia kekal kini belum jlas, nanti jlaslah di surga.\n\nDekatkanlah aku padaMu, dekat pada salibMu;\nDekatkanlah, dekat, dekat padaMu, slalu dekat sisiMu.",
       "midiPath": "assets/midi/243_Dekatkanlah Aku PadaMu.mid",
-      "pdfPath": "assets/pdf/243_Dekatkanlah Aku PadaMu.pdf"
+      "pdfPath": "assets/pdf/243_Dekatkanlah Aku PadaMu.pdf",
+      "chordRef": {
+        "songId": "hymn-243",
+        "path": "assets/chord/243_Dekatkanlah Aku PadaMu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1814,
+        "sha256": "606eb9a6dcaf6abc1df383339b187b2d28da9b02ece8dd9ebdcc95765b80f244"
+      }
     },
     {
       "id": "hymn-244",
@@ -3588,7 +4365,14 @@
       ],
       "lyrics": "Allah yang mulia, ku mau spertiMu, inilah doa, harapanku;\nKu mau tinggalkan harta di dunia, kenakan Kristus, pegang Firman.\n\nKu mau spertiMu, ku mau spertiMu, kudus dan mulia, mahakasih;\nSandar Roh Kudus, lakukan Firman, Kristus jadilah di hatiku.\n\nKu mau spertiMu: lembut, pemurah, baik, penyayang, rendah hati;\nBantu yang lemah, hibur yang duka, pimpin yang dosa trima slamat.\n\nKu mau spertiMu, ku mau spertiMu, kudus dan mulia, mahakasih;\nSandar Roh Kudus, lakukan Firman, Kristus jadilah di hatiku.",
       "midiPath": "assets/midi/244_Tuhan, Aku Mau SepertiMu.mid",
-      "pdfPath": "assets/pdf/244_Tuhan, Aku Mau SepertiMu.pdf"
+      "pdfPath": "assets/pdf/244_Tuhan, Aku Mau SepertiMu.pdf",
+      "chordRef": {
+        "songId": "hymn-244",
+        "path": "assets/chord/244_Tuhan, Aku Mau Seperti-Mu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1455,
+        "sha256": "d8f090556830cb789fb6219337708c48209d48a4dc398e4bff81409356597c0a"
+      }
     },
     {
       "id": "hymn-245",
@@ -3603,7 +4387,14 @@
       ],
       "lyrics": "Surya sirna: gelaplah, satu hari berlalu;\nTuhan, jagalah aku, lalui malam yang gelap.\n\nKau melihat, siang malam; sgala hal, Kau pun tahu;\nMohon Kau kasihiku, ampunilah dosaku.\n\nWaktu terus berlalu, hidup bagaikan embun;\nKau briku hidup kekal, menempuh jalan surga.\n\nKemah dunia tak lama, ku rindu rumah surga;\nBersatu dengan Tuhan dan tinggal bersamaMu.",
       "midiPath": "assets/midi/245_Tinggal Bersama Tuhan.mid",
-      "pdfPath": "assets/pdf/245_Tinggal Bersama Tuhan.pdf"
+      "pdfPath": "assets/pdf/245_Tinggal Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-245",
+        "path": "assets/chord/245_Tinggal Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1014,
+        "sha256": "49fcbb7dee0effc835a8c810a7ee324bae347c6d3c4870495a5c1919fdd50f9f"
+      }
     },
     {
       "id": "hymn-246",
@@ -3619,7 +4410,14 @@
       ],
       "lyrics": "Mohon RohMu turun, tinggal di hatiku;\nSungguh mulia, penuh kuasa, briku banyak nugrah.\n\nMohon RohMu pimpin, mengerti FirmanMu;\nTekun berdoa dan berjaga, tiap hari maju.\n\nMohon RohMu tegur, kuatkan hatiku;\nMelakukan kehendakMu, benci semua dosa.\n\nMohon RohMu jaga, teguhkan imanku;\nPerkataan dan perbuatan sesuai firman Tuhan.\n\nMohon RohMu hibur, tambahkan hikmatMu;\nAgar aku tahan uji, dapat masuk surga.",
       "midiPath": "assets/midi/246_Memohon Roh Kudus.mid",
-      "pdfPath": "assets/pdf/246_Memohon Roh Kudus.pdf"
+      "pdfPath": "assets/pdf/246_Memohon Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-246",
+        "path": "assets/chord/246_Memohon Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 870,
+        "sha256": "9e3905caa2ba49a93c6547d62f70df7d50c5cffee49af803e22c8f273edde951"
+      }
     },
     {
       "id": "hymn-247",
@@ -3634,7 +4432,14 @@
       ],
       "lyrics": "Pada hari Pentakosta, nyata kuasa besar,\nUmat Tuhan tekun berdoa, menanti Roh Kudus;\nTerdengar suara gemuruh, lihat lidah bagai api.\n\nKuasa, Kuasa, Kuasa Pentakosta! \nKuasa sperti skarang, Kuasa sperti skarang;\nKuasa, Kuasa, kuasa Pentakosta! \nKuasa sperti skarang.\n\nKetika Roh Kudus turun, semua berbasa roh,\nDengan brani, bersemangat, mengabarkan Injil;\nSatu hati melayani, membalas anugrah Tuhan.\n\nKuasa, Kuasa, Kuasa Pentakosta! \nKuasa sperti skarang, Kuasa sperti skarang;\nKuasa, Kuasa, kuasa Pentakosta! \nKuasa sperti skarang.\n\nUmat yang penuh Roh Kudus trima hikmat, kuasa,\nDi manapun menyaksikan kasih anugrahNya;\nMelakukan tanda heran, selamatkan yang tersesat.\n\nKuasa, Kuasa, Kuasa Pentakosta! \nKuasa sperti skarang, Kuasa sperti skarang;\nKuasa, Kuasa, kuasa Pentakosta! \nKuasa sperti skarang.\n\nBila mohon dengan tekun, pasti trima RohNya,\nDipenuhi kuasa, hikmat, sperti Pentakosta;\nFirman dan Roh tak'kan ubah: dulu, kini, tetap kuasa.\n\nKuasa, Kuasa, Kuasa Pentakosta! \nKuasa sperti skarang, Kuasa sperti skarang;\nKuasa, Kuasa, kuasa Pentakosta! \nKuasa sperti skarang.",
       "midiPath": "assets/midi/247_Kuasa Roh Kudus.mid",
-      "pdfPath": "assets/pdf/247_Kuasa Roh Kudus.pdf"
+      "pdfPath": "assets/pdf/247_Kuasa Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-247",
+        "path": "assets/chord/247_Kuasa Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1819,
+        "sha256": "a01acd5a0c3ddcd5add69cad36706e593a3fee084841884e5debb010ab04cdd9"
+      }
     },
     {
       "id": "hymn-248",
@@ -3649,7 +4454,14 @@
       ],
       "lyrics": "Mohon Roh Kudus, mengubah niatku,\nAgar ku menjadi srupa denganMu.\n\nHaleluya, RohNya kuasa! Haleluya, Amin!\nHaleluya, RohNya kuasa dalam hatiku .\n\nMohon Roh Kudus, kobarkan hatiku,\nDi manapun, bersaksi tentang Yesus.\n\nHaleluya, RohNya kuasa! Haleluya, Amin!\nHaleluya, RohNya kuasa dalam hatiku .\n\nMohon Roh Kudus, tabahkan hatiku,\nBrani tempuh bahya demi namaMu.\n\nHaleluya, RohNya kuasa! Haleluya, Amin!\nHaleluya, RohNya kuasa dalam hatiku .\n\nMohon Roh Kudus, penuhi hatiku,\nAgar ku selalu turut printahMu.\n\nHaleluya, RohNya kuasa! Haleluya, Amin!\nHaleluya, RohNya kuasa dalam hatiku .",
       "midiPath": "assets/midi/248_Mohon Roh Kudus.mid",
-      "pdfPath": "assets/pdf/248_Mohon Roh Kudus.pdf"
+      "pdfPath": "assets/pdf/248_Mohon Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-248",
+        "path": "assets/chord/248_Mohon Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1011,
+        "sha256": "242097c58e20839559ca2e82542f353fe14bbb201d97449b4cdc909657fba343"
+      }
     },
     {
       "id": "hymn-249",
@@ -3663,7 +4475,14 @@
       ],
       "lyrics": "Dulu rasul mohon RohNya, di hari Pentakosta;\nYesus genapi janjiNya, Roh Kudus diturunkan.\n\nTuhan, kini bri kuasa! Tuhan, kini bri kuasa!\nTuhan, kini bri kuasa! RohMu baptis semua.\n\nTiba tiba ada suara, bagai angin bertiup;\nLidah bagai nyala api, semua berbahasa roh.\n\nTuhan, kini bri kuasa! Tuhan, kini bri kuasa!\nTuhan, kini bri kuasa! RohMu baptis semua.\n\nUmat yang penuh Roh Kudus, berjuang demi Firman;\nLakukan tanda mujizat, pimpin orang padaNya.\n\nTuhan, kini bri kuasa! Tuhan, kini bri kuasa!\nTuhan, kini bri kuasa! RohMu baptis semua.",
       "midiPath": "assets/midi/249_Roh Kudus Baptis Semua.mid",
-      "pdfPath": "assets/pdf/249_Roh Kudus Baptis Semua.pdf"
+      "pdfPath": "assets/pdf/249_Roh Kudus Baptis Semua.pdf",
+      "chordRef": {
+        "songId": "hymn-249",
+        "path": "assets/chord/249_Roh Kudus Baptis Semua.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1832,
+        "sha256": "a3e919f1d97e1035069ba4301e64364b6e5acb8416a0877bed1f42b7e98416d5"
+      }
     },
     {
       "id": "hymn-250",
@@ -3678,7 +4497,14 @@
       ],
       "lyrics": "Mohon RohNya penuhiku, bri kekuatan baru;\nKobarkanlah semangatku, di hati yang dingin.\n\nAku lemah sbab terikat perkara duniawi;\nJiwa lemah tak berdaya, melawan seteru.\n\nSmangat ingin layani Dia, tapi lemah lagi;\nDengar firman cepat jemu, lebih cinta tubuh.\n\nTuhan, palingkanlah aku, bri kekuatan baru;\nAgar giat sampai akhir, masuk surga mulia.",
       "midiPath": "assets/midi/250_Mendapat Kekuatan Baru.mid",
-      "pdfPath": "assets/pdf/250_Mendapat Kekuatan Baru.pdf"
+      "pdfPath": "assets/pdf/250_Mendapat Kekuatan Baru.pdf",
+      "chordRef": {
+        "songId": "hymn-250",
+        "path": "assets/chord/250_Mendapat Kekuatan Baru.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 884,
+        "sha256": "90331e7cde482f06777604954ba43591b85a5615aba3079fc0cd0e0e41d51d55"
+      }
     },
     {
       "id": "hymn-251",
@@ -3807,7 +4633,14 @@
       ],
       "lyrics": "Tekun berdoa dengan tulus, kekuatiran dunia hilang;\nBertelut dalam BaitNya, memohon dalam namaNya.\nHana duka lalu berdoa, orang buta trus berseru,\nPrempuan Kanaan karna iman, semua dapat berkat Tuhan.\n\nTekun berdoa dengan sungguh, mencurahkan isi hati;\nTuhan pasti sembuhkanku, selamatkan roh, jiwaku.\nBila mohon tanpa malu, dengan tidak jemu jemu,\nSiang malam trus berseru, pasti akan dikabulkan.\n\nTekun berdoa setiap saat, di luar, di rumah, di greja;\nTekun berdoa di manapun, dalam setiap kesempatan.\nDi daratan, di lautan, temui bahya Tuhan jaga,\nLembah maut pun tak berdaya, tekun berdoa trima nugrah.",
       "midiPath": "assets/midi/259_Tekun Berdoa.mid",
-      "pdfPath": "assets/pdf/259_Tekun Berdoa.pdf"
+      "pdfPath": "assets/pdf/259_Tekun Berdoa.pdf",
+      "chordRef": {
+        "songId": "hymn-259",
+        "path": "assets/chord/259_Tekun Berdoa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1757,
+        "sha256": "2bcb4d122ad72383ae8066579c3697ae77970f17ee7145ffb568ec6c0d919346"
+      }
     },
     {
       "id": "hymn-260",
@@ -3850,7 +4683,14 @@
       ],
       "lyrics": "Anak Tuhan, duka berdoa, diangkat ke surga,\nAllah panggil dan tanyaku, \"Apa yang kau minta?\"\nKu jawab, \"Cemas meliput, Oh, Tuhan tolonglah!\nKu mau cari KrajaanMu, Kau bri kecukupan.\"\n\nAnak Tuhan, sungguh berdoa, diangkat ke surga,\nAllah pegang dan tanya ku, \"Apa yang kau minta?\"\nKu jawab, \"Dunia pnuh dosa Oh, Tuhan tolonglah!\nKu mau lakukan firmanMu, tak tercemar dunia.\"\n\nAnak Tuhan, tekun berdoa, diangkat ke surga,\nAllah datang dan tanya ku, \"Apa yang kau minta?\"\nKu jawab, \"Nafsu menggoda, Oh, Tuhan tolonglah!\nKu mau melatih tubuhku, hasilkan buah Roh.\"\n\nAnak Tuhan, tulus berdoa, diangkat ke surga,\nAllah peluk dan tanya ku, \"Apa yang kau minta?\"\nKu jawab, \"umat berbantah, Oh, Tuhan tolonglah!\nKu mau saling mengasihi, bersatu dalamMu.\"",
       "midiPath": "assets/midi/262_Bersekutu Dalam Roh Dengan Tuhan.mid",
-      "pdfPath": "assets/pdf/262_Bersekutu Dalam Roh Dengan Tuhan.pdf"
+      "pdfPath": "assets/pdf/262_Bersekutu Dalam Roh Dengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-262",
+        "path": "assets/chord/262_Bersekutu Dalam Roh Dengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1499,
+        "sha256": "1a1fc06efb7afd8f380c393bc1f6a082850e3e322dc90adde088e0b190b6f024"
+      }
     },
     {
       "id": "hymn-263",
@@ -3980,7 +4820,14 @@
       ],
       "lyrics": "Jangan kau takut saksikan Yesus, sekatapun berguna;\nJangan takut junjung nama Tuhan karna Dia menjagamu.\n\nJangan kau takut, jangan kau takut, jangan, jangan takut;\nYesuslah juru slamatmu, maka jangan kau takut.\n\nJangan kau takut kerja untukNya, giat dalam kebunNya;\nWalau kau lelah tetaplah girang karna tak 'kan percuma.\n\nJangan kau takut, jangan kau takut, jangan, jangan takut;\nYesuslah juru slamatmu, maka jangan kau takut.\n\nJangan kau takut susah untukNya, disiksa dan dihina;\nJangan kau lupa Tuhan di dunia, pikul salib untukmu.\n\nJangan kau takut, jangan kau takut, jangan, jangan takut;\nYesuslah juru slamatmu, maka jangan kau takut.\n\nJangan kau takut mati untukNya, Dialah sumber hidup;\nWaktu Dia datang, kau disambutNya, masuk surga mulia.\n\nJangan kau takut, jangan kau takut, jangan, jangan takut;\nYesuslah juru slamatmu, maka jangan kau takut.",
       "midiPath": "assets/midi/271_Jangan Takut.mid",
-      "pdfPath": "assets/pdf/271_Jangan Takut.pdf"
+      "pdfPath": "assets/pdf/271_Jangan Takut.pdf",
+      "chordRef": {
+        "songId": "hymn-271",
+        "path": "assets/chord/271_Jangan Takut.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1520,
+        "sha256": "26eed4cca1f837723260072550f2b3c3f188d3233a8abe71f3952240527d9f5f"
+      }
     },
     {
       "id": "hymn-272",
@@ -4726,7 +5573,14 @@
       ],
       "lyrics": "Puji Allah Bapa yang Mahakuasa! PutraNya dibrikan sebab kasihNya,\nAlmasih disalib demi yang sesat terbukalah pintu menuju slamat.\n\nPuji Dia yang mulia! Hai, dengar sabdaNya! Puji Dia yang mulia! umatNya bersuka!\nDatang pada Bapa melalui Yesus Pujilah Dia karna kuasaNya besar!\n\nDarah Yesus Kristus menebus dosa itu janjiNya bagi yang percaya;\nYang paling berdosa, bila bertobat dan trima baptisan dia akan slamat.\n\nPuji Dia yang mulia! Hai, dengar sabdaNya! Puji Dia yang mulia! umatNya bersuka!\nDatang pada Bapa melalui Yesus Pujilah Dia karna kuasaNya besar!\n\nBesar janji Allah, besar KaryaNya! Besar suka cita dalam PutraNya;\nPuncak suka cita tak terkatakan ketika kita terima Roh Kudus.\n\nPuji Dia yang mulia! Hai, dengar sabdaNya! Puji Dia yang mulia! umatNya bersuka!\nDatang pada Bapa melalui Yesus Pujilah Dia karna kuasaNya besar!",
       "midiPath": "assets/midi/322_Kemuliaan Untuk Tuhan.mid",
-      "pdfPath": "assets/pdf/322_Kemuliaan Untuk Tuhan.pdf"
+      "pdfPath": "assets/pdf/322_Kemuliaan Untuk Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-322",
+        "path": "assets/chord/322_Kemuliaan Untuk Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1999,
+        "sha256": "779821a6af90868b7952d440fda1ec641ddd2b4190abd8533e976d6c0abe469e"
+      }
     },
     {
       "id": "hymn-323",
@@ -4845,7 +5699,14 @@
       ],
       "lyrics": "Ada nada nada indah bergema riang di hatiku,\nKu nyanyi berulang ulang, damai anugrah Tuhan.\n\nDamai, damai anugrah dari surga!\nOh damai yg sungguh ajaib! Damai anugrah Tuhan!\n\nDamai oleh salib Kristus hutangku dilunaskanNya,\nTiada dasar lebih teguh, damai anugrah Tuhan.\n\nDamai, damai anugrah dari surga!\nOh damai yg sungguh ajaib! Damai anugrah Tuhan!\n\nDalam Yesus ku kan tinggal dan slalu dekat sisiNya,\nHanya damai yang beserta, damai anugrah Tuhan.\n\nDamai, damai anugrah dari surga!\nOh damai yg sungguh ajaib! Damai anugrah Tuhan!",
       "midiPath": "assets/midi/330_Damai, Anugerah Tuhan.mid",
-      "pdfPath": "assets/pdf/330_Damai, Anugerah Tuhan.pdf"
+      "pdfPath": "assets/pdf/330_Damai, Anugerah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-330",
+        "path": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1446,
+        "sha256": "981869266953b513ab08ebcee0d545b6f028f230f7102341652ec616f80a988d"
+      }
     },
     {
       "id": "hymn-331",
@@ -4873,7 +5734,14 @@
       ],
       "lyrics": "Kasih Allah amat besar takkan dapat dilukiskan,\nLebih tinggi dari bintang, lebih dalam dari lautan;\nBri PutraNya 'tuk menebus umat yang berdosa;\nMendamaikan dengan Allah, ampuni dosanya.\n\nKasih Allah sungguh besar, kudus tak terhingga!\nSetia sampai selamanya, malak nyanyi girang.\n\nBiarpun bumi berlalu, dan krajaan dunia hancur,\nManusia tak mau berdoa, menolak menyembah Allah;\nKasih Allah tak berubah, kekal, tak terukur;\nMenebus umat manusia, malak nyanyi girang.\n\nKasih Allah sungguh besar, kudus tak terhingga!\nSetia sampai selamanya, malak nyanyi girang.\n\nBila lautan jadi tinta dan langit sbagai kertasnya,\nSemua tangkai jadi pena, dan dengan hikmat manusia;\nMenuliskan kasih Allah, lautan pun keringlah;\nLuas langit pun takkan cukup memuat KasihNya.\n\nKasih Allah sungguh besar, kudus tak terhingga!\nSetia sampai selamanya, malak nyanyi girang.",
       "midiPath": "assets/midi/332_Kasih Allah.mid",
-      "pdfPath": "assets/pdf/332_Kasih Allah.pdf"
+      "pdfPath": "assets/pdf/332_Kasih Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-332",
+        "path": "assets/chord/332_Kasih Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1711,
+        "sha256": "6f30150324880b0ff0d8bf5ea2a66cb84101e518059ef0f4e4468db4dfe281ee"
+      }
     },
     {
       "id": "hymn-333",
@@ -4888,7 +5756,14 @@
       ],
       "lyrics": "Seminggu tlah berlalu, Tuhan tuntun jalanku;\nUntuk trima nugrahNya di BaitNya yang kudus;\nSatu hari terindah, berkumpul dirumahMu;\nSabat kudus di dunia lambang Sabat yang kekal.\n\nDoa kami panjatkan, dalam namaMu, Yesus;\nAmpuni dosa kami, sucikan hati kami;\nJauhkan hal duniawi, diam dalam SabatMu;\nJauhkan hal duniawi, diam dalam SabatMu.\n\nKami mengagungkanMu, nyatakanlah kasihMu;\nTampak kemuliaanMu saat di rumah Tuhan;\nBiarlah kami rasakan jamuan kekal di surga;\nBiarlah kami rasakan jamuan kekal di surga.\n\nFirman Injil yang benar harus kita kabarkan;\nTebarkan benih kasih, menangkan banyak jiwa;\nPegang Sabat sempurna sampai kumpul di surga;\nPegang Sabat sempurna sampai kumpul di surga.",
       "midiPath": "assets/midi/333_Tiap Minggu DijagaNya.mid",
-      "pdfPath": "assets/pdf/333_Tiap Minggu DijagaNya.pdf"
+      "pdfPath": "assets/pdf/333_Tiap Minggu DijagaNya.pdf",
+      "chordRef": {
+        "songId": "hymn-333",
+        "path": "assets/chord/333_Tiap Minggu DijagaNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1198,
+        "sha256": "b282cb00bdc2c4c0b05bca623a0788f339fcb083b7bdeaa158e49f59551ae264"
+      }
     },
     {
       "id": "hymn-334",
@@ -5218,7 +6093,14 @@
       ],
       "lyrics": "Hai, laskar Kristus, bangkitlah! Angkat senjatamu;\nBerprang sebelum malam glap selimuti langit;\nDengan sgenap kekuatanmu kalahkan seteru;\nIman itu kemenangan yang kalahkan dunia.\n\nMenang karna iman! Menang karna iman!\nImanlah kemenangan yang kalahkan dunia.\n\nPanji kita ialah kasih, pedang Firman Allah;\nDengan sorak kemenangan, berprang di jalanNya;\nDengan iman memenangkan setiap pertempuran;\nIman yang kalahkan maut jadi prisai kita.\n\nMenang karna iman! Menang karna iman!\nImanlah kemenangan yang kalahkan dunia.\n\nSemua musuh yang menghadang, 'kan kita kalahkan;\nTinggalkan kesnangan dunia, majulah berperang;\nIkat pinggang kebenaran dan ketopong slamat;\nMenggemakan sorak kita, menggetarkan bumi.\n\nMenang karna iman! Menang karna iman!\nImanlah kemenangan yang kalahkan dunia.",
       "midiPath": "assets/midi/356_Imanlah Kemenangan.mid",
-      "pdfPath": "assets/pdf/356_Imanlah Kemenangan.pdf"
+      "pdfPath": "assets/pdf/356_Imanlah Kemenangan.pdf",
+      "chordRef": {
+        "songId": "hymn-356",
+        "path": "assets/chord/356_Imanlah Kemenangan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2165,
+        "sha256": "2bcf382db9e4725f96677f0c216297fb15fdcab4057be25fb495b333237dc6d5"
+      }
     },
     {
       "id": "hymn-357",
@@ -5249,7 +6131,14 @@
       ],
       "lyrics": "Roh Kudus, penuhiku, sucikan hatiku;\nSinari sluruh hatiku , tiada kegelapan.\n\nPnuhiku, pnuhiku, Roh Kudus, penuhiku;\nBiar hatiku suci bersih, Roh Kudus, penuhiku.\n\nRoh Kudus, penuhiku, lembutkan hatiku;\nAjarkan kehendak Kristus dengan Firman Hidup.\n\nPnuhiku, pnuhiku, Roh Kudus, penuhiku;\nBiar hatiku suci bersih, Roh Kudus, penuhiku.\n\nRoh Kudus, penuhiku, briku kuasaMu;\nNyalakan api kasihMu di dalam hatiku.\n\nPnuhiku, pnuhiku, Roh Kudus, penuhiku;\nBiar hatiku suci bersih, Roh Kudus, penuhiku.\n\nRoh Kudus, penuhiku, ku jadi milikMu;\nHingga ku turut printahMu dan hidup bagiMu.\n\nPnuhiku, pnuhiku, Roh Kudus, penuhiku;\nBiar hatiku suci bersih, Roh Kudus, penuhiku.",
       "midiPath": "assets/midi/358_Roh Kudus, Penuhilah Aku.mid",
-      "pdfPath": "assets/pdf/358_Roh Kudus, Penuhilah Aku.pdf"
+      "pdfPath": "assets/pdf/358_Roh Kudus, Penuhilah Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-358",
+        "path": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1828,
+        "sha256": "ef22c12ffc0d200ffce0513f0c0343db75cd666c0da7239cfb1fce1fc8b04bac"
+      }
     },
     {
       "id": "hymn-359",
@@ -5326,7 +6215,14 @@
       ],
       "lyrics": "Teguh pada janji Kristus Rajaku, pujian bagiNya kekal selamanya;\nKemuliaan di tempat Maha tinggi, berpegang pada janji Allah.\n\nTeguh, teguh, berpegang pada janji Juruslamatku;\nTeguh, teguh, ku berpegang pada janji Allah.\n\nTeguh pada janji yang takkan gagal kala badai takut, bimbang, menerjang,\nDengan Kuasa firmanNya kukan menang, berpegang pada janji Allah.\n\nTeguh, teguh, berpegang pada janji Juruslamatku;\nTeguh, teguh, ku berpegang pada janji Allah.\n\nTeguh pada janji Kristus Tuhanku, tali kasihNya kekal mengikatku,\nDengan pedang Roh kalahkan cobaan, berpegang pada janji Allah.\n\nTeguh, teguh, berpegang pada janji Juruslamatku;\nTeguh, teguh, ku berpegang pada janji Allah.\n\nTeguh pada janjiNya ku tak goyah, tiap saat ku dengar panggilan RohNya,\nBersandar pada Juru selamatku, berpegang pada janji Allah.\n\nTeguh, teguh, berpegang pada janji Juruslamatku;\nTeguh, teguh, ku berpegang pada janji Allah.",
       "midiPath": "assets/midi/363_Berpegang Pada JanjiNya.mid",
-      "pdfPath": "assets/pdf/363_Berpegang Pada JanjiNya.pdf"
+      "pdfPath": "assets/pdf/363_Berpegang Pada JanjiNya.pdf",
+      "chordRef": {
+        "songId": "hymn-363",
+        "path": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1502,
+        "sha256": "837c72db7b07c789c2338ccf4649c15bc69b622c227cff2baf34065aa05fe8ee"
+      }
     },
     {
       "id": "hymn-364",
@@ -5370,7 +6266,14 @@
       ],
       "lyrics": "Berimanlah, kala sunyi jalanmu, Dia lihat dan tahu sgala langkahmu;\nYang terhina tak pernah Dia tinggalkan, berimanlah pada Tuhan.\n\nBerimanlah pada Tuhan, dari tahta, Dia jaga anakNya;\nDia berkuasa selamanya, berimanlah pada Tuhan.\n\nBerimanlah, kala doa blum terjawab, permohonanmu takkan Dia lupa;\nNantikan Dia, percaya dan bersabar, berimanlah Dia kan jawab.\n\nBerimanlah pada Tuhan, dari tahta, Dia jaga anakNya;\nDia berkuasa selamanya, berimanlah pada Tuhan.\n\nBerimanlah dalam duka dan drita, hatiNya rasakan sengsaramu;\nPada Tuhan serahkanlah semua, beban berat dan kuatirmu.\n\nBerimanlah pada Tuhan, dari tahta, Dia jaga anakNya;\nDia berkuasa selamanya, berimanlah pada Tuhan.\n\nBerimanlah walau hidupmu gagal, berimanlah, Dia pasti sediakan;\nTuhan tegak di tengah kehancuran, Dia berkuasa di tahtaNya.\n\nBerimanlah pada Tuhan, dari tahta, Dia jaga anakNya;\nDia berkuasa selamanya, berimanlah pada Tuhan.",
       "midiPath": "assets/midi/366_Berimanlah Kepada Tuhan.mid",
-      "pdfPath": "assets/pdf/366_Berimanlah Kepada Tuhan.pdf"
+      "pdfPath": "assets/pdf/366_Berimanlah Kepada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-366",
+        "path": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1768,
+        "sha256": "94c746042874a3c24285e49b15a725ebd34596814fa7a42e010db616d848d72b"
+      }
     },
     {
       "id": "hymn-367",
@@ -5398,7 +6301,14 @@
       ],
       "lyrics": "Ku tak tahu hari esokku, ku hanya tahu berlalu.\nSinar Surya tak ku harap karna langit kan lenyap.\nTiadalah kuatir hatiku akan masa depanku,\nKu berjalan serta Yesus, Dia pegang tanganku.\n\nBanyak hal di hari esok tak dapatku mengerti;\nTapi satu hal ku tahu: Tuhan pegang tanganku.\n\nBagai naik tangga ke surga, jalanku makin terang;\nTiap beban semakin ringan, awan glap jadi terang.\nDi sana terang selalu, tiada air mata,\nDi akhir jalan hidupku tampaklah surga permai.\n\nBanyak hal di hari esok tak dapatku mengerti;\nTapi satu hal ku tahu: Tuhan pegang tanganku.\n\nKu tak tahu hari esokku, derita atau bahgia;\nTapi Dia yang pliharaku, selalu di sisiku.\nWalaupun susah jalanku, lewat api dan air bah,\nYesus tetap menolongku, aman dalam darahNya.\n\nBanyak hal di hari esok tak dapatku mengerti;\nTapi satu hal ku tahu: Tuhan pegang tanganku.",
       "midiPath": "assets/midi/368_Ku Tahu Siapa Pegang Hari Esok.mid",
-      "pdfPath": "assets/pdf/368_Ku Tahu Siapa Pegang Hari Esok.pdf"
+      "pdfPath": "assets/pdf/368_Ku Tahu Siapa Pegang Hari Esok.pdf",
+      "chordRef": {
+        "songId": "hymn-368",
+        "path": "assets/chord/368_Ku Tahu Siapa Pegang Hari Esok.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1766,
+        "sha256": "98f7326d0fc853b4703cbd6be22aa6e7677607a256824ede88d5520771f9b9f4"
+      }
     },
     {
       "id": "hymn-369",
@@ -5427,7 +6337,14 @@
       ],
       "lyrics": "Girang dalamNya, Puji nugrah Tuhan, Dia lepas sgala ikatan;\nDalam darahNya ku tak perlu takut, karna Yesuslah sgalanya!\n\n\"Bila Dia serta, bila Dia serta, bila Dia serta, siapa lawan kita?\nSiapa? Siapa dapat melawan kita?\"\n\nTeguh dan girang dalam kuasaNya, setia dan benar tiap hari;\nIblis menyerang, sandarlah FirmanNya, Yesuslah kekuatan kita.\n\n\"Bila Dia serta, bila Dia serta, bila Dia serta, siapa lawan kita?\nSiapa? Siapa dapat melawan kita?\"\n\nPegang FirmanNya, janji Tuhan pasti, Firman Allah \"Ya dan Amin\";\nDunia berlalu, FirmanNya tak ubah, kekal untuk selamanya.\n\n\"Bila Dia serta, bila Dia serta, bila Dia serta, siapa lawan kita?\nSiapa? Siapa dapat melawan kita?\"\n\nTinggal dalamNya, aman dijagaNya, beroleh hidup yang kekal;\nJiwa yang lemah tak akan terpisah dari tangan kasih Tuhan.\n\n\"Bila Dia serta, bila Dia serta, bila Dia serta, siapa lawan kita?\nSiapa? Siapa dapat melawan kita?\"",
       "midiPath": "assets/midi/370_Bila Tuhan Beserta Kita.mid",
-      "pdfPath": "assets/pdf/370_Bila Tuhan Beserta Kita.pdf"
+      "pdfPath": "assets/pdf/370_Bila Tuhan Beserta Kita.pdf",
+      "chordRef": {
+        "songId": "hymn-370",
+        "path": "assets/chord/370_Bila Tuhan Beserta Kita.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1878,
+        "sha256": "69478d0a1b432c1a23ace80be7051d376914f0c8354d765293eddd79ddc187d3"
+      }
     },
     {
       "id": "hymn-371",
@@ -5470,7 +6387,14 @@
       ],
       "lyrics": "Janganlah takut, wahai Anak domba, Tuhan tlah bangkit, menang atas maut;\nKuasa di bumi dan kuasa di surga tlah dimenangkan hanya 'tuk umatNya\n\nPercayalah, percayalah! Segalanya mungkin, percayalah!\nPercayalah, percayalah! Segalanya mungkin, percayalah.\n\nJanganlah takut, Dia jalan di depan, Dia menuntunmu ke jalan yang benar;\nSumber air Mara Dia maniskan 'tukmu, yang pahit Dia minum di Getsemani\n\nPercayalah, percayalah! Segalanya mungkin, percayalah!\nPercayalah, percayalah! Segalanya mungkin, percayalah.\n\nJanganlah takut, wahai Anak domba, Tuhan selalu jaga setiap saat;\nBaik dalam gelap maupun dalam terang Dia takkan pergi, sandarlah padaNya\n\nPercayalah, percayalah! Segalanya mungkin, percayalah!\nPercayalah, percayalah! Segalanya mungkin, percayalah.",
       "midiPath": "assets/midi/373_Percayalah.mid",
-      "pdfPath": "assets/pdf/373_Percayalah.pdf"
+      "pdfPath": "assets/pdf/373_Percayalah.pdf",
+      "chordRef": {
+        "songId": "hymn-373",
+        "path": "assets/chord/373_Percayalah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1878,
+        "sha256": "4c637eebc53b9da7ac63521db173597a008de40b216df093d73183ad05168580"
+      }
     },
     {
       "id": "hymn-374",
@@ -5528,7 +6452,14 @@
       ],
       "lyrics": "Kala ku temui cobaan, kala jalan hidup sukar,\nSatu hal yang paling manis, Tuhan, Kau ingatku!\n\nTuhan, Kau ingatku, Tuhan, Kau ingatku,\nKu tak takut sbab Kau dekat, Tuhan, Kau ingatku.\n\nHidup dunia penuh kuatir, bayangi jiwa ragaku;\nWalau cemas di hatiku, Tuhan, Kau ingatku!\n\nTuhan, Kau ingatku, Tuhan, Kau ingatku,\nKu tak takut sbab Kau dekat, Tuhan, Kau ingatku.\n\nSaat senang atau susah, saat suka maupun duka,\nCukuplah bila kutahu, Tuhan, Kau ingatku!\n\nTuhan, Kau ingatku, Tuhan, Kau ingatku,\nKu tak takut sbab Kau dekat, Tuhan, Kau ingatku.",
       "midiPath": "assets/midi/377_Tuhan Kau Mengingatku.mid",
-      "pdfPath": "assets/pdf/377_Tuhan Kau Mengingatku.pdf"
+      "pdfPath": "assets/pdf/377_Tuhan Kau Mengingatku.pdf",
+      "chordRef": {
+        "songId": "hymn-377",
+        "path": "assets/chord/377_Tuhan Kau Mengingatku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1252,
+        "sha256": "c55bb0b8abcdc4c34d39d20fe609bc24f0726443bc55160bcb49aa70a6f384a2"
+      }
     },
     {
       "id": "hymn-378",
@@ -5760,7 +6691,14 @@
       ],
       "lyrics": "Atas kehidupan ini, ku bertrima kasih;\nKu memuji anugrahNya di dalam doaku.\n\nTrima kasih, ya Tuhan ku, jiwaku tlah Kau slamatkan;\nPuji Hu, berikan daku nugrah slamat yang heran sungguh\n\nAtas sgala ciptaanNya, ku bertrima kasih;\nHatiku pnuh suka cita sebab Dia milikku.\n\nTrima kasih, ya Tuhan ku, jiwaku tlah Kau slamatkan;\nPuji Hu, berikan daku nugrah slamat yang heran sungguh\n\nSetiap hari ku percaya akan anugrahNya;\nKu kan slalu memujiNya sampai ku lihat Dia.\n\nTrima kasih, ya Tuhan ku, jiwaku tlah Kau slamatkan;\nPuji Hu, berikan daku nugrah slamat yang heran sungguh",
       "midiPath": "assets/midi/393_Terima Kasih, Tuhan.mid",
-      "pdfPath": "assets/pdf/393_Terima Kasih, Tuhan.pdf"
+      "pdfPath": "assets/pdf/393_Terima Kasih, Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-393",
+        "path": "assets/chord/393_Terima Kasih, Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1714,
+        "sha256": "bf1223aa1764c4fd355f42664000700f342df80f9d87121260dfd7145d430607"
+      }
     },
     {
       "id": "hymn-394",
@@ -5774,7 +6712,14 @@
       ],
       "lyrics": "Trima kasih, O Tuhan ku, atas Sang Penebusku;\nAtas berkat yang berlimpah, atas penyertaanMu!\nTrima kasih atas masa yang indah maupun susah!\nTuhan hapus air mataku, bri damai di jiwaku!\n\nTrima kasih, O Tuhan ku, tuk semua kehendakMu!\nAtas badai yang ku rasa, dan semua yang tersedia!\nAtas semua penghiburan saat ku putus asa!\nAtas nugrah tak ternilai, dan kasih yang terbesar!\n\nTrima kasih atas bunga walaupun penuh duri!\nAtas rumah yang pnuh kasih dan pengharapan kekal!\nAtas suka maupun duka dan kedamaian surga!\nHari esok pnuh harapan, trima kasih slamanya!",
       "midiPath": "assets/midi/394_Terima Kasih Pada Tuhan.mid",
-      "pdfPath": "assets/pdf/394_Terima Kasih Pada Tuhan.pdf"
+      "pdfPath": "assets/pdf/394_Terima Kasih Pada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-394",
+        "path": "assets/chord/394_Terima Kasih Pada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1317,
+        "sha256": "d54a735913897b639dcb90f2d8d320787c2a7afcc69a3404ac6d9d7bfa58e9c5"
+      }
     },
     {
       "id": "hymn-395",
@@ -5789,7 +6734,14 @@
       ],
       "lyrics": "Ku menuju tempat tinggi, rohani ku makin tinggi;\nKu naikkan doa tiap waktu, \"Tuhan, teguhkan imanku.\"\n\nMohon Tuhan teguhkanku, lebih dekat kepadaMu;\nAgar imanku berdiri di tempat yang lebih tinggi.\n\nDi dunia hidup cemas, tiada tempat yang tenteram;\nWalau semua cinta dunia, hanya surga tujuanku.\n\nMohon Tuhan teguhkanku, lebih dekat kepadaMu;\nAgar imanku berdiri di tempat yang lebih tinggi.\n\nKu mau bebas dari dunia walau Iblis merintangku;\nKarna iman ku mendengar kidung syahdu girangkanku.\n\nMohon Tuhan teguhkanku, lebih dekat kepadaMu;\nAgar imanku berdiri di tempat yang lebih tinggi.\n\nMenuju tempat tertinggi, kupandang cahaya mulia;\nKini Rohku slalu mohon Tuhan pimpin sampai surga.\n\nMohon Tuhan teguhkanku, lebih dekat kepadaMu;\nAgar imanku berdiri di tempat yang lebih tinggi.",
       "midiPath": "assets/midi/395_Di Tempat yang Lebih Tinggi.mid",
-      "pdfPath": "assets/pdf/395_Di Tempat yang Lebih Tinggi.pdf"
+      "pdfPath": "assets/pdf/395_Di Tempat yang Lebih Tinggi.pdf",
+      "chordRef": {
+        "songId": "hymn-395",
+        "path": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1065,
+        "sha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585"
+      }
     },
     {
       "id": "hymn-396",
@@ -5818,7 +6770,14 @@
       ],
       "lyrics": "Hidup di dunia yang fana, semua kan mengawasi,\nTetaplah bersih dan murni, nyatakan Yesus dalammu.\n\nNyatakan Yesus dalammu, nyatakan Yesus dalammu;\nKabarkan InjilNya, setia dan benar, nyatakan Yesus dalammu.\n\nKau bagai kitab terbuka, slalu diperhatikan,\nApakah tiap pembacanya melihat Yesus dalammu?\n\nNyatakan Yesus dalammu, nyatakan Yesus dalammu;\nKabarkan InjilNya, setia dan benar, nyatakan Yesus dalammu.\n\nSuka cita yang terindah dalam rumah di surga,\nKala di sana berjumpa jiwa yang tlah kau menangkan.\n\nNyatakan Yesus dalammu, nyatakan Yesus dalammu;\nKabarkan InjilNya, setia dan benar, nyatakan Yesus dalammu.\n\nSiang malam hidup untukNya, setia, brani, dan benar,\nPimpin yang dosa pada trang, nyatakan Yesus dalammu.\n\nNyatakan Yesus dalammu, nyatakan Yesus dalammu;\nKabarkan InjilNya, setia dan benar, nyatakan Yesus dalammu.",
       "midiPath": "assets/midi/397_Nyatakan Yesus Dalammu.mid",
-      "pdfPath": "assets/pdf/397_Nyatakan Yesus Dalammu.pdf"
+      "pdfPath": "assets/pdf/397_Nyatakan Yesus Dalammu.pdf",
+      "chordRef": {
+        "songId": "hymn-397",
+        "path": "assets/chord/397_Nyatakan Yesus Dalammu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1709,
+        "sha256": "c09144f3c03e9a156eb35f901747329b8bae5542707773c0285429c6f41efabc"
+      }
     },
     {
       "id": "hymn-398",
@@ -5832,7 +6791,14 @@
       ],
       "lyrics": "Hidup tuk Yesus, hidup yang benar\nBerjuang snangkan Dia spanjang hidupku,\nBerbuah setia dan suka cita\nJalan inilah berkat bagiku.\n\nOh, Yesus Juruslamat, ku srahkan diriku \nKarna Engkau tlah srahkan hidupMu gantiku;\nTak ada allah lain di dalam hatiku \nKini kusrahkan hidupku padaMu, ya Tuhan\n\nHidup tuk Yesus, yang tlah gantiku\nMenanggung dosaku di Kalvari,\nKarna kasihNya, ku ikut Tuhan\nSerahkan semua turut jejakNya.\n\nOh, Yesus Juruslamat, ku srahkan diriku \nKarna Engkau tlah srahkan hidupMu gantiku;\nTak ada allah lain di dalam hatiku \nKini kusrahkan hidupku padaMu, ya Tuhan\n\nHidup tuk Yesus, saat di dunia\nHarta terindah: diperkenanNya,\nMencari jiwa tuk ditebusNya\nTuntun mereka ke pangkuanNya.\n\nOh, Yesus Juruslamat, ku srahkan diriku \nKarna Engkau tlah srahkan hidupMu gantiku;\nTak ada allah lain di dalam hatiku \nKini kusrahkan hidupku padaMu, ya Tuhan",
       "midiPath": "assets/midi/398_Hidup Untuk Yesus.mid",
-      "pdfPath": "assets/pdf/398_Hidup Untuk Yesus.pdf"
+      "pdfPath": "assets/pdf/398_Hidup Untuk Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-398",
+        "path": "assets/chord/398_Hidup Untuk Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2155,
+        "sha256": "c112c12cac217631ab50faf490ad55ebf8d2934a781ddf199541086e6b9496e3"
+      }
     },
     {
       "id": "hymn-399",
@@ -5931,7 +6897,14 @@
       ],
       "lyrics": "Seblum meninggalkan rumah, berdoakah kau?\nDalam nama Tuhan Yesus, mohon Tuhan mengasihi,\nlindung dan jaga?\n\nDoa membri kelegaan ubah glap jadi terang;\nDalam suka maupun duka, slalu berdoa.\n\nBila jumpa pencobaan, berdoakah kau?\nKarna kasih Dia berkorban, mohon pimpinan Roh Kudus\nmenjaga slalu?\n\nDoa membri kelegaan ubah glap jadi terang;\nDalam suka maupun duka, slalu berdoa.\n\nBila marah kuasaimu, berdoakah kau?\nSudahkah mohon nugrahNya untuk dapat memaafkan\npada sesama?\n\nDoa membri kelegaan ubah glap jadi terang;\nDalam suka maupun duka, slalu berdoa.\n\nBila pencobaan datang, berdoakah kau?\nKala jiwamu sengsara, kau bawakah dalam doa\nkepada Yesus?\n\nDoa membri kelegaan ubah glap jadi terang;\nDalam suka maupun duka, slalu berdoa.",
       "midiPath": "assets/midi/405_Berdoakah Engkau?.mid",
-      "pdfPath": "assets/pdf/405_Berdoakah Engkau?.pdf"
+      "pdfPath": "assets/pdf/405_Berdoakah Engkau?.pdf",
+      "chordRef": {
+        "songId": "hymn-405",
+        "path": "assets/chord/405_Berdoakah Engkau_.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1830,
+        "sha256": "dcd9971b992223154d827a8a44aa9cc4f3bb3a5bfffd6eb48be53fe2ccf4d26f"
+      }
     },
     {
       "id": "hymn-406",
@@ -5960,7 +6933,14 @@
       ],
       "lyrics": "Ku masuk ke dalam taman kala mawar masih berembun,\nKu dengar suara langkah yang lembut, Putra Allah tampaklah.\n\nDia jalan dan bercakap denganku, Dia briku tahu ku milikNya;\nDan suka cita yang kurasakan, tiada lain yang pernah tahu.\n\nSuara Tuhan sungguh merdu, burung pun diam, tak bernyanyi,\nDan lagu yang dibriNya padaku slalu dalam hatiku .\n\nDia jalan dan bercakap denganku, Dia briku tahu ku milikNya;\nDan suka cita yang kurasakan, tiada lain yang pernah tahu.\n\nWalaupun malam tlah tiba, ku kan tetap bersama Tuhan,\nTetapi dengan hati yang pilu Tuhan suruh ku pulang.\n\nDia jalan dan bercakap denganku, Dia briku tahu ku milikNya;\nDan suka cita yang kurasakan, tiada lain yang pernah tahu.",
       "midiPath": "assets/midi/407_Dalam Taman.mid",
-      "pdfPath": "assets/pdf/407_Dalam Taman.pdf"
+      "pdfPath": "assets/pdf/407_Dalam Taman.pdf",
+      "chordRef": {
+        "songId": "hymn-407",
+        "path": "assets/chord/407_Dalam Taman.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1376,
+        "sha256": "53c07eb36d8ce9d93b0b2e5d8740a4619179dacca0ec2d436466764428cf28ed"
+      }
     },
     {
       "id": "hymn-408",
@@ -6018,7 +6998,14 @@
       ],
       "lyrics": "Ada taman tempat Yesus menunggu, taman itu sangatlah indah;\nBersinar karna cahaya Tuhan, itu taman doa nan indah.\n\nTaman yang indah, taman doa nan indah,\nO sungguh indah taman doa;\nYesus menunggu ku dan bukakan pintu\nKe dalam taman doa nan indah.\n\nAda taman tempat Yesus menunggu, ku bawa bebanku ke sana,\nTuk dengar suara Tuhan menghibur, dalam taman doa nan indah.\n\nTaman yang indah, taman doa nan indah,\nO sungguh indah taman doa;\nYesus menunggu ku dan bukakan pintu\nKe dalam taman doa nan indah.\n\nAda taman tempat Yesus menunggu, Dia suruhmu segra ke sana,\nBerjalan dan bercakap denganNya, dalam taman doa nan indah.\n\nTaman yang indah, taman doa nan indah,\nO sungguh indah taman doa;\nYesus menunggu ku dan bukakan pintu\nKe dalam taman doa nan indah.",
       "midiPath": "assets/midi/411_Taman Doa Nan indah.mid",
-      "pdfPath": "assets/pdf/411_Taman Doa Nan indah.pdf"
+      "pdfPath": "assets/pdf/411_Taman Doa Nan indah.pdf",
+      "chordRef": {
+        "songId": "hymn-411",
+        "path": "assets/chord/411_Taman Doa Nan indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1518,
+        "sha256": "656d916bc9bb04d209fba53f54c7c173b0dfc3cb562546a48ef3cd4714eb7bdf"
+      }
     },
     {
       "id": "hymn-412",
@@ -6033,7 +7020,14 @@
       ],
       "lyrics": "Indahnya saat berdoa, kala kita sujud,\nDi kaki Tuhan Yesus Juru selamat;\nDengan iman kan trima perlindungan Tuhan,\nKini jiwa tentramlah! Indah saat berdoa.\n\nSaat yang indah kala ku berdoa;\nKini jiwa tentramlah! Indah saat berdoa\n\nIndahnya saat berdoa, kala Tuhan dekat,\nDengan kasih sayangNya, dengar suaraNya;\nKala Tuhan bersabda, \"Srahkanlah bebanmu\".\nDi kaki Tuhan Yesus jiwaku tentramlah.\n\nSaat yang indah kala ku berdoa;\nKini jiwa tentramlah! Indah saat berdoa\n\nIndahnya saat berdoa, kala susah datang,\nCritakan pada Yesus yang Maha kasih,\nDia akan merasakan dan angkat bebanmu;\nKini jiwa tentramlah! Indah saat berdoa.\n\nSaat yang indah kala ku berdoa;\nKini jiwa tentramlah! Indah saat berdoa\n\nIndahnya saat berdoa, percaya padaNya,\nJanji berkatNya pasti kita terima;\nDengan iman yang teguh sgala beban sirna;\nKini jiwa tentramlah! Indah saat berdoa.\n\nSaat yang indah kala ku berdoa;\nKini jiwa tentramlah! Indah saat berdoa",
       "midiPath": "assets/midi/412_Indahnya Saat Berdoa.mid",
-      "pdfPath": "assets/pdf/412_Indahnya Saat Berdoa.pdf"
+      "pdfPath": "assets/pdf/412_Indahnya Saat Berdoa.pdf",
+      "chordRef": {
+        "songId": "hymn-412",
+        "path": "assets/chord/412_Indahnya Saat Berdoa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1584,
+        "sha256": "fdaa56884f689381b3223e4b5167c98259c4a444ef8d20e2d153ba233a4e477f"
+      }
     },
     {
       "id": "hymn-413",
@@ -6087,7 +7081,14 @@
       ],
       "lyrics": "\"Kau sanggupkah?\" tanya Yesus, \"Untuk minum cawanKu?\"\n\"Sungguh, kami sanggup Tuhan, sampai mati ikutMu\"\n\nYa, kami sanggup, kami milikMu\nBentuklah kami sepertiMu\nBiarlah trang Tuhan slalu menuntun\nAgar setia ikuti jejakMu\n\n\"Kau sanggupkah?\" bisik Yesus, \"Setia sepanjang masa?\"\nDengan pastiku menjawab, \" Ku tak akan berubah\"\n\nYa, kami sanggup, kami milikMu\nBentuklah kami sepertiMu\nBiarlah trang Tuhan slalu menuntun\nAgar setia ikuti jejakMu",
       "midiPath": "assets/midi/416_\"Kau Sanggupkah?\" Tanya Yesus.mid",
-      "pdfPath": "assets/pdf/416_\"Kau Sanggupkah?\" Tanya Yesus.pdf"
+      "pdfPath": "assets/pdf/416_\"Kau Sanggupkah?\" Tanya Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-416",
+        "path": "assets/chord/416_Kau Sanggupkah Tanya Yesus_.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2061,
+        "sha256": "836b383535c787640ee671393d91290d8ac9b002f36e5a5882dec8ea3321b119"
+      }
     },
     {
       "id": "hymn-417",
@@ -6175,7 +7176,14 @@
       ],
       "lyrics": "Hanya dari sebuah percikan api kecil\nBeri kehangatan kepada sekitarnya\nItulah kasih Tuhan; bila kau rasakannya,\nKaukan brikan kasih Tuhan pada semua orang\n\nIndahnya musim semi, semua pohon bertunas\nBurung pun berkicau, bunga bunga merekah,\nItulah kasih Tuhan; bila kau rasakannya,\nKaukan nyanyi dan critakan tentang kasih Tuhan\n\nKu harap kau, teman ikut bersuka cita\nSandar pada Tuhan di manapun berada\nKu akan beritakan; ku ingin dunia tahu;\nKasih Tuhan telah datang untuk kau dan aku",
       "midiPath": "assets/midi/422_Beritakan KasihNya.mid",
-      "pdfPath": "assets/pdf/422_Beritakan KasihNya.pdf"
+      "pdfPath": "assets/pdf/422_Beritakan KasihNya.pdf",
+      "chordRef": {
+        "songId": "hymn-422",
+        "path": "assets/chord/422_Beritakan KasihNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1398,
+        "sha256": "4265e45a09029a5080b77c4a29a070bdb083a63319fccb14a668286e1624fa9a"
+      }
     },
     {
       "id": "hymn-423",
@@ -6320,7 +7328,14 @@
       ],
       "lyrics": "Ada pengertian yang dalam saat bersatu dalam Roh,\nBerkumpul dalam namaNya, Inilah janji Tuhan.\nAda kasih dalam Yesus, ada manna bagi kita,\nBerkumpul dalam namaNya Inilah janji Tuhan.\n\nBerkumpul dalam kasihNya, kita saling memahami\nBahwa saudara seiman satu di dalam Tuhan.\nTrima kasih Tuhan Yesus, atas kasih yang Kau bri kan,\nKau telah menuntun kami, Terima kasih",
       "midiPath": "assets/midi/432_Pengertian Yang Mendalam.mid",
-      "pdfPath": "assets/pdf/432_Pengertian Yang Mendalam.pdf"
+      "pdfPath": "assets/pdf/432_Pengertian Yang Mendalam.pdf",
+      "chordRef": {
+        "songId": "hymn-432",
+        "path": "assets/chord/432_Pengertian Yang Mendalam.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1579,
+        "sha256": "f06fabe179b6f4de5324a997d5269d629a3c89f7a33fcb1f40487c9bee713432"
+      }
     },
     {
       "id": "hymn-433",
@@ -6335,7 +7350,14 @@
       ],
       "lyrics": "Jauh di dalam jiwaku saat ini mengalun melodi nan syahdu;\nKidung surga yang memberi ketenangan tak henti penuhi jiwaku.\n\nDamai nan ajaib, datang dari Bapa surgawi;\nTinggallah dalam jiwaku slamanya, dalam glombang lautan kasih.\n\nSungguh indah harta dalam damai ini, terkubur di lubuk jiwaku;\nTiada kekuatan yang dapat membawanya walau tahun terus berlalu.\n\nDamai nan ajaib, datang dari Bapa surgawi;\nTinggallah dalam jiwaku slamanya, dalam glombang lautan kasih.\n\nKu beristirahat dalam damai ajaib, dalam tuntunan Tuhan Yesus;\nSiang dan malam ku terlindung dari bahya, muliaNya penuhi jiwaku.\n\nDamai nan ajaib, datang dari Bapa surgawi;\nTinggallah dalam jiwaku slamanya, dalam glombang lautan kasih.\n\nKu kan bertemu dengan pencipta damai kala ku masuk kota damai;\nNyanyian umat tebusan kan berkumandang di dalam Kerajaan Surga.\n\nDamai nan ajaib, datang dari Bapa surgawi;\nTinggallah dalam jiwaku slamanya, dalam glombang lautan kasih.",
       "midiPath": "assets/midi/433_Damai Nan Ajaib.mid",
-      "pdfPath": "assets/pdf/433_Damai Nan Ajaib.pdf"
+      "pdfPath": "assets/pdf/433_Damai Nan Ajaib.pdf",
+      "chordRef": {
+        "songId": "hymn-433",
+        "path": "assets/chord/433_Damai Nan Ajaib.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1761,
+        "sha256": "ceca65512acf6b5a9d45c62d74e64867ea67f64f2c5eb59cface512be9723cc7"
+      }
     },
     {
       "id": "hymn-434",
@@ -6350,7 +7372,14 @@
       ],
       "lyrics": "Ku punya rumah yang tlah tersedia, di suatu negri yang mulia;\nKu rindu tinggal dekat Tuhanku di suatu negri yang mulia.\n\nDi suatu negri yang mulia, ku kan berkumpul bersama\nMalak yang bersuka cita; Di suatu negri yang mulia\nBersama Tuhan Rajaku, di suatu negri yang mulia.\n\nKu dalam perjalanan ke sana, ke suatu negri yang mulia;\nDi sana ku kan memuji Tuhan, di suatu negri yang mulia.\n\nDi suatu negri yang mulia, ku kan berkumpul bersama\nMalak yang bersuka cita; Di suatu negri yang mulia\nBersama Tuhan Rajaku, di suatu negri yang mulia.\n\nSungguh bahagia jumpa Tuhanku di suatu negri yang mulia;\nSlamanya bersama umat Tuhan, di suatu negri yang mulia.\n\nDi suatu negri yang mulia, ku kan berkumpul bersama\nMalak yang bersuka cita; Di suatu negri yang mulia\nBersama Tuhan Rajaku, di suatu negri yang mulia.\n\nKu kan bersorak dengan umatNya di suatu negri yang mulia;\nHosana bagi Kristus Sang Raja, di suatu negri yang mulia.\n\nDi suatu negri yang mulia, ku kan berkumpul bersama\nMalak yang bersuka cita; Di suatu negri yang mulia\nBersama Tuhan Rajaku, di suatu negri yang mulia.",
       "midiPath": "assets/midi/434_Di Suatu Negeri Yang Mulia.mid",
-      "pdfPath": "assets/pdf/434_Di Suatu Negeri Yang Mulia.pdf"
+      "pdfPath": "assets/pdf/434_Di Suatu Negeri Yang Mulia.pdf",
+      "chordRef": {
+        "songId": "hymn-434",
+        "path": "assets/chord/434_Di Suatu Negeri Yang Mulia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1707,
+        "sha256": "2e5cbed5f21adc8fc80cb12d01dbd079ff06e4c56f12365e2cea4a8520126ee2"
+      }
     },
     {
       "id": "hymn-435",
@@ -6362,7 +7391,14 @@
       ],
       "lyrics": "Ku kan slalu puji kasih karuniaNya.\nKarna rahmatNya tebus dosaku;\nKu tak tahu mengapa Tuhan cintaku,\nDia tahu semua kebutuhanku.\nKu akan slalu memandang ke Kalvari.\nPada Yesus yang mati untukku;\nSungguh heran rahmatNya bagi jiwaku.\nDia mengampuni semua dosaku.",
       "midiPath": "assets/midi/435_Dia Mengampuni Semua Dosaku.mid",
-      "pdfPath": "assets/pdf/435_Dia Mengampuni Semua Dosaku.pdf"
+      "pdfPath": "assets/pdf/435_Dia Mengampuni Semua Dosaku.pdf",
+      "chordRef": {
+        "songId": "hymn-435",
+        "path": "assets/chord/435_Dia Mengampuni Semua Dosaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2225,
+        "sha256": "38577d902e69bdcd92f94512867e50b36f1c981be045cdf7383133f9b4c64873"
+      }
     },
     {
       "id": "hymn-436",
@@ -6481,7 +7517,14 @@
       ],
       "lyrics": "Iman umat umat kudus! Tetap hidup walau bahya,\nSungguh girang hati kita kala dengar Firman mulia!\nIman umatMu, imanku! Ku kan setia selamanya.\n\nIman umat umat kudus! Kan menangkan sgala bangsa,\nKebenaran dari Tuhan bebaskan sluruh manusia;\nIman umatMu, imanku! Ku kan setia selamanya.\n\nIman umat umat kudus! kasihi kawan dan lawan,\nTiap ucapan dan perbuatan menyatakan kasih Allah;\nIman umatMu, imanku! Ku kan setia selamanya.",
       "midiPath": "assets/midi/443_Iman UmatUmat Kudus.mid",
-      "pdfPath": "assets/pdf/443_Iman UmatUmat Kudus.pdf"
+      "pdfPath": "assets/pdf/443_Iman UmatUmat Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-443",
+        "path": "assets/chord/443_Iman Umat-Umat Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1371,
+        "sha256": "f8393287f00b09dc84b09b68247286961a8ff71c6d7ac9e3938c32f25f18df08"
+      }
     },
     {
       "id": "hymn-444",
@@ -6584,7 +7627,14 @@
       ],
       "lyrics": "Srukanlah perang! Musuh tlah dekat, angkatlah panji tuk Tuhan\nSiapkan senjata, berdiri teguh, bersandarlah pada FirmanNya\n\nLaskar Kristus, bangkit dan bersiaplah!\nJunjung panji, kalahkan dunia\nMaju terus, bersorak Hosana,\nKristus panglima perang kita\n\nTeruslah maju, kalahkan musuh, sandar Allah pasti menang\nPrisai dan panji bersinar terang, berperang demi kebenaran\n\nLaskar Kristus, bangkit dan bersiaplah!\nJunjung panji, kalahkan dunia\nMaju terus, bersorak Hosana,\nKristus panglima perang kita\n\nAllah semesta, dengarlah kami! Tolonglah dengan nugrahMu\nKala prang usai dan dimenangkan, kami trima mahkota mulia\n\nLaskar Kristus, bangkit dan bersiaplah!\nJunjung panji, kalahkan dunia\nMaju terus, bersorak Hosana,\nKristus panglima perang kita",
       "midiPath": "assets/midi/450_Serukanlah Perang.mid",
-      "pdfPath": "assets/pdf/450_Serukanlah Perang.pdf"
+      "pdfPath": "assets/pdf/450_Serukanlah Perang.pdf",
+      "chordRef": {
+        "songId": "hymn-450",
+        "path": "assets/chord/450_Serukanlah Perang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1625,
+        "sha256": "4b69be42249adfd8c1f92bd0f61beaef69b3e8c67ca4f65c7c44c268685d8540"
+      }
     },
     {
       "id": "hymn-451",
@@ -6612,7 +7662,14 @@
       ],
       "lyrics": "Jadi visiku, Raja hatiku,\nTiada yang ku rindu slain Engkau\nKau yang utama di hatiku,\nSiang maupun malam Kaulah plitaku\n\nJadilah hikmat tuk Ucapanku;\nKu mau slalu bersamaMu, Tuhan\nKaulah Bapaku, ku anakMu;\nKau di dalamku, ku bersamaMu\n\nKu tak hiraukan kesnangan dunia;\nKaulah harapan ku selamanya\nHanyalah Engkau di hatiku,\nRaja di surga, Kaulah milikku\n\nRaja surgawi kemenanganku;\nBiar ku gapai suka cita surga\nApapun yang akan terjadi,\nRaja hatiku tetap visiku",
       "midiPath": "assets/midi/452_Jadilah Visiku.mid",
-      "pdfPath": "assets/pdf/452_Jadilah Visiku.pdf"
+      "pdfPath": "assets/pdf/452_Jadilah Visiku.pdf",
+      "chordRef": {
+        "songId": "hymn-452",
+        "path": "assets/chord/452_Jadilah Visiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1185,
+        "sha256": "8733159ee4879b51b117c7ea603d51e13ee2aaf0fa978ff14233155bc3113387"
+      }
     },
     {
       "id": "hymn-453",
@@ -6642,7 +7699,14 @@
       ],
       "lyrics": "Oh datanglah Imanuel, bebaskan kaum Israel,\nYang meratap dalam sepi, sampai Mesias datanglah.\n\nGirang! girang! Imanuel\nDatang PadaMu, Israel!\n\nOh datanglah Musim Semi, jiwa kami menantiMu;\nKabut malam dihalauNya, kuasa maut pun sirnalah.\n\nGirang! girang! Imanuel\nDatang PadaMu, Israel!\n\nOh datanglah Hikmat Allah, aturlah alam semesta;\nTunjukkan jalan yang benar dan kami turut jalanNya.\n\nGirang! girang! Imanuel\nDatang PadaMu, Israel!\n\nOh datanglah Sang Penebus, satukan hati manusia;\nHapus kesedihan kami, jadi Raja Damai kami.\n\nGirang! girang! Imanuel\nDatang PadaMu, Israel!",
       "midiPath": "assets/midi/454_Oh Datanglah, Imanuel.mid",
-      "pdfPath": "assets/pdf/454_Oh Datanglah, Imanuel.pdf"
+      "pdfPath": "assets/pdf/454_Oh Datanglah, Imanuel.pdf",
+      "chordRef": {
+        "songId": "hymn-454",
+        "path": "assets/chord/454_Oh Datanglah, Imanuel.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1346,
+        "sha256": "2b7056cf07eddf37bc9d5ce4982cdb1ee44a10b533fbcdc1d65df2ed433d51b5"
+      }
     },
     {
       "id": "hymn-455",
@@ -6812,7 +7876,14 @@
       ],
       "lyrics": "Tiap hariku dibriNya kekuatan, tuk hadapi sgala cobaan;\nPercaya Tuhan kan mencukupi, ku takkan kuatir atau takut.\nKemurahan Tuhan tiada batas, beriku sgala yang terbaik\nWalau suka duka ku alami, ku slalu dalam damai.\n\nTiap hari Tuhan slalu dekatku, beri berkat baru tiap waktu;\nMenghibur dan menanggung susahku, Dialah Penasehat Agung.\nPliharaku bagai buah hatiNya, Dia bertekad pada diriNya;\nBriku cukup kekuatan tiap hari, ini janji bagiku.\n\nTolongku dalam tiap pencobaan, agarku percaya janjimu;\nAgarku selalu kan beriman dan berpaut pada FirmanMu.\nTuhan, tolong saatku sengsara, bri kekuatan dari tanganMu;\nHari lepas hari, tiap waktu, sampai tiba di surga.",
       "midiPath": "assets/midi/466_Tiap Hari, Tiap Waktu.mid",
-      "pdfPath": "assets/pdf/466_Tiap Hari, Tiap Waktu.pdf"
+      "pdfPath": "assets/pdf/466_Tiap Hari, Tiap Waktu.pdf",
+      "chordRef": {
+        "songId": "hymn-466",
+        "path": "assets/chord/466_Tiap Hari, Tiap Waktu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1210,
+        "sha256": "14a210602217263d92dbddb28a9123772befaf0cdc13bd9c25c9838ff18c3031"
+      }
     },
     {
       "id": "hymn-467",
@@ -6827,7 +7898,14 @@
       ],
       "lyrics": "Hai! jiwa yang berbeban brat, trimalah nugrahNya,\nDia pasti bri kelegaan, sandarlah FirmanNya.\n\nPercayalah pada Yesus, skarang percaya;\nDia pasti slamatkanmu, Dia slamatkanmu.\n\nYesus curahkan darahNya, limpahkan berkatNya;\nMasuk dalam darah Yesus, jadi sputih salju.\n\nPercayalah pada Yesus, skarang percaya;\nDia pasti slamatkanmu, Dia slamatkanmu.\n\nYesuslah jalan yang benar, pimpinmu ke surga;\nPercaya padaNya skarang, kau kan trima berkat.\n\nPercayalah pada Yesus, skarang percaya;\nDia pasti slamatkanmu, Dia slamatkanmu.\n\nMari ikut bersekutu dalam kekudusan,\nTinggal dalam tanah surga, sejahtra slamanya.\n\nPercayalah pada Yesus, skarang percaya;\nDia pasti slamatkanmu, Dia slamatkanmu.",
       "midiPath": "assets/midi/467_Percayalah Pada Yesus.mid",
-      "pdfPath": "assets/pdf/467_Percayalah Pada Yesus.pdf"
+      "pdfPath": "assets/pdf/467_Percayalah Pada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-467",
+        "path": "assets/chord/467_Percayalah Pada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1616,
+        "sha256": "72897f907cae6637d1636c727d4f12af7129e2a1b16d2d30cf401c489ed5fc1e"
+      }
     },
     {
       "id": "hymn-468",
@@ -6841,7 +7919,14 @@
       ],
       "lyrics": "Dulu mati dalam dosa , tiada trang yang tampak,\nFirman Tuhan bawa terang Kristus di dalamku.\n\nKristus tlah hidup dalam hatiku;\nKeslamatan yang heran, Kristus di dalamku.\n\nBagaikan surya sinari bunga yang berseri,\nHidup, trang dan kasih dari Kristus di dalamku.\n\nKristus tlah hidup dalam hatiku;\nKeslamatan yang heran, Kristus di dalamku.\n\nHatiku pnuh kerinduan tuk jadi sperti Dia,\nSuatu hal yang indah bahwa Kristus di dalamku.\n\nKristus tlah hidup dalam hatiku;\nKeslamatan yang heran, Kristus di dalamku.",
       "midiPath": "assets/midi/468_Kristus Hidup di Dalam Ku.mid",
-      "pdfPath": "assets/pdf/468_Kristus Hidup di Dalam Ku.pdf"
+      "pdfPath": "assets/pdf/468_Kristus Hidup di Dalam Ku.pdf",
+      "chordRef": {
+        "songId": "hymn-468",
+        "path": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1522,
+        "sha256": "ec7f9eb7b59037398025af659ff9ba82ec80d4e3f2aa8f589085e4275dc1b6d2"
+      }
     },
     {
       "id": "hymn-469",
@@ -7055,7 +8140,14 @@
       ],
       "lyrics": "Hanya satu rencana keslamatan, dan kita bagian dalamnya\nBagi kita tlah dibrikan kasih ini tuk disampaikan pada dunia\nRencana tuk selamatkan dunia adalah kehendak Tuhan\nKeslamatan melalui salib Kristus haruslah kita britakan\n\nRencana Tuhan sekarang ada di atas pundakmu\nTiada jalan lain agar dunia tahu selain sebarkan InjilNya\n\nBapa telah mengorbankan PutraNya, Putra TunggalNya terkasih\nDia utus Yesus tuk mati bagi dunia, sungguh tak terhingga kasihNya\nDalam Yesus nyatalah rencanaNya, Dia korbankan diri di salib\nDarahNya hapuskan dosa manusia, yang bersalah pun bebaslah\n\nRencana Tuhan sekarang ada di atas pundakmu\nTiada jalan lain agar dunia tahu selain sebarkan InjilNya\n\nRencana Tuhan telah tergenapi; Dia harap engkau kabarkan\nAgar dunia dengar kabar baik ini; semua terletak di pundakmu\nHanya satu rencana bagi dunia, haruslah kita sampaikan\nDan kita britakan pada sesama sampai sluruh penjuru dunia\n\nRencana Tuhan sekarang ada di atas pundakmu\nTiada jalan lain agar dunia tahu selain sebarkan InjilNya",
       "midiPath": "assets/midi/483_Hanya Satu Rencana.mid",
-      "pdfPath": "assets/pdf/483_Hanya Satu Rencana.pdf"
+      "pdfPath": "assets/pdf/483_Hanya Satu Rencana.pdf",
+      "chordRef": {
+        "songId": "hymn-483",
+        "path": "assets/chord/483_Hanya Satu Rencana.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2205,
+        "sha256": "e493ca630d5fe5dc6ec8345a2f514f16d2656e9f815403d713c3d44baa911e40"
+      }
     },
     {
       "id": "hymn-484",
@@ -7187,7 +8279,14 @@
       ],
       "lyrics": "Ku temukan damai yang belum ku kenal, yang tak dapat dibrikan dunia\nSbab tlah ku serahkan tubuh dan jiwaku pada Almasihku yang mulia\n\nAllahku ajaib, agung dan mulia, malaikat di surga sujud menyembah\nAku menyembah Juruslamatku, Yesus Allahku yang ajaib\n\nKu ingin hidupku diatur olehMu, senantiasa turut padaMu\nBiarlah kehendakMu saja yang terjadi, Engkau Almasihku yang mulia\n\nAllahku ajaib, agung dan mulia, malaikat di surga sujud menyembah\nAku menyembah Juruslamatku, Yesus Allahku yang ajaib\n\nSmua talentaku sembahkan di kakiMu, anugrahMu berkat bagiku\nEngkau sandaranku, ku serahkan semua pada Almasihku yang mulia\n\nAllahku ajaib, agung dan mulia, malaikat di surga sujud menyembah\nAku menyembah Juruslamatku, Yesus Allahku yang ajaib\n\nKemuliaanMu lebih dari dunia, FirmanMu membri kehidupan\nEngkau sungguh besar, terpujilah Tuhan, Engkau Almasihku yang mulia\n\nAllahku ajaib, agung dan mulia, malaikat di surga sujud menyembah\nAku menyembah Juruslamatku, Yesus Allahku yang ajaib",
       "midiPath": "assets/midi/492_Allahku Yang Ajaib.mid",
-      "pdfPath": "assets/pdf/492_Allahku Yang Ajaib.pdf"
+      "pdfPath": "assets/pdf/492_Allahku Yang Ajaib.pdf",
+      "chordRef": {
+        "songId": "hymn-492",
+        "path": "assets/chord/492_Allahku Yang Ajaib.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1584,
+        "sha256": "de24a98d06c99beb89639e435e8a4456aaae04ad14cdcd0ec5ab88bf985d79e7"
+      }
     },
     {
       "id": "hymn-493",
@@ -7536,7 +8635,14 @@
       ],
       "lyrics": "Ku bertekad akan menjauhi kesenangan dunia,\nSemua yang indah, semua yang mulia jadi harapanku.\n\nKudatang padaNya dengan suka cita\nYesus Maha mulia, ku datang skarang\n\nKu bertekad datang pada Yesus, tinggalkan dosaku,\nDialah jalan dan kebenaran, Dia Firman kehidupan.\n\nKudatang padaNya dengan suka cita\nYesus Maha mulia, ku datang skarang\n\nKu bertekad mengikuti Yesus, setia setiap saat,\nIngat dan lakukanlah FirmanNya, Dialah jalan hidup.\n\nKudatang padaNya dengan suka cita\nYesus Maha mulia, ku datang skarang\n\nKu bertekad untuk masuk surga, buang jalan dosa,\nWalaupun iblis merintangiku, kukan terus maju.\n\nKudatang padaNya dengan suka cita\nYesus Maha mulia, ku datang skarang\n\nKu bertekad; Hai teman ikutlah, jangan tunda lagi,\nFirmanNya bimbing, RohNya memimpin dalam jalan surga.\n\nKudatang padaNya dengan suka cita\nYesus Maha mulia, ku datang skarang",
       "midiPath": "assets/midi/516_Aku Bertekad.mid",
-      "pdfPath": "assets/pdf/516_Aku Bertekad.pdf"
+      "pdfPath": "assets/pdf/516_Aku Bertekad.pdf",
+      "chordRef": {
+        "songId": "hymn-516",
+        "path": "assets/chord/516_Aku Bertekad.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1390,
+        "sha256": "94726f2c3ebc4dedc78785cd4e86302e94ba7a9236a64524c63a9bff4aa445ce"
+      }
     },
     {
       "id": "hymn-517",
@@ -7592,7 +8698,14 @@
       ],
       "lyrics": "Walau doamu trasa sia sia\nDan dunia jatuhkan imanmu\nHatimu hancur dan remuk redam,\nKau kan menuai dengan girang\n\nYang menabur dengan air mata\nuntuk Allah Bapa\nwalau doamu trasa sia sia,\nkau kan menuai dengan girang!\n\nWalau putus asa meliputi\nTetapkah kau berdoa?\nApakah kau telah mencariNya?\nKau kan menuai dengan girang\n\nYang menabur dengan air mata\nuntuk Allah Bapa\nwalau doamu trasa sia sia,\nkau kan menuai dengan girang!\n\nAdakah kau ragu saat berdoa?\nTerganggukah kau oleh dunia?\nPandanglah ke atas, Tuhan tak jauh\nKau kan menuai dengan girang\n\nYang menabur dengan air mata\nuntuk Allah Bapa\nwalau doamu trasa sia sia,\nkau kan menuai dengan girang!",
       "midiPath": "assets/midi/520_Menabur Dengan Air Mata.mid",
-      "pdfPath": "assets/pdf/520_Menabur Dengan Air Mata.pdf"
+      "pdfPath": "assets/pdf/520_Menabur Dengan Air Mata.pdf",
+      "chordRef": {
+        "songId": "hymn-520",
+        "path": "assets/chord/520_Menabur Dengan Air Mata.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1955,
+        "sha256": "3e85106f1390513a597f02abdb00816367021151966d09db80fd5814488b58a0"
+      }
     },
     {
       "id": "hymn-521",
@@ -7604,7 +8717,14 @@
       ],
       "lyrics": "Di Padang rumput Tuhan mengalir air sejuk\nKu berjalan dengan Dia di sana\nSemua domba berkecukupan di padangNya ku dombaNya\nAir sejuk di padang\nAku berjalan dengan Tuhan\nGlap malam berliku\nMelangkahku denganNya.",
       "midiPath": "assets/midi/521_Akulah DombaNya.mid",
-      "pdfPath": "assets/pdf/521_Akulah DombaNya.pdf"
+      "pdfPath": "assets/pdf/521_Akulah DombaNya.pdf",
+      "chordRef": {
+        "songId": "hymn-521",
+        "path": "assets/chord/521_Akulah DombaNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1193,
+        "sha256": "111c165db36fed0a68f2e8e16e659a8e0bf7892c10beed558873bb039d699701"
+      }
     },
     {
       "id": "hymn-522",
@@ -7700,7 +8820,14 @@
       ],
       "lyrics": "Ku lihat semua ciptaanNya, ku rasakan kebesaranNya\nDia atur daratan dan lautan, Apa artiNya?\nKu mengenang kebebasanku yang Dia bri dengan kematianNya\nDia datang bebaskan umatNya, Apa artinya?\nSampai ku berjumpa denganNya, dan rasakan ajaib nugrahNya\nKu tahu bahwa Dia bukanlah Tuhan yang tak perduli, yang jauh dariku dan\nskarang Dia jalan di sisiku, menjagaku agar tak sesat,\nbantuku temukan jalanNya, Dialah segalanya",
       "midiPath": "assets/midi/528_Dia Segalanya Bagiku.mid",
-      "pdfPath": "assets/pdf/528_Dia Segalanya Bagiku.pdf"
+      "pdfPath": "assets/pdf/528_Dia Segalanya Bagiku.pdf",
+      "chordRef": {
+        "songId": "hymn-528",
+        "path": "assets/chord/528_Dia Segalanya Bagiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3269,
+        "sha256": "ab44d55955a463fbb0097873f8f6359c9612f9701ecb24ef6858175eca04dbd7"
+      }
     },
     {
       "id": "hymn-529",

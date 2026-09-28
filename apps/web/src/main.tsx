@@ -22,7 +22,11 @@ installGlobalDiagnostics();
 installDirectManipulationEnhancements();
 
 if (typeof window !== "undefined") {
-  window.addEventListener("vite:preloadError", () => {
+  window.addEventListener("vite:preloadError", (event) => {
+    if (!navigator.onLine) {
+      event.preventDefault();
+      return;
+    }
     const reloaded = window.sessionStorage.getItem("gys_chunk_reload");
     if (!reloaded) {
       window.sessionStorage.setItem("gys_chunk_reload", "1");
@@ -63,7 +67,12 @@ installRouteSectionDeepLinks();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   let refreshing = false;
+  let controlled = Boolean(navigator.serviceWorker.controller);
   const reloadForUpdate = () => {
+    if (!controlled) {
+      controlled = Boolean(navigator.serviceWorker.controller);
+      return;
+    }
     if (refreshing) return;
     refreshing = true;
     window.location.reload();

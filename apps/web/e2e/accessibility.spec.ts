@@ -256,6 +256,14 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("heading", { name: "MIDI player", exact: true }),
     ).toBeVisible();
+    const chordDisclosure = page.locator(
+      '.kidung-settings-section[aria-labelledby="kidung-chord-heading"] details',
+    );
+    await expect(chordDisclosure).not.toHaveAttribute("open", "");
+    await expect(
+      page.getByRole("group", { name: "Chord letter theme", exact: true }),
+    ).toBeHidden();
+    await chordDisclosure.locator("summary").click();
     await expect(
       page.getByRole("group", { name: "Chord letter theme", exact: true }),
     ).toBeVisible();
@@ -290,6 +298,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("slider", { name: /和弦背景不透明度/ }),
     ).toBeVisible();
+    await expectNoAxeViolations(page);
     await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(
       0,
     );
@@ -660,6 +669,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expectNoAxeViolations(page);
 
     await page.goto("/GYSApp-Tauri/lainnya");
+    await page.locator('[data-setting="appearance"] > summary').click();
     await page.getByRole("button", { name: "Tampilan & keterbacaan" }).click();
     await expect(
       page.getByRole("dialog", { name: "Tampilan & keterbacaan" }),

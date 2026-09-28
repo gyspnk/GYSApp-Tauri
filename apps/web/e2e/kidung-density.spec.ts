@@ -32,6 +32,95 @@ test("phone catalog moves collection filtering behind one compact trigger", asyn
   await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
 });
 
+test("catalog collection choices use readable names for installed books", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await openCatalog(page);
+
+  const filter = page.locator(".kidung-desktop-filter .control-select");
+  const trigger = filter.locator(".control-select-trigger");
+  await trigger.click();
+  await expect(filter.locator(".control-select-option")).toHaveText([
+    "Semua koleksi",
+    "Rohani",
+  ]);
+});
+
+test("catalog lists only verified chord and MIDI metadata below each title", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
+  await expect(page.locator(".pujian-item")).toHaveCount(533);
+
+  const firstTitle = page.locator(".pujian-title").first();
+  await expect(firstTitle.locator(".pujian-title-label")).toHaveText(
+    "Pujilah Allah Yang Maha Esa",
+  );
+  await expect(firstTitle.locator(".pujian-metadata")).toHaveText(
+    "Chord · MIDI",
+  );
+  await expect(
+    page.getByRole("button", {
+      name: "Pujilah Allah Yang Maha Esa",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator(".pujian-item")
+        .first()
+        .evaluate((row) => row.getBoundingClientRect().height),
+    )
+    .toBeLessThanOrEqual(72);
+  await expect(page.locator(".chord-indicator")).toHaveCount(0);
+
+  await page.getByRole("textbox", { name: "Cari lagu" }).fill("416");
+  await expect(
+    page.locator('.pujian-item[data-id="hymn-416"] .pujian-metadata'),
+  ).toContainText("MIDI");
+});
+
+test("catalog preserves and searches lettered hymn variants", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
+
+  const search = page.getByRole("textbox", { name: "Cari lagu" });
+  await search.fill("051A");
+  await expect(page.locator(".pujian-item")).toHaveCount(1);
+  await expect(page.locator('.pujian-item[data-id="hymn-051A"]')).toBeVisible();
+  await expect(
+    page.locator('.pujian-item[data-id="hymn-051A"] .pujian-nomor'),
+  ).toHaveText("051A");
+
+  await search.fill("051B");
+  await expect(page.locator(".pujian-item")).toHaveCount(1);
+  await expect(page.locator('.pujian-item[data-id="hymn-051B"]')).toBeVisible();
+  await expect(
+    page.locator('.pujian-item[data-id="hymn-051B"] .pujian-nomor'),
+  ).toHaveText("051B");
+});
+
+test("catalog matches upstream lyric substrings and partial song numbers", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
+
+  const search = page.getByRole("textbox", { name: "Cari lagu" });
+  await search.fill("mon");
+  await expect(page.locator(".pujian-item")).toHaveCount(2);
+  await expect(page.locator('.pujian-item[data-id="hymn-300"]')).toBeVisible();
+  await expect(page.locator('.pujian-item[data-id="hymn-438"]')).toBeVisible();
+
+  await search.fill("02");
+  await expect(page.locator('.pujian-item[data-id="hymn-002"]')).toBeVisible();
+});
+
 test("playlist rows expose one contextual menu instead of permanent row actions", async ({
   page,
 }) => {
@@ -62,12 +151,50 @@ test("text reader removes duplicate song navigation and PDF action from persiste
   ).toHaveCount(0);
 });
 
+test("text reader keeps only primary actions visible until More is opened", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openFirstHymn(page);
+
+  const toolbar = page.locator(".hymn-text-toolbar");
+  await expect(toolbar.locator(".hymn-segmented-toolbar")).toBeHidden();
+  await expect(toolbar.locator(".hymn-reader-settings-summary")).toBeHidden();
+  const actions = toolbar.locator(".detail-actions .hymn-action");
+  const actionCount = await actions.count();
+  expect(actionCount).toBeGreaterThanOrEqual(1);
+  expect(actionCount).toBeLessThanOrEqual(2);
+  if (actionCount > 1) {
+    const actionRows = await actions.evaluateAll((buttons) =>
+      buttons.map((button) => button.getBoundingClientRect().top),
+    );
+    expect(Math.abs(actionRows[0]! - actionRows[1]!)).toBeLessThanOrEqual(1);
+  }
+  const toolbarHeight = await toolbar.evaluate(
+    (element) => element.clientHeight,
+  );
+  expect(toolbarHeight).toBeLessThanOrEqual(54);
+
+  const more = toolbar.locator(".hymn-more-actions-summary");
+  await more.click();
+  const panel = toolbar.locator(".hymn-more-actions-panel");
+  await expect(panel).toBeVisible();
+  await expect(panel.locator(".hymn-segmented-toolbar")).toBeVisible();
+  const readerSettings = panel.locator(".hymn-reader-settings-summary");
+  await expect(readerSettings).toBeVisible();
+  await readerSettings.click();
+  await expect(
+    panel.locator(".hymn-reader-settings > .song-controls .reader-preferences"),
+  ).toBeVisible();
+});
+
 test("reader settings prioritize typography and collapse music controls", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
 
+  await page.locator(".hymn-more-actions-summary").click();
   const settings = page.locator(".hymn-reader-settings-summary");
   await expect(settings).toContainText("Aa");
   await settings.click();

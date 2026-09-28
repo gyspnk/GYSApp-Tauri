@@ -122,6 +122,57 @@ describe("Literature persistent + incremental catalog", () => {
     ]);
   });
 
+  it("adds newer offline snapshot items when the cached BFF catalog has none", async () => {
+    const saved = item({ id: "warta-lama" });
+    const bundledOnly = item({
+      id: "warta-baru",
+      title: "Warta di snapshot",
+      publishedAt: "2026-08-20T00:00:00.000Z",
+      updatedAt: "2026-08-20T00:00:00.000Z",
+    });
+    storage.set(
+      PERSIST_KEY,
+      JSON.stringify({ fetchedAt: new Date().toISOString(), items: [saved] }),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        fetchCalls.push(url);
+        const items = url.includes("/offline/literature.json")
+          ? [saved, bundledOnly]
+          : [saved];
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              source: "tjc.org",
+              generatedAt: new Date().toISOString(),
+              items,
+            }),
+            { status: 200 },
+          ),
+        );
+      }),
+    );
+
+    const { fetchLiteratureCatalog, subscribeLiterature } =
+      await import("./literature-catalog.js");
+    const updates: LiteratureItem[][] = [];
+    const unsubscribe = subscribeLiterature((items) => updates.push(items));
+
+    expect((await fetchLiteratureCatalog()).map((entry) => entry.id)).toEqual([
+      "warta-lama",
+    ]);
+    await until(() => {
+      expect(updates.at(-1)?.map((entry) => entry.id)).toEqual([
+        "warta-baru",
+        "warta-lama",
+      ]);
+    });
+    unsubscribe();
+    expect(fetchCalls).toContain("/offline/literature.json");
+  });
+
   it("keeps persisted covers when upstream metadata lacks them", async () => {
     const covered = item({
       id: "buku-cover",

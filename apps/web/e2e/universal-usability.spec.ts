@@ -85,22 +85,16 @@ test("phone shell keeps navigation labels readable and common actions finger siz
   await expectNoHorizontalOverflow(page);
 });
 
-test("More starts with account needs before technical asset management", async ({
+test("More exposes its setting categories before hidden technical details", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/lainnya");
 
-  const account = page.locator(".account-card");
-  const assets = page.locator(".distributed-assets-card");
-  await expect(account).toBeVisible();
-  await expect(assets).toBeVisible();
-
-  const accountBox = await account.boundingBox();
-  const assetsBox = await assets.boundingBox();
-  expect(accountBox).not.toBeNull();
-  expect(assetsBox).not.toBeNull();
-  expect(accountBox!.y).toBeLessThan(assetsBox!.y);
+  const rows = page.locator(".more-setting-section");
+  await expect(rows).toHaveCount(7);
+  await expect(rows.locator(":scope > summary").last()).toBeInViewport();
+  await expect(page.locator(".distributed-assets-card")).toBeHidden();
   await expectNoHorizontalOverflow(page);
 });
 

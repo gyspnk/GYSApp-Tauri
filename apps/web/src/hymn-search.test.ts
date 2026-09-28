@@ -61,6 +61,57 @@ describe("hymn search index", () => {
     ]);
   });
 
+  it("matches substrings inside a title without requiring a token prefix", () => {
+    const index = buildHymnSearchIndex([
+      ...entries,
+      {
+        ...entries[0]!,
+        id: "hymn-004",
+        number: 4,
+        title: "Harmoni Baru",
+        lyrics: "Nada indah tercipta.",
+      },
+    ]);
+    expect(searchHymns(index, "mon", "all").map((item) => item.id)).toEqual([
+      "hymn-004",
+    ]);
+  });
+
+  it("matches a partial query inside a zero-padded hymn number", () => {
+    const index = buildHymnSearchIndex([{ ...entries[1]!, id: "song-two" }]);
+    expect(searchHymns(index, "02", "all").map((item) => item.id)).toEqual([
+      "song-two",
+    ]);
+  });
+
+  it("keeps punctuation-normalized upstream keywords contiguous", () => {
+    const punctuation = {
+      ...entries[0]!,
+      id: "hymn-004",
+      number: 4,
+      title: "Pengharapan",
+      lyrics: "Anugerah, kasih Tuhan menyertai kami.",
+      verses: ["Anugerah, kasih Tuhan menyertai kami."],
+    };
+    const index = buildHymnSearchIndex([punctuation]);
+
+    expect(searchHymns(index, "anugerah,kasih", "all")).toEqual([punctuation]);
+  });
+
+  it("does not search catalog IDs or collection labels as song content", () => {
+    const metadataOnly = {
+      ...entries[1]!,
+      id: "pujian-secret-marker",
+      book: "pujian" as const,
+    };
+    const index = buildHymnSearchIndex([metadataOnly]);
+
+    expect(searchHymns(index, "secret", "all")).toEqual([]);
+    expect(searchHymns(index, "pujian", "all")).toEqual([]);
+    expect(searchHymns(index, "peng", "pujian")).toEqual([metadataOnly]);
+    expect(searchHymns(index, "peng", "rohani")).toEqual([]);
+  });
+
   it("normalizes accents and applies the collection filter", () => {
     const index: HymnSearchIndex[] = buildHymnSearchIndex([
       ...entries,
@@ -81,5 +132,28 @@ describe("hymn search index", () => {
     expect(
       searchHymns(index, "kasih", "pujian").map((item) => item.id),
     ).toEqual(["hymn-003"]);
+  });
+
+  it("keeps lettered hymn variants searchable by their canonical number", () => {
+    const variants = buildHymnSearchIndex([
+      {
+        ...entries[0]!,
+        id: "hymn-051A",
+        number: 51,
+        title: "Batu Zaman",
+      },
+      {
+        ...entries[0]!,
+        id: "hymn-051B",
+        number: 51,
+        title: "Batu Zaman",
+      },
+    ]);
+    expect(searchHymns(variants, "051A", "all").map((item) => item.id)).toEqual(
+      ["hymn-051A"],
+    );
+    expect(searchHymns(variants, "051B", "all").map((item) => item.id)).toEqual(
+      ["hymn-051B"],
+    );
   });
 });

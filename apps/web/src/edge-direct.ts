@@ -1,3 +1,6 @@
+import type TauriWebSocket from "@tauri-apps/plugin-websocket";
+import type { Message as TauriWebSocketMessage } from "@tauri-apps/plugin-websocket";
+
 type EdgeDirectRequest = {
   text: string;
   voice: string;
@@ -10,7 +13,8 @@ export type EdgeSocketMessage =
   | { type: "Text"; data: string }
   | { type: "Binary"; data: number[] }
   | { type: "Ping" | "Pong"; data: number[] }
-  | { type: "Close"; data: unknown };
+  | { type: "Close"; data: unknown }
+  | { type: "Error"; data: unknown };
 
 export interface EdgeSocket {
   addListener(listener: (message: EdgeSocketMessage) => void): () => void;
@@ -33,6 +37,79 @@ type EdgeDirectDependencies = {
   randomId?: () => string;
 };
 
+function edgeDiagnostic(
+  level: "info" | "warn" | "error",
+  scope: string,
+  message: unknown,
+): void {
+  if (typeof window === "undefined") return;
+  void import("./diagnostics.js").then(({ recordDiagnostic }) =>
+    recordDiagnostic(level, scope, message),
+  );
+}
+
+export class TauriEdgeSocketAdapter implements EdgeSocket {
+  private readonly listeners = new Set<(message: EdgeSocketMessage) => void>();
+  private readonly socket: Pick<
+    TauriWebSocket,
+    "addListener" | "send" | "disconnect"
+  >;
+
+  public constructor(
+    socket: Pick<TauriWebSocket, "addListener" | "send" | "disconnect">,
+  ) {
+    this.socket = socket;
+  }
+
+  public addListener(
+    listener: (message: EdgeSocketMessage) => void,
+  ): () => void {
+    this.listeners.add(listener);
+    const unlisten = this.socket.addListener((message) =>
+      this.onMessage(message),
+    );
+    return () => {
+      this.listeners.delete(listener);
+      unlisten();
+    };
+  }
+
+  public async send(message: string | number[]): Promise<void> {
+    try {
+      await this.socket.send(message);
+    } catch (error) {
+      this.emit({ type: "Error", data: error });
+      throw error;
+    }
+  }
+
+  public async disconnect(): Promise<void> {
+    try {
+      await this.socket.disconnect();
+    } catch (error) {
+      this.emit({ type: "Error", data: error });
+      throw error;
+    }
+  }
+
+  private onMessage(message: TauriWebSocketMessage): void {
+    switch (message.type) {
+      case "Text":
+      case "Binary":
+      case "Ping":
+      case "Pong":
+        this.emit(message);
+        return;
+      case "Close":
+        this.emit({ type: "Close", data: message.data });
+    }
+  }
+
+  private emit(message: EdgeSocketMessage): void {
+    for (const listener of this.listeners) listener(message);
+  }
+}
+
 const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 const SEC_MS_GEC_VERSION = "1-143.0.3650.75";
 const EDGE_WSS =
@@ -41,6 +118,21 @@ const WINDOWS_EPOCH_OFFSET_SECONDS = 11_644_473_600n;
 const FIVE_MINUTES_SECONDS = 300n;
 const HUNDRED_NS_PER_SECOND = 10_000_000n;
 const DEFAULT_TIMEOUT_MS = 25_000;
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function abortError(): Error {
   return new DOMException("Speech cancelled", "AbortError");
@@ -88,6 +180,11 @@ function upperHex(bytes: ArrayBuffer): string {
     .toUpperCase();
 }
 
+function edgeTimestamp(nowMs: number): string {
+  const date = new Date(nowMs);
+  return `${WEEKDAYS[date.getUTCDay()]} ${MONTHS[date.getUTCMonth()]} ${String(date.getUTCDate()).padStart(2, "0")} ${date.getUTCFullYear()} ${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}:${String(date.getUTCSeconds()).padStart(2, "0")} GMT+0000 (Coordinated Universal Time)`;
+}
+
 export async function generateSecMsGec(nowMs = Date.now()): Promise<string> {
   const unixSeconds = BigInt(Math.floor(nowMs / 1_000));
   let fileTimeSeconds = unixSeconds + WINDOWS_EPOCH_OFFSET_SECONDS;
@@ -131,13 +228,13 @@ export function buildEdgeSsml(
   const language = escapeXml(languageFromVoice(request.voice));
   const text = escapeXml(request.text);
   const ssml =
-    `<speak version='1.0' xml:lang='${language}'><voice name='${voice}'>` +
+    `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${language}'><voice name='${voice}'>` +
     `<prosody pitch='${signedPercent(request.pitch)}' rate='${signedPercent(request.rate)}' volume='${volumePercent(request.volume)}'>` +
     `${text}</prosody></voice></speak>`;
   return [
     `X-RequestId:${requestId}`,
     "Content-Type:application/ssml+xml",
-    `X-Timestamp:${timestamp}`,
+    `X-Timestamp:${timestamp}Z`,
     "Path:ssml",
     "",
     ssml,
@@ -179,7 +276,7 @@ async function defaultConnect(
 ): Promise<EdgeSocket> {
   const module = await import("@tauri-apps/plugin-websocket");
   const socket = await module.default.connect(url, config);
-  return socket as unknown as EdgeSocket;
+  return new TauriEdgeSocketAdapter(socket);
 }
 
 export function canUseNativeEdgeTransport(
@@ -200,34 +297,49 @@ export async function synthesizeEdgeDirect(
   signal?: AbortSignal,
 ): Promise<Blob> {
   if (signal?.aborted) throw abortError();
+  edgeDiagnostic("info", "tts.edge.capability", "Using direct Edge transport");
+  edgeDiagnostic("info", "tts.edge.provider", "Keyless Edge WebSocket");
   const connect = dependencies.connect ?? defaultConnect;
   const now = dependencies.now ?? Date.now;
   const randomId = dependencies.randomId ?? defaultRandomId;
   const requestId = normalizeRandomId(randomId());
   const connectionId = normalizeRandomId(randomId());
   const muid = normalizeRandomId(randomId()).toUpperCase();
-  const timestamp = new Date(now()).toString();
+  const timestamp = edgeTimestamp(now());
   const secMsGec = await generateSecMsGec(now());
+  if (signal?.aborted) throw abortError();
   const url = new URL(EDGE_WSS);
   url.searchParams.set("TrustedClientToken", TRUSTED_CLIENT_TOKEN);
   url.searchParams.set("Sec-MS-GEC", secMsGec);
   url.searchParams.set("Sec-MS-GEC-Version", SEC_MS_GEC_VERSION);
   url.searchParams.set("ConnectionId", connectionId);
 
-  const socket = await connect(url.toString(), {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br, zstd",
-      Pragma: "no-cache",
-      "Cache-Control": "no-cache",
-      Origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
-      Cookie: `MUID=${muid}`,
-    },
-    maxMessageSize: 16 * 1024 * 1024,
-    maxFrameSize: 16 * 1024 * 1024,
-  });
+  let socket: EdgeSocket;
+  try {
+    edgeDiagnostic("info", "tts.edge.connect", "Opening speech socket");
+    socket = await connect(url.toString(), {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        Pragma: "no-cache",
+        "Cache-Control": "no-cache",
+        Origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
+        Cookie: `MUID=${muid}`,
+      },
+      maxMessageSize: 16 * 1024 * 1024,
+      maxFrameSize: 16 * 1024 * 1024,
+    });
+  } catch (error) {
+    edgeDiagnostic("error", "tts.edge.connect", error);
+    throw error;
+  }
+  if (signal?.aborted) {
+    await socket.disconnect().catch(() => undefined);
+    throw abortError();
+  }
+  edgeDiagnostic("info", "tts.edge.handshake", "Speech socket accepted");
 
   return await new Promise<Blob>((resolve, reject) => {
     const chunks: Uint8Array[] = [];
@@ -247,10 +359,16 @@ export async function synthesizeEdgeDirect(
       removeListener();
       signal?.removeEventListener("abort", onAbort);
     };
-    const fail = (error: Error) => {
+    let stage = "receive";
+    const fail = (error: Error, failedStage = stage) => {
       if (settled) return;
       settled = true;
       cleanup();
+      edgeDiagnostic(
+        failedStage === "abort" ? "info" : "error",
+        `tts.edge.${failedStage}`,
+        error,
+      );
       void disconnect().finally(() => reject(error));
     };
     const finish = () => {
@@ -265,9 +383,16 @@ export async function synthesizeEdgeDirect(
         chunks.map((chunk) => chunk.slice().buffer as ArrayBuffer),
         { type: "audio/mpeg" },
       );
+      edgeDiagnostic(
+        "info",
+        "tts.edge.audio",
+        `Received ${blob.size} audio bytes`,
+      );
       void disconnect().finally(() => resolve(blob));
     };
-    const onAbort = () => fail(abortError());
+    const onAbort = () => {
+      fail(abortError(), "abort");
+    };
     const removeListener = socket.addListener((message) => {
       if (settled) return;
       if (message.type === "Binary") {
@@ -277,6 +402,14 @@ export async function synthesizeEdgeDirect(
       }
       if (message.type === "Text") {
         if (parsePath(message.data) === "turn.end") finish();
+        return;
+      }
+      if (message.type === "Error") {
+        const error =
+          message.data instanceof Error
+            ? message.data
+            : new Error("Edge speech socket failed");
+        fail(error);
         return;
       }
       if (message.type === "Close")
@@ -290,9 +423,15 @@ export async function synthesizeEdgeDirect(
 
     void (async () => {
       try {
+        stage = "config";
+        edgeDiagnostic("info", "tts.edge.config", "Sending speech config");
         await socket.send(buildEdgeSpeechConfig(timestamp));
         if (signal?.aborted) throw abortError();
+        stage = "ssml";
+        edgeDiagnostic("info", "tts.edge.ssml", "Sending SSML request");
         await socket.send(buildEdgeSsml(request, requestId, timestamp));
+        stage = "receive";
+        edgeDiagnostic("info", "tts.edge.receive", "Waiting for audio frames");
       } catch (error) {
         fail(
           signal?.aborted
@@ -300,6 +439,7 @@ export async function synthesizeEdgeDirect(
             : error instanceof Error
               ? error
               : new Error("Edge speech transport failed"),
+          signal?.aborted ? "abort" : stage,
         );
       }
     })();

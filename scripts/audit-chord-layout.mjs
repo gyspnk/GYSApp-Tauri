@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, readdir } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import { getDocument } from "../apps/web/node_modules/pdfjs-dist/legacy/build/pdf.mjs";
 
@@ -12,6 +12,8 @@ function parseArgs(argv) {
     lock: "packages/contracts/generated/chord-manifest.json",
     musicLock: "apps/web/public/offline/music-lock.json",
     out: "docs/discovery/chord-position-audit.json",
+    outExplicit: false,
+    fork: false,
     strict: false,
     check: false,
   };
@@ -25,6 +27,10 @@ function parseArgs(argv) {
       options.check = true;
       continue;
     }
+    if (argument === "--fork") {
+      options.fork = true;
+      continue;
+    }
     const [key, inline] = argument.split("=", 2);
     if (!["--source-root", "--lock", "--music-lock", "--out"].includes(key)) {
       throw new Error(`unknown argument: ${argument}`);
@@ -34,8 +40,13 @@ function parseArgs(argv) {
     if (key === "--source-root") options.sourceRoot = value;
     if (key === "--lock") options.lock = value;
     if (key === "--music-lock") options.musicLock = value;
-    if (key === "--out") options.out = value;
+    if (key === "--out") {
+      options.out = value;
+      options.outExplicit = true;
+    }
   }
+  if (options.fork && !options.outExplicit)
+    options.out = "docs/discovery/chord-fork-position-audit.json";
   if (!options.sourceRoot) {
     throw new Error(
       "--source-root is required; pass the immutable gyschordweb checkout explicitly",
@@ -234,7 +245,14 @@ function mapEntries(notes, noteRows, lyricLines, entries) {
   return { mapped, orphan, sentinelEntries };
 }
 
-async function auditPdf(pdfBytes, pages) {
+function normalizeText(text) {
+  return text
+    .normalize("NFKC")
+    .toLocaleLowerCase("en")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+async function auditPdf(pdfBytes, pages, fork) {
   const pdf = await getDocument({
     data: new Uint8Array(pdfBytes),
     disableWorker: true,
@@ -249,6 +267,18 @@ async function auditPdf(pdfBytes, pages) {
   let mappedEntries = 0;
   let orphanEntries = 0;
   let sentinelEntries = 0;
+  const forkPairing = fork
+    ? {
+        pagesCompared: 0,
+        chordEntriesCompared: 0,
+        noteTokenMismatches: 0,
+        rowBoundaryMismatches: 0,
+        lyricMismatches: 0,
+        positionMismatches: 0,
+        mappingMismatches: 0,
+        pageResults: [],
+      }
+    : undefined;
   try {
     for (const [pageKey, entries] of Object.entries(pages).sort(
       ([a], [b]) => Number(a) - Number(b),
@@ -293,6 +323,86 @@ async function auditPdf(pdfBytes, pages) {
       mappedEntries += mapping.mapped.length;
       orphanEntries += mapping.orphan.length;
       sentinelEntries += mapping.sentinelEntries;
+      if (fork) {
+        const forkPageNumber = fork.startPage + pageNumber - 1;
+        if (forkPageNumber > fork.startPage + fork.pageCount - 1)
+          throw new Error(
+            `chord page ${pageNumber} exceeds Fork page mapping for ${fork.songId}`,
+          );
+        const forkPage = await fork.pdf.getPage(forkPageNumber);
+        const forkViewport = forkPage.getViewport({ scale: 1 });
+        const forkContent = await forkPage.getTextContent();
+        const forkItems = forkContent.items.map(textItem);
+        const forkExtracted = extractPageNotes(
+          forkItems,
+          forkViewport.width,
+          forkViewport.height,
+        );
+        const forkLyrics = extractLyricLines(forkItems, forkViewport.width);
+        const rowBounds = (rows) =>
+          rows.map(({ firstIdx, lastIdx }) => [firstIdx, lastIdx]);
+        const rowBoundaryMismatch =
+          JSON.stringify(rowBounds(extracted.noteRows)) !==
+          JSON.stringify(rowBounds(forkExtracted.noteRows));
+        const forkMapping = mapEntries(
+          forkExtracted.notes,
+          forkExtracted.noteRows,
+          forkLyrics,
+          validEntries,
+        );
+        const keyFor = (item) => `${item.noteIdx}\u0000${item.chord}`;
+        const sourceMapped = new Map(
+          mapping.mapped.map((item) => [keyFor(item), item]),
+        );
+        const forkMapped = new Map(
+          forkMapping.mapped.map((item) => [keyFor(item), item]),
+        );
+        const overlayEntries = validEntries.filter(
+          (entry) => entry.noteIdx >= 0 && entry.noteIdx < 99_999,
+        );
+        const noteTokenMismatches = overlayEntries.filter(
+          (entry) =>
+            extracted.notes[entry.noteIdx]?.str !==
+            forkExtracted.notes[entry.noteIdx]?.str,
+        ).length;
+        let lyricMismatches = 0;
+        let positionMismatches = 0;
+        let mappingMismatches = 0;
+        for (const entry of overlayEntries) {
+          const key = keyFor(entry);
+          const sourceChord = sourceMapped.get(key);
+          const forkChord = forkMapped.get(key);
+          if (!sourceChord || !forkChord) {
+            mappingMismatches += 1;
+            continue;
+          }
+          if (
+            normalizeText(sourceChord.lyric) !== normalizeText(forkChord.lyric)
+          )
+            lyricMismatches += 1;
+          if (Math.abs(sourceChord.position - forkChord.position) > 0.02)
+            positionMismatches += 1;
+        }
+        forkPairing.pagesCompared += 1;
+        forkPairing.chordEntriesCompared += overlayEntries.length;
+        forkPairing.noteTokenMismatches += noteTokenMismatches;
+        forkPairing.rowBoundaryMismatches += Number(rowBoundaryMismatch);
+        forkPairing.lyricMismatches += lyricMismatches;
+        forkPairing.positionMismatches += positionMismatches;
+        forkPairing.mappingMismatches += mappingMismatches;
+        forkPairing.pageResults.push({
+          page: pageNumber,
+          forkPage: forkPageNumber,
+          sourceNotes: extracted.notes.length,
+          forkNotes: forkExtracted.notes.length,
+          rowBoundaryMismatch,
+          chordEntriesCompared: overlayEntries.length,
+          noteTokenMismatches,
+          lyricMismatches,
+          positionMismatches,
+          mappingMismatches,
+        });
+      }
       pageResults.push({
         page: pageNumber,
         pdfNotes: extracted.notes.length,
@@ -321,19 +431,79 @@ async function auditPdf(pdfBytes, pages) {
     orphanEntries,
     sentinelEntries,
     invalidEntries,
+    ...(forkPairing ? { forkPairing } : {}),
   };
 }
 
 const lock = await readJson(lockPath);
 const musicLock = await readJson(musicLockPath);
+let forkManifest;
+let forkPdf;
+if (options.fork) {
+  forkManifest = await readJson(
+    resolve(root, "apps/web/public/offline/fork-hymnal-manifest.json"),
+  );
+  const forkCommit = "4f0d39bf9a8f6ece5e8f29659940c4fa4072c1a8";
+  if (
+    forkManifest.sourceRepo !== "ThenGB/GYSAPP-Fork" ||
+    !forkCommit.startsWith(forkManifest.sourceCommit) ||
+    forkManifest.masterPath !== "assets/data/pdf/kr/kr_master.pdf"
+  )
+    throw new Error("unexpected Fork PDF provenance");
+  const response = await fetch(
+    `https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/${forkCommit}/${forkManifest.masterPath}`,
+    { signal: AbortSignal.timeout(60_000) },
+  );
+  if (!response.ok)
+    throw new Error(`Fork master PDF download failed: HTTP ${response.status}`);
+  const forkPdfBytes = Buffer.from(await response.arrayBuffer());
+  if (
+    forkPdfBytes.byteLength !== forkManifest.sizeBytes ||
+    sha256(forkPdfBytes) !== forkManifest.sha256
+  )
+    throw new Error("Fork master PDF failed pinned size/SHA-256 validation");
+  forkPdf = await getDocument({
+    data: new Uint8Array(forkPdfBytes),
+    disableWorker: true,
+    verbosity: 0,
+    standardFontDataUrl: new URL(
+      "../apps/web/node_modules/pdfjs-dist/standard_fonts/",
+      import.meta.url,
+    ).toString(),
+  }).promise;
+  if (forkPdf.numPages !== forkManifest.pageCount)
+    throw new Error("Fork master PDF page count differs from its manifest");
+}
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
-  lock.sourceCommit !== "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
+  lock.sourceCommit !== "e8e7efe1189b5746a2bb542348e221844091c8d1"
 )
   throw new Error("unexpected chord lock provenance");
-if (!Array.isArray(lock.entries) || lock.entries.length !== 155)
+if (!Array.isArray(lock.entries) || lock.entries.length !== 161)
   throw new Error(
-    `expected 155 chord entries, got ${lock.entries?.length ?? 0}`,
+    `expected 161 chord entries, got ${lock.entries?.length ?? 0}`,
+  );
+
+const chordListPath = sourcePath("assets-chord-list.json");
+const chordDirectory = sourcePath("assets/chord");
+if (!chordListPath || !chordDirectory)
+  throw new Error("upstream chord inventory is missing");
+const chordList = await readJson(chordListPath);
+if (
+  !Array.isArray(chordList) ||
+  chordList.some((stem) => typeof stem !== "string")
+)
+  throw new Error("upstream chord list has an invalid shape");
+const chordInventories = [
+  chordList.map((stem) => stem + ".chord.json"),
+  (await readdir(chordDirectory)).filter((name) =>
+    name.endsWith(".chord.json"),
+  ),
+  lock.entries.map((entry) => entry.path.split("/").at(-1)),
+].map((names) => JSON.stringify([...names].sort()));
+if (new Set(chordInventories).size !== 1)
+  throw new Error(
+    "upstream chord list, source files, and generated lock differ",
   );
 
 const files = [];
@@ -364,7 +534,25 @@ for (const entry of lock.entries) {
     sha256(pdfBytes) !== pdfLock.sha256
   )
     throw new Error(`PDF integrity drift: ${pdfRelative}`);
-  const audit = await auditPdf(pdfBytes, pages);
+  const songNumber = entry.songId.match(/^hymn-(\d+)$/)?.[1];
+  const forkSong = forkManifest?.songs?.[songNumber];
+  if (forkManifest && !forkSong)
+    throw new Error(`Fork master has no mapping for ${entry.songId}`);
+  const lastChordPage = Math.max(...Object.keys(pages).map(Number));
+  if (forkSong && forkSong.pageCount < lastChordPage)
+    throw new Error(`Fork page count is too short for ${entry.songId}`);
+  const audit = await auditPdf(
+    pdfBytes,
+    pages,
+    forkSong
+      ? {
+          pdf: forkPdf,
+          songId: entry.songId,
+          startPage: forkSong.startPage,
+          pageCount: forkSong.pageCount,
+        }
+      : undefined,
+  );
   files.push({
     songId: entry.songId,
     chordPath: entry.path,
@@ -378,7 +566,7 @@ for (const entry of lock.entries) {
   process.stdout.write(
     `${files.length}/${lock.entries.length} ${entry.songId} ${audit.mappedEntries}/${
       audit.mappedEntries + audit.orphanEntries + audit.invalidEntries
-    } mapped\n`,
+    } mapped${audit.forkPairing ? `; Fork ${audit.forkPairing.pagesCompared} pages` : ""}\n`,
   );
 }
 
@@ -405,6 +593,34 @@ const totals = files.reduce(
   },
 );
 
+if (forkPdf) await forkPdf.cleanup();
+const forkPairingTotals = options.fork
+  ? files.reduce(
+      (result, file) => {
+        const pairing = file.forkPairing;
+        result.pagesCompared += pairing.pagesCompared;
+        result.chordEntriesCompared += pairing.chordEntriesCompared;
+        for (const key of [
+          "noteTokenMismatches",
+          "rowBoundaryMismatches",
+          "lyricMismatches",
+          "positionMismatches",
+          "mappingMismatches",
+        ])
+          result[key] += pairing[key];
+        return result;
+      },
+      {
+        pagesCompared: 0,
+        chordEntriesCompared: 0,
+        noteTokenMismatches: 0,
+        rowBoundaryMismatches: 0,
+        lyricMismatches: 0,
+        positionMismatches: 0,
+        mappingMismatches: 0,
+      },
+    )
+  : undefined;
 const report = {
   version: 1,
   generatedAt: new Date().toISOString(),
@@ -414,8 +630,21 @@ const report = {
   musicLockPath: relative(root, musicLockPath).replaceAll("\\", "/"),
   chordCount: files.length,
   totals,
+  ...(forkPairingTotals
+    ? {
+        forkSourceRepo: forkManifest.sourceRepo,
+        forkSourceCommit: forkManifest.sourceCommit,
+        forkMasterSha256: forkManifest.sha256,
+        forkPairingTotals,
+      }
+    : {}),
   files,
 };
+const forkMismatches = forkPairingTotals
+  ? Object.entries(forkPairingTotals)
+      .filter(([key]) => key.endsWith("Mismatches"))
+      .reduce((total, [, value]) => total + value, 0)
+  : 0;
 if (options.check) {
   const previous = JSON.parse(await readFile(outPath, "utf8"));
   const { generatedAt: _previousGeneratedAt, ...previousReport } = previous;
@@ -428,6 +657,10 @@ if (options.check) {
   console.log(
     `Chord position audit matches committed report (${totals.mappedEntries} mapped, ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid).`,
   );
+  if (forkPairingTotals)
+    console.log(
+      `Fork master pairing matches committed report (${forkPairingTotals.pagesCompared} pages, ${forkPairingTotals.chordEntriesCompared} chord entries, ${forkMismatches} mismatches).`,
+    );
 } else {
   await writeFile(outPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   console.log(
@@ -435,9 +668,16 @@ if (options.check) {
       totals.mappedEntries
     } mapped, ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid entries.`,
   );
+  if (forkPairingTotals)
+    console.log(
+      `Fork master pairing: ${forkPairingTotals.pagesCompared} pages, ${forkPairingTotals.chordEntriesCompared} chord entries, ${forkMismatches} mismatches.`,
+    );
 }
-if (options.strict && (totals.orphanEntries > 0 || totals.invalidEntries > 0)) {
+if (
+  options.strict &&
+  (totals.orphanEntries > 0 || totals.invalidEntries > 0 || forkMismatches > 0)
+) {
   throw new Error(
-    `strict chord audit failed: ${totals.orphanEntries} orphan and ${totals.invalidEntries} invalid entries`,
+    `strict chord audit failed: ${totals.orphanEntries} orphan, ${totals.invalidEntries} invalid, ${forkMismatches} cross-source mismatches`,
   );
 }

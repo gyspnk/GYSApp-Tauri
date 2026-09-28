@@ -82,7 +82,7 @@ describe("bibleVerseEntries", () => {
       "Karena begitu besar kasih Allah akan dunia ini, sehingga Ia telah mengaruniakan Anak-Nya yang tunggal.",
     );
     expect(entry?.searchText).toContain("Yohanes 3:16");
-    expect(entry?.href).toBe("/bible?book=43&chapter=3&verse=16");
+    expect(entry?.href).toBe("/bible?book=43&chapter=3&verse=16&version=b_tb");
     expect(entry?.id).toBe("bible-43:3:16");
   });
   it("strips markup tokens from the snippet", () => {
@@ -107,7 +107,7 @@ describe("bibleVerseEntries", () => {
 describe("bibleVerseHref", () => {
   it("keeps the reader inside the application shell", () => {
     expect(bibleVerseHref(verseByIndex(0))).toBe(
-      "/bible?book=1&chapter=1&verse=1",
+      "/bible?book=1&chapter=1&verse=1&version=b_tb",
     );
   });
 });
@@ -117,6 +117,13 @@ describe("parseBibleDeepLink", () => {
     expect(
       parseBibleDeepLink(new URLSearchParams("book=43&chapter=3&verse=16")),
     ).toEqual({ book: "43", chapter: 3, verse: 16 });
+  });
+  it("preserves a valid source translation in the deep link", () => {
+    expect(
+      parseBibleDeepLink(
+        new URLSearchParams("book=43&chapter=3&verse=16&version=b_kjv"),
+      ),
+    ).toEqual({ book: "43", chapter: 3, verse: 16, version: "b_kjv" });
   });
   it("rejects missing or non-integer parts", () => {
     expect(parseBibleDeepLink(new URLSearchParams("book=43"))).toBeUndefined();
@@ -129,7 +136,23 @@ describe("parseBibleDeepLink", () => {
     expect(
       parseBibleDeepLink(new URLSearchParams("book=&chapter=3&verse=16")),
     ).toBeUndefined();
+    expect(
+      parseBibleDeepLink(
+        new URLSearchParams("book=43&chapter=3&verse=16&version=../bibles"),
+      ),
+    ).toBeUndefined();
     expect(parseBibleDeepLink(undefined)).toBeUndefined();
+  });
+  it("rejects non-decimal and zero chapter or verse values", () => {
+    for (const query of [
+      "book=43&chapter=3.5&verse=16",
+      "book=43&chapter=1e2&verse=16",
+      "book=43&chapter=3&verse=0x10",
+      "book=43&chapter=0&verse=16",
+      "book=43&chapter=3&verse=-1",
+    ]) {
+      expect(parseBibleDeepLink(new URLSearchParams(query))).toBeUndefined();
+    }
   });
 });
 

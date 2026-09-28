@@ -122,4 +122,70 @@ describe("BrowserAssetStore", () => {
       else vi.stubGlobal("localStorage", originalLocalStorage);
     }
   });
+
+  it("drops invalid cached PDFs and lets the next download retry", async () => {
+    const originalWindow = globalThis.window;
+    const originalCaches = globalThis.caches;
+    const originalLocalStorage = globalThis.localStorage;
+    const caches = cacheStorage();
+    vi.stubGlobal("window", { caches });
+    vi.stubGlobal("caches", caches);
+    vi.stubGlobal("localStorage", localStorageMock());
+    const pdfItem: AssetManifestItem = {
+      id: "literature-pdf:demo",
+      kind: "pdf",
+      source: "remote",
+      path: "https://assets.example/demo.pdf",
+      url: "https://assets.example/demo.pdf",
+      version: "v1",
+      status: "remote",
+      lastUpdated: "2026-09-28T00:00:00.000Z",
+    };
+    const invalid = new TextEncoder().encode("<html>offline error</html>");
+    const valid = new TextEncoder().encode("%PDF-1.7\nfixture");
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(invalid, {
+          status: 200,
+          headers: { "content-type": "text/html" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(valid, {
+          status: 200,
+          headers: { "content-type": "application/pdf" },
+        }),
+      );
+    const validatePdf = (bytes: Uint8Array) => {
+      if (new TextDecoder().decode(bytes.subarray(0, 5)) !== "%PDF-")
+        throw new Error("not a PDF");
+    };
+
+    try {
+      const store = new BrowserAssetStore();
+      await store.put(pdfItem, invalid, "text/html");
+      await expect(
+        store.download(pdfItem, undefined, validatePdf),
+      ).rejects.toThrow("not a PDF");
+      await expect(store.get(pdfItem)).resolves.toBeUndefined();
+
+      await expect(
+        store.download(pdfItem, undefined, validatePdf),
+      ).resolves.toEqual(valid);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      await expect(store.get(pdfItem)).resolves.toEqual(valid);
+    } finally {
+      fetchMock.mockRestore();
+      if (originalWindow === undefined)
+        delete (globalThis as { window?: unknown }).window;
+      else vi.stubGlobal("window", originalWindow);
+      if (originalCaches === undefined)
+        delete (globalThis as { caches?: unknown }).caches;
+      else vi.stubGlobal("caches", originalCaches);
+      if (originalLocalStorage === undefined)
+        delete (globalThis as { localStorage?: unknown }).localStorage;
+      else vi.stubGlobal("localStorage", originalLocalStorage);
+    }
+  });
 });

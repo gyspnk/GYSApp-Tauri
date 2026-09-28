@@ -135,11 +135,15 @@ describe("BFF public boundary", () => {
 
   it("streams only the pinned metadata index for an optional hymnal", async () => {
     const originalFetch = globalThis.fetch;
-    const bytes = new TextEncoder().encode("[]");
+    const bytes = new Uint8Array(729_948).fill(0x20);
+    bytes.set(new TextEncoder().encode("[]"));
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(bytes, {
         status: 200,
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-length": String(bytes.byteLength),
+          "content-type": "application/json",
+        },
       }),
     );
     globalThis.fetch = fetchMock;
@@ -155,7 +159,9 @@ describe("BFF public boundary", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(new TextDecoder().decode(await response.arrayBuffer())).toBe("[]");
+      const received = await response.arrayBuffer();
+      expect(received.byteLength).toBe(bytes.byteLength);
+      expect(new TextDecoder().decode(received).trim()).toBe("[]");
       expect(fetchMock).toHaveBeenCalledWith(
         "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
         expect.objectContaining({ signal: expect.any(AbortSignal) }),

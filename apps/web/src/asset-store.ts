@@ -195,17 +195,35 @@ export class BrowserAssetStore {
   public async download(
     item: AssetManifestItem,
     signal?: AbortSignal,
+    validate?: (bytes: Uint8Array) => void,
   ): Promise<Uint8Array> {
     const key = `${item.id}:${item.version}:${item.url ?? item.path}`;
     const existing = this.inFlightDownloads.get(key);
-    if (existing) return waitForSignal(existing, signal);
+    if (existing) {
+      const bytes = await waitForSignal(existing, signal);
+      try {
+        validate?.(bytes);
+      } catch (error) {
+        await this.remove(item);
+        throw error;
+      }
+      return bytes;
+    }
     const request = (async () => {
       const cached = await this.get(item);
-      if (cached) return cached;
+      if (cached) {
+        try {
+          validate?.(cached);
+          return cached;
+        } catch {
+          await this.remove(item);
+        }
+      }
       const response = await fetch(assetUrl(item), { cache: "no-store" });
       if (!response.ok)
         throw new Error(`Asset request failed: ${response.status}`);
       const bytes = new Uint8Array(await response.arrayBuffer());
+      validate?.(bytes);
       await this.put(
         item,
         bytes,

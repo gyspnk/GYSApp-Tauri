@@ -110,7 +110,8 @@ function mergeCatalogs(
   if (!incoming.length) return undefined;
   const merged = new Map<string, LiteratureItem>();
   for (const item of incoming) merged.set(item.id, item);
-  let changed = false;
+  const currentIds = new Set(current.map((item) => item.id));
+  let changed = incoming.some((item) => !currentIds.has(item.id));
   for (const item of current) {
     const existing = merged.get(item.id);
     if (!existing) {
@@ -237,6 +238,8 @@ function scheduleCatalogRevalidate() {
 }
 
 async function loadMergedCatalog(current: LiteratureItem[]) {
+  let refreshed = current;
+  let changed = false;
   for (const url of bffCandidates()) {
     try {
       const response = await fetch(url, { cache: "default" });
@@ -247,7 +250,7 @@ async function loadMergedCatalog(current: LiteratureItem[]) {
         throw new Error(`Expected JSON from ${url}, got HTML`);
       const incoming = LiteratureCatalogSchema.parse(await response.json());
       const covers = new Map(
-        current
+        refreshed
           .filter((item) => item.imageUrl)
           .map((item) => [item.id, item.imageUrl]),
       );
@@ -256,12 +259,16 @@ async function loadMergedCatalog(current: LiteratureItem[]) {
           ? item
           : { ...item, imageUrl: covers.get(item.id) },
       );
-      return mergeCatalogs(current, normalized);
+      const merged = mergeCatalogs(refreshed, normalized);
+      if (merged) {
+        refreshed = merged;
+        changed = true;
+      }
     } catch {
       // try the next candidate
     }
   }
-  return undefined;
+  return changed ? refreshed : undefined;
 }
 
 async function loadCatalog(signal: AbortSignal) {

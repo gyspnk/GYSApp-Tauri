@@ -44,8 +44,8 @@
         "sourceCommit": "4f0d39b",
         "path": "assets/data/index/hymne_index.json",
         "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/hymne_index.json",
-        "sizeBytes": 740939,
-        "checksumSha256": "bc89b27b1fac68f584161c3f5e91e416bf4580106a05efc6dc96a14140e0fba3"
+        "sizeBytes": 729948,
+        "checksumSha256": "0373b62421f5523280adcdbb8b2add92cfff455d452f4df1737a1d8ca2827391"
       }
     },
     {
@@ -59,8 +59,8 @@
         "sourceCommit": "4f0d39b",
         "path": "assets/data/index/mdr_index.json",
         "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/mdr_index.json",
-        "sizeBytes": 636392,
-        "checksumSha256": "8b0d298bb5900c0ea9cfe2e4d53b47a1088a9e322e4b38ffe7b4542c5e7d4dfa"
+        "sizeBytes": 625473,
+        "checksumSha256": "46a63445b747885c32153f5e1d15e8d468d44b8641a27d409a801a13bb3cbd34"
       }
     },
     {
@@ -74,8 +74,8 @@
         "sourceCommit": "4f0d39b",
         "path": "assets/data/index/asm_i_index.json",
         "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_i_index.json",
-        "sizeBytes": 45562,
-        "checksumSha256": "d3d9d4e865c7f3465fc75766b0ee048865b427d43e5042984a647c863763fa0e"
+        "sizeBytes": 43992,
+        "checksumSha256": "e1fd6ee9cb1a2670d28a4d4b1c6a11442da28dfe36fa301e87e3f44a5d990112"
       }
     },
     {
@@ -89,8 +89,8 @@
         "sourceCommit": "4f0d39b",
         "path": "assets/data/index/asm_m_index.json",
         "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_m_index.json",
-        "sizeBytes": 56106,
-        "checksumSha256": "d058e51bcb0c720729322effaf0d989893bfc37a4bfbb4c6b7a531bac3fa1917"
+        "sizeBytes": 54412,
+        "checksumSha256": "e1e384a20b847e474839acd84aebcd2201934cf401445182e222a1baa1790d92"
       }
     },
     {
@@ -104,8 +104,8 @@
         "sourceCommit": "4f0d39b",
         "path": "assets/data/index/asm_p_index.json",
         "downloadUrl": "https://raw.githubusercontent.com/ThenGB/GYSAPP-Fork/4f0d39b/assets/data/index/asm_p_index.json",
-        "sizeBytes": 54893,
-        "checksumSha256": "1470f8af2d6a28074454b587319adcaaf6ad95c0b0d0a0690d4d747e9b855c8c"
+        "sizeBytes": 53056,
+        "checksumSha256": "24242748ccd431b14ccf0f784eb6cfb1b6b688d8b3a11d7b8413d3b963c6dfd1"
       }
     },
     {

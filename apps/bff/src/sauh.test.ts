@@ -8,6 +8,26 @@ describe("BFF Sauh normalization", () => {
     );
   });
 
+  it("keeps the featured verse reference aligned with its quote", () => {
+    const posts = normalizeSauhPosts([
+      {
+        id: 26734,
+        slug: "sbj260928",
+        date: "2026-09-28T00:00:35.000+07:00",
+        modified: "2026-09-28T07:56:35.000+07:00",
+        link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260928/",
+        title: { rendered: "Buah Pertobatan" },
+        content: {
+          rendered:
+            '<div class="shortcode tf_clearfix box white"><p>“Kerajaan Allah akan menghasilkan buah itu” (Matius 21:43)</p></div><p>Berikutnya, pertobatan yang sesuai dengan iman (Luk. 3:8a).</p>',
+        },
+      },
+    ]);
+
+    expect(posts[0]?.reference).toBe("Matius 21:43");
+    expect(posts[0]?.verse).toBe("Kerajaan Allah akan menghasilkan buah itu");
+  });
+
   it("drops items without a valid upstream date instead of making them current", () => {
     const posts = normalizeSauhPosts([
       {

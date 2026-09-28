@@ -31,6 +31,7 @@ export interface ChordCache {
   stats(): Promise<unknown>;
   gc(): Promise<void>;
   getRef?(songId: string): ChordRef | undefined;
+  isIntegrityVerified?(songId: string): boolean | undefined;
 }
 
 const MANIFEST_TTL_MS = 6 * 60 * 60 * 1000;
@@ -165,7 +166,8 @@ export class ChordRepository {
     if (
       cached &&
       cachedRef?.sha256 === ref.sha256 &&
-      cachedRef.sourceCommit === ref.sourceCommit
+      cachedRef.sourceCommit === ref.sourceCommit &&
+      this.cache.isIntegrityVerified?.(songId) !== false
     )
       return cached;
     const fetched = await this.upstream.fetchChord(ref, signal);

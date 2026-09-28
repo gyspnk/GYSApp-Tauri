@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 const sourceRoot = process.env.GYSCHORDWEB_SNAPSHOT;
 const sourceCommit =
-  process.env.GYSCHORDWEB_COMMIT ?? "3039ae678c9e0e6ca439f4e1e0250759667dbcdf";
+  process.env.GYSCHORDWEB_COMMIT ?? "e8e7efe1189b5746a2bb542348e221844091c8d1";
 if (!sourceRoot)
   throw new Error(
     "Set GYSCHORDWEB_SNAPSHOT to an immutable gyschordweb snapshot.",
@@ -12,11 +12,24 @@ if (!sourceRoot)
 const source = JSON.parse(
   await readFile(join(sourceRoot, "docs", "assets-lyrics.json"), "utf8"),
 );
+const chordManifest = JSON.parse(
+  await readFile(
+    join("packages", "contracts", "generated", "chord-manifest.json"),
+    "utf8",
+  ),
+);
+if (chordManifest.sourceCommit !== sourceCommit)
+  throw new Error("Chord manifest does not match the hymn source commit.");
+const chordRefs = new Map(
+  chordManifest.entries.map((entry) => [entry.songId, entry]),
+);
 const items = source.map((entry) => {
   const number = Number.parseInt(entry.number, 10);
   const stem = `${entry.number}_${entry.title}`;
+  const id = `hymn-${entry.number}`;
+  const chordRef = chordRefs.get(id);
   return {
-    id: `hymn-${entry.number}`,
+    id,
     book: "rohani",
     number,
     title: entry.title,
@@ -24,6 +37,7 @@ const items = source.map((entry) => {
     lyrics: entry.verses.join("\n\n"),
     midiPath: `assets/midi/${stem}.mid`,
     pdfPath: `assets/pdf/${stem}.pdf`,
+    ...(chordRef ? { chordRef } : {}),
   };
 });
 

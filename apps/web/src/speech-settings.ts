@@ -22,7 +22,7 @@ export const defaultSpeechSettings: PersistedSpeechSettings = {
   rate: 0.9,
   pitch: 1,
   volume: 1,
-  engine: "edge",
+  engine: "auto",
 };
 
 function readNumber(
@@ -47,7 +47,7 @@ function readVoiceId(storage: SpeechStorage): string | undefined {
 
 function readEngine(storage: SpeechStorage): SpeechEnginePreference {
   const value = storage.getItem(SPEECH_STORAGE_KEYS.engine);
-  return value === "local" ? "local" : "edge";
+  return value === "edge" || value === "local" ? value : "auto";
 }
 
 export function readSpeechSettings(

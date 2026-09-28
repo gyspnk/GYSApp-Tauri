@@ -33,15 +33,22 @@ try {
     );
   }
   const csp = String(config?.app?.security?.csp ?? "");
-  for (const origin of [
-    "https://tjc.org",
-    "https://*.tjc.org",
-    "https://raw.githubusercontent.com",
+  const directives = new Map(
+    csp.split(";").map((entry) => {
+      const [name, ...sources] = entry.trim().split(/\s+/);
+      return [name, sources];
+    }),
+  );
+  for (const [directive, origin] of [
+    ["connect-src", "https://tjc.org"],
+    ["connect-src", "https://*.tjc.org"],
+    ["connect-src", "https://raw.githubusercontent.com"],
+    ["img-src", "https://tjcorguploads.s3.amazonaws.com"],
+    ["style-src", "https://fonts.googleapis.com"],
+    ["font-src", "https://fonts.gstatic.com"],
   ]) {
-    if (!csp.includes(origin))
-      throw new Error(
-        `Tauri CSP must allow verified upstream origin ${origin}`,
-      );
+    if (!directives.get(directive)?.includes(origin))
+      throw new Error(`Tauri CSP ${directive} must allow ${origin}`);
   }
 } catch (error) {
   throw new Error(`Unable to validate Tauri packaging boundary: ${error}`);

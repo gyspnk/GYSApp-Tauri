@@ -1006,14 +1006,14 @@ a:focus-visible {
     padding 180ms var(--ease-out),
     border-color 180ms var(--ease-out);
 }
-.bible-page-header:not(:focus-within):not(.is-search-active) {
+.bible-page-header:not(:focus-within):not(.is-search-open) {
   margin-bottom: 0;
   padding: 0;
   border-color: transparent;
   background: transparent;
   box-shadow: none;
 }
-.bible-page-header:not(:focus-within):not(.is-search-active) .bible-search {
+.bible-page-header:not(:focus-within):not(.is-search-open) .bible-search {
   max-height: 0;
   padding: 0;
   border-color: transparent;
@@ -2612,9 +2612,39 @@ blockquote {
   padding-top: 2px;
 }
 .bible-search-options-disclosure {
-  display: contents;
+  display: block;
 }
 .bible-search-options-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+  list-style: none;
+}
+.bible-search-options-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.bible-search-options-disclosure > summary::after {
+  content: "⌄";
+  color: var(--blue);
+  font-size: 14px;
+}
+.bible-search-options-disclosure[open] > summary::after {
+  content: "⌃";
+}
+.bible-search-options-disclosure .bible-search-options {
+  padding-top: 7px;
+  animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bible-search-options-disclosure:not([open]) .bible-search-options {
   display: none;
 }
 .check-option {
@@ -2871,28 +2901,6 @@ body.is-resizing-bible {
   cursor: col-resize;
   user-select: none;
 }
-.split-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 8px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-soft);
-}
-.split-sync-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--muted);
-  cursor: pointer;
-  user-select: none;
-}
-.split-sync-toggle input {
-  accent-color: var(--blue);
-}
 .chapter-scrubber,
 .split-ratio-control {
   display: inline-grid;
@@ -2951,13 +2959,15 @@ body.is-resizing-bible {
     opacity var(--motion-normal) var(--ease-out);
 }
 .pdf-toolbar.is-collapsed {
-  opacity: 0.85;
-  transform: translateY(-2px);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
 }
 .pdf-toolbar.is-collapsed:hover,
 .pdf-toolbar.is-collapsed:focus-within {
   opacity: 1;
   transform: none;
+  pointer-events: auto;
 }
 .detail-actions {
   transition:
@@ -3673,6 +3683,9 @@ body.is-resizing-bible {
 .verse-row.is-highlight-green {
   background: color-mix(in srgb, #5a9e73 14%, transparent);
 }
+.verse-row.is-highlight-custom {
+  background: color-mix(in srgb, var(--verse-highlight-color) 22%, transparent);
+}
 .verse-row.is-speaking {
   border-color: color-mix(in srgb, var(--blue) 62%, var(--line));
   background: color-mix(in srgb, var(--blue-soft) 74%, transparent);
@@ -4325,9 +4338,21 @@ body.is-resizing-bible {
 .highlight-dot.is-green {
   background: #79b98b;
 }
+.highlight-dot.is-custom {
+  background: var(--highlight-color);
+}
 .highlight-dot.is-active {
   border-color: var(--ink);
   box-shadow: 0 0 0 2px var(--surface);
+}
+.selected-verse-highlights input[type="color"] {
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  cursor: pointer;
 }
 .bible-note-field {
   display: grid;
@@ -4776,14 +4801,63 @@ body.is-resizing-bible {
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
-.more-grid {
+.more-settings-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 0;
   margin-top: 0;
+  max-width: 820px;
 }
-.distributed-assets-card {
-  order: initial;
+.more-setting-section {
+  min-width: 0;
+  border-bottom: 1px solid var(--line);
+}
+.more-setting-row {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.more-setting-row::-webkit-details-marker {
+  display: none;
+}
+.more-setting-row > strong {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.more-setting-row > svg {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--muted);
+  transition: transform 0.16s ease;
+}
+.more-setting-section[open] > .more-setting-row > svg {
+  transform: rotate(180deg);
+}
+.more-settings-content {
+  min-width: 0;
+  padding: 4px 0 16px;
+}
+.more-settings-content > p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.more-settings-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--blue);
+  font-weight: 650;
+  text-decoration: none;
+}
+.more-settings-link:hover {
+  text-decoration: underline;
 }
 .more-card {
   min-width: 0;
@@ -4794,54 +4868,24 @@ body.is-resizing-bible {
   box-shadow: var(--shadow);
 }
 .more-card-wide,
-.report-card,
-.account-card,
-.appearance-card {
-  grid-column: span 2;
+.report-card {
   display: grid;
   gap: 16px;
 }
-.more-resource-group,
-.more-secondary-group {
-  grid-column: 1 / -1;
-  min-width: 0;
-}
 .more-resource-group {
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  padding-top: 2px;
-}
-.more-resource-group > .more-card {
-  grid-column: 1;
-}
-.more-secondary-group {
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
 }
 .more-secondary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
 }
 .more-secondary-grid > .more-card {
   min-width: 0;
-}
-.more-secondary-grid > .device-data-tools {
-  grid-column: span 1;
-}
-.more-secondary-grid > .report-card {
-  grid-column: span 2;
-}
-@media (max-width: 959px) and (min-width: 600px) {
-  .more-secondary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .more-secondary-grid > .device-data-tools,
-  .more-secondary-grid > .report-card {
-    grid-column: 1 / -1;
-  }
 }
 
 /* e-GYS Member Badge & Card Styles */
@@ -5149,64 +5193,88 @@ body.is-resizing-bible {
   }
 }
 
-/* Appearance Pills Grid */
-.appearance-section .section-subtitle {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-.theme-pill-grid {
+/* Theme and language values stay visible while their full pickers stay closed. */
+.appearance-settings {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px;
+  max-width: 700px;
 }
-.theme-pill-btn {
-  display: flex;
-  flex-direction: column;
+.appearance-setting-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) minmax(132px, 220px);
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 52px;
-  padding: 6px 4px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  gap: 12px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--line);
+}
+.appearance-setting-name {
+  min-width: 0;
   color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.appearance-setting-select {
+  width: 100%;
+  min-width: 0;
+}
+.appearance-setting-select .control-select-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.appearance-setting-select .control-select-trigger {
+  min-height: var(--control-hit, 44px);
+  padding-inline: 10px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.appearance-setting-select .control-select-menu {
+  min-width: 100%;
+}
+.appearance-setting-disclosure {
+  min-width: 0;
+}
+.appearance-setting-disclosure > summary {
   cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+  list-style: none;
 }
-.theme-pill-btn:hover {
-  border-color: var(--blue);
-  background: var(--blue-soft);
+.appearance-setting-disclosure > summary::-webkit-details-marker {
+  display: none;
 }
-.theme-pill-btn.is-active {
-  border-color: var(--navy);
-  background: var(--navy);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+.appearance-setting-disclosure > .appearance-setting-row {
+  grid-template-columns: minmax(0, 1fr) max-content 18px;
 }
-.theme-pill-btn .pill-icon {
+.appearance-setting-value {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-.theme-pill-btn .pill-icon svg {
-  display: block;
-}
-.theme-pill-btn .pill-label {
-  font-size: 11px;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
   font-weight: 600;
+}
+.appearance-accent-swatch {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+}
+.appearance-setting-disclosure > .appearance-setting-row > svg {
+  color: var(--muted);
+  transition: transform 0.16s ease;
+}
+.appearance-setting-disclosure[open] > .appearance-setting-row > svg {
+  transform: rotate(180deg);
+}
+.appearance-setting-disclosure .accent-palette-grid {
+  max-width: 500px;
+  margin: 4px 0 12px auto;
 }
 .more-card-heading {
   display: flex;
@@ -5248,6 +5316,16 @@ body.is-resizing-bible {
   margin-top: 16px;
 }
 .pack-manager-actions > small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.offline-pack-diagnostics > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.offline-pack-diagnostics > small {
+  display: block;
   color: var(--muted);
   font-size: 10px;
 }
@@ -5741,6 +5819,9 @@ body.is-resizing-bible {
   padding-top: 1.35em;
   line-height: inherit;
 }
+.chord-rich-line {
+  padding-top: 1.65em;
+}
 .lyrics-sheet .chord-capability {
   max-width: 100%;
 }
@@ -5987,6 +6068,53 @@ body.is-resizing-bible {
   }
   .selected-verse-actions .quiet-button {
     flex: 0 0 auto;
+    min-height: 44px;
+  }
+  .selected-verse-highlights,
+  .selected-verse-close {
+    flex: 0 0 auto;
+  }
+  .selected-verse-highlights .highlight-dot {
+    position: relative;
+    display: grid;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .selected-verse-highlights .highlight-dot::before {
+    width: 28px;
+    height: 28px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: var(--highlight-color);
+    content: "";
+  }
+  .selected-verse-highlights .highlight-dot.is-yellow {
+    --highlight-color: #f4d35e;
+  }
+  .selected-verse-highlights .highlight-dot.is-blue {
+    --highlight-color: #83aef7;
+  }
+  .selected-verse-highlights .highlight-dot.is-green {
+    --highlight-color: #79b98b;
+  }
+  .selected-verse-highlights .highlight-dot.is-active::before {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+  .selected-verse-highlights input[type="color"] {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    box-sizing: border-box;
+  }
+  .selected-verse-close {
+    width: 44px;
+    height: 44px;
   }
   .hymn-layout {
     grid-template-columns: 1fr;
@@ -6026,24 +6154,9 @@ body.is-resizing-bible {
   .faith-copy {
     font-size: 22px;
   }
-  .more-grid {
-    grid-template-columns: 1fr;
-  }
-  .more-card-wide,
-  .report-card {
-    grid-column: auto;
-  }
-  .more-resource-group,
-  .more-secondary-group {
-    grid-column: auto;
-  }
   .more-secondary-grid {
     grid-template-columns: 1fr;
     gap: 10px;
-  }
-  .more-secondary-grid > .device-data-tools,
-  .more-secondary-grid > .report-card {
-    grid-column: auto;
   }
   .distributed-asset-row {
     align-items: flex-start;
@@ -6946,51 +7059,6 @@ body.is-resizing-bible {
     gap: 6px;
     padding-top: 7px;
   }
-  .app-frame.is-reader-route .bible-search-options-disclosure {
-    display: block;
-  }
-  .app-frame.is-reader-route .bible-search-options-disclosure > summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 34px;
-    padding: 0 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-soft);
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 650;
-    list-style: none;
-  }
-  .app-frame.is-reader-route
-    .bible-search-options-disclosure
-    > summary::-webkit-details-marker {
-    display: none;
-  }
-  .app-frame.is-reader-route .bible-search-options-disclosure > summary::after {
-    content: "⌄";
-    color: var(--blue);
-    font-size: 14px;
-  }
-  .app-frame.is-reader-route
-    .bible-search-options-disclosure[open]
-    > summary::after {
-    content: "⌃";
-  }
-  .app-frame.is-reader-route
-    .bible-search-options-disclosure
-    .bible-search-options {
-    display: flex;
-    padding-top: 7px;
-    animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .app-frame.is-reader-route
-    .bible-search-options-disclosure:not([open])
-    .bible-search-options {
-    display: none;
-  }
   .app-frame.is-reader-route .reader-toolbar {
     align-items: stretch;
     gap: 7px;
@@ -7390,55 +7458,6 @@ body.is-resizing-bible {
   content-visibility: auto;
   contain-intrinsic-size: 70px;
 }
-.pujian-row {
-  width: 100%;
-  min-height: 70px;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  align-items: center;
-  gap: 14px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  text-align: left;
-  padding: 12px 7px;
-  cursor: pointer;
-  transition:
-    background var(--motion-fast) var(--ease-out),
-    padding var(--motion-fast) var(--ease-out);
-}
-.pujian-row:hover {
-  background: var(--surface-soft);
-  padding-inline: 13px;
-}
-.pujian-number {
-  color: var(--blue);
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
-}
-.pujian-copy {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-.pujian-copy strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 15px;
-}
-.pujian-copy small {
-  color: var(--muted);
-  font-size: 12px;
-}
-.pujian-arrow {
-  color: var(--blue);
-  font-size: 24px;
-  transition: transform var(--motion-fast) var(--ease-out);
-}
-.pujian-row:hover .pujian-arrow {
-  transform: translateX(4px);
-}
 .catalog-note {
   color: var(--muted);
   font-size: 13px;
@@ -7711,10 +7730,6 @@ body.is-resizing-bible {
   color: var(--blue);
   font-size: 11px;
   white-space: nowrap;
-}
-/* Language pill grid (appearance section). */
-.lang-pill-grid {
-  max-width: 340px;
 }
 /* Segmented groups inside the PDF toolbar (layout toggle & zoom). */
 .pdf-view-scroll-toggle,
@@ -8076,10 +8091,6 @@ body.is-resizing-bible {
     display: grid;
     align-items: start;
   }
-  .pujian-row {
-    grid-template-columns: 46px 1fr auto;
-    gap: 10px;
-  }
   .detail-neighbors {
     width: 100%;
   }
@@ -8381,88 +8392,6 @@ body.is-resizing-bible {
 .pujian-list li {
   border: 0;
 }
-.pujian-row {
-  grid-template-columns: 56px minmax(0, 1fr) auto;
-  min-height: 78px;
-  gap: 14px;
-  padding: 11px 13px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--navy) 4%, transparent);
-  transition:
-    background var(--motion-fast) var(--ease-out),
-    border-color var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out);
-}
-.pujian-row:hover {
-  padding-inline: 13px;
-  border-color: color-mix(in srgb, var(--blue) 32%, var(--line));
-  background: var(--surface);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--navy) 8%, transparent);
-  transform: translateY(-1px);
-}
-.pujian-number {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--blue) 24%, var(--line));
-  border-radius: 10px;
-  background: var(--blue-soft);
-  color: var(--blue);
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: 0.04em;
-}
-.pujian-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px 9px;
-  color: var(--muted);
-  font-size: 11px;
-}
-.pujian-meta > span:not(.pujian-badge)::before {
-  content: "·";
-  margin-right: 9px;
-  color: var(--line-strong);
-}
-.pujian-meta > span:first-child::before {
-  content: none;
-  margin-right: 0;
-}
-.pujian-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 22px;
-  padding: 0 7px;
-  border: 1px solid color-mix(in srgb, var(--blue) 25%, var(--line));
-  border-radius: 999px;
-  background: var(--blue-soft);
-  color: var(--blue);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.pujian-badge.is-muted {
-  border-color: var(--line);
-  background: var(--surface-soft);
-  color: var(--muted);
-}
-.pujian-row-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.pujian-row-action-label {
-  opacity: 0.8;
-}
 /* gyschordweb displayPujian parity: nomor + title + add-to-playlist link */
 .pujian-item {
   position: relative;
@@ -8518,21 +8447,6 @@ body.is-resizing-bible {
 .lyrics-title h2,
 .hymn-pdf-viewer-title strong {
   font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-}
-.chord-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  color: var(--muted);
-  opacity: 0.65;
-  transition: all var(--motion-fast) var(--ease-out);
-}
-.chord-indicator.has-chord {
-  color: var(--success, #16a34a);
-  opacity: 1;
 }
 .add-to-playlist-btn {
   flex: 0 0 auto;
@@ -8649,7 +8563,7 @@ body.is-resizing-bible {
     overflow: hidden;
     padding-top: 8px;
   }
-  .bible-page-header .bible-search:not(:focus-within):not(.is-active) {
+  .bible-page-header .bible-search:not(:focus-within):not(.is-open) {
     height: auto;
     max-height: 1px;
     min-height: 0;
@@ -8774,32 +8688,6 @@ body.is-resizing-bible {
     width: 100%;
     min-width: 0;
     max-width: none;
-  }
-  .pujian-row {
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    gap: 10px;
-    min-height: 76px;
-    padding: 10px;
-  }
-  .pujian-row:hover {
-    padding-inline: 10px;
-  }
-  .pujian-number {
-    width: 42px;
-    height: 42px;
-  }
-  .pujian-copy strong {
-    font-size: 14px;
-  }
-  .pujian-meta {
-    gap: 4px 7px;
-    font-size: 10px;
-  }
-  .pujian-meta > span:not(.pujian-badge)::before {
-    margin-right: 7px;
-  }
-  .pujian-row-action-label {
-    display: none;
   }
   .hymn-detail-page .detail-actions {
     display: grid;
@@ -8989,12 +8877,6 @@ body.gys-viewer-active {
 .pdf-transpose-reset {
   font-size: 11px;
 }
-.hymn-midi-dock-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 .hymn-midi-dock-row + .hymn-midi-dock-row {
   margin-top: 8px;
 }
@@ -9071,6 +8953,8 @@ body.gys-viewer-active {
   white-space: nowrap;
 }
 .hymn-pdf-viewer-title strong {
+  width: 100%;
+  min-width: 0;
   color: var(--ink);
   font-size: 12px;
 }
@@ -9600,6 +9484,29 @@ body.gys-viewer-active {
   gap: 24px;
   margin-top: 24px;
 }
+.kidung-settings-disclosure {
+  display: grid;
+  gap: 16px;
+}
+.kidung-settings-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.kidung-settings-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.kidung-settings-disclosure > summary::after {
+  content: "⌄";
+  color: var(--blue);
+  font-size: 14px;
+}
+.kidung-settings-disclosure[open] > summary::after {
+  content: "⌃";
+}
 .kidung-settings-section {
   display: flex;
   flex-direction: column;
@@ -9671,42 +9578,10 @@ body.gys-viewer-active {
   color: var(--ink);
   font-size: 13px;
 }
-.hymn-page .hymn-page-header {
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  padding-inline: 0;
-}
 .hymn-page .pujian-list {
   display: grid;
   gap: 0;
   border-top: 1px solid var(--line);
-}
-.hymn-page .pujian-list li {
-  border-bottom: 1px solid var(--line);
-}
-.hymn-page .pujian-row,
-.hymn-page .pujian-row:hover {
-  min-height: 72px;
-  padding: 12px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  transform: none;
-}
-.hymn-page .pujian-row:hover {
-  padding-inline: 7px;
-  background: var(--surface-soft);
-}
-.hymn-page .pujian-number {
-  width: auto;
-  height: auto;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
 }
 .media-surface.is-kidung-media:not(.is-minimized) {
   right: 20px;
@@ -10138,10 +10013,6 @@ body.gys-viewer-active {
     justify-content: center;
     padding-inline: 0;
   }
-  .search-trigger span,
-  .search-trigger kbd {
-    display: none;
-  }
   .topbar-select {
     width: 44px;
     min-width: 44px;
@@ -10461,8 +10332,8 @@ body.gys-viewer-active {
     background: color-mix(in srgb, var(--canvas) 94%, transparent);
     scrollbar-width: none;
   }
-  .more-grid {
-    gap: 10px;
+  .more-settings-list {
+    gap: 0;
   }
   .more-card,
   .more-card.more-action {
@@ -10898,18 +10769,6 @@ body.gys-viewer-active {
   .more-cat-btn {
     padding-inline: 12px;
   }
-  .theme-pill-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
-  }
-  .theme-pill-btn {
-    min-height: 44px;
-    padding: 6px;
-    gap: 0;
-  }
-  .theme-pill-btn .pill-icon {
-    font-size: 18px;
-  }
   .distributed-asset-actions .asset-action-button {
     width: 44px;
     min-width: 44px;
@@ -11103,9 +10962,6 @@ body.gys-viewer-active {
   }
   .home-media-section {
     margin-top: 8px;
-  }
-  .home-media-section + .home-media-section {
-    margin-top: 6px;
   }
   .home-suara-shelf {
     padding-bottom: 4px;
@@ -11877,17 +11733,6 @@ body:has(.home-page)::-webkit-scrollbar {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.chord-indicator {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-.chord-indicator.has-chord {
-  color: #16a34a;
-}
-.chord-indicator.no-chord {
-  color: var(--line);
 }
 .pdf-fullscreen-toggle {
   flex-shrink: 0;

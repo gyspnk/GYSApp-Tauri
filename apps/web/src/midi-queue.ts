@@ -17,6 +17,12 @@ import {
   selectMidiPlaylistItem,
 } from "./midi-playlist.js";
 import { speechPlayer } from "./speech-player.js";
+import {
+  getHymnPdfMeta,
+  resolveHymnMidiDefaults,
+  warmHymnPdfMeta,
+} from "./hymn-pdf-meta.js";
+import { readNaturalChordPreference } from "./hymn-preferences.js";
 
 type CatalogState = HymnCatalogEntry[];
 
@@ -68,6 +74,10 @@ async function loadItem(
   const catalog = await loadCatalog();
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
+  const songMetaPromise = warmHymnPdfMeta(hymn);
+  const songMeta = getHymnPdfMeta(hymn.id);
+  const naturalChords = readNaturalChordPreference();
+  const midiDefaults = resolveHymnMidiDefaults(songMeta, naturalChords);
   const lock = await loadMusicLock();
   const ref = findMusicAsset(lock, "midi", hymn.midiPath);
   if (!ref) throw new Error(`MIDI ${hymn.title} tidak tersedia`);
@@ -94,9 +104,27 @@ async function loadItem(
       rawMidi: bytes,
       sourceHash: ref.sha256,
       keepPlaying: previousWasPlaying,
+      tempo: midiDefaults.tempo,
+      transpose: midiDefaults.transpose,
     },
   );
   if (!loadedIntoPlayer) return;
+  if (!songMeta) {
+    void songMetaPromise.then((resolvedMeta) => {
+      const current = midiPlayer.snapshot();
+      if (current.songId !== hymn.id) return;
+      if (resolvedMeta.tempo !== undefined)
+        void midiPlayer
+          .setTempo(resolvedMeta.tempo, { userOverride: false })
+          .catch(() => undefined);
+      const resolvedTranspose = resolveHymnMidiDefaults(
+        resolvedMeta,
+        naturalChords,
+      ).transpose;
+      if (current.transpose === midiDefaults.transpose)
+        void midiPlayer.setTranspose(resolvedTranspose).catch(() => undefined);
+    });
+  }
   await midiPlayer.play();
 }
 

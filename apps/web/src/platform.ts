@@ -477,6 +477,8 @@ export class BrowserSpeechProvider implements SpeechProvider {
   private active: SpeechSynthesisUtterance | undefined;
   private activeCancel: ((error: Error) => void) | undefined;
 
+  public constructor(private readonly localOnly = false) {}
+
   public async status(): Promise<{
     available: boolean;
     offline: boolean;
@@ -490,15 +492,20 @@ export class BrowserSpeechProvider implements SpeechProvider {
       };
     const voices = await this.voices();
     return {
-      available: true,
-      offline: voices.some((voice) => voice.local) || voices.length === 0,
+      available: !this.localOnly || voices.length > 0,
+      offline: this.localOnly
+        ? voices.length > 0
+        : voices.some((voice) => voice.local) || voices.length === 0,
+      ...(this.localOnly && voices.length === 0
+        ? { reason: "No local speech voice is available" }
+        : {}),
     };
   }
 
   public async voices(): Promise<SpeechVoice[]> {
     if (!("speechSynthesis" in window)) return [];
-    const read = (): SpeechVoice[] =>
-      naturalFirstVoices(
+    const read = (): SpeechVoice[] => {
+      const voices = naturalFirstVoices(
         window.speechSynthesis.getVoices().map((voice) => ({
           id: voice.voiceURI,
           name: voice.name,
@@ -506,6 +513,8 @@ export class BrowserSpeechProvider implements SpeechProvider {
           local: voice.localService,
         })),
       );
+      return this.localOnly ? voices.filter((voice) => voice.local) : voices;
+    };
     const current = read();
     if (current.length > 0) return current;
     return new Promise((resolve) => {

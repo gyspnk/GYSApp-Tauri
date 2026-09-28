@@ -37,6 +37,9 @@ export type BibleHeaderActionProps = {
   copied: boolean;
   onCopyChapter: () => void;
   // Search
+  searchOpen: boolean;
+  onToggleSearch: () => void;
+  onOpenNotes: () => void;
   onFocusSearch: () => void;
 };
 

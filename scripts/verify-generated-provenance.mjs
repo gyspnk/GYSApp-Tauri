@@ -6,6 +6,8 @@ import { assertEgysLocalOnly } from "./verify-egys-local-only.mjs";
 
 await assertEgysLocalOnly(process.cwd());
 
+const MUSIC_SOURCE_COMMIT = "e8e7efe1189b5746a2bb542348e221844091c8d1";
+
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 const listFiles = async (root) => {
   if (!existsSync(root)) return [];
@@ -38,20 +40,26 @@ const sourceField = (field, value) =>
 
 if (
   lock.sourceRepo !== "gyspnk/gyschordweb" ||
-  lock.sourceCommit !== "3039ae678c9e0e6ca439f4e1e0250759667dbcdf"
+  lock.sourceCommit !== MUSIC_SOURCE_COMMIT
 )
   throw new Error("music lock provenance drifted");
-if (lock.items.length !== 1223)
-  throw new Error(`expected 1223 music entries, got ${lock.items.length}`);
-if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 155)
+if (lock.items.length !== 1229)
+  throw new Error(`expected 1229 music entries, got ${lock.items.length}`);
+if (chord.sourceCommit !== lock.sourceCommit || chord.entries.length !== 161)
   throw new Error("chord manifest drifted from music lock");
 for (const requiredChord of [
   "106_",
   "108_",
+  "128_",
+  "153_",
+  "156_",
+  "164_",
   "196_",
   "271_",
   "322_",
+  "333_",
   "363_",
+  "397_",
   "398_",
   "407_",
   "466_",
@@ -97,6 +105,14 @@ for (const entry of chord.entries) {
 }
 if (hymns.sourceCommit !== lock.sourceCommit || hymns.items.length !== 533)
   throw new Error("hymn catalog drifted from music lock");
+const hymnsById = new Map(hymns.items.map((item) => [item.id, item]));
+for (const entry of chord.entries) {
+  const hymn = hymnsById.get(entry.songId);
+  if (!hymn || JSON.stringify(hymn.chordRef) !== JSON.stringify(entry))
+    throw new Error(`hymn chord reference drift: ${entry.songId}`);
+}
+if (hymns.items.filter((item) => item.chordRef).length !== chord.entries.length)
+  throw new Error("hymn catalog chord availability is incomplete");
 if (
   forkPdf.sourceRepo !== "ThenGB/GYSAPP-Fork" ||
   forkPdf.sourceCommit !== "4f0d39b" ||

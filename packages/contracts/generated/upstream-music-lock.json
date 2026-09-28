@@ -1,7 +1,7 @@
 {
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
-  "generatedAt": "2026-09-11T18:10:18.732Z",
+  "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+  "generatedAt": "2026-09-26T03:38:49.328Z",
   "items": [
     {
       "id": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -7795,6 +7795,13 @@
       "sha256": "6c89e261433dfe74bdbd4f90842e1b96683e4585cdf80f9b5d1bd7ce01b9a806"
     },
     {
+      "id": "assets/chord/128_Hari Kudus Nan Bahagia.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/128_Hari Kudus Nan Bahagia.chord.json",
+      "size": 2153,
+      "sha256": "06cdeba2cb048594e181ffe6b312fab7c4d955bd01e31eefc670d349ce9be6e5"
+    },
+    {
       "id": "assets/chord/129_Peringati Hari Kudus.chord.json",
       "kind": "chord",
       "path": "assets/chord/129_Peringati Hari Kudus.chord.json",
@@ -7865,11 +7872,25 @@
       "sha256": "efe72283ba1c08638f6b9512541aab918dd89126a3393328a59835a5641bc470"
     },
     {
+      "id": "assets/chord/153_Setiap Waktu Berserah Pada Tuhan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/153_Setiap Waktu Berserah Pada Tuhan.chord.json",
+      "size": 1772,
+      "sha256": "738d0bf08a6281aa9a3a2b7898a14df675cb3d1bf4f89a67fbda78a996bea4e8"
+    },
+    {
       "id": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
       "kind": "chord",
       "path": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
       "size": 1430,
       "sha256": "e0d8f67e0cc10983c6d6e4b8285d66a7dc5fc93a1484c0496976813713347f2d"
+    },
+    {
+      "id": "assets/chord/156_Jalan Bersama Tuhan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/156_Jalan Bersama Tuhan.chord.json",
+      "size": 1685,
+      "sha256": "52742d0f17b708e7e61d562e57240825dc0e42139799e0afdc84ac89d28b4ec9"
     },
     {
       "id": "assets/chord/158_Berjalan di Jalan Tuhan.chord.json",
@@ -7884,6 +7905,13 @@
       "path": "assets/chord/161_Di Bawah Naungan Tuhan.chord.json",
       "size": 1006,
       "sha256": "27d1817e50f71efc7bde69c46bcfac463d52c80d794c01ae90823c47d7227a88"
+    },
+    {
+      "id": "assets/chord/164_Cukuplah Kasih Karunia Tuhan.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/164_Cukuplah Kasih Karunia Tuhan.chord.json",
+      "size": 827,
+      "sha256": "57a483696688bdd8dd471ff996afcf705ceb9da96603008c849399c246a99d47"
     },
     {
       "id": "assets/chord/165_Yesus Memeluk Aku.chord.json",
@@ -8306,6 +8334,13 @@
       "sha256": "6f30150324880b0ff0d8bf5ea2a66cb84101e518059ef0f4e4468db4dfe281ee"
     },
     {
+      "id": "assets/chord/333_Tiap Minggu DijagaNya.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/333_Tiap Minggu DijagaNya.chord.json",
+      "size": 1198,
+      "sha256": "b282cb00bdc2c4c0b05bca623a0788f339fcb083b7bdeaa158e49f59551ae264"
+    },
+    {
       "id": "assets/chord/356_Imanlah Kemenangan.chord.json",
       "kind": "chord",
       "path": "assets/chord/356_Imanlah Kemenangan.chord.json",
@@ -8381,6 +8416,13 @@
       "path": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
       "size": 1065,
       "sha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585"
+    },
+    {
+      "id": "assets/chord/397_Nyatakan Yesus Dalammu.chord.json",
+      "kind": "chord",
+      "path": "assets/chord/397_Nyatakan Yesus Dalammu.chord.json",
+      "size": 1709,
+      "sha256": "c09144f3c03e9a156eb35f901747329b8bae5542707773c0285429c6f41efabc"
     },
     {
       "id": "assets/chord/398_Hidup Untuk Yesus.chord.json",

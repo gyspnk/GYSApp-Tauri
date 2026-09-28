@@ -104,6 +104,47 @@ async function installFaithFixture(page: Page) {
   );
 }
 
+test("mobile literature search precedes shelves and puts results first", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-literature-progress-v2",
+      JSON.stringify({
+        "audit-article": {
+          version: 2,
+          percent: 25,
+          updatedAt: "2026-09-15T00:00:00.000Z",
+          lastOpenedAt: "2026-09-15T00:00:00.000Z",
+          resourceVersion: "2026-09-01T00:00:00.000Z",
+        },
+      }),
+    );
+  });
+  await installLiteratureFixture(page);
+  await page.goto("/GYSApp-Tauri/literatur");
+
+  const toolbar = page.locator(".literature-toolbar");
+  const featured = page.locator(".literature-featured");
+  await expect(toolbar).toBeVisible();
+  await expect(featured).toBeVisible();
+  await expect(page.locator(".literature-recent")).toBeVisible();
+  const toolbarBounds = await toolbar.boundingBox();
+  const featuredBounds = await featured.boundingBox();
+  expect(toolbarBounds).not.toBeNull();
+  expect(featuredBounds).not.toBeNull();
+  expect(toolbarBounds!.y).toBeLessThan(featuredBounds!.y);
+
+  await page
+    .getByRole("textbox", { name: "Cari literatur", exact: true })
+    .fill("Berakar");
+  await expect(page.locator(".literature-row")).toHaveCount(1);
+  await expect(featured).toHaveCount(0);
+  await expect(page.locator(".literature-recent")).toHaveCount(0);
+});
+
 async function prepare(page: Page) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("https://raw.githubusercontent.com/**", (route) =>
@@ -206,6 +247,16 @@ test("reading catalogs stay flat, readable, and contained across layouts", async
     expect(shelfStyle.boxShadow).toBe("none");
 
     if (viewport.width <= 390) {
+      const toolbarBounds = await page
+        .locator(".literature-toolbar")
+        .boundingBox();
+      const featuredBounds = await page
+        .locator(".literature-featured")
+        .boundingBox();
+      expect(toolbarBounds).not.toBeNull();
+      expect(featuredBounds).not.toBeNull();
+      expect(toolbarBounds!.y).toBeLessThan(featuredBounds!.y);
+
       const metadata = page.locator(".literature-shelf-item small").first();
       const metadataStyle = await metadata.evaluate((element) => {
         const style = getComputedStyle(element);

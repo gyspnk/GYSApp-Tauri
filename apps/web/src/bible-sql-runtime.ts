@@ -26,6 +26,21 @@ function sqlWasmUrl(): string {
   return resolveSqlWasmUrl(wasmUrl);
 }
 
+let sqlRuntime: ReturnType<typeof initSqlJs> | undefined;
+
+function loadSqlRuntime(): ReturnType<typeof initSqlJs> {
+  return (sqlRuntime ??= initSqlJs({ locateFile: sqlWasmUrl }).catch(
+    (error: unknown) => {
+      sqlRuntime = undefined;
+      throw error;
+    },
+  ));
+}
+
+export async function prepareSqliteBibleRuntime(): Promise<void> {
+  await loadSqlRuntime();
+}
+
 function firstResult(
   database: { exec(query: string): SqlQueryResult[] },
   query: string,
@@ -38,7 +53,7 @@ export async function projectSqliteBibleAsync(
   bytes: Uint8Array,
   source: string,
 ): Promise<BibleReaderPack> {
-  const SQL = await initSqlJs({ locateFile: sqlWasmUrl });
+  const SQL = await loadSqlRuntime();
   const database = new SQL.Database(bytes);
   try {
     const books = firstResult(

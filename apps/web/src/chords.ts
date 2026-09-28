@@ -8,6 +8,7 @@ import { ChordManifestV1Schema } from "@gys/contracts";
 import { BrowserChordCache } from "./chord-cache.js";
 import { createPlatformServices } from "./platform.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { loadMusicLock } from "./music-assets.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 
@@ -88,8 +89,33 @@ export function createBrowserChordRepository(): ChordRepository {
           return fallbackManifest();
         }
         const nextEtag = response.headers.get("etag");
+        const manifest = ChordManifestV1Schema.parse(await response.json());
+        const musicLock = await loadMusicLock();
+        const lockedChords = new Map(
+          musicLock.items
+            .filter((item) => item.kind === "chord")
+            .map((item) => [item.path, item]),
+        );
+        if (
+          manifest.sourceRepo !== musicLock.sourceRepo ||
+          manifest.sourceCommit !== musicLock.sourceCommit ||
+          manifest.entries.length !== lockedChords.size ||
+          new Set(manifest.entries.map((entry) => entry.path)).size !==
+            lockedChords.size ||
+          manifest.entries.some((entry) => {
+            const locked = lockedChords.get(entry.path);
+            return (
+              !locked ||
+              entry.songId !== chordSongIdFromPath(entry.path) ||
+              entry.sourceCommit !== musicLock.sourceCommit ||
+              entry.size !== locked.size ||
+              entry.sha256.toLowerCase() !== locked.sha256.toLowerCase()
+            );
+          })
+        )
+          return fallbackManifest();
         return {
-          manifest: ChordManifestV1Schema.parse(await response.json()),
+          manifest,
           ...(nextEtag ? { etag: nextEtag } : {}),
         };
       } catch (error) {
