@@ -41,6 +41,23 @@ const packagedSauhSnapshot = JSON.parse(
 const packagedSauhTitle = packagedSauhSnapshot.items?.[0]?.title;
 assert.ok(packagedSauhTitle, "Packaged Sauh snapshot has no title");
 const packagedSauhReference = packagedSauhSnapshot.items?.[0]?.reference;
+const publisherDate = Object.fromEntries(
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .formatToParts(new Date())
+    .map((part) => [part.type, part.value]),
+);
+const recoverySlug = `sbj${publisherDate.year.slice(-2)}${publisherDate.month}${publisherDate.day}`;
+const recoverySauh = {
+  ...packagedSauhSnapshot.items[0],
+  id: recoverySlug,
+  url: `https://tjc.org/id/gerakan-baca-alkitab/${recoverySlug}/`,
+  updatedAt: new Date().toISOString(),
+};
 
 async function allocatePort() {
   const server = createServer();
@@ -527,7 +544,7 @@ try {
   await page.locator(".home-grid").waitFor({ state: "visible" });
   const homeReadyMs = Date.now() - homeStartedAt;
   const homeFailurePage = page;
-  await homeFailurePage.addInitScript(() => {
+  await homeFailurePage.addInitScript((recoverySauh) => {
     if (window.sessionStorage.getItem("gys-native-home-fixture-used") === "1")
       return;
     window.sessionStorage.setItem("gys-native-home-fixture-used", "1");
@@ -584,11 +601,20 @@ try {
       }
       if (url.origin !== window.location.origin) {
         window.__gysNativeHomeRequests.publisher += 1;
+        if (
+          window.__gysNativeHomeFeedsAvailable &&
+          url.pathname.includes("/wp-json/wp/v2/posts")
+        )
+          return Promise.resolve(
+            new Response(JSON.stringify([recoverySauh]), {
+              headers: { "content-type": "application/json" },
+            }),
+          );
         return Promise.reject(new TypeError("Failed to fetch"));
       }
       return nativeFetch(input, init);
     };
-  });
+  }, recoverySauh);
   await homeFailurePage.goto(new URL("/", runtimeOrigin).href);
   await homeFailurePage.locator(".home-grid").waitFor({ state: "visible" });
   const homeSauhError = homeFailurePage.locator(".sauh-offline-state");
