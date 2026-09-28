@@ -36,6 +36,7 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable
         run: pnpm --filter @gys/native exec tauri build --no-bundle
       - name: Exercise keyless Edge through WebView2 and the Tauri plugin
