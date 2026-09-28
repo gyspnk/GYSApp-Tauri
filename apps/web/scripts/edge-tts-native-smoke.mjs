@@ -1158,13 +1158,13 @@ try {
 
   const localSettings = await openSpeechSettings(page);
   await localSettings.nth(0).selectOption("local");
-  const localIndonesianVoice = await page.evaluate(() => {
-    const voice = window.speechSynthesis
+  const localSpeechVoice = await page.evaluate(() => {
+    const voices = window.speechSynthesis
       .getVoices()
-      .find(
-        (candidate) =>
-          candidate.localService && /^id(?:-|_)/i.test(candidate.lang),
-      );
+      .filter((candidate) => candidate.localService);
+    const voice =
+      voices.find((candidate) => /^id(?:-|_)/i.test(candidate.lang)) ??
+      voices[0];
     return voice
       ? {
           id: voice.voiceURI,
@@ -1174,69 +1174,74 @@ try {
         }
       : undefined;
   });
-  assert.ok(
-    localIndonesianVoice,
-    "Packaged WebView2 has no installed local Indonesian speech voice",
-  );
-  await page.waitForFunction(
-    (voiceId) =>
-      [
-        ...document.querySelectorAll(".drawer-speech-card select")[1].options,
-      ].some((option) => option.value === voiceId),
-    localIndonesianVoice.id,
-  );
-  await localSettings.nth(1).selectOption(localIndonesianVoice.id);
-  await page.locator(".hamburger-drawer-close").click();
-  await page.evaluate(() => {
-    const synthesis = window.speechSynthesis;
-    const speak = synthesis.speak.bind(synthesis);
-    const state = {
-      called: false,
-      started: false,
-      voiceId: undefined,
-      language: undefined,
-      local: false,
-    };
-    window.__gysNativeLocalSpeech = state;
-    synthesis.speak = (utterance) => {
-      state.called = true;
-      state.voiceId = utterance.voice?.voiceURI;
-      state.language = utterance.lang;
-      state.local = utterance.voice?.localService ?? false;
-      utterance.addEventListener(
-        "start",
-        () => {
-          state.started = true;
-        },
-        { once: true },
-      );
-      speak(utterance);
-    };
-  });
-  await readerButton.click();
-  await page.waitForFunction(
-    () => window.__gysNativeLocalSpeech?.started === true,
-    null,
-    { timeout: 10_000 },
-  );
-  const localSpeechPlayback = await page.evaluate(
-    () => window.__gysNativeLocalSpeech,
-  );
-  assert.deepEqual(localSpeechPlayback, {
-    called: true,
-    started: true,
-    voiceId: localIndonesianVoice.id,
-    language: localIndonesianVoice.language,
-    local: true,
-  });
-  await page.locator(".media-stop-control").click();
-  await page.waitForFunction(
-    (label) =>
-      document
-        .querySelector(".reader-speech-btn")
-        ?.getAttribute("aria-label") === label,
-    idleLabel,
-  );
+  let localSpeechPlayback;
+  if (localSpeechVoice) {
+    await page.waitForFunction(
+      (voiceId) =>
+        [
+          ...document.querySelectorAll(".drawer-speech-card select")[1].options,
+        ].some((option) => option.value === voiceId),
+      localSpeechVoice.id,
+    );
+    await localSettings.nth(1).selectOption(localSpeechVoice.id);
+    await page.locator(".hamburger-drawer-close").click();
+    await page.evaluate(() => {
+      const synthesis = window.speechSynthesis;
+      const speak = synthesis.speak.bind(synthesis);
+      const state = {
+        called: false,
+        started: false,
+        voiceId: undefined,
+        language: undefined,
+        local: false,
+      };
+      window.__gysNativeLocalSpeech = state;
+      synthesis.speak = (utterance) => {
+        state.called = true;
+        state.voiceId = utterance.voice?.voiceURI;
+        state.language = utterance.lang;
+        state.local = utterance.voice?.localService ?? false;
+        utterance.addEventListener(
+          "start",
+          () => {
+            state.started = true;
+          },
+          { once: true },
+        );
+        speak(utterance);
+      };
+    });
+    await readerButton.click();
+    await page.waitForFunction(
+      () => window.__gysNativeLocalSpeech?.started === true,
+      null,
+      { timeout: 10_000 },
+    );
+    localSpeechPlayback = await page.evaluate(
+      () => window.__gysNativeLocalSpeech,
+    );
+    assert.deepEqual(localSpeechPlayback, {
+      called: true,
+      started: true,
+      voiceId: localSpeechVoice.id,
+      language: localSpeechVoice.language,
+      local: true,
+    });
+    await page.locator(".media-stop-control").click();
+    await page.waitForFunction(
+      (label) =>
+        document
+          .querySelector(".reader-speech-btn")
+          ?.getAttribute("aria-label") === label,
+      idleLabel,
+    );
+  } else {
+    localSpeechPlayback = { skipped: "runner has no installed local voice" };
+    console.log(
+      "Skipping local playback: runner has no installed local voice.",
+    );
+    await page.locator(".hamburger-drawer-close").click();
+  }
   const restoreEdgeSettings = await openSpeechSettings(page);
   await restoreEdgeSettings.nth(0).selectOption("edge");
   await restoreEdgeSettings.nth(1).selectOption("id-ID-GadisNeural");

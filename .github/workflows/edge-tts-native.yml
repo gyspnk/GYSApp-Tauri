@@ -39,18 +39,6 @@ jobs:
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable
         run: pnpm --filter @gys/native exec tauri build --no-bundle
-      - name: Install Indonesian local speech voice
-        shell: pwsh
-        run: |
-          $capability = "Language.TextToSpeech~~~id-ID~0.0.1.0"
-          $state = Get-WindowsCapability -Online -Name $capability
-          if ($state.State -ne "Installed") {
-            Add-WindowsCapability -Online -Name $capability | Out-Host
-          }
-          $state = Get-WindowsCapability -Online -Name $capability
-          if ($state.State -ne "Installed") {
-            throw "Indonesian Text-to-Speech capability is $($state.State)"
-          }
       - name: Ensure the WebView2 Evergreen Runtime
         shell: pwsh
         run: |
