@@ -69,7 +69,7 @@ jobs:
           $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
           New-Item -Path $policyPath -Force | Out-Null
           $arguments = "--remote-debugging-port=$port --remote-allow-origins=*"
-          New-ItemProperty -Path $policyPath -Name "*" -PropertyType String -Value $arguments -Force | Out-Null
+          New-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -PropertyType String -Value $arguments -Force | Out-Null
           Add-Content -Path $env:GITHUB_ENV -Value "GYS_WEBVIEW2_POLICY_DEBUG_PORT=$port" -Encoding utf8
           Write-Host "Configured temporary loopback-only WebView2 debugging policy."
       - name: Exercise keyless Edge through WebView2 and the Tauri plugin
@@ -79,4 +79,4 @@ jobs:
         shell: pwsh
         run: |
           $policyPath = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
-          Remove-ItemProperty -Path $policyPath -Name "*" -ErrorAction SilentlyContinue
+          Remove-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -ErrorAction SilentlyContinue

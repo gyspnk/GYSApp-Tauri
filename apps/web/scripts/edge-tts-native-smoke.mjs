@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -96,6 +96,22 @@ async function waitForDevTools(app, port) {
       // The WebView2 DevTools endpoint appears after its window is created.
     }
     await delay(250);
+  }
+  if (useWebView2PolicyDebugging) {
+    try {
+      const diagnostics = execFileSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-Command",
+          "$ErrorActionPreference = 'SilentlyContinue'; Get-ItemProperty -LiteralPath 'HKCU:\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments' | Format-List *; Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('gysapp-native.exe', 'msedgewebview2.exe') } | Select-Object Name, CommandLine | Format-List",
+        ],
+        { encoding: "utf8", timeout: 5_000, windowsHide: true },
+      );
+      console.error(`WebView2 diagnostics:\n${diagnostics.trim()}`);
+    } catch (error) {
+      console.error(`Could not collect WebView2 diagnostics: ${error.message}`);
+    }
   }
   throw new Error("Timed out waiting for the WebView2 DevTools endpoint");
 }
