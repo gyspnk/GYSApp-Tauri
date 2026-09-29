@@ -147,6 +147,10 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await page.goto("/GYSApp-Tauri/lainnya");
+    await page
+      .locator('.more-setting-section[data-setting="appearance"] > summary')
+      .click();
+    await page.locator('[data-setting="accent"] > summary').click();
     await expect(
       page.getByRole("radiogroup", { name: "Pilih Warna Aksen" }),
     ).toBeVisible();
@@ -575,7 +579,7 @@ test.describe("responsive reader navigation", () => {
     ).toBeVisible();
   });
 
-  test("Lainnya keeps primary settings ahead of compact resource and tool groups", async ({
+  test("Lainnya keeps its settings rows compact and reveals tools on demand", async ({
     page,
   }) => {
     for (const viewport of [
@@ -591,63 +595,37 @@ test.describe("responsive reader navigation", () => {
         page.getByRole("heading", { name: "Lainnya", exact: true }),
       ).toBeVisible({ timeout: 15_000 });
 
-      const grid = page.locator(".more-grid");
-      const order = await grid.locator(":scope > *").evaluateAll((elements) =>
-        elements.map((element) => ({
-          account: element.classList.contains("account-card"),
-          appearance: element.classList.contains("appearance-card"),
-          resources: element.classList.contains("more-resource-group"),
-          secondary: element.classList.contains("more-secondary-group"),
-        })),
-      );
-      expect(order.map((item) => Object.values(item).indexOf(true))).toEqual([
-        0, 1, 2, 3,
+      const rows = page.locator(".more-setting-section");
+      await expect(rows).toHaveCount(7);
+      await expect(rows.locator(":scope > summary")).toHaveText([
+        "Akun",
+        "Tampilan",
+        "Audio & Suara",
+        "Kidung",
+        "Data Offline",
+        "Backup",
+        "Tentang & Bantuan",
       ]);
-
-      const boxes = await page
-        .locator(
-          ".account-card, .appearance-card, .more-resource-group, .more-secondary-group",
-        )
+      await expect(rows.locator(":scope > summary").last()).toBeInViewport();
+      const rowBoxes = await rows
+        .locator(":scope > summary")
         .evaluateAll((elements) =>
           elements.map((element) => {
             const box = element.getBoundingClientRect();
-            return { top: box.top, width: box.width };
+            return { height: box.height, right: box.right, left: box.left };
           }),
         );
-      expect(boxes).toHaveLength(4);
-      expect(boxes[0]!.top).toBeLessThan(boxes[1]!.top);
-      expect(boxes[1]!.top).toBeLessThan(boxes[2]!.top);
-      expect(boxes[2]!.top).toBeLessThan(boxes[3]!.top);
-
-      const compactActions = await page
-        .locator(
-          ".more-secondary-grid > .more-action, .more-secondary-grid > .device-data-tools",
-        )
-        .evaluateAll((elements) =>
-          elements.map((element) => {
-            const box = element.getBoundingClientRect();
-            return {
-              height: box.height,
-              right: box.right,
-              left: box.left,
-            };
-          }),
-        );
-      for (const action of compactActions) {
-        expect(action.height).toBeGreaterThanOrEqual(44);
-        expect(action.left).toBeGreaterThanOrEqual(-1);
-        expect(action.right).toBeLessThanOrEqual(viewport.width + 1);
+      for (const row of rowBoxes) {
+        expect(row.height).toBeGreaterThanOrEqual(44);
+        expect(row.left).toBeGreaterThanOrEqual(-1);
+        expect(row.right).toBeLessThanOrEqual(viewport.width + 1);
       }
 
-      await expect(page.locator(".more-resource-group")).toContainText(
-        "Paket lokal",
-      );
-      await expect(page.locator(".more-resource-group")).toContainText(
-        "Manajemen Aset",
-      );
-      await expect(page.locator(".more-secondary-group")).toContainText(
-        "Laporkan masalah",
-      );
+      await expect(page.locator(".distributed-assets-card")).toBeHidden();
+      await rows.nth(4).locator(":scope > summary").click();
+      await expect(page.locator(".distributed-assets-card")).toBeVisible();
+      await rows.nth(6).locator(":scope > summary").click();
+      await expect(page.locator(".report-card")).toBeVisible();
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
   });
@@ -779,10 +757,13 @@ test.describe("responsive reader navigation", () => {
       page.getByRole("button", { name: "Tampilkan chord" }),
     ).toBeVisible();
     await expect(page.getByRole("tab", { name: "PDF" })).toBeVisible();
-    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     await expect(
-      page.locator(".hymn-detail-page .detail-actions .hymn-action-primary"),
-    ).toHaveCount(0);
+      page.getByRole("button", {
+        name: "Pasang SoundFont untuk memutar",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
   test("mobile hymn text mode folds secondary actions and reader settings", async ({
@@ -796,15 +777,18 @@ test.describe("responsive reader navigation", () => {
 
     await expect(
       page.locator(".hymn-detail-page .detail-actions .hymn-action"),
-    ).toHaveCount(1);
+    ).toHaveCount(2);
     await expect(page.locator(".hymn-more-actions")).toBeVisible();
     await expect(
       page.locator(".hymn-more-actions .hymn-more-actions-panel"),
     ).toBeHidden();
+    await expect(page.locator(".hymn-reader-settings")).toBeHidden();
+    await page.locator(".hymn-more-actions-summary").click();
     await expect(page.locator(".hymn-reader-settings")).toBeVisible();
     await expect(
       page.locator(".hymn-reader-settings .song-controls"),
     ).toBeHidden();
+    await page.locator(".hymn-more-actions-summary").click();
 
     await expect(page.locator(".hymn-text-toolbar")).toBeVisible();
     await expect(page.locator(".lyrics-sheet")).toBeVisible();
@@ -928,7 +912,7 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
-  test("Kidung hides MIDI transport until its SoundFont is installed", async ({
+  test("Kidung keeps Play visible and opens SoundFont assets when unavailable", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -936,10 +920,28 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(
-      page.getByRole("button", { name: "Putar MIDI", exact: true }),
-    ).toHaveCount(0);
+    const play = page.getByRole("button", {
+      name: "Pasang SoundFont untuk memutar",
+      exact: true,
+    });
+    await expect(play).toBeVisible();
     await expect(page.locator(".media-surface")).toHaveCount(0);
+    await play.click();
+    await expect(page).toHaveURL(/\/lainnya\?section=data$/);
+    await expect(page.locator(".distributed-assets-list")).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+    await expect(
+      page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
+    ).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL(/\/lainnya\?section=data$/);
+    await expect(page.locator(".distributed-assets-list")).toBeVisible();
+    await expect(
+      page.locator(".distributed-asset-group-label").filter({
+        hasText: "Soundfont",
+      }),
+    ).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
@@ -978,6 +980,7 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("button", { name: "Putar MIDI", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
+    await page.locator(".hymn-more-actions-summary").click();
     await page.locator(".hymn-reader-settings-summary").click();
     await page.locator(".hymn-music-settings > summary").click();
     await expect(page.getByText("SoundFont aktif")).toBeVisible();
@@ -1080,9 +1083,137 @@ test.describe("responsive reader navigation", () => {
     const engine = page.getByLabel("Mesin");
     await expect(engine).toBeVisible();
     await expect(engine.locator("option")).toHaveText([
-      "Edge TTS",
+      "Otomatis",
+      "Edge neural (online)",
       "TTS lokal",
     ]);
+  });
+
+  test("Bible search and notes open on demand from reader actions", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 15_000,
+      },
+    );
+
+    const searchButton = page.getByRole("button", {
+      name: "Buka pencarian ayat di Alkitab",
+    });
+    const searchForm = page.locator("#bible-search-form");
+    const searchInput = page.getByLabel("Cari Alkitab");
+    await expect(searchButton).toHaveAttribute("aria-expanded", "false");
+    await expect(searchForm).toHaveAttribute("aria-hidden", "true");
+    await expect(searchForm).toHaveAttribute("inert", "");
+    await searchButton.click();
+    await expect(searchForm).toHaveAttribute("aria-hidden", "false");
+    await expect(searchForm).not.toHaveAttribute("inert");
+    await expect(searchInput).toBeFocused();
+
+    const searchFilters = page.locator(".bible-search-options-disclosure");
+    await expect(searchFilters).not.toHaveAttribute("open", "");
+    await searchFilters.locator(":scope > summary").click();
+    await expect(searchFilters).toHaveAttribute("open", "");
+    await expect(searchInput).toBeInViewport();
+    await searchButton.click();
+    await expect(searchButton).toHaveAttribute("aria-expanded", "false");
+    await expect(searchForm).toHaveAttribute("inert", "");
+    await expect(searchButton).toBeFocused();
+    await searchButton.click();
+    await expect(searchInput).toBeFocused();
+
+    await page.getByRole("button", { name: "Menu Alkitab" }).click();
+    const notesButton = page
+      .locator(".reader-hamburger-drawer")
+      .getByRole("button", { name: "Catatan ayat", exact: true });
+    await expect(notesButton).toBeVisible();
+    await notesButton.click();
+    await expect(page.locator(".bible-notes-modal")).toBeVisible();
+  });
+
+  test("Bible broad search stays bounded and localized on a phone", async ({
+    page,
+  }) => {
+    const copies = {
+      id: {
+        open: "Buka pencarian ayat di Alkitab",
+        label: "Cari Alkitab",
+        placeholder: "Kata, kitab, atau referensi…",
+        submit: "Cari",
+        results: "Hasil pencarian",
+        more: "Tampilkan lebih banyak ayat",
+      },
+      en: {
+        open: "Open Bible verse search",
+        label: "Search Bible",
+        placeholder: "Word, book, or reference…",
+        submit: "Search",
+        results: "Search results",
+        more: "Show more verses",
+      },
+      zh: {
+        open: "打开圣经经文搜索",
+        label: "搜索圣经",
+        placeholder: "关键词、书卷或经文…",
+        submit: "搜索",
+        results: "搜索结果",
+        more: "显示更多经文",
+      },
+    } as const;
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      const locale = new URLSearchParams(window.location.search).get(
+        "__gys_locale",
+      );
+      if (locale !== "id" && locale !== "en" && locale !== "zh") return;
+      localStorage.setItem("gys-locale", locale);
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale, theme: "light" }),
+      );
+    });
+
+    for (const locale of ["id", "en", "zh"] as const) {
+      await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${locale}`);
+      await expect(
+        page.getByRole("heading", { name: /Kejadian 1/ }),
+      ).toBeVisible({
+        timeout: 15_000,
+      });
+
+      await page.getByRole("button", { name: copies[locale].open }).click();
+      const searchForm = page.locator("#bible-search-form");
+      const searchInput = searchForm.getByLabel(copies[locale].label, {
+        exact: true,
+      });
+      await expect(searchInput).toHaveAttribute(
+        "placeholder",
+        copies[locale].placeholder,
+      );
+      await searchInput.fill("Allah");
+      await searchForm
+        .getByRole("button", { name: copies[locale].submit, exact: true })
+        .click();
+
+      const results = page.locator(".result-item");
+      await expect(
+        page.getByRole("heading", { name: copies[locale].results }),
+      ).toBeVisible();
+      await expect(results).toHaveCount(40);
+      await expect(results.first()).toContainText("Kejadian 1:1");
+      const moreResults = page.getByRole("button", {
+        name: copies[locale].more,
+        exact: true,
+      });
+      await expect(moreResults).toBeVisible();
+      await moreResults.click();
+      await expect(results).toHaveCount(80);
+      expect(await hasNoHorizontalOverflow(page)).toBe(true);
+    }
   });
 
   test("topbar theme and speech endpoint settings stay localized", async ({

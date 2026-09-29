@@ -1,4 +1,5 @@
-const CACHE = "gysapp-shell-v18";
+const CACHE = "gysapp-shell-v22";
+const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
@@ -68,6 +69,28 @@ function putNamedCached(cacheName, request, response) {
   );
 }
 
+function isPdfResponse(requestUrl, response) {
+  const contentType = response.headers.get("content-type") ?? "";
+  return (
+    requestUrl.pathname.toLowerCase().endsWith(".pdf") ||
+    contentType.split(";", 1)[0].trim().toLowerCase() === "application/pdf"
+  );
+}
+
+async function preserveEditorialContent(oldShellNames) {
+  const contentCache = await caches.open(CONTENT_CACHE);
+  // CacheStorage.keys() is insertion ordered, so copy from newest old shell
+  // first and keep already migrated snapshots when multiple releases exist.
+  for (const name of [...oldShellNames].reverse()) {
+    const oldShell = await caches.open(name);
+    for (const url of CONTENT_JSON) {
+      if (await contentCache.match(url)) continue;
+      const response = await oldShell.match(url);
+      if (response) await putCached(contentCache, url, response);
+    }
+  }
+}
+
 async function waitForCacheWrites() {
   while (pendingCacheWrites.size) {
     await Promise.allSettled([...pendingCacheWrites]);
@@ -112,7 +135,15 @@ self.addEventListener("install", (event) => {
       await Promise.allSettled(
         CORE.map(async (url) => {
           const response = await fetch(url, { cache: "no-cache" });
-          if (response.ok) await putCached(cache, url, response.clone());
+          if (response.ok) {
+            if (
+              CONTENT_JSON.includes(new URL(url, self.location.origin).pathname)
+            ) {
+              await putNamedCached(CONTENT_CACHE, url, response.clone());
+            } else {
+              await putCached(cache, url, response.clone());
+            }
+          }
         }),
       );
       const indexResponse = await fetch(withBase("index.html"), {
@@ -138,13 +169,13 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key.startsWith("gysapp-shell-") && key !== CACHE)
-            .map((key) => caches.delete(key)),
-        ),
-      )
+      .then(async (keys) => {
+        const oldShells = keys.filter(
+          (key) => key.startsWith("gysapp-shell-") && key !== CACHE,
+        );
+        await preserveEditorialContent(oldShells);
+        await Promise.all(oldShells.map((key) => caches.delete(key)));
+      })
       .then(() =>
         caches
           .open(REMOTE_MEDIA_CACHE)
@@ -244,8 +275,10 @@ self.addEventListener("fetch", (event) => {
     requestUrl.pathname.endsWith("/index.html");
   if (isNavigation) {
     event.respondWith(
-      fetchAndCacheShell(event.request, event.waitUntil).catch(() =>
-        caches.match(withBase("index.html")),
+      fetchAndCacheShell(event.request, event.waitUntil).catch(
+        async () =>
+          (await caches.match(withBase("index.html"))) ??
+          caches.match(withBase("")),
       ),
     );
     return;
@@ -259,13 +292,19 @@ self.addEventListener("fetch", (event) => {
           if (!response.ok) throw new Error(String(response.status));
           const copy = response.clone();
           event.waitUntil(
-            putNamedCached(CACHE, event.request, copy).catch(() => undefined),
+            putNamedCached(CONTENT_CACHE, event.request, copy).catch(
+              () => undefined,
+            ),
           );
           return response;
         } catch {
           // offline / transient failure: serve the cached snapshot below
         }
-        return (await caches.match(event.request)) ?? Response.error();
+        return (
+          (await caches
+            .open(CONTENT_CACHE)
+            .then((cache) => cache.match(event.request))) ?? Response.error()
+        );
       })(),
     );
     return;
@@ -277,7 +316,8 @@ self.addEventListener("fetch", (event) => {
         cached ??
         fetch(event.request)
           .then((response) => {
-            if (!response.ok) return response;
+            if (!response.ok || isPdfResponse(requestUrl, response))
+              return response;
             const copy = response.clone();
             event.waitUntil(
               putNamedCached(CACHE, event.request, copy).catch(() => undefined),

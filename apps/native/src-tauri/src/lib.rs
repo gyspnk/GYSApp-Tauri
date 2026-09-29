@@ -499,7 +499,7 @@ async fn file_dialog_open(
 }
 
 #[tauri::command]
-async fn file_dialog_save(app: AppHandle, file: NativeFileToSave) -> Result<(), String> {
+async fn file_dialog_save(app: AppHandle, file: NativeFileToSave) -> Result<bool, String> {
     let name = file.name.trim();
     if name.is_empty()
         || name.len() > 255
@@ -527,7 +527,7 @@ async fn file_dialog_save(app: AppHandle, file: NativeFileToSave) -> Result<(), 
         .await
         .map_err(|_| "native save dialog was interrupted".to_owned())?
     else {
-        return Ok(());
+        return Ok(false);
     };
     let mut open_options = OpenOptions::default();
     open_options.write(true).create(true).truncate(true);
@@ -539,7 +539,7 @@ async fn file_dialog_save(app: AppHandle, file: NativeFileToSave) -> Result<(), 
         .write_all(&bytes)
         .map_err(|_| "native output file could not be written".to_owned())?;
     let _ = file.mime_type;
-    Ok(())
+    Ok(true)
 }
 
 #[tauri::command]

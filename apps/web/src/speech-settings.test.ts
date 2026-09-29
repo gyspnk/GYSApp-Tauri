@@ -52,9 +52,12 @@ describe("speech settings persistence", () => {
     });
   });
 
-  it("migrates the old automatic engine to Edge while preserving local mode", () => {
+  it("preserves automatic, explicit Edge, and local engine choices", () => {
     expect(
       readSpeechSettings(storage({ "gys-speech-engine-v1": "auto" })).engine,
+    ).toBe("auto");
+    expect(
+      readSpeechSettings(storage({ "gys-speech-engine-v1": "edge" })).engine,
     ).toBe("edge");
     expect(
       readSpeechSettings(storage({ "gys-speech-engine-v1": "local" })).engine,

@@ -16,6 +16,7 @@ import {
 } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
+  type AssetManifestItem,
   LiteratureCatalogSchema,
   type LiteratureCategory,
   type LiteratureItem,
@@ -51,6 +52,25 @@ const LiteraturePdfReader = lazy(() =>
 );
 
 const ISSUE_PDF_CACHE = new Map<string, string>();
+
+function validateLiteraturePdf(bytes: Uint8Array): void {
+  if (new TextDecoder().decode(bytes.subarray(0, 5)) !== "%PDF-")
+    throw new Error("Downloaded resource is not a PDF");
+}
+
+async function readCachedLiteraturePdf(
+  asset: AssetManifestItem,
+): Promise<Uint8Array | undefined> {
+  const bytes = await assetStore.get(asset);
+  if (!bytes) return undefined;
+  try {
+    validateLiteraturePdf(bytes);
+    return bytes;
+  } catch {
+    await assetStore.remove(asset);
+    return undefined;
+  }
+}
 
 /**
  * Warta Sejati “issue” pages are hub posts: the actual newsletter PDF lives
@@ -362,6 +382,50 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         </span>
       </section>
 
+      <section
+        className="literature-toolbar"
+        aria-label={translate(locale, "literature.filter")}
+      >
+        <label className="search-field">
+          <span>{translate(locale, "literature.search")}</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={translate(locale, "literature.searchPlaceholder")}
+          />
+        </label>
+        <Select
+          value={category}
+          onChange={setCategory}
+          label={translate(locale, "literature.categoryLabel")}
+          options={[
+            {
+              value: "all",
+              label: categoryLabel(locale, "all"),
+            },
+            ...availableCategories.map((value) => ({
+              value,
+              label: `${categoryLabel(locale, value)} · ${counts.get(value) ?? 0}`,
+            })),
+          ]}
+        />
+        <Select
+          value={sort}
+          onChange={setSort}
+          label={translate(locale, "literature.sortLabel")}
+          options={[
+            {
+              value: "recent",
+              label: translate(locale, "literature.sortRecent"),
+            },
+            {
+              value: "title",
+              label: translate(locale, "literature.sortTitle"),
+            },
+          ]}
+        />
+      </section>
+
       {status === "ready" &&
         featured.length > 0 &&
         !query &&
@@ -415,137 +479,96 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           </section>
         )}
 
-      {status === "ready" && recentItems.length > 0 && (
-        <section
-          className="literature-recent"
-          aria-labelledby="literature-recent-title"
-        >
-          <div className="section-title-row">
-            <div>
-              <p className="date-line">
-                {translate(locale, "literature.thisDevice")}
-              </p>
-              <h2 id="literature-recent-title">
-                {translate(locale, "literature.lastViewed")}
-              </h2>
+      {status === "ready" &&
+        recentItems.length > 0 &&
+        !deferredQuery &&
+        category === "all" && (
+          <section
+            className="literature-recent"
+            aria-labelledby="literature-recent-title"
+          >
+            <div className="section-title-row">
+              <div>
+                <p className="date-line">
+                  {translate(locale, "literature.thisDevice")}
+                </p>
+                <h2 id="literature-recent-title">
+                  {translate(locale, "literature.lastViewed")}
+                </h2>
+              </div>
+              <span>
+                {translate(locale, "literature.readingCount", {
+                  count: recentItems.length,
+                })}
+              </span>
             </div>
-            <span>
-              {translate(locale, "literature.readingCount", {
-                count: recentItems.length,
-              })}
-            </span>
-          </div>
-          <div className="literature-recent-list">
-            {recentItems.map((item) => {
-              const entry = progressMap[item.id];
-              const percent = entry?.percent ?? 0;
-              return (
-                <div className="literature-recent-item" key={item.id}>
-                  <Link
-                    className="literature-recent-link"
-                    to={literatureHref(item)}
-                  >
-                    <Cover
-                      item={item}
-                      compact
-                      fallbackCategory={categoryLabel(locale, item.category)}
-                      coverAlt={translate(locale, "home.coverAlt", {
+            <div className="literature-recent-list">
+              {recentItems.map((item) => {
+                const entry = progressMap[item.id];
+                const percent = entry?.percent ?? 0;
+                return (
+                  <div className="literature-recent-item" key={item.id}>
+                    <Link
+                      className="literature-recent-link"
+                      to={literatureHref(item)}
+                    >
+                      <Cover
+                        item={item}
+                        compact
+                        fallbackCategory={categoryLabel(locale, item.category)}
+                        coverAlt={translate(locale, "home.coverAlt", {
+                          title: item.title,
+                        })}
+                      />
+                      <span>
+                        <strong>{item.title}</strong>
+                        <small>
+                          {percent > 0
+                            ? translate(locale, "literature.percentComplete", {
+                                percent,
+                              })
+                            : translate(locale, "literature.notStarted")}{" "}
+                          ·{" "}
+                          {entry?.lastOpenedAt
+                            ? new Date(entry.lastOpenedAt).toLocaleDateString(
+                                locale,
+                              )
+                            : translate(locale, "literature.justOpened")}
+                        </small>
+                        <progress
+                          value={percent}
+                          max={100}
+                          aria-label={translate(
+                            locale,
+                            "literature.progressAria",
+                            {
+                              title: item.title,
+                            },
+                          )}
+                        />
+                      </span>
+                      <span aria-hidden="true">›</span>
+                    </Link>
+                    <button
+                      className="literature-recent-remove"
+                      type="button"
+                      aria-label={translate(locale, "literature.removeRecent", {
                         title: item.title,
                       })}
-                    />
-                    <span>
-                      <strong>{item.title}</strong>
-                      <small>
-                        {percent > 0
-                          ? translate(locale, "literature.percentComplete", {
-                              percent,
-                            })
-                          : translate(locale, "literature.notStarted")}{" "}
-                        ·{" "}
-                        {entry?.lastOpenedAt
-                          ? new Date(entry.lastOpenedAt).toLocaleDateString(
-                              locale,
-                            )
-                          : translate(locale, "literature.justOpened")}
-                      </small>
-                      <progress
-                        value={percent}
-                        max={100}
-                        aria-label={translate(
-                          locale,
-                          "literature.progressAria",
-                          {
-                            title: item.title,
-                          },
-                        )}
-                      />
-                    </span>
-                    <span aria-hidden="true">›</span>
-                  </Link>
-                  <button
-                    className="literature-recent-remove"
-                    type="button"
-                    aria-label={translate(locale, "literature.removeRecent", {
-                      title: item.title,
-                    })}
-                    title={translate(locale, "literature.removeFromRecent")}
-                    onClick={() => {
-                      removeLiteratureProgress(item.id);
-                      setProgressRevision((r) => r + 1);
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      <section
-        className="literature-toolbar"
-        aria-label={translate(locale, "literature.filter")}
-      >
-        <label className="search-field">
-          <span>{translate(locale, "literature.search")}</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={translate(locale, "literature.searchPlaceholder")}
-          />
-        </label>
-        <Select
-          value={category}
-          onChange={setCategory}
-          label={translate(locale, "literature.categoryLabel")}
-          options={[
-            {
-              value: "all",
-              label: categoryLabel(locale, "all"),
-            },
-            ...availableCategories.map((value) => ({
-              value,
-              label: `${categoryLabel(locale, value)} · ${counts.get(value) ?? 0}`,
-            })),
-          ]}
-        />
-        <Select
-          value={sort}
-          onChange={setSort}
-          label={translate(locale, "literature.sortLabel")}
-          options={[
-            {
-              value: "recent",
-              label: translate(locale, "literature.sortRecent"),
-            },
-            {
-              value: "title",
-              label: translate(locale, "literature.sortTitle"),
-            },
-          ]}
-        />
-      </section>
+                      title={translate(locale, "literature.removeFromRecent")}
+                      onClick={() => {
+                        removeLiteratureProgress(item.id);
+                        setProgressRevision((r) => r + 1);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
       {status === "loading" && (
         <div className="loading-panel" role="status">
@@ -662,6 +685,8 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   >("idle");
   const [notice, setNotice] = useState("");
   const [readerOpen, setReaderOpen] = useState(false);
+  const [pdfData, setPdfData] = useState<Uint8Array>();
+  const pdfReaderGeneration = useRef(0);
   const readerDialogRef = useRef<HTMLDivElement | null>(null);
   const readerOpenerRef = useRef<HTMLElement | null>(null);
   const closeReader = () => {
@@ -729,6 +754,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   );
 
   useEffect(() => {
+    pdfReaderGeneration.current += 1;
+    setPdfData(undefined);
+    setReaderOpen(false);
     if (!item) return;
     const existing = readLiteratureProgress(
       new Map([[item.id, resourceVersion]]),
@@ -760,7 +788,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       if (!pdfAsset) {
         return;
       }
-      const cached = await assetStore.get(pdfAsset);
+      const cached = await readCachedLiteraturePdf(pdfAsset).catch(
+        () => undefined,
+      );
       if (!cancelled) setDownloadStatus(cached ? "ready" : "idle");
     })();
     return () => {
@@ -898,9 +928,15 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   }, [item, updateProgress]);
 
   const openReader = useCallback(
-    (trigger?: HTMLElement | null) => {
+    async (trigger?: HTMLElement | null) => {
       if (!item || !pdfAsset) return;
+      const generation = ++pdfReaderGeneration.current;
       rememberDialogOpener(readerOpenerRef, trigger);
+      const data = await readCachedLiteraturePdf(pdfAsset).catch(
+        () => undefined,
+      );
+      if (generation !== pdfReaderGeneration.current) return;
+      setPdfData(data);
       setReaderOpen(true);
     },
     [item, pdfAsset],
@@ -939,9 +975,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     if (!item || !pdfAsset) return;
     setDownloadStatus("downloading");
     try {
-      const bytes = await assetStore.download(pdfAsset);
-      if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
-        throw new Error("downloaded resource is not a PDF");
+      await assetStore.download(pdfAsset, undefined, validateLiteraturePdf);
       const current = progressRef.current;
       const next: LiteratureProgress = {
         version: 2,
@@ -1263,6 +1297,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 >
                   <LiteraturePdfReader
                     src={pdfSourceUrl ?? item.url}
+                    {...(pdfData ? { data: pdfData } : {})}
                     initialPage={resumePage}
                     locale={locale}
                     title={item.title}

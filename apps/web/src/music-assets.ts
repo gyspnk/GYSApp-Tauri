@@ -8,6 +8,8 @@ import { recordDiagnostic } from "./diagnostics.js";
 
 const RAW_ROOT = "https://raw.githubusercontent.com/gyspnk/gyschordweb";
 const CACHE_NAME = "gys-music-assets-v1";
+// ponytail: FIFO eviction keeps incidental PDF reads bounded; add durable LRU only if users need longer offline history.
+const MAX_CACHED_PDF_BYTES = 16 * 1024 * 1024;
 let lockPromise: Promise<UpstreamMusicLock> | undefined;
 let bundledMusicPathsPromise: Promise<Set<string>> | undefined;
 const inFlight = new Map<string, Promise<Uint8Array>>();
@@ -76,10 +78,9 @@ function normalizedAssetName(path: string): string {
 
 /**
  * Resolve generated hymn-catalog paths against the immutable gyschordweb lock.
- * The two upstream generators differ only in filename whitespace for a number
- * of PDFs/MIDI files (for example `051A_ Batu` vs `051A_Batu`). Falling back
- * to the stable hymn number/suffix keeps binary loading deterministic without
- * duplicating or editing either upstream snapshot.
+ * Upstream filename differences include whitespace (for example `051A_ Batu`
+ * vs `051A_Batu`) and number-only MIDI names. Falling back to the stable hymn
+ * number/suffix keeps binary loading deterministic across both forms.
  */
 export function findMusicAsset(
   lock: UpstreamMusicLock,
@@ -98,7 +99,9 @@ export function findMusicAsset(
   if (!key) return undefined;
   return candidates.find((item) => {
     const candidate = normalizedAssetName(item.path);
-    return candidate.startsWith(`${key.toLocaleLowerCase()}_`);
+    const stem = candidate.replace(/\.(?:mid|midi|pdf)$/i, "");
+    const normalizedKey = key.toLocaleLowerCase();
+    return stem === normalizedKey || stem.startsWith(`${normalizedKey}_`);
   });
 }
 
@@ -145,6 +148,39 @@ async function readAndVerify(
   return bytes;
 }
 
+function isCachedPdf(request: Request, response: Response): boolean {
+  if (response.headers.get("x-gys-music-asset-kind") === "pdf") return true;
+  const url = new URL(request.url);
+  return (
+    url.pathname.toLowerCase().endsWith(".pdf") ||
+    url.searchParams.get("path")?.toLowerCase().endsWith(".pdf") === true
+  );
+}
+
+async function pruneCachedPdfs(
+  cache: Cache,
+  preserveUrl?: string,
+): Promise<void> {
+  const pdfs: Array<{ request: Request; bytes: number }> = [];
+  let totalBytes = 0;
+  for (const request of await cache.keys()) {
+    const response = await cache.match(request);
+    if (!response || !isCachedPdf(request, response)) continue;
+    const contentLength = Number(response.headers.get("content-length"));
+    const bytes =
+      contentLength > 0
+        ? contentLength
+        : (await response.clone().arrayBuffer()).byteLength;
+    pdfs.push({ request, bytes });
+    totalBytes += bytes;
+  }
+  for (const pdf of pdfs) {
+    if (totalBytes <= MAX_CACHED_PDF_BYTES) break;
+    if (pdf.request.url === preserveUrl) continue;
+    if (await cache.delete(pdf.request)) totalBytes -= pdf.bytes;
+  }
+}
+
 async function cachedResponse(
   url: string,
   ref: UpstreamMusicItem,
@@ -154,7 +190,14 @@ async function cachedResponse(
   const response = await cache.match(url);
   if (!response) return undefined;
   try {
-    return await readAndVerify(response, ref);
+    const bytes = await readAndVerify(response, ref);
+    await pruneCachedPdfs(
+      cache,
+      ref.kind === "pdf" && bytes.byteLength <= MAX_CACHED_PDF_BYTES
+        ? url
+        : undefined,
+    );
+    return bytes;
   } catch {
     await cache.delete(url);
     return undefined;
@@ -170,14 +213,25 @@ async function networkResponse(
   const bytes = await readAndVerify(response, ref);
   if ("caches" in window) {
     const cache = await caches.open(CACHE_NAME);
-    await cache.put(
-      url,
-      new Response(bytes.slice().buffer as ArrayBuffer, {
-        headers: {
-          "content-type":
-            response.headers.get("content-type") ?? "application/octet-stream",
-        },
-      }),
+    if (ref.kind !== "pdf" || bytes.byteLength <= MAX_CACHED_PDF_BYTES) {
+      await cache.put(
+        url,
+        new Response(bytes.slice().buffer as ArrayBuffer, {
+          headers: {
+            "content-length": String(bytes.byteLength),
+            "content-type":
+              response.headers.get("content-type") ??
+              "application/octet-stream",
+            "x-gys-music-asset-kind": ref.kind,
+          },
+        }),
+      );
+    }
+    await pruneCachedPdfs(
+      cache,
+      ref.kind === "pdf" && bytes.byteLength <= MAX_CACHED_PDF_BYTES
+        ? url
+        : undefined,
     );
   }
   return bytes;
@@ -265,7 +319,12 @@ export async function musicAssetStats(): Promise<{
   let bytes = 0;
   for (const request of requests) {
     const response = await cache.match(request);
-    bytes += Number(response?.headers.get("content-length") ?? 0);
+    if (!response) continue;
+    const contentLength = Number(response.headers.get("content-length"));
+    bytes +=
+      contentLength > 0
+        ? contentLength
+        : (await response.clone().arrayBuffer()).byteLength;
   }
   return { entries: requests.length, bytes };
 }

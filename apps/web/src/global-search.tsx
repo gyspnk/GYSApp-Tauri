@@ -366,7 +366,7 @@ export function GlobalSearch({
           bibleClientRef.current = client;
           const verses = await client.search(normalized);
           if (cancelled || sequence !== bibleSequenceRef.current) return;
-          setBibleEntries(bibleVerseEntries(pack, verses));
+          setBibleEntries(bibleVerseEntries(pack, verses, "b_tb"));
         } catch (error: unknown) {
           if (!cancelled) recordDiagnostic("warn", "search.bible", error);
         }

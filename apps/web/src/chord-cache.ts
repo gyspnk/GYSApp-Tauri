@@ -7,6 +7,7 @@ import {
 import type { ChordCache } from "@gys/domain";
 
 type Entry = {
+  format?: 2;
   ref: ChordRef;
   key: string;
   bytes: number;
@@ -16,6 +17,16 @@ type Entry = {
 
 const INDEX_KEY = "gys-chord-cache-index-v1";
 const MAX_BYTES = 25 * 1024 * 1024;
+
+async function sha256(bytes: Uint8Array): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest(
+    "SHA-256",
+    bytes as BufferSource,
+  );
+  return [...new Uint8Array(digest)]
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 export class BrowserChordCache implements ChordCache {
   private index = new Map<string, Entry>();
@@ -66,6 +77,13 @@ export class BrowserChordCache implements ChordCache {
       return undefined;
     }
     try {
+      if (
+        (entry.format === 2 && bytes.byteLength !== entry.ref.size) ||
+        (entry.format === 2 &&
+          (await sha256(bytes)).toLowerCase() !==
+            entry.ref.sha256.toLowerCase())
+      )
+        throw new Error("cached chord integrity mismatch");
       const document = ChordDocumentV2Schema.parse(
         JSON.parse(new TextDecoder().decode(bytes)) as unknown,
       );
@@ -86,11 +104,9 @@ export class BrowserChordCache implements ChordCache {
     await this.ensureLoaded();
     const previous = this.index.get(ref.songId);
     const key = this.key(ref.songId, ref.sha256);
-    await this.platform.blobs.putAtomic(
-      key,
-      new TextEncoder().encode(JSON.stringify(document)),
-    );
+    await this.platform.blobs.putAtomic(key, bytes.slice());
     this.index.set(ref.songId, {
+      format: 2,
       ref,
       key,
       bytes: bytes.byteLength,
@@ -114,6 +130,11 @@ export class BrowserChordCache implements ChordCache {
 
   public getRef(songId: string): ChordRef | undefined {
     return this.index.get(songId)?.ref;
+  }
+
+  public isIntegrityVerified(songId: string): boolean | undefined {
+    const entry = this.index.get(songId);
+    return entry ? entry.format === 2 : undefined;
   }
 
   public async pin(songId: string, pinned: boolean): Promise<void> {

@@ -1,6 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
 type TestLocale = "id" | "en" | "zh";
+type TestMediaSessionWindow = Window & {
+  __gysMediaSession?: {
+    handlers: Record<string, (details?: unknown) => unknown>;
+    playbackState: string;
+  };
+};
 
 const speechLocaleCopy: Record<
   TestLocale,
@@ -70,6 +76,32 @@ async function openSpeechPlayerAtDesktop(
       "gys-shell-settings-v1",
       JSON.stringify({ version: 1, locale: nextLocale, theme: "light" }),
     );
+    type MediaActionHandler = (details?: {
+      seekOffset?: number;
+      seekTime?: number;
+    }) => unknown;
+    const handlers: Record<string, MediaActionHandler> = {};
+    const mediaSession = {
+      handlers,
+      metadata: null as unknown,
+      playbackState: "none",
+      positionState: null as unknown,
+      setActionHandler(action: string, handler: MediaActionHandler | null) {
+        if (handler) handlers[action] = handler;
+        else delete handlers[action];
+      },
+      setPositionState(state?: unknown) {
+        this.positionState = state ?? null;
+      },
+    };
+    Object.defineProperty(window, "__gysMediaSession", {
+      configurable: true,
+      value: mediaSession,
+    });
+    Object.defineProperty(navigator, "mediaSession", {
+      configurable: true,
+      value: mediaSession,
+    });
     const voice = {
       voiceURI: "gys-e2e-id",
       name: "GYS E2E voice",
@@ -128,6 +160,19 @@ async function expectCentered(page: Page, width: number) {
   expect(box).not.toBeNull();
   expect(Math.abs(box!.x + box!.width / 2 - width / 2)).toBeLessThanOrEqual(3);
   return box!;
+}
+
+async function triggerMediaAction(page: Page, action: string) {
+  await page.evaluate((actionName) => {
+    const session = (window as TestMediaSessionWindow).__gysMediaSession;
+    void session?.handlers[actionName]?.();
+  }, action);
+}
+
+async function readMediaPlaybackState(page: Page) {
+  return page.evaluate(
+    () => (window as TestMediaSessionWindow).__gysMediaSession?.playbackState,
+  );
 }
 
 test("persistent media defaults to one centered semantic dock", async ({
@@ -242,6 +287,44 @@ test("speech session keeps its source and state across reader routes", async ({
   );
 });
 
+test("system media controls follow speech and disable unsupported seeking", async ({
+  page,
+}) => {
+  await openSpeechPlayerAtDesktop(page);
+  const actions = await page.evaluate(() =>
+    Object.keys(
+      (window as TestMediaSessionWindow).__gysMediaSession?.handlers ?? {},
+    ),
+  );
+  expect(actions).toEqual(
+    expect.arrayContaining([
+      "play",
+      "pause",
+      "stop",
+      "previoustrack",
+      "nexttrack",
+    ]),
+  );
+  expect(actions).not.toEqual(
+    expect.arrayContaining(["seekto", "seekbackward", "seekforward"]),
+  );
+
+  const title = page.locator(".media-context-link strong");
+  const firstVerse = await title.textContent();
+  await triggerMediaAction(page, "nexttrack");
+  await expect.poll(() => title.textContent()).not.toBe(firstVerse);
+  const nextVerse = await title.textContent();
+
+  await triggerMediaAction(page, "previoustrack");
+  await expect.poll(() => title.textContent()).toBe(firstVerse);
+  expect(nextVerse).not.toBe(firstVerse);
+
+  await triggerMediaAction(page, "pause");
+  await expect.poll(() => readMediaPlaybackState(page)).toBe("paused");
+  await triggerMediaAction(page, "play");
+  await expect.poll(() => readMediaPlaybackState(page)).toBe("playing");
+});
+
 test("shared speech dock localizes its semantic chrome for every locale", async ({
   page,
 }) => {
@@ -284,4 +367,111 @@ test("shared speech dock localizes its semantic chrome for every locale", async 
     await media.getByRole("button", { name: copy.close }).click();
     await expect(media).toHaveCount(0);
   }
+});
+
+async function openBrowserSpeechPlayer(page: Page, engine: "auto" | "local") {
+  await page.addInitScript((preferredEngine) => {
+    localStorage.setItem("gys-speech-engine-v1", preferredEngine);
+    localStorage.setItem("gys-locale", "id");
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale: "id", theme: "light" }),
+    );
+    const voices = [
+      {
+        voiceURI: "gys-online-id",
+        name: "GYS Online Indonesian",
+        lang: "id-ID",
+        localService: false,
+        default: false,
+      },
+      {
+        voiceURI: "gys-local-id",
+        name: "GYS Local Indonesian",
+        lang: "id-ID",
+        localService: true,
+        default: true,
+      },
+    ];
+    const spokenVoiceIds: string[] = [];
+    (
+      window as Window & { __gysSpokenVoiceIds?: string[] }
+    ).__gysSpokenVoiceIds = spokenVoiceIds;
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: {
+        getVoices: () => voices,
+        speak: (utterance: {
+          voice?: { voiceURI: string } | null;
+          onend?: () => void;
+        }) => {
+          spokenVoiceIds.push(utterance.voice?.voiceURI ?? "unselected");
+          window.setTimeout(() => utterance.onend?.(), 1_200);
+        },
+        cancel: () => undefined,
+        pause: () => undefined,
+        resume: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      },
+    });
+    class TestUtterance {
+      public lang = "";
+      public voice: unknown = null;
+      public rate = 1;
+      public pitch = 1;
+      public volume = 1;
+      public onend?: () => void;
+      public onerror?: () => void;
+      public constructor(public readonly text: string) {}
+    }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      configurable: true,
+      value: TestUtterance,
+    });
+  }, engine);
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const read = page.getByRole("button", { name: "Bacakan" });
+  await expect(read).toBeEnabled({ timeout: 15_000 });
+  await read.click();
+  await expect(page.locator(".verse-row.is-speaking")).toBeVisible();
+}
+
+test("browser Auto uses a system voice when direct Edge speech is unavailable", async ({
+  page,
+}) => {
+  await openBrowserSpeechPlayer(page, "auto");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as Window & { __gysSpokenVoiceIds?: string[] })
+            .__gysSpokenVoiceIds ?? [],
+      ),
+    )
+    .toContain("gys-online-id");
+  await expect(page.locator(".media-meta small")).toContainText("TTS sistem");
+});
+
+test("browser Local uses only an installed local voice", async ({ page }) => {
+  await openBrowserSpeechPlayer(page, "local");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as Window & { __gysSpokenVoiceIds?: string[] })
+            .__gysSpokenVoiceIds ?? [],
+      ),
+    )
+    .toContain("gys-local-id");
+  await expect(page.locator(".media-meta small")).toContainText("TTS lokal");
+  const spokenVoiceIds = await page.evaluate(
+    () =>
+      (window as Window & { __gysSpokenVoiceIds?: string[] })
+        .__gysSpokenVoiceIds ?? [],
+  );
+  expect(spokenVoiceIds).not.toContain("gys-online-id");
 });

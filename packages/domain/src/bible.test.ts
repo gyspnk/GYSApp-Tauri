@@ -187,6 +187,54 @@ describe("BibleRepository", () => {
     ]);
   });
 
+  it("matches fully typed references exactly instead of by number substring", async () => {
+    const repository = new BibleRepository(
+      [
+        {
+          id: "40:3:16",
+          book: "40",
+          bookOrder: 40,
+          chapter: 3,
+          verse: 16,
+          text: "Yohanes Pembaptis melihat Yesus.",
+        },
+        {
+          id: "43:3:16",
+          book: "43",
+          bookOrder: 43,
+          chapter: 3,
+          verse: 16,
+          text: "Karena begitu besar kasih Allah akan dunia ini.",
+        },
+        {
+          id: "43:13:16",
+          book: "43",
+          bookOrder: 43,
+          chapter: 13,
+          verse: 16,
+          text: "Kamu akan berdukacita.",
+        },
+      ],
+      { bookNames: { "40": "Matius", "43": "Yohanes" } },
+    );
+
+    expect(
+      (await repository.search("Yohanes 3:16")).map((verse) => verse.id),
+    ).toEqual(["43:3:16"]);
+    expect((await repository.search("3:16")).map((verse) => verse.id)).toEqual([
+      "40:3:16",
+      "43:3:16",
+    ]);
+    expect(
+      (await repository.search("3:16", { book: "43" })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["43:3:16"]);
+    expect(
+      await repository.search("Yohanes 3:16", { testament: "old" }),
+    ).toEqual([]);
+  });
+
   it("filters by testament using the canonical book order", async () => {
     const repository = new BibleRepository([
       {

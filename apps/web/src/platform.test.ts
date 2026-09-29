@@ -7,6 +7,62 @@ import {
 } from "./platform.js";
 
 describe("browser platform binary boundary", () => {
+  it("restricts explicit local speech to installed local voices", async () => {
+    let nativeVoices = [
+      {
+        voiceURI: "remote-en",
+        name: "Remote English",
+        lang: "en-US",
+        localService: false,
+      },
+      {
+        voiceURI: "local-id",
+        name: "Local Indonesian",
+        lang: "id-ID",
+        localService: true,
+      },
+    ];
+    vi.stubGlobal("window", {
+      speechSynthesis: {
+        getVoices: () => nativeVoices,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      },
+      setTimeout: (callback: () => void) => {
+        queueMicrotask(callback);
+        return 1;
+      },
+      clearTimeout: vi.fn(),
+    });
+
+    try {
+      const provider = new BrowserSpeechProvider(true);
+      await expect(provider.voices()).resolves.toMatchObject([
+        { id: "local-id", local: true },
+      ]);
+      await expect(provider.status()).resolves.toMatchObject({
+        available: true,
+        offline: true,
+      });
+
+      nativeVoices = [
+        {
+          voiceURI: "remote-en",
+          name: "Remote English",
+          lang: "en-US",
+          localService: false,
+        },
+      ];
+      await expect(provider.voices()).resolves.toEqual([]);
+      await expect(provider.status()).resolves.toMatchObject({
+        available: false,
+        offline: false,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("sets the utterance language and recovers to a matching browser voice", async () => {
     const browserVoice = {
       voiceURI: "browser-en",

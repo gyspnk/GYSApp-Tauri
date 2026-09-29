@@ -202,12 +202,15 @@ class TauriFileDialogs implements PlatformFileDialogs {
     return files;
   }
 
-  public async save(file: PlatformFile): Promise<void> {
-    await this.invoke("file_dialog_save", {
+  public async save(file: PlatformFile): Promise<boolean> {
+    const saved = await this.invoke("file_dialog_save", {
       name: file.name,
       mimeType: file.mimeType,
       bytes: encodeBase64(file.bytes),
     });
+    if (typeof saved !== "boolean")
+      throw nativeError("file dialog save response invalid");
+    return saved;
   }
 }
 

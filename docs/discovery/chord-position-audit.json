@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-11T18:10:22.095Z",
+  "generatedAt": "2026-09-26T03:39:56.362Z",
   "sourceRepo": "gyspnk/gyschordweb",
-  "sourceCommit": "3039ae678c9e0e6ca439f4e1e0250759667dbcdf",
+  "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
   "lockPath": "packages/contracts/generated/chord-manifest.json",
   "musicLockPath": "apps/web/public/offline/music-lock.json",
-  "chordCount": 155,
+  "chordCount": 161,
   "totals": {
-    "pdfPages": 175,
-    "auditedPages": 175,
-    "chordEntries": 3596,
-    "mappedEntries": 3596,
+    "pdfPages": 181,
+    "auditedPages": 181,
+    "chordEntries": 3738,
+    "mappedEntries": 3738,
     "orphanEntries": 0,
     "sentinelEntries": 2,
     "invalidEntries": 0
@@ -2328,6 +2328,51 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-128",
+      "chordPath": "assets/chord/128_Hari Kudus Nan Bahagia.chord.json",
+      "chordBytes": 2153,
+      "chordSha256": "06cdeba2cb048594e181ffe6b312fab7c4d955bd01e31eefc670d349ce9be6e5",
+      "pdfPath": "assets/pdf/128_Hari Kudus Nan Bahagia.pdf",
+      "pdfBytes": 9989,
+      "pdfSha256": "3c6299dc7b225cc6bf077042bc32216ae3b40dc25ee51b4919a8b008ea4e08d7",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 496,
+          "notationRows": 20,
+          "lyricRows": 14,
+          "chordEntries": 33,
+          "mappedEntries": 33,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "C#",
+              "position": 0.0449
+            },
+            {
+              "noteIdx": 6,
+              "chord": "G#",
+              "position": 0.3016
+            },
+            {
+              "noteIdx": 9,
+              "chord": "C#",
+              "position": 0.4526
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 33,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-129",
       "chordPath": "assets/chord/129_Peringati Hari Kudus.chord.json",
       "chordBytes": 1247,
@@ -2806,6 +2851,51 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-153",
+      "chordPath": "assets/chord/153_Setiap Waktu Berserah Pada Tuhan.chord.json",
+      "chordBytes": 1772,
+      "chordSha256": "738d0bf08a6281aa9a3a2b7898a14df675cb3d1bf4f89a67fbda78a996bea4e8",
+      "pdfPath": "assets/pdf/153_Setiap Waktu Berserah Pada Tuhan.pdf",
+      "pdfBytes": 10379,
+      "pdfSha256": "7b1867cdf258abef12e40369c4ea86dd3c883cdb96cf18cbdb255904f59aa8bc",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 416,
+          "notationRows": 16,
+          "lyricRows": 15,
+          "chordEntries": 27,
+          "mappedEntries": 27,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 0,
+              "chord": "G#",
+              "position": 0.0362
+            },
+            {
+              "noteIdx": 7,
+              "chord": "D#",
+              "position": 0.3214
+            },
+            {
+              "noteIdx": 10,
+              "chord": "G#",
+              "position": 0.4588
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 27,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-155",
       "chordPath": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
       "chordBytes": 1430,
@@ -2846,6 +2936,51 @@
         }
       ],
       "mappedEntries": 22,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-156",
+      "chordPath": "assets/chord/156_Jalan Bersama Tuhan.chord.json",
+      "chordBytes": 1685,
+      "chordSha256": "52742d0f17b708e7e61d562e57240825dc0e42139799e0afdc84ac89d28b4ec9",
+      "pdfPath": "assets/pdf/156_Jalan Bersama Tuhan.pdf",
+      "pdfBytes": 8595,
+      "pdfSha256": "8a0c07b7f9758266474f9051ab763bcf4a681b2ca99d508d54c4084705441b4b",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 256,
+          "notationRows": 16,
+          "lyricRows": 16,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "E",
+              "position": 0.141
+            },
+            {
+              "noteIdx": 3,
+              "chord": "A",
+              "position": 0.2668
+            },
+            {
+              "noteIdx": 5,
+              "chord": "E",
+              "position": 0.4162
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -2936,6 +3071,51 @@
         }
       ],
       "mappedEntries": 15,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-164",
+      "chordPath": "assets/chord/164_Cukuplah Kasih Karunia Tuhan.chord.json",
+      "chordBytes": 827,
+      "chordSha256": "57a483696688bdd8dd471ff996afcf705ceb9da96603008c849399c246a99d47",
+      "pdfPath": "assets/pdf/164_Cukuplah Kasih Karunia Tuhan.pdf",
+      "pdfBytes": 11544,
+      "pdfSha256": "208e51100d85cfcc3fda4c9965a41b604b79f0bd4b1c754d124f29ea068fe9e0",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 192,
+          "notationRows": 8,
+          "lyricRows": 14,
+          "chordEntries": 12,
+          "mappedEntries": 12,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "C#",
+              "position": 0.1052
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3547
+            },
+            {
+              "noteIdx": 10,
+              "chord": "C#",
+              "position": 0.4681
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 12,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0
@@ -5781,6 +5961,51 @@
       "invalidEntries": 0
     },
     {
+      "songId": "hymn-333",
+      "chordPath": "assets/chord/333_Tiap Minggu DijagaNya.chord.json",
+      "chordBytes": 1198,
+      "chordSha256": "b282cb00bdc2c4c0b05bca623a0788f339fcb083b7bdeaa158e49f59551ae264",
+      "pdfPath": "assets/pdf/333_Tiap Minggu DijagaNya.pdf",
+      "pdfBytes": 10847,
+      "pdfSha256": "2b42b5b77f62542e786abbdeed756eff34b385f0ef490114a447635dea6f76be",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 283,
+          "notationRows": 16,
+          "lyricRows": 21,
+          "chordEntries": 18,
+          "mappedEntries": 18,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 2,
+              "chord": "C#m",
+              "position": 0.1534
+            },
+            {
+              "noteIdx": 7,
+              "chord": "F#m",
+              "position": 0.4564
+            },
+            {
+              "noteIdx": 11,
+              "chord": "G#",
+              "position": 0.6817
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 18,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
       "songId": "hymn-356",
       "chordPath": "assets/chord/356_Imanlah Kemenangan.chord.json",
       "chordBytes": 2165,
@@ -6327,6 +6552,51 @@
         }
       ],
       "mappedEntries": 16,
+      "orphanEntries": 0,
+      "sentinelEntries": 0,
+      "invalidEntries": 0
+    },
+    {
+      "songId": "hymn-397",
+      "chordPath": "assets/chord/397_Nyatakan Yesus Dalammu.chord.json",
+      "chordBytes": 1709,
+      "chordSha256": "c09144f3c03e9a156eb35f901747329b8bae5542707773c0285429c6f41efabc",
+      "pdfPath": "assets/pdf/397_Nyatakan Yesus Dalammu.pdf",
+      "pdfBytes": 13148,
+      "pdfSha256": "cf7cd3791fda0b85800bb4bb5bf68d11c9bed4279c64c75a454a762a05b7a1ab",
+      "pdfPages": 1,
+      "auditedPages": 1,
+      "pageResults": [
+        {
+          "page": 1,
+          "pdfNotes": 424,
+          "notationRows": 16,
+          "lyricRows": 14,
+          "chordEntries": 26,
+          "mappedEntries": 26,
+          "orphanEntries": 0,
+          "sentinelEntries": 0,
+          "invalidEntries": 0,
+          "sampleMappings": [
+            {
+              "noteIdx": 1,
+              "chord": "D#",
+              "position": 0.1214
+            },
+            {
+              "noteIdx": 4,
+              "chord": "Gm",
+              "position": 0.2518
+            },
+            {
+              "noteIdx": 7,
+              "chord": "G#",
+              "position": 0.3904
+            }
+          ]
+        }
+      ],
+      "mappedEntries": 26,
       "orphanEntries": 0,
       "sentinelEntries": 0,
       "invalidEntries": 0

@@ -11,6 +11,7 @@ import {
   type AccountProfile,
   type AssetManifestV1,
   type DistributedAssetKind,
+  type PlatformFile,
 } from "@gys/contracts";
 import {
   decryptBackupV2,
@@ -56,7 +57,7 @@ import {
 import { Select } from "./select.js";
 import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { clearPlatformStorage } from "./platform.js";
+import { clearPlatformStorage, createPlatformServices } from "./platform.js";
 import {
   isTauriShell,
   openNativeEgysLogin,
@@ -68,6 +69,7 @@ import {
   distributedDownloadsConfigured,
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
+import { DISTRIBUTED_ASSET_DEFINITIONS } from "./distributed-assets.js";
 import {
   ACCENT_PRESETS,
   getAccentColor,
@@ -315,16 +317,12 @@ function localUpdateCount(diff: AssetManifestDiff): number {
   ).length;
 }
 
-function downloadBackup(envelope: unknown) {
-  const blob = new Blob([JSON.stringify(envelope, null, 2)], {
-    type: "application/octet-stream",
+async function saveBackup(envelope: unknown): Promise<boolean> {
+  return createPlatformServices().files.save({
+    name: "gys-backup-" + new Date().toISOString().slice(0, 10) + ".gysbk",
+    mimeType: "application/json",
+    bytes: new TextEncoder().encode(JSON.stringify(envelope, null, 2)),
   });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `gys-backup-${new Date().toISOString().slice(0, 10)}.gysbk`;
-  anchor.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }
 
 export async function clearAppData() {
@@ -360,6 +358,9 @@ export function MorePage({
   setTheme: (value: ShellTheme) => void;
 }) {
   const nativeShell = isTauriShell();
+  const initialSection = new URLSearchParams(window.location.search).get(
+    "section",
+  );
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
@@ -391,7 +392,7 @@ export function MorePage({
   const [isEgysLoginClosing, setIsEgysLoginClosing] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
-  const [backupFile, setBackupFile] = useState<File>();
+  const [backupFile, setBackupFile] = useState<PlatformFile>();
   const [reminderOpen, setReminderOpen] = useState(false);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
@@ -415,6 +416,12 @@ export function MorePage({
     getAccentColor,
     getAccentColor,
   );
+  const selectedAccent = ACCENT_PRESETS.find(
+    (preset) => preset.color === accentColor,
+  );
+  const selectedAccentLabel = selectedAccent
+    ? translate(locale, `more.accent.${selectedAccent.id}`)
+    : translate(locale, "more.custom");
   const changeTheme = (next: ShellTheme) => {
     setTheme(next);
   };
@@ -721,7 +728,8 @@ export function MorePage({
         backupPassword,
         { appVersion: "0.1.0", domains: ["settings"] },
       );
-      downloadBackup(envelope);
+      const saved = await saveBackup(envelope);
+      if (!saved) return;
       setBackupPassword("");
       setBackupOpen(false);
       show(translate(locale, "more.backupExported"));
@@ -731,39 +739,67 @@ export function MorePage({
     }
   };
 
+  const chooseBackupFile = async () => {
+    try {
+      const files = await createPlatformServices().files.open({
+        accept: [".gysbk", ".json"],
+      });
+      if (files?.[0]) setBackupFile(files[0]);
+    } catch (error) {
+      recordDiagnostic("warn", "backup.file.open", error);
+      show(translate(locale, "more.backupFileError"));
+    }
+  };
+
   const importBackup = async () => {
     if (!backupFile) {
       show(translate(locale, "more.chooseBackupFile"));
       return;
     }
-    if (backupPassword.length < 8) {
-      show(translate(locale, "more.backupPasswordRequired"));
-      return;
-    }
+    const backupText = new TextDecoder().decode(backupFile.bytes);
+    let parsed: unknown;
     try {
-      const text = await backupFile.text();
-      const parsed: unknown = JSON.parse(text);
-      const data = await decryptBackupV2(
-        parsed as Parameters<typeof decryptBackupV2>[0],
-        backupPassword,
-      );
-      const settings = data.settings;
-      restorePortableBackupSettings(settings);
+      parsed = JSON.parse(backupText);
+    } catch {
+      parsed = undefined;
+    }
+    const version =
+      parsed &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed) &&
+      "version" in parsed
+        ? parsed.version
+        : undefined;
+    try {
+      if (version === 2) {
+        if (backupPassword.length < 8) {
+          show(translate(locale, "more.backupPasswordRequired"));
+          return;
+        }
+        const data = await decryptBackupV2(
+          parsed as Parameters<typeof decryptBackupV2>[0],
+          backupPassword,
+        );
+        restorePortableBackupSettings(data.settings);
+        setBackupPassword("");
+        setBackupFile(undefined);
+        setBackupOpen(false);
+        show(translate(locale, "more.backupRestored"));
+        return;
+      }
+      const legacy = await importLegacyGysbk(backupFile.bytes);
+      if (legacy.settings !== undefined)
+        restorePortableBackupSettings(legacy.settings);
+      localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
       setBackupPassword("");
       setBackupFile(undefined);
       setBackupOpen(false);
-      show(translate(locale, "more.backupRestored"));
-    } catch {
-      try {
-        const legacy = await importLegacyGysbk(await backupFile.text());
-        localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
-        show(translate(locale, "more.legacyImported"));
-      } catch {
-        show(translate(locale, "more.invalidBackup"));
-      }
+      show(translate(locale, "more.legacyImported"));
+    } catch (error) {
+      recordDiagnostic("warn", "backup.import", error);
+      show(translate(locale, "more.invalidBackup"));
     }
   };
-
   const saveReminder = async () => {
     if (!reminderTime) {
       localStorage.removeItem("gys-reminder-time-v1");
@@ -858,6 +894,14 @@ export function MorePage({
     setDistributedProgress(undefined);
     setDistributedError(undefined);
     try {
+      if (
+        DISTRIBUTED_ASSET_DEFINITIONS.find((asset) => asset.code === code)
+          ?.kind === "bible"
+      ) {
+        const { prepareSqliteBibleRuntime } =
+          await import("./bible-sql-runtime.js");
+        await prepareSqliteBibleRuntime();
+      }
       const manager = getDistributedAssetManager();
       await manager.install(code, {
         onProgress: (received, total) =>
@@ -920,447 +964,491 @@ export function MorePage({
         </div>
       </section>
 
-      <section className="more-grid">
-        <article className="more-card more-card-wide account-card egys-card">
-          <div className="more-card-heading">
-            <div>
-              <h2>
-                {accountProfile
-                  ? (accountProfile.displayName ??
-                    translate(locale, "more.accountMember"))
-                  : translate(locale, "more.accountEgys")}
-              </h2>
-            </div>
-            {accountProfile || nativeShell ? (
-              <span
-                className={`pack-badge${accountProfile ? " is-verified" : ""}`}
-              >
-                {accountProfile
-                  ? translate(locale, "more.connected")
-                  : egysUnavailable
-                    ? translate(locale, "more.assetUnavailable")
-                    : translate(locale, "more.guest")}
-              </span>
-            ) : null}
-          </div>
-
-          {accountLoading || authBusy ? (
-            <div className="account-loading-box" role="status">
-              <p>{translate(locale, "more.checkingAccount")}</p>
-            </div>
-          ) : accountProfile ? (
-            <div className="egys-member-badge">
-              <div className="member-badge-header">
-                <span className="member-church-title">Gereja Yesus Sejati</span>
-                <span className="member-status-pill">
-                  {accountProfile.isMember === true
-                    ? translate(locale, "more.memberOfficial")
-                    : translate(locale, "more.memberRegistered")}
-                </span>
+      <section className="more-settings-list">
+        <details className="more-setting-section" data-setting="account">
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryAccount")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <article className="more-card more-card-wide account-card egys-card">
+            <div className="more-card-heading">
+              <div>
+                <h2>
+                  {accountProfile
+                    ? (accountProfile.displayName ??
+                      translate(locale, "more.accountMember"))
+                    : translate(locale, "more.accountEgys")}
+                </h2>
               </div>
-              <div className="member-badge-body">
-                <div className="member-info-row">
-                  <span className="info-label">
-                    {translate(locale, "more.fullName")}
+              {accountProfile || nativeShell ? (
+                <span
+                  className={`pack-badge${accountProfile ? " is-verified" : ""}`}
+                >
+                  {accountProfile
+                    ? translate(locale, "more.connected")
+                    : egysUnavailable
+                      ? translate(locale, "more.assetUnavailable")
+                      : translate(locale, "more.guest")}
+                </span>
+              ) : null}
+            </div>
+
+            {accountLoading || authBusy ? (
+              <div className="account-loading-box" role="status">
+                <p>{translate(locale, "more.checkingAccount")}</p>
+              </div>
+            ) : accountProfile ? (
+              <div className="egys-member-badge">
+                <div className="member-badge-header">
+                  <span className="member-church-title">
+                    Gereja Yesus Sejati
                   </span>
-                  <strong className="info-value member-name">
-                    {accountProfile.displayName}
-                  </strong>
+                  <span className="member-status-pill">
+                    {accountProfile.isMember === true
+                      ? translate(locale, "more.memberOfficial")
+                      : translate(locale, "more.memberRegistered")}
+                  </span>
                 </div>
-                <div className="member-info-grid">
-                  <div>
+                <div className="member-badge-body">
+                  <div className="member-info-row">
                     <span className="info-label">
-                      {translate(locale, "more.branch")}
+                      {translate(locale, "more.fullName")}
                     </span>
-                    <strong className="info-value">
-                      {accountProfile.branchName ??
-                        accountProfile.branchCode ??
-                        translate(locale, "more.center")}
+                    <strong className="info-value member-name">
+                      {accountProfile.displayName}
                     </strong>
                   </div>
-                  {accountProfile.membershipNo && (
+                  <div className="member-info-grid">
                     <div>
                       <span className="info-label">
-                        {translate(locale, "more.memberNumber")}
+                        {translate(locale, "more.branch")}
                       </span>
                       <strong className="info-value">
-                        {accountProfile.membershipNo}
+                        {accountProfile.branchName ??
+                          accountProfile.branchCode ??
+                          translate(locale, "more.center")}
                       </strong>
                     </div>
+                    {accountProfile.membershipNo && (
+                      <div>
+                        <span className="info-label">
+                          {translate(locale, "more.memberNumber")}
+                        </span>
+                        <strong className="info-value">
+                          {accountProfile.membershipNo}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
+                  {accountProfile.memberStatus && (
+                    <div className="member-info-row">
+                      <span className="info-label">
+                        {translate(locale, "more.membershipStatus")}
+                      </span>
+                      <span className="info-value-text">
+                        {accountProfile.memberStatus}
+                      </span>
+                    </div>
+                  )}
+                  {accountProfile.email && (
+                    <div className="member-info-row">
+                      <span className="info-label">Email</span>
+                      <span className="info-value-text">
+                        {accountProfile.email}
+                      </span>
+                    </div>
+                  )}
+                  {egysSession?.userId === accountProfile.id && (
+                    <small className="egys-login-trace">
+                      {translate(locale, "more.lastLogin")}{" "}
+                      {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
+                      ·{translate(locale, "more.detectedSince")}{" "}
+                      {new Date(egysSession.firstLoginAt).toLocaleDateString(
+                        locale,
+                      )}
+                    </small>
                   )}
                 </div>
-                {accountProfile.memberStatus && (
-                  <div className="member-info-row">
-                    <span className="info-label">
-                      {translate(locale, "more.membershipStatus")}
-                    </span>
-                    <span className="info-value-text">
-                      {accountProfile.memberStatus}
-                    </span>
-                  </div>
-                )}
-                {accountProfile.email && (
-                  <div className="member-info-row">
-                    <span className="info-label">Email</span>
-                    <span className="info-value-text">
-                      {accountProfile.email}
-                    </span>
-                  </div>
-                )}
-                {egysSession?.userId === accountProfile.id && (
-                  <small className="egys-login-trace">
-                    {translate(locale, "more.lastLogin")}{" "}
-                    {new Date(egysSession.lastSeenAt).toLocaleString(locale)} ·
-                    {translate(locale, "more.detectedSince")}{" "}
-                    {new Date(egysSession.firstLoginAt).toLocaleDateString(
-                      locale,
-                    )}
-                  </small>
-                )}
+                <div className="member-badge-actions">
+                  <button
+                    type="button"
+                    className="quiet-button account-signout"
+                    onClick={() => {
+                      void signOutEgys().then(() => {
+                        setAccountProfile(undefined);
+                        setEgysSession(undefined);
+                        show(translate(locale, "more.sessionSignedOut"));
+                      });
+                    }}
+                  >
+                    {translate(locale, "more.signOut")}
+                  </button>
+                </div>
               </div>
-              <div className="member-badge-actions">
-                <button
-                  type="button"
-                  className="quiet-button account-signout"
-                  onClick={() => {
-                    void signOutEgys().then(() => {
-                      setAccountProfile(undefined);
-                      setEgysSession(undefined);
-                      show(translate(locale, "more.sessionSignedOut"));
-                    });
-                  }}
-                >
-                  {translate(locale, "more.signOut")}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="egys-login-box">
-              <p className="egys-login-desc">
-                {nativeShell
-                  ? translate(locale, "more.officialLoginDescription")
-                  : translate(locale, "more.googleLoginDescription")}
-              </p>
-              <div className="egys-login-actions">
-                {nativeShell ? (
-                  <>
-                    <button
-                      type="button"
+            ) : (
+              <div className="egys-login-box">
+                <p className="egys-login-desc">
+                  {nativeShell
+                    ? translate(locale, "more.officialLoginDescription")
+                    : translate(locale, "more.googleLoginDescription")}
+                </p>
+                <div className="egys-login-actions">
+                  {nativeShell ? (
+                    <>
+                      <button
+                        type="button"
+                        className="primary-button egys-login-button"
+                        onClick={() => void openNativeEgysLoginFlow()}
+                      >
+                        <Icon name="person" size={16} />
+                        <span>
+                          {translate(locale, "more.openOfficialLogin")}
+                        </span>
+                      </button>
+                      <small className="account-sync-note">
+                        {translate(locale, "more.nativeLoginMethods")}
+                      </small>
+                    </>
+                  ) : (
+                    <a
                       className="primary-button egys-login-button"
-                      onClick={() => void openNativeEgysLoginFlow()}
+                      href={`https://e.gys.or.id/login?theme=${theme}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setEgysLoginOpen(true);
+                      }}
                     >
                       <Icon name="person" size={16} />
                       <span>{translate(locale, "more.openOfficialLogin")}</span>
-                    </button>
-                    <small className="account-sync-note">
-                      {translate(locale, "more.nativeLoginMethods")}
-                    </small>
-                  </>
-                ) : (
-                  <a
-                    className="primary-button egys-login-button"
-                    href={`https://e.gys.or.id/login?theme=${theme}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setEgysLoginOpen(true);
-                    }}
-                  >
-                    <Icon name="person" size={16} />
-                    <span>{translate(locale, "more.openOfficialLogin")}</span>
-                  </a>
-                )}
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </article>
+            )}
+          </article>
+        </details>
 
-        <article className="more-card more-card-wide appearance-card">
-          <div className="more-card-heading">
-            <div>
-              <h2>{translate(locale, "more.appearance")}</h2>
-            </div>
-          </div>
-
-          <div className="appearance-section">
-            <label className="section-subtitle">
-              {translate(locale, "more.screenTheme")}
-            </label>
-            <div
-              className="theme-pill-grid"
-              role="radiogroup"
-              aria-label={translate(locale, "more.chooseTheme")}
-            >
-              {[
-                {
-                  key: "light",
-                  icon: "sun" as const,
-                  label: translate(locale, "more.themeLight"),
-                },
-                {
-                  key: "dark",
-                  icon: "moon" as const,
-                  label: translate(locale, "more.themeDark"),
-                },
-                {
-                  key: "amoled",
-                  icon: "amoled" as const,
-                  label: translate(locale, "more.themeAmoled"),
-                },
-                {
-                  key: "sepia",
-                  icon: "sepia" as const,
-                  label: translate(locale, "more.themeSepia"),
-                },
-                {
-                  key: "system",
-                  icon: "system" as const,
-                  label: translate(locale, "more.themeAutomatic"),
-                },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  role="radio"
-                  aria-checked={theme === item.key}
-                  className={`theme-pill-btn${theme === item.key ? " is-active" : ""}`}
-                  onClick={() => changeTheme(item.key as typeof theme)}
-                  aria-label={item.label}
-                  title={item.label}
-                >
-                  <span className="pill-icon">
-                    <Icon name={item.icon} size={18} />
-                  </span>
-                  <span className="pill-label">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="appearance-section">
-            <label className="section-subtitle">
-              {translate(locale, "more.accent")}
-            </label>
-            <div
-              className="accent-palette-grid"
-              role="radiogroup"
-              aria-label={translate(locale, "more.chooseAccent")}
-            >
-              {ACCENT_PRESETS.map((preset) => {
-                const active = accentColor === preset.color;
-                const presetName = translate(
-                  locale,
-                  `more.accent.${preset.id}`,
-                );
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    className={`accent-palette-item${active ? " is-active" : ""}`}
-                    onClick={() => setAccentColor(preset.color)}
-                    aria-label={translate(locale, "more.accentLabel", {
-                      name: presetName,
-                    })}
-                    title={presetName}
-                  >
-                    <span
-                      className="accent-swatch-circle"
-                      style={{ backgroundColor: preset.color }}
-                    />
-                    <span className="accent-swatch-name">{presetName}</span>
-                  </button>
-                );
-              })}
-              <label
-                className={`accent-palette-item is-custom${!ACCENT_PRESETS.some((p) => p.color === accentColor) ? " is-active" : ""}`}
-                title={translate(locale, "more.customAccent")}
-              >
-                <input
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  className="sr-only"
-                  aria-label={translate(locale, "more.customAccent")}
+        <details className="more-setting-section" data-setting="appearance">
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryAppearance")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <article className="more-card more-card-wide appearance-card">
+            <div className="appearance-settings">
+              <div className="appearance-setting-row">
+                <span className="appearance-setting-name">
+                  {translate(locale, "more.screenTheme")}
+                </span>
+                <Select
+                  className="appearance-setting-select"
+                  value={theme}
+                  onChange={changeTheme}
+                  label={translate(locale, "more.chooseTheme")}
+                  options={[
+                    {
+                      value: "system",
+                      label: translate(locale, "more.themeAutomatic"),
+                    },
+                    {
+                      value: "light",
+                      label: translate(locale, "more.themeLight"),
+                    },
+                    {
+                      value: "dark",
+                      label: translate(locale, "more.themeDark"),
+                    },
+                    {
+                      value: "amoled",
+                      label: translate(locale, "more.themeAmoled"),
+                    },
+                    {
+                      value: "sepia",
+                      label: translate(locale, "more.themeSepia"),
+                    },
+                  ]}
                 />
-                <span
-                  className="accent-swatch-circle is-custom-circle"
-                  style={{
-                    backgroundColor: !ACCENT_PRESETS.some(
-                      (p) => p.color === accentColor,
-                    )
-                      ? accentColor
-                      : "transparent",
-                  }}
-                >
-                  🎨
-                </span>
-                <span className="accent-swatch-name">
-                  {translate(locale, "more.custom")}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div className="appearance-section">
-            <label className="section-subtitle">
-              {translate(locale, "more.appLanguage")}
-            </label>
-            <div className="lang-pill-grid">
-              <Select
-                value={locale}
-                onChange={(val) => {
-                  const next = val as Locale;
-                  setLocale(next);
-                }}
-                label={translate(locale, "more.chooseLanguage")}
-                options={[
-                  { value: "id", label: "🇮🇩 Bahasa Indonesia (Utama)" },
-                  { value: "en", label: "🇬🇧 English" },
-                  { value: "zh", label: "🇨🇳 简体中文" },
-                ]}
-              />
-            </div>
-          </div>
-        </article>
-
-        <div className="more-resource-group" data-testid="more-resource-group">
-          <article className="more-card more-card-wide">
-            <div className="more-card-heading">
-              <div>
-                <h2>{translate(locale, "more.localPack")}</h2>
               </div>
-              <span className="pack-badge">
-                {translate(locale, "more.ready")}
-              </span>
-            </div>
-            <p>{translate(locale, "more.localPackDescription")}</p>
-            <div className="pack-stats">
-              <span>
-                <strong>{manifest?.bible ?? "TB"}</strong>
-                <small>{translate(locale, "more.translations")}</small>
-              </span>
-              <span>
-                <strong>{manifest?.hymns ?? "—"}</strong>
-                <small>{translate(locale, "more.songs")}</small>
-              </span>
-              <span>
-                <strong>
-                  {manifest
-                    ? formatBytes(
-                        manifest.items.reduce(
-                          (sum, item) => sum + item.bytes,
-                          0,
-                        ),
-                      )
-                    : "—"}
-                </strong>
-                <small>{translate(locale, "more.corePack")}</small>
-              </span>
-            </div>
-            <div className="pack-manager-actions">
-              <button
-                className="quiet-button"
-                type="button"
-                disabled={!manifest || packBusy}
-                onClick={() => void updateOfflinePack()}
+
+              <details
+                className="appearance-setting-disclosure"
+                data-setting="accent"
               >
-                {packBusy
-                  ? translate(locale, "more.saving", { percent: packProgress })
-                  : assetCheck.status === "update"
-                    ? localUpdateCount(assetCheck.diff) > 0
-                      ? translate(locale, "more.downloadUpdates", {
-                          count: localUpdateCount(assetCheck.diff),
-                        })
-                      : translate(locale, "more.updateMetadata")
-                    : translate(locale, "more.verifySave")}
-              </button>
-              <button
-                className="text-button"
-                type="button"
-                disabled={
-                  !assetManifest || packBusy || assetCheck.status === "checking"
-                }
-                onClick={() => void checkOfflinePack()}
-              >
-                {assetCheck.status === "checking"
-                  ? translate(locale, "more.checking")
-                  : translate(locale, "more.checkVersion")}
-              </button>
-              <small>
-                Manifest v{manifest?.version ?? 1} ·{" "}
-                {manifest
-                  ? new Date(manifest.generatedAt).toLocaleDateString(locale)
-                  : translate(locale, "more.loading")}
-                {assetCheck.status === "update" &&
-                  ` · ${translate(locale, "more.updatesAvailable", {
-                    count: localUpdateCount(assetCheck.diff),
-                  })}`}
-                {assetCheck.status === "current" &&
-                  ` · ${translate(locale, "more.latest")}`}
-                {assetCheck.status === "error" &&
-                  ` · ${translate(locale, "more.notChecked")}`}
-              </small>
+                <summary className="appearance-setting-row">
+                  <span className="appearance-setting-name">
+                    {translate(locale, "more.accent")}
+                  </span>
+                  <span className="appearance-setting-value">
+                    <span
+                      className="appearance-accent-swatch"
+                      style={{ backgroundColor: accentColor }}
+                      aria-hidden="true"
+                    />
+                    {selectedAccentLabel}
+                  </span>
+                  <Icon name="chevronDown" size={18} />
+                </summary>
+                <div
+                  className="accent-palette-grid"
+                  role="radiogroup"
+                  aria-label={translate(locale, "more.chooseAccent")}
+                >
+                  {ACCENT_PRESETS.map((preset) => {
+                    const active = accentColor === preset.color;
+                    const presetName = translate(
+                      locale,
+                      `more.accent.${preset.id}`,
+                    );
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        className={`accent-palette-item${active ? " is-active" : ""}`}
+                        onClick={() => setAccentColor(preset.color)}
+                        aria-label={translate(locale, "more.accentLabel", {
+                          name: presetName,
+                        })}
+                        title={presetName}
+                      >
+                        <span
+                          className="accent-swatch-circle"
+                          style={{ backgroundColor: preset.color }}
+                        />
+                        <span className="accent-swatch-name">{presetName}</span>
+                      </button>
+                    );
+                  })}
+                  <label
+                    className={`accent-palette-item is-custom${!selectedAccent ? " is-active" : ""}`}
+                    title={translate(locale, "more.customAccent")}
+                  >
+                    <input
+                      type="color"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="sr-only"
+                      aria-label={translate(locale, "more.customAccent")}
+                    />
+                    <span
+                      className="accent-swatch-circle is-custom-circle"
+                      style={{
+                        backgroundColor: !selectedAccent
+                          ? accentColor
+                          : "transparent",
+                      }}
+                    >
+                      🎨
+                    </span>
+                    <span className="accent-swatch-name">
+                      {translate(locale, "more.custom")}
+                    </span>
+                  </label>
+                </div>
+              </details>
+
+              <div className="appearance-setting-row">
+                <span className="appearance-setting-name">
+                  {translate(locale, "more.appLanguage")}
+                </span>
+                <Select
+                  className="appearance-setting-select"
+                  value={locale}
+                  onChange={(val) => {
+                    const next = val as Locale;
+                    setLocale(next);
+                  }}
+                  label={translate(locale, "more.chooseLanguage")}
+                  options={[
+                    { value: "id", label: "🇮🇩 Bahasa Indonesia (Utama)" },
+                    { value: "en", label: "🇬🇧 English" },
+                    { value: "zh", label: "🇨🇳 简体中文" },
+                  ]}
+                />
+              </div>
             </div>
           </article>
+        </details>
 
-          <DistributedAssetPanel
-            locale={locale}
-            assets={distributedAssets}
-            loading={distributedAssetsLoading}
-            downloadAvailable={distributedDownloadsConfigured()}
-            {...(distributedBusyCode ? { busyCode: distributedBusyCode } : {})}
-            {...(distributedProgress ? { progress: distributedProgress } : {})}
-            {...(distributedError ? { error: distributedError } : {})}
-            onInstall={(code) => void installDistributedAsset(code)}
-            onRemove={(code) => void removeDistributedAsset(code)}
-          />
-        </div>
+        <details className="more-setting-section" data-setting="audio">
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryAudio")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <div className="more-settings-content">
+            <p>{translate(locale, "bible.configureAudio")}</p>
+            <Link className="more-settings-link" to="/bible?settings=audio">
+              {translate(locale, "bible.audioSettings")}
+              <Icon name="chevronRight" size={16} />
+            </Link>
+          </div>
+        </details>
 
-        <div
-          className="more-secondary-group"
-          data-testid="more-secondary-group"
+        <details className="more-setting-section" data-setting="hymns">
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryHymns")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <div className="more-settings-content">
+            <div className="more-secondary-grid">
+              <button
+                className="more-card more-action"
+                type="button"
+                onClick={() => setPlaylistOpen((open) => !open)}
+              >
+                <span className="more-icon">♫</span>
+                <strong>{translate(locale, "more.midiQueue")}</strong>
+                <small>
+                  {playlist.items.length
+                    ? translate(locale, "more.queueStatus", {
+                        count: playlist.items.length,
+                        mode: playlist.autoNext
+                          ? translate(locale, "more.queueAutomatic")
+                          : translate(locale, "more.queueManual"),
+                      })
+                    : translate(locale, "more.prepareQueue")}
+                </small>
+              </button>
+              <button
+                className="more-card more-action"
+                type="button"
+                onClick={() => setReminderOpen((open) => !open)}
+              >
+                <span className="more-icon">◷</span>
+                <strong>{translate(locale, "more.reminder")}</strong>
+                <small>{translate(locale, "more.reminderDesc")}</small>
+              </button>
+            </div>
+          </div>
+        </details>
+
+        <details
+          className="more-setting-section"
+          data-setting="offline"
+          open={initialSection === "data"}
         >
-          <div className="more-secondary-grid">
-            <button
-              className="more-card more-action"
-              type="button"
-              onClick={() => setBackupOpen((open) => !open)}
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryOffline")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <div className="more-settings-content">
+            <div
+              className="more-resource-group"
+              data-testid="more-resource-group"
             >
-              <span className="more-icon">↥</span>
-              <strong>{translate(locale, "more.backupImport")}</strong>
-              <small>{translate(locale, "more.backupImportDesc")}</small>
-            </button>
+              <article className="more-card more-card-wide">
+                <div className="more-card-heading">
+                  <div>
+                    <h2>{translate(locale, "more.localPack")}</h2>
+                  </div>
+                  <span className="pack-badge">
+                    {translate(locale, "more.ready")}
+                  </span>
+                </div>
+                <p>{translate(locale, "more.localPackDescription")}</p>
+                <div className="pack-stats">
+                  <span>
+                    <strong>{manifest?.bible ?? "TB"}</strong>
+                    <small>{translate(locale, "more.translations")}</small>
+                  </span>
+                  <span>
+                    <strong>{manifest?.hymns ?? "—"}</strong>
+                    <small>{translate(locale, "more.songs")}</small>
+                  </span>
+                  <span>
+                    <strong>
+                      {manifest
+                        ? formatBytes(
+                            manifest.items.reduce(
+                              (sum, item) => sum + item.bytes,
+                              0,
+                            ),
+                          )
+                        : "—"}
+                    </strong>
+                    <small>{translate(locale, "more.corePack")}</small>
+                  </span>
+                </div>
+                <div className="pack-manager-actions">
+                  <button
+                    className="quiet-button"
+                    type="button"
+                    disabled={!manifest || packBusy}
+                    onClick={() => void updateOfflinePack()}
+                  >
+                    {packBusy
+                      ? translate(locale, "more.saving", {
+                          percent: packProgress,
+                        })
+                      : assetCheck.status === "update"
+                        ? localUpdateCount(assetCheck.diff) > 0
+                          ? translate(locale, "more.downloadUpdates", {
+                              count: localUpdateCount(assetCheck.diff),
+                            })
+                          : translate(locale, "more.updateMetadata")
+                        : translate(locale, "more.verifySave")}
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    disabled={
+                      !assetManifest ||
+                      packBusy ||
+                      assetCheck.status === "checking"
+                    }
+                    onClick={() => void checkOfflinePack()}
+                  >
+                    {assetCheck.status === "checking"
+                      ? translate(locale, "more.checking")
+                      : translate(locale, "more.checkVersion")}
+                  </button>
+                  {assetCheck.status !== "idle" && (
+                    <small aria-live="polite">
+                      {assetCheck.status === "update"
+                        ? localUpdateCount(assetCheck.diff) > 0
+                          ? translate(locale, "more.updatesAvailable", {
+                              count: localUpdateCount(assetCheck.diff),
+                            })
+                          : translate(locale, "more.updateMetadata")
+                        : assetCheck.status === "current"
+                          ? translate(locale, "more.latest")
+                          : assetCheck.status === "error"
+                            ? translate(locale, "more.notChecked")
+                            : translate(locale, "more.checking")}
+                    </small>
+                  )}
+                </div>
+                <details className="offline-pack-diagnostics">
+                  <summary className="text-button">
+                    {translate(locale, "more.offlineDiagnostics")}
+                  </summary>
+                  <small>
+                    Manifest v{manifest?.version ?? 1} ·{" "}
+                    {manifest
+                      ? new Date(manifest.generatedAt).toLocaleDateString(
+                          locale,
+                        )
+                      : translate(locale, "more.loading")}
+                  </small>
+                </details>
+              </article>
 
-            <button
-              className="more-card more-action"
-              type="button"
-              onClick={() => setReminderOpen((open) => !open)}
-            >
-              <span className="more-icon">◷</span>
-              <strong>{translate(locale, "more.reminder")}</strong>
-              <small>{translate(locale, "more.reminderDesc")}</small>
-            </button>
-
-            <button
-              className="more-card more-action"
-              type="button"
-              onClick={() => setPlaylistOpen((open) => !open)}
-            >
-              <span className="more-icon">♫</span>
-              <strong>{translate(locale, "more.midiQueue")}</strong>
-              <small>
-                {playlist.items.length
-                  ? translate(locale, "more.queueStatus", {
-                      count: playlist.items.length,
-                      mode: playlist.autoNext
-                        ? translate(locale, "more.queueAutomatic")
-                        : translate(locale, "more.queueManual"),
-                    })
-                  : translate(locale, "more.prepareQueue")}
-              </small>
-            </button>
-
+              <DistributedAssetPanel
+                locale={locale}
+                assets={distributedAssets}
+                loading={distributedAssetsLoading}
+                downloadAvailable={distributedDownloadsConfigured()}
+                {...(distributedBusyCode
+                  ? { busyCode: distributedBusyCode }
+                  : {})}
+                {...(distributedProgress
+                  ? { progress: distributedProgress }
+                  : {})}
+                {...(distributedError ? { error: distributedError } : {})}
+                onInstall={(code) => void installDistributedAsset(code)}
+                onRemove={(code) => void removeDistributedAsset(code)}
+              />
+            </div>
             <details
               className="more-card more-card-wide device-data-tools"
               data-testid="device-data-tools"
@@ -1398,7 +1486,37 @@ export function MorePage({
                 </button>
               </div>
             </details>
+          </div>
+        </details>
 
+        <details className="more-setting-section" data-setting="backup">
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryBackup")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <div className="more-settings-content">
+            <button
+              className="more-card more-action"
+              type="button"
+              onClick={() => setBackupOpen((open) => !open)}
+            >
+              <span className="more-icon">↥</span>
+              <strong>{translate(locale, "more.backupImport")}</strong>
+              <small>{translate(locale, "more.backupImportDesc")}</small>
+            </button>
+          </div>
+        </details>
+
+        <details
+          className="more-setting-section"
+          data-setting="about"
+          open={initialSection === "help"}
+        >
+          <summary className="more-setting-row">
+            <strong>{translate(locale, "more.categoryAbout")}</strong>
+            <Icon name="chevronDown" size={18} />
+          </summary>
+          <div className="more-settings-content">
             <form className="more-card report-card" onSubmit={submitReport}>
               <div className="more-card-heading">
                 <div>
@@ -1437,7 +1555,7 @@ export function MorePage({
               </small>
             </form>
           </div>
-        </div>
+        </details>
       </section>
       {backupOpen && (
         <section
@@ -1476,14 +1594,13 @@ export function MorePage({
             >
               {translate(locale, "more.exportBackup")}
             </button>
-            <label className="quiet-button file-button">
-              {translate(locale, "more.chooseFile")}
-              <input
-                type="file"
-                accept=".gysbk,.json"
-                onChange={(event) => setBackupFile(event.target.files?.[0])}
-              />
-            </label>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => void chooseBackupFile()}
+            >
+              {backupFile?.name ?? translate(locale, "more.chooseFile")}
+            </button>
             <button
               className="quiet-button"
               type="button"

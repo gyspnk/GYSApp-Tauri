@@ -41,7 +41,7 @@ const routes = [
     id: "lainnya",
     path: "/lainnya",
     ready: ".more-page",
-    meaningful: ".more-card",
+    meaningful: ".more-setting-row",
   },
 ] as const;
 

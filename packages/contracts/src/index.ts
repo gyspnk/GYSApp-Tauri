@@ -611,7 +611,7 @@ export interface PlatformFileDialogs {
     multiple?: boolean;
     signal?: AbortSignal;
   }): Promise<PlatformFile[] | undefined>;
-  save(file: PlatformFile): Promise<void>;
+  save(file: PlatformFile): Promise<boolean>;
 }
 
 export interface PlatformShare {

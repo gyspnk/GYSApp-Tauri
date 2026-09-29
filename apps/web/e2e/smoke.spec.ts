@@ -29,9 +29,17 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   await expect(page.getByText("Kesaksian", { exact: true })).toHaveCount(0);
 
   await page.goto("/GYSApp-Tauri/lainnya");
-  await expect(
-    page.getByRole("heading", { name: "Appearance & language" }),
-  ).toBeVisible();
+  await page
+    .locator('.more-setting-section[data-setting="appearance"] > summary')
+    .click();
+  await page
+    .locator('.more-setting-section[data-setting="offline"] > summary')
+    .click();
+  const appearanceRow = page.locator(
+    '.more-setting-section[data-setting="appearance"] > summary strong',
+  );
+  await expect(appearanceRow).toHaveText("Appearance");
+  await expect(page.locator(".appearance-card")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Local pack" })).toBeVisible();
   await expect(
     page.getByText("Tampilan & Bahasa", { exact: true }),
@@ -39,10 +47,18 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
 
   await page.getByRole("button", { name: "Language", exact: true }).click();
   await page.getByRole("option", { name: "中文" }).click();
-  await expect(page.getByRole("heading", { name: "外观与语言" })).toBeVisible();
+  await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("heading", { name: "外观与语言" })).toBeVisible();
+  await page
+    .locator('.more-setting-section[data-setting="appearance"] > summary')
+    .click();
+  await page
+    .locator('.more-setting-section[data-setting="offline"] > summary')
+    .click();
+  await expect(appearanceRow).toHaveText("外观");
+  await expect(page.locator(".appearance-card")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
 });
 
 test("feature-critical hymn actions follow the selected locale", async ({
@@ -287,9 +303,12 @@ test("offline pack manager keeps one update action and reports manifest status",
     1,
   );
   await expect(page.locator(".pack-manager-actions button")).toHaveCount(2);
-  await expect(page.locator(".pack-manager-actions small")).toContainText(
-    /Manifest v1/,
-  );
+  const diagnostics = page.locator(".offline-pack-diagnostics");
+  await expect(diagnostics.locator("summary")).toHaveText("Diagnostik");
+  await expect(diagnostics.locator("small")).toContainText(/Manifest v1/);
+  await expect(diagnostics.locator("small")).not.toBeVisible();
+  await diagnostics.locator("summary").click();
+  await expect(diagnostics.locator("small")).toBeVisible();
 });
 
 test("Bible reader keeps search, split reading, and verse annotations local", async ({
@@ -299,7 +318,11 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
   await page.getByLabel("Cari Alkitab").fill("begitu besar");
+  await page.locator(".bible-search-options-disclosure > summary").click();
   await page.getByLabel("Frasa tepat").check();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect(page.locator(".result-item").first()).toBeVisible();
@@ -322,7 +345,10 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
     .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
     .first()
     .click();
-  await page.getByRole("button", { name: /Buka catatan ayat/ }).click();
+  await page
+    .getByRole("toolbar", { name: "Aksi ayat terpilih" })
+    .getByRole("button", { name: "Catatan ayat", exact: true })
+    .click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
   await page
     .getByLabel("Catatan pribadi")
@@ -337,7 +363,11 @@ test("Bible search narrows results to a testament", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
   await page.getByLabel("Cari Alkitab").fill("Allah");
+  await page.locator(".bible-search-options-disclosure > summary").click();
   const searchBook = page.locator(
     ".bible-search-options .control-select-trigger",
   );
@@ -373,6 +403,71 @@ test("Bible search narrows results to a testament", async ({ page }) => {
         })),
     )
     .toEqual({ hasOldTestament: false, hasNewTestament: true });
+
+  await searchBook.click({ force: true });
+  await page.getByRole("option", { name: "Yohanes", exact: true }).click();
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+  await expect
+    .poll(async () => {
+      const references = await page
+        .locator(".result-item strong")
+        .allTextContents();
+      return {
+        hasResults: references.length > 0,
+        hasOtherBook: references.some(
+          (reference) => !reference.startsWith("Yohanes "),
+        ),
+      };
+    })
+    .toEqual({ hasResults: true, hasOtherBook: false });
+});
+
+test("Bible search phrase and whole-word filters work offline", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  const appOrigin = new URL(page.url()).origin;
+  await page.route("**/*", async (route) => {
+    if (new URL(route.request().url()).origin === appOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
+  await page.locator(".bible-search-options-disclosure > summary").click();
+  const searchInput = page.getByLabel("Cari Alkitab");
+  const searchButton = page.getByRole("button", {
+    name: "Cari",
+    exact: true,
+  });
+  const results = page.locator(".result-item");
+  const exactPhrase = page.getByLabel("Frasa tepat");
+  const wholeWord = page.getByLabel("Kata utuh");
+
+  await searchInput.fill("besar begitu");
+  await searchButton.click();
+  await expect(results.filter({ hasText: "Kejadian 48:19" })).toHaveCount(1);
+  await expect(results.filter({ hasText: "Yohanes 18:22" })).toHaveCount(1);
+
+  await exactPhrase.check();
+  await searchButton.click();
+  await expect(results).toHaveCount(0);
+
+  await exactPhrase.uncheck();
+  await searchInput.fill("Yohan");
+  await searchButton.click();
+  await expect(results.first()).toContainText("Yohanes");
+  await wholeWord.check();
+  await searchButton.click();
+  await expect(results).toHaveCount(0);
 });
 
 test("Bible search matches book names from the offline pack", async ({
@@ -386,6 +481,9 @@ test("Bible search matches book names from the offline pack", async ({
   // books also mention the name in their verse text (Matius 3:1 begins with
   // "Yohanes Pembaptis"); the book-name index entry is what makes the book of
   // Yohanes itself appear.
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
   await page.getByLabel("Cari Alkitab").fill("Yohanes");
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   const results = page.locator(".result-item");
@@ -409,6 +507,29 @@ test("Bible search matches book names from the offline pack", async ({
         .then((texts) => texts.some((text) => text.startsWith("Yohanes "))),
     )
     .toBe(true);
+});
+
+test("Bible typed references match and open the exact verse", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page
+    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
+    .click();
+  await page.getByLabel("Cari Alkitab").fill("Yohanes 3:16");
+  await page.getByRole("button", { name: "Cari", exact: true }).click();
+
+  const results = page.locator(".result-item");
+  await expect(results).toHaveCount(1, { timeout: 15_000 });
+  await expect(results.locator("strong")).toHaveText("Yohanes 3:16");
+  await results.click();
+  await expect(page.getByRole("heading", { name: "Yohanes 3" })).toBeVisible();
+  await expect(page.locator('[id="bible-verse-43:3:16"]')).toHaveClass(
+    /is-selected/,
+  );
 });
 
 test("Bible reader typography persists across reloads", async ({ page }) => {
@@ -953,6 +1074,8 @@ test("home shows Bible and hymn history side by side when both coexist", async (
   page,
 }) => {
   await page.addInitScript(() => {
+    localStorage.setItem("gys-bible-book", "43");
+    localStorage.setItem("gys-bible-chapter", "3");
     localStorage.setItem(
       "gys-activity-v1",
       JSON.stringify({
@@ -974,6 +1097,11 @@ test("home shows Bible and hymn history side by side when both coexist", async (
   });
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".continue-item")).toHaveCount(2);
+  await page.locator('.continue-item[href="/GYSApp-Tauri/bible"]').click();
+  await expect(page).toHaveURL(/\/bible$/);
+  await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 test("device reset clears browser preferences, durable blobs, and app caches", async ({
@@ -1231,7 +1359,9 @@ test("global search finds Bible verses and deep-links into the internal reader",
     .first();
   await expect(bibleResult).toBeVisible({ timeout: 15_000 });
   await bibleResult.click();
-  await expect(page).toHaveURL(/\/bible\?book=43&chapter=3&verse=16$/);
+  await expect(page).toHaveURL(
+    /\/bible\?book=43&chapter=3&verse=16&version=b_tb$/,
+  );
   await expect(
     page.getByRole("heading", { name: "Yohanes 3" }).first(),
   ).toBeVisible({ timeout: 15_000 });
@@ -1240,6 +1370,40 @@ test("global search finds Bible verses and deep-links into the internal reader",
     .first();
   await expect(verseButton).toBeVisible();
   await expect(verseButton).toHaveAttribute("aria-pressed", "true");
+});
+
+test("Bible deep links clamp references and preserve position for unknown books", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-bible-book", "43");
+    localStorage.setItem("gys-bible-chapter", "3");
+  });
+  await page.goto("/GYSApp-Tauri/bible?book=43&chapter=3&verse=999");
+  const selectedVerse = page.locator('[id="bible-verse-43:3:36"]');
+  await expect(selectedVerse).toHaveClass(/is-selected/, { timeout: 15_000 });
+
+  await page.goto("/GYSApp-Tauri/bible?book=43&chapter=99&verse=1");
+  await expect(page.getByRole("heading", { name: "Yohanes 21" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.locator('[id="bible-verse-43:21:1"]')).toHaveClass(
+    /is-selected/,
+  );
+
+  await page.goto("/GYSApp-Tauri/bible?book=99&chapter=1&verse=1");
+  await expect(page.getByRole("heading", { name: "Yohanes 3" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.locator('[id="bible-verse-43:3:1"]')).toBeVisible();
+
+  await page.goto("/GYSApp-Tauri/bible?book=43&chapter=1e2&verse=16");
+  await expect(page.getByRole("heading", { name: "Yohanes 3" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.locator('[id="bible-verse-43:3:16"]')).not.toHaveClass(
+    /is-selected/,
+  );
 });
 
 test("literature detail persists favorite and progress controls", async ({
@@ -1327,7 +1491,10 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   ).toBeVisible({ timeout: 15_000 });
   await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
-  await page.goto("/GYSApp-Tauri/lainnya?section=data");
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page
+    .locator('.more-setting-section[data-setting="hymns"] > summary')
+    .click();
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
   await expect(
@@ -1336,6 +1503,9 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
     }),
   ).toBeVisible();
   await page.reload();
+  await page
+    .locator('.more-setting-section[data-setting="hymns"] > summary')
+    .click();
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
 });
@@ -1401,6 +1571,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
   // Enable split view via Hamburger menu
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await expect(page.getByText("Tampilan Belah")).toBeVisible();
+  await expect(page.getByText("Gulir Sinkron")).toHaveCount(0);
   await page.getByText("Tampilan Belah").click();
   await expect(page.locator(".bible-pane")).toHaveCount(2);
 
@@ -1433,4 +1604,117 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
       ),
     )
     .toBe("1");
+
+  await page.getByText("Tampilan Belah").click();
+  await expect(page.locator(".bible-pane")).toHaveCount(1);
+  await expect(page.getByText("Gulir Sinkron")).toHaveCount(0);
+});
+
+test("Bible split keeps matching verse anchors aligned across different text heights", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-bible-book", "19");
+    localStorage.setItem("gys-bible-chapter", "119");
+    localStorage.setItem("gys-bible-split-v1", "1");
+    localStorage.setItem("gys-bible-secondary-version", "b_tb");
+    localStorage.setItem("gys-bible-split-sync-scroll-v1", "1");
+  });
+  await page.goto("/GYSApp-Tauri/bible");
+  const panes = page.locator(".bible-reader.is-split .bible-pane");
+  await expect(panes).toHaveCount(2);
+  await expect(
+    panes.first().getByRole("heading", { name: /Mazmur 119/ }),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(panes.first().locator(".verse-row")).toHaveCount(176);
+
+  // Uneven row heights simulate the differing verse lengths of two translations.
+  await page.addStyleTag({
+    content:
+      ".bible-pane-secondary .verse-list > div:nth-child(even) > .verse-row { min-height: 160px !important; }",
+  });
+  await page.evaluate(() => {
+    const list = document.querySelector<HTMLElement>(
+      ".bible-reader.is-split .bible-pane:not(.bible-pane-secondary) .verse-list",
+    )!;
+    const targetVerse = list.querySelectorAll<HTMLElement>(".verse-row")[99]!;
+    list.scrollTop +=
+      targetVerse.getBoundingClientRect().top -
+      list.getBoundingClientRect().top;
+  });
+  const readVisibleAnchors = () =>
+    page.locator(".bible-reader.is-split .verse-list").evaluateAll((lists) =>
+      lists.map((list) => {
+        const top = list.getBoundingClientRect().top;
+        return Array.from(list.querySelectorAll(".verse-row")).findIndex(
+          (row) => row.getBoundingClientRect().bottom > top + 1,
+        );
+      }),
+    );
+
+  const primaryAnchor = await page
+    .locator(
+      ".bible-reader.is-split .bible-pane:not(.bible-pane-secondary) .verse-list",
+    )
+    .evaluate((list) => {
+      const top = list.getBoundingClientRect().top;
+      return Array.from(list.querySelectorAll(".verse-row")).findIndex(
+        (row) => row.getBoundingClientRect().bottom > top + 1,
+      );
+    });
+  expect(primaryAnchor).toBeGreaterThan(90);
+  await expect.poll(readVisibleAnchors).toEqual([primaryAnchor, primaryAnchor]);
+
+  const secondaryList = page.locator(
+    ".bible-reader.is-split .bible-pane-secondary .verse-list",
+  );
+  await secondaryList.evaluate((list) => {
+    const targetVerse = list.querySelectorAll<HTMLElement>(".verse-row")[129]!;
+    list.scrollTop +=
+      targetVerse.getBoundingClientRect().top -
+      list.getBoundingClientRect().top;
+  });
+  await expect
+    .poll(async () => {
+      const [primary, secondary] = await readVisibleAnchors();
+      return primary === secondary && secondary > 120;
+    })
+    .toBe(true);
+});
+
+test("Bible split keeps the reader usable when a secondary pack is unavailable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-bible-split-v1", "1");
+    localStorage.setItem("gys-bible-secondary-version", "b_kjv");
+  });
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  const secondaryPane = page.locator(".bible-pane-secondary");
+  await expect(secondaryPane).toContainText("Tidak dapat memuat KJV.", {
+    timeout: 15_000,
+  });
+  await expect(secondaryPane).not.toContainText("Bible asset is not installed");
+  const retryButton = secondaryPane.getByRole("button", {
+    name: "Coba lagi",
+  });
+  await expect(retryButton).toBeVisible();
+  await retryButton.click();
+  await expect(secondaryPane).toContainText("Tidak dapat memuat KJV.");
+  await expect(
+    page.locator(".bible-reader.is-split .bible-pane").first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
 });

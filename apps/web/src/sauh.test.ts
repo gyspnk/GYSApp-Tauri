@@ -403,6 +403,58 @@ describe("Sauh feed normalization", () => {
     vi.unstubAllGlobals();
   }, 15_000);
 
+  it("uses today's packaged snapshot without a network request while offline", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-27T05:00:00.000Z"));
+    const snapshotId = "sbj260927";
+    const snapshot = {
+      items: [
+        {
+          id: snapshotId,
+          title: "Snapshot hari ini",
+          reference: "Kolose 3:10",
+          verse: "Manusia baru yang terus-menerus diperbaharui",
+          body: "Renungan resmi yang tersedia di paket offline.",
+          url: `https://tjc.org/id/gerakan-baca-alkitab/${snapshotId}/`,
+          updatedAt: "2026-09-25T10:10:32.000Z",
+          source: "tjc.org",
+        },
+      ],
+    };
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      if (!String(input).includes("/offline/sauh.json"))
+        return Promise.reject(new Error("Unexpected network request"));
+      return Promise.resolve(
+        new Response(JSON.stringify(snapshot), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("navigator", { onLine: false });
+    vi.stubGlobal("window", {
+      setTimeout,
+      clearTimeout,
+      location: { pathname: "/" },
+    });
+
+    try {
+      const { fetchSauh } = await import("./sauh.js");
+      const result = await fetchSauh();
+      expect(result[0]?.id).toBe(snapshotId);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining("/offline/sauh.json"),
+        expect.objectContaining({ cache: "default" }),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    }
+  });
+
   it("rejects instead of showing an outdated snapshot when today's entry is unavailable", async () => {
     vi.resetModules();
     const snapshot = {

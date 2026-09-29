@@ -22,7 +22,7 @@ import {
   type BibleReaderPack,
 } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import {
   bibleBookNames,
@@ -36,6 +36,7 @@ import { bibleSpeechLanguage } from "./bible-language.js";
 import { BibleSearchClient } from "./bible-search.js";
 import {
   calculateProportionalScroll,
+  calculateVerseAnchorScroll,
   useBibleSplitController,
 } from "./bible-split.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -66,6 +67,8 @@ import { loadBibleReaderPack } from "./bible-distributed.js";
 import { Icon } from "./icons.js";
 import { setBibleHeaderState } from "./bible-header-store.js";
 
+const SEARCH_RESULTS_PAGE_SIZE = 40;
+
 type PackState =
   | { status: "loading" }
   | { status: "ready"; pack: BibleReaderPack }
@@ -78,13 +81,19 @@ type SelectionToolbarState = {
   top: number;
 };
 
+type SavedBibleNote = { id: string; text: string };
+type BibleNotes = Record<string, SavedBibleNote[]>;
+
 const BOOK_KEY = "gys-bible-book";
 const CHAPTER_KEY = "gys-bible-chapter";
 const BOOKMARKS_KEY = "gys-bible-bookmarks";
 const NOTES_KEY = "gys-bible-notes-v1";
 const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
+const HIGHLIGHT_PALETTE_KEY = "gys-bible-highlight-palette-v1";
 const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
 const VERSION_KEY = "gys-bible-version-v1";
+const DEFAULT_HIGHLIGHT_COLORS = ["yellow", "blue", "green"] as const;
+const MAX_CUSTOM_HIGHLIGHT_COLORS = 6;
 
 function readSavedNumber(key: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
@@ -124,6 +133,80 @@ function readStringMap(key: string): Record<string, string> {
   } catch {
     return {};
   }
+}
+
+function readBibleNotes(): BibleNotes {
+  if (typeof window === "undefined") return {};
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(NOTES_KEY) ?? "{}");
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value).flatMap(([verseId, stored]) => {
+        if (typeof stored === "string") {
+          const text = stored.trim();
+          return text ? [[verseId, [{ id: `legacy-${verseId}`, text }]]] : [];
+        }
+        if (!Array.isArray(stored)) return [];
+        const notes = stored.flatMap((entry, index) => {
+          if (!entry || typeof entry !== "object") return [];
+          const note = entry as { id?: unknown; text?: unknown };
+          if (typeof note.text !== "string" || !note.text.trim()) return [];
+          return [
+            {
+              id:
+                typeof note.id === "string" && note.id
+                  ? note.id
+                  : `legacy-${verseId}-${index}`,
+              text: note.text.trim(),
+            },
+          ];
+        });
+        return notes.length ? [[verseId, notes]] : [];
+      }),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function isCustomHighlightColor(value: string): boolean {
+  return /^#[0-9a-f]{6}$/i.test(value);
+}
+
+function readBibleHighlights(): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(readStringMap(HIGHLIGHTS_KEY)).filter(
+      ([, color]) =>
+        DEFAULT_HIGHLIGHT_COLORS.includes(
+          color as (typeof DEFAULT_HIGHLIGHT_COLORS)[number],
+        ) || isCustomHighlightColor(color),
+    ),
+  );
+}
+
+function readCustomHighlightColors(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const value: unknown = JSON.parse(
+      localStorage.getItem(HIGHLIGHT_PALETTE_KEY) ?? "[]",
+    );
+    return Array.isArray(value)
+      ? [
+          ...new Set(
+            value.filter(
+              (entry): entry is string =>
+                typeof entry === "string" && isCustomHighlightColor(entry),
+            ),
+          ),
+        ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function makeBibleNoteId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function readSearchHistory(): string[] {
@@ -550,6 +633,15 @@ function ChapterPane({
           const selected = selectedVerseId === verse.id;
           const speaking = speakingVerseId === verse.id;
           const highlight = highlights[verse.id];
+          const highlightClass = highlight
+            ? ` is-highlight-${
+                DEFAULT_HIGHLIGHT_COLORS.includes(
+                  highlight as (typeof DEFAULT_HIGHLIGHT_COLORS)[number],
+                )
+                  ? highlight
+                  : "custom"
+              }`
+            : "";
           const pericope =
             verse.verse === 0 ? undefined : pericopeByVerse.get(verse.verse);
 
@@ -603,9 +695,16 @@ function ChapterPane({
                 </div>
               )}
               <article
-                className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlight ? ` is-highlight-${highlight}` : ""}`}
+                className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlightClass}`}
                 id={`bible-verse-${verse.id}`}
                 aria-current={speaking ? "true" : undefined}
+                style={
+                  isCustomHighlightColor(highlight ?? "")
+                    ? ({
+                        "--verse-highlight-color": highlight,
+                      } as CSSProperties)
+                    : undefined
+                }
               >
                 <button
                   className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
@@ -681,6 +780,7 @@ function ChapterPane({
 }
 
 export function BiblePage({ locale }: { locale: Locale }) {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [packState, setPackState] = useState<PackState>({ status: "loading" });
   const [selectedVersionCode, setSelectedVersionCode] =
@@ -699,13 +799,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
     readSavedNumber(CHAPTER_KEY, 1),
   );
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [searchBook, setSearchBook] = useState("all");
   const [exactPhrase, setExactPhrase] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
-  const [searchFiltersOpen, setSearchFiltersOpen] = useState(() =>
-    typeof window === "undefined" ? true : window.innerWidth >= 600,
-  );
+  const [searchFiltersOpen, setSearchFiltersOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
+  const [visibleSearchResultCount, setVisibleSearchResultCount] = useState(
+    SEARCH_RESULTS_PAGE_SIZE,
+  );
   const [searchedQuery, setSearchedQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string>();
@@ -713,16 +815,21 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [bookmarks, setBookmarks] = useState<Set<string>>(() =>
     readStringSet(BOOKMARKS_KEY),
   );
-  const [notes, setNotes] = useState<Record<string, string>>(() =>
-    readStringMap(NOTES_KEY),
-  );
-  const [highlights, setHighlights] = useState<Record<string, string>>(() =>
-    readStringMap(HIGHLIGHTS_KEY),
+  const [notes, setNotes] = useState<BibleNotes>(readBibleNotes);
+  const [highlights, setHighlights] =
+    useState<Record<string, string>>(readBibleHighlights);
+  const [customHighlightColors, setCustomHighlightColors] = useState(
+    readCustomHighlightColors,
   );
   const [selectedVerseId, setSelectedVerseId] = useState<string>();
+  const [selectedNoteId, setSelectedNoteId] = useState<string>();
+  const selectedNoteIdRef = useRef<string | undefined>(undefined);
+  selectedNoteIdRef.current = selectedNoteId;
   const [noteDraft, setNoteDraft] = useState("");
   const [speaking, setSpeaking] = useState(false);
-  const [speechControlsOpen, setSpeechControlsOpen] = useState(false);
+  const [speechControlsOpen, setSpeechControlsOpen] = useState(
+    () => searchParams.get("settings") === "audio",
+  );
   const [readerActionsOpen, setReaderActionsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectionToolbar, setSelectionToolbar] = useState<
@@ -735,6 +842,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [secondaryPackState, setSecondaryPackState] = useState<PackState>({
     status: "loading",
   });
+  const [secondaryPackAttempt, setSecondaryPackAttempt] = useState(0);
   const [crossRefModal, setCrossRefModal] = useState<
     | {
         pericopeId: string;
@@ -767,6 +875,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   >(undefined);
   const touchStartX = useRef<number | undefined>(undefined);
   const searchAbortRef = useRef<AbortController | undefined>(undefined);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const quickNavRef = useRef<
     | {
         pointerId: number;
@@ -806,12 +915,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
       if (target?.isConnected) target.focus({ preventScroll: true });
     });
   }, []);
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 600px)");
-    const syncSearchFilters = () => setSearchFiltersOpen(mediaQuery.matches);
-    syncSearchFilters();
-    mediaQuery.addEventListener("change", syncSearchFilters);
-    return () => mediaQuery.removeEventListener("change", syncSearchFilters);
+  const focusBibleSearch = useCallback(() => {
+    setSearchOpen(true);
+    window.requestAnimationFrame(() => {
+      const input = searchInputRef.current;
+      if (!input) return;
+      const bounds = input.getBoundingClientRect();
+      const topbarBottom =
+        document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
+      if (bounds.top < topbarBottom || bounds.bottom > window.innerHeight) {
+        input.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      input.focus({ preventScroll: true });
+    });
   }, []);
   useEffect(
     () => subscribeBibleTypography(() => setTypography(readBibleTypography())),
@@ -884,20 +1000,58 @@ export function BiblePage({ locale }: { locale: Locale }) {
     }
   };
 
+  const syncPaneByVerseAnchor = (
+    source: HTMLDivElement,
+    target: HTMLDivElement,
+  ) => {
+    const sourceRows = source.querySelectorAll<HTMLElement>(".verse-row");
+    const targetRows = target.querySelectorAll<HTMLElement>(".verse-row");
+    const sourceTop = source.getBoundingClientRect().top;
+    const sourceIndex = Array.from(sourceRows).findIndex(
+      (row) => row.getBoundingClientRect().bottom > sourceTop + 1,
+    );
+    const targetIndex =
+      sourceIndex < 0 || targetRows.length === 0
+        ? -1
+        : calculateVerseAnchorScroll(
+            sourceIndex + 1,
+            sourceRows.length,
+            targetRows.length,
+          ) - 1;
+    const sourceRow = sourceRows[sourceIndex];
+    const targetRow = targetRows[targetIndex];
+    if (!sourceRow || !targetRow) {
+      target.scrollTop = calculateProportionalScroll(
+        source.scrollTop,
+        source.scrollHeight,
+        source.clientHeight,
+        target.scrollHeight,
+        target.clientHeight,
+      );
+      return;
+    }
+
+    const sourceRect = sourceRow.getBoundingClientRect();
+    const targetRect = targetRow.getBoundingClientRect();
+    const targetTop = target.getBoundingClientRect().top;
+    const verseProgress =
+      sourceRect.height > 0
+        ? Math.max(
+            0,
+            Math.min(1, (sourceTop - sourceRect.top) / sourceRect.height),
+          )
+        : 0;
+    target.scrollTop +=
+      targetRect.top - targetTop + verseProgress * targetRect.height;
+  };
+
   const onPrimaryScroll = () => {
     if (!splitView || !syncScroll || isSyncingRef.current) return;
     const primary = primaryScrollRef.current;
     const secondary = secondaryScrollRef.current;
     if (!primary || !secondary) return;
     isSyncingRef.current = true;
-    const targetTop = calculateProportionalScroll(
-      primary.scrollTop,
-      primary.scrollHeight,
-      primary.clientHeight,
-      secondary.scrollHeight,
-      secondary.clientHeight,
-    );
-    secondary.scrollTop = targetTop;
+    syncPaneByVerseAnchor(primary, secondary);
     requestAnimationFrame(() => {
       isSyncingRef.current = false;
     });
@@ -909,14 +1063,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     const secondary = secondaryScrollRef.current;
     if (!primary || !secondary) return;
     isSyncingRef.current = true;
-    const targetTop = calculateProportionalScroll(
-      secondary.scrollTop,
-      secondary.scrollHeight,
-      secondary.clientHeight,
-      primary.scrollHeight,
-      primary.clientHeight,
-    );
-    primary.scrollTop = targetTop;
+    syncPaneByVerseAnchor(secondary, primary);
     requestAnimationFrame(() => {
       isSyncingRef.current = false;
     });
@@ -929,9 +1076,28 @@ export function BiblePage({ locale }: { locale: Locale }) {
   // reference is a no-op, so revisiting the route does not fight the user's
   // manual navigation.
   useEffect(() => {
-    if (!deepLink || packState.status !== "ready") return;
-    const key = `${deepLink.book}:${deepLink.chapter}:${deepLink.verse}`;
+    if (!deepLink) return;
+    const key = `${location.key}:${deepLink.version ?? ""}:${deepLink.book}:${deepLink.chapter}:${deepLink.verse}`;
     if (lastAppliedDeepLinkRef.current === key) return;
+    if (deepLink.version) {
+      if (deepLink.version !== "b_tb") {
+        if (!assetCatalogReady) return;
+        const versionAvailable = bibleAssets.some(
+          (asset) =>
+            asset.code === deepLink.version &&
+            (asset.state === "installed" || asset.state === "update"),
+        );
+        if (!versionAvailable) return;
+      }
+      if (selectedVersionCode !== deepLink.version) {
+        setPackState({ status: "loading" });
+        setSelectedVerseId(undefined);
+        setSelectedVersionCode(deepLink.version);
+        localStorage.setItem(VERSION_KEY, deepLink.version);
+        return;
+      }
+    }
+    if (packState.status !== "ready") return;
     const resolved = resolveBibleDeepLink(packState.pack, deepLink);
     if (!resolved) return;
     lastAppliedDeepLinkRef.current = key;
@@ -940,7 +1106,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSelectedVerseId(
       `${resolved.bookId}:${resolved.chapter}:${resolved.verse}`,
     );
-  }, [deepLink, packState]);
+  }, [
+    assetCatalogReady,
+    bibleAssets,
+    deepLink,
+    location.key,
+    packState,
+    selectedVersionCode,
+  ]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1039,6 +1212,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     selectedVersionCode,
     packState,
     packAttempt,
+    secondaryPackAttempt,
   ]);
 
   const searchClient = useMemo(
@@ -1447,11 +1621,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
     localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
   }, [highlights]);
   useEffect(() => {
+    localStorage.setItem(
+      HIGHLIGHT_PALETTE_KEY,
+      JSON.stringify(customHighlightColors),
+    );
+  }, [customHighlightColors]);
+  useEffect(() => {
     if (!selectedVerseId) {
+      setSelectedNoteId(undefined);
       setNoteDraft("");
       return;
     }
-    setNoteDraft(notes[selectedVerseId] ?? "");
+    const verseNotes = notes[selectedVerseId] ?? [];
+    const selectedNote =
+      verseNotes.find((note) => note.id === selectedNoteIdRef.current) ??
+      verseNotes[0];
+    if (selectedNote?.id !== selectedNoteIdRef.current)
+      setSelectedNoteId(selectedNote?.id);
+    setNoteDraft(selectedNote?.text ?? "");
     window.setTimeout(() => {
       document
         .getElementById(`bible-verse-${selectedVerseId}`)
@@ -1488,10 +1675,12 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSearchError(undefined);
     if (!searchClient || !requestedQuery.trim()) {
       setSearchResults([]);
+      setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
       setSearchedQuery("");
       searchAbortRef.current = undefined;
       return;
     }
+    setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
     setSearching(true);
     try {
       const results = await searchClient.search(
@@ -1625,6 +1814,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
         setSelectedVersionCode(value);
         localStorage.setItem(VERSION_KEY, value);
         setSearchResults([]);
+        setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
         setSearchedQuery("");
         setSelectedVerseId(undefined);
       },
@@ -1695,13 +1885,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
       speechControlsOpen,
       onToggleSpeechControls: () =>
         setSpeechControlsOpen((current) => !current),
-      onFocusSearch: () => {
-        const input = document.querySelector<HTMLInputElement>(
-          ".bible-search-row input",
-        );
-        input?.focus();
-        input?.scrollIntoView({ behavior: "smooth", block: "center" });
+      searchOpen,
+      onToggleSearch: () => {
+        if (searchOpen) setSearchOpen(false);
+        else focusBibleSearch();
       },
+      onOpenNotes: () => setNotesPopupOpen(true),
+      onFocusSearch: focusBibleSearch,
     });
   }, [
     packState.status,
@@ -1721,6 +1911,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
     speaking,
     speechSnapshot.status,
     speechControlsOpen,
+    searchOpen,
+    focusBibleSearch,
     copied,
   ]);
 
@@ -1782,10 +1974,48 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const saveNote = () => {
     if (!selectedVerseId) return;
+    const text = noteDraft.trim();
+    if (!text) {
+      if (!selectedNoteId) return;
+      const remaining = (notes[selectedVerseId] ?? []).filter(
+        (note) => note.id !== selectedNoteId,
+      );
+      setNotes((current) => {
+        const next = { ...current };
+        if (remaining.length) next[selectedVerseId] = remaining;
+        else delete next[selectedVerseId];
+        return next;
+      });
+      setSelectedNoteId(remaining[0]?.id);
+      setNoteDraft(remaining[0]?.text ?? "");
+      return;
+    }
+    const noteId = selectedNoteId ?? makeBibleNoteId();
     setNotes((current) => {
+      const verseNotes = current[selectedVerseId] ?? [];
+      const index = verseNotes.findIndex((note) => note.id === noteId);
+      const savedNote = { id: noteId, text };
       const next = { ...current };
-      if (noteDraft.trim()) next[selectedVerseId] = noteDraft.trim();
-      else delete next[selectedVerseId];
+      next[selectedVerseId] =
+        index < 0
+          ? [...verseNotes, savedNote]
+          : verseNotes.map((note) => (note.id === noteId ? savedNote : note));
+      return next;
+    });
+    setSelectedNoteId(noteId);
+    setNoteDraft(text);
+  };
+
+  const beginNoteForSelectedVerse = () => {
+    setSelectedNoteId(undefined);
+    setNoteDraft("");
+  };
+
+  const setVerseHighlight = (verseId: string, color: string) => {
+    setHighlights((current) => {
+      const next = { ...current };
+      if (next[verseId] === color) delete next[verseId];
+      else next[verseId] = color;
       return next;
     });
   };
@@ -1820,21 +2050,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const savedNotesList = Object.entries(notes)
-    .map(([noteVerseId, text]) => {
+    .flatMap(([noteVerseId, verseNotes]) =>
+      verseNotes.map((note) => ({ noteVerseId, note })),
+    )
+    .map(({ noteVerseId, note }) => {
       const noteVerse =
         packState.status === "ready"
           ? packState.pack.verses.find((verse) => verse.id === noteVerseId)
           : undefined;
       return noteVerse
         ? {
-            id: noteVerse.id,
+            id: `${noteVerse.id}:${note.id}`,
+            verseId: noteVerse.id,
+            noteId: note.id,
             verse: noteVerse,
-            text,
+            text: note.text,
             label: `${books.find((candidate) => String(candidate.id) === noteVerse.book)?.name ?? noteVerse.book} ${noteVerse.chapter}:${noteVerse.verse}`,
           }
         : undefined;
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .filter((entry) => !selectedVerseId || entry.verseId === selectedVerseId)
     .sort((left, right) =>
       left.label.localeCompare(right.label, "id", { numeric: true }),
     );
@@ -1910,7 +2146,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 <button
                   className="text-button"
                   type="button"
-                  onClick={addNoteForNewVerse}
+                  onClick={() =>
+                    selectedVerseId
+                      ? beginNoteForSelectedVerse()
+                      : addNoteForNewVerse()
+                  }
                 >
                   {translate(locale, "bible.addNote")}
                 </button>
@@ -1926,7 +2166,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
                       onClick={() => {
                         setSelectedBook(Number(entry.verse.book));
                         setSelectedChapter(entry.verse.chapter);
-                        setSelectedVerseId(entry.id);
+                        setSelectedVerseId(entry.verseId);
+                        setSelectedNoteId(entry.noteId);
                         setNoteDraft(entry.text);
                       }}
                     >
@@ -1939,13 +2180,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
                       aria-label={translate(locale, "bible.deleteNote", {
                         label: entry.label,
                       })}
-                      onClick={() =>
+                      onClick={() => {
+                        const remaining = (notes[entry.verseId] ?? []).filter(
+                          (note) => note.id !== entry.noteId,
+                        );
                         setNotes((current) => {
                           const next = { ...current };
-                          delete next[entry.id];
+                          if (remaining.length) next[entry.verseId] = remaining;
+                          else delete next[entry.verseId];
                           return next;
-                        })
-                      }
+                        });
+                        if (
+                          selectedVerseId === entry.verseId &&
+                          selectedNoteId === entry.noteId
+                        ) {
+                          setSelectedNoteId(remaining[0]?.id);
+                          setNoteDraft(remaining[0]?.text ?? "");
+                        }
+                      }}
                     >
                       ×
                     </button>
@@ -1979,11 +2231,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
   return (
     <div className="page bible-page">
       <header
-        className={`bible-page-header${query || searchResults.length ? " is-search-active" : ""}`}
+        className={`bible-page-header${searchOpen ? " is-search-open" : ""}`}
       >
         <h1 className="sr-only">{translate(locale, "page.bibleTitle")}</h1>
         <form
-          className={`bible-search${query || searchResults.length ? " is-active" : ""}`}
+          id="bible-search-form"
+          className={`bible-search${searchOpen ? " is-open" : ""}`}
+          aria-hidden={!searchOpen}
+          inert={!searchOpen}
           onSubmit={(event) => void runSearch(event)}
           role="search"
         >
@@ -1992,6 +2247,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </label>
           <div className="search-row">
             <input
+              ref={searchInputRef}
               id="bible-query"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -2007,10 +2263,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
           <details
             className="bible-search-options-disclosure"
-            open={
-              searchFiltersOpen ||
-              (typeof window !== "undefined" && window.innerWidth >= 600)
-            }
+            open={searchFiltersOpen}
             onToggle={(event) => setSearchFiltersOpen(event.currentTarget.open)}
           >
             <summary>{translate(locale, "bible.searchFilters")}</summary>
@@ -2056,21 +2309,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </label>
             </div>
           </details>
-          <div className="page-intro-actions">
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => setNotesPopupOpen(true)}
-              aria-label={translate(locale, "bible.openNotes", {
-                count: Object.keys(notes).length,
-              })}
-            >
-              {translate(locale, "bible.notes")}
-              {Object.keys(notes).length > 0
-                ? ` (${Object.keys(notes).length})`
-                : ""}
-            </button>
-          </div>
           {searchError && (
             <div className="inline-error" role="alert">
               <span>{searchError}</span>
@@ -2118,6 +2356,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => {
                 setSearchResults([]);
+                setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
                 setSearchedQuery("");
               }}
             >
@@ -2125,7 +2364,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             </button>
           </div>
           <div className="result-list">
-            {searchResults.slice(0, 40).map((result) => (
+            {searchResults.slice(0, visibleSearchResultCount).map((result) => (
               <button
                 className="result-item"
                 key={result.id}
@@ -2135,7 +2374,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   setSelectedChapter(result.chapter);
                   setSelectedVerseId(result.id);
                   setSearchResults([]);
+                  setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
                   setSearchedQuery("");
+                  setSearchOpen(false);
                 }}
               >
                 <strong>
@@ -2150,6 +2391,22 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </button>
             ))}
           </div>
+          {searchResults.length > visibleSearchResultCount && (
+            <button
+              className="text-button"
+              type="button"
+              onClick={() =>
+                setVisibleSearchResultCount((current) =>
+                  Math.min(
+                    current + SEARCH_RESULTS_PAGE_SIZE,
+                    searchResults.length,
+                  ),
+                )
+              }
+            >
+              {translate(locale, "bible.showMoreResults")}
+            </button>
+          )}
         </section>
       )}
       {searchedQuery &&
@@ -2306,10 +2563,27 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 if (secondaryPackState.status === "error") {
                   return (
                     <div className="bible-pane-secondary bible-side-empty">
-                      {translate(locale, "bible.secondaryError", {
-                        version: secondaryVersionCode,
-                        message: secondaryPackState.message,
-                      })}
+                      <span>
+                        {translate(locale, "bible.secondaryError", {
+                          version:
+                            bibleVersionOptions.find(
+                              (option) => option.value === secondaryVersionCode,
+                            )?.shortLabel ??
+                            secondaryVersionCode
+                              .replace(/^b_/u, "")
+                              .toUpperCase(),
+                        })}
+                      </span>
+                      <br />
+                      <button
+                        className="text-button"
+                        type="button"
+                        onClick={() =>
+                          setSecondaryPackAttempt((attempt) => attempt + 1)
+                        }
+                      >
+                        {translate(locale, "bible.retry")}
+                      </button>
                     </div>
                   );
                 }
@@ -2475,30 +2749,68 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 className="selected-verse-highlights"
                 aria-label={translate(locale, "bible.highlightColor")}
               >
-                {(["yellow", "blue", "green"] as const).map((color) => (
-                  <button
-                    className={`highlight-dot is-${color}${highlights[activeToolbarVerse.id] === color ? " is-active" : ""}`}
-                    key={color}
-                    type="button"
-                    aria-label={translate(locale, "bible.highlight", {
-                      color: translate(
+                {DEFAULT_HIGHLIGHT_COLORS.map((color) => {
+                  const active = highlights[activeToolbarVerse.id] === color;
+                  const colorName = translate(
+                    locale,
+                    color === "yellow"
+                      ? "bible.colorYellow"
+                      : color === "blue"
+                        ? "bible.colorBlue"
+                        : "bible.colorGreen",
+                  );
+                  return (
+                    <button
+                      className={`highlight-dot is-${color}${active ? " is-active" : ""}`}
+                      key={color}
+                      type="button"
+                      aria-label={translate(
                         locale,
-                        color === "yellow"
-                          ? "bible.colorYellow"
-                          : color === "blue"
-                            ? "bible.colorBlue"
-                            : "bible.colorGreen",
-                      ),
-                    })}
-                    aria-pressed={highlights[activeToolbarVerse.id] === color}
-                    onClick={() =>
-                      setHighlights((current) => ({
-                        ...current,
-                        [activeToolbarVerse.id]: color,
-                      }))
-                    }
-                  />
-                ))}
+                        active ? "bible.unhighlight" : "bible.highlight",
+                        { color: colorName },
+                      )}
+                      aria-pressed={active}
+                      onClick={() =>
+                        setVerseHighlight(activeToolbarVerse.id, color)
+                      }
+                    />
+                  );
+                })}
+                {customHighlightColors.map((color) => {
+                  const active = highlights[activeToolbarVerse.id] === color;
+                  return (
+                    <button
+                      className={`highlight-dot is-custom${active ? " is-active" : ""}`}
+                      key={color}
+                      type="button"
+                      style={{ "--highlight-color": color } as CSSProperties}
+                      aria-label={translate(
+                        locale,
+                        active ? "bible.unhighlight" : "bible.highlight",
+                        { color },
+                      )}
+                      aria-pressed={active}
+                      onClick={() =>
+                        setVerseHighlight(activeToolbarVerse.id, color)
+                      }
+                    />
+                  );
+                })}
+                <input
+                  type="color"
+                  aria-label={translate(locale, "bible.customHighlightColor")}
+                  value={customHighlightColors[0] ?? "#b54747"}
+                  onChange={(event) => {
+                    const color = event.currentTarget.value.toLowerCase();
+                    setCustomHighlightColors((current) =>
+                      [
+                        color,
+                        ...current.filter((entry) => entry !== color),
+                      ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS),
+                    );
+                    setVerseHighlight(activeToolbarVerse.id, color);
+                  }}
+                />
               </div>
               <button
                 className="quiet-button"

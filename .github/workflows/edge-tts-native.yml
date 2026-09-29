@@ -1,0 +1,82 @@
+name: Edge TTS Native
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "apps/native/**"
+      - "apps/web/src/edge-direct*.ts"
+      - "apps/web/src/edge-speech.ts"
+      - "apps/web/src/speech-player.ts"
+      - "apps/web/scripts/edge-tts-native-smoke.mjs"
+      - "apps/web/package.json"
+      - ".github/workflows/edge-tts-native.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: edge-tts-native-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  packaged-native-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
+      - name: Build the packaged Tauri executable
+        run: pnpm --filter @gys/native exec tauri build --no-bundle
+      - name: Ensure the WebView2 Evergreen Runtime
+        shell: pwsh
+        run: |
+          $runtimeRoots = @(
+            (Join-Path ${env:ProgramFiles(x86)} "Microsoft\EdgeWebView\Application"),
+            (Join-Path $env:LOCALAPPDATA "Microsoft\EdgeWebView\Application")
+          )
+          $runtime = $runtimeRoots | ForEach-Object {
+            Get-ChildItem -Path (Join-Path $_ "*\msedgewebview2.exe") -File -ErrorAction SilentlyContinue
+          } | Select-Object -First 1
+          if (-not $runtime) {
+            $installer = Join-Path $env:RUNNER_TEMP "MicrosoftEdgeWebView2Setup.exe"
+            Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile $installer
+            $result = Start-Process -FilePath $installer -ArgumentList "/silent", "/install" -Wait -PassThru
+            if ($result.ExitCode -ne 0) { throw "WebView2 runtime installer exited with $($result.ExitCode)" }
+          }
+          $runtime = $runtimeRoots | ForEach-Object {
+            Get-ChildItem -Path (Join-Path $_ "*\msedgewebview2.exe") -File -ErrorAction SilentlyContinue
+          } | Select-Object -First 1
+          if (-not $runtime) { throw "WebView2 runtime is not installed" }
+      - name: Configure temporary WebView2 debugging policy
+        shell: pwsh
+        run: |
+          $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+          $listener.Start()
+          $port = $listener.LocalEndpoint.Port
+          $listener.Stop()
+          $policyPath = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          New-Item -Path $policyPath -Force | Out-Null
+          $arguments = "--remote-debugging-port=$port --remote-allow-origins=*"
+          New-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -PropertyType String -Value $arguments -Force | Out-Null
+          Add-Content -Path $env:GITHUB_ENV -Value "GYS_WEBVIEW2_POLICY_DEBUG_PORT=$port" -Encoding utf8
+          Write-Host "Configured temporary loopback-only WebView2 debugging policy."
+      - name: Exercise keyless Edge through WebView2 and the Tauri plugin
+        run: pnpm --filter @gys/web test:e2e:native-edge
+      - name: Remove temporary WebView2 debugging policy
+        if: always()
+        shell: pwsh
+        run: |
+          $policyPath = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          Remove-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -ErrorAction SilentlyContinue

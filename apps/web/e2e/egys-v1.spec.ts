@@ -10,6 +10,7 @@ test("web account uses only the official e-GYS v1 login link", async ({
   });
 
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="account"] > summary').click();
   const login = page.getByRole("link", { name: /Buka login e-GYS resmi/i });
   await expect(login).toHaveAttribute(
     "href",
@@ -25,10 +26,14 @@ test("Lainnya renders unified settings and account panels cleanly", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="account"] > summary').click();
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
+  await page.locator('[data-setting="appearance"] > summary').click();
   await expect(
-    page.getByRole("heading", { name: "Tampilan & Bahasa" }),
+    page.getByRole("button", { name: "Pilih Tema", exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".accent-palette-grid")).toBeHidden();
+  await page.locator('[data-setting="offline"] > summary').click();
   await expect(
     page.getByRole("heading", { name: "Paket lokal" }),
   ).toBeVisible();
@@ -38,6 +43,7 @@ test("clicking e-GYS login opens the login flow in an overlay modal without redi
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="account"] > summary').click();
   const loginBtn = page.getByRole("link", { name: /Buka login e-GYS resmi/i });
   await expect(loginBtn).toBeVisible();
   const pageUrl = page.url();
@@ -81,6 +87,7 @@ test("active e-GYS session displays the member profile badge", async ({
   });
 
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="account"] > summary').click();
   await expect(
     page.getByRole("heading", { name: "Sdr. Yohanes" }),
   ).toBeVisible();

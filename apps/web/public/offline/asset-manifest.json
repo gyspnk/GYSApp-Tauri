@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-20T13:49:08.296Z",
+  "generatedAt": "2026-09-28T04:37:37.169Z",
   "items": [
     {
       "id": "bible-tb",
@@ -11,7 +11,7 @@
       "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
       "bytes": 21340160,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "bible-tb-reader",
@@ -22,40 +22,40 @@
       "sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
       "bytes": 7939120,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "hymn-catalog",
       "kind": "hymn-catalog",
       "source": "local",
       "path": "offline/hymn-catalog.json",
-      "version": "a4672d1fb223e08e381baca408583255bf4be5dd7a52cf0a16983bfcfa3740be",
-      "sha256": "a4672d1fb223e08e381baca408583255bf4be5dd7a52cf0a16983bfcfa3740be",
-      "bytes": 868916,
+      "version": "88f283e04e16a08abd1546bea89648f6fef0c2619bf576b2b783bf3b126765f0",
+      "sha256": "88f283e04e16a08abd1546bea89648f6fef0c2619bf576b2b783bf3b126765f0",
+      "bytes": 917610,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "distributed-asset-catalog",
       "kind": "pack",
       "source": "local",
       "path": "offline/distributed-assets.json",
-      "version": "9bb199a0768958fe06d2512376c2bf4ac731b3d6a6255aa8d59194ffe477096f",
-      "sha256": "9bb199a0768958fe06d2512376c2bf4ac731b3d6a6255aa8d59194ffe477096f",
+      "version": "583db19136e42fe2b565a0defc508971454e040303c803461335dbcfaff7eee3",
+      "sha256": "583db19136e42fe2b565a0defc508971454e040303c803461335dbcfaff7eee3",
       "bytes": 7505,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "music-lock",
       "kind": "pack",
       "source": "local",
       "path": "offline/music-lock.json",
-      "version": "57eea10bf6e812802a00355bf147289ce275adbf3c47e092cb39508b7cef8044",
-      "sha256": "57eea10bf6e812802a00355bf147289ce275adbf3c47e092cb39508b7cef8044",
-      "bytes": 311606,
+      "version": "9c88c2b1b05b24bc5a237c19b775fae6ad55ef734d69319df33faefa663132c8",
+      "sha256": "9c88c2b1b05b24bc5a237c19b775fae6ad55ef734d69319df33faefa663132c8",
+      "bytes": 313267,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "faith-topics",
@@ -66,29 +66,29 @@
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
       "bytes": 8311,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "sauh-feed",
       "kind": "pack",
       "source": "local",
       "path": "offline/sauh.json",
-      "version": "fbbfb750da1289732d2fdbae96f82180f24e586ea137b78af06ed6dea1e37237",
-      "sha256": "fbbfb750da1289732d2fdbae96f82180f24e586ea137b78af06ed6dea1e37237",
-      "bytes": 7668,
+      "version": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0",
+      "sha256": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0",
+      "bytes": 22208,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-28T04:37:37.169Z"
     },
     {
       "id": "literature-catalog",
       "kind": "pack",
       "source": "local",
       "path": "offline/literature.json",
-      "version": "4db500434c8705022699bb9bd5e94ee63b76a1fbd3db96b090e0fb3adcec9ebc",
-      "sha256": "4db500434c8705022699bb9bd5e94ee63b76a1fbd3db96b090e0fb3adcec9ebc",
-      "bytes": 152126,
+      "version": "4a9e8d9ed769f3d4a925d822cc937cd4150e7fce3f12753e148c4642d15075be",
+      "sha256": "4a9e8d9ed769f3d4a925d822cc937cd4150e7fce3f12753e148c4642d15075be",
+      "bytes": 163677,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "suara-sejati",
@@ -99,7 +99,7 @@
       "sha256": "eb04a568ee0e6a83120d4e864ad94e5695baa7f8ed29bdeb4517b0f80d230bd1",
       "bytes": 90609,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "fork-hymnal-map",
@@ -110,7 +110,7 @@
       "sha256": "df14db981bf30bb6481e3f6ed0aff6cc185a0c0642a539b55a718bf015ea88b5",
       "bytes": 60815,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "music-seed:assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -121,7 +121,7 @@
       "sha256": "44c545e4bba6ab9aa63a533697cc81663be47b2ffac59ffe8da1f184f65cf887",
       "bytes": 13540,
       "status": "available",
-      "lastUpdated": "2026-09-20T13:49:08.296Z"
+      "lastUpdated": "2026-09-27T09:14:14.855Z"
     },
     {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",
@@ -184,13 +184,43 @@
       "status": "remote"
     },
     {
-      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalur-undangan-2-2-2F",
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftepat-waktu-dan-saku-2F",
       "kind": "cover",
-      "version": "2023-01-19T00:00:00.000Z",
-      "lastUpdated": "2023-01-19T00:00:00.000Z",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2022/07/Walau-Sukar-Tetap-Mekar.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2022/07/Walau-Sukar-Tetap-Mekar.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide16-300x261.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide16-300x261.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenapaki-tiga-iman-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide15-300x191.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide15-300x191.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbangkit-dari-kematian-2F",
+      "kind": "cover",
+      "version": "2025-03-05T00:00:00.000Z",
+      "lastUpdated": "2025-03-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide14-296x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide14-296x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsepuluh-potong-kue-pie-2F",
+      "kind": "cover",
+      "version": "2025-03-04T00:00:00.000Z",
+      "lastUpdated": "2025-03-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide13-300x245.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide13-300x245.jpg",
       "status": "remote"
     },
     {
@@ -304,13 +334,193 @@
       "status": "remote"
     },
     {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalur-undangan-2-2-2F",
+      "kind": "cover",
+      "version": "2023-01-19T00:00:00.000Z",
+      "lastUpdated": "2023-01-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide1-300x277.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2023/01/Slide1-300x277.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenemukantuhan-2F",
+      "kind": "cover",
+      "version": "2021-11-03T00:00:00.000Z",
+      "lastUpdated": "2021-11-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-44-300x131.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-44-300x131.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmemanggil-2F",
+      "kind": "cover",
+      "version": "2021-11-01T00:00:00.000Z",
+      "lastUpdated": "2021-11-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-41-300x140.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-41-300x140.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmenyatakan-2F",
+      "kind": "cover",
+      "version": "2021-11-01T00:00:00.000Z",
+      "lastUpdated": "2021-11-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-38-300x132.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/WS110-38-300x132.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalan-yang-berputar-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Jalan_yang_Berputar-300x246.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Jalan_yang_Berputar-300x246.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftitik-balik-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Titik_Balik-300x276.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Titik_Balik-300x276.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftiang-kayu-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Tiang_Kayu-218x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Tiang_Kayu-218x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftidak-selalu-mudah-2F",
+      "kind": "cover",
+      "version": "2021-08-24T00:00:00.000Z",
+      "lastUpdated": "2021-08-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Tidak_Selalu_Mudah-290x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Tidak_Selalu_Mudah-290x300.jpg",
+      "status": "remote"
+    },
+    {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenjadi-anak-nya-2F",
       "kind": "cover",
       "version": "2021-08-24T00:00:00.000Z",
       "lastUpdated": "2021-08-24T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Melayani-Dalam-Gelap-dan-Sunyi.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Melayani-Dalam-Gelap-dan-Sunyi.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Menjadi-Anak-Nya-269x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/08/Menjadi-Anak-Nya-269x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftenteram-dalam-doa-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tenteram_Dalam_Doa-300x239.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tenteram_Dalam_Doa-300x239.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftaat-tanpa-pengecualian-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Taat_Tanpa_Pengecualian-300x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Taat_Tanpa_Pengecualian-300x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpunya-riwayat-penyakit-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/ccimage-14783218132_8c6f76c9cf_o-230x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/ccimage-14783218132_8c6f76c9cf_o-230x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menyediakan-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/ccimage-gd5255e6d34d3b56ab8c9945bc820ea71329c3ac8a30a78b9cc1bfcd6d246a0ddabd9d776b58e25bbf91f3070577a787c-scaled-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/ccimage-gd5255e6d34d3b56ab8c9945bc820ea71329c3ac8a30a78b9cc1bfcd6d246a0ddabd9d776b58e25bbf91f3070577a787c-scaled-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhati-gembira-adalah-obat-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Hati_Gembira_Adalah_Obat-212x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Hati_Gembira_Adalah_Obat-212x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsemua-ada-saatnya-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Semua_Ada_Saatnya-300x254.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Semua_Ada_Saatnya-300x254.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menggerakkan-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tuhan_Menggerakkan-150x150.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tuhan_Menggerakkan-150x150.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhanya-sejauh-doa-2F",
+      "kind": "cover",
+      "version": "2021-07-04T00:00:00.000Z",
+      "lastUpdated": "2021-07-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Hanya_Sejauh_Doa-300x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Hanya_Sejauh_Doa-300x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Falas-pasir-2F",
+      "kind": "cover",
+      "version": "2021-07-03T00:00:00.000Z",
+      "lastUpdated": "2021-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Alas_Pasir-300x126.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Alas_Pasir-300x126.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjangan-tanya-mengapa-2F",
+      "kind": "cover",
+      "version": "2021-07-03T00:00:00.000Z",
+      "lastUpdated": "2021-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Jangan_Tanya_Mengapa-300x288.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Jangan_Tanya_Mengapa-300x288.jpg",
       "status": "remote"
     },
     {
@@ -319,8 +529,818 @@
       "version": "2021-07-03T00:00:00.000Z",
       "lastUpdated": "2021-07-03T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/06/Semua-Ada-Saatnya.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/06/Semua-Ada-Saatnya.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tidak_Dibatasi_Pandemi-182x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/07/Tidak_Dibatasi_Pandemi-182x300.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menemukanku-2F",
+      "kind": "cover",
+      "version": "2021-05-27T00:00:00.000Z",
+      "lastUpdated": "2021-05-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/Hy-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/Hy-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsemua-dimulai-dengan-mendengar-nama-gereja-sejati-2F",
+      "kind": "cover",
+      "version": "2021-05-26T00:00:00.000Z",
+      "lastUpdated": "2021-05-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/ch-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/ch-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalanan-saya-percaya-kepada-tuhan-2F",
+      "kind": "cover",
+      "version": "2021-05-25T00:00:00.000Z",
+      "lastUpdated": "2021-05-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/hearthh-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/hearthh-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-adalah-tempat-perlindungan-kita-2F",
+      "kind": "cover",
+      "version": "2021-05-24T00:00:00.000Z",
+      "lastUpdated": "2021-05-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/wayy-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/wayy-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fseluruh-keluarga-percaya-kepada-tuhan-2F",
+      "kind": "cover",
+      "version": "2021-05-23T00:00:00.000Z",
+      "lastUpdated": "2021-05-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/handd-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/05/handd-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menyertai-kami-sepanjang-jalan-2F",
+      "kind": "cover",
+      "version": "2020-12-24T00:00:00.000Z",
+      "lastUpdated": "2020-12-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/12/people2-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/12/people2-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmeninggalkan-dusta-dan-percaya-dalam-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-12-23T00:00:00.000Z",
+      "lastUpdated": "2020-12-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/12/promise2-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/12/promise2-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmencari-roh-kudus-menemukan-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-11-27T00:00:00.000Z",
+      "lastUpdated": "2020-11-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/11/light1f-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/11/light1f-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdibangunkan-oleh-kesengsaraan-2F",
+      "kind": "cover",
+      "version": "2020-11-24T00:00:00.000Z",
+      "lastUpdated": "2020-11-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/11/wakeupp-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/11/wakeupp-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberada-di-jalan-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-11-10T00:00:00.000Z",
+      "lastUpdated": "2020-11-10T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/way-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/way-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-allah-yang-indah-2F",
+      "kind": "cover",
+      "version": "2020-11-06T00:00:00.000Z",
+      "lastUpdated": "2020-11-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/baby-hand-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/baby-hand-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Flangkah-orang-ditentukan-oleh-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-11-03T00:00:00.000Z",
+      "lastUpdated": "2020-11-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/people-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/people-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkebajikan-dan-kemurahan-mengikuti-aku-seumur-hidupku-2F",
+      "kind": "cover",
+      "version": "2020-10-27T00:00:00.000Z",
+      "lastUpdated": "2020-10-27T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/pray4-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/pray4-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpengalaman-saat-berdoa-2F",
+      "kind": "cover",
+      "version": "2020-10-23T00:00:00.000Z",
+      "lastUpdated": "2020-10-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/pray3-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/10/pray3-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmasa-bergejolak-percaya-dalam-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-10-20T00:00:00.000Z",
+      "lastUpdated": "2020-10-20T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/fishg-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/fishg-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsegalanya-mungkin-bagi-tuhan-2-2F",
+      "kind": "cover",
+      "version": "2020-10-16T00:00:00.000Z",
+      "lastUpdated": "2020-10-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/lightg-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/lightg-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-menyembuhkan-kaki-dan-tangan-yang-terkupas-2F",
+      "kind": "cover",
+      "version": "2020-10-13T00:00:00.000Z",
+      "lastUpdated": "2020-10-13T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/washf-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/washf-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-yang-menguatkan-2F",
+      "kind": "cover",
+      "version": "2020-10-09T00:00:00.000Z",
+      "lastUpdated": "2020-10-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/light111-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/light111-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fsegalanya-mungkin-bagi-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-10-06T00:00:00.000Z",
+      "lastUpdated": "2020-10-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/light10-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/light10-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkasih-allah-memanggil-2F",
+      "kind": "cover",
+      "version": "2020-10-02T00:00:00.000Z",
+      "lastUpdated": "2020-10-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/familyss-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/familyss-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-pedang-putih-2F",
+      "kind": "cover",
+      "version": "2020-09-29T00:00:00.000Z",
+      "lastUpdated": "2020-09-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/sword-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/sword-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-mengasihi-domba-nya-2F",
+      "kind": "cover",
+      "version": "2020-09-25T00:00:00.000Z",
+      "lastUpdated": "2020-09-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/SHEPPs-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/SHEPPs-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fnasihat_untuk_pelajar-2F",
+      "kind": "cover",
+      "version": "2020-09-22T00:00:00.000Z",
+      "lastUpdated": "2020-09-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/talk-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/talk-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fengkaulah_mata_air_kehidupan-2F",
+      "kind": "cover",
+      "version": "2020-09-18T00:00:00.000Z",
+      "lastUpdated": "2020-09-18T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/water9-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/09/water9-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-benar-yang-maha-tahu-2F",
+      "kind": "cover",
+      "version": "2020-09-15T00:00:00.000Z",
+      "lastUpdated": "2020-09-15T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sick-1-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sick-1-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-membebaskanku-dari-belenggu-iblis-2F",
+      "kind": "cover",
+      "version": "2020-09-11T00:00:00.000Z",
+      "lastUpdated": "2020-09-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/fires1-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/fires1-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmeninggalkan-kesesatan-dan-percaya-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-09-08T00:00:00.000Z",
+      "lastUpdated": "2020-09-08T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/walks-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/walks-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdarah-tuhan-yang-berharga-2F",
+      "kind": "cover",
+      "version": "2020-09-04T00:00:00.000Z",
+      "lastUpdated": "2020-09-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/water47-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/water47-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjalan-menuju-kebenaran-2F",
+      "kind": "cover",
+      "version": "2020-09-01T00:00:00.000Z",
+      "lastUpdated": "2020-09-01T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/child-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/child-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengalahkan-serangan-si-jahat-2F",
+      "kind": "cover",
+      "version": "2020-08-28T00:00:00.000Z",
+      "lastUpdated": "2020-08-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/pray8-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/pray8-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fia-memelihara-hidupku-2F",
+      "kind": "cover",
+      "version": "2020-08-25T00:00:00.000Z",
+      "lastUpdated": "2020-08-25T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/birds-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/birds-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpengalaman-saya-ketika-sakit-2F",
+      "kind": "cover",
+      "version": "2020-08-21T00:00:00.000Z",
+      "lastUpdated": "2020-08-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sick-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sick-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhilang-dan-ditemukan-kembali-2F",
+      "kind": "cover",
+      "version": "2020-08-18T00:00:00.000Z",
+      "lastUpdated": "2020-08-18T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sheep-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/sheep-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanakku-hidup-kembali-2F",
+      "kind": "cover",
+      "version": "2020-08-14T00:00:00.000Z",
+      "lastUpdated": "2020-08-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/kid-hand-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/kid-hand-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpenglihatan-ajaib-2F",
+      "kind": "cover",
+      "version": "2020-08-11T00:00:00.000Z",
+      "lastUpdated": "2020-08-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/water4-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/water4-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdamai-sejahtera-dalam-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-08-07T00:00:00.000Z",
+      "lastUpdated": "2020-08-07T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/white-flower-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/white-flower-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-di-tengah-gempa-tohoku-2F",
+      "kind": "cover",
+      "version": "2020-08-04T00:00:00.000Z",
+      "lastUpdated": "2020-08-04T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/earthquake-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/08/earthquake-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fserahkan-segala-kekuatiranmu-kepada-nya-2F",
+      "kind": "cover",
+      "version": "2020-07-31T00:00:00.000Z",
+      "lastUpdated": "2020-07-31T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/pray6-300x169.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/pray6-300x169.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdua-kali-disembuhkan-2F",
+      "kind": "cover",
+      "version": "2020-07-28T00:00:00.000Z",
+      "lastUpdated": "2020-07-28T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/twice-300x169.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/twice-300x169.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanlah-kemenanganku-2F",
+      "kind": "cover",
+      "version": "2020-07-24T00:00:00.000Z",
+      "lastUpdated": "2020-07-24T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/win-300x169.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/win-300x169.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Faku-akan-pergi-satu-kali-lagi-2F",
+      "kind": "cover",
+      "version": "2020-07-21T00:00:00.000Z",
+      "lastUpdated": "2020-07-21T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/go-300x169.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/go-300x169.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Flebih-peduli-lebih-banyak-berdoa-lebih-banyak-melayani-2F",
+      "kind": "cover",
+      "version": "2020-07-17T00:00:00.000Z",
+      "lastUpdated": "2020-07-17T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/care-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/care-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftujuh-puluh-kali-tujuh-2F",
+      "kind": "cover",
+      "version": "2020-07-14T00:00:00.000Z",
+      "lastUpdated": "2020-07-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/forgive1-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/forgive1-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fanugerah-yang-indah-2F",
+      "kind": "cover",
+      "version": "2020-07-10T00:00:00.000Z",
+      "lastUpdated": "2020-07-10T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/pray5-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/07/pray5-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menjaga-rumah-kami-2F",
+      "kind": "cover",
+      "version": "2020-07-07T00:00:00.000Z",
+      "lastUpdated": "2020-07-07T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/home-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/home-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fterombang-amping-di-tengah-laut-2F",
+      "kind": "cover",
+      "version": "2020-07-03T00:00:00.000Z",
+      "lastUpdated": "2020-07-03T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/ocean-waves-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/ocean-waves-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fgelas-yang-pecah-2F",
+      "kind": "cover",
+      "version": "2020-06-30T00:00:00.000Z",
+      "lastUpdated": "2020-06-30T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/broken-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/broken-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmemenangkan-peperangan-rohani-2F",
+      "kind": "cover",
+      "version": "2020-06-26T00:00:00.000Z",
+      "lastUpdated": "2020-06-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/warr-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/warr-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberkat-berkat-allah-yang-istimewa-2F",
+      "kind": "cover",
+      "version": "2020-06-23T00:00:00.000Z",
+      "lastUpdated": "2020-06-23T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/prayy-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/prayy-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkasih-tuhan-yang-besar-2F",
+      "kind": "cover",
+      "version": "2020-06-19T00:00:00.000Z",
+      "lastUpdated": "2020-06-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/car-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/car-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengenal_yesus-2F",
+      "kind": "cover",
+      "version": "2020-06-16T00:00:00.000Z",
+      "lastUpdated": "2020-06-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/lov-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/lov-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalanan-kristiani-2F",
+      "kind": "cover",
+      "version": "2020-06-12T00:00:00.000Z",
+      "lastUpdated": "2020-06-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-des-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-des-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmasa-depan-yang-manis-2F",
+      "kind": "cover",
+      "version": "2020-06-09T00:00:00.000Z",
+      "lastUpdated": "2020-06-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/beautiful-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/beautiful-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdi-ujung-pelangi-2F",
+      "kind": "cover",
+      "version": "2020-06-02T00:00:00.000Z",
+      "lastUpdated": "2020-06-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/rainbow-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/06/rainbow-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-membuka-jalan-bagiku-2F",
+      "kind": "cover",
+      "version": "2020-05-29T00:00:00.000Z",
+      "lastUpdated": "2020-05-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-lightss-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-lightss-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdipanggil-keluar-dari-dunia-2F",
+      "kind": "cover",
+      "version": "2020-05-26T00:00:00.000Z",
+      "lastUpdated": "2020-05-26T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/light-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/light-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbersyukur-atas-segala-kasih-kemurahan-nya-2F",
+      "kind": "cover",
+      "version": "2020-05-22T00:00:00.000Z",
+      "lastUpdated": "2020-05-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/thankss-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/thankss-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fgys-manapakkam-2F",
+      "kind": "cover",
+      "version": "2020-05-19T00:00:00.000Z",
+      "lastUpdated": "2020-05-19T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/prayt-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/prayt-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fberjalan-dalam-kebenaran-dan-diselamatkan-2F",
+      "kind": "cover",
+      "version": "2020-05-15T00:00:00.000Z",
+      "lastUpdated": "2020-05-15T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-lightl-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/walk-lightl-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesempatan-saya-mengenal-tuhan-2F",
+      "kind": "cover",
+      "version": "2020-05-12T00:00:00.000Z",
+      "lastUpdated": "2020-05-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/pray-know-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/pray-know-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fallah-memberikan-anak-secara-ajaib-bagi-kami-2F",
+      "kind": "cover",
+      "version": "2020-05-08T00:00:00.000Z",
+      "lastUpdated": "2020-05-08T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/baby-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/baby-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmimpi-ajaib-2F",
+      "kind": "cover",
+      "version": "2020-05-05T00:00:00.000Z",
+      "lastUpdated": "2020-05-05T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/dream-1024x678-1-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/dream-1024x678-1-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhanmenjamahku-2F",
+      "kind": "cover",
+      "version": "2020-05-02T00:00:00.000Z",
+      "lastUpdated": "2020-05-02T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/ccimage-52e6d3424d54af14ea898675c6203f78083edbed5b55714c702a7b-scaled-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/05/ccimage-52e6d3424d54af14ea898675c6203f78083edbed5b55714c702a7b-scaled-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperahu-emas-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/goldenship-copy-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/goldenship-copy-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fteman-orang-berdosa-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/teman-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/teman-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmengucap-syukur-dalam-segala-keadaan-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/grateful-copy-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/grateful-copy-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Findah-pada-akhirnya-2F",
+      "kind": "cover",
+      "version": "2020-04-11T00:00:00.000Z",
+      "lastUpdated": "2020-04-11T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/beautiful-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/04/beautiful-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbertumbuh-melalui-pelayanan-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/footwashh-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/footwashh-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fhadiah-yang-terindah-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/dove-300x199.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/dove-300x199.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fjangan-melupakan-doa-2F",
+      "kind": "cover",
+      "version": "2020-02-14T00:00:00.000Z",
+      "lastUpdated": "2020-02-14T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/pray-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/02/pray-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbudak-uang-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/money-1-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/money-1-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-menjamahku-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/hand-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/hand-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fperjalananku-di-dalam-sebuah-perjalanan-dari-ketakutan-dan-keraguan-menuju-iman-dan-kepercayaan-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/myway-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/myway-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-mengembalikan-anakku-2-2F",
+      "kind": "cover",
+      "version": "2020-01-06T00:00:00.000Z",
+      "lastUpdated": "2020-01-06T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/child-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/child-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fterlindung-dari-bahaya-kebakaran-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/fire-1-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/fire-1-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdi-laut-dan-di-gunung-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/mountain-sea-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/mountain-sea-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Faku-dapat-tersenyum-kembali-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/smile-1-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/smile-1-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fbintang-yang-membawaku-kepada-gereja-yesus-sejati-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/ligth-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/ligth-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fdisembuhkan-luar-dalam-2-2F",
+      "kind": "cover",
+      "version": "2019-12-12T00:00:00.000Z",
+      "lastUpdated": "2019-12-12T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/healing-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/healing-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftuhan-yang-telah-memimpin-sepanjang-hidupku-2-2F",
+      "kind": "cover",
+      "version": "2019-11-29T00:00:00.000Z",
+      "lastUpdated": "2019-11-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/guide-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/12/guide-300x200.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Ftersesat-dalam-idealisme-duniawi-2-2F",
+      "kind": "cover",
+      "version": "2019-11-29T00:00:00.000Z",
+      "lastUpdated": "2019-11-29T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/11/busy-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/11/busy-300x200.jpg",
       "status": "remote"
     },
     {
@@ -364,6 +1384,16 @@
       "status": "remote"
     },
     {
+      "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fkesaksian-belas-2F",
+      "kind": "cover",
+      "version": "2017-05-16T00:00:00.000Z",
+      "lastUpdated": "2017-05-16T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/crossbibble-300x200.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2020/01/crossbibble-300x200.jpg",
+      "status": "remote"
+    },
+    {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fmenerima-yesus-2F",
       "kind": "cover",
       "version": "2017-05-16T00:00:00.000Z",
@@ -374,13 +1404,23 @@
       "status": "remote"
     },
     {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-4-2F",
+      "kind": "cover",
+      "version": "2026-09-22T00:00:00.000Z",
+      "lastUpdated": "2026-09-22T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/ws-buletin-kegiatan-gereja-4-214x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/ws-buletin-kegiatan-gereja-4-214x300.jpg",
+      "status": "remote"
+    },
+    {
       "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws-1-2F",
       "kind": "cover",
       "version": "2026-07-09T00:00:00.000Z",
       "lastUpdated": "2026-07-09T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/05/Menjembatani-Perbedaan-Generasi-pdf.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/05/Menjembatani-Perbedaan-Generasi-pdf.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/cover-Menjembatani-Perbedaan-Generas-214x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/cover-Menjembatani-Perbedaan-Generas-214x300.jpg",
       "status": "remote"
     },
     {
@@ -399,8 +1439,8 @@
       "version": "2026-06-21T00:00:00.000Z",
       "lastUpdated": "2026-06-21T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2-pdf.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2-pdf.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2-214x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/06/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-2-214x300.jpg",
       "status": "remote"
     },
     {
@@ -409,8 +1449,8 @@
       "version": "2026-03-27T00:00:00.000Z",
       "lastUpdated": "2026-03-27T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/03/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-1-1.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/03/Warta-Sejati-Buletin-Kegiatan-Gereja-Edisi-1-1.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/ws-buletin-kegiatan-gereja-image-a-214x300.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/ws-buletin-kegiatan-gereja-image-a-214x300.jpg",
       "status": "remote"
     },
     {
@@ -449,8 +1489,8 @@
       "version": "2025-02-11T00:00:00.000Z",
       "lastUpdated": "2025-02-11T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/02/ws123-image-214x300.jpg",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/02/ws123-image-214x300.jpg",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/02/WS123-pdf.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2025/02/WS123-pdf.jpg",
       "status": "remote"
     },
     {
@@ -674,6 +1714,16 @@
       "status": "remote"
     },
     {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws100-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws100-pdf.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws100-pdf.jpg",
+      "status": "remote"
+    },
+    {
       "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws99-2F",
       "kind": "cover",
       "version": "2020-04-09T00:00:00.000Z",
@@ -681,6 +1731,16 @@
       "source": "remote",
       "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws99-pdf.jpg",
       "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws99-pdf.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "literature-cover:warta-https-3A-2F-2Ftjc.org-2Fid-2Fwarta-sejati-2Fws98-2F",
+      "kind": "cover",
+      "version": "2020-04-09T00:00:00.000Z",
+      "lastUpdated": "2020-04-09T00:00:00.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws98-pdf.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/08/ws98-pdf.jpg",
       "status": "remote"
     },
     {
@@ -2044,43 +3104,73 @@
       "status": "remote"
     },
     {
-      "id": "sauh-cover:sbj260916",
+      "id": "literature-cover:buku-https-3A-2F-2Ftjc.org-2Fid-2Fallah-menciptakan-2F",
       "kind": "cover",
-      "version": "2026-09-16T00:00:46.000Z",
-      "lastUpdated": "2026-09-16T00:00:46.000Z",
+      "version": "1970-01-01T00:00:00.000Z",
+      "lastUpdated": "1970-01-01T00:00:00.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/16-Kasih-Karunia-Allah-300x198.png",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/16-Kasih-Karunia-Allah-300x198.png",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/Allah-Menciptakan-Langit-dan-Bumi.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2021/11/Allah-Menciptakan-Langit-dan-Bumi.jpg",
       "status": "remote"
     },
     {
-      "id": "sauh-cover:sbj260902",
+      "id": "sauh-cover:sbj260928",
       "kind": "cover",
-      "version": "2026-09-02T00:00:09.000Z",
-      "lastUpdated": "2026-09-02T00:00:09.000Z",
+      "version": "2026-09-28T00:56:35.000Z",
+      "lastUpdated": "2026-09-28T00:56:35.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Bersedih-scaled.png",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Bersedih-scaled.png",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Buah-Pertobatan.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Buah-Pertobatan.jpg",
       "status": "remote"
     },
     {
-      "id": "sauh-cover:sbj260901",
+      "id": "sauh-cover:sbj260927",
       "kind": "cover",
-      "version": "2026-09-01T00:00:59.000Z",
-      "lastUpdated": "2026-09-01T00:00:59.000Z",
+      "version": "2026-09-25T10:10:32.000Z",
+      "lastUpdated": "2026-09-25T10:10:32.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Kompleks-Banget-Sih.png",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/Kompleks-Banget-Sih.png",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/27-Hidup-yang-Selalu-Diperbaharui.jpeg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/27-Hidup-yang-Selalu-Diperbaharui.jpeg",
       "status": "remote"
     },
     {
-      "id": "sauh-cover:sbj260816",
+      "id": "sauh-cover:sbj260924",
       "kind": "cover",
-      "version": "2026-08-16T00:09:34.000Z",
-      "lastUpdated": "2026-08-16T00:09:34.000Z",
+      "version": "2026-09-23T05:19:05.000Z",
+      "lastUpdated": "2026-09-23T05:19:05.000Z",
       "source": "remote",
-      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
-      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/08/Orang-Biasa-yang-Luar-Biasa.png",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/24-Tua-Tetapi-Tidak-Dewasa.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/24-Tua-Tetapi-Tidak-Dewasa.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "sauh-cover:sbj260926",
+      "kind": "cover",
+      "version": "2026-09-21T03:13:58.000Z",
+      "lastUpdated": "2026-09-21T03:13:58.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/26-Enggan-Masuk-Kanaan.png",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/26-Enggan-Masuk-Kanaan.png",
+      "status": "remote"
+    },
+    {
+      "id": "sauh-cover:sbj260925",
+      "kind": "cover",
+      "version": "2026-09-17T17:07:06.000Z",
+      "lastUpdated": "2026-09-17T17:07:06.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/25-Percaya-dan-Melakukan.jpg",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/25-Percaya-dan-Melakukan.jpg",
+      "status": "remote"
+    },
+    {
+      "id": "sauh-cover:sbj260923",
+      "kind": "cover",
+      "version": "2026-09-17T16:46:49.000Z",
+      "lastUpdated": "2026-09-17T16:46:49.000Z",
+      "source": "remote",
+      "path": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/23-Daun-Tanpa-Buah.png",
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/23-Daun-Tanpa-Buah.png",
       "status": "remote"
     },
     {

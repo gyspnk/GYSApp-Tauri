@@ -1,5 +1,9 @@
 import { SpeechOrchestrator } from "@gys/domain";
-import type { SpeechEnginePreference, SpeechVoice } from "@gys/contracts";
+import type {
+  SpeechEnginePreference,
+  SpeechProvider,
+  SpeechVoice,
+} from "@gys/contracts";
 import { BrowserSpeechProvider } from "./platform.js";
 import { midiPlayer } from "./midi-player.js";
 import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
@@ -21,6 +25,18 @@ export type SpeechQueueItem = {
   voiceId?: string;
 };
 export type { SpeechEnginePreference } from "@gys/contracts";
+
+export function speechProvidersForEngine(
+  engine: SpeechEnginePreference,
+  edgeProvider: SpeechProvider,
+  systemProvider: SpeechProvider,
+  localProvider: SpeechProvider,
+): SpeechProvider[] {
+  if (engine === "edge") return [edgeProvider];
+  if (engine === "local") return [localProvider];
+  return [edgeProvider, systemProvider];
+}
+
 export type SpeechSnapshot = {
   status: "idle" | "loading" | "speaking" | "paused" | "error";
   currentIndex: number;
@@ -59,6 +75,7 @@ const initial: SpeechSnapshot = {
 
 class BrowserSpeechSession {
   private readonly browserProvider = new BrowserSpeechProvider();
+  private readonly localSpeechProvider = new BrowserSpeechProvider(true);
   private readonly edgeProvider = new EdgeSpeechProvider();
   private orchestrator = new SpeechOrchestrator([
     this.edgeProvider,
@@ -79,23 +96,29 @@ class BrowserSpeechSession {
   public async loadVoices(): Promise<void> {
     if (typeof window === "undefined") return;
     try {
-      const [edgeVoices, browserVoices, edgeStatus, browserStatus] =
-        await Promise.all([
-          isEdgeSpeechConfigured()
-            ? this.edgeProvider.voices()
-            : Promise.resolve([]),
-          this.browserProvider.voices(),
-          this.edgeProvider.status(),
-          this.browserProvider.status(),
-        ]);
+      const saved = readSpeechSettings(localStorage);
+      const engine: SpeechEnginePreference = saved.engine;
+      const [
+        edgeVoices,
+        browserVoices,
+        edgeStatus,
+        browserStatus,
+        localStatus,
+      ] = await Promise.all([
+        engine !== "local" && isEdgeSpeechConfigured()
+          ? this.edgeProvider.voices()
+          : Promise.resolve([]),
+        this.browserProvider.voices(),
+        this.edgeProvider.status(),
+        this.browserProvider.status(),
+        this.localSpeechProvider.status(),
+      ]);
       const voices = [
         ...edgeVoices,
         ...browserVoices.filter(
           (voice) => !edgeVoices.some((candidate) => candidate.id === voice.id),
         ),
       ];
-      const saved = readSpeechSettings(localStorage);
-      const engine: SpeechEnginePreference = saved.engine;
       const edgeEffective = edgeStatus.available;
       this.patch({
         voices,
@@ -104,7 +127,7 @@ class BrowserSpeechSession {
           engine === "edge"
             ? edgeEffective
             : engine === "local"
-              ? browserStatus.available
+              ? localStatus.available
               : edgeEffective || browserStatus.available,
         engine,
         ...(saved.voiceId && voices.some((voice) => voice.id === saved.voiceId)
@@ -312,6 +335,16 @@ class BrowserSpeechSession {
         );
         if (controller.signal.aborted || generation !== this.playbackGeneration)
           return;
+        if (
+          this.state.engine === "auto" &&
+          result.providerId !== this.edgeProvider.id
+        ) {
+          recordDiagnostic(
+            "warn",
+            "tts.edge.retry",
+            "Using system speech because Edge was unavailable or failed",
+          );
+        }
         this.patch({ providerId: result.providerId, offline: result.offline });
       }
       if (generation === this.playbackGeneration)
@@ -408,23 +441,35 @@ class BrowserSpeechSession {
   }
 
   private providersFor(engine: SpeechEnginePreference) {
-    // Native Edge-compatible speech is keyless but online. If the compatibility
-    // endpoint is unavailable, system speech remains the recoverable fallback.
-    if (engine === "edge") {
-      return isEdgeSpeechConfigured()
-        ? [this.edgeProvider, this.browserProvider]
-        : [this.browserProvider];
+    const providers = speechProvidersForEngine(
+      engine,
+      this.edgeProvider,
+      this.browserProvider,
+      this.localSpeechProvider,
+    );
+    if (engine !== "local")
+      recordDiagnostic(
+        "info",
+        "tts.edge.provider",
+        `Engine selected: ${engine}`,
+      );
+    if (engine === "auto" && !isEdgeSpeechConfigured()) {
+      recordDiagnostic(
+        "warn",
+        "tts.edge.capability",
+        "Edge transport unavailable; using system speech",
+      );
     }
-    if (engine === "local") return [this.browserProvider];
-    return [this.edgeProvider, this.browserProvider];
+    return providers;
   }
 
   private async refreshAvailability(
     engine: SpeechEnginePreference,
   ): Promise<void> {
-    const [edgeStatus, browserStatus] = await Promise.all([
+    const [edgeStatus, browserStatus, localStatus] = await Promise.all([
       this.edgeProvider.status(),
       this.browserProvider.status(),
+      this.localSpeechProvider.status(),
     ]);
     const edgeEffective = edgeStatus.available;
     this.patch({
@@ -432,7 +477,7 @@ class BrowserSpeechSession {
         engine === "edge"
           ? edgeEffective
           : engine === "local"
-            ? browserStatus.available
+            ? localStatus.available
             : edgeEffective || browserStatus.available,
     });
   }

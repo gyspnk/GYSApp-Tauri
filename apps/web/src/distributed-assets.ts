@@ -60,7 +60,7 @@ function isTrustedPackageUrl(value: string): boolean {
   }
 }
 
-function assertTrustedPackageUrl(value: string): void {
+export function assertTrustedPackageUrl(value: string): void {
   if (!isTrustedPackageUrl(value)) {
     throw new Error(`Untrusted distributed asset URL: ${value}`);
   }

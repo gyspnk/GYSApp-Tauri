@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
@@ -32,6 +33,30 @@ async function fetchJson(url) {
     throw new Error(`Manifest request failed: ${url} (${response.status})`);
   return JSON.parse((await response.text()).replace(/^\uFEFF/, ""));
 }
+
+await Promise.all(
+  config.definitions
+    .filter((definition) => definition.metadata)
+    .map(async ({ code, metadata }) => {
+      const response = await fetch(metadata.downloadUrl, {
+        headers: { accept: "application/json" },
+      });
+      if (!response.ok)
+        throw new Error(
+          `Metadata request failed for ${code}: ${response.status}`,
+        );
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const checksumSha256 = createHash("sha256").update(bytes).digest("hex");
+      if (
+        bytes.byteLength !== metadata.sizeBytes ||
+        checksumSha256 !== metadata.checksumSha256.toLowerCase()
+      ) {
+        throw new Error(
+          `Metadata integrity mismatch for ${code}: expected ${metadata.sizeBytes} bytes/${metadata.checksumSha256}, received ${bytes.byteLength} bytes/${checksumSha256}`,
+        );
+      }
+    }),
+);
 
 const manifests = await Promise.all(
   tracks.map(async (track) => ({

@@ -141,6 +141,40 @@ describe("DistributedAssetManager", () => {
     await expect(store.getRecord("b_kjv")).resolves.toBeUndefined();
   });
 
+  it("allows retry after a partial response disconnects", async () => {
+    const store = new DistributedAssetStore({
+      cacheStorage: cacheStorage(),
+      registry: storage(),
+    });
+    let attempts = 0;
+    const manager = new DistributedAssetManager({
+      catalogLoader: async () => catalog,
+      store,
+      fetcher: async () => {
+        attempts += 1;
+        if (attempts === 1) {
+          return new Response(
+            new ReadableStream<Uint8Array>({
+              start(controller) {
+                controller.enqueue(new Uint8Array([1, 2]));
+                controller.error(new Error("connection lost"));
+              },
+            }),
+          );
+        }
+        return new Response(packageBytes);
+      },
+    });
+
+    await expect(manager.install("b_kjv")).rejects.toThrow("connection lost");
+    await expect(store.getRecord("b_kjv")).resolves.toBeUndefined();
+    await expect(manager.install("b_kjv")).resolves.toBeUndefined();
+    await expect(manager.loadStatuses()).resolves.toContainEqual(
+      expect.objectContaining({ code: "b_kjv", state: "installed" }),
+    );
+    expect(attempts).toBe(2);
+  });
+
   it("passes abort signals through without leaving a partial install", async () => {
     const store = new DistributedAssetStore({
       cacheStorage: cacheStorage(),
@@ -254,6 +288,54 @@ describe("DistributedAssetManager", () => {
       "Distributed package checksum mismatch",
     );
     expect((await store.getRecord("b_kjv"))?.version).toBe("2026.05.21");
+  });
+
+  it("updates to a newer package and allows reinstall after removal", async () => {
+    const store = new DistributedAssetStore({
+      cacheStorage: cacheStorage(),
+      registry: storage(),
+    });
+    let current = catalog;
+    let requests = 0;
+    const manager = new DistributedAssetManager({
+      catalogLoader: async () => current,
+      store,
+      fetcher: async () => {
+        requests += 1;
+        return new Response(packageBytes, { status: 200 });
+      },
+    });
+
+    await manager.install("b_kjv");
+    current = {
+      ...catalog,
+      items: catalog.items.map((item) =>
+        item.code === "b_kjv"
+          ? { ...item, version: "2026.06.01", releaseTag: "bibles-2026.06.01" }
+          : item,
+      ),
+    };
+    await manager.refresh();
+    expect(
+      (await manager.loadStatuses()).find((item) => item.code === "b_kjv")
+        ?.state,
+    ).toBe("update");
+
+    await manager.install("b_kjv");
+    await expect(store.getRecord("b_kjv")).resolves.toMatchObject({
+      version: "2026.06.01",
+      releaseTag: "bibles-2026.06.01",
+    });
+    await manager.remove("b_kjv");
+    expect(
+      (await manager.loadStatuses()).find((item) => item.code === "b_kjv")
+        ?.state,
+    ).toBe("available");
+    await manager.install("b_kjv");
+    await expect(store.getRecord("b_kjv")).resolves.toMatchObject({
+      version: "2026.06.01",
+    });
+    expect(requests).toBe(3);
   });
 
   it("verifies and stores hymnal metadata in the same install", async () => {

@@ -74,6 +74,40 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
 test("phone navigation and compact text actions remain easy to tap", async ({
   page,
 }) => {
+  const today = new Date();
+  const todaySlug = `sbj${today.toISOString().slice(2, 10).replaceAll("-", "")}`;
+  const updatedAt = today.toISOString();
+  const todaySauh = {
+    id: todaySlug,
+    title: "Renungan hari ini",
+    reference: "Yohanes 3:16",
+    verse: "Karena begitu besar kasih Allah akan dunia ini.",
+    body: "Isi renungan untuk pengujian target sentuh.",
+    url: `https://tjc.org/id/gerakan-baca-alkitab/${todaySlug}/`,
+    updatedAt,
+    source: "tjc.org" as const,
+  };
+  await page.route("**/offline/sauh.json", (route) =>
+    route.fulfill({ json: { items: [todaySauh] } }),
+  );
+  await page.route("**/api/v1/content/sauh**", (route) =>
+    route.fulfill({ json: { items: [todaySauh] } }),
+  );
+  await page.route("**/wp-json/wp/v2/posts**", (route) =>
+    route.fulfill({
+      json: [
+        {
+          slug: todaySlug,
+          title: { rendered: todaySauh.title },
+          content: { rendered: `<p>${todaySauh.body}</p>` },
+          link: todaySauh.url,
+          date: updatedAt,
+          modified: updatedAt,
+        },
+      ],
+    }),
+  );
+
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/GYSApp-Tauri/");
   await expectTouchTarget(page.locator(".brand-mark"), 40);

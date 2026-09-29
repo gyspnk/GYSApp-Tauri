@@ -241,7 +241,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
           ? post.slug
           : `sauh-${String(post.id ?? result.length)}`,
       title,
-      reference: referenceFrom(body),
+      reference: referenceFrom(stripHtml(raw)),
       verse: quoteFrom(raw),
       body,
       url,

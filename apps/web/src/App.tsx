@@ -57,7 +57,10 @@ import {
   playNextMidiPlaylistItem,
   playPreviousMidiPlaylistItem,
 } from "./midi-queue.js";
-import { installMediaSessionBridge } from "./media-session.js";
+import {
+  installMediaSessionBridge,
+  mediaSessionBridge,
+} from "./media-session.js";
 import { speechPlayer } from "./speech-player.js";
 import {
   getCustomEdgeEndpoint,
@@ -510,9 +513,13 @@ function Header({
   onFocusPageSearch: () => void;
 }) {
   const isBibleRoute = pathname === "/bible";
+  const location = useLocation();
   const bibleHeader = useBibleHeaderState();
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
+  const shouldOpenAudioSettings =
+    isBibleRoute &&
+    new URLSearchParams(location.search).get("settings") === "audio";
 
   const midiSnapshot = useSyncExternalStore(
     midiPlayer.subscribe,
@@ -548,6 +555,10 @@ function Header({
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [hamburgerOpen]);
+
+  useEffect(() => {
+    if (shouldOpenAudioSettings && bibleHeader) setHamburgerOpen(true);
+  }, [bibleHeader, shouldOpenAudioSettings]);
 
   const handleToggleMidi = () => {
     if (isMidiPlaying) {
@@ -631,6 +642,17 @@ function Header({
           <div className="reader-context-actions">
             {isBibleRoute && bibleHeader?.active ? (
               <>
+                <button
+                  className={`reader-context-button reader-search-btn${bibleHeader.searchOpen ? " is-active" : ""}`}
+                  type="button"
+                  aria-expanded={bibleHeader.searchOpen}
+                  aria-controls="bible-search-form"
+                  aria-label={translate(locale, "bible.searchVerses")}
+                  title={translate(locale, "bible.searchVerses")}
+                  onClick={bibleHeader.onToggleSearch}
+                >
+                  <Icon name="search" size={15} />
+                </button>
                 {bibleHeader.speechAvailable && (
                   <button
                     className={`reader-context-button reader-speech-btn${bibleHeader.speaking ? " is-speaking" : ""}`}
@@ -714,6 +736,28 @@ function Header({
                         </div>
 
                         <div className="hamburger-drawer-body">
+                          <div className="hamburger-section">
+                            <div className="hamburger-group">
+                              <button
+                                className="hamburger-item"
+                                type="button"
+                                onClick={() => {
+                                  bibleHeader.onOpenNotes();
+                                  setHamburgerOpen(false);
+                                }}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon name="bookmark" size={16} />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>
+                                    {translate(locale, "bible.notes")}
+                                  </strong>
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+
                           {/* Section 1: Typography */}
                           <div className="hamburger-card">
                             <div className="hamburger-card-header">
@@ -940,11 +984,14 @@ function Header({
                                       )
                                     }
                                   >
+                                    <option value="auto">
+                                      {translate(locale, "bible.autoTts")}
+                                    </option>
                                     <option
                                       value="edge"
                                       disabled={!isEdgeSpeechConfigured()}
                                     >
-                                      Edge TTS
+                                      {translate(locale, "bible.edgeOnlineTts")}
                                     </option>
                                     <option value="local">
                                       {translate(locale, "bible.localTts")}
@@ -985,7 +1032,7 @@ function Header({
                                       </option>
                                     ))}
                                   </select>
-                                  {speechSnapshot.engine === "edge" &&
+                                  {speechSnapshot.engine !== "local" &&
                                     !isEdgeSpeechConfigured() && (
                                       <small className="drawer-speech-hint">
                                         {translate(locale, "bible.edgeHint")}
@@ -1182,7 +1229,12 @@ function Header({
                   <button
                     className="reader-context-button"
                     type="button"
-                    onClick={onFocusPageSearch}
+                    disabled={isBibleRoute && !bibleHeader?.active}
+                    onClick={
+                      isBibleRoute && bibleHeader?.active
+                        ? bibleHeader.onFocusSearch
+                        : onFocusPageSearch
+                    }
                     aria-label={
                       isBibleRoute
                         ? translate(locale, "bible.searchVerses")
@@ -1537,15 +1589,18 @@ function MediaSurface({ locale }: { locale: Locale }) {
     : snapshot.songId
       ? `/kidung/${encodeURIComponent(snapshot.songId)}`
       : undefined;
+  const activeSpeechVoice = speechSnapshot.voices.find(
+    (voice) => voice.id === speechSnapshot.activeVoiceId,
+  );
   const speechProviderLabel =
     speechSnapshot.providerId === "edge-compatibility"
-      ? "Edge TTS"
+      ? translate(locale, "bible.edgeOnlineTts")
       : speechSnapshot.providerId === "browser-system"
-        ? speechSnapshot.offline
+        ? (activeSpeechVoice?.local ?? speechSnapshot.offline)
           ? translate(locale, "media.localTts")
           : translate(locale, "media.systemTts")
         : speechSnapshot.engine === "edge"
-          ? "Edge TTS"
+          ? translate(locale, "bible.edgeOnlineTts")
           : speechSnapshot.engine === "local"
             ? translate(locale, "media.localTts")
             : translate(locale, "media.speechBible");
@@ -1643,6 +1698,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
     return () => window.cancelAnimationFrame(frame);
   }, [minimized, snapshot.songId, speechActive]);
   useEffect(() => {
+    mediaSessionBridge.setSpeechActive(speechActive);
+  }, [speechActive, speechSnapshot.status]);
+  useEffect(() => {
     if (!hasMediaSession || !("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: mediaTitle ?? "GYS",
@@ -1660,9 +1718,9 @@ function MediaSurface({ locale }: { locale: Locale }) {
         () => {
           const speech = latestSpeechRef.current;
           if (latestMediaKindRef.current === "speech")
-            return speech.status === "error"
-              ? speechPlayer.stop()
-              : speechPlayer.resume();
+            return speech.status === "paused"
+              ? speechPlayer.resume()
+              : speechPlayer.play();
           void speechPlayer.pause();
           return midiPlayer.play().catch(() => undefined);
         },
@@ -1682,21 +1740,48 @@ function MediaSurface({ locale }: { locale: Locale }) {
             : midiPlayer.stop().catch(() => undefined),
       ],
       [
-        "seekbackward",
+        "previoustrack",
         () => {
+          if (latestMediaKindRef.current === "speech")
+            return speechPlayer.previous();
+          return midiPlayer.getTime() > 2
+            ? midiPlayer
+                .seek(0)
+                .then(() => midiPlayer.play())
+                .catch(() => undefined)
+            : playPreviousMidiPlaylistItem().catch(() => undefined);
+        },
+      ],
+      [
+        "nexttrack",
+        () =>
+          latestMediaKindRef.current === "speech"
+            ? speechPlayer.next()
+            : playNextMidiPlaylistItem().catch(() => undefined),
+      ],
+      [
+        "seekbackward",
+        (details) => {
           const midi = latestMidiRef.current;
           return latestMediaKindRef.current === "speech"
-            ? speechPlayer.stop()
-            : midiPlayer.seek(Math.max(0, midi.position - 10));
+            ? undefined
+            : midiPlayer.seek(
+                Math.max(0, midi.position - (details?.seekOffset ?? 10)),
+              );
         },
       ],
       [
         "seekforward",
-        () => {
+        (details) => {
           const midi = latestMidiRef.current;
           return latestMediaKindRef.current === "speech"
-            ? speechPlayer.stop()
-            : midiPlayer.seek(Math.min(midi.duration, midi.position + 10));
+            ? undefined
+            : midiPlayer.seek(
+                Math.min(
+                  midi.duration,
+                  midi.position + (details?.seekOffset ?? 10),
+                ),
+              );
         },
       ],
       [
@@ -1704,14 +1789,21 @@ function MediaSurface({ locale }: { locale: Locale }) {
         (details) => {
           const midi = latestMidiRef.current;
           return latestMediaKindRef.current === "speech"
-            ? speechPlayer.stop()
+            ? undefined
             : midiPlayer.seek(details?.seekTime ?? midi.position);
         },
       ],
     ];
     for (const [action, handler] of handlers) {
       try {
-        navigator.mediaSession.setActionHandler(action, handler);
+        const seeking =
+          action === "seekto" ||
+          action === "seekbackward" ||
+          action === "seekforward";
+        navigator.mediaSession.setActionHandler(
+          action,
+          speechActive && seeking ? null : handler,
+        );
       } catch {
         // Safari exposes the Media Session object but not every action.
       }
@@ -1725,7 +1817,13 @@ function MediaSurface({ locale }: { locale: Locale }) {
         }
       }
     };
-  }, [hasMediaSession, mediaTitle, speechActive]);
+  }, [
+    hasMediaSession,
+    mediaTitle,
+    speechActive,
+    speechSnapshot.status,
+    snapshot.status,
+  ]);
   if (!hasMediaSession) return null;
   const playing = speechActive
     ? speechSnapshot.status === "speaking"
@@ -2034,16 +2132,6 @@ function MediaSurface({ locale }: { locale: Locale }) {
           {isKidungMedia ? (
             <div className="media-meta-top">
               <small>MIDI</small>
-              <button
-                className="media-queue-badge"
-                type="button"
-                onClick={() => navigate("/kidung?section=playlist")}
-                aria-label={`${translate(locale, "media.queueOpen")}${playlist.items.length ? ` · ${translate(locale, "media.queueSongCount", { count: playlist.items.length })}` : ""}`}
-                title={`${translate(locale, "media.queueTitle")}${playlist.items.length ? ` · ${playlist.items.length}` : ""}`}
-              >
-                <Icon name="queueMusic" size={14} />
-                <span aria-hidden="true">{playlist.items.length}</span>
-              </button>
             </div>
           ) : (
             <small>
@@ -2237,6 +2325,17 @@ function MediaSurface({ locale }: { locale: Locale }) {
                     </summary>
                     <div className="media-advanced-panel">
                       {midiAdvancedControls}
+                      <button
+                        className="media-queue-badge"
+                        type="button"
+                        onClick={() => navigate("/kidung?section=playlist")}
+                        aria-label={`${translate(locale, "media.queueOpen")}${playlist.items.length ? ` · ${translate(locale, "media.queueSongCount", { count: playlist.items.length })}` : ""}`}
+                        title={`${translate(locale, "media.queueTitle")}${playlist.items.length ? ` · ${playlist.items.length}` : ""}`}
+                      >
+                        <Icon name="queueMusic" size={14} />
+                        <span>{translate(locale, "media.queueTitle")}</span>
+                        <span aria-hidden="true">{playlist.items.length}</span>
+                      </button>
                     </div>
                   </details>
                 ) : (

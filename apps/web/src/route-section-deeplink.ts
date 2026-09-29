@@ -1,5 +1,6 @@
 const MORE_SECTION_TARGETS: Record<string, string> = {
-  data: ".distributed-assets-card",
+  data: '.more-setting-section[data-setting="offline"] > .more-setting-row',
+  help: ".report-card",
 };
 
 const ALIGN_TOLERANCE_PX = 1;

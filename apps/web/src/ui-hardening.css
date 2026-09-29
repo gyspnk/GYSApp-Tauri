@@ -71,9 +71,7 @@ button[aria-label*="rujukan silang untuk"]::before {
   padding-block: 7px;
 }
 
-.add-to-playlist-btn,
-.pujian-fav-btn,
-.pujian-row-action {
+.add-to-playlist-btn {
   min-inline-size: 40px;
   min-block-size: 40px;
 }

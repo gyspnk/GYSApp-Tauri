@@ -8,6 +8,7 @@ import {
   detectPreloadTransposeFromPdfText,
   extractPdfKeyFromText,
   extractPdfTempoFromText,
+  MIDI_TEMPO_FALLBACK_BPM,
   parsePdfKeyToSemitone,
 } from "./pdf-meta.js";
 import { loadForkHymnalPdfBytes } from "./fork-pdf.js";
@@ -20,7 +21,20 @@ export type HymnPdfMeta = {
   preloadTranspose?: number;
 };
 
+export function resolveHymnMidiDefaults(
+  meta: HymnPdfMeta | undefined,
+  preferNaturalChords: boolean,
+): { tempo: number; transpose: number } {
+  return {
+    tempo: Number.isFinite(meta?.tempo)
+      ? (meta?.tempo as number)
+      : MIDI_TEMPO_FALLBACK_BPM,
+    transpose: preferNaturalChords ? (meta?.preloadTranspose ?? 0) : 0,
+  };
+}
+
 const cache = new Map<string, Promise<HymnPdfMeta>>();
+const settledCache = new Map<string, HymnPdfMeta>();
 
 let pdfjsPromise: Promise<typeof import("pdfjs-dist")> | undefined;
 /**
@@ -67,7 +81,17 @@ export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
   if (existing) return existing;
   const request = loadForkHymnalPdfBytes(item.number)
     .then(({ bytes }) => extractPdfMetaFromBytes(bytes))
-    .catch(() => ({ preloadTranspose: 0 }) as HymnPdfMeta);
+    .catch(
+      () =>
+        ({
+          tempo: MIDI_TEMPO_FALLBACK_BPM,
+          preloadTranspose: 0,
+        }) as HymnPdfMeta,
+    )
+    .then((meta) => {
+      settledCache.set(item.id, meta);
+      return meta;
+    });
   cache.set(item.id, request);
   void request.catch(() => cache.delete(item.id));
   return request;
@@ -75,18 +99,10 @@ export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
 
 /** Synchronous read for the MIDI load path (same as gyschordweb map read). */
 export function getHymnPdfMeta(songId: string): HymnPdfMeta | undefined {
-  const entry = cache.get(songId);
-  if (entry === undefined) return undefined;
-  let settled: HymnPdfMeta | undefined;
-  entry.then(
-    (value) => {
-      settled = value;
-    },
-    () => undefined,
-  );
-  return settled;
+  return settledCache.get(songId);
 }
 
 export function _resetHymnPdfMetaCacheForTest(): void {
   cache.clear();
+  settledCache.clear();
 }

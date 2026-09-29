@@ -14,6 +14,7 @@ const PORTABLE_BACKUP_KEYS = new Set([
   "gys-bible-bookmarks",
   "gys-bible-notes-v1",
   "gys-bible-highlights-v1",
+  "gys-bible-highlight-palette-v1",
   "gys-bible-search-history-v1",
   "gys-bible-split-v1",
   "gys-bible-split-ratio-v1",

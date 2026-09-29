@@ -204,6 +204,7 @@ describe("Tauri platform adapter", () => {
 
   it("uses native file dialog commands for import/export", async () => {
     const { invoke, mock } = createInvoke();
+    let saveResult = true;
     mock.mockImplementation(async (command, args) => {
       if (command === "file_dialog_open")
         return [
@@ -213,7 +214,7 @@ describe("Tauri platform adapter", () => {
             bytes: "AAEC",
           },
         ];
-      if (command === "file_dialog_save") return null;
+      if (command === "file_dialog_save") return saveResult;
       throw new Error(`Unexpected native command: ${command}`);
     });
     const services = createTauriPlatformServices(invoke);
@@ -231,6 +232,14 @@ describe("Tauri platform adapter", () => {
         mimeType: "application/octet-stream",
         bytes: new Uint8Array([3, 4]),
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(true);
+    saveResult = false;
+    await expect(
+      services.files.save({
+        name: "backup.gysbk",
+        mimeType: "application/octet-stream",
+        bytes: new Uint8Array([3, 4]),
+      }),
+    ).resolves.toBe(false);
   });
 });

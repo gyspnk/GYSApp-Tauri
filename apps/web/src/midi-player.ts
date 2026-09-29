@@ -61,6 +61,7 @@ type WorkerMessage = {
   sampleRate?: number;
 };
 type PendingRequest = {
+  kind: "render" | "other";
   resolve: (message: WorkerMessage) => void;
   reject: (error: Error) => void;
   timer: number;
@@ -68,9 +69,8 @@ type PendingRequest = {
 
 /**
  * Invalidates asynchronous MIDI work whenever the selected song or a render
- * setting changes. The worker cannot always cancel a render already in WASM,
- * so callers use this gate to ignore a late result before it can touch the
- * shared audio session.
+ * setting changes. The render worker is terminated when a live WASM render is
+ * superseded; the generation gate protects results already returned.
  */
 export class MidiOperationGate {
   private generation = 0;
@@ -100,7 +100,9 @@ function readMidiPreferences(): {
   volume?: number;
   muted?: boolean;
   tempo?: number;
+  tempoOverride?: boolean;
   transpose?: number;
+  transposeOverride?: boolean;
   instrument?: number;
 } {
   if (typeof window === "undefined") return {};
@@ -120,9 +122,19 @@ function readMidiPreferences(): {
       ...(typeof candidate.tempo === "number"
         ? { tempo: candidate.tempo }
         : {}),
+      ...(typeof candidate.tempoOverride === "boolean"
+        ? { tempoOverride: candidate.tempoOverride }
+        : typeof candidate.tempo === "number"
+          ? { tempoOverride: true }
+          : {}),
       ...(typeof candidate.transpose === "number"
         ? { transpose: candidate.transpose }
         : {}),
+      ...(typeof candidate.transposeOverride === "boolean"
+        ? { transposeOverride: candidate.transposeOverride }
+        : typeof candidate.transpose === "number"
+          ? { transposeOverride: true }
+          : {}),
       ...(typeof candidate.instrument === "number"
         ? { instrument: candidate.instrument }
         : {}),
@@ -294,6 +306,8 @@ export class BrowserMidiPlayer {
   private readonly preloadQueue = new MidiPreloadQueue();
   private preloadGeneration = 0;
   private readonly operationGate = new MidiOperationGate();
+  private transposeOverride = savedMidiPreferences.transposeOverride ?? false;
+  private tempoOverride = savedMidiPreferences.tempoOverride ?? false;
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
@@ -339,17 +353,20 @@ export class BrowserMidiPlayer {
       midiUrl?: string;
       /** Detected tempo from the PDF metadata (gyschordweb _tempoByPdfHref). */
       tempo?: number;
+      /** New-song target transpose from the PDF/natural-chord profile. */
+      transpose?: number;
       /** A/B crossfade: keep the previous playlist song audible while this
        * song's buffer renders. `play()` fades it out instead of cutting. */
       keepPlaying?: boolean;
     } = {},
   ): Promise<boolean> {
-    this.cancelPreloads();
     const generation = this.operationGate.next();
+    this.cancelPreloads();
     if (!options.keepPlaying || this.crossfadeMs <= 0) await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
-    const tempo =
-      options.tempo !== undefined
+    const tempo = this.tempoOverride
+      ? this.state.tempo
+      : options.tempo !== undefined
         ? clampTempo(options.tempo)
         : savedMidiPreferences.tempo === undefined && !this.state.songId
           ? Math.round(midi.tempo)
@@ -374,7 +391,9 @@ export class BrowserMidiPlayer {
       duration,
       position: 0,
       tempo,
-      transpose: this.state.transpose,
+      transpose: this.transposeOverride
+        ? this.state.transpose
+        : (options.transpose ?? this.state.transpose),
       backend: "idle",
       loadingProgress: 0,
       error: undefined,
@@ -458,6 +477,9 @@ export class BrowserMidiPlayer {
   public getCurrentTranspose(): number {
     return this.state.transpose;
   }
+  public hasTransposePreference(): boolean {
+    return this.transposeOverride;
+  }
   public getCurrentInstrument(): number {
     return this.state.instrument;
   }
@@ -526,12 +548,15 @@ export class BrowserMidiPlayer {
 
   public async stop(): Promise<void> {
     this.operationGate.next();
+    this.cancelPreloads();
     await this.stopAudio();
     if (this.state.songId) this.patch({ status: "stopped", position: 0 });
   }
 
   public async seek(position: number): Promise<void> {
     const generation = this.operationGate.next();
+    const wasLoading = this.state.status === "loading";
+    this.cancelPreloads();
     const next = Math.max(0, Math.min(this.state.duration, position));
     const playing = this.state.status === "playing";
     if (playing) this.updatePositionFromClock();
@@ -539,9 +564,9 @@ export class BrowserMidiPlayer {
     if (!this.operationGate.isCurrent(generation)) return;
     this.patch({
       position: next,
-      status: playing ? "paused" : this.state.status,
+      status: playing ? "paused" : wasLoading ? "ready" : this.state.status,
     });
-    if (playing) await this.play();
+    if (playing || wasLoading) await this.play();
   }
 
   public async setVolume(volume: number): Promise<void> {
@@ -555,57 +580,77 @@ export class BrowserMidiPlayer {
     this.patch({ muted });
   }
 
-  public async setTempo(tempo: number): Promise<void> {
+  public async setTempo(
+    tempo: number,
+    options: { userOverride?: boolean } = {},
+  ): Promise<void> {
+    if (options.userOverride === false && this.tempoOverride) return;
+    if (options.userOverride !== false) this.tempoOverride = true;
     const next = Math.max(30, Math.min(220, Math.round(tempo)));
+    if (next === this.state.tempo) return;
     const wasPlaying = this.state.status === "playing";
-    this.cancelPreloads();
+    const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
+    this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       tempo: next,
-      status: wasPlaying ? "paused" : this.state.status,
+      status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
     });
-    if (wasPlaying) await this.play();
+    if (wasPlaying || wasLoading) await this.play();
   }
 
-  public async setTranspose(transpose: number): Promise<void> {
+  public async setTranspose(
+    transpose: number,
+    options: { userOverride?: boolean } = {},
+  ): Promise<void> {
+    if (options.userOverride === false && this.transposeOverride) return;
+    const overrideChanged =
+      options.userOverride !== false && !this.transposeOverride;
+    if (options.userOverride !== false) this.transposeOverride = true;
     const next = Math.max(-24, Math.min(24, Math.trunc(transpose)));
+    if (next === this.state.transpose) {
+      if (overrideChanged) this.persistPreferences();
+      return;
+    }
     const wasPlaying = this.state.status === "playing";
-    this.cancelPreloads();
+    const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
+    this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       transpose: next,
-      status: wasPlaying ? "paused" : this.state.status,
+      status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
     });
-    if (wasPlaying) await this.play();
+    if (wasPlaying || wasLoading) await this.play();
   }
 
   public async setInstrument(instrument: number): Promise<void> {
     const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
     const wasPlaying = this.state.status === "playing";
-    this.cancelPreloads();
+    const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
+    this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.rendered = undefined;
     this.patch({
       instrument: next,
-      status: wasPlaying ? "paused" : this.state.status,
+      status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
     });
-    if (wasPlaying) await this.play();
+    if (wasPlaying || wasLoading) await this.play();
   }
 
   public destroy(): void {
-    this.cancelPreloads();
     this.operationGate.next();
+    this.cancelPreloads();
     void this.stopAudio();
     for (const pending of this.pending.values()) {
       window.clearTimeout(pending.timer);
@@ -665,6 +710,7 @@ export class BrowserMidiPlayer {
         });
         return true;
       } catch (error) {
+        if (error instanceof StaleMidiOperation) return false;
         const context = [request.songId, request.title]
           .filter(Boolean)
           .join(" · ");
@@ -696,6 +742,28 @@ export class BrowserMidiPlayer {
   public cancelPreloads(): void {
     this.preloadGeneration += 1;
     this.preloadQueue.clear();
+    this.cancelActiveRender();
+  }
+
+  private cancelActiveRender(): void {
+    if (
+      ![...this.pending.values()].some((pending) => pending.kind === "render")
+    )
+      return;
+    const stale = new StaleMidiOperation();
+    const worker = this.worker;
+    this.worker = undefined;
+    this.workerReadyReject?.(stale);
+    this.workerReadyReject = undefined;
+    this.workerReady = undefined;
+    this.soundfontWorker = undefined;
+    this.soundfontRequest = undefined;
+    for (const pending of this.pending.values()) {
+      window.clearTimeout(pending.timer);
+      pending.reject(stale);
+    }
+    this.pending.clear();
+    worker?.terminate();
   }
 
   /** gyschordweb crossfadePrefs: ms of gapless overlap on song switches. */
@@ -766,6 +834,7 @@ export class BrowserMidiPlayer {
       instrument,
       sampleRate: audioSampleRate,
       announceProgress: true,
+      operationGeneration: generation,
     });
     throwIfStale(this.operationGate, generation);
     const buffer = this.audio.createBuffer(2, pcm.left.length, pcm.sampleRate);
@@ -785,6 +854,7 @@ export class BrowserMidiPlayer {
     instrument: number;
     sampleRate: number;
     announceProgress: boolean;
+    operationGeneration?: number;
   }): Promise<RenderedPcm> {
     const key = midiRenderKey(
       options.sourceHash,
@@ -801,7 +871,11 @@ export class BrowserMidiPlayer {
       const secondCheck = await this.renderCache.get(key);
       if (secondCheck) return secondCheck;
       const worker = await this.ensureWorker();
+      if (options.operationGeneration !== undefined)
+        throwIfStale(this.operationGate, options.operationGeneration);
       await this.ensureSoundfont(worker, options.announceProgress);
+      if (options.operationGeneration !== undefined)
+        throwIfStale(this.operationGate, options.operationGeneration);
       if (options.announceProgress) this.patch({ loadingProgress: 34 });
       const tempoRate = options.tempo / Math.max(30, options.sourceTempo);
       const message = await this.request(worker, {
@@ -813,6 +887,8 @@ export class BrowserMidiPlayer {
         instrument: options.instrument,
         tempoRate,
       });
+      if (options.operationGeneration !== undefined)
+        throwIfStale(this.operationGate, options.operationGeneration);
       if (message.type !== "rendered" || !message.left || !message.right)
         throw new Error(message.error ?? "FluidSynth did not return audio");
       const sampleRate = message.sampleRate ?? options.sampleRate;
@@ -953,7 +1029,12 @@ export class BrowserMidiPlayer {
         this.pending.delete(id);
         reject(new Error("MIDI worker request timed out"));
       }, 120_000);
-      this.pending.set(id, { resolve, reject, timer });
+      this.pending.set(id, {
+        kind: payload.type === "render" ? "render" : "other",
+        resolve,
+        reject,
+        timer,
+      });
       const transfer: Transferable[] = [];
       const midiBuffer = payload.midiBuffer;
       const soundfontBuffer = payload.buffer;
@@ -971,7 +1052,10 @@ export class BrowserMidiPlayer {
     const previous = this.bufferSource;
     const previousGain = this.sourceGain;
     if (previous && this.crossfadeMs > 0 && this.state.status === "playing") {
-      previous.onended = null;
+      previous.onended = () => {
+        previous.disconnect();
+        previousGain?.disconnect();
+      };
       const now = audio.currentTime;
       const fade = this.crossfadeMs / 1000;
       if (previousGain) {
@@ -1009,6 +1093,9 @@ export class BrowserMidiPlayer {
       if (this.bufferSource !== source || this.state.status !== "playing")
         return;
       this.bufferSource = undefined;
+      this.sourceGain = undefined;
+      source.disconnect();
+      gain.disconnect();
       this.clearTimer();
       this.patch({ status: "stopped", position: 0 });
       for (const listener of this.endedListeners) listener();
@@ -1082,10 +1169,10 @@ export class BrowserMidiPlayer {
       }
       this.bufferSource.disconnect();
       this.bufferSource = undefined;
-      if (this.sourceGain) {
-        this.sourceGain.disconnect();
-        this.sourceGain = undefined;
-      }
+    }
+    if (this.sourceGain) {
+      this.sourceGain.disconnect();
+      this.sourceGain = undefined;
     }
     for (const pair of this.scheduled) {
       try {
@@ -1117,30 +1204,36 @@ export class BrowserMidiPlayer {
       for (const listener of this.settingsListeners) listener();
     }
     if (
-      typeof window !== "undefined" &&
-      ("volume" in next ||
-        "muted" in next ||
-        "tempo" in next ||
-        "transpose" in next ||
-        "instrument" in next)
+      "volume" in next ||
+      "muted" in next ||
+      "tempo" in next ||
+      "transpose" in next ||
+      "instrument" in next
     ) {
-      try {
-        window.localStorage.setItem(
-          "gys-midi-preferences-v1",
-          JSON.stringify({
-            volume: this.state.volume,
-            muted: this.state.muted,
-            tempo: this.state.tempo,
-            transpose: this.state.transpose,
-            instrument: this.state.instrument,
-          }),
-        );
-      } catch {
-        // Private browsing and quota failures must not block playback.
-      }
+      this.persistPreferences();
     }
     // MediaSession + Wake Lock parity lives in media-session.ts (global bridge).
     for (const listener of this.listeners) listener();
+  }
+
+  private persistPreferences(): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        "gys-midi-preferences-v1",
+        JSON.stringify({
+          volume: this.state.volume,
+          muted: this.state.muted,
+          tempo: this.state.tempo,
+          tempoOverride: this.tempoOverride,
+          transpose: this.state.transpose,
+          transposeOverride: this.transposeOverride,
+          instrument: this.state.instrument,
+        }),
+      );
+    } catch {
+      // Private browsing and quota failures must not block playback.
+    }
   }
 }
 

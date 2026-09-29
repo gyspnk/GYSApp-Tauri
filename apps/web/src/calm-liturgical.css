@@ -118,7 +118,6 @@ button.text-button {
   font-size: 14px;
 }
 
-.theme-pill-btn .pill-label,
 .accent-swatch-name {
   font-size: 12px;
 }
@@ -330,12 +329,6 @@ button.text-button {
 
 .hymn-text-toolbar .detail-actions .hymn-action-primary {
   box-shadow: none;
-}
-
-/* Human-facing account/preferences lead the More page. Technical asset
-   management remains fully available in the DOM order that follows it. */
-.distributed-assets-card {
-  order: 0;
 }
 
 /* Give keyboard users the same clarity on native controls and disclosures. */

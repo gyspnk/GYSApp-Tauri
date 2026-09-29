@@ -30,8 +30,10 @@ export function buildHymnSearchIndex(
   return entries.map((item) => {
     const number = String(item.number);
     const paddedNumber = number.padStart(3, "0");
+    const sourceNumber =
+      item.id.match(/^hymn-(\d+[a-z]?)$/i)?.[1] ?? paddedNumber;
     const haystack = normalizeHymnSearchText(
-      `${number} ${paddedNumber} ${item.title} ${item.book} ${item.lyrics}`,
+      `${number} ${paddedNumber} ${sourceNumber} ${item.title} ${item.lyrics}`,
     );
     return { item, haystack, tokens: tokenize(haystack) };
   });
@@ -44,13 +46,17 @@ function parseQuery(query: string): QueryPart[] {
   for (const match of query.matchAll(/"([^"\n]+)"|([^\s]+)/g)) {
     const raw = match[1] ?? match[2] ?? "";
     const value = normalizeHymnSearchText(raw);
-    if (value) parts.push({ phrase: Boolean(match[1]), value });
+    if (value)
+      parts.push({ phrase: Boolean(match[1]) || value.includes(" "), value });
   }
   return parts;
 }
 
-function hasTokenPrefix(tokens: ReadonlySet<string>, value: string): boolean {
-  for (const token of tokens) if (token.startsWith(value)) return true;
+function hasTokenSubstring(
+  tokens: ReadonlySet<string>,
+  value: string,
+): boolean {
+  for (const token of tokens) if (token.includes(value)) return true;
   return false;
 }
 
@@ -58,12 +64,11 @@ function matches(index: HymnSearchIndex, parts: readonly QueryPart[]): boolean {
   return parts.every((part) =>
     part.phrase
       ? index.haystack.includes(part.value)
-      : index.tokens.has(part.value) ||
-        hasTokenPrefix(index.tokens, part.value),
+      : hasTokenSubstring(index.tokens, part.value),
   );
 }
 
-/** Search with AND semantics; quoted terms remain contiguous phrases. */
+/** AND-search substrings; quoted terms remain contiguous phrases. */
 export function searchHymns(
   index: readonly HymnSearchIndex[],
   query: string,

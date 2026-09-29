@@ -25,9 +25,9 @@ import {
   type HymnCatalogEntry,
   type UpstreamMusicLock,
 } from "@gys/contracts";
-import { MidiLoader } from "@gys/domain";
+import { ChordNotAvailableError, MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
-import { createBrowserChordRepository } from "./chords.js";
+import { chordSongIdFromPath, createBrowserChordRepository } from "./chords.js";
 import {
   ChordCapability,
   chordKeyIndex,
@@ -43,7 +43,6 @@ import {
   downloadMusicAsset,
   findMusicAsset,
   loadMusicAsset,
-  resolveMusicAssetUrl,
 } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
@@ -57,7 +56,11 @@ import {
   loadInstalledDistributedHymnCatalog,
   loadInstalledDistributedHymnalPdf,
 } from "./distributed-hymnals.js";
-import { getHymnPdfMeta, warmHymnPdfMeta } from "./hymn-pdf-meta.js";
+import {
+  getHymnPdfMeta,
+  resolveHymnMidiDefaults,
+  warmHymnPdfMeta,
+} from "./hymn-pdf-meta.js";
 import {
   readHymnViewerPrefs,
   setDefaultPdfLayout,
@@ -85,8 +88,11 @@ import {
   addSongToActivePlaylist,
   createSavedPlaylist,
   deleteSavedPlaylist,
+  exportUpstreamPlaylist,
   getActivePlaylistId,
   getSavedPlaylists,
+  importUpstreamPlaylist,
+  moveSavedPlaylistSong,
   removeSongFromPlaylist,
   renameSavedPlaylist,
   setActivePlaylist,
@@ -230,8 +236,15 @@ function useHymnData() {
   return { catalog, musicLock };
 }
 
-function numberLabel(number: number) {
-  return String(number).padStart(3, "0");
+function numberLabel(number: number, id?: string) {
+  const canonicalNumber = id?.match(/^hymn-(\d{3}[a-z]?)$/i)?.[1];
+  return canonicalNumber ?? String(number).padStart(3, "0");
+}
+function hymnCollectionLabel(book: string) {
+  return book
+    .split("-")
+    .map((word) => word.charAt(0).toLocaleUpperCase("id-ID") + word.slice(1))
+    .join(" ");
 }
 function formatMidiTime(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds || 0));
@@ -242,7 +255,7 @@ function formatMidiTime(seconds: number): string {
 function uniqueItems(items: HymnCatalogEntry[]) {
   const seen = new Set<string>();
   return items.filter((item) => {
-    const key = `${item.assetCode ?? item.book}:${item.number}:${item.title.trim().toLocaleLowerCase()}`;
+    const key = `${item.assetCode ?? item.book}:${item.id}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -278,7 +291,13 @@ export function KidungPage({ locale }: { locale: Locale }) {
         {...(musicLock ? { musicLock } : {})}
       />
     );
-  return <HymnCatalog locale={locale} state={catalog} />;
+  return (
+    <HymnCatalog
+      locale={locale}
+      state={catalog}
+      {...(musicLock ? { musicLock } : {})}
+    />
+  );
 }
 
 type KidungSection = "songs" | "playlist" | "settings";
@@ -369,8 +388,49 @@ function HymnPlaylistPage({
   const importPlaylist = async (file: File | undefined) => {
     if (!file) return;
     try {
-      importMidiPlaylist(await file.text());
+      const serialized = await file.text();
+      const value: unknown = JSON.parse(serialized);
+      if (
+        value &&
+        typeof value === "object" &&
+        (value as { version?: unknown }).version === 1 &&
+        Array.isArray((value as { items?: unknown }).items)
+      ) {
+        importMidiPlaylist(serialized);
+      } else {
+        const entries =
+          catalog.status === "ready"
+            ? catalog.items
+            : await fetch(
+                `${import.meta.env.BASE_URL}offline/hymn-catalog.json`,
+                {
+                  cache: "force-cache",
+                },
+              ).then(async (response) => {
+                if (!response.ok) throw new Error("Hymn catalog unavailable");
+                return parseCatalog(await response.json());
+              });
+        const imported = importUpstreamPlaylist(value, entries);
+        createSavedPlaylist(`${imported.name} (Imported)`, imported.songIds);
+      }
       setImportError(undefined);
+    } catch {
+      setImportError(translate(locale, "kidung.playlistImportError"));
+    }
+  };
+  const downloadSavedPlaylist = (saved: SavedPlaylist) => {
+    if (catalog.status !== "ready") return;
+    try {
+      const data = exportUpstreamPlaylist(saved, catalog.items);
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${data.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.json`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
     } catch {
       setImportError(translate(locale, "kidung.playlistImportError"));
     }
@@ -423,21 +483,28 @@ function HymnPlaylistPage({
           <h1>{translate(locale, "kidung.playlist")}</h1>
         </div>
         <div className="kidung-tool-heading-actions">
-          <button
-            className="text-button"
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {translate(locale, "kidung.import")}
-          </button>
-          <button
-            className="text-button"
-            type="button"
-            onClick={() => downloadMidiPlaylist()}
-            disabled={playlist.items.length === 0}
-          >
-            {translate(locale, "kidung.export")}
-          </button>
+          <details className="kidung-row-menu">
+            <summary aria-label={translate(locale, "kidung.playlistTools")}>
+              <Icon name="more" size={18} />
+            </summary>
+            <div className="kidung-row-menu-panel">
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {translate(locale, "kidung.import")}
+              </button>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => downloadMidiPlaylist()}
+                disabled={playlist.items.length === 0}
+              >
+                {translate(locale, "kidung.exportQueue")}
+              </button>
+            </div>
+          </details>
           <input
             ref={fileInputRef}
             className="sr-only"
@@ -575,6 +642,18 @@ function HymnPlaylistPage({
                         >
                           {translate(locale, "kidung.renamePlaylist")}
                         </button>
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={(event) => {
+                            downloadSavedPlaylist(saved);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                          }}
+                        >
+                          {translate(locale, "kidung.export")}
+                        </button>
                         {saved.songIds.length > 0 && (
                           <details className="kidung-manage-saved-items">
                             <summary>
@@ -587,22 +666,85 @@ function HymnPlaylistPage({
                               )}
                             </summary>
                             <div>
-                              {saved.songIds.map((songId) => (
-                                <button
-                                  key={`remove-${songId}`}
-                                  type="button"
-                                  className="text-button"
-                                  onClick={() =>
-                                    removeSongFromPlaylist(saved.id, songId)
-                                  }
-                                >
-                                  {translate(
-                                    locale,
-                                    "kidung.removeSongFromPlaylist",
-                                    { title: songId },
-                                  )}
-                                </button>
-                              ))}
+                              {saved.songIds.map((songId, index) => {
+                                const entry =
+                                  catalog.status === "ready"
+                                    ? catalog.items.find(
+                                        (candidate) => candidate.id === songId,
+                                      )
+                                    : undefined;
+                                const title = entry?.title ?? songId;
+                                return (
+                                  <div
+                                    className="kidung-saved-playlist-item"
+                                    key={songId}
+                                  >
+                                    <span>
+                                      {entry
+                                        ? `${numberLabel(entry.number, entry.id)} · `
+                                        : ""}
+                                      {title}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="text-button"
+                                      aria-label={translate(
+                                        locale,
+                                        "kidung.moveUp",
+                                        { title },
+                                      )}
+                                      disabled={index === 0}
+                                      onClick={() =>
+                                        moveSavedPlaylistSong(
+                                          saved.id,
+                                          index,
+                                          index - 1,
+                                        )
+                                      }
+                                    >
+                                      ↑
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-button"
+                                      aria-label={translate(
+                                        locale,
+                                        "kidung.moveDown",
+                                        { title },
+                                      )}
+                                      disabled={
+                                        index === saved.songIds.length - 1
+                                      }
+                                      onClick={() =>
+                                        moveSavedPlaylistSong(
+                                          saved.id,
+                                          index,
+                                          index + 1,
+                                        )
+                                      }
+                                    >
+                                      ↓
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-button kidung-danger-action"
+                                      aria-label={translate(
+                                        locale,
+                                        "kidung.removeSongFromPlaylist",
+                                        { title },
+                                      )}
+                                      onClick={() =>
+                                        removeSongFromPlaylist(saved.id, songId)
+                                      }
+                                    >
+                                      {translate(
+                                        locale,
+                                        "kidung.removeFromPlaylist",
+                                      )}
+                                    </button>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </details>
                         )}
@@ -1033,181 +1175,185 @@ function HymnSettingsPage({
           <p className="date-line">
             {translate(locale, "kidung.settingsChord")}
           </p>
-          <h2 id="kidung-chord-heading">
-            {translate(locale, "kidung.settingsChordAppearance")}
-          </h2>
-          <div className="kidung-settings-controls">
-            <label className="kidung-settings-switch">
-              <input
-                type="checkbox"
-                checked={chordUiPrefs.syncThemeWithAccent}
-                onChange={(event) =>
+          <details className="kidung-settings-disclosure">
+            <summary>
+              <h2 id="kidung-chord-heading">
+                {translate(locale, "kidung.settingsChordAppearance")}
+              </h2>
+            </summary>
+            <div className="kidung-settings-controls">
+              <label className="kidung-settings-switch">
+                <input
+                  type="checkbox"
+                  checked={chordUiPrefs.syncThemeWithAccent}
+                  onChange={(event) =>
+                    updateChordUiPrefs({
+                      syncThemeWithAccent: event.target.checked,
+                    })
+                  }
+                />
+                <span>
+                  <strong>
+                    {translate(locale, "kidung.settingsSyncChordTheme")}
+                  </strong>
+                </span>
+              </label>
+              <div
+                className="chord-ui-palette"
+                role="group"
+                aria-label={translate(locale, "kidung.settingsChordThemeGroup")}
+              >
+                {CHORD_THEME_PRESETS.map((preset) => {
+                  const colorLabel = translate(
+                    locale,
+                    `kidung.chordColor.${preset.key}`,
+                  );
+                  return (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      className={`chord-ui-swatch${chordUiPrefs.theme === preset.key ? " is-selected" : ""}${chordUiPrefs.syncThemeWithAccent ? " is-disabled" : ""}`}
+                      disabled={chordUiPrefs.syncThemeWithAccent}
+                      style={{ background: preset.color }}
+                      aria-label={translate(
+                        locale,
+                        "kidung.settingsChordThemeSwatch",
+                        { color: colorLabel },
+                      )}
+                      title={colorLabel}
+                      onClick={() => updateChordUiPrefs({ theme: preset.key })}
+                    />
+                  );
+                })}
+              </div>
+              <label className="kidung-settings-switch">
+                <input
+                  type="checkbox"
+                  checked={chordUiPrefs.syncFillWithAccent}
+                  onChange={(event) =>
+                    updateChordUiPrefs({
+                      syncFillWithAccent: event.target.checked,
+                    })
+                  }
+                />
+                <span>
+                  <strong>
+                    {translate(locale, "kidung.settingsSyncChordFill")}
+                  </strong>
+                </span>
+              </label>
+              <Select
+                value={chordUiPrefs.fill}
+                onChange={(value) =>
                   updateChordUiPrefs({
-                    syncThemeWithAccent: event.target.checked,
+                    fill: value as "none" | "soft" | "solid",
                   })
                 }
+                label={translate(locale, "kidung.settingsFillStyle")}
+                options={[
+                  {
+                    value: "none",
+                    label: translate(locale, "kidung.settingsFillNone"),
+                  },
+                  {
+                    value: "soft",
+                    label: translate(locale, "kidung.settingsFillSoft"),
+                  },
+                  {
+                    value: "solid",
+                    label: translate(locale, "kidung.settingsFillSolid"),
+                  },
+                ]}
               />
-              <span>
-                <strong>
-                  {translate(locale, "kidung.settingsSyncChordTheme")}
-                </strong>
-              </span>
-            </label>
-            <div
-              className="chord-ui-palette"
-              role="group"
-              aria-label={translate(locale, "kidung.settingsChordThemeGroup")}
-            >
-              {CHORD_THEME_PRESETS.map((preset) => {
-                const colorLabel = translate(
-                  locale,
-                  `kidung.chordColor.${preset.key}`,
-                );
-                return (
-                  <button
-                    key={preset.key}
-                    type="button"
-                    className={`chord-ui-swatch${chordUiPrefs.theme === preset.key ? " is-selected" : ""}${chordUiPrefs.syncThemeWithAccent ? " is-disabled" : ""}`}
-                    disabled={chordUiPrefs.syncThemeWithAccent}
-                    style={{ background: preset.color }}
-                    aria-label={translate(
-                      locale,
-                      "kidung.settingsChordThemeSwatch",
-                      { color: colorLabel },
-                    )}
-                    title={colorLabel}
-                    onClick={() => updateChordUiPrefs({ theme: preset.key })}
-                  />
-                );
-              })}
+              <div
+                className="chord-ui-palette"
+                role="group"
+                aria-label={translate(locale, "kidung.settingsChordFillGroup")}
+              >
+                {CHORD_FILL_PRESETS.map((preset) => {
+                  const colorLabel = translate(
+                    locale,
+                    `kidung.chordColor.${preset.key}`,
+                  );
+                  return (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      className={`chord-ui-swatch is-fill${chordUiPrefs.fillColor === preset.key ? " is-selected" : ""}${chordUiPrefs.syncFillWithAccent ? " is-disabled" : ""}`}
+                      disabled={chordUiPrefs.syncFillWithAccent}
+                      style={{ background: preset.color }}
+                      aria-label={translate(
+                        locale,
+                        "kidung.settingsChordFillSwatch",
+                        { color: colorLabel },
+                      )}
+                      title={colorLabel}
+                      onClick={() =>
+                        updateChordUiPrefs({ fillColor: preset.key })
+                      }
+                    />
+                  );
+                })}
+              </div>
+              <label className="chord-ui-slider">
+                <span>
+                  {translate(locale, "kidung.settingsOpacity", {
+                    percent: chordUiPrefs.fillOpacityPercent,
+                  })}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={chordUiPrefs.fillOpacityPercent}
+                  onChange={(event) =>
+                    updateChordUiPrefs({
+                      fillOpacityPercent: Number(event.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label className="chord-ui-slider">
+                <span>
+                  {translate(locale, "kidung.settingsFontSize", {
+                    percent: chordUiPrefs.fontOverridePercent,
+                  })}
+                </span>
+                <input
+                  type="range"
+                  min={80}
+                  max={180}
+                  step={5}
+                  value={chordUiPrefs.fontOverridePercent}
+                  onChange={(event) =>
+                    updateChordUiPrefs({
+                      fontOverridePercent: Number(event.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label className="chord-ui-slider">
+                <span>
+                  {translate(locale, "kidung.settingsPadding", {
+                    percent: chordUiPrefs.fillPaddingPercent,
+                  })}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={400}
+                  step={10}
+                  value={chordUiPrefs.fillPaddingPercent}
+                  onChange={(event) =>
+                    updateChordUiPrefs({
+                      fillPaddingPercent: Number(event.target.value),
+                    })
+                  }
+                />
+              </label>
             </div>
-            <label className="kidung-settings-switch">
-              <input
-                type="checkbox"
-                checked={chordUiPrefs.syncFillWithAccent}
-                onChange={(event) =>
-                  updateChordUiPrefs({
-                    syncFillWithAccent: event.target.checked,
-                  })
-                }
-              />
-              <span>
-                <strong>
-                  {translate(locale, "kidung.settingsSyncChordFill")}
-                </strong>
-              </span>
-            </label>
-            <Select
-              value={chordUiPrefs.fill}
-              onChange={(value) =>
-                updateChordUiPrefs({
-                  fill: value as "none" | "soft" | "solid",
-                })
-              }
-              label={translate(locale, "kidung.settingsFillStyle")}
-              options={[
-                {
-                  value: "none",
-                  label: translate(locale, "kidung.settingsFillNone"),
-                },
-                {
-                  value: "soft",
-                  label: translate(locale, "kidung.settingsFillSoft"),
-                },
-                {
-                  value: "solid",
-                  label: translate(locale, "kidung.settingsFillSolid"),
-                },
-              ]}
-            />
-            <div
-              className="chord-ui-palette"
-              role="group"
-              aria-label={translate(locale, "kidung.settingsChordFillGroup")}
-            >
-              {CHORD_FILL_PRESETS.map((preset) => {
-                const colorLabel = translate(
-                  locale,
-                  `kidung.chordColor.${preset.key}`,
-                );
-                return (
-                  <button
-                    key={preset.key}
-                    type="button"
-                    className={`chord-ui-swatch is-fill${chordUiPrefs.fillColor === preset.key ? " is-selected" : ""}${chordUiPrefs.syncFillWithAccent ? " is-disabled" : ""}`}
-                    disabled={chordUiPrefs.syncFillWithAccent}
-                    style={{ background: preset.color }}
-                    aria-label={translate(
-                      locale,
-                      "kidung.settingsChordFillSwatch",
-                      { color: colorLabel },
-                    )}
-                    title={colorLabel}
-                    onClick={() =>
-                      updateChordUiPrefs({ fillColor: preset.key })
-                    }
-                  />
-                );
-              })}
-            </div>
-            <label className="chord-ui-slider">
-              <span>
-                {translate(locale, "kidung.settingsOpacity", {
-                  percent: chordUiPrefs.fillOpacityPercent,
-                })}
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={chordUiPrefs.fillOpacityPercent}
-                onChange={(event) =>
-                  updateChordUiPrefs({
-                    fillOpacityPercent: Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-            <label className="chord-ui-slider">
-              <span>
-                {translate(locale, "kidung.settingsFontSize", {
-                  percent: chordUiPrefs.fontOverridePercent,
-                })}
-              </span>
-              <input
-                type="range"
-                min={80}
-                max={180}
-                step={5}
-                value={chordUiPrefs.fontOverridePercent}
-                onChange={(event) =>
-                  updateChordUiPrefs({
-                    fontOverridePercent: Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-            <label className="chord-ui-slider">
-              <span>
-                {translate(locale, "kidung.settingsPadding", {
-                  percent: chordUiPrefs.fillPaddingPercent,
-                })}
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={400}
-                step={10}
-                value={chordUiPrefs.fillPaddingPercent}
-                onChange={(event) =>
-                  updateChordUiPrefs({
-                    fillPaddingPercent: Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-          </div>
+          </details>
         </section>
         <section
           className="kidung-settings-section"
@@ -1446,9 +1592,11 @@ function MidiControlsPanel({ locale }: { locale: Locale }) {
 function HymnCatalog({
   locale,
   state,
+  musicLock,
 }: {
   locale: Locale;
   state: CatalogState;
+  musicLock?: UpstreamMusicLock;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -1458,6 +1606,19 @@ function HymnCatalog({
   const allItems = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
     [state],
+  );
+  const midiSongs = useMemo(
+    () =>
+      new Set(
+        musicLock
+          ? allItems
+              .filter((item) =>
+                findMusicAsset(musicLock, "midi", item.midiPath),
+              )
+              .map((item) => item.id)
+          : [],
+      ),
+    [allItems, musicLock],
   );
   const searchIndex = useMemo(() => buildHymnSearchIndex(allItems), [allItems]);
   const books = useMemo(
@@ -1528,7 +1689,10 @@ function HymnCatalog({
                       value: "all",
                       label: translate(locale, "kidung.allCollections"),
                     },
-                    ...books.map((value) => ({ value, label: value })),
+                    ...books.map((value) => ({
+                      value,
+                      label: hymnCollectionLabel(value),
+                    })),
                   ]}
                 />
               </div>
@@ -1557,7 +1721,10 @@ function HymnCatalog({
                         value: "all",
                         label: translate(locale, "kidung.allCollections"),
                       },
-                      ...books.map((value) => ({ value, label: value })),
+                      ...books.map((value) => ({
+                        value,
+                        label: hymnCollectionLabel(value),
+                      })),
                     ]}
                   />
                 </div>
@@ -1582,6 +1749,16 @@ function HymnCatalog({
           <ol className="pujian-list" ref={listRef}>
             {filtered.map((item) => {
               const inQueue = queueIds.has(item.id);
+              const metadata = item.assetCode
+                ? []
+                : [
+                    ...(item.chordRef
+                      ? [translate(locale, "kidung.assetChord")]
+                      : []),
+                    ...(midiSongs.has(item.id)
+                      ? [translate(locale, "kidung.assetMidi")]
+                      : []),
+                  ];
               return (
                 <li
                   key={item.id}
@@ -1591,31 +1768,21 @@ function HymnCatalog({
                   data-judul={item.title.toLowerCase()}
                 >
                   <span className="pujian-nomor" aria-hidden="true">
-                    {numberLabel(item.number)}
+                    {numberLabel(item.number, item.id)}
                   </span>
                   <button
                     type="button"
                     className="pujian-title"
+                    aria-label={item.title}
                     onClick={(event) => onRowClick(event, item.id)}
                   >
-                    {item.title}
+                    <span className="pujian-title-label">{item.title}</span>
+                    {metadata.length > 0 && (
+                      <span className="pujian-metadata">
+                        {metadata.join(" · ")}
+                      </span>
+                    )}
                   </button>
-                  {!item.assetCode && (
-                    <span
-                      className={`chord-indicator${item.chordRef ? " has-chord" : " no-chord"}`}
-                      title={
-                        item.chordRef
-                          ? translate(locale, "kidung.chordAvailable")
-                          : translate(locale, "kidung.chordUnavailable")
-                      }
-                      aria-hidden="true"
-                    >
-                      <Icon
-                        name={item.chordRef ? "checkCircle" : "cancel"}
-                        size={15}
-                      />
-                    </span>
-                  )}
                   {!item.assetCode && (
                     <button
                       type="button"
@@ -1705,7 +1872,7 @@ function HymnDetail({
     readHymnTypography(songId),
   );
   const [chordStatus, setChordStatus] = useState<
-    "idle" | "loading" | "ready" | "error"
+    "idle" | "loading" | "ready" | "error" | "unavailable"
   >("idle");
   const [chordDocument, setChordDocument] = useState<ChordDocumentV2>();
   const [chordLayout, setChordLayout] = useState<ChordLayoutPage[]>([]);
@@ -1917,15 +2084,13 @@ function HymnDetail({
     setFitFontSize(readHymnTypography(songId).fontSize);
     // gyschordweb originalPdfKey: a detected PDF key is the display base;
     // natural-chord preference seeds a default -1 transpose for black keys.
+    const hasTransposePreference = midiPlayer.hasTransposePreference();
+    userSetTransposeRef.current = hasTransposePreference;
     const meta = getHymnPdfMeta(songId);
     const natural = readNaturalChordPreference();
-    let baseTranspose = midiPlayer.settingsSnapshot().transpose;
-    if (
-      natural &&
-      meta?.preloadTranspose !== undefined &&
-      !userSetTransposeRef.current
-    )
-      baseTranspose = meta.preloadTranspose;
+    const baseTranspose = hasTransposePreference
+      ? midiPlayer.settingsSnapshot().transpose
+      : resolveHymnMidiDefaults(meta, natural).transpose;
     setTranspose(baseTranspose);
     transposeRef.current = baseTranspose;
     if (meta?.keySemitone !== undefined && meta.keySemitone != null) {
@@ -1942,12 +2107,13 @@ function HymnDetail({
     transposeRef.current = transpose;
   }, [transpose]);
   useEffect(() => {
+    if (midiPlayer.snapshot().songId !== songId) return;
     if (midiSettings.transpose !== transpose) {
       transposeRef.current = midiSettings.transpose;
       setTranspose(midiSettings.transpose);
       setKeyIndex((((sourceKeyIndex + midiSettings.transpose) % 12) + 12) % 12);
     }
-  }, [midiSettings.transpose, sourceKeyIndex, transpose]);
+  }, [midiSettings.transpose, songId, sourceKeyIndex, transpose]);
   useEffect(() => {
     if (!item) return;
     setFavorite(isFavorite("hymn", item.id));
@@ -1969,7 +2135,7 @@ function HymnDetail({
     return observeSingleLineFit(
       overlayTitleRef.current,
       ".hymn-pdf-viewer-title strong",
-      { maxPx: 16, minPx: 9 },
+      { maxPx: 16, minPx: 11 },
     );
   }, [viewerMode, item?.title]);
   // gyschordweb handleGlobalKeydown (viewer-active): song nav + transpose.
@@ -2058,14 +2224,7 @@ function HymnDetail({
       const pdfRef = findMusicAsset(musicLock, "pdf", candidate.pdfPath);
       if (pdfRef && !prefetchedPdf.has(pdfRef.sha256)) {
         prefetchedPdf.add(pdfRef.sha256);
-        void resolveMusicAssetUrl(pdfRef, musicLock)
-          .then((pdfUrl) =>
-            fetch(pdfUrl, { priority: "low", cache: "force-cache" }).then(
-              () => undefined,
-              () => undefined,
-            ),
-          )
-          .catch(() => undefined);
+        void loadMusicAsset(pdfRef).catch(() => undefined);
       }
       const ref = findMusicAsset(musicLock, "midi", candidate.midiPath);
       if (!ref) continue;
@@ -2296,7 +2455,7 @@ function HymnDetail({
     const anchor = window.document.createElement("a");
     anchor.href = url;
     anchor.download =
-      `${numberLabel(item?.number ?? 0)}_${(item?.title ?? "kidung").replace(/[^\w -]/g, "")}.chord.json`.replace(
+      `${numberLabel(item?.number ?? 0, item?.id)}_${(item?.title ?? "kidung").replace(/[^\w -]/g, "")}.chord.json`.replace(
         /\s+/g,
         "_",
       );
@@ -2555,9 +2714,10 @@ function HymnDetail({
         forkError = error;
       }
       if (!musicPdfRef) throw forkError ?? new Error("PDF unavailable");
-      const src = await resolveMusicAssetUrl(musicPdfRef, musicLock);
+      const bytes = await loadMusicAsset(musicPdfRef);
       return {
-        src,
+        src: "",
+        bytes,
         initialPage: 1,
         source: "canonical" as const,
         sourceVersion: musicPdfRef.sha256,
@@ -2643,11 +2803,14 @@ function HymnDetail({
       if (nextLayout.length > 0 || Object.keys(nextOverlays).length > 0)
         show(translate(locale, "kidung.chordPdfVerified"));
       else show(translate(locale, "kidung.chordSourceVerified"));
-    } catch {
+    } catch (error) {
       if (controller.signal.aborted || run !== chordRun.current) return;
-      setChordStatus("error");
+      const unavailable = error instanceof ChordNotAvailableError;
+      setChordStatus(unavailable ? "unavailable" : "error");
       show(
-        `${translate(locale, "kidung.chordUnavailable")}; ${translate(locale, "kidung.connectRetry")}`,
+        unavailable
+          ? translate(locale, "kidung.chordUnavailable")
+          : `${translate(locale, "kidung.chordUnavailable")}; ${translate(locale, "kidung.connectRetry")}`,
       );
     } finally {
       if (chordAbort.current === controller) chordAbort.current = undefined;
@@ -2661,8 +2824,19 @@ function HymnDetail({
     setPdfVersion(undefined);
     try {
       const asset = await loadPdfAsset();
-      if (run !== pdfRun.current) return;
-      const nextUrl = asset.src;
+      const nextUrl =
+        asset.src ||
+        (asset.bytes
+          ? URL.createObjectURL(
+              new Blob([asset.bytes.slice().buffer as ArrayBuffer], {
+                type: "application/pdf",
+              }),
+            )
+          : "");
+      if (run !== pdfRun.current) {
+        if (nextUrl.startsWith("blob:")) URL.revokeObjectURL(nextUrl);
+        return;
+      }
       setPdfBytes(asset.bytes);
       setPdfInitialPage(asset.initialPage);
       setPdfPageCount(asset.pageCount);
@@ -2750,11 +2924,21 @@ function HymnDetail({
       /* ignore */
     }
     setMidiStatus("loading");
-    void warmHymnPdfMeta(item).catch(() => undefined);
+    const songMetaPromise = warmHymnPdfMeta(item);
     try {
+      const songMeta = getHymnPdfMeta(item.id);
+      const midiDefaults = resolveHymnMidiDefaults(
+        songMeta,
+        readNaturalChordPreference(),
+      );
+      const targetTranspose = userSetTransposeRef.current
+        ? transposeRef.current
+        : midiPlayer.hasTransposePreference()
+          ? midiPlayer.settingsSnapshot().transpose
+          : midiDefaults.transpose;
       const preloaded = await midiPlayer.hasPreloaded(
         ref.sha256,
-        transpose,
+        targetTranspose,
         midiSettings.instrument,
         midiSettings.tempo,
       );
@@ -2772,7 +2956,6 @@ function HymnDetail({
       });
       if (midiLoadGeneration.current !== thisGeneration) return;
       await midiPlayer.resumeContext();
-      const songMeta = getHymnPdfMeta(item.id);
       const loadedIntoPlayer = await midiPlayer.load(
         item.id,
         item.title,
@@ -2781,11 +2964,50 @@ function HymnDetail({
           rawMidi: bytes,
           sourceHash: ref.sha256,
           midiUrl: rawUrl,
-          ...(songMeta?.tempo !== undefined ? { tempo: songMeta.tempo } : {}),
+          tempo: midiDefaults.tempo,
+          transpose: targetTranspose,
         },
       );
       if (midiLoadGeneration.current !== thisGeneration) return;
       if (!loadedIntoPlayer) return;
+      if (!songMeta) {
+        void songMetaPromise.then((resolvedMeta) => {
+          if (midiLoadGeneration.current !== thisGeneration) return;
+          if (resolvedMeta.tempo !== undefined) {
+            void midiPlayer
+              .setTempo(resolvedMeta.tempo, { userOverride: false })
+              .catch(() => undefined);
+          }
+          const resolvedTranspose = resolveHymnMidiDefaults(
+            resolvedMeta,
+            readNaturalChordPreference(),
+          ).transpose;
+          if (
+            resolvedMeta.keySemitone !== undefined &&
+            resolvedMeta.keySemitone !== null
+          ) {
+            setSourceKeyIndex(resolvedMeta.keySemitone);
+            keyInitialized.current = true;
+          }
+          if (!userSetTransposeRef.current) {
+            transposeRef.current = resolvedTranspose;
+            setTranspose(resolvedTranspose);
+            void midiPlayer
+              .setTranspose(resolvedTranspose, { userOverride: false })
+              .catch(() => undefined);
+          }
+          const sourceKey = resolvedMeta.keySemitone ?? sourceKeyIndex;
+          setKeyIndex(
+            (((sourceKey +
+              (userSetTransposeRef.current
+                ? transposeRef.current
+                : resolvedTranspose)) %
+              12) +
+              12) %
+              12,
+          );
+        });
+      }
       const queueIndex = getMidiPlaylist().items.findIndex(
         (entry) => entry.songId === item.id,
       );
@@ -2916,7 +3138,7 @@ function HymnDetail({
               >
                 <strong id="pdf-viewer-title">{item.title}</strong>
                 <small id="pdf-viewer-number">
-                  No. {numberLabel(item.number)}
+                  No. {numberLabel(item.number, item.id)}
                 </small>
               </div>
               <button
@@ -3246,23 +3468,34 @@ function HymnDetail({
                 </span>
               </button>
             )}
-            {midiAvailable && (
+            {!item.assetCode && (
               <button
                 type="button"
                 className="primary-button hymn-action hymn-action-primary"
-                onClick={() => void loadMidi()}
-                title={translate(locale, "kidung.playMidi")}
+                onClick={() =>
+                  midiAvailable
+                    ? void loadMidi()
+                    : navigate("/lainnya?section=data")
+                }
+                title={
+                  midiAvailable
+                    ? translate(locale, "kidung.playMidi")
+                    : translate(locale, "kidung.installSoundfontToPlay")
+                }
                 disabled={
                   midiStatus === "loading" || midiState.status === "loading"
                 }
                 aria-label={
-                  midiState.songId === item.id && midiState.status === "playing"
-                    ? translate(locale, "kidung.pauseMidi")
-                    : midiStatus === "loading"
-                      ? translate(locale, "kidung.loadingMidi")
-                      : midiStatus === "ready"
-                        ? translate(locale, "kidung.midiReady")
-                        : translate(locale, "kidung.playMidi")
+                  !midiAvailable
+                    ? translate(locale, "kidung.installSoundfontToPlay")
+                    : midiState.songId === item.id &&
+                        midiState.status === "playing"
+                      ? translate(locale, "kidung.pauseMidi")
+                      : midiStatus === "loading"
+                        ? translate(locale, "kidung.loadingMidi")
+                        : midiStatus === "ready"
+                          ? translate(locale, "kidung.midiReady")
+                          : translate(locale, "kidung.playMidi")
                 }
               >
                 <span className="hymn-action-icon" aria-hidden="true">
@@ -3277,90 +3510,19 @@ function HymnDetail({
                   />
                 </span>
                 <span className="hymn-action-label">
-                  {midiState.songId === item.id &&
-                  midiState.status === "playing"
-                    ? translate(locale, "kidung.pauseMidi")
-                    : midiStatus === "loading"
-                      ? translate(locale, "kidung.loadingMidi")
-                      : midiStatus === "ready"
-                        ? translate(locale, "kidung.midiReady")
-                        : translate(locale, "kidung.playMidi")}
+                  {!midiAvailable
+                    ? translate(locale, "kidung.installSoundfontToPlay")
+                    : midiState.songId === item.id &&
+                        midiState.status === "playing"
+                      ? translate(locale, "kidung.pauseMidi")
+                      : midiStatus === "loading"
+                        ? translate(locale, "kidung.loadingMidi")
+                        : midiStatus === "ready"
+                          ? translate(locale, "kidung.midiReady")
+                          : translate(locale, "kidung.playMidi")}
                 </span>
               </button>
             )}
-          </div>
-
-          <div className="hymn-segmented-toolbar">
-            {viewerMode !== "pdf" && (
-              <div
-                className="hymn-scope-pill-group"
-                role="group"
-                aria-label={translate(locale, "kidung.verseScope")}
-              >
-                <button
-                  type="button"
-                  className={`hymn-scope-pill-btn${viewScope === "all" ? " is-active" : ""}`}
-                  onClick={() => updateViewScope("all")}
-                  title={translate(locale, "kidung.showAllVerses")}
-                  aria-pressed={viewScope === "all"}
-                >
-                  {translate(locale, "kidung.allVerses")}
-                </button>
-                <button
-                  type="button"
-                  className={`hymn-scope-pill-btn${viewScope === "verse" ? " is-active" : ""}`}
-                  onClick={() => updateViewScope("verse")}
-                  title={translate(locale, "kidung.showVerseByVerse")}
-                  aria-pressed={viewScope === "verse"}
-                >
-                  {translate(locale, "kidung.verseLabel", {
-                    count: safeVerseIndex + 1,
-                  })}
-                </button>
-              </div>
-            )}
-
-            <div className="hymn-autoscroll-control">
-              <button
-                type="button"
-                className={`quiet-button hymn-autoscroll-btn${autoScrollActive ? " is-active" : ""}`}
-                onClick={() => setAutoScrollActive((a) => !a)}
-                title={
-                  autoScrollActive
-                    ? translate(locale, "kidung.autoScrollStop")
-                    : translate(locale, "kidung.autoScrollStart")
-                }
-                aria-label={
-                  autoScrollActive
-                    ? translate(locale, "kidung.autoScrollStop")
-                    : translate(locale, "kidung.autoScrollStart")
-                }
-                aria-pressed={autoScrollActive}
-              >
-                <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name={autoScrollActive ? "pause" : "play"} size={16} />
-                </span>
-                <span className="hymn-action-label">
-                  {autoScrollActive
-                    ? `Gulir ${autoScrollSpeed}×`
-                    : translate(locale, "kidung.autoScroll")}
-                </span>
-              </button>
-              {autoScrollActive && (
-                <select
-                  className="hymn-autoscroll-speed-select"
-                  value={autoScrollSpeed}
-                  onChange={(e) => setAutoScrollSpeed(Number(e.target.value))}
-                  aria-label={translate(locale, "kidung.autoScrollSpeed")}
-                >
-                  <option value={1}>1×</option>
-                  <option value={2}>2×</option>
-                  <option value={3}>3×</option>
-                  <option value={4}>4×</option>
-                  <option value={5}>5×</option>
-                </select>
-              )}
-            </div>
           </div>
 
           <details className="hymn-more-actions" name="hymn-text-toolbar-menu">
@@ -3375,6 +3537,83 @@ function HymnDetail({
               </span>
             </summary>
             <div className="hymn-more-actions-panel">
+              <div className="hymn-segmented-toolbar">
+                {viewerMode !== "pdf" && (
+                  <div
+                    className="hymn-scope-pill-group"
+                    role="group"
+                    aria-label={translate(locale, "kidung.verseScope")}
+                  >
+                    <button
+                      type="button"
+                      className={`hymn-scope-pill-btn${viewScope === "all" ? " is-active" : ""}`}
+                      onClick={() => updateViewScope("all")}
+                      title={translate(locale, "kidung.showAllVerses")}
+                      aria-pressed={viewScope === "all"}
+                    >
+                      {translate(locale, "kidung.allVerses")}
+                    </button>
+                    <button
+                      type="button"
+                      className={`hymn-scope-pill-btn${viewScope === "verse" ? " is-active" : ""}`}
+                      onClick={() => updateViewScope("verse")}
+                      title={translate(locale, "kidung.showVerseByVerse")}
+                      aria-pressed={viewScope === "verse"}
+                    >
+                      {translate(locale, "kidung.verseLabel", {
+                        count: safeVerseIndex + 1,
+                      })}
+                    </button>
+                  </div>
+                )}
+
+                <div className="hymn-autoscroll-control">
+                  <button
+                    type="button"
+                    className={`quiet-button hymn-autoscroll-btn${autoScrollActive ? " is-active" : ""}`}
+                    onClick={() => setAutoScrollActive((a) => !a)}
+                    title={
+                      autoScrollActive
+                        ? translate(locale, "kidung.autoScrollStop")
+                        : translate(locale, "kidung.autoScrollStart")
+                    }
+                    aria-label={
+                      autoScrollActive
+                        ? translate(locale, "kidung.autoScrollStop")
+                        : translate(locale, "kidung.autoScrollStart")
+                    }
+                    aria-pressed={autoScrollActive}
+                  >
+                    <span className="hymn-action-icon" aria-hidden="true">
+                      <Icon
+                        name={autoScrollActive ? "pause" : "play"}
+                        size={16}
+                      />
+                    </span>
+                    <span className="hymn-action-label">
+                      {autoScrollActive
+                        ? `Gulir ${autoScrollSpeed}×`
+                        : translate(locale, "kidung.autoScroll")}
+                    </span>
+                  </button>
+                  {autoScrollActive && (
+                    <select
+                      className="hymn-autoscroll-speed-select"
+                      value={autoScrollSpeed}
+                      onChange={(e) =>
+                        setAutoScrollSpeed(Number(e.target.value))
+                      }
+                      aria-label={translate(locale, "kidung.autoScrollSpeed")}
+                    >
+                      <option value={1}>1×</option>
+                      <option value={2}>2×</option>
+                      <option value={3}>3×</option>
+                      <option value={4}>4×</option>
+                      <option value={5}>5×</option>
+                    </select>
+                  )}
+                </div>
+              </div>
               <button
                 type="button"
                 className="quiet-button hymn-action hymn-fullscreen-action"
@@ -3476,7 +3715,7 @@ function HymnDetail({
                     if (pdfSource === "fork")
                       downloadMusicAsset(
                         {
-                          id: `KR-${numberLabel(item.number)}`,
+                          id: `KR-${numberLabel(item.number, item.id)}`,
                           path: "kr_master.pdf",
                         },
                         pdfBytes,
@@ -3496,517 +3735,552 @@ function HymnDetail({
                   </span>
                 </button>
               )}
-            </div>
-          </details>
-          <details
-            className="hymn-reader-settings"
-            name="hymn-text-toolbar-menu"
-          >
-            <summary
-              className="hymn-reader-settings-summary"
-              aria-label={translate(locale, "kidung.readerSettings")}
-              title={translate(locale, "kidung.readerSettings")}
-            >
-              <span className="reader-aa-label" aria-hidden="true">
-                Aa
-              </span>
-              <span className="sr-only">
-                {translate(locale, "kidung.readerSettings")}
-              </span>
-            </summary>
-            <div className="song-controls">
               <details
-                className="reader-settings-group hymn-reading-settings"
-                open
+                className="hymn-reader-settings"
+                name="hymn-reader-settings"
               >
-                <summary>{translate(locale, "kidung.textSpacing")}</summary>
-                <div className="reader-settings-group-body">
-                  <div
-                    className="reader-preferences"
-                    aria-label={translate(locale, "kidung.textSettings")}
+                <summary
+                  className="hymn-reader-settings-summary"
+                  aria-label={translate(locale, "kidung.readerSettings")}
+                  title={translate(locale, "kidung.readerSettings")}
+                >
+                  <span className="reader-aa-label" aria-hidden="true">
+                    Aa
+                  </span>
+                  <span className="reader-settings-copy">
+                    {translate(locale, "kidung.readerSettings")}
+                  </span>
+                </summary>
+                <div className="song-controls">
+                  <details
+                    className="reader-settings-group hymn-reading-settings"
+                    open
                   >
-                    <span>{translate(locale, "kidung.text")}</span>
-                    <button
-                      type="button"
-                      onPointerDown={() =>
-                        holdStart(() =>
-                          updateTypography({
-                            fontSize: typography.fontSize - 1,
-                          }),
-                        )
-                      }
-                      onPointerUp={holdStop}
-                      onPointerLeave={holdStop}
-                      onPointerCancel={holdStop}
-                      onClick={tapStep(() =>
-                        updateTypography({ fontSize: typography.fontSize - 1 }),
-                      )}
-                      aria-label={translate(locale, "kidung.decreaseText")}
-                    >
-                      A−
-                    </button>
-                    <output aria-live="polite">
-                      {Math.round(typography.fontSize)} px
-                    </output>
-                    <button
-                      type="button"
-                      onPointerDown={() =>
-                        holdStart(() =>
-                          updateTypography({
-                            fontSize: typography.fontSize + 1,
-                          }),
-                        )
-                      }
-                      onPointerUp={holdStop}
-                      onPointerLeave={holdStop}
-                      onPointerCancel={holdStop}
-                      onClick={tapStep(() =>
-                        updateTypography({ fontSize: typography.fontSize + 1 }),
-                      )}
-                      aria-label={translate(locale, "kidung.increaseText")}
-                    >
-                      A+
-                    </button>
-                    <button
-                      type="button"
-                      onPointerDown={() =>
-                        holdStart(() =>
-                          updateTypography({
-                            lineHeight: typography.lineHeight - 0.1,
-                          }),
-                        )
-                      }
-                      onPointerUp={holdStop}
-                      onPointerLeave={holdStop}
-                      onPointerCancel={holdStop}
-                      onClick={tapStep(() =>
-                        updateTypography({
-                          lineHeight: typography.lineHeight - 0.1,
-                        }),
-                      )}
-                      aria-label={translate(locale, "kidung.decreaseSpacing")}
-                    >
-                      − Spasi
-                    </button>
-                    <button
-                      type="button"
-                      onPointerDown={() =>
-                        holdStart(() =>
-                          updateTypography({
-                            lineHeight: typography.lineHeight + 0.1,
-                          }),
-                        )
-                      }
-                      onPointerUp={holdStop}
-                      onPointerLeave={holdStop}
-                      onPointerCancel={holdStop}
-                      onClick={tapStep(() =>
-                        updateTypography({
-                          lineHeight: typography.lineHeight + 0.1,
-                        }),
-                      )}
-                      aria-label={translate(locale, "kidung.increaseSpacing")}
-                    >
-                      + Spasi
-                    </button>
-                    <button
-                      type="button"
-                      className="text-button"
-                      onClick={() => updateTypography(DEFAULT_HYMN_TYPOGRAPHY)}
-                    >
-                      {translate(locale, "kidung.resetText")}
-                    </button>
-                  </div>
-                </div>
-              </details>
-              <details className="reader-settings-group hymn-music-settings">
-                <summary>{translate(locale, "kidung.musicChord")}</summary>
-                <div className="reader-settings-group-body">
-                  {midiAvailable && (
-                    <div className="hymn-midi-reader-controls">
-                      <output className="hymn-soundfont-active">
-                        <span>
-                          {translate(locale, "kidung.activeSoundfont")}
-                        </span>
-                        <strong>GeneralUser-GS</strong>
-                      </output>
-                      {midiState.status === "loading" && (
-                        <div
-                          className="midi-preload-bar"
-                          role="progressbar"
-                          aria-valuenow={midiState.loadingProgress}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          style={{
-                            height: 4,
-                            background: "rgba(141,110,63,0.18)",
-                            borderRadius: 999,
-                            overflow: "hidden",
-                            margin: "6px 0",
-                          }}
+                    <summary>{translate(locale, "kidung.textSpacing")}</summary>
+                    <div className="reader-settings-group-body">
+                      <div
+                        className="reader-preferences"
+                        aria-label={translate(locale, "kidung.textSettings")}
+                      >
+                        <span>{translate(locale, "kidung.text")}</span>
+                        <button
+                          type="button"
+                          onPointerDown={() =>
+                            holdStart(() =>
+                              updateTypography({
+                                fontSize: typography.fontSize - 1,
+                              }),
+                            )
+                          }
+                          onPointerUp={holdStop}
+                          onPointerLeave={holdStop}
+                          onPointerCancel={holdStop}
+                          onClick={tapStep(() =>
+                            updateTypography({
+                              fontSize: typography.fontSize - 1,
+                            }),
+                          )}
+                          aria-label={translate(locale, "kidung.decreaseText")}
                         >
-                          <div
-                            className="midi-preload-fill"
-                            style={{
-                              width: `${Math.max(4, midiState.loadingProgress)}%`,
-                              height: "100%",
-                              background: "var(--accent, #8d6e3f)",
-                              transition: "width 0.2s ease",
-                            }}
-                          />
-                        </div>
-                      )}
-                      {(midiState.songId === item.id &&
-                        (midiState.status === "playing" ||
-                          midiState.status === "paused" ||
-                          midiState.status === "ready" ||
-                          midiState.status === "stopped")) ||
-                      midiState.status === "loading" ? (
-                        midiState.duration > 0 ? (
-                          <div
-                            className="hymn-midi-seekbar"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              margin: "6px 0",
-                            }}
-                          >
-                            <span
-                              className="hymn-midi-time"
+                          A−
+                        </button>
+                        <output aria-live="polite">
+                          {Math.round(typography.fontSize)} px
+                        </output>
+                        <button
+                          type="button"
+                          onPointerDown={() =>
+                            holdStart(() =>
+                              updateTypography({
+                                fontSize: typography.fontSize + 1,
+                              }),
+                            )
+                          }
+                          onPointerUp={holdStop}
+                          onPointerLeave={holdStop}
+                          onPointerCancel={holdStop}
+                          onClick={tapStep(() =>
+                            updateTypography({
+                              fontSize: typography.fontSize + 1,
+                            }),
+                          )}
+                          aria-label={translate(locale, "kidung.increaseText")}
+                        >
+                          A+
+                        </button>
+                        <button
+                          type="button"
+                          onPointerDown={() =>
+                            holdStart(() =>
+                              updateTypography({
+                                lineHeight: typography.lineHeight - 0.1,
+                              }),
+                            )
+                          }
+                          onPointerUp={holdStop}
+                          onPointerLeave={holdStop}
+                          onPointerCancel={holdStop}
+                          onClick={tapStep(() =>
+                            updateTypography({
+                              lineHeight: typography.lineHeight - 0.1,
+                            }),
+                          )}
+                          aria-label={translate(
+                            locale,
+                            "kidung.decreaseSpacing",
+                          )}
+                        >
+                          − Spasi
+                        </button>
+                        <button
+                          type="button"
+                          onPointerDown={() =>
+                            holdStart(() =>
+                              updateTypography({
+                                lineHeight: typography.lineHeight + 0.1,
+                              }),
+                            )
+                          }
+                          onPointerUp={holdStop}
+                          onPointerLeave={holdStop}
+                          onPointerCancel={holdStop}
+                          onClick={tapStep(() =>
+                            updateTypography({
+                              lineHeight: typography.lineHeight + 0.1,
+                            }),
+                          )}
+                          aria-label={translate(
+                            locale,
+                            "kidung.increaseSpacing",
+                          )}
+                        >
+                          + Spasi
+                        </button>
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() =>
+                            updateTypography(DEFAULT_HYMN_TYPOGRAPHY)
+                          }
+                        >
+                          {translate(locale, "kidung.resetText")}
+                        </button>
+                      </div>
+                    </div>
+                  </details>
+                  <details className="reader-settings-group hymn-music-settings">
+                    <summary>{translate(locale, "kidung.musicChord")}</summary>
+                    <div className="reader-settings-group-body">
+                      {midiAvailable && (
+                        <div className="hymn-midi-reader-controls">
+                          <output className="hymn-soundfont-active">
+                            <span>
+                              {translate(locale, "kidung.activeSoundfont")}
+                            </span>
+                            <strong>GeneralUser-GS</strong>
+                          </output>
+                          {midiState.status === "loading" && (
+                            <div
+                              className="midi-preload-bar"
+                              role="progressbar"
+                              aria-valuenow={midiState.loadingProgress}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
                               style={{
-                                fontVariantNumeric: "tabular-nums",
-                                fontSize: "0.8rem",
-                                minWidth: 32,
-                                textAlign: "right",
+                                height: 4,
+                                background: "rgba(141,110,63,0.18)",
+                                borderRadius: 999,
+                                overflow: "hidden",
+                                margin: "6px 0",
                               }}
                             >
-                              {formatMidiTime(midiState.position)}
+                              <div
+                                className="midi-preload-fill"
+                                style={{
+                                  width: `${Math.max(4, midiState.loadingProgress)}%`,
+                                  height: "100%",
+                                  background: "var(--accent, #8d6e3f)",
+                                  transition: "width 0.2s ease",
+                                }}
+                              />
+                            </div>
+                          )}
+                          {(midiState.songId === item.id &&
+                            (midiState.status === "playing" ||
+                              midiState.status === "paused" ||
+                              midiState.status === "ready" ||
+                              midiState.status === "stopped")) ||
+                          midiState.status === "loading" ? (
+                            midiState.duration > 0 ? (
+                              <div
+                                className="hymn-midi-seekbar"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  margin: "6px 0",
+                                }}
+                              >
+                                <span
+                                  className="hymn-midi-time"
+                                  style={{
+                                    fontVariantNumeric: "tabular-nums",
+                                    fontSize: "0.8rem",
+                                    minWidth: 32,
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  {formatMidiTime(midiState.position)}
+                                </span>
+                                <input
+                                  className="hymn-midi-seek-input"
+                                  type="range"
+                                  min={0}
+                                  max={midiState.duration || 100}
+                                  step={0.1}
+                                  value={Math.min(
+                                    midiState.position,
+                                    midiState.duration || 100,
+                                  )}
+                                  onChange={(event) => {
+                                    const v = Number(event.target.value);
+                                    if (Number.isFinite(v))
+                                      void midiPlayer
+                                        .seek(v)
+                                        .catch(() => undefined);
+                                  }}
+                                  style={{ flex: 1 }}
+                                  aria-label={translate(
+                                    locale,
+                                    "media.positionMidi",
+                                  )}
+                                  disabled={
+                                    midiState.status === "loading" ||
+                                    isMidiSwitchingRef.current
+                                  }
+                                />
+                                <span
+                                  className="hymn-midi-time"
+                                  style={{
+                                    fontVariantNumeric: "tabular-nums",
+                                    fontSize: "0.8rem",
+                                    minWidth: 32,
+                                  }}
+                                >
+                                  {formatMidiTime(midiState.duration)}
+                                </span>
+                              </div>
+                            ) : null
+                          ) : null}
+                          <label className="hymn-instrument-select">
+                            <span>
+                              {translate(locale, "kidung.instrument")}
                             </span>
-                            <input
-                              className="hymn-midi-seek-input"
-                              type="range"
-                              min={0}
-                              max={midiState.duration || 100}
-                              step={0.1}
-                              value={Math.min(
-                                midiState.position,
-                                midiState.duration || 100,
+                            <select
+                              aria-label={translate(
+                                locale,
+                                "kidung.instrument",
                               )}
+                              value={midiSettings.instrument}
+                              onChange={(event) =>
+                                void midiPlayer
+                                  .setInstrument(Number(event.target.value))
+                                  .catch(() => undefined)
+                              }
+                            >
+                              <option value={-1}>
+                                {midiInstrumentLabel(-1)}
+                              </option>
+                              {GM_INSTRUMENTS.map((name, program) => (
+                                <option key={program} value={program}>
+                                  {String(program + 1).padStart(3, "0")} ·{" "}
+                                  {name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <div className="hymn-tempo-control">
+                            <span>{translate(locale, "kidung.tempo")}</span>
+                            <button
+                              type="button"
+                              onPointerDown={() =>
+                                holdStart(
+                                  () =>
+                                    void midiPlayer.setTempo(
+                                      midiSettings.tempo - 2,
+                                    ),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(
+                                () =>
+                                  void midiPlayer.setTempo(
+                                    midiSettings.tempo - 2,
+                                  ),
+                              )}
+                              aria-label={translate(locale, "kidung.tempoDown")}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min={30}
+                              max={220}
+                              value={midiSettings.tempo}
                               onChange={(event) => {
                                 const v = Number(event.target.value);
                                 if (Number.isFinite(v))
                                   void midiPlayer
-                                    .seek(v)
+                                    .setTempo(v)
                                     .catch(() => undefined);
                               }}
+                              onBlur={(event) => {
+                                const v = Number(event.target.value);
+                                if (!Number.isFinite(v))
+                                  void midiPlayer
+                                    .setTempo(midiSettings.tempo)
+                                    .catch(() => undefined);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter")
+                                  (event.target as HTMLInputElement).blur();
+                              }}
+                              aria-label={translate(locale, "media.tempoInput")}
+                              style={{ width: 56, textAlign: "center" }}
+                            />
+                            <span style={{ fontSize: "0.8rem" }}>BPM</span>
+                            <button
+                              type="button"
+                              onPointerDown={() =>
+                                holdStart(
+                                  () =>
+                                    void midiPlayer.setTempo(
+                                      midiSettings.tempo + 2,
+                                    ),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(
+                                () =>
+                                  void midiPlayer.setTempo(
+                                    midiSettings.tempo + 2,
+                                  ),
+                              )}
+                              aria-label={translate(locale, "kidung.tempoUp")}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div
+                            className="hymn-midi-volume"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginTop: 6,
+                            }}
+                          >
+                            <span style={{ fontSize: "0.75rem", minWidth: 48 }}>
+                              {translate(locale, "media.volumeShort")}
+                            </span>
+                            <input
+                              type="range"
+                              min={0}
+                              max={1}
+                              step={0.05}
+                              value={midiState.muted ? 0 : midiState.volume}
+                              onChange={(e) =>
+                                void midiPlayer
+                                  .setVolume(Number(e.target.value))
+                                  .catch(() => undefined)
+                              }
                               style={{ flex: 1 }}
+                              aria-label={translate(locale, "media.volumeMidi")}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void midiPlayer
+                                  .setMuted(!midiState.muted)
+                                  .catch(() => undefined)
+                              }
                               aria-label={translate(
                                 locale,
-                                "media.positionMidi",
+                                midiState.muted
+                                  ? "media.unmuteMidi"
+                                  : "media.muteMidi",
                               )}
-                              disabled={
-                                midiState.status === "loading" ||
-                                isMidiSwitchingRef.current
-                              }
-                            />
-                            <span
-                              className="hymn-midi-time"
-                              style={{
-                                fontVariantNumeric: "tabular-nums",
-                                fontSize: "0.8rem",
-                                minWidth: 32,
-                              }}
+                              style={{ fontSize: "0.8rem" }}
                             >
-                              {formatMidiTime(midiState.duration)}
-                            </span>
+                              <Icon
+                                name={midiState.muted ? "volumeOff" : "volume"}
+                                size={16}
+                              />
+                            </button>
                           </div>
-                        ) : null
-                      ) : null}
-                      <label className="hymn-instrument-select">
-                        <span>{translate(locale, "kidung.instrument")}</span>
-                        <select
-                          aria-label={translate(locale, "kidung.instrument")}
-                          value={midiSettings.instrument}
-                          onChange={(event) =>
-                            void midiPlayer
-                              .setInstrument(Number(event.target.value))
-                              .catch(() => undefined)
-                          }
-                        >
-                          <option value={-1}>{midiInstrumentLabel(-1)}</option>
-                          {GM_INSTRUMENTS.map((name, program) => (
-                            <option key={program} value={program}>
-                              {String(program + 1).padStart(3, "0")} · {name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="hymn-tempo-control">
-                        <span>{translate(locale, "kidung.tempo")}</span>
-                        <button
-                          type="button"
-                          onPointerDown={() =>
-                            holdStart(
-                              () =>
-                                void midiPlayer.setTempo(
-                                  midiSettings.tempo - 2,
-                                ),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(
-                            () =>
-                              void midiPlayer.setTempo(midiSettings.tempo - 2),
-                          )}
-                          aria-label={translate(locale, "kidung.tempoDown")}
-                        >
-                          −
-                        </button>
-                        <input
-                          type="number"
-                          min={30}
-                          max={220}
-                          value={midiSettings.tempo}
-                          onChange={(event) => {
-                            const v = Number(event.target.value);
-                            if (Number.isFinite(v))
-                              void midiPlayer
-                                .setTempo(v)
-                                .catch(() => undefined);
-                          }}
-                          onBlur={(event) => {
-                            const v = Number(event.target.value);
-                            if (!Number.isFinite(v))
-                              void midiPlayer
-                                .setTempo(midiSettings.tempo)
-                                .catch(() => undefined);
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter")
-                              (event.target as HTMLInputElement).blur();
-                          }}
-                          aria-label={translate(locale, "media.tempoInput")}
-                          style={{ width: 56, textAlign: "center" }}
-                        />
-                        <span style={{ fontSize: "0.8rem" }}>BPM</span>
-                        <button
-                          type="button"
-                          onPointerDown={() =>
-                            holdStart(
-                              () =>
-                                void midiPlayer.setTempo(
-                                  midiSettings.tempo + 2,
-                                ),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(
-                            () =>
-                              void midiPlayer.setTempo(midiSettings.tempo + 2),
-                          )}
-                          aria-label={translate(locale, "kidung.tempoUp")}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <div
-                        className="hymn-midi-volume"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          marginTop: 6,
+                        </div>
+                      )}
+                      <Select
+                        value={keyIndex}
+                        onChange={(value) => {
+                          setKeyIndex(value);
+                          updateTranspose(
+                            transposeBetweenKeys(sourceKeyIndex, value),
+                          );
                         }}
-                      >
-                        <span style={{ fontSize: "0.75rem", minWidth: 48 }}>
-                          {translate(locale, "media.volumeShort")}
+                        label={translate(locale, "kidung.key")}
+                        options={Array.from({ length: 12 }, (_, value) => ({
+                          value,
+                          label: chordKeyName(value, accidental),
+                        }))}
+                      />
+                      <Select
+                        value={accidental}
+                        onChange={setAccidental}
+                        label={translate(locale, "kidung.notation")}
+                        options={[
+                          {
+                            value: "sharp",
+                            label: translate(locale, "kidung.sharp"),
+                          },
+                          {
+                            value: "flat",
+                            label: translate(locale, "kidung.flat"),
+                          },
+                        ]}
+                      />
+                      <div className="transpose-control">
+                        <span>
+                          {translate(locale, "kidung.displayedKey", {
+                            key: renderedKey,
+                          })}
+                          {capo > 0
+                            ? ` (${translate(locale, "kidung.shapeKey", {
+                                key: chordKeyName(
+                                  (((sourceKeyIndex + transpose - capo) % 12) +
+                                    12) %
+                                    12,
+                                  accidental,
+                                ),
+                              })})`
+                            : ""}
                         </span>
-                        <input
-                          type="range"
-                          min={0}
-                          max={1}
-                          step={0.05}
-                          value={midiState.muted ? 0 : midiState.volume}
-                          onChange={(e) =>
-                            void midiPlayer
-                              .setVolume(Number(e.target.value))
-                              .catch(() => undefined)
-                          }
-                          style={{ flex: 1 }}
-                          aria-label={translate(locale, "media.volumeMidi")}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void midiPlayer
-                              .setMuted(!midiState.muted)
-                              .catch(() => undefined)
-                          }
-                          aria-label={translate(
-                            locale,
-                            midiState.muted
-                              ? "media.unmuteMidi"
-                              : "media.muteMidi",
+                        <div className="transpose-btn-group">
+                          <button
+                            type="button"
+                            onPointerDown={() =>
+                              holdStart(() => updateTranspose(transpose - 1))
+                            }
+                            onPointerUp={holdStop}
+                            onPointerLeave={holdStop}
+                            onPointerCancel={holdStop}
+                            onClick={tapStep(() =>
+                              updateTranspose(transpose - 1),
+                            )}
+                            aria-label={translate(
+                              locale,
+                              "kidung.transposeDown",
+                            )}
+                          >
+                            −
+                          </button>
+                          <strong>
+                            {transpose > 0 ? `+${transpose}` : transpose}
+                          </strong>
+                          <button
+                            type="button"
+                            onPointerDown={() =>
+                              holdStart(() => updateTranspose(transpose + 1))
+                            }
+                            onPointerUp={holdStop}
+                            onPointerLeave={holdStop}
+                            onPointerCancel={holdStop}
+                            onClick={tapStep(() =>
+                              updateTranspose(transpose + 1),
+                            )}
+                            aria-label={translate(locale, "kidung.transposeUp")}
+                          >
+                            +
+                          </button>
+                          {transpose !== 0 && (
+                            <button
+                              type="button"
+                              className="transpose-reset-btn"
+                              onClick={() => updateTranspose(0)}
+                              title={translate(locale, "kidung.resetTranspose")}
+                            >
+                              {translate(locale, "kidung.resetTranspose")}
+                            </button>
                           )}
-                          style={{ fontSize: "0.8rem" }}
-                        >
-                          <Icon
-                            name={midiState.muted ? "volumeOff" : "volume"}
-                            size={16}
-                          />
-                        </button>
+                        </div>
+                      </div>
+                      <div className="capo-control">
+                        <span>
+                          {translate(locale, "kidung.capo", {
+                            value:
+                              capo === 0
+                                ? translate(locale, "kidung.noCapo")
+                                : translate(locale, "kidung.fret", {
+                                    count: capo,
+                                  }),
+                          })}
+                        </span>
+                        <div className="capo-btn-group">
+                          <button
+                            type="button"
+                            onPointerDown={() =>
+                              holdStart(() =>
+                                setCapo((c) => Math.max(0, c - 1)),
+                              )
+                            }
+                            onPointerUp={holdStop}
+                            onPointerLeave={holdStop}
+                            onPointerCancel={holdStop}
+                            onClick={tapStep(() =>
+                              setCapo((c) => Math.max(0, c - 1)),
+                            )}
+                            disabled={capo <= 0}
+                            aria-label={translate(locale, "kidung.capoDown")}
+                          >
+                            −
+                          </button>
+                          <strong>{capo === 0 ? "0" : capo}</strong>
+                          <button
+                            type="button"
+                            onPointerDown={() =>
+                              holdStart(() =>
+                                setCapo((c) => Math.min(11, c + 1)),
+                              )
+                            }
+                            onPointerUp={holdStop}
+                            onPointerLeave={holdStop}
+                            onPointerCancel={holdStop}
+                            onClick={tapStep(() =>
+                              setCapo((c) => Math.min(11, c + 1)),
+                            )}
+                            disabled={capo >= 11}
+                            aria-label={translate(locale, "kidung.capoUp")}
+                          >
+                            +
+                          </button>
+                          {capo > 0 && (
+                            <button
+                              type="button"
+                              className="transpose-reset-btn"
+                              onClick={() => setCapo(0)}
+                              title={translate(locale, "kidung.resetCapo")}
+                            >
+                              {translate(locale, "kidung.resetCapo")}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  )}
-                  <Select
-                    value={keyIndex}
-                    onChange={(value) => {
-                      setKeyIndex(value);
-                      updateTranspose(
-                        transposeBetweenKeys(sourceKeyIndex, value),
-                      );
-                    }}
-                    label={translate(locale, "kidung.key")}
-                    options={Array.from({ length: 12 }, (_, value) => ({
-                      value,
-                      label: chordKeyName(value, accidental),
-                    }))}
-                  />
-                  <Select
-                    value={accidental}
-                    onChange={setAccidental}
-                    label={translate(locale, "kidung.notation")}
-                    options={[
-                      {
-                        value: "sharp",
-                        label: translate(locale, "kidung.sharp"),
-                      },
-                      {
-                        value: "flat",
-                        label: translate(locale, "kidung.flat"),
-                      },
-                    ]}
-                  />
-                  <div className="transpose-control">
-                    <span>
-                      {translate(locale, "kidung.displayedKey", {
-                        key: renderedKey,
-                      })}
-                      {capo > 0
-                        ? ` (${translate(locale, "kidung.shapeKey", {
-                            key: chordKeyName(
-                              (((sourceKeyIndex + transpose - capo) % 12) +
-                                12) %
-                                12,
-                              accidental,
-                            ),
-                          })})`
-                        : ""}
-                    </span>
-                    <div className="transpose-btn-group">
-                      <button
-                        type="button"
-                        onPointerDown={() =>
-                          holdStart(() => updateTranspose(transpose - 1))
-                        }
-                        onPointerUp={holdStop}
-                        onPointerLeave={holdStop}
-                        onPointerCancel={holdStop}
-                        onClick={tapStep(() => updateTranspose(transpose - 1))}
-                        aria-label={translate(locale, "kidung.transposeDown")}
-                      >
-                        −
-                      </button>
-                      <strong>
-                        {transpose > 0 ? `+${transpose}` : transpose}
-                      </strong>
-                      <button
-                        type="button"
-                        onPointerDown={() =>
-                          holdStart(() => updateTranspose(transpose + 1))
-                        }
-                        onPointerUp={holdStop}
-                        onPointerLeave={holdStop}
-                        onPointerCancel={holdStop}
-                        onClick={tapStep(() => updateTranspose(transpose + 1))}
-                        aria-label={translate(locale, "kidung.transposeUp")}
-                      >
-                        +
-                      </button>
-                      {transpose !== 0 && (
-                        <button
-                          type="button"
-                          className="transpose-reset-btn"
-                          onClick={() => updateTranspose(0)}
-                          title={translate(locale, "kidung.resetTranspose")}
-                        >
-                          {translate(locale, "kidung.resetTranspose")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="capo-control">
-                    <span>
-                      {translate(locale, "kidung.capo", {
-                        value:
-                          capo === 0
-                            ? translate(locale, "kidung.noCapo")
-                            : translate(locale, "kidung.fret", {
-                                count: capo,
-                              }),
-                      })}
-                    </span>
-                    <div className="capo-btn-group">
-                      <button
-                        type="button"
-                        onPointerDown={() =>
-                          holdStart(() => setCapo((c) => Math.max(0, c - 1)))
-                        }
-                        onPointerUp={holdStop}
-                        onPointerLeave={holdStop}
-                        onPointerCancel={holdStop}
-                        onClick={tapStep(() =>
-                          setCapo((c) => Math.max(0, c - 1)),
-                        )}
-                        disabled={capo <= 0}
-                        aria-label={translate(locale, "kidung.capoDown")}
-                      >
-                        −
-                      </button>
-                      <strong>{capo === 0 ? "0" : capo}</strong>
-                      <button
-                        type="button"
-                        onPointerDown={() =>
-                          holdStart(() => setCapo((c) => Math.min(11, c + 1)))
-                        }
-                        onPointerUp={holdStop}
-                        onPointerLeave={holdStop}
-                        onPointerCancel={holdStop}
-                        onClick={tapStep(() =>
-                          setCapo((c) => Math.min(11, c + 1)),
-                        )}
-                        disabled={capo >= 11}
-                        aria-label={translate(locale, "kidung.capoUp")}
-                      >
-                        +
-                      </button>
-                      {capo > 0 && (
-                        <button
-                          type="button"
-                          className="transpose-reset-btn"
-                          onClick={() => setCapo(0)}
-                          title={translate(locale, "kidung.resetCapo")}
-                        >
-                          {translate(locale, "kidung.resetCapo")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  </details>
                 </div>
               </details>
             </div>
@@ -4095,19 +4369,27 @@ function HymnDetail({
             {translate(locale, "kidung.chordVerifying")}
           </div>
         )}
-        {chordsVisible && chordStatus === "error" && (
-          <div className="error-panel" role="alert">
-            <strong>{translate(locale, "kidung.chordUnavailable")}</strong>
-            <span>{translate(locale, "kidung.connectRetry")}</span>
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={() => void loadChord()}
+        {chordsVisible &&
+          (chordStatus === "error" || chordStatus === "unavailable") && (
+            <div
+              className="error-panel"
+              role={chordStatus === "unavailable" ? "status" : "alert"}
             >
-              {translate(locale, "kidung.retry")}
-            </button>
-          </div>
-        )}
+              <strong>{translate(locale, "kidung.chordUnavailable")}</strong>
+              {chordStatus === "error" && (
+                <>
+                  <span>{translate(locale, "kidung.connectRetry")}</span>
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={() => void loadChord()}
+                  >
+                    {translate(locale, "kidung.retry")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         {viewerMode !== "pdf" && (
           <nav
             className={`hymn-text-footer${viewScope === "all" ? " is-all-verses" : ""}`}

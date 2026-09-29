@@ -31,70 +31,70 @@ const DK_READ_MORE = new Map<string, { pdf: string; source: string }>([
   [
     "1",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Yesus-Kristus.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Yesus-Kristus.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-yesus-kristus/",
     },
   ],
   [
     "2",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Alkitab.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Alkitab.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-alkitab/",
     },
   ],
   [
     "3",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Gereja.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Gereja.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-gereja/",
     },
   ],
   [
     "4",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Baptisan.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Baptisan.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-baptisan/",
     },
   ],
   [
     "5",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Roh-Kudus.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Roh-Kudus.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-rohkudus/",
     },
   ],
   [
     "6",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Basuh-Kaki.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Basuh-Kaki.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-basuhkaki/",
     },
   ],
   [
     "7",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Perjamuan-Kudus.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Perjamuan-Kudus.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-pk/",
     },
   ],
   [
     "8",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Hari-Sabat.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Hari-Sabat.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-sabat/",
     },
   ],
   [
     "9",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Keselamatan.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Keselamatan.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-keselamatan/",
     },
   ],
   [
     "10",
     {
-      pdf: "https://tjc.org/id/wp-content/uploads/sites/43/2019/10/Kedatangan-Kristus.pdf",
+      pdf: "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Kedatangan-Kristus.pdf",
       source: "https://tjc.org/id/dasar-kepercayaan/dk-kedatangan-kristus/",
     },
   ],

@@ -171,6 +171,15 @@ test("literature PDF overlay keeps localized actions reachable across widths", a
       );
 
       if (locale === "id" && viewport === 320) {
+        await expect
+          .poll(
+            () =>
+              overlay
+                .locator(".pdf-reader")
+                .getAttribute("data-pdf-loading-phase"),
+            { timeout: 15_000 },
+          )
+          .toMatch(/^(ready|error)$/);
         const focusable = overlay.locator(
           'button:not([disabled]):not([aria-hidden="true"]):visible, input:not([disabled]):not([aria-hidden="true"]):visible, select:not([disabled]):not([aria-hidden="true"]):visible, textarea:not([disabled]):not([aria-hidden="true"]):visible, a[href]:not([aria-hidden="true"]):visible, [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"]):visible',
         );

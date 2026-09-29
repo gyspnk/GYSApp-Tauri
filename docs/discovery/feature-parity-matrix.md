@@ -1,5 +1,8 @@
 # Feature parity matrix (initial baseline)
 
+> Historical baseline. Current source-backed results and explicit open proof
+> are recorded in [the September 2026 matrix](feature-parity-matrix-2026-09.md).
+
 This is a living matrix. `PARITY` is reserved for an exercised behavior and
 attached test evidence; `PLANNED` is not a claim of completion.
 

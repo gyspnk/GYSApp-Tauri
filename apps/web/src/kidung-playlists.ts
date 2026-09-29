@@ -7,7 +7,7 @@
  * `gys-playlist-backup` IndexedDB database used by midi-playlist.ts, so an
  * evicted localStorage cannot destroy user data.
  */
-import type { MidiPlaylistItem } from "@gys/contracts";
+import type { HymnCatalogEntry, MidiPlaylistItem } from "@gys/contracts";
 
 export type SavedPlaylist = {
   id: string;
@@ -15,6 +15,87 @@ export type SavedPlaylist = {
   songIds: string[];
   createdAt: number;
 };
+
+export function importUpstreamPlaylist(
+  value: unknown,
+  catalog: readonly HymnCatalogEntry[],
+): { name: string; songIds: string[] } {
+  if (!value || typeof value !== "object")
+    throw new Error("Playlist JSON must be an object");
+  const source = value as { name?: unknown; songs?: unknown };
+  if (
+    typeof source.name !== "string" ||
+    !source.name.trim() ||
+    !Array.isArray(source.songs)
+  )
+    throw new Error("Playlist JSON has no name or songs");
+
+  const catalogIds = new Map(
+    catalog.map((entry) => [entry.id.toLowerCase(), entry.id]),
+  );
+  const songIds: string[] = [];
+  for (const song of source.songs) {
+    if (!song || typeof song !== "object")
+      throw new Error("Playlist contains an invalid song");
+    const record = song as { nomor?: unknown; judul?: unknown };
+    if (typeof record.judul !== "string" || !record.judul.trim())
+      throw new Error("Playlist contains an invalid song title");
+    const match = String(record.nomor ?? "")
+      .trim()
+      .match(/^(\d{1,3})([a-z])?$/i);
+    if (!match) throw new Error("Playlist contains an invalid song number");
+    const sourceId = `hymn-${match[1]!.padStart(3, "0")}${match[2] ?? ""}`;
+    const songId = catalogIds.get(sourceId.toLowerCase());
+    if (!songId)
+      throw new Error(`Playlist song ${record.nomor} is not in the catalog`);
+    if (!songIds.includes(songId)) songIds.push(songId);
+  }
+  return { name: source.name.trim(), songIds };
+}
+
+export function exportUpstreamPlaylist(
+  playlist: SavedPlaylist,
+  catalog: readonly HymnCatalogEntry[],
+): {
+  name: string;
+  songs: Array<{ nomor: string; judul: string; fileHref: string }>;
+} {
+  const entries = new Map(catalog.map((entry) => [entry.id, entry]));
+  return {
+    name: playlist.name,
+    songs: playlist.songIds.map((songId) => {
+      const entry = entries.get(songId);
+      if (!entry) throw new Error(`Playlist song ${songId} is unavailable`);
+      const number = entry.id.match(/^hymn-(\d{3}[a-z]?)$/i)?.[1];
+      if (!number)
+        throw new Error(`Playlist song ${songId} has no source number`);
+      return {
+        nomor: number,
+        judul: entry.title,
+        fileHref: entry.midiPath,
+      };
+    }),
+  };
+}
+
+export function reorderSavedPlaylistSongs(
+  songIds: string[],
+  from: number,
+  to: number,
+): string[] {
+  if (
+    from < 0 ||
+    from >= songIds.length ||
+    to < 0 ||
+    to >= songIds.length ||
+    from === to
+  )
+    return songIds;
+  const reordered = [...songIds];
+  const [songId] = reordered.splice(from, 1);
+  if (songId !== undefined) reordered.splice(to, 0, songId);
+  return reordered;
+}
 
 const STORAGE_KEY = "gys-kidung-playlists-v1";
 const ACTIVE_KEY = "gys-kidung-active-playlist";
@@ -43,8 +124,14 @@ function backupToIDB(): void {
       if (!db.objectStoreNames.contains(IDB_STORE)) return;
       try {
         const tx = db.transaction(IDB_STORE, "readwrite");
+        let activePlaylistId: string | null = null;
+        try {
+          activePlaylistId = localStorage.getItem(ACTIVE_KEY);
+        } catch {
+          // The playlist backup still survives when local storage is blocked.
+        }
         tx.objectStore(IDB_STORE).put(
-          { playlists, savedAt: Date.now() },
+          { playlists, activePlaylistId, savedAt: Date.now() },
           IDB_KEY,
         );
         tx.oncomplete = () => db.close();
@@ -59,8 +146,9 @@ function backupToIDB(): void {
 
 function restoreFromIDB(): void {
   if (typeof indexedDB === "undefined" || typeof window === "undefined") return;
-  const serialized = localStorage.getItem(STORAGE_KEY);
-  if (serialized) return;
+  const shouldRestorePlaylists = localStorage.getItem(STORAGE_KEY) === null;
+  const shouldRestoreActivePlaylist = localStorage.getItem(ACTIVE_KEY) === null;
+  if (!shouldRestorePlaylists && !shouldRestoreActivePlaylist) return;
   const request = indexedDB.open(IDB_DB, 1);
   request.onupgradeneeded = () => {
     request.result.createObjectStore(IDB_STORE);
@@ -72,16 +160,39 @@ function restoreFromIDB(): void {
     const get = tx.objectStore(IDB_STORE).get(IDB_KEY);
     get.onsuccess = () => {
       db.close();
-      const backup = get.result as { playlists?: SavedPlaylist[] } | undefined;
+      const backup = get.result as
+        | {
+            playlists?: SavedPlaylist[];
+            activePlaylistId?: string | null;
+          }
+        | undefined;
       if (!backup?.playlists) return;
-      playlists = backup.playlists;
-      invalidateSnapshotCache();
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
-      } catch {
-        // Keep the in-memory copy only.
+      let restored = false;
+      if (localStorage.getItem(STORAGE_KEY) === null) {
+        playlists = backup.playlists;
+        invalidateSnapshotCache();
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
+        } catch {
+          // Keep the in-memory copy only.
+        }
+        restored = true;
       }
-      window.dispatchEvent(new CustomEvent(EVENT_NAME));
+      if (
+        localStorage.getItem(ACTIVE_KEY) === null &&
+        backup.activePlaylistId &&
+        backup.playlists.some(
+          (playlist) => playlist.id === backup.activePlaylistId,
+        )
+      ) {
+        try {
+          localStorage.setItem(ACTIVE_KEY, backup.activePlaylistId);
+          restored = true;
+        } catch {
+          // Keep the active selection in the IndexedDB backup.
+        }
+      }
+      if (restored) window.dispatchEvent(new CustomEvent(EVENT_NAME));
     };
   };
 }
@@ -97,9 +208,8 @@ function hydrate(): void {
     } catch {
       playlists = [];
     }
-  } else {
-    restoreFromIDB();
   }
+  restoreFromIDB();
 }
 
 function persist(): void {
@@ -138,12 +248,15 @@ export function subscribeSavedPlaylists(listener: () => void): () => void {
   };
 }
 
-export function createSavedPlaylist(name: string): SavedPlaylist {
+export function createSavedPlaylist(
+  name: string,
+  songIds: string[] = [],
+): SavedPlaylist {
   hydrate();
   const playlist: SavedPlaylist = {
     id: makeId(),
     name: name.trim() || "Playlist Baru",
-    songIds: [],
+    songIds: [...new Set(songIds)],
     createdAt: Date.now(),
   };
   playlists.push(playlist);
@@ -189,6 +302,9 @@ export function setActivePlaylist(id: string | null): void {
   } catch {
     // ignore
   }
+  backupToIDB();
+  if (typeof window !== "undefined")
+    window.dispatchEvent(new CustomEvent(EVENT_NAME));
 }
 
 export function addSongToActivePlaylist(songId: string): boolean {
@@ -214,6 +330,20 @@ export function removeSongFromPlaylist(
   playlist.songIds = playlist.songIds.filter(
     (candidate) => candidate !== songId,
   );
+  persist();
+}
+
+export function moveSavedPlaylistSong(
+  playlistId: string,
+  from: number,
+  to: number,
+): void {
+  hydrate();
+  const playlist = playlists.find((candidate) => candidate.id === playlistId);
+  if (!playlist) return;
+  const reordered = reorderSavedPlaylistSongs(playlist.songIds, from, to);
+  if (reordered === playlist.songIds) return;
+  playlist.songIds = reordered;
   persist();
 }
 

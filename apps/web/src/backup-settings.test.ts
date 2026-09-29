@@ -27,6 +27,7 @@ describe("portable backup settings", () => {
         font: "hymnal",
       }),
       "gys-faith-note-1": "portable note",
+      "gys-bible-highlight-palette-v1": JSON.stringify(["#ca7231"]),
       "gys-asset-index-v1": "cache pointer",
       "gys-egys-session-v1": "private session",
       "gys-unlisted-device-state": "private state",
@@ -40,6 +41,7 @@ describe("portable backup settings", () => {
         font: "hymnal",
       }),
       "gys-faith-note-1": "portable note",
+      "gys-bible-highlight-palette-v1": JSON.stringify(["#ca7231"]),
     });
     expect(isPortableBackupSetting("gys-ui-preferences-v1")).toBe(true);
     expect(isPortableBackupSetting("gys-asset-index-v1")).toBe(false);
@@ -58,6 +60,7 @@ describe("portable backup settings", () => {
           font: "sans",
         }),
         "gys-faith-note-1": "portable note",
+        "gys-bible-highlight-palette-v1": JSON.stringify(["#ca7231"]),
         "gys-live-v1-token": "injected token",
         "gys-egys-session-v1": "injected session",
         "gys-custom-edge-endpoint-v1": "https://injected.invalid/tts",
@@ -67,10 +70,13 @@ describe("portable backup settings", () => {
       storage,
     );
 
-    expect(restored).toBe(3);
+    expect(restored).toBe(4);
     expect(storage.getItem("gys-accent-color")).toBe("#355c9a");
     expect(storage.getItem("gys-ui-preferences-v1")).toContain('"compact"');
     expect(storage.getItem("gys-faith-note-1")).toBe("portable note");
+    expect(storage.getItem("gys-bible-highlight-palette-v1")).toBe(
+      JSON.stringify(["#ca7231"]),
+    );
     expect(storage.getItem("gys-live-v1-token")).toBeNull();
     expect(storage.getItem("gys-egys-session-v1")).toBeNull();
     expect(storage.getItem("gys-custom-edge-endpoint-v1")).toBeNull();

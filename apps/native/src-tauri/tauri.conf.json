@@ -14,6 +14,7 @@
     "windows": [
       {
         "title": "GYSApp",
+        "url": "?v=22",
         "width": 1200,
         "height": 800,
         "minWidth": 320,
@@ -21,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://*.workers.dev https://e.gys.or.id wss://e.gys.or.id https://tjc.org https://*.tjc.org https://raw.githubusercontent.com; img-src 'self' data: https://tjc.org https://*.tjc.org; media-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      "csp": "default-src 'self'; connect-src 'self' https://*.workers.dev https://e.gys.or.id wss://e.gys.or.id https://tjc.org https://*.tjc.org https://raw.githubusercontent.com; img-src 'self' data: https://tjc.org https://*.tjc.org https://tjcorguploads.s3.amazonaws.com; media-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'wasm-unsafe-eval'"
     }
   },
   "plugins": {

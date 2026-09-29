@@ -205,6 +205,7 @@ export function extractLyricLines(
       const marker = sorted.find(
         (item) => lyricVariant(item.str) !== undefined,
       );
+      const variant = marker ? lyricVariant(marker.str) : undefined;
       const content = marker
         ? sorted.filter((item) => item !== marker)
         : sorted;
@@ -219,7 +220,7 @@ export function extractLyricLines(
         text: content.map((item) => item.str).join(" "),
         startPct: (start / pageWidth) * 100,
         widthPct: Math.max(1, ((end - start) / pageWidth) * 100),
-        ...(marker ? { variant: lyricVariant(marker.str) } : {}),
+        ...(variant === undefined ? {} : { variant }),
       };
     });
 }

@@ -1,4 +1,5 @@
 import type { DistributedAssetKind } from "@gys/contracts";
+import { sha256 } from "./asset-store.js";
 
 const REGISTRY_KEY = "gys-distributed-assets-v1";
 const CACHE_PREFIX = "gys-distributed-v1-";
@@ -18,6 +19,7 @@ export type InstalledDistributedAssetRecord = DistributedAssetRecordInput & {
   cacheName: string;
   cacheKey: string;
   payloadBytes: number;
+  payloadChecksumSha256?: string;
   installedAt: string;
   metadataCacheKey?: string;
   metadataBytes?: number;
@@ -85,6 +87,10 @@ function isRecord(value: unknown): value is InstalledDistributedAssetRecord {
       : typeof record.metadataCacheKey === "string" &&
         typeof record.metadataBytes === "number" &&
         typeof record.metadataChecksumSha256 === "string";
+  const payloadChecksumValid =
+    record.payloadChecksumSha256 === undefined ||
+    (typeof record.payloadChecksumSha256 === "string" &&
+      /^[a-f\d]{64}$/i.test(record.payloadChecksumSha256));
   return (
     typeof record.code === "string" &&
     typeof record.kind === "string" &&
@@ -97,7 +103,8 @@ function isRecord(value: unknown): value is InstalledDistributedAssetRecord {
     typeof record.cacheKey === "string" &&
     typeof record.payloadBytes === "number" &&
     typeof record.installedAt === "string" &&
-    metadataValid
+    metadataValid &&
+    payloadChecksumValid
   );
 }
 
@@ -154,6 +161,29 @@ export class DistributedAssetStore {
     if (!response) return undefined;
     const bytes = new Uint8Array(await response.arrayBuffer());
     if (bytes.byteLength !== record.payloadBytes) return undefined;
+    if (record.payloadChecksumSha256) {
+      if (
+        (await sha256(bytes)).toLowerCase() !==
+        record.payloadChecksumSha256.toLowerCase()
+      )
+        return undefined;
+    } else {
+      // Earlier releases verified the package before persisting its payload.
+      const payloadChecksumSha256 = await sha256(bytes);
+      const registry = this.readRegistry();
+      const current = registry[code];
+      if (
+        current?.cacheName === record.cacheName &&
+        !current.payloadChecksumSha256
+      ) {
+        registry[code] = { ...current, payloadChecksumSha256 };
+        try {
+          this.writeRegistry(registry);
+        } catch {
+          // Keep an existing offline asset usable if the index cannot be updated.
+        }
+      }
+    }
     return bytes;
   }
 
@@ -166,22 +196,22 @@ export class DistributedAssetStore {
       .then((cache) => cache.match(record.metadataCacheKey!));
     if (!response) return undefined;
     const bytes = new Uint8Array(await response.arrayBuffer());
-    return bytes.byteLength === record.metadataBytes ? bytes : undefined;
+    if (bytes.byteLength !== record.metadataBytes) return undefined;
+    if (
+      (await sha256(bytes)).toLowerCase() !==
+      record.metadataChecksumSha256?.toLowerCase()
+    )
+      return undefined;
+    return bytes;
   }
 
   public async hasCachedPayload(code: string): Promise<boolean> {
+    if (!(await this.getBytes(code))) return false;
     const record = await this.getRecord(code);
     if (!record) return false;
-    const cache = await this.cacheStorage.open(record.cacheName);
-    const payload = await cache.match(record.cacheKey);
-    if (!payload || !(await responseHasSize(payload, record.payloadBytes)))
-      return false;
     if (!record.metadataCacheKey || record.metadataBytes === undefined)
       return true;
-    const metadata = await cache.match(record.metadataCacheKey);
-    return Boolean(
-      metadata && (await responseHasSize(metadata, record.metadataBytes)),
-    );
+    return Boolean(await this.getMetadataBytes(code));
   }
 
   public async put(
@@ -195,6 +225,7 @@ export class DistributedAssetStore {
       cacheName: cacheName(input, installedAt),
       cacheKey: cacheKey(input),
       payloadBytes: bytes.byteLength,
+      payloadChecksumSha256: await sha256(bytes),
       installedAt,
       ...(metadata
         ? {
@@ -262,16 +293,4 @@ export class DistributedAssetStore {
     );
     this.registry.removeItem(REGISTRY_KEY);
   }
-}
-
-async function responseHasSize(
-  response: Response,
-  expected: number,
-): Promise<boolean> {
-  const value = response.headers.get("content-length");
-  if (value !== null) {
-    const header = Number(value);
-    if (Number.isFinite(header) && header >= 0) return header === expected;
-  }
-  return (await response.clone().blob()).size === expected;
 }

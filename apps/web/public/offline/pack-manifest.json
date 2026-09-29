@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-20T13:49:08.296Z",
+  "generatedAt": "2026-09-28T04:37:37.169Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -19,20 +19,20 @@
     {
       "id": "hymn-catalog",
       "path": "offline/hymn-catalog.json",
-      "bytes": 868916,
-      "sha256": "a4672d1fb223e08e381baca408583255bf4be5dd7a52cf0a16983bfcfa3740be"
+      "bytes": 917610,
+      "sha256": "88f283e04e16a08abd1546bea89648f6fef0c2619bf576b2b783bf3b126765f0"
     },
     {
       "id": "distributed-asset-catalog",
       "path": "offline/distributed-assets.json",
       "bytes": 7505,
-      "sha256": "9bb199a0768958fe06d2512376c2bf4ac731b3d6a6255aa8d59194ffe477096f"
+      "sha256": "583db19136e42fe2b565a0defc508971454e040303c803461335dbcfaff7eee3"
     },
     {
       "id": "music-lock",
       "path": "offline/music-lock.json",
-      "bytes": 311606,
-      "sha256": "57eea10bf6e812802a00355bf147289ce275adbf3c47e092cb39508b7cef8044"
+      "bytes": 313267,
+      "sha256": "9c88c2b1b05b24bc5a237c19b775fae6ad55ef734d69319df33faefa663132c8"
     },
     {
       "id": "faith-topics",
@@ -43,14 +43,14 @@
     {
       "id": "sauh-feed",
       "path": "offline/sauh.json",
-      "bytes": 7668,
-      "sha256": "fbbfb750da1289732d2fdbae96f82180f24e586ea137b78af06ed6dea1e37237"
+      "bytes": 22208,
+      "sha256": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0"
     },
     {
       "id": "literature-catalog",
       "path": "offline/literature.json",
-      "bytes": 152126,
-      "sha256": "4db500434c8705022699bb9bd5e94ee63b76a1fbd3db96b090e0fb3adcec9ebc"
+      "bytes": 163677,
+      "sha256": "4a9e8d9ed769f3d4a925d822cc937cd4150e7fce3f12753e148c4642d15075be"
     },
     {
       "id": "suara-sejati",

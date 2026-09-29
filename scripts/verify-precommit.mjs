@@ -1,15 +1,27 @@
 import { execFileSync } from "node:child_process";
 
-function run(command, args) {
+const repoLocalGitVariables = execFileSync(
+  "git",
+  ["rev-parse", "--local-env-vars"],
+  { encoding: "utf8" },
+)
+  .trim()
+  .split(/\r?\n/);
+
+function run(command, args, clearRepoGitEnvironment = false) {
   const windowsPnpm = process.platform === "win32" && command === "pnpm";
   const executable = windowsPnpm ? (process.env.ComSpec ?? "cmd.exe") : command;
   const executableArgs = windowsPnpm
     ? ["/d", "/s", "/c", "pnpm", ...args]
     : args;
-  execFileSync(executable, executableArgs, { stdio: "inherit" });
+  const env = { ...process.env };
+  if (clearRepoGitEnvironment)
+    for (const variable of repoLocalGitVariables) delete env[variable];
+  execFileSync(executable, executableArgs, { stdio: "inherit", env });
 }
 
-run("node", ["scripts/sync-egys.mjs", "--write", "--strict"]);
+// Git hooks export this repo's Git environment; e-GYS is a separate checkout.
+run("node", ["scripts/sync-egys.mjs", "--write", "--strict"], true);
 run("node", ["scripts/check-egys-upstream.mjs", "--write", "--strict"]);
 run("pnpm", [
   "exec",

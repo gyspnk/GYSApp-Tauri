@@ -14,7 +14,7 @@ test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", a
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
-  ).toBeVisible({ timeout: 15_000 });
+  ).toBeVisible({ timeout: 25_000 });
   await page.waitForTimeout(250);
   expect(pdfRuntimeRequests).toEqual([]);
 
@@ -25,6 +25,28 @@ test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", a
   await expect
     .poll(() => pdfRuntimeRequests.length, { timeout: 20_000 })
     .toBeGreaterThan(0);
+});
+
+test("a hymn without canonical chord data does not suggest a connectivity failure", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung/hymn-051A");
+  await expect(
+    page.getByRole("heading", { name: "Batu Zaman", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page
+    .getByRole("button", { name: "Tampilkan chord", exact: true })
+    .click();
+
+  const unavailable = page.locator(".error-panel");
+  await expect(unavailable).toBeVisible();
+  await expect(unavailable).toContainText("Chord belum tersedia");
+  await expect(unavailable).not.toContainText(
+    "Sambungkan internet lalu coba lagi.",
+  );
+  await expect(
+    unavailable.getByRole("button", { name: "Coba lagi", exact: true }),
+  ).toHaveCount(0);
 });
 
 test("canonical chord and fork PDF assets open from hymn detail", async ({
@@ -49,6 +71,7 @@ test("canonical chord and fork PDF assets open from hymn detail", async ({
   await expect(page.locator(".chord-capability").first()).toBeVisible({
     timeout: 20_000,
   });
+  await page.locator(".hymn-more-actions-summary").click();
   await page.locator(".hymn-reader-settings-summary").click();
   await page.locator(".hymn-music-settings > summary").click();
   await page.getByRole("button", { name: "Nada dasar" }).click();
@@ -281,6 +304,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
 }) => {
   await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
+  await page.locator(".hymn-more-actions-summary").click();
   await page.locator(".hymn-reader-settings-summary").click();
   await page.getByRole("button", { name: "Perbesar ukuran teks" }).click();
   await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");

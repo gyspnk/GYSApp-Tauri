@@ -115,7 +115,7 @@ export class BrowserFileDialogs implements PlatformFileDialogs {
     });
   }
 
-  public async save(file: PlatformFile): Promise<void> {
+  public async save(file: PlatformFile): Promise<boolean> {
     if (typeof document === "undefined")
       throw new Error("File dialogs are unavailable");
     const buffer = new ArrayBuffer(file.bytes.byteLength);
@@ -130,6 +130,7 @@ export class BrowserFileDialogs implements PlatformFileDialogs {
     anchor.download = file.name;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    return true;
   }
 }
 

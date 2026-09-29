@@ -8,6 +8,7 @@ test("reset is secondary, guarded, and cancel-safe", async ({ page }) => {
   });
 
   await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="offline"] > summary').click();
 
   const advanced = page.getByTestId("device-data-tools");
   await expect(advanced).toBeVisible();
