@@ -12,6 +12,27 @@ test("Home keeps its empty activity state and exposes feed retries offline", asy
   let literatureSnapshots = 0;
   let publisherRequests = 0;
   let feedsAvailable = false;
+  const date = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .formatToParts(new Date())
+      .map((part) => [part.type, part.value]),
+  );
+  const todaySlug = `sbj${date.year.slice(-2)}${date.month}${date.day}`;
+  const todaySauh = {
+    id: todaySlug,
+    title: "Renungan hari ini",
+    reference: "Yohanes 3:16",
+    verse: "Karena begitu besar kasih Allah akan dunia ini.",
+    body: "Fixture pemulihan Sauh hari ini.",
+    url: `https://tjc.org/id/gerakan-baca-alkitab/${todaySlug}/`,
+    updatedAt: new Date().toISOString(),
+    source: "tjc.org" as const,
+  };
   await page.route("**/offline/sauh.json", (route) => {
     sauhSnapshots += 1;
     if (feedsAvailable) return route.continue();
@@ -29,7 +50,15 @@ test("Home keeps its empty activity state and exposes feed retries offline", asy
   });
   await page.route("https://tjc.org/**", (route) => {
     publisherRequests += 1;
-    if (feedsAvailable) return route.continue();
+    if (feedsAvailable) {
+      const url = new URL(route.request().url());
+      if (
+        url.pathname.includes("/wp-json/wp/v2/posts") &&
+        url.searchParams.get("slug") === todaySlug
+      )
+        return route.fulfill({ json: [todaySauh] });
+      return route.continue();
+    }
     return route.abort("connectionrefused");
   });
 
