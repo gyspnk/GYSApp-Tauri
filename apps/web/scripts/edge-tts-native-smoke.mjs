@@ -2748,6 +2748,7 @@ try {
     tempo: 220,
     tempoOverride: true,
     transpose: -2,
+    transposeOverride: true,
     instrument: 40,
   });
   const routeSpeechPreferences = await page.evaluate(() => ({

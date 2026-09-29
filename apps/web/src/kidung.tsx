@@ -2084,10 +2084,13 @@ function HymnDetail({
     setFitFontSize(readHymnTypography(songId).fontSize);
     // gyschordweb originalPdfKey: a detected PDF key is the display base;
     // natural-chord preference seeds a default -1 transpose for black keys.
-    userSetTransposeRef.current = false;
+    const hasTransposePreference = midiPlayer.hasTransposePreference();
+    userSetTransposeRef.current = hasTransposePreference;
     const meta = getHymnPdfMeta(songId);
     const natural = readNaturalChordPreference();
-    const baseTranspose = resolveHymnMidiDefaults(meta, natural).transpose;
+    const baseTranspose = hasTransposePreference
+      ? midiPlayer.settingsSnapshot().transpose
+      : resolveHymnMidiDefaults(meta, natural).transpose;
     setTranspose(baseTranspose);
     transposeRef.current = baseTranspose;
     if (meta?.keySemitone !== undefined && meta.keySemitone != null) {
@@ -2930,7 +2933,9 @@ function HymnDetail({
       );
       const targetTranspose = userSetTransposeRef.current
         ? transposeRef.current
-        : midiDefaults.transpose;
+        : midiPlayer.hasTransposePreference()
+          ? midiPlayer.settingsSnapshot().transpose
+          : midiDefaults.transpose;
       const preloaded = await midiPlayer.hasPreloaded(
         ref.sha256,
         targetTranspose,
@@ -2988,7 +2993,7 @@ function HymnDetail({
             transposeRef.current = resolvedTranspose;
             setTranspose(resolvedTranspose);
             void midiPlayer
-              .setTranspose(resolvedTranspose)
+              .setTranspose(resolvedTranspose, { userOverride: false })
               .catch(() => undefined);
           }
           const sourceKey = resolvedMeta.keySemitone ?? sourceKeyIndex;

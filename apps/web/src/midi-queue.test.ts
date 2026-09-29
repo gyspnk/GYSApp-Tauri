@@ -3,6 +3,8 @@ import { playMidiPlaylistItem } from "./midi-queue.js";
 
 const mocks = vi.hoisted(() => ({
   player: {
+    hasTransposePreference: vi.fn(() => false),
+    settingsSnapshot: vi.fn(() => ({ transpose: 0 })),
     isPlaying: vi.fn(() => false),
     load: vi.fn(async () => true),
     play: vi.fn(async () => undefined),
@@ -142,6 +144,20 @@ describe("MIDI playlist song defaults", () => {
       "Next hymn",
       { ppq: 480, tempo: 100, events: [] },
       expect.objectContaining({ tempo: 84, transpose: 0 }),
+    );
+  });
+
+  it("keeps an explicit transpose preference when loading the next queued song", async () => {
+    mocks.player.hasTransposePreference.mockReturnValue(true);
+    mocks.player.settingsSnapshot.mockReturnValue({ transpose: -2 });
+
+    await playMidiPlaylistItem("hymn-002");
+
+    expect(mocks.player.load).toHaveBeenCalledWith(
+      "hymn-002",
+      "Next hymn",
+      { ppq: 480, tempo: 100, events: [] },
+      expect.objectContaining({ tempo: 84, transpose: -2 }),
     );
   });
 });

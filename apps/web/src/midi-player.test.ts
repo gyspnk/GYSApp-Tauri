@@ -51,6 +51,28 @@ describe("MIDI song tempo defaults", () => {
     await player.load("hymn-003", "Following hymn", midi, { transpose: 0 });
     expect(player.snapshot().transpose).toBe(0);
   });
+
+  it("keeps a user-selected transpose when loading another song", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+
+    await player.setTranspose(-2);
+    await player.load("hymn-001", "First hymn", midi, { transpose: 0 });
+
+    expect(player.snapshot().transpose).toBe(-2);
+  });
+
+  it("keeps metadata defaults separate from a user transpose preference", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+
+    await player.setTranspose(-1, { userOverride: false });
+    expect(player.hasTransposePreference()).toBe(false);
+
+    await player.setTranspose(-2);
+    await player.setTranspose(0, { userOverride: false });
+
+    expect(player.snapshot().transpose).toBe(-2);
+  });
 });
 
 class FakeWorker extends EventTarget {

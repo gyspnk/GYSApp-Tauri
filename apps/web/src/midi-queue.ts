@@ -78,6 +78,9 @@ async function loadItem(
   const songMeta = getHymnPdfMeta(hymn.id);
   const naturalChords = readNaturalChordPreference();
   const midiDefaults = resolveHymnMidiDefaults(songMeta, naturalChords);
+  const transpose = midiPlayer.hasTransposePreference()
+    ? midiPlayer.settingsSnapshot().transpose
+    : midiDefaults.transpose;
   const lock = await loadMusicLock();
   const ref = findMusicAsset(lock, "midi", hymn.midiPath);
   if (!ref) throw new Error(`MIDI ${hymn.title} tidak tersedia`);
@@ -105,7 +108,7 @@ async function loadItem(
       sourceHash: ref.sha256,
       keepPlaying: previousWasPlaying,
       tempo: midiDefaults.tempo,
-      transpose: midiDefaults.transpose,
+      transpose,
     },
   );
   if (!loadedIntoPlayer) return;
@@ -121,8 +124,13 @@ async function loadItem(
         resolvedMeta,
         naturalChords,
       ).transpose;
-      if (current.transpose === midiDefaults.transpose)
-        void midiPlayer.setTranspose(resolvedTranspose).catch(() => undefined);
+      if (
+        !midiPlayer.hasTransposePreference() &&
+        current.transpose === midiDefaults.transpose
+      )
+        void midiPlayer
+          .setTranspose(resolvedTranspose, { userOverride: false })
+          .catch(() => undefined);
     });
   }
   await midiPlayer.play();

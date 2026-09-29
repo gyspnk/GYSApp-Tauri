@@ -102,6 +102,7 @@ function readMidiPreferences(): {
   tempo?: number;
   tempoOverride?: boolean;
   transpose?: number;
+  transposeOverride?: boolean;
   instrument?: number;
 } {
   if (typeof window === "undefined") return {};
@@ -129,6 +130,11 @@ function readMidiPreferences(): {
       ...(typeof candidate.transpose === "number"
         ? { transpose: candidate.transpose }
         : {}),
+      ...(typeof candidate.transposeOverride === "boolean"
+        ? { transposeOverride: candidate.transposeOverride }
+        : typeof candidate.transpose === "number"
+          ? { transposeOverride: true }
+          : {}),
       ...(typeof candidate.instrument === "number"
         ? { instrument: candidate.instrument }
         : {}),
@@ -300,6 +306,7 @@ export class BrowserMidiPlayer {
   private readonly preloadQueue = new MidiPreloadQueue();
   private preloadGeneration = 0;
   private readonly operationGate = new MidiOperationGate();
+  private transposeOverride = savedMidiPreferences.transposeOverride ?? false;
   private tempoOverride = savedMidiPreferences.tempoOverride ?? false;
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
@@ -384,7 +391,9 @@ export class BrowserMidiPlayer {
       duration,
       position: 0,
       tempo,
-      transpose: options.transpose ?? this.state.transpose,
+      transpose: this.transposeOverride
+        ? this.state.transpose
+        : (options.transpose ?? this.state.transpose),
       backend: "idle",
       loadingProgress: 0,
       error: undefined,
@@ -467,6 +476,9 @@ export class BrowserMidiPlayer {
   }
   public getCurrentTranspose(): number {
     return this.state.transpose;
+  }
+  public hasTransposePreference(): boolean {
+    return this.transposeOverride;
   }
   public getCurrentInstrument(): number {
     return this.state.instrument;
@@ -591,9 +603,19 @@ export class BrowserMidiPlayer {
     if (wasPlaying || wasLoading) await this.play();
   }
 
-  public async setTranspose(transpose: number): Promise<void> {
+  public async setTranspose(
+    transpose: number,
+    options: { userOverride?: boolean } = {},
+  ): Promise<void> {
+    if (options.userOverride === false && this.transposeOverride) return;
+    const overrideChanged =
+      options.userOverride !== false && !this.transposeOverride;
+    if (options.userOverride !== false) this.transposeOverride = true;
     const next = Math.max(-24, Math.min(24, Math.trunc(transpose)));
-    if (next === this.state.transpose) return;
+    if (next === this.state.transpose) {
+      if (overrideChanged) this.persistPreferences();
+      return;
+    }
     const wasPlaying = this.state.status === "playing";
     const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
@@ -1182,31 +1204,36 @@ export class BrowserMidiPlayer {
       for (const listener of this.settingsListeners) listener();
     }
     if (
-      typeof window !== "undefined" &&
-      ("volume" in next ||
-        "muted" in next ||
-        "tempo" in next ||
-        "transpose" in next ||
-        "instrument" in next)
+      "volume" in next ||
+      "muted" in next ||
+      "tempo" in next ||
+      "transpose" in next ||
+      "instrument" in next
     ) {
-      try {
-        window.localStorage.setItem(
-          "gys-midi-preferences-v1",
-          JSON.stringify({
-            volume: this.state.volume,
-            muted: this.state.muted,
-            tempo: this.state.tempo,
-            tempoOverride: this.tempoOverride,
-            transpose: this.state.transpose,
-            instrument: this.state.instrument,
-          }),
-        );
-      } catch {
-        // Private browsing and quota failures must not block playback.
-      }
+      this.persistPreferences();
     }
     // MediaSession + Wake Lock parity lives in media-session.ts (global bridge).
     for (const listener of this.listeners) listener();
+  }
+
+  private persistPreferences(): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        "gys-midi-preferences-v1",
+        JSON.stringify({
+          volume: this.state.volume,
+          muted: this.state.muted,
+          tempo: this.state.tempo,
+          tempoOverride: this.tempoOverride,
+          transpose: this.state.transpose,
+          transposeOverride: this.transposeOverride,
+          instrument: this.state.instrument,
+        }),
+      );
+    } catch {
+      // Private browsing and quota failures must not block playback.
+    }
   }
 }
 
