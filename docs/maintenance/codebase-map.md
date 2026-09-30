@@ -1737,5 +1737,10 @@ Vary mismatch; a behavior check reproduces and guards the corrected lookup. The
 production first-offline settings/playlist/text-reader flow now passes 3/3 with
 retries disabled. Service-worker unit checks pass 13/13, including missing asset,
 path restrictions, deduplication, cache reset and editorial retention. All 65
-emitted asset paths resolve in the build. Final-head CI/native evidence and
+emitted asset paths resolve in the build. CI at `78bc8cf` exposes a remaining
+runtime-health assertion for shell v22; align it with v23 and require the
+production-served asset manifest to contain lazy settings/playlist modules.
+The loading fixture also resolves reader paths from this public manifest:
+GitHub artifacts omit hidden `.vite` metadata used by its first local version.
+Final-head CI/native evidence and
 interrupted/signed-upgrade parity remain required.

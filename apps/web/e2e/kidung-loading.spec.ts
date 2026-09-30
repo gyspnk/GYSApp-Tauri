@@ -1,20 +1,30 @@
 import { expect, test } from "@playwright/test";
-import { readFile } from "node:fs/promises";
 
 test.use({ serviceWorkers: "block" });
 
 test("catalog and settings stay usable without loading the hymn reader", async ({
   page,
 }) => {
-  const readerPath =
-    process.env.GYS_E2E_DEV === "1"
-      ? "/src/kidung.tsx"
-      : JSON.parse(
-          await readFile(
-            new URL("../dist/.vite/manifest.json", import.meta.url),
-            "utf8",
-          ),
-        )["src/kidung.tsx"].file;
+  let readerPath = "/src/kidung.tsx";
+  if (process.env.GYS_E2E_DEV !== "1") {
+    // CI downloads the production artifact without hidden .vite metadata.
+    // Resolve the actual deferred reader through the public offline manifest.
+    const response = await page.request.get(
+      "/GYSApp-Tauri/offline-shell-assets.json",
+    );
+    expect(response.ok()).toBe(true);
+    const { assets } = (await response.json()) as { assets: string[] };
+    const sectionChunk =
+      /^assets\/kidung-(?:page|catalog|local-nav|midi-controls|playlist-page|playlists|settings-page|shared)-/;
+    const readers = assets.filter(
+      (path) =>
+        path.startsWith("assets/kidung-") &&
+        path.endsWith(".js") &&
+        !sectionChunk.test(path),
+    );
+    expect(readers).toHaveLength(1);
+    readerPath = readers[0]!;
+  }
   const readerRequests: string[] = [];
   await page.route("**/*", async (route) => {
     if (new URL(route.request().url()).pathname.endsWith(readerPath)) {

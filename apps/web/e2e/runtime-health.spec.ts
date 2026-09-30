@@ -74,9 +74,23 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
   );
   expect(serviceWorkerResponse.ok()).toBe(true);
   const serviceWorker = await serviceWorkerResponse.text();
-  expect(serviceWorker).toContain("gysapp-shell-v22");
+  expect(serviceWorker).toContain("gysapp-shell-v23");
   expect(serviceWorker).not.toContain("distributed-hymn-catalog");
   expect(serviceWorker).toContain("MAX_REMOTE_MEDIA_ENTRIES = 96");
+  if (process.env.GYS_E2E_DEV !== "1") {
+    const buildAssetsResponse = await page.request.get(
+      new URL("offline-shell-assets.json", page.url()).toString(),
+    );
+    expect(buildAssetsResponse.ok()).toBe(true);
+    const buildAssets = await buildAssetsResponse.json();
+    expect(buildAssets.version).toBe(1);
+    expect(buildAssets.assets).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^assets\/kidung-settings-page-.*\.js$/),
+        expect.stringMatching(/^assets\/kidung-playlist-page-.*\.js$/),
+      ]),
+    );
+  }
   expect(metadataWarnings).toEqual([]);
 });
 
