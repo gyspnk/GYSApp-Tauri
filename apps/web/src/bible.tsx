@@ -14,7 +14,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  BibleReaderPackSchema,
   SpeechEnginePreferenceSchema,
   type BibleBook,
   type BibleCrossReference,
@@ -64,6 +63,7 @@ import {
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
 import { loadBibleReaderPack } from "./bible-distributed.js";
+import { loadBundledBiblePack } from "./bible-pack-loader.js";
 import { Icon } from "./icons.js";
 import { setBibleHeaderState } from "./bible-header-store.js";
 
@@ -1120,19 +1120,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setPackState({ status: "loading" });
     const request =
       selectedVersionCode === "b_tb"
-        ? fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
-            signal: controller.signal,
-            cache: "no-store",
-          }).then(async (response) => {
-            if (!response.ok)
-              throw new Error("Offline TB reader pack unavailable");
-            const json: unknown = await response.json();
-            const parsed = BibleReaderPackSchema.safeParse(json);
-            if (!parsed.success) {
-              throw new Error("TB reader pack is invalid");
-            }
-            return parsed.data;
-          })
+        ? loadBundledBiblePack()
         : loadBibleReaderPack(
             selectedVersionCode,
             getDistributedAssetManager().getStore(),
@@ -1171,17 +1159,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSecondaryPackState({ status: "loading" });
     const request =
       secondaryVersionCode === "b_tb"
-        ? fetch(`${import.meta.env.BASE_URL}offline/bible/tb-reader.json`, {
-            signal: controller.signal,
-            cache: "no-store",
-          }).then(async (response) => {
-            if (!response.ok)
-              throw new Error("Offline TB reader pack unavailable");
-            const json: unknown = await response.json();
-            const parsed = BibleReaderPackSchema.safeParse(json);
-            if (!parsed.success) throw new Error("TB reader pack is invalid");
-            return parsed.data;
-          })
+        ? loadBundledBiblePack()
         : loadBibleReaderPack(
             secondaryVersionCode,
             getDistributedAssetManager().getStore(),

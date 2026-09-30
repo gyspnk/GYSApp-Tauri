@@ -53,7 +53,7 @@ function createDefaultWorker(): BibleSearchWorker {
  * worker startup failures so search never becomes a hard dependency.
  */
 export class BibleSearchClient {
-  private readonly fallback: BibleRepository;
+  private fallback: BibleRepository | undefined;
   private readonly pending = new Map<number, PendingSearch>();
   private readonly ready: Promise<void>;
   private resolveReady!: () => void;
@@ -63,11 +63,10 @@ export class BibleSearchClient {
   private readyTimer: ReturnType<typeof setTimeout> | undefined;
 
   public constructor(
-    verses: readonly BibleVerse[],
+    private readonly verses: readonly BibleVerse[],
     workerFactory: BibleSearchWorkerFactory = createDefaultWorker,
-    bookNames?: Readonly<Record<string, string>>,
+    private readonly bookNames?: Readonly<Record<string, string>>,
   ) {
-    this.fallback = new BibleRepository(verses, bookNames ? { bookNames } : {});
     this.ready = new Promise<void>((resolve) => {
       this.resolveReady = resolve;
     });
@@ -106,12 +105,12 @@ export class BibleSearchClient {
   ): Promise<BibleVerse[]> {
     if (signal?.aborted) throw abortError();
     if (!this.worker || this.failed) {
-      return this.fallback.search(query, options);
+      return this.fallbackRepository().search(query, options);
     }
     await this.ready;
     if (signal?.aborted) throw abortError();
     if (!this.worker || this.failed) {
-      return this.fallback.search(query, options);
+      return this.fallbackRepository().search(query, options);
     }
 
     const id = ++this.nextId;
@@ -136,7 +135,7 @@ export class BibleSearchClient {
       } catch {
         this.pending.delete(id);
         signal?.removeEventListener("abort", onAbort);
-        void this.fallback.search(query, options).then(resolve, reject);
+        void this.fallbackRepository().search(query, options).then(resolve, reject);
       }
     });
   }
@@ -156,6 +155,13 @@ export class BibleSearchClient {
       pending.reject(abortError());
       this.pending.delete(id);
     }
+  }
+
+  private fallbackRepository(): BibleRepository {
+    return (this.fallback ??= new BibleRepository(
+      this.verses,
+      this.bookNames ? { bookNames: this.bookNames } : {},
+    ));
   }
 
   private handleMessage(message: WorkerResponse): void {
@@ -189,7 +195,7 @@ export class BibleSearchClient {
         "abort",
         request.onAbort ?? (() => undefined),
       );
-      void this.fallback
+      void this.fallbackRepository()
         .search(request.query, request.options)
         .then(request.resolve, request.reject);
     }

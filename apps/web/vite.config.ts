@@ -189,6 +189,7 @@ export default defineConfig({
   },
   build: {
     target: "es2022",
+    manifest: true,
     // The shell Service Worker owns the same module requests. Vite's
     // modulepreload links then trigger Chromium cross-world mismatch warnings
     // without improving the offline cache path.

@@ -1,33 +1,7 @@
-import { BibleReaderPackSchema, type BibleReaderPack } from "@gys/contracts";
+import type { BibleReaderPack } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
 
-/**
- * Lazily loaded offline TB reader pack used by the cross-space search. The
- * 7 MB pack is fetched only when the search surface is opened and stays
- * cached for the session; a transient failure is retryable on the next open
- * instead of being permanently cached.
- */
-let biblePackPromise: Promise<BibleReaderPack> | undefined;
-
-export function loadBiblePack(): Promise<BibleReaderPack> {
-  biblePackPromise ??= fetch(
-    `${import.meta.env.BASE_URL}offline/bible/tb-reader.json`,
-    { cache: "force-cache" },
-  )
-    .then(async (response) => {
-      if (!response.ok)
-        throw new Error(`TB reader pack failed: ${response.status}`);
-      const json: unknown = await response.json();
-      const parsed = BibleReaderPackSchema.safeParse(json);
-      if (!parsed.success) throw new Error("TB reader pack is invalid");
-      return parsed.data;
-    })
-    .catch((error: unknown) => {
-      biblePackPromise = undefined;
-      throw error;
-    });
-  return biblePackPromise;
-}
+export { loadBundledBiblePack as loadBiblePack } from "./bible-pack-loader.js";
 
 /** Map numeric TB book ids to display names for the search index. */
 export function bibleBookNames(pack: BibleReaderPack): Record<string, string> {

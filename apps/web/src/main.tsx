@@ -6,6 +6,7 @@ import { installDirectManipulationEnhancements } from "./direct-manipulation.js"
 import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
 import { initializeUiPreferences } from "./ui-preferences.js";
+import { clearStaleShellCaches } from "./chunk-recovery.js";
 import "./styles.css";
 import "./ui-hardening.css";
 import "./ui-preferences.css";
@@ -32,10 +33,11 @@ if (typeof window !== "undefined") {
       window.sessionStorage.setItem("gys_chunk_reload", "1");
       const cachesObj = (window as unknown as { caches?: CacheStorage }).caches;
       if (cachesObj) {
-        void cachesObj
-          .keys()
-          .then((keys) => Promise.all(keys.map((k) => cachesObj.delete(k))))
-          .then(() => {
+        void clearStaleShellCaches(cachesObj)
+          .catch((error: unknown) => {
+            recordDiagnostic("warn", "chunk-recovery.cache", error);
+          })
+          .finally(() => {
             window.location.reload();
           });
       } else {

@@ -1662,3 +1662,13 @@ Validation for CF-195: 2026-09-28 — the regression test confirmed that reapply
 
 Validation for CF-196: 2026-09-28 — the Bible search 390×844 visual test now waits for `document.fonts.ready` and three animation frames after focusing search instead of relying on a fixed 250 ms delay; the focused Playwright case passes 5/5 after this test-only stabilization. The preceding full Playwright run exited 0 with 322 passed, three BFF-gated skips, and one Bible screenshot that passed on retry. No visual snapshot was changed. Protected prerequisite: preserve reviewed visual baselines and the existing dirty worktree. Next frontier: close the documented external installer, native picker, Windows media-panel, and provider CORS boundaries when their required environments are available.
 Validation for CF-197: 2026-09-28 — focused Bible search visual tests pass 15/15 across five repetitions per case. The final full Playwright run passes 323 tests and skips three cases gated on the local BFF configuration, with no failures (8.5 minutes). Reviewed and refreshed the two Bible search snapshots and the desktop filter snapshot: browser locator scrolling accounts for a 7 px desktop origin change before focus, while the 390×844 page has a stable 7 px top offset missing from the prior baseline. Test screenshot capture waits for fonts and render frames and starts from scrollY 0. Protected prerequisite: preserve the reviewed snapshots and unrelated dirty worktree changes. Next frontier: verify the signed installer/updater, OS picker/media controls, live Literature Worker freshness, and provider PDF CORS when those environments are available.
+
+- `2026-09-30 / CF-198`: share bundled TB loading across reader, split
+  reader and global search; construct the main-thread search fallback on demand;
+  count transitive static bundle imports; preserve downloaded asset caches on
+  stale-chunk recovery; provide offline local verification, watch/UI/debug
+  commands and a cached packaged-native build. Continue the approved UI,
+  loading and parity roadmap in
+  `docs/plans/2026-09-30-loading-debug-efficiency.md`.
+
+Validation for CF-198: implementation prepared through the GitHub connector because the session executor failed to start. Pure JavaScript bundle-graph, exit-status and pre-push smoke checks passed in the orchestration runtime. Repository build, tests and formatting require the PR's GitHub Actions run; physical-device, visual and end-to-end cold-process measurements remain pending.

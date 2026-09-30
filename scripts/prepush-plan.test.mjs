@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createPrepushPlan } from "./prepush-plan.mjs";
 
 test("pre-push verification compiles the TypeScript workspace only once", () => {
-  const plan = createPrepushPlan();
+  const plan = createPrepushPlan({ full: true });
   const pnpmCommands = plan
     .filter((step) => step.command === "pnpm")
     .map((step) => step.args.join(" "));
@@ -14,7 +14,7 @@ test("pre-push verification compiles the TypeScript workspace only once", () => 
 });
 
 test("full browser verification reuses the pre-push build", () => {
-  const plan = createPrepushPlan();
+  const plan = createPrepushPlan({ full: true });
   const e2e = plan.find(
     (step) =>
       step.command === "pnpm" &&
@@ -26,7 +26,7 @@ test("full browser verification reuses the pre-push build", () => {
 });
 
 test("pre-push still keeps non-duplicate quality and native gates", () => {
-  const plan = createPrepushPlan();
+  const plan = createPrepushPlan({ full: true });
   const commands = plan.map((step) =>
     `${step.command} ${step.args.join(" ")}`.trim(),
   );
@@ -50,4 +50,17 @@ test("pre-push still keeps non-duplicate quality and native gates", () => {
       `missing pre-push gate: ${expected}`,
     );
   }
+});
+
+test("default pre-push feedback is offline and excludes full release work", () => {
+  const commands = createPrepushPlan().map(
+    (step) => `${step.command} ${step.args.join(" ")}`,
+  );
+  assert.deepEqual(commands, [
+    "pnpm format:check",
+    "pnpm verify:docs",
+    "pnpm verify:generated",
+    "pnpm typecheck",
+    "pnpm test",
+  ]);
 });

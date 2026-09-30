@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 type ShellRun = {
   run: number;
   elapsedMs: number;
-  domContentLoaded: number;
-  firstPaint: number;
+  domContentLoaded: number | null;
+  firstPaint: number | null;
   moduleCount: number;
   duplicateModules: string[];
 };
@@ -22,9 +22,12 @@ function percentile(values: readonly number[], fraction: number): number {
 test("initial shell stays responsive and does not duplicate application modules", async ({
   page,
 }, testInfo) => {
-  test.setTimeout(30_000);
+  const samples = Number(process.env.GYS_PERF_SAMPLES ?? 5);
+  if (!Number.isInteger(samples) || samples < 5 || samples > 100)
+    throw new Error("GYS_PERF_SAMPLES must be an integer from 5 to 100");
+  test.setTimeout(Math.max(45_000, samples * 10_000));
   const runs: ShellRun[] = [];
-  for (let run = 1; run <= 2; run += 1) {
+  for (let run = 1; run <= samples; run += 1) {
     await page.evaluate(() => performance.clearResourceTimings());
     const started = Date.now();
     await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });
@@ -50,12 +53,12 @@ test("initial shell stays responsive and does not duplicate application modules"
       const counts = new Map<string, number>();
       for (const url of moduleUrls) counts.set(url, (counts.get(url) ?? 0) + 1);
       return {
-        domContentLoaded: navigation?.domContentLoadedEventEnd ?? 0,
+        domContentLoaded: navigation?.domContentLoadedEventEnd || null,
         firstPaint:
           performance
             .getEntriesByType("paint")
             .find((entry) => entry.name === "first-contentful-paint")
-            ?.startTime ?? 0,
+            ?.startTime ?? null,
         moduleCount: counts.size,
         duplicateModules: [...counts]
           .filter(([, count]) => count > 1)
@@ -70,6 +73,10 @@ test("initial shell stays responsive and does not duplicate application modules"
   console.log(
     `[performance] shell median=${medianMs.toFixed(1)}ms p95=${p95Ms.toFixed(1)}ms samples=${elapsed.join(",")}`,
   );
+  await testInfo.attach("shell-performance.json", {
+    body: JSON.stringify({ runs, medianMs, p95Ms }, null, 2),
+    contentType: "application/json",
+  });
   testInfo.annotations.push({
     type: "performance",
     description: JSON.stringify({ runs, medianMs, p95Ms }),

@@ -21,7 +21,10 @@
     "lint": "tsc -b --pretty false",
     "dev": "vite --host 127.0.0.1 --port 5173",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
-    "serve": "vite preview --host 127.0.0.1 --port 4173"
+    "serve": "vite preview --host 127.0.0.1 --port 4173",
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:e2e:ui": "playwright test --ui",
+    "test:performance": "playwright test e2e/performance.spec.ts --workers=1"
   },
   "dependencies": {
     "@gys/contracts": "workspace:*",

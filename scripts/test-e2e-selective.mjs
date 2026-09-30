@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { processExitCode } from "./process-result.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -27,4 +28,5 @@ const result = spawnSync("pnpm", ["exec", "playwright", "test", ...plan.args], {
   shell: true,
 });
 
-process.exit(result.status ?? 0);
+if (result.error) console.error(result.error.message);
+process.exit(processExitCode(result));

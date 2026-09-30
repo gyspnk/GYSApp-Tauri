@@ -1,4 +1,17 @@
-export function createPrepushPlan() {
+/**
+ * Local pushes get deterministic checks without network sync or full browser
+ * rebuilds. The complete release plan stays available through verify:release.
+ */
+export function createPrepushPlan({ full = false } = {}) {
+  if (!full) {
+    return [
+      { command: "pnpm", args: ["format:check"] },
+      { command: "pnpm", args: ["verify:docs"] },
+      { command: "pnpm", args: ["verify:generated"] },
+      { command: "pnpm", args: ["typecheck"] },
+      { command: "pnpm", args: ["test"] },
+    ];
+  }
   return [
     { command: "node", args: ["scripts/sync-egys.mjs", "--strict"] },
     {

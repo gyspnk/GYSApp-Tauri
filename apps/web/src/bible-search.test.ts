@@ -118,4 +118,34 @@ describe("BibleSearchClient", () => {
     await expect(pending).rejects.toMatchObject({ name: "AbortError" });
     client.dispose();
   });
+  it("falls back to reference-aware search when worker startup fails", async () => {
+    const client = new BibleSearchClient(verses, () => {
+      throw new Error("worker unavailable");
+    });
+    expect(client.backend).toBe("main");
+    await expect(client.search("Allah")).resolves.toMatchObject([
+      { id: "gen-1-1" },
+      { id: "joh-3-16" },
+    ]);
+    client.dispose();
+  });
+
+  it("recovers pending searches when an initialized worker fails", async () => {
+    let worker: BibleSearchWorker | undefined;
+    const client = new BibleSearchClient(verses, () => {
+      worker = {
+        onmessage: null,
+        onerror: null,
+        postMessage() {},
+        terminate: vi.fn(),
+      };
+      return worker;
+    });
+    const result = client.search("kasih");
+    worker?.onerror?.({ message: "worker failed" } as ErrorEvent);
+    await expect(result).resolves.toMatchObject([{ id: "joh-3-16" }]);
+    expect(worker?.terminate).toHaveBeenCalledTimes(1);
+    client.dispose();
+  });
+
 });
