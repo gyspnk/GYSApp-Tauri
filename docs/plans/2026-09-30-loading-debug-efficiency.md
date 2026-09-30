@@ -54,6 +54,13 @@ ready. CI timings are not device-startup guarantees.
 - Selective verification includes loading, offline sections, playlist parity, visual and
   accessibility contracts for every extracted Kidung section.
 
+- Bible chapter rendering and verse text parsing have separate modules. Verse
+  text memoization avoids reparsing during unrelated reader state changes;
+  query expressions are compiled once per query and reused across styled segments.
+  Next/secondary chapter filtering now follows navigation and pack changes.
+- Selective checks for Bible renderer modules include annotation migration,
+  visual and accessibility contracts without filtering away legacy test titles.
+
 ## Commands
 
 ```sh

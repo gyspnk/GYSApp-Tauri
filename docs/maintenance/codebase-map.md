@@ -1744,3 +1744,27 @@ The loading fixture also resolves reader paths from this public manifest:
 GitHub artifacts omit hidden `.vite` metadata used by its first local version.
 Final-head CI/native evidence and
 interrupted/signed-upgrade parity remain required.
+
+- `2026-09-30 / CF-204`: extract Bible chapter presentation into
+  `bible-chapter.tsx` and verse marker/entity/query rendering into
+  `bible-verse-text.tsx`. Memoize verse text separately from reader state,
+  retain parsed segments when the query changes, and reuse compiled literal
+  query expressions across styled segments. Stabilize the next-chapter target
+  so its existing memo avoids scanning all verses on unrelated UI updates.
+  Memoize secondary chapter selection/filtering while split view is enabled.
+  Reader loading, speech, navigation, notes and persisted key formats retain
+  their ownership. Selective renderer checks include legacy annotation migration
+  without a title grep, plus visual and accessibility coverage.
+
+Validation for CF-204: six rendered-text contracts cover nested hidden footnotes,
+Jesus words/italics, poetry line breaks, entity decoding without HTML injection,
+empty text, and literal query terms across styles/search results. Web unit tests
+pass 358/358. Local build/typecheck pass; the initial JavaScript graph remains
+177.8 KiB gzip within the unchanged 180 KiB limit. Production browser behavior passes 44/44 without retries; standalone annotation
+migration/highlight checks pass 2/2. Seven local pixel baselines fail identically
+on the preceding `9ece155` reader in this executor: five before/after screenshots
+are pixel-identical, and two differ by only 30/70 control pixels. No baseline or
+threshold is changed. Final-head CI visual/native evidence remains required. This
+reduces repeated render work; no new cold-start/device latency claim is made.
+Bible search/notes orchestration, CSS ownership and signed-upgrade/device parity
+remain open work.

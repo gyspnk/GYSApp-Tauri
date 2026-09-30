@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { collectChangedFiles } from "./test-e2e-selective-core.mjs";
+import {
+  collectChangedFiles,
+  resolveSelectiveTestArgs,
+} from "./test-e2e-selective-core.mjs";
 
 function fakeExec(outputs, commands) {
   return (command) => {
@@ -78,4 +81,29 @@ test("a partial PR range falls back to local detection instead of guessing", () 
     "git status --porcelain -uall",
     "git diff --name-only HEAD",
   ]);
+});
+
+test("Bible render modules include annotation migration and visual contracts without title filtering", () => {
+  for (const module of [
+    "bible.tsx",
+    "bible-chapter.tsx",
+    "bible-verse-text.tsx",
+  ]) {
+    const result = resolveSelectiveTestArgs([`apps/web/src/${module}`], []);
+    for (const spec of [
+      "bible-annotations",
+      "navigation-layout",
+      "visual",
+      "accessibility",
+    ]) {
+      assert.ok(
+        result.args.includes(`e2e/${spec}.spec.ts`),
+        `${module}: ${spec}`,
+      );
+    }
+    assert.ok(
+      !result.args.includes("-g"),
+      `${module}: include untitled legacy migration`,
+    );
+  }
 });

@@ -97,6 +97,14 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       grepPatterns.add("Bible");
     }
 
+    if (/apps\/web\/src\/bible(?:-chapter|-verse-text)?\.tsx$/.test(file)) {
+      specFiles.add("e2e/bible-annotations.spec.ts");
+      specFiles.add("e2e/visual.spec.ts");
+      specFiles.add("e2e/accessibility.spec.ts");
+      // Annotation tests include legacy migration without "Bible" in the title.
+      runSmokeAll = true;
+    }
+
     if (file.includes("sauh")) {
       specFiles.add("e2e/sauh-lifecycle.spec.ts");
       specFiles.add("e2e/sauh-error.spec.ts");

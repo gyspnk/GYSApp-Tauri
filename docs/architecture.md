@@ -140,6 +140,15 @@ history live in versioned local keys and remain available offline. The split
 controller owns ratio clamping, pointer lifecycle, keyboard-safe persistence,
 and the mobile guard independently of the reader component.
 
+Bible chapter presentation belongs to `bible-chapter.tsx`; marker parsing,
+entity decoding and literal query highlighting belong to `bible-verse-text.tsx`.
+Verse text is memoized independently of selection, notes, bookmarks and speech
+state. Parsed segments depend on raw text; compiled query expressions depend on
+the query and are reused across segments. Next-chapter and secondary chapter
+lists depend on navigation and pack state rather than unrelated UI updates.
+The reader remains responsible for loading, search, annotation persistence and
+split orchestration; these module boundaries do not add lazy loading delays.
+
 The global media surface subscribes to the external MIDI and speech stores,
 not React render ticks. It exposes the active source as an internal route (and
 verse hash for Bible speech), keeps title/progress visible in minimized mode,

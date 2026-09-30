@@ -17,7 +17,6 @@ import {
   SpeechEnginePreferenceSchema,
   type BibleBook,
   type BibleCrossReference,
-  type BiblePericope,
   type BibleReaderPack,
 } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
@@ -65,6 +64,12 @@ import {
 import { loadBibleReaderPack } from "./bible-distributed.js";
 import { loadBundledBiblePack } from "./bible-pack-loader.js";
 import { Icon } from "./icons.js";
+import {
+  ChapterPane,
+  DEFAULT_HIGHLIGHT_COLORS,
+  isCustomHighlightColor,
+} from "./bible-chapter.js";
+import { HighlightedText } from "./bible-verse-text.js";
 import { setBibleHeaderState } from "./bible-header-store.js";
 
 const SEARCH_RESULTS_PAGE_SIZE = 40;
@@ -92,7 +97,6 @@ const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
 const HIGHLIGHT_PALETTE_KEY = "gys-bible-highlight-palette-v1";
 const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
 const VERSION_KEY = "gys-bible-version-v1";
-const DEFAULT_HIGHLIGHT_COLORS = ["yellow", "blue", "green"] as const;
 const MAX_CUSTOM_HIGHLIGHT_COLORS = 6;
 
 function readSavedNumber(key: string, fallback: number): number {
@@ -169,10 +173,6 @@ function readBibleNotes(): BibleNotes {
   }
 }
 
-function isCustomHighlightColor(value: string): boolean {
-  return /^#[0-9a-f]{6}$/i.test(value);
-}
-
 function readBibleHighlights(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(readStringMap(HIGHLIGHTS_KEY)).filter(
@@ -244,239 +244,6 @@ function speechVerseId(
   }
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function HighlightedText({ text, query }: { text: string; query: string }) {
-  const terms = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
-  if (!terms.length) return <>{text}</>;
-  const matcher = new RegExp(`(${terms.join("|")})`, "ig");
-  return (
-    <>
-      {text
-        .split(matcher)
-        .map((part, index) =>
-          terms.some((term) => new RegExp(`^${term}$`, "i").test(part)) ? (
-            <mark key={`${part}-${index}`}>{part}</mark>
-          ) : (
-            <span key={`${part}-${index}`}>{part}</span>
-          ),
-        )}
-    </>
-  );
-}
-
-function decodeBibleEntityLocal(value: string): string {
-  const named: Record<string, string> = {
-    amp: "&",
-    apos: "'",
-    nbsp: " ",
-    quot: '"',
-    lt: "<",
-    gt: ">",
-  };
-  return value.replace(
-    /&(?:#(\d+)|#x([0-9a-f]+)|([a-z][a-z0-9]+));/gi,
-    (whole, decimal: string, hexadecimal: string, name: string) => {
-      const codePoint = decimal
-        ? Number(decimal)
-        : hexadecimal
-          ? Number.parseInt(hexadecimal, 16)
-          : undefined;
-      if (
-        codePoint !== undefined &&
-        Number.isInteger(codePoint) &&
-        codePoint >= 0 &&
-        codePoint <= 0x10ffff
-      )
-        return String.fromCodePoint(codePoint);
-      return name ? (named[name.toLowerCase()] ?? whole) : whole;
-    },
-  );
-}
-
-type VerseSegment = {
-  text: string;
-  isJesus?: boolean;
-  isFootnote?: boolean;
-  isItalic?: boolean;
-  isPoetry?: boolean;
-};
-
-function parseBibleVerseSegments(raw: string): VerseSegment[] {
-  const segments: VerseSegment[] = [];
-  const stack: Array<
-    Pick<VerseSegment, "isJesus" | "isFootnote" | "isItalic" | "isPoetry">
-  > = [];
-  let buffer = "";
-  const flush = () => {
-    if (!buffer) return;
-    const style = stack.reduce(
-      (acc, cur) => ({ ...acc, ...cur }),
-      {} as Pick<
-        VerseSegment,
-        "isJesus" | "isFootnote" | "isItalic" | "isPoetry"
-      >,
-    );
-    // footnote ⓐⓑ hidden completely — jangan push sama sekali
-    if (style.isFootnote) {
-      buffer = "";
-      return;
-    }
-    const decoded = decodeBibleEntityLocal(buffer);
-    segments.push({ text: decoded, ...style });
-    buffer = "";
-  };
-  let i = 0;
-  while (i < raw.length) {
-    if (raw[i] === "<") {
-      const end = raw.indexOf(">", i);
-      if (end === -1) {
-        buffer += raw[i];
-        i += 1;
-        continue;
-      }
-      const tagRaw = raw.slice(i + 1, end).trim();
-      const isClosing = tagRaw.startsWith("/");
-      const tagName = tagRaw
-        .replace(/^\//, "")
-        .split(/[\s\/]/, 1)[0]
-        ?.toLowerCase();
-      const isSelfClosing = tagRaw.endsWith("/") || tagName === "pb";
-      flush();
-      if (!isClosing && !isSelfClosing) {
-        if (tagName === "j") stack.push({ isJesus: true });
-        else if (tagName === "f") stack.push({ isFootnote: true });
-        else if (tagName === "i") stack.push({ isItalic: true });
-        else if (tagName === "t") stack.push({ isPoetry: true });
-        else if (tagName === "br" || tagName === "p") {
-          segments.push({ text: "\n" });
-        }
-      } else if (isClosing) {
-        for (let s = stack.length - 1; s >= 0; s -= 1) {
-          const cur = stack[s];
-          if (!cur) continue;
-          if (
-            (tagName === "j" && cur.isJesus) ||
-            (tagName === "f" && cur.isFootnote) ||
-            (tagName === "i" && cur.isItalic) ||
-            (tagName === "t" && cur.isPoetry)
-          ) {
-            stack.splice(s, 1);
-            break;
-          }
-        }
-        if (tagName === "t") {
-          segments.push({ text: "\n" });
-        }
-      } else if (isSelfClosing) {
-        if (tagName === "pb") segments.push({ text: "\n" });
-        else if (tagName === "br") segments.push({ text: "\n" });
-      }
-      i = end + 1;
-      continue;
-    }
-    if (raw[i] === "&") {
-      const semi = raw.indexOf(";", i);
-      if (semi !== -1 && semi - i <= 32) {
-        buffer += raw.slice(i, semi + 1);
-        i = semi + 1;
-        continue;
-      }
-    }
-    buffer += raw[i];
-    i += 1;
-  }
-  flush();
-  // Merge consecutive segments with same style and normalize spaces
-  const merged: VerseSegment[] = [];
-  for (const seg of segments) {
-    if (seg.text === "\n") {
-      merged.push(seg);
-      continue;
-    }
-    const normalized = seg.text.replace(/\s+/g, " ");
-    if (!normalized.trim()) continue;
-    const last = merged[merged.length - 1];
-    if (
-      last &&
-      last.text !== "\n" &&
-      last.isJesus === seg.isJesus &&
-      last.isFootnote === seg.isFootnote &&
-      last.isItalic === seg.isItalic &&
-      last.isPoetry === seg.isPoetry
-    ) {
-      last.text += normalized;
-    } else {
-      merged.push({ ...seg, text: normalized });
-    }
-  }
-  // hapus <br> di awal/akhir yang bikin first line ter-enter sekali, dan rapikan dobel enter
-  while (merged.length && merged[0]?.text === "\n") merged.shift();
-  while (merged.length && merged[merged.length - 1]?.text === "\n")
-    merged.pop();
-  const compact: VerseSegment[] = [];
-  for (const seg of merged) {
-    if (seg.text === "\n" && compact[compact.length - 1]?.text === "\n")
-      continue;
-    compact.push(seg);
-  }
-  return compact;
-}
-
-function highlightSegmentText(text: string, query: string): React.ReactNode[] {
-  const terms = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
-  if (!terms.length) return [text];
-  const matcher = new RegExp(`(${terms.join("|")})`, "ig");
-  return text
-    .split(matcher)
-    .map((part, idx) =>
-      terms.some((term) => new RegExp(`^${term}$`, "i").test(part)) ? (
-        <mark key={`${part}-${idx}`}>{part}</mark>
-      ) : (
-        <span key={`${part}-${idx}`}>{part}</span>
-      ),
-    );
-}
-
-function BibleVerseText({ raw, query }: { raw: string; query: string }) {
-  const segments = parseBibleVerseSegments(raw);
-  if (!segments.length) return null;
-  return (
-    <>
-      {segments.map((seg, idx) => {
-        if (seg.text === "\n") return <br key={`br-${idx}`} />;
-        if (seg.isFootnote) return null;
-        const highlighted = highlightSegmentText(seg.text, query);
-        // footnote ⓐⓑ hidden per request — gak tampak sama sekali
-        if (seg.isJesus) {
-          return (
-            <span key={`seg-${idx}`} className="bible-jw">
-              {highlighted}
-            </span>
-          );
-        }
-        if (seg.isPoetry) {
-          return (
-            <span key={`seg-${idx}`} className="bible-poetry">
-              {highlighted}
-            </span>
-          );
-        }
-        if (seg.isItalic) {
-          return (
-            <em key={`seg-${idx}`} className="bible-italic">
-              {highlighted}
-            </em>
-          );
-        }
-        return <span key={`seg-${idx}`}>{highlighted}</span>;
-      })}
-    </>
-  );
-}
-
 function findNextTarget(
   books: readonly BibleBook[],
   book: BibleBook,
@@ -499,285 +266,6 @@ function findNextTarget(
 
 const EMPTY_BOOKMARKS = new Set<string>();
 const EMPTY_HIGHLIGHTS: Record<string, string> = {};
-
-function ChapterPane({
-  locale,
-  book,
-  chapter,
-  verses,
-  translation,
-  pericopes,
-  crossRefs,
-  onOpenCrossRefs,
-  onSelectParallel,
-  bookmarks,
-  highlights,
-  selectedVerseId,
-  speakingVerseId,
-  searchQuery,
-  secondary = false,
-  scrollRef,
-  onScroll,
-  onSelect,
-  onBookmark,
-  onTouchStart,
-  onTouchEnd,
-}: {
-  locale: Locale;
-  book: BibleBook;
-  chapter: number;
-  verses: BibleVerse[];
-  translation: string;
-  pericopes?: readonly BiblePericope[] | undefined;
-  crossRefs?:
-    Readonly<Record<string, readonly BibleCrossReference[]>> | undefined;
-  onOpenCrossRefs?: (
-    id: string,
-    refs: readonly BibleCrossReference[],
-    title: string,
-  ) => void;
-  onSelectParallel?: (bookId: number, chapter: number, verse: number) => void;
-  bookmarks: Set<string>;
-  highlights: Record<string, string>;
-  selectedVerseId?: string | undefined;
-  speakingVerseId?: string | undefined;
-  searchQuery: string;
-  secondary?: boolean;
-  scrollRef?: React.RefObject<HTMLDivElement | null>;
-  onScroll?: () => void;
-  onSelect: (verse: BibleVerse) => void;
-  onBookmark: (id: string) => void;
-  onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
-  onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
-}) {
-  const chapterPericopes = useMemo(() => {
-    if (!pericopes?.length) return [];
-    return pericopes.filter(
-      (p) => p.book === String(book.id) && p.chapter === chapter,
-    );
-  }, [pericopes, book.id, chapter]);
-
-  const pericopeByVerse = useMemo(() => {
-    const map = new Map<number, BiblePericope>();
-    for (const p of chapterPericopes) {
-      map.set(p.verse, p);
-    }
-    return map;
-  }, [chapterPericopes]);
-
-  return (
-    <section
-      className={`bible-pane${secondary ? " bible-pane-secondary" : ""}`}
-      aria-label={`${book.name} ${chapter}`}
-      data-pericopes={pericopes?.length ?? 0}
-      data-book={book.id}
-      data-chapter={chapter}
-    >
-      <div className="reader-heading">
-        <p className="date-line">{translation}</p>
-        <h2>
-          {book.name} {chapter}
-        </h2>
-      </div>
-      {(() => {
-        const chapterPericope = pericopeByVerse.get(0);
-        if (!chapterPericope) return null;
-        return (
-          <div
-            className="bible-pericope-heading is-chapter"
-            role="heading"
-            aria-level={3}
-          >
-            <div className="bible-pericope-title-row">
-              <span className="bible-pericope-title">
-                {chapterPericope.title}
-              </span>
-            </div>
-            {chapterPericope.parallels &&
-              chapterPericope.parallels.length > 0 && (
-                <div className="bible-pericope-parallels">
-                  {chapterPericope.parallels.map((par, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className="bible-parallel-pill"
-                      onClick={() => {
-                        if (par.start) {
-                          onSelectParallel?.(
-                            Number(par.start.book),
-                            par.start.chapter,
-                            par.start.verse,
-                          );
-                        }
-                      }}
-                      title={translate(locale, "bible.parallelOpen", {
-                        text: par.text,
-                      })}
-                    >
-                      {par.text}
-                    </button>
-                  ))}
-                </div>
-              )}
-          </div>
-        );
-      })()}
-      <div
-        className="verse-list"
-        ref={scrollRef}
-        onScroll={onScroll}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        {verses.map((verse) => {
-          const selected = selectedVerseId === verse.id;
-          const speaking = speakingVerseId === verse.id;
-          const highlight = highlights[verse.id];
-          const highlightClass = highlight
-            ? ` is-highlight-${
-                DEFAULT_HIGHLIGHT_COLORS.includes(
-                  highlight as (typeof DEFAULT_HIGHLIGHT_COLORS)[number],
-                )
-                  ? highlight
-                  : "custom"
-              }`
-            : "";
-          const pericope =
-            verse.verse === 0 ? undefined : pericopeByVerse.get(verse.verse);
-
-          const numericId = String(
-            book.id * 1_000_000 + chapter * 1000 + verse.verse,
-          );
-          const verseRefs =
-            crossRefs?.[verse.id] ??
-            crossRefs?.[`${book.id}:${chapter}:${verse.verse}`] ??
-            crossRefs?.[numericId];
-          const hasVerseRefs = Boolean(verseRefs && verseRefs.length);
-
-          return (
-            <div key={verse.id}>
-              {pericope && (
-                <div
-                  className="bible-pericope-heading"
-                  role="heading"
-                  aria-level={3}
-                >
-                  <div className="bible-pericope-title-row">
-                    <span className="bible-pericope-title">
-                      {pericope.title}
-                    </span>
-                  </div>
-                  {pericope.parallels && pericope.parallels.length > 0 && (
-                    <div className="bible-pericope-parallels">
-                      {pericope.parallels.map((par, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          className="bible-parallel-pill"
-                          onClick={() => {
-                            if (par.start) {
-                              onSelectParallel?.(
-                                Number(par.start.book),
-                                par.start.chapter,
-                                par.start.verse,
-                              );
-                            }
-                          }}
-                          title={translate(locale, "bible.parallelOpen", {
-                            text: par.text,
-                          })}
-                        >
-                          {par.text}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              <article
-                className={`verse-row${selected ? " is-selected" : ""}${speaking ? " is-speaking" : ""}${highlightClass}`}
-                id={`bible-verse-${verse.id}`}
-                aria-current={speaking ? "true" : undefined}
-                style={
-                  isCustomHighlightColor(highlight ?? "")
-                    ? ({
-                        "--verse-highlight-color": highlight,
-                      } as CSSProperties)
-                    : undefined
-                }
-              >
-                <button
-                  className={`verse-number${bookmarks.has(verse.id) ? " is-bookmarked" : ""}`}
-                  type="button"
-                  onClick={() => onBookmark(verse.id)}
-                  aria-label={translate(locale, "bible.bookmarkVerse", {
-                    verse: verse.verse,
-                  })}
-                  aria-pressed={bookmarks.has(verse.id)}
-                >
-                  {verse.verse}
-                </button>
-                <div className="verse-content">
-                  <span
-                    className="verse-text"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onSelect(verse)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onSelect(verse);
-                      }
-                    }}
-                    aria-pressed={selected}
-                  >
-                    <BibleVerseText raw={verse.text} query={searchQuery} />
-                  </span>
-                  {hasVerseRefs && onOpenCrossRefs && verseRefs && (
-                    <button
-                      className="bible-crossref-inline"
-                      type="button"
-                      aria-label={translate(
-                        locale,
-                        "bible.crossReferenceAria",
-                        {
-                          count: verseRefs.length,
-                          reference: `${book.name} ${chapter}:${verse.verse}`,
-                        },
-                      )}
-                      title={translate(locale, "bible.crossReferenceTitle", {
-                        count: verseRefs.length,
-                      })}
-                      onClick={() =>
-                        onOpenCrossRefs(
-                          verse.id,
-                          verseRefs,
-                          `${book.name} ${chapter}:${verse.verse}`,
-                        )
-                      }
-                    >
-                      <span className="bible-crossref-star">*</span>
-                      <span className="bible-crossref-count">
-                        {verseRefs.length}
-                      </span>
-                    </button>
-                  )}
-                </div>
-                {speaking && (
-                  <span className="sr-only" role="status">
-                    {translate(locale, "bible.speakingVerse", {
-                      verse: verse.verse,
-                    })}
-                  </span>
-                )}
-              </article>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 export function BiblePage({ locale }: { locale: Locale }) {
   const location = useLocation();
@@ -1475,7 +963,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
       (verse) => verse.book === String(book.id) && verse.chapter === chapter,
     );
   }, [book, chapter, packState]);
-  const nextTarget = book ? findNextTarget(books, book, chapter, 1) : undefined;
+  const nextTarget = useMemo(
+    () => (book ? findNextTarget(books, book, chapter, 1) : undefined),
+    [books, book, chapter],
+  );
   const nextVerses = useMemo(() => {
     if (packState.status !== "ready" || !nextTarget) return [];
     return packState.pack.verses.filter(
@@ -1484,6 +975,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
         verse.chapter === nextTarget.chapter,
     );
   }, [nextTarget, packState]);
+  const secondaryChapter = useMemo(() => {
+    if (!splitView || secondaryPackState.status !== "ready" || !book)
+      return undefined;
+    const pack = secondaryPackState.pack;
+    const secondaryBook =
+      pack.books.find((candidate) => candidate.id === selectedBook) ??
+      pack.books.find(
+        (candidate) => String(candidate.id) === String(book.id),
+      ) ??
+      book;
+    return {
+      book: secondaryBook,
+      verses: pack.verses.filter(
+        (verse) =>
+          verse.book === String(secondaryBook.id) && verse.chapter === chapter,
+      ),
+    };
+  }, [splitView, secondaryPackState, selectedBook, book, chapter]);
   const selectedVerse = selectedVerseId
     ? chapterVerses.find((verse) => verse.id === selectedVerseId)
     : undefined;
@@ -2569,13 +2078,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   );
                 }
                 const secPack = secondaryPackState.pack;
-                const secBook =
-                  secPack.books.find((b) => b.id === selectedBook) ??
-                  secPack.books.find((b) => String(b.id) === String(book.id)) ??
-                  book;
-                const secVerses = secPack.verses.filter(
-                  (v) => v.book === String(secBook.id) && v.chapter === chapter,
-                );
+                if (!secondaryChapter) return null;
+                const { book: secBook, verses: secVerses } = secondaryChapter;
                 return (
                   <ChapterPane
                     locale={locale}
