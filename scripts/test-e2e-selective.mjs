@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { processExitCode } from "./process-result.mjs";
+import { pnpmInvocation, processExitCode } from "./process-result.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -22,10 +22,11 @@ if (plan.changedFiles?.length) {
 }
 console.log(`🚀 Running: pnpm exec playwright test ${plan.args.join(" ")}\n`);
 
-const result = spawnSync("pnpm", ["exec", "playwright", "test", ...plan.args], {
+const invocation = pnpmInvocation(["exec", "playwright", "test", ...plan.args]);
+const result = spawnSync(invocation.command, invocation.args, {
   cwd: webDir,
   stdio: "inherit",
-  shell: true,
+  shell: invocation.shell,
 });
 
 if (result.error) console.error(result.error.message);

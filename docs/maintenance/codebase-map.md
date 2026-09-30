@@ -1674,4 +1674,14 @@ Validation for CF-197: 2026-09-28 — focused Bible search visual tests pass 15/
   loading and parity roadmap in
   `docs/plans/2026-09-30-loading-debug-efficiency.md`.
 
-Validation for CF-198: implementation prepared through the GitHub connector because the session executor failed to start. Pure JavaScript bundle-graph, exit-status and pre-push smoke checks passed in the orchestration runtime. Repository build, tests and formatting require the PR's GitHub Actions run; physical-device, visual and end-to-end cold-process measurements remain pending.
+Validation for CF-198: initial GitHub connector implementation at `d9faa61` passes CI build/typecheck, 350 web unit tests, script/policy checks, formatting/docs/provenance, bundle/native-asset checks, Rust tests/clippy and 323 browser tests (three BFF-gated skips). The packaged Windows/WebView2 smoke also passes at that SHA: fresh-profile offline shell, verified offline PDF/MIDI/SoundFont, native cache corruption repair, 120 media transitions and preference restart. See PR #9 and its CI runs. Physical-device, signed-upgrade and live-provider parity gates remain open.
+
+- `2026-09-30 / CF-199`: restore local verification after the executor becomes
+  available; add explicit Vite/HMR browser iteration with production/CI guards;
+  bound the development image proxy's fallback chain to three seconds; keep
+  Bible typography persistence outside React's replayable state updaters;
+  measure greeting readiness in the browser separately from host test polling;
+  preserve literal regex/space arguments in test runners on Windows/Unix;
+  align README and architecture with the implemented local/PR/release gates.
+
+Validation for CF-199: local production build/typecheck, 352 web unit tests and workspace/script suites pass. Focused dev browser tests pass 3/3, including two font clicks adding exactly two steps with persistence after reload; the original dev run exposed a three-step StrictMode regression and stalled lazy navigation behind remote image requests. A 30-navigation production-preview sample records greeting-ready median 402.2ms and p95 496.5ms using a browser animation-frame marker; this includes a first navigation in the same browser profile and does not establish cold-process/native/device startup. Visual inspection of Home/Bible at 390px and Kidung at 1440px confirms one page heading and no horizontal overflow. Final PR CI is required for the additional changes; external parity gates remain open.

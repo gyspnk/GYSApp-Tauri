@@ -43,9 +43,13 @@ function devImageProxyPlugin(): Plugin {
               );
             }
 
+            // A dead publisher must not occupy the browser's local-origin
+            // connections and delay lazy route modules during development.
+            const imageRequestSignal = AbortSignal.timeout(3_000);
             for (const cand of candidates) {
               try {
                 const upstream = await fetch(cand, {
+                  signal: imageRequestSignal,
                   headers: {
                     "User-Agent":
                       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

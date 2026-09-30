@@ -6,6 +6,9 @@ export default defineConfig({
   // Sequential e2e shares one preview server; a 30s budget intermittently
   // starves first-hit navigations (cold asset compile) on slower runners.
   timeout: 40_000,
+  // Vite compiles a route on its first visit; production/CI retain their
+  // original assertion budget and are measured separately from dev mode.
+  expect: { timeout: process.env.GYS_E2E_DEV === "1" ? 15_000 : 5_000 },
   // A few specs fetch immutable upstream fixtures (gyschordweb raw CDN).
   // One retry absorbs transient upstream hiccups without masking real bugs.
   retries: 1,

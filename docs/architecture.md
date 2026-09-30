@@ -434,28 +434,32 @@ flowchart LR
   APPDATA --> ATOMIC["Path-Safe Hex Keys & Unique Temp File Replacement"]
 ```
 
-### 14. Direct-to-Main Git Workflow
+### 14. Local iteration and pull request verification
 
 ```mermaid
 flowchart LR
-  DEV["Direct-to-Main Development on 'main'"] --> PRECOMMIT["pnpm verify:precommit"]
-  PRECOMMIT --> HOOK1["Sync e-GYS, Lint, Typecheck, Contract Tests, Verify Generated"]
-  HOOK1 --> PREPUSH["pnpm verify:prepush"]
-  PREPUSH --> HOOK2["Full Test Matrix, Policy Tests, Chord Audit, Build, Budgets, Native, E2E"]
-  HOOK2 --> PUSH["Fast-Forward Push directly to origin/main"]
-  PUSH --> CI["CI Secondary Verification"]
+  DEV["Feature branch"] --> PRECOMMIT["Read-only staged formatting and relevant metadata checks"]
+  PRECOMMIT --> PREPUSH["Offline format, docs, provenance, type and unit checks"]
+  PREPUSH --> PR["Push branch and open PR"]
+  PR --> CI["Production build, budgets, full browser suite and native checks"]
+  RELEASE["pnpm verify:release"] --> FULL["Local upstream sync, chord audit and full release gates"]
 ```
 
 ## Release gates
 
-Local `pnpm verify:prepush` runs the same primary gates used by CI: e-GYS
-revision/contract verification, formatting, lint, strict typecheck, unit and
-contract tests, production builds, bundle budget, and Playwright critical
-flows. It also runs `verify:native-assets` after the web build, which checks
-the Tauri `frontendDist` boundary and every default offline/runtime binary.
-Only the local hooks access the private e-GYS upstream; GitHub Actions is a
-secondary verification layer for the already-reviewed generated contract and
-never clones or fetches the upstream repository.
+Local `pnpm verify:prepush` provides deterministic iteration checks without
+upstream synchronization or browser/native rebuilds. The complete original
+release plan is available through `pnpm verify:release`: local upstream
+revision/contract verification, chord audit, native checks, tests, production
+build, native asset and bundle verification, and Playwright using that build.
+GitHub Actions verifies the checked-in derived contract and never clones or
+fetches the private upstream repository. Explicit local synchronization remains
+an authenticated maintainer operation.
+
+`pnpm test:e2e:dev` runs UI behavior against Vite/HMR after building workspace
+dependencies. It is a local iteration tool; CI and bundle/performance assertions
+continue to use the production build. The server resolver rejects dev mode
+in CI or together with a prebuilt-production flag.
 
 ## Native platform boundary
 

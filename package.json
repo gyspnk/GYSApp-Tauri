@@ -15,7 +15,7 @@
     "dev:web": "pnpm --filter @gys/web dev",
     "serve": "pnpm --filter @gys/web preview",
     "preview": "pnpm --filter @gys/web preview",
-    "build": "pnpm run check:workspace && pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build && pnpm --filter @gys/testkit build && pnpm --filter @gys/bff build && pnpm --filter @gys/web build",
+    "build": "pnpm run check:workspace && pnpm build:test-deps && pnpm --filter @gys/web build",
     "verify:bundle": "node scripts/check-bundle-budget.mjs",
     "typecheck": "pnpm --filter @gys/contracts typecheck && pnpm --filter @gys/domain typecheck && pnpm --filter @gys/testkit typecheck && pnpm --filter @gys/bff typecheck && pnpm --filter @gys/web typecheck",
     "native:check": "pnpm --filter @gys/native check",
@@ -51,7 +51,9 @@
     "test:watch": "pnpm --filter @gys/web test:watch",
     "test:e2e:ui": "pnpm --filter @gys/web test:e2e:ui",
     "test:performance": "node scripts/test-performance.mjs",
-    "verify:release": "node scripts/verify-prepush.mjs --full"
+    "verify:release": "node scripts/verify-prepush.mjs --full",
+    "build:test-deps": "pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build && pnpm --filter @gys/testkit build && pnpm --filter @gys/bff build",
+    "test:e2e:dev": "node scripts/test-e2e-dev.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

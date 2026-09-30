@@ -899,6 +899,18 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [typography, setTypography] = useState<BibleTypography>(() =>
     readBibleTypography(),
   );
+  const typographyRef = useRef(typography);
+  typographyRef.current = typography;
+  const changeFontSize = useCallback((direction: 1 | -1) => {
+    const next =
+      direction === 1
+        ? increaseBibleFontSize(typographyRef.current)
+        : decreaseBibleFontSize(typographyRef.current);
+    typographyRef.current = next;
+    // Persist from the event handler: React may replay state updaters in dev.
+    writeBibleTypography(next);
+    setTypography(next);
+  }, []);
   const openPickerModal = useCallback((trigger?: HTMLElement | null) => {
     pickerTriggerRef.current =
       trigger ??
@@ -1808,18 +1820,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
       fontSize: typography.fontSize,
       minFontSize: BIBLE_FONT_SIZE_MIN,
       maxFontSize: BIBLE_FONT_SIZE_MAX,
-      onIncreaseFontSize: () =>
-        setTypography((current) => {
-          const next = increaseBibleFontSize(current);
-          writeBibleTypography(next);
-          return next;
-        }),
-      onDecreaseFontSize: () =>
-        setTypography((current) => {
-          const next = decreaseBibleFontSize(current);
-          writeBibleTypography(next);
-          return next;
-        }),
+      onIncreaseFontSize: () => changeFontSize(1),
+      onDecreaseFontSize: () => changeFontSize(-1),
       splitView,
       onToggleSplitView: () => setSplitView((value) => !value),
       secondaryVersionCode,
@@ -1882,6 +1884,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     startQuickNav,
     quickNavKeyDown,
     openPickerModal,
+    changeFontSize,
     typography.fontSize,
     splitView,
     syncScroll,

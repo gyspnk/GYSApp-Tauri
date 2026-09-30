@@ -19,4 +19,21 @@ describe("Playwright preview server command", () => {
       "pnpm --dir ../.. build",
     );
   });
+
+  it("builds only workspace dependencies and enables HMR for explicit dev tests", () => {
+    const command = resolveE2eServerCommand({ GYS_E2E_DEV: "1" });
+    expect(command).toContain("build:test-deps");
+    expect(command).toContain("pnpm exec vite --host");
+    expect(command).toContain("--base /GYSApp-Tauri/");
+    expect(command).not.toContain("vite preview");
+  });
+
+  it("prevents dev mode from replacing production verification", () => {
+    expect(() =>
+      resolveE2eServerCommand({ GYS_E2E_DEV: "1", CI: "true" }),
+    ).toThrow();
+    expect(() =>
+      resolveE2eServerCommand({ GYS_E2E_DEV: "1", GYS_E2E_PREBUILT: "1" }),
+    ).toThrow();
+  });
 });

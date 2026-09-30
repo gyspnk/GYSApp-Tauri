@@ -2,10 +2,11 @@
 
 Baseline: GYSApp-Tauri `287d48c`, gyschordweb `e8e7efe`.
 Primary native validation: Windows/WebView2. Android needs device verification.
-The initial implementation is being verified in GitHub Actions because the
-session executor failed to start. CI timings are not device-startup guarantees.
+Initial commits were prepared through the GitHub connector while the session
+executor was unavailable. Local verification resumed when the workspace became
+ready. CI timings are not device-startup guarantees.
 
-## Implemented foundations awaiting CI
+## Implemented foundations
 
 - Shared, retryable bundled TB request and parsed pack for reading, split and
   global search; subscriber cancellation does not abort another consumer.
@@ -14,6 +15,10 @@ session executor failed to start. CI timings are not device-startup guarantees.
   media dock loads when a session opens; Bible header controls load on their
   reader route; playback arbitration remains in the
   shell, which observes status changes instead of every position update.
+- Bible typography persists from the click handler rather than a replayable
+  React state updater, so StrictMode applies one font step per click.
+- Development image proxy requests have a shared three-second deadline across
+  publisher fallbacks, freeing local-origin connections for route modules.
 - Readability controls mount inside More rather than observing all body DOM
   mutations while other pages are open.
 - Device reset belongs to an application service rather than the More page.
@@ -26,7 +31,10 @@ session executor failed to start. CI timings are not device-startup guarantees.
   checks. `pnpm verify:release` retains the full original verification plan.
 - `pnpm dev:native`, `pnpm test:watch`, `pnpm test:e2e:ui` and
   `pnpm test:performance` provide explicit iteration paths.
-- Performance smoke uses five samples and attaches JSON; dedicated performance
+- `pnpm test:e2e:dev --ui` serves Vite/HMR with only workspace dependencies
+  built; CI and prebuilt verification reject this development mode.
+- Performance smoke uses five samples and attaches JSON. A browser frame
+  marker separates greeting readiness from host test polling; dedicated performance
   runs use 30 samples and one worker. Missing paint metrics are null.
 - Packaged-native workflow caches Rust dependency and release target artifacts.
 - Selective test execution fails on missing processes or signal termination.
@@ -42,6 +50,7 @@ pnpm test:e2e
 pnpm dev:native
 pnpm test:watch
 pnpm test:e2e:ui
+pnpm test:e2e:dev --ui
 pnpm test:performance
 pnpm verify:release
 ```
@@ -91,6 +100,12 @@ Initial device targets: warm shell p95 <=500ms, cold native shell <=1000ms,
 local catalog <=500ms, local chapter <=700ms, reader revisit <=200ms,
 indexed search <=150ms, local PDF first page <=1000ms and CLS <=0.10.
 These are acceptance targets to calibrate on reference hardware, not results.
+
+Recorded local production-preview result: 30 same-profile navigations,
+greeting-ready median 402.2ms and p95 496.5ms. The first navigation is included;
+this is not an OS/process startup measurement or remote-feed readiness claim.
+The initial implementation passes full browser and packaged-native CI at
+`d9faa61`; the subsequent local debug/typography changes require final-head CI.
 
 No full-roadmap completion or physical-device parity claim is made until these
 gates have recorded evidence.
