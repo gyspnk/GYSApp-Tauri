@@ -55,6 +55,7 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
+import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { createPlatformServices } from "./platform.js";
@@ -1249,6 +1250,7 @@ export function MorePage({
                 />
               </div>
             </div>
+            <UiPreferencesPanel locale={locale} />
           </article>
         </details>
 

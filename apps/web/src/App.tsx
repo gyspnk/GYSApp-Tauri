@@ -38,10 +38,7 @@ import {
   isEdgeSpeechConfigured,
   setCustomEdgeEndpoint,
 } from "./edge-speech.js";
-import {
-  getMidiPlaylist,
-  subscribeMidiPlaylist,
-} from "./midi-playlist.js";
+import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
@@ -54,7 +51,6 @@ import {
   type ShellTheme,
 } from "./settings.js";
 import { Icon } from "./icons.js";
-import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { useBibleHeaderState } from "./bible-header-store.js";
 import {
   readSidebarCollapsed,
@@ -81,8 +77,8 @@ function hasMediaSession(): boolean {
   const speech = speechPlayer.snapshot();
   return Boolean(
     (midi.songId && midi.status !== "idle") ||
-      (speech.total > 0 && speech.status !== "idle") ||
-      speech.playerOpen,
+    (speech.total > 0 && speech.status !== "idle") ||
+    speech.playerOpen,
   );
 }
 
@@ -1624,7 +1620,6 @@ function Shell({
           />
         </Suspense>
       ) : null}
-      <UiPreferencesPanel locale={locale} />
     </div>
   );
 }

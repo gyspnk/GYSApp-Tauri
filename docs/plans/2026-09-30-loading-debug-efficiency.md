@@ -13,6 +13,8 @@ session executor failed to start. CI timings are not device-startup guarantees.
 - Home and its editorial repositories load as a separate route chunk. The
   media dock loads when a session opens; playback arbitration remains in the
   shell, which observes status changes instead of every position update.
+- Readability controls mount inside More rather than observing all body DOM
+  mutations while other pages are open.
 - Device reset belongs to an application service rather than the More page.
 - Vite manifest traversal includes transitive static imports and excludes lazy
   routes/workers; retain existing 180 KiB graph and 250 KiB entry limits.
