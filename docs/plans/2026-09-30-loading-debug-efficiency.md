@@ -10,8 +10,9 @@ session executor failed to start. CI timings are not device-startup guarantees.
 - Shared, retryable bundled TB request and parsed pack for reading, split and
   global search; subscriber cancellation does not abort another consumer.
 - Main-thread Bible search repository constructed only when fallback is used.
-- Home and its editorial repositories load as a separate route chunk; the
-  shell observes audio-playing booleans instead of every position update.
+- Home and its editorial repositories load as a separate route chunk. The
+  media dock loads when a session opens; playback arbitration remains in the
+  shell, which observes status changes instead of every position update.
 - Device reset belongs to an application service rather than the More page.
 - Vite manifest traversal includes transitive static imports and excludes lazy
   routes/workers; retain existing 180 KiB graph and 250 KiB entry limits.
@@ -53,7 +54,7 @@ cold-process and fresh-profile benchmarks are still separate required work.
    offline benchmarks with at least 30 samples per condition. Measure shell,
    real content, search readiness, PDF first page and audio first sample
    separately; include total app/WebView/worker memory.
-2. Extract shell, Home and media dock from App; then split Kidung catalog,
+2. Continue extracting the shell from App; then split Kidung catalog,
    reader, settings and playlists, plus Bible search/notes/split. Retain
    route, focus, playback, offline and persistence contracts.
 3. Separate catalog metadata from lyrics/search payload. Show the active Bible
