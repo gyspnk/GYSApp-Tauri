@@ -1693,3 +1693,13 @@ Validation for CF-199: local production build/typecheck, 352 web unit tests and 
   official links, touch targets and locale/viewport geometry assertions.
 
 Validation for CF-200: final-head CI at `0af3576` passes build/typecheck, 352 web unit tests, script/policy suites, bundle/provenance/native-asset verification, Rust tests/clippy and packaged-native smoke; browser shard 1 passes, while shard 2 exposes the asynchronous focus-list race in the Faith PDF fixture. The original focused case passes 3/3 locally; the readiness correction passes 10/10 repeats across three browser workers with retries disabled before the next complete CI run. No visual baseline or focus timeout was relaxed.
+
+- `2026-09-30 / CF-201`: give each Bible quick-picker locale/viewport contract
+  an independent test lifecycle and the existing timeout. The preceding CI
+  succeeds but reports one retry after fifteen full navigations exhaust a
+  single 40-second test budget. Preserve all fifteen combinations and every
+  picker, focus, drag-label and overflow assertion; do not extend timeouts.
+
+Validation for CF-201: all fifteen cases pass twice (30/30) locally across
+three workers with retries disabled. Complete final-head CI is required before
+closing PR #9 verification.

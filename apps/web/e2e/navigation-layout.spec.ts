@@ -1467,51 +1467,53 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("Bible quick picker and drag overlay keep locale and viewport contracts", async ({
-    page,
-  }) => {
-    const copy = {
-      id: {
-        locale: "id",
-        handle: "Geser judul untuk berpindah pasal",
-        quick: "Navigasi cepat Alkitab",
-        picker: "Pilih Kitab & Pasal",
-        close: "Tutup pemilih kitab",
-        steps: "Langkah pemilihan",
-        placeholder: "Cari kitab atau isi ayat…",
-        dragBook: "Menggeser Kitab",
-      },
-      en: {
-        locale: "en",
-        handle: "Drag the title to change chapter",
-        quick: "Bible quick navigation",
-        picker: "Choose book & chapter",
-        close: "Close book picker",
-        steps: "Selection steps",
-        placeholder: "Search books or verse text…",
-        dragBook: "Scrubbing Book",
-      },
-      zh: {
-        locale: "zh",
-        handle: "拖动标题切换章节",
-        quick: "圣经快速导航",
-        picker: "选择书卷和章节",
-        close: "关闭书卷选择器",
-        steps: "选择步骤",
-        placeholder: "搜索书卷或经文内容…",
-        dragBook: "正在滑动书卷",
-      },
-    } as const;
-    const viewports = [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-      { width: 768, height: 1024 },
-      { width: 1024, height: 768 },
-      { width: 1440, height: 900 },
-    ];
+  const quickPickerCopy = {
+    id: {
+      locale: "id",
+      handle: "Geser judul untuk berpindah pasal",
+      quick: "Navigasi cepat Alkitab",
+      picker: "Pilih Kitab & Pasal",
+      close: "Tutup pemilih kitab",
+      steps: "Langkah pemilihan",
+      placeholder: "Cari kitab atau isi ayat…",
+      dragBook: "Menggeser Kitab",
+    },
+    en: {
+      locale: "en",
+      handle: "Drag the title to change chapter",
+      quick: "Bible quick navigation",
+      picker: "Choose book & chapter",
+      close: "Close book picker",
+      steps: "Selection steps",
+      placeholder: "Search books or verse text…",
+      dragBook: "Scrubbing Book",
+    },
+    zh: {
+      locale: "zh",
+      handle: "拖动标题切换章节",
+      quick: "圣经快速导航",
+      picker: "选择书卷和章节",
+      close: "关闭书卷选择器",
+      steps: "选择步骤",
+      placeholder: "搜索书卷或经文内容…",
+      dragBook: "正在滑动书卷",
+    },
+  } as const;
+  const viewports = [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
+  ];
 
-    for (const selected of Object.values(copy)) {
-      for (const viewport of viewports) {
+  // Each locale/viewport owns the existing timeout instead of sharing it
+  // across fifteen complete navigations. Keep every interaction assertion.
+  for (const selected of Object.values(quickPickerCopy)) {
+    for (const viewport of viewports) {
+      test(`Bible quick picker and drag overlay keep locale and viewport contracts (${selected.locale}, ${viewport.width}px)`, async ({
+        page,
+      }) => {
         await page.setViewportSize(viewport);
         await page.addInitScript((nextLocale) => {
           localStorage.setItem("gys-locale", nextLocale);
@@ -1573,7 +1575,7 @@ test.describe("responsive reader navigation", () => {
         );
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
         await page.mouse.up();
-      }
+      });
     }
-  });
+  }
 });
