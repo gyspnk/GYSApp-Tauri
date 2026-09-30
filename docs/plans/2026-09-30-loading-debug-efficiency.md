@@ -38,6 +38,21 @@ ready. CI timings are not device-startup guarantees.
   runs use 30 samples and one worker. Missing paint metrics are null.
 - Packaged-native workflow caches Rust dependency and release target artifacts.
 - Selective test execution fails on missing processes or signal termination.
+- Kidung routes load catalog, reader, playlists and settings independently;
+  settings skip catalog/music-lock fetches, and playlist skips music-lock fetch.
+  Shared navigation/formatters and MIDI controls have explicit ownership.
+- Catalog queue buttons subscribe to the queue snapshot, so pressed state and
+  accessible labels update immediately without changing search or reloading.
+- The shell queue coordinator loads PDF-derived song defaults only when audio
+  is requested, in parallel with catalog loading. Tempo/transpose rules remain
+  unchanged. The initial JavaScript graph is 177.8 KiB gzip locally.
+- A generated build-asset manifest prepares hashed lazy code in the service
+  worker after page load without executing modules. Prepared catalog can open
+  previously unvisited settings, playlist and text reader offline. Native and
+  PWA shell ownership, editorial caches and explicit music downloads stay
+  separate; interrupted/signed upgrades remain separate acceptance gates.
+- Selective verification includes loading, offline sections, playlist parity, visual and
+  accessibility contracts for every extracted Kidung section.
 
 ## Commands
 
@@ -66,8 +81,9 @@ cold-process and fresh-profile benchmarks are still separate required work.
    offline benchmarks with at least 30 samples per condition. Measure shell,
    real content, search readiness, PDF first page and audio first sample
    separately; include total app/WebView/worker memory.
-2. Continue extracting the shell from App; then split Kidung catalog,
-   reader, settings and playlists, plus Bible search/notes/split. Retain
+2. Continue extracting the shell from App; continue extracting the Kidung reader internals
+   and Bible search/notes/split. Kidung catalog, settings and playlists now
+   have independent modules and lazy route boundaries. Retain
    route, focus, playback, offline and persistence contracts.
 3. Separate catalog metadata from lyrics/search payload. Show the active Bible
    chapter before whole-pack indexing; profile parsing and cloning before
@@ -104,8 +120,10 @@ These are acceptance targets to calibrate on reference hardware, not results.
 Recorded local production-preview result: 30 same-profile navigations,
 greeting-ready median 402.2ms and p95 496.5ms. The first navigation is included;
 this is not an OS/process startup measurement or remote-feed readiness claim.
-The initial implementation passes full browser and packaged-native CI at
-`d9faa61`; the subsequent local debug/typography changes require final-head CI.
+The preceding debug/typography implementation passes full CI at `647e6c8`
+(337 browser cases, three BFF-gated skips, no flaky retries) and packaged-native
+Windows/WebView2 smoke. The Kidung section extraction requires its own final-head
+CI before completion; local loading and queue regressions provide focused proof.
 
 No full-roadmap completion or physical-device parity claim is made until these
 gates have recorded evidence.

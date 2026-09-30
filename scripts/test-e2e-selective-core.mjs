@@ -111,7 +111,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
 
     const isKidungPresentation =
-      file.includes("kidung-ux.css") ||
+      file.includes("kidung-") ||
       file.includes("kidung.tsx") ||
       file.includes("hymn-detail") ||
       file.includes("hymn-reader");
@@ -129,6 +129,9 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
 
     if (isKidungPresentation) {
       specFiles.add("e2e/kidung-usability.spec.ts");
+      specFiles.add("e2e/kidung-loading.spec.ts");
+      specFiles.add("e2e/kidung-offline.spec.ts");
+      specFiles.add("e2e/playlist-parity.spec.ts");
       specFiles.add("e2e/visual.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");

@@ -3,6 +3,24 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
+test("catalog queue status updates immediately without changing search", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  const first = page.locator(".add-to-playlist-btn").first();
+  await expect(first).toBeVisible();
+  await expect(first).toHaveAttribute("aria-pressed", "false");
+  const originalLabel = await first.getAttribute("aria-label");
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(first).not.toHaveAttribute("aria-label", originalLabel!);
+  await expect(page.locator(".kidung-local-nav a small")).toHaveText("1");
+  await first.click();
+  await expect(page.locator(".kidung-local-nav a small")).toHaveText("1");
+  await page.reload();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+});
+
 type TestMediaSessionWindow = Window & {
   __gysMediaSession?: {
     handlers: Record<string, (details?: unknown) => unknown>;

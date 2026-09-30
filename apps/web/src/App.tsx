@@ -83,7 +83,9 @@ const BiblePage = lazy(() =>
   import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
 );
 const KidungPage = lazy(() =>
-  import("./kidung.js").then(({ KidungPage: Page }) => ({ default: Page })),
+  import("./kidung-page.js").then(({ KidungPage: Page }) => ({
+    default: Page,
+  })),
 );
 const FaithPage = lazy(() =>
   import("./faith.js").then(({ FaithPage: Page }) => ({ default: Page })),

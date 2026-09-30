@@ -244,6 +244,18 @@ flowchart TB
 
 ### Kidung
 
+`kidung-page.tsx` selects independently loaded catalog (`kidung-catalog.tsx`),
+reader (`kidung.tsx`), playlist (`kidung-playlist-page.tsx`) and settings
+(`kidung-settings-page.tsx`) views. Navigation and formatting live in
+`kidung-local-nav.tsx` and `kidung-shared.ts`; MIDI reader controls live in
+`kidung-midi-controls.tsx`. Settings do not load song data. Catalog queue buttons
+observe the playlist snapshot, while the shell coordinator loads PDF song
+metadata only when starting playback. Vite emits `offline-shell-assets.json`;
+service-worker installation prepares same-origin build assets without executing
+lazy views, so their first offline use does not require a previous route visit.
+Shared playback and persistence remain
+owned by the existing domain controllers.
+
 ```mermaid
 stateDiagram-v2
   [*] --> HymnDomainModel: Hymn ID, Title, Lyrics, PDF, Chords, MIDI

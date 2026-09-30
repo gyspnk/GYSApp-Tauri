@@ -1,6 +1,26 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
+function offlineBuildAssetsPlugin(): Plugin {
+  return {
+    name: "offline-build-assets",
+    apply: "build",
+    generateBundle(_options, bundle) {
+      // Fetch code into CacheStorage without importing or executing lazy views.
+      // Public music binaries remain verified, explicit asset downloads.
+      const assets = Object.values(bundle)
+        .map((entry) => entry.fileName)
+        .filter((file) => /^assets\/.*\.(?:js|mjs|css|wasm)$/.test(file))
+        .sort();
+      this.emitFile({
+        type: "asset",
+        fileName: "offline-shell-assets.json",
+        source: JSON.stringify({ version: 1, assets }),
+      });
+    },
+  };
+}
+
 function devImageProxyPlugin(): Plugin {
   return {
     name: "dev-image-proxy",
@@ -180,7 +200,7 @@ export default defineConfig({
     process.env.NODE_ENV === "production" && !isTauriBuild
       ? "/GYSApp-Tauri/"
       : "/",
-  plugins: [react(), devImageProxyPlugin()],
+  plugins: [react(), devImageProxyPlugin(), offlineBuildAssetsPlugin()],
   server: {
     host: "127.0.0.1",
     port: 5173,

@@ -63,7 +63,7 @@ function loadServiceWorker({
 }
 
 test("service-worker shell cache is versioned after a deploy change", () => {
-  assert.match(source, /const CACHE = "gysapp-shell-v22";/);
+  assert.match(source, /const CACHE = "gysapp-shell-v23";/);
   assert.doesNotMatch(source, /distributed-hymn-catalog/);
 });
 
@@ -117,6 +117,103 @@ test("install caches the app shell and editorial snapshots", async () => {
   assert.ok(
     writes.some(([request]) => request === "/GYSApp-Tauri/offline/sauh.json"),
   );
+});
+
+test("install prepares lazy build assets once and rejects non-build paths", async () => {
+  const calls = [];
+  const response = {
+    ok: true,
+    clone: () => response,
+    text: async () => "<!doctype html>",
+    json: async () => ({
+      version: 1,
+      assets: [
+        "assets/kidung-settings-hash.js",
+        "assets/kidung-settings-hash.js",
+        "assets/reader-hash.css",
+        "assets/sql-hash.wasm",
+        "https://unrelated.example/asset.js",
+        "assets/../offline/catalog.js",
+        "assets/music.pdf",
+        42,
+      ],
+    }),
+  };
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async (url) => {
+      calls.push(url);
+      return response;
+    },
+  });
+  let installation;
+  handlers.get("install")({
+    waitUntil(promise) {
+      installation = promise;
+    },
+  });
+  await installation;
+  assert.equal(
+    calls.filter((url) => url.endsWith("kidung-settings-hash.js")).length,
+    1,
+  );
+  assert.ok(writes.some(([url]) => url.endsWith("reader-hash.css")));
+  assert.ok(writes.some(([url]) => url.endsWith("sql-hash.wasm")));
+  assert.ok(!calls.some((url) => url.includes("unrelated.example")));
+  assert.ok(!calls.some((url) => url.includes("../")));
+  assert.ok(!calls.some((url) => url.endsWith("music.pdf")));
+});
+
+test("one unavailable build asset does not discard prepared routes", async () => {
+  const response = {
+    ok: true,
+    clone: () => response,
+    text: async () => "<!doctype html>",
+    json: async () => ({
+      version: 1,
+      assets: ["assets/missing.js", "assets/reader.js"],
+    }),
+  };
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async (url) => {
+      if (url.endsWith("missing.js")) throw new Error("connection interrupted");
+      return response;
+    },
+  });
+  let installation;
+  handlers.get("install")({
+    waitUntil(promise) {
+      installation = promise;
+    },
+  });
+  await installation;
+  assert.ok(writes.some(([url]) => url.endsWith("reader.js")));
+  assert.ok(!writes.some(([url]) => url.endsWith("missing.js")));
+});
+
+test("prefetched same-origin modules survive an Origin Vary header offline", async () => {
+  const cached = { source: "prepared-module" };
+  const request = {
+    method: "GET",
+    mode: "cors",
+    url: "https://gyspnk.github.io/GYSApp-Tauri/assets/settings-hash.js",
+  };
+  const { handlers } = loadServiceWorker({
+    cacheMatch: async (lookup, options) => {
+      assert.equal(lookup, request);
+      return options?.ignoreVary ? cached : undefined;
+    },
+    fetch: async () => {
+      assert.fail("prepared modules must not require the network");
+    },
+  });
+  let result;
+  handlers.get("fetch")({
+    request,
+    respondWith(promise) {
+      result = promise;
+    },
+  });
+  assert.equal(await result, cached);
 });
 
 test("failed native navigation falls back to the cached root shell", async () => {

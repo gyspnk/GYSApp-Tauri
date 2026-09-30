@@ -1703,3 +1703,39 @@ Validation for CF-200: final-head CI at `0af3576` passes build/typecheck, 352 we
 Validation for CF-201: all fifteen cases pass twice (30/30) locally across
 three workers with retries disabled. Complete final-head CI is required before
 closing PR #9 verification.
+
+- `2026-09-30 / CF-202`: split Kidung's catalog, playlist and settings into
+  independent lazy views with shared navigation/formatters and MIDI controls;
+  retain the existing reader and its source-backed playback rules. Settings
+  skip song data and playlist skips music-lock loading. Subscribe catalog queue
+  status to the actual snapshot rather than a detached render tick. Defer the
+  queue coordinator's PDF song metadata module until playback. Extend selective
+  coverage to each new section's loading/UI/playlist parity contracts.
+
+Validation for CF-202: the new queue regression fails before the change because
+`aria-pressed` stays false after adding a song. It passes after the fix, including
+deduplication and reload persistence. Both loading regressions pass: a blocked
+reader chunk does not prevent catalog/settings use, and settings fetch no hymn
+catalog/music lock. Local typecheck/build pass and the unchanged 180 KiB initial
+bundle budget passes at 177.8 KiB gzip. The Kidung/playlist/density suite passes
+62/62 without retries, dev loading/queue passes 3/3, and final production loading/
+queue checks pass 9/9 across repeated runs. Final-head CI remains required before
+closing the slice; physical/native upgrade/provider
+parity gates remain open.
+
+- `2026-09-30 / CF-203`: preserve first offline use of independently loaded
+  views with a generated build-asset manifest. Prepare same-origin JavaScript,
+  CSS and WASM during service-worker installation after page load without
+  executing modules. Deduplicate asset requests, reject non-build/traversal
+  paths and retain successful entries when one download fails. Limit Vary
+  bypass to application build assets. Bump shell cache to v23, preserving
+  editorial and explicit verified download ownership.
+
+Validation for CF-203: an unvisited settings page fails offline after the Kidung
+split despite service-worker readiness. Preparing assets exposes Vite's Origin
+Vary mismatch; a behavior check reproduces and guards the corrected lookup. The
+production first-offline settings/playlist/text-reader flow now passes 3/3 with
+retries disabled. Service-worker unit checks pass 13/13, including missing asset,
+path restrictions, deduplication, cache reset and editorial retention. All 65
+emitted asset paths resolve in the build. Final-head CI/native evidence and
+interrupted/signed-upgrade parity remain required.

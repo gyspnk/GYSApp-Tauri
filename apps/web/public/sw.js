@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v22";
+const CACHE = "gysapp-shell-v23";
 const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
@@ -119,6 +119,29 @@ async function cacheOptional() {
   );
 }
 
+async function cacheBuildAssets(cache) {
+  const response = await fetch(withBase("offline-shell-assets.json"), {
+    cache: "no-cache",
+  });
+  if (!response.ok) return;
+  const manifest = await response.json();
+  if (manifest.version !== 1 || !Array.isArray(manifest.assets)) return;
+  const assets = [...new Set(manifest.assets)].filter(
+    (path) =>
+      typeof path === "string" &&
+      /^assets\/[A-Za-z0-9_./-]+\.(?:js|mjs|css|wasm)$/.test(path) &&
+      !path.split("/").some((segment) => segment === ".." || segment === "."),
+  );
+  await Promise.allSettled(
+    assets.map(async (path) => {
+      const url = withBase(path);
+      if (await cache.match(url)) return;
+      const asset = await fetch(url, { cache: "no-cache" });
+      if (asset.ok) await putCached(cache, url, asset.clone());
+    }),
+  );
+}
+
 async function pruneRemoteMediaCache(cache) {
   const keys = await cache.keys();
   const stale = keys.slice(
@@ -161,6 +184,11 @@ self.addEventListener("install", (event) => {
           }),
         );
       }
+      // Installation completes after the hashed lazy code is prepared, so an
+      // unvisited core view can open offline. This never executes its modules
+      // or blocks the page's first render. Older builds without a manifest
+      // retain the existing best-effort shell installation path.
+      await cacheBuildAssets(cache).catch(() => undefined);
     }),
   );
   self.skipWaiting();
@@ -310,8 +338,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const isBuildAsset =
+    requestUrl.pathname.startsWith(withBase("assets/")) &&
+    /\.(?:js|mjs|css|wasm)$/.test(requestUrl.pathname);
   event.respondWith(
-    caches.match(event.request).then(
+    // Vite preview varies on Origin: a worker's prefetch and a module import
+    // carry different request headers. Same-origin build bytes are immutable
+    // and shared by both requests; editorial/provider responses keep Vary.
+    caches.match(event.request, { ignoreVary: isBuildAsset }).then(
       (cached) =>
         cached ??
         fetch(event.request)
