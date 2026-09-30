@@ -641,7 +641,10 @@ function Shell({
     () => midiPlayer.snapshot().status,
   );
   const isMidiPlaying = midiStatus === "playing";
-  const mediaVisible = useSyncExternalStore(subscribeMediaSession, hasMediaSession);
+  const mediaVisible = useSyncExternalStore(
+    subscribeMediaSession,
+    hasMediaSession,
+  );
   const previousMidiStatusRef = useRef(midiStatus);
   useEffect(() => {
     const previousStatus = previousMidiStatusRef.current;

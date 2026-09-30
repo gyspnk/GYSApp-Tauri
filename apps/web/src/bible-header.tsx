@@ -306,8 +306,7 @@ export function BibleHeader({
                               className="typography-step-btn"
                               onClick={bibleHeader.onDecreaseFontSize}
                               disabled={
-                                bibleHeader.fontSize <=
-                                bibleHeader.minFontSize
+                                bibleHeader.fontSize <= bibleHeader.minFontSize
                               }
                               aria-label={translate(
                                 locale,
@@ -315,9 +314,7 @@ export function BibleHeader({
                               )}
                             >
                               <span className="step-label">A−</span>
-                              <small>
-                                {translate(locale, "bible.small")}
-                              </small>
+                              <small>{translate(locale, "bible.small")}</small>
                             </button>
                             <div className="typography-size-indicator">
                               <strong>{bibleHeader.fontSize}</strong>
@@ -328,8 +325,7 @@ export function BibleHeader({
                               className="typography-step-btn"
                               onClick={bibleHeader.onIncreaseFontSize}
                               disabled={
-                                bibleHeader.fontSize >=
-                                bibleHeader.maxFontSize
+                                bibleHeader.fontSize >= bibleHeader.maxFontSize
                               }
                               aria-label={translate(
                                 locale,
@@ -337,9 +333,7 @@ export function BibleHeader({
                               )}
                             >
                               <span className="step-label">A+</span>
-                              <small>
-                                {translate(locale, "bible.large")}
-                              </small>
+                              <small>{translate(locale, "bible.large")}</small>
                             </button>
                           </div>
                         </div>
@@ -379,9 +373,7 @@ export function BibleHeader({
                               <button
                                 className={`hamburger-item${bibleHeader.syncScroll ? " is-active" : ""}`}
                                 type="button"
-                                onClick={() =>
-                                  bibleHeader.onToggleSyncScroll()
-                                }
+                                onClick={() => bibleHeader.onToggleSyncScroll()}
                               >
                                 <div className="hamburger-item-icon">
                                   <Icon name="arrow" size={16} />
@@ -391,10 +383,7 @@ export function BibleHeader({
                                     {translate(locale, "bible.syncScroll")}
                                   </strong>
                                   <small>
-                                    {translate(
-                                      locale,
-                                      "bible.syncScrollHint",
-                                    )}
+                                    {translate(locale, "bible.syncScrollHint")}
                                   </small>
                                 </div>
                                 <div
@@ -453,10 +442,7 @@ export function BibleHeader({
                                 {speechSnapshot.playerOpen ||
                                 bibleHeader.speaking
                                   ? translate(locale, "bible.active")
-                                  : translate(
-                                      locale,
-                                      "bible.showAudioPlayer",
-                                    )}
+                                  : translate(locale, "bible.showAudioPlayer")}
                               </span>
                             </button>
 
@@ -479,10 +465,7 @@ export function BibleHeader({
                                         locale,
                                         "bible.closeAudioOptions",
                                       )
-                                    : translate(
-                                        locale,
-                                        "bible.configureAudio",
-                                      )}
+                                    : translate(locale, "bible.configureAudio")}
                                 </small>
                               </div>
                               <div className="hamburger-expand-badge">
@@ -502,9 +485,7 @@ export function BibleHeader({
                           {bibleHeader.speechControlsOpen && (
                             <div className="drawer-speech-card">
                               <label className="drawer-speech-row">
-                                <span>
-                                  {translate(locale, "bible.engine")}
-                                </span>
+                                <span>{translate(locale, "bible.engine")}</span>
                                 <select
                                   className="drawer-speech-select"
                                   value={speechSnapshot.engine}
@@ -532,9 +513,7 @@ export function BibleHeader({
                               </label>
 
                               <label className="drawer-speech-row">
-                                <span>
-                                  {translate(locale, "bible.voice")}
-                                </span>
+                                <span>{translate(locale, "bible.voice")}</span>
                                 <select
                                   className="drawer-speech-select"
                                   value={
@@ -575,10 +554,7 @@ export function BibleHeader({
                               {speechSnapshot.engine === "edge" && (
                                 <label className="drawer-speech-row">
                                   <span className="drawer-speech-label">
-                                    {translate(
-                                      locale,
-                                      "bible.gatewayEndpoint",
-                                    )}{" "}
+                                    {translate(locale, "bible.gatewayEndpoint")}{" "}
                                     ({translate(locale, "bible.optional")})
                                   </span>
                                   <input
@@ -618,9 +594,7 @@ export function BibleHeader({
                                   step="0.1"
                                   value={speechSnapshot.rate}
                                   onChange={(e) =>
-                                    speechPlayer.setRate(
-                                      Number(e.target.value),
-                                    )
+                                    speechPlayer.setRate(Number(e.target.value))
                                   }
                                 />
                               </div>
