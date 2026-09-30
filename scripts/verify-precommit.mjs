@@ -32,7 +32,14 @@ for (const path of formatted) {
   const input = execFileSync("git", ["show", `:${path}`]);
   run(
     "pnpm",
-    ["exec", "prettier", "--check", "--ignore-unknown", "--stdin-filepath", path],
+    [
+      "exec",
+      "prettier",
+      "--check",
+      "--ignore-unknown",
+      "--stdin-filepath",
+      path,
+    ],
     { input, stdio: ["pipe", "inherit", "inherit"] },
   );
 }

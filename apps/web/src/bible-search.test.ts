@@ -147,5 +147,4 @@ describe("BibleSearchClient", () => {
     expect(worker?.terminate).toHaveBeenCalledTimes(1);
     client.dispose();
   });
-
 });

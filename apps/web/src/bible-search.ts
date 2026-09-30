@@ -135,7 +135,9 @@ export class BibleSearchClient {
       } catch {
         this.pending.delete(id);
         signal?.removeEventListener("abort", onAbort);
-        void this.fallbackRepository().search(query, options).then(resolve, reject);
+        void this.fallbackRepository()
+          .search(query, options)
+          .then(resolve, reject);
       }
     });
   }

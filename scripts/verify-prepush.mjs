@@ -25,6 +25,8 @@ function run(command, args, env = {}) {
   });
 }
 
-for (const step of createPrepushPlan({ full: process.argv.includes("--full") })) {
+for (const step of createPrepushPlan({
+  full: process.argv.includes("--full"),
+})) {
   run(step.command, step.args, step.env);
 }

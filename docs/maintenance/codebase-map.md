@@ -1665,6 +1665,7 @@ Validation for CF-197: 2026-09-28 — focused Bible search visual tests pass 15/
 
 - `2026-09-30 / CF-198`: share bundled TB loading across reader, split
   reader and global search; construct the main-thread search fallback on demand;
+  lazy-load Home and select shell audio state; extract device reset from More;
   count transitive static bundle imports; preserve downloaded asset caches on
   stale-chunk recovery; provide offline local verification, watch/UI/debug
   commands and a cached packaged-native build. Continue the approved UI,

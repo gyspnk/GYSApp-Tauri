@@ -119,7 +119,7 @@ import {
 import { autoFitFontSize } from "./hymn-autofit.js";
 import type { ShellTheme } from "./settings.js";
 import { LyricsPanel } from "./lyrics-panel.js";
-import { clearAppData } from "./more.js";
+import { clearAppData } from "./app-data.js";
 import {
   CHORD_FILL_PRESETS,
   CHORD_THEME_PRESETS,

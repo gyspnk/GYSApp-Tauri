@@ -57,7 +57,10 @@ import {
 import { Select } from "./select.js";
 import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { clearPlatformStorage, createPlatformServices } from "./platform.js";
+import { createPlatformServices } from "./platform.js";
+import { clearAppData } from "./app-data.js";
+
+export { clearAppData } from "./app-data.js";
 import {
   isTauriShell,
   openNativeEgysLogin,
@@ -323,27 +326,6 @@ async function saveBackup(envelope: unknown): Promise<boolean> {
     mimeType: "application/json",
     bytes: new TextEncoder().encode(JSON.stringify(envelope, null, 2)),
   });
-}
-
-export async function clearAppData() {
-  let resetError: unknown;
-  try {
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith("gys-")) localStorage.removeItem(key);
-    }
-  } catch (error) {
-    resetError = error;
-    recordDiagnostic("warn", "storage.reset.local", error);
-  }
-  try {
-    await clearPlatformStorage();
-  } catch (error) {
-    // A private browser or a native storage permission failure must be
-    // surfaced to the action handler instead of being reported as success.
-    resetError ??= error;
-    recordDiagnostic("warn", "storage.reset", error);
-  }
-  if (resetError) throw resetError;
 }
 
 export function MorePage({

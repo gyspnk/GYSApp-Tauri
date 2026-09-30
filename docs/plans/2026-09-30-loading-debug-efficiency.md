@@ -10,6 +10,9 @@ session executor failed to start. CI timings are not device-startup guarantees.
 - Shared, retryable bundled TB request and parsed pack for reading, split and
   global search; subscriber cancellation does not abort another consumer.
 - Main-thread Bible search repository constructed only when fallback is used.
+- Home and its editorial repositories load as a separate route chunk; the
+  shell observes audio-playing booleans instead of every position update.
+- Device reset belongs to an application service rather than the More page.
 - Vite manifest traversal includes transitive static imports and excludes lazy
   routes/workers; retain existing 180 KiB graph and 250 KiB entry limits.
 - Stale chunk recovery clears only app shell caches and reloads even when cache

@@ -16,7 +16,10 @@ const result = spawnSync(
   {
     stdio: "inherit",
     shell: true,
-    env: { ...process.env, GYS_PERF_SAMPLES: process.env.GYS_PERF_SAMPLES ?? "30" },
+    env: {
+      ...process.env,
+      GYS_PERF_SAMPLES: process.env.GYS_PERF_SAMPLES ?? "30",
+    },
   },
 );
 if (result.error) console.error(result.error.message);
