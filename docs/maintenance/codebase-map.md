@@ -1685,3 +1685,11 @@ Validation for CF-198: initial GitHub connector implementation at `d9faa61` pass
   align README and architecture with the implemented local/PR/release gates.
 
 Validation for CF-199: local production build/typecheck, 352 web unit tests and workspace/script suites pass. Focused dev browser tests pass 3/3, including two font clicks adding exactly two steps with persistence after reload; the original dev run exposed a three-step StrictMode regression and stalled lazy navigation behind remote image requests. A 30-navigation production-preview sample records greeting-ready median 402.2ms and p95 496.5ms using a browser animation-frame marker; this includes a first navigation in the same browser profile and does not establish cold-process/native/device startup. Visual inspection of Home/Bible at 390px and Kidung at 1440px confirms one page heading and no horizontal overflow. Final PR CI is required for the additional changes; external parity gates remain open.
+
+- `2026-09-30 / CF-200`: stabilize the Faith PDF keyboard contract by waiting
+  for the fixture's explicit error/retry state before checking its first/last
+  focus boundaries. Loading asynchronously adds a new focusable Retry button.
+  Keep initial close focus, exact Tab/Shift+Tab wrap, Escape, opener restoration,
+  official links, touch targets and locale/viewport geometry assertions.
+
+Validation for CF-200: final-head CI at `0af3576` passes build/typecheck, 352 web unit tests, script/policy suites, bundle/provenance/native-asset verification, Rust tests/clippy and packaged-native smoke; browser shard 1 passes, while shard 2 exposes the asynchronous focus-list race in the Faith PDF fixture. The original focused case passes 3/3 locally; the readiness correction passes 10/10 repeats across three browser workers with retries disabled before the next complete CI run. No visual baseline or focus timeout was relaxed.

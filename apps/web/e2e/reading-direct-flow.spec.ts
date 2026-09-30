@@ -528,6 +528,11 @@ test("faith PDF overlay keeps both official links reachable across locales and w
         .toBe(true);
 
       if (locale === "id" && viewport === 320) {
+        // The failed PDF adds a Retry button asynchronously. Establish the
+        // error-state focus order before asserting its first/last boundaries.
+        await expect(overlay.locator("[data-pdf-retry]")).toBeVisible({
+          timeout: 15_000,
+        });
         const focusable = overlay.locator(
           'button:not([disabled]):not([aria-hidden="true"]):visible, input:not([disabled]):not([aria-hidden="true"]):visible, select:not([disabled]):not([aria-hidden="true"]):visible, textarea:not([disabled]):not([aria-hidden="true"]):visible, a[href]:not([aria-hidden="true"]):visible, [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"]):visible',
         );
