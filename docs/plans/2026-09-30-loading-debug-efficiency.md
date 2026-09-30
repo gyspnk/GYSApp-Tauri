@@ -11,7 +11,8 @@ session executor failed to start. CI timings are not device-startup guarantees.
   global search; subscriber cancellation does not abort another consumer.
 - Main-thread Bible search repository constructed only when fallback is used.
 - Home and its editorial repositories load as a separate route chunk. The
-  media dock loads when a session opens; playback arbitration remains in the
+  media dock loads when a session opens; Bible header controls load on their
+  reader route; playback arbitration remains in the
   shell, which observes status changes instead of every position update.
 - Readability controls mount inside More rather than observing all body DOM
   mutations while other pages are open.

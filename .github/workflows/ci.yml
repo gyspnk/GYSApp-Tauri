@@ -35,7 +35,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
-      - run: pnpm format:check
+      - name: Check formatting with actionable diffs
+        run: |
+          if ! pnpm format:check; then
+            pnpm exec prettier --write .
+            git diff -- .
+            exit 1
+          fi
       # Keep this job compile-free so it returns cheap structural feedback in
       # parallel. Browser verification consumes one separately verified build.
       - run: pnpm audit --prod
