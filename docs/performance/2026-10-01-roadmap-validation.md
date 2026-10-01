@@ -27,6 +27,9 @@ runtime and condition; the reference-device targets remain release gates.
 - Metadata: 179,002 bytes / 24,376 gzip bytes versus full lyrics catalog
   917,610 bytes / 138,299 gzip bytes. This reduces the initial catalog JSON
   by 80.5% raw and 82.4% compressed; lyrics stay available through deferred search.
+- Security follow-up: BFF Hono is pinned to 4.13.11 after
+  GHSA-hxh3-vqpv-xpqv appeared during final CI. BFF typecheck and 51 tests
+  pass; the production audit reports no known vulnerabilities.
 - Initial JavaScript graph: 177.2 KiB gzip, within the unchanged 180 KiB budget.
 - The 90-case UI matrix passes locally without retries. Widths are
   320/390/768/1024/1440/1920, locales ID/EN/ZH, themes light/dark/system/AMOLED/sepia.
