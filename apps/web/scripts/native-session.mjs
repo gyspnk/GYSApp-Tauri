@@ -97,6 +97,7 @@ export async function launchNative(executable, profile) {
     const context = browser.contexts()[0];
     assert.ok(context, "Missing WebView2 context");
     const page = context.pages()[0] ?? (await context.newPage());
+    await page.bringToFront();
     await page.waitForFunction(() => location.origin !== "null", null, {
       timeout: 15000,
     });

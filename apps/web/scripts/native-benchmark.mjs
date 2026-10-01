@@ -18,11 +18,29 @@ const runs = [];
 let session;
 let previousMode;
 async function marked(page, marker) {
-  await page.waitForFunction(
-    (name) => performance.getEntriesByName(name).length > 0,
-    marker,
-    { timeout: 15000 },
-  );
+  try {
+    await page.waitForFunction(
+      (name) => performance.getEntriesByName(name).length > 0,
+      marker,
+      { timeout: 15000, polling: 100 },
+    );
+  } catch (error) {
+    const diagnostic = await page
+      .evaluate(() => ({
+        url: location.href,
+        readyState: document.readyState,
+        visibility: document.visibilityState,
+        root: document.querySelector("#root")?.textContent?.slice(0, 1200),
+        body: document.body?.textContent?.slice(0, 1200),
+        marks: performance.getEntriesByType("mark").map((entry) => entry.name),
+        resources: performance
+          .getEntriesByType("resource")
+          .map((entry) => entry.name),
+      }))
+      .catch(() => ({ unavailable: true }));
+    console.error(JSON.stringify({ marker, diagnostic }));
+    throw error;
+  }
   return page.evaluate(
     (name) => ({
       origin: performance.timeOrigin,

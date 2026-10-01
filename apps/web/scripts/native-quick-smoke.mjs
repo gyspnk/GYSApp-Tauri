@@ -144,7 +144,11 @@ try {
       results.mediaScope =
         "catalog queue accessibility and reader controls; mutation/synthesis/playback belong to native-soak";
     }
-    results[selected] = { status: "passed", elapsedMs: Date.now() - started };
+    results[selected] = {
+      ...results[selected],
+      status: "passed",
+      elapsedMs: Date.now() - started,
+    };
   }
   console.log(
     JSON.stringify({
