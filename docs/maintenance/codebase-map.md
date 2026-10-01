@@ -1820,7 +1820,7 @@ new runtime/real-offline-font regressions. Intentional visual baselines keep
 existing pixel thresholds. Native run 36818004484 passes short suites, 30 actual
 process relaunches and the original full soak after browser/native worker
 separation; raw runner metrics and physical/configured-BFF exclusions are saved.
-The final 77-case editorial/visual run and 14 repaired full-suite failures
+The local 77-case editorial/visual run and 14 repaired full-suite failures
 pass without retries; an unavailable-reflection breakpoint regression covers
 960–1440px. Filled custom actions use black/white at the AA midpoint rather
 than off-black, with yellow/medium-gray browser checks. Pinned real chord/PDF
@@ -1830,6 +1830,14 @@ The redesigned shell has a new 120-sample browser receipt: warm shell median
 162.1ms / p95 359.4ms, indexed search p95 45.0ms, catalog 664.3ms,
 chapter 824.0ms and PDF 1010.2ms. Executor runs are not controlled reference
 hardware or a claim that every proposed instant-content target is met.
-Final redesigned-tree full-browser/CI/native outcomes are required on PR #9 before
+The first redesigned-tree CI passes 467 browser cases and skips three
+provider/environment cases. Two strict Kidung images differ by one/207 text
+pixels between executors; reviewed actual/diff images establish the hosted
+Linux baselines without changing tolerances or application code. The redesigned native
+quick/font suites, 30-relaunch benchmark and full media soak pass in run
+36825985931 on application commit 25f17fb / shell 7ac2f5f76b0d6e04; raw
+receipts preserve physical/provider exclusions. The closing test-image/evidence
+commit leaves that application unchanged. Final canonical-baseline CI outcomes
+are required on PR #9 before
 closing this frontier. The user request authorizes these visual changes and
 commit/push; physical-device and signed-upgrade gates remain separate.

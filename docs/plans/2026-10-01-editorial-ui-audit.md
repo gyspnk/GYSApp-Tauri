@@ -41,7 +41,7 @@ all seven settings disclosures, custom-accent contrast, first reading actions,
 column width, unavailable-reflection desktop breakpoints, non-moving rows,
 localized keyboard references, and a real offline
 reload into Chinese after installing all verified fonts. The visual suites
-exercise 57 cases; all 54 changed PNG baselines were inspected. The final
+exercise 57 cases; all 54 changed PNG baselines were inspected. The local
 editorial/visual run passes 77/77 without retries, including medium-gray and
 yellow custom-accent contrast. Fourteen failures from the full audit pass after
 correcting obsolete font/copy/card contracts, a genuine unavailable-reflection
@@ -49,6 +49,15 @@ breakpoint override, and external-fixture transport. Browser cases now reuse
 real SHA-256-verified chord/master-PDF fixtures across contexts; the image
 fixture covers both direct and proxied publisher URLs. The standalone
 unavailable-reflection check passes at 960/1024/1199/1200/1440px.
+
+The first redesigned-tree CI runs 472 browser cases: 467 pass, three are
+explicit provider/environment skips, and two strict Kidung PNGs expose renderer
+text rasterization differences (one and 207 pixels). Both retry results are
+identical. The CI actual/expected/diff images were compared: layout and controls
+are unchanged. These two baselines now come from the hosted Linux renderer,
+retaining the exact existing thresholds. Other screenshots keep their reviewed
+baselines; local three-worker reproduction passes six repeated cases against
+the original local baselines. Final CI consumes the canonical CI images.
 
 Font sources, licenses, original SHA-256 values, generated hashes and exact
 regeneration tools are recorded in
@@ -106,7 +115,15 @@ media soak. [Raw native receipts](../performance/2026-10-01-packaged-native-vali
 include runner memory, local content and exact exclusions. Median process shell
 is 785.8ms; p95 is 2905.5ms. Indexed search p95 is 30.9ms, catalog 533.6ms,
 chapter 772.4ms and PDF first page 1089.5ms. These measurements precede the UI
-redesign; final-head CI/native verification is required on PR #9.
+redesign. The redesigned application also passes Windows
+[run 36825985931](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/36825985931):
+four font assets are verified and all four faces load, short startup/storage/media
+suites pass, 30 actual process relaunches pass, and the full media soak passes.
+[Redesigned native receipts](../performance/2026-10-01-editorial-packaged-native-validation.json)
+identify application commit `25f17fb` and emitted shell `7ac2f5f76b0d6e04`.
+The closing commit only reconciles reviewed test images and evidence documents;
+its application sources/assets are unchanged. Final canonical-image CI remains
+a required PR #9 check.
 
 A hosted Windows runner is not a physical-device or cold-OS benchmark. Signed
 upgrades, physical audio first sample, device media panels/file pickers and
