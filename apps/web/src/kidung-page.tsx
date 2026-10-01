@@ -1,14 +1,17 @@
+import { loadMusicLock as loadPinnedMusicLock } from "./music-assets.js";
+import { loadCoreHymns, loadCoreHymnMetadata } from "./hymn-payloads.js";
 import { lazy, useEffect, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
-import {
-  UpstreamMusicLockSchema,
-  type UpstreamMusicLock,
-} from "@gys/contracts";
+import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
 import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 import type { ShellTheme } from "./settings.js";
-import { type CatalogState, parseCatalog } from "./kidung-shared.js";
+import {
+  type CatalogState,
+  parseCatalog,
+  parseHymnMetadata,
+} from "./kidung-shared.js";
 
 type KidungShellContext = {
   locale?: Locale;
@@ -36,30 +39,35 @@ const HymnSettingsPage = lazy(() =>
   })),
 );
 
-function useHymnData(loadMusicLock: boolean) {
-  const [catalog, setCatalog] = useState<CatalogState>({ status: "loading" });
+function useHymnData<T extends HymnMetadata>(
+  loadMusicLock: boolean,
+  loadCore: () => Promise<T[]>,
+  parse: (value: unknown) => T[],
+) {
+  const [catalog, setCatalog] = useState<CatalogState<T>>({
+    status: "loading",
+  });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
   useEffect(() => {
     const controller = new AbortController();
-    const load = () =>
-      Promise.all([
-        fetch(`${import.meta.env.BASE_URL}offline/hymn-catalog.json`, {
-          signal: controller.signal,
-          cache: "force-cache",
-        }).then(async (response) => {
-          if (!response.ok) throw new Error("Offline hymn catalog unavailable");
-          return parseCatalog(await response.json());
-        }),
+    let generation = 0;
+    const load = () => {
+      const current = ++generation;
+      return Promise.all([
+        loadCore(),
         loadInstalledDistributedHymnCatalog(
           getDistributedAssetManager().getStore(),
         ).catch(() => []),
       ])
         .then(([core, distributed]) => {
-          if (!controller.signal.aborted)
-            setCatalog({ status: "ready", items: [...core, ...distributed] });
+          if (!controller.signal.aborted && current === generation)
+            setCatalog({
+              status: "ready",
+              items: [...core, ...parse({ items: distributed })],
+            });
         })
         .catch((error: unknown) => {
-          if (!controller.signal.aborted)
+          if (!controller.signal.aborted && current === generation)
             setCatalog({
               status: "error",
               message:
@@ -68,6 +76,7 @@ function useHymnData(loadMusicLock: boolean) {
                   : "Unable to load hymn catalog",
             });
         });
+    };
     void load();
     const onAssetsChanged = () => void load();
     window.addEventListener("gys-distributed-assets-change", onAssetsChanged);
@@ -78,17 +87,12 @@ function useHymnData(loadMusicLock: boolean) {
         onAssetsChanged,
       );
     };
-  }, []);
+  }, [loadCore, parse]);
   useEffect(() => {
     if (!loadMusicLock) return;
     const controller = new AbortController();
-    void fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
-      cache: "force-cache",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("MIDI lock unavailable");
-        const lock = UpstreamMusicLockSchema.parse(await response.json());
+    void loadPinnedMusicLock()
+      .then((lock) => {
         if (!controller.signal.aborted) setMusicLock(lock);
       })
       .catch(() => {
@@ -99,25 +103,38 @@ function useHymnData(loadMusicLock: boolean) {
   return { catalog, musicLock };
 }
 
-function KidungDataPage({ locale }: { locale: Locale }) {
-  const { songId } = useParams();
-  const [searchParams] = useSearchParams();
-  const section = searchParams.get("section");
-  const { catalog, musicLock } = useHymnData(
-    Boolean(songId) || section !== "playlist",
+function KidungReaderDataPage({
+  locale,
+  songId,
+}: {
+  locale: Locale;
+  songId: string;
+}) {
+  const { catalog, musicLock } = useHymnData(true, loadCoreHymns, parseCatalog);
+  return (
+    <HymnDetail
+      key={songId}
+      locale={locale}
+      songId={songId}
+      state={catalog}
+      {...(musicLock ? { musicLock } : {})}
+    />
   );
-  if (!songId && section === "playlist")
-    return <HymnPlaylistPage locale={locale} catalog={catalog} />;
-  if (songId)
-    return (
-      <HymnDetail
-        key={songId}
-        locale={locale}
-        songId={songId}
-        state={catalog}
-        {...(musicLock ? { musicLock } : {})}
-      />
-    );
+}
+
+function KidungCatalogDataPage({
+  locale,
+  playlist,
+}: {
+  locale: Locale;
+  playlist: boolean;
+}) {
+  const { catalog, musicLock } = useHymnData(
+    !playlist,
+    loadCoreHymnMetadata,
+    parseHymnMetadata,
+  );
+  if (playlist) return <HymnPlaylistPage locale={locale} catalog={catalog} />;
   return (
     <HymnCatalog
       locale={locale}
@@ -144,5 +161,9 @@ export function KidungPage({ locale }: { locale: Locale }) {
       />
     );
 
-  return <KidungDataPage locale={locale} />;
+  return songId ? (
+    <KidungReaderDataPage locale={locale} songId={songId} />
+  ) : (
+    <KidungCatalogDataPage locale={locale} playlist={section === "playlist"} />
+  );
 }

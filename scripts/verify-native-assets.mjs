@@ -13,6 +13,7 @@ const required = [
   "offline/suara-sejati.json",
   "offline/literature.json",
   "offline/hymn-catalog.json",
+  "offline/hymn-metadata.json",
   "offline/music-lock.json",
   "offline/fork-hymnal-manifest.json",
   "offline/bible/manifest.json",

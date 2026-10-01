@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
@@ -24,6 +25,18 @@ const chord = await readJson(
 );
 const chordAudit = await readJson("docs/discovery/chord-position-audit.json");
 const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
+const hymnMetadata = await readJson(
+  "apps/web/public/offline/hymn-metadata.json",
+);
+if (
+  !isDeepStrictEqual(hymnMetadata, {
+    ...hymns,
+    items: hymns.items.map(
+      ({ lyrics: _lyrics, verses: _verses, ...item }) => item,
+    ),
+  })
+)
+  throw new Error("Hymn metadata drifted from pinned source");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
 const assets = await readJson("apps/web/public/offline/asset-manifest.json");

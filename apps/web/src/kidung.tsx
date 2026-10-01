@@ -33,8 +33,16 @@ import {
   downloadMusicAsset,
   findMusicAsset,
   loadMusicAsset,
+  loadMusicLock,
 } from "./music-assets.js";
 import { midiPlayer } from "./midi-player.js";
+import { HymnMidiProgress } from "./kidung-midi-progress.js";
+import { createSnapshotSelector } from "./snapshot-selector.js";
+
+const readMidiReaderState = createSnapshotSelector(
+  midiPlayer.snapshot,
+  ({ position: _position, ...reader }) => reader,
+);
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
 import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
@@ -303,13 +311,16 @@ export function HymnDetail({
   );
   const midiState = useSyncExternalStore(
     midiPlayer.subscribe,
-    midiPlayer.snapshot,
-    midiPlayer.snapshot,
+    readMidiReaderState,
+    readMidiReaderState,
   );
   const midiAvailable = !item?.assetCode && soundfontInstalled;
-  const verses = getHymnVerses(item);
+  const verses = useMemo(() => getHymnVerses(item), [item]);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
-  const sequence = state.status === "ready" ? uniqueItems(state.items) : [];
+  const sequence = useMemo(
+    () => (state.status === "ready" ? uniqueItems(state.items) : []),
+    [state],
+  );
   const index = item
     ? sequence.findIndex((candidate) => candidate.id === item.id)
     : -1;
@@ -1005,14 +1016,17 @@ export function HymnDetail({
       } catch (error) {
         forkError = error;
       }
-      if (!musicPdfRef) throw forkError ?? new Error("PDF unavailable");
-      const bytes = await loadMusicAsset(musicPdfRef);
+      const resolvedPdfRef =
+        musicPdfRef ??
+        findMusicAsset(await loadMusicLock(), "pdf", item.pdfPath);
+      if (!resolvedPdfRef) throw forkError ?? new Error("PDF unavailable");
+      const bytes = await loadMusicAsset(resolvedPdfRef);
       return {
         src: "",
         bytes,
         initialPage: 1,
         source: "canonical" as const,
-        sourceVersion: musicPdfRef.sha256,
+        sourceVersion: resolvedPdfRef.sha256,
       } satisfies HymnPdfAsset;
     })();
     pdfAssetPromise.current = request;
@@ -2204,64 +2218,10 @@ export function HymnDetail({
                               midiState.status === "stopped")) ||
                           midiState.status === "loading" ? (
                             midiState.duration > 0 ? (
-                              <div
-                                className="hymn-midi-seekbar"
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  margin: "6px 0",
-                                }}
-                              >
-                                <span
-                                  className="hymn-midi-time"
-                                  style={{
-                                    fontVariantNumeric: "tabular-nums",
-                                    fontSize: "0.8rem",
-                                    minWidth: 32,
-                                    textAlign: "right",
-                                  }}
-                                >
-                                  {formatMidiTime(midiState.position)}
-                                </span>
-                                <input
-                                  className="hymn-midi-seek-input"
-                                  type="range"
-                                  min={0}
-                                  max={midiState.duration || 100}
-                                  step={0.1}
-                                  value={Math.min(
-                                    midiState.position,
-                                    midiState.duration || 100,
-                                  )}
-                                  onChange={(event) => {
-                                    const v = Number(event.target.value);
-                                    if (Number.isFinite(v))
-                                      void midiPlayer
-                                        .seek(v)
-                                        .catch(() => undefined);
-                                  }}
-                                  style={{ flex: 1 }}
-                                  aria-label={translate(
-                                    locale,
-                                    "media.positionMidi",
-                                  )}
-                                  disabled={
-                                    midiState.status === "loading" ||
-                                    isMidiSwitchingRef.current
-                                  }
-                                />
-                                <span
-                                  className="hymn-midi-time"
-                                  style={{
-                                    fontVariantNumeric: "tabular-nums",
-                                    fontSize: "0.8rem",
-                                    minWidth: 32,
-                                  }}
-                                >
-                                  {formatMidiTime(midiState.duration)}
-                                </span>
-                              </div>
+                              <HymnMidiProgress
+                                locale={locale}
+                                switching={isMidiSwitchingRef.current}
+                              />
                             ) : null
                           ) : null}
                           <label className="hymn-instrument-select">

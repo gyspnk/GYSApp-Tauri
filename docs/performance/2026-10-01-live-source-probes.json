@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-01",
+  "literature": {
+    "checkedAt": "2026-10-01T01:47:52.373Z",
+    "source": "tjc.org",
+    "liveCount": 300,
+    "bundledCount": 300,
+    "comparedFields": [
+      "category",
+      "title",
+      "url",
+      "format",
+      "publishedAt",
+      "updatedAt",
+      "source"
+    ],
+    "differences": [],
+    "scope": "production parser directly against official live sources; not deployed BFF or authenticated provider proof"
+  },
+  "delivery": [
+    {
+      "url": "https://tjc.org/id/literatur/",
+      "status": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "cors": "*",
+      "contentRange": null,
+      "pdfSignature": null
+    },
+    {
+      "url": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Yesus-Kristus.pdf",
+      "status": 206,
+      "contentType": "application/pdf",
+      "cors": null,
+      "contentRange": "bytes 0-1023/3544443",
+      "pdfSignature": true
+    }
+  ],
+  "limitations": [
+    "Official source and parser probes do not verify deployed BFF CORS or authenticated provider state.",
+    "Faith PDF returns valid range bytes without Access-Control-Allow-Origin; configured BFF/runtime verification remains required."
+  ]
+}

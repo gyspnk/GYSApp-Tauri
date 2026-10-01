@@ -80,44 +80,37 @@ pnpm verify:release
 Use `GYS_E2E_PREBUILT=1` only after building the current source. Unit/watch
 commands need built workspace packages on a clean checkout. The performance
 command uses the current preview build and records same-browser navigations;
-cold-process and fresh-profile benchmarks are still separate required work.
+the expanded browser command records fresh-browser, fresh-context, warm and
+prepared-offline conditions. Packaged process/profile evidence remains separate.
 
-## Remaining implementation and acceptance gates
+## Roadmap implementation and remaining acceptance gates
 
-1. Record cold-process, warm-relaunch, first-install, same-profile restart and
-   offline benchmarks with at least 30 samples per condition. Measure shell,
-   real content, search readiness, PDF first page and audio first sample
-   separately; include total app/WebView/worker memory.
-2. Continue extracting the shell from App; continue extracting the Kidung reader internals
-   and Bible search/notes/split. Kidung catalog, settings and playlists now
-   have independent modules and lazy route boundaries. Retain
-   route, focus, playback, offline and persistence contracts.
-3. Separate catalog metadata from lyrics/search payload. Show the active Bible
-   chapter before whole-pack indexing; profile parsing and cloning before
-   deciding on per-book/chapter packs. Optional installed-pack invalidation
-   must follow release hashes, updates, uninstall and retry.
-4. Consolidate CSS ownership, tokens and cascade. Preserve existing reviewed
-   geometry; check 320/390/768/1024/1440/1920 widths, ID/EN/ZH, five themes,
-   200% text, 44px controls, keyboard focus and reduced motion.
-5. Select audio state subscriptions so position ticks update the transport
-   rather than the whole shell. Scope DOM observers to component lifecycles
-   and clean listeners/timers on unmount and HMR.
-6. Make app updates safe during reading, editing and playback. Keep versioned
-   shell and core data available offline; test interrupted update, stale
-   chunk, eviction and profile migration.
-7. Profile native SQLite connection setup and base64 blob IPC. Change those
-   boundaries only with measured wins, capability limits and atomic integrity
-   tests. Split native smoke into short startup/storage/media/asset suites and
-   a separate long soak/live-provider suite.
-8. Expand differential parity tests against the pinned upstream. Retain all
-   533 catalog songs, 161 chord mappings, MIDI defaults, transport and playlist
-   import/export. Close physical touch, native picker, Windows media panel and
-   signed in-place upgrade evidence.
-9. Verify live Literature freshness and Faith PDF delivery separately from
-   local fixtures. Keep protected authenticated provider behavior explicit.
-10. Replace source-string UI assertions with behavior/computed-style tests as
-    affected components are extracted. Dependency-aware test selection must
-    broaden coverage for unknown shared changes.
+The 2026-10-01 continuation implements loading/data separation, module boundaries,
+ordered CSS ownership, audio selectors, component-scoped PDF observers, safe
+versioned offline updates and conservative verification selection. It adds a
+90-case UI matrix, source-byte parity audit, four 30-sample browser conditions,
+short native suites and 30-process native profiling while retaining the full
+soak/live-provider gate. The implementation/evidence table, exact limitations,
+and repeatable commands are maintained in
+[the dated validation receipt](../performance/2026-10-01-roadmap-validation.md).
+
+Remaining acceptance gates:
+
+1. Reference hardware, cold OS/filesystem cache, first signed native installation,
+   and physical audio first sample; browser profile/renderer metrics and CI
+   packaged process relaunches are labeled separately.
+2. Physical touch, native OS file picker and Windows media-panel behavior.
+3. Signed in-place installation/upgrade with retained user profile. Interrupted
+   PWA downloads, mixed builds, cache integrity and migration have automated guards.
+4. Configured/deployed BFF CORS and native Faith PDF page-progress restart;
+   official PDF range delivery alone cannot close this gate.
+5. Protected authenticated-provider behavior and source freshness beyond the
+   specific dated read-only official-source receipt.
+
+Further module extraction, historical cross-layer CSS cleanup, per-book packs,
+SQLite pooling or binary IPC should follow measured coupling/cost and prove a
+win. Existing geometry, source provenance, atomic integrity and capability
+limits remain acceptance requirements.
 
 Initial device targets: warm shell p95 <=500ms, cold native shell <=1000ms,
 local catalog <=500ms, local chapter <=700ms, reader revisit <=200ms,
@@ -129,8 +122,14 @@ greeting-ready median 402.2ms and p95 496.5ms. The first navigation is included;
 this is not an OS/process startup measurement or remote-feed readiness claim.
 The preceding debug/typography implementation passes full CI at `647e6c8`
 (337 browser cases, three BFF-gated skips, no flaky retries) and packaged-native
-Windows/WebView2 smoke. The Kidung section extraction requires its own final-head
-CI before completion; local loading and queue regressions provide focused proof.
+Windows/WebView2 smoke. The Kidung section and Bible-rendering extraction passed final-head CI/native at
+`0110337` (341 browser passes, three BFF skips, no flaky retries). The 2026-10-01
+continuation requires its own final-head verification recorded on PR #9.
 
 No full-roadmap completion or physical-device parity claim is made until these
 gates have recorded evidence.
+
+Additional iteration commands: `pnpm test:native:quick [startup|storage|media|assets]`,
+`pnpm test:native:soak`, `pnpm test:performance:native`, and
+`pnpm test:performance:browser-roadmap`. Windows suites require the packaged
+executable; browser profiling requires a current production preview.

@@ -148,3 +148,20 @@ describe("BibleSearchClient", () => {
     client.dispose();
   });
 });
+
+it("a reader can display and cancel without cloning the Bible into a search worker", async () => {
+  const factory = vi.fn(fakeWorker);
+  const client = new BibleSearchClient(verses, factory, undefined, true);
+  expect(client.backend).toBe("pending");
+  expect(factory).not.toHaveBeenCalled();
+  const controller = new AbortController();
+  controller.abort();
+  await expect(
+    client.search("Allah", {}, controller.signal),
+  ).rejects.toMatchObject({ name: "AbortError" });
+  expect(factory).not.toHaveBeenCalled();
+  await expect(client.search("Allah")).resolves.toHaveLength(2);
+  await client.search("kasih");
+  expect(factory).toHaveBeenCalledOnce();
+  client.dispose();
+});

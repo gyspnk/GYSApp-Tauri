@@ -115,6 +115,11 @@ export const HymnCatalogEntrySchema = z.object({
   chordRef: ChordRefSchema.optional(),
 });
 export type HymnCatalogEntry = z.infer<typeof HymnCatalogEntrySchema>;
+export const HymnMetadataSchema = HymnCatalogEntrySchema.omit({
+  lyrics: true,
+  verses: true,
+});
+export type HymnMetadata = z.infer<typeof HymnMetadataSchema>;
 
 export const LiteratureCategorySchema = z.enum([
   "kesaksian",

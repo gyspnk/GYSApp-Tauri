@@ -31,6 +31,7 @@ import {
   type SavedPlaylist,
 } from "./kidung-playlists.js";
 import { applyAutoNextMode, getAutoNextMode } from "./midi-playlist.js";
+import type { HymnMetadata } from "@gys/contracts";
 import {
   type CatalogState,
   parseCatalog,
@@ -43,7 +44,7 @@ export function HymnPlaylistPage({
   catalog,
 }: {
   locale: Locale;
-  catalog: CatalogState;
+  catalog: CatalogState<HymnMetadata>;
 }) {
   const navigate = useNavigate();
   const playlist = useSyncExternalStore(

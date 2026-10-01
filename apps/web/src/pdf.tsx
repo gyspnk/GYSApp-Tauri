@@ -1,3 +1,5 @@
+import { useReadinessMarker } from "./readiness.js";
+import { enhancePdfReader } from "./direct-manipulation.js";
 import {
   useCallback,
   useEffect,
@@ -510,6 +512,7 @@ export function PdfReader({
   const [loadPhase, setLoadPhase] = useState<
     "loading" | "slow" | "ready" | "error"
   >("loading");
+  useReadinessMarker("gys-pdf-page-ready", status === "ready", page);
   const markPageReady = useCallback(() => {
     setLoadPhase("ready");
     setStatus("ready");
@@ -1065,6 +1068,10 @@ export function PdfReader({
     setLoadProgress(8);
     setLoadAttempt((attempt) => attempt + 1);
   };
+  useEffect(() => {
+    if (variant !== "hymn" || !pdfReaderRef.current) return;
+    return enhancePdfReader(pdfReaderRef.current);
+  }, [variant, locale]);
   const readerTitle = title ?? translate(locale, "pdf.readerTitle");
 
   return (

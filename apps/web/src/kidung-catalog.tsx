@@ -1,5 +1,7 @@
+import { useReadinessMarker } from "./readiness.js";
 import { useSyncExternalStore } from "react";
 import {
+  useEffect,
   useDeferredValue,
   useMemo,
   useRef,
@@ -7,7 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { type HymnCatalogEntry, type UpstreamMusicLock } from "@gys/contracts";
+import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { findMusicAsset } from "./music-assets.js";
 import { Select } from "./select.js";
@@ -25,6 +27,7 @@ import {
   hymnCollectionLabel,
   uniqueItems,
 } from "./kidung-shared.js";
+import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
 import { KidungLocalNav } from "./kidung-local-nav.js";
 
 export function HymnCatalog({
@@ -33,9 +36,10 @@ export function HymnCatalog({
   musicLock,
 }: {
   locale: Locale;
-  state: CatalogState;
+  state: CatalogState<HymnMetadata>;
   musicLock?: UpstreamMusicLock;
 }) {
+  useReadinessMarker("gys-hymn-catalog-ready", state.status === "ready");
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
@@ -58,7 +62,38 @@ export function HymnCatalog({
       ),
     [allItems, musicLock],
   );
-  const searchIndex = useMemo(() => buildHymnSearchIndex(allItems), [allItems]);
+  const [corpus, setCorpus] =
+    useState<Awaited<ReturnType<typeof loadHymnSearchCorpus>>>();
+  const [corpusError, setCorpusError] = useState<string>();
+  const [corpusAttempt, setCorpusAttempt] = useState(0);
+  const needsCorpus = Boolean(deferredQuery.trim());
+  useEffect(() => {
+    if (!needsCorpus) return;
+    let active = true;
+    setCorpusError(undefined);
+    void loadHymnSearchCorpus().then(
+      (items) => {
+        if (active) setCorpus(items);
+      },
+      (error) => {
+        if (active)
+          setCorpusError(
+            error instanceof Error ? error.message : "Search unavailable",
+          );
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [needsCorpus, allItems, corpusAttempt]);
+  const searchableItems = useMemo(() => {
+    const byId = new Map(corpus?.map((item) => [item.id, item]));
+    return allItems.map((item) => byId.get(item.id) ?? item);
+  }, [allItems, corpus]);
+  const searchIndex = useMemo(
+    () => buildHymnSearchIndex(searchableItems),
+    [searchableItems],
+  );
   const books = useMemo(
     () => [...new Set(allItems.map((item) => item.book))].sort(),
     [allItems],
@@ -91,7 +126,7 @@ export function HymnCatalog({
   };
   const onRowQueue = (
     event: ReactMouseEvent<HTMLButtonElement>,
-    item: HymnCatalogEntry,
+    item: HymnMetadata,
   ) => {
     event.stopPropagation();
     triggerRipple(event.currentTarget, event.clientX, event.clientY);
@@ -183,6 +218,20 @@ export function HymnCatalog({
       )}
       {state.status === "ready" && (
         <section className="hymn-catalog-shell">
+          {needsCorpus && !corpus && !corpusError && (
+            <p role="status">{translate(locale, "kidung.catalogLoading")}</p>
+          )}
+          {needsCorpus && corpusError && (
+            <div role="alert">
+              <span>{corpusError}</span>
+              <button
+                type="button"
+                onClick={() => setCorpusAttempt((value) => value + 1)}
+              >
+                {translate(locale, "home.retry")}
+              </button>
+            </div>
+          )}
           <ol className="pujian-list" ref={listRef}>
             {filtered.map((item) => {
               const inQueue = queueIds.has(item.id);

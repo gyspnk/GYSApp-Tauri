@@ -1,3 +1,25 @@
+import { BibleNotesPopup } from "./bible-notes-popup.js";
+import {
+  type BibleNotes,
+  BOOK_KEY,
+  CHAPTER_KEY,
+  BOOKMARKS_KEY,
+  NOTES_KEY,
+  HIGHLIGHTS_KEY,
+  HIGHLIGHT_PALETTE_KEY,
+  SEARCH_HISTORY_KEY,
+  VERSION_KEY,
+  MAX_CUSTOM_HIGHLIGHT_COLORS,
+  readSavedNumber,
+  readSavedVersion,
+  readStringSet,
+  readBibleNotes,
+  readBibleHighlights,
+  readCustomHighlightColors,
+  makeBibleNoteId,
+  readSearchHistory,
+} from "./bible-reader-storage.js";
+import { useReadinessMarker } from "./readiness.js";
 import {
   useCallback,
   useEffect,
@@ -9,7 +31,6 @@ import {
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode,
   type TouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -64,15 +85,16 @@ import {
 import { loadBibleReaderPack } from "./bible-distributed.js";
 import { loadBundledBiblePack } from "./bible-pack-loader.js";
 import { Icon } from "./icons.js";
+import { ChapterPane } from "./bible-chapter.js";
 import {
-  ChapterPane,
   DEFAULT_HIGHLIGHT_COLORS,
   isCustomHighlightColor,
-} from "./bible-chapter.js";
-import { HighlightedText } from "./bible-verse-text.js";
+} from "./bible-highlights.js";
+import {
+  BibleSearchPanel,
+  SEARCH_RESULTS_PAGE_SIZE,
+} from "./bible-search-panel.js";
 import { setBibleHeaderState } from "./bible-header-store.js";
-
-const SEARCH_RESULTS_PAGE_SIZE = 40;
 
 type PackState =
   | { status: "loading" }
@@ -85,145 +107,6 @@ type SelectionToolbarState = {
   left: number;
   top: number;
 };
-
-type SavedBibleNote = { id: string; text: string };
-type BibleNotes = Record<string, SavedBibleNote[]>;
-
-const BOOK_KEY = "gys-bible-book";
-const CHAPTER_KEY = "gys-bible-chapter";
-const BOOKMARKS_KEY = "gys-bible-bookmarks";
-const NOTES_KEY = "gys-bible-notes-v1";
-const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
-const HIGHLIGHT_PALETTE_KEY = "gys-bible-highlight-palette-v1";
-const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
-const VERSION_KEY = "gys-bible-version-v1";
-const MAX_CUSTOM_HIGHLIGHT_COLORS = 6;
-
-function readSavedNumber(key: string, fallback: number): number {
-  if (typeof window === "undefined") return fallback;
-  const saved = Number(localStorage.getItem(key));
-  return Number.isInteger(saved) && saved > 0 ? saved : fallback;
-}
-
-function readSavedVersion(): string {
-  if (typeof window === "undefined") return "b_tb";
-  return localStorage.getItem(VERSION_KEY) ?? "b_tb";
-}
-
-function readStringSet(key: string): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(key) ?? "[]");
-    return new Set(
-      Array.isArray(value)
-        ? value.filter((entry): entry is string => typeof entry === "string")
-        : [],
-    );
-  } catch {
-    return new Set();
-  }
-}
-
-function readStringMap(key: string): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
-    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-    return Object.fromEntries(
-      Object.entries(value).filter(
-        (entry): entry is [string, string] => typeof entry[1] === "string",
-      ),
-    );
-  } catch {
-    return {};
-  }
-}
-
-function readBibleNotes(): BibleNotes {
-  if (typeof window === "undefined") return {};
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(NOTES_KEY) ?? "{}");
-    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-    return Object.fromEntries(
-      Object.entries(value).flatMap(([verseId, stored]) => {
-        if (typeof stored === "string") {
-          const text = stored.trim();
-          return text ? [[verseId, [{ id: `legacy-${verseId}`, text }]]] : [];
-        }
-        if (!Array.isArray(stored)) return [];
-        const notes = stored.flatMap((entry, index) => {
-          if (!entry || typeof entry !== "object") return [];
-          const note = entry as { id?: unknown; text?: unknown };
-          if (typeof note.text !== "string" || !note.text.trim()) return [];
-          return [
-            {
-              id:
-                typeof note.id === "string" && note.id
-                  ? note.id
-                  : `legacy-${verseId}-${index}`,
-              text: note.text.trim(),
-            },
-          ];
-        });
-        return notes.length ? [[verseId, notes]] : [];
-      }),
-    );
-  } catch {
-    return {};
-  }
-}
-
-function readBibleHighlights(): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(readStringMap(HIGHLIGHTS_KEY)).filter(
-      ([, color]) =>
-        DEFAULT_HIGHLIGHT_COLORS.includes(
-          color as (typeof DEFAULT_HIGHLIGHT_COLORS)[number],
-        ) || isCustomHighlightColor(color),
-    ),
-  );
-}
-
-function readCustomHighlightColors(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const value: unknown = JSON.parse(
-      localStorage.getItem(HIGHLIGHT_PALETTE_KEY) ?? "[]",
-    );
-    return Array.isArray(value)
-      ? [
-          ...new Set(
-            value.filter(
-              (entry): entry is string =>
-                typeof entry === "string" && isCustomHighlightColor(entry),
-            ),
-          ),
-        ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS)
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function makeBibleNoteId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function readSearchHistory(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const value: unknown = JSON.parse(
-      localStorage.getItem(SEARCH_HISTORY_KEY) ?? "[]",
-    );
-    return Array.isArray(value)
-      ? value
-          .filter((entry): entry is string => typeof entry === "string")
-          .slice(0, 8)
-      : [];
-  } catch {
-    return [];
-  }
-}
 
 function cleanVerse(verse: BibleVerse): string {
   return sanitizeBibleText(verse.text);
@@ -299,6 +182,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [searchedQuery, setSearchedQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string>();
+  useReadinessMarker(
+    "gys-bible-search-ready",
+    Boolean(searchedQuery) && !searching,
+    searchResults,
+  );
   const [searchHistory, setSearchHistory] = useState(readSearchHistory);
   const [bookmarks, setBookmarks] = useState<Set<string>>(() =>
     readStringSet(BOOKMARKS_KEY),
@@ -700,6 +588,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
             packState.pack.verses,
             undefined,
             bibleBookNames(packState.pack),
+            true,
           )
         : undefined,
     [packState],
@@ -963,6 +852,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
       (verse) => verse.book === String(book.id) && verse.chapter === chapter,
     );
   }, [book, chapter, packState]);
+  useReadinessMarker(
+    "gys-bible-chapter-ready",
+    packState.status === "ready" && chapterVerses.length > 0,
+  );
   const nextTarget = useMemo(
     () => (book ? findNextTarget(books, book, chapter, 1) : undefined),
     [books, book, chapter],
@@ -1181,6 +1074,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
     }
     setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
     setSearching(true);
+    performance.clearMarks("gys-bible-search-start");
+    performance.mark("gys-bible-search-start");
     try {
       const results = await searchClient.search(
         requestedQuery,
@@ -1539,174 +1434,44 @@ export function BiblePage({ locale }: { locale: Locale }) {
     navigateBy(end < start ? 1 : -1);
   };
 
-  const savedNotesList = Object.entries(notes)
-    .flatMap(([noteVerseId, verseNotes]) =>
-      verseNotes.map((note) => ({ noteVerseId, note })),
-    )
-    .map(({ noteVerseId, note }) => {
-      const noteVerse =
-        packState.status === "ready"
-          ? packState.pack.verses.find((verse) => verse.id === noteVerseId)
-          : undefined;
-      return noteVerse
-        ? {
-            id: `${noteVerse.id}:${note.id}`,
-            verseId: noteVerse.id,
-            noteId: note.id,
-            verse: noteVerse,
-            text: note.text,
-            label: `${books.find((candidate) => String(candidate.id) === noteVerse.book)?.name ?? noteVerse.book} ${noteVerse.chapter}:${noteVerse.verse}`,
-          }
-        : undefined;
-    })
-    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
-    .filter((entry) => !selectedVerseId || entry.verseId === selectedVerseId)
-    .sort((left, right) =>
-      left.label.localeCompare(right.label, "id", { numeric: true }),
-    );
-
-  const renderNotesPopup = (): ReactNode => {
-    if (!notesPopupOpen) return null;
-    return createPortal(
-      <div
-        className="bible-notes-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label={translate(locale, "bible.notes")}
-        onClick={() => setNotesPopupOpen(false)}
-      >
-        <div
-          className="bible-notes-modal"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="bible-notes-header">
-            <div>
-              <small>{translate(locale, "bible.savedReading")}</small>
-              <strong>{translate(locale, "bible.notes")}</strong>
-            </div>
-            <span className="bible-notes-count">
-              {translate(locale, "bible.noteCount", {
-                count: savedNotesList.length,
-              })}
-              {bookmarks.size > 0
-                ? ` · ${translate(locale, "bible.bookmarkCount", {
-                    count: bookmarks.size,
-                  })}`
-                : ""}
-            </span>
-            <button
-              className="bible-notes-close"
-              type="button"
-              aria-label={translate(locale, "bible.closeNotes")}
-              onClick={() => setNotesPopupOpen(false)}
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="bible-notes-body">
-            {selectedVerse && (
-              <div className="bible-selection-panel">
-                <strong>
-                  {book?.name} {chapter}:{selectedVerse.verse}
-                </strong>
-                <p>{cleanVerse(selectedVerse)}</p>
-                <label className="bible-note-field">
-                  <span>{translate(locale, "bible.personalNote")}</span>
-                  <textarea
-                    value={noteDraft}
-                    rows={3}
-                    onChange={(event) => setNoteDraft(event.target.value)}
-                    placeholder={translate(locale, "bible.notePlaceholder")}
-                  />
-                </label>
-                <button
-                  className="primary-button"
-                  type="button"
-                  onClick={saveNote}
-                >
-                  {translate(locale, "bible.saveNote")}
-                </button>
-              </div>
-            )}
-
-            <div className="bible-notes-section-label">
-              <span>{translate(locale, "bible.savedNotes")}</span>
-              {savedNotesList.length > 0 && (
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    selectedVerseId
-                      ? beginNoteForSelectedVerse()
-                      : addNoteForNewVerse()
-                  }
-                >
-                  {translate(locale, "bible.addNote")}
-                </button>
-              )}
-            </div>
-            {savedNotesList.length > 0 ? (
-              <div className="bible-notes-list">
-                {savedNotesList.map((entry) => (
-                  <div className="bible-notes-item" key={entry.id}>
-                    <button
-                      className="bible-notes-item-open"
-                      type="button"
-                      onClick={() => {
-                        setSelectedBook(Number(entry.verse.book));
-                        setSelectedChapter(entry.verse.chapter);
-                        setSelectedVerseId(entry.verseId);
-                        setSelectedNoteId(entry.noteId);
-                        setNoteDraft(entry.text);
-                      }}
-                    >
-                      <strong>{entry.label}</strong>
-                      <span>{entry.text}</span>
-                    </button>
-                    <button
-                      className="bible-notes-item-delete"
-                      type="button"
-                      aria-label={translate(locale, "bible.deleteNote", {
-                        label: entry.label,
-                      })}
-                      onClick={() => {
-                        const remaining = (notes[entry.verseId] ?? []).filter(
-                          (note) => note.id !== entry.noteId,
-                        );
-                        setNotes((current) => {
-                          const next = { ...current };
-                          if (remaining.length) next[entry.verseId] = remaining;
-                          else delete next[entry.verseId];
-                          return next;
-                        });
-                        if (
-                          selectedVerseId === entry.verseId &&
-                          selectedNoteId === entry.noteId
-                        ) {
-                          setSelectedNoteId(remaining[0]?.id);
-                          setNoteDraft(remaining[0]?.text ?? "");
-                        }
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="bible-side-empty">
-                {selectedVerse
-                  ? translate(locale, "bible.noOtherNotes")
-                  : translate(locale, "bible.noNotesPrompt")}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>,
-      document.body,
-    );
-  };
+  const hasSavedNotes = Object.keys(notes).length > 0;
+  const verseById = useMemo(
+    () =>
+      new Map(
+        hasSavedNotes && packState.status === "ready"
+          ? packState.pack.verses.map((verse) => [verse.id, verse] as const)
+          : [],
+      ),
+    [packState, hasSavedNotes],
+  );
+  const savedNotesList = useMemo(
+    () =>
+      Object.entries(notes)
+        .flatMap(([noteVerseId, verseNotes]) =>
+          verseNotes.map((note) => ({ noteVerseId, note })),
+        )
+        .map(({ noteVerseId, note }) => {
+          const noteVerse = verseById.get(noteVerseId);
+          return noteVerse
+            ? {
+                id: `${noteVerse.id}:${note.id}`,
+                verseId: noteVerse.id,
+                noteId: note.id,
+                verse: noteVerse,
+                text: note.text,
+                label: `${books.find((candidate) => String(candidate.id) === noteVerse.book)?.name ?? noteVerse.book} ${noteVerse.chapter}:${noteVerse.verse}`,
+              }
+            : undefined;
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+        .filter(
+          (entry) => !selectedVerseId || entry.verseId === selectedVerseId,
+        )
+        .sort((left, right) =>
+          left.label.localeCompare(right.label, "id", { numeric: true }),
+        ),
+    [notes, verseById, books, selectedVerseId],
+  );
 
   const splitStyle = {
     "--bible-split": `${splitRatio}%`,
@@ -1720,194 +1485,36 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page bible-page">
-      <header
-        className={`bible-page-header${searchOpen ? " is-search-open" : ""}`}
-      >
-        <h1 className="sr-only">{translate(locale, "page.bibleTitle")}</h1>
-        <form
-          id="bible-search-form"
-          className={`bible-search${searchOpen ? " is-open" : ""}`}
-          aria-hidden={!searchOpen}
-          inert={!searchOpen}
-          onSubmit={(event) => void runSearch(event)}
-          role="search"
-        >
-          <label htmlFor="bible-query">
-            {translate(locale, "bible.search")}
-          </label>
-          <div className="search-row">
-            <input
-              ref={searchInputRef}
-              id="bible-query"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={translate(locale, "bible.searchPlaceholder")}
-            />
-            <button
-              className="primary-button"
-              type="submit"
-              disabled={searching}
-            >
-              {searching ? "…" : translate(locale, "bible.searchAction")}
-            </button>
-          </div>
-          <details
-            className="bible-search-options-disclosure"
-            open={searchFiltersOpen}
-            onToggle={(event) => setSearchFiltersOpen(event.currentTarget.open)}
-          >
-            <summary>{translate(locale, "bible.searchFilters")}</summary>
-            <div className="bible-search-options">
-              <Select
-                value={searchBook}
-                onChange={setSearchBook}
-                label={translate(locale, "bible.book")}
-                options={[
-                  {
-                    value: "all",
-                    label: translate(locale, "bible.allBooks"),
-                  },
-                  {
-                    value: "old",
-                    label: translate(locale, "bible.oldTestament"),
-                  },
-                  {
-                    value: "new",
-                    label: translate(locale, "bible.newTestament"),
-                  },
-                  ...books.map((candidate) => ({
-                    value: String(candidate.id),
-                    label: candidate.name,
-                  })),
-                ]}
-              />
-              <label className="check-option">
-                <input
-                  type="checkbox"
-                  checked={exactPhrase}
-                  onChange={(event) => setExactPhrase(event.target.checked)}
-                />{" "}
-                {translate(locale, "bible.exactPhrase")}
-              </label>
-              <label className="check-option">
-                <input
-                  type="checkbox"
-                  checked={wholeWord}
-                  onChange={(event) => setWholeWord(event.target.checked)}
-                />{" "}
-                {translate(locale, "bible.wholeWord")}
-              </label>
-            </div>
-          </details>
-          {searchError && (
-            <div className="inline-error" role="alert">
-              <span>{searchError}</span>
-              <button
-                className="text-button"
-                type="button"
-                onClick={() => void runSearch(undefined, query)}
-                disabled={searching || !query.trim()}
-              >
-                {translate(locale, "bible.retrySearch")}
-              </button>
-            </div>
-          )}
-          {searchHistory.length > 0 && !query && (
-            <div
-              className="bible-search-history"
-              aria-label={translate(locale, "bible.searchHistory")}
-            >
-              {searchHistory.map((entry) => (
-                <button
-                  key={entry}
-                  type="button"
-                  onClick={() => {
-                    setQuery(entry);
-                    void runSearch(undefined, entry);
-                  }}
-                >
-                  {entry}
-                </button>
-              ))}
-            </div>
-          )}
-        </form>
-      </header>
-
-      {searchResults.length > 0 && (
-        <section
-          className="search-results"
-          aria-label={translate(locale, "bible.results")}
-        >
-          <div className="section-title-row">
-            <h2>{translate(locale, "bible.results")}</h2>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => {
-                setSearchResults([]);
-                setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
-                setSearchedQuery("");
-              }}
-            >
-              {translate(locale, "bible.closeResults")}
-            </button>
-          </div>
-          <div className="result-list">
-            {searchResults.slice(0, visibleSearchResultCount).map((result) => (
-              <button
-                className="result-item"
-                key={result.id}
-                type="button"
-                onClick={() => {
-                  setSelectedBook(Number(result.book));
-                  setSelectedChapter(result.chapter);
-                  setSelectedVerseId(result.id);
-                  setSearchResults([]);
-                  setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
-                  setSearchedQuery("");
-                  setSearchOpen(false);
-                }}
-              >
-                <strong>
-                  {books.find(
-                    (candidate) => String(candidate.id) === result.book,
-                  )?.name ?? result.book}{" "}
-                  {result.chapter}:{result.verse}
-                </strong>
-                <span>
-                  <HighlightedText text={cleanVerse(result)} query={query} />
-                </span>
-              </button>
-            ))}
-          </div>
-          {searchResults.length > visibleSearchResultCount && (
-            <button
-              className="text-button"
-              type="button"
-              onClick={() =>
-                setVisibleSearchResultCount((current) =>
-                  Math.min(
-                    current + SEARCH_RESULTS_PAGE_SIZE,
-                    searchResults.length,
-                  ),
-                )
-              }
-            >
-              {translate(locale, "bible.showMoreResults")}
-            </button>
-          )}
-        </section>
-      )}
-      {searchedQuery &&
-        !searching &&
-        !searchError &&
-        searchResults.length === 0 &&
-        searchedQuery === query.trim() && (
-          <div className="empty-panel" role="status">
-            {translate(locale, "bible.noResults")}
-          </div>
-        )}
+      <BibleSearchPanel
+        locale={locale}
+        searchOpen={searchOpen}
+        query={query}
+        searchInputRef={searchInputRef}
+        searching={searching}
+        runSearch={runSearch}
+        setQuery={setQuery}
+        searchFiltersOpen={searchFiltersOpen}
+        setSearchFiltersOpen={setSearchFiltersOpen}
+        searchBook={searchBook}
+        setSearchBook={setSearchBook}
+        books={books}
+        exactPhrase={exactPhrase}
+        setExactPhrase={setExactPhrase}
+        wholeWord={wholeWord}
+        setWholeWord={setWholeWord}
+        searchError={searchError}
+        searchHistory={searchHistory}
+        searchResults={searchResults}
+        setSearchResults={setSearchResults}
+        visibleSearchResultCount={visibleSearchResultCount}
+        setVisibleSearchResultCount={setVisibleSearchResultCount}
+        searchedQuery={searchedQuery}
+        setSearchedQuery={setSearchedQuery}
+        setSelectedBook={setSelectedBook}
+        setSelectedChapter={setSelectedChapter}
+        setSelectedVerseId={setSelectedVerseId}
+        setSearchOpen={setSearchOpen}
+      />
 
       {packState.status === "loading" && (
         <section
@@ -2164,7 +1771,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
           </div>
         </section>
       )}
-      {notesPopupOpen && renderNotesPopup()}
+      <BibleNotesPopup
+        locale={locale}
+        notesPopupOpen={notesPopupOpen}
+        setNotesPopupOpen={setNotesPopupOpen}
+        savedNotesList={savedNotesList}
+        bookmarks={bookmarks}
+        selectedVerse={selectedVerse}
+        book={book}
+        chapter={chapter}
+        noteDraft={noteDraft}
+        setNoteDraft={setNoteDraft}
+        saveNote={saveNote}
+        selectedVerseId={selectedVerseId}
+        beginNoteForSelectedVerse={beginNoteForSelectedVerse}
+        addNoteForNewVerse={addNoteForNewVerse}
+        setSelectedBook={setSelectedBook}
+        setSelectedChapter={setSelectedChapter}
+        setSelectedVerseId={setSelectedVerseId}
+        setSelectedNoteId={setSelectedNoteId}
+        notes={notes}
+        setNotes={setNotes}
+        selectedNoteId={selectedNoteId}
+      />
       {packState.status === "ready" &&
         book &&
         createPortal(

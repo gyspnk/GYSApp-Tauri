@@ -17,8 +17,8 @@ function createZoomHud(
   return hud;
 }
 
-function enhancePdfReader(reader: HTMLElement): void {
-  if (reader.dataset.directManipulationReady === "true") return;
+export function enhancePdfReader(reader: HTMLElement): () => void {
+  if (reader.dataset.directManipulationReady === "true") return () => undefined;
 
   const stage = reader.querySelector<HTMLElement>(".pdf-stage");
   const indicator = reader.querySelector<HTMLElement>(".pdf-zoom-indicator");
@@ -40,7 +40,7 @@ function enhancePdfReader(reader: HTMLElement): void {
     !zoomOut ||
     !zoomReset
   )
-    return;
+    return () => undefined;
 
   reader.dataset.directManipulationReady = "true";
   stage.dataset.directManipulationReady = "true";
@@ -82,7 +82,7 @@ function enhancePdfReader(reader: HTMLElement): void {
     subtree: true,
   });
 
-  stage.addEventListener("pointerdown", (event) => {
+  const onPointerDown = (event: PointerEvent) => {
     const target = event.target;
     if (
       target instanceof Element &&
@@ -90,33 +90,28 @@ function enhancePdfReader(reader: HTMLElement): void {
     )
       return;
     stage.focus({ preventScroll: true });
-  });
+  };
 
   // pdf.tsx already owns Ctrl/Cmd +/- globally. Keep that canonical handler
   // single-owned; this layer only adds the missing reset shortcut.
-  stage.addEventListener("keydown", (event) => {
+  let frame: number | undefined;
+  const onKeyDown = (event: KeyboardEvent) => {
     if ((!event.ctrlKey && !event.metaKey) || event.key !== "0") return;
     if (zoomReset.disabled) return;
     event.preventDefault();
     zoomReset.click();
-    window.requestAnimationFrame(showZoomHud);
-  });
-}
-
-export function installDirectManipulationEnhancements(): () => void {
-  if (typeof document === "undefined") return () => undefined;
-
-  const enhance = () => {
-    document
-      .querySelectorAll<HTMLElement>(".pdf-reader-hymn")
-      .forEach(enhancePdfReader);
+    frame = window.requestAnimationFrame(showZoomHud);
   };
-
-  enhance();
-  const observer = new MutationObserver(enhance);
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-  return () => observer.disconnect();
+  stage.addEventListener("pointerdown", onPointerDown);
+  stage.addEventListener("keydown", onKeyDown);
+  return () => {
+    zoomObserver.disconnect();
+    stage.removeEventListener("pointerdown", onPointerDown);
+    stage.removeEventListener("keydown", onKeyDown);
+    if (hideHudTimer !== undefined) clearTimeout(hideHudTimer);
+    if (frame !== undefined) cancelAnimationFrame(frame);
+    hud.remove();
+    delete reader.dataset.directManipulationReady;
+    delete stage.dataset.directManipulationReady;
+  };
 }

@@ -1,0 +1,2828 @@
+/* Focused text reader: one compact toolbar, one disclosure at a time, and the
+   current verse as the primary surface. */
+.hymn-text-toolbar {
+  position: relative;
+  z-index: var(--z-toolbar);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--canvas);
+}
+.hymn-text-toolbar .detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 0;
+  min-width: 0;
+  order: 1;
+  width: auto;
+}
+.hymn-text-toolbar .detail-actions .hymn-action {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* gyschordweb parity: the scope/autoscroll group gets its own row below the
+   primary actions so eight controls never fight for one unwrappable strip.
+   more/settings join row 1; segmented takes the full second row. */
+.hymn-segmented-toolbar {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+  order: 2;
+}
+.hymn-more-actions,
+.hymn-reader-settings {
+  position: static;
+  width: 44px;
+  flex: 0 0 44px;
+  order: 1;
+}
+.hymn-more-actions-summary,
+.hymn-reader-settings-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--blue);
+  cursor: pointer;
+  font: inherit;
+  list-style: none;
+}
+.hymn-more-actions-summary::-webkit-details-marker,
+.hymn-reader-settings-summary::-webkit-details-marker {
+  display: none;
+}
+.hymn-more-actions:not([open]) > .hymn-more-actions-panel,
+.hymn-reader-settings:not([open]) > .song-controls {
+  display: none !important;
+}
+.hymn-more-actions-panel,
+.hymn-reader-settings > .song-controls {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: var(--z-popover);
+  max-height: min(65dvh, 520px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+}
+.hymn-more-actions-panel {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hymn-more-actions-panel .hymn-action {
+  min-height: 38px;
+}
+.hymn-reader-settings > .song-controls {
+  margin: 0;
+}
+.hymn-midi-reader-controls {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(180px, 1.4fr) minmax(
+      150px,
+      1fr
+    );
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.hymn-soundfont-active,
+.hymn-instrument-select,
+.hymn-tempo-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.hymn-soundfont-active,
+.hymn-instrument-select > span,
+.hymn-tempo-control > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.hymn-soundfont-active {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+}
+.hymn-soundfont-active strong {
+  color: var(--ink);
+}
+.hymn-instrument-select {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.hymn-instrument-select select {
+  width: 100%;
+  min-height: 44px;
+}
+.hymn-tempo-control button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+.hymn-tempo-control output {
+  min-width: 68px;
+  text-align: center;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .topbar,
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer)
+  .navigation-shell {
+  display: none;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .main-content {
+  max-width: none;
+  height: 100dvh;
+  overflow: hidden;
+  padding: 0 24px;
+}
+.hymn-detail-page.is-text-viewer {
+  width: min(100%, 1120px);
+  height: 100dvh;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hymn-detail-page.is-text-viewer .detail-hero {
+  min-height: 58px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.hymn-detail-page.is-text-viewer .detail-hero h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(17px, 2.2vw, 22px);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hymn-text-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.hymn-text-title .viewer-chrome-button {
+  flex: 0 0 44px;
+}
+.hymn-detail-page.is-text-viewer .detail-neighbors {
+  display: flex;
+  gap: 4px;
+}
+.hymn-detail-page.is-text-viewer .detail-neighbor-button {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.hymn-detail-page.is-text-viewer .detail-neighbor-button .control-copy {
+  display: none;
+}
+.hymn-detail-page.is-text-viewer .hymn-detail-surface {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
+  border: 0;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  place-content: safe center;
+  justify-items: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  margin: 0;
+  padding: 16px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+  transition:
+    font-size 160ms var(--ease-out),
+    line-height 160ms var(--ease-out);
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+  width: 100%;
+  max-width: none;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet.is-continuous {
+  margin-inline: auto;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet p {
+  width: fit-content;
+  max-width: min(100%, 44rem);
+  margin-inline: auto;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching {
+  transition-duration: 60ms;
+}
+.hymn-text-footer {
+  display: grid;
+  grid-template-columns: 44px 44px minmax(100px, 1fr) 44px 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 0 max(7px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+/* gyschordweb parity: in "all verses" mode the footer has no verse chevrons,
+   so collapse to three balanced columns instead of leaving a hole in the
+   five-column grid. */
+.hymn-text-footer.is-all-verses {
+  grid-template-columns: 44px minmax(100px, 1fr) 44px;
+}
+.hymn-text-footer button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.hymn-text-footer button:disabled {
+  opacity: 0.3;
+}
+.hymn-text-footer > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-more-actions,
+.hymn-detail-page.is-pdf-viewer .hymn-reader-settings {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer)
+    .main-content {
+    padding: 0 12px;
+  }
+  .hymn-detail-page.is-text-viewer .detail-hero {
+    min-height: 52px;
+    gap: 8px;
+    padding: 5px 0;
+  }
+  .hymn-detail-page.is-text-viewer .detail-hero h1 {
+    font-size: 17px;
+  }
+  .hymn-text-toolbar {
+    justify-content: center;
+  }
+  .hymn-text-toolbar .detail-actions {
+    flex: 0 1 auto;
+  }
+  .hymn-text-toolbar .detail-actions .hymn-action {
+    flex: 0 0 44px;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+  .hymn-text-toolbar .hymn-action-label {
+    display: none;
+  }
+  .hymn-more-actions-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .hymn-more-actions-panel .hymn-action {
+    width: auto;
+    min-width: 0;
+    justify-content: flex-start;
+    padding-inline: 8px;
+  }
+  .hymn-reader-settings > .song-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .hymn-midi-reader-controls {
+    grid-template-columns: 1fr;
+  }
+  .hymn-soundfont-active {
+    flex-direction: row;
+    align-items: center;
+  }
+  .hymn-reader-settings > .song-controls .control-select,
+  .hymn-reader-settings > .song-controls .transpose-control,
+  .hymn-reader-settings > .song-controls .reader-preferences {
+    min-width: 0;
+  }
+  .hymn-reader-settings > .song-controls .transpose-control,
+  .hymn-reader-settings > .song-controls .reader-preferences {
+    grid-column: 1 / -1;
+  }
+  .hymn-reader-settings > .song-controls .reader-preferences {
+    justify-content: space-between;
+  }
+  .hymn-detail-page.is-text-viewer .lyrics-sheet {
+    padding: 10px 0;
+  }
+  .hymn-text-footer {
+    gap: 4px;
+  }
+}
+
+/* Mobile keeps the action targets touchable while removing repeated labels
+   from controls whose accessible names already describe the action. */
+@media (max-width: 599px) {
+  .reader-action-group {
+    gap: 6px;
+  }
+  .hymn-detail-page .hymn-action {
+    min-height: 44px;
+  }
+  .reader-action-group .reader-control-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  .reader-action-group .reader-control-icon .control-copy,
+  .hymn-detail-page .detail-neighbors .control-copy,
+  .asset-action-button .asset-action-copy,
+  .theme-pill-btn .pill-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .hymn-detail-page .detail-neighbors {
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .hymn-detail-page .detail-neighbors .detail-neighbor-button {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  .more-category-bar {
+    gap: 6px;
+    padding-inline: 0;
+  }
+  .more-category-bar,
+  .bible-page-header,
+  .bible-reader,
+  .reader-toolbar {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .more-cat-btn {
+    padding-inline: 12px;
+  }
+  .distributed-asset-actions .asset-action-button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  .more-card.more-action {
+    gap: 6px;
+    padding: 16px;
+  }
+}
+
+/* === Desktop Home Adaptive: Balanced hero & media shelf layout === */
+@media (min-width: 960px) {
+  .home-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .home-page .page-intro {
+    flex: 0 0 auto;
+    padding-bottom: 4px;
+  }
+  .home-grid {
+    display: grid;
+    grid-template-areas:
+      "verse continue"
+      "verse suara"
+      "literature literature";
+    grid-template-columns: minmax(0, 1.15fr) minmax(min(320px, 42vw), 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 22px;
+    padding-top: 16px;
+    max-height: none;
+    overflow: visible;
+  }
+  /* Sauh Bagi Jiwa: preserve the publisher image ratio on desktop. */
+  .home-grid .verse-panel {
+    grid-area: verse;
+    align-self: start;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .sauh-card-media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 782 / 380;
+    flex: 0 0 auto;
+  }
+  .sauh-card-media .sauh-image {
+    object-fit: contain;
+    object-position: center;
+    background: var(--surface-soft);
+  }
+  .sauh-card-media .sauh-media-overlay {
+    display: none;
+  }
+  .sauh-card-content {
+    margin-top: 0;
+    flex: 0 0 auto;
+    padding: 24px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .sauh-card-body {
+    gap: 8px;
+  }
+  .sauh-title {
+    font-size: clamp(20px, 2vw, 24px);
+    font-weight: 800;
+    line-height: 1.32;
+  }
+  .verse-panel blockquote {
+    font-size: clamp(15px, 1.4vw, 17.5px);
+    line-height: 1.65;
+  }
+  /* Kolom Lanjutkan: Compact & clean */
+  .home-grid .continue-panel {
+    min-height: 0;
+    padding: 10px 20px;
+  }
+  .home-grid .continue-panel .section-heading {
+    margin-bottom: 12px;
+  }
+  .home-grid .continue-item {
+    padding-block: 6px;
+  }
+  .continue-grid {
+    gap: 10px;
+    align-content: start;
+  }
+  /* Suara Sejati & Literatur: Compact media banner, clear & readable text */
+  .home-grid .home-media-section {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .home-media-section .section-title-row {
+    flex: 0 0 auto;
+    margin-bottom: 6px;
+  }
+  .home-suara-shelf {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 14px;
+    padding: 4px 2px 10px;
+  }
+  .home-suara-shelf .suara-library-item {
+    flex: 0 0 clamp(230px, 26vw, 270px);
+    width: clamp(230px, 26vw, 270px);
+    height: 190px;
+    min-height: 190px;
+    max-height: 190px;
+  }
+  .suara-card-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+  .suara-card-content {
+    margin-top: auto;
+    flex: 0 0 auto;
+    padding: 10px 14px 12px;
+    gap: 3px;
+  }
+  .suara-card-content strong {
+    font-size: 13.5px;
+    font-weight: 750;
+    line-height: 1.32;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    max-height: 36px;
+  }
+  .suara-card-content small {
+    font-size: 12px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    max-height: 33px;
+  }
+}
+
+/* A full navigation rail leaves a narrow working canvas on small desktops.
+   Stack the dashboard until the content can support two readable columns. */
+@media (min-width: 960px) and (max-width: 1199px) {
+  .home-grid {
+    grid-template-areas:
+      "verse"
+      "continue"
+      "suara"
+      "literature";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    align-items: start;
+  }
+  .home-grid .verse-panel {
+    height: auto;
+    min-height: clamp(360px, 58vw, 520px);
+  }
+}
+
+@media (max-width: 599px) {
+  /* Mobile: kurangi bottom yang kebanyakan */
+  .home-page {
+    padding-bottom: 4px;
+  }
+  .home-grid {
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .home-media-section {
+    margin-top: 8px;
+  }
+  .home-suara-shelf {
+    padding-bottom: 4px;
+  }
+  .main-content {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+
+/* === Fix: Alkitab toolbar collapsible & header buttons mobile tabrakan === */
+@media (max-width: 599px) {
+  /* Header alkitab: jangan bertabrakan — bar tetap visible untuk popover, actions yang scroll */
+  .reader-context-bar {
+    overflow: visible;
+    gap: 4px;
+    padding-bottom: 2px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .reader-context-left {
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .reader-context-book-picker {
+    max-width: none;
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .reader-version-select-wrap {
+    min-width: 44px;
+    flex: 0 0 auto;
+  }
+  .reader-version-select-wrap .reader-context-select .control-select-trigger {
+    min-width: 44px;
+    min-height: 44px;
+    height: 44px;
+    padding-inline: 8px;
+  }
+  .app-frame.is-reader-route .bible-reader {
+    margin-inline: -12px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .reader-context-actions {
+    gap: 4px;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    margin-left: auto;
+  }
+  .reader-context-actions::-webkit-scrollbar {
+    display: none;
+  }
+  .reader-context-button {
+    flex: 0 0 var(--control-hit, 44px);
+  }
+  .reader-typography-wrapper {
+    position: static;
+  }
+  .reader-typography-popover {
+    position: fixed;
+    top: 58px;
+    right: 8px;
+    left: 8px;
+    max-width: none;
+    z-index: 1200;
+  }
+  /* Bible page header: grouping collapsible lebih pas */
+  .bible-page-header {
+    padding: 12px;
+    gap: 10px;
+  }
+  .bible-search-options {
+    gap: 8px;
+    align-items: stretch;
+  }
+  .bible-search-options .control-select {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .bible-search-options .check-option {
+    flex: 1 1 auto;
+    min-width: 110px;
+  }
+  /* Topbar mobile: cegah tabrakan */
+  .topbar {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+  .topbar-actions {
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+  .search-trigger {
+    min-width: 36px;
+    padding-inline: 8px;
+    flex: 0 0 auto;
+  }
+  .search-trigger span {
+    display: none;
+  }
+  .topbar-select {
+    min-width: 36px;
+  }
+}
+@media (max-width: 359px) {
+  .reader-context-bar {
+    gap: 3px;
+  }
+  .reader-context-button {
+    min-width: var(--control-hit, 44px);
+    width: var(--control-hit, 44px);
+  }
+  .reader-context-book-picker {
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+}
+
+/* Sembunyikan scrollbar di beranda */
+.home-page,
+.home-page *,
+.home-grid,
+.verse-panel,
+.sauh-card-media {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.home-page::-webkit-scrollbar,
+.home-page *::-webkit-scrollbar,
+.home-grid::-webkit-scrollbar,
+.verse-panel::-webkit-scrollbar,
+.sauh-card-media::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+html:has(.home-page),
+body:has(.home-page) {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html:has(.home-page)::-webkit-scrollbar,
+body:has(.home-page)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hamburger expand accordion badge */
+.hamburger-expand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-out);
+}
+.hamburger-item.is-active .hamburger-expand-badge {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.media-close-button {
+  margin-left: 2px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Adaptive GYS Logo (Dark/AMOLED: bright/white, Sepia: black, Light: normal)
+   ========================================================================== */
+.brand img,
+.brand-mark img {
+  transition: filter var(--motion-fast) var(--ease-out);
+}
+
+:root[data-theme="dark"] .brand img,
+:root[data-theme="dark"] .brand-mark img,
+:root[data-theme="amoled"] .brand img,
+:root[data-theme="amoled"] .brand-mark img {
+  filter: brightness(0) invert(1);
+}
+
+:root[data-theme="sepia"] .brand img,
+:root[data-theme="sepia"] .brand-mark img {
+  filter: brightness(0) opacity(0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .brand img,
+  :root[data-theme="system"] .brand-mark img {
+    filter: brightness(0) invert(1);
+  }
+}
+
+/* ==========================================================================
+   Desktop Sidebar Layout & Icon Alignment Refinements
+   ========================================================================== */
+.navigation-shell .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  min-height: 48px;
+  text-align: left;
+}
+.navigation-shell .nav-item svg,
+.navigation-shell .nav-item .icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.navigation-shell .nav-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.navigation-shell .nav-copy strong {
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.navigation-shell .nav-copy small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+@media (max-width: 599px) {
+  .navigation-shell .nav-item {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .navigation-shell .nav-copy {
+    display: block;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   Accent Palette Swatches & Custom Picker
+   ========================================================================== */
+.accent-palette-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+.accent-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.accent-dot:hover {
+  transform: scale(1.15);
+}
+.accent-dot.is-active {
+  box-shadow: 0 0 0 2.5px var(--ink);
+  transform: scale(1.1);
+}
+.accent-dot.is-custom {
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+
+.accent-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.accent-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+.accent-palette-item:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.accent-palette-item.is-active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: 0 0 0 1.5px var(--blue);
+}
+.accent-swatch-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex: 0 0 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.accent-swatch-circle.is-custom-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+.accent-swatch-name {
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Kidung Segmented & Auto-Scroll Controls
+   ========================================================================== */
+.hymn-mode-pill-group,
+.hymn-scope-pill-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.hymn-mode-pill-btn,
+.hymn-scope-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.hymn-mode-pill-btn:hover:not(:disabled),
+.hymn-scope-pill-btn:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--surface);
+}
+.hymn-mode-pill-btn.is-active,
+.hymn-scope-pill-btn.is-active {
+  background: var(--surface);
+  color: var(--blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.hymn-autoscroll-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hymn-autoscroll-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.hymn-autoscroll-btn.is-active {
+  background: var(--blue) !important;
+  color: #ffffff !important;
+  border-color: var(--blue) !important;
+}
+.hymn-autoscroll-speed-select {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Capo & Transpose Button Groups */
+.transpose-btn-group,
+.capo-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.transpose-btn-group button,
+.capo-btn-group button {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+.transpose-btn-group button:hover:not(:disabled),
+.capo-btn-group button:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+.transpose-reset-btn {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 0 8px !important;
+  min-width: auto !important;
+}
+.capo-control {
+  display: grid;
+  gap: 6px;
+}
+.capo-control > span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* Continuous All-Verses Mode */
+.hymn-all-verses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+.hymn-detail-page.is-text-viewer .hymn-all-verses-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-all-verses-container
+  > .lyrics-sheet.is-continuous {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  place-content: initial;
+}
+.lyrics-sheet.is-continuous {
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.hymn-verse-header {
+  margin-bottom: 12px;
+}
+.hymn-verse-number-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-soft);
+  padding: 2px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hymn-all-verses-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ---- gyschordweb compact control pass (kidung) --------------------------
+   Reference: gyschordweb 04-viewer.css - icon buttons 32px, indicators
+   0.7rem, transport rows slimmer than page-level buttons. */
+.hymn-text-toolbar .detail-actions .hymn-action {
+  min-height: 34px;
+  padding: 0;
+  width: 34px;
+  justify-content: center;
+  gap: 0;
+}
+.hymn-text-toolbar .detail-actions .hymn-action-primary {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.hymn-text-toolbar .detail-actions .hymn-action-primary:hover:not(:disabled),
+.hymn-text-toolbar .detail-actions .hymn-action-primary:focus-visible {
+  filter: brightness(1.08);
+}
+/* Labels become screen-reader-only; buttons keep aria-label + title. */
+.hymn-text-toolbar .detail-actions .hymn-action-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.hymn-scope-pill-btn,
+.hymn-autoscroll-btn {
+  min-height: 28px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+.hymn-autoscroll-speed-select {
+  min-height: 28px;
+  font-size: 11px;
+}
+.hymn-more-actions-summary,
+.hymn-reader-settings-summary {
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  min-height: 34px;
+}
+.hymn-more-actions,
+.hymn-reader-settings {
+  width: 34px;
+  flex: 0 0 34px;
+}
+.hymn-text-footer {
+  grid-template-columns: 38px 38px minmax(80px, 1fr) 38px 38px;
+  gap: 5px;
+}
+.hymn-text-footer.is-all-verses {
+  grid-template-columns: 38px minmax(80px, 1fr) 38px;
+}
+.hymn-text-footer button {
+  width: 38px;
+  height: 38px;
+}
+.detail-hero .detail-neighbor-button {
+  min-height: 32px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+@media (max-width: 599px) {
+  .hymn-text-toolbar .detail-actions .hymn-action {
+    width: 36px;
+    min-height: 36px;
+  }
+  .hymn-text-footer {
+    grid-template-columns: 40px 40px minmax(70px, 1fr) 40px 40px;
+  }
+  .hymn-text-footer.is-all-verses {
+    grid-template-columns: 40px minmax(70px, 1fr) 40px;
+  }
+  .hymn-text-footer button {
+    width: 40px;
+    height: 40px;
+  }
+}
+/* Small phones honour the >=44px touch-target gate. */
+@media (max-width: 390px) {
+  .hymn-scope-pill-btn,
+  .hymn-autoscroll-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+  .hymn-autoscroll-speed-select {
+    min-height: 44px;
+  }
+  .hymn-more-actions-summary,
+  .hymn-reader-settings-summary {
+    width: 44px;
+    min-width: 44px;
+    flex: 0 0 44px;
+    min-height: 44px;
+  }
+  .hymn-more-actions,
+  .hymn-reader-settings {
+    width: 44px;
+    flex: 0 0 44px;
+  }
+  .hymn-text-toolbar .detail-actions .hymn-action {
+    width: 44px;
+    min-height: 44px;
+  }
+}
+/* MIDI dock classes freed from inline styles. */
+.hymn-midi-seekbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 160px;
+}
+.hymn-midi-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  min-width: 32px;
+  color: var(--muted);
+}
+.hymn-midi-time-end {
+  text-align: right;
+}
+.midi-preload-bar {
+  height: 4px;
+  flex: 0 0 120px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #8d6e3f 18%, transparent);
+  overflow: hidden;
+}
+.midi-preload-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent, #8d6e3f);
+  transition: width 0.2s ease;
+}
+.hymn-midi-mute[aria-pressed="true"] {
+  color: var(--muted);
+}
+
+/* ── Sauh inline loading/error inside the main content card ── */
+.sauh-inline-loading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px;
+}
+.sauh-inline-loading div {
+  display: grid;
+  gap: 4px;
+}
+.sauh-inline-loading strong {
+  font-size: 15px;
+}
+.sauh-inline-loading small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.sauh-inline-spinner {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 3px solid color-mix(in srgb, var(--blue) 22%, transparent);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: sauh-spin 0.8s linear infinite;
+}
+@keyframes sauh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sauh-inline-error {
+  display: grid;
+  gap: 8px;
+  padding: 28px 20px;
+}
+.sauh-inline-error strong {
+  font-size: 15px;
+}
+.sauh-inline-error span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sauh-inline-error .detail-actions {
+  margin-top: 8px;
+}
+
+/* ── gyschordweb chord-ui-prefs parity: marker theming ── */
+.chord-capability {
+  --chord-text-color: #0b4c99;
+  --chord-fill-background: transparent;
+  --chord-fill-opacity: 70%;
+  --chord-font-scale: 1;
+  --chord-fill-padding-scale: 1;
+}
+.chord-capability .chord-visual-marker {
+  color: var(--chord-text-color);
+  background: var(--chord-fill-background);
+  opacity: 1;
+  font-size: calc(0.62rem * var(--chord-font-scale));
+  padding: calc(0.1rem * var(--chord-fill-padding-scale))
+    calc(0.22rem * var(--chord-fill-padding-scale));
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+.pdf-chord-layer {
+  --chord-text-color: #0b4c99;
+  --chord-fill-background: transparent;
+  --chord-fill-opacity: 70%;
+  --chord-font-scale: 1;
+  --chord-fill-padding-scale: 1;
+}
+
+/* Chord UI settings */
+.chord-ui-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chord-ui-swatch {
+  width: 26px;
+  height: 26px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.chord-ui-swatch.is-selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.chord-ui-swatch.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.chord-ui-slider {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.chord-ui-slider span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.chord-ui-slider input {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.media-autonext-subtitle {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pdf-fullscreen-toggle {
+  flex-shrink: 0;
+}
+
+/* ── gyschordweb mini-player parity: MIDI Queue kicker + seek time ── */
+.media-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  grid-column: 1 / -1;
+}
+.media-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 70%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+.media-seek-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  grid-column: 1 / -1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.media-seek-time input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--blue);
+}
+.media-midi-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+}
+.media-loop-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-width: 52px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+.media-loop-control[aria-pressed="true"] {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+}
+.media-key-control {
+  position: relative;
+}
+.media-key-control .media-control {
+  width: auto;
+  min-width: 40px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.media-key-dropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 2px;
+  padding: 6px;
+  min-width: 160px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+.media-key-dropdown button {
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.media-key-dropdown button:hover {
+  background: var(--surface-soft);
+}
+.media-key-dropdown button.is-selected {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+}
+.media-midi-actions .media-transpose {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.media-midi-actions .media-transpose button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+.media-midi-actions .media-transpose strong {
+  min-width: 24px;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* gyschordweb mini tempo toggle + popover */
+.media-tempo-control {
+  position: relative;
+}
+.media-tempo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 54px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.media-tempo-toggle strong {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.media-tempo-toggle small {
+  color: var(--muted);
+  font-size: 9px;
+}
+.media-tempo-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-popover);
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-width: 200px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+.media-tempo-popover input {
+  accent-color: var(--blue);
+}
+.media-tempo-popover span {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── gyschordweb lyrics-panel parity: fullscreen lyrics reader ── */
+.lyrics-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+.lyrics-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+}
+.lyrics-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  max-width: 860px;
+}
+.lyrics-header {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+.lyrics-main-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.lyrics-transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.lyrics-hdr-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.lyrics-hdr-btn:hover {
+  background: var(--surface);
+}
+.lyrics-play-toggle {
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  color: var(--blue);
+}
+.lyrics-midi-label {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lyrics-seek {
+  flex: 1;
+  min-width: 60px;
+  min-height: 44px;
+  accent-color: var(--blue);
+}
+.lyrics-title {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: center;
+  text-align: center;
+}
+.lyrics-song-number {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.lyrics-title h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lyrics-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.lyrics-ctrl-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lyrics-ctrl-btn:hover,
+.lyrics-ctrl-btn.is-active {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+}
+.lyrics-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lyrics-tune-line,
+.lyrics-text-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  row-gap: 8px;
+  flex-wrap: wrap;
+}
+.lyrics-midi-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.lyrics-instrument-select {
+  max-width: 180px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+}
+.lyrics-tempo-input {
+  width: 52px;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+}
+.lyrics-key-group {
+  position: relative;
+}
+.lyrics-key-btn {
+  min-width: 44px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+.lyrics-key-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 2px;
+  padding: 6px;
+  min-width: 160px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+.lyrics-key-dropdown button {
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lyrics-key-dropdown button:hover {
+  background: var(--surface-soft);
+}
+.lyrics-key-dropdown button.is-selected {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+}
+.lyrics-transpose-label {
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lyrics-verse-indicator {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lyrics-content {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px 28px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.lyrics-panel :is(input, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline-offset: 3px;
+}
+.lyrics-verse-container {
+  text-align: center;
+  width: 100%;
+}
+.lyrics-verse-text p {
+  margin: 0;
+  padding: 0;
+}
+.lyrics-chords-on .lyrics-chord-row {
+  min-height: 1.6em;
+}
+.lyrics-verse-text.is-pinching {
+  transition: none !important;
+}
+
+.hymn-midi-loop {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+}
+.hymn-midi-loop[aria-pressed="true"] {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+}
+.hymn-loop-label {
+  font-size: 10px;
+  font-weight: 700;
+}
+.kidung-settings-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 599px) {
+  .lyrics-main-line {
+    flex-wrap: wrap;
+  }
+  .lyrics-transport {
+    order: 2;
+    flex-basis: 100%;
+  }
+  .lyrics-title {
+    order: 1;
+    flex-basis: 100%;
+  }
+  .lyrics-header-actions {
+    order: 3;
+  }
+  .lyrics-content {
+    padding: 10px 14px 20px;
+  }
+}
+
+/* Long-horizon shell refinement: desktop sidebar collapse */
+@media (min-width: 960px) {
+  .workspace {
+    --sidebar-motion-duration: 240ms;
+    --sidebar-motion-ease: var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+    --sidebar-expanded-width: 256px;
+    --sidebar-collapsed-width: 80px;
+    grid-template-columns: var(--sidebar-expanded-width) minmax(0, 1fr);
+    transition: grid-template-columns var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
+  }
+  .navigation-shell {
+    position: relative;
+    top: 0;
+    padding-inline: 20px;
+    transition: padding var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
+  }
+  .app-frame.is-reader-route .navigation-shell {
+    top: 0;
+  }
+  .sidebar-collapse-toggle {
+    position: absolute;
+    top: 0;
+    right: -44px;
+    z-index: 3;
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-inline-start: 0;
+    border-radius: 0 10px 10px 0;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
+  }
+  .sidebar-collapse-toggle:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--accent, var(--blue)) 42%,
+      var(--line)
+    );
+    background: color-mix(
+      in srgb,
+      var(--accent, var(--blue)) 7%,
+      var(--surface)
+    );
+  }
+  .sidebar-collapse-toggle:focus-visible {
+    outline: 2px solid var(--accent, var(--blue));
+    outline-offset: 3px;
+  }
+  .navigation-shell .nav-item {
+    transition:
+      color var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      transform var(--motion-fast, 150ms) var(--ease-out, ease-out),
+      gap var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      padding var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+  }
+  .navigation-shell .nav-item.is-active {
+    background: var(--blue-soft);
+    border-color: color-mix(in srgb, var(--blue) 18%, transparent);
+  }
+  .navigation-shell .nav-active-indicator {
+    display: none;
+  }
+  .workspace.is-sidebar-collapsed {
+    grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
+  }
+  .workspace.is-sidebar-collapsed .navigation-shell {
+    padding-inline: 12px;
+  }
+  .workspace.is-sidebar-collapsed .nav-item {
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+    width: 44px;
+    min-width: 44px;
+    justify-self: center;
+  }
+  .workspace:not(.is-sidebar-collapsed) .nav-item {
+    width: 100%;
+    min-width: 44px;
+    justify-self: stretch;
+  }
+  .workspace.is-sidebar-collapsed .nav-copy,
+  .workspace.is-sidebar-collapsed .sidebar-foot {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateX(-6px);
+    white-space: nowrap;
+    max-width: 0;
+    transition:
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+  }
+  .workspace:not(.is-sidebar-collapsed) .nav-copy,
+  .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
+    width: 180px;
+    max-width: 180px;
+    transition:
+      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+  }
+}
+@media (max-width: 959px) {
+  .sidebar-collapse-toggle {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace,
+  .navigation-shell,
+  .nav-copy,
+  .sidebar-foot,
+  .sidebar-collapse-toggle,
+  .nav-active-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Long-horizon media refinement: centered persistent dock */
+.media-surface {
+  max-width: min(720px, calc(100vw - 32px));
+  transition:
+    width var(--motion-normal) var(--ease-out),
+    max-width var(--motion-normal) var(--ease-out),
+    transform var(--motion-normal) var(--ease-out),
+    bottom var(--motion-normal) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.media-surface:not(.has-custom-position) {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 18px !important;
+  transform: translateX(-50%) !important;
+}
+.media-surface.has-custom-position {
+  transform: none;
+}
+.media-surface.is-minimized {
+  width: min(360px, calc(100vw - 32px));
+  max-width: min(360px, calc(100vw - 32px));
+}
+.media-minimize,
+.media-close-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9px;
+}
+.media-surface.is-minimized .media-mini-context {
+  min-width: 0;
+}
+@media (max-width: 959px) {
+  .media-surface,
+  .media-surface.has-custom-position {
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 18px !important;
+    transform: translateX(-50%) !important;
+    width: min(560px, calc(100vw - 24px));
+    max-width: min(560px, calc(100vw - 24px));
+  }
+  .media-surface.is-minimized {
+    width: min(360px, calc(100vw - 24px));
+    max-width: min(360px, calc(100vw - 24px));
+  }
+  .media-drag-handle {
+    cursor: default;
+  }
+}
+@media (max-width: 599px) {
+  .media-surface,
+  .media-surface.has-custom-position {
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+  .media-surface.is-minimized {
+    width: min(360px, calc(100vw - 24px));
+    max-width: min(360px, calc(100vw - 24px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-surface,
+  .media-minimize,
+  .media-close-button {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Long-horizon UX refinement: quiet, state-led interaction */
+.search-trigger,
+.account-button,
+.sidebar-collapse-toggle,
+.media-minimize,
+.media-close-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.search-trigger:hover,
+.account-button:hover,
+.global-search-result:hover,
+.primary-button:hover,
+.quiet-button:hover,
+.text-button:hover {
+  transform: none;
+}
+
+.search-trigger:hover,
+.account-button:hover,
+.sidebar-collapse-toggle:hover {
+  box-shadow: none;
+}
+
+.topbar,
+.navigation-shell {
+  box-shadow: none;
+}
+
+.media-surface {
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 13%, transparent);
+}
+
+.nav-item,
+.search-trigger,
+.account-button,
+.sidebar-collapse-toggle,
+.media-control,
+.media-minimize,
+.media-close-button {
+  transition-timing-function: var(--ease-out, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+/* The 600-959px composition is an icon rail, not a compressed full sidebar.
+   Keep accessible names on links while hiding visual copy that otherwise
+   overflows the 80px rail into reader content. */
+@media (min-width: 600px) and (max-width: 959px) {
+  .navigation-shell .nav-copy,
+  .navigation-shell .sidebar-foot {
+    display: none !important;
+  }
+  .navigation-shell .nav-item {
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  .route-view,
+  .workspace,
+  .navigation-shell,
+  .nav-item,
+  .nav-active-indicator,
+  .nav-copy,
+  .sidebar-foot,
+  .sidebar-collapse-toggle,
+  .media-surface,
+  .media-control,
+  .media-minimize,
+  .media-close-button,
+  .search-trigger,
+  .account-button,
+  .global-search-result,
+  .reader-context-button,
+  .control-select-trigger,
+  .popover,
+  .menu-popover {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focused Sauh UX: center only the transient loading state. */
+.verse-panel:has(.sauh-skeleton) {
+  min-height: 290px;
+}
+
+.verse-panel:has(.sauh-skeleton) .sauh-card-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.verse-panel:has(.sauh-skeleton) .sauh-skeleton {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.verse-panel:has(.sauh-skeleton) .section-heading {
+  position: relative;
+  z-index: 1;
+}
+
+.verse-panel:has(.sauh-offline-state) {
+  height: auto;
+  min-height: 0;
+}
+
+/* More: keep destructive device actions secondary to everyday settings. */
+.device-data-tools {
+  padding: 0;
+  overflow: clip;
+}
+
+.device-data-summary {
+  min-height: 70px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.device-data-summary::-webkit-details-marker {
+  display: none;
+}
+
+.device-data-summary > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.device-data-summary small,
+.device-data-body small {
+  color: var(--muted);
+}
+
+.device-data-chevron {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+.device-data-tools[open] .device-data-chevron {
+  transform: rotate(90deg);
+}
+
+.device-data-body {
+  border-top: 1px solid var(--line);
+  padding: 16px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.device-data-body > div {
+  display: grid;
+  gap: 4px;
+  max-width: 64ch;
+}
+
+.danger-button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 620px) {
+  .device-data-summary {
+    min-height: 64px;
+    padding: 16px;
+  }
+
+  .device-data-body {
+    padding: 14px 16px 16px;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .danger-button {
+    width: 100%;
+  }
+}
+
+/* MIDI dock: compact status badges and one consistent control rhythm. */
+.media-surface.is-kidung-media:not(.is-minimized) {
+  grid-template-columns: 40px minmax(220px, 1fr) 144px repeat(3, 44px);
+  grid-template-areas: "art main transport stop mute minimize";
+  grid-template-rows: auto;
+  align-items: end;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-art {
+  grid-area: art;
+  align-self: start;
+  margin-top: 0;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-main {
+  grid-area: main;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-transport-controls {
+  display: flex;
+  grid-area: transport;
+  width: auto;
+  min-width: 0;
+  justify-self: stretch;
+  align-self: end;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-stop-control {
+  grid-area: stop;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-mute-control {
+  grid-area: mute;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
+  grid-area: minimize;
+}
+
+.media-surface.is-kidung-media .media-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.media-queue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 32px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.media-queue-badge:hover {
+  border-color: color-mix(in srgb, var(--blue) 55%, var(--line));
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface-soft));
+}
+
+.media-queue-badge span {
+  color: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 8px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-volume-control {
+  grid-column: 1 / -1;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-midi-actions {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  > .media-control:not(.media-loop-control),
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-key-control
+  .media-control {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-loop-control {
+  width: auto;
+  min-width: 48px;
+  padding-inline: 8px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  .media-transpose {
+  gap: 2px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-midi-actions
+  .media-transpose
+  button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-instrument-control
+  > span {
+  display: none;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-tempo-control,
+.media-surface.is-kidung-media:not(.is-minimized) .media-instrument-control {
+  align-self: end;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-stop-control,
+.media-surface.is-kidung-media:not(.is-minimized) > .media-mute-control {
+  width: 44px;
+  min-width: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-transport-controls
+  .media-control {
+  flex: 0 0 44px;
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    display: grid;
+  }
+}
+
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: 32px minmax(0, 1fr) 44px 44px 44px;
+    grid-template-areas:
+      "art main main main main"
+      "art transport stop mute minimize";
+    grid-template-rows: auto auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-midi-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 359px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-areas:
+      "art main main main main"
+      "art transport transport transport transport"
+      "art stop mute minimize .";
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized)
+    > .media-transport-controls {
+    width: 144px;
+    min-width: 144px;
+    justify-self: center;
+  }
+}
+
+/* JEV media decision: keep the Kidung dock task-first and disclose the
+   low-frequency MIDI controls without removing them. */
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  display: grid;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta small,
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta span {
+  display: block;
+}
+
+.media-surface.is-kidung-media .media-queue-badge {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary::after {
+  flex: 0 0 auto;
+  color: var(--muted);
+  content: "⌄";
+  font-size: 16px;
+  line-height: 1;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-controls[open]
+  > .media-advanced-summary::after {
+  content: "⌃";
+}
+
+.media-surface.is-kidung-media .media-advanced-summary > span {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.media-surface.is-kidung-media .media-advanced-summary > small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-control {
+  grid-column: 1;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-column: 2;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-toggle,
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-instrument-control
+  select {
+  min-height: 44px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-transpose
+  button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 420px) {
+  .media-surface.is-kidung-media .media-advanced-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .media-surface.is-kidung-media .media-advanced-panel .media-tempo-control,
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    grid-column: 1;
+  }
+}
+
+/* Keep the desktop dock to two intentional bands: identity, then the
+   volume/seek/advanced controls. Mobile keeps the existing stacked rhythm. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-main {
+    grid-template-rows: auto auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta-top {
+    min-height: 44px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    grid-template-columns: minmax(68px, 0.7fr) minmax(0, 1.15fr) minmax(
+        112px,
+        auto
+      );
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-volume-control {
+    grid-column: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-volume-control span {
+    flex: 0 0 auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+    grid-column: auto;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+    grid-column: auto;
+  }
+}
+
+/* Bible pack loading: keep the first paint shaped like the reader instead of
+   reserving an unstructured generic status card. */
+.bible-loading-reader {
+  overflow: hidden;
+}
+
+.bible-loading-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bible-loading-spinner {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 2px solid color-mix(in srgb, var(--blue) 26%, var(--line));
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: bible-loading-spin 900ms linear infinite;
+}
+
+@keyframes bible-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bible-loading-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: clamp(420px, 62vh, 700px);
+  overflow: hidden;
+}
+
+.bible-loading-layout.is-split {
+  grid-template-columns:
+    minmax(0, calc(var(--bible-split, 50%) - 6px))
+    12px minmax(0, calc(100% - var(--bible-split, 50%) - 6px));
+  grid-template-rows: 1fr;
+}
+
+.bible-loading-pane {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.bible-loading-layout.is-split .bible-loading-pane.is-primary {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+  grid-column: 3;
+  grid-row: 1;
+  border-left: 1px solid var(--line);
+}
+
+.bible-loading-divider {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 100%;
+  background: var(--surface);
+}
+
+.bible-loading-heading {
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  padding: 26px 24px 18px;
+}
+
+.bible-loading-line,
+.bible-loading-number {
+  display: block;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    color-mix(in srgb, var(--surface-soft) 72%, var(--surface) 28%) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: gys-shimmer 1.6s ease-in-out infinite;
+}
+
+.bible-loading-line {
+  width: 100%;
+  height: 16px;
+  border-radius: 5px;
+}
+
+.bible-loading-line.is-kicker {
+  width: 42px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.bible-loading-line.is-title {
+  width: min(220px, 62%);
+  height: 28px;
+}
+
+.bible-loading-line.is-short {
+  width: 72%;
+}
+
+.bible-loading-verse-list {
+  display: grid;
+  padding: 0 30px 26px;
+}
+
+.bible-loading-verse {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.bible-loading-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.bible-loading-copy {
+  display: grid;
+  align-content: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+@media (max-width: 680px) {
+  .bible-loading-layout {
+    min-height: 420px;
+  }
+
+  .bible-loading-layout.is-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(320px, min(70vh, 640px)));
+  }
+
+  .bible-loading-layout.is-split .bible-loading-pane.is-primary,
+  .bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .bible-loading-layout.is-split .bible-loading-pane.is-secondary {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .bible-loading-divider {
+    display: none;
+  }
+
+  .bible-loading-heading {
+    padding: 22px 19px 14px;
+  }
+
+  .bible-loading-verse-list {
+    padding-inline: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bible-loading-spinner,
+  .bible-loading-line,
+  .bible-loading-number {
+    animation: none;
+  }
+}

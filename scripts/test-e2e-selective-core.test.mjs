@@ -107,3 +107,37 @@ test("Bible render modules include annotation migration and visual contracts wit
     );
   }
 });
+
+test("unknown shared code broadens coverage even beside a known feature", () => {
+  for (const path of [
+    "apps/web/src/service-worker-updates.ts",
+    "apps/web/src/snapshot-selector.ts",
+    "apps/web/src/styles/00-tokens.css",
+    "packages/domain/src/cache.ts",
+    "apps/web/public/sw.js",
+    "pnpm-lock.yaml",
+  ]) {
+    const result = resolveSelectiveTestArgs(
+      ["apps/web/src/bible.tsx", path],
+      ["--retries=0"],
+    );
+    assert.deepEqual(result.args, ["--retries=0"], path);
+    assert.match(result.description, /Full browser coverage/);
+  }
+});
+
+test("extracted Bible and hymn payload modules retain migration and loading contracts", () => {
+  for (const path of [
+    "bible-notes-popup.tsx",
+    "bible-search-panel.tsx",
+    "bible-reader-storage.ts",
+  ]) {
+    const plan = resolveSelectiveTestArgs([`apps/web/src/${path}`], []);
+    assert.ok(plan.args.includes("e2e/bible-annotations.spec.ts"));
+    assert.ok(plan.args.includes("e2e/reader-data-loading.spec.ts"));
+    assert.ok(!plan.args.includes("-g"));
+  }
+  const plan = resolveSelectiveTestArgs(["apps/web/src/hymn-payloads.ts"], []);
+  assert.ok(plan.args.includes("e2e/kidung-offline.spec.ts"));
+  assert.ok(plan.args.includes("e2e/reader-data-loading.spec.ts"));
+});

@@ -24,7 +24,11 @@
     "serve": "vite preview --host 127.0.0.1 --port 4173",
     "test:watch": "vitest --config vitest.config.ts",
     "test:e2e:ui": "playwright test --ui",
-    "test:performance": "playwright test e2e/performance.spec.ts --workers=1"
+    "test:performance": "playwright test e2e/performance.spec.ts --workers=1",
+    "test:e2e:native-quick": "node scripts/native-quick-smoke.mjs",
+    "test:e2e:native-soak": "node scripts/edge-tts-native-smoke.mjs",
+    "test:performance:native": "node scripts/native-benchmark.mjs",
+    "test:performance:browser-roadmap": "node scripts/browser-roadmap-benchmark.mjs"
   },
   "dependencies": {
     "@gys/contracts": "workspace:*",

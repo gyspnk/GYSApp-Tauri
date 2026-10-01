@@ -390,22 +390,21 @@ with a 37-flow smoke suite after the one-flow deduplication.
 
 ## Documentation and skill cadence
 
-- Last maintenance skill review: 2026-09-25
-- Skill review frontier: CF-109
+- Last maintenance skill review: 2026-10-01
+- Skill review frontier: CF-205
 - Review triggers: 30 calendar days or 10 new resolved frontier decisions,
   whichever comes first.
 - Review scope: compare the maintenance skill, `AGENTS.md`, `CONTEXT.md`,
   `scripts/verify-documentation.mjs`, the active spec, and this map; update
   every affected pointer and retain proof, protected prerequisites, and the
   next frontier.
-- Review result: the active pasted goal spec, verifier, and map still agree on
-  dated frontier receipts, protected prerequisites, next-frontier evidence, and
-  the 30-day/10-frontier review triggers. The `gysapp-maintenance` skill,
-  workspace `AGENTS.md`, `CONTEXT.md`, and separate simplification spec are
-  absent; no missing policy text was fabricated. CF-110 closes 40-to-80 Bible
-  Search paging in ID/EN/ZH and packaged WebView2 readiness/search measurements.
-  Performance budgets, full offline/filter parity, signed-installer, and OS
-  media evidence remain open.
+- Review result: on 2026-10-01 the user-requested full roadmap, documentation
+  verifier, plan and evidence receipts were reconciled. The available skill
+  catalog contains no gysapp-maintenance skill; workspace AGENTS.md, CONTEXT.md
+  and a separate maintenance spec remain absent. No policy was invented.
+  CF-205 covers the current roadmap implementation and verification gates.
+  Physical-device, signed-installation, first audio sample and configured
+  provider prerequisites retain their separate evidence requirements.
 
 ## Frontier
 
@@ -1768,3 +1767,35 @@ threshold is changed. Final-head CI visual/native evidence remains required. Thi
 reduces repeated render work; no new cold-start/device latency claim is made.
 Bible search/notes orchestration, CSS ownership and signed-upgrade/device parity
 remain open work.
+
+- `2026-10-01 / CF-205`: continue the entire authorized loading/UI/efficiency
+  roadmap. Separate 533-song metadata from retryable shared lyric payloads;
+  defer Bible worker creation/whole-pack cloning until actual search. Extract
+  route frames, Bible search and notes presentation/persistence, and isolate
+  Kidung position ticks in MIDI progress. Memoize verse lookup for saved notes
+  only when notes exist. Scope PDF enhancements to component cleanup. Split
+  base CSS into six ordered ownership layers without changing the reviewed
+  cascade. Replace affected accent/flat-row/PDF-navigation source assertions
+  with runtime checks and broaden unknown shared test selection to full coverage.
+  Require explicit safe update activation, preserve the previous active shell,
+  verify exact emitted code/core bytes and prevent mixed deployments or new
+  HTML from overwriting old offline shell bytes. Make verified local PDFs use
+  the bounded music cache, and wait for music lock before PDF fallback. Add
+  separate short native suites, 30-roundtrip storage profiling, 30-process native
+  benchmarks and four 30-sample browser conditions while retaining full soak.
+
+Validation for CF-205: the 90-case UI matrix passes without retries; eight
+computed-style/PDF touch/lifecycle cases pass across ID/EN/ZH. Loading checks
+cover metadata-before-lyrics, chapter-before-worker, delayed lock fallback,
+explicit reader/editor updates and unvisited offline routes. A new offline-PDF
+reload guard exposes uncached local seed bytes, then passes with bounded verified
+reuse. Service-worker checks pass 19/19, including corrupt/interrupted core/code,
+mixed deployments and retention of the active build rather than partial cache
+insertion order. Immutable upstream byte audit matches 533 entries and 161
+chord references. Initial JS is 177.2 KiB gzip inside the unchanged 180 KiB gate;
+metadata shrinks from 917,610 to 179,002 bytes. Official Literature and Faith
+source probes are separately recorded in the dated validation receipt. Full
+final-tree checks and packaged-native benchmark/soak evidence are required on
+PR #9 before closing this slice; physical-device, signed-upgrade, audio-first-
+sample and configured-BFF gates remain open. The maintenance review reconciles
+those prerequisites and does not fabricate missing skill or policy files.

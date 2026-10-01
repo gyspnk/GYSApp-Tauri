@@ -1,3 +1,4 @@
+import { useReadinessMarker } from "./readiness.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LiteratureItem } from "@gys/contracts";
@@ -45,6 +46,7 @@ function SauhSkeleton({ locale }: { locale: Locale }) {
 }
 
 export function HomePage({ locale }: { locale: Locale }) {
+  useReadinessMarker("gys-home-ready");
   const [sauh, setSauh] = useState<Awaited<ReturnType<typeof fetchSauh>>>(
     () => {
       const cached = getCachedSauh();

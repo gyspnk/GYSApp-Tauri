@@ -1,8 +1,13 @@
-import { HymnCatalogEntrySchema, type HymnCatalogEntry } from "@gys/contracts";
+import {
+  HymnCatalogEntrySchema,
+  HymnMetadataSchema,
+  type HymnMetadata,
+  type HymnCatalogEntry,
+} from "@gys/contracts";
 
-export type CatalogState =
+export type CatalogState<T = HymnCatalogEntry> =
   | { status: "loading" }
-  | { status: "ready"; items: HymnCatalogEntry[] }
+  | { status: "ready"; items: T[] }
   | { status: "error"; message: string };
 
 export function parseCatalog(value: unknown): HymnCatalogEntry[] {
@@ -36,7 +41,7 @@ export function formatMidiTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export function uniqueItems(items: HymnCatalogEntry[]) {
+export function uniqueItems<T extends HymnMetadata>(items: T[]): T[] {
   const seen = new Set<string>();
   return items.filter((item) => {
     const key = `${item.assetCode ?? item.book}:${item.id}`;
@@ -44,4 +49,16 @@ export function uniqueItems(items: HymnCatalogEntry[]) {
     seen.add(key);
     return true;
   });
+}
+
+export function parseHymnMetadata(value: unknown): HymnMetadata[] {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    !Array.isArray((value as { items?: unknown }).items)
+  )
+    throw new Error("Hymn metadata is invalid");
+  return (value as { items: unknown[] }).items.map((item) =>
+    HymnMetadataSchema.parse(item),
+  );
 }

@@ -1,3 +1,7 @@
+import {
+  DEFAULT_HIGHLIGHT_COLORS,
+  isCustomHighlightColor,
+} from "./bible-highlights.js";
 import { useMemo, type CSSProperties, type TouchEvent } from "react";
 import type {
   BibleBook,
@@ -7,12 +11,6 @@ import type {
 import type { BibleVerse } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import { BibleVerseText } from "./bible-verse-text.js";
-
-export const DEFAULT_HIGHLIGHT_COLORS = ["yellow", "blue", "green"] as const;
-
-export function isCustomHighlightColor(value: string): boolean {
-  return /^#[0-9a-f]{6}$/i.test(value);
-}
 
 export function ChapterPane({
   locale,

@@ -4,6 +4,10 @@ type MessageValues = Record<string, string | number>;
 
 export const messages: Record<Locale, Record<string, string>> = {
   id: {
+    "update.ready": "Pembaruan siap.",
+    "update.busy":
+      "Pembaruan siap. Selesaikan bacaan, edit, dan audio, lalu kembali ke Beranda.",
+    "update.reload": "Muat ulang untuk memperbarui",
     "home.title": "Selamat datang kembali",
     "home.today": "Jumat, 14 Agustus 2026",
     "home.sauhNoReference": "Referensi belum tercantum di Sauh",
@@ -246,6 +250,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.crossReferenceHint": "{count} ayat terkait — ketuk untuk membuka",
   },
   en: {
+    "update.ready": "An update is ready.",
+    "update.busy":
+      "An update is ready. Finish reading, editing and audio, then return Home.",
+    "update.reload": "Reload to update",
     "home.title": "Welcome back",
     "home.today": "Friday, August 14, 2026",
     "home.sauhNoReference": "Reference not listed by Sauh",
@@ -488,6 +496,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.crossReferenceHint": "{count} related verses — tap to open",
   },
   zh: {
+    "update.ready": "更新已就绪。",
+    "update.busy": "更新已就绪。请先完成阅读、编辑和音频播放，然后返回首页。",
+    "update.reload": "重新加载以更新",
     "home.title": "欢迎回来",
     "home.today": "2026年8月14日，星期五",
     "home.sauhNoReference": "Sauh 未提供经文出处",

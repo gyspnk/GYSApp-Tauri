@@ -60,17 +60,26 @@ export class BibleSearchClient {
   private worker: BibleSearchWorker | undefined;
   private nextId = 0;
   private failed = false;
+  private started = false;
   private readyTimer: ReturnType<typeof setTimeout> | undefined;
 
   public constructor(
     private readonly verses: readonly BibleVerse[],
-    workerFactory: BibleSearchWorkerFactory = createDefaultWorker,
+    private readonly workerFactory: BibleSearchWorkerFactory = createDefaultWorker,
     private readonly bookNames?: Readonly<Record<string, string>>,
+    lazy = false,
   ) {
     this.ready = new Promise<void>((resolve) => {
       this.resolveReady = resolve;
     });
 
+    if (!lazy) this.initialize();
+  }
+
+  private initialize(): void {
+    if (this.started || this.failed) return;
+    this.started = true;
+    const workerFactory = this.workerFactory;
     if (
       typeof Worker === "undefined" &&
       workerFactory === createDefaultWorker
@@ -85,8 +94,8 @@ export class BibleSearchClient {
       this.worker.onerror = () => this.failWorker();
       this.worker.postMessage({
         type: "init",
-        verses: [...verses],
-        ...(bookNames ? { bookNames: { ...bookNames } } : {}),
+        verses: [...this.verses],
+        ...(this.bookNames ? { bookNames: { ...this.bookNames } } : {}),
       });
       this.readyTimer = setTimeout(() => this.failWorker(), 4_000);
     } catch {
@@ -94,7 +103,8 @@ export class BibleSearchClient {
     }
   }
 
-  public get backend(): "worker" | "main" {
+  public get backend(): "worker" | "main" | "pending" {
+    if (!this.started && !this.failed) return "pending";
     return this.worker && !this.failed ? "worker" : "main";
   }
 
@@ -104,6 +114,7 @@ export class BibleSearchClient {
     signal?: AbortSignal,
   ): Promise<BibleVerse[]> {
     if (signal?.aborted) throw abortError();
+    this.initialize();
     if (!this.worker || this.failed) {
       return this.fallbackRepository().search(query, options);
     }

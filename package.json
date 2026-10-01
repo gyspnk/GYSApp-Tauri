@@ -53,7 +53,13 @@
     "test:performance": "node scripts/test-performance.mjs",
     "verify:release": "node scripts/verify-prepush.mjs --full",
     "build:test-deps": "pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build && pnpm --filter @gys/testkit build && pnpm --filter @gys/bff build",
-    "test:e2e:dev": "node scripts/test-e2e-dev.mjs"
+    "test:e2e:dev": "node scripts/test-e2e-dev.mjs",
+    "test:native:quick": "pnpm --filter @gys/web test:e2e:native-quick",
+    "test:native:soak": "pnpm --filter @gys/web test:e2e:native-soak",
+    "test:performance:native": "pnpm --filter @gys/web test:performance:native",
+    "generate:hymn-metadata": "node scripts/generate-hymn-metadata.mjs",
+    "test:performance:browser-roadmap": "pnpm --filter @gys/web test:performance:browser-roadmap",
+    "verify:upstream-parity": "node scripts/verify-upstream-parity.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
