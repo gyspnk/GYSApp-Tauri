@@ -40,7 +40,7 @@ jobs:
         with:
           workspaces: "apps/native/src-tauri -> target"
           shared-key: native-windows-release-v1
-          cache-on-failure: false
+          cache-on-failure: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable

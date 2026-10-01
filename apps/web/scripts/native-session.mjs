@@ -117,14 +117,14 @@ export async function launchNative(executable, profile) {
     });
     const context = browser.contexts()[0];
     assert.ok(context, "Missing WebView2 context");
-    const page = context
-      .pages()
-      .find((candidate) => /tauri\.localhost/.test(candidate.url()));
-    assert.ok(page, "Missing native application page target");
-    await page.bringToFront();
-    await page.waitForFunction(() => location.origin !== "null", null, {
+    const page =
+      context.pages()[0] ??
+      (await context.waitForEvent("page", { timeout: 15000 }));
+    await page.waitForURL(/tauri\.localhost/, {
       timeout: 15000,
+      waitUntil: "domcontentloaded",
     });
+    await page.bringToFront();
     return {
       app,
       browser,
@@ -137,11 +137,19 @@ export async function launchNative(executable, profile) {
       close,
     };
   } catch (error) {
+    const pages = browser
+      ?.contexts()
+      .flatMap((context) => context.pages().map((page) => page.url()));
+    const targets = await fetch(`http://127.0.0.1:${port}/json/list`)
+      .then((response) => response.json())
+      .catch(() => []);
     console.error(
       JSON.stringify({
         nativePid: app.pid,
         exitCode: app.exitCode,
         processOutput,
+        pages,
+        targets,
       }),
     );
     await close();
