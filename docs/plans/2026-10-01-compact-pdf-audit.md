@@ -53,3 +53,11 @@ renderer baselines. The broader responsive/editorial/roadmap matrix exercises
 six screen classes, three locales and five themes; CI runs the full browser
 suite and packaged Windows smoke, relaunch and media checks on the pushed tree.
 Physical-device audio and provider-specific prerequisites remain separate.
+
+The first full CI run on 5b6d72f passes 478 browser cases with three explicit
+skips. One tablet settings image retains the old starting margin because its
+local difference stays below the existing comparison threshold. The hosted
+renderer reproduces a 4108-pixel difference in both attempts. Reviewed
+expected/actual/diff images confirm the intended compact layout; the identical
+hosted actual images establish the updated tablet baseline. No tolerance or
+application source changes accompany this reconciliation.

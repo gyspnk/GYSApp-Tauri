@@ -1853,7 +1853,7 @@ commit/push; physical-device and signed-upgrade gates remain separate.
   physical-device/provider gates remain outside these executor results.
 
 Validation for CF-207: 57 visual cases pass at unchanged pixel thresholds;
-41 intentional image changes were reviewed and unchanged strict CI baselines
+42 intentional image changes were reviewed and unchanged strict CI baselines
 retained. The responsive/editorial/roadmap matrix passes 125 cases; the stale
 PDF-ready race and a 40s multi-route timeout were isolated for final focused
 verification. The dashboard order guard now recognizes the existing wide-screen
@@ -1867,3 +1867,11 @@ CI/native gates must pass before this slice is reported complete. The final
 PDF efficiency run passes 10/10 cases, and the deterministic suite includes
 363 web unit tests plus all workspace/script checks. Initial JS is 177.2 KiB
 under the unchanged 180 KiB gate; native assets verify 22 files/32,607,926 bytes.
+
+The first full CI run on 5b6d72f passes 478 browser cases with three explicit
+skips. One tablet settings image retains the old starting margin because its
+local difference stays below the existing comparison threshold. The hosted
+renderer reproduces a 4108-pixel difference in both attempts. Reviewed
+expected/actual/diff images confirm the intended compact layout; the identical
+hosted actual images establish the updated tablet baseline. No tolerance or
+application source changes accompany this reconciliation.
