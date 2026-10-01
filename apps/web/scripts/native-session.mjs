@@ -42,7 +42,14 @@ export async function launchNative(executable, profile) {
     env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = `--remote-debugging-port=${port} --remote-allow-origins=*`;
   }
   const startedAt = Date.now();
-  const app = spawn(executable, [], { stdio: "ignore", env });
+  const app = spawn(executable, [], { stdio: ["ignore", "pipe", "pipe"], env });
+  let processOutput = "";
+  for (const stream of [app.stdout, app.stderr]) {
+    stream.setEncoding("utf8");
+    stream.on("data", (chunk) => {
+      processOutput = `${processOutput}${chunk}`.slice(-12000);
+    });
+  }
   let browser;
   const close = async () => {
     await browser?.close().catch(() => undefined);
@@ -84,8 +91,22 @@ export async function launchNative(executable, profile) {
       try {
         const response = await fetch(`http://127.0.0.1:${port}/json/version`);
         if (response.ok) {
-          endpoint = await response.json();
-          break;
+          const version = await response.json();
+          const targetsResponse = await fetch(
+            `http://127.0.0.1:${port}/json/list`,
+          );
+          const targets = targetsResponse.ok
+            ? await targetsResponse.json()
+            : [];
+          if (
+            targets.some(
+              (target) =>
+                target.type === "page" && /tauri\.localhost/.test(target.url),
+            )
+          ) {
+            endpoint = version;
+            break;
+          }
         }
       } catch {}
       await delay(100);
@@ -96,7 +117,10 @@ export async function launchNative(executable, profile) {
     });
     const context = browser.contexts()[0];
     assert.ok(context, "Missing WebView2 context");
-    const page = context.pages()[0] ?? (await context.newPage());
+    const page = context
+      .pages()
+      .find((candidate) => /tauri\.localhost/.test(candidate.url()));
+    assert.ok(page, "Missing native application page target");
     await page.bringToFront();
     await page.waitForFunction(() => location.origin !== "null", null, {
       timeout: 15000,
@@ -113,6 +137,13 @@ export async function launchNative(executable, profile) {
       close,
     };
   } catch (error) {
+    console.error(
+      JSON.stringify({
+        nativePid: app.pid,
+        exitCode: app.exitCode,
+        processOutput,
+      }),
+    );
     await close();
     throw error;
   }

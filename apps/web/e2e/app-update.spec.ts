@@ -117,3 +117,16 @@ test("a Faith PDF overlay blocks updates even while the catalog URL stays unchan
   await page.locator(".faith-pdf-close").click();
   await expect(banner.locator("button")).toBeEnabled();
 });
+
+test("the packaged entry document resolves to Home", async ({ page }) => {
+  await page.goto("/GYSApp-Tauri/index.html");
+  await expect(page.locator(".home-grid")).toBeVisible();
+  await expect(page).toHaveURL(/\/GYSApp-Tauri\/$/);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => performance.getEntriesByName("gys-shell-ready").length,
+      ),
+    )
+    .toBe(1);
+});

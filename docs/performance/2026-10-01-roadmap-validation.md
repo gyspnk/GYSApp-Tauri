@@ -27,7 +27,8 @@ runtime and condition; the reference-device targets remain release gates.
 - Metadata: 179,002 bytes / 24,376 gzip bytes versus full lyrics catalog
   917,610 bytes / 138,299 gzip bytes. This reduces the initial catalog JSON
   by 80.5% raw and 82.4% compressed; lyrics stay available through deferred search.
-- Packaged startup uses an explicit `index.html?p=/` document URL. Native
+- Packaged startup uses the standard `index.html` document URL, normalized
+  to the Home route. Native
   benchmark readiness failures log the URL, DOM state and observed markers;
   process-start samples never substitute a test-triggered navigation.
 - Security follow-up: BFF Hono is pinned to 4.13.11 after

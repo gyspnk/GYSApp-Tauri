@@ -46,7 +46,10 @@ if (typeof window !== "undefined") {
 }
 
 const routeParams = new URLSearchParams(window.location.search);
-const restoredPath = routeParams.get("p");
+const appBase = import.meta.env.BASE_URL.replace(/\/$/, "");
+const restoredPath =
+  routeParams.get("p") ??
+  (window.location.pathname === `${appBase}/index.html` ? "/" : null);
 if (restoredPath) {
   const restoredQuery = routeParams.get("q");
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
