@@ -2,6 +2,14 @@
 
 ## Unreleased — GA hardening slice
 
+- Dock the shared MIDI/Bible player in the sidebar with animated expansion to
+  the bottom of the window, persistent playback, reduced motion, and mobile
+  navigation clearance. Remove draggable-player state and obsolete CSS.
+- Add a PDF/text toggle to the Kidung list; close PDF reading directly to the
+  list, preserve explicit modes in song routes, and cache hydrated catalogs.
+- Display all ten complete Faith statements inline and keep notes and official
+  doctrine PDFs accessible. Standardize new controls at 44px and SVG focus.
+
 - Compact shared page spacing and PDF controls. Correct spread fit, page input,
   resize/fullscreen rendering, scroll virtualization and cancellation; bound PDF
   bitmap memory, coalesce rapid zoom, and provide shared accessible options,

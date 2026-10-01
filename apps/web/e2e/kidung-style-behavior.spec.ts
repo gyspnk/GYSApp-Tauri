@@ -125,6 +125,10 @@ for (const locale of ["id", "en", "zh"] as const) {
       )
       .toBe(true);
     await chrome.locator(".viewer-chrome-button").first().click();
+    await expect(page).toHaveURL(/\/kidung$/);
+    await expect(page.locator(".pujian-list")).toBeVisible();
+    await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await expect(page.locator(".lyrics-sheet").first()).toBeVisible();
     await expect(page.locator(".pdf-zoom-hud")).toHaveCount(0);
     await page.locator(".hymn-more-actions-summary").click();

@@ -605,6 +605,7 @@ function Shell({
             />
           </button>
           <Navigation locale={locale} />
+          <div className="sidebar-media-anchor" aria-hidden="true" />
         </aside>
         <main className="main-content" id="main-content" tabIndex={-1}>
           <div

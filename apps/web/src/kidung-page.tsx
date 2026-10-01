@@ -39,13 +39,18 @@ const HymnSettingsPage = lazy(() =>
   })),
 );
 
+// Retain the last successful catalog across reader/list navigation. Installed
+// collections still refresh in the background and on asset-change events.
+const catalogCache = new Map<() => Promise<HymnMetadata[]>, HymnMetadata[]>();
+
 function useHymnData<T extends HymnMetadata>(
   loadMusicLock: boolean,
   loadCore: () => Promise<T[]>,
   parse: (value: unknown) => T[],
 ) {
-  const [catalog, setCatalog] = useState<CatalogState<T>>({
-    status: "loading",
+  const [catalog, setCatalog] = useState<CatalogState<T>>(() => {
+    const cached = catalogCache.get(loadCore) as T[] | undefined;
+    return cached ? { status: "ready", items: cached } : { status: "loading" };
   });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
   useEffect(() => {
@@ -54,17 +59,25 @@ function useHymnData<T extends HymnMetadata>(
     const load = () => {
       const current = ++generation;
       return Promise.all([
-        loadCore(),
+        loadCore().then((core) => {
+          if (
+            !controller.signal.aborted &&
+            current === generation &&
+            !catalogCache.has(loadCore)
+          )
+            setCatalog({ status: "ready", items: core });
+          return core;
+        }),
         loadInstalledDistributedHymnCatalog(
           getDistributedAssetManager().getStore(),
         ).catch(() => []),
       ])
         .then(([core, distributed]) => {
-          if (!controller.signal.aborted && current === generation)
-            setCatalog({
-              status: "ready",
-              items: [...core, ...parse({ items: distributed })],
-            });
+          if (!controller.signal.aborted && current === generation) {
+            const items = [...core, ...parse({ items: distributed })];
+            catalogCache.set(loadCore, items);
+            setCatalog({ status: "ready", items });
+          }
         })
         .catch((error: unknown) => {
           if (!controller.signal.aborted && current === generation)

@@ -67,7 +67,7 @@ flowchart TB
   SHELL --> MORE["Iman / account / settings / backup"]
   BIBLE --> MEDIA["One global MediaController"]
   HYMNS --> MEDIA
-  MEDIA --> FLOAT["Minimized, expanded, draggable surface"]
+  MEDIA --> DOCK["Persistent sidebar / animated bottom dock"]
   HYMNS --> MUSICCACHE["Immutable hash cache + preloading"]
   LIT --> PDF["Local PDF.js + lazy pages"]
   BIBLE --> WORKER["Lazy Bible search worker"]

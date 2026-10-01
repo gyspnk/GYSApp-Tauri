@@ -326,6 +326,7 @@ export const Icon = memo(function Icon({
     strokeLinejoin: "round" as const,
     className,
     "aria-hidden": true,
+    focusable: false,
   };
   return <svg {...common}>{ICON_PATHS[name]}</svg>;
 });

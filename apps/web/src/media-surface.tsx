@@ -1,10 +1,10 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type PointerEvent as ReactPointerEvent,
+  type CSSProperties,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
@@ -212,37 +212,21 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           : speechSnapshot.engine === "local"
             ? translate(locale, "media.localTts")
             : translate(locale, "media.speechBible");
-  const dragRef = useRef<
-    | {
-        pointerId: number;
-        startX: number;
-        startY: number;
-        originLeft: number;
-        originTop: number;
-      }
-    | undefined
-  >(undefined);
-  const [dragging, setDragging] = useState(false);
-  const [position, setPosition] = useState<
-    { left: number; top: number } | undefined
-  >(() => {
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem("gys-media-position-v1") ?? "null",
-      ) as { left?: unknown; top?: unknown } | null;
-      return typeof stored?.left === "number" && typeof stored.top === "number"
-        ? { left: stored.left, top: stored.top }
-        : undefined;
-    } catch {
-      return undefined;
-    }
-  });
+  const surfaceRef = useRef<HTMLElement>(null);
+  const transitionRect = useRef<DOMRect | undefined>(undefined);
+  const animationRef = useRef<Animation | undefined>(undefined);
   const [minimized, setMinimized] = useState(
-    () => localStorage.getItem("gys-media-minimized") === "1",
+    () => localStorage.getItem("gys-media-minimized") !== "0",
   );
+  const [sidebarBounds, setSidebarBounds] = useState({ left: 12, width: 232 });
+  const toggleDock = () => {
+    transitionRect.current = surfaceRef.current?.getBoundingClientRect();
+    animationRef.current?.cancel();
+    setMinimized((value) => !value);
+  };
   useEffect(() => {
     const syncPreference = () =>
-      setMinimized(localStorage.getItem("gys-media-minimized") === "1");
+      setMinimized(localStorage.getItem("gys-media-minimized") !== "0");
     window.addEventListener("gys-media-preference-change", syncPreference);
     return () =>
       window.removeEventListener("gys-media-preference-change", syncPreference);
@@ -250,61 +234,44 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   useEffect(() => {
     localStorage.setItem("gys-media-minimized", minimized ? "1" : "0");
   }, [minimized]);
-  useEffect(() => {
-    if (!position) return;
-    localStorage.setItem("gys-media-position-v1", JSON.stringify(position));
-  }, [position]);
-  useEffect(() => {
-    let frame = 0;
-    const clampPosition = () => {
-      setPosition((current) => {
-        if (!current) return current;
-        const surface = document.querySelector<HTMLElement>(".media-surface");
-        const width = surface?.getBoundingClientRect().width ?? 0;
-        const height = surface?.getBoundingClientRect().height ?? 0;
-        const maxLeft = Math.max(8, window.innerWidth - width - 8);
-        const maxTop = Math.max(8, window.innerHeight - height - 8);
-        return {
-          left: Math.max(8, Math.min(current.left, maxLeft)),
-          top: Math.max(8, Math.min(current.top, maxTop)),
-        };
-      });
+  useLayoutEffect(() => {
+    const anchor = document.querySelector<HTMLElement>(".sidebar-media-anchor");
+    if (!anchor) return;
+    const measure = () => {
+      const rect = anchor.getBoundingClientRect();
+      setSidebarBounds({ left: rect.left, width: rect.width });
     };
-    const onResize = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(clampPosition);
-    };
-    window.addEventListener("resize", onResize);
-    onResize();
+    const observer = new ResizeObserver(measure);
+    observer.observe(anchor);
+    measure();
+    window.addEventListener("resize", measure);
     return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", onResize);
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
     };
   }, []);
-  useEffect(() => {
-    // A minimized player is shorter than the expanded surface. Re-clamp after
-    // either state changes so a saved desktop position cannot put controls
-    // below the viewport on a phone or after an orientation change.
-    const frame = window.requestAnimationFrame(() => {
-      setPosition((current) => {
-        if (!current) return current;
-        const surface = document.querySelector<HTMLElement>(".media-surface");
-        const width = surface?.getBoundingClientRect().width ?? 0;
-        const height = surface?.getBoundingClientRect().height ?? 0;
-        return {
-          left: Math.max(
-            8,
-            Math.min(current.left, window.innerWidth - width - 8),
-          ),
-          top: Math.max(
-            8,
-            Math.min(current.top, window.innerHeight - height - 8),
-          ),
-        };
-      });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [minimized, snapshot.songId, speechActive]);
+  useLayoutEffect(() => {
+    const surface = surfaceRef.current;
+    const previous = transitionRect.current;
+    transitionRect.current = undefined;
+    if (
+      !surface ||
+      !previous ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const next = surface.getBoundingClientRect();
+    animationRef.current = surface.animate(
+      [
+        {
+          transform: `translate(${previous.left - next.left}px, ${previous.top - next.top}px) scale(${previous.width / next.width}, ${previous.height / next.height})`,
+        },
+        { transform: "none" },
+      ],
+      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" },
+    );
+    return () => animationRef.current?.cancel();
+  }, [minimized]);
   useEffect(() => {
     mediaSessionBridge.setSpeechActive(speechActive);
   }, [speechActive, speechSnapshot.status]);
@@ -460,68 +427,6 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     void (playing ? midiPlayer.pause() : midiPlayer.play()).catch(
       () => undefined,
     );
-  };
-  const beginDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (window.matchMedia("(max-width: 959px)").matches) return;
-    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
-    if (!surface) return;
-    const rect = surface.getBoundingClientRect();
-    dragRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originLeft: rect.left,
-      originTop: rect.top,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDragging(true);
-  };
-  const moveDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
-    if (!surface) return;
-    const left = drag.originLeft + event.clientX - drag.startX;
-    const top = drag.originTop + event.clientY - drag.startY;
-    setPosition({
-      left: Math.max(
-        8,
-        Math.min(left, window.innerWidth - surface.offsetWidth - 8),
-      ),
-      top: Math.max(
-        8,
-        Math.min(top, window.innerHeight - surface.offsetHeight - 8),
-      ),
-    });
-  };
-  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
-    dragRef.current = undefined;
-    setDragging(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId))
-      event.currentTarget.releasePointerCapture(event.pointerId);
-  };
-  const moveByKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (window.matchMedia("(max-width: 959px)").matches) return;
-    const directionByKey: Record<string, [number, number]> = {
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-      ArrowUp: [0, -1],
-      ArrowDown: [0, 1],
-    };
-    const direction = directionByKey[event.key];
-    if (!direction) return;
-    const surface = event.currentTarget.closest<HTMLElement>(".media-surface");
-    if (!surface) return;
-    event.preventDefault();
-    const step = event.shiftKey ? 48 : 16;
-    const rect = surface.getBoundingClientRect();
-    const left = (position?.left ?? rect.left) + direction[0] * step;
-    const top = (position?.top ?? rect.top) + direction[1] * step;
-    setPosition({
-      left: Math.max(8, Math.min(left, window.innerWidth - rect.width - 8)),
-      top: Math.max(8, Math.min(top, window.innerHeight - rect.height - 8)),
-    });
   };
   const midiAdvancedControls = (
     <>
@@ -684,37 +589,22 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   );
   return (
     <aside
-      className={`media-surface${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${position ? " has-custom-position" : ""}${dragging ? " is-dragging" : ""}`}
+      ref={surfaceRef}
+      className={`media-surface persistent-media${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${sidebarBounds.width < 100 ? " is-rail-player" : ""}`}
       data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
           : snapshot.backend
       }
       style={
-        position
-          ? {
-              left: position.left,
-              top: position.top,
-              right: "auto",
-              bottom: "auto",
-            }
-          : undefined
+        {
+          "--media-sidebar-left": `${sidebarBounds.left}px`,
+          "--media-sidebar-width": `${sidebarBounds.width}px`,
+        } as CSSProperties
       }
       aria-label={translate(locale, "shell.media")}
     >
-      <div
-        className="media-art media-drag-handle"
-        title={translate(locale, "media.dragHandle")}
-        aria-label={translate(locale, "media.dragHandle")}
-        role="button"
-        tabIndex={0}
-        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-        onPointerDown={beginDrag}
-        onPointerMove={moveDrag}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onKeyDown={moveByKeyboard}
-      >
+      <div className="media-art" aria-hidden="true">
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
       {minimized && (
@@ -730,8 +620,12 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           <strong>{mediaTitle ?? translate(locale, "media.mediaGys")}</strong>
           <small>
             {speechActive
-              ? `${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
-              : `${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
+              ? `${translate(locale, "nav.bible")} · ${Math.max(1, speechSnapshot.currentIndex + 1)}/${speechSnapshot.total}`
+              : snapshot.status === "loading"
+                ? translate(locale, "media.loadingMidi", {
+                    percent: snapshot.loadingProgress,
+                  })
+                : `MIDI · ${formatDuration(snapshot.position)} / ${formatDuration(snapshot.duration)}`}
           </small>
         </button>
       )}
@@ -1016,7 +910,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
         </div>
       ) : (
         <button
-          className="media-control"
+          className="media-control media-primary-control"
           type="button"
           onClick={togglePlayback}
           aria-label={
@@ -1093,13 +987,14 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       <button
         className="media-minimize"
         type="button"
-        onClick={() => setMinimized((value) => !value)}
+        onClick={toggleDock}
+        aria-expanded={!minimized}
         aria-label={translate(
           locale,
           minimized ? "media.restore" : "media.minimize",
         )}
       >
-        <Icon name={minimized ? "chevronUp" : "chevronDown"} size={16} />
+        <Icon name={minimized ? "fullscreen" : "chevronDown"} size={16} />
       </button>
     </aside>
   );

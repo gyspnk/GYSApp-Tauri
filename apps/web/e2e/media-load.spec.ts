@@ -375,10 +375,11 @@ test("rapid hymn/viewer changes keep the latest route and do not leak stale PDF 
   // hymn in a text-first state rather than displaying hymn-001's late PDF.
   await page.getByRole("button", { name: "Tampilkan chord" }).click();
   await page.getByRole("tab", { name: "PDF" }).click();
-  await page.getByRole("button", { name: "Kembali ke lirik" }).click();
-  await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await page.getByRole("button", { name: "← Semua kidung" }).click();
+  await expect(page).toHaveURL(/\/kidung$/);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-002?mode=lyrics");
 
-  await expect(page).toHaveURL(/\/kidung\/hymn-002$/);
+  await expect(page).toHaveURL(/\/kidung\/hymn-002\?mode=lyrics$/);
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 20_000 });
   await expect(page.locator(".pdf-reader")).toHaveCount(0);
   await expect(page.locator(".hymn-detail-page h1")).not.toHaveText(

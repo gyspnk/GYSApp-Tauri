@@ -131,3 +131,42 @@ configured-BFF/native Faith PDF progress remain separate gates. External cover
 availability depends on the publisher/network; the audit improves truthful
 fallback behavior without fabricating publisher artwork. User content outside
 the bundled Chinese UI subset uses available system glyph fonts.
+
+## Persistent media and reading continuation
+
+The shared MIDI/Bible session now starts in the sidebar on a fresh profile and
+expands to a persistent bottom dock. A measured 320ms Web Animation moves the
+same surface between positions; reduced motion skips it. Collapsed rails and
+fullscreen scores keep play/expand controls available, while phones keep the
+dock above navigation. Saved expanded/minimized preferences still apply. The
+old drag position, pointer/keyboard dragging, and forced centered CSS are removed.
+
+The Kidung list now offers a 44px PDF/text toggle, defaults to PDF, and sends the
+selected mode in song URLs. PDF exit returns directly to the list; neighboring
+songs retain the mode. Successful catalog snapshots remain in memory across
+list/reader navigation, with installed collections refreshed in the background.
+Core content no longer waits for that hydration. Faith displays all ten complete
+statements inline, with official explanatory PDFs and personal notes available.
+
+Validation of this continuation:
+
+- Production build, workspace typecheck, formatting, documentation, generated
+  provenance and all unit/policy/script suites pass, including 363 web units.
+- The complete nonvisual browser run has 427 passes and three existing
+  environment skips. Seven cases initially retained old player/navigation
+  expectations or overlapped a rebuild; all seven pass on the final tree after
+  correction. The final 15 media/reading guards also pass, including MIDI
+  controls, persisted pauses, reduced motion, collapsed rail geometry, PDF
+  neighbor navigation, direct return to the list, and complete Faith text.
+- The 52-case visual baseline run has 50 passes. The two strict text-control
+  baselines retain their original images and thresholds: this executor differs
+  by 1 pixel (desktop More) and 207 pixels (phone settings). A clean worktree at
+  the original PR head `b7414c7` reproduces both failures, and its actual PNGs
+  have identical SHA-256 hashes to the final tree's actual PNGs. The ten
+  intentionally changed list/Faith baselines were reviewed and updated.
+- Initial JavaScript remains 177.2 KiB against the 180 KiB limit. Packaged assets
+  still verify 22 files / 32,607,926 bytes; no runtime dependency was added.
+- Native smoke fixtures explicitly request expanded transport controls and use
+  an explicit text route when restoring typography. Windows execution and
+  physical-device loading/audio measurements are not repeated locally. The
+  earlier native receipt above belongs to the original PR head.

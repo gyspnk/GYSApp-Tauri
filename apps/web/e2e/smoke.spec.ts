@@ -1024,12 +1024,16 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
     .click();
   await expect(page).toHaveURL(/\/kidung$/);
   await page
+    .getByRole("group", { name: "Mode tampilan kidung" })
+    .getByRole("button", { name: "Teks", exact: true })
+    .click();
+  await page
     .getByRole("button", {
       name: "Pujilah Allah Yang Maha Esa",
       exact: true,
     })
     .click();
-  await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+  await expect(page).toHaveURL(/\/kidung\/hymn-001\?mode=lyrics$/);
   await expect(page.getByText("Bait 1 dari 3", { exact: true })).toBeVisible();
 });
 
@@ -1252,7 +1256,10 @@ test("the shared read-aloud surface can be minimized without losing the session"
   const readButton = page.getByRole("button", { name: "Bacakan" });
   await expect(readButton).toBeEnabled({ timeout: 15_000 });
   await readButton.click();
-  await expect(page.locator(".media-surface")).toBeVisible();
+  await expect(page.locator(".media-surface.is-minimized")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Perbesar pemutar", exact: true })
+    .click();
   await expect(page.locator(".verse-row.is-speaking")).toBeVisible({
     timeout: 15_000,
   });
@@ -1277,26 +1284,7 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(pitch).toHaveValue("1.4");
   await expect(volume).toHaveValue("0.65");
   await page.getByRole("button", { name: "Tutup menu" }).click();
-  const dragHandle = page.locator(".media-drag-handle");
-  const dragBox = await dragHandle.boundingBox();
-  if (!dragBox) throw new Error("Media drag handle is not measurable");
-  await page.mouse.move(
-    dragBox.x + dragBox.width / 2,
-    dragBox.y + dragBox.height / 2,
-  );
-  await page.mouse.down();
-  await page.mouse.move(
-    dragBox.x + dragBox.width / 2 + 24,
-    dragBox.y + dragBox.height / 2 + 12,
-  );
-  await page.mouse.up();
-  await expect
-    .poll(() =>
-      page.evaluate(() => localStorage.getItem("gys-media-position-v1")),
-    )
-    .not.toBeNull();
-  // A saved position must be re-clamped when the viewport shrinks so the
-  // floating surface never leaves the visible area.
+  // Docked geometry follows the viewport without arbitrary saved positions.
   await page.setViewportSize({ width: 320, height: 480 });
   await expect
     .poll(async () => {

@@ -856,7 +856,7 @@ test.describe("responsive reader navigation", () => {
       page.getByText("Bait 3 dari 3", { exact: true }),
     ).toBeVisible();
     await touchSwipe(page);
-    await expect(page).toHaveURL(/hymn-002$/);
+    await expect(page).toHaveURL(/hymn-002\?mode=lyrics$/);
   });
 
   test("hymn pinch zoom is smooth and persists its text size", async ({
@@ -1038,7 +1038,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".app-frame .topbar")).toBeHidden();
     await expect(page.locator(".app-frame .navigation-shell")).toBeHidden();
     await expect(
-      page.getByRole("button", { name: "Kembali ke lirik" }),
+      page.getByRole("button", { name: "← Semua kidung" }),
     ).toBeVisible();
     await expect
       .poll(

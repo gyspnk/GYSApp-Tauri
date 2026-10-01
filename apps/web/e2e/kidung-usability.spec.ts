@@ -154,18 +154,13 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     geometry.mute!,
     geometry.minimize!,
   ];
-  if (viewportWidth >= 360) {
-    expect(
-      Math.max(...controls.map((box) => box.y)) -
-        Math.min(...controls.map((box) => box.y)),
-    ).toBeLessThan(1.5);
-  } else {
-    expect(geometry.transport!.y).toBeLessThan(geometry.stop!.y - 10);
-    expect(
-      Math.max(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y) -
-        Math.min(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y),
-    ).toBeLessThan(1.5);
-  }
+  expect(
+    Math.max(...controls.map((box) => box.y)) -
+      Math.min(...controls.map((box) => box.y)),
+  ).toBeLessThan(1.5);
+  expect(geometry.media!.x + geometry.media!.width).toBeLessThanOrEqual(
+    viewportWidth,
+  );
 }
 
 async function openCatalog(page: Page) {
@@ -249,6 +244,7 @@ const MIDI_NEXT_FIXTURE_HASH = createHash("sha256")
 
 async function prepareMidiDockFixture(page: Page) {
   await page.addInitScript(() => {
+    localStorage.setItem("gys-media-minimized", "0");
     const handlers: Record<string, (details?: unknown) => unknown> = {};
     const mediaSession = {
       handlers,

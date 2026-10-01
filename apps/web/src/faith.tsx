@@ -398,7 +398,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                     </span>
                     <span className="faith-row-copy">
                       <strong>
-                        {item.text.split(/[.!?]/)[0]}
+                        {item.text}
                         {note && (
                           <span
                             className="faith-row-note-dot"

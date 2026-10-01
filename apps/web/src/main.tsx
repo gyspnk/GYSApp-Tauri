@@ -16,6 +16,7 @@ import "./kidung-touch-targets.css";
 import "./reading-surfaces.css";
 import "./kidung-responsive.css";
 import "./calm-liturgical.css";
+import "./persistent-media.css";
 
 runStorageMigrations();
 initializeUiPreferences();

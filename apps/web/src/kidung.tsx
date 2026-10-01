@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   type ChordDocumentV2,
   type HymnCatalogEntry,
@@ -133,6 +133,8 @@ export function HymnDetail({
   musicLock?: UpstreamMusicLock;
 }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedMode = searchParams.get("mode");
   const item =
     state.status === "ready"
       ? state.items.find((candidate) => candidate.id === songId)
@@ -187,7 +189,9 @@ export function HymnDetail({
   >("idle");
   const [soundfontInstalled, setSoundfontInstalled] = useState(false);
   const [viewerMode, setViewerMode] = useState<HymnViewerMode>(() =>
-    readHymnViewerMode(songId),
+    requestedMode === "pdf" || requestedMode === "lyrics"
+      ? requestedMode
+      : readHymnViewerMode(songId),
   );
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
@@ -589,7 +593,7 @@ export function HymnDetail({
   useEffect(() => {
     if (!item || autoLoadedSong.current === item.id) return;
     autoLoadedSong.current = item.id;
-    const saved = readHymnViewerMode(item.id);
+    const saved = viewerMode;
     if (saved === "pdf" && pdfStatus === "idle") void loadPdf();
     if (chordsVisible && chordStatus === "idle") void loadChord();
   }, [item, chordStatus, chordsVisible, pdfStatus]);
@@ -859,7 +863,7 @@ export function HymnDetail({
   const goToNeighbor = (song: { id: string } | undefined) => {
     if (!song) return;
     if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-    navigate(`/kidung/${song.id}`);
+    navigate(`/kidung/${song.id}?mode=${viewerMode}`);
   };
   const toggle = () => {
     if (!item) return;
@@ -889,7 +893,7 @@ export function HymnDetail({
     if (song) {
       // gyschordweb _forceAutoPlayNext: keep playing across song changes.
       if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-      navigate(`/kidung/${song.id}`);
+      navigate(`/kidung/${song.id}?mode=${viewerMode}`);
     }
   };
   const pointerDistance = () => {
@@ -1168,8 +1172,9 @@ export function HymnDetail({
   };
   const selectViewerMode = (mode: HymnViewerMode) => {
     writeHymnViewerMode(item.id, mode);
-    setViewerMode(mode);
-    if (mode === "pdf" && pdfStatus !== "ready") void loadPdf();
+    const next = new URLSearchParams(searchParams);
+    next.set("mode", mode);
+    navigate({ search: next.toString() }, { replace: true });
   };
   const toggleChords = () => {
     const next = !chordsVisible;
@@ -1415,14 +1420,14 @@ export function HymnDetail({
               <button
                 type="button"
                 className="viewer-chrome-button"
-                onClick={() => selectViewerMode("lyrics")}
-                aria-label={translate(locale, "kidung.backToLyrics")}
+                onClick={() => navigate("/kidung")}
+                aria-label={translate(locale, "kidung.back")}
               >
                 <span aria-hidden="true">
                   <Icon name="chevronLeft" size={18} />
                 </span>
                 <span className="viewer-chrome-copy">
-                  {translate(locale, "kidung.text")}
+                  {translate(locale, "kidung.songs")}
                 </span>
               </button>
               <button

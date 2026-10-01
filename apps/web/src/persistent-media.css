@@ -1,0 +1,230 @@
+/* One media session, two dock positions. Geometry is measured from the rail;
+   Web Animations carries the surface between them without a playback restart. */
+.sidebar-media-anchor {
+  flex: 0 0 136px;
+  width: 100%;
+  pointer-events: none;
+}
+.app-frame:not(:has(.persistent-media)) .sidebar-media-anchor {
+  flex-basis: 0;
+}
+.media-surface.persistent-media {
+  transform-origin: top left;
+  transform: none;
+  animation: none;
+  transition: border-color 160ms ease;
+  max-width: none;
+  border-radius: 12px;
+}
+.media-surface.persistent-media:hover {
+  transform: none;
+}
+.media-surface.persistent-media:not(.is-minimized) {
+  left: max(12px, var(--media-sidebar-left));
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: auto;
+  max-width: none;
+  padding: 12px 16px;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto auto auto;
+  gap: 12px;
+}
+.media-surface.persistent-media:not(.is-minimized) > * {
+  grid-row: 1;
+  grid-column: auto;
+  align-self: center;
+  margin-top: 0;
+}
+.persistent-media:not(.is-minimized) .media-meta {
+  display: grid;
+}
+.persistent-media:not(.is-minimized) .media-meta small {
+  display: block;
+}
+.media-surface.persistent-media.is-minimized {
+  left: var(--media-sidebar-left);
+  right: auto;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: var(--media-sidebar-width);
+  padding: 12px;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
+  box-shadow: none;
+  background: var(--surface-soft);
+}
+.media-surface.persistent-media.is-minimized > .media-art {
+  display: none;
+}
+.media-surface.persistent-media.is-minimized > .media-mini-context {
+  display: grid;
+  grid-column: 1 / -1;
+  padding: 0 2px 6px;
+  min-height: 44px;
+}
+.media-surface.persistent-media.is-minimized > .media-control {
+  grid-column: 2;
+}
+.media-surface.persistent-media.is-minimized > .media-minimize {
+  grid-column: 3;
+}
+.media-mini-context strong {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.media-mini-context small {
+  font-size: 11px;
+}
+.persistent-media .media-control,
+.persistent-media .media-minimize {
+  min-width: 44px;
+  min-height: 44px;
+}
+.app-frame:has(.persistent-media:not(.is-minimized)) .main-content {
+  padding-bottom: 220px;
+}
+/* Fullscreen scores hide the navigation. Keep the minimized session reachable. */
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized,
+.media-surface.persistent-media.is-rail-player.is-minimized {
+  left: 12px;
+  width: 64px;
+  grid-template-columns: 44px;
+  padding: 9px;
+}
+.app-frame:has(.is-pdf-viewer)
+  .persistent-media.is-minimized
+  > .media-mini-context,
+.persistent-media.is-rail-player.is-minimized > .media-mini-context {
+  display: none;
+}
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized > .media-control,
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized > .media-minimize,
+.persistent-media.is-rail-player.is-minimized > .media-control,
+.persistent-media.is-rail-player.is-minimized > .media-minimize {
+  grid-column: 1;
+}
+.hymn-index-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hymn-index-heading .hymn-mode-button {
+  min-height: 44px;
+}
+.faith-page .faith-row {
+  align-items: start;
+  padding-block: 22px;
+  contain-intrinsic-size: auto 160px;
+}
+.faith-page .faith-row-heading {
+  align-items: start;
+}
+.faith-page .faith-row-heading strong {
+  display: block;
+  white-space: normal;
+  overflow: visible;
+  font-size: clamp(16px, 1.4vw, 18px);
+  line-height: 1.75;
+  max-width: 72ch;
+}
+.faith-page .faith-row-actions {
+  padding-top: 6px;
+}
+/* Shared controls retain clear silhouettes and consistent optical icon weight. */
+:where(
+  .primary-button,
+  .quiet-button,
+  .text-button,
+  .viewer-chrome-button,
+  .media-control,
+  .media-minimize,
+  .hymn-mode-button
+) {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+:where(button, a):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+@media (max-width: 599px) {
+  .sidebar-media-anchor {
+    display: none;
+  }
+  .media-surface.persistent-media:not(.is-minimized) {
+    left: 8px;
+    right: 8px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 6px;
+    padding: 12px;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-art {
+    display: none;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-main {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .media-surface.persistent-media:not(.is-minimized)
+    > .media-transport-controls {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-stop-control {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-mute-control {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-close-button {
+    display: none;
+  }
+  .media-surface.persistent-media:not(.is-minimized) > .media-minimize {
+    grid-column: 4;
+    grid-row: 2;
+  }
+  .media-surface.persistent-media.is-minimized,
+  .app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized,
+  .media-surface.persistent-media.is-rail-player.is-minimized {
+    left: 8px;
+    right: 8px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    width: auto;
+    grid-template-columns: minmax(0, 1fr) 44px 44px;
+  }
+  .media-surface.persistent-media.is-minimized > .media-mini-context {
+    display: grid;
+    grid-column: 1;
+    padding: 0;
+  }
+  .media-surface.persistent-media.is-minimized > .media-control {
+    grid-column: 2;
+  }
+  .media-surface.persistent-media.is-minimized > .media-minimize {
+    grid-column: 3;
+  }
+  .faith-page .faith-row {
+    gap: 8px;
+    padding-inline: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    .primary-button,
+    .quiet-button,
+    .text-button,
+    .viewer-chrome-button,
+    .media-control,
+    .media-minimize,
+    .hymn-mode-button
+  ) {
+    transition: none;
+  }
+}

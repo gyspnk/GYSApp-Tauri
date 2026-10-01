@@ -151,14 +151,26 @@ split orchestration; these module boundaries do not add lazy loading delays.
 
 The global media surface subscribes to the external MIDI and speech stores,
 not React render ticks. It exposes the active source as an internal route (and
-verse hash for Bible speech), keeps title/progress visible in minimized mode,
-clamps a persisted drag position after viewport changes, and registers Media
-Session handlers against live refs so position updates do not recreate the
-handler set.
+verse hash for Bible speech), and keeps title/progress visible in the sidebar.
+A ResizeObserver measures the sidebar anchor; the expanded player spans the
+bottom of the viewport. A 320ms Web Animation moves the same surface between
+those bounds without restarting either playback engine. Reduced motion skips
+that animation, and phones retain a compact dock above navigation. Collapsed
+rails and fullscreen scores keep play/expand controls reachable. Media Session
+handlers use live refs so position updates do not recreate the handler set.
 
 Kidung subscribes only to the MIDI settings store (tempo/transpose/instrument),
 not the 4 Hz playback-position store. This keeps the reader shell stable while
-the floating surface updates its progress indicator.
+the persistent surface updates its progress indicator.
+
+The Kidung catalog offers PDF and text modes, with PDF selected on a new list
+visit. Song routes carry `mode=pdf` or `mode=lyrics`; closing a PDF goes directly
+to the song list. Core catalog data renders before installed collections finish
+hydrating. Successful catalogs remain in memory across reader/list navigation,
+while installed collections refresh on mount and asset-change events.
+
+All ten Faith statements are rendered in full on the page. Official doctrine
+PDFs and personal notes remain separate actions.
 
 The Kidung catalog builds a normalized search index once per loaded catalog
 revision. Queries use token/prefix AND matching and preserve quoted phrases;

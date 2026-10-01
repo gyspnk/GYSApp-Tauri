@@ -504,6 +504,11 @@ try {
   });
   const context = browser.contexts()[0];
   assert.ok(context, "Tauri did not expose a WebView2 context");
+  // Deep transport checks explicitly request the expanded dock. Browser tests
+  // cover the default sidebar state and animated minimize/restore behavior.
+  await context.addInitScript(() => {
+    localStorage.setItem("gys-media-minimized", "0");
+  });
   const page = context.pages()[0] ?? (await context.newPage());
   page.once("crash", () => console.error("Native WebView renderer crashed"));
   page.on("pageerror", (error) =>
@@ -3032,15 +3037,10 @@ try {
       "Faith PDF progress did not survive restarting packaged Tauri",
     );
   }
-  await restoredPage.goto(new URL("/kidung/hymn-001", origin).href);
+  await restoredPage.goto(new URL("/kidung/hymn-001?mode=lyrics", origin).href);
   await restoredPage
     .getByRole("heading", { name: "Pujilah Allah Yang Maha Esa", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
-  const lyricsReturn = restoredPage.getByRole("button", {
-    name: "Kembali ke lirik",
-    exact: true,
-  });
-  if (await lyricsReturn.count()) await lyricsReturn.click();
   const restoredTypographySettings =
     await openHymnTypographySettings(restoredPage);
   assert.equal(

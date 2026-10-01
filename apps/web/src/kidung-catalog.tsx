@@ -8,7 +8,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { findMusicAsset } from "./music-assets.js";
@@ -41,6 +41,8 @@ export function HymnCatalog({
 }) {
   useReadinessMarker("gys-hymn-catalog-ready", state.status === "ready");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pdfMode = searchParams.get("mode") !== "lyrics";
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
   const mobileFilterRef = useRef<HTMLDetailsElement>(null);
@@ -122,7 +124,7 @@ export function HymnCatalog({
       event.clientX,
       event.clientY,
     );
-    navigate(`/kidung/${songId}`);
+    navigate(`/kidung/${songId}?mode=${pdfMode ? "pdf" : "lyrics"}`);
   };
   const onRowQueue = (
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -139,6 +141,35 @@ export function HymnCatalog({
     <div className="page hymn-page">
       <div className="hymn-index-heading">
         <h1>{translate(locale, "page.kidungTitle")}</h1>
+        <div
+          className="hymn-mode-toggle"
+          role="group"
+          aria-label={translate(locale, "kidung.viewMode")}
+        >
+          {(["pdf", "lyrics"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className={`hymn-mode-button${pdfMode === (mode === "pdf") ? " is-active" : ""}`}
+              aria-pressed={pdfMode === (mode === "pdf")}
+              onClick={() =>
+                setSearchParams(
+                  (current) => {
+                    const next = new URLSearchParams(current);
+                    next.set("mode", mode);
+                    return next;
+                  },
+                  { replace: true },
+                )
+              }
+            >
+              <Icon name={mode === "pdf" ? "file" : "book"} size={16} />
+              <span>
+                {mode === "pdf" ? "PDF" : translate(locale, "kidung.text")}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
       <div className="kidung-catalog-topbar">
         <KidungLocalNav active="songs" locale={locale} />
