@@ -2,6 +2,11 @@
 
 ## Unreleased — GA hardening slice
 
+- Refine global search with feature icons, localized Faith topics, an icon close
+  action, keyboard focus restoration and clearer internal navigation. Raise
+  hymn footer, narrow Faith search and accent choices to 44px targets; localize
+  full-verse counts and remove obsolete small-control overrides.
+
 - Recompose the application around default GYS blue, compact icon/label
   navigation, direct home reading actions, a daily-reading feature and full-width
   shelves. Remove navigation descriptions and shorten surrounding controls;

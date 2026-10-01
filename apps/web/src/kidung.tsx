@@ -2690,7 +2690,9 @@ export function HymnDetail({
               </>
             ) : (
               <span className="hymn-all-verses-summary">
-                {verses.length} Bait Lengkap
+                {translate(locale, "kidung.allVerseCount", {
+                  count: verses.length,
+                })}
               </span>
             )}
             <button

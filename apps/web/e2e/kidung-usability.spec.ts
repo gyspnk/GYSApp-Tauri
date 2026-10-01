@@ -902,7 +902,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
 
   for (const locale of ["id", "en", "zh"] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
+    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?mode=lyrics&__gys_locale=${locale}`);
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah/ }),
     ).toBeVisible({ timeout: 20_000 });
@@ -1093,6 +1093,7 @@ test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", asyn
 test("Kidung playlist and reader semantic chrome stays localized", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   const copies = {
     id: {
       playlist: "Playlist",
@@ -1194,7 +1195,7 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
     ).toBeVisible();
     await expect(page.getByText(copy.off, { exact: true })).toBeVisible();
 
-    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
+    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?mode=lyrics&__gys_locale=${locale}`);
     await expect(
       page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
     ).toBeVisible({ timeout: 20_000 });

@@ -212,3 +212,54 @@ panel colors intentionally change to the blue default. Earlier comparisons in
 this document remain historical evidence for the preceding warm version.
 Native Windows execution on this revision remains delegated to hosted CI;
 instant loading or physical-device audio timing is not claimed.
+
+## Application-wide element evaluation
+
+A follow-up inventory checks ten routes at 320, 390, 768 and 1440px, including
+Sauh, Suara, hymn text and the queue entry. The separate 93-case roadmap/runtime
+matrix passes across six widths, three locales, five themes, keyboard focus,
+reduced motion and 200% text enlargement. The inventory excludes hidden inputs
+and noninteractive inline text from target-size findings.
+
+| Element family       | Evaluation and response                                                                                                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell/navigation     | Compact icon/label hierarchy, collapsed-state persistence and mobile navigation retained. Align the collapse geometry assertion with the button's 28px projection, which clears headings. Verify the flat 1px header separator rather than the superseded no-separator rule.            |
+| Home/Sauh/Suara      | Direct actions, readable daily content, fallback/retry states and full-width shelves fit the checked widths. No additional explanatory panels are added.                                                                                                                                |
+| Bible                | Reader, split panes, picker, search, notes and cross references retain their established layout and keyboard contracts.                                                                                                                                                                 |
+| Kidung catalog/queue | Independent PDF/text mode and queue actions remain discoverable through icons and concise labels.                                                                                                                                                                                       |
+| Hymn text controls   | Remove obsolete 38/40px footer overrides; retain 44px song/verse controls. Replace the hardcoded Indonesian full-verse count with localized compact text.                                                                                                                               |
+| PDF readers          | Preserve bounded rendering, existing 44px transport, overflow menus, fullscreen, source actions and navigation.                                                                                                                                                                         |
+| Persistent media     | Sidebar/bottom docking, paused state, route persistence and reduced-motion behavior remain covered by the dock suite.                                                                                                                                                                   |
+| Faith                | All ten complete paragraphs remain inline. Raise the narrow-screen search input from 42px to 44px.                                                                                                                                                                                      |
+| Literature           | Compact metadata and book placeholders retain the existing searchable reading hierarchy.                                                                                                                                                                                                |
+| Global search        | Use consistent feature icons instead of initial-letter badges, an icon close control, an inset search icon and localized Faith topic names. Keep the label accessible, hide redundant introductory copy and use a chevron for internal navigation. Close with Escape and restore focus. |
+| Settings             | Raise accent choices from 38px to 44px and replace `transition: all` with the two visual properties that change. Preserve custom accents and theme contrast.                                                                                                                            |
+| Dialogs/focus/status | Keep semantic labels, live status and visible focus. Search gets explicit three-locale, phone/desktop axe and keyboard coverage.                                                                                                                                                        |
+
+The preceding hosted run on `9932d7a` exposed two obsolete shell expectations and
+nine renderer-sensitive visual differences. Its artifact
+[11163232752](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/36863184133/artifacts/11163232752)
+provides reviewed canonical images for eight surfaces whose local output is
+byte-identical before and after this follow-up. Those eight baselines use the
+hosted images without threshold changes. Newly changed hymn-footer and palette
+images require verification against the next hosted run; the prior artifact is
+not used to erase their intentional changes. Local full visual regeneration
+passes 57 cases before the canonical hosted substitutions. New element tests
+cover icon results, translated topics, Escape/focus, axe, 44px hymn controls and
+translated full-verse counts in ID/EN/ZH at 320 and 1440px. CSS-pixel size checks
+allow only 0.01px for transform/device-pixel rounding.
+
+Final local verification for this follow-up: workspace typecheck, production
+build, bundle budget and all workspace/script tests pass (363 web unit tests).
+The broad browser run passed 444 cases and skipped three environment-specific
+cases; its one failure was the localized Kidung chord test relying on a browser
+CDN download. That test now uses checksum-verified immutable assets and an
+explicit lyrics route, and passes without retries. The 93-case responsive/theme
+matrix and 12 new element cases also pass. Initial JavaScript is 177.2 KiB gzip,
+within the 180 KiB graph budget, with no new dependency.
+
+Windows native verification is still open: on the preceding `9932d7a` run,
+quick suites and the 30-process benchmark passed, but the media soak failed
+“Speech did not remain paused.” Browser persistence/pause tests passing do not
+establish that the packaged Windows path passes. This UI follow-up does not
+change the speech engine or claim that native failure is resolved.

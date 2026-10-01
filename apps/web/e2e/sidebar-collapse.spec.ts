@@ -34,7 +34,9 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(controlBox!.height).toBeGreaterThanOrEqual(44);
   expect(controlBox!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
   expect(
-    Math.abs(controlBox!.x - (expanded!.x + expanded!.width)),
+    Math.abs(
+      controlBox!.x + controlBox!.width - (expanded!.x + expanded!.width + 28),
+    ),
   ).toBeLessThanOrEqual(1);
   const expandedItem = await nav.locator(".nav-item.is-active").boundingBox();
   expect(expandedItem).not.toBeNull();
@@ -107,7 +109,11 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(collapsed).not.toBeNull();
   expect(collapsedControlBox).not.toBeNull();
   expect(
-    Math.abs(collapsedControlBox!.x - (collapsed!.x + collapsed!.width)),
+    Math.abs(
+      collapsedControlBox!.x +
+        collapsedControlBox!.width -
+        (collapsed!.x + collapsed!.width + 28),
+    ),
   ).toBeLessThanOrEqual(1);
 
   await page.reload();
