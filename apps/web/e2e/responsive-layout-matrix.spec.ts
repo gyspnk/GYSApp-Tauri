@@ -215,6 +215,9 @@ test("dashboard composition keeps its intended order at every device class", asy
         return { x: box.x, y: box.y, right: box.right, bottom: box.bottom };
       };
       return {
+        unavailable: Boolean(
+          document.querySelector(".verse-panel .sauh-offline-state"),
+        ),
         verse: read(".verse-panel"),
         continuePanel: read(".continue-panel"),
         suara: read(".home-suara-section"),
@@ -240,7 +243,17 @@ test("dashboard composition keeps its intended order at every device class", asy
     } else {
       expect(Math.abs(layout.verse.y - layout.continuePanel.y)).toBeLessThan(4);
       expect(layout.continuePanel.x).toBeGreaterThan(layout.verse.x);
-      expect(layout.suara.x).toBeGreaterThanOrEqual(layout.continuePanel.x - 1);
+      if (layout.unavailable) {
+        expect(layout.suara.x).toBeLessThanOrEqual(layout.verse.x + 1);
+        expect(layout.suara.right).toBeGreaterThanOrEqual(
+          layout.continuePanel.right - 1,
+        );
+        expect(layout.verse.bottom).toBeLessThanOrEqual(layout.suara.y + 1);
+      } else {
+        expect(layout.suara.x).toBeGreaterThanOrEqual(
+          layout.continuePanel.x - 1,
+        );
+      }
       expect(layout.literature.x).toBeLessThanOrEqual(layout.verse.x + 1);
       expect(layout.literature.right).toBeGreaterThanOrEqual(
         layout.continuePanel.right - 1,

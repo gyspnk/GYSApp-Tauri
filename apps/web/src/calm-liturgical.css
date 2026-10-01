@@ -657,3 +657,163 @@ summary:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
 }
+
+/* Compact spacing keeps the page hierarchy clear without shrinking targets. */
+:root {
+  --page-gutter: clamp(18px, 3vw, 40px);
+  --page-start: clamp(24px, 3vw, 36px);
+}
+
+/* One navigation row; secondary PDF actions expand underneath it. */
+.pdf-reader .pdf-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+.pdf-reader .pdf-page-navigation {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-reader .pdf-page-navigation > span {
+  white-space: nowrap;
+  font-size: 12px;
+}
+.pdf-reader .pdf-page-jump {
+  gap: 4px;
+  font-size: 0;
+}
+.pdf-reader .pdf-page-jump input {
+  width: 52px;
+  min-height: 44px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-reader .pdf-toolbar :is(button, .pdf-download) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 8px;
+  border-radius: 5px;
+  color: var(--ink);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.pdf-reader .pdf-toolbar button:focus-visible,
+.pdf-reader .pdf-toolbar a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.pdf-reader .pdf-advanced-toggle {
+  width: 44px;
+  flex: 0 0 44px;
+}
+.pdf-reader-hymn .pdf-advanced-toggle::before,
+.pdf-reader-hymn .pdf-fullscreen-toggle::before {
+  content: none;
+}
+.pdf-reader .pdf-advanced-controls {
+  display: none;
+  flex: 1 0 100%;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-advanced-controls.is-open {
+  display: flex;
+  animation: pdf-tools-enter var(--motion-fast) var(--ease-out) both;
+}
+.pdf-reader .pdf-advanced-controls > label:has(input[type="range"]) {
+  display: none;
+}
+.pdf-reader .pdf-zoom-controls,
+.pdf-reader .pdf-layout-toggle {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  align-items: center;
+}
+.pdf-reader .pdf-zoom-indicator {
+  min-width: 60px;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-reader .pdf-stage {
+  padding: 16px;
+  scrollbar-gutter: stable;
+}
+.pdf-reader .pdf-pages.pdf-layout-two > .pdf-page-frame {
+  min-width: 0;
+}
+.pdf-reader .pdf-page-frame canvas[data-pdf-rendered="true"] {
+  animation: pdf-page-reveal 140ms var(--ease-out) both;
+}
+@keyframes pdf-page-reveal {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 719px) {
+  .pdf-reader .pdf-stage {
+    padding: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdf-reader .pdf-toolbar *,
+  .pdf-reader .pdf-page-frame canvas[data-pdf-rendered="true"] {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.pdf-reader .pdf-fullscreen-toggle {
+  width: 44px;
+  flex: 0 0 44px;
+}
+.pdf-reader .pdf-vertical-page,
+.pdf-reader .pdf-horizontal-page {
+  aspect-ratio: 595 / 842;
+  box-sizing: border-box;
+}
+
+@media (max-width: 719px) {
+  .pdf-reader .pdf-page-navigation .pdf-resume {
+    flex: 1 0 100%;
+  }
+  .pdf-reader :is(.pdf-advanced-toggle, .pdf-fullscreen-toggle) {
+    align-self: flex-start;
+  }
+}
+
+.pdf-reader:fullscreen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: var(--surface);
+}
+.pdf-reader:fullscreen .pdf-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pdf-reader:fullscreen .pdf-toolbar {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+}

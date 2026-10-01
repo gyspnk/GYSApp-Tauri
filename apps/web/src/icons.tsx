@@ -31,6 +31,7 @@ export type IconName =
   | "person"
   | "columns"
   | "copy"
+  | "fullscreen"
   | "settings"
   | "download"
   | "file"
@@ -188,6 +189,7 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </>
   ),
+  fullscreen: <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5" />,
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />

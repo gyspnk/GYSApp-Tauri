@@ -141,3 +141,11 @@ test("extracted Bible and hymn payload modules retain migration and loading cont
   assert.ok(plan.args.includes("e2e/kidung-offline.spec.ts"));
   assert.ok(plan.args.includes("e2e/reader-data-loading.spec.ts"));
 });
+
+test("PDF-only edits select rendering and reader regressions without the global matrix", () => {
+  const selection = resolveSelectiveTestArgs(["apps/web/src/pdf.tsx"], []);
+  assert.ok(selection.args.includes("e2e/pdf-reader-efficiency.spec.ts"));
+  assert.ok(selection.args.includes("e2e/kidung-pdf-density.spec.ts"));
+  assert.ok(selection.args.includes("e2e/media-load.spec.ts"));
+  assert.ok(!selection.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
+});

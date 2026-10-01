@@ -7,6 +7,7 @@ test.use({ serviceWorkers: "block" });
 test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   const pdfRuntimeRequests: string[] = [];
   page.on("request", (request) => {
     if (/pdf\.worker|pdf\.mjs/i.test(request.url()))
@@ -54,6 +55,7 @@ test("canonical chord and fork PDF assets open from hymn detail", async ({
   page,
 }) => {
   test.setTimeout(90_000);
+  await preparePinnedReaderAssets(page);
   const forkPdfRequests: string[] = [];
   page.on("request", (request) => {
     if (/kr_master\.pdf/i.test(request.url()))

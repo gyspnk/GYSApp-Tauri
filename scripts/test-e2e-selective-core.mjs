@@ -87,7 +87,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     )
       return true;
     if (!file.startsWith("apps/web/src/")) return false;
-    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|ui-preferences|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
       file,
     );
   });
@@ -202,6 +202,17 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");
       specFiles.add("e2e/roadmap-ui-matrix.spec.ts");
+      runSmokeAll = true;
+    }
+
+    if (
+      file.startsWith("apps/web/src/pdf") ||
+      file.includes("direct-manipulation")
+    ) {
+      specFiles.add("e2e/pdf-reader-efficiency.spec.ts");
+      specFiles.add("e2e/kidung-pdf-density.spec.ts");
+      specFiles.add("e2e/direct-manipulation.spec.ts");
+      specFiles.add("e2e/media-load.spec.ts");
       runSmokeAll = true;
     }
 

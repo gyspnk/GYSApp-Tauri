@@ -83,9 +83,8 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await page.locator(".pdf-reader-hymn .pdf-advanced-toggle").click();
   await expect(advanced).toBeHidden();
 
-  // The canonical keyboard handler intentionally ignores input until PDF.js
-  // has completed its page render, so synchronize with the visible reader
-  // readiness instead of racing the loading state.
+  // Verify the initial visible page before exercising keyboard zoom. Inputs
+  // remain usable while a later zoom/resize render is in flight.
   const stage = page.locator(".pdf-reader-hymn .pdf-stage");
   await expect(stage.locator(".pdf-loading")).toHaveCount(0, {
     timeout: 30_000,

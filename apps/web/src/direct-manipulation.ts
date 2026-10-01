@@ -56,10 +56,6 @@ export function enhancePdfReader(reader: HTMLElement): () => void {
       : reader.dataset.pdfLocale === "zh"
         ? "zh"
         : "id";
-  if (advancedToggle.getAttribute("aria-expanded") === "true") {
-    advancedToggle.click();
-  }
-
   const hud = createZoomHud(
     stage,
     indicator.textContent?.trim() || "100%",

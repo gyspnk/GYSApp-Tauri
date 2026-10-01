@@ -165,7 +165,13 @@ revision. Queries use token/prefix AND matching and preserve quoted phrases;
 the UI never lower-cases the full lyric corpus on every keystroke. The vertical
 PDF reader uses the same bounded-resource principle: pages outside the
 IntersectionObserver preload window cancel their render task and release their
-canvas. BFF Literature and Suara Sejati cache boundaries share in-flight
+canvas. The observer root is the actual scroll stage, and active-page tracking
+is separate from preloading. PDF raster zoom coalesces updates for 100ms;
+private render buffers isolate cancelled tasks from their successors. Logical
+zoom retains the 100–800% range while each bitmap is bounded to 4 million
+pixels, 8192px per side and a maximum device pixel ratio of 2. The stage's
+ResizeObserver refreshes fit rendering after resize/fullscreen, and page input
+commits on Enter/blur rather than decoding each intermediate digit. BFF Literature and Suara Sejati cache boundaries share in-flight
 upstream requests, so concurrent shell mounts cannot create duplicate fetches.
 Global search and its Bible worker dependencies are imported only after the
 search dialog opens. The bundle gate derives its initial graph from the entry

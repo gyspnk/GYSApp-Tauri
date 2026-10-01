@@ -2,6 +2,11 @@
 
 ## Unreleased — GA hardening slice
 
+- Compact shared page spacing and PDF controls. Correct spread fit, page input,
+  resize/fullscreen rendering, scroll virtualization and cancellation; bound PDF
+  bitmap memory, coalesce rapid zoom, and provide shared accessible options,
+  keyboard navigation, downloads and reduced-motion behavior.
+
 - Adopt warm editorial reading typography and paper/ink themes, with licensed
   fonts bundled for offline use. Improve first reading actions, hymn index
   headings, Faith mobile paragraphs, book placeholders, reading widths and

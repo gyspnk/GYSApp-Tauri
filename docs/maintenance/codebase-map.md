@@ -1841,3 +1841,29 @@ commit leaves that application unchanged. Final canonical-baseline CI outcomes
 are required on PR #9 before
 closing this frontier. The user request authorizes these visual changes and
 commit/push; physical-device and signed-upgrade gates remain separate.
+
+- `2026-10-01 / CF-207`: compact the authorized warm editorial UI and repair
+  PDF toolbar density, spread fitting, page input, resize, rendering races and
+  scroll virtualization. Share fullscreen/download/focus/keyboard controls
+  across hymn, Literature and Faith viewers, keep 44px targets, and bound raster
+  memory at extreme zoom. The [compact PDF audit](../plans/2026-10-01-compact-pdf-audit.md)
+  records findings, tradeoffs and verification. CF-206's final canonical CI and
+  packaged Windows checks passed on 5fcca3c (runs 36827881157/36827881297).
+  CF-207 requires the pushed tree's full CI and native checks before closure;
+  physical-device/provider gates remain outside these executor results.
+
+Validation for CF-207: 57 visual cases pass at unchanged pixel thresholds;
+41 intentional image changes were reviewed and unchanged strict CI baselines
+retained. The responsive/editorial/roadmap matrix passes 125 cases; the stale
+PDF-ready race and a 40s multi-route timeout were isolated for final focused
+verification. The dashboard order guard now recognizes the existing wide-screen
+unavailable-state shelf layout rather than asserting the available-state grid
+against asynchronous provider failures. New 48-page PDF regressions verify offscreen bitmap eviction,
+4-million-pixel raster limits, spread fit, relative hymn page entry, motion,
+focus and accessible options. The repaired final focused run passes 32/32 cases, and 12 PDF visual rechecks
+pass without retries. PDF-only edits select their reader regressions instead
+of the global matrix. Local pre-push, assets and bundle checks pass; the pushed
+CI/native gates must pass before this slice is reported complete. The final
+PDF efficiency run passes 10/10 cases, and the deterministic suite includes
+363 web unit tests plus all workspace/script checks. Initial JS is 177.2 KiB
+under the unchanged 180 KiB gate; native assets verify 22 files/32,607,926 bytes.
