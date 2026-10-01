@@ -24,6 +24,7 @@ test("activation migrates previous editorial content and keeps PDFs out of shell
   const previousCache = `gysapp-shell-v${currentVersion - 1}`;
   const currentCache = `gysapp-shell-v${currentVersion}`;
   const editorialStatuses: number[] = [];
+  let installationComplete = false;
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? "/", "http://127.0.0.1").pathname;
     const appPath = pathname.startsWith(APP_BASE)
@@ -43,6 +44,16 @@ test("activation migrates previous editorial content and keeps PDFs out of shell
       response.end(
         "<!doctype html><title>SW fixture</title><main>Fixture</main>",
       );
+      return;
+    }
+    if (appPath === "/offline-shell-assets.json") {
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ version: 1, assets: [] }));
+      return;
+    }
+    if (appPath === "/offline/sauh.json" && !installationComplete) {
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ revision: "old" }));
       return;
     }
     if (appPath === "/offline/sauh.json") {
@@ -121,7 +132,7 @@ test("activation migrates previous editorial content and keeps PDFs out of shell
         caches
           .keys()
           .then(
-            (names) => names.includes(newCache) && !names.includes(oldCache),
+            (names) => names.includes(newCache) && names.includes(oldCache),
           ),
       { oldCache: previousCache, newCache: currentCache },
     );
@@ -129,6 +140,7 @@ test("activation migrates previous editorial content and keeps PDFs out of shell
       Boolean(navigator.serviceWorker.controller),
     );
 
+    installationComplete = true;
     const contentPlacement = await page.evaluate(
       async ({ basePath, shellName }) => {
         const url = new URL(`${basePath}/offline/sauh.json`, location.href)
@@ -142,11 +154,24 @@ test("activation migrates previous editorial content and keeps PDFs out of shell
       },
       { basePath: APP_BASE, shellName: currentCache },
     );
+    const activeState = await page.evaluate(async (basePath) => {
+      const state = await caches.open("gysapp-update-state-v1");
+      return (await state.match(`${basePath}/__active-shell__`))?.json();
+    }, APP_BASE);
+    expect(activeState).toEqual({
+      active: currentCache,
+      previous: previousCache,
+    });
     expect(contentPlacement).toEqual({
       stableSnapshot: true,
       shellSnapshot: false,
     });
 
+    const fallback = await page.evaluate(
+      async (basePath) => (await fetch(`${basePath}/offline/sauh.json`)).json(),
+      APP_BASE,
+    );
+    expect(fallback).toEqual({ revision: "old" });
     await context.setOffline(true);
     const snapshot = await page.evaluate(
       async (basePath) =>

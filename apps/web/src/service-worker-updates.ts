@@ -31,6 +31,7 @@ export function installServiceWorkerUpdates(): () => void {
             "input:not([type='button']):not([type='range']), textarea, select",
           ) ||
             focused.isContentEditable)),
+      Boolean(document.querySelector(".pdf-reader")),
     );
   };
   const render = () => {

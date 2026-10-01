@@ -89,3 +89,31 @@ test("activation is explicit and disabled for an unsubmitted editor", async ({
     )
     .toBe("requested");
 });
+
+test("a Faith PDF overlay blocks updates even while the catalog URL stays unchanged", async ({
+  page,
+}) => {
+  test.skip(process.env.GYS_E2E_DEV === "1", "Production update coordinator");
+  const pdf = await page.request.get(
+    "/GYSApp-Tauri/assets/pdf/001_Pujilah%20Allah%20Yang%20Maha%20Esa.pdf",
+  );
+  expect(pdf.ok()).toBe(true);
+  const bytes = await pdf.body();
+  await page.route(/Yesus-Kristus\.pdf/, (route) =>
+    route.fulfill({ contentType: "application/pdf", body: bytes }),
+  );
+  await page.goto("/GYSApp-Tauri/iman");
+  const banner = page.locator(".app-update-banner");
+  await expect(banner.locator("button")).toBeEnabled();
+  await page.locator(".faith-row-heading").first().click();
+  await expect(page.locator(".faith-pdf-body .pdf-reader")).toBeVisible();
+  await expect(page).toHaveURL(/\/iman$/);
+  await expect(banner.locator("button")).toBeDisabled();
+  await page.evaluate(() =>
+    navigator.serviceWorker.dispatchEvent(new Event("controllerchange")),
+  );
+  await expect(page.locator(".faith-pdf-body .pdf-reader")).toBeVisible();
+  await expect(banner.locator("button")).toBeDisabled();
+  await page.locator(".faith-pdf-close").click();
+  await expect(banner.locator("button")).toBeEnabled();
+});

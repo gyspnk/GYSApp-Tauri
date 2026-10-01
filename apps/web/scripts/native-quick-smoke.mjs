@@ -94,17 +94,25 @@ try {
       });
     } else if (selected === "assets") {
       results.assets = await page.evaluate(async () => {
-        const pack = await (await fetch("offline/pack-manifest.json")).json();
-        const metadata = await (
-          await fetch("offline/hymn-metadata.json")
-        ).json();
-        const bible = await (
-          await fetch("offline/bible/tb-reader.json")
-        ).json();
+        const assetUrl = (path) => new URL(`/${path}`, location.origin).href;
+        const readJson = async (path) => {
+          const response = await fetch(assetUrl(path));
+          if (
+            !response.ok ||
+            !response.headers.get("content-type")?.includes("json")
+          )
+            throw new Error(
+              `Invalid packaged JSON response: ${path} (${response.status})`,
+            );
+          return response.json();
+        };
+        const pack = await readJson("offline/pack-manifest.json");
+        const metadata = await readJson("offline/hymn-metadata.json");
+        const bible = await readJson("offline/bible/tb-reader.json");
         if (metadata.items.length !== 533 || bible.books.length !== 66)
           throw new Error("Packaged core count mismatch");
         for (const item of pack.items) {
-          const response = await fetch(item.path);
+          const response = await fetch(assetUrl(item.path));
           if (!response.ok) throw new Error(`Missing ${item.path}`);
           const bytes = await response.arrayBuffer();
           const digest = [

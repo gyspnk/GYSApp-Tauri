@@ -73,6 +73,9 @@ describe("safe app update activation", () => {
       "/GYSApp-Tauri/literatur/article",
     ])
       expect(isUpdateBusy(path, "idle", "idle", false)).toBe(true);
+    expect(
+      isUpdateBusy("/GYSApp-Tauri/iman", "idle", "idle", false, true),
+    ).toBe(true);
     expect(isUpdateBusy("/", "paused", "idle", false)).toBe(true);
     expect(isUpdateBusy("/", "idle", "paused", false)).toBe(true);
     expect(isUpdateBusy("/", "idle", "idle", true)).toBe(true);

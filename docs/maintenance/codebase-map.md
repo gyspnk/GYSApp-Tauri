@@ -1799,3 +1799,9 @@ final-tree checks and packaged-native benchmark/soak evidence are required on
 PR #9 before closing this slice; physical-device, signed-upgrade, audio-first-
 sample and configured-BFF gates remain open. The maintenance review reconciles
 those prerequisites and does not fabricate missing skill or policy files.
+
+Final verification follow-up for CF-205: packaged quick assets use root-relative
+URLs after reader navigation and validate JSON response types; Faith PDF overlays
+block activation while the catalog URL stays unchanged. The browser upgrade
+fixture now installs a complete core before exercising HTTP 503 editorial
+fallback, offline reuse and previous active cache retention.

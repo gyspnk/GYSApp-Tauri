@@ -42,9 +42,11 @@ export function isUpdateBusy(
   midi: string,
   speech: string,
   editing: boolean,
+  readingOverlay = false,
 ): boolean {
   return (
     editing ||
+    readingOverlay ||
     /\/(?:bible|kidung\/[^/?]+|iman\/[^/?]+|literatur\/[^/?]+)(?:\/|$)/.test(
       path,
     ) ||
