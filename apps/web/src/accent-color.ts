@@ -5,6 +5,7 @@ export type AccentPreset = {
 };
 
 export const ACCENT_PRESETS: readonly AccentPreset[] = [
+  { id: "ink", name: "Tinta hangat", color: "#874536" },
   { id: "sapphire", name: "Biru Safir", color: "#2a65c7" },
   { id: "emerald", name: "Zamrud", color: "#059669" },
   { id: "ruby", name: "Merah Delima", color: "#e11d48" },
@@ -75,24 +76,59 @@ export function subscribeAccentColor(listener: () => void): () => void {
   };
 }
 
+/** Choose the more readable foreground for a user-selected opaque hex accent. */
+export function getAccentForeground(color: string): string | undefined {
+  const match = /^#([a-f0-9]{6}|[a-f0-9]{3})$/i.exec(color);
+  if (!match) return undefined;
+  const hex =
+    match[1]!.length === 3
+      ? [...match[1]!].map((digit) => digit + digit).join("")
+      : match[1]!;
+  const luminance = [0, 2, 4]
+    .map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255)
+    .map((channel) =>
+      channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+    )
+    .reduce(
+      (sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index]!,
+      0,
+    );
+  // Black/white guarantee AA at every opaque accent luminance. Off-black
+  // leaves a mid-tone gap where neither foreground reaches 4.5:1.
+  return (luminance + 0.05) / 0.05 > 1.05 / (luminance + 0.05)
+    ? "#000000"
+    : "#ffffff";
+}
+
 export function applyAccentToDocument(color: string): void {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   if (!color || color === DEFAULT_ACCENT_COLOR) {
     root.style.removeProperty("--accent");
+    root.style.removeProperty("--on-accent");
+    root.style.removeProperty("--accent-fill");
     root.style.removeProperty("--blue");
     root.style.removeProperty("--blue-soft");
     root.style.removeProperty("--navy");
   } else {
     root.style.setProperty("--accent", color);
-    root.style.setProperty("--blue", color);
+    const foreground = getAccentForeground(color);
+    if (foreground) root.style.setProperty("--on-accent", foreground);
+    else root.style.removeProperty("--on-accent");
+    root.style.setProperty("--accent-fill", color);
+    // Filled actions retain the chosen color. Foreground ink blends toward
+    // the current theme so even white/yellow/black custom accents stay legible.
+    root.style.setProperty(
+      "--blue",
+      `color-mix(in srgb, ${color} 30%, var(--ink))`,
+    );
     root.style.setProperty(
       "--blue-soft",
       `color-mix(in srgb, ${color} 15%, var(--surface))`,
     );
     root.style.setProperty(
       "--navy",
-      `color-mix(in srgb, ${color} 70%, var(--ink))`,
+      `color-mix(in srgb, ${color} 20%, var(--ink))`,
     );
   }
 }

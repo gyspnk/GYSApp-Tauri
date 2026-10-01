@@ -184,6 +184,7 @@ test("install prepares lazy build assets once and rejects non-build paths", asyn
         "assets/kidung-settings-hash.js",
         "assets/reader-hash.css",
         "assets/sql-hash.wasm",
+        "assets/editorial-hash.woff2",
         "https://unrelated.example/asset.js",
         "assets/../offline/catalog.js",
         "assets/music.pdf",
@@ -210,6 +211,7 @@ test("install prepares lazy build assets once and rejects non-build paths", asyn
   );
   assert.ok(writes.some(([url]) => url.endsWith("reader-hash.css")));
   assert.ok(writes.some(([url]) => url.endsWith("sql-hash.wasm")));
+  assert.ok(writes.some(([url]) => url.endsWith("editorial-hash.woff2")));
   assert.ok(!calls.some((url) => url.includes("unrelated.example")));
   assert.ok(!calls.some((url) => url.includes("../")));
   assert.ok(!calls.some((url) => url.endsWith("music.pdf")));
@@ -537,42 +539,42 @@ test("activation retains the previously active build instead of newer interrupte
   ]);
 });
 
-test("a corrupted prepared module is refetched and verified before activation", async () => {
-  const path = "assets/reader.js",
-    good = "export const ready = true;";
-  const integrity = `sha256-${createHash("sha256").update(good).digest("base64")}`;
-  let moduleFetches = 0;
-  const { handlers, writes } = loadServiceWorker({
-    cacheMatchByName: async (_name, url) =>
-      url.endsWith(path) ? new Response("corrupted") : undefined,
-    fetch: async (url) => {
-      if (url.endsWith("offline-shell-assets.json"))
-        return new Response(
-          JSON.stringify({
-            version: 1,
-            buildId: "test",
-            assets: [path],
-            integrity: { [path]: integrity },
-          }),
-        );
-      if (url.endsWith(path)) {
-        moduleFetches++;
-        return new Response(good);
-      }
-      return new Response("<!doctype html>");
-    },
+for (const path of ["assets/reader.js", "assets/editorial.woff2"])
+  test(`a corrupted prepared ${path} is refetched and verified before activation`, async () => {
+    const good = "export const ready = true;";
+    const integrity = `sha256-${createHash("sha256").update(good).digest("base64")}`;
+    let moduleFetches = 0;
+    const { handlers, writes } = loadServiceWorker({
+      cacheMatchByName: async (_name, url) =>
+        url.endsWith(path) ? new Response("corrupted") : undefined,
+      fetch: async (url) => {
+        if (url.endsWith("offline-shell-assets.json"))
+          return new Response(
+            JSON.stringify({
+              version: 1,
+              buildId: "test",
+              assets: [path],
+              integrity: { [path]: integrity },
+            }),
+          );
+        if (url.endsWith(path)) {
+          moduleFetches++;
+          return new Response(good);
+        }
+        return new Response("<!doctype html>");
+      },
+    });
+    let installation;
+    handlers.get("install")({
+      waitUntil(promise) {
+        installation = promise;
+      },
+    });
+    await installation;
+    assert.equal(moduleFetches, 1);
+    const prepared = writes.find(([url]) => url.endsWith(path));
+    assert.equal(await prepared[1].text(), good);
   });
-  let installation;
-  handlers.get("install")({
-    waitUntil(promise) {
-      installation = promise;
-    },
-  });
-  await installation;
-  assert.equal(moduleFetches, 1);
-  const prepared = writes.find(([url]) => url.endsWith(path));
-  assert.equal(await prepared[1].text(), good);
-});
 
 test("a later deployment cannot overwrite the active offline HTML", async () => {
   const buildId = "0123456789abcdef";

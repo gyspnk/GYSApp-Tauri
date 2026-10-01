@@ -78,8 +78,8 @@
   gap: 12px;
 }
 .pack-badge.is-verified {
-  border-color: color-mix(in srgb, #2e7d32 45%, var(--line-strong));
-  color: #2e7d32;
+  border-color: color-mix(in srgb, var(--success) 45%, var(--line-strong));
+  color: var(--success);
 }
 /* Row-level cue for the hymn list; the title keeps its own hover accent. */
 .pujian-item {
@@ -207,8 +207,8 @@
   height: 42px;
   border: none;
   border-radius: 50%;
-  background: var(--blue);
-  color: #fff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
   cursor: pointer;
   transition:
     transform 0.15s ease,
@@ -962,7 +962,7 @@
 .pujian-title,
 .lyrics-title h2,
 .hymn-pdf-viewer-title strong {
-  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
 }
 .add-to-playlist-btn {
   flex: 0 0 auto;
@@ -1937,7 +1937,7 @@ body.gys-viewer-active {
   white-space: nowrap;
 }
 .kidung-playlist-song strong {
-  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
@@ -2166,7 +2166,7 @@ body.gys-viewer-active {
   align-self: end;
 }
 .media-surface.is-kidung-media .media-primary-control {
-  background: var(--blue);
+  background: var(--accent-fill);
   color: var(--surface);
 }
 .media-surface.is-speech-media:not(.is-minimized) {
@@ -2218,7 +2218,7 @@ body.gys-viewer-active {
   align-self: end;
 }
 .media-surface.is-speech-media .media-primary-control {
-  background: var(--blue);
+  background: var(--accent-fill);
   color: var(--surface);
 }
 
@@ -2232,7 +2232,7 @@ body.gys-viewer-active {
 }
 .speech-progress-fill {
   height: 100%;
-  background: var(--blue);
+  background: var(--accent-fill);
   border-radius: 999px;
   transition: width 200ms ease;
 }

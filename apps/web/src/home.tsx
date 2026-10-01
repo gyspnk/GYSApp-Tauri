@@ -17,7 +17,7 @@ import {
 } from "./suara.js";
 import {
   fetchLiteratureCatalog,
-  literatureCategoryLabels,
+  literatureCategoryLabel,
   subscribeLiterature,
 } from "./literature-catalog.js";
 import {
@@ -246,11 +246,15 @@ export function HomePage({ locale }: { locale: Locale }) {
           {selectedToday && (
             <div className="sauh-card-media">
               <LazyImage
+                locale={locale}
                 className="sauh-image"
                 wrapperClassName="sauh-image-wrap"
                 src={selectedToday.imageUrl}
                 fallbackTitle={selectedToday.title}
-                fallbackCategory="renungan"
+                fallbackCategory={translate(
+                  locale,
+                  "literature.category.renungan",
+                )}
                 alt={translate(locale, "home.illustrationAlt", {
                   title: selectedToday.title,
                 })}
@@ -343,6 +347,16 @@ export function HomePage({ locale }: { locale: Locale }) {
           ) : (
             <div className="empty-inline">
               <p>{translate(locale, "home.noRecent")}</p>
+              <div className="home-start-links">
+                <Link className="quiet-button" to="/bible">
+                  <Icon name="book" size={18} />
+                  {translate(locale, "nav.bible")}
+                </Link>
+                <Link className="quiet-button" to="/kidung">
+                  <Icon name="music" size={18} />
+                  {translate(locale, "nav.kidung")}
+                </Link>
+              </div>
             </div>
           )}
         </article>
@@ -386,11 +400,12 @@ export function HomePage({ locale }: { locale: Locale }) {
                 >
                   <div className="suara-card-media">
                     <LazyImage
+                      locale={locale}
                       className="suara-thumb-img"
                       wrapperClassName="suara-library-thumb"
                       src={post.imageUrl}
                       fallbackTitle={post.title}
-                      fallbackCategory="kesaksian"
+                      fallbackCategory={translate(locale, "home.testimony")}
                       alt={translate(locale, "home.coverAlt", {
                         title: post.title,
                       })}
@@ -457,11 +472,15 @@ export function HomePage({ locale }: { locale: Locale }) {
                 >
                   <div className="suara-card-media">
                     <LazyImage
+                      locale={locale}
                       className="suara-thumb-img"
                       wrapperClassName="suara-library-thumb"
                       src={item.imageUrl}
                       fallbackTitle={item.title}
-                      fallbackCategory={item.category}
+                      fallbackCategory={literatureCategoryLabel(
+                        locale,
+                        item.category,
+                      )}
                       alt={translate(locale, "home.coverAlt", {
                         title: item.title,
                       })}
@@ -472,8 +491,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                   </div>
                   <div className="suara-card-content">
                     <span className="suara-date">
-                      {literatureCategoryLabels[item.category] ?? item.category}{" "}
-                      ·{" "}
+                      {literatureCategoryLabel(locale, item.category)} ·{" "}
                       {item.publishedAt
                         ? new Date(item.publishedAt).toLocaleDateString(
                             locale,

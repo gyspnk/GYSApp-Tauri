@@ -276,7 +276,7 @@ test("speech session keeps its source and state across reader routes", async ({
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await expect(
-    page.getByRole("heading", { name: /Selamat datang/i }),
+    page.getByRole("heading", { name: /Bacaan & nyanyian/i }),
   ).toBeVisible({
     timeout: 15_000,
   });

@@ -123,7 +123,32 @@ try {
           if (bytes.byteLength !== item.bytes || digest !== item.sha256)
             throw new Error(`Packaged integrity mismatch: ${item.path}`);
         }
+        const shell = await readJson("offline-shell-assets.json");
+        const fonts = shell.assets.filter((path) => path.endsWith(".woff2"));
+        if (fonts.length !== 4) throw new Error("Packaged font count mismatch");
+        for (const path of fonts) {
+          const response = await fetch(assetUrl(path));
+          const bytes = await response.arrayBuffer();
+          const hash = new Uint8Array(
+            await crypto.subtle.digest("SHA-256", bytes),
+          );
+          const digest = `sha256-${btoa(String.fromCharCode(...hash))}`;
+          if (!response.ok || digest !== shell.integrity[path])
+            throw new Error(`Packaged font integrity mismatch: ${path}`);
+        }
+        for (const [font, text] of [
+          ['16px "GYS Reading Sans"', "Bacaan"],
+          ['16px "Source Serif 4"', "Nyanyian"],
+          ['italic 16px "Source Serif 4"', "Nyanyian"],
+          ['16px "Noto Serif SC"', "阅读与诗歌"],
+        ]) {
+          const faces = await document.fonts.load(font, text);
+          if (!faces.length || faces.some((face) => face.status !== "loaded"))
+            throw new Error(`Packaged font unavailable: ${font}`);
+        }
         return {
+          verifiedFonts: fonts.length,
+          loadedFontFaces: 4,
           hymns: metadata.items.length,
           bibleBooks: bible.books.length,
           verifiedFiles: pack.items.length,

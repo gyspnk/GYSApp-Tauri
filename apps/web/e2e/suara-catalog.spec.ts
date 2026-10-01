@@ -142,14 +142,28 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
           const boxes = cards.map((card) => card.getBoundingClientRect());
           return {
             heights: boxes.map((box) => box.height),
+            separatedCaptions: cards.every((card) => {
+              const media = card
+                .querySelector(".suara-card-media")!
+                .getBoundingClientRect();
+              const caption = card
+                .querySelector(".suara-card-content")!
+                .getBoundingClientRect();
+              return (
+                media.height === 112 &&
+                caption.top >= media.bottom - 1 &&
+                caption.bottom <= card.getBoundingClientRect().bottom + 1
+              );
+            }),
             widths: boxes.map((box) => box.width),
             scrollWidth: document.documentElement.scrollWidth,
             viewportWidth: window.innerWidth,
           };
         });
       expect(
-        geometry.heights.every((height) => Math.abs(height - 290) < 1),
+        geometry.heights.every((height) => height >= 210 && height <= 320),
       ).toBe(true);
+      expect(geometry.separatedCaptions).toBe(true);
       expect(geometry.widths.every((cardWidth) => cardWidth > 0)).toBe(true);
       expect(geometry.scrollWidth).toBeLessThanOrEqual(
         geometry.viewportWidth + 1,

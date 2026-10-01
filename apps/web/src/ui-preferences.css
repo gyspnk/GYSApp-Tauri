@@ -42,7 +42,7 @@
     .lyrics-title,
     .kidung-song-title
   ) {
-  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   letter-spacing: -0.01em;
 }
 
@@ -130,7 +130,7 @@
   border: 1px solid color-mix(in srgb, var(--blue) 28%, var(--line));
   border-radius: 7px;
   color: var(--blue);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-reading);
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
@@ -328,7 +328,7 @@
 }
 
 .ui-preference-sample.is-hymnal {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-reading);
   font-size: 17px;
 }
 
@@ -373,7 +373,8 @@
 
 .ui-preference-choice.is-selected .ui-preference-check {
   border-color: var(--blue);
-  background: var(--blue);
+  background: var(--accent-fill);
+  color: var(--on-accent);
 }
 
 .ui-preferences-footer {

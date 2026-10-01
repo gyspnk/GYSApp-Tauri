@@ -269,7 +269,7 @@
   cursor: not-allowed;
 }
 .typography-step-btn .step-label {
-  font-family: Georgia, serif;
+  font-family: var(--font-reading);
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
@@ -394,7 +394,7 @@
   transition: transform var(--motion-fast) var(--ease-out);
 }
 .hamburger-switch.is-on {
-  background: var(--blue);
+  background: var(--accent-fill);
 }
 .hamburger-switch.is-on .switch-thumb {
   transform: translateX(16px);
@@ -479,8 +479,8 @@
   color: var(--ink);
 }
 .drawer-speech-pill.is-active {
-  background: var(--blue);
-  color: #fff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -649,7 +649,7 @@
   gap: 3px;
 }
 .reader-typography-btn .typography-icon-label {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;

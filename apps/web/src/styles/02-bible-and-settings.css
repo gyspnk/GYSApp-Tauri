@@ -159,9 +159,9 @@
 }
 
 .book-grid-btn.is-current {
-  background: var(--blue);
+  background: var(--accent-fill);
   border-color: var(--blue);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .bible-picker-results {
@@ -279,9 +279,9 @@
 }
 
 .num-grid-btn.is-current {
-  background: var(--blue);
+  background: var(--accent-fill);
   border-color: var(--blue);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .selection-toolbar {
@@ -356,7 +356,7 @@
   display: -webkit-box;
   overflow: hidden;
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: 12px;
   line-height: 1.35;
   -webkit-box-orient: vertical;
@@ -444,7 +444,7 @@
 }
 .reader-heading h2 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: calc(var(--bible-font-size, 18px) * 1.25);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -506,7 +506,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: var(--bible-font-size, 18px);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -533,7 +533,7 @@
 }
 .bible-pericope-title {
   text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: var(--bible-font-size, 18px);
   font-weight: 700;
   color: var(--ink);
@@ -760,8 +760,8 @@
 .bible-crossref-nav-btn:hover,
 .bible-crossref-nav-btn:focus-visible {
   border-color: var(--blue);
-  background: var(--blue);
-  color: #ffffff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
 }
 .bible-crossref-snippet {
   margin: 0;
@@ -991,13 +991,13 @@
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: var(--bible-font-size, 18px);
   line-height: var(--bible-line-height, 1.72);
 }
 .verse-content {
   min-width: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: var(--bible-font-size, 18px);
   line-height: var(--bible-line-height, 1.72);
 }
@@ -1109,7 +1109,7 @@
 .bible-selection-panel > p {
   margin: 0;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   line-height: 1.6;
 }
 .selection-actions,
@@ -1234,8 +1234,8 @@
   line-height: 1;
 }
 .verse-number.is-bookmarked {
-  background: var(--blue);
-  color: #fff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
 }
 .hymn-layout {
   display: grid;
@@ -1394,7 +1394,7 @@
   overflow-wrap: anywhere;
   padding: 24px 10px 18px;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: 18px;
   line-height: 1.65;
   touch-action: pan-y;
@@ -1518,7 +1518,7 @@
   max-width: 700px;
   margin-bottom: 32px;
   color: var(--navy);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: clamp(22px, 3vw, 31px);
   line-height: 1.45;
   letter-spacing: -0.025em;
@@ -2559,7 +2559,7 @@
 .sauh-offline-state {
   display: grid;
   gap: 10px;
-  margin: 35px 0;
+  margin: 18px 0;
   color: var(--muted);
   line-height: 1.6;
 }

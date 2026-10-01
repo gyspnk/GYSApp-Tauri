@@ -1,3 +1,4 @@
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -302,6 +303,7 @@ test("literature PDF stays inline and resumes the last page", async ({
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.locator(".hymn-more-actions-summary").click();

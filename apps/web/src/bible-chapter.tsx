@@ -245,10 +245,18 @@ export function ChapterPane({
                   >
                     <BibleVerseText raw={verse.text} query={searchQuery} />
                   </span>
+                  {hasVerseRefs && onOpenCrossRefs && verseRefs && "\u2060"}
                   {hasVerseRefs && onOpenCrossRefs && verseRefs && (
-                    <button
+                    <span
                       className="bible-crossref-inline"
-                      type="button"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          event.currentTarget.click();
+                        }
+                      }}
                       aria-label={translate(
                         locale,
                         "bible.crossReferenceAria",
@@ -272,7 +280,7 @@ export function ChapterPane({
                       <span className="bible-crossref-count">
                         {verseRefs.length}
                       </span>
-                    </button>
+                    </span>
                   )}
                 </div>
                 {speaking && (

@@ -1,4 +1,4 @@
-/* Calm Liturgical Utility
+/* Warm editorial reading surfaces
    Final cross-app refinement layer. This file is intentionally loaded last:
    shared visual grammar belongs here; feature-owned layout stays with the
    feature that owns it. */
@@ -159,7 +159,9 @@ button.text-button {
 
 /* Active navigation must be obvious without needing motion or glow. */
 .navigation-shell .nav-active-indicator {
-  border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
+  border: 0;
+  border-inline-start: 3px solid var(--blue);
+  border-radius: 4px;
   box-shadow: none;
 }
 
@@ -527,4 +529,131 @@ summary:focus-visible {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* Shared editorial hierarchy. Reader preferences still own body typography. */
+.page h1,
+.page h2,
+.page h3 {
+  font-family: var(--font-reading);
+  font-optical-sizing: auto;
+  font-weight: 600;
+}
+.page h1 {
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.18;
+}
+.hymn-index-heading {
+  margin-bottom: 24px;
+}
+.hymn-index-heading h1 {
+  margin: 0;
+}
+.home-start-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0;
+}
+.home-start-links .quiet-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bible-reader:not(.is-split) {
+  max-inline-size: 52rem;
+  margin-inline: auto;
+}
+.suara-card-media:has([data-image-state="error"]) .suara-media-overlay,
+.suara-card-media:has([data-image-state="missing"]) .suara-media-overlay,
+.sauh-card-media:has([data-image-state="error"]) .sauh-media-overlay,
+.sauh-card-media:has([data-image-state="missing"]) .sauh-media-overlay {
+  display: none;
+}
+.img-fallback-placeholder > strong {
+  font-family: var(--font-reading);
+  font-size: 28px;
+  font-weight: 500;
+}
+.img-fallback-placeholder > small {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* Printed verse numbers stay in the margin; selected/highlighted verses retain
+   their feature-owned backgrounds and note controls. */
+.bible-reader .verse-row {
+  border-top-color: transparent;
+}
+.bible-reader .verse-row.section-heading {
+  border-top-color: var(--line);
+}
+.bible-reader .verse-number:not(.is-bookmarked) {
+  background: transparent;
+  border-radius: 0;
+}
+.faith-row-heading {
+  align-items: start;
+}
+.faith-row-heading .faith-number {
+  align-self: start;
+}
+/* A discrete cover and caption removes blur/gradient work from every shelf
+   item and keeps both real artwork and offline initials legible. */
+.home-suara-shelf .suara-library-item,
+.suara-library-grid .suara-library-item {
+  height: auto;
+  min-height: 210px;
+  max-height: none;
+  justify-content: flex-start;
+  box-shadow: none;
+}
+.home-literature-shelf .suara-library-item {
+  min-height: 190px;
+}
+.suara-card-media {
+  position: relative;
+  inset: auto;
+  height: 112px;
+  flex: 0 0 112px;
+  border-radius: 0;
+}
+.suara-media-overlay {
+  display: none;
+}
+.suara-card-content {
+  background: var(--surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin-top: 0;
+  padding: 14px;
+}
+.suara-card-content strong {
+  font-family: var(--font-reading);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  max-height: none;
+}
+.suara-card-content small {
+  max-height: none;
+}
+.home-suara-shelf .suara-library-item:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.sauh-page .online-article-card.sauh-article:not(.has-image) {
+  max-inline-size: 52rem;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: none;
+}
+.sauh-inline-error {
+  padding: 0;
+}
+.bible-crossref-inline:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
 }

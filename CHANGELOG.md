@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+- Adopt warm editorial reading typography and paper/ink themes, with licensed
+  fonts bundled for offline use. Improve first reading actions, hymn index
+  headings, Faith mobile paragraphs, book placeholders, reading widths and
+  custom-accent/settings contrast.
+- Separate native startup from browser shell workers, retire legacy packaged
+  workers and verify 30 Windows process relaunches plus full media soak.
+
 - Synced canonical hymn/chord parity to the 2026-09-05 gyschordweb source, added native keyless Edge-compatible online TTS with safe fallbacks, and hardened the responsive sidebar/media shell.
 - Clean-checkout documentation verification now validates tracked living documentation instead of local-only continuity artifacts that were never committed to the repository.
 - Generated canonical hymn/chord outputs with byte-integrity provenance are excluded from generic Prettier rewriting; their dedicated provenance verifier remains authoritative.

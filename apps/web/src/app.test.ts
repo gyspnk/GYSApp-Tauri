@@ -15,9 +15,9 @@ describe("Quiet Sanctuary navigation", () => {
   });
 
   it("provides Indonesian, English, and Chinese labels with safe fallback", () => {
-    expect(translate("id", "home.title")).toBe("Selamat datang kembali");
-    expect(translate("en", "home.title")).toBe("Welcome back");
-    expect(translate("zh", "home.title")).toBe("欢迎回来");
+    expect(translate("id", "home.title")).toBe("Bacaan & nyanyian");
+    expect(translate("en", "home.title")).toBe("Readings & hymns");
+    expect(translate("zh", "home.title")).toBe("阅读与诗歌");
     expect(translate("id", "missing.key")).toBe("missing.key");
   });
 });

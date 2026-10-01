@@ -127,6 +127,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
       })
       .catch((error: unknown) => {
         if (signal?.aborted) return;
+        recordDiagnostic("warn", "content.sauh", error);
         setState({
           status: "error",
           message:
@@ -160,6 +161,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
           {translate(locale, "sauh.title")} · {translate(locale, "sauh.today")}
         </span>
       </div>
+      {state.status !== "ready" && <h1>{translate(locale, "sauh.title")}</h1>}
       <article
         className={`online-article-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
         data-sauh-status={state.status}
@@ -180,11 +182,6 @@ export function SauhPage({ locale }: { locale: Locale }) {
           >
             <strong>{translate(locale, "sauh.unavailableTitle")}</strong>
             <span>{translate(locale, "sauh.unavailableBody")}</span>
-            {state.status === "error" && (
-              <small className="online-error-detail">
-                {translate(locale, "sauh.errorDetails")}: {state.message}
-              </small>
-            )}
             <div className="detail-actions">
               <button
                 className="quiet-button"
@@ -207,11 +204,15 @@ export function SauhPage({ locale }: { locale: Locale }) {
         {state.status === "ready" && (
           <>
             <LazyImage
+              locale={locale}
               className="online-article-image"
               wrapperClassName="sauh-article-image-wrap"
               src={state.post.imageUrl}
               fallbackTitle={state.post.title}
-              fallbackCategory="renungan"
+              fallbackCategory={translate(
+                locale,
+                "literature.category.renungan",
+              )}
               alt={translate(locale, "sauh.imageAlt", {
                 title: state.post.title,
               })}
@@ -322,11 +323,12 @@ export function SuaraPage({ locale }: { locale: Locale }) {
             >
               <div className="suara-card-media">
                 <LazyImage
+                  locale={locale}
                   className="suara-thumb-img"
                   wrapperClassName="suara-library-thumb"
                   src={post.imageUrl}
                   fallbackTitle={post.title}
-                  fallbackCategory="kesaksian"
+                  fallbackCategory={translate(locale, "home.testimony")}
                   alt={translate(locale, "suara.coverAlt", {
                     title: post.title,
                   })}
@@ -427,9 +429,6 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             {state.post?.title ?? translate(locale, "suara.detailErrorTitle")}
           </strong>
           <span>{translate(locale, "suara.detailErrorBody")}</span>
-          <small className="online-error-detail">
-            {translate(locale, "suara.detailErrorDetails")}: {state.message}
-          </small>
           {state.post && <Paragraphs text={state.post.excerpt} />}
           {state.post && (
             <SourceLink
@@ -450,11 +449,12 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
           </p>
           <h1>{state.post.title}</h1>
           <LazyImage
+            locale={locale}
             className="online-article-image"
             wrapperClassName="suara-article-image-wrap"
             src={state.post.imageUrl}
             fallbackTitle={state.post.title}
-            fallbackCategory="kesaksian"
+            fallbackCategory={translate(locale, "home.testimony")}
             alt={translate(locale, "suara.detailCoverAlt", {
               title: state.post.title,
             })}

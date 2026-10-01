@@ -85,7 +85,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
 
     await expectNoAxeViolations(page);
@@ -155,7 +155,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.addInitScript(() => localStorage.setItem("gys-theme", "dark"));
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
 
     await expectNoAxeViolations(page);

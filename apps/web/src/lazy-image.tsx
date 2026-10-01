@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { translate, type Locale } from "./i18n.js";
 
 export type LazyImageState = "loading" | "loaded" | "missing" | "error";
 
@@ -67,6 +68,7 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
 }
 
 export function LazyImage({
+  locale = "id",
   src,
   alt,
   className = "",
@@ -78,6 +80,7 @@ export function LazyImage({
   fetchPriority,
   onLoad,
 }: {
+  locale?: Locale;
   src?: string | undefined;
   alt: string;
   className?: string | undefined;
@@ -122,7 +125,11 @@ export function LazyImage({
         <div
           className={`img-fallback-placeholder ${error ? "is-error" : "is-missing"}`}
           role="img"
-          aria-label={`${error ? "Gagal memuat pratinjau" : "Pratinjau tidak tersedia"}: ${alt}`}
+          aria-label={translate(
+            locale,
+            error ? "image.previewError" : "image.previewMissing",
+            { title: alt },
+          )}
         >
           <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
           {fallbackCategory && <small>{fallbackCategory}</small>}

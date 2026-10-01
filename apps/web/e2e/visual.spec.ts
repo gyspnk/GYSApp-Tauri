@@ -143,17 +143,7 @@ for (const surface of surfaces) {
         expect(heading!.y).toBeGreaterThanOrEqual(topbar!.y + topbar!.height);
       }
 
-      // The universal appearance launcher has its own dedicated behavior +
-      // screenshot suite. Keep the legacy More-page baseline scoped to the
-      // pre-existing layout so intentional additions cannot weaken its pixel
-      // threshold or force unrelated baseline churn.
-      if (surface.name === "more") {
-        const preferencesEntry = page.locator(".ui-preferences-entry");
-        await expect(preferencesEntry).toHaveCount(1);
-        await preferencesEntry.evaluate((element) => {
-          (element as HTMLElement).style.display = "none";
-        });
-      }
+      await page.evaluate(() => document.fonts.ready);
 
       await expect(page).toHaveScreenshot(
         `${surface.name}-${viewport.name}.png`,
@@ -168,7 +158,7 @@ for (const surface of surfaces) {
                   ),
                 ]
               : [],
-          maskColor: "#e8edf4",
+          maskColor: "#ded6c8",
           maxDiffPixelRatio: 0.005,
         },
       );

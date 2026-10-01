@@ -259,3 +259,25 @@ for (const item of assets.items) {
 console.log(
   `Generated provenance verified: ${lock.items.length} music items, ${hymns.items.length} hymns, ${pack.items.length} offline assets, ${literature.items.filter((item) => item.imageUrl).length}/${literature.items.length} literature covers.`,
 );
+
+const fontsRoot = "apps/web/src/assets/fonts";
+const fonts = await readJson(`${fontsRoot}/provenance.json`);
+if (
+  fonts.sourceCommit !== "9710da1eacb3be272583c3224dcb70f9da6eadbb" ||
+  fonts.fonts.length !== 4
+)
+  throw new Error("Editorial font source provenance drifted");
+for (const font of fonts.fonts) {
+  const bytes = await readFile(join(fontsRoot, font.file));
+  if (
+    bytes.length !== font.bytes ||
+    createHash("sha256").update(bytes).digest("hex") !== font.sha256
+  )
+    throw new Error(`Editorial font checksum mismatch: ${font.file}`);
+  const license = await readFile(join(fontsRoot, font.license), "utf8");
+  if (!license.includes("SIL OPEN FONT LICENSE Version 1.1"))
+    throw new Error(`Editorial font license missing: ${font.file}`);
+}
+console.log(
+  "Editorial font provenance and licenses verified (4 bundled WOFF2 assets).",
+);

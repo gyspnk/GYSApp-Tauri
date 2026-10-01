@@ -70,7 +70,7 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   const headingFont = await page
     .locator("h1")
     .evaluate((element) => getComputedStyle(element).fontFamily);
-  expect(headingFont.toLowerCase()).toContain("playfair");
+  expect(headingFont.toLowerCase()).toContain("source serif 4");
 });
 
 test("compact mode stays touch-safe and keeps mobile sheet controls reachable", async ({
@@ -125,7 +125,7 @@ test("standard desktop, automatic font, and sans font remain readable", async ({
   const sansHeadingFont = await dialog
     .locator("h2")
     .evaluate((element) => getComputedStyle(element).fontFamily);
-  expect(sansHeadingFont.toLowerCase()).not.toContain("playfair");
+  expect(sansHeadingFont.toLowerCase()).not.toContain("source serif 4");
 
   await dialog.getByRole("radio", { name: /^Otomatis/ }).click();
   await expect(page.locator("html")).toHaveAttribute(

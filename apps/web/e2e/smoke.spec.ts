@@ -4,12 +4,12 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator("nav.primary-nav")).toHaveCount(1);
   await expect(
-    page.getByRole("heading", { name: "Selamat datang kembali" }),
+    page.getByRole("heading", { name: "Bacaan & nyanyian" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
   await expect(
-    page.getByRole("heading", { name: "Welcome back" }),
+    page.getByRole("heading", { name: "Readings & hymns" }),
   ).toBeVisible();
   await page.getByRole("link", { name: /Hymns/ }).first().click();
   await expect(page).toHaveURL(/\/kidung$/);
@@ -25,7 +25,9 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   await page.getByRole("button", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
   await expect(page.getByText("Today’s Sauh", { exact: true })).toBeVisible();
-  await expect(page.getByText("Testimonies", { exact: true })).toBeVisible();
+  await expect(page.locator(".home-suara-section .date-line")).toHaveText(
+    "Testimonies",
+  );
   await expect(page.getByText("Kesaksian", { exact: true })).toHaveCount(0);
 
   await page.goto("/GYSApp-Tauri/lainnya");
@@ -142,7 +144,7 @@ test("shell remains usable across the release viewport matrix", async ({
     await page.setViewportSize(viewport);
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.locator("nav.primary-nav")).toHaveCount(1);
     await expect
@@ -847,15 +849,17 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
     updatedAt: new Date().toISOString(),
     source: "tjc.org",
   };
-  await page.route("**/api/v1/content/image*", (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "image/png",
-      body: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
-        "base64",
-      ),
-    }),
+  await page.route(
+    /(?:\/api\/v1\/content\/image|https:\/\/tjcorguploads\.s3\.amazonaws\.com\/)/,
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+X2NDWQAAAABJRU5ErkJggg==",
+          "base64",
+        ),
+      }),
   );
   await page.route("**/offline/sauh.json", (route) =>
     route.fulfill({ json: { items: [todaySauh] } }),

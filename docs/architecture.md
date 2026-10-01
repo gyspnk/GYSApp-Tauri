@@ -519,3 +519,22 @@ accepts only that commit/path pair, preserves byte ranges, and is optional:
 Pages and native previews still fall back to the immutable raw source when the
 Worker is not configured. The page database in
 `offline/fork-hymnal-manifest.json` and the binary therefore cannot drift.
+
+## Editorial typography and accent ownership
+
+`styles/00-tokens.css` owns paper/ink/theme tokens and bundled font faces; the
+existing final `calm-liturgical.css` refinement layer owns shared editorial
+hierarchy. Feature files retain reader controls, highlights, split layouts and
+user preferences. `--accent` stores the user's exact custom selection;
+`--accent-fill` keeps that color on filled actions, while `--blue`/`--navy`
+blend toward theme ink for readable text. `--on-accent` chooses a contrasting
+foreground; reset removes inline overrides so theme defaults resume.
+
+Font source/license/regeneration ownership is in
+[the font guide](../apps/web/src/assets/fonts/README.md). The Vite shell manifest
+includes WOFF2 assets with exact emitted-byte hashes; browser installation
+verifies them with the rest of the versioned shell. Native packaging verifies
+the same hashes and serves fonts from packaged assets without PWA workers.
+Chinese UI glyph coverage is explicit; user-content glyphs outside the subset
+use system fallback. The [editorial audit](plans/2026-10-01-editorial-ui-audit.md)
+records intentional baseline changes and remaining device/release gates.

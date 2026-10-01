@@ -128,21 +128,12 @@ async function resolveIssuePdfUrl(
 import {
   fetchLiteratureCatalog,
   literatureCategoryLabels,
+  literatureCategoryLabel as categoryLabel,
 } from "./literature-catalog.js";
 
 export { fetchLiteratureCatalog, literatureCategoryLabels };
 
 const labels = literatureCategoryLabels;
-const categoryKeys: Record<LiteratureCategory | "all", string> = {
-  all: "literature.category.all",
-  kesaksian: "literature.category.kesaksian",
-  warta: "literature.category.warta",
-  "pelita-kecil": "literature.category.pelitaKecil",
-  panduan: "literature.category.panduan",
-  renungan: "literature.category.renungan",
-  buku: "literature.category.buku",
-  pujian: "literature.category.pujian",
-};
 const categoryOrder: LiteratureCategory[] = [
   "kesaksian",
   "warta",
@@ -157,10 +148,6 @@ const formatKeys: Record<LiteratureItem["format"], string> = {
   issue: "literature.format.issue",
   pdf: "literature.format.pdf",
 };
-
-function categoryLabel(locale: Locale, category: LiteratureCategory | "all") {
-  return translate(locale, categoryKeys[category]);
-}
 
 function formatLabel(locale: Locale, format: LiteratureItem["format"]) {
   return translate(locale, formatKeys[format]);
@@ -240,6 +227,7 @@ function scrollDocumentToRatio(
 }
 
 function Cover({
+  locale,
   item,
   compact = false,
   loading = "lazy",
@@ -247,6 +235,7 @@ function Cover({
   fallbackCategory,
   coverAlt,
 }: {
+  locale: Locale;
   item: LiteratureItem;
   compact?: boolean;
   loading?: "eager" | "lazy";
@@ -256,6 +245,7 @@ function Cover({
 }) {
   return (
     <LazyImage
+      locale={locale}
       wrapperClassName={`literature-cover${compact ? " is-compact" : ""}${item.imageUrl ? "" : " is-coverless"}`}
       src={item.imageUrl}
       fallbackTitle={item.title}
@@ -457,6 +447,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                   key={item.id}
                 >
                   <Cover
+                    locale={locale}
                     item={item}
                     compact
                     fallbackCategory={categoryLabel(locale, item.category)}
@@ -513,6 +504,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                       to={literatureHref(item)}
                     >
                       <Cover
+                        locale={locale}
                         item={item}
                         compact
                         fallbackCategory={categoryLabel(locale, item.category)}
@@ -614,6 +606,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     key={item.id}
                   >
                     <Cover
+                      locale={locale}
                       item={item}
                       fallbackCategory={categoryLabel(locale, item.category)}
                       coverAlt={translate(locale, "home.coverAlt", {
@@ -1054,6 +1047,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       </div>
       <section className="literature-detail-hero">
         <Cover
+          locale={locale}
           item={item}
           fallbackCategory={itemCategoryLabel}
           loading="eager"

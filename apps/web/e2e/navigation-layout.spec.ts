@@ -430,8 +430,13 @@ test.describe("responsive reader navigation", () => {
               scrollWidth: (element as HTMLElement).scrollWidth,
               clientWidth: (element as HTMLElement).clientWidth,
             },
-            heading: { left: heading.left, right: heading.right },
+            heading: {
+              left: heading.left,
+              right: heading.right,
+              bottom: heading.bottom,
+            },
             action: {
+              top: action.top,
               left: action.left,
               right: action.right,
               width: action.width,
@@ -450,7 +455,12 @@ test.describe("responsive reader navigation", () => {
         expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
         expect(action.right).toBeLessThanOrEqual(row.right + 1);
         expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);
-        expect(heading.right).toBeLessThanOrEqual(action.left - 8);
+        if (viewport.width <= 480) {
+          expect(action.top).toBeGreaterThanOrEqual(heading.bottom - 1);
+          expect(heading.right - heading.left).toBeGreaterThan(row.width * 0.8);
+        } else {
+          expect(heading.right).toBeLessThanOrEqual(action.left - 8);
+        }
       }
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
@@ -459,6 +469,23 @@ test.describe("responsive reader navigation", () => {
   test("legacy and unknown routes stay explicit across locales and devices", async ({
     page,
   }) => {
+    // Settings may check release tracks in the background. Route this unrelated
+    // transport deterministically; runtime errors remain asserted below.
+    await page.route("**/GYSApp-Data/main/latest/*-manifest.json", (route) =>
+      route.fulfill({
+        json: {
+          track: route
+            .request()
+            .url()
+            .split("/")
+            .pop()!
+            .replace("-manifest.json", ""),
+          releaseTag: "test-empty",
+          publishedAt: "2026-10-01T00:00:00Z",
+          packages: [],
+        },
+      }),
+    );
     const copies = [
       {
         locale: "id",
@@ -647,7 +674,7 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 320, height: 720 });
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
     holdNextScript = true;
     await page
@@ -716,7 +743,7 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
     await page
       .locator('.navigation-shell .nav-item[aria-label="Iman"]')

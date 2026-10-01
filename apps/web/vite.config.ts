@@ -14,7 +14,7 @@ function offlineBuildAssetsPlugin(): Plugin {
       // Public music binaries remain verified, explicit asset downloads.
       const assets = Object.values(bundle)
         .map((entry) => entry.fileName)
-        .filter((file) => /^assets\/.*\.(?:js|mjs|css|wasm)$/.test(file))
+        .filter((file) => /^assets\/.*\.(?:js|mjs|css|wasm|woff2)$/.test(file))
         .sort();
       buildId = createHash("sha256")
         .update(assets.join("\n"))

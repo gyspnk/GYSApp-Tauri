@@ -225,9 +225,10 @@
 }
 
 .faith-row-heading strong {
-  font-size: 15px;
-  font-weight: 620;
-  line-height: 1.5;
+  font-family: var(--font-reading);
+  font-size: 17px;
+  font-weight: 450;
+  line-height: 1.6;
   min-width: 0;
 }
 
@@ -244,9 +245,9 @@
   width: 44px;
   height: 44px;
   margin: 0;
-  border-radius: 50%;
-  background: var(--blue-soft);
-  color: var(--blue);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 750;
@@ -766,7 +767,6 @@
 
 .literature-row:hover {
   background: var(--surface-soft);
-  padding-inline: 13px;
   transform: none;
   box-shadow: none;
 }
@@ -796,57 +796,36 @@
   object-fit: cover;
 }
 
+/* A missing publisher preview is a readable book placeholder, not an alarm. */
+.literature-cover[data-image-state="missing"],
+.literature-cover[data-image-state="error"] {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-inline-start: 3px solid var(--line-strong);
+  box-shadow: none;
+}
 .literature-cover[data-image-state="missing"] .img-fallback-placeholder,
 .literature-cover[data-image-state="error"] .img-fallback-placeholder {
+  min-height: 0;
   gap: 4px;
   padding: 8px 4px;
   background: var(--surface-soft);
   color: var(--ink);
-  font-size: 11px;
   letter-spacing: 0;
   text-align: center;
 }
-
-.literature-cover[data-image-state="missing"] .img-fallback-placeholder::before,
-.literature-cover[data-image-state="error"] .img-fallback-placeholder::before {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
+.literature-cover .img-fallback-placeholder > strong {
+  font-family: var(--font-reading);
+  font-size: 23px;
+  font-weight: 500;
 }
-
-.literature-cover[data-image-state="missing"]
-  .img-fallback-placeholder::before {
-  content: "∅";
-}
-
-.literature-cover[data-image-state="error"] .img-fallback-placeholder {
-  background: color-mix(in srgb, var(--danger, #b42318) 8%, var(--surface));
-  color: var(--danger, #b42318);
-}
-
-.literature-cover[data-image-state="error"] .img-fallback-placeholder::before {
-  content: "!";
-}
-
-.literature-cover[data-image-state="missing"]
-  .img-fallback-placeholder
-  > strong,
-.literature-cover[data-image-state="error"] .img-fallback-placeholder > strong {
-  display: none;
-}
-
-.literature-cover[data-image-state="missing"] .img-fallback-placeholder > small,
-.literature-cover[data-image-state="error"] .img-fallback-placeholder > small {
+.literature-cover .img-fallback-placeholder > small {
   max-width: 100%;
-  color: currentColor;
-  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
   opacity: 1;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1320,11 +1299,14 @@
 
 @media (max-width: 480px) {
   .faith-row {
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
     padding-inline: 12px;
   }
 
   .faith-row-actions {
+    justify-content: flex-start;
+    padding-inline-start: 46px;
     gap: 6px;
   }
 

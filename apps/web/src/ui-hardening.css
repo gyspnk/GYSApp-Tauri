@@ -36,23 +36,26 @@ button.text-button {
 }
 
 .verse-number.is-bookmarked {
-  background: radial-gradient(circle, var(--blue) 0 14px, transparent 14.5px);
+  background: radial-gradient(
+    circle,
+    var(--accent-fill) 0 14px,
+    transparent 14.5px
+  );
 }
 
 /* Cross-reference stars remain true inline content. Their visual box must not
    widen a verse line, so the larger hit area lives on an absolutely positioned
    pseudo-element instead of min-size/padding on the button itself. */
-button[aria-label*="rujukan silang untuk"] {
+.bible-crossref-inline {
   position: relative;
   min-inline-size: 0;
   min-block-size: 0;
-  display: inline-grid;
-  place-items: center;
+  display: inline;
   margin: 0;
   padding: 0;
 }
 
-button[aria-label*="rujukan silang untuk"]::before {
+.bible-crossref-inline::before {
   content: "";
   position: absolute;
   inset-inline-start: 50%;
@@ -122,7 +125,7 @@ button[aria-label*="rujukan silang untuk"]::before {
 /* An unavailable daily devotion is an operational state, not a hero image.
    On wide screens stop the empty card from spanning the height of both content
    shelves and let the shelves use the full content width below. */
-@media (min-width: 960px) {
+@media (min-width: 1200px) {
   .home-grid:has(.verse-panel .sauh-offline-state) {
     grid-template-areas:
       "verse continue"
@@ -157,7 +160,7 @@ button[aria-label*="rujukan silang untuk"]::before {
     min-block-size: 44px;
   }
 
-  button[aria-label*="rujukan silang untuk"]::before {
+  .bible-crossref-inline::before {
     inline-size: 44px;
     block-size: 44px;
   }

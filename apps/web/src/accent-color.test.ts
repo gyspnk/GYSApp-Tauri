@@ -3,6 +3,7 @@ import {
   ACCENT_PRESETS,
   DEFAULT_ACCENT_COLOR,
   getAccentColor,
+  getAccentForeground,
   setAccentColor,
   setAccentStorageForTesting,
   subscribeAccentColor,
@@ -28,6 +29,19 @@ describe("accent-color", () => {
     expect(getAccentColor()).toBe(DEFAULT_ACCENT_COLOR);
     expect(ACCENT_PRESETS.length).toBeGreaterThanOrEqual(8);
     expect(ACCENT_PRESETS[0]!.color).toBe(DEFAULT_ACCENT_COLOR);
+  });
+
+  it("keeps light and dark custom accents readable, including shorthand hex", () => {
+    expect(getAccentForeground("#ffffff")).toBe("#000000");
+    expect(getAccentForeground("#ffff00")).toBe("#000000");
+    expect(getAccentForeground("#000000")).toBe("#ffffff");
+    expect(getAccentForeground("#000")).toBe("#ffffff");
+    expect(getAccentForeground("#fff")).toBe("#000000");
+    // The previous off-black foreground failed AA in this mid-tone interval.
+    for (const accent of ["#777777", "#797979", "#808080"]) {
+      expect(getAccentForeground(accent)).toBe("#000000");
+    }
+    expect(getAccentForeground("not-a-color")).toBeUndefined();
   });
 
   it("updates accent color and notifies subscribers", () => {

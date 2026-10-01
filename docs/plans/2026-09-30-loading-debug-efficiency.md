@@ -133,3 +133,12 @@ Additional iteration commands: `pnpm test:native:quick [startup|storage|media|as
 `pnpm test:native:soak`, `pnpm test:performance:native`, and
 `pnpm test:performance:browser-roadmap`. Windows suites require the packaged
 executable; browser profiling requires a current production preview.
+
+## Warm editorial follow-up
+
+The user's subsequent full UI audit request and selected hymn-book direction
+are implemented in the [editorial audit](2026-10-01-editorial-ui-audit.md). The
+new visual baselines intentionally replace the previous appearance while keeping
+feature, accessibility and performance gates. Windows relaunch/soak evidence is
+linked in the dated roadmap receipt; final redesigned-head verification remains
+required before closing PR #9.

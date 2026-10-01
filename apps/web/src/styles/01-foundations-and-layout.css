@@ -997,8 +997,8 @@ h1 {
 }
 .primary-button {
   border-color: var(--blue);
-  background: var(--blue);
-  color: #fff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
   min-width: 44px;
 }
 .primary-button:hover {
@@ -1143,12 +1143,8 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--blue) 12%, var(--surface-soft)) 0%,
-    var(--surface-soft) 100%
-  );
-  color: var(--blue);
+  background: var(--surface-soft);
+  color: var(--ink);
   font-weight: 700;
   font-size: 14px;
   letter-spacing: 0.06em;
@@ -1764,13 +1760,13 @@ blockquote {
 }
 :root[data-theme="sepia"] .sauh-page .sauh-article .online-article-body {
   color: #3b2f1f;
-  font-family: Georgia, "Source Serif 4", ui-serif, serif;
+  font-family: var(--font-reading);
 }
 .sauh-page .sauh-article .online-article-body p {
   white-space: normal;
 }
 .sauh-page .sauh-article blockquote {
-  font-family: Georgia, "Source Serif 4", ui-serif, serif;
+  font-family: var(--font-reading);
   font-style: italic;
   border-left: 3px solid var(--blue);
   padding-left: 1rem;
@@ -1926,7 +1922,7 @@ blockquote {
   .suara-detail-page
   .online-article-body.suara-article-body {
   color: #3b2f1f;
-  font-family: Georgia, "Source Serif 4", ui-serif, serif;
+  font-family: var(--font-reading);
 }
 
 .suara-detail-page .online-article-body.suara-article-body p {
@@ -1949,7 +1945,7 @@ blockquote {
   margin: 0.08em 0.13em 0 0;
   font-weight: 750;
   color: var(--blue);
-  font-family: Georgia, "Source Serif 4", ui-serif, serif;
+  font-family: var(--font-reading);
 }
 
 .suara-detail-page .suara-quote {
@@ -2462,7 +2458,7 @@ blockquote {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-reading);
   font-size: 15px;
   font-weight: 700;
 }
@@ -2747,7 +2743,7 @@ blockquote {
 .bible-split-divider:focus-visible::before {
   height: 80px;
   width: 4px;
-  background: var(--blue);
+  background: var(--accent-fill);
 }
 @media (max-width: 680px) {
   .bible-reader.is-split .bible-reader-layout {
@@ -2773,7 +2769,7 @@ blockquote {
   .bible-split-divider:focus-visible::before {
     width: 76px;
     height: 4px;
-    background: var(--blue);
+    background: var(--accent-fill);
   }
   .bible-pane-secondary {
     border-left: none;
@@ -3077,8 +3073,8 @@ body.is-resizing-bible {
 }
 
 .quick-nav-item.is-selected {
-  background: var(--blue);
-  color: #ffffff;
+  background: var(--accent-fill);
+  color: var(--on-accent);
   font-weight: 700;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 40%, transparent);
 }

@@ -70,7 +70,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement)
-          .getPropertyValue("--blue")
+          .getPropertyValue("--accent")
           .trim(),
       ),
     )
@@ -96,7 +96,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement)
-          .getPropertyValue("--blue")
+          .getPropertyValue("--accent")
           .trim(),
       ),
     )

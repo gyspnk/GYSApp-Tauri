@@ -137,10 +137,12 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
+      <div className="hymn-index-heading">
+        <h1>{translate(locale, "page.kidungTitle")}</h1>
+      </div>
       <div className="kidung-catalog-topbar">
         <KidungLocalNav active="songs" locale={locale} />
         <header className="hymn-page-header">
-          <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
           {state.status === "ready" && (
             <div className="catalog-toolbar hymn-catalog-controls">
               <label className="search-field">

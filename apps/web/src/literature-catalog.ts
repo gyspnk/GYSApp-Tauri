@@ -4,6 +4,7 @@ import {
   type LiteratureCategory,
   type LiteratureItem,
 } from "@gys/contracts";
+import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
 
 export const literatureCategoryLabels: Record<
@@ -327,4 +328,22 @@ async function loadCatalog(signal: AbortSignal) {
       : new Error("Literature catalog unavailable");
   recordDiagnostic("error", "literature.catalog", failure);
   throw failure;
+}
+
+const categoryKeys: Record<LiteratureCategory | "all", string> = {
+  all: "literature.category.all",
+  kesaksian: "literature.category.kesaksian",
+  warta: "literature.category.warta",
+  "pelita-kecil": "literature.category.pelitaKecil",
+  panduan: "literature.category.panduan",
+  renungan: "literature.category.renungan",
+  buku: "literature.category.buku",
+  pujian: "literature.category.pujian",
+};
+
+export function literatureCategoryLabel(
+  locale: Locale,
+  category: LiteratureCategory | "all",
+) {
+  return translate(locale, categoryKeys[category]);
 }

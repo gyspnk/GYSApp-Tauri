@@ -163,7 +163,7 @@ async function cacheBuildAssets(cache) {
   const assets = [...new Set(manifest.assets)].filter(
     (path) =>
       typeof path === "string" &&
-      /^assets\/[A-Za-z0-9_./-]+\.(?:js|mjs|css|wasm)$/.test(path) &&
+      /^assets\/[A-Za-z0-9_./-]+\.(?:js|mjs|css|wasm|woff2)$/.test(path) &&
       !path.split("/").some((segment) => segment === ".." || segment === "."),
   );
   const results = await Promise.allSettled(
@@ -420,7 +420,7 @@ self.addEventListener("fetch", (event) => {
 
   const isBuildAsset =
     requestUrl.pathname.startsWith(withBase("assets/")) &&
-    /\.(?:js|mjs|css|wasm)$/.test(requestUrl.pathname);
+    /\.(?:js|mjs|css|wasm|woff2)$/.test(requestUrl.pathname);
   event.respondWith(
     // Vite preview varies on Origin: a worker's prefetch and a module import
     // carry different request headers. Same-origin build bytes are immutable

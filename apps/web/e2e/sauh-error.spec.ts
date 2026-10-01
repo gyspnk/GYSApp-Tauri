@@ -129,21 +129,18 @@ test("Sauh route error actions stay localized across locales", async ({
     id: {
       unavailable: "Renungan hari ini belum tersedia.",
       body: "Periksa koneksi atau buka sumber resmi untuk membaca renungan terbaru.",
-      detail: "Detail teknis",
       retry: "Coba lagi",
       source: "Buka di tjc.org →",
     },
     en: {
       unavailable: "Today's reflection is unavailable.",
       body: "Check your connection or open the official source for the latest reflection.",
-      detail: "Technical detail",
       retry: "Try again",
       source: "Open tjc.org →",
     },
     zh: {
       unavailable: "今日灵修内容暂不可用。",
       body: "请检查网络连接，或打开官方来源阅读最新灵修内容。",
-      detail: "技术详情",
       retry: "重试",
       source: "在 tjc.org 打开 →",
     },
@@ -174,7 +171,7 @@ test("Sauh route error actions stay localized across locales", async ({
     await expect(state).toBeVisible({ timeout: 10_000 });
     await expect(state).toContainText(copy.unavailable);
     await expect(state).toContainText(copy.body);
-    await expect(state).toContainText(copy.detail);
+    await expect(state.locator("details, pre, code")).toHaveCount(0);
     await expect(
       state.getByRole("button", { name: copy.retry, exact: true }),
     ).toBeVisible();

@@ -1,3 +1,4 @@
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { createHash } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
@@ -738,7 +739,7 @@ test("MIDI session keeps its source, queue, and minimized state across routes", 
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await expect(
-    page.getByRole("heading", { name: /Selamat datang/i }),
+    page.getByRole("heading", { name: /Bacaan & nyanyian/i }),
   ).toBeVisible({
     timeout: 15_000,
   });
@@ -1730,6 +1731,7 @@ test("hymn lyric sheets stay centered in verse and all-verses modes", async ({
 test("all-verses text mode renders canonical chords for every verse", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
   await page
@@ -1760,6 +1762,7 @@ test("all-verses text mode renders canonical chords for every verse", async ({
 test("Kidung default chord markers have clear space above their lyric lines", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
   await page
@@ -1874,6 +1877,7 @@ for (const [name, width, height, surface, theme] of visualCases) {
     if (surface === "catalog") await openCatalog(page);
     if (surface === "playlist") await openPlaylistWithSong(page);
     if (surface === "reader") await openFirstHymn(page);
+    if (surface === "pdf" || surface === "pdf-music") await preparePinnedReaderAssets(page);
     if (surface === "pdf") await openFirstHymnPdf(page);
     if (surface === "playlist-menu") {
       await openPlaylistWithSong(page);

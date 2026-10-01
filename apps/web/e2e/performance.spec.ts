@@ -48,7 +48,7 @@ test("initial shell stays responsive and does not duplicate application modules"
     const started = Date.now();
     await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible({ timeout: 8_000 });
     await page.waitForFunction(
       () =>

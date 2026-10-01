@@ -119,3 +119,14 @@ A 30-pair catalog render experiment with CSS content visibility had median
 versus 599.0 ms. The median regressed and improvement was not consistent;
 the candidate is not adopted and the reviewed catalog geometry is retained.
 Raw pairs are recorded in `2026-10-01-catalog-render-prototype.json`.
+
+## Packaged Windows follow-up
+
+Commit `0ac73ecc99e96079db18a761d0c85822a2f99272` passes Windows
+[run 36818004484](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/36818004484):
+short startup/storage/media/assets, all 30 process relaunches, and the original
+full media soak/live keyless Edge suite. The [raw receipts](2026-10-01-packaged-native-validation.json)
+record runner memory, playback and explicit configured-BFF/physical-device
+exclusions. Median process shell is 785.8ms and p95 is 2905.5ms; those startup
+outliers remain visible. The [subsequent editorial UI audit](../plans/2026-10-01-editorial-ui-audit.md)
+requires another final-head native verification, including bundled fonts.

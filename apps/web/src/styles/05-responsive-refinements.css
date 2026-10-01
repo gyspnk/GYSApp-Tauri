@@ -1011,8 +1011,8 @@ body:has(.home-page)::-webkit-scrollbar {
   justify-content: center;
 }
 .hymn-autoscroll-btn.is-active {
-  background: var(--blue) !important;
-  color: #ffffff !important;
+  background: var(--accent-fill) !important;
+  color: var(--on-accent) !important;
   border-color: var(--blue) !important;
 }
 .hymn-autoscroll-speed-select {
@@ -1131,7 +1131,7 @@ body:has(.home-page)::-webkit-scrollbar {
   gap: 0;
 }
 .hymn-text-toolbar .detail-actions .hymn-action-primary {
-  background: var(--blue);
+  background: var(--accent-fill);
   border-color: var(--blue);
 }
 .hymn-text-toolbar .detail-actions .hymn-action-primary:hover:not(:disabled),
