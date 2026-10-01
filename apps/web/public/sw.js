@@ -381,7 +381,9 @@ self.addEventListener("fetch", (event) => {
     requestUrl.pathname.endsWith("/index.html");
   if (isNavigation) {
     event.respondWith(
-      fetchAndCacheShell(event.request, event.waitUntil).catch(
+      fetchAndCacheShell(event.request, (promise) =>
+        event.waitUntil(promise),
+      ).catch(
         async () =>
           (await (await caches.open(CACHE)).match(withBase("index.html"))) ??
           (await caches.open(CACHE)).match(withBase("")),

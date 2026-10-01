@@ -118,6 +118,33 @@ test("same-origin navigations refresh the shell from the network", async () => {
   assert.equal(calls[0].init.cache, "no-cache");
 });
 
+test("navigation writes retain the FetchEvent receiver", async () => {
+  const response = { ok: true, clone: () => response };
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async () => response,
+  });
+  let result;
+  let lifetime;
+  const event = {
+    request: {
+      method: "GET",
+      mode: "navigate",
+      url: "https://gyspnk.github.io/GYSApp-Tauri/",
+    },
+    respondWith(promise) {
+      result = promise;
+    },
+    waitUntil(promise) {
+      assert.equal(this, event);
+      lifetime = promise;
+    },
+  };
+  handlers.get("fetch")(event);
+  assert.equal(await result, response);
+  await lifetime;
+  assert.equal(writes.length, 1);
+});
+
 test("install caches the app shell and editorial snapshots", async () => {
   const response = {
     ok: true,

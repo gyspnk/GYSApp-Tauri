@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
+import { isTauriShell } from "./native-platform.js";
 import { installGlobalDiagnostics, recordDiagnostic } from "./diagnostics.js";
 import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
@@ -68,7 +69,7 @@ createRoot(document.getElementById("root")!).render(
 );
 installRouteSectionDeepLinks();
 
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
+if (import.meta.env.PROD && !isTauriShell() && "serviceWorker" in navigator) {
   void import("./service-worker-updates.js").then(
     ({ installServiceWorkerUpdates }) => {
       const dispose = installServiceWorkerUpdates();

@@ -92,6 +92,15 @@ try {
   for (let run = 0; run < samples; run++) {
     session = await launchNative(executable, profile);
     const { page, context } = session;
+    assert.equal(
+      await page.evaluate(async () =>
+        "serviceWorker" in navigator
+          ? (await navigator.serviceWorker.getRegistrations()).length
+          : 0,
+      ),
+      0,
+      "Packaged native must not depend on a browser shell worker",
+    );
     const shell = await marked(page, "gys-shell-ready");
     const home = await marked(page, "gys-home-ready");
     const origin = await page.evaluate(() => location.origin);

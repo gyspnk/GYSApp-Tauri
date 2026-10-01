@@ -27,6 +27,12 @@ runtime and condition; the reference-device targets remain release gates.
 - Metadata: 179,002 bytes / 24,376 gzip bytes versus full lyrics catalog
   917,610 bytes / 138,299 gzip bytes. This reduces the initial catalog JSON
   by 80.5% raw and 82.4% compressed; lyrics stay available through deferred search.
+- Windows relaunch follow-up: an active browser shell worker served an empty
+  native document. Tauri now uses packaged assets without registering PWA workers;
+  the native page-load hook retires only its own legacy worker registrations.
+  Browser navigation writes also retain the FetchEvent receiver. Native-only
+  startup and browser update regressions pass locally; final Windows results
+  remain recorded on PR #9.
 - Packaged startup uses the standard `index.html` document URL, normalized
   to the Home route. Native
   benchmark readiness failures log the URL, DOM state and observed markers;
