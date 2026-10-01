@@ -52,7 +52,6 @@ export async function launchNative(executable, profile) {
   }
   let browser;
   const close = async () => {
-    await browser?.close().catch(() => undefined);
     if (app.exitCode === null && app.pid) {
       await new Promise((ok) => {
         const closer = spawn(
@@ -81,6 +80,7 @@ export async function launchNative(executable, profile) {
           killer.once("exit", ok);
         });
     }
+    await browser?.close().catch(() => undefined);
   };
   try {
     const deadline = Date.now() + 30000;
@@ -101,7 +101,9 @@ export async function launchNative(executable, profile) {
           if (
             targets.some(
               (target) =>
-                target.type === "page" && /tauri\.localhost/.test(target.url),
+                target.type === "page" &&
+                /tauri\.localhost/.test(target.url) &&
+                target.title === "GYSApp",
             )
           ) {
             endpoint = version;
