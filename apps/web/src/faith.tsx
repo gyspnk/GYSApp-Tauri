@@ -385,55 +385,54 @@ export function FaithPage({ locale }: { locale: Locale }) {
               const progress = readFaithPdfProgress(item.number);
               return (
                 <div className="faith-row" role="listitem" key={item.number}>
-                  <button
-                    className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
-                    type="button"
-                    onClick={(event) => openFaithPdf(item, event.currentTarget)}
-                    aria-label={translate(locale, "faith.pdfLabel", {
-                      number: item.number,
-                    })}
-                  >
-                    <span className="faith-number">
-                      {item.number.padStart(2, "0")}
-                    </span>
-                    <span className="faith-row-copy">
-                      <strong>
-                        {item.text}
-                        {note && (
+                  <span className="faith-number" aria-hidden="true">
+                    {item.number.padStart(2, "0")}
+                  </span>
+                  <div className="faith-row-copy">
+                    <p className="faith-statement">{item.text}</p>
+                    <div className="faith-row-actions">
+                      <button
+                        className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
+                        type="button"
+                        onClick={(event) =>
+                          openFaithPdf(item, event.currentTarget)
+                        }
+                        aria-label={translate(locale, "faith.pdfLabel", {
+                          number: item.number,
+                        })}
+                      >
+                        <Icon name="file" size={16} />
+                        <span>PDF</span>
+                        {progress && (
                           <span
-                            className="faith-row-note-dot"
-                            aria-label={translate(locale, "faith.hasNote")}
+                            className="faith-row-progress"
+                            title={translate(locale, "faith.progressTitle", {
+                              percent: progress.percent,
+                            })}
                           >
-                            ✎
+                            {translate(locale, "faith.progress", {
+                              page: progress.page,
+                            })}
                           </span>
                         )}
-                      </strong>
-                      {progress && (
-                        <span
-                          className="faith-row-progress"
-                          title={translate(locale, "faith.progressTitle", {
-                            percent: progress.percent,
-                          })}
-                        >
-                          {translate(locale, "faith.progress", {
-                            page: progress.page,
-                          })}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                  <div className="faith-row-actions">
-                    <button
-                      className="faith-row-summary"
-                      type="button"
-                      onClick={() => toggleSelected(item.number)}
-                      aria-label={translate(locale, "faith.noteLabel", {
-                        number: item.number,
-                      })}
-                    >
-                      <Icon name="bookmark" size={14} />
-                      <span>{translate(locale, "faith.noteShort")}</span>
-                    </button>
+                      </button>
+                      <button
+                        className="faith-row-summary"
+                        type="button"
+                        onClick={() => toggleSelected(item.number)}
+                        aria-label={translate(locale, "faith.noteLabel", {
+                          number: item.number,
+                        })}
+                      >
+                        <Icon name="bookmark" size={14} />
+                        <span>{translate(locale, "faith.noteShort")}</span>
+                        {note && (
+                          <span className="sr-only">
+                            {translate(locale, "faith.hasNote")}
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

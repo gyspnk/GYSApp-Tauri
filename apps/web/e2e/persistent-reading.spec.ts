@@ -2,13 +2,21 @@ import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
-for (const width of [390, 1440]) {
+for (const width of [320, 390, 1440]) {
   test(`Kidung PDF is a catalog mode and closes straight to the list (${width}px)`, async ({
     page,
   }) => {
     await preparePinnedReaderAssets(page);
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/GYSApp-Tauri/kidung");
+    expect(
+      await page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--blue")
+          .trim(),
+      ),
+    ).toBe("#0079a8");
+    await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
     await expect(
       modes.getByRole("button", { name: "PDF", exact: true }),
@@ -48,10 +56,17 @@ for (const width of [390, 1440]) {
     ).content;
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/GYSApp-Tauri/iman");
-    const rows = page.locator(".faith-row-heading strong");
+    const rows = page.locator(".faith-statement");
     await expect(rows).toHaveCount(10);
     for (let index = 0; index < items.length; index++) {
       await expect(rows.nth(index)).toHaveText(items[index].text);
+      expect(
+        await rows.nth(index).evaluate((node) => ({
+          tag: node.tagName,
+          interactive: Boolean(node.closest("button")),
+          clipped: node.scrollHeight > node.clientHeight + 1,
+        })),
+      ).toEqual({ tag: "P", interactive: false, clipped: false });
       await rows.nth(index).scrollIntoViewIfNeeded();
       const bounds = (await rows.nth(index).boundingBox())!;
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);

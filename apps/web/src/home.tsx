@@ -238,6 +238,30 @@ export function HomePage({ locale }: { locale: Locale }) {
           <h1>{translate(locale, "home.title")}</h1>
         </div>
       </section>
+      <nav
+        className="home-portals"
+        aria-label={translate(locale, "home.overview")}
+      >
+        {(
+          [
+            ["/bible", "bible"],
+            ["/kidung", "kidung"],
+            ["/iman", "iman"],
+          ] as const
+        ).map(([path, key]) => (
+          <Link className="home-portal" to={path} key={path}>
+            <Icon
+              name={
+                key === "kidung" ? "music" : key === "iman" ? "faith" : "bible"
+              }
+              size={28}
+            />
+            <span className="portal-copy">
+              <strong>{translate(locale, `nav.${key}`)}</strong>
+            </span>
+          </Link>
+        ))}
+      </nav>
       <section
         className="home-grid"
         aria-label={translate(locale, "home.overview")}
@@ -347,16 +371,6 @@ export function HomePage({ locale }: { locale: Locale }) {
           ) : (
             <div className="empty-inline">
               <p>{translate(locale, "home.noRecent")}</p>
-              <div className="home-start-links">
-                <Link className="quiet-button" to="/bible">
-                  <Icon name="book" size={18} />
-                  {translate(locale, "nav.bible")}
-                </Link>
-                <Link className="quiet-button" to="/kidung">
-                  <Icon name="music" size={18} />
-                  {translate(locale, "nav.kidung")}
-                </Link>
-              </div>
             </div>
           )}
         </article>

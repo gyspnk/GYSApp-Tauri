@@ -540,10 +540,11 @@ Worker is not configured. The page database in
 
 ## Editorial typography and accent ownership
 
-`styles/00-tokens.css` owns paper/ink/theme tokens and bundled font faces; the
-existing final `calm-liturgical.css` refinement layer owns shared editorial
-hierarchy. Feature files retain reader controls, highlights, split layouts and
-user preferences. `--accent` stores the user's exact custom selection;
+`styles/00-tokens.css` owns the default GYS blue/white tokens, optional themes
+and bundled font faces. `app-design.css` owns the compact shell, direct home
+actions and catalog hierarchy; it follows the older `calm-liturgical.css`
+refinements. `persistent-media.css` owns docking geometry. Feature files retain
+reader controls, highlights, split layouts and user preferences. `--accent` stores the user's exact custom selection;
 `--accent-fill` keeps that color on filled actions, while `--blue`/`--navy`
 blend toward theme ink for readable text. `--on-accent` chooses a contrasting
 foreground; reset removes inline overrides so theme defaults resume.

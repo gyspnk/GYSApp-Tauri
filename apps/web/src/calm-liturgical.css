@@ -549,17 +549,6 @@ summary:focus-visible {
 .hymn-index-heading h1 {
   margin: 0;
 }
-.home-start-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 0;
-}
-.home-start-links .quiet-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
 .bible-reader:not(.is-split) {
   max-inline-size: 52rem;
   margin-inline: auto;

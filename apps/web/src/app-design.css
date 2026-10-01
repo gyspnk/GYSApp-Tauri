@@ -1,0 +1,368 @@
+/* Compact application composition. Reader geometry and media motion stay in
+   feature styles; this file owns the shell, home and catalog hierarchy. */
+:root {
+  --page-gutter: clamp(20px, 3vw, 36px);
+  --page-start: 24px;
+  --shell-paper: #123f60;
+  --shell-ink: #f4faff;
+  --shell-selected: #d9effb;
+}
+:root:is([data-theme="dark"], [data-theme="amoled"]) {
+  --shell-paper: #0d2435;
+}
+:root[data-theme="sepia"] {
+  --shell-paper: #3b3028;
+  --shell-selected: #eee0c3;
+}
+
+@media (min-width: 960px) {
+  .workspace {
+    --sidebar-expanded-width: 208px;
+  }
+  .navigation-shell {
+    background: var(--shell-paper);
+    color: var(--shell-ink);
+    border-right: 0;
+    padding: 20px 12px;
+  }
+  .navigation-shell .nav-item {
+    color: var(--shell-ink);
+    min-height: 52px;
+    padding: 12px;
+    gap: 12px;
+  }
+  .navigation-shell .nav-copy strong {
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .workspace:not(.is-sidebar-collapsed) .nav-copy {
+    width: auto;
+    max-width: 132px;
+  }
+  .navigation-shell .nav-item.is-active {
+    background: var(--shell-selected);
+    border-color: transparent;
+  }
+  .navigation-shell .nav-item.is-active :is(strong, svg) {
+    color: #123f60;
+  }
+  .navigation-shell .sidebar-collapse-toggle {
+    right: -28px;
+    background: var(--shell-paper);
+    color: var(--shell-ink);
+    border-color: #7896ae;
+  }
+  .navigation-shell .nav-item:hover {
+    background: #ffffff14;
+  }
+  .navigation-shell .nav-item.is-active:hover {
+    background: var(--shell-selected);
+  }
+  .navigation-shell .sidebar-foot {
+    display: none;
+  }
+}
+.topbar {
+  border-bottom: 0;
+  box-shadow: 0 1px 0 var(--line);
+}
+.search-trigger {
+  background: var(--canvas);
+  border-radius: 8px;
+}
+.page:not(.hymn-page) > .page-intro,
+.faith-page-title {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.page:not(.hymn-page) :is(.page-intro h1, .faith-page-title) {
+  font-family: inherit;
+  font-size: clamp(28px, 2.5vw, 36px);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+.date-line {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.intro-copy {
+  max-width: 58ch;
+  line-height: 1.6;
+}
+
+/* Three direct actions form a compact toolbar, rather than explanatory cards. */
+.home-portals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.home-portal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  min-height: 56px;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+.home-portal:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.home-portal > svg {
+  color: var(--blue);
+  margin: 0;
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.portal-copy strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.home-grid {
+  grid-template-areas: "verse continue" "suara suara" "literature literature";
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px;
+  padding-top: 20px;
+}
+.home-grid .verse-panel {
+  min-height: 260px;
+  border: 0;
+  border-radius: 12px;
+}
+.home-grid .sauh-card-media {
+  min-height: 260px;
+}
+.home-grid .verse-panel:not(:has(.sauh-card-media)) {
+  min-height: 0;
+}
+.home-grid .continue-panel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 0;
+}
+.continue-grid {
+  gap: 0;
+}
+.continue-item {
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding-block: 16px;
+}
+.home-media-section {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.home-media-section .section-title-row h2 {
+  font-family: inherit;
+  font-weight: 650;
+  font-size: 20px;
+}
+.home-suara-shelf {
+  gap: 16px;
+}
+:is(.home-suara-shelf, .suara-library-grid) .suara-library-item {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+:is(.home-suara-shelf, .suara-library-grid) .suara-card-media {
+  border-radius: 8px;
+  overflow: hidden;
+}
+:is(.home-suara-shelf, .suara-library-grid) .suara-card-content {
+  padding: 12px 0;
+}
+:is(.home-suara-shelf, .suara-library-grid) .suara-card-content h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Catalog rows use distinct number, title and icon-action lanes. */
+.hymn-index-heading {
+  padding-block: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.hymn-index-heading h1 {
+  font-family: inherit;
+  font-size: clamp(28px, 2.5vw, 36px);
+  font-weight: 650;
+  margin: 0;
+}
+.pujian-list {
+  border-radius: 0;
+  border-inline: 0;
+  background: transparent;
+}
+.pujian-item {
+  padding-block: 4px;
+  min-height: 60px;
+}
+.hymn-page .pujian-nomor {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+}
+.pujian-title-label {
+  font-size: 16px;
+  font-weight: 550;
+}
+.literature-list {
+  border-radius: 0;
+  border-inline: 0;
+  background: transparent;
+}
+.literature-row {
+  padding-block: 16px;
+}
+.more-card {
+  border-radius: 8px;
+  padding: 20px;
+  border-top: 3px solid var(--blue);
+}
+:is(.primary-button, .quiet-button, .secondary-button) {
+  border-radius: 8px;
+  padding-inline: 14px;
+  font-weight: 550;
+}
+:is(.icon-button, .media-control) {
+  border-radius: 8px;
+}
+
+/* These paragraphs are deliberately complete; only the surrounding tools shrink. */
+.faith-page .faith-stack {
+  max-width: 960px;
+}
+.faith-page .faith-search-bar {
+  margin-bottom: 4px;
+  max-width: 480px;
+}
+.faith-page .faith-rows {
+  border-block: 0;
+}
+.faith-page .faith-row {
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 16px;
+  padding: 24px 0;
+  content-visibility: visible;
+}
+.faith-row > .faith-number {
+  width: auto;
+  height: auto;
+  margin: 0;
+  align-self: start;
+  justify-items: start;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 550;
+  color: var(--blue);
+  line-height: 1.6;
+  background: transparent;
+}
+.faith-page .faith-statement {
+  margin: 0;
+  max-width: 68ch;
+  font-family: var(--font-reading);
+  font-size: clamp(18px, 1.4vw, 20px);
+  font-weight: 400;
+  line-height: 1.7;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+.faith-page .faith-row-actions {
+  justify-content: start;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  padding-inline-start: 0;
+}
+.faith-page .faith-row-heading {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--blue);
+}
+.faith-page .faith-row-heading svg {
+  margin: 0;
+}
+.faith-row-heading.has-note {
+  border-color: var(--blue);
+}
+
+@media (max-width: 1199px) {
+  .home-grid {
+    grid-template-areas: "verse" "continue" "suara" "literature";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+@media (max-width: 959px) {
+  .navigation-shell .nav-active-indicator {
+    border: 0;
+    border-radius: 8px;
+    background: var(--blue-soft);
+  }
+}
+@media (max-width: 599px) {
+  .app-frame:not(.is-reader-route) .main-content {
+    padding: 20px 16px var(--page-end);
+  }
+  .home-portal {
+    gap: 6px;
+    padding-inline: 6px;
+  }
+  .home-portal > svg {
+    width: 20px;
+    height: 20px;
+  }
+  .portal-copy strong {
+    font-size: 13px;
+  }
+  .home-grid .verse-panel,
+  .home-grid .sauh-card-media {
+    min-height: 240px;
+  }
+  .faith-page .faith-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 12px;
+    padding-block: 20px;
+  }
+  .faith-row > .faith-number {
+    font-size: 20px;
+  }
+  .faith-page .faith-row-heading {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-portal {
+    animation: soft-rise 240ms var(--ease-out) both;
+  }
+  .home-portal:nth-child(2) {
+    animation-delay: 30ms;
+  }
+  .home-portal:nth-child(3) {
+    animation-delay: 60ms;
+  }
+}

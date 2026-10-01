@@ -48,7 +48,7 @@ for (const theme of ["light", "dark", "sepia", "amoled", "system"] as const) {
     );
     await page.route(/^https:\/\//, (route) => route.abort());
     for (const [route, ready] of [
-      ["/", ".home-start-links"],
+      ["/", ".home-portals"],
       ["/iman", ".faith-row"],
       ["/literatur", ".literature-row"],
     ]) {
@@ -70,11 +70,11 @@ test("first visit offers working reading destinations and a visible hymn index t
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/");
-  const start = page.locator(".home-start-links");
+  const start = page.locator(".home-portals");
   await start.getByRole("link", { name: "Alkitab" }).click();
   await expect(page.locator(".verse-row").first()).toBeVisible();
   await page.goto("/GYSApp-Tauri/");
-  // Reading history replaces the first-visit shortcuts after the user reads.
+  // Reading history appears below the persistent direct actions.
   await expect(
     page.locator(".continue-panel").getByRole("link").first(),
   ).toHaveAttribute("href", /bible/);
@@ -136,9 +136,15 @@ test("bundled fonts load with all external requests blocked", async ({
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   expect(fonts.some((url) => url.includes("gys-reading-sans"))).toBe(true);
-  expect(fonts.some((url) => url.includes("source-serif-4"))).toBe(true);
   expect(
     await page.evaluate(() => document.fonts.check('16px "GYS Reading Sans"')),
+  ).toBe(true);
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(page.locator(".faith-statement").first()).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  expect(fonts.some((url) => url.includes("source-serif-4"))).toBe(true);
+  expect(
+    await page.evaluate(() => document.fonts.check('18px "Source Serif 4"')),
   ).toBe(true);
 });
 

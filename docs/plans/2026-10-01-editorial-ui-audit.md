@@ -170,3 +170,45 @@ Validation of this continuation:
   an explicit text route when restoring typography. Windows execution and
   physical-device loading/audio measurements are not repeated locally. The
   earlier native receipt above belongs to the original PR head.
+
+## Compact GYS blue UI revision
+
+This continuation supersedes the warm default appearance above. The requested
+UI now uses GYS blue (`#0079a8`) with neutral white/blue surfaces, and keeps
+optional themes and explicit custom accents. The change includes composition,
+not only palette replacement:
+
+- Reduce the desktop sidebar from 256px to 208px, retain the 80px collapsed
+  rail, and show icons with short destination labels without descriptions.
+- Replace the home entry cards with three compact direct actions. Remove
+  duplicate first-visit buttons from reading history. Place the daily reading
+  first, use one readable column below 1200px, and follow it with full-width
+  shelves. Reduce oversized headings and surrounding card/button spacing.
+- Simplify catalog hierarchy and shared control silhouettes. Keep visible
+  labels where they help discovery and accessible names on icon controls.
+  Remove the visible literature introduction while retaining accessible copy.
+- Render each Faith statement as a complete, always-open paragraph, separate
+  from PDF and Notes buttons. Keep all ten actual bundled statements in the
+  page without truncation, including the final sentence of statement 1.
+- Preserve persistent MIDI/Bible playback, dock transitions, reduced motion,
+  existing PDF controls and user reading preferences. No runtime dependency
+  or external font request was introduced.
+
+Validation: production build, workspace typecheck and workspace/script tests
+pass, including 363 web unit tests. Initial JavaScript remains 177.2 KiB against
+the unchanged 180 KiB gate. Generated provenance, documentation and native
+assets verify. The broad affected browser run passes 137 cases; its sole old
+sidebar-width expectation is revised to the new 208px composition and covered
+by the final focused rechecks. The 40 focused scenarios are verified after
+moving the local-serif assertion from the catalog to an actual reading page;
+fonts now load only when a surface needs them. One final 320px text-route check
+needed a retry while visual captures ran concurrently; a separate six-case
+PDF/full-belief run then passes with retries disabled. Accessibility checks
+include all five themes.
+The 57-case visual suite is regenerated for the intentional GYS blue design
+with unchanged thresholds; 42 changed images were visually reviewed. The two
+previous strict text-control images now also require updates because their
+panel colors intentionally change to the blue default. Earlier comparisons in
+this document remain historical evidence for the preceding warm version.
+Native Windows execution on this revision remains delegated to hosted CI;
+instant loading or physical-device audio timing is not claimed.

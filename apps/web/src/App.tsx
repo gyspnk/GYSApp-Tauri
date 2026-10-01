@@ -320,7 +320,6 @@ function Navigation({ locale }: { locale: Locale }) {
           <Icon name={destination.icon} />
           <span className="nav-copy">
             <strong>{translate(locale, destination.labelKey)}</strong>
-            <small>{translate(locale, destination.descriptionKey)}</small>
           </span>
         </NavLink>
       ))}

@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+- Recompose the application around default GYS blue, compact icon/label
+  navigation, direct home reading actions, a daily-reading feature and full-width
+  shelves. Remove navigation descriptions and shorten surrounding controls;
+  retain complete reading content and accessible labels.
+- Present every Faith statement as an always-open document paragraph with
+  independent PDF and Notes actions, rather than making the text a PDF button.
+
 - Dock the shared MIDI/Bible player in the sidebar with animated expansion to
   the bottom of the window, persistent playback, reduced motion, and mobile
   navigation clearance. Remove draggable-player state and obsolete CSS.

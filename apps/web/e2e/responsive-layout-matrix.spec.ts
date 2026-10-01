@@ -142,7 +142,8 @@ test("shell adapts across responsive breakpoints", async ({ page }) => {
       expect(navBox!.width).toBeGreaterThanOrEqual(88);
       expect(navBox!.width).toBeLessThanOrEqual(96);
     } else {
-      expect(navBox!.width).toBeGreaterThanOrEqual(220);
+      expect(navBox!.width).toBeGreaterThanOrEqual(200);
+      expect(navBox!.width).toBeLessThanOrEqual(216);
     }
 
     const labels = nav.locator(".nav-copy strong");
@@ -236,36 +237,7 @@ test("dashboard composition keeps its intended order at every device class", asy
       expect(box.right).toBeLessThanOrEqual(viewport.width + 1);
     }
 
-    if (viewport.width <= 599) {
-      expect(layout.continuePanel.y).toBeLessThan(layout.verse.y);
-    } else if (viewport.width < 1200) {
-      expect(layout.verse.y).toBeLessThan(layout.continuePanel.y);
-    } else {
-      expect(Math.abs(layout.verse.y - layout.continuePanel.y)).toBeLessThan(4);
-      expect(layout.continuePanel.x).toBeGreaterThan(layout.verse.x);
-      if (layout.unavailable) {
-        expect(layout.suara.x).toBeLessThanOrEqual(layout.verse.x + 1);
-        expect(layout.suara.right).toBeGreaterThanOrEqual(
-          layout.continuePanel.right - 1,
-        );
-        expect(layout.verse.bottom).toBeLessThanOrEqual(layout.suara.y + 1);
-      } else {
-        expect(layout.suara.x).toBeGreaterThanOrEqual(
-          layout.continuePanel.x - 1,
-        );
-      }
-      expect(layout.literature.x).toBeLessThanOrEqual(layout.verse.x + 1);
-      expect(layout.literature.right).toBeGreaterThanOrEqual(
-        layout.continuePanel.right - 1,
-      );
-    }
-
-    if (viewport.width <= 599) {
-      expect(layout.continuePanel.bottom).toBeLessThanOrEqual(
-        layout.verse.y + 1,
-      );
-      expect(layout.verse.bottom).toBeLessThanOrEqual(layout.suara.y + 1);
-    } else if (viewport.width < 1200) {
+    if (viewport.width < 1200) {
       expect(layout.verse.bottom).toBeLessThanOrEqual(
         layout.continuePanel.y + 1,
       );
@@ -273,10 +245,21 @@ test("dashboard composition keeps its intended order at every device class", asy
         layout.suara.y + 1,
       );
     } else {
-      expect(layout.continuePanel.bottom).toBeLessThanOrEqual(
-        layout.suara.y + 1,
+      expect(Math.abs(layout.verse.y - layout.continuePanel.y)).toBeLessThan(4);
+      expect(layout.continuePanel.x).toBeGreaterThan(layout.verse.x);
+      expect(layout.suara.x).toBeLessThanOrEqual(layout.verse.x + 1);
+      expect(layout.suara.right).toBeGreaterThanOrEqual(
+        layout.continuePanel.right - 1,
+      );
+      expect(
+        Math.max(layout.verse.bottom, layout.continuePanel.bottom),
+      ).toBeLessThanOrEqual(layout.suara.y + 1);
+      expect(layout.literature.x).toBeLessThanOrEqual(layout.verse.x + 1);
+      expect(layout.literature.right).toBeGreaterThanOrEqual(
+        layout.continuePanel.right - 1,
       );
     }
+
     expect(layout.suara.bottom).toBeLessThanOrEqual(layout.literature.y + 1);
   }
 });

@@ -363,7 +363,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         <div>
           <p className="date-line">{translate(locale, "literature.eyebrow")}</p>
           <h1>{translate(locale, "literature.title")}</h1>
-          <p className="intro-copy">{translate(locale, "literature.intro")}</p>
+          <p className="sr-only">{translate(locale, "literature.intro")}</p>
         </div>
         <span className="pack-badge">
           {translate(locale, "literature.itemCount", {

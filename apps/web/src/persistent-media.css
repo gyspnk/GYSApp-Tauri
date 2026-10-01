@@ -112,25 +112,6 @@
 .hymn-index-heading .hymn-mode-button {
   min-height: 44px;
 }
-.faith-page .faith-row {
-  align-items: start;
-  padding-block: 22px;
-  contain-intrinsic-size: auto 160px;
-}
-.faith-page .faith-row-heading {
-  align-items: start;
-}
-.faith-page .faith-row-heading strong {
-  display: block;
-  white-space: normal;
-  overflow: visible;
-  font-size: clamp(16px, 1.4vw, 18px);
-  line-height: 1.75;
-  max-width: 72ch;
-}
-.faith-page .faith-row-actions {
-  padding-top: 6px;
-}
 /* Shared controls retain clear silhouettes and consistent optical icon weight. */
 :where(
   .primary-button,

@@ -324,7 +324,7 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("dashboard uses an adaptive compact scale without wasting desktop space", async ({
+  test("dashboard presents direct reading portals and a daily reading with full-width shelves", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 720 });
@@ -362,9 +362,23 @@ test.describe("responsive reader navigation", () => {
           .getBoundingClientRect().top,
       };
     });
-    expect(phone.heading).toBeLessThanOrEqual(23);
+    expect(phone.heading).toBeGreaterThanOrEqual(28);
+    expect(phone.heading).toBeLessThanOrEqual(32);
+    await expect(page.locator(".home-portal")).toHaveCount(3);
+    await expect(page.locator(".home-portal").nth(0)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/bible",
+    );
+    await expect(page.locator(".home-portal").nth(1)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/kidung",
+    );
+    await expect(page.locator(".home-portal").nth(2)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/iman",
+    );
     expect(phone.actionTop).toBeGreaterThan(0);
-    expect(phone.mediaTop).toBeLessThan(720);
+    expect(phone.mediaTop).toBeLessThan(1100);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -375,16 +389,25 @@ test.describe("responsive reader navigation", () => {
       continueHeight: document
         .querySelector(".continue-panel")!
         .getBoundingClientRect().height,
-      verseRight: document
+      verseLeft: document.querySelector(".verse-panel")!.getBoundingClientRect()
+        .left,
+      verseBottom: document
         .querySelector(".verse-panel")!
-        .getBoundingClientRect().right,
+        .getBoundingClientRect().bottom,
+      mediaTop: document
+        .querySelector(".home-media-section")!
+        .getBoundingClientRect().top,
       mediaLeft: document
         .querySelector(".home-media-section")!
         .getBoundingClientRect().left,
     }));
-    expect(desktop.heading).toBeLessThanOrEqual(34);
+    expect(desktop.heading).toBeGreaterThanOrEqual(32);
+    expect(desktop.heading).toBeLessThanOrEqual(36);
     expect(desktop.continueHeight).toBeLessThan(180);
-    expect(desktop.mediaLeft).toBeGreaterThan(desktop.verseRight);
+    expect(Math.abs(desktop.mediaLeft - desktop.verseLeft)).toBeLessThanOrEqual(
+      1,
+    );
+    expect(desktop.mediaTop).toBeGreaterThan(desktop.verseBottom);
   });
 
   test("faith rows keep the PDF action and Catatan action separated", async ({
@@ -455,12 +478,10 @@ test.describe("responsive reader navigation", () => {
         expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
         expect(action.right).toBeLessThanOrEqual(row.right + 1);
         expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);
-        if (viewport.width <= 480) {
-          expect(action.top).toBeGreaterThanOrEqual(heading.bottom - 1);
-          expect(heading.right - heading.left).toBeGreaterThan(row.width * 0.8);
-        } else {
-          expect(heading.right).toBeLessThanOrEqual(action.left - 8);
-        }
+        expect(heading.right).toBeLessThanOrEqual(row.right + 1);
+        expect(
+          heading.right <= action.left - 5 || heading.bottom <= action.top - 5,
+        ).toBe(true);
       }
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
