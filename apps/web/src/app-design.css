@@ -761,13 +761,19 @@
   margin-top: 32px;
 }
 .more-page .more-settings-list {
-  max-width: 920px;
+  width: 100%;
+  min-width: 0;
   gap: 12px;
 }
 .more-page .more-setting-section {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface);
+}
+.more-page .more-account-title {
+  flex: 1;
+  margin: 0;
+  font-size: 20px;
 }
 .more-page .more-setting-row {
   padding: 16px 20px;

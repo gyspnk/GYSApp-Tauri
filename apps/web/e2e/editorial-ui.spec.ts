@@ -240,16 +240,14 @@ for (const accent of ["#ffff00", "#797979"]) {
     );
     await page.route(/^https:\/\//, (route) => route.abort());
     await page.goto("/GYSApp-Tauri/lainnya");
-    await page.locator('[data-setting="account"] > summary').click();
     for (const theme of ["light", "dark"]) {
       await page.evaluate(
         (theme) => (document.documentElement.dataset.theme = theme),
         theme,
       );
-      await expect(page.locator(".egys-login-button")).toHaveCSS(
-        "color",
-        "rgb(0, 0, 0)",
-      );
+      await expect(
+        page.getByRole("button", { name: "Login dengan Google", exact: true }),
+      ).toBeVisible();
       const results = await new AxeBuilder({ page }).analyze();
       expect(
         results.violations,

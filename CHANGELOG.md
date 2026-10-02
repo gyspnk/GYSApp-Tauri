@@ -2,6 +2,10 @@
 
 ## Unreleased — GA hardening slice
 
+- Restore explicit Google, WhatsApp and Apple login actions in one responsive
+  row. Keep Google visible offline, retain the native v1 bridge and official
+  browser handoff, and make settings fill the content width. Use the account
+  title as its expand/collapse control without redundant labels or descriptions.
 - Make Faith cards and search fill the content width, hide the redundant heading
   and reflection hint, justify complete statements, and use 14px phone text.
   Add bounded Ctrl+wheel/two-finger text zoom, compact right-aligned PDF/Notes
