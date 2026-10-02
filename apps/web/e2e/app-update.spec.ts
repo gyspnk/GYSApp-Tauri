@@ -130,3 +130,33 @@ test("the packaged entry document resolves to Home", async ({ page }) => {
     )
     .toBe(1);
 });
+
+test("catalog searching does not leave the update blocked after blur", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/literatur");
+  const banner = page.locator(".app-update-banner");
+  await expect(banner.locator("button")).toBeEnabled();
+  await page.locator(".search-field input").fill("Kitab");
+  await page.getByRole("heading", { name: "Literatur", exact: true }).click();
+  await expect(banner.locator("button")).toBeEnabled();
+  await banner.locator("button").click();
+  await expect(banner).toContainText("Memasang pembaruan");
+  await expect(banner.locator("button")).toBeDisabled();
+});
+
+test("a redundant waiting worker removes its stale update banner", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".app-update-banner")).toBeVisible();
+  await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.ready;
+    Object.defineProperty(registration.waiting, "state", {
+      value: "redundant",
+      configurable: true,
+    });
+    registration.waiting!.dispatchEvent(new Event("statechange"));
+  });
+  await expect(page.locator(".app-update-banner")).toHaveCount(0);
+});

@@ -12,12 +12,22 @@ export class AppUpdateController {
   public get pending(): boolean {
     return Boolean(this.waiting) || this.reloadPending;
   }
+  public get updating(): boolean {
+    return this.activating;
+  }
+  public withdraw(worker: Pick<ServiceWorker, "postMessage">): void {
+    if (this.waiting !== worker) return;
+    this.waiting = undefined;
+    this.activating = false;
+    this.changed();
+  }
   public offer(worker: Pick<ServiceWorker, "postMessage">): void {
+    if (this.waiting !== worker) this.activating = false;
     this.waiting = worker;
     this.changed();
   }
   public activate(): boolean {
-    if (!this.pending || this.busy()) return false;
+    if (!this.pending || this.activating || this.busy()) return false;
     if (this.reloadPending) this.reload();
     else {
       this.activating = true;
@@ -28,11 +38,13 @@ export class AppUpdateController {
   public controllerChanged(): void {
     if (!this.controlled) {
       this.controlled = true;
-      return;
+      if (!this.activating) return;
     }
     this.waiting = undefined;
     this.reloadPending = true;
-    if (this.activating && !this.busy()) this.reload();
+    const requested = this.activating;
+    this.activating = false;
+    if (requested && !this.busy()) this.reload();
     else this.changed();
   }
 }

@@ -688,7 +688,7 @@ test("wide Kidung catalog shares navigation and filters in one top row", async (
 
     if (viewport.width >= 1200) {
       expect(
-        Math.abs(geometry.nav.top - geometry.header.top),
+        Math.abs(geometry.nav.bottom - geometry.header.bottom),
       ).toBeLessThanOrEqual(2);
       expect(geometry.wrapper.height).toBeLessThanOrEqual(
         Math.max(geometry.nav.height, geometry.header.height) + 2,

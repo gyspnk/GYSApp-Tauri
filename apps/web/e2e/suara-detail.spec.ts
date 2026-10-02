@@ -24,33 +24,30 @@ const article = {
 
 const localeCopy = {
   id: {
-    back: "← Beranda",
+    back: "Kembali ke kesaksian",
     title: "Suara Sejati",
     label: "Suara Sejati",
     source: "Sumber resmi ↗",
-    home: "Kembali ke beranda",
     alt: "Thumbnail Menapaki Tiga Iman Bag",
     loading: "Membuka kesaksian…",
     error: "Artikel resmi belum dapat dimuat.",
     retry: "Coba lagi",
   },
   en: {
-    back: "← Home",
+    back: "Back to testimonies",
     title: "True Voice",
     label: "True Voice",
     source: "Official source ↗",
-    home: "Back to Home",
     alt: "Thumbnail for Menapaki Tiga Iman Bag",
     loading: "Opening testimony…",
     error: "The official article could not be loaded.",
     retry: "Try again",
   },
   zh: {
-    back: "← 主页",
+    back: "返回见证馆藏",
     title: "真实声音",
     label: "真实声音",
     source: "官方来源 ↗",
-    home: "返回主页",
     alt: "Menapaki Tiga Iman Bag 的缩略图",
     loading: "正在打开见证…",
     error: "官方文章暂时无法加载。",
@@ -143,7 +140,9 @@ test("Suara detail localizes ready state and stays contained across devices", as
       const detail = page.getByTestId("suara-detail-page");
       await expect(detail).toBeVisible();
       await expect(
-        detail.getByRole("link", { name: localeCopy[locale].back }),
+        detail
+          .locator(".detail-back")
+          .getByRole("link", { name: localeCopy[locale].back }),
       ).toBeVisible();
       await expect(
         detail.getByText(localeCopy[locale].label, { exact: true }),
@@ -155,8 +154,10 @@ test("Suara detail localizes ready state and stays contained across devices", as
         detail.getByRole("link", { name: localeCopy[locale].source }),
       ).toHaveAttribute("href", post.url);
       await expect(
-        detail.getByRole("link", { name: localeCopy[locale].home }),
-      ).toBeVisible();
+        detail
+          .locator(".detail-actions")
+          .getByRole("link", { name: localeCopy[locale].back }),
+      ).toHaveAttribute("href", "/GYSApp-Tauri/suara");
       await expect(detail.locator(".date-line")).toContainText(
         localeCopy[locale].label,
       );

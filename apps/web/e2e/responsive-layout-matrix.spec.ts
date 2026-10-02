@@ -216,6 +216,9 @@ test("dashboard composition keeps its intended order at every device class", asy
         return { x: box.x, y: box.y, right: box.right, bottom: box.bottom };
       };
       return {
+        emptyHistory: Boolean(
+          document.querySelector(".continue-panel .empty-inline"),
+        ),
         unavailable: Boolean(
           document.querySelector(".verse-panel .sauh-offline-state"),
         ),
@@ -237,7 +240,7 @@ test("dashboard composition keeps its intended order at every device class", asy
       expect(box.right).toBeLessThanOrEqual(viewport.width + 1);
     }
 
-    if (viewport.width < 1200) {
+    if (viewport.width < 1200 || layout.emptyHistory) {
       expect(layout.verse.bottom).toBeLessThanOrEqual(
         layout.continuePanel.y + 1,
       );

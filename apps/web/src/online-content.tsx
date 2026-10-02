@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
@@ -8,7 +8,7 @@ import {
   selectTodaySauh,
   subscribeSauh,
 } from "./sauh.js";
-import { fetchSuara, getCachedSuara } from "./suara.js";
+import { fetchSuara, getCachedSuara, subscribeSuara } from "./suara.js";
 import { fetchOnlineArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
@@ -246,6 +246,8 @@ export function SauhPage({ locale }: { locale: Locale }) {
 }
 
 export function SuaraPage({ locale }: { locale: Locale }) {
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<
     | { status: "loading" }
     | { status: "ready"; posts: SuaraSejatiPost[] }
@@ -272,6 +274,22 @@ export function SuaraPage({ locale }: { locale: Locale }) {
     load(controller.signal);
     return () => controller.abort();
   }, []);
+  useEffect(
+    () =>
+      subscribeSuara((posts) => {
+        if (posts.length) setState({ status: "ready", posts });
+      }),
+    [],
+  );
+  const normalizedQuery = query.trim().toLocaleLowerCase(locale);
+  const filteredPosts =
+    state.status === "ready"
+      ? state.posts.filter((post) =>
+          `${post.title} ${post.excerpt}`
+            .toLocaleLowerCase(locale)
+            .includes(normalizedQuery),
+        )
+      : [];
   return (
     <div
       className="page online-content-page suara-page"
@@ -290,6 +308,48 @@ export function SuaraPage({ locale }: { locale: Locale }) {
           <p className="intro-copy">{translate(locale, "suara.intro")}</p>
         </div>
       </section>
+      {state.status === "ready" && state.posts.length > 0 && (
+        <section
+          className="catalog-search"
+          aria-label={translate(locale, "catalog.searchSuara")}
+        >
+          <label className="search-field">
+            <span>{translate(locale, "catalog.searchSuara")}</span>
+            <input
+              type="search"
+              ref={searchRef}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={translate(locale, "catalog.searchPlaceholder")}
+            />
+          </label>
+          <div className="catalog-filter-status">
+            <span role="status">
+              {translate(locale, "catalog.resultCount", {
+                count: filteredPosts.length,
+              })}
+            </span>
+            {query && (
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  searchRef.current?.focus();
+                }}
+              >
+                {translate(locale, "catalog.reset")}
+              </button>
+            )}
+          </div>
+          {filteredPosts.length === 0 && (
+            <div className="empty-state">
+              <strong>{translate(locale, "literature.emptyTitle")}</strong>
+              <span>{translate(locale, "literature.emptyBody")}</span>
+            </div>
+          )}
+        </section>
+      )}
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
           {translate(locale, "suara.loading")}
@@ -315,7 +375,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       )}
       {state.status === "ready" && state.posts.length > 0 && (
         <div className="suara-library-grid">
-          {state.posts.map((post, index) => (
+          {filteredPosts.map((post, index) => (
             <Link
               className="suara-library-item"
               key={post.id}
@@ -328,6 +388,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
                   wrapperClassName="suara-library-thumb"
                   src={post.imageUrl}
                   fallbackTitle={post.title}
+                  fallbackCategoryKey="kesaksian"
                   fallbackCategory={translate(locale, "home.testimony")}
                   alt={translate(locale, "suara.coverAlt", {
                     title: post.title,
@@ -358,7 +419,12 @@ export function SuaraPage({ locale }: { locale: Locale }) {
 
 type SuaraState =
   | { status: "loading" }
-  | { status: "ready"; post: SuaraSejatiPost; body?: string }
+  | {
+      status: "ready";
+      post: SuaraSejatiPost;
+      body?: string;
+      previewOnly?: boolean;
+    }
   | { status: "error"; post?: SuaraSejatiPost; message: string };
 
 export function SuaraDetailPage({ locale }: { locale: Locale }) {
@@ -370,16 +436,23 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
     setState({ status: "loading" });
     void (async () => {
       const posts = await fetchSuara(controller.signal);
-      const post = posts.find((item) => item.id === postId);
+      let post = posts.find((item) => item.id === postId);
       if (!post) throw new Error("Suara Sejati tidak ditemukan");
       try {
         const article = await fetchOnlineArticle(post.url, controller.signal);
+        post = getCachedSuara()?.find((item) => item.id === postId) ?? post;
         setState({ status: "ready", post, body: article.body });
       } catch (error) {
         if (controller.signal.aborted) return;
         recordDiagnostic("warn", "content.article", error);
+        post = getCachedSuara()?.find((item) => item.id === postId) ?? post;
         if (post.excerpt) {
-          setState({ status: "ready", post, body: post.excerpt });
+          setState({
+            status: "ready",
+            post,
+            body: post.excerpt,
+            previewOnly: true,
+          });
         } else {
           setState({
             status: "error",
@@ -406,6 +479,23 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
   };
 
   useEffect(load, [postId]);
+  useEffect(
+    () =>
+      subscribeSuara((posts) =>
+        setState((current) => {
+          if (current.status !== "ready") return current;
+          const post = posts.find((item) => item.id === current.post.id);
+          return post
+            ? {
+                ...current,
+                post,
+                ...(current.previewOnly ? { body: post.excerpt } : {}),
+              }
+            : current;
+        }),
+      ),
+    [],
+  );
 
   return (
     <div
@@ -413,8 +503,8 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       data-testid="suara-detail-page"
     >
       <div className="detail-back">
-        <Link className="text-button" to="/">
-          {translate(locale, "suara.backHome")}
+        <Link className="text-button" to="/suara">
+          {translate(locale, "suara.backCollection")}
         </Link>
         <span>{translate(locale, "suara.title")}</span>
       </div>
@@ -454,6 +544,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             wrapperClassName="suara-article-image-wrap"
             src={state.post.imageUrl}
             fallbackTitle={state.post.title}
+            fallbackCategoryKey="kesaksian"
             fallbackCategory={translate(locale, "home.testimony")}
             alt={translate(locale, "suara.detailCoverAlt", {
               title: state.post.title,
@@ -461,14 +552,22 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             loading="eager"
             fetchPriority="high"
           />
+          {state.previewOnly && (
+            <aside className="reader-preview-note" role="status">
+              <p>{translate(locale, "suara.previewOnly")}</p>
+              <button className="quiet-button" type="button" onClick={load}>
+                {translate(locale, "suara.detailRetry")}
+              </button>
+            </aside>
+          )}
           <SuaraParagraphs text={state.body ?? state.post.excerpt} />
           <div className="detail-actions">
             <SourceLink
               href={state.post.url}
               label={translate(locale, "suara.officialSource")}
             />
-            <Link className="quiet-button" to="/">
-              {translate(locale, "suara.returnHome")}
+            <Link className="quiet-button" to="/suara">
+              {translate(locale, "suara.backCollection")}
             </Link>
           </div>
         </article>

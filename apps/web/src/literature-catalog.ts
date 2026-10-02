@@ -111,27 +111,23 @@ function mergeCatalogs(
   if (!incoming.length) return undefined;
   const merged = new Map<string, LiteratureItem>();
   for (const item of incoming) merged.set(item.id, item);
-  const currentIds = new Set(current.map((item) => item.id));
-  let changed = incoming.some((item) => !currentIds.has(item.id));
   for (const item of current) {
     const existing = merged.get(item.id);
     if (!existing) {
-      changed = true;
       merged.set(item.id, item);
       continue;
     }
     // Local entries often carry covers resolved earlier; keep the richer one.
     if (!existing.imageUrl && item.imageUrl) {
-      changed = true;
       merged.set(item.id, { ...existing, imageUrl: item.imageUrl });
     }
   }
-  if (!changed) return undefined;
-  return [...merged.values()].sort((left, right) =>
+  const next = [...merged.values()].sort((left, right) =>
     (right.publishedAt ?? right.updatedAt).localeCompare(
       left.publishedAt ?? left.updatedAt,
     ),
   );
+  return JSON.stringify(next) === JSON.stringify(current) ? undefined : next;
 }
 
 function bffCandidates(): string[] {

@@ -1,18 +1,11 @@
-/* Compact application composition. Reader geometry and media motion stay in
+/* Application composition. Reader geometry and media motion stay in
    feature styles; this file owns the shell, home and catalog hierarchy. */
 :root {
   --page-gutter: clamp(20px, 3vw, 36px);
   --page-start: 24px;
-  --shell-paper: #123f60;
-  --shell-ink: #f4faff;
-  --shell-selected: #d9effb;
-}
-:root:is([data-theme="dark"], [data-theme="amoled"]) {
-  --shell-paper: #0d2435;
-}
-:root[data-theme="sepia"] {
-  --shell-paper: #3b3028;
-  --shell-selected: #eee0c3;
+  --shell-paper: var(--surface);
+  --shell-ink: var(--ink);
+  --shell-selected: var(--blue-soft);
 }
 
 @media (min-width: 960px) {
@@ -22,7 +15,7 @@
   .navigation-shell {
     background: var(--shell-paper);
     color: var(--shell-ink);
-    border-right: 0;
+    border-right: 1px solid var(--line);
     padding: 20px 12px;
   }
   .navigation-shell .nav-item {
@@ -30,6 +23,7 @@
     min-height: 52px;
     padding: 12px;
     gap: 12px;
+    border-radius: 12px;
   }
   .navigation-shell .nav-copy strong {
     font-size: 14px;
@@ -44,16 +38,16 @@
     border-color: transparent;
   }
   .navigation-shell .nav-item.is-active :is(strong, svg) {
-    color: #123f60;
+    color: var(--ink);
   }
   .navigation-shell .sidebar-collapse-toggle {
     right: -28px;
     background: var(--shell-paper);
     color: var(--shell-ink);
-    border-color: #7896ae;
+    border-color: var(--line-strong);
   }
   .navigation-shell .nav-item:hover {
-    background: #ffffff14;
+    background: var(--blue-soft);
   }
   .navigation-shell .nav-item.is-active:hover {
     background: var(--shell-selected);
@@ -68,7 +62,7 @@
 }
 .search-trigger {
   background: var(--canvas);
-  border-radius: 8px;
+  border-radius: 14px;
 }
 .page:not(.hymn-page) > .page-intro,
 .faith-page-title {
@@ -81,6 +75,18 @@
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.035em;
+}
+.page-intro h1 {
+  margin-bottom: 0;
+}
+.page.home-page:not(.hymn-page) .page-intro h1 {
+  font-family: var(--font-reading);
+  font-size: clamp(32px, 3.2vw, 48px);
+  font-weight: 550;
+  letter-spacing: -0.045em;
+}
+:root[data-ui-font="sans"] .page.home-page .page-intro h1 {
+  font-family: inherit;
 }
 .date-line {
   font-size: 10px;
@@ -109,7 +115,7 @@
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -137,8 +143,6 @@
 }
 .home-grid .verse-panel {
   min-height: 260px;
-  border: 0;
-  border-radius: 12px;
 }
 .home-grid .sauh-card-media {
   min-height: 260px;
@@ -146,11 +150,32 @@
 .home-grid .verse-panel:not(:has(.sauh-card-media)) {
   min-height: 0;
 }
+/* A failed preview is a small label, not a screen-sized empty illustration. */
+.home-grid
+  .sauh-card-media:has(
+    [data-image-state="error"],
+    [data-image-state="missing"]
+  ) {
+  position: relative;
+  inset: auto;
+  height: 72px;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.home-grid .sauh-card-media .img-fallback-placeholder {
+  flex-direction: row;
+  gap: 12px;
+  justify-content: start;
+  padding-inline: 24px;
+}
+.home-grid .sauh-card-content {
+  margin-top: 0;
+}
 .home-grid .continue-panel {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 8px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 24px;
 }
 .continue-grid {
   gap: 0;
@@ -174,21 +199,34 @@
   gap: 16px;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-library-item {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+:is(.home-suara-shelf, .suara-library-grid) .suara-library-item:hover {
+  border-color: var(--blue);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-media {
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-content {
-  padding: 12px 0;
+  padding: 16px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
-:is(.home-suara-shelf, .suara-library-grid) .suara-card-content h3 {
+:is(.home-suara-shelf, .suara-library-grid) .suara-card-content strong {
+  font-family: inherit;
   font-size: 16px;
   font-weight: 600;
+  line-height: 1.45;
+  max-height: none;
 }
 
 /* Catalog rows use distinct number, title and icon-action lanes. */
@@ -203,23 +241,53 @@
   margin: 0;
 }
 .pujian-list {
-  border-radius: 0;
-  border-inline: 0;
-  background: transparent;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 .pujian-item {
   padding-block: 4px;
+  padding-inline: 12px;
   min-height: 60px;
+}
+.pujian-item:hover {
+  background: var(--canvas);
 }
 .hymn-page .pujian-nomor {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: var(--radius-lg);
+  background: var(--blue-soft);
 }
 .pujian-title-label {
   font-size: 16px;
   font-weight: 550;
+}
+.hymn-page .pujian-title {
+  font-family: inherit;
+}
+.kidung-tool-heading h1 {
+  font-family: inherit;
+  font-size: clamp(28px, 2.5vw, 36px);
+  font-weight: 650;
+  line-height: 1.2;
+}
+.kidung-settings-section h2 {
+  font-family: inherit;
+  font-size: 20px;
+}
+.kidung-catalog-topbar {
+  align-items: end;
+}
+.kidung-catalog-topbar .hymn-page-header {
+  padding: 0;
+  border: 0;
 }
 .literature-list {
   border-radius: 0;
@@ -228,19 +296,44 @@
 }
 .literature-row {
   padding-block: 16px;
+  padding-inline: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  margin-bottom: 8px;
 }
 .more-card {
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   padding: 20px;
   border-top: 3px solid var(--blue);
 }
+.more-setting-section {
+  border-bottom-color: var(--line);
+}
+.more-setting-row:hover {
+  background: var(--blue-soft);
+}
+.app-update-banner {
+  left: auto;
+  right: 16px;
+  width: min(560px, calc(100% - 32px));
+  padding: 16px;
+  border-radius: var(--radius-card);
+  font-size: 14px;
+}
+.app-update-banner button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--blue-soft);
+  color: var(--ink);
+}
 :is(.primary-button, .quiet-button, .secondary-button) {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding-inline: 14px;
   font-weight: 550;
 }
 :is(.icon-button, .media-control) {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* These paragraphs are deliberately complete; only the surrounding tools shrink. */
@@ -253,11 +346,16 @@
 }
 .faith-page .faith-rows {
   border-block: 0;
+  display: grid;
+  gap: 12px;
 }
 .faith-page .faith-row {
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 16px;
-  padding: 24px 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
   content-visibility: visible;
 }
 .faith-row > .faith-number {
@@ -299,7 +397,7 @@
   min-height: 44px;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   color: var(--blue);
 }
@@ -317,11 +415,97 @@
     gap: 20px;
   }
 }
+.home-grid .verse-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-feature);
+  overflow: hidden;
+}
+.home-grid .sauh-card-content {
+  padding: clamp(20px, 3vw, 32px);
+}
+.home-grid .sauh-title {
+  font-family: var(--font-reading);
+  font-size: clamp(24px, 2.1vw, 32px);
+  line-height: 1.3;
+}
+.home-grid .sauh-card-body blockquote {
+  font-family: var(--font-reading);
+  line-height: 1.75;
+}
+.literature-shelf-item {
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--surface);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.literature-shelf-item:hover {
+  border-color: var(--blue);
+}
+.img-fallback-placeholder:has(.img-fallback-art) {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+.img-fallback-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.img-fallback-placeholder:has(.img-fallback-art) > small {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #102536;
+  color: #fff;
+  max-width: calc(100% - 20px);
+}
+.literature-cover.is-compact .img-fallback-placeholder > small,
+.literature-row .img-fallback-placeholder > small {
+  display: none;
+}
+@media (min-width: 960px) {
+  .home-grid .verse-panel:has([data-image-state="loaded"]) {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    padding: 0;
+    min-height: 320px;
+  }
+  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-card-media {
+    height: 100%;
+    min-height: 320px;
+    margin: 0;
+    border-radius: 0;
+    aspect-ratio: auto;
+  }
+  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-card-content {
+    align-self: center;
+  }
+  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
 @media (max-width: 959px) {
   .navigation-shell .nav-active-indicator {
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--blue-soft);
+  }
+}
+@media (min-width: 600px) and (max-width: 1199px) {
+  .literature-page .literature-shelf {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 8px;
+  }
+  .literature-shelf-item {
+    flex: 0 0 168px;
+    scroll-snap-align: start;
   }
 }
 @media (max-width: 599px) {
@@ -346,13 +530,49 @@
   .faith-page .faith-row {
     grid-template-columns: 28px minmax(0, 1fr);
     gap: 12px;
-    padding-block: 20px;
+    padding: 16px;
   }
   .faith-row > .faith-number {
     font-size: 20px;
   }
   .faith-page .faith-row-heading {
     flex-wrap: wrap;
+  }
+  .hymn-page .hymn-index-heading {
+    padding-top: 16px;
+  }
+  .kidung-tool-page > .kidung-local-nav {
+    padding-top: 16px;
+  }
+  .kidung-tool-page .kidung-tool-heading {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .kidung-tool-heading-actions {
+    width: auto;
+    flex: none;
+  }
+  .literature-page .literature-intro {
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    justify-content: space-between;
+  }
+  .literature-intro > .pack-badge {
+    flex: none;
+    margin-bottom: 4px;
+  }
+  .literature-page .literature-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .literature-toolbar > .search-field {
+    grid-column: 1 / -1;
+  }
+  .literature-toolbar .control-select {
+    min-width: 0;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -365,4 +585,248 @@
   .home-portal:nth-child(3) {
     animation-delay: 60ms;
   }
+  .more-setting-section[open] > :not(summary) {
+    animation: fade-in var(--motion-normal) var(--ease-out);
+  }
+  .more-setting-row {
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+  .more-setting-section::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size var(--motion-normal) var(--ease-out),
+      content-visibility var(--motion-normal) allow-discrete;
+  }
+  .more-setting-section[open]::details-content {
+    block-size: auto;
+    overflow: visible;
+  }
+  .control-select-menu {
+    animation: fade-in var(--motion-fast) var(--ease-out);
+  }
+}
+.more-setting-row:hover,
+.more-setting-section[open] > .more-setting-row {
+  color: var(--ink);
+}
+/* One shared policy also covers feature menus, loading shimmer and new controls. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::details-content {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Collection discovery and settings have distinct visual hierarchy. */
+.more-library-hub {
+  margin-top: 24px;
+}
+.more-library-hub h2,
+.more-settings-heading {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+}
+.more-library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.more-library-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 132px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.more-library-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 14px;
+  background: var(--blue-soft);
+  color: var(--ink);
+}
+.more-library-link > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+.more-library-link strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.3;
+}
+.more-library-link small {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.more-library-link > svg {
+  margin: 0;
+  color: var(--muted);
+}
+.more-library-link:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.more-settings-heading {
+  margin-top: 32px;
+}
+.more-page .more-settings-list {
+  max-width: 920px;
+  gap: 12px;
+}
+.more-page .more-setting-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.more-page .more-setting-row {
+  padding: 16px 20px;
+  min-height: 64px;
+  border-radius: var(--radius-card);
+}
+.more-page .more-setting-section > :not(summary) {
+  margin-inline: 20px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1199px) {
+  .more-library-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .more-library-link {
+    min-height: 104px;
+    padding: 20px;
+  }
+}
+@media (max-width: 599px) {
+  .more-library-link {
+    padding: 16px;
+    gap: 12px;
+  }
+  .more-page .more-setting-row {
+    padding: 16px;
+  }
+  .more-page .more-setting-section > :not(summary) {
+    margin-inline: 16px;
+  }
+}
+
+/* A first visit gets a full daily feature and a compact reading invitation. */
+.home-grid .continue-panel .empty-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.home-grid .continue-panel .empty-inline p {
+  margin: 0;
+}
+@media (min-width: 960px) {
+  .home-grid:has(.continue-panel .empty-inline) {
+    grid-template-areas: "verse verse" "continue continue" "suara suara" "literature literature";
+  }
+  .home-grid:has(.continue-panel .empty-inline) .continue-panel {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 24px;
+  }
+  .home-grid:has(.continue-panel .empty-inline)
+    .continue-panel
+    .section-heading {
+    margin: 0;
+  }
+  .home-grid:has(.continue-panel .empty-inline) .empty-inline {
+    flex: 1;
+  }
+}
+
+/* Search feedback is shared by the two reading catalogs. */
+.catalog-search {
+  margin-block: 24px;
+}
+.catalog-search .search-field {
+  max-width: 640px;
+}
+.catalog-filter-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding-block: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.catalog-filter-status .quiet-button {
+  flex: none;
+}
+
+.reader-preview-note {
+  padding: var(--space-4);
+  margin-block: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--blue-soft);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.reader-preview-note p {
+  margin: 0 0 12px;
+}
+.more-page .more-setting-section > .more-card {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.catalog-search .empty-state,
+.literature-page > .empty-state {
+  display: grid;
+  gap: 8px;
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.catalog-search .empty-state strong,
+.literature-page > .empty-state strong {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.catalog-search .empty-state span,
+.literature-page > .empty-state span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.suara-article-image-wrap:is(
+  [data-image-state="missing"],
+  [data-image-state="error"]
+) {
+  height: 96px;
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
 }

@@ -1875,3 +1875,109 @@ renderer reproduces a 4108-pixel difference in both attempts. Reviewed
 expected/actual/diff images confirm the intended compact layout; the identical
 hosted actual images establish the updated tablet baseline. No tolerance or
 application source changes accompany this reconciliation.
+
+- `2026-10-02 / CF-208`: continue the requested PR #9 whole-interface review
+  after pulling main and checking out its current branch. Compact failed Home
+  artwork, correct Suara captions, align catalog/tool headings and Literature
+  filters, wrap shelf titles, and stop Kidung settings panels stretching.
+  Remove the route transform that traps fixed reading dialogs; use native
+  disclosure/menu motion and a shared reduced-motion policy. The
+  [follow-up audit](../plans/2026-10-02-ui-polish-followup.md) records the
+  reviewed surfaces and Windows baseline provenance.
+
+Validation for CF-208: typecheck, lint, workspace unit/policy/script checks,
+production build, bundle/generated/native-asset checks pass. Initial JS stays
+177.2 KiB under the unchanged 180 KiB gate. Six new browser cases cover
+11 routes at phone/desktop widths, overflow/page errors, fallback artwork,
+viewport-fixed notes with motion enabled, reduced-motion menus, and the 44px
+close target at the first entrance-animation frame. Reviewed
+Windows images pass all 57 visual cases without changing pixel tolerances or
+Linux references. The full browser run passes 504 and skips three configured-BFF
+cases; one animation-size failure exposes a shared dialog scale. Removing that
+scale preserves slide/fade motion and touch dimensions. All 97 final affected
+UI/accessibility/reader/visual checks pass without retries on the rebuilt tree.
+Physical/native/provider evidence remains separate from this responsive
+Chromium audit.
+
+- `2026-10-02 / CF-209`: pursue the requested thumbnail/update fixes and a
+  stronger library composition on PR #9. Recover cached-image completion,
+  official source alternatives and online reconnects; render existing SVG
+  illustrations for genuinely unavailable covers. Fix metadata-only feed
+  updates, superseded waiting workers, repeated activation and search fields
+  incorrectly treated as dirty editors. Rework Home's display heading,
+  image/quote composition, reading/media cards, category artwork, settings
+  hover and compact update toast; keep tablet shelf titles readable.
+  The [thumbnail/update rework audit](../plans/2026-10-02-thumbnail-update-library-rework.md)
+  distinguishes official source coverage from rendering/transport failures.
+
+Validation for CF-209: workspace unit/policy/script checks pass (369 web tests),
+as do typecheck, lint, build, generated provenance and native asset checks.
+The initial graph remains 177.3 KiB under 180 KiB. New regressions cover metadata
+cover recovery in both feeds, redundant workers, one activation, search blur,
+official derivative recovery and reconnect without reload. The browser review
+passes 155 cases at unchanged visual thresholds, including the final
+600/768/1024px tablet shelves. The full 515-case run reports 511 passed,
+3 BFF prerequisites skipped and one local stylesheet request failure
+(`net::ERR_NO_BUFFER_SPACE`). All 63 final affected checks pass with one worker
+and no retries, including that case and the final thumbnail badge adjustment.
+The real worker also passes two lifecycle checks: clean install/two reloads
+and explicit activation of a new version without a stale banner. No failed
+case remains unverified; the three BFF prerequisites remain explicit.
+This is local browser evidence, not a new native,
+physical-device, provider, hosted Linux or deployment receipt.
+
+- `2026-10-02 / CF-210`: begin the broader UI rework with an explicit
+  [five-stage acceptance plan](../plans/2026-10-02-comprehensive-ui-rework.md).
+  Theme-integrated navigation, a localized three-destination collection hub,
+  separated settings panels, and a first-visit reading action are implemented.
+  Build/typecheck pass; initial JS is 177.5 KiB under 180 KiB. All 36 focused
+  browser checks pass without retry after updating two superseded geometry
+  assertions to the new designed behavior. Responsive proof is saved in
+  `docs/ui/2026-10-02-comprehensive/`. The broader goal remains active:
+  catalog/reader review, shared style consolidation, 200% text, refreshed visual
+  baselines and full final verification are still required. CF-209 describes
+  the previous build and must not be treated as the current rework's full gate.
+
+Validation for CF-210: build, typecheck and bundle budget pass. The rebuilt tree
+passes 36 focused browser checks with one worker and no retries. Proof covers
+11 route/state captures, localized collection links at three widths and all
+settings themes. The broader acceptance plan remains in progress; final visual
+baselines and the complete browser gate are not yet verified for this build.
+
+- `2026-10-02 / CF-211`: continue the five-stage comprehensive UI rework.
+  Suara search and Literature result/reset controls share localized status,
+  empty recovery and focus restoration. A failed complete article explicitly
+  displays its summary with retry/source/back-to-collection actions. Missing
+  reader artwork is compact. Existing Suara update events now refresh open
+  catalog/reader metadata and preserve query/full article content; the load
+  path rechecks the cache after article loading to prevent stale metadata.
+  Shared card/feature radius tokens replace literal duplicates. The final
+  visual/reference review covers responsive catalog, reader, PDF, settings,
+  menus and recovery surfaces; visual thresholds are unchanged.
+
+Validation for CF-211: build, typecheck, lint, generated provenance, native
+asset verification and bundle budget pass (177.8 KiB / 180 KiB). Workspace
+unit/script checks pass, including 369 web tests. The directed browser runs
+pass 74 and 98 cases respectively. The new real feed regression fails on the
+previous build at stale catalog metadata, then all five catalog checks pass
+on the repaired build. The real preview activates its updated service worker
+and opens the collection hub. The 526-case browser gate is still running;
+this receipt does not yet claim that full gate or native-device validation.
+
+Additional CF-211 evidence: all six distributed-asset browser cases pass without
+retry on a separate BFF-configured build with mocked download responses. This
+covers Bible/hymnal installation, offline restart, removal and reinstallation.
+The hymnal fixture now preserves original service-worker core bytes, while
+only page requests receive the modified fixture catalog; production integrity
+verification remains intact. This is not a live backend or real KJV payload receipt.
+
+Final CF-211 receipt: the 526-case audit finishes with 520 passed, three static
+BFF prerequisites skipped and three superseded design assertions. Those
+assertions are corrected to the reviewed composition, collection backlink and
+native-scroll reachability. On the final rebuilt tree, all 81 repeated checks
+pass without retries, including every failed case, responsive/usability/Suara,
+catalog recovery, real workers and both visual suites at unchanged thresholds.
+The separate mocked-BFF run passes all six asset cases. Final preview build
+73e3c2881d9ef054 matches dist and activates successfully. All five plan stages
+are complete for local browser scope; external/native/device limits remain
+explicit. No push or deployment is performed.

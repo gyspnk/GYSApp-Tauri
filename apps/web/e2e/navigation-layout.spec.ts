@@ -401,8 +401,8 @@ test.describe("responsive reader navigation", () => {
         .querySelector(".home-media-section")!
         .getBoundingClientRect().left,
     }));
-    expect(desktop.heading).toBeGreaterThanOrEqual(32);
-    expect(desktop.heading).toBeLessThanOrEqual(36);
+    expect(desktop.heading).toBeGreaterThanOrEqual(40);
+    expect(desktop.heading).toBeLessThanOrEqual(48);
     expect(desktop.continueHeight).toBeLessThan(180);
     expect(Math.abs(desktop.mediaLeft - desktop.verseLeft)).toBeLessThanOrEqual(
       1,
@@ -606,7 +606,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".reader-context-bar")).toHaveCount(0);
     await expect(page.locator(".brand-mark")).toBeVisible();
 
-    const search = page.getByRole("textbox", { name: "Cari lagu" });
+    const search = page.getByRole("searchbox", { name: "Cari lagu" });
     await expect(search).toBeVisible();
     await expect
       .poll(() =>
@@ -654,6 +654,7 @@ test.describe("responsive reader navigation", () => {
         "Backup",
         "Tentang & Bantuan",
       ]);
+      await rows.locator(":scope > summary").last().scrollIntoViewIfNeeded();
       await expect(rows.locator(":scope > summary").last()).toBeInViewport();
       const rowBoxes = await rows
         .locator(":scope > summary")

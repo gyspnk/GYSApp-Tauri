@@ -103,7 +103,7 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
     )
     .toBeGreaterThan(0);
   const literatureSources = await page
-    .locator(".literature-page .literature-cover img")
+    .locator(".literature-page .literature-cover .img-with-skeleton")
     .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
   expect(
     literatureSources

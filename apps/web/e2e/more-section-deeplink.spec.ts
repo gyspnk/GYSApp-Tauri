@@ -20,6 +20,7 @@ test("More shows compact setting categories and hides details until requested", 
     "Tentang & Bantuan",
   ]);
   for (let index = 0; index < 7; index += 1) {
+    await rows.nth(index).locator(":scope > summary").scrollIntoViewIfNeeded();
     await expect(rows.nth(index).locator(":scope > summary")).toBeInViewport();
   }
   await expect(page.locator(".more-setting-section[open]")).toHaveCount(0);

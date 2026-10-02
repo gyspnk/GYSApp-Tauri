@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { translate, type Locale } from "./i18n.js";
+import { getCoverDataUri } from "./cover-generator.js";
 
 export type LazyImageState = "loading" | "loaded" | "missing" | "error";
 
@@ -67,7 +68,11 @@ export function resolveProxiedImageUrl(src?: string): string | undefined {
   return proxy.toString();
 }
 
-export function LazyImage({
+export function LazyImage(props: Parameters<typeof ImageContent>[0]) {
+  return <ImageContent key={props.src ?? ""} {...props} />;
+}
+
+function ImageContent({
   locale = "id",
   src,
   alt,
@@ -77,6 +82,7 @@ export function LazyImage({
   decoding = "async",
   fallbackTitle,
   fallbackCategory,
+  fallbackCategoryKey,
   fetchPriority,
   onLoad,
 }: {
@@ -89,12 +95,28 @@ export function LazyImage({
   decoding?: "async" | "sync" | "auto" | undefined;
   fallbackTitle?: string | undefined;
   fallbackCategory?: string | undefined;
+  fallbackCategoryKey?: string | undefined;
   fetchPriority?: "high" | "low" | "auto" | undefined;
   onLoad?: (() => void) | undefined;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const effectiveSrc = resolveProxiedImageUrl(src);
+  const [attempt, setAttempt] = useState(0);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const candidates = [
+    ...new Set(
+      [resolveProxiedImageUrl(src), resolveOriginalImageUrl(src), src].filter(
+        (value): value is string => Boolean(value),
+      ),
+    ),
+  ];
+  const effectiveSrc = candidates[attempt];
+  const imageFailed = () => {
+    if (attempt + 1 < candidates.length) {
+      setLoaded(false);
+      setAttempt(attempt + 1);
+    } else setError(true);
+  };
   const fallbackMark = (fallbackTitle ?? "GYS")
     .split(/\s+/)
     .filter(Boolean)
@@ -104,9 +126,23 @@ export function LazyImage({
     .toUpperCase();
 
   useEffect(() => {
-    setLoaded(false);
+    const image = imageRef.current;
+    // Cached images may finish before React observes the load event.
+    setLoaded(Boolean(image?.complete && image.naturalWidth > 0));
     setError(false);
+    if (image?.complete && image.currentSrc && image.naturalWidth === 0)
+      imageFailed();
   }, [effectiveSrc]);
+
+  useEffect(() => {
+    if (!error) return;
+    const retry = () => {
+      setAttempt(0);
+      setError(false);
+    };
+    window.addEventListener("online", retry);
+    return () => window.removeEventListener("online", retry);
+  }, [error]);
 
   const imageState = getLazyImageState(effectiveSrc, loaded, error);
 
@@ -131,11 +167,24 @@ export function LazyImage({
             { title: alt },
           )}
         >
-          <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
+          {fallbackTitle ? (
+            <img
+              className="img-fallback-art"
+              src={getCoverDataUri({
+                title: fallbackTitle,
+                category: fallbackCategoryKey ?? fallbackCategory,
+              })}
+              alt=""
+              aria-hidden="true"
+            />
+          ) : (
+            <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
+          )}
           {fallbackCategory && <small>{fallbackCategory}</small>}
         </div>
       ) : (
         <img
+          ref={imageRef}
           src={effectiveSrc}
           alt={alt}
           className={`${className} img-with-skeleton ${loaded ? "is-loaded" : ""}`}
@@ -147,9 +196,7 @@ export function LazyImage({
             setError(false);
             onLoad?.();
           }}
-          onError={() => {
-            setError(true);
-          }}
+          onError={imageFailed}
         />
       )}
     </div>

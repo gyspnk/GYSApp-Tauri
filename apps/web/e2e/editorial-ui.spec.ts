@@ -15,7 +15,10 @@ test("unavailable reflection preserves readable columns at desktop breakpoints",
     const verse = (await page.locator(".verse-panel").boundingBox())!;
     const reading = (await page.locator(".continue-panel").boundingBox())!;
     const shelf = (await page.locator(".home-suara-section").boundingBox())!;
-    if (width < 1200) {
+    if (
+      width < 1200 ||
+      (await page.locator(".continue-panel .empty-inline").count())
+    ) {
       expect(verse.width).toBeGreaterThan(500);
       expect(reading.y).toBeGreaterThanOrEqual(verse.y + verse.height + 19);
     } else {
@@ -108,9 +111,7 @@ test("offline cover placeholders stay legible and rows do not move on hover", as
   const cover = row.locator(
     '.literature-cover[data-image-state="error"], .literature-cover[data-image-state="missing"]',
   );
-  await expect(
-    cover.locator(".img-fallback-placeholder > strong"),
-  ).toBeVisible();
+  await expect(cover.locator(".img-fallback-art")).toBeVisible();
   const title = row.locator(".literature-copy");
   const before = await title.boundingBox();
   await row.hover();

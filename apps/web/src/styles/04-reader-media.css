@@ -1996,6 +1996,7 @@ body.gys-viewer-active {
 }
 .kidung-settings-layout {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
   margin-top: 24px;

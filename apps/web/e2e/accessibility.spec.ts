@@ -362,7 +362,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       await trigger.click();
 
       const dialog = page.getByRole("dialog", { name: "Temukan sesuatu" });
-      const input = dialog.getByRole("textbox", {
+      const input = dialog.getByRole("searchbox", {
         name: "Cari Alkitab, Kidung, Literatur, Iman, atau media",
       });
       const close = dialog.getByRole("button", { name: "Tutup", exact: true });
@@ -409,7 +409,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await enTrigger.click();
     const enDialog = page.getByRole("dialog", { name: "Find something" });
     await expect(
-      enDialog.getByRole("textbox", {
+      enDialog.getByRole("searchbox", {
         name: "Search the Bible, hymns, literature, faith, or media",
       }),
     ).toBeFocused();
@@ -423,7 +423,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await zhTrigger.click();
     const zhDialog = page.getByRole("dialog", { name: "查找内容" });
     await expect(
-      zhDialog.getByRole("textbox", {
+      zhDialog.getByRole("searchbox", {
         name: "搜索圣经、诗歌、文献、信仰或媒体",
       }),
     ).toBeFocused();
@@ -524,7 +524,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("heading", { name: "Literature", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("textbox", { name: "Search literature" }),
+      page.getByRole("searchbox", { name: "Search literature" }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Category", exact: true }),
@@ -553,7 +553,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("heading", { name: "文献", exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("textbox", { name: "搜索文献" })).toBeVisible();
+    await expect(
+      page.getByRole("searchbox", { name: "搜索文献" }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "分类", exact: true }),
     ).toBeVisible();

@@ -249,6 +249,7 @@ function Cover({
       wrapperClassName={`literature-cover${compact ? " is-compact" : ""}${item.imageUrl ? "" : " is-coverless"}`}
       src={item.imageUrl}
       fallbackTitle={item.title}
+      fallbackCategoryKey={item.category}
       fallbackCategory={fallbackCategory ?? labels[item.category]}
       alt={coverAlt ?? `Sampul ${item.title}`}
       loading={loading}
@@ -258,6 +259,7 @@ function Cover({
 }
 
 export function LiteraturePage({ locale }: { locale: Locale }) {
+  const searchRef = useRef<HTMLInputElement>(null);
   const catalogState = useLiteratureCatalog();
   const items = catalogState.status === "ready" ? catalogState.items : [];
   const status = catalogState.status;
@@ -379,6 +381,8 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         <label className="search-field">
           <span>{translate(locale, "literature.search")}</span>
           <input
+            type="search"
+            ref={searchRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={translate(locale, "literature.searchPlaceholder")}
@@ -416,6 +420,28 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         />
       </section>
 
+      {status === "ready" && (
+        <div className="catalog-filter-status">
+          <span role="status">
+            {translate(locale, "catalog.resultCount", {
+              count: filtered.length,
+            })}
+          </span>
+          {(query || category !== "all") && (
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setCategory("all");
+                searchRef.current?.focus();
+              }}
+            >
+              {translate(locale, "catalog.reset")}
+            </button>
+          )}
+        </div>
+      )}
       {status === "ready" &&
         featured.length > 0 &&
         !query &&

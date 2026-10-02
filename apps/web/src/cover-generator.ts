@@ -106,7 +106,7 @@ export function generateCoverSvg({
   height = 280,
 }: CoverOptions): string {
   const normCat = (category || "kesaksian").toLowerCase();
-  const theme = CATEGORY_THEMES[normCat] ?? DEFAULT_THEME;
+  const theme = CATEGORY_THEMES[normCat] ?? { ...DEFAULT_THEME, label: "GYS" };
   const hash = hashString(title || "GYS");
 
   const initials = (title || "GYS")
@@ -115,7 +115,18 @@ export function generateCoverSvg({
     .slice(0, 3)
     .map((w) => w[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
+    .replace(
+      /[<>&"']/g,
+      (character) =>
+        ({
+          "<": "&lt;",
+          ">": "&gt;",
+          "&": "&amp;",
+          '"': "&quot;",
+          "'": "&apos;",
+        })[character]!,
+    );
 
   // Pattern variant based on title hash
   const patternType = hash % 3;

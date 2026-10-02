@@ -473,6 +473,7 @@ export function GlobalSearch({
           <Icon name="search" size={18} className="global-search-input-icon" />
           <input
             ref={inputRef}
+            type="search"
             id="global-search-input"
             value={query}
             onChange={(event) => setQuery(event.target.value)}

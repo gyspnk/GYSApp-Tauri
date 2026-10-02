@@ -722,6 +722,7 @@
 
 .literature-shelf-item > span {
   display: grid;
+  align-content: start;
   gap: 3px;
   min-width: 0;
 }
@@ -735,6 +736,8 @@
 
 .literature-shelf-item strong {
   font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .literature-shelf-item small {

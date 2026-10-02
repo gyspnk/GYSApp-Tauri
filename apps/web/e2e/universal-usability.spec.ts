@@ -93,6 +93,7 @@ test("More exposes its setting categories before hidden technical details", asyn
 
   const rows = page.locator(".more-setting-section");
   await expect(rows).toHaveCount(7);
+  await rows.locator(":scope > summary").last().scrollIntoViewIfNeeded();
   await expect(rows.locator(":scope > summary").last()).toBeInViewport();
   await expect(page.locator(".distributed-assets-card")).toBeHidden();
   await expectNoHorizontalOverflow(page);

@@ -138,7 +138,7 @@ test("mobile literature search precedes shelves and puts results first", async (
   expect(toolbarBounds!.y).toBeLessThan(featuredBounds!.y);
 
   await page
-    .getByRole("textbox", { name: "Cari literatur", exact: true })
+    .getByRole("searchbox", { name: "Cari literatur", exact: true })
     .fill("Berakar");
   await expect(page.locator(".literature-row")).toHaveCount(1);
   await expect(featured).toHaveCount(0);

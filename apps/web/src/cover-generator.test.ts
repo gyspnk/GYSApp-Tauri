@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { generateCoverSvg, getCoverDataUri } from "./cover-generator.js";
 
 describe("cover-generator", () => {
+  it("escapes title initials inside SVG text", () => {
+    expect(generateCoverSvg({ title: "< & >" })).toContain("&lt;&amp;&gt;");
+  });
   it("generates an SVG with category theme and initials", () => {
     const svg = generateCoverSvg({
       title: "Pimpinan Tuhan Di Masa Sukar",

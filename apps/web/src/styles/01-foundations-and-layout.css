@@ -225,11 +225,11 @@ a:focus-visible {
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.97);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -513,17 +513,8 @@ a:focus-visible {
   outline: 0;
 }
 .route-view {
-  animation: route-enter 360ms var(--ease-out) both;
-}
-@keyframes route-enter {
-  from {
-    opacity: 0;
-    transform: translateY(7px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  /* A transformed route traps descendant fixed dialogs and toolbars. */
+  animation: fade-in var(--motion-normal) var(--ease-out);
 }
 .route-loading {
   max-width: 520px;

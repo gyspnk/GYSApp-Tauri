@@ -42,11 +42,13 @@ export function installServiceWorkerUpdates(): () => void {
     }
     const locale = readShellSettings(localStorage).locale;
     const blocked = busy();
-    message.textContent = blocked
-      ? translate(locale, "update.busy")
-      : translate(locale, "update.ready");
+    message.textContent = controller.updating
+      ? translate(locale, "update.activating")
+      : blocked
+        ? translate(locale, "update.busy")
+        : translate(locale, "update.ready");
     button.textContent = translate(locale, "update.reload");
-    button.disabled = blocked;
+    button.disabled = blocked || controller.updating;
     if (!banner.isConnected) document.body.append(banner);
   };
   const controller = new AppUpdateController(
@@ -100,11 +102,11 @@ export function installServiceWorkerUpdates(): () => void {
   const offer = (worker: ServiceWorker | null) => {
     if (!worker) return;
     if (worker.state === "installed") controller.offer(worker);
-    else
-      listen(worker, "statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller)
-          controller.offer(worker);
-      });
+    listen(worker, "statechange", () => {
+      if (worker.state === "installed" && navigator.serviceWorker.controller)
+        controller.offer(worker);
+      if (worker.state === "redundant") controller.withdraw(worker);
+    });
   };
   const check = async () => {
     try {

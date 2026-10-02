@@ -136,6 +136,40 @@ describe("Suara Sejati persistent + incremental cache", () => {
     unsubscribe();
   });
 
+  it("publishes a recovered cover for an existing cached post", async () => {
+    const saved = post({ id: "suara-cover" });
+    const recovered = {
+      ...saved,
+      imageUrl: "https://tjc.org/id/wp-content/uploads/cover.png",
+    };
+    storage.set(PERSIST_KEY, JSON.stringify({ items: [saved] }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              source: "tjc.org",
+              generatedAt: new Date().toISOString(),
+              items: [recovered],
+            }),
+          ),
+        ),
+      ),
+    );
+    const { fetchSuara, subscribeSuara } = await import("./suara.js");
+    const updates: SuaraSejatiPost[][] = [];
+    const unsubscribe = subscribeSuara((items) => updates.push(items));
+    await fetchSuara();
+    await until(() =>
+      expect(updates.at(-1)?.[0]?.imageUrl).toBe(recovered.imageUrl),
+    );
+    expect(JSON.parse(storage.get(PERSIST_KEY)!).items[0].imageUrl).toBe(
+      recovered.imageUrl,
+    );
+    unsubscribe();
+  });
+
   it("falls back to the packaged snapshot when nothing is cached", async () => {
     vi.stubGlobal(
       "fetch",

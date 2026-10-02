@@ -66,6 +66,8 @@
   --radius-sm: 5px;
   --radius-md: 8px;
   --radius-lg: 10px;
+  --radius-card: 16px;
+  --radius-feature: 20px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-fast: 150ms;
   --motion-normal: 220ms;

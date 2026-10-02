@@ -275,6 +275,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                 wrapperClassName="sauh-image-wrap"
                 src={selectedToday.imageUrl}
                 fallbackTitle={selectedToday.title}
+                fallbackCategoryKey="renungan"
                 fallbackCategory={translate(
                   locale,
                   "literature.category.renungan",
@@ -371,6 +372,10 @@ export function HomePage({ locale }: { locale: Locale }) {
           ) : (
             <div className="empty-inline">
               <p>{translate(locale, "home.noRecent")}</p>
+              <Link className="quiet-button" to="/bible">
+                <Icon name="book" size={18} />
+                {translate(locale, "home.startReading")}
+              </Link>
             </div>
           )}
         </article>
@@ -381,7 +386,9 @@ export function HomePage({ locale }: { locale: Locale }) {
           <div className="section-title-row">
             <div>
               <p className="date-line">{translate(locale, "home.testimony")}</p>
-              <h2 id="home-suara-heading">Suara Sejati</h2>
+              <h2 id="home-suara-heading">
+                {translate(locale, "suara.title")}
+              </h2>
             </div>
             <Link className="text-button" to="/suara">
               {translate(locale, "home.viewAll")}
@@ -419,6 +426,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                       wrapperClassName="suara-library-thumb"
                       src={post.imageUrl}
                       fallbackTitle={post.title}
+                      fallbackCategoryKey="kesaksian"
                       fallbackCategory={translate(locale, "home.testimony")}
                       alt={translate(locale, "home.coverAlt", {
                         title: post.title,
@@ -491,6 +499,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                       wrapperClassName="suara-library-thumb"
                       src={item.imageUrl}
                       fallbackTitle={item.title}
+                      fallbackCategoryKey={item.category}
                       fallbackCategory={literatureCategoryLabel(
                         locale,
                         item.category,

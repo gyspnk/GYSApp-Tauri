@@ -179,6 +179,7 @@ export function HymnCatalog({
               <label className="search-field">
                 <span>{translate(locale, "kidung.search")}</span>
                 <input
+                  type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={translate(locale, "kidung.searchPlaceholder")}
