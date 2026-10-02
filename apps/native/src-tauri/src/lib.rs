@@ -5,7 +5,7 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use tauri::webview::{NewWindowResponse, WebviewWindowBuilder};
+use tauri::webview::{NewWindowResponse, PageLoadEvent, WebviewWindowBuilder};
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_dialog::{DialogExt, FileAccessMode, FilePath};
@@ -165,6 +165,24 @@ fn platform_name() -> &'static str {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .on_page_load(|webview, payload| {
+            if webview.label() == "main" && matches!(payload.event(), PageLoadEvent::Finished) {
+                // Browser workers cannot reliably fetch the WebView2 custom protocol.
+                // Retire old PWA registrations even if they served an empty document.
+                let _ = webview.eval(r#"(() => {
+                    if (!['tauri.localhost', 'localhost'].includes(location.hostname) ||
+                        !('serviceWorker' in navigator)) return;
+                    navigator.serviceWorker.getRegistrations().then(async registrations => {
+                        const owned = registrations.filter(registration =>
+                            new URL(registration.scope).origin === location.origin &&
+                            [registration.active, registration.waiting, registration.installing]
+                                .some(worker => worker && new URL(worker.scriptURL).pathname === '/sw.js'));
+                        await Promise.all(owned.map(registration => registration.unregister()));
+                        if (owned.length) location.replace(new URL('/index.html', location.origin).href);
+                    }).catch(error => console.warn('Native worker retirement failed', error));
+                })()"#);
+            }
+        })
         .plugin(tauri_plugin_websocket::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_deep_link::init())

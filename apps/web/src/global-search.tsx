@@ -19,6 +19,7 @@ import {
   type SuaraSejatiFeed,
 } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
+import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
   bibleBookNames,
@@ -226,13 +227,13 @@ function ensureIndex() {
   return indexPromise;
 }
 
-const labels: Record<SearchKind, string> = {
-  hymn: "Kidung",
-  literature: "Literatur",
-  faith: "Iman",
-  sauh: "Sauh Bagi Jiwa",
-  suara: "Suara Sejati",
-  bible: "Alkitab",
+const resultIcons: Record<SearchKind, IconName> = {
+  hymn: "music",
+  literature: "file",
+  faith: "faith",
+  sauh: "book",
+  suara: "heart",
+  bible: "bible",
 };
 
 export function GlobalSearch({
@@ -447,29 +448,32 @@ export function GlobalSearch({
       >
         <div className="global-search-heading">
           <div>
-            <p className="date-line">{translate(locale, "search.eyebrow")}</p>
+            <p className="sr-only">{translate(locale, "search.eyebrow")}</p>
             <h2 id="global-search-title">
               {translate(locale, "search.title")}
             </h2>
           </div>
           <button
-            className="text-button"
+            className="icon-button global-search-close"
             type="button"
             onClick={() => {
               onClose();
               returnFocusRef?.current?.focus({ preventScroll: true });
             }}
             aria-label={translate(locale, "search.close")}
+            title={`${translate(locale, "search.close")} (Esc)`}
           >
-            {translate(locale, "search.close")} <kbd>Esc</kbd>
+            <Icon name="cancel" size={20} />
           </button>
         </div>
         <form onSubmit={submit} role="search" className="global-search-form">
-          <label htmlFor="global-search-input">
+          <label className="sr-only" htmlFor="global-search-input">
             {translate(locale, "search.label")}
           </label>
+          <Icon name="search" size={18} className="global-search-input-icon" />
           <input
             ref={inputRef}
+            type="search"
             id="global-search-input"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -515,13 +519,19 @@ export function GlobalSearch({
                     className={`search-result-mark is-${entry.kind}`}
                     aria-hidden="true"
                   >
-                    {labels[entry.kind].slice(0, 1)}
+                    <Icon name={resultIcons[entry.kind]} size={18} />
                   </span>
                   <span>
-                    <strong>{entry.title}</strong>
+                    <strong>
+                      {entry.kind === "faith"
+                        ? translate(locale, "faith.topic", {
+                            number: entry.id.split("-").at(-1) ?? "",
+                          })
+                        : entry.title}
+                    </strong>
                     <small>{entry.detail}</small>
                   </span>
-                  <span aria-hidden="true">↗</span>
+                  <Icon name="chevronRight" size={18} />
                 </button>
               </li>
             ))}

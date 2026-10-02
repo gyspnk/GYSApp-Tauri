@@ -1,3 +1,4 @@
+import "./generate-hymn-metadata.mjs";
 import { createHash } from "node:crypto";
 import {
   readFile,
@@ -12,6 +13,7 @@ const files = [
   ["bible-tb", "offline/bible/b_tb.db"],
   ["bible-tb-reader", "offline/bible/tb-reader.json"],
   ["hymn-catalog", "offline/hymn-catalog.json"],
+  ["hymn-metadata", "offline/hymn-metadata.json"],
   ["distributed-asset-catalog", "offline/distributed-assets.json"],
   ["music-lock", "offline/music-lock.json"],
   ["faith-topics", "offline/faith.json"],

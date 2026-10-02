@@ -2,6 +2,38 @@
 
 ## Unreleased — GA hardening slice
 
+- Refine global search with feature icons, localized Faith topics, an icon close
+  action, keyboard focus restoration and clearer internal navigation. Raise
+  hymn footer, narrow Faith search and accent choices to 44px targets; localize
+  full-verse counts and remove obsolete small-control overrides.
+
+- Recompose the application around default GYS blue, compact icon/label
+  navigation, direct home reading actions, a daily-reading feature and full-width
+  shelves. Remove navigation descriptions and shorten surrounding controls;
+  retain complete reading content and accessible labels.
+- Present every Faith statement as an always-open document paragraph with
+  independent PDF and Notes actions, rather than making the text a PDF button.
+
+- Dock the shared MIDI/Bible player in the sidebar with animated expansion to
+  the bottom of the window, persistent playback, reduced motion, and mobile
+  navigation clearance. Remove draggable-player state and obsolete CSS.
+- Add a PDF/text toggle to the Kidung list; close PDF reading directly to the
+  list, preserve explicit modes in song routes, and cache hydrated catalogs.
+- Display all ten complete Faith statements inline and keep notes and official
+  doctrine PDFs accessible. Standardize new controls at 44px and SVG focus.
+
+- Compact shared page spacing and PDF controls. Correct spread fit, page input,
+  resize/fullscreen rendering, scroll virtualization and cancellation; bound PDF
+  bitmap memory, coalesce rapid zoom, and provide shared accessible options,
+  keyboard navigation, downloads and reduced-motion behavior.
+
+- Adopt warm editorial reading typography and paper/ink themes, with licensed
+  fonts bundled for offline use. Improve first reading actions, hymn index
+  headings, Faith mobile paragraphs, book placeholders, reading widths and
+  custom-accent/settings contrast.
+- Separate native startup from browser shell workers, retire legacy packaged
+  workers and verify 30 Windows process relaunches plus full media soak.
+
 - Synced canonical hymn/chord parity to the 2026-09-05 gyschordweb source, added native keyless Edge-compatible online TTS with safe fallbacks, and hardened the responsive sidebar/media shell.
 - Clean-checkout documentation verification now validates tracked living documentation instead of local-only continuity artifacts that were never committed to the repository.
 - Generated canonical hymn/chord outputs with byte-integrity provenance are excluded from generic Prettier rewriting; their dedicated provenance verifier remains authoritative.

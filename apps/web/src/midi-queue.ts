@@ -17,11 +17,6 @@ import {
   selectMidiPlaylistItem,
 } from "./midi-playlist.js";
 import { speechPlayer } from "./speech-player.js";
-import {
-  getHymnPdfMeta,
-  resolveHymnMidiDefaults,
-  warmHymnPdfMeta,
-} from "./hymn-pdf-meta.js";
 import { readNaturalChordPreference } from "./hymn-preferences.js";
 
 type CatalogState = HymnCatalogEntry[];
@@ -71,7 +66,12 @@ async function loadItem(
   item: MidiPlaylistItem,
   options: { keepPlaying?: boolean } = {},
 ): Promise<void> {
-  const catalog = await loadCatalog();
+  // The shell installs queue coordination before any audio is requested.
+  // Load PDF-derived song defaults only with playback, alongside the catalog.
+  const [
+    catalog,
+    { getHymnPdfMeta, resolveHymnMidiDefaults, warmHymnPdfMeta },
+  ] = await Promise.all([loadCatalog(), import("./hymn-pdf-meta.js")]);
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
   const songMetaPromise = warmHymnPdfMeta(hymn);

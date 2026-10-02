@@ -76,6 +76,28 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     };
   }
 
+  const unknownShared = changedFiles.filter((file) => {
+    if (/\.test\.[cm]?[jt]sx?$/.test(file)) return false;
+    if (file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"))
+      return false;
+    if (
+      /^(?:packages\/(?:contracts|domain|testkit)\/src\/|apps\/web\/public\/sw\.js|pnpm-lock\.yaml|package\.json|apps\/web\/(?:package\.json|vite\.config|playwright))/.test(
+        file,
+      )
+    )
+      return true;
+    if (!file.startsWith("apps/web/src/")) return false;
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+      file,
+    );
+  });
+  if (unknownShared.length)
+    return {
+      description: `Full browser coverage for unclassified shared changes: ${unknownShared.join(", ")}`,
+      args: userArgs,
+      changedFiles,
+    };
+
   const specFiles = new Set();
   const grepPatterns = new Set();
   let runSmokeAll = false;
@@ -97,6 +119,19 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       grepPatterns.add("Bible");
     }
 
+    if (
+      /apps\/web\/src\/bible(?:-(?:chapter|verse-text|search-panel|notes-popup|reader-storage|highlights|search))?\.tsx?$/.test(
+        file,
+      )
+    ) {
+      specFiles.add("e2e/bible-annotations.spec.ts");
+      specFiles.add("e2e/reader-data-loading.spec.ts");
+      specFiles.add("e2e/visual.spec.ts");
+      specFiles.add("e2e/accessibility.spec.ts");
+      // Annotation tests include legacy migration without "Bible" in the title.
+      runSmokeAll = true;
+    }
+
     if (file.includes("sauh")) {
       specFiles.add("e2e/sauh-lifecycle.spec.ts");
       specFiles.add("e2e/sauh-error.spec.ts");
@@ -111,10 +146,13 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
 
     const isKidungPresentation =
-      file.includes("kidung-ux.css") ||
+      file.includes("kidung-") ||
       file.includes("kidung.tsx") ||
       file.includes("hymn-detail") ||
-      file.includes("hymn-reader");
+      file.includes("hymn-reader") ||
+      file.includes("hymn-payloads") ||
+      file.includes("hymn-search-corpus") ||
+      file.includes("hymn-metadata");
 
     if (
       file.includes("kidung") ||
@@ -129,10 +167,16 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
 
     if (isKidungPresentation) {
       specFiles.add("e2e/kidung-usability.spec.ts");
+      specFiles.add("e2e/kidung-loading.spec.ts");
+      specFiles.add("e2e/reader-data-loading.spec.ts");
+      specFiles.add("e2e/kidung-style-behavior.spec.ts");
+      specFiles.add("e2e/kidung-offline.spec.ts");
+      specFiles.add("e2e/playlist-parity.spec.ts");
       specFiles.add("e2e/visual.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");
+      specFiles.add("e2e/roadmap-ui-matrix.spec.ts");
       runSmokeAll = true;
     }
 
@@ -157,6 +201,18 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");
+      specFiles.add("e2e/roadmap-ui-matrix.spec.ts");
+      runSmokeAll = true;
+    }
+
+    if (
+      file.startsWith("apps/web/src/pdf") ||
+      file.includes("direct-manipulation")
+    ) {
+      specFiles.add("e2e/pdf-reader-efficiency.spec.ts");
+      specFiles.add("e2e/kidung-pdf-density.spec.ts");
+      specFiles.add("e2e/direct-manipulation.spec.ts");
+      specFiles.add("e2e/media-load.spec.ts");
       runSmokeAll = true;
     }
 
@@ -173,6 +229,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");
+      specFiles.add("e2e/roadmap-ui-matrix.spec.ts");
       runSmokeAll = true;
     }
   }

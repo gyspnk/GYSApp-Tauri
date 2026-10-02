@@ -1,0 +1,70 @@
+import { expect, test } from "@playwright/test";
+
+test.use({ serviceWorkers: "allow" });
+
+test("prepared catalog opens previously unvisited Kidung sections offline", async ({
+  page,
+  context,
+}) => {
+  test.skip(
+    process.env.GYS_E2E_DEV === "1",
+    "Production service worker contract",
+  );
+  await page.goto("/GYSApp-Tauri/kidung");
+  await expect(page.locator(".pujian-item")).toHaveCount(533);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
+    )
+    .toBe(true);
+  await context.setOffline(true);
+
+  await page.locator('.kidung-local-nav a[href$="section=settings"]').click();
+  await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
+  await page.locator('.kidung-local-nav a[href$="section=playlist"]').click();
+  await expect(page.locator(".kidung-tool-heading h1")).toHaveText("Playlist");
+  await page.locator('.kidung-local-nav a[href$="/kidung"]').click();
+  await expect(page.locator(".pujian-item")).toHaveCount(533);
+  await page
+    .getByRole("group", { name: "Mode tampilan kidung" })
+    .getByRole("button", { name: "Teks", exact: true })
+    .click();
+  await page.locator(".pujian-title").first().click();
+  await expect(page.locator(".hymn-detail-page")).toBeVisible();
+  await expect(page.locator(".lyrics-sheet").first()).toBeVisible();
+});
+
+test("a verified local PDF remains readable after returning offline", async ({
+  page,
+  context,
+}) => {
+  test.skip(
+    process.env.GYS_E2E_DEV === "1",
+    "Production service worker contract",
+  );
+  await page.route("https://raw.githubusercontent.com/**", (route) =>
+    route.abort(),
+  );
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(page.locator(".lyrics-sheet").first()).toBeVisible();
+  await page.getByRole("tab", { name: "PDF" }).click();
+  await expect(
+    page.locator("canvas[data-pdf-rendered='true']").first(),
+  ).toBeVisible({ timeout: 20000 });
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
+    )
+    .toBe(true);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(
+    page.locator("canvas[data-pdf-rendered='true']").first(),
+  ).toBeVisible({ timeout: 20000 });
+});

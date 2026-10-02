@@ -55,9 +55,13 @@ import {
   updateMidiPlaylistOptions,
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
+import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { Icon, type IconName } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { clearPlatformStorage, createPlatformServices } from "./platform.js";
+import { createPlatformServices } from "./platform.js";
+import { clearAppData } from "./app-data.js";
+
+export { clearAppData } from "./app-data.js";
 import {
   isTauriShell,
   openNativeEgysLogin,
@@ -323,27 +327,6 @@ async function saveBackup(envelope: unknown): Promise<boolean> {
     mimeType: "application/json",
     bytes: new TextEncoder().encode(JSON.stringify(envelope, null, 2)),
   });
-}
-
-export async function clearAppData() {
-  let resetError: unknown;
-  try {
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith("gys-")) localStorage.removeItem(key);
-    }
-  } catch (error) {
-    resetError = error;
-    recordDiagnostic("warn", "storage.reset.local", error);
-  }
-  try {
-    await clearPlatformStorage();
-  } catch (error) {
-    // A private browser or a native storage permission failure must be
-    // surfaced to the action handler instead of being reported as success.
-    resetError ??= error;
-    recordDiagnostic("warn", "storage.reset", error);
-  }
-  if (resetError) throw resetError;
 }
 
 export function MorePage({
@@ -964,6 +947,41 @@ export function MorePage({
         </div>
       </section>
 
+      <nav
+        className="more-library-hub"
+        aria-label={translate(locale, "more.explore")}
+      >
+        <h2>{translate(locale, "more.explore")}</h2>
+        <div className="more-library-grid">
+          {(
+            [
+              [
+                "/literatur",
+                "literature.title",
+                "more.exploreLiterature",
+                "book",
+              ],
+              ["/suara", "suara.title", "more.exploreSuara", "person"],
+              ["/sauh", "sauh.title", "more.exploreSauh", "sun"],
+            ] as const
+          ).map(([path, title, description, icon]) => (
+            <Link className="more-library-link" to={path} key={path}>
+              <span className="more-library-icon">
+                <Icon name={icon} size={24} />
+              </span>
+              <span>
+                <strong>{translate(locale, title)}</strong>
+                <small>{translate(locale, description)}</small>
+              </span>
+              <Icon name="chevronRight" size={18} />
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      <h2 className="more-settings-heading">
+        {translate(locale, "more.preferences")}
+      </h2>
       <section className="more-settings-list">
         <details className="more-setting-section" data-setting="account">
           <summary className="more-setting-row">
@@ -1267,6 +1285,7 @@ export function MorePage({
                 />
               </div>
             </div>
+            <UiPreferencesPanel locale={locale} />
           </article>
         </details>
 

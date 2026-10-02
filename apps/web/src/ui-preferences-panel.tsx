@@ -65,22 +65,6 @@ const FONT_OPTIONS: readonly PreferenceOption<UiFont>[] = [
   },
 ] as const;
 
-function useAppearanceHost(): HTMLElement | null {
-  const [host, setHost] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const findHost = () => {
-      setHost(document.querySelector<HTMLElement>(".appearance-card"));
-    };
-    findHost();
-    const observer = new MutationObserver(findHost);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
-
-  return host;
-}
-
 function focusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
@@ -171,7 +155,6 @@ function useModalKeyboard(
 }
 
 export function UiPreferencesPanel({ locale }: { locale: Locale }) {
-  const host = useAppearanceHost();
   const preferences = useSyncExternalStore(
     subscribeUiPreferences,
     getUiPreferences,
@@ -193,29 +176,26 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
   }));
   useModalKeyboard(open, panelRef, openerRef, close);
 
-  const launcher = host
-    ? createPortal(
-        <div className="ui-preferences-entry">
-          <div className="ui-preferences-entry-copy">
-            <strong>{translate(locale, "more.readabilityTitle")}</strong>
-            <small>{translate(locale, "more.readabilityDescription")}</small>
-          </div>
-          <button
-            ref={openerRef}
-            type="button"
-            className="quiet-button ui-preferences-open"
-            onClick={() => setOpen(true)}
-            aria-haspopup="dialog"
-          >
-            <span className="ui-preferences-open-mark" aria-hidden="true">
-              Aa
-            </span>
-            <span>{translate(locale, "more.readabilityTitle")}</span>
-          </button>
-        </div>,
-        host,
-      )
-    : null;
+  const launcher = (
+    <div className="ui-preferences-entry">
+      <div className="ui-preferences-entry-copy">
+        <strong>{translate(locale, "more.readabilityTitle")}</strong>
+        <small>{translate(locale, "more.readabilityDescription")}</small>
+      </div>
+      <button
+        ref={openerRef}
+        type="button"
+        className="quiet-button ui-preferences-open"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+      >
+        <span className="ui-preferences-open-mark" aria-hidden="true">
+          Aa
+        </span>
+        <span>{translate(locale, "more.readabilityTitle")}</span>
+      </button>
+    </div>
+  );
 
   const dialog =
     open && typeof document !== "undefined"

@@ -1,0 +1,245 @@
+{
+  "height": 64,
+  "rows": [
+    {
+      "candidate": false,
+      "ms": 541.3000000044703
+    },
+    {
+      "candidate": true,
+      "ms": 501.20000000298023
+    },
+    {
+      "candidate": false,
+      "ms": 477.19999999552965
+    },
+    {
+      "candidate": true,
+      "ms": 516
+    },
+    {
+      "candidate": false,
+      "ms": 470.90000000596046
+    },
+    {
+      "candidate": true,
+      "ms": 520.2999999970198
+    },
+    {
+      "candidate": false,
+      "ms": 510
+    },
+    {
+      "candidate": true,
+      "ms": 460.6000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 505.19999999552965
+    },
+    {
+      "candidate": true,
+      "ms": 513.1000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 560.8999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 514
+    },
+    {
+      "candidate": false,
+      "ms": 512.1000000014901
+    },
+    {
+      "candidate": true,
+      "ms": 507.80000000447035
+    },
+    {
+      "candidate": false,
+      "ms": 477.29999999701977
+    },
+    {
+      "candidate": true,
+      "ms": 500.1000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 463.20000000298023
+    },
+    {
+      "candidate": true,
+      "ms": 589.3000000044703
+    },
+    {
+      "candidate": false,
+      "ms": 484.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 473
+    },
+    {
+      "candidate": false,
+      "ms": 491.79999999701977
+    },
+    {
+      "candidate": true,
+      "ms": 493.6000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 493.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 495
+    },
+    {
+      "candidate": false,
+      "ms": 492.5
+    },
+    {
+      "candidate": true,
+      "ms": 471.5
+    },
+    {
+      "candidate": false,
+      "ms": 492
+    },
+    {
+      "candidate": true,
+      "ms": 437.20000000298023
+    },
+    {
+      "candidate": false,
+      "ms": 467.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 498.19999999552965
+    },
+    {
+      "candidate": false,
+      "ms": 496.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 464.80000000447035
+    },
+    {
+      "candidate": false,
+      "ms": 482.30000000447035
+    },
+    {
+      "candidate": true,
+      "ms": 520.2000000029802
+    },
+    {
+      "candidate": false,
+      "ms": 533
+    },
+    {
+      "candidate": true,
+      "ms": 487.1000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 472.20000000298023
+    },
+    {
+      "candidate": true,
+      "ms": 578.3000000044703
+    },
+    {
+      "candidate": false,
+      "ms": 600.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 573.3999999985099
+    },
+    {
+      "candidate": false,
+      "ms": 582.6000000014901
+    },
+    {
+      "candidate": true,
+      "ms": 543.7000000029802
+    },
+    {
+      "candidate": false,
+      "ms": 649.1000000014901
+    },
+    {
+      "candidate": true,
+      "ms": 598.7999999970198
+    },
+    {
+      "candidate": false,
+      "ms": 612.5
+    },
+    {
+      "candidate": true,
+      "ms": 550
+    },
+    {
+      "candidate": false,
+      "ms": 558.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 552.5
+    },
+    {
+      "candidate": false,
+      "ms": 523.2999999970198
+    },
+    {
+      "candidate": true,
+      "ms": 599
+    },
+    {
+      "candidate": false,
+      "ms": 545
+    },
+    {
+      "candidate": true,
+      "ms": 552.0999999940395
+    },
+    {
+      "candidate": false,
+      "ms": 721.3999999985099
+    },
+    {
+      "candidate": true,
+      "ms": 492.1000000014901
+    },
+    {
+      "candidate": false,
+      "ms": 492.5
+    },
+    {
+      "candidate": true,
+      "ms": 696.8999999985099
+    },
+    {
+      "candidate": false,
+      "ms": 494.09999999403954
+    },
+    {
+      "candidate": true,
+      "ms": 483.79999999701977
+    },
+    {
+      "candidate": false,
+      "ms": 453.6000000014901
+    },
+    {
+      "candidate": true,
+      "ms": 565.8999999985099
+    }
+  ]
+}

@@ -1,5 +1,8 @@
+import { useReadinessMarker } from "./readiness.js";
+import { enhancePdfReader } from "./direct-manipulation.js";
 import {
   useCallback,
+  useId,
   useEffect,
   useMemo,
   useRef,
@@ -27,6 +30,8 @@ import {
   pdfPageWindow,
   pdfLayoutForViewport,
   pdfPercentScale,
+  pdfRasterScale,
+  pdfFitScale,
   shouldRenderPdfPage,
   type PdfLayout,
 } from "./pdf-utils.js";
@@ -192,6 +197,7 @@ function VerticalPdfPage({
   horizontal = false,
   onReady,
   onError,
+  viewportRevision,
 }: {
   documentProxy: PDFDocumentProxy;
   pageNumber: number;
@@ -205,6 +211,7 @@ function VerticalPdfPage({
   editorEnabled?: boolean;
   onEditChord?: (noteIdx: number, current: string) => void;
   horizontal?: boolean;
+  viewportRevision: number;
   onReady?: () => void;
   onError?: () => void;
 }) {
@@ -233,9 +240,6 @@ function VerticalPdfPage({
         const isNearViewport = entries.some((entry) => entry.isIntersecting);
         setNearViewport(isNearViewport);
         setStatus((current) => (isNearViewport ? current : "idle"));
-        if (isNearViewport) {
-          onActive(pageNumber);
-        }
       },
       {
         root: stageRef.current,
@@ -245,7 +249,7 @@ function VerticalPdfPage({
     );
     observer.observe(host);
     return () => observer.disconnect();
-  }, [onActive, pageNumber, stageRef]);
+  }, [pageNumber, stageRef]);
 
   useEffect(() => {
     if (!nearViewport || !canvasRef.current || !hostRef.current) return;
@@ -265,7 +269,7 @@ function VerticalPdfPage({
           return;
         }
         const baseViewport = nextPage.getViewport({ scale: 1 });
-        const availableWidth = Math.max(320, hostRef.current.clientWidth - 32);
+        const availableWidth = Math.max(1, hostRef.current.clientWidth - 32);
         const fitScale = availableWidth / baseViewport.width;
         if (zoomPercent === 100) fitScaleRef.current = fitScale;
         const scale = pdfPercentScale(
@@ -273,24 +277,38 @@ function VerticalPdfPage({
           fitScale,
           fitScaleRef.current ?? baseScale,
         );
-        const dpr =
-          typeof window !== "undefined" && window.devicePixelRatio
-            ? window.devicePixelRatio
-            : 1;
+        const logicalViewport = nextPage.getViewport({ scale });
+        hostRef.current.style.minHeight = `${logicalViewport.height + 32}px`;
+        const dpr = pdfRasterScale(
+          logicalViewport.width,
+          logicalViewport.height,
+          window.devicePixelRatio,
+        );
         const viewport = nextPage.getViewport({
-          scale: Math.max(0.08, scale * dpr),
+          scale: scale * dpr,
         });
         const canvas = canvasRef.current;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         canvas.style.width = `${viewport.width / dpr}px`;
         canvas.style.height = `${viewport.height / dpr}px`;
+        // A detached render target prevents a cancelled task from writing into
+        // the same visible canvas as the next zoom/resize render.
+        const buffer = document.createElement("canvas");
+        buffer.width = canvas.width;
+        buffer.height = canvas.height;
         renderTask = nextPage.render({
-          canvas,
-          canvasContext: canvas.getContext("2d")!,
+          canvas: buffer,
+          canvasContext: buffer.getContext("2d")!,
           viewport,
         });
-        return renderTask.promise;
+        return renderTask.promise
+          .then(() => {
+            if (!disposed) canvas.getContext("2d")!.drawImage(buffer, 0, 0);
+          })
+          .finally(() => {
+            buffer.width = buffer.height = 0;
+          });
       })
       .then(() => {
         if (!disposed) {
@@ -308,6 +326,7 @@ function VerticalPdfPage({
     return () => {
       disposed = true;
       renderTask?.cancel();
+      setStatus("idle");
       cleanupPdfPage(pdfPage);
       if (canvasRef.current) {
         canvasRef.current.width = 0;
@@ -319,6 +338,7 @@ function VerticalPdfPage({
     zoomPercent,
     baseScale,
     horizontal,
+    viewportRevision,
     nearViewport,
     pageNumber,
     onReady,
@@ -340,7 +360,9 @@ function VerticalPdfPage({
         <canvas
           ref={canvasRef}
           aria-hidden={status !== "ready"}
-          data-pdf-rendered={status === "ready" ? "true" : "false"}
+          data-pdf-rendered={
+            status === "ready" && nearViewport ? "true" : "false"
+          }
         />
         <PdfChordLayer
           markers={chordMarkers}
@@ -415,7 +437,21 @@ export function PdfReader({
     Math.max(1, pageRange?.start ?? 1),
   );
   const [zoomPercent, setZoomPercent] = useState(100);
-  const [advancedOpen, setAdvancedOpen] = useState(variant === "hymn");
+  const [renderZoomPercent, setRenderZoomPercent] = useState(100);
+  const [viewportRevision, setViewportRevision] = useState(0);
+  const [pageDraft, setPageDraft] = useState("");
+  const toolsId = useId();
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setRenderZoomPercent(zoomPercent),
+      100,
+    );
+    return () => window.clearTimeout(timer);
+  }, [zoomPercent]);
+  useEffect(() => {
+    setPageDraft(String(page - pageStart + 1));
+  }, [page, pageStart]);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [fullscreenActive, setFullscreenActive] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const downloadPdf = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -463,8 +499,6 @@ export function PdfReader({
         void request
           .then(() => setFullscreenActive(true))
           .catch(() => undefined);
-      } else {
-        setFullscreenActive(true);
       }
     }
   };
@@ -510,6 +544,7 @@ export function PdfReader({
   const [loadPhase, setLoadPhase] = useState<
     "loading" | "slow" | "ready" | "error"
   >("loading");
+  useReadinessMarker("gys-pdf-page-ready", status === "ready", page);
   const markPageReady = useCallback(() => {
     setLoadPhase("ready");
     setStatus("ready");
@@ -544,6 +579,58 @@ export function PdfReader({
   >(undefined);
   const { toolbarVisible, restoreToolbar } = useReadingToolbarAutoHide();
   const effectiveLayout = pdfLayoutForViewport(layout, viewportWidth);
+  const markActivePage = useCallback((nextPage: number) => {
+    setPage((current) => (current === nextPage ? current : nextPage));
+  }, []);
+  useEffect(() => {
+    const stage = pdfStageRef.current;
+    if (
+      !stage ||
+      (effectiveLayout !== "vertical" && effectiveLayout !== "horizontal")
+    )
+      return;
+    let frame: number | undefined;
+    const onScroll = () => {
+      if (frame !== undefined) return;
+      frame = requestAnimationFrame(() => {
+        frame = undefined;
+        const bounds = stage.getBoundingClientRect();
+        // One hit-test per frame also works when a zoomed page is much taller
+        // than the viewport; intersection-ratio thresholds cannot track that.
+        const active = document
+          .elementFromPoint(
+            bounds.left + bounds.width / 2,
+            bounds.top + bounds.height / 2,
+          )
+          ?.closest<HTMLElement>("[data-pdf-page]");
+        if (active && stage.contains(active))
+          markActivePage(Number(active.dataset.pdfPage));
+      });
+    };
+    stage.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      stage.removeEventListener("scroll", onScroll);
+      if (frame !== undefined) cancelAnimationFrame(frame);
+    };
+  }, [effectiveLayout, markActivePage]);
+
+  useEffect(() => {
+    const stage = pdfStageRef.current;
+    if (!stage) return;
+    let timer: number | undefined;
+    const observer = new ResizeObserver(() => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(
+        () => setViewportRevision((value) => value + 1),
+        100,
+      );
+    });
+    observer.observe(stage);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const onResize = () => setViewportWidth(window.innerWidth);
@@ -591,7 +678,7 @@ export function PdfReader({
       effectiveLayout !== "horizontal"
     )
       initialScaleRef.current = undefined;
-  }, [zoomPercent, layout, effectiveLayout]);
+  }, [zoomPercent, layout, effectiveLayout, viewportRevision]);
 
   // gyschordweb updateCenteringAndOverflow: only-vertical-centered page when
   // shorter than the stage, is-overflowing when wider than the stage.
@@ -620,10 +707,17 @@ export function PdfReader({
         target &&
         (target.tagName === "INPUT" ||
           target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT")
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
       )
         return;
-      if (status !== "ready") return;
+      if (!documentProxy) return;
+      if (
+        target &&
+        target !== document.body &&
+        !pdfReaderRef.current?.contains(target)
+      )
+        return;
       if (event.ctrlKey || event.metaKey) {
         if (event.key === "+" || event.key === "=") {
           event.preventDefault();
@@ -634,12 +728,38 @@ export function PdfReader({
         }
         return;
       }
+      if (
+        target &&
+        target !== document.body &&
+        !pdfReaderRef.current?.contains(target)
+      )
+        return;
       switch (event.key) {
+        case "ArrowLeft":
+        case "PageUp":
+          event.preventDefault();
+          goToPage(page - (effectiveLayout === "two" ? 2 : 1));
+          break;
+        case "ArrowRight":
+        case "PageDown":
+          event.preventDefault();
+          goToPage(page + (effectiveLayout === "two" ? 2 : 1));
+          break;
+        case "Home":
+          event.preventDefault();
+          goToPage(pageStart);
+          break;
+        case "End":
+          event.preventDefault();
+          goToPage(pageStart + total - 1);
+          break;
         case "ArrowUp":
+          if (zoomPercent > 100) break;
           event.preventDefault();
           goToPage(page - (effectiveLayout === "two" ? 2 : 1));
           break;
         case "ArrowDown":
+          if (zoomPercent > 100) break;
           event.preventDefault();
           goToPage(page + (effectiveLayout === "two" ? 2 : 1));
           break;
@@ -647,7 +767,7 @@ export function PdfReader({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [status, page, effectiveLayout]);
+  }, [documentProxy, page, effectiveLayout, pageStart, total, zoomPercent]);
 
   useEffect(() => {
     if (!documentProxy || !zoomAnchorRef.current) return;
@@ -940,39 +1060,48 @@ export function PdfReader({
         }
         pdfPages.push(pdfPage);
         const baseViewport = pdfPage.getViewport({ scale: 1 });
-        const availableWidth = Math.max(320, stageWidth - 32);
-        const fitWidth = availableWidth / baseViewport.width;
-        const fitHeight = Math.max(120, stageHeight - 32) / baseViewport.height;
-        // gyschordweb page-fit: single/two fits both axes; vertical fits width.
-        const fitScale =
-          effectiveLayout === "single"
-            ? Math.min(fitWidth, fitHeight)
-            : fitWidth;
-        if (zoomPercent === 100) initialScaleRef.current = fitScale;
+        const fitScale = pdfFitScale(
+          stageWidth,
+          stageHeight,
+          baseViewport.width,
+          baseViewport.height,
+          pageNumbers.length,
+        );
+        if (renderZoomPercent === 100) initialScaleRef.current = fitScale;
         const scale = pdfPercentScale(
-          zoomPercent,
+          renderZoomPercent,
           fitScale,
           initialScaleRef.current,
         );
-        const dpr =
-          typeof window !== "undefined" && window.devicePixelRatio
-            ? window.devicePixelRatio
-            : 1;
+        const logicalViewport = pdfPage.getViewport({ scale });
+        const dpr = pdfRasterScale(
+          logicalViewport.width,
+          logicalViewport.height,
+          window.devicePixelRatio,
+        );
         const viewport = pdfPage.getViewport({
-          scale: Math.max(0.08, scale * dpr),
+          scale: scale * dpr,
         });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         // CSS size keeps the page at its logical scale (dpr-aware rendering).
         canvas.style.width = `${viewport.width / dpr}px`;
         canvas.style.height = `${viewport.height / dpr}px`;
+        const buffer = document.createElement("canvas");
+        buffer.width = canvas.width;
+        buffer.height = canvas.height;
         const renderTask = pdfPage.render({
-          canvas,
-          canvasContext: canvas.getContext("2d")!,
+          canvas: buffer,
+          canvasContext: buffer.getContext("2d")!,
           viewport,
         });
         renderTasks.push(renderTask);
-        await renderTask.promise;
+        try {
+          await renderTask.promise;
+          if (!disposed) canvas.getContext("2d")!.drawImage(buffer, 0, 0);
+        } finally {
+          buffer.width = buffer.height = 0;
+        }
       }),
     )
       .then(() => {
@@ -998,7 +1127,15 @@ export function PdfReader({
       }
       if (secondaryCanvasRef.current) secondaryCanvasRef.current.width = 0;
     };
-  }, [documentProxy, effectiveLayout, page, pageStart, total, zoomPercent]);
+  }, [
+    documentProxy,
+    effectiveLayout,
+    page,
+    pageStart,
+    total,
+    renderZoomPercent,
+    viewportRevision,
+  ]);
 
   const goToPage = (next: number) => {
     const bounded = Math.max(
@@ -1012,11 +1149,31 @@ export function PdfReader({
       `[data-pdf-page="${bounded}"]`,
     );
     target?.scrollIntoView({
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
       block: effectiveLayout === "vertical" ? "start" : "nearest",
       inline: effectiveLayout === "horizontal" ? "center" : "nearest",
     });
   };
+  useEffect(() => {
+    if (
+      !documentProxy ||
+      (effectiveLayout !== "vertical" && effectiveLayout !== "horizontal")
+    )
+      return;
+    const frame = requestAnimationFrame(() => {
+      const target = verticalStageRef.current?.querySelector<HTMLElement>(
+        `[data-pdf-page="${page}"]`,
+      );
+      target?.scrollIntoView({
+        behavior: "instant",
+        block: effectiveLayout === "vertical" ? "start" : "nearest",
+        inline: effectiveLayout === "horizontal" ? "start" : "nearest",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [documentProxy, effectiveLayout]);
   const canResume =
     total > 0 &&
     resumePage !== undefined &&
@@ -1065,6 +1222,10 @@ export function PdfReader({
     setLoadProgress(8);
     setLoadAttempt((attempt) => attempt + 1);
   };
+  useEffect(() => {
+    if (!pdfReaderRef.current) return;
+    return enhancePdfReader(pdfReaderRef.current);
+  }, [variant, locale]);
   const readerTitle = title ?? translate(locale, "pdf.readerTitle");
 
   return (
@@ -1077,7 +1238,18 @@ export function PdfReader({
       data-pdf-loading-progress={loadProgress}
       onPointerMove={restoreToolbar}
     >
-      <div className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}>
+      <div
+        className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape" || !advancedOpen) return;
+          event.stopPropagation();
+          event.preventDefault();
+          setAdvancedOpen(false);
+          pdfReaderRef.current
+            ?.querySelector<HTMLButtonElement>(".pdf-advanced-toggle")
+            ?.focus();
+        }}
+      >
         <div className="pdf-page-navigation">
           <button
             type="button"
@@ -1101,39 +1273,30 @@ export function PdfReader({
                   page: pageStart > 1 ? page - pageStart + 1 : page,
                 })}
           </span>
-          {canResume && (
-            <button
-              className="pdf-resume"
-              type="button"
-              data-pdf-resume="true"
-              onClick={() => goToPage(resumePage)}
-            >
-              {translate(locale, "pdf.resume", { page: resumePage })}
-            </button>
-          )}
           {total > 1 && (
             <label className="pdf-page-jump">
               {translate(locale, "pdf.jumpLabel")}
               <input
                 type="number"
-                min={pageStart}
-                max={pageStart + Math.max(0, total - 1)}
-                value={page}
+                min={1}
+                max={total}
+                value={pageDraft}
                 aria-label={translate(locale, "pdf.jumpAria")}
-                onChange={(event) =>
-                  setPage(
-                    Math.max(
-                      pageStart,
-                      Math.min(
-                        pageStart + Math.max(0, total - 1),
-                        Number(event.target.value) || pageStart,
-                      ),
-                    ),
-                  )
-                }
+                onChange={(event) => setPageDraft(event.target.value)}
+                onBlur={(event) => {
+                  const next = Number(event.currentTarget.value) || 1;
+                  goToPage(pageStart + next - 1);
+                  setPageDraft(String(Math.max(1, Math.min(total, next))));
+                }}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter")
-                    goToPage(Number(event.currentTarget.value) || 1);
+                  if (event.key === "Enter") event.currentTarget.blur();
+                  if (event.key === "Escape") {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    event.currentTarget.value = String(page - pageStart + 1);
+                    setPageDraft(event.currentTarget.value);
+                    event.currentTarget.blur();
+                  }
                 }}
               />
             </label>
@@ -1148,72 +1311,23 @@ export function PdfReader({
             <Icon name="chevronRight" size={18} />
             <span className="sr-only">{translate(locale, "pdf.next")}</span>
           </button>
+          {canResume && (
+            <button
+              className="pdf-resume"
+              type="button"
+              data-pdf-resume="true"
+              onClick={() => goToPage(resumePage)}
+            >
+              {translate(locale, "pdf.resume", { page: resumePage })}
+            </button>
+          )}
         </div>
-        {variant === "hymn" && total > 1 && (
-          <div
-            className="pdf-view-scroll-toggle"
-            role="group"
-            aria-label={translate(locale, "pdf.viewModeGroup")}
-          >
-            <button
-              type="button"
-              className={layout === "two" ? "is-active" : ""}
-              aria-pressed={layout === "two"}
-              aria-label={translate(locale, "pdf.layout.two")}
-              onClick={() => setLayout("two")}
-              title={translate(locale, "pdf.layout.two")}
-            >
-              <Icon name="columns" size={15} />
-              <span className="sr-only">
-                {translate(locale, "pdf.layout.two")}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={layout === "single" ? "is-active" : ""}
-              aria-pressed={layout === "single"}
-              aria-label={translate(locale, "pdf.layout.single")}
-              onClick={() => setLayout("single")}
-              title={translate(locale, "pdf.layout.single")}
-            >
-              <Icon name="file" size={15} />
-              <span className="sr-only">
-                {translate(locale, "pdf.layout.single")}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={layout === "vertical" ? "is-active" : ""}
-              aria-pressed={layout === "vertical"}
-              aria-label={translate(locale, "pdf.layout.vertical")}
-              onClick={() => setLayout("vertical")}
-              title={translate(locale, "pdf.layout.verticalTitle")}
-            >
-              <Icon name="swapVert" size={15} />
-              <span className="sr-only">
-                {translate(locale, "pdf.layout.vertical")}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={layout === "horizontal" ? "is-active" : ""}
-              aria-pressed={layout === "horizontal"}
-              aria-label={translate(locale, "pdf.layout.horizontal")}
-              onClick={() => setLayout("horizontal")}
-              title={translate(locale, "pdf.layout.horizontalTitle")}
-            >
-              <Icon name="book" size={15} />
-              <span className="sr-only">
-                {translate(locale, "pdf.layout.horizontal")}
-              </span>
-            </button>
-          </div>
-        )}
-        {variant === "hymn" && (
+        {
           <button
             className="pdf-advanced-toggle"
             type="button"
             aria-expanded={advancedOpen}
+            aria-controls={toolsId}
             aria-label={translate(
               locale,
               advancedOpen ? "pdf.settingsClose" : "pdf.settings",
@@ -1232,8 +1346,8 @@ export function PdfReader({
               )}
             </span>
           </button>
-        )}
-        {variant === "hymn" && (
+        }
+        {
           <button
             className="pdf-fullscreen-toggle"
             type="button"
@@ -1247,16 +1361,13 @@ export function PdfReader({
               fullscreenActive ? "pdf.exitFullscreen" : "pdf.fullscreen",
             )}
           >
-            {translate(
-              locale,
-              fullscreenActive
-                ? "pdf.exitFullscreenShort"
-                : "pdf.fullscreenShort",
-            )}
+            <Icon name="fullscreen" size={18} />
           </button>
-        )}
+        }
         <div
+          id={toolsId}
           className={`pdf-advanced-controls${advancedOpen ? " is-open" : ""}`}
+          inert={!advancedOpen}
         >
           <div
             className="pdf-zoom-controls"
@@ -1280,6 +1391,7 @@ export function PdfReader({
               data-pdf-zoom-indicator="true"
               aria-label={`${zoomPercent}%`}
               title={translate(locale, "pdf.zoomResetTitle")}
+              onClick={() => setZoomPercent(100)}
               onDoubleClick={() => setZoomPercent(100)}
               onTouchEnd={(event) => {
                 // Double-tap on the indicator resets zoom (gyschordweb parity)
@@ -1408,10 +1520,10 @@ export function PdfReader({
               {translate(locale, "pdf.layoutNarrowNote")}
             </small>
           )}
-          {downloadUrl && (
+          {(downloadUrl || src) && (
             <a
               className="pdf-download"
-              href={downloadUrl}
+              href={downloadUrl ?? src}
               download={`${readerTitle}.pdf`}
               onClick={downloadPdf}
               aria-label={translate(locale, "pdf.download")}
@@ -1555,15 +1667,12 @@ export function PdfReader({
                   key={pageNumber}
                   documentProxy={documentProxy!}
                   pageNumber={pageNumber}
-                  zoomPercent={zoomPercent}
+                  zoomPercent={renderZoomPercent}
                   baseScale={initialScaleRef.current}
-                  stageRef={verticalStageRef}
+                  stageRef={pdfStageRef}
+                  viewportRevision={viewportRevision}
                   locale={locale}
-                  onActive={(nextPage) => {
-                    setPage((current) =>
-                      current === nextPage ? current : nextPage,
-                    );
-                  }}
+                  onActive={markActivePage}
                   {...(chordOverlays?.[String(pageNumber)]
                     ? { chordMarkers: chordOverlays[String(pageNumber)] }
                     : {})}

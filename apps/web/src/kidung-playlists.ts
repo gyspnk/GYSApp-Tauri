@@ -7,7 +7,7 @@
  * `gys-playlist-backup` IndexedDB database used by midi-playlist.ts, so an
  * evicted localStorage cannot destroy user data.
  */
-import type { HymnCatalogEntry, MidiPlaylistItem } from "@gys/contracts";
+import type { HymnMetadata, MidiPlaylistItem } from "@gys/contracts";
 
 export type SavedPlaylist = {
   id: string;
@@ -18,7 +18,7 @@ export type SavedPlaylist = {
 
 export function importUpstreamPlaylist(
   value: unknown,
-  catalog: readonly HymnCatalogEntry[],
+  catalog: readonly HymnMetadata[],
 ): { name: string; songIds: string[] } {
   if (!value || typeof value !== "object")
     throw new Error("Playlist JSON must be an object");
@@ -55,7 +55,7 @@ export function importUpstreamPlaylist(
 
 export function exportUpstreamPlaylist(
   playlist: SavedPlaylist,
-  catalog: readonly HymnCatalogEntry[],
+  catalog: readonly HymnMetadata[],
 ): {
   name: string;
   songs: Array<{ nomor: string; judul: string; fileHref: string }>;

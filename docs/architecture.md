@@ -140,23 +140,50 @@ history live in versioned local keys and remain available offline. The split
 controller owns ratio clamping, pointer lifecycle, keyboard-safe persistence,
 and the mobile guard independently of the reader component.
 
+Bible chapter presentation belongs to `bible-chapter.tsx`; marker parsing,
+entity decoding and literal query highlighting belong to `bible-verse-text.tsx`.
+Verse text is memoized independently of selection, notes, bookmarks and speech
+state. Parsed segments depend on raw text; compiled query expressions depend on
+the query and are reused across segments. Next-chapter and secondary chapter
+lists depend on navigation and pack state rather than unrelated UI updates.
+The reader remains responsible for loading, search, annotation persistence and
+split orchestration; these module boundaries do not add lazy loading delays.
+
 The global media surface subscribes to the external MIDI and speech stores,
 not React render ticks. It exposes the active source as an internal route (and
-verse hash for Bible speech), keeps title/progress visible in minimized mode,
-clamps a persisted drag position after viewport changes, and registers Media
-Session handlers against live refs so position updates do not recreate the
-handler set.
+verse hash for Bible speech), and keeps title/progress visible in the sidebar.
+A ResizeObserver measures the sidebar anchor; the expanded player spans the
+bottom of the viewport. A 320ms Web Animation moves the same surface between
+those bounds without restarting either playback engine. Reduced motion skips
+that animation, and phones retain a compact dock above navigation. Collapsed
+rails and fullscreen scores keep play/expand controls reachable. Media Session
+handlers use live refs so position updates do not recreate the handler set.
 
 Kidung subscribes only to the MIDI settings store (tempo/transpose/instrument),
 not the 4 Hz playback-position store. This keeps the reader shell stable while
-the floating surface updates its progress indicator.
+the persistent surface updates its progress indicator.
+
+The Kidung catalog offers PDF and text modes, with PDF selected on a new list
+visit. Song routes carry `mode=pdf` or `mode=lyrics`; closing a PDF goes directly
+to the song list. Core catalog data renders before installed collections finish
+hydrating. Successful catalogs remain in memory across reader/list navigation,
+while installed collections refresh on mount and asset-change events.
+
+All ten Faith statements are rendered in full on the page. Official doctrine
+PDFs and personal notes remain separate actions.
 
 The Kidung catalog builds a normalized search index once per loaded catalog
 revision. Queries use token/prefix AND matching and preserve quoted phrases;
 the UI never lower-cases the full lyric corpus on every keystroke. The vertical
 PDF reader uses the same bounded-resource principle: pages outside the
 IntersectionObserver preload window cancel their render task and release their
-canvas. BFF Literature and Suara Sejati cache boundaries share in-flight
+canvas. The observer root is the actual scroll stage, and active-page tracking
+is separate from preloading. PDF raster zoom coalesces updates for 100ms;
+private render buffers isolate cancelled tasks from their successors. Logical
+zoom retains the 100–800% range while each bitmap is bounded to 4 million
+pixels, 8192px per side and a maximum device pixel ratio of 2. The stage's
+ResizeObserver refreshes fit rendering after resize/fullscreen, and page input
+commits on Enter/blur rather than decoding each intermediate digit. BFF Literature and Suara Sejati cache boundaries share in-flight
 upstream requests, so concurrent shell mounts cannot create duplicate fetches.
 Global search and its Bible worker dependencies are imported only after the
 search dialog opens. The bundle gate derives its initial graph from the entry
@@ -243,6 +270,18 @@ flowchart TB
 ### 2. Kidung Rohani Domain & Musical State Diagram
 
 ### Kidung
+
+`kidung-page.tsx` selects independently loaded catalog (`kidung-catalog.tsx`),
+reader (`kidung.tsx`), playlist (`kidung-playlist-page.tsx`) and settings
+(`kidung-settings-page.tsx`) views. Navigation and formatting live in
+`kidung-local-nav.tsx` and `kidung-shared.ts`; MIDI reader controls live in
+`kidung-midi-controls.tsx`. Settings do not load song data. Catalog queue buttons
+observe the playlist snapshot, while the shell coordinator loads PDF song
+metadata only when starting playback. Vite emits `offline-shell-assets.json`;
+service-worker installation prepares same-origin build assets without executing
+lazy views, so their first offline use does not require a previous route visit.
+Shared playback and persistence remain
+owned by the existing domain controllers.
 
 ```mermaid
 stateDiagram-v2
@@ -434,28 +473,32 @@ flowchart LR
   APPDATA --> ATOMIC["Path-Safe Hex Keys & Unique Temp File Replacement"]
 ```
 
-### 14. Direct-to-Main Git Workflow
+### 14. Local iteration and pull request verification
 
 ```mermaid
 flowchart LR
-  DEV["Direct-to-Main Development on 'main'"] --> PRECOMMIT["pnpm verify:precommit"]
-  PRECOMMIT --> HOOK1["Sync e-GYS, Lint, Typecheck, Contract Tests, Verify Generated"]
-  HOOK1 --> PREPUSH["pnpm verify:prepush"]
-  PREPUSH --> HOOK2["Full Test Matrix, Policy Tests, Chord Audit, Build, Budgets, Native, E2E"]
-  HOOK2 --> PUSH["Fast-Forward Push directly to origin/main"]
-  PUSH --> CI["CI Secondary Verification"]
+  DEV["Feature branch"] --> PRECOMMIT["Read-only staged formatting and relevant metadata checks"]
+  PRECOMMIT --> PREPUSH["Offline format, docs, provenance, type and unit checks"]
+  PREPUSH --> PR["Push branch and open PR"]
+  PR --> CI["Production build, budgets, full browser suite and native checks"]
+  RELEASE["pnpm verify:release"] --> FULL["Local upstream sync, chord audit and full release gates"]
 ```
 
 ## Release gates
 
-Local `pnpm verify:prepush` runs the same primary gates used by CI: e-GYS
-revision/contract verification, formatting, lint, strict typecheck, unit and
-contract tests, production builds, bundle budget, and Playwright critical
-flows. It also runs `verify:native-assets` after the web build, which checks
-the Tauri `frontendDist` boundary and every default offline/runtime binary.
-Only the local hooks access the private e-GYS upstream; GitHub Actions is a
-secondary verification layer for the already-reviewed generated contract and
-never clones or fetches the upstream repository.
+Local `pnpm verify:prepush` provides deterministic iteration checks without
+upstream synchronization or browser/native rebuilds. The complete original
+release plan is available through `pnpm verify:release`: local upstream
+revision/contract verification, chord audit, native checks, tests, production
+build, native asset and bundle verification, and Playwright using that build.
+GitHub Actions verifies the checked-in derived contract and never clones or
+fetches the private upstream repository. Explicit local synchronization remains
+an authenticated maintainer operation.
+
+`pnpm test:e2e:dev` runs UI behavior against Vite/HMR after building workspace
+dependencies. It is a local iteration tool; CI and bundle/performance assertions
+continue to use the production build. The server resolver rejects dev mode
+in CI or together with a prebuilt-production flag.
 
 ## Native platform boundary
 
@@ -494,3 +537,23 @@ accepts only that commit/path pair, preserves byte ranges, and is optional:
 Pages and native previews still fall back to the immutable raw source when the
 Worker is not configured. The page database in
 `offline/fork-hymnal-manifest.json` and the binary therefore cannot drift.
+
+## Editorial typography and accent ownership
+
+`styles/00-tokens.css` owns the default GYS blue/white tokens, optional themes
+and bundled font faces. `app-design.css` owns the compact shell, direct home
+actions and catalog hierarchy; it follows the older `calm-liturgical.css`
+refinements. `persistent-media.css` owns docking geometry. Feature files retain
+reader controls, highlights, split layouts and user preferences. `--accent` stores the user's exact custom selection;
+`--accent-fill` keeps that color on filled actions, while `--blue`/`--navy`
+blend toward theme ink for readable text. `--on-accent` chooses a contrasting
+foreground; reset removes inline overrides so theme defaults resume.
+
+Font source/license/regeneration ownership is in
+[the font guide](../apps/web/src/assets/fonts/README.md). The Vite shell manifest
+includes WOFF2 assets with exact emitted-byte hashes; browser installation
+verifies them with the rest of the versioned shell. Native packaging verifies
+the same hashes and serves fonts from packaged assets without PWA workers.
+Chinese UI glyph coverage is explicit; user-content glyphs outside the subset
+use system fallback. The [editorial audit](plans/2026-10-01-editorial-ui-audit.md)
+records intentional baseline changes and remaining device/release gates.

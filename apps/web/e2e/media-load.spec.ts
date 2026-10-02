@@ -1,3 +1,4 @@
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -6,6 +7,7 @@ test.use({ serviceWorkers: "block" });
 test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   const pdfRuntimeRequests: string[] = [];
   page.on("request", (request) => {
     if (/pdf\.worker|pdf\.mjs/i.test(request.url()))
@@ -53,6 +55,7 @@ test("canonical chord and fork PDF assets open from hymn detail", async ({
   page,
 }) => {
   test.setTimeout(90_000);
+  await preparePinnedReaderAssets(page);
   const forkPdfRequests: string[] = [];
   page.on("request", (request) => {
     if (/kr_master\.pdf/i.test(request.url()))
@@ -302,6 +305,7 @@ test("literature PDF stays inline and resumes the last page", async ({
 test("hymn reader preferences persist and PDF layout adapts to a phone", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.locator(".hymn-more-actions-summary").click();
@@ -371,10 +375,11 @@ test("rapid hymn/viewer changes keep the latest route and do not leak stale PDF 
   // hymn in a text-first state rather than displaying hymn-001's late PDF.
   await page.getByRole("button", { name: "Tampilkan chord" }).click();
   await page.getByRole("tab", { name: "PDF" }).click();
-  await page.getByRole("button", { name: "Kembali ke lirik" }).click();
-  await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await page.getByRole("button", { name: "← Semua kidung" }).click();
+  await expect(page).toHaveURL(/\/kidung$/);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-002?mode=lyrics");
 
-  await expect(page).toHaveURL(/\/kidung\/hymn-002$/);
+  await expect(page).toHaveURL(/\/kidung\/hymn-002\?mode=lyrics$/);
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 20_000 });
   await expect(page.locator(".pdf-reader")).toHaveCount(0);
   await expect(page.locator(".hymn-detail-page h1")).not.toHaveText(

@@ -3,8 +3,8 @@
   "short_name": "GYSApp",
   "start_url": "/GYSApp-Tauri/",
   "display": "standalone",
-  "background_color": "#f7faff",
-  "theme_color": "#f7faff",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
   "icons": [
     {
       "src": "assets/gys-mark.svg",

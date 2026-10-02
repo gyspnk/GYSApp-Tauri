@@ -35,7 +35,11 @@ test("desktop light shell is compact, stable, and uses reachable controls", asyn
   expect(box).not.toBeNull();
   expect(box!.width).toBeGreaterThanOrEqual(44);
   expect(box!.height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator(".topbar")).toHaveCSS("box-shadow", "none");
+  // The header has a one-pixel separator without blurred elevation.
+  await expect(page.locator(".topbar")).toHaveCSS(
+    "box-shadow",
+    /0px 1px 0px 0px$/,
+  );
   await page.screenshot({
     path: "test-results/ux-light-desktop.png",
     fullPage: true,

@@ -213,6 +213,38 @@ describe("Literature persistent + incremental catalog", () => {
     });
   });
 
+  it("publishes recovered covers without requiring a new catalog ID", async () => {
+    const saved = item({ id: "catalog-cover" });
+    const recovered = {
+      ...saved,
+      imageUrl: "https://tjc.org/id/wp-content/uploads/cover.png",
+    };
+    storage.set(PERSIST_KEY, JSON.stringify({ items: [saved] }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              source: "tjc.org",
+              generatedAt: new Date().toISOString(),
+              items: [recovered],
+            }),
+          ),
+        ),
+      ),
+    );
+    const { fetchLiteratureCatalog, subscribeLiterature } =
+      await import("./literature-catalog.js");
+    const updates: LiteratureItem[][] = [];
+    const unsubscribe = subscribeLiterature((items) => updates.push(items));
+    await fetchLiteratureCatalog();
+    await until(() =>
+      expect(updates.at(-1)?.[0]?.imageUrl).toBe(recovered.imageUrl),
+    );
+    unsubscribe();
+  });
+
   it("sorts the offline snapshot before Home renders the latest shelf", async () => {
     const older = item({
       id: "older-entry",

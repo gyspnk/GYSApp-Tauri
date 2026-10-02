@@ -180,6 +180,7 @@ test("an optional hymnal persists offline and can be removed and reinstalled", a
   );
 
   const context = page.context();
+  await context.route(/^https:\/\//, (route) => route.abort());
   for (const track of ["bibles", "hymnals", "soundfont"] as const) {
     await context.route(`**/${track}-manifest.json`, (route) =>
       route.fulfill({
@@ -203,7 +204,10 @@ test("an optional hymnal persists offline and can be removed and reinstalled", a
     );
   }
   await context.route("**/offline/distributed-assets.json", (route) =>
-    route.fulfill({ json: catalog }),
+    // The worker must install the original core bytes verified by its manifest.
+    route.request().serviceWorker()
+      ? route.continue()
+      : route.fulfill({ json: catalog }),
   );
 
   const packageRequests: string[] = [];

@@ -1,0 +1,5399 @@
+{
+  "sourceRepo": "gyspnk/gyschordweb",
+  "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+  "generatedAt": "2026-09-26T03:39:10.059Z",
+  "books": ["rohani", "kidung-jemaat", "pujian", "anak", "mandarin", "english"],
+  "items": [
+    {
+      "id": "hymn-001",
+      "book": "rohani",
+      "number": 1,
+      "title": "Pujilah Allah Yang Maha Esa",
+      "midiPath": "assets/midi/001_Pujilah Allah Yang Maha Esa.mid",
+      "pdfPath": "assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
+      "chordRef": {
+        "songId": "hymn-001",
+        "path": "assets/chord/001_Pujilah Allah Yang Maha Esa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1435,
+        "sha256": "af73bbe941833964e7b250bfe4b6f2014f42295000495343d4f3043ba5dd0028"
+      }
+    },
+    {
+      "id": "hymn-002",
+      "book": "rohani",
+      "number": 2,
+      "title": "Pujilah Allah Yang Mahakudus",
+      "midiPath": "assets/midi/002_Pujilah Allah Yang Mahakudus.mid",
+      "pdfPath": "assets/pdf/002_Pujilah Allah Yang Mahakudus.pdf",
+      "chordRef": {
+        "songId": "hymn-002",
+        "path": "assets/chord/002_Pujilah Allah Yang Mahakudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 627,
+        "sha256": "aa8fce17767f33e0f626c6b0d26ec141dd8f3af2c85a1e1d6ff36a3ac3591b76"
+      }
+    },
+    {
+      "id": "hymn-003",
+      "book": "rohani",
+      "number": 3,
+      "title": "Pujilah Allah Yang Benar",
+      "midiPath": "assets/midi/003_Pujilah Allah Yang Benar.mid",
+      "pdfPath": "assets/pdf/003_Pujilah Allah Yang Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-003",
+        "path": "assets/chord/003_Pujilah Allah Yang Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 572,
+        "sha256": "32cc4542f286b91022ba59c0831a3c8146e13c358a61ad683d6dc908e80d3072"
+      }
+    },
+    {
+      "id": "hymn-004",
+      "book": "rohani",
+      "number": 4,
+      "title": "Pujilah Bapa Yang di Surga",
+      "midiPath": "assets/midi/004_Pujilah Bapa Yang di Surga.mid",
+      "pdfPath": "assets/pdf/004_Pujilah Bapa Yang di Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-004",
+        "path": "assets/chord/004_Pujilah Bapa Yang di Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 812,
+        "sha256": "60c8fb6af600cf4ec1ab3c2e93097b70623218154d10cee1fa754415d9de5e26"
+      }
+    },
+    {
+      "id": "hymn-005",
+      "book": "rohani",
+      "number": 5,
+      "title": "Segala Sesuatu Memuji Allah",
+      "midiPath": "assets/midi/005_Segala Sesuatu Memuji Allah.mid",
+      "pdfPath": "assets/pdf/005_Segala Sesuatu Memuji Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-005",
+        "path": "assets/chord/005_Segala Sesuatu Memuji Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1560,
+        "sha256": "e5b89854986f33e90b754f9c4382ac34bc39eb6581c5c1f98e7edd5f4e485a5d"
+      }
+    },
+    {
+      "id": "hymn-006",
+      "book": "rohani",
+      "number": 6,
+      "title": "Pujilah CiptaanNya",
+      "midiPath": "assets/midi/006_Pujilah CiptaanNya.mid",
+      "pdfPath": "assets/pdf/006_Pujilah CiptaanNya.pdf",
+      "chordRef": {
+        "songId": "hymn-006",
+        "path": "assets/chord/006_Pujilah Ciptaan-Nya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2023,
+        "sha256": "5cfa4a81aea5e80efc8de3b496b7dd9f0b048e1490ea0a40bcc6cf688de50d6c"
+      }
+    },
+    {
+      "id": "hymn-007",
+      "book": "rohani",
+      "number": 7,
+      "title": "Segala Sesuatu Memuji Tuhan",
+      "midiPath": "assets/midi/007_Segala Sesuatu Memuji Tuhan.mid",
+      "pdfPath": "assets/pdf/007_Segala Sesuatu Memuji Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-007",
+        "path": "assets/chord/007_Segala Sesuatu Memuji Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1438,
+        "sha256": "225b0dd6d26040449476ace338c9bbb1d66d2b00d333ef2199a50ae7f51520d0"
+      }
+    },
+    {
+      "id": "hymn-008",
+      "book": "rohani",
+      "number": 8,
+      "title": "Pujilah Allah",
+      "midiPath": "assets/midi/008_Pujilah Allah.mid",
+      "pdfPath": "assets/pdf/008_Pujilah Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-008",
+        "path": "assets/chord/008_Pujilah Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 947,
+        "sha256": "f8359b5fb800a913cbba245dfc071ee71cfb852c9650a1118422361e3c117c0b"
+      }
+    },
+    {
+      "id": "hymn-009",
+      "book": "rohani",
+      "number": 9,
+      "title": "Bersorak Bagi Tuhan",
+      "midiPath": "assets/midi/009_Bersorak Bagi Tuhan.mid",
+      "pdfPath": "assets/pdf/009_Bersorak Bagi Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-009",
+        "path": "assets/chord/009_Bersorak Bagi Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 935,
+        "sha256": "dab9eb65248d2b39f77dff27988f21dd766eb44948d11a40c41e1b84113845c5"
+      }
+    },
+    {
+      "id": "hymn-010",
+      "book": "rohani",
+      "number": 10,
+      "title": "Muliakanlah Yesus",
+      "midiPath": "assets/midi/010_Muliakanlah Yesus.mid",
+      "pdfPath": "assets/pdf/010_Muliakanlah Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-010",
+        "path": "assets/chord/010_Muliakanlah Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1002,
+        "sha256": "459175b0acb2d8dbe825098aadbf5eaf56cdb6b7bd8e468dd7208e12205918ce"
+      }
+    },
+    {
+      "id": "hymn-011",
+      "book": "rohani",
+      "number": 11,
+      "title": "Gembira di Dalam Tuhan",
+      "midiPath": "assets/midi/011_Gembira di Dalam Tuhan.mid",
+      "pdfPath": "assets/pdf/011_Gembira di Dalam Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-011",
+        "path": "assets/chord/011_Gembira di Dalam Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 823,
+        "sha256": "0dc1ed474bd8be5438e08d80e99e2781eb9d85a6f1876303dea915aaece0163e"
+      }
+    },
+    {
+      "id": "hymn-012",
+      "book": "rohani",
+      "number": 12,
+      "title": "Mulia Nama Yesus",
+      "midiPath": "assets/midi/012_Mulia Nama Yesus.mid",
+      "pdfPath": "assets/pdf/012_Mulia Nama Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-012",
+        "path": "assets/chord/012_Mulia Nama Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1691,
+        "sha256": "424106f99693948134752be84de145b7957a7999f41206816ec34d04318c24d6"
+      }
+    },
+    {
+      "id": "hymn-013",
+      "book": "rohani",
+      "number": 13,
+      "title": "Tiada yang Seperti Yesus",
+      "midiPath": "assets/midi/013_Tiada yang Seperti Yesus.mid",
+      "pdfPath": "assets/pdf/013_Tiada yang Seperti Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-013",
+        "path": "assets/chord/013_Tiada yang Seperti Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1561,
+        "sha256": "d3d6bd5aca7b920193c5d02950ee39ca89678ee9f27d8246a171409b6ee21f63"
+      }
+    },
+    {
+      "id": "hymn-014",
+      "book": "rohani",
+      "number": 14,
+      "title": "Kristus Maharaja",
+      "midiPath": "assets/midi/014_Kristus Maharaja.mid",
+      "pdfPath": "assets/pdf/014_Kristus Maharaja.pdf",
+      "chordRef": {
+        "songId": "hymn-014",
+        "path": "assets/chord/014_Kristus Maharaja.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1388,
+        "sha256": "ace7d6201c0dc8110d9e76341d2345ce2a769f331449ec47b3333acd4d3b4c02"
+      }
+    },
+    {
+      "id": "hymn-015",
+      "book": "rohani",
+      "number": 15,
+      "title": "Pujilah Yesus",
+      "midiPath": "assets/midi/015_Pujilah Yesus.mid",
+      "pdfPath": "assets/pdf/015_Pujilah Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-015",
+        "path": "assets/chord/015_Pujilah Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1130,
+        "sha256": "e74167f23d5a2ac19b526c81aed1c739f1b986954243af76862e28c7d80f007e"
+      }
+    },
+    {
+      "id": "hymn-016",
+      "book": "rohani",
+      "number": 16,
+      "title": "Sembahlah Tuhan Langit dan Bumi",
+      "midiPath": "assets/midi/016_Sembahlah Tuhan Langit dan Bumi.mid",
+      "pdfPath": "assets/pdf/016_Sembahlah Tuhan Langit dan Bumi.pdf",
+      "chordRef": {
+        "songId": "hymn-016",
+        "path": "assets/chord/016_Sembahlah Tuhan Langit dan Bumi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1497,
+        "sha256": "9db64a9500eb7cdfa40d5524bad22f6b80fb49eb80a62009c8812eca42a74cb6"
+      }
+    },
+    {
+      "id": "hymn-017",
+      "book": "rohani",
+      "number": 17,
+      "title": "Pujilah Kasih Tuhan",
+      "midiPath": "assets/midi/017_Pujilah Kasih Tuhan.mid",
+      "pdfPath": "assets/pdf/017_Pujilah Kasih Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-017",
+        "path": "assets/chord/017_Pujilah Kasih Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "29ffdf2166c5bc2c874b2a59f401f80d95621d1f11234f1aa35271337f6327d0"
+      }
+    },
+    {
+      "id": "hymn-018",
+      "book": "rohani",
+      "number": 18,
+      "title": "Pujilah Anugerah Tuhan",
+      "midiPath": "assets/midi/018_Pujilah Anugerah Tuhan.mid",
+      "pdfPath": "assets/pdf/018_Pujilah Anugerah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-018",
+        "path": "assets/chord/018_Pujilah Anugerah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1460,
+        "sha256": "ca17a8cd15f3d2a609d4a436a3a2d4341048ab30e7a5e812d77c7a7fbd3d1995"
+      }
+    },
+    {
+      "id": "hymn-019",
+      "book": "rohani",
+      "number": 19,
+      "title": "Hosana",
+      "midiPath": "assets/midi/019_Hosana.mid",
+      "pdfPath": "assets/pdf/019_Hosana.pdf",
+      "chordRef": {
+        "songId": "hymn-019",
+        "path": "assets/chord/019_Hosana.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2156,
+        "sha256": "01783c6e7cd6d17e24bb4f537fc98ec70faefb31e566a36dceb0db95dfde5760"
+      }
+    },
+    {
+      "id": "hymn-020",
+      "book": "rohani",
+      "number": 20,
+      "title": "Pujilah Tuhan Sang Raja",
+      "midiPath": "assets/midi/020_Pujilah Tuhan Sang Raja.mid",
+      "pdfPath": "assets/pdf/020_Pujilah Tuhan Sang Raja.pdf",
+      "chordRef": {
+        "songId": "hymn-020",
+        "path": "assets/chord/020_Pujilah Tuhan Sang Raja.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1311,
+        "sha256": "0daa6eff920668598ae39b2b3f9bea22bcafe0276656d9823339736439b18837"
+      }
+    },
+    {
+      "id": "hymn-021",
+      "book": "rohani",
+      "number": 21,
+      "title": "Yesus Terelok",
+      "midiPath": "assets/midi/021_Yesus Terelok.mid",
+      "pdfPath": "assets/pdf/021_Yesus Terelok.pdf",
+      "chordRef": {
+        "songId": "hymn-021",
+        "path": "assets/chord/021_Yesus Terelok.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1266,
+        "sha256": "13a4f07f2511beb81501f96676d2f9f136f2ccde43ede526b400049c826c57f0"
+      }
+    },
+    {
+      "id": "hymn-022",
+      "book": "rohani",
+      "number": 22,
+      "title": "Pujilah Alkitab",
+      "midiPath": "assets/midi/022_Pujilah Alkitab.mid",
+      "pdfPath": "assets/pdf/022_Pujilah Alkitab.pdf",
+      "chordRef": {
+        "songId": "hymn-022",
+        "path": "assets/chord/022_Pujilah Alkitab.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 948,
+        "sha256": "9684eefd3011512950780ffe9885593832544d48a494ede4807c9da385c3a4cb"
+      }
+    },
+    {
+      "id": "hymn-023",
+      "book": "rohani",
+      "number": 23,
+      "title": "Firman Tuhan Sungguh Indah",
+      "midiPath": "assets/midi/023_Firman Tuhan Sungguh Indah.mid",
+      "pdfPath": "assets/pdf/023_Firman Tuhan Sungguh Indah.pdf",
+      "chordRef": {
+        "songId": "hymn-023",
+        "path": "assets/chord/023_Firman Tuhan Sungguh Indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 951,
+        "sha256": "a261122495e0ab1069c0649ed1ad58a2db59abba0384df1c44456fe0b0b0dd21"
+      }
+    },
+    {
+      "id": "hymn-024",
+      "book": "rohani",
+      "number": 24,
+      "title": "Firman Kehidupan",
+      "midiPath": "assets/midi/024_Firman Kehidupan.mid",
+      "pdfPath": "assets/pdf/024_Firman Kehidupan.pdf",
+      "chordRef": {
+        "songId": "hymn-024",
+        "path": "assets/chord/024_Firman Kehidupan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1945,
+        "sha256": "b05beaedfb4a5db1332cf5b6d6c9bcd625b9937c49497f547f6b0c99a153b3ef"
+      }
+    },
+    {
+      "id": "hymn-025",
+      "book": "rohani",
+      "number": 25,
+      "title": "Firman Allah Murni",
+      "midiPath": "assets/midi/025_Firman Allah Murni.mid",
+      "pdfPath": "assets/pdf/025_Firman Allah Murni.pdf",
+      "chordRef": {
+        "songId": "hymn-025",
+        "path": "assets/chord/025_Firman Allah Murni.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "1d4f21a104b49c634c37542c2d2e95b3cc34aaa205dc0fd2f69698b265a4defd"
+      }
+    },
+    {
+      "id": "hymn-026",
+      "book": "rohani",
+      "number": 26,
+      "title": "Tuhan! Berfirmanlah Padaku",
+      "midiPath": "assets/midi/026_Tuhan! Berfirmanlah Padaku.mid",
+      "pdfPath": "assets/pdf/026_Tuhan! Berfirmanlah Padaku.pdf",
+      "chordRef": {
+        "songId": "hymn-026",
+        "path": "assets/chord/026_Tuhan! Berfirmanlah Padaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 889,
+        "sha256": "864243805a4803c8f1197dad73bbffff2e015723e6ba644fa36899af519ddcb5"
+      }
+    },
+    {
+      "id": "hymn-027",
+      "book": "rohani",
+      "number": 27,
+      "title": "Yesus Cintaku",
+      "midiPath": "assets/midi/027_Yesus Cintaku.mid",
+      "pdfPath": "assets/pdf/027_Yesus Cintaku.pdf",
+      "chordRef": {
+        "songId": "hymn-027",
+        "path": "assets/chord/027_Yesus Cintaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1709,
+        "sha256": "fed5396cd6c4eadac2f28265ac750923e80cbb01611955f2f6c9ec5b717c602c"
+      }
+    },
+    {
+      "id": "hymn-028",
+      "book": "rohani",
+      "number": 28,
+      "title": "Yesus Pengasih",
+      "midiPath": "assets/midi/028_Yesus Pengasih.mid",
+      "pdfPath": "assets/pdf/028_Yesus Pengasih.pdf",
+      "chordRef": {
+        "songId": "hymn-028",
+        "path": "assets/chord/028_Yesus Pengasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1079,
+        "sha256": "88dea92d9db082e4cec58252661bff86b7ec2f6a8dc0a5bcdb38649fb2aa2b9b"
+      }
+    },
+    {
+      "id": "hymn-029",
+      "book": "rohani",
+      "number": 29,
+      "title": "Tuhan Mencari Domba yang Hilang",
+      "midiPath": "assets/midi/029_Tuhan Mencari Domba yang Hilang.mid",
+      "pdfPath": "assets/pdf/029_Tuhan Mencari Domba yang Hilang.pdf",
+      "chordRef": {
+        "songId": "hymn-029",
+        "path": "assets/chord/029_Tuhan Mencari Domba yang Hilang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1658,
+        "sha256": "8cca2082a97c00d9f2400ce0436cfe410aac2d1ad6b1c6a32d08d2b4da9e4096"
+      }
+    },
+    {
+      "id": "hymn-030",
+      "book": "rohani",
+      "number": 30,
+      "title": "Kasih Tuhan Mencariku",
+      "midiPath": "assets/midi/030_Kasih Tuhan Mencariku.mid",
+      "pdfPath": "assets/pdf/030_Kasih Tuhan Mencariku.pdf",
+      "chordRef": {
+        "songId": "hymn-030",
+        "path": "assets/chord/030_Kasih Tuhan Mencariku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2224,
+        "sha256": "63c34defbab1a82c06023d4103f4df0253b61ffe6b9864fe22a84a10fdedab12"
+      }
+    },
+    {
+      "id": "hymn-031",
+      "book": "rohani",
+      "number": 31,
+      "title": "Semuanya Demiku",
+      "midiPath": "assets/midi/031_Semuanya Demiku.mid",
+      "pdfPath": "assets/pdf/031_Semuanya Demiku.pdf",
+      "chordRef": {
+        "songId": "hymn-031",
+        "path": "assets/chord/031_Semuanya Demiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1577,
+        "sha256": "cf952172ed76da5b13a062c1d43a64cc415750fde951043f4896d64902c62061"
+      }
+    },
+    {
+      "id": "hymn-032",
+      "book": "rohani",
+      "number": 32,
+      "title": "Yesus Menerima Orang Berdosa",
+      "midiPath": "assets/midi/032_Yesus Menerima Orang Berdosa.mid",
+      "pdfPath": "assets/pdf/032_Yesus Menerima Orang Berdosa.pdf"
+    },
+    {
+      "id": "hymn-033",
+      "book": "rohani",
+      "number": 33,
+      "title": "Ke Yerusalem Baru",
+      "midiPath": "assets/midi/033_Ke Yerusalem Baru.mid",
+      "pdfPath": "assets/pdf/033_Ke Yerusalem Baru.pdf",
+      "chordRef": {
+        "songId": "hymn-033",
+        "path": "assets/chord/033_Ke Yerusalem Baru.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1769,
+        "sha256": "3a803e4bd58e47534ef9416c9247d299efa9238f37f468a982ed294aba858a43"
+      }
+    },
+    {
+      "id": "hymn-034",
+      "book": "rohani",
+      "number": 34,
+      "title": "Yesus Memanggilmu ",
+      "midiPath": "assets/midi/034_Yesus Memanggilmu .mid",
+      "pdfPath": "assets/pdf/034_Yesus Memanggilmu .pdf"
+    },
+    {
+      "id": "hymn-035",
+      "book": "rohani",
+      "number": 35,
+      "title": "Hujan Malam Berlalu, Terbitlah Terang",
+      "midiPath": "assets/midi/035_Hujan Malam Berlalu, Terbitlah Terang.mid",
+      "pdfPath": "assets/pdf/035_Hujan Malam Berlalu, Terbitlah Terang.pdf"
+    },
+    {
+      "id": "hymn-036",
+      "book": "rohani",
+      "number": 36,
+      "title": "Suara Pengharapan",
+      "midiPath": "assets/midi/036_Suara Pengharapan.mid",
+      "pdfPath": "assets/pdf/036_Suara Pengharapan.pdf",
+      "chordRef": {
+        "songId": "hymn-036",
+        "path": "assets/chord/036_Suara Pengharapan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2401,
+        "sha256": "596da989a6b56060835994db6c229df465840ea1736b09bf0133d6bbe12bc61f"
+      }
+    },
+    {
+      "id": "hymn-037",
+      "book": "rohani",
+      "number": 37,
+      "title": "Dosa di Putihkan Seperti Salju",
+      "midiPath": "assets/midi/037_Dosa di Putihkan Seperti Salju.mid",
+      "pdfPath": "assets/pdf/037_Dosa di Putihkan Seperti Salju.pdf"
+    },
+    {
+      "id": "hymn-038",
+      "book": "rohani",
+      "number": 38,
+      "title": "Aku Mendengar Suara Yesus",
+      "midiPath": "assets/midi/038_Aku Mendengar Suara Yesus.mid",
+      "pdfPath": "assets/pdf/038_Aku Mendengar Suara Yesus.pdf"
+    },
+    {
+      "id": "hymn-039",
+      "book": "rohani",
+      "number": 39,
+      "title": "Hanya DarahNya Yang Berkuasa",
+      "midiPath": "assets/midi/039_Hanya DarahNya Yang Berkuasa.mid",
+      "pdfPath": "assets/pdf/039_Hanya DarahNya Yang Berkuasa.pdf"
+    },
+    {
+      "id": "hymn-040",
+      "book": "rohani",
+      "number": 40,
+      "title": "Darah Yesus",
+      "midiPath": "assets/midi/040_Darah Yesus.mid",
+      "pdfPath": "assets/pdf/040_Darah Yesus.pdf"
+    },
+    {
+      "id": "hymn-041",
+      "book": "rohani",
+      "number": 41,
+      "title": "Darah Tuhan Berkuasa",
+      "midiPath": "assets/midi/041_Darah Tuhan Berkuasa.mid",
+      "pdfPath": "assets/pdf/041_Darah Tuhan Berkuasa.pdf"
+    },
+    {
+      "id": "hymn-042",
+      "book": "rohani",
+      "number": 42,
+      "title": "Darah Anak Domba",
+      "midiPath": "assets/midi/042_Darah Anak Domba.mid",
+      "pdfPath": "assets/pdf/042_Darah Anak Domba.pdf"
+    },
+    {
+      "id": "hymn-043",
+      "book": "rohani",
+      "number": 43,
+      "title": "DarahNya Membersihkan",
+      "midiPath": "assets/midi/043_DarahNya Membersihkan.mid",
+      "pdfPath": "assets/pdf/043_DarahNya Membersihkan.pdf"
+    },
+    {
+      "id": "hymn-044",
+      "book": "rohani",
+      "number": 44,
+      "title": "Hanya Tuhan Penolongku",
+      "midiPath": "assets/midi/044_Hanya Tuhan Penolongku.mid",
+      "pdfPath": "assets/pdf/044_Hanya Tuhan Penolongku.pdf"
+    },
+    {
+      "id": "hymn-045",
+      "book": "rohani",
+      "number": 45,
+      "title": "Menyelamatkan Orang Berdosa",
+      "midiPath": "assets/midi/045_Menyelamatkan Orang Berdosa.mid",
+      "pdfPath": "assets/pdf/045_Menyelamatkan Orang Berdosa.pdf"
+    },
+    {
+      "id": "hymn-046",
+      "book": "rohani",
+      "number": 46,
+      "title": "Tuhan Buka Mata hatiku",
+      "midiPath": "assets/midi/046_Tuhan Buka Mata hatiku.mid",
+      "pdfPath": "assets/pdf/046_Tuhan Buka Mata hatiku.pdf"
+    },
+    {
+      "id": "hymn-047",
+      "book": "rohani",
+      "number": 47,
+      "title": "Yesus Telah Tolongku",
+      "midiPath": "assets/midi/047_Yesus Telah Tolongku.mid",
+      "pdfPath": "assets/pdf/047_Yesus Telah Tolongku.pdf"
+    },
+    {
+      "id": "hymn-048",
+      "book": "rohani",
+      "number": 48,
+      "title": "Anugerah di Atas Salib ",
+      "midiPath": "assets/midi/048_Anugerah di Atas Salib .mid",
+      "pdfPath": "assets/pdf/048_Anugerah di Atas Salib .pdf"
+    },
+    {
+      "id": "hymn-049",
+      "book": "rohani",
+      "number": 49,
+      "title": "Tuhan Selamatkanku",
+      "midiPath": "assets/midi/049_Tuhan Selamatkanku.mid",
+      "pdfPath": "assets/pdf/049_Tuhan Selamatkanku.pdf"
+    },
+    {
+      "id": "hymn-050",
+      "book": "rohani",
+      "number": 50,
+      "title": "Hanya Yesus",
+      "midiPath": "assets/midi/050_Hanya Yesus.mid",
+      "pdfPath": "assets/pdf/050_Hanya Yesus.pdf"
+    },
+    {
+      "id": "hymn-051A",
+      "book": "rohani",
+      "number": 51,
+      "title": " Batu Zaman",
+      "midiPath": "assets/midi/051A_ Batu Zaman.mid",
+      "pdfPath": "assets/pdf/051A_ Batu Zaman.pdf"
+    },
+    {
+      "id": "hymn-051B",
+      "book": "rohani",
+      "number": 51,
+      "title": " Batu Zaman",
+      "midiPath": "assets/midi/051B_ Batu Zaman.mid",
+      "pdfPath": "assets/pdf/051B_ Batu Zaman.pdf"
+    },
+    {
+      "id": "hymn-052",
+      "book": "rohani",
+      "number": 52,
+      "title": "Ku Dengar Suara Yesus",
+      "midiPath": "assets/midi/052_Ku Dengar Suara Yesus.mid",
+      "pdfPath": "assets/pdf/052_Ku Dengar Suara Yesus.pdf"
+    },
+    {
+      "id": "hymn-053",
+      "book": "rohani",
+      "number": 53,
+      "title": "Allah Bapa Pengasih",
+      "midiPath": "assets/midi/053_Allah Bapa Pengasih.mid",
+      "pdfPath": "assets/pdf/053_Allah Bapa Pengasih.pdf"
+    },
+    {
+      "id": "hymn-054",
+      "book": "rohani",
+      "number": 54,
+      "title": "Bebas Dari Gelap Menuju Terang",
+      "midiPath": "assets/midi/054_Bebas Dari Gelap Menuju Terang.mid",
+      "pdfPath": "assets/pdf/054_Bebas Dari Gelap Menuju Terang.pdf",
+      "chordRef": {
+        "songId": "hymn-054",
+        "path": "assets/chord/054_Bebas Dari Gelap Menuju Terang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1882,
+        "sha256": "e2afe304748e0bde3479a1c3ad701ee4846d24589f98d751c97a4722f95409df"
+      }
+    },
+    {
+      "id": "hymn-055",
+      "book": "rohani",
+      "number": 55,
+      "title": "Tuhan Bebaskan",
+      "midiPath": "assets/midi/055_Tuhan Bebaskan.mid",
+      "pdfPath": "assets/pdf/055_Tuhan Bebaskan.pdf"
+    },
+    {
+      "id": "hymn-056",
+      "book": "rohani",
+      "number": 56,
+      "title": "Tahun Yobel Sudah Tiba",
+      "midiPath": "assets/midi/056_Tahun Yobel Sudah Tiba.mid",
+      "pdfPath": "assets/pdf/056_Tahun Yobel Sudah Tiba.pdf"
+    },
+    {
+      "id": "hymn-057",
+      "book": "rohani",
+      "number": 57,
+      "title": "Dosaku Amat Berat",
+      "midiPath": "assets/midi/057_Dosaku Amat Berat.mid",
+      "pdfPath": "assets/pdf/057_Dosaku Amat Berat.pdf"
+    },
+    {
+      "id": "hymn-058",
+      "book": "rohani",
+      "number": 58,
+      "title": "Yesus Pimpin",
+      "midiPath": "assets/midi/058_Yesus Pimpin.mid",
+      "pdfPath": "assets/pdf/058_Yesus Pimpin.pdf"
+    },
+    {
+      "id": "hymn-059",
+      "book": "rohani",
+      "number": 59,
+      "title": "Mohon Pimpinan Tuhan",
+      "midiPath": "assets/midi/059_Mohon Pimpinan Tuhan.mid",
+      "pdfPath": "assets/pdf/059_Mohon Pimpinan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-059",
+        "path": "assets/chord/059_Mohon Pimpinan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1830,
+        "sha256": "114345ce1010606ac659e48bb18dfee5f61d0958bb559129e37499bd966d70ef"
+      }
+    },
+    {
+      "id": "hymn-060",
+      "book": "rohani",
+      "number": 60,
+      "title": "Menempuh Jalan Surga",
+      "midiPath": "assets/midi/060_Menempuh Jalan Surga.mid",
+      "pdfPath": "assets/pdf/060_Menempuh Jalan Surga.pdf"
+    },
+    {
+      "id": "hymn-061",
+      "book": "rohani",
+      "number": 61,
+      "title": "Tuhan Pimpin Jalanku",
+      "midiPath": "assets/midi/061_Tuhan Pimpin Jalanku.mid",
+      "pdfPath": "assets/pdf/061_Tuhan Pimpin Jalanku.pdf"
+    },
+    {
+      "id": "hymn-062",
+      "book": "rohani",
+      "number": 62,
+      "title": "Semoga Tuhan Menyertai",
+      "midiPath": "assets/midi/062_Semoga Tuhan Menyertai.mid",
+      "pdfPath": "assets/pdf/062_Semoga Tuhan Menyertai.pdf"
+    },
+    {
+      "id": "hymn-063",
+      "book": "rohani",
+      "number": 63,
+      "title": "Semoga Tuhan Pimpin",
+      "midiPath": "assets/midi/063_Semoga Tuhan Pimpin.mid",
+      "pdfPath": "assets/pdf/063_Semoga Tuhan Pimpin.pdf"
+    },
+    {
+      "id": "hymn-064",
+      "book": "rohani",
+      "number": 64,
+      "title": "Terang Tuhan Memimpin",
+      "midiPath": "assets/midi/064_Terang Tuhan Memimpin.mid",
+      "pdfPath": "assets/pdf/064_Terang Tuhan Memimpin.pdf"
+    },
+    {
+      "id": "hymn-065",
+      "book": "rohani",
+      "number": 65,
+      "title": "Dekat Pada Tuhan",
+      "midiPath": "assets/midi/065_Dekat Pada Tuhan.mid",
+      "pdfPath": "assets/pdf/065_Dekat Pada Tuhan.pdf"
+    },
+    {
+      "id": "hymn-066",
+      "book": "rohani",
+      "number": 66,
+      "title": "Tuhan, Aku Menantikan Engkau",
+      "midiPath": "assets/midi/066_Tuhan, Aku Menantikan Engkau.mid",
+      "pdfPath": "assets/pdf/066_Tuhan, Aku Menantikan Engkau.pdf"
+    },
+    {
+      "id": "hymn-067",
+      "book": "rohani",
+      "number": 67,
+      "title": "Tuhan Tuntunlah Aku",
+      "midiPath": "assets/midi/067_Tuhan Tuntunlah Aku.mid",
+      "pdfPath": "assets/pdf/067_Tuhan Tuntunlah Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-067",
+        "path": "assets/chord/067_Tuhan Tuntunlah Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1001,
+        "sha256": "231399717b0698ff194051e1a728f802705bfd4e688f463e887e285cb599a5fa"
+      }
+    },
+    {
+      "id": "hymn-068",
+      "book": "rohani",
+      "number": 68,
+      "title": "Tuhan, Pegangilah Tanganku",
+      "midiPath": "assets/midi/068_Tuhan, Pegangilah Tanganku.mid",
+      "pdfPath": "assets/pdf/068_Tuhan, Pegangilah Tanganku.pdf"
+    },
+    {
+      "id": "hymn-069",
+      "book": "rohani",
+      "number": 69,
+      "title": "Yesus Jurumudiku",
+      "midiPath": "assets/midi/069_Yesus Jurumudiku.mid",
+      "pdfPath": "assets/pdf/069_Yesus Jurumudiku.pdf"
+    },
+    {
+      "id": "hymn-070",
+      "book": "rohani",
+      "number": 70,
+      "title": "Tuhan Sumber Segala Berkat",
+      "midiPath": "assets/midi/070_Tuhan Sumber Segala Berkat.mid",
+      "pdfPath": "assets/pdf/070_Tuhan Sumber Segala Berkat.pdf"
+    },
+    {
+      "id": "hymn-071",
+      "book": "rohani",
+      "number": 71,
+      "title": "Yesus Tuhanku",
+      "midiPath": "assets/midi/071_Yesus Tuhanku.mid",
+      "pdfPath": "assets/pdf/071_Yesus Tuhanku.pdf"
+    },
+    {
+      "id": "hymn-072",
+      "book": "rohani",
+      "number": 72,
+      "title": "Tuhan Segala Berkat",
+      "midiPath": "assets/midi/072_Tuhan Segala Berkat.mid",
+      "pdfPath": "assets/pdf/072_Tuhan Segala Berkat.pdf"
+    },
+    {
+      "id": "hymn-073",
+      "book": "rohani",
+      "number": 73,
+      "title": "Yesus Pemberi Berkat",
+      "midiPath": "assets/midi/073_Yesus Pemberi Berkat.mid",
+      "pdfPath": "assets/pdf/073_Yesus Pemberi Berkat.pdf"
+    },
+    {
+      "id": "hymn-074",
+      "book": "rohani",
+      "number": 74,
+      "title": "Dosa di Putihkan Seperti Salju",
+      "midiPath": "assets/midi/074_Dosa di Putihkan Seperti Salju.mid",
+      "pdfPath": "assets/pdf/074_Dosa di Putihkan Seperti Salju.pdf"
+    },
+    {
+      "id": "hymn-075",
+      "book": "rohani",
+      "number": 75,
+      "title": "Kristus Lahir",
+      "midiPath": "assets/midi/075_Kristus Lahir.mid",
+      "pdfPath": "assets/pdf/075_Kristus Lahir.pdf"
+    },
+    {
+      "id": "hymn-076",
+      "book": "rohani",
+      "number": 76,
+      "title": "Yesus Disalib",
+      "midiPath": "assets/midi/076_Yesus Disalib.mid",
+      "pdfPath": "assets/pdf/076_Yesus Disalib.pdf"
+    },
+    {
+      "id": "hymn-077",
+      "book": "rohani",
+      "number": 77,
+      "title": "Junjung Tinggi Salib Tuhan",
+      "midiPath": "assets/midi/077_Junjung Tinggi Salib Tuhan.mid",
+      "pdfPath": "assets/pdf/077_Junjung Tinggi Salib Tuhan.pdf"
+    },
+    {
+      "id": "hymn-078",
+      "book": "rohani",
+      "number": 78,
+      "title": "Tuhan Bangkit",
+      "midiPath": "assets/midi/078_Tuhan Bangkit.mid",
+      "pdfPath": "assets/pdf/078_Tuhan Bangkit.pdf"
+    },
+    {
+      "id": "hymn-079",
+      "book": "rohani",
+      "number": 79,
+      "title": "Puji Kebangkitan Yesus",
+      "midiPath": "assets/midi/079_Puji Kebangkitan Yesus.mid",
+      "pdfPath": "assets/pdf/079_Puji Kebangkitan Yesus.pdf"
+    },
+    {
+      "id": "hymn-080",
+      "book": "rohani",
+      "number": 80,
+      "title": "Tuhan Telah Kalahkan Maut",
+      "midiPath": "assets/midi/080_Tuhan Telah Kalahkan Maut.mid",
+      "pdfPath": "assets/pdf/080_Tuhan Telah Kalahkan Maut.pdf"
+    },
+    {
+      "id": "hymn-081",
+      "book": "rohani",
+      "number": 81,
+      "title": "Yesus Datang Kembali",
+      "midiPath": "assets/midi/081_Yesus Datang Kembali.mid",
+      "pdfPath": "assets/pdf/081_Yesus Datang Kembali.pdf"
+    },
+    {
+      "id": "hymn-082",
+      "book": "rohani",
+      "number": 82,
+      "title": "Bersiap dan Berjaga",
+      "midiPath": "assets/midi/082_Bersiap dan Berjaga.mid",
+      "pdfPath": "assets/pdf/082_Bersiap dan Berjaga.pdf"
+    },
+    {
+      "id": "hymn-083",
+      "book": "rohani",
+      "number": 83,
+      "title": "Ketika Yesus Datang",
+      "midiPath": "assets/midi/083_Ketika Yesus Datang.mid",
+      "pdfPath": "assets/pdf/083_Ketika Yesus Datang.pdf"
+    },
+    {
+      "id": "hymn-084",
+      "book": "rohani",
+      "number": 84,
+      "title": "Menyambut Rajaku",
+      "midiPath": "assets/midi/084_Menyambut Rajaku.mid",
+      "pdfPath": "assets/pdf/084_Menyambut Rajaku.pdf",
+      "chordRef": {
+        "songId": "hymn-084",
+        "path": "assets/chord/084_Menyambut Rajaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1962,
+        "sha256": "914459608edee4c449a952c6cac733fa4c3366f3c16517ce8b7564b535bb1b15"
+      }
+    },
+    {
+      "id": "hymn-085",
+      "book": "rohani",
+      "number": 85,
+      "title": "Tuhan Segera Datang",
+      "midiPath": "assets/midi/085_Tuhan Segera Datang.mid",
+      "pdfPath": "assets/pdf/085_Tuhan Segera Datang.pdf",
+      "chordRef": {
+        "songId": "hymn-085",
+        "path": "assets/chord/085_Tuhan Segera Datang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1590,
+        "sha256": "8164ca191416afbaf58efc660c700cdc610577f640cf8f8e22bc1e27a049b262"
+      }
+    },
+    {
+      "id": "hymn-086",
+      "book": "rohani",
+      "number": 86,
+      "title": "Baik dan Jahat Dibalas",
+      "midiPath": "assets/midi/086_Baik dan Jahat Dibalas.mid",
+      "pdfPath": "assets/pdf/086_Baik dan Jahat Dibalas.pdf"
+    },
+    {
+      "id": "hymn-087",
+      "book": "rohani",
+      "number": 87,
+      "title": "Hari Penghakiman",
+      "midiPath": "assets/midi/087_Hari Penghakiman.mid",
+      "pdfPath": "assets/pdf/087_Hari Penghakiman.pdf"
+    },
+    {
+      "id": "hymn-088",
+      "book": "rohani",
+      "number": 88,
+      "title": "Anugerah Juruselamat",
+      "midiPath": "assets/midi/088_Anugerah Juruselamat.mid",
+      "pdfPath": "assets/pdf/088_Anugerah Juruselamat.pdf"
+    },
+    {
+      "id": "hymn-089",
+      "book": "rohani",
+      "number": 89,
+      "title": "AnugerahNya Berlimpah",
+      "midiPath": "assets/midi/089_AnugerahNya Berlimpah.mid",
+      "pdfPath": "assets/pdf/089_AnugerahNya Berlimpah.pdf",
+      "chordRef": {
+        "songId": "hymn-089",
+        "path": "assets/chord/089_AnugerahNya Berlimpah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1566,
+        "sha256": "4367ae05b7abeaf316aa2b6052fb4e3f3c29e41fa67062986021ce2bf903c99d"
+      }
+    },
+    {
+      "id": "hymn-090",
+      "book": "rohani",
+      "number": 90,
+      "title": "Hitunglah BerkatNya",
+      "midiPath": "assets/midi/090_Hitunglah BerkatNya.mid",
+      "pdfPath": "assets/pdf/090_Hitunglah BerkatNya.pdf",
+      "chordRef": {
+        "songId": "hymn-090",
+        "path": "assets/chord/090_Hitunglah BerkatNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1399,
+        "sha256": "70fdece436fd433186c58896b6f7b9f5adc740b765615f4fd9ba72bef6c80b2c"
+      }
+    },
+    {
+      "id": "hymn-091",
+      "book": "rohani",
+      "number": 91,
+      "title": "Tuhan Pimpin Jalanku",
+      "midiPath": "assets/midi/091_Tuhan Pimpin Jalanku.mid",
+      "pdfPath": "assets/pdf/091_Tuhan Pimpin Jalanku.pdf",
+      "chordRef": {
+        "songId": "hymn-091",
+        "path": "assets/chord/091_Tuhan Pimpin Jalanku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2281,
+        "sha256": "b0df0bd40bfd8dc7d23ab792ae66f35d15e62251874f4671be4c7114b916d36f"
+      }
+    },
+    {
+      "id": "hymn-092",
+      "book": "rohani",
+      "number": 92,
+      "title": "Bersyukur Atas Kesembuhan",
+      "midiPath": "assets/midi/092_Bersyukur Atas Kesembuhan.mid",
+      "pdfPath": "assets/pdf/092_Bersyukur Atas Kesembuhan.pdf"
+    },
+    {
+      "id": "hymn-093",
+      "book": "rohani",
+      "number": 93,
+      "title": "Bersyukur Atas Pembaharuan",
+      "midiPath": "assets/midi/093_Bersyukur Atas Pembaharuan.mid",
+      "pdfPath": "assets/pdf/093_Bersyukur Atas Pembaharuan.pdf"
+    },
+    {
+      "id": "hymn-094",
+      "book": "rohani",
+      "number": 94,
+      "title": "Anugerah Tuhan Kekal",
+      "midiPath": "assets/midi/094_Anugerah Tuhan Kekal.mid",
+      "pdfPath": "assets/pdf/094_Anugerah Tuhan Kekal.pdf"
+    },
+    {
+      "id": "hymn-095",
+      "book": "rohani",
+      "number": 95,
+      "title": "Raja yang Diurapi",
+      "midiPath": "assets/midi/095_Raja yang Diurapi.mid",
+      "pdfPath": "assets/pdf/095_Raja yang Diurapi.pdf"
+    },
+    {
+      "id": "hymn-096",
+      "book": "rohani",
+      "number": 96,
+      "title": "Anugerah yang Mengherankan",
+      "midiPath": "assets/midi/096_Anugerah yang Mengherankan.mid",
+      "pdfPath": "assets/pdf/096_Anugerah yang Mengherankan.pdf"
+    },
+    {
+      "id": "hymn-097",
+      "book": "rohani",
+      "number": 97,
+      "title": "Tuhan Tinggalkan Maligai Gading",
+      "midiPath": "assets/midi/097_Tuhan Tinggalkan Maligai Gading.mid",
+      "pdfPath": "assets/pdf/097_Tuhan Tinggalkan Maligai Gading.pdf"
+    },
+    {
+      "id": "hymn-098",
+      "book": "rohani",
+      "number": 98,
+      "title": "Kala Kukenang Salib",
+      "midiPath": "assets/midi/098_Kala Kukenang Salib.mid",
+      "pdfPath": "assets/pdf/098_Kala Kukenang Salib.pdf"
+    },
+    {
+      "id": "hymn-099",
+      "book": "rohani",
+      "number": 99,
+      "title": "Mencintai Tuhan Lebih Dalam",
+      "midiPath": "assets/midi/099_Mencintai Tuhan Lebih Dalam.mid",
+      "pdfPath": "assets/pdf/099_Mencintai Tuhan Lebih Dalam.pdf"
+    },
+    {
+      "id": "hymn-100",
+      "book": "rohani",
+      "number": 100,
+      "title": "Berkorban Untuk Tuhan",
+      "midiPath": "assets/midi/100_Berkorban Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/100_Berkorban Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-101",
+      "book": "rohani",
+      "number": 101,
+      "title": "Hanya Cinta Yesus",
+      "midiPath": "assets/midi/101_Hanya Cinta Yesus.mid",
+      "pdfPath": "assets/pdf/101_Hanya Cinta Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-101",
+        "path": "assets/chord/101_Hanya Cinta Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1063,
+        "sha256": "f05505929278eabb3e2abe6a8c4db18ea2fdbaa4548cca933459f54e7b3c50c8"
+      }
+    },
+    {
+      "id": "hymn-102",
+      "book": "rohani",
+      "number": 102,
+      "title": "Hidup Untuk Tuhan",
+      "midiPath": "assets/midi/102_Hidup Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/102_Hidup Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-103",
+      "book": "rohani",
+      "number": 103,
+      "title": "Lebih Baik Ada Yesus",
+      "midiPath": "assets/midi/103_Lebih Baik Ada Yesus.mid",
+      "pdfPath": "assets/pdf/103_Lebih Baik Ada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-103",
+        "path": "assets/chord/103_Lebih Baik Ada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1690,
+        "sha256": "f4105afac7318f63e0e4bcb203f08134f399c527c0e612de65a2ca243ff9548e"
+      }
+    },
+    {
+      "id": "hymn-104",
+      "book": "rohani",
+      "number": 104,
+      "title": "Aku Amat Cinta Yesus",
+      "midiPath": "assets/midi/104_Aku Amat Cinta Yesus.mid",
+      "pdfPath": "assets/pdf/104_Aku Amat Cinta Yesus.pdf"
+    },
+    {
+      "id": "hymn-105",
+      "book": "rohani",
+      "number": 105,
+      "title": "Mati Untuk Tuhan",
+      "midiPath": "assets/midi/105_Mati Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/105_Mati Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-106",
+      "book": "rohani",
+      "number": 106,
+      "title": "Aku Murid Yesus",
+      "midiPath": "assets/midi/106_Aku Murid Yesus.mid",
+      "pdfPath": "assets/pdf/106_Aku Murid Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-106",
+        "path": "assets/chord/106_Aku Murid Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1691,
+        "sha256": "16721dbf3cd417cd72bb4523a419d21618778fb4c935040a549916010d56c1d1"
+      }
+    },
+    {
+      "id": "hymn-107",
+      "book": "rohani",
+      "number": 107,
+      "title": "Ikut Yesus",
+      "midiPath": "assets/midi/107_Ikut Yesus.mid",
+      "pdfPath": "assets/pdf/107_Ikut Yesus.pdf"
+    },
+    {
+      "id": "hymn-108",
+      "book": "rohani",
+      "number": 108,
+      "title": "Ikut Almasih",
+      "midiPath": "assets/midi/108_Ikut Almasih.mid",
+      "pdfPath": "assets/pdf/108_Ikut Almasih.pdf",
+      "chordRef": {
+        "songId": "hymn-108",
+        "path": "assets/chord/108_Ikut Almasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1946,
+        "sha256": "636277276d21840202e3fed796a70c0f169ca69e53f0560d585aabaea6ddd16f"
+      }
+    },
+    {
+      "id": "hymn-109",
+      "book": "rohani",
+      "number": 109,
+      "title": "Turut Jejak Tuhan",
+      "midiPath": "assets/midi/109_Turut Jejak Tuhan.mid",
+      "pdfPath": "assets/pdf/109_Turut Jejak Tuhan.pdf"
+    },
+    {
+      "id": "hymn-110",
+      "book": "rohani",
+      "number": 110,
+      "title": "Tinggalkan Segalanya Ikut Tuhan",
+      "midiPath": "assets/midi/110_Tinggalkan Segalanya Ikut Tuhan.mid",
+      "pdfPath": "assets/pdf/110_Tinggalkan Segalanya Ikut Tuhan.pdf"
+    },
+    {
+      "id": "hymn-111",
+      "book": "rohani",
+      "number": 111,
+      "title": "Ikut Juruselamat",
+      "midiPath": "assets/midi/111_Ikut Juruselamat.mid",
+      "pdfPath": "assets/pdf/111_Ikut Juruselamat.pdf"
+    },
+    {
+      "id": "hymn-112",
+      "book": "rohani",
+      "number": 112,
+      "title": "Aku Mau Ikut Tuhan",
+      "midiPath": "assets/midi/112_Aku Mau Ikut Tuhan.mid",
+      "pdfPath": "assets/pdf/112_Aku Mau Ikut Tuhan.pdf"
+    },
+    {
+      "id": "hymn-113",
+      "book": "rohani",
+      "number": 113,
+      "title": "Pentahbisan Gedung Gereja",
+      "midiPath": "assets/midi/113_Pentahbisan Gedung Gereja.mid",
+      "pdfPath": "assets/pdf/113_Pentahbisan Gedung Gereja.pdf"
+    },
+    {
+      "id": "hymn-114",
+      "book": "rohani",
+      "number": 114,
+      "title": "Persembahan Syukur",
+      "midiPath": "assets/midi/114_Persembahan Syukur.mid",
+      "pdfPath": "assets/pdf/114_Persembahan Syukur.pdf"
+    },
+    {
+      "id": "hymn-115",
+      "book": "rohani",
+      "number": 115,
+      "title": "Gedung Gereja Terbangun",
+      "midiPath": "assets/midi/115_Gedung Gereja Terbangun.mid",
+      "pdfPath": "assets/pdf/115_Gedung Gereja Terbangun.pdf"
+    },
+    {
+      "id": "hymn-116",
+      "book": "rohani",
+      "number": 116,
+      "title": "Persembahkan Jiwa Raga",
+      "midiPath": "assets/midi/116_Persembahkan Jiwa Raga.mid",
+      "pdfPath": "assets/pdf/116_Persembahkan Jiwa Raga.pdf"
+    },
+    {
+      "id": "hymn-117",
+      "book": "rohani",
+      "number": 117,
+      "title": "Terimalah Persembahanku",
+      "midiPath": "assets/midi/117_Terimalah Persembahanku.mid",
+      "pdfPath": "assets/pdf/117_Terimalah Persembahanku.pdf"
+    },
+    {
+      "id": "hymn-118",
+      "book": "rohani",
+      "number": 118,
+      "title": "Persembahkan Seluruh Hidupku",
+      "midiPath": "assets/midi/118_Persembahkan Seluruh Hidupku.mid",
+      "pdfPath": "assets/pdf/118_Persembahkan Seluruh Hidupku.pdf"
+    },
+    {
+      "id": "hymn-119",
+      "book": "rohani",
+      "number": 119,
+      "title": "Semuanya Bagi Yesus",
+      "midiPath": "assets/midi/119_Semuanya Bagi Yesus.mid",
+      "pdfPath": "assets/pdf/119_Semuanya Bagi Yesus.pdf"
+    },
+    {
+      "id": "hymn-120",
+      "book": "rohani",
+      "number": 120,
+      "title": "Mempersembahkan Semua",
+      "midiPath": "assets/midi/120_Mempersembahkan Semua.mid",
+      "pdfPath": "assets/pdf/120_Mempersembahkan Semua.pdf"
+    },
+    {
+      "id": "hymn-121",
+      "book": "rohani",
+      "number": 121,
+      "title": "Apa Yang Kupersembahkan",
+      "midiPath": "assets/midi/121_Apa Yang Kupersembahkan.mid",
+      "pdfPath": "assets/pdf/121_Apa Yang Kupersembahkan.pdf"
+    },
+    {
+      "id": "hymn-122",
+      "book": "rohani",
+      "number": 122,
+      "title": "Saling Mengasihi",
+      "midiPath": "assets/midi/122_Saling Mengasihi.mid",
+      "pdfPath": "assets/pdf/122_Saling Mengasihi.pdf",
+      "chordRef": {
+        "songId": "hymn-122",
+        "path": "assets/chord/122_Saling Mengasihi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1005,
+        "sha256": "557abeb6a3dcb9027472d9b5a4374159637c62f9a0b092a8ff7f832137080529"
+      }
+    },
+    {
+      "id": "hymn-123",
+      "book": "rohani",
+      "number": 123,
+      "title": "Sampai Bertemu Lagi",
+      "midiPath": "assets/midi/123_Sampai Bertemu Lagi.mid",
+      "pdfPath": "assets/pdf/123_Sampai Bertemu Lagi.pdf"
+    },
+    {
+      "id": "hymn-124A",
+      "book": "rohani",
+      "number": 124,
+      "title": " Melaksanakan Kasih",
+      "midiPath": "assets/midi/124A_ Melaksanakan Kasih.mid",
+      "pdfPath": "assets/pdf/124A_ Melaksanakan Kasih.pdf"
+    },
+    {
+      "id": "hymn-124B",
+      "book": "rohani",
+      "number": 124,
+      "title": " Melaksanakan Kasih",
+      "midiPath": "assets/midi/124B_ Melaksanakan Kasih.mid",
+      "pdfPath": "assets/pdf/124B_ Melaksanakan Kasih.pdf"
+    },
+    {
+      "id": "hymn-125",
+      "book": "rohani",
+      "number": 125,
+      "title": "Kidung Perpisahan",
+      "midiPath": "assets/midi/125_Kidung Perpisahan.mid",
+      "pdfPath": "assets/pdf/125_Kidung Perpisahan.pdf"
+    },
+    {
+      "id": "hymn-126",
+      "book": "rohani",
+      "number": 126,
+      "title": "Mengasihi Sesama Saudara",
+      "midiPath": "assets/midi/126_Mengasihi Sesama Saudara.mid",
+      "pdfPath": "assets/pdf/126_Mengasihi Sesama Saudara.pdf",
+      "chordRef": {
+        "songId": "hymn-126",
+        "path": "assets/chord/126_Mengasihi Sesama Saudara.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1434,
+        "sha256": "6c89e261433dfe74bdbd4f90842e1b96683e4585cdf80f9b5d1bd7ce01b9a806"
+      }
+    },
+    {
+      "id": "hymn-127",
+      "book": "rohani",
+      "number": 127,
+      "title": "Saling Mengasihi Dengan Sungguh",
+      "midiPath": "assets/midi/127_Saling Mengasihi Dengan Sungguh.mid",
+      "pdfPath": "assets/pdf/127_Saling Mengasihi Dengan Sungguh.pdf"
+    },
+    {
+      "id": "hymn-128",
+      "book": "rohani",
+      "number": 128,
+      "title": "Hari Kudus Nan Bahagia",
+      "midiPath": "assets/midi/128_Hari Kudus Nan Bahagia.mid",
+      "pdfPath": "assets/pdf/128_Hari Kudus Nan Bahagia.pdf",
+      "chordRef": {
+        "songId": "hymn-128",
+        "path": "assets/chord/128_Hari Kudus Nan Bahagia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2153,
+        "sha256": "06cdeba2cb048594e181ffe6b312fab7c4d955bd01e31eefc670d349ce9be6e5"
+      }
+    },
+    {
+      "id": "hymn-129",
+      "book": "rohani",
+      "number": 129,
+      "title": "Peringati Hari Kudus",
+      "midiPath": "assets/midi/129_Peringati Hari Kudus.mid",
+      "pdfPath": "assets/pdf/129_Peringati Hari Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-129",
+        "path": "assets/chord/129_Peringati Hari Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1247,
+        "sha256": "87d1738fbb580d161f517d011d1c11bd5afa65f68c39ca72eeef40d088e9bb67"
+      }
+    },
+    {
+      "id": "hymn-130",
+      "book": "rohani",
+      "number": 130,
+      "title": "Sabat Kudus",
+      "midiPath": "assets/midi/130_Sabat Kudus.mid",
+      "pdfPath": "assets/pdf/130_Sabat Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-130",
+        "path": "assets/chord/130_Sabat Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1015,
+        "sha256": "de9fe74a7c987a57e71b1d37989af88c9cd9496e0570ba71dfcccd5afd9e69bc"
+      }
+    },
+    {
+      "id": "hymn-131",
+      "book": "rohani",
+      "number": 131,
+      "title": "Girang Berhari Sabat",
+      "midiPath": "assets/midi/131_Girang Berhari Sabat.mid",
+      "pdfPath": "assets/pdf/131_Girang Berhari Sabat.pdf",
+      "chordRef": {
+        "songId": "hymn-131",
+        "path": "assets/chord/131_Girang Berhari Sabat.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1570,
+        "sha256": "13dcd0ba05749bbb8f9f0749038d9e1f31e2b33a2d6ac170c6b6e11bbd9043e9"
+      }
+    },
+    {
+      "id": "hymn-132A",
+      "book": "rohani",
+      "number": 132,
+      "title": " Mohon Tuhan Lindungi",
+      "midiPath": "assets/midi/132A_ Mohon Tuhan Lindungi.mid",
+      "pdfPath": "assets/pdf/132A_ Mohon Tuhan Lindungi.pdf"
+    },
+    {
+      "id": "hymn-132B",
+      "book": "rohani",
+      "number": 132,
+      "title": " Mohon Tuhan Lindungi",
+      "midiPath": "assets/midi/132B_ Mohon Tuhan Lindungi.mid",
+      "pdfPath": "assets/pdf/132B_ Mohon Tuhan Lindungi.pdf"
+    },
+    {
+      "id": "hymn-133",
+      "book": "rohani",
+      "number": 133,
+      "title": "Yesus Takkan Berubah",
+      "midiPath": "assets/midi/133_Yesus Takkan Berubah.mid",
+      "pdfPath": "assets/pdf/133_Yesus Takkan Berubah.pdf",
+      "chordRef": {
+        "songId": "hymn-133",
+        "path": "assets/chord/133_Yesus Takkan Berubah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2754,
+        "sha256": "a6a91e1a1892d3c0286d439469de56262310b0e71d06adcc37fe42937212975f"
+      }
+    },
+    {
+      "id": "hymn-134",
+      "book": "rohani",
+      "number": 134,
+      "title": "Pandanglah Tuhan",
+      "midiPath": "assets/midi/134_Pandanglah Tuhan.mid",
+      "pdfPath": "assets/pdf/134_Pandanglah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-134",
+        "path": "assets/chord/134_Pandanglah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1332,
+        "sha256": "dd80bce3bb42f60af565509a3328d25d5a1d4fab763a1937e34a9267c1b4e46d"
+      }
+    },
+    {
+      "id": "hymn-135",
+      "book": "rohani",
+      "number": 135,
+      "title": "Mengapa Sibuk ?",
+      "midiPath": "assets/midi/135_Mengapa Sibuk ?.mid",
+      "pdfPath": "assets/pdf/135_Mengapa Sibuk ?.pdf"
+    },
+    {
+      "id": "hymn-136",
+      "book": "rohani",
+      "number": 136,
+      "title": "Aku Tahu Siapa yang Kupercaya",
+      "midiPath": "assets/midi/136_Aku Tahu Siapa yang Kupercaya.mid",
+      "pdfPath": "assets/pdf/136_Aku Tahu Siapa yang Kupercaya.pdf"
+    },
+    {
+      "id": "hymn-137",
+      "book": "rohani",
+      "number": 137,
+      "title": "Yesus Sahabatku",
+      "midiPath": "assets/midi/137_Yesus Sahabatku.mid",
+      "pdfPath": "assets/pdf/137_Yesus Sahabatku.pdf",
+      "chordRef": {
+        "songId": "hymn-137",
+        "path": "assets/chord/137_Yesus Sahabatku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1526,
+        "sha256": "75059673838a8cbd9dcb23aa46258ab920ddaae2e033441ccfa84ccf978b2822"
+      }
+    },
+    {
+      "id": "hymn-138",
+      "book": "rohani",
+      "number": 138,
+      "title": "Bila Menolak Almasih",
+      "midiPath": "assets/midi/138_Bila Menolak Almasih.mid",
+      "pdfPath": "assets/pdf/138_Bila Menolak Almasih.pdf",
+      "chordRef": {
+        "songId": "hymn-138",
+        "path": "assets/chord/138_Bila Menolak Almasih.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1834,
+        "sha256": "a91960ad142d6042fe58f35f50309d1cda3446de8578017dae71530c89e8b59e"
+      }
+    },
+    {
+      "id": "hymn-139",
+      "book": "rohani",
+      "number": 139,
+      "title": "Mendengar Yesus Lewat",
+      "midiPath": "assets/midi/139_Mendengar Yesus Lewat.mid",
+      "pdfPath": "assets/pdf/139_Mendengar Yesus Lewat.pdf"
+    },
+    {
+      "id": "hymn-140",
+      "book": "rohani",
+      "number": 140,
+      "title": "Almasih Tahu Dukamu",
+      "midiPath": "assets/midi/140_Almasih Tahu Dukamu.mid",
+      "pdfPath": "assets/pdf/140_Almasih Tahu Dukamu.pdf"
+    },
+    {
+      "id": "hymn-141",
+      "book": "rohani",
+      "number": 141,
+      "title": "Bahagia Kekal atau Sengsara Kekal?",
+      "midiPath": "assets/midi/141_Bahagia Kekal atau Sengsara Kekal?.mid",
+      "pdfPath": "assets/pdf/141_Bahagia Kekal atau Sengsara Kekal?.pdf"
+    },
+    {
+      "id": "hymn-142",
+      "book": "rohani",
+      "number": 142,
+      "title": "Sandar Tuhan Hapuskan Duka",
+      "midiPath": "assets/midi/142_Sandar Tuhan Hapuskan Duka.mid",
+      "pdfPath": "assets/pdf/142_Sandar Tuhan Hapuskan Duka.pdf"
+    },
+    {
+      "id": "hymn-143",
+      "book": "rohani",
+      "number": 143,
+      "title": "Aku Mau Sandar Tuhan",
+      "midiPath": "assets/midi/143_Aku Mau Sandar Tuhan.mid",
+      "pdfPath": "assets/pdf/143_Aku Mau Sandar Tuhan.pdf"
+    },
+    {
+      "id": "hymn-144",
+      "book": "rohani",
+      "number": 144,
+      "title": "Percayalah Tuhan Dengan Sungguh",
+      "midiPath": "assets/midi/144_Percayalah Tuhan Dengan Sungguh.mid",
+      "pdfPath": "assets/pdf/144_Percayalah Tuhan Dengan Sungguh.pdf"
+    },
+    {
+      "id": "hymn-145",
+      "book": "rohani",
+      "number": 145,
+      "title": "Bersandar Pada Yesus",
+      "midiPath": "assets/midi/145_Bersandar Pada Yesus.mid",
+      "pdfPath": "assets/pdf/145_Bersandar Pada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-145",
+        "path": "assets/chord/145_Bersandar Pada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1936,
+        "sha256": "061d0d06b7a079cfa363281e724b66e140e642a4a6eb85c0103197dc911cca86"
+      }
+    },
+    {
+      "id": "hymn-146",
+      "book": "rohani",
+      "number": 146,
+      "title": "Sandar Tuhan Setiap Waktu",
+      "midiPath": "assets/midi/146_Sandar Tuhan Setiap Waktu.mid",
+      "pdfPath": "assets/pdf/146_Sandar Tuhan Setiap Waktu.pdf",
+      "chordRef": {
+        "songId": "hymn-146",
+        "path": "assets/chord/146_Sandar Tuhan Setiap Waktu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1064,
+        "sha256": "3eb1da586c7e9f1ae1b0b37c7d785176769daa62e1a6ceae83470a65dab7de0e"
+      }
+    },
+    {
+      "id": "hymn-147",
+      "book": "rohani",
+      "number": 147,
+      "title": "Carilah Dahulu Kerajaan Allah",
+      "midiPath": "assets/midi/147_Carilah Dahulu Kerajaan Allah.mid",
+      "pdfPath": "assets/pdf/147_Carilah Dahulu Kerajaan Allah.pdf"
+    },
+    {
+      "id": "hymn-148",
+      "book": "rohani",
+      "number": 148,
+      "title": "Yesus Gembalaku",
+      "midiPath": "assets/midi/148_Yesus Gembalaku.mid",
+      "pdfPath": "assets/pdf/148_Yesus Gembalaku.pdf"
+    },
+    {
+      "id": "hymn-149",
+      "book": "rohani",
+      "number": 149,
+      "title": "Tenteram di Bawah Lengan Tuhan",
+      "midiPath": "assets/midi/149_Tenteram di Bawah Lengan Tuhan.mid",
+      "pdfPath": "assets/pdf/149_Tenteram di Bawah Lengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-149",
+        "path": "assets/chord/149_Tenteram di Bawah Lengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1578,
+        "sha256": "efe72283ba1c08638f6b9512541aab918dd89126a3393328a59835a5641bc470"
+      }
+    },
+    {
+      "id": "hymn-150",
+      "book": "rohani",
+      "number": 150,
+      "title": "Gembala yang Baik Menjaga",
+      "midiPath": "assets/midi/150_Gembala yang Baik Menjaga.mid",
+      "pdfPath": "assets/pdf/150_Gembala yang Baik Menjaga.pdf"
+    },
+    {
+      "id": "hymn-151",
+      "book": "rohani",
+      "number": 151,
+      "title": "Tuhan Menjagamu",
+      "midiPath": "assets/midi/151_Tuhan Menjagamu.mid",
+      "pdfPath": "assets/pdf/151_Tuhan Menjagamu.pdf"
+    },
+    {
+      "id": "hymn-152",
+      "book": "rohani",
+      "number": 152,
+      "title": "Tuhan Menyediakan",
+      "midiPath": "assets/midi/152_Tuhan Menyediakan.mid",
+      "pdfPath": "assets/pdf/152_Tuhan Menyediakan.pdf"
+    },
+    {
+      "id": "hymn-153",
+      "book": "rohani",
+      "number": 153,
+      "title": "Setiap Waktu Berserah Pada Tuhan",
+      "midiPath": "assets/midi/153_Setiap Waktu Berserah Pada Tuhan.mid",
+      "pdfPath": "assets/pdf/153_Setiap Waktu Berserah Pada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-153",
+        "path": "assets/chord/153_Setiap Waktu Berserah Pada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1772,
+        "sha256": "738d0bf08a6281aa9a3a2b7898a14df675cb3d1bf4f89a67fbda78a996bea4e8"
+      }
+    },
+    {
+      "id": "hymn-154",
+      "book": "rohani",
+      "number": 154,
+      "title": "Yesus Bentengku yang Kokoh",
+      "midiPath": "assets/midi/154_Yesus Bentengku yang Kokoh.mid",
+      "pdfPath": "assets/pdf/154_Yesus Bentengku yang Kokoh.pdf"
+    },
+    {
+      "id": "hymn-155",
+      "book": "rohani",
+      "number": 155,
+      "title": "Tuhan Selalu Menjagaku",
+      "midiPath": "assets/midi/155_Tuhan Selalu Menjagaku.mid",
+      "pdfPath": "assets/pdf/155_Tuhan Selalu Menjagaku.pdf",
+      "chordRef": {
+        "songId": "hymn-155",
+        "path": "assets/chord/155_Tuhan Selalu Menjagaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1430,
+        "sha256": "e0d8f67e0cc10983c6d6e4b8285d66a7dc5fc93a1484c0496976813713347f2d"
+      }
+    },
+    {
+      "id": "hymn-156",
+      "book": "rohani",
+      "number": 156,
+      "title": "Jalan Bersama Tuhan",
+      "midiPath": "assets/midi/156_Jalan Bersama Tuhan.mid",
+      "pdfPath": "assets/pdf/156_Jalan Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-156",
+        "path": "assets/chord/156_Jalan Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1685,
+        "sha256": "52742d0f17b708e7e61d562e57240825dc0e42139799e0afdc84ac89d28b4ec9"
+      }
+    },
+    {
+      "id": "hymn-157",
+      "book": "rohani",
+      "number": 157,
+      "title": "Surga di Dalam Hati",
+      "midiPath": "assets/midi/157_Surga di Dalam Hati.mid",
+      "pdfPath": "assets/pdf/157_Surga di Dalam Hati.pdf"
+    },
+    {
+      "id": "hymn-158",
+      "book": "rohani",
+      "number": 158,
+      "title": "Berjalan di Jalan Tuhan",
+      "midiPath": "assets/midi/158_Berjalan di Jalan Tuhan.mid",
+      "pdfPath": "assets/pdf/158_Berjalan di Jalan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-158",
+        "path": "assets/chord/158_Berjalan di Jalan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1399,
+        "sha256": "9688460131393f2efb15b6c1e6ad8a4032f827d189ce07e88414d740c8362045"
+      }
+    },
+    {
+      "id": "hymn-159",
+      "book": "rohani",
+      "number": 159,
+      "title": "Tuhan Beri Sejahtera",
+      "midiPath": "assets/midi/159_Tuhan Beri Sejahtera.mid",
+      "pdfPath": "assets/pdf/159_Tuhan Beri Sejahtera.pdf"
+    },
+    {
+      "id": "hymn-160",
+      "book": "rohani",
+      "number": 160,
+      "title": "Terang Sejati di Hati",
+      "midiPath": "assets/midi/160_Terang Sejati di Hati.mid",
+      "pdfPath": "assets/pdf/160_Terang Sejati di Hati.pdf"
+    },
+    {
+      "id": "hymn-161",
+      "book": "rohani",
+      "number": 161,
+      "title": "Di Bawah Naungan Tuhan",
+      "midiPath": "assets/midi/161_Di Bawah Naungan Tuhan.mid",
+      "pdfPath": "assets/pdf/161_Di Bawah Naungan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-161",
+        "path": "assets/chord/161_Di Bawah Naungan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1006,
+        "sha256": "27d1817e50f71efc7bde69c46bcfac463d52c80d794c01ae90823c47d7227a88"
+      }
+    },
+    {
+      "id": "hymn-162",
+      "book": "rohani",
+      "number": 162,
+      "title": "Tuhan Pikul Bebanku",
+      "midiPath": "assets/midi/162_Tuhan Pikul Bebanku.mid",
+      "pdfPath": "assets/pdf/162_Tuhan Pikul Bebanku.pdf"
+    },
+    {
+      "id": "hymn-163",
+      "book": "rohani",
+      "number": 163,
+      "title": "Giranglah Jiwaku",
+      "midiPath": "assets/midi/163_Giranglah Jiwaku.mid",
+      "pdfPath": "assets/pdf/163_Giranglah Jiwaku.pdf"
+    },
+    {
+      "id": "hymn-164",
+      "book": "rohani",
+      "number": 164,
+      "title": "Cukuplah Kasih Karunia Tuhan",
+      "midiPath": "assets/midi/164_Cukuplah Kasih Karunia Tuhan.mid",
+      "pdfPath": "assets/pdf/164_Cukuplah Kasih Karunia Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-164",
+        "path": "assets/chord/164_Cukuplah Kasih Karunia Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 827,
+        "sha256": "57a483696688bdd8dd471ff996afcf705ceb9da96603008c849399c246a99d47"
+      }
+    },
+    {
+      "id": "hymn-165",
+      "book": "rohani",
+      "number": 165,
+      "title": "Yesus Memeluk Aku",
+      "midiPath": "assets/midi/165_Yesus Memeluk Aku.mid",
+      "pdfPath": "assets/pdf/165_Yesus Memeluk Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-165",
+        "path": "assets/chord/165_Yesus Memeluk Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1640,
+        "sha256": "374f2717e3f602d6c74bb9c6702e1d8e7d50efbe7a6c88baf96f4b0b382ea8ab"
+      }
+    },
+    {
+      "id": "hymn-166",
+      "book": "rohani",
+      "number": 166,
+      "title": "Di Bawah Naungan Tuhan",
+      "midiPath": "assets/midi/166_Di Bawah Naungan Tuhan.mid",
+      "pdfPath": "assets/pdf/166_Di Bawah Naungan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-167",
+      "book": "rohani",
+      "number": 167,
+      "title": "Laskar Salib",
+      "midiPath": "assets/midi/167_Laskar Salib.mid",
+      "pdfPath": "assets/pdf/167_Laskar Salib.pdf"
+    },
+    {
+      "id": "hymn-168",
+      "book": "rohani",
+      "number": 168,
+      "title": "Laskar Kristus Maju",
+      "midiPath": "assets/midi/168_Laskar Kristus Maju.mid",
+      "pdfPath": "assets/pdf/168_Laskar Kristus Maju.pdf"
+    },
+    {
+      "id": "hymn-169",
+      "book": "rohani",
+      "number": 169,
+      "title": "Baik dan Jahat Berlawanan",
+      "midiPath": "assets/midi/169_Baik dan Jahat Berlawanan.mid",
+      "pdfPath": "assets/pdf/169_Baik dan Jahat Berlawanan.pdf"
+    },
+    {
+      "id": "hymn-170",
+      "book": "rohani",
+      "number": 170,
+      "title": "Maju Untuk Tuhan",
+      "midiPath": "assets/midi/170_Maju Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/170_Maju Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-171",
+      "book": "rohani",
+      "number": 171,
+      "title": "Gereja Yesus Sejati",
+      "midiPath": "assets/midi/171_Gereja Yesus Sejati.mid",
+      "pdfPath": "assets/pdf/171_Gereja Yesus Sejati.pdf"
+    },
+    {
+      "id": "hymn-172",
+      "book": "rohani",
+      "number": 172,
+      "title": "Kau Pasti Menang",
+      "midiPath": "assets/midi/172_Kau Pasti Menang.mid",
+      "pdfPath": "assets/pdf/172_Kau Pasti Menang.pdf"
+    },
+    {
+      "id": "hymn-173",
+      "book": "rohani",
+      "number": 173,
+      "title": "Panji Salib",
+      "midiPath": "assets/midi/173_Panji Salib.mid",
+      "pdfPath": "assets/pdf/173_Panji Salib.pdf"
+    },
+    {
+      "id": "hymn-174",
+      "book": "rohani",
+      "number": 174,
+      "title": "GerejaNya Pasti Maju",
+      "midiPath": "assets/midi/174_GerejaNya Pasti Maju.mid",
+      "pdfPath": "assets/pdf/174_GerejaNya Pasti Maju.pdf"
+    },
+    {
+      "id": "hymn-175",
+      "book": "rohani",
+      "number": 175,
+      "title": "Pantang Mundur",
+      "midiPath": "assets/midi/175_Pantang Mundur.mid",
+      "pdfPath": "assets/pdf/175_Pantang Mundur.pdf"
+    },
+    {
+      "id": "hymn-176",
+      "book": "rohani",
+      "number": 176,
+      "title": "Pastilah Menang",
+      "midiPath": "assets/midi/176_Pastilah Menang.mid",
+      "pdfPath": "assets/pdf/176_Pastilah Menang.pdf"
+    },
+    {
+      "id": "hymn-177",
+      "book": "rohani",
+      "number": 177,
+      "title": "Jangan Turut Bujukan",
+      "midiPath": "assets/midi/177_Jangan Turut Bujukan.mid",
+      "pdfPath": "assets/pdf/177_Jangan Turut Bujukan.pdf"
+    },
+    {
+      "id": "hymn-178",
+      "book": "rohani",
+      "number": 178,
+      "title": "Menuju Ke Surga",
+      "midiPath": "assets/midi/178_Menuju Ke Surga.mid",
+      "pdfPath": "assets/pdf/178_Menuju Ke Surga.pdf"
+    },
+    {
+      "id": "hymn-179",
+      "book": "rohani",
+      "number": 179,
+      "title": "Bersiap Masuk Surga",
+      "midiPath": "assets/midi/179_Bersiap Masuk Surga.mid",
+      "pdfPath": "assets/pdf/179_Bersiap Masuk Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-179",
+        "path": "assets/chord/179_Bersiap Masuk Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1499,
+        "sha256": "4c4628e8413cb1f9599a2bedff9a9b6c0ea47d842258d38783064b44fbb8c369"
+      }
+    },
+    {
+      "id": "hymn-180",
+      "book": "rohani",
+      "number": 180,
+      "title": "Jalan Hidup Kekal",
+      "midiPath": "assets/midi/180_Jalan Hidup Kekal.mid",
+      "pdfPath": "assets/pdf/180_Jalan Hidup Kekal.pdf"
+    },
+    {
+      "id": "hymn-181",
+      "book": "rohani",
+      "number": 181,
+      "title": "Ku Harus Maju",
+      "midiPath": "assets/midi/181_Ku Harus Maju.mid",
+      "pdfPath": "assets/pdf/181_Ku Harus Maju.pdf"
+    },
+    {
+      "id": "hymn-182",
+      "book": "rohani",
+      "number": 182,
+      "title": "Maju Terus",
+      "midiPath": "assets/midi/182_Maju Terus.mid",
+      "pdfPath": "assets/pdf/182_Maju Terus.pdf"
+    },
+    {
+      "id": "hymn-183",
+      "book": "rohani",
+      "number": 183,
+      "title": "Maju Tak Gentar",
+      "midiPath": "assets/midi/183_Maju Tak Gentar.mid",
+      "pdfPath": "assets/pdf/183_Maju Tak Gentar.pdf"
+    },
+    {
+      "id": "hymn-184",
+      "book": "rohani",
+      "number": 184,
+      "title": "Berjalan di Atas Jalan Surgawi",
+      "midiPath": "assets/midi/184_Berjalan di Atas Jalan Surgawi.mid",
+      "pdfPath": "assets/pdf/184_Berjalan di Atas Jalan Surgawi.pdf"
+    },
+    {
+      "id": "hymn-185",
+      "book": "rohani",
+      "number": 185,
+      "title": "Rindu Rumah di Surga",
+      "midiPath": "assets/midi/185_Rindu Rumah di Surga.mid",
+      "pdfPath": "assets/pdf/185_Rindu Rumah di Surga.pdf"
+    },
+    {
+      "id": "hymn-186",
+      "book": "rohani",
+      "number": 186,
+      "title": "Surga Rumahku",
+      "midiPath": "assets/midi/186_Surga Rumahku.mid",
+      "pdfPath": "assets/pdf/186_Surga Rumahku.pdf"
+    },
+    {
+      "id": "hymn-187",
+      "book": "rohani",
+      "number": 187,
+      "title": "Datang ke Tempat nan Indah",
+      "midiPath": "assets/midi/187_Datang ke Tempat nan Indah.mid",
+      "pdfPath": "assets/pdf/187_Datang ke Tempat nan Indah.pdf"
+    },
+    {
+      "id": "hymn-188",
+      "book": "rohani",
+      "number": 188,
+      "title": "Kembali ke surga Mulia",
+      "midiPath": "assets/midi/188_Kembali ke surga Mulia.mid",
+      "pdfPath": "assets/pdf/188_Kembali ke surga Mulia.pdf"
+    },
+    {
+      "id": "hymn-189",
+      "book": "rohani",
+      "number": 189,
+      "title": "Surga Indah",
+      "midiPath": "assets/midi/189_Surga Indah.mid",
+      "pdfPath": "assets/pdf/189_Surga Indah.pdf"
+    },
+    {
+      "id": "hymn-190",
+      "book": "rohani",
+      "number": 190,
+      "title": "Umat Surga",
+      "midiPath": "assets/midi/190_Umat Surga.mid",
+      "pdfPath": "assets/pdf/190_Umat Surga.pdf"
+    },
+    {
+      "id": "hymn-191",
+      "book": "rohani",
+      "number": 191,
+      "title": "Rumahku di Surga",
+      "midiPath": "assets/midi/191_Rumahku di Surga.mid",
+      "pdfPath": "assets/pdf/191_Rumahku di Surga.pdf"
+    },
+    {
+      "id": "hymn-192",
+      "book": "rohani",
+      "number": 192,
+      "title": "Salib Pimpin Jalanku",
+      "midiPath": "assets/midi/192_Salib Pimpin Jalanku.mid",
+      "pdfPath": "assets/pdf/192_Salib Pimpin Jalanku.pdf"
+    },
+    {
+      "id": "hymn-193",
+      "book": "rohani",
+      "number": 193,
+      "title": "Surga Yang Mulia",
+      "midiPath": "assets/midi/193_Surga Yang Mulia.mid",
+      "pdfPath": "assets/pdf/193_Surga Yang Mulia.pdf"
+    },
+    {
+      "id": "hymn-194",
+      "book": "rohani",
+      "number": 194,
+      "title": "Perhentian di Surga",
+      "midiPath": "assets/midi/194_Perhentian di Surga.mid",
+      "pdfPath": "assets/pdf/194_Perhentian di Surga.pdf"
+    },
+    {
+      "id": "hymn-195",
+      "book": "rohani",
+      "number": 195,
+      "title": "Rindu Tempat Bahagia",
+      "midiPath": "assets/midi/195_Rindu Tempat Bahagia.mid",
+      "pdfPath": "assets/pdf/195_Rindu Tempat Bahagia.pdf"
+    },
+    {
+      "id": "hymn-196",
+      "book": "rohani",
+      "number": 196,
+      "title": "Surga Indah",
+      "midiPath": "assets/midi/196_Surga Indah.mid",
+      "pdfPath": "assets/pdf/196_Surga Indah.pdf",
+      "chordRef": {
+        "songId": "hymn-196",
+        "path": "assets/chord/196_Surga Indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3246,
+        "sha256": "85fbfa404966200fd59370cf2d2c77fd43a94035fdf5e4a573add0e3dc5d2d30"
+      }
+    },
+    {
+      "id": "hymn-197",
+      "book": "rohani",
+      "number": 197,
+      "title": "Pulang ke Rumah",
+      "midiPath": "assets/midi/197_Pulang ke Rumah.mid",
+      "pdfPath": "assets/pdf/197_Pulang ke Rumah.pdf"
+    },
+    {
+      "id": "hymn-198",
+      "book": "rohani",
+      "number": 198,
+      "title": "Sandar Tuhan ke Surga",
+      "midiPath": "assets/midi/198_Sandar Tuhan ke Surga.mid",
+      "pdfPath": "assets/pdf/198_Sandar Tuhan ke Surga.pdf"
+    },
+    {
+      "id": "hymn-199",
+      "book": "rohani",
+      "number": 199,
+      "title": "Rumahku Yang di Surga",
+      "midiPath": "assets/midi/199_Rumahku Yang di Surga.mid",
+      "pdfPath": "assets/pdf/199_Rumahku Yang di Surga.pdf"
+    },
+    {
+      "id": "hymn-200",
+      "book": "rohani",
+      "number": 200,
+      "title": "Merindukan Rumah di Surga",
+      "midiPath": "assets/midi/200_Merindukan Rumah di Surga.mid",
+      "pdfPath": "assets/pdf/200_Merindukan Rumah di Surga.pdf",
+      "chordRef": {
+        "songId": "hymn-200",
+        "path": "assets/chord/200_Merindukan Rumah di Surga.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1498,
+        "sha256": "435b4e212b3ca9df6410141ecf549e3c32a52271d6798a426d97d366fa646a3f"
+      }
+    },
+    {
+      "id": "hymn-201",
+      "book": "rohani",
+      "number": 201,
+      "title": "Kemuliaan Kekal",
+      "midiPath": "assets/midi/201_Kemuliaan Kekal.mid",
+      "pdfPath": "assets/pdf/201_Kemuliaan Kekal.pdf",
+      "chordRef": {
+        "songId": "hymn-201",
+        "path": "assets/chord/201_Kemuliaan Kekal.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1703,
+        "sha256": "9b43c87c16110799d24d3802d6fca7014ef53e29c69ce981f2a77a9116fb47e6"
+      }
+    },
+    {
+      "id": "hymn-202",
+      "book": "rohani",
+      "number": 202,
+      "title": "Surga Tempat Bahagia",
+      "midiPath": "assets/midi/202_Surga Tempat Bahagia.mid",
+      "pdfPath": "assets/pdf/202_Surga Tempat Bahagia.pdf",
+      "chordRef": {
+        "songId": "hymn-202",
+        "path": "assets/chord/202_Surga Tempat Bahagia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1515,
+        "sha256": "c95c5dcd935c17fc6507925adc5cbec61362dd722823ef7d2b65cfe40a451cbc"
+      }
+    },
+    {
+      "id": "hymn-203",
+      "book": "rohani",
+      "number": 203,
+      "title": "Bunga Bakung",
+      "midiPath": "assets/midi/203_Bunga Bakung.mid",
+      "pdfPath": "assets/pdf/203_Bunga Bakung.pdf",
+      "chordRef": {
+        "songId": "hymn-203",
+        "path": "assets/chord/203_Bunga Bakung.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3158,
+        "sha256": "ae83d68273b6fc2ddad849bab42ff3c52e6936905d4f7c4e761fac9440f41556"
+      }
+    },
+    {
+      "id": "hymn-204",
+      "book": "rohani",
+      "number": 204,
+      "title": "Berpengharapan Karena Iman",
+      "midiPath": "assets/midi/204_Berpengharapan Karena Iman.mid",
+      "pdfPath": "assets/pdf/204_Berpengharapan Karena Iman.pdf",
+      "chordRef": {
+        "songId": "hymn-204",
+        "path": "assets/chord/204_Berpengharapan Karena Iman.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1063,
+        "sha256": "9615bebfe6be3f53bb1fd4ea539e3bb980dee4a12aae33ca6f631864ee52d2f5"
+      }
+    },
+    {
+      "id": "hymn-205",
+      "book": "rohani",
+      "number": 205,
+      "title": "Di Dalam Kristus Pasti Bangkit",
+      "midiPath": "assets/midi/205_Di Dalam Kristus Pasti Bangkit.mid",
+      "pdfPath": "assets/pdf/205_Di Dalam Kristus Pasti Bangkit.pdf",
+      "chordRef": {
+        "songId": "hymn-205",
+        "path": "assets/chord/205_Di Dalam Kristus Pasti Bangkit.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2055,
+        "sha256": "da41b938a6486b271631800afcb2bc4448d433913923c02876b051b863a57b6f"
+      }
+    },
+    {
+      "id": "hymn-206",
+      "book": "rohani",
+      "number": 206,
+      "title": "Aku Pasti Berjumpa Dengan Tuhan",
+      "midiPath": "assets/midi/206_Aku Pasti Berjumpa Dengan Tuhan.mid",
+      "pdfPath": "assets/pdf/206_Aku Pasti Berjumpa Dengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-206",
+        "path": "assets/chord/206_Aku Pasti Berjumpa Dengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1492,
+        "sha256": "a9c8a882880180d3dd0640bf2073a3ebb24b235fd1e908b5334a170c1e2503f2"
+      }
+    },
+    {
+      "id": "hymn-207",
+      "book": "rohani",
+      "number": 207,
+      "title": "Merindukan Kedatangan Tuhan",
+      "midiPath": "assets/midi/207_Merindukan Kedatangan Tuhan.mid",
+      "pdfPath": "assets/pdf/207_Merindukan Kedatangan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-207",
+        "path": "assets/chord/207_Merindukan Kedatangan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1586,
+        "sha256": "e8b4eccbe5ca73d722fc846c44d92a57ad44543b5315f84cfa1f6fa9729f39df"
+      }
+    },
+    {
+      "id": "hymn-208",
+      "book": "rohani",
+      "number": 208,
+      "title": "Umat Kudus Diangkat",
+      "midiPath": "assets/midi/208_Umat Kudus Diangkat.mid",
+      "pdfPath": "assets/pdf/208_Umat Kudus Diangkat.pdf",
+      "chordRef": {
+        "songId": "hymn-208",
+        "path": "assets/chord/208_Umat Kudus Diangkat.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1474,
+        "sha256": "e09acc00396ec2985f8210f36e1055a591c569e764dbdf6c824dfca06a6bedc9"
+      }
+    },
+    {
+      "id": "hymn-209",
+      "book": "rohani",
+      "number": 209,
+      "title": "Aku Akan Melihat Tuhan",
+      "midiPath": "assets/midi/209_Aku Akan Melihat Tuhan.mid",
+      "pdfPath": "assets/pdf/209_Aku Akan Melihat Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-209",
+        "path": "assets/chord/209_Aku Akan Melihat Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1687,
+        "sha256": "066c20f986eb756839f2520365db54bbf08d1ccdb1458f32e3e9222a93f457f5"
+      }
+    },
+    {
+      "id": "hymn-210",
+      "book": "rohani",
+      "number": 210,
+      "title": "Di Kala Hidup Ini Berakhir",
+      "midiPath": "assets/midi/210_Di Kala Hidup Ini Berakhir.mid",
+      "pdfPath": "assets/pdf/210_Di Kala Hidup Ini Berakhir.pdf",
+      "chordRef": {
+        "songId": "hymn-210",
+        "path": "assets/chord/210_Di Kala Hidup Ini Berakhir.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1592,
+        "sha256": "b329edebc28613247e4f97b97decad41b29dc2e910918374a088b9ed4a480481"
+      }
+    },
+    {
+      "id": "hymn-211",
+      "book": "rohani",
+      "number": 211,
+      "title": "Allah Mengawasi",
+      "midiPath": "assets/midi/211_Allah Mengawasi.mid",
+      "pdfPath": "assets/pdf/211_Allah Mengawasi.pdf",
+      "chordRef": {
+        "songId": "hymn-211",
+        "path": "assets/chord/211_Allah Mengawasi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1267,
+        "sha256": "74903066363ca4cf11e132914b6fbf16eb49f394a5338addcf4fcf5fad1bbe97"
+      }
+    },
+    {
+      "id": "hymn-212",
+      "book": "rohani",
+      "number": 212,
+      "title": "Bersinar Bagi Tuhan",
+      "midiPath": "assets/midi/212_Bersinar Bagi Tuhan.mid",
+      "pdfPath": "assets/pdf/212_Bersinar Bagi Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-212",
+        "path": "assets/chord/212_Bersinar Bagi Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 816,
+        "sha256": "116981f9785fe29da8142bdd02b12939807c55b68a3397111881aecf86d91a66"
+      }
+    },
+    {
+      "id": "hymn-213",
+      "book": "rohani",
+      "number": 213,
+      "title": "Walau Sedikit Namun Berarti",
+      "midiPath": "assets/midi/213_Walau Sedikit Namun Berarti.mid",
+      "pdfPath": "assets/pdf/213_Walau Sedikit Namun Berarti.pdf",
+      "chordRef": {
+        "songId": "hymn-213",
+        "path": "assets/chord/213_Walau Sedikit Namun Berarti.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 881,
+        "sha256": "fd2fda666ff93cffa4ae66cb892d0bc6da45d2ceb89034e24a4c2ac1b24e4566"
+      }
+    },
+    {
+      "id": "hymn-214",
+      "book": "rohani",
+      "number": 214,
+      "title": "Delapan Kebahagiaan",
+      "midiPath": "assets/midi/214_Delapan Kebahagiaan.mid",
+      "pdfPath": "assets/pdf/214_Delapan Kebahagiaan.pdf",
+      "chordRef": {
+        "songId": "hymn-214",
+        "path": "assets/chord/214_Delapan Kebahagiaan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1374,
+        "sha256": "42dba98ed7a39ed928c3771d50e7b2b629c59a9a49a95db83c80339ae6364470"
+      }
+    },
+    {
+      "id": "hymn-215",
+      "book": "rohani",
+      "number": 215,
+      "title": "Akhlak Gereja Benar",
+      "midiPath": "assets/midi/215_Akhlak Gereja Benar.mid",
+      "pdfPath": "assets/pdf/215_Akhlak Gereja Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-215",
+        "path": "assets/chord/215_Akhlak Gereja Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 935,
+        "sha256": "7555d1fc607c0c5ed9a8b474ab9a96bcb55c951283774227a154f19c0e6778fb"
+      }
+    },
+    {
+      "id": "hymn-216",
+      "book": "rohani",
+      "number": 216,
+      "title": "Budi Pekerti Umat Suci",
+      "midiPath": "assets/midi/216_Budi Pekerti Umat Suci.mid",
+      "pdfPath": "assets/pdf/216_Budi Pekerti Umat Suci.pdf",
+      "chordRef": {
+        "songId": "hymn-216",
+        "path": "assets/chord/216_Budi Pekerti Umat Suci.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1003,
+        "sha256": "f5ae2aa8797526ae316f3847d77026f8dd61ec789e9598eb105b6307f8d295fd"
+      }
+    },
+    {
+      "id": "hymn-217",
+      "book": "rohani",
+      "number": 217,
+      "title": "Melakukan Firman Tuhan",
+      "midiPath": "assets/midi/217_Melakukan Firman Tuhan.mid",
+      "pdfPath": "assets/pdf/217_Melakukan Firman Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-217",
+        "path": "assets/chord/217_Melakukan Firman Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1265,
+        "sha256": "499ed5edb75b0843bbaf6b0e27666889bcbe15cb78f28e8abf69f3bf99f1bc10"
+      }
+    },
+    {
+      "id": "hymn-218",
+      "book": "rohani",
+      "number": 218,
+      "title": "Buah Roh Kudus",
+      "midiPath": "assets/midi/218_Buah Roh Kudus.mid",
+      "pdfPath": "assets/pdf/218_Buah Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-218",
+        "path": "assets/chord/218_Buah Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1575,
+        "sha256": "c2922ecf8af16895f3229dffef019aa73c06b19b2924df5e7ff449b9b6b7f49e"
+      }
+    },
+    {
+      "id": "hymn-219",
+      "book": "rohani",
+      "number": 219,
+      "title": "Di mana Saja Bersinar",
+      "midiPath": "assets/midi/219_Di mana Saja Bersinar.mid",
+      "pdfPath": "assets/pdf/219_Di mana Saja Bersinar.pdf",
+      "chordRef": {
+        "songId": "hymn-219",
+        "path": "assets/chord/219_Di mana Saja Bersinar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1513,
+        "sha256": "7a8c2ee8840b96773ea64d216ebc217f02b13d3143936b5b7c76402486a65487"
+      }
+    },
+    {
+      "id": "hymn-220",
+      "book": "rohani",
+      "number": 220,
+      "title": "Api Pengujian",
+      "midiPath": "assets/midi/220_Api Pengujian.mid",
+      "pdfPath": "assets/pdf/220_Api Pengujian.pdf",
+      "chordRef": {
+        "songId": "hymn-220",
+        "path": "assets/chord/220_Api Pengujian.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1450,
+        "sha256": "7227b349511eaf59de43d6aa025219c4d7fe082e1165eaff51612aaa2d499594"
+      }
+    },
+    {
+      "id": "hymn-221",
+      "book": "rohani",
+      "number": 221,
+      "title": "Taklukkan Keinginan Daging",
+      "midiPath": "assets/midi/221_Taklukkan Keinginan Daging.mid",
+      "pdfPath": "assets/pdf/221_Taklukkan Keinginan Daging.pdf",
+      "chordRef": {
+        "songId": "hymn-221",
+        "path": "assets/chord/221_Taklukkan Keinginan Daging.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1071,
+        "sha256": "88b53c58014256f12a897fd88798d0a562ffacc0009e3c65b56db1460c065883"
+      }
+    },
+    {
+      "id": "hymn-222",
+      "book": "rohani",
+      "number": 222,
+      "title": "Berbahagialah Yang Suci Hatinya",
+      "midiPath": "assets/midi/222_Berbahagialah Yang Suci Hatinya.mid",
+      "pdfPath": "assets/pdf/222_Berbahagialah Yang Suci Hatinya.pdf",
+      "chordRef": {
+        "songId": "hymn-222",
+        "path": "assets/chord/222_Berbahagialah Yang Suci Hatinya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 630,
+        "sha256": "888b4e2e5e395055414d6381c30ae4a20a0b5890c09f83e656856b6de8f407d8"
+      }
+    },
+    {
+      "id": "hymn-223",
+      "book": "rohani",
+      "number": 223,
+      "title": "Kidung Umat Pilihan",
+      "midiPath": "assets/midi/223_Kidung Umat Pilihan.mid",
+      "pdfPath": "assets/pdf/223_Kidung Umat Pilihan.pdf",
+      "chordRef": {
+        "songId": "hymn-223",
+        "path": "assets/chord/223_Kidung Umat Pilihan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1998,
+        "sha256": "be63630c8c78db4601b8e2e4d7fe78f69a023f38eda9592093fd6a4168c6a52e"
+      }
+    },
+    {
+      "id": "hymn-224",
+      "book": "rohani",
+      "number": 224,
+      "title": "Mohon Tuhan Selidiki",
+      "midiPath": "assets/midi/224_Mohon Tuhan Selidiki.mid",
+      "pdfPath": "assets/pdf/224_Mohon Tuhan Selidiki.pdf",
+      "chordRef": {
+        "songId": "hymn-224",
+        "path": "assets/chord/224_Mohon Tuhan Selidiki.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1635,
+        "sha256": "5ae30f7df114959b80657fcf7afacdceecbd450f78edf14e95302fcb41ec1c1f"
+      }
+    },
+    {
+      "id": "hymn-225",
+      "book": "rohani",
+      "number": 225,
+      "title": "Turut Roh Kudus",
+      "midiPath": "assets/midi/225_Turut Roh Kudus.mid",
+      "pdfPath": "assets/pdf/225_Turut Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-225",
+        "path": "assets/chord/225_Turut Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1500,
+        "sha256": "e180c756e96d6a6d7506780ee671506d886f5c7bb715173e34e42c5cb5e6a44e"
+      }
+    },
+    {
+      "id": "hymn-226",
+      "book": "rohani",
+      "number": 226,
+      "title": "Jadilah Kehendak Tuhan",
+      "midiPath": "assets/midi/226_Jadilah Kehendak Tuhan.mid",
+      "pdfPath": "assets/pdf/226_Jadilah Kehendak Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-226",
+        "path": "assets/chord/226_Jadilah Kehendak Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1437,
+        "sha256": "1a2d20bcc8831cdbde224a7e1bebbb64a775e3f8f0a87c2ba3fb1207f76160d0"
+      }
+    },
+    {
+      "id": "hymn-227",
+      "book": "rohani",
+      "number": 227,
+      "title": "Berbahagialah Yang Mendengar PerintahNya",
+      "midiPath": "assets/midi/227_Berbahagialah Yang Mendengar PerintahNya.mid",
+      "pdfPath": "assets/pdf/227_Berbahagialah Yang Mendengar PerintahNya.pdf",
+      "chordRef": {
+        "songId": "hymn-227",
+        "path": "assets/chord/227_Berbahagialah Yang Mendengar PerintahNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1009,
+        "sha256": "16b309cd60dcddb2f3e61a8b8d5ed228e25c0fff2c30f4a4ac80c2621fad6d78"
+      }
+    },
+    {
+      "id": "hymn-228",
+      "book": "rohani",
+      "number": 228,
+      "title": "Berbahagialah Yang Turut PerintahNya",
+      "midiPath": "assets/midi/228_Berbahagialah Yang Turut PerintahNya.mid",
+      "pdfPath": "assets/pdf/228_Berbahagialah Yang Turut PerintahNya.pdf",
+      "chordRef": {
+        "songId": "hymn-228",
+        "path": "assets/chord/228_Berbahagialah Yang Turut PerintahNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1583,
+        "sha256": "cc4ee44fd76190eaf31d9e4951c458dea6ae715ddc716fa5e17ff63a202a7c14"
+      }
+    },
+    {
+      "id": "hymn-229",
+      "book": "rohani",
+      "number": 229,
+      "title": "Sepuluh Perintah Allah",
+      "midiPath": "assets/midi/229_Sepuluh Perintah Allah.mid",
+      "pdfPath": "assets/pdf/229_Sepuluh Perintah Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-229",
+        "path": "assets/chord/229_Sepuluh Perintah Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1293,
+        "sha256": "e7d3a532386999f082c4c6203faaa570fd33552dd2ad3193f79814fc88594a43"
+      }
+    },
+    {
+      "id": "hymn-230",
+      "book": "rohani",
+      "number": 230,
+      "title": "Berbahagialah Orang yang Benar",
+      "midiPath": "assets/midi/230_Berbahagialah Orang yang Benar.mid",
+      "pdfPath": "assets/pdf/230_Berbahagialah Orang yang Benar.pdf",
+      "chordRef": {
+        "songId": "hymn-230",
+        "path": "assets/chord/230_Berbahagialah Orang yang Benar.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1006,
+        "sha256": "8551923623bcae42cfb3b90419fb4abc37051577d1b2888d281da56ca466fea4"
+      }
+    },
+    {
+      "id": "hymn-231",
+      "book": "rohani",
+      "number": 231,
+      "title": "Jadilah Seperti KehendakMu",
+      "midiPath": "assets/midi/231_Jadilah Seperti KehendakMu.mid",
+      "pdfPath": "assets/pdf/231_Jadilah Seperti KehendakMu.pdf",
+      "chordRef": {
+        "songId": "hymn-231",
+        "path": "assets/chord/231_Jadilah Seperti Kehendak-Mu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1436,
+        "sha256": "2165a9ac3e0a3102ab5dbb4a99bd8d6659cdc2038576e668c84f8edc6b4976db"
+      }
+    },
+    {
+      "id": "hymn-232",
+      "book": "rohani",
+      "number": 232,
+      "title": "Seperti Yesus",
+      "midiPath": "assets/midi/232_Seperti Yesus.mid",
+      "pdfPath": "assets/pdf/232_Seperti Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-232",
+        "path": "assets/chord/232_Seperti Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1757,
+        "sha256": "5ae41523e75717057225a26eed6983167b0ca07df9067495b9cff322ef2c06c9"
+      }
+    },
+    {
+      "id": "hymn-233",
+      "book": "rohani",
+      "number": 233,
+      "title": "Milik Yesus",
+      "midiPath": "assets/midi/233_Milik Yesus.mid",
+      "pdfPath": "assets/pdf/233_Milik Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-233",
+        "path": "assets/chord/233_Milik Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 751,
+        "sha256": "e253b41ff1cb91c475610af3aa7339b1aa8581391f5861d2d268dbd2c329d8ac"
+      }
+    },
+    {
+      "id": "hymn-234",
+      "book": "rohani",
+      "number": 234,
+      "title": "Ingin Lebih Dekat Tuhan",
+      "midiPath": "assets/midi/234_Ingin Lebih Dekat Tuhan.mid",
+      "pdfPath": "assets/pdf/234_Ingin Lebih Dekat Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-234",
+        "path": "assets/chord/234_Ingin Lebih Dekat Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1703,
+        "sha256": "5216795fb7b2ab762bb356ad0fb3d162adff6faaccdb78416c60521a75f6e0c1"
+      }
+    },
+    {
+      "id": "hymn-235",
+      "book": "rohani",
+      "number": 235,
+      "title": "Tuhan dan Aku Satu Tubuh",
+      "midiPath": "assets/midi/235_Tuhan dan Aku Satu Tubuh.mid",
+      "pdfPath": "assets/pdf/235_Tuhan dan Aku Satu Tubuh.pdf",
+      "chordRef": {
+        "songId": "hymn-235",
+        "path": "assets/chord/235_Tuhan dan Aku Satu Tubuh.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1756,
+        "sha256": "3e7d53b5c6d155200a1d46eff4c65a26b33e2dd8a0e7f7b5998acd9c54c49596"
+      }
+    },
+    {
+      "id": "hymn-236",
+      "book": "rohani",
+      "number": 236,
+      "title": "Aku Milik Yesus",
+      "midiPath": "assets/midi/236_Aku Milik Yesus.mid",
+      "pdfPath": "assets/pdf/236_Aku Milik Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-236",
+        "path": "assets/chord/236_Aku Milik Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1772,
+        "sha256": "0de272023089325bebc4a4624d1c2b94402d0e286e67fe2ea5782ec3840e8203"
+      }
+    },
+    {
+      "id": "hymn-237",
+      "book": "rohani",
+      "number": 237,
+      "title": "Sejak Yesus di hatiku",
+      "midiPath": "assets/midi/237_Sejak Yesus di hatiku.mid",
+      "pdfPath": "assets/pdf/237_Sejak Yesus di hatiku.pdf",
+      "chordRef": {
+        "songId": "hymn-237",
+        "path": "assets/chord/237_Sejak Yesus di Hatiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1506,
+        "sha256": "b650adc7c1683162ec103f69b779a185ea11bb39ac0d1e2cbb51cc92307532b4"
+      }
+    },
+    {
+      "id": "hymn-238",
+      "book": "rohani",
+      "number": 238,
+      "title": "Yesus, Tinggallah di hatiku",
+      "midiPath": "assets/midi/238_Yesus, Tinggallah di hatiku.mid",
+      "pdfPath": "assets/pdf/238_Yesus, Tinggallah di hatiku.pdf",
+      "chordRef": {
+        "songId": "hymn-238",
+        "path": "assets/chord/238_Yesus, Tinggallah di Hatiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1681,
+        "sha256": "f94fd10f4733ea9f1606f91cd9f9ef625c04381885e11b552d9533ad8cbe6c96"
+      }
+    },
+    {
+      "id": "hymn-239",
+      "book": "rohani",
+      "number": 239,
+      "title": "Tuhan, Tinggallah Bersamaku",
+      "midiPath": "assets/midi/239_Tuhan, Tinggallah Bersamaku.mid",
+      "pdfPath": "assets/pdf/239_Tuhan, Tinggallah Bersamaku.pdf",
+      "chordRef": {
+        "songId": "hymn-239",
+        "path": "assets/chord/239_Tuhan, Tinggallah Bersamaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1634,
+        "sha256": "7cc240243098b5bc0667edb61537afaa17bb6bd720108dbc29f1b86a9c5e02f2"
+      }
+    },
+    {
+      "id": "hymn-240",
+      "book": "rohani",
+      "number": 240,
+      "title": "Girang Bersama Tuhan",
+      "midiPath": "assets/midi/240_Girang Bersama Tuhan.mid",
+      "pdfPath": "assets/pdf/240_Girang Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-240",
+        "path": "assets/chord/240_Girang Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1754,
+        "sha256": "ff71148f0cfe80891d518433b3cb224fbdb7e73eaf2ed05c095a718a872f9572"
+      }
+    },
+    {
+      "id": "hymn-241",
+      "book": "rohani",
+      "number": 241,
+      "title": "Raja Jiwaku",
+      "midiPath": "assets/midi/241_Raja Jiwaku.mid",
+      "pdfPath": "assets/pdf/241_Raja Jiwaku.pdf",
+      "chordRef": {
+        "songId": "hymn-241",
+        "path": "assets/chord/241_Raja Jiwaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 952,
+        "sha256": "8fbee6c2f0b125e9152dd109ff8a3682fc8d0672fbe875ad16a85887959422ee"
+      }
+    },
+    {
+      "id": "hymn-242",
+      "book": "rohani",
+      "number": 242,
+      "title": "Tuhan Menanti di Luar Pintu",
+      "midiPath": "assets/midi/242_Tuhan Menanti di Luar Pintu.mid",
+      "pdfPath": "assets/pdf/242_Tuhan Menanti di Luar Pintu.pdf",
+      "chordRef": {
+        "songId": "hymn-242",
+        "path": "assets/chord/242_Tuhan Menanti di Luar Pintu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1511,
+        "sha256": "96680731f1fda1e684dad0425987f4f1bd1d50c2183732d6a3f2a361f4c4c30b"
+      }
+    },
+    {
+      "id": "hymn-243",
+      "book": "rohani",
+      "number": 243,
+      "title": "Dekatkanlah Aku PadaMu",
+      "midiPath": "assets/midi/243_Dekatkanlah Aku PadaMu.mid",
+      "pdfPath": "assets/pdf/243_Dekatkanlah Aku PadaMu.pdf",
+      "chordRef": {
+        "songId": "hymn-243",
+        "path": "assets/chord/243_Dekatkanlah Aku PadaMu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1814,
+        "sha256": "606eb9a6dcaf6abc1df383339b187b2d28da9b02ece8dd9ebdcc95765b80f244"
+      }
+    },
+    {
+      "id": "hymn-244",
+      "book": "rohani",
+      "number": 244,
+      "title": "Tuhan, Aku Mau SepertiMu",
+      "midiPath": "assets/midi/244_Tuhan, Aku Mau SepertiMu.mid",
+      "pdfPath": "assets/pdf/244_Tuhan, Aku Mau SepertiMu.pdf",
+      "chordRef": {
+        "songId": "hymn-244",
+        "path": "assets/chord/244_Tuhan, Aku Mau Seperti-Mu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1455,
+        "sha256": "d8f090556830cb789fb6219337708c48209d48a4dc398e4bff81409356597c0a"
+      }
+    },
+    {
+      "id": "hymn-245",
+      "book": "rohani",
+      "number": 245,
+      "title": "Tinggal Bersama Tuhan",
+      "midiPath": "assets/midi/245_Tinggal Bersama Tuhan.mid",
+      "pdfPath": "assets/pdf/245_Tinggal Bersama Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-245",
+        "path": "assets/chord/245_Tinggal Bersama Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1014,
+        "sha256": "49fcbb7dee0effc835a8c810a7ee324bae347c6d3c4870495a5c1919fdd50f9f"
+      }
+    },
+    {
+      "id": "hymn-246",
+      "book": "rohani",
+      "number": 246,
+      "title": "Memohon Roh Kudus",
+      "midiPath": "assets/midi/246_Memohon Roh Kudus.mid",
+      "pdfPath": "assets/pdf/246_Memohon Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-246",
+        "path": "assets/chord/246_Memohon Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 870,
+        "sha256": "9e3905caa2ba49a93c6547d62f70df7d50c5cffee49af803e22c8f273edde951"
+      }
+    },
+    {
+      "id": "hymn-247",
+      "book": "rohani",
+      "number": 247,
+      "title": "Kuasa Roh Kudus",
+      "midiPath": "assets/midi/247_Kuasa Roh Kudus.mid",
+      "pdfPath": "assets/pdf/247_Kuasa Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-247",
+        "path": "assets/chord/247_Kuasa Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1819,
+        "sha256": "a01acd5a0c3ddcd5add69cad36706e593a3fee084841884e5debb010ab04cdd9"
+      }
+    },
+    {
+      "id": "hymn-248",
+      "book": "rohani",
+      "number": 248,
+      "title": "Mohon Roh Kudus",
+      "midiPath": "assets/midi/248_Mohon Roh Kudus.mid",
+      "pdfPath": "assets/pdf/248_Mohon Roh Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-248",
+        "path": "assets/chord/248_Mohon Roh Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1011,
+        "sha256": "242097c58e20839559ca2e82542f353fe14bbb201d97449b4cdc909657fba343"
+      }
+    },
+    {
+      "id": "hymn-249",
+      "book": "rohani",
+      "number": 249,
+      "title": "Roh Kudus Baptis Semua",
+      "midiPath": "assets/midi/249_Roh Kudus Baptis Semua.mid",
+      "pdfPath": "assets/pdf/249_Roh Kudus Baptis Semua.pdf",
+      "chordRef": {
+        "songId": "hymn-249",
+        "path": "assets/chord/249_Roh Kudus Baptis Semua.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1832,
+        "sha256": "a3e919f1d97e1035069ba4301e64364b6e5acb8416a0877bed1f42b7e98416d5"
+      }
+    },
+    {
+      "id": "hymn-250",
+      "book": "rohani",
+      "number": 250,
+      "title": "Mendapat Kekuatan Baru",
+      "midiPath": "assets/midi/250_Mendapat Kekuatan Baru.mid",
+      "pdfPath": "assets/pdf/250_Mendapat Kekuatan Baru.pdf",
+      "chordRef": {
+        "songId": "hymn-250",
+        "path": "assets/chord/250_Mendapat Kekuatan Baru.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 884,
+        "sha256": "90331e7cde482f06777604954ba43591b85a5615aba3079fc0cd0e0e41d51d55"
+      }
+    },
+    {
+      "id": "hymn-251",
+      "book": "rohani",
+      "number": 251,
+      "title": "Baptisan Roh Kudus",
+      "midiPath": "assets/midi/251_Baptisan Roh Kudus.mid",
+      "pdfPath": "assets/pdf/251_Baptisan Roh Kudus.pdf"
+    },
+    {
+      "id": "hymn-252",
+      "book": "rohani",
+      "number": 252,
+      "title": "Rindu Kepenuhan Roh Kudus",
+      "midiPath": "assets/midi/252_Rindu Kepenuhan Roh Kudus.mid",
+      "pdfPath": "assets/pdf/252_Rindu Kepenuhan Roh Kudus.pdf"
+    },
+    {
+      "id": "hymn-253",
+      "book": "rohani",
+      "number": 253,
+      "title": "Roh Kudus Telah Datang",
+      "midiPath": "assets/midi/253_Roh Kudus Telah Datang.mid",
+      "pdfPath": "assets/pdf/253_Roh Kudus Telah Datang.pdf"
+    },
+    {
+      "id": "hymn-254",
+      "book": "rohani",
+      "number": 254,
+      "title": "Berbahasa Roh Sangat Penting",
+      "midiPath": "assets/midi/254_Berbahasa Roh Sangat Penting.mid",
+      "pdfPath": "assets/pdf/254_Berbahasa Roh Sangat Penting.pdf"
+    },
+    {
+      "id": "hymn-255",
+      "book": "rohani",
+      "number": 255,
+      "title": "Kebaktian Kebangunan Rohani",
+      "midiPath": "assets/midi/255_Kebaktian Kebangunan Rohani.mid",
+      "pdfPath": "assets/pdf/255_Kebaktian Kebangunan Rohani.pdf"
+    },
+    {
+      "id": "hymn-256",
+      "book": "rohani",
+      "number": 256,
+      "title": "Hujan Yang Membawa Berkat",
+      "midiPath": "assets/midi/256_Hujan Yang Membawa Berkat.mid",
+      "pdfPath": "assets/pdf/256_Hujan Yang Membawa Berkat.pdf"
+    },
+    {
+      "id": "hymn-257",
+      "book": "rohani",
+      "number": 257,
+      "title": "Berjagajaga dan Berdoa",
+      "midiPath": "assets/midi/257_Berjagajaga dan Berdoa.mid",
+      "pdfPath": "assets/pdf/257_Berjagajaga dan Berdoa.pdf"
+    },
+    {
+      "id": "hymn-258",
+      "book": "rohani",
+      "number": 258,
+      "title": "Berdoa dan Berpuasa",
+      "midiPath": "assets/midi/258_Berdoa dan Berpuasa.mid",
+      "pdfPath": "assets/pdf/258_Berdoa dan Berpuasa.pdf"
+    },
+    {
+      "id": "hymn-259",
+      "book": "rohani",
+      "number": 259,
+      "title": "Tekun Berdoa",
+      "midiPath": "assets/midi/259_Tekun Berdoa.mid",
+      "pdfPath": "assets/pdf/259_Tekun Berdoa.pdf",
+      "chordRef": {
+        "songId": "hymn-259",
+        "path": "assets/chord/259_Tekun Berdoa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1757,
+        "sha256": "2bcb4d122ad72383ae8066579c3697ae77970f17ee7145ffb568ec6c0d919346"
+      }
+    },
+    {
+      "id": "hymn-260",
+      "book": "rohani",
+      "number": 260,
+      "title": "Pujian di Pagi Hari",
+      "midiPath": "assets/midi/260_Pujian di Pagi Hari.mid",
+      "pdfPath": "assets/pdf/260_Pujian di Pagi Hari.pdf"
+    },
+    {
+      "id": "hymn-261",
+      "book": "rohani",
+      "number": 261,
+      "title": "Doa di Malam Hari",
+      "midiPath": "assets/midi/261_Doa di Malam Hari.mid",
+      "pdfPath": "assets/pdf/261_Doa di Malam Hari.pdf"
+    },
+    {
+      "id": "hymn-262",
+      "book": "rohani",
+      "number": 262,
+      "title": "Bersekutu Dalam Roh Dengan Tuhan",
+      "midiPath": "assets/midi/262_Bersekutu Dalam Roh Dengan Tuhan.mid",
+      "pdfPath": "assets/pdf/262_Bersekutu Dalam Roh Dengan Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-262",
+        "path": "assets/chord/262_Bersekutu Dalam Roh Dengan Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1499,
+        "sha256": "1a1fc06efb7afd8f380c393bc1f6a082850e3e322dc90adde088e0b190b6f024"
+      }
+    },
+    {
+      "id": "hymn-263",
+      "book": "rohani",
+      "number": 263,
+      "title": "Yesus Sahabat Yang Baik",
+      "midiPath": "assets/midi/263_Yesus Sahabat Yang Baik.mid",
+      "pdfPath": "assets/pdf/263_Yesus Sahabat Yang Baik.pdf"
+    },
+    {
+      "id": "hymn-264",
+      "book": "rohani",
+      "number": 264,
+      "title": "Tuhan, Dengarlah Doaku",
+      "midiPath": "assets/midi/264_Tuhan, Dengarlah Doaku.mid",
+      "pdfPath": "assets/pdf/264_Tuhan, Dengarlah Doaku.pdf"
+    },
+    {
+      "id": "hymn-265",
+      "book": "rohani",
+      "number": 265,
+      "title": "Lekas Beritahu Yesus",
+      "midiPath": "assets/midi/265_Lekas Beritahu Yesus.mid",
+      "pdfPath": "assets/pdf/265_Lekas Beritahu Yesus.pdf"
+    },
+    {
+      "id": "hymn-266",
+      "book": "rohani",
+      "number": 266,
+      "title": "Memberitakan Injil",
+      "midiPath": "assets/midi/266_Memberitakan Injil.mid",
+      "pdfPath": "assets/pdf/266_Memberitakan Injil.pdf"
+    },
+    {
+      "id": "hymn-267",
+      "book": "rohani",
+      "number": 267,
+      "title": "Menuruti Pengutusan Tuhan",
+      "midiPath": "assets/midi/267_Menuruti Pengutusan Tuhan.mid",
+      "pdfPath": "assets/pdf/267_Menuruti Pengutusan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-268",
+      "book": "rohani",
+      "number": 268,
+      "title": "Turut Panggilan Tuhan",
+      "midiPath": "assets/midi/268_Turut Panggilan Tuhan.mid",
+      "pdfPath": "assets/pdf/268_Turut Panggilan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-269",
+      "book": "rohani",
+      "number": 269,
+      "title": "Dengar Tuhan Memanggilku",
+      "midiPath": "assets/midi/269_Dengar Tuhan Memanggilku.mid",
+      "pdfPath": "assets/pdf/269_Dengar Tuhan Memanggilku.pdf"
+    },
+    {
+      "id": "hymn-270",
+      "book": "rohani",
+      "number": 270,
+      "title": "Ke Tempat Nan Jauh",
+      "midiPath": "assets/midi/270_Ke Tempat Nan Jauh.mid",
+      "pdfPath": "assets/pdf/270_Ke Tempat Nan Jauh.pdf"
+    },
+    {
+      "id": "hymn-271",
+      "book": "rohani",
+      "number": 271,
+      "title": "Jangan Takut",
+      "midiPath": "assets/midi/271_Jangan Takut.mid",
+      "pdfPath": "assets/pdf/271_Jangan Takut.pdf",
+      "chordRef": {
+        "songId": "hymn-271",
+        "path": "assets/chord/271_Jangan Takut.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1520,
+        "sha256": "26eed4cca1f837723260072550f2b3c3f188d3233a8abe71f3952240527d9f5f"
+      }
+    },
+    {
+      "id": "hymn-272",
+      "book": "rohani",
+      "number": 272,
+      "title": "Roh Penghibur Datang",
+      "midiPath": "assets/midi/272_Roh Penghibur Datang.mid",
+      "pdfPath": "assets/pdf/272_Roh Penghibur Datang.pdf"
+    },
+    {
+      "id": "hymn-273",
+      "book": "rohani",
+      "number": 273,
+      "title": "Kabar Gembira",
+      "midiPath": "assets/midi/273_Kabar Gembira.mid",
+      "pdfPath": "assets/pdf/273_Kabar Gembira.pdf"
+    },
+    {
+      "id": "hymn-274",
+      "book": "rohani",
+      "number": 274,
+      "title": "Hujan Akhir Turun",
+      "midiPath": "assets/midi/274_Hujan Akhir Turun.mid",
+      "pdfPath": "assets/pdf/274_Hujan Akhir Turun.pdf"
+    },
+    {
+      "id": "hymn-275",
+      "book": "rohani",
+      "number": 275,
+      "title": "Bawa Berkas ke Rumah",
+      "midiPath": "assets/midi/275_Bawa Berkas ke Rumah.mid",
+      "pdfPath": "assets/pdf/275_Bawa Berkas ke Rumah.pdf"
+    },
+    {
+      "id": "hymn-276",
+      "book": "rohani",
+      "number": 276,
+      "title": "Dengarlah InjilNya",
+      "midiPath": "assets/midi/276_Dengarlah InjilNya.mid",
+      "pdfPath": "assets/pdf/276_Dengarlah InjilNya.pdf"
+    },
+    {
+      "id": "hymn-277",
+      "book": "rohani",
+      "number": 277,
+      "title": "Girang Memberitakan Injil",
+      "midiPath": "assets/midi/277_Girang Memberitakan Injil.mid",
+      "pdfPath": "assets/pdf/277_Girang Memberitakan Injil.pdf"
+    },
+    {
+      "id": "hymn-278",
+      "book": "rohani",
+      "number": 278,
+      "title": "Tuhan Tolong",
+      "midiPath": "assets/midi/278_Tuhan Tolong.mid",
+      "pdfPath": "assets/pdf/278_Tuhan Tolong.pdf"
+    },
+    {
+      "id": "hymn-279",
+      "book": "rohani",
+      "number": 279,
+      "title": "Pintu Anugerah Terbuka",
+      "midiPath": "assets/midi/279_Pintu Anugerah Terbuka.mid",
+      "pdfPath": "assets/pdf/279_Pintu Anugerah Terbuka.pdf"
+    },
+    {
+      "id": "hymn-280",
+      "book": "rohani",
+      "number": 280,
+      "title": "Beritakan Injil",
+      "midiPath": "assets/midi/280_Beritakan Injil.mid",
+      "pdfPath": "assets/pdf/280_Beritakan Injil.pdf"
+    },
+    {
+      "id": "hymn-281",
+      "book": "rohani",
+      "number": 281,
+      "title": "Keluhan Jiwa",
+      "midiPath": "assets/midi/281_Keluhan Jiwa.mid",
+      "pdfPath": "assets/pdf/281_Keluhan Jiwa.pdf"
+    },
+    {
+      "id": "hymn-282",
+      "book": "rohani",
+      "number": 282,
+      "title": "Giatlah Bekerja",
+      "midiPath": "assets/midi/282_Giatlah Bekerja.mid",
+      "pdfPath": "assets/pdf/282_Giatlah Bekerja.pdf"
+    },
+    {
+      "id": "hymn-283",
+      "book": "rohani",
+      "number": 283,
+      "title": "Menuai Untuk Tuhan",
+      "midiPath": "assets/midi/283_Menuai Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/283_Menuai Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-284",
+      "book": "rohani",
+      "number": 284,
+      "title": "Bersinarkan Terang Injil",
+      "midiPath": "assets/midi/284_Bersinarkan Terang Injil.mid",
+      "pdfPath": "assets/pdf/284_Bersinarkan Terang Injil.pdf"
+    },
+    {
+      "id": "hymn-285",
+      "book": "rohani",
+      "number": 285,
+      "title": "Bertolak Ke Lautan Dalam",
+      "midiPath": "assets/midi/285_Bertolak Ke Lautan Dalam.mid",
+      "pdfPath": "assets/pdf/285_Bertolak Ke Lautan Dalam.pdf"
+    },
+    {
+      "id": "hymn-286",
+      "book": "rohani",
+      "number": 286,
+      "title": "Beritakan Anugerah Keselamatan",
+      "midiPath": "assets/midi/286_Beritakan Anugerah Keselamatan.mid",
+      "pdfPath": "assets/pdf/286_Beritakan Anugerah Keselamatan.pdf"
+    },
+    {
+      "id": "hymn-287",
+      "book": "rohani",
+      "number": 287,
+      "title": "Bekerja Untuk Yesus",
+      "midiPath": "assets/midi/287_Bekerja Untuk Yesus.mid",
+      "pdfPath": "assets/pdf/287_Bekerja Untuk Yesus.pdf"
+    },
+    {
+      "id": "hymn-288",
+      "book": "rohani",
+      "number": 288,
+      "title": "Lekas Bekerja",
+      "midiPath": "assets/midi/288_Lekas Bekerja.mid",
+      "pdfPath": "assets/pdf/288_Lekas Bekerja.pdf"
+    },
+    {
+      "id": "hymn-289",
+      "book": "rohani",
+      "number": 289,
+      "title": "Mengutus Pekerja Kudus",
+      "midiPath": "assets/midi/289_Mengutus Pekerja Kudus.mid",
+      "pdfPath": "assets/pdf/289_Mengutus Pekerja Kudus.pdf"
+    },
+    {
+      "id": "hymn-290",
+      "book": "rohani",
+      "number": 290,
+      "title": "Upacara Pentahbisan",
+      "midiPath": "assets/midi/290_Upacara Pentahbisan.mid",
+      "pdfPath": "assets/pdf/290_Upacara Pentahbisan.pdf"
+    },
+    {
+      "id": "hymn-291",
+      "book": "rohani",
+      "number": 291,
+      "title": "Sumber Penghapus Dosa",
+      "midiPath": "assets/midi/291_Sumber Penghapus Dosa.mid",
+      "pdfPath": "assets/pdf/291_Sumber Penghapus Dosa.pdf"
+    },
+    {
+      "id": "hymn-292",
+      "book": "rohani",
+      "number": 292,
+      "title": "Anugerah Penebusan Dosa",
+      "midiPath": "assets/midi/292_Anugerah Penebusan Dosa.mid",
+      "pdfPath": "assets/pdf/292_Anugerah Penebusan Dosa.pdf"
+    },
+    {
+      "id": "hymn-293",
+      "book": "rohani",
+      "number": 293,
+      "title": "Dosa Dibersihkan",
+      "midiPath": "assets/midi/293_Dosa Dibersihkan.mid",
+      "pdfPath": "assets/pdf/293_Dosa Dibersihkan.pdf"
+    },
+    {
+      "id": "hymn-294",
+      "book": "rohani",
+      "number": 294,
+      "title": "Aku Menghampiri Mu",
+      "midiPath": "assets/midi/294_Aku Menghampiri Mu.mid",
+      "pdfPath": "assets/pdf/294_Aku Menghampiri Mu.pdf"
+    },
+    {
+      "id": "hymn-295",
+      "book": "rohani",
+      "number": 295,
+      "title": "Sakramen Pembasuhan Kaki",
+      "midiPath": "assets/midi/295_Sakramen Pembasuhan Kaki.mid",
+      "pdfPath": "assets/pdf/295_Sakramen Pembasuhan Kaki.pdf"
+    },
+    {
+      "id": "hymn-296",
+      "book": "rohani",
+      "number": 296,
+      "title": "Memperingati Kematian Tuhan",
+      "midiPath": "assets/midi/296_Memperingati Kematian Tuhan.mid",
+      "pdfPath": "assets/pdf/296_Memperingati Kematian Tuhan.pdf"
+    },
+    {
+      "id": "hymn-297",
+      "book": "rohani",
+      "number": 297,
+      "title": "Apakah Tekadku Untuk Tuhan",
+      "midiPath": "assets/midi/297_Apakah Tekadku Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/297_Apakah Tekadku Untuk Tuhan.pdf"
+    },
+    {
+      "id": "hymn-298",
+      "book": "rohani",
+      "number": 298,
+      "title": "Upacara Pernikahan Umat Suci",
+      "midiPath": "assets/midi/298_Upacara Pernikahan Umat Suci.mid",
+      "pdfPath": "assets/pdf/298_Upacara Pernikahan Umat Suci.pdf"
+    },
+    {
+      "id": "hymn-299",
+      "book": "rohani",
+      "number": 299,
+      "title": "Pemberkatan Nikah",
+      "midiPath": "assets/midi/299_Pemberkatan Nikah.mid",
+      "pdfPath": "assets/pdf/299_Pemberkatan Nikah.pdf"
+    },
+    {
+      "id": "hymn-300",
+      "book": "rohani",
+      "number": 300,
+      "title": "Ucapan Selamat Berbahagia",
+      "midiPath": "assets/midi/300_Ucapan Selamat Berbahagia.mid",
+      "pdfPath": "assets/pdf/300_Ucapan Selamat Berbahagia.pdf"
+    },
+    {
+      "id": "hymn-301",
+      "book": "rohani",
+      "number": 301,
+      "title": "Hidup Manusia Tidak Lama",
+      "midiPath": "assets/midi/301_Hidup Manusia Tidak Lama.mid",
+      "pdfPath": "assets/pdf/301_Hidup Manusia Tidak Lama.pdf"
+    },
+    {
+      "id": "hymn-302",
+      "book": "rohani",
+      "number": 302,
+      "title": "Pemakaman",
+      "midiPath": "assets/midi/302_Pemakaman.mid",
+      "pdfPath": "assets/pdf/302_Pemakaman.pdf"
+    },
+    {
+      "id": "hymn-303",
+      "book": "rohani",
+      "number": 303,
+      "title": "Surga Telah Datang",
+      "midiPath": "assets/midi/303_Surga Telah Datang.mid",
+      "pdfPath": "assets/pdf/303_Surga Telah Datang.pdf"
+    },
+    {
+      "id": "hymn-304",
+      "book": "rohani",
+      "number": 304,
+      "title": "Anak Hilang Telah Kembali",
+      "midiPath": "assets/midi/304_Anak Hilang Telah Kembali.mid",
+      "pdfPath": "assets/pdf/304_Anak Hilang Telah Kembali.pdf"
+    },
+    {
+      "id": "hymn-305",
+      "book": "rohani",
+      "number": 305,
+      "title": "Mawas Diri",
+      "midiPath": "assets/midi/305_Mawas Diri.mid",
+      "pdfPath": "assets/pdf/305_Mawas Diri.pdf"
+    },
+    {
+      "id": "hymn-306",
+      "book": "rohani",
+      "number": 306,
+      "title": "Bertobat dan Lahir Kembali",
+      "midiPath": "assets/midi/306_Bertobat dan Lahir Kembali.mid",
+      "pdfPath": "assets/pdf/306_Bertobat dan Lahir Kembali.pdf"
+    },
+    {
+      "id": "hymn-307",
+      "book": "rohani",
+      "number": 307,
+      "title": "Pulanglah !",
+      "midiPath": "assets/midi/307_Pulanglah !.mid",
+      "pdfPath": "assets/pdf/307_Pulanglah !.pdf"
+    },
+    {
+      "id": "hymn-308",
+      "book": "rohani",
+      "number": 308,
+      "title": "Tuhan Teman Orang Berdosa",
+      "midiPath": "assets/midi/308_Tuhan Teman Orang Berdosa.mid",
+      "pdfPath": "assets/pdf/308_Tuhan Teman Orang Berdosa.pdf"
+    },
+    {
+      "id": "hymn-309",
+      "book": "rohani",
+      "number": 309,
+      "title": "Pengharapan di Tahun Baru",
+      "midiPath": "assets/midi/309_Pengharapan di Tahun Baru.mid",
+      "pdfPath": "assets/pdf/309_Pengharapan di Tahun Baru.pdf"
+    },
+    {
+      "id": "hymn-310",
+      "book": "rohani",
+      "number": 310,
+      "title": "Ucapan Syukur di Akhir Tahun",
+      "midiPath": "assets/midi/310_Ucapan Syukur di Akhir Tahun.mid",
+      "pdfPath": "assets/pdf/310_Ucapan Syukur di Akhir Tahun.pdf"
+    },
+    {
+      "id": "hymn-311",
+      "book": "rohani",
+      "number": 311,
+      "title": "Segala Ciptaan Tuhan",
+      "midiPath": "assets/midi/311_Segala Ciptaan Tuhan.mid",
+      "pdfPath": "assets/pdf/311_Segala Ciptaan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-312",
+      "book": "rohani",
+      "number": 312,
+      "title": "Mari Berkumpul MenyembahNya",
+      "midiPath": "assets/midi/312_Mari Berkumpul MenyembahNya.mid",
+      "pdfPath": "assets/pdf/312_Mari Berkumpul MenyembahNya.pdf"
+    },
+    {
+      "id": "hymn-313",
+      "book": "rohani",
+      "number": 313,
+      "title": "Besar KesetiaanMu",
+      "midiPath": "assets/midi/313_Besar KesetiaanMu.mid",
+      "pdfPath": "assets/pdf/313_Besar KesetiaanMu.pdf"
+    },
+    {
+      "id": "hymn-314",
+      "book": "rohani",
+      "number": 314,
+      "title": "Sungguh Besar Allahku",
+      "midiPath": "assets/midi/314_Sungguh Besar Allahku.mid",
+      "pdfPath": "assets/pdf/314_Sungguh Besar Allahku.pdf"
+    },
+    {
+      "id": "hymn-315",
+      "book": "rohani",
+      "number": 315,
+      "title": "Allah yang Esa, Kekal dan tak Nampak",
+      "midiPath": "assets/midi/315_Allah yang Esa, Kekal dan tak Nampak.mid",
+      "pdfPath": "assets/pdf/315_Allah yang Esa, Kekal dan tak Nampak.pdf"
+    },
+    {
+      "id": "hymn-316",
+      "book": "rohani",
+      "number": 316,
+      "title": "Sembahlah Sang Raja",
+      "midiPath": "assets/midi/316_Sembahlah Sang Raja.mid",
+      "pdfPath": "assets/pdf/316_Sembahlah Sang Raja.pdf"
+    },
+    {
+      "id": "hymn-317",
+      "book": "rohani",
+      "number": 317,
+      "title": "Tuhan Telah Datang",
+      "midiPath": "assets/midi/317_Tuhan Telah Datang.mid",
+      "pdfPath": "assets/pdf/317_Tuhan Telah Datang.pdf"
+    },
+    {
+      "id": "hymn-318",
+      "book": "rohani",
+      "number": 318,
+      "title": "Pelabuhan Jiwa",
+      "midiPath": "assets/midi/318_Pelabuhan Jiwa.mid",
+      "pdfPath": "assets/pdf/318_Pelabuhan Jiwa.pdf"
+    },
+    {
+      "id": "hymn-319",
+      "book": "rohani",
+      "number": 319,
+      "title": "Malaikat dari Tempat Mulia",
+      "midiPath": "assets/midi/319_Malaikat dari Tempat Mulia.mid",
+      "pdfPath": "assets/pdf/319_Malaikat dari Tempat Mulia.pdf"
+    },
+    {
+      "id": "hymn-320",
+      "book": "rohani",
+      "number": 320,
+      "title": "Kemuliaan Bagi Allah",
+      "midiPath": "assets/midi/320_Kemuliaan Bagi Allah.mid",
+      "pdfPath": "assets/pdf/320_Kemuliaan Bagi Allah.pdf"
+    },
+    {
+      "id": "hymn-321",
+      "book": "rohani",
+      "number": 321,
+      "title": "Marilah Memuji",
+      "midiPath": "assets/midi/321_Marilah Memuji.mid",
+      "pdfPath": "assets/pdf/321_Marilah Memuji.pdf"
+    },
+    {
+      "id": "hymn-322",
+      "book": "rohani",
+      "number": 322,
+      "title": "Kemuliaan Untuk Tuhan",
+      "midiPath": "assets/midi/322_Kemuliaan Untuk Tuhan.mid",
+      "pdfPath": "assets/pdf/322_Kemuliaan Untuk Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-322",
+        "path": "assets/chord/322_Kemuliaan Untuk Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1999,
+        "sha256": "779821a6af90868b7952d440fda1ec641ddd2b4190abd8533e976d6c0abe469e"
+      }
+    },
+    {
+      "id": "hymn-323",
+      "book": "rohani",
+      "number": 323,
+      "title": "Muliakanlah Yesus",
+      "midiPath": "assets/midi/323_Muliakanlah Yesus.mid",
+      "pdfPath": "assets/pdf/323_Muliakanlah Yesus.pdf"
+    },
+    {
+      "id": "hymn-324",
+      "book": "rohani",
+      "number": 324,
+      "title": "Mulialah NamaMu",
+      "midiPath": "assets/midi/324_Mulialah NamaMu.mid",
+      "pdfPath": "assets/pdf/324_Mulialah NamaMu.pdf"
+    },
+    {
+      "id": "hymn-325",
+      "book": "rohani",
+      "number": 325,
+      "title": "Yesus Amatlah Berharga",
+      "midiPath": "assets/midi/325_Yesus Amatlah Berharga.mid",
+      "pdfPath": "assets/pdf/325_Yesus Amatlah Berharga.pdf"
+    },
+    {
+      "id": "hymn-326",
+      "book": "rohani",
+      "number": 326,
+      "title": "Dia Membuat Ku Selalu Bernyanyi",
+      "midiPath": "assets/midi/326_Dia Membuat Ku Selalu Bernyanyi.mid",
+      "pdfPath": "assets/pdf/326_Dia Membuat Ku Selalu Bernyanyi.pdf"
+    },
+    {
+      "id": "hymn-327",
+      "book": "rohani",
+      "number": 327,
+      "title": "Lebih Mengenal Yesus",
+      "midiPath": "assets/midi/327_Lebih Mengenal Yesus.mid",
+      "pdfPath": "assets/pdf/327_Lebih Mengenal Yesus.pdf"
+    },
+    {
+      "id": "hymn-328",
+      "book": "rohani",
+      "number": 328,
+      "title": "Puji Tuhan Yang MahaKuasa",
+      "midiPath": "assets/midi/328_Puji Tuhan Yang MahaKuasa.mid",
+      "pdfPath": "assets/pdf/328_Puji Tuhan Yang MahaKuasa.pdf"
+    },
+    {
+      "id": "hymn-329",
+      "book": "rohani",
+      "number": 329,
+      "title": "Allah Abraham, Ishak dan Yakub",
+      "midiPath": "assets/midi/329_Allah Abraham, Ishak dan Yakub.mid",
+      "pdfPath": "assets/pdf/329_Allah Abraham, Ishak dan Yakub.pdf"
+    },
+    {
+      "id": "hymn-330",
+      "book": "rohani",
+      "number": 330,
+      "title": "Damai, Anugerah Tuhan",
+      "midiPath": "assets/midi/330_Damai, Anugerah Tuhan.mid",
+      "pdfPath": "assets/pdf/330_Damai, Anugerah Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-330",
+        "path": "assets/chord/330_Damai, Anugerah Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1446,
+        "sha256": "981869266953b513ab08ebcee0d545b6f028f230f7102341652ec616f80a988d"
+      }
+    },
+    {
+      "id": "hymn-331",
+      "book": "rohani",
+      "number": 331,
+      "title": "Kasih Setia dan Rahmat",
+      "midiPath": "assets/midi/331_Kasih Setia dan Rahmat.mid",
+      "pdfPath": "assets/pdf/331_Kasih Setia dan Rahmat.pdf"
+    },
+    {
+      "id": "hymn-332",
+      "book": "rohani",
+      "number": 332,
+      "title": "Kasih Allah",
+      "midiPath": "assets/midi/332_Kasih Allah.mid",
+      "pdfPath": "assets/pdf/332_Kasih Allah.pdf",
+      "chordRef": {
+        "songId": "hymn-332",
+        "path": "assets/chord/332_Kasih Allah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1711,
+        "sha256": "6f30150324880b0ff0d8bf5ea2a66cb84101e518059ef0f4e4468db4dfe281ee"
+      }
+    },
+    {
+      "id": "hymn-333",
+      "book": "rohani",
+      "number": 333,
+      "title": "Tiap Minggu DijagaNya",
+      "midiPath": "assets/midi/333_Tiap Minggu DijagaNya.mid",
+      "pdfPath": "assets/pdf/333_Tiap Minggu DijagaNya.pdf",
+      "chordRef": {
+        "songId": "hymn-333",
+        "path": "assets/chord/333_Tiap Minggu DijagaNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1198,
+        "sha256": "b282cb00bdc2c4c0b05bca623a0788f339fcb083b7bdeaa158e49f59551ae264"
+      }
+    },
+    {
+      "id": "hymn-334",
+      "book": "rohani",
+      "number": 334,
+      "title": "Yesus Mawar Saron",
+      "midiPath": "assets/midi/334_Yesus Mawar Saron.mid",
+      "pdfPath": "assets/pdf/334_Yesus Mawar Saron.pdf"
+    },
+    {
+      "id": "hymn-335",
+      "book": "rohani",
+      "number": 335,
+      "title": "Yesus Datang",
+      "midiPath": "assets/midi/335_Yesus Datang.mid",
+      "pdfPath": "assets/pdf/335_Yesus Datang.pdf"
+    },
+    {
+      "id": "hymn-336",
+      "book": "rohani",
+      "number": 336,
+      "title": "Apakah Yesus Memperhatikan?",
+      "midiPath": "assets/midi/336_Apakah Yesus Memperhatikan?.mid",
+      "pdfPath": "assets/pdf/336_Apakah Yesus Memperhatikan?.pdf"
+    },
+    {
+      "id": "hymn-337",
+      "book": "rohani",
+      "number": 337,
+      "title": "Sebab Dia Hidup",
+      "midiPath": "assets/midi/337_Sebab Dia Hidup.mid",
+      "pdfPath": "assets/pdf/337_Sebab Dia Hidup.pdf"
+    },
+    {
+      "id": "hymn-338",
+      "book": "rohani",
+      "number": 338,
+      "title": "Dia Mengangkatku",
+      "midiPath": "assets/midi/338_Dia Mengangkatku.mid",
+      "pdfPath": "assets/pdf/338_Dia Mengangkatku.pdf"
+    },
+    {
+      "id": "hymn-339",
+      "book": "rohani",
+      "number": 339,
+      "title": "Yesus Segalanya Bagiku",
+      "midiPath": "assets/midi/339_Yesus Segalanya Bagiku.mid",
+      "pdfPath": "assets/pdf/339_Yesus Segalanya Bagiku.pdf"
+    },
+    {
+      "id": "hymn-340",
+      "book": "rohani",
+      "number": 340,
+      "title": "Juruselamat Kita Yang Agung",
+      "midiPath": "assets/midi/340_Juruselamat Kita Yang Agung.mid",
+      "pdfPath": "assets/pdf/340_Juruselamat Kita Yang Agung.pdf"
+    },
+    {
+      "id": "hymn-341",
+      "book": "rohani",
+      "number": 341,
+      "title": "Undanglah Yesus ke Hatimu",
+      "midiPath": "assets/midi/341_Undanglah Yesus ke Hatimu.mid",
+      "pdfPath": "assets/pdf/341_Undanglah Yesus ke Hatimu.pdf"
+    },
+    {
+      "id": "hymn-342",
+      "book": "rohani",
+      "number": 342,
+      "title": "Pelita Kecil, Berkobarlah!",
+      "midiPath": "assets/midi/342_Pelita Kecil, Berkobarlah!.mid",
+      "pdfPath": "assets/pdf/342_Pelita Kecil, Berkobarlah!.pdf"
+    },
+    {
+      "id": "hymn-343",
+      "book": "rohani",
+      "number": 343,
+      "title": "KasihNya Mengangkatku",
+      "midiPath": "assets/midi/343_KasihNya Mengangkatku.mid",
+      "pdfPath": "assets/pdf/343_KasihNya Mengangkatku.pdf"
+    },
+    {
+      "id": "hymn-344",
+      "book": "rohani",
+      "number": 344,
+      "title": "Betapa Dia Mengasihi Kau dan Aku",
+      "midiPath": "assets/midi/344_Betapa Dia Mengasihi Kau dan Aku.mid",
+      "pdfPath": "assets/pdf/344_Betapa Dia Mengasihi Kau dan Aku.pdf"
+    },
+    {
+      "id": "hymn-345",
+      "book": "rohani",
+      "number": 345,
+      "title": "Sungguh Dalam Kasih Yesus",
+      "midiPath": "assets/midi/345_Sungguh Dalam Kasih Yesus.mid",
+      "pdfPath": "assets/pdf/345_Sungguh Dalam Kasih Yesus.pdf"
+    },
+    {
+      "id": "hymn-346",
+      "book": "rohani",
+      "number": 346,
+      "title": "Lemah Lembut PanggilanNya",
+      "midiPath": "assets/midi/346_Lemah Lembut PanggilanNya.mid",
+      "pdfPath": "assets/pdf/346_Lemah Lembut PanggilanNya.pdf"
+    },
+    {
+      "id": "hymn-347",
+      "book": "rohani",
+      "number": 347,
+      "title": "Batu Karang yang Kokoh",
+      "midiPath": "assets/midi/347_Batu Karang yang Kokoh.mid",
+      "pdfPath": "assets/pdf/347_Batu Karang yang Kokoh.pdf"
+    },
+    {
+      "id": "hymn-348",
+      "book": "rohani",
+      "number": 348,
+      "title": "Anugerah Yesus yang Ajaib",
+      "midiPath": "assets/midi/348_Anugerah Yesus yang Ajaib.mid",
+      "pdfPath": "assets/pdf/348_Anugerah Yesus yang Ajaib.pdf"
+    },
+    {
+      "id": "hymn-349",
+      "book": "rohani",
+      "number": 349,
+      "title": "Ajaib, Ajaiblah Yesus",
+      "midiPath": "assets/midi/349_Ajaib, Ajaiblah Yesus.mid",
+      "pdfPath": "assets/pdf/349_Ajaib, Ajaiblah Yesus.pdf"
+    },
+    {
+      "id": "hymn-350",
+      "book": "rohani",
+      "number": 350,
+      "title": "Hadirkah Kau?",
+      "midiPath": "assets/midi/350_Hadirkah Kau?.mid",
+      "pdfPath": "assets/pdf/350_Hadirkah Kau?.pdf"
+    },
+    {
+      "id": "hymn-351",
+      "book": "rohani",
+      "number": 351,
+      "title": "Dia Hidup",
+      "midiPath": "assets/midi/351_Dia Hidup.mid",
+      "pdfPath": "assets/pdf/351_Dia Hidup.pdf"
+    },
+    {
+      "id": "hymn-352",
+      "book": "rohani",
+      "number": 352,
+      "title": "Dia Menaungi Jiwaku",
+      "midiPath": "assets/midi/352_Dia Menaungi Jiwaku.mid",
+      "pdfPath": "assets/pdf/352_Dia Menaungi Jiwaku.pdf"
+    },
+    {
+      "id": "hymn-353",
+      "book": "rohani",
+      "number": 353,
+      "title": "Di bawah Salib Yesus",
+      "midiPath": "assets/midi/353_Di bawah Salib Yesus.mid",
+      "pdfPath": "assets/pdf/353_Di bawah Salib Yesus.pdf"
+    },
+    {
+      "id": "hymn-354",
+      "book": "rohani",
+      "number": 354,
+      "title": "Kemenangan Dalam Yesus",
+      "midiPath": "assets/midi/354_Kemenangan Dalam Yesus.mid",
+      "pdfPath": "assets/pdf/354_Kemenangan Dalam Yesus.pdf"
+    },
+    {
+      "id": "hymn-355",
+      "book": "rohani",
+      "number": 355,
+      "title": "Kekal di hatiku",
+      "midiPath": "assets/midi/355_Kekal di hatiku.mid",
+      "pdfPath": "assets/pdf/355_Kekal di hatiku.pdf"
+    },
+    {
+      "id": "hymn-356",
+      "book": "rohani",
+      "number": 356,
+      "title": "Imanlah Kemenangan",
+      "midiPath": "assets/midi/356_Imanlah Kemenangan.mid",
+      "pdfPath": "assets/pdf/356_Imanlah Kemenangan.pdf",
+      "chordRef": {
+        "songId": "hymn-356",
+        "path": "assets/chord/356_Imanlah Kemenangan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2165,
+        "sha256": "2bcf382db9e4725f96677f0c216297fb15fdcab4057be25fb495b333237dc6d5"
+      }
+    },
+    {
+      "id": "hymn-357",
+      "book": "rohani",
+      "number": 357,
+      "title": "Tuhan adalah Gembalaku",
+      "midiPath": "assets/midi/357_Tuhan adalah Gembalaku.mid",
+      "pdfPath": "assets/pdf/357_Tuhan adalah Gembalaku.pdf"
+    },
+    {
+      "id": "hymn-358",
+      "book": "rohani",
+      "number": 358,
+      "title": "Roh Kudus, Penuhilah Aku",
+      "midiPath": "assets/midi/358_Roh Kudus, Penuhilah Aku.mid",
+      "pdfPath": "assets/pdf/358_Roh Kudus, Penuhilah Aku.pdf",
+      "chordRef": {
+        "songId": "hymn-358",
+        "path": "assets/chord/358_Roh Kudus, Penuhilah Aku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1828,
+        "sha256": "ef22c12ffc0d200ffce0513f0c0343db75cd666c0da7239cfb1fce1fc8b04bac"
+      }
+    },
+    {
+      "id": "hymn-359",
+      "book": "rohani",
+      "number": 359,
+      "title": "Kita Berjalan ke Sion",
+      "midiPath": "assets/midi/359_Kita Berjalan ke Sion.mid",
+      "pdfPath": "assets/pdf/359_Kita Berjalan ke Sion.pdf"
+    },
+    {
+      "id": "hymn-360",
+      "book": "rohani",
+      "number": 360,
+      "title": "Adakah Tempat Bagi Yesus?",
+      "midiPath": "assets/midi/360_Adakah Tempat Bagi Yesus?.mid",
+      "pdfPath": "assets/pdf/360_Adakah Tempat Bagi Yesus?.pdf"
+    },
+    {
+      "id": "hymn-361",
+      "book": "rohani",
+      "number": 361,
+      "title": "Haruskah Yesus Memikul Salib Sendiri?",
+      "midiPath": "assets/midi/361_Haruskah Yesus Memikul Salib Sendiri?.mid",
+      "pdfPath": "assets/pdf/361_Haruskah Yesus Memikul Salib Sendiri?.pdf"
+    },
+    {
+      "id": "hymn-362",
+      "book": "rohani",
+      "number": 362,
+      "title": "Tuhan Roti Hidup",
+      "midiPath": "assets/midi/362_Tuhan Roti Hidup.mid",
+      "pdfPath": "assets/pdf/362_Tuhan Roti Hidup.pdf"
+    },
+    {
+      "id": "hymn-363",
+      "book": "rohani",
+      "number": 363,
+      "title": "Berpegang Pada JanjiNya",
+      "midiPath": "assets/midi/363_Berpegang Pada JanjiNya.mid",
+      "pdfPath": "assets/pdf/363_Berpegang Pada JanjiNya.pdf",
+      "chordRef": {
+        "songId": "hymn-363",
+        "path": "assets/chord/363_Berpegang Pada JanjiNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1502,
+        "sha256": "837c72db7b07c789c2338ccf4649c15bc69b622c227cff2baf34065aa05fe8ee"
+      }
+    },
+    {
+      "id": "hymn-364",
+      "book": "rohani",
+      "number": 364,
+      "title": "Hatiku Simpan FirmanMu",
+      "midiPath": "assets/midi/364_Hatiku Simpan FirmanMu.mid",
+      "pdfPath": "assets/pdf/364_Hatiku Simpan FirmanMu.pdf"
+    },
+    {
+      "id": "hymn-365",
+      "book": "rohani",
+      "number": 365,
+      "title": "Kepala Tuhan Kini Terluka",
+      "midiPath": "assets/midi/365_Kepala Tuhan Kini Terluka.mid",
+      "pdfPath": "assets/pdf/365_Kepala Tuhan Kini Terluka.pdf"
+    },
+    {
+      "id": "hymn-366",
+      "book": "rohani",
+      "number": 366,
+      "title": "Berimanlah Kepada Tuhan",
+      "midiPath": "assets/midi/366_Berimanlah Kepada Tuhan.mid",
+      "pdfPath": "assets/pdf/366_Berimanlah Kepada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-366",
+        "path": "assets/chord/366_Berimanlah Kepada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1768,
+        "sha256": "94c746042874a3c24285e49b15a725ebd34596814fa7a42e010db616d848d72b"
+      }
+    },
+    {
+      "id": "hymn-367",
+      "book": "rohani",
+      "number": 367,
+      "title": "Burung Pipit Dia Jaga",
+      "midiPath": "assets/midi/367_Burung Pipit Dia Jaga.mid",
+      "pdfPath": "assets/pdf/367_Burung Pipit Dia Jaga.pdf"
+    },
+    {
+      "id": "hymn-368",
+      "book": "rohani",
+      "number": 368,
+      "title": "Ku Tahu Siapa Pegang Hari Esok",
+      "midiPath": "assets/midi/368_Ku Tahu Siapa Pegang Hari Esok.mid",
+      "pdfPath": "assets/pdf/368_Ku Tahu Siapa Pegang Hari Esok.pdf",
+      "chordRef": {
+        "songId": "hymn-368",
+        "path": "assets/chord/368_Ku Tahu Siapa Pegang Hari Esok.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1766,
+        "sha256": "98f7326d0fc853b4703cbd6be22aa6e7677607a256824ede88d5520771f9b9f4"
+      }
+    },
+    {
+      "id": "hymn-369",
+      "book": "rohani",
+      "number": 369,
+      "title": "Perlu Yesus",
+      "midiPath": "assets/midi/369_Perlu Yesus.mid",
+      "pdfPath": "assets/pdf/369_Perlu Yesus.pdf"
+    },
+    {
+      "id": "hymn-370",
+      "book": "rohani",
+      "number": 370,
+      "title": "Bila Tuhan Beserta Kita",
+      "midiPath": "assets/midi/370_Bila Tuhan Beserta Kita.mid",
+      "pdfPath": "assets/pdf/370_Bila Tuhan Beserta Kita.pdf",
+      "chordRef": {
+        "songId": "hymn-370",
+        "path": "assets/chord/370_Bila Tuhan Beserta Kita.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1878,
+        "sha256": "69478d0a1b432c1a23ace80be7051d376914f0c8354d765293eddd79ddc187d3"
+      }
+    },
+    {
+      "id": "hymn-371",
+      "book": "rohani",
+      "number": 371,
+      "title": "Dalam Pencobaan",
+      "midiPath": "assets/midi/371_Dalam Pencobaan.mid",
+      "pdfPath": "assets/pdf/371_Dalam Pencobaan.pdf"
+    },
+    {
+      "id": "hymn-372",
+      "book": "rohani",
+      "number": 372,
+      "title": "Saat Ini",
+      "midiPath": "assets/midi/372_Saat Ini.mid",
+      "pdfPath": "assets/pdf/372_Saat Ini.pdf"
+    },
+    {
+      "id": "hymn-373",
+      "book": "rohani",
+      "number": 373,
+      "title": "Percayalah",
+      "midiPath": "assets/midi/373_Percayalah.mid",
+      "pdfPath": "assets/pdf/373_Percayalah.pdf",
+      "chordRef": {
+        "songId": "hymn-373",
+        "path": "assets/chord/373_Percayalah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1878,
+        "sha256": "4c637eebc53b9da7ac63521db173597a008de40b216df093d73183ad05168580"
+      }
+    },
+    {
+      "id": "hymn-374",
+      "book": "rohani",
+      "number": 374,
+      "title": "Raja kekal, Pimpinlah",
+      "midiPath": "assets/midi/374_Raja kekal, Pimpinlah.mid",
+      "pdfPath": "assets/pdf/374_Raja kekal, Pimpinlah.pdf"
+    },
+    {
+      "id": "hymn-375",
+      "book": "rohani",
+      "number": 375,
+      "title": "Bekas Paku di TanganNya",
+      "midiPath": "assets/midi/375_Bekas Paku di TanganNya.mid",
+      "pdfPath": "assets/pdf/375_Bekas Paku di TanganNya.pdf"
+    },
+    {
+      "id": "hymn-376",
+      "book": "rohani",
+      "number": 376,
+      "title": "Batu Karang",
+      "midiPath": "assets/midi/376_Batu Karang.mid",
+      "pdfPath": "assets/pdf/376_Batu Karang.pdf"
+    },
+    {
+      "id": "hymn-377",
+      "book": "rohani",
+      "number": 377,
+      "title": "Tuhan Kau Mengingatku",
+      "midiPath": "assets/midi/377_Tuhan Kau Mengingatku.mid",
+      "pdfPath": "assets/pdf/377_Tuhan Kau Mengingatku.pdf",
+      "chordRef": {
+        "songId": "hymn-377",
+        "path": "assets/chord/377_Tuhan Kau Mengingatku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1252,
+        "sha256": "c55bb0b8abcdc4c34d39d20fe609bc24f0726443bc55160bcb49aa70a6f384a2"
+      }
+    },
+    {
+      "id": "hymn-378",
+      "book": "rohani",
+      "number": 378,
+      "title": "Percaya dan Taat",
+      "midiPath": "assets/midi/378_Percaya dan Taat.mid",
+      "pdfPath": "assets/pdf/378_Percaya dan Taat.pdf"
+    },
+    {
+      "id": "hymn-379",
+      "book": "rohani",
+      "number": 379,
+      "title": "Pandanglah Pada Yesus",
+      "midiPath": "assets/midi/379_Pandanglah Pada Yesus.mid",
+      "pdfPath": "assets/pdf/379_Pandanglah Pada Yesus.pdf"
+    },
+    {
+      "id": "hymn-380",
+      "book": "rohani",
+      "number": 380,
+      "title": "Yesus Segalanya Bagiku",
+      "midiPath": "assets/midi/380_Yesus Segalanya Bagiku.mid",
+      "pdfPath": "assets/pdf/380_Yesus Segalanya Bagiku.pdf"
+    },
+    {
+      "id": "hymn-381",
+      "book": "rohani",
+      "number": 381,
+      "title": "Betapa Aku Mengasihi Yesus",
+      "midiPath": "assets/midi/381_Betapa Aku Mengasihi Yesus.mid",
+      "pdfPath": "assets/pdf/381_Betapa Aku Mengasihi Yesus.pdf"
+    },
+    {
+      "id": "hymn-382",
+      "book": "rohani",
+      "number": 382,
+      "title": "Di hatiku Ada Melodi Kasih",
+      "midiPath": "assets/midi/382_Di hatiku Ada Melodi Kasih.mid",
+      "pdfPath": "assets/pdf/382_Di hatiku Ada Melodi Kasih.pdf"
+    },
+    {
+      "id": "hymn-383",
+      "book": "rohani",
+      "number": 383,
+      "title": "Suatu Hari Nanti",
+      "midiPath": "assets/midi/383_Suatu Hari Nanti.mid",
+      "pdfPath": "assets/pdf/383_Suatu Hari Nanti.pdf"
+    },
+    {
+      "id": "hymn-384",
+      "book": "rohani",
+      "number": 384,
+      "title": "Cepat Atau Lambat",
+      "midiPath": "assets/midi/384_Cepat Atau Lambat.mid",
+      "pdfPath": "assets/pdf/384_Cepat Atau Lambat.pdf"
+    },
+    {
+      "id": "hymn-385",
+      "book": "rohani",
+      "number": 385,
+      "title": "Di Tepi Yordan",
+      "midiPath": "assets/midi/385_Di Tepi Yordan.mid",
+      "pdfPath": "assets/pdf/385_Di Tepi Yordan.pdf"
+    },
+    {
+      "id": "hymn-386",
+      "book": "rohani",
+      "number": 386,
+      "title": "Aku Menemukan Sobat Setia",
+      "midiPath": "assets/midi/386_Aku Menemukan Sobat Setia.mid",
+      "pdfPath": "assets/pdf/386_Aku Menemukan Sobat Setia.pdf"
+    },
+    {
+      "id": "hymn-387",
+      "book": "rohani",
+      "number": 387,
+      "title": "Tuhan, Bersabdalah Padaku",
+      "midiPath": "assets/midi/387_Tuhan, Bersabdalah Padaku.mid",
+      "pdfPath": "assets/pdf/387_Tuhan, Bersabdalah Padaku.pdf"
+    },
+    {
+      "id": "hymn-388",
+      "book": "rohani",
+      "number": 388,
+      "title": "Dekat Dengan Tuhan ku",
+      "midiPath": "assets/midi/388_Dekat Dengan Tuhan ku.mid",
+      "pdfPath": "assets/pdf/388_Dekat Dengan Tuhan ku.pdf"
+    },
+    {
+      "id": "hymn-389",
+      "book": "rohani",
+      "number": 389,
+      "title": "Lebih Dekat Kepada Tuhan",
+      "midiPath": "assets/midi/389_Lebih Dekat Kepada Tuhan.mid",
+      "pdfPath": "assets/pdf/389_Lebih Dekat Kepada Tuhan.pdf"
+    },
+    {
+      "id": "hymn-390",
+      "book": "rohani",
+      "number": 390,
+      "title": "Lebih Dekat PadaMu",
+      "midiPath": "assets/midi/390_Lebih Dekat PadaMu.mid",
+      "pdfPath": "assets/pdf/390_Lebih Dekat PadaMu.pdf"
+    },
+    {
+      "id": "hymn-391",
+      "book": "rohani",
+      "number": 391,
+      "title": "Ku Tak Akan Pernah Sendiri",
+      "midiPath": "assets/midi/391_Ku Tak Akan Pernah Sendiri.mid",
+      "pdfPath": "assets/pdf/391_Ku Tak Akan Pernah Sendiri.pdf"
+    },
+    {
+      "id": "hymn-392",
+      "book": "rohani",
+      "number": 392,
+      "title": "Aku Akan Pergi ke Mana Engkau Mengutusku",
+      "midiPath": "assets/midi/392_Aku Akan Pergi ke Mana Engkau Mengutusku.mid",
+      "pdfPath": "assets/pdf/392_Aku Akan Pergi ke Mana Engkau Mengutusku.pdf"
+    },
+    {
+      "id": "hymn-393",
+      "book": "rohani",
+      "number": 393,
+      "title": "Terima Kasih, Tuhan",
+      "midiPath": "assets/midi/393_Terima Kasih, Tuhan.mid",
+      "pdfPath": "assets/pdf/393_Terima Kasih, Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-393",
+        "path": "assets/chord/393_Terima Kasih, Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1714,
+        "sha256": "bf1223aa1764c4fd355f42664000700f342df80f9d87121260dfd7145d430607"
+      }
+    },
+    {
+      "id": "hymn-394",
+      "book": "rohani",
+      "number": 394,
+      "title": "Terima Kasih Pada Tuhan",
+      "midiPath": "assets/midi/394_Terima Kasih Pada Tuhan.mid",
+      "pdfPath": "assets/pdf/394_Terima Kasih Pada Tuhan.pdf",
+      "chordRef": {
+        "songId": "hymn-394",
+        "path": "assets/chord/394_Terima Kasih Pada Tuhan.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1317,
+        "sha256": "d54a735913897b639dcb90f2d8d320787c2a7afcc69a3404ac6d9d7bfa58e9c5"
+      }
+    },
+    {
+      "id": "hymn-395",
+      "book": "rohani",
+      "number": 395,
+      "title": "Di Tempat yang Lebih Tinggi",
+      "midiPath": "assets/midi/395_Di Tempat yang Lebih Tinggi.mid",
+      "pdfPath": "assets/pdf/395_Di Tempat yang Lebih Tinggi.pdf",
+      "chordRef": {
+        "songId": "hymn-395",
+        "path": "assets/chord/395_Di Tempat yang Lebih Tinggi.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1065,
+        "sha256": "c9f8a8e4d626e682dd52e9f7319a66e60c4ce79f59dda59e4c222d4824c3f585"
+      }
+    },
+    {
+      "id": "hymn-396",
+      "book": "rohani",
+      "number": 396,
+      "title": "Aku Akan Setia",
+      "midiPath": "assets/midi/396_Aku Akan Setia.mid",
+      "pdfPath": "assets/pdf/396_Aku Akan Setia.pdf"
+    },
+    {
+      "id": "hymn-397",
+      "book": "rohani",
+      "number": 397,
+      "title": "Nyatakan Yesus Dalammu",
+      "midiPath": "assets/midi/397_Nyatakan Yesus Dalammu.mid",
+      "pdfPath": "assets/pdf/397_Nyatakan Yesus Dalammu.pdf",
+      "chordRef": {
+        "songId": "hymn-397",
+        "path": "assets/chord/397_Nyatakan Yesus Dalammu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1709,
+        "sha256": "c09144f3c03e9a156eb35f901747329b8bae5542707773c0285429c6f41efabc"
+      }
+    },
+    {
+      "id": "hymn-398",
+      "book": "rohani",
+      "number": 398,
+      "title": "Hidup Untuk Yesus",
+      "midiPath": "assets/midi/398_Hidup Untuk Yesus.mid",
+      "pdfPath": "assets/pdf/398_Hidup Untuk Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-398",
+        "path": "assets/chord/398_Hidup Untuk Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2155,
+        "sha256": "c112c12cac217631ab50faf490ad55ebf8d2934a781ddf199541086e6b9496e3"
+      }
+    },
+    {
+      "id": "hymn-399",
+      "book": "rohani",
+      "number": 399,
+      "title": "Tuhan, Ku Mau Menjadi Kristen",
+      "midiPath": "assets/midi/399_Tuhan, Ku Mau Menjadi Kristen.mid",
+      "pdfPath": "assets/pdf/399_Tuhan, Ku Mau Menjadi Kristen.pdf"
+    },
+    {
+      "id": "hymn-400",
+      "book": "rohani",
+      "number": 400,
+      "title": "Aku Mau Seperti Yesus",
+      "midiPath": "assets/midi/400_Aku Mau Seperti Yesus.mid",
+      "pdfPath": "assets/pdf/400_Aku Mau Seperti Yesus.pdf"
+    },
+    {
+      "id": "hymn-401",
+      "book": "rohani",
+      "number": 401,
+      "title": "Kuduskan Dirimu",
+      "midiPath": "assets/midi/401_Kuduskan Dirimu.mid",
+      "pdfPath": "assets/pdf/401_Kuduskan Dirimu.pdf"
+    },
+    {
+      "id": "hymn-402",
+      "book": "rohani",
+      "number": 402,
+      "title": "Jalan Tuhan",
+      "midiPath": "assets/midi/402_Jalan Tuhan.mid",
+      "pdfPath": "assets/pdf/402_Jalan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-403",
+      "book": "rohani",
+      "number": 403,
+      "title": "Tuhan, Jadilah KehendakMu",
+      "midiPath": "assets/midi/403_Tuhan, Jadilah KehendakMu.mid",
+      "pdfPath": "assets/pdf/403_Tuhan, Jadilah KehendakMu.pdf"
+    },
+    {
+      "id": "hymn-404",
+      "book": "rohani",
+      "number": 404,
+      "title": "Tuhan Memberkatimu",
+      "midiPath": "assets/midi/404_Tuhan Memberkatimu.mid",
+      "pdfPath": "assets/pdf/404_Tuhan Memberkatimu.pdf"
+    },
+    {
+      "id": "hymn-405",
+      "book": "rohani",
+      "number": 405,
+      "title": "Berdoakah Engkau?",
+      "midiPath": "assets/midi/405_Berdoakah Engkau?.mid",
+      "pdfPath": "assets/pdf/405_Berdoakah Engkau?.pdf",
+      "chordRef": {
+        "songId": "hymn-405",
+        "path": "assets/chord/405_Berdoakah Engkau_.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1830,
+        "sha256": "dcd9971b992223154d827a8a44aa9cc4f3bb3a5bfffd6eb48be53fe2ccf4d26f"
+      }
+    },
+    {
+      "id": "hymn-406",
+      "book": "rohani",
+      "number": 406,
+      "title": "Aku Harus Memberitahu Yesus",
+      "midiPath": "assets/midi/406_Aku Harus Memberitahu Yesus.mid",
+      "pdfPath": "assets/pdf/406_Aku Harus Memberitahu Yesus.pdf"
+    },
+    {
+      "id": "hymn-407",
+      "book": "rohani",
+      "number": 407,
+      "title": "Dalam Taman",
+      "midiPath": "assets/midi/407_Dalam Taman.mid",
+      "pdfPath": "assets/pdf/407_Dalam Taman.pdf",
+      "chordRef": {
+        "songId": "hymn-407",
+        "path": "assets/chord/407_Dalam Taman.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1376,
+        "sha256": "53c07eb36d8ce9d93b0b2e5d8740a4619179dacca0ec2d436466764428cf28ed"
+      }
+    },
+    {
+      "id": "hymn-408",
+      "book": "rohani",
+      "number": 408,
+      "title": "Masuklah Dalam hatiku",
+      "midiPath": "assets/midi/408_Masuklah Dalam hatiku.mid",
+      "pdfPath": "assets/pdf/408_Masuklah Dalam hatiku.pdf"
+    },
+    {
+      "id": "hymn-409",
+      "book": "rohani",
+      "number": 409,
+      "title": "Jadikan Aku Saluran Berkat",
+      "midiPath": "assets/midi/409_Jadikan Aku Saluran Berkat.mid",
+      "pdfPath": "assets/pdf/409_Jadikan Aku Saluran Berkat.pdf"
+    },
+    {
+      "id": "hymn-410",
+      "book": "rohani",
+      "number": 410,
+      "title": "Ajarlah Aku Berdoa",
+      "midiPath": "assets/midi/410_Ajarlah Aku Berdoa.mid",
+      "pdfPath": "assets/pdf/410_Ajarlah Aku Berdoa.pdf"
+    },
+    {
+      "id": "hymn-411",
+      "book": "rohani",
+      "number": 411,
+      "title": "Taman Doa Nan indah",
+      "midiPath": "assets/midi/411_Taman Doa Nan indah.mid",
+      "pdfPath": "assets/pdf/411_Taman Doa Nan indah.pdf",
+      "chordRef": {
+        "songId": "hymn-411",
+        "path": "assets/chord/411_Taman Doa Nan indah.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1518,
+        "sha256": "656d916bc9bb04d209fba53f54c7c173b0dfc3cb562546a48ef3cd4714eb7bdf"
+      }
+    },
+    {
+      "id": "hymn-412",
+      "book": "rohani",
+      "number": 412,
+      "title": "Indahnya Saat Berdoa",
+      "midiPath": "assets/midi/412_Indahnya Saat Berdoa.mid",
+      "pdfPath": "assets/pdf/412_Indahnya Saat Berdoa.pdf",
+      "chordRef": {
+        "songId": "hymn-412",
+        "path": "assets/chord/412_Indahnya Saat Berdoa.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1584,
+        "sha256": "fdaa56884f689381b3223e4b5167c98259c4a444ef8d20e2d153ba233a4e477f"
+      }
+    },
+    {
+      "id": "hymn-413",
+      "book": "rohani",
+      "number": 413,
+      "title": "Layanilah Tuhan Dengan Suka cita",
+      "midiPath": "assets/midi/413_Layanilah Tuhan Dengan Suka cita.mid",
+      "pdfPath": "assets/pdf/413_Layanilah Tuhan Dengan Suka cita.pdf"
+    },
+    {
+      "id": "hymn-414",
+      "book": "rohani",
+      "number": 414,
+      "title": "Bila Aku Semakin Melayani Dia",
+      "midiPath": "assets/midi/414_Bila Aku Semakin Melayani Dia.mid",
+      "pdfPath": "assets/pdf/414_Bila Aku Semakin Melayani Dia.pdf"
+    },
+    {
+      "id": "hymn-415",
+      "book": "rohani",
+      "number": 415,
+      "title": "Serahkan Yang Terbaik padaNya",
+      "midiPath": "assets/midi/415_Serahkan Yang Terbaik padaNya.mid",
+      "pdfPath": "assets/pdf/415_Serahkan Yang Terbaik padaNya.pdf"
+    },
+    {
+      "id": "hymn-416",
+      "book": "rohani",
+      "number": 416,
+      "title": "\"Kau Sanggupkah?\" Tanya Yesus",
+      "midiPath": "assets/midi/416_\"Kau Sanggupkah?\" Tanya Yesus.mid",
+      "pdfPath": "assets/pdf/416_\"Kau Sanggupkah?\" Tanya Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-416",
+        "path": "assets/chord/416_Kau Sanggupkah Tanya Yesus_.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2061,
+        "sha256": "836b383535c787640ee671393d91290d8ac9b002f36e5a5882dec8ea3321b119"
+      }
+    },
+    {
+      "id": "hymn-417",
+      "book": "rohani",
+      "number": 417,
+      "title": "Mengikut Yesus",
+      "midiPath": "assets/midi/417_Mengikut Yesus.mid",
+      "pdfPath": "assets/pdf/417_Mengikut Yesus.pdf"
+    },
+    {
+      "id": "hymn-418",
+      "book": "rohani",
+      "number": 418,
+      "title": "Sudahkah Kau Persembahkan Semua?",
+      "midiPath": "assets/midi/418_Sudahkah Kau Persembahkan Semua?.mid",
+      "pdfPath": "assets/pdf/418_Sudahkah Kau Persembahkan Semua?.pdf"
+    },
+    {
+      "id": "hymn-419",
+      "book": "rohani",
+      "number": 419,
+      "title": "Jadikan Aku Saluran Berkat",
+      "midiPath": "assets/midi/419_Jadikan Aku Saluran Berkat.mid",
+      "pdfPath": "assets/pdf/419_Jadikan Aku Saluran Berkat.pdf"
+    },
+    {
+      "id": "hymn-420",
+      "book": "rohani",
+      "number": 420,
+      "title": "Persembahan Bagi Tuhan",
+      "midiPath": "assets/midi/420_Persembahan Bagi Tuhan.mid",
+      "pdfPath": "assets/pdf/420_Persembahan Bagi Tuhan.pdf"
+    },
+    {
+      "id": "hymn-421",
+      "book": "rohani",
+      "number": 421,
+      "title": "Datanglah ke PestaNya",
+      "midiPath": "assets/midi/421_Datanglah ke PestaNya.mid",
+      "pdfPath": "assets/pdf/421_Datanglah ke PestaNya.pdf"
+    },
+    {
+      "id": "hymn-422",
+      "book": "rohani",
+      "number": 422,
+      "title": "Beritakan KasihNya",
+      "midiPath": "assets/midi/422_Beritakan KasihNya.mid",
+      "pdfPath": "assets/pdf/422_Beritakan KasihNya.pdf",
+      "chordRef": {
+        "songId": "hymn-422",
+        "path": "assets/chord/422_Beritakan KasihNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1398,
+        "sha256": "4265e45a09029a5080b77c4a29a070bdb083a63319fccb14a668286e1624fa9a"
+      }
+    },
+    {
+      "id": "hymn-423",
+      "book": "rohani",
+      "number": 423,
+      "title": "Ceritakanlah Tentang Yesus",
+      "midiPath": "assets/midi/423_Ceritakanlah Tentang Yesus.mid",
+      "pdfPath": "assets/pdf/423_Ceritakanlah Tentang Yesus.pdf"
+    },
+    {
+      "id": "hymn-424",
+      "book": "rohani",
+      "number": 424,
+      "title": "Perintah Raja",
+      "midiPath": "assets/midi/424_Perintah Raja.mid",
+      "pdfPath": "assets/pdf/424_Perintah Raja.pdf"
+    },
+    {
+      "id": "hymn-425",
+      "book": "rohani",
+      "number": 425,
+      "title": "Ulurkan Tali Keselamatan",
+      "midiPath": "assets/midi/425_Ulurkan Tali Keselamatan.mid",
+      "pdfPath": "assets/pdf/425_Ulurkan Tali Keselamatan.pdf"
+    },
+    {
+      "id": "hymn-426",
+      "book": "rohani",
+      "number": 426,
+      "title": "Juruselamat Yang Ajaib",
+      "midiPath": "assets/midi/426_Juruselamat Yang Ajaib.mid",
+      "pdfPath": "assets/pdf/426_Juruselamat Yang Ajaib.pdf"
+    },
+    {
+      "id": "hymn-427",
+      "book": "rohani",
+      "number": 427,
+      "title": "Ceritakan Pada Bangsa Bangsa",
+      "midiPath": "assets/midi/427_Ceritakan Pada Bangsa Bangsa.mid",
+      "pdfPath": "assets/pdf/427_Ceritakan Pada Bangsa Bangsa.pdf"
+    },
+    {
+      "id": "hymn-428",
+      "book": "rohani",
+      "number": 428,
+      "title": "Orang Yang Penuh Kesengsaraan",
+      "midiPath": "assets/midi/428_Orang Yang Penuh Kesengsaraan.mid",
+      "pdfPath": "assets/pdf/428_Orang Yang Penuh Kesengsaraan.pdf"
+    },
+    {
+      "id": "hymn-429",
+      "book": "rohani",
+      "number": 429,
+      "title": "Aku Telah Melihat KemuliaanNya",
+      "midiPath": "assets/midi/429_Aku Telah Melihat KemuliaanNya.mid",
+      "pdfPath": "assets/pdf/429_Aku Telah Melihat KemuliaanNya.pdf"
+    },
+    {
+      "id": "hymn-430",
+      "book": "rohani",
+      "number": 430,
+      "title": "Berhimpunkah di Surga Kehidupan?",
+      "midiPath": "assets/midi/430_Berhimpunkah di Surga Kehidupan?.mid",
+      "pdfPath": "assets/pdf/430_Berhimpunkah di Surga Kehidupan?.pdf"
+    },
+    {
+      "id": "hymn-431",
+      "book": "rohani",
+      "number": 431,
+      "title": "Kasih Sempurna",
+      "midiPath": "assets/midi/431_Kasih Sempurna.mid",
+      "pdfPath": "assets/pdf/431_Kasih Sempurna.pdf"
+    },
+    {
+      "id": "hymn-432",
+      "book": "rohani",
+      "number": 432,
+      "title": "Pengertian Yang Mendalam",
+      "midiPath": "assets/midi/432_Pengertian Yang Mendalam.mid",
+      "pdfPath": "assets/pdf/432_Pengertian Yang Mendalam.pdf",
+      "chordRef": {
+        "songId": "hymn-432",
+        "path": "assets/chord/432_Pengertian Yang Mendalam.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1579,
+        "sha256": "f06fabe179b6f4de5324a997d5269d629a3c89f7a33fcb1f40487c9bee713432"
+      }
+    },
+    {
+      "id": "hymn-433",
+      "book": "rohani",
+      "number": 433,
+      "title": "Damai Nan Ajaib",
+      "midiPath": "assets/midi/433_Damai Nan Ajaib.mid",
+      "pdfPath": "assets/pdf/433_Damai Nan Ajaib.pdf",
+      "chordRef": {
+        "songId": "hymn-433",
+        "path": "assets/chord/433_Damai Nan Ajaib.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1761,
+        "sha256": "ceca65512acf6b5a9d45c62d74e64867ea67f64f2c5eb59cface512be9723cc7"
+      }
+    },
+    {
+      "id": "hymn-434",
+      "book": "rohani",
+      "number": 434,
+      "title": "Di Suatu Negeri Yang Mulia",
+      "midiPath": "assets/midi/434_Di Suatu Negeri Yang Mulia.mid",
+      "pdfPath": "assets/pdf/434_Di Suatu Negeri Yang Mulia.pdf",
+      "chordRef": {
+        "songId": "hymn-434",
+        "path": "assets/chord/434_Di Suatu Negeri Yang Mulia.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1707,
+        "sha256": "2e5cbed5f21adc8fc80cb12d01dbd079ff06e4c56f12365e2cea4a8520126ee2"
+      }
+    },
+    {
+      "id": "hymn-435",
+      "book": "rohani",
+      "number": 435,
+      "title": "Dia Mengampuni Semua Dosaku",
+      "midiPath": "assets/midi/435_Dia Mengampuni Semua Dosaku.mid",
+      "pdfPath": "assets/pdf/435_Dia Mengampuni Semua Dosaku.pdf",
+      "chordRef": {
+        "songId": "hymn-435",
+        "path": "assets/chord/435_Dia Mengampuni Semua Dosaku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2225,
+        "sha256": "38577d902e69bdcd92f94512867e50b36f1c981be045cdf7383133f9b4c64873"
+      }
+    },
+    {
+      "id": "hymn-436",
+      "book": "rohani",
+      "number": 436,
+      "title": "Sepanjang Jalan Tuhan Memimpinku",
+      "midiPath": "assets/midi/436_Sepanjang Jalan Tuhan Memimpinku.mid",
+      "pdfPath": "assets/pdf/436_Sepanjang Jalan Tuhan Memimpinku.pdf"
+    },
+    {
+      "id": "hymn-437",
+      "book": "rohani",
+      "number": 437,
+      "title": "Tuhan, Buatlah Hatiku Bersemi",
+      "midiPath": "assets/midi/437_Tuhan, Buatlah Hatiku Bersemi.mid",
+      "pdfPath": "assets/pdf/437_Tuhan, Buatlah Hatiku Bersemi.pdf"
+    },
+    {
+      "id": "hymn-438",
+      "book": "rohani",
+      "number": 438,
+      "title": "Untuk Keindahan Bumi",
+      "midiPath": "assets/midi/438_Untuk Keindahan Bumi.mid",
+      "pdfPath": "assets/pdf/438_Untuk Keindahan Bumi.pdf"
+    },
+    {
+      "id": "hymn-439",
+      "book": "rohani",
+      "number": 439,
+      "title": "Setiap Saat",
+      "midiPath": "assets/midi/439_Setiap Saat.mid",
+      "pdfPath": "assets/pdf/439_Setiap Saat.pdf"
+    },
+    {
+      "id": "hymn-440",
+      "book": "rohani",
+      "number": 440,
+      "title": "Biarlah Semua Makhluk",
+      "midiPath": "assets/midi/440_Biarlah Semua Makhluk.mid",
+      "pdfPath": "assets/pdf/440_Biarlah Semua Makhluk.pdf"
+    },
+    {
+      "id": "hymn-441",
+      "book": "rohani",
+      "number": 441,
+      "title": "Bersuka citalah",
+      "midiPath": "assets/midi/441_Bersuka citalah.mid",
+      "pdfPath": "assets/pdf/441_Bersuka citalah.pdf"
+    },
+    {
+      "id": "hymn-442",
+      "book": "rohani",
+      "number": 442,
+      "title": "Tuhan Memimpin Kita",
+      "midiPath": "assets/midi/442_Tuhan Memimpin Kita.mid",
+      "pdfPath": "assets/pdf/442_Tuhan Memimpin Kita.pdf"
+    },
+    {
+      "id": "hymn-443",
+      "book": "rohani",
+      "number": 443,
+      "title": "Iman UmatUmat Kudus",
+      "midiPath": "assets/midi/443_Iman UmatUmat Kudus.mid",
+      "pdfPath": "assets/pdf/443_Iman UmatUmat Kudus.pdf",
+      "chordRef": {
+        "songId": "hymn-443",
+        "path": "assets/chord/443_Iman Umat-Umat Kudus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1371,
+        "sha256": "f8393287f00b09dc84b09b68247286961a8ff71c6d7ac9e3938c32f25f18df08"
+      }
+    },
+    {
+      "id": "hymn-444",
+      "book": "rohani",
+      "number": 444,
+      "title": "Yesuslah Nama Yang Terindah",
+      "midiPath": "assets/midi/444_Yesuslah Nama Yang Terindah.mid",
+      "pdfPath": "assets/pdf/444_Yesuslah Nama Yang Terindah.pdf"
+    },
+    {
+      "id": "hymn-445",
+      "book": "rohani",
+      "number": 445,
+      "title": "Anugerah Lebih Besar dari Dosa",
+      "midiPath": "assets/midi/445_Anugerah Lebih Besar dari Dosa.mid",
+      "pdfPath": "assets/pdf/445_Anugerah Lebih Besar dari Dosa.pdf"
+    },
+    {
+      "id": "hymn-446",
+      "book": "rohani",
+      "number": 446,
+      "title": "Terpujilah Nama Tuhan",
+      "midiPath": "assets/midi/446_Terpujilah Nama Tuhan.mid",
+      "pdfPath": "assets/pdf/446_Terpujilah Nama Tuhan.pdf"
+    },
+    {
+      "id": "hymn-447",
+      "book": "rohani",
+      "number": 447,
+      "title": "Imanku Menemukan Tempat Perhentian",
+      "midiPath": "assets/midi/447_Imanku Menemukan Tempat Perhentian.mid",
+      "pdfPath": "assets/pdf/447_Imanku Menemukan Tempat Perhentian.pdf"
+    },
+    {
+      "id": "hymn-448",
+      "book": "rohani",
+      "number": 448,
+      "title": "Bersuka citalah, Tuhan Itu Raja",
+      "midiPath": "assets/midi/448_Bersuka citalah, Tuhan Itu Raja.mid",
+      "pdfPath": "assets/pdf/448_Bersuka citalah, Tuhan Itu Raja.pdf"
+    },
+    {
+      "id": "hymn-449",
+      "book": "rohani",
+      "number": 449,
+      "title": "Mungkinkah?",
+      "midiPath": "assets/midi/449_Mungkinkah?.mid",
+      "pdfPath": "assets/pdf/449_Mungkinkah?.pdf"
+    },
+    {
+      "id": "hymn-450",
+      "book": "rohani",
+      "number": 450,
+      "title": "Serukanlah Perang",
+      "midiPath": "assets/midi/450_Serukanlah Perang.mid",
+      "pdfPath": "assets/pdf/450_Serukanlah Perang.pdf",
+      "chordRef": {
+        "songId": "hymn-450",
+        "path": "assets/chord/450_Serukanlah Perang.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1625,
+        "sha256": "4b69be42249adfd8c1f92bd0f61beaef69b3e8c67ca4f65c7c44c268685d8540"
+      }
+    },
+    {
+      "id": "hymn-451",
+      "book": "rohani",
+      "number": 451,
+      "title": "Serukanlah Dari Puncak Gunung",
+      "midiPath": "assets/midi/451_Serukanlah Dari Puncak Gunung.mid",
+      "pdfPath": "assets/pdf/451_Serukanlah Dari Puncak Gunung.pdf"
+    },
+    {
+      "id": "hymn-452",
+      "book": "rohani",
+      "number": 452,
+      "title": "Jadilah Visiku",
+      "midiPath": "assets/midi/452_Jadilah Visiku.mid",
+      "pdfPath": "assets/pdf/452_Jadilah Visiku.pdf",
+      "chordRef": {
+        "songId": "hymn-452",
+        "path": "assets/chord/452_Jadilah Visiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1185,
+        "sha256": "8733159ee4879b51b117c7ea603d51e13ee2aaf0fa978ff14233155bc3113387"
+      }
+    },
+    {
+      "id": "hymn-453",
+      "book": "rohani",
+      "number": 453,
+      "title": "Anak Raja",
+      "midiPath": "assets/midi/453_Anak Raja.mid",
+      "pdfPath": "assets/pdf/453_Anak Raja.pdf"
+    },
+    {
+      "id": "hymn-454",
+      "book": "rohani",
+      "number": 454,
+      "title": "Oh Datanglah, Imanuel",
+      "midiPath": "assets/midi/454_Oh Datanglah, Imanuel.mid",
+      "pdfPath": "assets/pdf/454_Oh Datanglah, Imanuel.pdf",
+      "chordRef": {
+        "songId": "hymn-454",
+        "path": "assets/chord/454_Oh Datanglah, Imanuel.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1346,
+        "sha256": "2b7056cf07eddf37bc9d5ce4982cdb1ee44a10b533fbcdc1d65df2ed433d51b5"
+      }
+    },
+    {
+      "id": "hymn-455",
+      "book": "rohani",
+      "number": 455,
+      "title": "Nama Yang Indah",
+      "midiPath": "assets/midi/455_Nama Yang Indah.mid",
+      "pdfPath": "assets/pdf/455_Nama Yang Indah.pdf"
+    },
+    {
+      "id": "hymn-456",
+      "book": "rohani",
+      "number": 456,
+      "title": "Yesuslah Terang Dunia",
+      "midiPath": "assets/midi/456_Yesuslah Terang Dunia.mid",
+      "pdfPath": "assets/pdf/456_Yesuslah Terang Dunia.pdf"
+    },
+    {
+      "id": "hymn-457",
+      "book": "rohani",
+      "number": 457,
+      "title": "Hanyalah JamahanMu",
+      "midiPath": "assets/midi/457_Hanyalah JamahanMu.mid",
+      "pdfPath": "assets/pdf/457_Hanyalah JamahanMu.pdf"
+    },
+    {
+      "id": "hymn-458",
+      "book": "rohani",
+      "number": 458,
+      "title": "Janganlah Pergi Tanpa Yesus",
+      "midiPath": "assets/midi/458_Janganlah Pergi Tanpa Yesus.mid",
+      "pdfPath": "assets/pdf/458_Janganlah Pergi Tanpa Yesus.pdf"
+    },
+    {
+      "id": "hymn-459",
+      "book": "rohani",
+      "number": 459,
+      "title": "Yesuslah Terang Dunia",
+      "midiPath": "assets/midi/459_Yesuslah Terang Dunia.mid",
+      "pdfPath": "assets/pdf/459_Yesuslah Terang Dunia.pdf"
+    },
+    {
+      "id": "hymn-460",
+      "book": "rohani",
+      "number": 460,
+      "title": "Yesus Paling Mengenalmu",
+      "midiPath": "assets/midi/460_Yesus Paling Mengenalmu.mid",
+      "pdfPath": "assets/pdf/460_Yesus Paling Mengenalmu.pdf"
+    },
+    {
+      "id": "hymn-461",
+      "book": "rohani",
+      "number": 461,
+      "title": "Semua Karena Bukit Golgota",
+      "midiPath": "assets/midi/461_Semua Karena Bukit Golgota.mid",
+      "pdfPath": "assets/pdf/461_Semua Karena Bukit Golgota.pdf"
+    },
+    {
+      "id": "hymn-462",
+      "book": "rohani",
+      "number": 462,
+      "title": "Penebus Agung",
+      "midiPath": "assets/midi/462_Penebus Agung.mid",
+      "pdfPath": "assets/pdf/462_Penebus Agung.pdf"
+    },
+    {
+      "id": "hymn-463",
+      "book": "rohani",
+      "number": 463,
+      "title": "Roh Kudus, Penolongku",
+      "midiPath": "assets/midi/463_Roh Kudus, Penolongku.mid",
+      "pdfPath": "assets/pdf/463_Roh Kudus, Penolongku.pdf"
+    },
+    {
+      "id": "hymn-464",
+      "book": "rohani",
+      "number": 464,
+      "title": "Tertegun di HadapanNya",
+      "midiPath": "assets/midi/464_Tertegun di HadapanNya.mid",
+      "pdfPath": "assets/pdf/464_Tertegun di HadapanNya.pdf"
+    },
+    {
+      "id": "hymn-465",
+      "book": "rohani",
+      "number": 465,
+      "title": "Yesus Perlindunganku Yang Teguh",
+      "midiPath": "assets/midi/465_Yesus Perlindunganku Yang Teguh.mid",
+      "pdfPath": "assets/pdf/465_Yesus Perlindunganku Yang Teguh.pdf"
+    },
+    {
+      "id": "hymn-466",
+      "book": "rohani",
+      "number": 466,
+      "title": "Tiap Hari, Tiap Waktu",
+      "midiPath": "assets/midi/466_Tiap Hari, Tiap Waktu.mid",
+      "pdfPath": "assets/pdf/466_Tiap Hari, Tiap Waktu.pdf",
+      "chordRef": {
+        "songId": "hymn-466",
+        "path": "assets/chord/466_Tiap Hari, Tiap Waktu.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1210,
+        "sha256": "14a210602217263d92dbddb28a9123772befaf0cdc13bd9c25c9838ff18c3031"
+      }
+    },
+    {
+      "id": "hymn-467",
+      "book": "rohani",
+      "number": 467,
+      "title": "Percayalah Pada Yesus",
+      "midiPath": "assets/midi/467_Percayalah Pada Yesus.mid",
+      "pdfPath": "assets/pdf/467_Percayalah Pada Yesus.pdf",
+      "chordRef": {
+        "songId": "hymn-467",
+        "path": "assets/chord/467_Percayalah Pada Yesus.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1616,
+        "sha256": "72897f907cae6637d1636c727d4f12af7129e2a1b16d2d30cf401c489ed5fc1e"
+      }
+    },
+    {
+      "id": "hymn-468",
+      "book": "rohani",
+      "number": 468,
+      "title": "Kristus Hidup di Dalam Ku",
+      "midiPath": "assets/midi/468_Kristus Hidup di Dalam Ku.mid",
+      "pdfPath": "assets/pdf/468_Kristus Hidup di Dalam Ku.pdf",
+      "chordRef": {
+        "songId": "hymn-468",
+        "path": "assets/chord/468_Kristus Hidup di Dalam Ku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1522,
+        "sha256": "ec7f9eb7b59037398025af659ff9ba82ec80d4e3f2aa8f589085e4275dc1b6d2"
+      }
+    },
+    {
+      "id": "hymn-469",
+      "book": "rohani",
+      "number": 469,
+      "title": "Dia Menuntunmu",
+      "midiPath": "assets/midi/469_Dia Menuntunmu.mid",
+      "pdfPath": "assets/pdf/469_Dia Menuntunmu.pdf"
+    },
+    {
+      "id": "hymn-470",
+      "book": "rohani",
+      "number": 470,
+      "title": "Hai Sion, Bersegeralah",
+      "midiPath": "assets/midi/470_Hai Sion, Bersegeralah.mid",
+      "pdfPath": "assets/pdf/470_Hai Sion, Bersegeralah.pdf"
+    },
+    {
+      "id": "hymn-471",
+      "book": "rohani",
+      "number": 471,
+      "title": "Di Kalvari",
+      "midiPath": "assets/midi/471_Di Kalvari.mid",
+      "pdfPath": "assets/pdf/471_Di Kalvari.pdf"
+    },
+    {
+      "id": "hymn-472",
+      "book": "rohani",
+      "number": 472,
+      "title": "Dengarlah Doa Kami, Ya Tuhan!",
+      "midiPath": "assets/midi/472_Dengarlah Doa Kami, Ya Tuhan!.mid",
+      "pdfPath": "assets/pdf/472_Dengarlah Doa Kami, Ya Tuhan!.pdf"
+    },
+    {
+      "id": "hymn-473",
+      "book": "rohani",
+      "number": 473,
+      "title": "Tuhan, Pakailah Daku",
+      "midiPath": "assets/midi/473_Tuhan, Pakailah Daku.mid",
+      "pdfPath": "assets/pdf/473_Tuhan, Pakailah Daku.pdf"
+    },
+    {
+      "id": "hymn-474",
+      "book": "rohani",
+      "number": 474,
+      "title": "Datanglah dengan Hati yang Hancur",
+      "midiPath": "assets/midi/474_Datanglah dengan Hati yang Hancur.mid",
+      "pdfPath": "assets/pdf/474_Datanglah dengan Hati yang Hancur.pdf"
+    },
+    {
+      "id": "hymn-475",
+      "book": "rohani",
+      "number": 475,
+      "title": "Juruselamat Menantimu",
+      "midiPath": "assets/midi/475_Juruselamat Menantimu.mid",
+      "pdfPath": "assets/pdf/475_Juruselamat Menantimu.pdf"
+    },
+    {
+      "id": "hymn-476",
+      "book": "rohani",
+      "number": 476,
+      "title": "Diamlah Jiwaku",
+      "midiPath": "assets/midi/476_Diamlah Jiwaku.mid",
+      "pdfPath": "assets/pdf/476_Diamlah Jiwaku.pdf"
+    },
+    {
+      "id": "hymn-477",
+      "book": "rohani",
+      "number": 477,
+      "title": "Dunia Berlalu",
+      "midiPath": "assets/midi/477_Dunia Berlalu.mid",
+      "pdfPath": "assets/pdf/477_Dunia Berlalu.pdf"
+    },
+    {
+      "id": "hymn-478",
+      "book": "rohani",
+      "number": 478,
+      "title": "Ku Mau Seperti Yesus",
+      "midiPath": "assets/midi/478_Ku Mau Seperti Yesus.mid",
+      "pdfPath": "assets/pdf/478_Ku Mau Seperti Yesus.pdf"
+    },
+    {
+      "id": "hymn-479",
+      "book": "rohani",
+      "number": 479,
+      "title": "Bawalah Mereka",
+      "midiPath": "assets/midi/479_Bawalah Mereka.mid",
+      "pdfPath": "assets/pdf/479_Bawalah Mereka.pdf"
+    },
+    {
+      "id": "hymn-480",
+      "book": "rohani",
+      "number": 480,
+      "title": "Mengapa Tidak Sekarang?",
+      "midiPath": "assets/midi/480_Mengapa Tidak Sekarang?.mid",
+      "pdfPath": "assets/pdf/480_Mengapa Tidak Sekarang?.pdf"
+    },
+    {
+      "id": "hymn-481",
+      "book": "rohani",
+      "number": 481,
+      "title": "Pujilah Dia!",
+      "midiPath": "assets/midi/481_Pujilah Dia!.mid",
+      "pdfPath": "assets/pdf/481_Pujilah Dia!.pdf"
+    },
+    {
+      "id": "hymn-482",
+      "book": "rohani",
+      "number": 482,
+      "title": "Surga Datang",
+      "midiPath": "assets/midi/482_Surga Datang.mid",
+      "pdfPath": "assets/pdf/482_Surga Datang.pdf"
+    },
+    {
+      "id": "hymn-483",
+      "book": "rohani",
+      "number": 483,
+      "title": "Hanya Satu Rencana",
+      "midiPath": "assets/midi/483_Hanya Satu Rencana.mid",
+      "pdfPath": "assets/pdf/483_Hanya Satu Rencana.pdf",
+      "chordRef": {
+        "songId": "hymn-483",
+        "path": "assets/chord/483_Hanya Satu Rencana.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 2205,
+        "sha256": "e493ca630d5fe5dc6ec8345a2f514f16d2656e9f815403d713c3d44baa911e40"
+      }
+    },
+    {
+      "id": "hymn-484",
+      "book": "rohani",
+      "number": 484,
+      "title": "Sang Raja Telah Datang",
+      "midiPath": "assets/midi/484_Sang Raja Telah Datang.mid",
+      "pdfPath": "assets/pdf/484_Sang Raja Telah Datang.pdf"
+    },
+    {
+      "id": "hymn-485",
+      "book": "rohani",
+      "number": 485,
+      "title": "Sumber Air Kehidupan",
+      "midiPath": "assets/midi/485_Sumber Air Kehidupan.mid",
+      "pdfPath": "assets/pdf/485_Sumber Air Kehidupan.pdf"
+    },
+    {
+      "id": "hymn-486",
+      "book": "rohani",
+      "number": 486,
+      "title": "Tentara Salibkah Aku?",
+      "midiPath": "assets/midi/486_Tentara Salibkah Aku?.mid",
+      "pdfPath": "assets/pdf/486_Tentara Salibkah Aku?.pdf"
+    },
+    {
+      "id": "hymn-487",
+      "book": "rohani",
+      "number": 487,
+      "title": "Sampai ke Seluruh Dunia",
+      "midiPath": "assets/midi/487_Sampai ke Seluruh Dunia.mid",
+      "pdfPath": "assets/pdf/487_Sampai ke Seluruh Dunia.pdf"
+    },
+    {
+      "id": "hymn-488",
+      "book": "rohani",
+      "number": 488,
+      "title": "Bawalah Daku, ya Bapa",
+      "midiPath": "assets/midi/488_Bawalah Daku, ya Bapa.mid",
+      "pdfPath": "assets/pdf/488_Bawalah Daku, ya Bapa.pdf"
+    },
+    {
+      "id": "hymn-489",
+      "book": "rohani",
+      "number": 489,
+      "title": "Bukan Perak atau Emas",
+      "midiPath": "assets/midi/489_Bukan Perak atau Emas.mid",
+      "pdfPath": "assets/pdf/489_Bukan Perak atau Emas.pdf"
+    },
+    {
+      "id": "hymn-490",
+      "book": "rohani",
+      "number": 490,
+      "title": "Saat Fajar Tiba",
+      "midiPath": "assets/midi/490_Saat Fajar Tiba.mid",
+      "pdfPath": "assets/pdf/490_Saat Fajar Tiba.pdf"
+    },
+    {
+      "id": "hymn-491",
+      "book": "rohani",
+      "number": 491,
+      "title": "Aku Memuji Penebusku",
+      "midiPath": "assets/midi/491_Aku Memuji Penebusku.mid",
+      "pdfPath": "assets/pdf/491_Aku Memuji Penebusku.pdf"
+    },
+    {
+      "id": "hymn-492",
+      "book": "rohani",
+      "number": 492,
+      "title": "Allahku Yang Ajaib",
+      "midiPath": "assets/midi/492_Allahku Yang Ajaib.mid",
+      "pdfPath": "assets/pdf/492_Allahku Yang Ajaib.pdf",
+      "chordRef": {
+        "songId": "hymn-492",
+        "path": "assets/chord/492_Allahku Yang Ajaib.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1584,
+        "sha256": "de24a98d06c99beb89639e435e8a4456aaae04ad14cdcd0ec5ab88bf985d79e7"
+      }
+    },
+    {
+      "id": "hymn-493",
+      "book": "rohani",
+      "number": 493,
+      "title": "Kita Berkumpul Bersama",
+      "midiPath": "assets/midi/493_Kita Berkumpul Bersama.mid",
+      "pdfPath": "assets/pdf/493_Kita Berkumpul Bersama.pdf"
+    },
+    {
+      "id": "hymn-494",
+      "book": "rohani",
+      "number": 494,
+      "title": "Bersama Mu",
+      "midiPath": "assets/midi/494_Bersama Mu.mid",
+      "pdfPath": "assets/pdf/494_Bersama Mu.pdf"
+    },
+    {
+      "id": "hymn-495",
+      "book": "rohani",
+      "number": 495,
+      "title": "Datanglah!",
+      "midiPath": "assets/midi/495_Datanglah!.mid",
+      "pdfPath": "assets/pdf/495_Datanglah!.pdf"
+    },
+    {
+      "id": "hymn-496",
+      "book": "rohani",
+      "number": 496,
+      "title": "Yesus Menjamahku",
+      "midiPath": "assets/midi/496_Yesus Menjamahku.mid",
+      "pdfPath": "assets/pdf/496_Yesus Menjamahku.pdf"
+    },
+    {
+      "id": "hymn-497",
+      "book": "rohani",
+      "number": 497,
+      "title": "Janji Tuhan Bagiku",
+      "midiPath": "assets/midi/497_Janji Tuhan Bagiku.mid",
+      "pdfPath": "assets/pdf/497_Janji Tuhan Bagiku.pdf"
+    },
+    {
+      "id": "hymn-498",
+      "book": "rohani",
+      "number": 498,
+      "title": "Yesus Pimpin Kita Pulang",
+      "midiPath": "assets/midi/498_Yesus Pimpin Kita Pulang.mid",
+      "pdfPath": "assets/pdf/498_Yesus Pimpin Kita Pulang.pdf"
+    },
+    {
+      "id": "hymn-499",
+      "book": "rohani",
+      "number": 499,
+      "title": "Jamahan Tangan Tuhan",
+      "midiPath": "assets/midi/499_Jamahan Tangan Tuhan.mid",
+      "pdfPath": "assets/pdf/499_Jamahan Tangan Tuhan.pdf"
+    },
+    {
+      "id": "hymn-500",
+      "book": "rohani",
+      "number": 500,
+      "title": "Siapa di Muka Pintuku?",
+      "midiPath": "assets/midi/500_Siapa di Muka Pintuku?.mid",
+      "pdfPath": "assets/pdf/500_Siapa di Muka Pintuku?.pdf"
+    },
+    {
+      "id": "hymn-501",
+      "book": "rohani",
+      "number": 501,
+      "title": "Dia Menerimaku",
+      "midiPath": "assets/midi/501_Dia Menerimaku.mid",
+      "pdfPath": "assets/pdf/501_Dia Menerimaku.pdf"
+    },
+    {
+      "id": "hymn-502",
+      "book": "rohani",
+      "number": 502,
+      "title": "Yesus Juruselamatku Yang Ajaib",
+      "midiPath": "assets/midi/502_Yesus Juruselamatku Yang Ajaib.mid",
+      "pdfPath": "assets/pdf/502_Yesus Juruselamatku Yang Ajaib.pdf"
+    },
+    {
+      "id": "hymn-503",
+      "book": "rohani",
+      "number": 503,
+      "title": "Penebus yang Terindah",
+      "midiPath": "assets/midi/503_Penebus yang Terindah.mid",
+      "pdfPath": "assets/pdf/503_Penebus yang Terindah.pdf"
+    },
+    {
+      "id": "hymn-504",
+      "book": "rohani",
+      "number": 504,
+      "title": "Pimpin ke Kalvari",
+      "midiPath": "assets/midi/504_Pimpin ke Kalvari.mid",
+      "pdfPath": "assets/pdf/504_Pimpin ke Kalvari.pdf"
+    },
+    {
+      "id": "hymn-505",
+      "book": "rohani",
+      "number": 505,
+      "title": "Yang Hampir yakin, Percayalah",
+      "midiPath": "assets/midi/505_Yang Hampir yakin, Percayalah.mid",
+      "pdfPath": "assets/pdf/505_Yang Hampir yakin, Percayalah.pdf"
+    },
+    {
+      "id": "hymn-506",
+      "book": "rohani",
+      "number": 506,
+      "title": "Ku Senang Beritakan Penebusan",
+      "midiPath": "assets/midi/506_Ku Senang Beritakan Penebusan.mid",
+      "pdfPath": "assets/pdf/506_Ku Senang Beritakan Penebusan.pdf"
+    },
+    {
+      "id": "hymn-507",
+      "book": "rohani",
+      "number": 507,
+      "title": "Beban Terangkat di Kalvari",
+      "midiPath": "assets/midi/507_Beban Terangkat di Kalvari.mid",
+      "pdfPath": "assets/pdf/507_Beban Terangkat di Kalvari.pdf"
+    },
+    {
+      "id": "hymn-508",
+      "book": "rohani",
+      "number": 508,
+      "title": "Sauh Jiwa Kita",
+      "midiPath": "assets/midi/508_Sauh Jiwa Kita.mid",
+      "pdfPath": "assets/pdf/508_Sauh Jiwa Kita.pdf"
+    },
+    {
+      "id": "hymn-509",
+      "book": "rohani",
+      "number": 509,
+      "title": "Aku Milik Raja",
+      "midiPath": "assets/midi/509_Aku Milik Raja.mid",
+      "pdfPath": "assets/pdf/509_Aku Milik Raja.pdf"
+    },
+    {
+      "id": "hymn-510",
+      "book": "rohani",
+      "number": 510,
+      "title": "Yesus Berjalan Denganku",
+      "midiPath": "assets/midi/510_Yesus Berjalan Denganku.mid",
+      "pdfPath": "assets/pdf/510_Yesus Berjalan Denganku.pdf"
+    },
+    {
+      "id": "hymn-511",
+      "book": "rohani",
+      "number": 511,
+      "title": "Sekarang Aku Milik Yesus",
+      "midiPath": "assets/midi/511_Sekarang Aku Milik Yesus.mid",
+      "pdfPath": "assets/pdf/511_Sekarang Aku Milik Yesus.pdf"
+    },
+    {
+      "id": "hymn-512",
+      "book": "rohani",
+      "number": 512,
+      "title": "Tuhan, Biarkan Ku Berjalan Dengan Mu",
+      "midiPath": "assets/midi/512_Tuhan, Biarkan Ku Berjalan Dengan Mu.mid",
+      "pdfPath": "assets/pdf/512_Tuhan, Biarkan Ku Berjalan Dengan Mu.pdf"
+    },
+    {
+      "id": "hymn-513",
+      "book": "rohani",
+      "number": 513,
+      "title": "Yesus, Hembuskan Berkat Mu",
+      "midiPath": "assets/midi/513_Yesus, Hembuskan Berkat Mu.mid",
+      "pdfPath": "assets/pdf/513_Yesus, Hembuskan Berkat Mu.pdf"
+    },
+    {
+      "id": "hymn-514",
+      "book": "rohani",
+      "number": 514,
+      "title": "Dalam Kristus Tiada Timur atau Barat",
+      "midiPath": "assets/midi/514_Dalam Kristus Tiada Timur atau Barat.mid",
+      "pdfPath": "assets/pdf/514_Dalam Kristus Tiada Timur atau Barat.pdf"
+    },
+    {
+      "id": "hymn-515",
+      "book": "rohani",
+      "number": 515,
+      "title": "Kenangan Indah",
+      "midiPath": "assets/midi/515_Kenangan Indah.mid",
+      "pdfPath": "assets/pdf/515_Kenangan Indah.pdf"
+    },
+    {
+      "id": "hymn-516",
+      "book": "rohani",
+      "number": 516,
+      "title": "Aku Bertekad",
+      "midiPath": "assets/midi/516_Aku Bertekad.mid",
+      "pdfPath": "assets/pdf/516_Aku Bertekad.pdf",
+      "chordRef": {
+        "songId": "hymn-516",
+        "path": "assets/chord/516_Aku Bertekad.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1390,
+        "sha256": "94726f2c3ebc4dedc78785cd4e86302e94ba7a9236a64524c63a9bff4aa445ce"
+      }
+    },
+    {
+      "id": "hymn-517",
+      "book": "rohani",
+      "number": 517,
+      "title": "Allah Abraham",
+      "midiPath": "assets/midi/517_Allah Abraham.mid",
+      "pdfPath": "assets/pdf/517_Allah Abraham.pdf"
+    },
+    {
+      "id": "hymn-518",
+      "book": "rohani",
+      "number": 518,
+      "title": "Kemuliaan Selamanya Bagi Yesus",
+      "midiPath": "assets/midi/518_Kemuliaan Selamanya Bagi Yesus.mid",
+      "pdfPath": "assets/pdf/518_Kemuliaan Selamanya Bagi Yesus.pdf"
+    },
+    {
+      "id": "hymn-519",
+      "book": "rohani",
+      "number": 519,
+      "title": "Berlindung Pada Batu Karang",
+      "midiPath": "assets/midi/519_Berlindung Pada Batu Karang.mid",
+      "pdfPath": "assets/pdf/519_Berlindung Pada Batu Karang.pdf"
+    },
+    {
+      "id": "hymn-520",
+      "book": "rohani",
+      "number": 520,
+      "title": "Menabur Dengan Air Mata",
+      "midiPath": "assets/midi/520_Menabur Dengan Air Mata.mid",
+      "pdfPath": "assets/pdf/520_Menabur Dengan Air Mata.pdf",
+      "chordRef": {
+        "songId": "hymn-520",
+        "path": "assets/chord/520_Menabur Dengan Air Mata.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1955,
+        "sha256": "3e85106f1390513a597f02abdb00816367021151966d09db80fd5814488b58a0"
+      }
+    },
+    {
+      "id": "hymn-521",
+      "book": "rohani",
+      "number": 521,
+      "title": "Akulah DombaNya",
+      "midiPath": "assets/midi/521_Akulah DombaNya.mid",
+      "pdfPath": "assets/pdf/521_Akulah DombaNya.pdf",
+      "chordRef": {
+        "songId": "hymn-521",
+        "path": "assets/chord/521_Akulah DombaNya.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 1193,
+        "sha256": "111c165db36fed0a68f2e8e16e659a8e0bf7892c10beed558873bb039d699701"
+      }
+    },
+    {
+      "id": "hymn-522",
+      "book": "rohani",
+      "number": 522,
+      "title": "Dengan Darah Yesus",
+      "midiPath": "assets/midi/522_Dengan Darah Yesus.mid",
+      "pdfPath": "assets/pdf/522_Dengan Darah Yesus.pdf"
+    },
+    {
+      "id": "hymn-523",
+      "book": "rohani",
+      "number": 523,
+      "title": "Betapa Mulianya Hari Itu",
+      "midiPath": "assets/midi/523_Betapa Mulianya Hari Itu.mid",
+      "pdfPath": "assets/pdf/523_Betapa Mulianya Hari Itu.pdf"
+    },
+    {
+      "id": "hymn-524",
+      "book": "rohani",
+      "number": 524,
+      "title": "Bagaimana Bila Sekarang?",
+      "midiPath": "assets/midi/524_Bagaimana Bila Sekarang?.mid",
+      "pdfPath": "assets/pdf/524_Bagaimana Bila Sekarang?.pdf"
+    },
+    {
+      "id": "hymn-525",
+      "book": "rohani",
+      "number": 525,
+      "title": "Biarlah Jiwamu Bergembira",
+      "midiPath": "assets/midi/525_Biarlah Jiwamu Bergembira.mid",
+      "pdfPath": "assets/pdf/525_Biarlah Jiwamu Bergembira.pdf"
+    },
+    {
+      "id": "hymn-526",
+      "book": "rohani",
+      "number": 526,
+      "title": "Hosana",
+      "midiPath": "assets/midi/526_Hosana.mid",
+      "pdfPath": "assets/pdf/526_Hosana.pdf"
+    },
+    {
+      "id": "hymn-527",
+      "book": "rohani",
+      "number": 527,
+      "title": "Gerbang Surga Terbuka Lebar",
+      "midiPath": "assets/midi/527_Gerbang Surga Terbuka Lebar.mid",
+      "pdfPath": "assets/pdf/527_Gerbang Surga Terbuka Lebar.pdf"
+    },
+    {
+      "id": "hymn-528",
+      "book": "rohani",
+      "number": 528,
+      "title": "Dia Segalanya Bagiku",
+      "midiPath": "assets/midi/528_Dia Segalanya Bagiku.mid",
+      "pdfPath": "assets/pdf/528_Dia Segalanya Bagiku.pdf",
+      "chordRef": {
+        "songId": "hymn-528",
+        "path": "assets/chord/528_Dia Segalanya Bagiku.chord.json",
+        "sourceCommit": "e8e7efe1189b5746a2bb542348e221844091c8d1",
+        "size": 3269,
+        "sha256": "ab44d55955a463fbb0097873f8f6359c9612f9701ecb24ef6858175eca04dbd7"
+      }
+    },
+    {
+      "id": "hymn-529",
+      "book": "rohani",
+      "number": 529,
+      "title": "Datanglah Pada Yesus",
+      "midiPath": "assets/midi/529_Datanglah Pada Yesus.mid",
+      "pdfPath": "assets/pdf/529_Datanglah Pada Yesus.pdf"
+    },
+    {
+      "id": "hymn-530",
+      "book": "rohani",
+      "number": 530,
+      "title": "Doa Bapa Kami",
+      "midiPath": "assets/midi/530_Doa Bapa Kami.mid",
+      "pdfPath": "assets/pdf/530_Doa Bapa Kami.pdf"
+    }
+  ]
+}

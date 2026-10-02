@@ -3,8 +3,9 @@ import { expect, test } from "@playwright/test";
 type ShellRun = {
   run: number;
   elapsedMs: number;
-  domContentLoaded: number;
-  firstPaint: number;
+  contentReadyMs: number | null;
+  domContentLoaded: number | null;
+  firstPaint: number | null;
   moduleCount: number;
   duplicateModules: string[];
 };
@@ -22,15 +23,38 @@ function percentile(values: readonly number[], fraction: number): number {
 test("initial shell stays responsive and does not duplicate application modules", async ({
   page,
 }, testInfo) => {
-  test.setTimeout(30_000);
+  const samples = Number(process.env.GYS_PERF_SAMPLES ?? 5);
+  if (!Number.isInteger(samples) || samples < 5 || samples > 100)
+    throw new Error("GYS_PERF_SAMPLES must be an integer from 5 to 100");
+  test.setTimeout(Math.max(45_000, samples * 10_000));
+  await page.addInitScript(() => {
+    const target = window as Window & { __gysShellReadyMs?: number };
+    let scheduled = false;
+    const observer = new MutationObserver(() => {
+      if (scheduled) return;
+      const heading = document.querySelector(".home-page h1");
+      if (!heading || heading.getBoundingClientRect().width === 0) return;
+      scheduled = true;
+      window.requestAnimationFrame(() => {
+        target.__gysShellReadyMs = performance.now();
+        observer.disconnect();
+      });
+    });
+    observer.observe(document, { childList: true, subtree: true });
+  });
   const runs: ShellRun[] = [];
-  for (let run = 1; run <= 2; run += 1) {
+  for (let run = 1; run <= samples; run += 1) {
     await page.evaluate(() => performance.clearResourceTimings());
     const started = Date.now();
     await page.goto("/GYSApp-Tauri/", { waitUntil: "domcontentloaded" });
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible({ timeout: 8_000 });
+    await page.waitForFunction(
+      () =>
+        (window as Window & { __gysShellReadyMs?: number })
+          .__gysShellReadyMs !== undefined,
+    );
     const elapsedMs = Date.now() - started;
     const metrics = await page.evaluate(() => {
       const navigation = performance.getEntriesByType("navigation")[0] as
@@ -50,12 +74,15 @@ test("initial shell stays responsive and does not duplicate application modules"
       const counts = new Map<string, number>();
       for (const url of moduleUrls) counts.set(url, (counts.get(url) ?? 0) + 1);
       return {
-        domContentLoaded: navigation?.domContentLoadedEventEnd ?? 0,
+        contentReadyMs:
+          (window as Window & { __gysShellReadyMs?: number })
+            .__gysShellReadyMs ?? null,
+        domContentLoaded: navigation?.domContentLoadedEventEnd || null,
         firstPaint:
           performance
             .getEntriesByType("paint")
             .find((entry) => entry.name === "first-contentful-paint")
-            ?.startTime ?? 0,
+            ?.startTime ?? null,
         moduleCount: counts.size,
         duplicateModules: [...counts]
           .filter(([, count]) => count > 1)
@@ -64,12 +91,16 @@ test("initial shell stays responsive and does not duplicate application modules"
     });
     runs.push({ run, elapsedMs, ...metrics });
   }
-  const elapsed = runs.map((entry) => entry.elapsedMs);
+  const elapsed = runs.map((entry) => entry.contentReadyMs ?? entry.elapsedMs);
   const medianMs = percentile(elapsed, 0.5);
   const p95Ms = percentile(elapsed, 0.95);
   console.log(
-    `[performance] shell median=${medianMs.toFixed(1)}ms p95=${p95Ms.toFixed(1)}ms samples=${elapsed.join(",")}`,
+    `[performance] shell median=${medianMs.toFixed(1)}ms p95=${p95Ms.toFixed(1)}ms samples=${elapsed.map((value) => value.toFixed(1)).join(",")}`,
   );
+  await testInfo.attach("shell-performance.json", {
+    body: JSON.stringify({ runs, medianMs, p95Ms }, null, 2),
+    contentType: "application/json",
+  });
   testInfo.annotations.push({
     type: "performance",
     description: JSON.stringify({ runs, medianMs, p95Ms }),

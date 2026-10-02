@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
@@ -24,6 +25,18 @@ const chord = await readJson(
 );
 const chordAudit = await readJson("docs/discovery/chord-position-audit.json");
 const hymns = await readJson("packages/contracts/generated/hymn-catalog.json");
+const hymnMetadata = await readJson(
+  "apps/web/public/offline/hymn-metadata.json",
+);
+if (
+  !isDeepStrictEqual(hymnMetadata, {
+    ...hymns,
+    items: hymns.items.map(
+      ({ lyrics: _lyrics, verses: _verses, ...item }) => item,
+    ),
+  })
+)
+  throw new Error("Hymn metadata drifted from pinned source");
 const pack = await readJson("apps/web/public/offline/pack-manifest.json");
 const literature = await readJson("apps/web/public/offline/literature.json");
 const assets = await readJson("apps/web/public/offline/asset-manifest.json");
@@ -245,4 +258,26 @@ for (const item of assets.items) {
 
 console.log(
   `Generated provenance verified: ${lock.items.length} music items, ${hymns.items.length} hymns, ${pack.items.length} offline assets, ${literature.items.filter((item) => item.imageUrl).length}/${literature.items.length} literature covers.`,
+);
+
+const fontsRoot = "apps/web/src/assets/fonts";
+const fonts = await readJson(`${fontsRoot}/provenance.json`);
+if (
+  fonts.sourceCommit !== "9710da1eacb3be272583c3224dcb70f9da6eadbb" ||
+  fonts.fonts.length !== 4
+)
+  throw new Error("Editorial font source provenance drifted");
+for (const font of fonts.fonts) {
+  const bytes = await readFile(join(fontsRoot, font.file));
+  if (
+    bytes.length !== font.bytes ||
+    createHash("sha256").update(bytes).digest("hex") !== font.sha256
+  )
+    throw new Error(`Editorial font checksum mismatch: ${font.file}`);
+  const license = await readFile(join(fontsRoot, font.license), "utf8");
+  if (!license.includes("SIL OPEN FONT LICENSE Version 1.1"))
+    throw new Error(`Editorial font license missing: ${font.file}`);
+}
+console.log(
+  "Editorial font provenance and licenses verified (4 bundled WOFF2 assets).",
 );

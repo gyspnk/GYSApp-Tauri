@@ -324,7 +324,7 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("dashboard uses an adaptive compact scale without wasting desktop space", async ({
+  test("dashboard presents direct reading portals and a daily reading with full-width shelves", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 720 });
@@ -362,9 +362,23 @@ test.describe("responsive reader navigation", () => {
           .getBoundingClientRect().top,
       };
     });
-    expect(phone.heading).toBeLessThanOrEqual(23);
+    expect(phone.heading).toBeGreaterThanOrEqual(28);
+    expect(phone.heading).toBeLessThanOrEqual(32);
+    await expect(page.locator(".home-portal")).toHaveCount(3);
+    await expect(page.locator(".home-portal").nth(0)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/bible",
+    );
+    await expect(page.locator(".home-portal").nth(1)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/kidung",
+    );
+    await expect(page.locator(".home-portal").nth(2)).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/iman",
+    );
     expect(phone.actionTop).toBeGreaterThan(0);
-    expect(phone.mediaTop).toBeLessThan(720);
+    expect(phone.mediaTop).toBeLessThan(1100);
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -375,16 +389,25 @@ test.describe("responsive reader navigation", () => {
       continueHeight: document
         .querySelector(".continue-panel")!
         .getBoundingClientRect().height,
-      verseRight: document
+      verseLeft: document.querySelector(".verse-panel")!.getBoundingClientRect()
+        .left,
+      verseBottom: document
         .querySelector(".verse-panel")!
-        .getBoundingClientRect().right,
+        .getBoundingClientRect().bottom,
+      mediaTop: document
+        .querySelector(".home-media-section")!
+        .getBoundingClientRect().top,
       mediaLeft: document
         .querySelector(".home-media-section")!
         .getBoundingClientRect().left,
     }));
-    expect(desktop.heading).toBeLessThanOrEqual(34);
+    expect(desktop.heading).toBeGreaterThanOrEqual(40);
+    expect(desktop.heading).toBeLessThanOrEqual(48);
     expect(desktop.continueHeight).toBeLessThan(180);
-    expect(desktop.mediaLeft).toBeGreaterThan(desktop.verseRight);
+    expect(Math.abs(desktop.mediaLeft - desktop.verseLeft)).toBeLessThanOrEqual(
+      1,
+    );
+    expect(desktop.mediaTop).toBeGreaterThan(desktop.verseBottom);
   });
 
   test("faith rows keep the PDF action and Catatan action separated", async ({
@@ -430,8 +453,13 @@ test.describe("responsive reader navigation", () => {
               scrollWidth: (element as HTMLElement).scrollWidth,
               clientWidth: (element as HTMLElement).clientWidth,
             },
-            heading: { left: heading.left, right: heading.right },
+            heading: {
+              left: heading.left,
+              right: heading.right,
+              bottom: heading.bottom,
+            },
             action: {
+              top: action.top,
               left: action.left,
               right: action.right,
               width: action.width,
@@ -450,7 +478,10 @@ test.describe("responsive reader navigation", () => {
         expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
         expect(action.right).toBeLessThanOrEqual(row.right + 1);
         expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);
-        expect(heading.right).toBeLessThanOrEqual(action.left - 8);
+        expect(heading.right).toBeLessThanOrEqual(row.right + 1);
+        expect(
+          heading.right <= action.left - 5 || heading.bottom <= action.top - 5,
+        ).toBe(true);
       }
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
@@ -459,6 +490,23 @@ test.describe("responsive reader navigation", () => {
   test("legacy and unknown routes stay explicit across locales and devices", async ({
     page,
   }) => {
+    // Settings may check release tracks in the background. Route this unrelated
+    // transport deterministically; runtime errors remain asserted below.
+    await page.route("**/GYSApp-Data/main/latest/*-manifest.json", (route) =>
+      route.fulfill({
+        json: {
+          track: route
+            .request()
+            .url()
+            .split("/")
+            .pop()!
+            .replace("-manifest.json", ""),
+          releaseTag: "test-empty",
+          publishedAt: "2026-10-01T00:00:00Z",
+          packages: [],
+        },
+      }),
+    );
     const copies = [
       {
         locale: "id",
@@ -558,7 +606,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".reader-context-bar")).toHaveCount(0);
     await expect(page.locator(".brand-mark")).toBeVisible();
 
-    const search = page.getByRole("textbox", { name: "Cari lagu" });
+    const search = page.getByRole("searchbox", { name: "Cari lagu" });
     await expect(search).toBeVisible();
     await expect
       .poll(() =>
@@ -606,6 +654,7 @@ test.describe("responsive reader navigation", () => {
         "Backup",
         "Tentang & Bantuan",
       ]);
+      await rows.locator(":scope > summary").last().scrollIntoViewIfNeeded();
       await expect(rows.locator(":scope > summary").last()).toBeInViewport();
       const rowBoxes = await rows
         .locator(":scope > summary")
@@ -647,7 +696,7 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 320, height: 720 });
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
     holdNextScript = true;
     await page
@@ -716,7 +765,7 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/");
     await expect(
-      page.getByRole("heading", { name: "Selamat datang kembali" }),
+      page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
     await page
       .locator('.navigation-shell .nav-item[aria-label="Iman"]')
@@ -829,7 +878,7 @@ test.describe("responsive reader navigation", () => {
       page.getByText("Bait 3 dari 3", { exact: true }),
     ).toBeVisible();
     await touchSwipe(page);
-    await expect(page).toHaveURL(/hymn-002$/);
+    await expect(page).toHaveURL(/hymn-002\?mode=lyrics$/);
   });
 
   test("hymn pinch zoom is smooth and persists its text size", async ({
@@ -1011,7 +1060,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.locator(".app-frame .topbar")).toBeHidden();
     await expect(page.locator(".app-frame .navigation-shell")).toBeHidden();
     await expect(
-      page.getByRole("button", { name: "Kembali ke lirik" }),
+      page.getByRole("button", { name: "← Semua kidung" }),
     ).toBeVisible();
     await expect
       .poll(
@@ -1467,51 +1516,53 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("Bible quick picker and drag overlay keep locale and viewport contracts", async ({
-    page,
-  }) => {
-    const copy = {
-      id: {
-        locale: "id",
-        handle: "Geser judul untuk berpindah pasal",
-        quick: "Navigasi cepat Alkitab",
-        picker: "Pilih Kitab & Pasal",
-        close: "Tutup pemilih kitab",
-        steps: "Langkah pemilihan",
-        placeholder: "Cari kitab atau isi ayat…",
-        dragBook: "Menggeser Kitab",
-      },
-      en: {
-        locale: "en",
-        handle: "Drag the title to change chapter",
-        quick: "Bible quick navigation",
-        picker: "Choose book & chapter",
-        close: "Close book picker",
-        steps: "Selection steps",
-        placeholder: "Search books or verse text…",
-        dragBook: "Scrubbing Book",
-      },
-      zh: {
-        locale: "zh",
-        handle: "拖动标题切换章节",
-        quick: "圣经快速导航",
-        picker: "选择书卷和章节",
-        close: "关闭书卷选择器",
-        steps: "选择步骤",
-        placeholder: "搜索书卷或经文内容…",
-        dragBook: "正在滑动书卷",
-      },
-    } as const;
-    const viewports = [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-      { width: 768, height: 1024 },
-      { width: 1024, height: 768 },
-      { width: 1440, height: 900 },
-    ];
+  const quickPickerCopy = {
+    id: {
+      locale: "id",
+      handle: "Geser judul untuk berpindah pasal",
+      quick: "Navigasi cepat Alkitab",
+      picker: "Pilih Kitab & Pasal",
+      close: "Tutup pemilih kitab",
+      steps: "Langkah pemilihan",
+      placeholder: "Cari kitab atau isi ayat…",
+      dragBook: "Menggeser Kitab",
+    },
+    en: {
+      locale: "en",
+      handle: "Drag the title to change chapter",
+      quick: "Bible quick navigation",
+      picker: "Choose book & chapter",
+      close: "Close book picker",
+      steps: "Selection steps",
+      placeholder: "Search books or verse text…",
+      dragBook: "Scrubbing Book",
+    },
+    zh: {
+      locale: "zh",
+      handle: "拖动标题切换章节",
+      quick: "圣经快速导航",
+      picker: "选择书卷和章节",
+      close: "关闭书卷选择器",
+      steps: "选择步骤",
+      placeholder: "搜索书卷或经文内容…",
+      dragBook: "正在滑动书卷",
+    },
+  } as const;
+  const viewports = [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
+  ];
 
-    for (const selected of Object.values(copy)) {
-      for (const viewport of viewports) {
+  // Each locale/viewport owns the existing timeout instead of sharing it
+  // across fifteen complete navigations. Keep every interaction assertion.
+  for (const selected of Object.values(quickPickerCopy)) {
+    for (const viewport of viewports) {
+      test(`Bible quick picker and drag overlay keep locale and viewport contracts (${selected.locale}, ${viewport.width}px)`, async ({
+        page,
+      }) => {
         await page.setViewportSize(viewport);
         await page.addInitScript((nextLocale) => {
           localStorage.setItem("gys-locale", nextLocale);
@@ -1573,7 +1624,7 @@ test.describe("responsive reader navigation", () => {
         );
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
         await page.mouse.up();
-      }
+      });
     }
-  });
+  }
 });

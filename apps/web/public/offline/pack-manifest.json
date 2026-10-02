@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-28T04:37:37.169Z",
+  "generatedAt": "2026-10-01T01:07:43.817Z",
   "bible": "TB",
   "hymns": 533,
   "items": [
@@ -21,6 +21,12 @@
       "path": "offline/hymn-catalog.json",
       "bytes": 917610,
       "sha256": "88f283e04e16a08abd1546bea89648f6fef0c2619bf576b2b783bf3b126765f0"
+    },
+    {
+      "id": "hymn-metadata",
+      "path": "offline/hymn-metadata.json",
+      "bytes": 179002,
+      "sha256": "fdc12d4483573b5e1b8333cb3bc21efccd664db74fda8a3e129ca859e42c637b"
     },
     {
       "id": "distributed-asset-catalog",

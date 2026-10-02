@@ -10,7 +10,7 @@ on:
       - "apps/web/src/edge-direct*.ts"
       - "apps/web/src/edge-speech.ts"
       - "apps/web/src/speech-player.ts"
-      - "apps/web/scripts/edge-tts-native-smoke.mjs"
+      - "apps/web/scripts/**"
       - "apps/web/package.json"
       - ".github/workflows/edge-tts-native.yml"
 
@@ -35,6 +35,12 @@ jobs:
           node-version: 24
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+      - name: Restore packaged Rust dependency and target cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "apps/native/src-tauri -> target"
+          shared-key: native-windows-release-v1
+          cache-on-failure: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable
@@ -72,8 +78,19 @@ jobs:
           New-ItemProperty -Path $policyPath -Name "gysapp-native.exe" -PropertyType String -Value $arguments -Force | Out-Null
           Add-Content -Path $env:GITHUB_ENV -Value "GYS_WEBVIEW2_POLICY_DEBUG_PORT=$port" -Encoding utf8
           Write-Host "Configured temporary loopback-only WebView2 debugging policy."
-      - name: Exercise keyless Edge through WebView2 and the Tauri plugin
-        run: pnpm --filter @gys/web test:e2e:native-edge
+      - name: Run short offline startup storage media and asset suites
+        run: pnpm test:native:quick
+      - name: Benchmark 30 packaged process relaunches and local content
+        run: pnpm test:performance:native
+      - name: Upload raw packaged benchmark
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-benchmark-${{ github.run_id }}
+          path: apps/web/native-benchmark.json
+          if-no-files-found: ignore
+      - name: Exercise full media soak and live keyless Edge
+        run: pnpm test:native:soak
       - name: Remove temporary WebView2 debugging policy
         if: always()
         shell: pwsh

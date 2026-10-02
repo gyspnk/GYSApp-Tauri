@@ -118,4 +118,50 @@ describe("BibleSearchClient", () => {
     await expect(pending).rejects.toMatchObject({ name: "AbortError" });
     client.dispose();
   });
+  it("falls back to reference-aware search when worker startup fails", async () => {
+    const client = new BibleSearchClient(verses, () => {
+      throw new Error("worker unavailable");
+    });
+    expect(client.backend).toBe("main");
+    await expect(client.search("Allah")).resolves.toMatchObject([
+      { id: "gen-1-1" },
+      { id: "joh-3-16" },
+    ]);
+    client.dispose();
+  });
+
+  it("recovers pending searches when an initialized worker fails", async () => {
+    let worker: BibleSearchWorker | undefined;
+    const client = new BibleSearchClient(verses, () => {
+      worker = {
+        onmessage: null,
+        onerror: null,
+        postMessage() {},
+        terminate: vi.fn(),
+      };
+      return worker;
+    });
+    const result = client.search("kasih");
+    worker?.onerror?.({ message: "worker failed" } as ErrorEvent);
+    await expect(result).resolves.toMatchObject([{ id: "joh-3-16" }]);
+    expect(worker?.terminate).toHaveBeenCalledTimes(1);
+    client.dispose();
+  });
+});
+
+it("a reader can display and cancel without cloning the Bible into a search worker", async () => {
+  const factory = vi.fn(fakeWorker);
+  const client = new BibleSearchClient(verses, factory, undefined, true);
+  expect(client.backend).toBe("pending");
+  expect(factory).not.toHaveBeenCalled();
+  const controller = new AbortController();
+  controller.abort();
+  await expect(
+    client.search("Allah", {}, controller.signal),
+  ).rejects.toMatchObject({ name: "AbortError" });
+  expect(factory).not.toHaveBeenCalled();
+  await expect(client.search("Allah")).resolves.toHaveLength(2);
+  await client.search("kasih");
+  expect(factory).toHaveBeenCalledOnce();
+  client.dispose();
 });

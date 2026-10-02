@@ -1,0 +1,39 @@
+{
+  "sourceCommit": "9710da1eacb3be272583c3224dcb70f9da6eadbb",
+  "fontTools": "4.61.1",
+  "brotli": "1.2.0",
+  "fonts": [
+    {
+      "file": "gys-reading-sans.woff2",
+      "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/sourcesans3/SourceSans3%5Bwght%5D.ttf",
+      "sourceSha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+      "sha256": "bc86e55db762ac2448fe13eb1f03984bafc16b02878b0a94b8995413fd8f8142",
+      "bytes": 72984,
+      "license": "gys-reading-sans-OFL.txt"
+    },
+    {
+      "file": "source-serif-4.woff2",
+      "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/sourceserif4/SourceSerif4%5Bopsz%2Cwght%5D.ttf",
+      "sourceSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+      "sha256": "8cc6df80eb76cc4d9d94b0cb78f67b69ba32f2388524fce82321750bbca785bc",
+      "bytes": 239880,
+      "license": "source-serif-4-OFL.txt"
+    },
+    {
+      "file": "source-serif-4-italic.woff2",
+      "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/sourceserif4/SourceSerif4-Italic%5Bopsz%2Cwght%5D.ttf",
+      "sourceSha256": "15fbc7e4679489a501998c3669272637a6646388ef7e4bd77eebb5bf967a1f42",
+      "sha256": "b8903feae3e21e2ffe7cf2c0c12cf21b0a505efcb5f651a6cba0ca97e1b42473",
+      "bytes": 203908,
+      "license": "source-serif-4-italic-OFL.txt"
+    },
+    {
+      "file": "noto-serif-sc.woff2",
+      "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf",
+      "sourceSha256": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
+      "sha256": "77897f7e93dd484be6dda620eeb9c6c74c8477231d0d4ea4c91ee974bb425f70",
+      "bytes": 209416,
+      "license": "noto-serif-sc-OFL.txt"
+    }
+  ]
+}

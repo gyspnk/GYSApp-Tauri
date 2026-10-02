@@ -25,7 +25,7 @@ export function pdfPercentScale(
     Number.isFinite(initialScale) && (initialScale ?? 0) > 0
       ? (initialScale as number)
       : safeFit;
-  return Math.max(0.08, base * (safePercent / 100));
+  return base * (safePercent / 100);
 }
 
 export type PdfDocumentSourceOptions =
@@ -149,4 +149,35 @@ export function cleanupPdfPage(
   } catch {
     // A page can already be detached when its IntersectionObserver exits.
   }
+}
+
+/** Keep high zoom useful without allocating gigabyte-sized canvas buffers. */
+export function pdfRasterScale(
+  width: number,
+  height: number,
+  dpr: number,
+): number {
+  const ratio = Number.isFinite(dpr) && dpr > 0 ? Math.min(dpr, 2) : 1;
+  return Math.min(
+    ratio,
+    Math.sqrt(4_000_000 / Math.max(1, width * height)),
+    8192 / Math.max(1, width, height),
+  );
+}
+
+/** A spread shares the available width and still fits the viewport height. */
+export function pdfFitScale(
+  width: number,
+  height: number,
+  pageWidth: number,
+  pageHeight: number,
+  columns = 1,
+): number {
+  return Math.max(
+    Number.EPSILON,
+    Math.min(
+      Math.max(1, width - 32 - (columns - 1) * 18) / columns / pageWidth,
+      Math.max(1, height - 32) / pageHeight,
+    ),
+  );
 }

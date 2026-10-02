@@ -1,12 +1,13 @@
-import type { HymnCatalogEntry } from "@gys/contracts";
+import type { HymnCatalogEntry, HymnMetadata } from "@gys/contracts";
 
 /**
  * Search data is intentionally built once per catalog revision. Keeping the
  * normalized haystack and token set beside each item avoids lower-casing the
  * complete 533-song lyric corpus on every keystroke.
  */
-export type HymnSearchIndex = {
-  item: HymnCatalogEntry;
+type SearchableHymn = HymnMetadata & Partial<Pick<HymnCatalogEntry, "lyrics">>;
+export type HymnSearchIndex<T = HymnCatalogEntry> = {
+  item: T;
   haystack: string;
   tokens: ReadonlySet<string>;
 };
@@ -24,16 +25,16 @@ function tokenize(value: string): ReadonlySet<string> {
   return new Set(value ? value.split(" ").filter(Boolean) : []);
 }
 
-export function buildHymnSearchIndex(
-  entries: readonly HymnCatalogEntry[],
-): HymnSearchIndex[] {
+export function buildHymnSearchIndex<T extends SearchableHymn>(
+  entries: readonly T[],
+): HymnSearchIndex<T>[] {
   return entries.map((item) => {
     const number = String(item.number);
     const paddedNumber = number.padStart(3, "0");
     const sourceNumber =
       item.id.match(/^hymn-(\d+[a-z]?)$/i)?.[1] ?? paddedNumber;
     const haystack = normalizeHymnSearchText(
-      `${number} ${paddedNumber} ${sourceNumber} ${item.title} ${item.lyrics}`,
+      `${number} ${paddedNumber} ${sourceNumber} ${item.title} ${item.lyrics ?? ""}`,
     );
     return { item, haystack, tokens: tokenize(haystack) };
   });
@@ -60,7 +61,10 @@ function hasTokenSubstring(
   return false;
 }
 
-function matches(index: HymnSearchIndex, parts: readonly QueryPart[]): boolean {
+function matches(
+  index: HymnSearchIndex<SearchableHymn>,
+  parts: readonly QueryPart[],
+): boolean {
   return parts.every((part) =>
     part.phrase
       ? index.haystack.includes(part.value)
@@ -69,11 +73,11 @@ function matches(index: HymnSearchIndex, parts: readonly QueryPart[]): boolean {
 }
 
 /** AND-search substrings; quoted terms remain contiguous phrases. */
-export function searchHymns(
-  index: readonly HymnSearchIndex[],
+export function searchHymns<T extends SearchableHymn>(
+  index: readonly HymnSearchIndex<T>[],
   query: string,
   book: string,
-): HymnCatalogEntry[] {
+): T[] {
   const parts = parseQuery(query.trim());
   return index
     .filter(

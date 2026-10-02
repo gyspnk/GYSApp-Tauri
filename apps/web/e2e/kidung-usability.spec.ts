@@ -1,7 +1,26 @@
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { createHash } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
+
+test("catalog queue status updates immediately without changing search", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  const first = page.locator(".add-to-playlist-btn").first();
+  await expect(first).toBeVisible();
+  await expect(first).toHaveAttribute("aria-pressed", "false");
+  const originalLabel = await first.getAttribute("aria-label");
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(first).not.toHaveAttribute("aria-label", originalLabel!);
+  await expect(page.locator(".kidung-local-nav a small")).toHaveText("1");
+  await first.click();
+  await expect(page.locator(".kidung-local-nav a small")).toHaveText("1");
+  await page.reload();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+});
 
 type TestMediaSessionWindow = Window & {
   __gysMediaSession?: {
@@ -135,18 +154,13 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     geometry.mute!,
     geometry.minimize!,
   ];
-  if (viewportWidth >= 360) {
-    expect(
-      Math.max(...controls.map((box) => box.y)) -
-        Math.min(...controls.map((box) => box.y)),
-    ).toBeLessThan(1.5);
-  } else {
-    expect(geometry.transport!.y).toBeLessThan(geometry.stop!.y - 10);
-    expect(
-      Math.max(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y) -
-        Math.min(geometry.stop!.y, geometry.mute!.y, geometry.minimize!.y),
-    ).toBeLessThan(1.5);
-  }
+  expect(
+    Math.max(...controls.map((box) => box.y)) -
+      Math.min(...controls.map((box) => box.y)),
+  ).toBeLessThan(1.5);
+  expect(geometry.media!.x + geometry.media!.width).toBeLessThanOrEqual(
+    viewportWidth,
+  );
 }
 
 async function openCatalog(page: Page) {
@@ -230,6 +244,7 @@ const MIDI_NEXT_FIXTURE_HASH = createHash("sha256")
 
 async function prepareMidiDockFixture(page: Page) {
   await page.addInitScript(() => {
+    localStorage.setItem("gys-media-minimized", "0");
     const handlers: Record<string, (details?: unknown) => unknown> = {};
     const mediaSession = {
       handlers,
@@ -673,7 +688,7 @@ test("wide Kidung catalog shares navigation and filters in one top row", async (
 
     if (viewport.width >= 1200) {
       expect(
-        Math.abs(geometry.nav.top - geometry.header.top),
+        Math.abs(geometry.nav.bottom - geometry.header.bottom),
       ).toBeLessThanOrEqual(2);
       expect(geometry.wrapper.height).toBeLessThanOrEqual(
         Math.max(geometry.nav.height, geometry.header.height) + 2,
@@ -720,7 +735,7 @@ test("MIDI session keeps its source, queue, and minimized state across routes", 
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await expect(
-    page.getByRole("heading", { name: /Selamat datang/i }),
+    page.getByRole("heading", { name: /Bacaan & nyanyian/i }),
   ).toBeVisible({
     timeout: 15_000,
   });
@@ -887,7 +902,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
 
   for (const locale of ["id", "en", "zh"] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
+    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?mode=lyrics&__gys_locale=${locale}`);
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah/ }),
     ).toBeVisible({ timeout: 20_000 });
@@ -1078,6 +1093,7 @@ test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", asyn
 test("Kidung playlist and reader semantic chrome stays localized", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   const copies = {
     id: {
       playlist: "Playlist",
@@ -1179,7 +1195,7 @@ test("Kidung playlist and reader semantic chrome stays localized", async ({
     ).toBeVisible();
     await expect(page.getByText(copy.off, { exact: true })).toBeVisible();
 
-    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
+    await page.goto(`/GYSApp-Tauri/kidung/hymn-001?mode=lyrics&__gys_locale=${locale}`);
     await expect(
       page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
     ).toBeVisible({ timeout: 20_000 });
@@ -1712,6 +1728,7 @@ test("hymn lyric sheets stay centered in verse and all-verses modes", async ({
 test("all-verses text mode renders canonical chords for every verse", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
   await page
@@ -1742,6 +1759,7 @@ test("all-verses text mode renders canonical chords for every verse", async ({
 test("Kidung default chord markers have clear space above their lyric lines", async ({
   page,
 }) => {
+  await preparePinnedReaderAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
   await page
@@ -1856,6 +1874,7 @@ for (const [name, width, height, surface, theme] of visualCases) {
     if (surface === "catalog") await openCatalog(page);
     if (surface === "playlist") await openPlaylistWithSong(page);
     if (surface === "reader") await openFirstHymn(page);
+    if (surface === "pdf" || surface === "pdf-music") await preparePinnedReaderAssets(page);
     if (surface === "pdf") await openFirstHymnPdf(page);
     if (surface === "playlist-menu") {
       await openPlaylistWithSong(page);

@@ -390,22 +390,21 @@ with a 37-flow smoke suite after the one-flow deduplication.
 
 ## Documentation and skill cadence
 
-- Last maintenance skill review: 2026-09-25
-- Skill review frontier: CF-109
+- Last maintenance skill review: 2026-10-01
+- Skill review frontier: CF-205
 - Review triggers: 30 calendar days or 10 new resolved frontier decisions,
   whichever comes first.
 - Review scope: compare the maintenance skill, `AGENTS.md`, `CONTEXT.md`,
   `scripts/verify-documentation.mjs`, the active spec, and this map; update
   every affected pointer and retain proof, protected prerequisites, and the
   next frontier.
-- Review result: the active pasted goal spec, verifier, and map still agree on
-  dated frontier receipts, protected prerequisites, next-frontier evidence, and
-  the 30-day/10-frontier review triggers. The `gysapp-maintenance` skill,
-  workspace `AGENTS.md`, `CONTEXT.md`, and separate simplification spec are
-  absent; no missing policy text was fabricated. CF-110 closes 40-to-80 Bible
-  Search paging in ID/EN/ZH and packaged WebView2 readiness/search measurements.
-  Performance budgets, full offline/filter parity, signed-installer, and OS
-  media evidence remain open.
+- Review result: on 2026-10-01 the user-requested full roadmap, documentation
+  verifier, plan and evidence receipts were reconciled. The available skill
+  catalog contains no gysapp-maintenance skill; workspace AGENTS.md, CONTEXT.md
+  and a separate maintenance spec remain absent. No policy was invented.
+  CF-205 covers the current roadmap implementation and verification gates.
+  Physical-device, signed-installation, first audio sample and configured
+  provider prerequisites retain their separate evidence requirements.
 
 ## Frontier
 
@@ -1662,3 +1661,323 @@ Validation for CF-195: 2026-09-28 — the regression test confirmed that reapply
 
 Validation for CF-196: 2026-09-28 — the Bible search 390×844 visual test now waits for `document.fonts.ready` and three animation frames after focusing search instead of relying on a fixed 250 ms delay; the focused Playwright case passes 5/5 after this test-only stabilization. The preceding full Playwright run exited 0 with 322 passed, three BFF-gated skips, and one Bible screenshot that passed on retry. No visual snapshot was changed. Protected prerequisite: preserve reviewed visual baselines and the existing dirty worktree. Next frontier: close the documented external installer, native picker, Windows media-panel, and provider CORS boundaries when their required environments are available.
 Validation for CF-197: 2026-09-28 — focused Bible search visual tests pass 15/15 across five repetitions per case. The final full Playwright run passes 323 tests and skips three cases gated on the local BFF configuration, with no failures (8.5 minutes). Reviewed and refreshed the two Bible search snapshots and the desktop filter snapshot: browser locator scrolling accounts for a 7 px desktop origin change before focus, while the 390×844 page has a stable 7 px top offset missing from the prior baseline. Test screenshot capture waits for fonts and render frames and starts from scrollY 0. Protected prerequisite: preserve the reviewed snapshots and unrelated dirty worktree changes. Next frontier: verify the signed installer/updater, OS picker/media controls, live Literature Worker freshness, and provider PDF CORS when those environments are available.
+
+- `2026-09-30 / CF-198`: share bundled TB loading across reader, split
+  reader and global search; construct the main-thread search fallback on demand;
+  lazy-load Home, Bible header controls and the active media dock;
+  select shell audio state;
+  extract device reset from More;
+  count transitive static bundle imports; preserve downloaded asset caches on
+  stale-chunk recovery; provide offline local verification, watch/UI/debug
+  commands and a cached packaged-native build. Continue the approved UI,
+  loading and parity roadmap in
+  `docs/plans/2026-09-30-loading-debug-efficiency.md`.
+
+Validation for CF-198: initial GitHub connector implementation at `d9faa61` passes CI build/typecheck, 350 web unit tests, script/policy checks, formatting/docs/provenance, bundle/native-asset checks, Rust tests/clippy and 323 browser tests (three BFF-gated skips). The packaged Windows/WebView2 smoke also passes at that SHA: fresh-profile offline shell, verified offline PDF/MIDI/SoundFont, native cache corruption repair, 120 media transitions and preference restart. See PR #9 and its CI runs. Physical-device, signed-upgrade and live-provider parity gates remain open.
+
+- `2026-09-30 / CF-199`: restore local verification after the executor becomes
+  available; add explicit Vite/HMR browser iteration with production/CI guards;
+  bound the development image proxy's fallback chain to three seconds; keep
+  Bible typography persistence outside React's replayable state updaters;
+  measure greeting readiness in the browser separately from host test polling;
+  preserve literal regex/space arguments in test runners on Windows/Unix;
+  align README and architecture with the implemented local/PR/release gates.
+
+Validation for CF-199: local production build/typecheck, 352 web unit tests and workspace/script suites pass. Focused dev browser tests pass 3/3, including two font clicks adding exactly two steps with persistence after reload; the original dev run exposed a three-step StrictMode regression and stalled lazy navigation behind remote image requests. A 30-navigation production-preview sample records greeting-ready median 402.2ms and p95 496.5ms using a browser animation-frame marker; this includes a first navigation in the same browser profile and does not establish cold-process/native/device startup. Visual inspection of Home/Bible at 390px and Kidung at 1440px confirms one page heading and no horizontal overflow. Final PR CI is required for the additional changes; external parity gates remain open.
+
+- `2026-09-30 / CF-200`: stabilize the Faith PDF keyboard contract by waiting
+  for the fixture's explicit error/retry state before checking its first/last
+  focus boundaries. Loading asynchronously adds a new focusable Retry button.
+  Keep initial close focus, exact Tab/Shift+Tab wrap, Escape, opener restoration,
+  official links, touch targets and locale/viewport geometry assertions.
+
+Validation for CF-200: final-head CI at `0af3576` passes build/typecheck, 352 web unit tests, script/policy suites, bundle/provenance/native-asset verification, Rust tests/clippy and packaged-native smoke; browser shard 1 passes, while shard 2 exposes the asynchronous focus-list race in the Faith PDF fixture. The original focused case passes 3/3 locally; the readiness correction passes 10/10 repeats across three browser workers with retries disabled before the next complete CI run. No visual baseline or focus timeout was relaxed.
+
+- `2026-09-30 / CF-201`: give each Bible quick-picker locale/viewport contract
+  an independent test lifecycle and the existing timeout. The preceding CI
+  succeeds but reports one retry after fifteen full navigations exhaust a
+  single 40-second test budget. Preserve all fifteen combinations and every
+  picker, focus, drag-label and overflow assertion; do not extend timeouts.
+
+Validation for CF-201: all fifteen cases pass twice (30/30) locally across
+three workers with retries disabled. Complete final-head CI is required before
+closing PR #9 verification.
+
+- `2026-09-30 / CF-202`: split Kidung's catalog, playlist and settings into
+  independent lazy views with shared navigation/formatters and MIDI controls;
+  retain the existing reader and its source-backed playback rules. Settings
+  skip song data and playlist skips music-lock loading. Subscribe catalog queue
+  status to the actual snapshot rather than a detached render tick. Defer the
+  queue coordinator's PDF song metadata module until playback. Extend selective
+  coverage to each new section's loading/UI/playlist parity contracts.
+
+Validation for CF-202: the new queue regression fails before the change because
+`aria-pressed` stays false after adding a song. It passes after the fix, including
+deduplication and reload persistence. Both loading regressions pass: a blocked
+reader chunk does not prevent catalog/settings use, and settings fetch no hymn
+catalog/music lock. Local typecheck/build pass and the unchanged 180 KiB initial
+bundle budget passes at 177.8 KiB gzip. The Kidung/playlist/density suite passes
+62/62 without retries, dev loading/queue passes 3/3, and final production loading/
+queue checks pass 9/9 across repeated runs. Final-head CI remains required before
+closing the slice; physical/native upgrade/provider
+parity gates remain open.
+
+- `2026-09-30 / CF-203`: preserve first offline use of independently loaded
+  views with a generated build-asset manifest. Prepare same-origin JavaScript,
+  CSS and WASM during service-worker installation after page load without
+  executing modules. Deduplicate asset requests, reject non-build/traversal
+  paths and retain successful entries when one download fails. Limit Vary
+  bypass to application build assets. Bump shell cache to v23, preserving
+  editorial and explicit verified download ownership.
+
+Validation for CF-203: an unvisited settings page fails offline after the Kidung
+split despite service-worker readiness. Preparing assets exposes Vite's Origin
+Vary mismatch; a behavior check reproduces and guards the corrected lookup. The
+production first-offline settings/playlist/text-reader flow now passes 3/3 with
+retries disabled. Service-worker unit checks pass 13/13, including missing asset,
+path restrictions, deduplication, cache reset and editorial retention. All 65
+emitted asset paths resolve in the build. CI at `78bc8cf` exposes a remaining
+runtime-health assertion for shell v22; align it with v23 and require the
+production-served asset manifest to contain lazy settings/playlist modules.
+The loading fixture also resolves reader paths from this public manifest:
+GitHub artifacts omit hidden `.vite` metadata used by its first local version.
+Final-head CI/native evidence and
+interrupted/signed-upgrade parity remain required.
+
+- `2026-09-30 / CF-204`: extract Bible chapter presentation into
+  `bible-chapter.tsx` and verse marker/entity/query rendering into
+  `bible-verse-text.tsx`. Memoize verse text separately from reader state,
+  retain parsed segments when the query changes, and reuse compiled literal
+  query expressions across styled segments. Stabilize the next-chapter target
+  so its existing memo avoids scanning all verses on unrelated UI updates.
+  Memoize secondary chapter selection/filtering while split view is enabled.
+  Reader loading, speech, navigation, notes and persisted key formats retain
+  their ownership. Selective renderer checks include legacy annotation migration
+  without a title grep, plus visual and accessibility coverage.
+
+Validation for CF-204: six rendered-text contracts cover nested hidden footnotes,
+Jesus words/italics, poetry line breaks, entity decoding without HTML injection,
+empty text, and literal query terms across styles/search results. Web unit tests
+pass 358/358. Local build/typecheck pass; the initial JavaScript graph remains
+177.8 KiB gzip within the unchanged 180 KiB limit. Production browser behavior passes 44/44 without retries; standalone annotation
+migration/highlight checks pass 2/2. Seven local pixel baselines fail identically
+on the preceding `9ece155` reader in this executor: five before/after screenshots
+are pixel-identical, and two differ by only 30/70 control pixels. No baseline or
+threshold is changed. Final-head CI visual/native evidence remains required. This
+reduces repeated render work; no new cold-start/device latency claim is made.
+Bible search/notes orchestration, CSS ownership and signed-upgrade/device parity
+remain open work.
+
+- `2026-10-01 / CF-205`: continue the entire authorized loading/UI/efficiency
+  roadmap. Separate 533-song metadata from retryable shared lyric payloads;
+  defer Bible worker creation/whole-pack cloning until actual search. Extract
+  route frames, Bible search and notes presentation/persistence, and isolate
+  Kidung position ticks in MIDI progress. Memoize verse lookup for saved notes
+  only when notes exist. Scope PDF enhancements to component cleanup. Split
+  base CSS into six ordered ownership layers without changing the reviewed
+  cascade. Replace affected accent/flat-row/PDF-navigation source assertions
+  with runtime checks and broaden unknown shared test selection to full coverage.
+  Require explicit safe update activation, preserve the previous active shell,
+  verify exact emitted code/core bytes and prevent mixed deployments or new
+  HTML from overwriting old offline shell bytes. Make verified local PDFs use
+  the bounded music cache, and wait for music lock before PDF fallback. Add
+  separate short native suites, 30-roundtrip storage profiling, 30-process native
+  benchmarks and four 30-sample browser conditions while retaining full soak.
+
+Validation for CF-205: the 90-case UI matrix passes without retries; eight
+computed-style/PDF touch/lifecycle cases pass across ID/EN/ZH. Loading checks
+cover metadata-before-lyrics, chapter-before-worker, delayed lock fallback,
+explicit reader/editor updates and unvisited offline routes. A new offline-PDF
+reload guard exposes uncached local seed bytes, then passes with bounded verified
+reuse. Service-worker checks pass 19/19, including corrupt/interrupted core/code,
+mixed deployments and retention of the active build rather than partial cache
+insertion order. Immutable upstream byte audit matches 533 entries and 161
+chord references. Initial JS is 177.2 KiB gzip inside the unchanged 180 KiB gate;
+metadata shrinks from 917,610 to 179,002 bytes. Official Literature and Faith
+source probes are separately recorded in the dated validation receipt. Full
+final-tree checks and packaged-native benchmark/soak evidence are required on
+PR #9 before closing this slice; physical-device, signed-upgrade, audio-first-
+sample and configured-BFF gates remain open. The maintenance review reconciles
+those prerequisites and does not fabricate missing skill or policy files.
+
+Final verification follow-up for CF-205: packaged quick assets use root-relative
+URLs after reader navigation and validate JSON response types; Faith PDF overlays
+block activation while the catalog URL stays unchanged. The browser upgrade
+fixture now installs a complete core before exercising HTTP 503 editorial
+fallback, offline reuse and previous active cache retention.
+
+- `2026-10-01 / CF-206`: apply the explicitly authorized full UI audit and the
+  user's warm editorial hymn-book direction. Own typography/palette in existing
+  token and refinement layers; make missing media useful without fake covers;
+  fix reading widths, Faith phone actions, visible catalog/state headings and
+  localized inline references. Bundle pinned, licensed normal/italic/Chinese
+  fonts with exact cache/packaging checks. Audit expanded settings, including
+  primary-action and offline-status contrast, rather than only collapsed routes.
+
+Validation for CF-206: the dated editorial audit records route/state findings,
+checked-in before/after captures, the 90-case responsive/localized matrix and
+new runtime/real-offline-font regressions. Intentional visual baselines keep
+existing pixel thresholds. Native run 36818004484 passes short suites, 30 actual
+process relaunches and the original full soak after browser/native worker
+separation; raw runner metrics and physical/configured-BFF exclusions are saved.
+The local 77-case editorial/visual run and 14 repaired full-suite failures
+pass without retries; an unavailable-reflection breakpoint regression covers
+960–1440px. Filled custom actions use black/white at the AA midpoint rather
+than off-black, with yellow/medium-gray browser checks. Pinned real chord/PDF
+fixtures avoid repeated CDN/CORS-dependent UI setup. Local deterministic
+pre-push passes and initial JS remains 177.3 KiB under the 180 KiB gate.
+The redesigned shell has a new 120-sample browser receipt: warm shell median
+162.1ms / p95 359.4ms, indexed search p95 45.0ms, catalog 664.3ms,
+chapter 824.0ms and PDF 1010.2ms. Executor runs are not controlled reference
+hardware or a claim that every proposed instant-content target is met.
+The first redesigned-tree CI passes 467 browser cases and skips three
+provider/environment cases. Two strict Kidung images differ by one/207 text
+pixels between executors; reviewed actual/diff images establish the hosted
+Linux baselines without changing tolerances or application code. The redesigned native
+quick/font suites, 30-relaunch benchmark and full media soak pass in run
+36825985931 on application commit 25f17fb / shell 7ac2f5f76b0d6e04; raw
+receipts preserve physical/provider exclusions. The closing test-image/evidence
+commit leaves that application unchanged. Final canonical-baseline CI outcomes
+are required on PR #9 before
+closing this frontier. The user request authorizes these visual changes and
+commit/push; physical-device and signed-upgrade gates remain separate.
+
+- `2026-10-01 / CF-207`: compact the authorized warm editorial UI and repair
+  PDF toolbar density, spread fitting, page input, resize, rendering races and
+  scroll virtualization. Share fullscreen/download/focus/keyboard controls
+  across hymn, Literature and Faith viewers, keep 44px targets, and bound raster
+  memory at extreme zoom. The [compact PDF audit](../plans/2026-10-01-compact-pdf-audit.md)
+  records findings, tradeoffs and verification. CF-206's final canonical CI and
+  packaged Windows checks passed on 5fcca3c (runs 36827881157/36827881297).
+  CF-207 requires the pushed tree's full CI and native checks before closure;
+  physical-device/provider gates remain outside these executor results.
+
+Validation for CF-207: 57 visual cases pass at unchanged pixel thresholds;
+42 intentional image changes were reviewed and unchanged strict CI baselines
+retained. The responsive/editorial/roadmap matrix passes 125 cases; the stale
+PDF-ready race and a 40s multi-route timeout were isolated for final focused
+verification. The dashboard order guard now recognizes the existing wide-screen
+unavailable-state shelf layout rather than asserting the available-state grid
+against asynchronous provider failures. New 48-page PDF regressions verify offscreen bitmap eviction,
+4-million-pixel raster limits, spread fit, relative hymn page entry, motion,
+focus and accessible options. The repaired final focused run passes 32/32 cases, and 12 PDF visual rechecks
+pass without retries. PDF-only edits select their reader regressions instead
+of the global matrix. Local pre-push, assets and bundle checks pass; the pushed
+CI/native gates must pass before this slice is reported complete. The final
+PDF efficiency run passes 10/10 cases, and the deterministic suite includes
+363 web unit tests plus all workspace/script checks. Initial JS is 177.2 KiB
+under the unchanged 180 KiB gate; native assets verify 22 files/32,607,926 bytes.
+
+The first full CI run on 5b6d72f passes 478 browser cases with three explicit
+skips. One tablet settings image retains the old starting margin because its
+local difference stays below the existing comparison threshold. The hosted
+renderer reproduces a 4108-pixel difference in both attempts. Reviewed
+expected/actual/diff images confirm the intended compact layout; the identical
+hosted actual images establish the updated tablet baseline. No tolerance or
+application source changes accompany this reconciliation.
+
+- `2026-10-02 / CF-208`: continue the requested PR #9 whole-interface review
+  after pulling main and checking out its current branch. Compact failed Home
+  artwork, correct Suara captions, align catalog/tool headings and Literature
+  filters, wrap shelf titles, and stop Kidung settings panels stretching.
+  Remove the route transform that traps fixed reading dialogs; use native
+  disclosure/menu motion and a shared reduced-motion policy. The
+  [follow-up audit](../plans/2026-10-02-ui-polish-followup.md) records the
+  reviewed surfaces and Windows baseline provenance.
+
+Validation for CF-208: typecheck, lint, workspace unit/policy/script checks,
+production build, bundle/generated/native-asset checks pass. Initial JS stays
+177.2 KiB under the unchanged 180 KiB gate. Six new browser cases cover
+11 routes at phone/desktop widths, overflow/page errors, fallback artwork,
+viewport-fixed notes with motion enabled, reduced-motion menus, and the 44px
+close target at the first entrance-animation frame. Reviewed
+Windows images pass all 57 visual cases without changing pixel tolerances or
+Linux references. The full browser run passes 504 and skips three configured-BFF
+cases; one animation-size failure exposes a shared dialog scale. Removing that
+scale preserves slide/fade motion and touch dimensions. All 97 final affected
+UI/accessibility/reader/visual checks pass without retries on the rebuilt tree.
+Physical/native/provider evidence remains separate from this responsive
+Chromium audit.
+
+- `2026-10-02 / CF-209`: pursue the requested thumbnail/update fixes and a
+  stronger library composition on PR #9. Recover cached-image completion,
+  official source alternatives and online reconnects; render existing SVG
+  illustrations for genuinely unavailable covers. Fix metadata-only feed
+  updates, superseded waiting workers, repeated activation and search fields
+  incorrectly treated as dirty editors. Rework Home's display heading,
+  image/quote composition, reading/media cards, category artwork, settings
+  hover and compact update toast; keep tablet shelf titles readable.
+  The [thumbnail/update rework audit](../plans/2026-10-02-thumbnail-update-library-rework.md)
+  distinguishes official source coverage from rendering/transport failures.
+
+Validation for CF-209: workspace unit/policy/script checks pass (369 web tests),
+as do typecheck, lint, build, generated provenance and native asset checks.
+The initial graph remains 177.3 KiB under 180 KiB. New regressions cover metadata
+cover recovery in both feeds, redundant workers, one activation, search blur,
+official derivative recovery and reconnect without reload. The browser review
+passes 155 cases at unchanged visual thresholds, including the final
+600/768/1024px tablet shelves. The full 515-case run reports 511 passed,
+3 BFF prerequisites skipped and one local stylesheet request failure
+(`net::ERR_NO_BUFFER_SPACE`). All 63 final affected checks pass with one worker
+and no retries, including that case and the final thumbnail badge adjustment.
+The real worker also passes two lifecycle checks: clean install/two reloads
+and explicit activation of a new version without a stale banner. No failed
+case remains unverified; the three BFF prerequisites remain explicit.
+This is local browser evidence, not a new native,
+physical-device, provider, hosted Linux or deployment receipt.
+
+- `2026-10-02 / CF-210`: begin the broader UI rework with an explicit
+  [five-stage acceptance plan](../plans/2026-10-02-comprehensive-ui-rework.md).
+  Theme-integrated navigation, a localized three-destination collection hub,
+  separated settings panels, and a first-visit reading action are implemented.
+  Build/typecheck pass; initial JS is 177.5 KiB under 180 KiB. All 36 focused
+  browser checks pass without retry after updating two superseded geometry
+  assertions to the new designed behavior. Responsive proof is saved in
+  `docs/ui/2026-10-02-comprehensive/`. The broader goal remains active:
+  catalog/reader review, shared style consolidation, 200% text, refreshed visual
+  baselines and full final verification are still required. CF-209 describes
+  the previous build and must not be treated as the current rework's full gate.
+
+Validation for CF-210: build, typecheck and bundle budget pass. The rebuilt tree
+passes 36 focused browser checks with one worker and no retries. Proof covers
+11 route/state captures, localized collection links at three widths and all
+settings themes. The broader acceptance plan remains in progress; final visual
+baselines and the complete browser gate are not yet verified for this build.
+
+- `2026-10-02 / CF-211`: continue the five-stage comprehensive UI rework.
+  Suara search and Literature result/reset controls share localized status,
+  empty recovery and focus restoration. A failed complete article explicitly
+  displays its summary with retry/source/back-to-collection actions. Missing
+  reader artwork is compact. Existing Suara update events now refresh open
+  catalog/reader metadata and preserve query/full article content; the load
+  path rechecks the cache after article loading to prevent stale metadata.
+  Shared card/feature radius tokens replace literal duplicates. The final
+  visual/reference review covers responsive catalog, reader, PDF, settings,
+  menus and recovery surfaces; visual thresholds are unchanged.
+
+Validation for CF-211: build, typecheck, lint, generated provenance, native
+asset verification and bundle budget pass (177.8 KiB / 180 KiB). Workspace
+unit/script checks pass, including 369 web tests. The directed browser runs
+pass 74 and 98 cases respectively. The new real feed regression fails on the
+previous build at stale catalog metadata, then all five catalog checks pass
+on the repaired build. The real preview activates its updated service worker
+and opens the collection hub. The 526-case browser gate is still running;
+this receipt does not yet claim that full gate or native-device validation.
+
+Additional CF-211 evidence: all six distributed-asset browser cases pass without
+retry on a separate BFF-configured build with mocked download responses. This
+covers Bible/hymnal installation, offline restart, removal and reinstallation.
+The hymnal fixture now preserves original service-worker core bytes, while
+only page requests receive the modified fixture catalog; production integrity
+verification remains intact. This is not a live backend or real KJV payload receipt.
+
+Final CF-211 receipt: the 526-case audit finishes with 520 passed, three static
+BFF prerequisites skipped and three superseded design assertions. Those
+assertions are corrected to the reviewed composition, collection backlink and
+native-scroll reachability. On the final rebuilt tree, all 81 repeated checks
+pass without retries, including every failed case, responsive/usability/Suara,
+catalog recovery, real workers and both visual suites at unchanged thresholds.
+The separate mocked-BFF run passes all six asset cases. Final preview build
+73e3c2881d9ef054 matches dist and activates successfully. All five plan stages
+are complete for local browser scope; external/native/device limits remain
+explicit. No push or deployment is performed.

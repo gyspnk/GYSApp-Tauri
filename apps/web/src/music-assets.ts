@@ -56,10 +56,15 @@ function bffAssetUrl(
 export async function loadMusicLock(): Promise<UpstreamMusicLock> {
   lockPromise ??= fetch(`${import.meta.env.BASE_URL}offline/music-lock.json`, {
     cache: "force-cache",
-  }).then(async (response) => {
-    if (!response.ok) throw new Error("Music lock unavailable");
-    return UpstreamMusicLockSchema.parse(await response.json());
-  });
+  })
+    .then(async (response) => {
+      if (!response.ok) throw new Error("Music lock unavailable");
+      return UpstreamMusicLockSchema.parse(await response.json());
+    })
+    .catch((error) => {
+      lockPromise = undefined;
+      throw error;
+    });
   return lockPromise;
 }
 
@@ -253,8 +258,9 @@ export async function loadMusicAsset(
     if ((await bundledMusicPaths()).has(ref.path)) {
       const local = localUrl(ref);
       try {
-        const response = await fetch(local, { cache: "force-cache" });
-        if (response.ok) return await readAndVerify(response, ref);
+        const cached = await cachedResponse(local, ref);
+        if (cached) return cached;
+        return await networkResponse(local, ref);
       } catch {
         // A corrupt/missing seed falls through to the verified remote copy.
       }

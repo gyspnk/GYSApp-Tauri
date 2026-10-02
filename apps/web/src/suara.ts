@@ -137,8 +137,7 @@ function sortByNewest(items: SuaraSejatiPost[]): SuaraSejatiPost[] {
 }
 
 /**
- * Union merge keyed by post id: cached entries stay, upstream additions are
- * appended without re-rendering the whole shelf.
+ * Merge additions and metadata changes, preserving covers absent upstream.
  */
 function mergeSuaraFeeds(
   current: SuaraSejatiPost[],
@@ -147,26 +146,20 @@ function mergeSuaraFeeds(
   if (!incoming.length) return undefined;
   const merged = new Map<string, SuaraSejatiPost>();
   for (const item of current) merged.set(item.id, item);
-  let added = false;
   for (const item of incoming) {
     const existing = merged.get(item.id);
-    if (!existing) added = true;
     merged.set(
       item.id,
-      existing?.imageUrl ? { ...item, imageUrl: existing.imageUrl } : item,
+      !item.imageUrl && existing?.imageUrl
+        ? { ...item, imageUrl: existing.imageUrl }
+        : item,
     );
   }
-  if (!added && merged.size === current.length) return undefined;
   const next = sortByNewest([...merged.values()]).slice(
     0,
     Math.max(MAX_PERSISTED_ITEMS, current.length),
   );
-  if (
-    next.length === current.length &&
-    next.every((item, index) => item.id === current[index]?.id)
-  )
-    return undefined;
-  return next;
+  return JSON.stringify(next) === JSON.stringify(current) ? undefined : next;
 }
 
 function suaraNetworkCandidates(): string[] {

@@ -30,3 +30,26 @@ test("Kidung presentation changes select the dedicated Kidung usability and visu
   assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
   assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
 });
+
+test("extracted Kidung sections retain loading and playlist parity coverage", () => {
+  for (const file of [
+    "kidung-page.tsx",
+    "kidung-catalog.tsx",
+    "kidung-local-nav.tsx",
+    "kidung-playlist-page.tsx",
+    "kidung-settings-page.tsx",
+    "kidung-midi-controls.tsx",
+    "kidung-shared.ts",
+  ]) {
+    const plan = resolveSelectiveTestArgs([`apps/web/src/${file}`], []);
+    for (const spec of [
+      "e2e/kidung-loading.spec.ts",
+      "e2e/kidung-offline.spec.ts",
+      "e2e/kidung-usability.spec.ts",
+      "e2e/playlist-parity.spec.ts",
+      "e2e/visual.spec.ts",
+      "e2e/accessibility.spec.ts",
+    ])
+      assert.ok(plan.args.includes(spec), `${file} should select ${spec}`);
+  }
+});

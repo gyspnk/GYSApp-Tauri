@@ -1,0 +1,229 @@
+{
+  "applicationCommit": "25f17fbad11763956f4229a8302e744891c8add6",
+  "builtShellId": "7ac2f5f76b0d6e04",
+  "runId": 36825985931,
+  "jobId": 110251673394,
+  "url": "https://github.com/gyspnk/GYSApp-Tauri/actions/runs/36825985931",
+  "conclusion": "success",
+  "quick": {
+    "runtime": "packaged Tauri/WebView2",
+    "profile": "runner-default-profile",
+    "suites": {
+      "startup": {
+        "status": "passed",
+        "elapsedMs": 1718
+      },
+      "storageProfile": {
+        "database": [
+          42, 15.700000000011642, 15.599999999976717, 15.700000000011642,
+          14.700000000011642, 14.899999999965075, 14.200000000011642,
+          16.400000000023283, 14.099999999976717, 14.700000000011642,
+          13.700000000011642, 15.799999999988358, 16.899999999965075,
+          16.100000000034925, 18, 16.599999999976717, 13.799999999988358,
+          16.100000000034925, 15.700000000011642, 17.79999999998836,
+          14.700000000011642, 15, 20.199999999953434, 17.20000000001164,
+          13.600000000034925, 15.099999999976717, 14.400000000023283, 15.5,
+          15.699999999953434, 18.70000000001164
+        ],
+        "blob": [
+          56.29999999998836, 57.5, 56.29999999998836, 82.09999999997672,
+          57.100000000034925, 55.70000000001164, 55.09999999997672, 56.5,
+          53.90000000002328, 54, 53.79999999998836, 54.5, 55.5,
+          54.899999999965075, 55.20000000001164, 55.5, 54.5, 54.29999999998836,
+          54.70000000001164, 53.90000000002328, 56.5, 55.399999999965075, 54.5,
+          61.40000000002328, 54.20000000001164, 54.20000000001164,
+          54.199999999953434, 54.70000000001164, 54.90000000002328, 55.5
+        ],
+        "blobBytes": 1048576,
+        "includes": "IPC, encoding, SQLite open/schema and atomic write",
+        "boundaryChanged": false
+      },
+      "storage": {
+        "status": "passed",
+        "elapsedMs": 2244
+      },
+      "mediaScope": "catalog queue accessibility and reader controls; mutation/synthesis/playback belong to native-soak",
+      "media": {
+        "status": "passed",
+        "elapsedMs": 1103
+      },
+      "assets": {
+        "verifiedFonts": 4,
+        "loadedFontFaces": 4,
+        "hymns": 533,
+        "bibleBooks": 66,
+        "verifiedFiles": 11,
+        "status": "passed",
+        "elapsedMs": 733
+      }
+    }
+  },
+  "benchmark": {
+    "output": "native-benchmark.json",
+    "runtime": "packaged Windows/WebView2",
+    "condition": "OS process relaunch with same app profile; offline local-content navigations after launch",
+    "samples": 30,
+    "metrics": {
+      "processShellMs": {
+        "measured": 30,
+        "medianMs": 764,
+        "p95Ms": 2958.2599731445293
+      },
+      "processGreetingMs": {
+        "measured": 30,
+        "medianMs": 1054,
+        "p95Ms": 3251.3799194335916
+      },
+      "offlineGreetingMs": {
+        "measured": 30,
+        "medianMs": 495.8500000000349,
+        "p95Ms": 541.9949999999778
+      },
+      "catalogMs": {
+        "measured": 30,
+        "medianMs": 489.2500000000291,
+        "p95Ms": 515.1949999999807
+      },
+      "chapterMs": {
+        "measured": 30,
+        "medianMs": 716.0499999999884,
+        "p95Ms": 823.2149999999936
+      },
+      "firstSearchMs": {
+        "measured": 30,
+        "medianMs": 288.6000000000058,
+        "p95Ms": 320.31999999998953
+      },
+      "indexedSearchMs": {
+        "measured": 30,
+        "medianMs": 30.849999999976717,
+        "p95Ms": 32.50999999997148
+      },
+      "pdfFirstPageMs": {
+        "measured": 30,
+        "medianMs": 1001.8500000000058,
+        "p95Ms": 1044.1700000000128
+      },
+      "audioFirstSampleMs": {
+        "measured": 0,
+        "medianMs": null,
+        "p95Ms": null
+      }
+    },
+    "memory": {
+      "rendererHeapBytes": {
+        "measured": 30,
+        "medianBytes": 43234910,
+        "p95Bytes": 43266112.2
+      },
+      "privateBytes": {
+        "measured": 30,
+        "medianBytes": 406775808,
+        "p95Bytes": 412318720
+      },
+      "workingSetBytes": {
+        "measured": 30,
+        "medianBytes": 723163136,
+        "p95Bytes": 728512921.6
+      }
+    },
+    "exclusions": [
+      "Not a cold OS/filesystem cache or reference physical-device benchmark",
+      "Fresh app-data/first signed installation is not isolated by the runner debugging policy",
+      "Audio first physical sample is unmeasured; full playback is verified separately",
+      "Process working-set sum can count shared pages; private byte sum is reported separately"
+    ]
+  },
+  "soak": {
+    "runtime": "packaged Tauri WebView2 + websocket plugin",
+    "freshProfileOfflineShell": "passed",
+    "offlineShellBlockedRequestCount": 28,
+    "offlineContentBlockedRequestCount": 38,
+    "offlineContentRoutes": {
+      "faithItems": 10,
+      "literatureItems": 300,
+      "sauhStatus": "ready",
+      "sauhTitle": "Buah Pertobatan",
+      "sauhReference": "Matius 21:43",
+      "suaraItems": 164
+    },
+    "packagedHomeResilience": {
+      "emptyActivity": "passed",
+      "feedErrorsAndRetries": "passed",
+      "feedRecoveryFromPackagedSnapshots": "passed",
+      "sauhTitle": "Buah Pertobatan",
+      "contentRequestsAfterRetry": {
+        "sauh": 2,
+        "suara": 4,
+        "literature": 4
+      },
+      "externalRequestsBlocked": true,
+      "noHorizontalOverflow": true
+    },
+    "sauhRecoveryAfterNetworkRestore": "passed",
+    "recoveredSauhTitle": "Buah Pertobatan",
+    "homeReadyMs": 272,
+    "bibleReadyMs": 888,
+    "bibleBroadSearch": "passed",
+    "bibleSearchMs": 1195,
+    "bibleSearchBudgetMs": 1500,
+    "bibleSearchInitialResults": 40,
+    "bibleSearchExpandedResults": 80,
+    "abortedSynthesis": true,
+    "selectedVoice": "id-ID-GadisNeural",
+    "localTtsPlayback": {
+      "called": true,
+      "started": false,
+      "voiceId": "Microsoft David - English (United States)",
+      "language": "en-US",
+      "local": true,
+      "skipped": "runner local voice did not emit start"
+    },
+    "receivedAudio": "Received 33984 audio bytes",
+    "playedAudio": "Playing 33984 audio bytes",
+    "pauseResumeStop": "passed",
+    "repeatRequest": "passed",
+    "missingChordState": "passed",
+    "nativeChordCacheRecovery": "same-size corruption refetched and source SHA verified",
+    "nativeChordCacheRecoveryFetches": 1,
+    "nativeChordCacheOfflineReplay": "passed without source fetch",
+    "nativeChordCacheOfflineFetches": 0,
+    "nativeLegacyChordOfflineRead": "legacy entry retained after blocked revalidation",
+    "nativeLegacyChordOfflineFetches": 1,
+    "nativeLegacyChordCacheUpgrade": "normalized cache upgraded to pinned raw bytes",
+    "nativeLegacyChordCacheUpgradeFetches": 1,
+    "installedHymnalCollections": ["Rohani"],
+    "packagedCollectionFilter": "passed",
+    "packagedBibleAnnotationsRestart": "passed",
+    "packagedFaithNoteRestart": "passed",
+    "packagedFaithPdfProgressRestart": "skipped: BFF base is not configured",
+    "packagedCustomHighlightPaletteRestart": "passed",
+    "packagedHymnTypographyRestart": "passed",
+    "packagedShellPreferencesRestart": "passed",
+    "routeSpecificAudioPreferencesRestart": "TTS voice/engine and MIDI volume/tempo/transpose/instrument passed",
+    "pdfOfflineFallback": "passed",
+    "pdfCanvas": {
+      "width": 384,
+      "height": 590
+    },
+    "midiBackend": "fluidsynth",
+    "upstreamMidiBackend": "fluidsynth",
+    "cachedMidiAndSoundFontOffline": "passed",
+    "nativeMidiCacheRecovery": "same-size corruption rejected, evicted, refetched and repaired",
+    "nativeMidiCacheRecoveryFetches": 1,
+    "nativeMidiRealTrackProgress": "165.14031746031745s track played and paused/resumed",
+    "nativeMidiControls": "volume, mute, tempo, transpose and instrument passed",
+    "nativeMidiCancelledRenders": 2,
+    "nativeMidiFullTrackMs": 58102,
+    "nativeMidiAcceleratedDuration": 58.142766439909295,
+    "nativeMidiFullTrack": "passed at 220 BPM",
+    "nativeMidiFullQueue": "two full upstream tracks auto-advanced at 220 BPM",
+    "nativeMidiFullQueueFirstTrackMs": 58203,
+    "nativeMidiFullQueueSecondTrackMs": 38672,
+    "midiAutoAdvance": "passed",
+    "midiAutoplayMs": 204606,
+    "midiSoakTransitions": 120,
+    "midiHeapRetainedBytes": -4156218,
+    "bibleHistoryRestart": "passed"
+  }
+}

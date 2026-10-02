@@ -67,7 +67,7 @@ flowchart TB
   SHELL --> MORE["Iman / account / settings / backup"]
   BIBLE --> MEDIA["One global MediaController"]
   HYMNS --> MEDIA
-  MEDIA --> FLOAT["Minimized, expanded, draggable surface"]
+  MEDIA --> DOCK["Persistent sidebar / animated bottom dock"]
   HYMNS --> MUSICCACHE["Immutable hash cache + preloading"]
   LIT --> PDF["Local PDF.js + lazy pages"]
   BIBLE --> WORKER["Lazy Bible search worker"]
@@ -157,9 +157,10 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  COMMIT["git commit"] --> SYNC["Local authenticated e-GYS clone/fetch"]
-  SYNC --> DIFF["Contract diff + compatibility"] --> DERIVED["Generated derived metadata"]
-  DERIVED --> TEST["Targeted tests"] --> STAGE["Stage derived files only"]
+  COMMIT["git commit"] --> INDEX["Check staged text without rewriting"]
+  INDEX --> PUSH["Local format, docs, provenance, types and unit tests"]
+  PUSH --> CI["PR build, bundle, browser and native verification"]
+  RELEASE["pnpm verify:release"] --> SYNC["Explicit local e-GYS sync and full gates"]
   WEB["Web/PWA"] --> LOGIN["Official e-GYS v1 login page"]
   APP["Tauri"] --> WEBVIEW["Allowlisted v1 login WebView"] --> BRIDGE["Validated login bridge"]
   BRIDGE --> KEYRING["OS keyring"] --> BFF["BFF profile request"] --> API["e-GYS v1 API"]
@@ -177,15 +178,34 @@ pnpm verify:docs
 pnpm dev
 ```
 
-`pnpm install` enables the repository-managed `.githooks` path. Before a
-commit, the hook checks the private e-GYS remote revision locally, rebuilds the
-reviewable route contract when it changes, blocks breaking route removals, and
-runs targeted contract/domain tests. Before a push it repeats the upstream
-check and runs the full local quality gate. Use `pnpm sync:egys` to refresh the
-lock deliberately; credentials are taken from the developer's existing Git
-credential manager/SSH setup and are never written to the repository. See
-[`docs/egys-integration.md`](./docs/egys-integration.md) for the contract and
-hook flow.
+`pnpm install` enables the repository-managed `.githooks` path. Pre-commit
+checks the staged text without rewriting files or accessing upstream. Pre-push
+runs deterministic formatting, documentation, provenance, type and unit checks.
+The PR's CI checks the production build, bundle, full browser suite and native
+boundary. `pnpm verify:release` retains the complete release gate, including
+explicit local upstream synchronization and chord audit. Use `pnpm sync:egys`
+to refresh the pinned discovery contract deliberately; authentication comes
+from the developer's existing Git credential manager/SSH setup.
+
+For quick iteration:
+
+```sh
+pnpm dev:native
+pnpm test:watch
+pnpm test:e2e:dev e2e/smoke.spec.ts -g "shell navigation" --workers=1
+pnpm test:e2e:dev --ui
+pnpm test:performance
+```
+
+The dev browser command builds the small workspace dependencies and starts
+Vite with HMR, without bundling the frontend. Stop any preview on port 4173
+before using it. Use dev mode for UI behavior; bundle/resource assertions and
+performance measurements require `pnpm test:e2e` or the production preview.
+Dev mode is rejected in CI and cannot be combined with `GYS_E2E_PREBUILT=1`.
+`pnpm test:e2e:ui` retains the production-preview UI mode. On a clean checkout,
+run `pnpm build:test-deps` before unit watch. The dedicated performance command
+records 30 samples with one worker; ordinary smoke uses five samples. See
+[the implementation and remaining acceptance gates](docs/plans/2026-09-30-loading-debug-efficiency.md).
 
 ## Documentation map
 
@@ -241,9 +261,9 @@ backend is ready. An optional Pages repository variable,
 `VITE_ASSET_MANIFEST_URL`, can point at an independently published HTTPS pack
 manifest; leave it empty to use the immutable bundled manifest. The private
 e-GYS repository is intentionally never cloned
-or fetched by GitHub Actions: authenticated maintainers run the repository-
-managed local pre-commit/pre-push hooks, which refresh the ignored checkout and
-stage only derived contract metadata. Without the protected deployment values, the web build still works
+or fetched by GitHub Actions: authenticated maintainers explicitly run
+`pnpm sync:egys` or `pnpm verify:release` locally and review derived metadata
+before staging it. Without the protected deployment values, the web build still works
 and shows an honest unavailable-session state instead of fabricating account
 data.
 

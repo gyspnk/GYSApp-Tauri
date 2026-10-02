@@ -77,7 +77,7 @@ test("catalog lists only verified chord and MIDI metadata below each title", asy
     .toBeLessThanOrEqual(72);
   await expect(page.locator(".chord-indicator")).toHaveCount(0);
 
-  await page.getByRole("textbox", { name: "Cari lagu" }).fill("416");
+  await page.getByRole("searchbox", { name: "Cari lagu" }).fill("416");
   await expect(
     page.locator('.pujian-item[data-id="hymn-416"] .pujian-metadata'),
   ).toContainText("MIDI");
@@ -89,7 +89,7 @@ test("catalog preserves and searches lettered hymn variants", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await openCatalog(page);
 
-  const search = page.getByRole("textbox", { name: "Cari lagu" });
+  const search = page.getByRole("searchbox", { name: "Cari lagu" });
   await search.fill("051A");
   await expect(page.locator(".pujian-item")).toHaveCount(1);
   await expect(page.locator('.pujian-item[data-id="hymn-051A"]')).toBeVisible();
@@ -111,7 +111,7 @@ test("catalog matches upstream lyric substrings and partial song numbers", async
   await page.setViewportSize({ width: 390, height: 844 });
   await openCatalog(page);
 
-  const search = page.getByRole("textbox", { name: "Cari lagu" });
+  const search = page.getByRole("searchbox", { name: "Cari lagu" });
   await search.fill("mon");
   await expect(page.locator(".pujian-item")).toHaveCount(2);
   await expect(page.locator('.pujian-item[data-id="hymn-300"]')).toBeVisible();

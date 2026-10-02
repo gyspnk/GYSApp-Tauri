@@ -14,7 +14,6 @@ const speechLocaleCopy: Record<
     heading: string;
     read: string;
     shell: string;
-    drag: string;
     minimize: string;
     restore: string;
     close: string;
@@ -28,7 +27,6 @@ const speechLocaleCopy: Record<
     heading: "Alkitab",
     read: "Bacakan",
     shell: "Sedang diputar",
-    drag: "Geser pemutar media",
     minimize: "Minimalkan pemutar",
     restore: "Perbesar pemutar",
     close: "Tutup pemutar suara",
@@ -41,7 +39,6 @@ const speechLocaleCopy: Record<
     heading: "Bible",
     read: "Read aloud",
     shell: "Now playing",
-    drag: "Move media player",
     minimize: "Minimize player",
     restore: "Restore player",
     close: "Close speech player",
@@ -54,7 +51,6 @@ const speechLocaleCopy: Record<
     heading: "圣经",
     read: "朗读",
     shell: "正在播放",
-    drag: "移动媒体播放器",
     minimize: "最小化播放器",
     restore: "恢复播放器",
     close: "关闭朗读播放器",
@@ -175,14 +171,29 @@ async function readMediaPlaybackState(page: Page) {
   );
 }
 
-test("persistent media defaults to one centered semantic dock", async ({
+test("persistent media defaults to the sidebar and animates into a bottom dock", async ({
   page,
 }) => {
   await page.addInitScript(() =>
     localStorage.removeItem("gys-media-position-v1"),
   );
   await openSpeechPlayerAtDesktop(page);
-  await expectCentered(page, 1440);
+  const media = page.locator(".media-surface");
+  await expect(media).toHaveClass(/is-minimized/);
+  const rail = await page.locator(".navigation-shell").boundingBox();
+  const compact = await media.boundingBox();
+  expect(compact!.x).toBeGreaterThanOrEqual(rail!.x);
+  expect(compact!.x + compact!.width).toBeLessThanOrEqual(
+    rail!.x + rail!.width,
+  );
+  await page.getByRole("button", { name: "Perbesar pemutar" }).click();
+  await expect(media).not.toHaveClass(/is-minimized/);
+  await expect
+    .poll(() => media.evaluate((node) => node.getAnimations().length))
+    .toBe(0);
+  const expanded = await media.boundingBox();
+  expect(expanded!.width).toBeGreaterThan(1300);
+  expect(expanded!.y + expanded!.height).toBeGreaterThan(850);
   await expect(page.getByRole("button", { name: "Ciutkan panel" })).toHaveCount(
     0,
   );
@@ -200,6 +211,19 @@ test("persistent media defaults to one centered semantic dock", async ({
       page.evaluate(() => localStorage.getItem("gys-media-minimized")),
     )
     .toBe("1");
+  await page
+    .getByRole("button", { name: "Ciutkan navigasi", exact: true })
+    .click();
+  await expect(media).toHaveClass(/is-rail-player/);
+  const collapsedRail = (await page
+    .locator(".navigation-shell")
+    .boundingBox())!;
+  await expect
+    .poll(async () => {
+      const box = (await media.boundingBox())!;
+      return box.x + box.width <= collapsedRail.x + collapsedRail.width;
+    })
+    .toBe(true);
   const restore = page.getByRole("button", { name: "Perbesar pemutar" });
   await expect(restore.locator("svg")).toHaveCount(1);
   await restore.click();
@@ -231,7 +255,7 @@ test("phone ignores a stale dragged position and keeps dock above bottom navigat
   expect(media.y + media.height).toBeLessThanOrEqual(nav!.y);
 });
 
-test("tablet uses stable centered dock geometry after resize", async ({
+test("tablet keeps its sidebar player reachable after resize", async ({
   page,
 }) => {
   await page.addInitScript(() =>
@@ -239,7 +263,7 @@ test("tablet uses stable centered dock geometry after resize", async ({
   );
   await openSpeechPlayerAtDesktop(page);
   await page.setViewportSize({ width: 768, height: 1024 });
-  const media = await expectCentered(page, 768);
+  const media = (await page.locator(".media-surface").boundingBox())!;
   expect(media.x).toBeGreaterThanOrEqual(12);
   expect(media.x + media.width).toBeLessThanOrEqual(756);
 });
@@ -276,7 +300,7 @@ test("speech session keeps its source and state across reader routes", async ({
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await expect(
-    page.getByRole("heading", { name: /Selamat datang/i }),
+    page.getByRole("heading", { name: /Bacaan & nyanyian/i }),
   ).toBeVisible({
     timeout: 15_000,
   });
@@ -331,7 +355,7 @@ test("shared speech dock localizes its semantic chrome for every locale", async 
   for (const locale of ["id", "en", "zh"] as const) {
     await page.addInitScript((nextLocale) => {
       localStorage.removeItem("gys-media-position-v1");
-      localStorage.removeItem("gys-media-minimized");
+      localStorage.setItem("gys-media-minimized", "0");
       localStorage.setItem("gys-locale", nextLocale);
       localStorage.setItem(
         "gys-shell-settings-v1",
@@ -344,8 +368,8 @@ test("shared speech dock localizes its semantic chrome for every locale", async 
     const media = page.locator(".media-surface");
     await expect(media).toHaveAttribute("aria-label", copy.shell);
     await expect(media.locator(".media-art")).toHaveAttribute(
-      "aria-label",
-      copy.drag,
+      "aria-hidden",
+      "true",
     );
     await expect(
       media.getByRole("button", { name: copy.previous }),
@@ -475,3 +499,33 @@ test("browser Local uses only an installed local voice", async ({ page }) => {
   );
   expect(spokenVoiceIds).not.toContain("gys-online-id");
 });
+
+for (const width of [390, 768, 1440]) {
+  test(`sidebar docking respects reduced motion and preserves pause (${width}px)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openSpeechPlayerAtDesktop(page);
+    await page.setViewportSize({ width, height: 900 });
+    const media = page.locator(".media-surface");
+    await page
+      .getByRole("button", { name: "Perbesar pemutar", exact: true })
+      .click();
+    await expect(media).not.toHaveClass(/is-minimized/);
+    await triggerMediaAction(page, "pause");
+    await expect.poll(() => readMediaPlaybackState(page)).toBe("paused");
+    await page
+      .getByRole("button", { name: "Minimalkan pemutar", exact: true })
+      .click();
+    await expect(media).toHaveClass(/is-minimized/);
+    expect(await media.evaluate((node) => node.getAnimations().length)).toBe(0);
+    expect(await readMediaPlaybackState(page)).toBe("paused");
+    const bounds = (await media.boundingBox())!;
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+    await page
+      .getByRole("button", { name: "Perbesar pemutar", exact: true })
+      .click();
+    expect(await readMediaPlaybackState(page)).toBe("paused");
+  });
+}

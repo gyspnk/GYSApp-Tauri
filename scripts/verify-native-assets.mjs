@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -13,6 +14,7 @@ const required = [
   "offline/suara-sejati.json",
   "offline/literature.json",
   "offline/hymn-catalog.json",
+  "offline/hymn-metadata.json",
   "offline/music-lock.json",
   "offline/fork-hymnal-manifest.json",
   "offline/bible/manifest.json",
@@ -52,6 +54,38 @@ try {
   }
 } catch (error) {
   throw new Error(`Unable to validate Tauri packaging boundary: ${error}`);
+}
+
+const provenance = JSON.parse(
+  await readFile(
+    resolve(root, "apps/web/src/assets/fonts/provenance.json"),
+    "utf8",
+  ),
+);
+const shell = JSON.parse(
+  await readFile(resolve(dist, "offline-shell-assets.json"), "utf8"),
+);
+for (const font of provenance.fonts) {
+  const basename = font.file.replace(/\.woff2$/, "");
+  const emitted = shell.assets.filter(
+    (path) =>
+      path.startsWith(`assets/${basename}-`) &&
+      /^[A-Za-z0-9_-]{8}\.woff2$/.test(
+        path.slice(`assets/${basename}-`.length),
+      ),
+  );
+  if (emitted.length !== 1)
+    throw new Error(`Expected one packaged font: ${font.file}`);
+  const bytes = await readFile(resolve(dist, emitted[0]));
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  if (digest !== font.sha256 || bytes.length !== font.bytes)
+    throw new Error(`Packaged font provenance mismatch: ${font.file}`);
+  if (
+    shell.integrity[emitted[0]] !==
+    `sha256-${Buffer.from(digest, "hex").toString("base64")}`
+  )
+    throw new Error(`Offline font integrity mismatch: ${font.file}`);
+  required.push(emitted[0]);
 }
 
 let totalBytes = 0;

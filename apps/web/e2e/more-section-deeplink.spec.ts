@@ -20,6 +20,7 @@ test("More shows compact setting categories and hides details until requested", 
     "Tentang & Bantuan",
   ]);
   for (let index = 0; index < 7; index += 1) {
+    await rows.nth(index).locator(":scope > summary").scrollIntoViewIfNeeded();
     await expect(rows.nth(index).locator(":scope > summary")).toBeInViewport();
   }
   await expect(page.locator(".more-setting-section[open]")).toHaveCount(0);
@@ -70,7 +71,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement)
-          .getPropertyValue("--blue")
+          .getPropertyValue("--accent")
           .trim(),
       ),
     )
@@ -96,7 +97,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement)
-          .getPropertyValue("--blue")
+          .getPropertyValue("--accent")
           .trim(),
       ),
     )

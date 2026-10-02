@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { collectChangedFiles } from "./test-e2e-selective-core.mjs";
+import {
+  collectChangedFiles,
+  resolveSelectiveTestArgs,
+} from "./test-e2e-selective-core.mjs";
 
 function fakeExec(outputs, commands) {
   return (command) => {
@@ -78,4 +81,71 @@ test("a partial PR range falls back to local detection instead of guessing", () 
     "git status --porcelain -uall",
     "git diff --name-only HEAD",
   ]);
+});
+
+test("Bible render modules include annotation migration and visual contracts without title filtering", () => {
+  for (const module of [
+    "bible.tsx",
+    "bible-chapter.tsx",
+    "bible-verse-text.tsx",
+  ]) {
+    const result = resolveSelectiveTestArgs([`apps/web/src/${module}`], []);
+    for (const spec of [
+      "bible-annotations",
+      "navigation-layout",
+      "visual",
+      "accessibility",
+    ]) {
+      assert.ok(
+        result.args.includes(`e2e/${spec}.spec.ts`),
+        `${module}: ${spec}`,
+      );
+    }
+    assert.ok(
+      !result.args.includes("-g"),
+      `${module}: include untitled legacy migration`,
+    );
+  }
+});
+
+test("unknown shared code broadens coverage even beside a known feature", () => {
+  for (const path of [
+    "apps/web/src/service-worker-updates.ts",
+    "apps/web/src/snapshot-selector.ts",
+    "apps/web/src/styles/00-tokens.css",
+    "packages/domain/src/cache.ts",
+    "apps/web/public/sw.js",
+    "pnpm-lock.yaml",
+  ]) {
+    const result = resolveSelectiveTestArgs(
+      ["apps/web/src/bible.tsx", path],
+      ["--retries=0"],
+    );
+    assert.deepEqual(result.args, ["--retries=0"], path);
+    assert.match(result.description, /Full browser coverage/);
+  }
+});
+
+test("extracted Bible and hymn payload modules retain migration and loading contracts", () => {
+  for (const path of [
+    "bible-notes-popup.tsx",
+    "bible-search-panel.tsx",
+    "bible-reader-storage.ts",
+  ]) {
+    const plan = resolveSelectiveTestArgs([`apps/web/src/${path}`], []);
+    assert.ok(plan.args.includes("e2e/bible-annotations.spec.ts"));
+    assert.ok(plan.args.includes("e2e/reader-data-loading.spec.ts"));
+    assert.ok(!plan.args.includes("-g"));
+  }
+  const plan = resolveSelectiveTestArgs(["apps/web/src/hymn-payloads.ts"], []);
+  assert.ok(plan.args.includes("e2e/kidung-offline.spec.ts"));
+  assert.ok(plan.args.includes("e2e/reader-data-loading.spec.ts"));
+});
+
+test("PDF-only edits select rendering and reader regressions without the global matrix", () => {
+  const selection = resolveSelectiveTestArgs(["apps/web/src/pdf.tsx"], []);
+  assert.ok(selection.args.includes("e2e/pdf-reader-efficiency.spec.ts"));
+  assert.ok(selection.args.includes("e2e/kidung-pdf-density.spec.ts"));
+  assert.ok(selection.args.includes("e2e/media-load.spec.ts"));
+  assert.ok(!selection.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
 });

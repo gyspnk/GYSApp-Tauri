@@ -1,11 +1,14 @@
 import { gzipSync } from "node:zlib";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { staticEntryFiles } from "./bundle-graph.mjs";
 
 const dist = join(process.cwd(), "apps", "web", "dist", "assets");
-const html = await readFile(
-  join(process.cwd(), "apps", "web", "dist", "index.html"),
-  "utf8",
+const manifest = JSON.parse(
+  await readFile(
+    join(process.cwd(), "apps", "web", "dist", ".vite", "manifest.json"),
+    "utf8",
+  ),
 );
 const files = await readdir(dist);
 const javascript = files.filter(
@@ -24,12 +27,8 @@ const rows = await Promise.all(
   }),
 );
 rows.sort((left, right) => right.gzip - left.gzip);
-const initialFiles = new Set(
-  [...html.matchAll(/(?:src|href)="[^"]*\/assets\/([^"]+\.(?:js|mjs))"/g)].map(
-    (match) => match[1],
-  ),
-);
-const initial = rows.filter(({ file }) => initialFiles.has(file));
+const initialFiles = staticEntryFiles(manifest);
+const initial = rows.filter(({ file }) => initialFiles.has(`assets/${file}`));
 if (!initial.length || initial.length !== initialFiles.size)
   throw new Error("Unable to resolve the initial JavaScript graph");
 const main = rows.find(({ file }) => file.startsWith("index-"));

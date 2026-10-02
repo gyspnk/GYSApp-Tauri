@@ -1,4 +1,5 @@
-const CACHE = "gysapp-shell-v22";
+const CACHE = "gysapp-shell-v24";
+const SHELL_STATE_CACHE = "gysapp-update-state-v1";
 const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
@@ -17,6 +18,7 @@ const CORE = [
   "offline/bible/tb-reader.json",
   "offline/bible/manifest.json",
   "offline/hymn-catalog.json",
+  "offline/hymn-metadata.json",
   "offline/distributed-assets.json",
   "offline/music-lock.json",
   "offline/faith.json",
@@ -119,6 +121,71 @@ async function cacheOptional() {
   );
 }
 
+async function hasBuildIntegrity(response, expected) {
+  if (!expected) return true;
+  const hash = await crypto.subtle.digest(
+    "SHA-256",
+    await response.clone().arrayBuffer(),
+  );
+  return (
+    `sha256-${btoa(String.fromCharCode(...new Uint8Array(hash)))}` === expected
+  );
+}
+
+async function cacheBuildAssets(cache) {
+  const response = await fetch(withBase("offline-shell-assets.json"), {
+    cache: "no-cache",
+  });
+  if (!response.ok) throw new Error("Build manifest unavailable");
+  const manifest = await response.json();
+  if (manifest.version !== 1 || !Array.isArray(manifest.assets))
+    throw new Error("Build manifest invalid");
+  const ownedBuild = CACHE.match(/v24-([a-f0-9]{16})$/)?.[1];
+  if (ownedBuild && manifest.buildId !== ownedBuild)
+    throw new Error("Build manifest changed during installation");
+  if (ownedBuild && !manifest.coreIntegrity)
+    throw new Error("Core integrity missing");
+  await Promise.all(
+    Object.entries(manifest.coreIntegrity ?? {}).map(
+      async ([path, expected]) => {
+        const url = withBase(path);
+        if (!CORE.includes(url)) throw new Error("Core integrity path invalid");
+        const stored = CONTENT_JSON.includes(
+          new URL(url, self.location.origin).pathname,
+        )
+          ? await (await caches.open(CONTENT_CACHE)).match(url)
+          : await cache.match(url);
+        if (!stored || !(await hasBuildIntegrity(stored, expected)))
+          throw new Error(`Core integrity mismatch: ${path}`);
+      },
+    ),
+  );
+  const assets = [...new Set(manifest.assets)].filter(
+    (path) =>
+      typeof path === "string" &&
+      /^assets\/[A-Za-z0-9_./-]+\.(?:js|mjs|css|wasm|woff2)$/.test(path) &&
+      !path.split("/").some((segment) => segment === ".." || segment === "."),
+  );
+  const results = await Promise.allSettled(
+    assets.map(async (path) => {
+      const url = withBase(path);
+      const expected = manifest.integrity?.[path];
+      if (manifest.buildId && !expected)
+        throw new Error(`Build integrity missing: ${path}`);
+      const cached = await cache.match(url);
+      if (cached && (await hasBuildIntegrity(cached, expected))) return;
+      if (cached) await cache.delete(url);
+      const asset = await fetch(url, { cache: "no-cache" });
+      if (!asset.ok) throw new Error(`Build asset unavailable: ${path}`);
+      if (!(await hasBuildIntegrity(asset, expected)))
+        throw new Error(`Build asset integrity mismatch: ${path}`);
+      await putCached(cache, url, asset.clone());
+    }),
+  );
+  if (results.some((result) => result.status === "rejected"))
+    throw new Error("Build asset preparation interrupted");
+}
+
 async function pruneRemoteMediaCache(cache) {
   const keys = await cache.keys();
   const stale = keys.slice(
@@ -131,10 +198,11 @@ async function pruneRemoteMediaCache(cache) {
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then(async (cache) => {
-      // A single missing optional/core URL must not invalidate the whole shell.
-      await Promise.allSettled(
+      // Do not publish an incomplete offline core over a working release.
+      await Promise.all(
         CORE.map(async (url) => {
           const response = await fetch(url, { cache: "no-cache" });
+          if (!response.ok) throw new Error(`Core asset unavailable: ${url}`);
           if (response.ok) {
             if (
               CONTENT_JSON.includes(new URL(url, self.location.origin).pathname)
@@ -161,9 +229,14 @@ self.addEventListener("install", (event) => {
           }),
         );
       }
+      // Installation completes after the hashed lazy code is prepared, so an
+      // unvisited core view can open offline. This never executes its modules
+      // or blocks the page's first render. Every asset must pass integrity
+      // verification before this build can activate.
+      await cacheBuildAssets(cache);
     }),
   );
-  self.skipWaiting();
+  // Existing clients activate updates explicitly after finishing their work.
 });
 self.addEventListener("activate", (event) => {
   event.waitUntil(
@@ -173,8 +246,33 @@ self.addEventListener("activate", (event) => {
         const oldShells = keys.filter(
           (key) => key.startsWith("gysapp-shell-") && key !== CACHE,
         );
+        // Failed installations can leave partial caches. Retain the previous
+        // activated build, never whichever partial cache happened to be newest.
+        const state = await caches.open(SHELL_STATE_CACHE);
+        const markerUrl = withBase("__active-shell__");
+        const marker = await state.match(markerUrl);
+        const saved = await marker?.json().catch(() => undefined);
+        const previous =
+          saved?.active === CACHE ? saved.previous : saved?.active;
+        const retained =
+          typeof previous === "string" && previous.startsWith("gysapp-shell-")
+            ? previous
+            : oldShells
+                .filter((key) => !key.startsWith("gysapp-shell-v24-"))
+                .at(-1);
         await preserveEditorialContent(oldShells);
-        await Promise.all(oldShells.map((key) => caches.delete(key)));
+        await putCached(
+          state,
+          markerUrl,
+          new Response(JSON.stringify({ active: CACHE, previous: retained }), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+        await Promise.all(
+          oldShells
+            .filter((key) => key !== retained)
+            .map((key) => caches.delete(key)),
+        );
       })
       .then(() =>
         caches
@@ -229,6 +327,14 @@ self.addEventListener("message", (event) => {
 async function fetchAndCacheShell(request, waitUntil) {
   const response = await fetch(request, { cache: "no-cache" });
   if (response.ok) {
+    // Do not overwrite the active offline shell with HTML from a deployment
+    // whose modules belong to a worker that has not finished installing.
+    const ownedBuild = CACHE.match(/v24-([a-f0-9]{16})$/)?.[1];
+    if (ownedBuild) {
+      const html = await response.clone().text();
+      if (!html.includes(`name="gys-build-id" content="${ownedBuild}"`))
+        return response;
+    }
     const copy = response.clone();
     const write = putNamedCached(CACHE, request, copy);
     waitUntil?.(write.catch(() => undefined));
@@ -275,10 +381,12 @@ self.addEventListener("fetch", (event) => {
     requestUrl.pathname.endsWith("/index.html");
   if (isNavigation) {
     event.respondWith(
-      fetchAndCacheShell(event.request, event.waitUntil).catch(
+      fetchAndCacheShell(event.request, (promise) =>
+        event.waitUntil(promise),
+      ).catch(
         async () =>
-          (await caches.match(withBase("index.html"))) ??
-          caches.match(withBase("")),
+          (await (await caches.open(CACHE)).match(withBase("index.html"))) ??
+          (await caches.open(CACHE)).match(withBase("")),
       ),
     );
     return;
@@ -310,21 +418,38 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const isBuildAsset =
+    requestUrl.pathname.startsWith(withBase("assets/")) &&
+    /\.(?:js|mjs|css|wasm|woff2)$/.test(requestUrl.pathname);
   event.respondWith(
-    caches.match(event.request).then(
-      (cached) =>
-        cached ??
-        fetch(event.request)
-          .then((response) => {
-            if (!response.ok || isPdfResponse(requestUrl, response))
+    // Vite preview varies on Origin: a worker's prefetch and a module import
+    // carry different request headers. Same-origin build bytes are immutable
+    // and shared by both requests; editorial/provider responses keep Vary.
+    caches
+      .open(CACHE)
+      .then(
+        async (cache) =>
+          (await cache.match(event.request, { ignoreVary: isBuildAsset })) ??
+          (isBuildAsset
+            ? await caches.match(event.request, { ignoreVary: true })
+            : undefined),
+      )
+      .then(
+        (cached) =>
+          cached ??
+          fetch(event.request)
+            .then((response) => {
+              if (!response.ok || isPdfResponse(requestUrl, response))
+                return response;
+              const copy = response.clone();
+              event.waitUntil(
+                putNamedCached(CACHE, event.request, copy).catch(
+                  () => undefined,
+                ),
+              );
               return response;
-            const copy = response.clone();
-            event.waitUntil(
-              putNamedCached(CACHE, event.request, copy).catch(() => undefined),
-            );
-            return response;
-          })
-          .catch(() => caches.match(withBase("index.html"))),
-    ),
+            })
+            .catch(() => caches.match(withBase("index.html"))),
+      ),
   );
 });
