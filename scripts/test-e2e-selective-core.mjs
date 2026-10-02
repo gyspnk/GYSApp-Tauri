@@ -87,7 +87,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     )
       return true;
     if (!file.startsWith("apps/web/src/")) return false;
-    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
       file,
     );
   });
@@ -106,6 +106,15 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts")) {
       specFiles.add(file.replace("apps/web/", ""));
       continue;
+    }
+
+    if (/apps\/web\/src\/(?:faith\.tsx|reading-zoom\.ts)$/.test(file)) {
+      specFiles.add("e2e/faith-zoom.spec.ts");
+      specFiles.add("e2e/reading-family-usability.spec.ts");
+      specFiles.add("e2e/reading-direct-flow.spec.ts");
+      specFiles.add("e2e/visual-reading.spec.ts");
+      specFiles.add("e2e/accessibility.spec.ts");
+      runSmokeAll = true;
     }
 
     if (
@@ -217,6 +226,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
 
     if (
+      file.includes("app-design.css") ||
       file.includes("App.tsx") ||
       file.includes("styles.css") ||
       file.includes("ui-hardening.css") ||
@@ -226,6 +236,11 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     ) {
       specFiles.add("e2e/smoke.spec.ts");
       specFiles.add("e2e/navigation-layout.spec.ts");
+      specFiles.add("e2e/sidebar-collapse.spec.ts");
+      specFiles.add("e2e/ux-refinement.spec.ts");
+      specFiles.add("e2e/visual.spec.ts");
+      specFiles.add("e2e/visual-reading.spec.ts");
+      specFiles.add("e2e/faith-zoom.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");

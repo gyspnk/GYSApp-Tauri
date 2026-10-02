@@ -13,6 +13,10 @@ const webDir = path.resolve(rootDir, "apps", "web");
 const userArgs = process.argv.slice(2);
 const changedFiles = collectChangedFiles({ rootDir });
 const plan = resolveSelectiveTestArgs(changedFiles, userArgs);
+// Each contract uses an isolated browser context. Distribute tests across the
+// existing bounded worker pool instead of serializing large spec files.
+if (!userArgs.some((arg) => arg.startsWith("--fully-parallel")))
+  plan.args.push("--fully-parallel");
 
 console.log(`\n🔍 [Selective E2E] ${plan.description}`);
 if (plan.changedFiles?.length) {

@@ -95,15 +95,10 @@ button.text-button {
   font-size: 11px;
 }
 
-.connection-status,
 .global-search-result small,
 .more-card > p,
 .account-sync-note {
   line-height: 1.5;
-}
-
-.connection-status {
-  font-size: 12.5px;
 }
 
 .global-search-result strong {

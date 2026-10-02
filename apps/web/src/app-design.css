@@ -16,7 +16,7 @@
     background: var(--shell-paper);
     color: var(--shell-ink);
     border-right: 1px solid var(--line);
-    padding: 20px 12px;
+    padding: 56px 12px 20px;
   }
   .navigation-shell .nav-item {
     color: var(--shell-ink);
@@ -41,10 +41,20 @@
     color: var(--ink);
   }
   .navigation-shell .sidebar-collapse-toggle {
-    right: -28px;
-    background: var(--shell-paper);
-    color: var(--shell-ink);
-    border-color: var(--line-strong);
+    top: 4px;
+    right: 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
+  }
+  .navigation-shell .sidebar-collapse-toggle:hover {
+    background: var(--blue-soft);
+    color: var(--blue);
+  }
+  .workspace.is-sidebar-collapsed .navigation-shell .sidebar-collapse-toggle {
+    right: calc(50% - 22px);
   }
   .navigation-shell .nav-item:hover {
     background: var(--blue-soft);
@@ -61,7 +71,7 @@
   box-shadow: 0 1px 0 var(--line);
 }
 .search-trigger {
-  background: var(--canvas);
+  background: var(--surface);
   border-radius: 14px;
 }
 .page:not(.hymn-page) > .page-intro,
@@ -338,13 +348,65 @@
 
 /* These paragraphs are deliberately complete; only the surrounding tools shrink. */
 .faith-page .faith-stack {
-  max-width: 960px;
+  max-width: none;
 }
 .faith-page .faith-search-bar {
   margin-bottom: 4px;
-  max-width: 480px;
+  max-width: none;
+  min-height: 54px;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--blue) 5%, transparent);
+}
+.faith-page .faith-search-bar:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 14%, transparent);
+}
+.faith-page .faith-search-bar > .faith-search-icon {
+  flex: 0 0 18px;
+  color: var(--blue);
+}
+.faith-page .faith-search-bar input {
+  min-height: 32px;
+  font-size: 14px;
+}
+@media (min-width: 960px) {
+  .faith-page .faith-search-bar input {
+    font-size: 16px;
+  }
+}
+.faith-page .faith-search-bar input:focus-visible {
+  outline: none;
+}
+.faith-page .faith-search-bar input::placeholder {
+  color: var(--muted);
+}
+.faith-search-clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.faith-search-clear:hover,
+.faith-search-clear:focus-visible {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.faith-page .faith-search-bar input::-webkit-search-cancel-button {
+  display: none;
 }
 .faith-page .faith-rows {
+  touch-action: pan-y;
   border-block: 0;
   display: grid;
   gap: 12px;
@@ -373,9 +435,13 @@
 }
 .faith-page .faith-statement {
   margin: 0;
-  max-width: 68ch;
+  text-align: justify;
+  max-width: none;
   font-family: var(--font-reading);
-  font-size: clamp(18px, 1.4vw, 20px);
+  font-size: calc(
+    var(--faith-font-size, clamp(18px, 1.4vw, 20px)) *
+      var(--reading-text-scale, 1)
+  );
   font-weight: 400;
   line-height: 1.7;
   white-space: normal;
@@ -383,25 +449,30 @@
   overflow-wrap: anywhere;
 }
 .faith-page .faith-row-actions {
-  justify-content: start;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 12px;
+  gap: 6px;
+  padding-top: 4px;
   padding-inline-start: 0;
 }
-.faith-page .faith-row-heading {
+.faith-page :is(.faith-row-heading, .faith-row-summary) {
   width: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 10px 12px;
+  gap: 4px;
+  min-height: 32px;
+  padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.faith-page .faith-row-heading {
   color: var(--blue);
 }
-.faith-page .faith-row-heading svg {
+.faith-page :is(.faith-row-heading, .faith-row-summary) svg {
+  width: 13px;
+  height: 13px;
   margin: 0;
 }
 .faith-row-heading.has-note {
@@ -531,6 +602,9 @@
     grid-template-columns: 28px minmax(0, 1fr);
     gap: 12px;
     padding: 16px;
+  }
+  .faith-page .faith-statement {
+    --faith-font-size: 0.875rem;
   }
   .faith-row > .faith-number {
     font-size: 20px;

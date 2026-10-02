@@ -2697,8 +2697,7 @@
     width: 32px;
     height: 32px;
   }
-  .brand small,
-  .connection-status {
+  .brand small {
     display: none;
   }
   .topbar-actions {

@@ -32,12 +32,13 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(controlBox).not.toBeNull();
   expect(controlBox!.width).toBeGreaterThanOrEqual(44);
   expect(controlBox!.height).toBeGreaterThanOrEqual(44);
-  expect(controlBox!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
-  expect(
-    Math.abs(
-      controlBox!.x + controlBox!.width - (expanded!.x + expanded!.width + 28),
-    ),
-  ).toBeLessThanOrEqual(1);
+  expect(controlBox!.y).toBeCloseTo(topbar!.y + topbar!.height + 4, 0);
+  expect(controlBox!.x).toBeGreaterThanOrEqual(expanded!.x);
+  expect(controlBox!.x + controlBox!.width).toBeLessThanOrEqual(
+    expanded!.x + expanded!.width,
+  );
+  const firstItem = await nav.locator(".nav-item").first().boundingBox();
+  expect(controlBox!.y + controlBox!.height).toBeLessThanOrEqual(firstItem!.y);
   const expandedItem = await nav.locator(".nav-item.is-active").boundingBox();
   expect(expandedItem).not.toBeNull();
   await collapse.evaluate((element) => (element as HTMLButtonElement).click());
@@ -108,14 +109,10 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   const collapsedControlBox = await expand.boundingBox();
   expect(collapsed).not.toBeNull();
   expect(collapsedControlBox).not.toBeNull();
+  expect(collapsedControlBox!.x).toBeGreaterThanOrEqual(collapsed!.x);
   expect(
-    Math.abs(
-      collapsedControlBox!.x +
-        collapsedControlBox!.width -
-        (collapsed!.x + collapsed!.width + 28),
-    ),
-  ).toBeLessThanOrEqual(1);
-
+    collapsedControlBox!.x + collapsedControlBox!.width,
+  ).toBeLessThanOrEqual(collapsed!.x + collapsed!.width);
   await page.reload();
   await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
   await expect(

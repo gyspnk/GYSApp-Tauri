@@ -53,3 +53,35 @@ test("extracted Kidung sections retain loading and playlist parity coverage", ()
       assert.ok(plan.args.includes(spec), `${file} should select ${spec}`);
   }
 });
+
+test("Faith text and gesture edits select reading contracts without unrelated media suites", () => {
+  for (const file of ["faith.tsx", "reading-zoom.ts"]) {
+    const plan = resolveSelectiveTestArgs([`apps/web/src/${file}`], []);
+    for (const spec of [
+      "faith-zoom",
+      "reading-family-usability",
+      "reading-direct-flow",
+      "visual-reading",
+      "accessibility",
+    ])
+      assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), `${file}: ${spec}`);
+    assert.ok(!plan.args.includes("e2e/media-load.spec.ts"));
+    assert.ok(!plan.description.startsWith("Full browser coverage"));
+  }
+});
+
+test("shared composition changes retain shell, visual, gesture and responsive coverage", () => {
+  const plan = resolveSelectiveTestArgs(["apps/web/src/app-design.css"], []);
+  for (const spec of [
+    "smoke",
+    "sidebar-collapse",
+    "ux-refinement",
+    "visual",
+    "visual-reading",
+    "faith-zoom",
+    "accessibility",
+    "roadmap-ui-matrix",
+  ])
+    assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), spec);
+  assert.ok(!plan.description.startsWith("Full browser coverage"));
+});
