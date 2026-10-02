@@ -1,3 +1,5 @@
+import { installControlMotion } from "./control-motion.js";
+import { installImmersiveInteractions } from "./immersive-interactions.js";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
@@ -21,6 +23,8 @@ import "./app-design.css";
 
 runStorageMigrations();
 initializeUiPreferences();
+installImmersiveInteractions();
+installControlMotion();
 installGlobalDiagnostics();
 
 if (typeof window !== "undefined") {

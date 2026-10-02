@@ -45,7 +45,6 @@ export function HymnCatalog({
   const pdfMode = searchParams.get("mode") !== "lyrics";
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
-  const mobileFilterRef = useRef<HTMLDetailsElement>(null);
   const deferredQuery = useDeferredValue(query);
   const allItems = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
@@ -139,105 +138,106 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      <div className="hymn-index-heading">
-        <h1>{translate(locale, "page.kidungTitle")}</h1>
-        <div
-          className="hymn-mode-toggle"
-          role="group"
-          aria-label={translate(locale, "kidung.viewMode")}
-        >
-          {(["pdf", "lyrics"] as const).map((mode) => (
+      <div className="kidung-index-toolbar">
+        <div className="kidung-controls-field">
+          <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
+          {state.status === "ready" && (
+            <div className="kidung-header-filter">
+              <Select
+                value={book}
+                onChange={setBook}
+                className="kidung-collection-select"
+                animated
+                label={translate(locale, "kidung.collection")}
+                options={[
+                  {
+                    value: "all",
+                    label: translate(locale, "kidung.allCollections"),
+                  },
+                  ...books.map((value) => ({
+                    value,
+                    label: hymnCollectionLabel(value),
+                  })),
+                ]}
+              />
+            </div>
+          )}
+          <KidungLocalNav active="songs" locale={locale} />
+          <div
+            role="group"
+            aria-label={translate(locale, "kidung.viewMode")}
+            className="kidung-mode-control"
+          >
             <button
-              key={mode}
               type="button"
-              className={`hymn-mode-button${pdfMode === (mode === "pdf") ? " is-active" : ""}`}
-              aria-pressed={pdfMode === (mode === "pdf")}
+              className="kidung-mode-cycle"
+              aria-label={translate(
+                locale,
+                pdfMode ? "kidung.score" : "kidung.text",
+              )}
+              aria-pressed={pdfMode}
+              title={translate(
+                locale,
+                pdfMode ? "kidung.score" : "kidung.text",
+              )}
               onClick={() =>
                 setSearchParams(
                   (current) => {
                     const next = new URLSearchParams(current);
-                    next.set("mode", mode);
+                    next.set("mode", pdfMode ? "lyrics" : "pdf");
                     return next;
                   },
                   { replace: true },
                 )
               }
             >
-              <Icon name={mode === "pdf" ? "file" : "book"} size={16} />
-              <span>
-                {mode === "pdf" ? "PDF" : translate(locale, "kidung.text")}
+              <span
+                key={pdfMode ? "pdf" : "lyrics"}
+                className="kidung-mode-glyph"
+                aria-hidden="true"
+              >
+                {pdfMode ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z M14 3v5h5 M8 8h3 M8 11h3 M14 17v-5l3-1" />
+                    <ellipse cx="12.5" cy="17.5" rx="1.5" ry="1" />
+                  </svg>
+                ) : (
+                  <span className="hymn-mode-aa">Aa</span>
+                )}
               </span>
             </button>
-          ))}
+          </div>
         </div>
-      </div>
-      <div className="kidung-catalog-topbar">
-        <KidungLocalNav active="songs" locale={locale} />
-        <header className="hymn-page-header">
-          {state.status === "ready" && (
-            <div className="catalog-toolbar hymn-catalog-controls">
-              <label className="search-field">
-                <span>{translate(locale, "kidung.search")}</span>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder={translate(locale, "kidung.searchPlaceholder")}
-                />
-              </label>
-              <div className="kidung-desktop-filter">
-                <Select
-                  value={book}
-                  onChange={setBook}
-                  label={translate(locale, "kidung.collection")}
-                  options={[
-                    {
-                      value: "all",
-                      label: translate(locale, "kidung.allCollections"),
-                    },
-                    ...books.map((value) => ({
-                      value,
-                      label: hymnCollectionLabel(value),
-                    })),
-                  ]}
-                />
-              </div>
-              <details className="kidung-mobile-filter" ref={mobileFilterRef}>
-                <summary
-                  className="kidung-filter-summary"
-                  aria-label={translate(locale, "kidung.collection")}
-                >
-                  <span>{translate(locale, "kidung.collection")}</span>
-                  <strong>
-                    {book === "all"
-                      ? translate(locale, "kidung.allCollections")
-                      : book}
-                  </strong>
-                </summary>
-                <div className="kidung-mobile-filter-panel">
-                  <Select
-                    value={book}
-                    onChange={(value) => {
-                      setBook(value);
-                      mobileFilterRef.current?.removeAttribute("open");
-                    }}
-                    label={translate(locale, "kidung.collection")}
-                    options={[
-                      {
-                        value: "all",
-                        label: translate(locale, "kidung.allCollections"),
-                      },
-                      ...books.map((value) => ({
-                        value,
-                        label: hymnCollectionLabel(value),
-                      })),
-                    ]}
+        <div className="kidung-catalog-topbar">
+          <header className="hymn-page-header">
+            {state.status === "ready" && (
+              <div className="catalog-toolbar hymn-catalog-controls">
+                <label className="search-field hymn-search-field">
+                  <span className="sr-only">
+                    {translate(locale, "kidung.search")}
+                  </span>
+                  <Icon name="search" size={18} />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder={translate(locale, "kidung.searchPlaceholder")}
                   />
-                </div>
-              </details>
-            </div>
-          )}
-        </header>
+                </label>
+              </div>
+            )}
+          </header>
+        </div>
       </div>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
@@ -269,16 +269,6 @@ export function HymnCatalog({
           <ol className="pujian-list" ref={listRef}>
             {filtered.map((item) => {
               const inQueue = queueIds.has(item.id);
-              const metadata = item.assetCode
-                ? []
-                : [
-                    ...(item.chordRef
-                      ? [translate(locale, "kidung.assetChord")]
-                      : []),
-                    ...(midiSongs.has(item.id)
-                      ? [translate(locale, "kidung.assetMidi")]
-                      : []),
-                  ];
               return (
                 <li
                   key={item.id}
@@ -297,11 +287,6 @@ export function HymnCatalog({
                     onClick={(event) => onRowClick(event, item.id)}
                   >
                     <span className="pujian-title-label">{item.title}</span>
-                    {metadata.length > 0 && (
-                      <span className="pujian-metadata">
-                        {metadata.join(" · ")}
-                      </span>
-                    )}
                   </button>
                   {!item.assetCode && (
                     <button

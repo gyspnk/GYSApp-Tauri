@@ -19,7 +19,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
     await expect(
-      modes.getByRole("button", { name: "PDF", exact: true }),
+      modes.getByRole("button", { name: "Partitur", exact: true }),
     ).toHaveAttribute("aria-pressed", "true");
     const row = page.locator(".pujian-title").first();
     await row.click();
@@ -35,7 +35,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page).toHaveURL(/\/kidung$/);
     await expect(row).toBeVisible();
     await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
-    await modes.getByRole("button", { name: "Teks", exact: true }).click();
+    await modes.getByRole("button", { name: "Partitur", exact: true }).click();
     await row.click();
     await expect(page).toHaveURL(/mode=lyrics/);
     await expect(page.locator(".lyrics-sheet")).toBeVisible();

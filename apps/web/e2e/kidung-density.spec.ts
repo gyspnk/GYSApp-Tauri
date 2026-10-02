@@ -27,9 +27,8 @@ test("phone catalog moves collection filtering behind one compact trigger", asyn
   await openCatalog(page);
 
   await expect(
-    page.locator(".kidung-desktop-filter .control-select"),
-  ).toBeHidden();
-  await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
+    page.locator(".kidung-header-filter .control-select-trigger"),
+  ).toBeVisible();
 });
 
 test("catalog collection choices use readable names for installed books", async ({
@@ -38,16 +37,16 @@ test("catalog collection choices use readable names for installed books", async 
   await page.setViewportSize({ width: 1024, height: 768 });
   await openCatalog(page);
 
-  const filter = page.locator(".kidung-desktop-filter .control-select");
+  const filter = page.locator(".kidung-header-filter .control-select");
   const trigger = filter.locator(".control-select-trigger");
   await trigger.click();
   await expect(filter.locator(".control-select-option")).toHaveText([
-    "Semua koleksi",
-    "Rohani",
+    "Semua",
+    "KR",
   ]);
 });
 
-test("catalog lists only verified chord and MIDI metadata below each title", async ({
+test("catalog keeps song titles compact without chord or MIDI subtitles", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -58,9 +57,7 @@ test("catalog lists only verified chord and MIDI metadata below each title", asy
   await expect(firstTitle.locator(".pujian-title-label")).toHaveText(
     "Pujilah Allah Yang Maha Esa",
   );
-  await expect(firstTitle.locator(".pujian-metadata")).toHaveText(
-    "Chord · MIDI",
-  );
+  await expect(page.locator(".pujian-metadata")).toHaveCount(0);
   await expect(
     page.getByRole("button", {
       name: "Pujilah Allah Yang Maha Esa",
@@ -80,7 +77,7 @@ test("catalog lists only verified chord and MIDI metadata below each title", asy
   await page.getByRole("searchbox", { name: "Cari lagu" }).fill("416");
   await expect(
     page.locator('.pujian-item[data-id="hymn-416"] .pujian-metadata'),
-  ).toContainText("MIDI");
+  ).toHaveCount(0);
 });
 
 test("catalog preserves and searches lettered hymn variants", async ({

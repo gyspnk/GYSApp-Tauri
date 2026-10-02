@@ -85,7 +85,7 @@ export function ChapterPane({
       data-book={book.id}
       data-chapter={chapter}
     >
-      <div className="reader-heading">
+      <div className="reader-heading sr-only">
         <p className="date-line">{translation}</p>
         <h2>
           {book.name} {chapter}

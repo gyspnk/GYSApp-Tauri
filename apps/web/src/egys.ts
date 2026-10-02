@@ -172,6 +172,19 @@ export async function signInEgysWithGoogle(credential: string): Promise<void> {
 }
 
 export const EGYS_PROFILE_KEY = "gys-egys-profile-v1";
+const PROFILE_CHANGED = "gys-egys-profile-changed";
+
+export function subscribeEgysProfile(listener: () => void): () => void {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === EGYS_PROFILE_KEY || event.key === null) listener();
+  };
+  window.addEventListener(PROFILE_CHANGED, listener);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener(PROFILE_CHANGED, listener);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
 export function readCachedEgysProfile(): AccountProfile | undefined {
   try {
@@ -192,6 +205,7 @@ export function saveEgysProfile(profile: AccountProfile): void {
   } catch {
     // ignore
   }
+  window.dispatchEvent(new Event(PROFILE_CHANGED));
 }
 
 export function clearEgysProfile(): void {
@@ -200,6 +214,7 @@ export function clearEgysProfile(): void {
   } catch {
     // ignore
   }
+  window.dispatchEvent(new Event(PROFILE_CHANGED));
 }
 
 export async function signOutEgys(): Promise<void> {

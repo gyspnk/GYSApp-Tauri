@@ -23,6 +23,7 @@ type SelectProps<T extends string | number> = {
   label?: string | undefined;
   className?: string | undefined;
   disabled?: boolean | undefined;
+  animated?: boolean;
 };
 
 /** A small accessible listbox used in place of browser-native selects. */
@@ -33,6 +34,7 @@ export function Select<T extends string | number>({
   label,
   className = "",
   disabled = false,
+  animated = true,
 }: SelectProps<T>) {
   const id = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -83,6 +85,28 @@ export function Select<T extends string | number>({
       window.removeEventListener("scroll", updateDirection, true);
     };
   }, [open, options.length]);
+
+  useLayoutEffect(() => {
+    const menu = menuRef.current;
+    if (
+      !open ||
+      !animated ||
+      !menu ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const animation = menu.animate(
+      [
+        {
+          opacity: 0,
+          transform: `translateY(${opensUp ? 6 : -6}px) scale(.97)`,
+        },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      { duration: 200, easing: "cubic-bezier(.22, 1, .36, 1)" },
+    );
+    return () => animation.cancel();
+  }, [open, opensUp, animated]);
 
   const choose = (next: SelectOption<T>) => {
     onChange(next.value);
@@ -168,7 +192,7 @@ export function Select<T extends string | number>({
       {open && (
         <div
           ref={menuRef}
-          className={`control-select-menu${opensUp ? " is-open-up" : ""}`}
+          className={`control-select-menu${opensUp ? " is-open-up" : ""}${animated ? " is-animated" : ""}`}
           id={id}
           role="listbox"
           aria-label={label}

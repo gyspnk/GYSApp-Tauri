@@ -28,6 +28,7 @@ export function numberLabel(number: number, id?: string) {
 }
 
 export function hymnCollectionLabel(book: string) {
+  if (book === "rohani") return "KR";
   return book
     .split("-")
     .map((word) => word.charAt(0).toLocaleUpperCase("id-ID") + word.slice(1))

@@ -613,7 +613,9 @@ test.describe("responsive reader navigation", () => {
         search.evaluate((element) => element.getBoundingClientRect().width),
       )
       .toBeGreaterThan(200);
-    await expect(page.locator('summary[aria-label="Koleksi"]')).toBeVisible();
+    await expect(
+      page.locator(".kidung-header-filter .control-select-trigger"),
+    ).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
     await search.click();
@@ -646,7 +648,7 @@ test.describe("responsive reader navigation", () => {
       const rows = page.locator(".more-setting-section");
       await expect(rows).toHaveCount(7);
       await expect(rows.locator(":scope > summary")).toHaveText([
-        "Akun",
+        "Akun e-GYS",
         "Tampilan",
         "Audio & Suara",
         "Kidung",
@@ -1100,11 +1102,9 @@ test.describe("responsive reader navigation", () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
-      {
-        timeout: 15_000,
-      },
-    );
+    await expect(page.locator(".reader-context-book-picker")).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.locator(".reader-context-bar")).toBeVisible();
     await expect(page.locator(".brand-mark")).toHaveCount(0);
 
@@ -1143,11 +1143,9 @@ test.describe("responsive reader navigation", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
-      {
-        timeout: 15_000,
-      },
-    );
+    await expect(page.locator(".reader-context-book-picker")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const searchButton = page.getByRole("button", {
       name: "Buka pencarian ayat di Alkitab",
@@ -1228,9 +1226,7 @@ test.describe("responsive reader navigation", () => {
 
     for (const locale of ["id", "en", "zh"] as const) {
       await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${locale}`);
-      await expect(
-        page.getByRole("heading", { name: /Kejadian 1/ }),
-      ).toBeVisible({
+      await expect(page.locator(".reader-context-book-picker")).toBeVisible({
         timeout: 15_000,
       });
 
@@ -1343,9 +1339,7 @@ test.describe("responsive reader navigation", () => {
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
         await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${selected.locale}`);
-        await expect(
-          page.getByRole("heading", { name: /Kejadian 1/ }),
-        ).toBeVisible({
+        await expect(page.locator(".reader-context-book-picker")).toBeVisible({
           timeout: 15_000,
         });
         await page.locator(".reader-hamburger-btn").click();
@@ -1390,11 +1384,9 @@ test.describe("responsive reader navigation", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
-      {
-        timeout: 15_000,
-      },
-    );
+    await expect(page.locator(".reader-context-book-picker")).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Tap title picker to open navigation modal
     await page
@@ -1435,9 +1427,7 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }),
     ).toBeFocused();
-    await expect(
-      page.getByRole("heading", { name: /Kejadian 1/ }),
-    ).toBeVisible();
+    await expect(page.locator(".reader-context-book-picker")).toBeVisible();
   });
 
   test("Bible picker traps keyboard focus and restores its trigger", async ({
@@ -1471,9 +1461,7 @@ test.describe("responsive reader navigation", () => {
         );
       }, selected.locale);
       await page.goto("/GYSApp-Tauri/bible");
-      await expect(
-        page.getByRole("heading", { name: /Kejadian 1/ }),
-      ).toBeVisible({
+      await expect(page.locator(".reader-context-book-picker")).toBeVisible({
         timeout: 15_000,
       });
 
@@ -1572,9 +1560,7 @@ test.describe("responsive reader navigation", () => {
           );
         }, selected.locale);
         await page.goto("/GYSApp-Tauri/bible");
-        await expect(
-          page.getByRole("heading", { name: /Kejadian 1/ }),
-        ).toBeVisible({
+        await expect(page.locator(".reader-context-book-picker")).toBeVisible({
           timeout: 15_000,
         });
 

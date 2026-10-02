@@ -910,3 +910,360 @@
   aspect-ratio: auto;
   overflow: hidden;
 }
+
+/* Header controls share the soft blue field styling used throughout the app. */
+.topbar .topbar-actions {
+  gap: 8px;
+}
+.topbar
+  :is(
+    .search-trigger,
+    .topbar-select .control-select-trigger,
+    .account-button,
+    .reader-context-button,
+    .reader-context-book-picker
+  ) {
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: 14px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: none;
+}
+.topbar .search-trigger {
+  padding-inline: 14px;
+}
+.topbar .search-trigger span {
+  font-weight: 600;
+}
+.topbar .search-trigger kbd {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  opacity: 0.65;
+}
+.topbar .topbar-select .control-select-trigger {
+  padding-inline: 12px;
+}
+.topbar .language-select .control-select-value {
+  font-size: 12px;
+  font-weight: 650;
+}
+.topbar .control-select-chevron {
+  color: inherit;
+}
+.topbar .account-button {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
+.topbar
+  :is(
+    .account-button,
+    .search-trigger,
+    .control-select-trigger,
+    .reader-context-button,
+    .reader-context-book-picker
+  )
+  svg {
+  margin: 0;
+  color: inherit;
+}
+.topbar
+  :is(
+    .search-trigger,
+    .topbar-select .control-select-trigger,
+    .account-button,
+    .reader-context-button,
+    .reader-context-book-picker
+  ):hover {
+  background: color-mix(in srgb, var(--blue) 13%, var(--surface));
+  border-color: color-mix(in srgb, var(--blue) 40%, var(--line));
+  transform: none;
+  box-shadow: none;
+}
+.topbar
+  :is(
+    .search-trigger,
+    .control-select-trigger,
+    .account-button,
+    .reader-context-button,
+    .reader-context-book-picker
+  ):focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.topbar .control-select-menu {
+  border-radius: 16px;
+  padding: 6px;
+}
+.topbar .language-select .control-select-menu {
+  animation: none;
+}
+.topbar .control-select-option {
+  border-radius: 10px;
+}
+.topbar .control-select-option.is-selected {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+@media (max-width: 600px) {
+  .topbar .topbar-actions {
+    gap: 6px;
+  }
+  .topbar .search-trigger {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .topbar .topbar-select .control-select-trigger {
+    padding-inline: 10px;
+  }
+}
+.topbar .account-avatar {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Consistent navigation icon weight, blue selection and quiet surfaces. */
+.navigation-shell .nav-item {
+  border-radius: 14px;
+  color: var(--muted);
+  box-shadow: none;
+}
+.navigation-shell .nav-item > svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin: 0;
+  stroke-width: 1.7;
+  color: inherit;
+}
+.navigation-shell .nav-copy strong {
+  font-weight: 550;
+}
+.navigation-shell .nav-item.is-active,
+.navigation-shell .nav-item.is-active :is(strong, svg) {
+  color: var(--blue);
+}
+.navigation-shell .nav-item:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+@media (min-width: 960px) {
+  .navigation-shell .primary-nav {
+    gap: 8px;
+  }
+  .navigation-shell .nav-item {
+    min-height: 48px;
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .navigation-shell .nav-item.is-active {
+    border-color: color-mix(in srgb, var(--blue) 18%, transparent);
+    background: var(--blue-soft);
+  }
+}
+@media (max-width: 959px) {
+  .navigation-shell {
+    border-top: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+    border-radius: 18px 18px 0 0;
+    background: var(--surface);
+    box-shadow: 0 -3px 14px color-mix(in srgb, var(--blue) 5%, transparent);
+  }
+  .navigation-shell .primary-nav {
+    gap: 4px;
+  }
+  .navigation-shell .nav-item {
+    gap: 5px;
+    border-radius: 12px;
+    padding: 8px 2px;
+    background: transparent;
+  }
+  .navigation-shell .nav-copy strong {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  .navigation-shell .nav-active-indicator {
+    border-radius: 12px;
+    background: var(--blue-soft);
+    box-shadow: none;
+  }
+  .navigation-shell .nav-item.is-active .nav-copy strong {
+    font-weight: 650;
+  }
+}
+/* Keep verse separation compact while preserving the reader's text spacing. */
+.bible-reader .verse-row {
+  padding-block: 7px;
+}
+.bible-pane > .reader-heading.sr-only {
+  padding: 0;
+  margin: -1px;
+}
+.topbar .reader-context-bar {
+  gap: 12px;
+}
+.topbar .reader-context-left,
+.topbar .reader-context-actions {
+  gap: 8px;
+}
+.topbar .reader-context-book-picker {
+  padding-inline: 12px;
+  font-weight: 600;
+}
+.topbar .reader-context-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.topbar .reader-context-button:is(.is-active, .is-speaking) {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+.topbar .reader-context-book-picker .picker-chevron {
+  color: inherit;
+}
+@media (max-width: 600px) {
+  .topbar .reader-context-bar,
+  .topbar .reader-context-left,
+  .topbar .reader-context-actions {
+    gap: 6px;
+  }
+  .topbar .reader-context-book-picker {
+    padding-inline: 10px;
+  }
+}
+.app-frame.is-reader-route .bible-reader {
+  width: 100%;
+  max-inline-size: none;
+  margin-inline: 0;
+}
+.bible-reader .verse-content {
+  text-align: justify;
+  text-justify: inter-word;
+}
+.bible-reader .verse-content .verse-text {
+  text-align: inherit;
+}
+@media (max-width: 959px) {
+  .app-frame.is-reader-route .bible-reader {
+    width: calc(100% + 24px);
+    margin-inline: -12px;
+  }
+  .bible-reader .verse-list {
+    padding-inline: 12px;
+  }
+  .bible-reader .verse-row {
+    padding-inline: 8px;
+    gap: 10px;
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+}
+@media (min-width: 960px) {
+  .app-frame.is-reader-route .main-content {
+    padding: 12px;
+  }
+  .app-frame.is-reader-route .bible-reader .verse-list {
+    padding: 0 12px 20px;
+  }
+  .app-frame.is-reader-route .bible-reader .verse-row {
+    padding-inline: 8px;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+/* Native app interaction: text fields retain their editing behavior. */
+#root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+#root :is(input, textarea, [contenteditable="true"]) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.bible-reader .verse-content {
+  font-size: calc(var(--bible-font-size, 18px) * var(--reading-text-scale, 1));
+}
+.app-frame.is-reader-route .bible-reader {
+  min-height: calc(100dvh - 58px);
+}
+@media (min-width: 960px) {
+  .app-frame.is-reader-route .main-content {
+    padding: 0;
+  }
+  .app-frame.is-reader-route .bible-reader {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+/* Verse numbers occupy the left gutter; the text uses all remaining width. */
+.app-frame.is-reader-route .bible-reader .verse-row {
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+}
+.bible-reader .verse-number {
+  width: 24px;
+  min-width: 24px;
+  height: calc(
+    var(--bible-font-size, 18px) * var(--reading-text-scale, 1) *
+      var(--bible-line-height, 1.72)
+  );
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.control-select-menu.is-animated {
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+    .reader-hamburger-drawer,
+    .reader-typography-popover,
+    .media-key-dropdown,
+    .media-tempo-popover,
+    .lyrics-key-dropdown,
+    .pdf-key-dropdown
+  ) {
+    animation: shared-popover-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+@keyframes shared-popover-in {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control-select-menu {
+    animation: none;
+  }
+}
+.topbar
+  :is(.search-trigger, .control-select-trigger, .reader-context-book-picker),
+.navigation-shell .nav-item.is-active :is(strong, svg) {
+  color: var(--navy);
+}
+.topbar .reader-context-button:is(.is-active, .is-speaking) {
+  color: white;
+}
+.topbar .topbar-select .control-select-trigger {
+  color: var(--navy);
+}

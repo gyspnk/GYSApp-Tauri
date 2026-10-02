@@ -1,3 +1,4 @@
+import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
 import {
   type BibleNotes,
@@ -238,6 +239,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSyncScroll,
     toggleSyncScroll,
   } = useBibleSplitController();
+  const pageZoomRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (pageZoomRef.current) return installReadingZoom(pageZoomRef.current);
+  }, []);
   const primaryScrollRef = useRef<HTMLDivElement | null>(null);
   const secondaryScrollRef = useRef<HTMLDivElement | null>(null);
   const isSyncingRef = useRef(false);
@@ -1484,7 +1489,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="page bible-page">
+    <div className="page bible-page" ref={pageZoomRef}>
       <BibleSearchPanel
         locale={locale}
         searchOpen={searchOpen}

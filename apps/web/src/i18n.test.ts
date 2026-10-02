@@ -147,6 +147,7 @@ const DYNAMIC_KEYS = [
   "kidung.removeSongFromPlaylist",
   "kidung.queueSongExists",
   "kidung.queueSongAdd",
+  "kidung.score",
 ];
 
 // Raw source scan without node types: Vite resolves the module list at build

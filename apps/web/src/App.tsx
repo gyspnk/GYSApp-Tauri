@@ -46,6 +46,7 @@ import {
   type ShellTheme,
 } from "./settings.js";
 import { Icon } from "./icons.js";
+import { AccountAvatar } from "./account-avatar.js";
 import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -398,7 +399,8 @@ function Header({
         <Select
           value={locale}
           onChange={setLocale}
-          className="topbar-select"
+          className="topbar-select language-select"
+          animated
           label={translate(locale, "shell.language")}
           options={[
             { value: "id", label: "ID" },
@@ -449,7 +451,7 @@ function Header({
           to="/lainnya"
           aria-label={translate(locale, "shell.account")}
         >
-          <Icon name="person" size={18} />
+          <AccountAvatar />
         </Link>
       </div>
     </header>

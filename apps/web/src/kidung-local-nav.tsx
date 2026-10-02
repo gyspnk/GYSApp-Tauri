@@ -1,3 +1,4 @@
+import { useAnimatedIndicator } from "./animated-indicator.js";
 import { useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
@@ -13,6 +14,7 @@ export function KidungLocalNav({
   active: KidungSection;
   locale: Locale;
 }) {
+  const motion = useAnimatedIndicator(active, 'a[aria-current="page"]');
   const playlist = useSyncExternalStore(
     subscribeMidiPlaylist,
     getMidiPlaylist,
@@ -48,10 +50,17 @@ export function KidungLocalNav({
       className="kidung-local-nav"
       aria-label={translate(locale, "kidung.navigation")}
     >
-      <div className="kidung-local-nav-links">
+      <div className="kidung-local-nav-links" ref={motion.containerRef}>
+        <span
+          className="kidung-nav-indicator"
+          ref={motion.indicatorRef}
+          aria-hidden="true"
+        />
         {links.map((link) => (
           <Link
             className={active === link.id ? "is-active" : undefined}
+            aria-label={link.label}
+            title={link.label}
             key={link.id}
             to={link.to}
             aria-current={active === link.id ? "page" : undefined}

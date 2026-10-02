@@ -180,15 +180,6 @@
   min-width: 0;
 }
 
-.hymn-page .pujian-metadata {
-  color: var(--muted);
-  font-family: var(--font-sans, Arial, sans-serif);
-  font-size: 11px;
-  font-weight: 550;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-}
-
 .hymn-page .pujian-title:hover,
 .hymn-page .pujian-title:focus-visible {
   background: transparent;
@@ -1074,4 +1065,424 @@
     animation: none;
     transform: none;
   }
+}
+
+.hymn-page .kidung-collection-select > .control-select-label {
+  display: none;
+}
+
+/* Header categories and compact actions share consistent alignment. */
+.hymn-page .kidung-header-filter {
+  width: clamp(100px, 18vw, 180px);
+  min-width: 0;
+}
+.hymn-page .kidung-header-filter .control-select-trigger {
+  min-height: 44px;
+}
+.hymn-page-header .hymn-catalog-controls {
+  grid-template-columns: minmax(0, 1fr);
+}
+.kidung-catalog-topbar {
+  align-items: end;
+}
+@media (min-width: 1200px) {
+  .kidung-catalog-topbar > .hymn-page-header {
+    padding-bottom: 0;
+  }
+}
+.kidung-local-nav a > svg {
+  margin: 0;
+  flex: 0 0 auto;
+}
+.hymn-page .pujian-list > .pujian-item {
+  grid-template-columns: minmax(0, 1fr) 52px;
+}
+.hymn-page .add-to-playlist-btn {
+  justify-self: end;
+  margin-right: 8px;
+}
+
+@media (min-width: 1024px) {
+  .kidung-index-toolbar {
+    display: grid;
+    grid-template-columns:
+      clamp(88px, 8vw, 120px) max-content minmax(96px, 1fr)
+      max-content;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hymn-page .hymn-index-heading,
+  .hymn-page .kidung-catalog-topbar {
+    display: contents;
+  }
+  .hymn-page .kidung-header-filter {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+  }
+  .kidung-index-toolbar .kidung-local-nav {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+  }
+  .kidung-index-toolbar .kidung-local-nav a {
+    padding-inline: 6px;
+    font-size: 12px;
+  }
+  .kidung-index-toolbar .hymn-page-header {
+    grid-column: 3;
+    grid-row: 1;
+    padding: 0;
+    border: 0;
+  }
+  .kidung-index-toolbar .hymn-mode-toggle {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .kidung-index-toolbar .search-field > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+.hymn-mode-aa {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.kidung-index-toolbar {
+  margin-bottom: 16px;
+}
+.hymn-page .hymn-search-field {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.hymn-page .hymn-search-field > svg {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  margin: 0;
+  color: var(--blue);
+  pointer-events: none;
+}
+.hymn-page .hymn-search-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px 10px 44px;
+  border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--blue) 3%, var(--surface));
+  box-shadow: none;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.hymn-page .hymn-search-field input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+.hymn-page .hymn-search-field input:hover {
+  border-color: color-mix(in srgb, var(--blue) 40%, var(--line));
+}
+.hymn-page .hymn-search-field input:focus {
+  border-color: var(--blue);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent);
+}
+
+/* A compact category pill, with an airy list rather than nested boxes. */
+.hymn-page .kidung-collection-select .control-select-trigger {
+  border-radius: 24px;
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 18%, var(--line));
+  color: var(--blue);
+  font-weight: 650;
+  box-shadow: none;
+  padding-inline: 14px;
+}
+.kidung-collection-select .control-select-chevron {
+  color: inherit;
+}
+.kidung-collection-select .control-select-trigger:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 16%, transparent);
+  outline-offset: 2px;
+}
+.kidung-collection-select .control-select-menu {
+  min-width: 160px;
+  padding: 6px;
+  border-radius: 16px;
+  animation: none;
+}
+.kidung-collection-select .control-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.kidung-collection-select .control-select-option.is-selected {
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-weight: 650;
+}
+.kidung-collection-select .control-select-option.is-selected::after {
+  content: "✓";
+}
+.kidung-local-nav-links {
+  position: relative;
+  isolation: isolate;
+}
+.kidung-nav-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--blue) 12%, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+.kidung-local-nav .kidung-local-nav-links a.is-active {
+  background: transparent;
+  box-shadow: none;
+  color: var(--blue);
+}
+
+/* One calm list surface, matching the rounded blue toolbar controls. */
+.hymn-page .pujian-list {
+  gap: 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.hymn-page .pujian-list > .pujian-item {
+  min-height: 60px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+}
+.hymn-page .pujian-list > .pujian-item + .pujian-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 12px auto 60px;
+  height: 1px;
+  background: color-mix(in srgb, var(--line) 65%, transparent);
+  pointer-events: none;
+}
+.hymn-page .pujian-list > .pujian-item:hover,
+.hymn-page .pujian-list > .pujian-item:focus-within {
+  background: var(--blue-soft);
+}
+.hymn-page .pujian-list .pujian-title {
+  min-height: 60px;
+  padding: 10px 12px 10px 60px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--ink);
+  box-shadow: none;
+}
+.hymn-page .pujian-list .pujian-title:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+.hymn-page .pujian-list .pujian-nomor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  margin-left: 8px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+.hymn-page .pujian-list .add-to-playlist-btn {
+  margin-right: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+.hymn-page .pujian-list .add-to-playlist-btn:hover,
+.hymn-page .pujian-list .add-to-playlist-btn:focus-visible,
+.hymn-page .pujian-list .add-to-playlist-btn.in-playlist {
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, var(--surface));
+}
+@media (max-width: 600px) {
+  .hymn-page .pujian-list {
+    padding: 3px;
+    border-radius: 16px;
+  }
+  .hymn-page .pujian-list > .pujian-item,
+  .hymn-page .pujian-list .pujian-title {
+    min-height: 56px;
+  }
+  .hymn-page .pujian-list .pujian-title {
+    font-size: 13px;
+  }
+}
+
+/* Shared controls field: collection, section and one cycling mode button. */
+.hymn-page .kidung-index-toolbar {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+.kidung-controls-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: 16px;
+  background: var(--blue-soft);
+}
+.hymn-page .kidung-controls-field .kidung-header-filter {
+  width: auto;
+}
+.hymn-page .kidung-controls-field .control-select-trigger {
+  width: auto;
+  min-width: 84px;
+  padding-inline: 10px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+}
+.kidung-controls-field .kidung-local-nav {
+  margin: 0;
+}
+.kidung-controls-field .kidung-local-nav-links {
+  display: flex;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.kidung-controls-field .kidung-local-nav a {
+  padding-inline: 10px;
+}
+.kidung-mode-control {
+  flex: 0 0 auto;
+  border-left: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
+  padding-left: 4px;
+}
+.kidung-mode-cycle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: var(--blue);
+  color: white;
+  cursor: pointer;
+}
+.kidung-mode-cycle:hover {
+  background: var(--navy);
+}
+.kidung-mode-cycle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.kidung-mode-glyph {
+  display: flex;
+  animation: kidung-mode-change 220ms var(--ease-out);
+}
+.kidung-mode-glyph svg {
+  margin: 0;
+}
+@keyframes kidung-mode-change {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.hymn-page .kidung-index-toolbar .hymn-page-header {
+  padding: 0;
+}
+@media (max-width: 1100px) {
+  .hymn-page .kidung-index-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kidung-controls-field {
+    width: 100%;
+  }
+  .kidung-controls-field .kidung-local-nav {
+    flex: 1;
+    min-width: 0;
+  }
+  .kidung-controls-field .kidung-local-nav-links {
+    width: 100%;
+  }
+  .kidung-controls-field .kidung-local-nav a {
+    flex: 1;
+  }
+}
+@media (max-width: 600px) {
+  .kidung-controls-field .kidung-local-nav a {
+    padding: 0;
+    min-width: 44px;
+  }
+  .kidung-controls-field .kidung-local-nav a > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .kidung-controls-field .kidung-local-nav a > svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kidung-mode-glyph {
+    animation: none;
+  }
+}
+.hymn-page .kidung-index-toolbar .hymn-page-header {
+  grid-column: auto;
+  grid-row: auto;
+}
+@media (max-width: 1100px) {
+  .hymn-page .kidung-index-toolbar {
+    padding-top: 12px;
+  }
+}
+.hymn-page .kidung-index-toolbar {
+  padding-bottom: 0;
+  margin-bottom: 10px;
+  border-bottom: 0;
+}
+.hymn-page .hymn-catalog-shell {
+  padding-top: 0;
+  border-top: 0;
 }
