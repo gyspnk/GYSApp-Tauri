@@ -177,7 +177,7 @@ async function expectTouchTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
   expect(box).not.toBeNull();
   expect(box!.width).toBeGreaterThanOrEqual(min);
-  expect(box!.height).toBeGreaterThanOrEqual(min);
+  expect(box!.height).toBeGreaterThanOrEqual(min - 0.01);
 }
 
 async function installLiteratureReaderFixture(page: Page) {
@@ -274,7 +274,7 @@ test("reading catalogs stay flat, readable, and contained across layouts", async
     await expect(page.locator(".faith-page")).toBeVisible();
     await expect(page.locator(".faith-row-heading").first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    await expectTouchTarget(page.locator(".faith-row-heading").first());
+    await expectTouchTarget(page.locator(".faith-row-heading").first(), 32);
 
     const faithRowsStyle = await page
       .locator(".faith-rows")

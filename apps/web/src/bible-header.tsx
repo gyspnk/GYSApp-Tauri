@@ -29,7 +29,6 @@ export function BibleHeader({
   setLocale,
   theme,
   setTheme,
-  online,
   onOpenSearch,
   searchTriggerRef,
   pathname,
@@ -39,7 +38,6 @@ export function BibleHeader({
   setLocale: (value: Locale) => void;
   theme: Theme;
   setTheme: (value: Theme) => void;
-  online: boolean;
   onOpenSearch: () => void;
   searchTriggerRef: RefObject<HTMLButtonElement | null>;
   pathname: string;

@@ -278,14 +278,6 @@
   line-height: 1.8;
 }
 
-.faith-hint {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  text-align: center;
-  padding: 14px 0 4px;
-}
-
 .faith-note-actions {
   display: flex;
   align-items: center;

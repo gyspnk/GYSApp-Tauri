@@ -332,7 +332,6 @@ function Header({
   setLocale,
   theme,
   setTheme,
-  online,
   onOpenSearch,
   searchTriggerRef,
   pathname,
@@ -342,7 +341,6 @@ function Header({
   setLocale: (value: Locale) => void;
   theme: Theme;
   setTheme: (value: Theme) => void;
-  online: boolean;
   onOpenSearch: () => void;
   searchTriggerRef: RefObject<HTMLButtonElement | null>;
   pathname: string;
@@ -363,7 +361,6 @@ function Header({
             setLocale,
             theme,
             setTheme,
-            online,
             onOpenSearch,
             searchTriggerRef,
             pathname,
@@ -398,13 +395,6 @@ function Header({
           <span>{translate(locale, "shell.search")}</span>
           <kbd>⌘K</kbd>
         </button>
-        <span
-          className={`connection-status ${online ? "is-online" : "is-offline"}`}
-          aria-live="polite"
-        >
-          <i aria-hidden="true" />
-          {translate(locale, online ? "shell.online" : "shell.offline")}
-        </span>
         <Select
           value={locale}
           onChange={setLocale}
@@ -473,7 +463,6 @@ function Shell({
   setTheme,
 }: ReturnType<typeof useAppSettings>) {
   useReadinessMarker("gys-shell-ready");
-  const [online, setOnline] = useState(() => navigator.onLine);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
@@ -538,16 +527,6 @@ function Shell({
     input.focus({ preventScroll: true });
   }, [location.pathname]);
   useEffect(() => {
-    const on = () => setOnline(true);
-    const off = () => setOnline(false);
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
-    return () => {
-      window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
-    };
-  }, []);
-  useEffect(() => {
     const onShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
@@ -572,7 +551,7 @@ function Shell({
         {translate(locale, "shell.skipContent")}
       </a>
       <Header
-        {...{ locale, setLocale, theme, setTheme, online }}
+        {...{ locale, setLocale, theme, setTheme }}
         onOpenSearch={openSearch}
         searchTriggerRef={searchTriggerRef}
         pathname={location.pathname}

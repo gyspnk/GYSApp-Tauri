@@ -1,14 +1,16 @@
 # e-GYS account integration
 
-GYSApp uses one production policy: installed Tauri builds integrate with the
-live e-GYS v1 service; web/PWA builds only open the official
-[`https://e.gys.or.id/login`](https://e.gys.or.id/login) page. The e-GYS v2
-repository and generated contract are discovery evidence only. No v2 provider
-SDK, polling flow, or exchange route is shipped at runtime.
+Installed Tauri builds integrate with the live e-GYS v1 service. Web/PWA
+builds support Google through the BFF and expose explicit Apple/WhatsApp
+handoff actions to the official [`https://e.gys.or.id/login`](https://e.gys.or.id/login)
+page. The e-GYS v2 repository and generated contract are discovery evidence
+only; no v2 provider exchange or polling flow is shipped at runtime.
 
 ## Native v1 flow
 
-1. Tauri opens the official login page in an origin-allowlisted WebView.
+1. The account card exposes Google, WhatsApp and Apple in one row.
+   All three open the existing origin-allowlisted official login WebView; users
+   select their provider there.
 2. The bridge accepts only `googlelogged`, `applelogged`, or `whatsapplogged`
    messages from `e.gys.or.id` with a valid opaque token.
 3. Tauri stores that token in the OS keyring. It is never placed in
@@ -23,10 +25,28 @@ gate because it cannot be made truthful with a browser mock.
 
 ## Web/PWA flow
 
-The account screen contains one action: **Buka login e-GYS resmi**. It opens the
-official v1 page in a new browser tab and explains that profile synchronization
-is available only in the installed application. The web build does not call
-`/auth/providers`, `/auth/exchange/*`, or the WhatsApp start/state routes.
+The account screen and login dialog both expose **WhatsApp** and **Apple**
+actions. They open the complete official v1 login page in a new browser tab,
+independently of Google SDK availability. Users choose the provider on that
+page. These cross-site sessions synchronize with GYSApp only in the installed
+application. Opening the portal does not sign the browser application in.
+
+The local Google action is always visible, including offline, and opens the
+Google dialog without loading an SDK on the account screen. Google sign-in
+remains available in the dialog through Google Identity Services and
+`POST /api/v1/auth/egys/google`. The BFF submits the credential to the existing
+live v1 callback and stores the resulting session in an HttpOnly cookie.
+The web build does not call `/auth/providers`, `/auth/exchange/*`, or the v2
+WhatsApp start/state routes. Do not restore the old v2 endpoints against the
+current live v1 host.
+
+## Regression history
+
+The old WhatsApp popup fixes (`30a8696`, `ded8214`) belonged to the v2 client.
+Commit `50ab269` replaced the iframe with a Google-only browser dialog and left
+Apple/WhatsApp as explanatory text. Explicit provider actions now preserve the
+live v1 handoff, including when the Google script fails. Browser regression
+tests cover 320px, 390px and desktop widths plus native command dispatch.
 
 ## Configuration
 

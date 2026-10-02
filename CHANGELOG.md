@@ -2,6 +2,20 @@
 
 ## Unreleased — GA hardening slice
 
+- Restore explicit Google, WhatsApp and Apple login actions in one responsive
+  row. Keep Google visible offline, retain the native v1 bridge and official
+  browser handoff, and make settings fill the content width. Use the account
+  title as its expand/collapse control without redundant labels or descriptions.
+- Make Faith cards and search fill the content width, hide the redundant heading
+  and reflection hint, justify complete statements, and use 14px phone text.
+  Add bounded Ctrl+wheel/two-finger text zoom, compact right-aligned PDF/Notes
+  actions, localized clear-search controls and a 16px desktop search input.
+- Integrate the desktop sidebar toggle into its rail, match header search colors
+  to other controls, and remove the header connection-status state/listeners.
+- Add fast Faith UI/gesture checks and classify Faith/composition edits for
+  selective browser verification. Distribute isolated selective tests across the
+  bounded worker pool while retaining full release/CI coverage.
+
 - Refine global search with feature icons, localized Faith topics, an icon close
   action, keyboard focus restoration and clearer internal navigation. Raise
   hymn footer, narrow Faith search and accent choices to 44px targets; localize

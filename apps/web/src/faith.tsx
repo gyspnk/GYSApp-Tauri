@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
+import { installReadingZoom } from "./reading-zoom.js";
 import { bffPdfUrl } from "./pdf-source.js";
 import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
@@ -159,6 +160,11 @@ function isFaithPack(value: unknown): value is FaithPack {
 }
 
 export function FaithPage({ locale }: { locale: Locale }) {
+  const pageRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (pageRef.current) return installReadingZoom(pageRef.current);
+  }, []);
   const [searchParams] = useSearchParams();
   const [pack, setPack] = useState<FaithPack | undefined>();
   const [query, setQuery] = useState("");
@@ -347,8 +353,8 @@ export function FaithPage({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="page faith-page">
-      <h1 className="faith-page-title">
+    <div className="page faith-page" ref={pageRef}>
+      <h1 className="sr-only">
         {group?.title ?? translate(locale, "nav.iman")}
       </h1>
       {!pack && (
@@ -363,9 +369,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
       )}
       {group && (
         <section className="faith-stack" aria-label={group.title}>
-          <div className="faith-search-bar">
-            <Icon name="search" size={16} />
+          <div className="faith-search-bar" role="search">
+            <Icon name="search" size={18} className="faith-search-icon" />
             <input
+              ref={searchRef}
               id="faith-query"
               type="search"
               value={query}
@@ -373,6 +380,20 @@ export function FaithPage({ locale }: { locale: Locale }) {
               placeholder={translate(locale, "faith.searchPlaceholder")}
               aria-label={translate(locale, "faith.search")}
             />
+            {query && (
+              <button
+                className="faith-search-clear"
+                type="button"
+                aria-label={translate(locale, "faith.clearSearch")}
+                title={translate(locale, "faith.clearSearch")}
+                onClick={() => {
+                  setQuery("");
+                  searchRef.current?.focus();
+                }}
+              >
+                <Icon name="cancel" size={16} />
+              </button>
+            )}
           </div>
           <div
             className="faith-rows"
@@ -510,11 +531,6 @@ export function FaithPage({ locale }: { locale: Locale }) {
               </div>,
               document.body,
             )}
-          {!active && (
-            <p className="faith-hint">
-              {translate(locale, "faith.selectHint")}
-            </p>
-          )}
         </section>
       )}
 

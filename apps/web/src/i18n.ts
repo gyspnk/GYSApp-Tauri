@@ -1175,7 +1175,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.loading": "Membuka pokok iman offline…",
     "faith.unavailable": "Pokok iman belum tersedia.",
     "faith.search": "Cari pokok iman",
-    "faith.searchPlaceholder": "Nomor atau kata…",
+    "faith.searchPlaceholder": "Cari nomor atau kata…",
+    "faith.clearSearch": "Hapus pencarian",
     "faith.list": "Daftar dasar kepercayaan",
     "faith.topic": "Pokok {number}",
     "faith.copySection": "Salin bagian",
@@ -1188,8 +1189,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.note": "Catatan pribadi",
     "faith.noteShort": "Catatan",
     "faith.notePlaceholder": "Tambahkan refleksi…",
-    "faith.selectHint":
-      "Pilih Catatan untuk menulis refleksi, atau buka pokok iman untuk membaca PDF penjelasannya.",
     "faith.noNotes":
       "Belum ada catatan. Pilih pokok iman lalu tekan tombol Catatan.",
     "faith.pdfTitle": "{title} (PDF)",
@@ -1322,7 +1321,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.resultCount": "{count} hasil ditemukan untuk “{query}”.",
     "search.results": "Hasil pencarian",
     "more.assetManagement": "Manajemen Aset",
-    "more.categoryAccount": "Akun",
     "more.categoryAppearance": "Tampilan",
     "more.categoryAudio": "Audio & Suara",
     "more.categoryHymns": "Kidung",
@@ -1366,12 +1364,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.lastLogin": "Login terakhir",
     "more.detectedSince": "terdeteksi sejak",
     "more.signOut": "Keluar dari Akun Ini",
-    "more.officialLoginDescription": "Masuk melalui halaman resmi e-GYS.",
-    "more.googleLoginDescription":
-      "Login dengan Google; akun e-GYS akan terdeteksi otomatis setelah berhasil.",
-    "more.openOfficialLogin": "Buka login e-GYS resmi",
-    "more.nativeLoginMethods":
-      "Google, Apple, dan WhatsApp OTP diproses langsung di halaman resmi e-GYS.",
     "more.sessionSignedOut": "Sesi e-GYS sudah dikeluarkan dari perangkat ini.",
     "more.appearance": "Tampilan & Bahasa",
     "more.screenTheme": "Tema Layar",
@@ -1475,9 +1467,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.googleModalDescription":
       "Login dengan akun Google. Setelah berhasil, aplikasi akan langsung memeriksa dan menampilkan akun e-GYS Anda.",
     "more.googleLogin": "Login dengan Google",
+    "more.whatsappLogin": "Login dengan WhatsApp",
+    "more.appleLogin": "Login dengan Apple",
+    "more.otherLoginMethods": "Atau lanjutkan dengan",
     "more.checkingLogin": "Memeriksa akun e-GYS…",
-    "more.googleFallback":
-      "Untuk Apple atau WhatsApp OTP, lanjutkan melalui portal resmi e-GYS. Login tersebut belum bisa dibaca lintas situs oleh browser.",
     "more.secureCredentials":
       "Credential Google diproses melalui koneksi aman aplikasi",
     "more.officialPortal": "Portal resmi e-GYS ↗",
@@ -1964,7 +1957,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.loading": "Opening the offline faith pack…",
     "faith.unavailable": "The faith topics are unavailable.",
     "faith.search": "Search faith topics",
-    "faith.searchPlaceholder": "Number or keyword…",
+    "faith.searchPlaceholder": "Search number or keyword…",
+    "faith.clearSearch": "Clear search",
     "faith.list": "List of faith foundations",
     "faith.topic": "Topic {number}",
     "faith.copySection": "Copy section",
@@ -1977,8 +1971,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.note": "Personal note",
     "faith.noteShort": "Note",
     "faith.notePlaceholder": "Add a reflection…",
-    "faith.selectHint":
-      "Choose Note to add a reflection, or open a topic to read its explanatory PDF.",
     "faith.noNotes": "No notes yet. Select a topic and press Note.",
     "faith.pdfTitle": "{title} (PDF)",
     "faith.pdfLabel": "Open faith topic {number} PDF",
@@ -2111,7 +2103,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.resultCount": "{count} results found for “{query}”.",
     "search.results": "Search results",
     "more.assetManagement": "Asset management",
-    "more.categoryAccount": "Account",
     "more.categoryAppearance": "Appearance",
     "more.categoryAudio": "Audio & voice",
     "more.categoryHymns": "Hymns",
@@ -2156,12 +2147,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.lastLogin": "Last login",
     "more.detectedSince": "detected since",
     "more.signOut": "Sign out of this account",
-    "more.officialLoginDescription": "Sign in through the official e-GYS page.",
-    "more.googleLoginDescription":
-      "Sign in with Google; your e-GYS account will be detected automatically after success.",
-    "more.openOfficialLogin": "Open official e-GYS login",
-    "more.nativeLoginMethods":
-      "Google, Apple, and WhatsApp OTP are handled directly on the official e-GYS page.",
     "more.sessionSignedOut": "The e-GYS session was signed out on this device.",
     "more.appearance": "Appearance & language",
     "more.screenTheme": "Screen theme",
@@ -2265,9 +2250,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.googleModalDescription":
       "Sign in with your Google account. After success, the app will check and display your e-GYS account.",
     "more.googleLogin": "Sign in with Google",
+    "more.whatsappLogin": "Sign in with WhatsApp",
+    "more.appleLogin": "Sign in with Apple",
+    "more.otherLoginMethods": "Or continue with",
     "more.checkingLogin": "Checking e-GYS account…",
-    "more.googleFallback":
-      "For Apple or WhatsApp OTP, continue through the official e-GYS portal. The browser cannot read those cross-site logins.",
     "more.secureCredentials":
       "Google credentials are processed through the app's secure connection",
     "more.officialPortal": "Official e-GYS portal ↗",
@@ -2748,7 +2734,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.loading": "正在打开离线信仰要点…",
     "faith.unavailable": "信仰要点暂不可用。",
     "faith.search": "搜索信仰要点",
-    "faith.searchPlaceholder": "编号或关键词…",
+    "faith.searchPlaceholder": "搜索编号或关键词…",
+    "faith.clearSearch": "清除搜索",
     "faith.list": "信仰基础列表",
     "faith.topic": "要点 {number}",
     "faith.copySection": "复制段落",
@@ -2761,7 +2748,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.note": "个人笔记",
     "faith.noteShort": "笔记",
     "faith.notePlaceholder": "添加默想…",
-    "faith.selectHint": "选择笔记添加心得，或打开信仰要点阅读详细说明的 PDF。",
     "faith.noNotes": "还没有笔记。选择要点后按“笔记”按钮。",
     "faith.pdfTitle": "{title}（PDF）",
     "faith.pdfLabel": "打开信仰要点 {number} PDF",
@@ -2890,7 +2876,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.resultCount": "找到 {count} 个关于“{query}”的结果。",
     "search.results": "搜索结果",
     "more.assetManagement": "资产管理",
-    "more.categoryAccount": "账户",
     "more.categoryAppearance": "外观",
     "more.categoryAudio": "音频与语音",
     "more.categoryHymns": "圣诗",
@@ -2933,12 +2918,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.lastLogin": "上次登录",
     "more.detectedSince": "检测自",
     "more.signOut": "退出此账户",
-    "more.officialLoginDescription": "通过 e-GYS 官方页面登录。",
-    "more.googleLoginDescription":
-      "使用 Google 登录；成功后将自动检测您的 e-GYS 账户。",
-    "more.openOfficialLogin": "打开 e-GYS 官方登录",
-    "more.nativeLoginMethods":
-      "Google、Apple 和 WhatsApp OTP 直接在 e-GYS 官方页面处理。",
     "more.sessionSignedOut": "此设备上的 e-GYS 会话已退出。",
     "more.appearance": "外观与语言",
     "more.screenTheme": "屏幕主题",
@@ -3039,9 +3018,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.googleModalDescription":
       "使用 Google 账户登录。成功后，应用将检查并显示您的 e-GYS 账户。",
     "more.googleLogin": "使用 Google 登录",
+    "more.whatsappLogin": "使用 WhatsApp 登录",
+    "more.appleLogin": "使用 Apple 登录",
+    "more.otherLoginMethods": "或继续使用",
     "more.checkingLogin": "正在检查 e-GYS 账户…",
-    "more.googleFallback":
-      "如需使用 Apple 或 WhatsApp OTP，请通过 e-GYS 官方门户继续。浏览器无法读取跨网站登录状态。",
     "more.secureCredentials": "Google 凭据通过应用的安全连接处理",
     "more.officialPortal": "e-GYS 官方门户 ↗",
     "more.close": "关闭",

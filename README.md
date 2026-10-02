@@ -187,6 +187,17 @@ explicit local upstream synchronization and chord audit. Use `pnpm sync:egys`
 to refresh the pinned discovery contract deliberately; authentication comes
 from the developer's existing Git credential manager/SSH setup.
 
+For Faith/sidebar UI checks against a build already produced with `pnpm build`:
+
+```sh
+GYS_E2E_PREBUILT=1 pnpm test:e2e e2e/faith-zoom.spec.ts e2e/sidebar-collapse.spec.ts --fully-parallel --retries=0
+```
+
+This focused suite verifies gestures, three-locale responsive layout/search and
+sidebar persistence without retries or external fixtures. `pnpm test:e2e:changed`
+selects affected browser contracts and distributes isolated tests across the
+bounded worker pool; full release and CI verification remain available.
+
 For quick iteration:
 
 ```sh

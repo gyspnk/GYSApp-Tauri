@@ -473,8 +473,8 @@ test.describe("responsive reader navigation", () => {
         if (row.width === 0 || action.width === 0) continue;
         expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth + 1);
         expect(action.width).toBeGreaterThanOrEqual(44);
-        // CSS pixels can land at 43.99997 on device-pixel boundaries.
-        expect(action.height).toBeGreaterThanOrEqual(44 - 0.01);
+        // Compact Faith actions are intentionally 32px; allow subpixel rounding.
+        expect(action.height).toBeGreaterThanOrEqual(32 - 0.01);
         expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
         expect(action.right).toBeLessThanOrEqual(row.right + 1);
         expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);

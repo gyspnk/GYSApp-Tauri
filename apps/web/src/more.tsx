@@ -43,6 +43,7 @@ import {
   type EgysSessionTrace,
 } from "./egys.js";
 import { renderEgysGoogleButton } from "./egys-google.js";
+import { EgysLoginMethods } from "./egys-login-methods.js";
 import {
   clearMidiPlaylist,
   downloadMidiPlaylist,
@@ -983,34 +984,32 @@ export function MorePage({
         {translate(locale, "more.preferences")}
       </h2>
       <section className="more-settings-list">
-        <details className="more-setting-section" data-setting="account">
+        <details
+          className="more-setting-section more-account-section"
+          data-setting="account"
+          open
+        >
           <summary className="more-setting-row">
-            <strong>{translate(locale, "more.categoryAccount")}</strong>
+            <h2 className="more-account-title">
+              {accountProfile
+                ? (accountProfile.displayName ??
+                  translate(locale, "more.accountMember"))
+                : translate(locale, "more.accountEgys")}
+            </h2>
+            {accountProfile || nativeShell ? (
+              <span
+                className={`pack-badge${accountProfile ? " is-verified" : ""}`}
+              >
+                {accountProfile
+                  ? translate(locale, "more.connected")
+                  : egysUnavailable
+                    ? translate(locale, "more.assetUnavailable")
+                    : translate(locale, "more.guest")}
+              </span>
+            ) : null}
             <Icon name="chevronDown" size={18} />
           </summary>
           <article className="more-card more-card-wide account-card egys-card">
-            <div className="more-card-heading">
-              <div>
-                <h2>
-                  {accountProfile
-                    ? (accountProfile.displayName ??
-                      translate(locale, "more.accountMember"))
-                    : translate(locale, "more.accountEgys")}
-                </h2>
-              </div>
-              {accountProfile || nativeShell ? (
-                <span
-                  className={`pack-badge${accountProfile ? " is-verified" : ""}`}
-                >
-                  {accountProfile
-                    ? translate(locale, "more.connected")
-                    : egysUnavailable
-                      ? translate(locale, "more.assetUnavailable")
-                      : translate(locale, "more.guest")}
-                </span>
-              ) : null}
-            </div>
-
             {accountLoading || authBusy ? (
               <div className="account-loading-box" role="status">
                 <p>{translate(locale, "more.checkingAccount")}</p>
@@ -1105,42 +1104,20 @@ export function MorePage({
               </div>
             ) : (
               <div className="egys-login-box">
-                <p className="egys-login-desc">
-                  {nativeShell
-                    ? translate(locale, "more.officialLoginDescription")
-                    : translate(locale, "more.googleLoginDescription")}
-                </p>
-                <div className="egys-login-actions">
-                  {nativeShell ? (
-                    <>
-                      <button
-                        type="button"
-                        className="primary-button egys-login-button"
-                        onClick={() => void openNativeEgysLoginFlow()}
-                      >
-                        <Icon name="person" size={16} />
-                        <span>
-                          {translate(locale, "more.openOfficialLogin")}
-                        </span>
-                      </button>
-                      <small className="account-sync-note">
-                        {translate(locale, "more.nativeLoginMethods")}
-                      </small>
-                    </>
-                  ) : (
-                    <a
-                      className="primary-button egys-login-button"
-                      href={`https://e.gys.or.id/login?theme=${theme}`}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setEgysLoginOpen(true);
-                      }}
-                    >
-                      <Icon name="person" size={16} />
-                      <span>{translate(locale, "more.openOfficialLogin")}</span>
-                    </a>
-                  )}
-                </div>
+                <EgysLoginMethods
+                  locale={locale}
+                  theme={theme}
+                  onGoogleLogin={() =>
+                    nativeShell
+                      ? void openNativeEgysLoginFlow()
+                      : setEgysLoginOpen(true)
+                  }
+                  onNativeLogin={
+                    nativeShell
+                      ? () => void openNativeEgysLoginFlow()
+                      : undefined
+                  }
+                />
               </div>
             )}
           </article>
@@ -1890,8 +1867,9 @@ export function MorePage({
                   </p>
                 )}
                 <p className="egys-google-fallback">
-                  {translate(locale, "more.googleFallback")}
+                  {translate(locale, "more.otherLoginMethods")}
                 </p>
+                <EgysLoginMethods locale={locale} theme={theme} />
               </div>
               <div className="egys-login-footer">
                 <span>

@@ -157,23 +157,12 @@ a:focus-visible {
   font-weight: 600;
   color: var(--muted);
 }
-.connection-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 12px;
-}
-.connection-status i,
 .offline-note i {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #38a36b;
   display: inline-block;
-}
-.connection-status.is-offline i {
-  background: #b98132;
 }
 .account-button {
   border: 1px solid var(--line);
