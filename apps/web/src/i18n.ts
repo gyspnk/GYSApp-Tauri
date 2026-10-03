@@ -1027,9 +1027,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.favorite": "★ Favorit",
     "kidung.saveFavorite": "☆ Simpan favorit",
     "kidung.loadingMidi": "Memuat MIDI…",
-    "kidung.midiReady": "MIDI siap",
     "kidung.playMidi": "Putar MIDI",
-    "kidung.installSoundfontToPlay": "Pasang SoundFont untuk memutar",
     "kidung.pauseMidi": "Jeda MIDI",
     "kidung.queueAdded": "Kidung ditambahkan ke antrean MIDI.",
     "kidung.queueExists": "Kidung sudah ada di antrean MIDI.",
@@ -1095,7 +1093,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.pdfForkOpened":
       "PDF Kidung Rohani dibuka dari database GYSApp-Fork.",
     "kidung.pdfCanonicalFallback": "PDF canonical dibuka sebagai fallback.",
-    "kidung.midiPlaying": "MIDI sedang diputar; pemutar dapat diminimalkan.",
     "kidung.midiReadyHint":
       "MIDI siap; tekan Putar pada pemutar untuk mengaktifkan suara.",
     "kidung.midiUnavailable": "MIDI belum dapat dimuat. Coba lagi saat online.",
@@ -1807,9 +1804,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.favorite": "★ Favorite",
     "kidung.saveFavorite": "☆ Save favorite",
     "kidung.loadingMidi": "Loading MIDI…",
-    "kidung.midiReady": "MIDI ready",
     "kidung.playMidi": "Play MIDI",
-    "kidung.installSoundfontToPlay": "Install SoundFont to play",
     "kidung.pauseMidi": "Pause MIDI",
     "kidung.queueAdded": "Hymn added to the MIDI queue.",
     "kidung.queueExists": "Hymn is already in the MIDI queue.",
@@ -1875,7 +1870,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.pdfForkOpened":
       "Sacred Hymn PDF opened from the GYSApp-Fork database.",
     "kidung.pdfCanonicalFallback": "Canonical PDF opened as a fallback.",
-    "kidung.midiPlaying": "MIDI is playing; the player can be minimized.",
     "kidung.midiReadyHint":
       "MIDI is ready; press Play on the player to enable sound.",
     "kidung.midiUnavailable": "MIDI could not be loaded. Try again online.",
@@ -2585,9 +2579,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.favorite": "★ 收藏",
     "kidung.saveFavorite": "☆ 保存收藏",
     "kidung.loadingMidi": "正在加载 MIDI…",
-    "kidung.midiReady": "MIDI 已就绪",
     "kidung.playMidi": "播放 MIDI",
-    "kidung.installSoundfontToPlay": "安装 SoundFont 以播放",
     "kidung.pauseMidi": "暂停 MIDI",
     "kidung.queueAdded": "诗歌已加入 MIDI 队列。",
     "kidung.queueExists": "诗歌已在 MIDI 队列中。",
@@ -2651,7 +2643,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.chordLayoutRetry": "和弦可用；联网后将重试 PDF 布局。",
     "kidung.pdfForkOpened": "已从 GYSApp-Fork 数据库打开圣诗 PDF。",
     "kidung.pdfCanonicalFallback": "已打开规范 PDF 作为备用。",
-    "kidung.midiPlaying": "MIDI 正在播放；播放器可以最小化。",
     "kidung.midiReadyHint": "MIDI 已就绪；按播放器上的播放键启用声音。",
     "kidung.midiUnavailable": "MIDI 无法加载，请联网后重试。",
     "kidung.favoriteSaved": "诗歌已保存到收藏。",

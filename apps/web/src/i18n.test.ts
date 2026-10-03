@@ -14,6 +14,8 @@ function allKeys(locale: Locale): Set<string> {
 // literal translate(locale, "...") call. Kept as a curated list so the
 // completeness guard also covers dynamic lookups.
 const DYNAMIC_KEYS = [
+  "kidung.openMidi",
+  "kidung.closeMidi",
   "more.whatsappLogin",
   "more.appleLogin",
   "shell.online",
