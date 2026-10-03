@@ -29,9 +29,22 @@ export function writeNaturalChordPreference(enabled: boolean): void {
   }
 }
 
+export const MIN_HYMN_FONT_SIZE = 16;
+export const MAX_HYMN_FONT_SIZE = 56;
+export function clampHymnFontSize(value: number): number {
+  return (
+    Math.round(
+      Math.max(
+        MIN_HYMN_FONT_SIZE,
+        Math.min(MAX_HYMN_FONT_SIZE, Number.isFinite(value) ? value : 18),
+      ) * 10,
+    ) / 10
+  );
+}
+
 export const DEFAULT_HYMN_TYPOGRAPHY: HymnTypography = {
   fontSize: 18,
-  lineHeight: 1.65,
+  lineHeight: 1.5,
 };
 
 const STORAGE_KEY = "gys-hymn-typography-v1";
@@ -58,7 +71,7 @@ function finite(value: unknown): value is number {
 function clampTypography(value: Partial<HymnTypography>): HymnTypography {
   return {
     fontSize: finite(value.fontSize)
-      ? Math.round(Math.max(16, Math.min(28, value.fontSize)) * 10) / 10
+      ? clampHymnFontSize(value.fontSize)
       : DEFAULT_HYMN_TYPOGRAPHY.fontSize,
     lineHeight: finite(value.lineHeight)
       ? Math.round(Math.max(1.4, Math.min(2.2, value.lineHeight)) * 100) / 100
@@ -93,10 +106,21 @@ function readStore(target: Storage): Store {
   }
 }
 
+export function hasHymnTypography(songId: string): boolean {
+  const target = storage();
+  return Boolean(target && readStore(target).songs[songId]);
+}
+
 export function readHymnTypography(songId: string): HymnTypography {
   const target = storage();
-  if (!target) return DEFAULT_HYMN_TYPOGRAPHY;
-  return readStore(target).songs[songId] ?? DEFAULT_HYMN_TYPOGRAPHY;
+  const saved = target ? readStore(target).songs[songId] : undefined;
+  if (saved) return saved;
+  const width = typeof window === "undefined" ? 390 : window.innerWidth || 390;
+  return {
+    ...DEFAULT_HYMN_TYPOGRAPHY,
+    fontSize:
+      Math.round(Math.max(18, Math.min(44, 18 + (width - 390) / 20)) * 10) / 10,
+  };
 }
 
 export function writeHymnTypography(

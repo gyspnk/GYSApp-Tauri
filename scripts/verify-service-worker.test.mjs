@@ -87,8 +87,29 @@ function loadServiceWorker({
 }
 
 test("service-worker shell cache is versioned after a deploy change", () => {
-  assert.match(source, /const CACHE = "gysapp-shell-v24";/);
+  assert.match(source, /const CACHE = "gysapp-shell-v25";/);
   assert.doesNotMatch(source, /distributed-hymn-catalog/);
+});
+
+test("background MIDI warming caches TimGM6mb without downloading GeneralUser", async () => {
+  const fetched = [];
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async (url) => {
+      fetched.push(url);
+      return new Response("packaged bank");
+    },
+  });
+  let warming;
+  handlers.get("message")({
+    data: { type: "gys-cache-optional" },
+    waitUntil(promise) {
+      warming = promise;
+    },
+  });
+  await warming;
+  assert.ok(fetched.includes("/GYSApp-Tauri/assets/soundfont/TimGM6mb.sf2"));
+  assert.ok(writes.some(([url]) => url.endsWith("TimGM6mb.sf2")));
+  assert.ok(fetched.every((url) => !url.includes("GeneralUser")));
 });
 
 test("same-origin navigations refresh the shell from the network", async () => {
@@ -513,13 +534,13 @@ test("new releases wait for explicit activation and an interrupted core cannot i
 });
 
 test("activation retains the previously active build instead of newer interrupted caches", async () => {
-  const active = "gysapp-shell-v24-working";
+  const active = "gysapp-shell-v25-working";
   const { handlers, deletedCaches } = loadServiceWorker({
     cacheNames: [
       active,
-      "gysapp-shell-v24-partial1",
-      "gysapp-shell-v24-partial2",
-      "gysapp-shell-v24",
+      "gysapp-shell-v25-partial1",
+      "gysapp-shell-v25-partial2",
+      "gysapp-shell-v25",
     ],
     cacheMatchByName: async (name, url) =>
       name === "gysapp-update-state-v1" && url.endsWith("__active-shell__")
@@ -534,8 +555,8 @@ test("activation retains the previously active build instead of newer interrupte
   });
   await activation;
   assert.deepEqual(deletedCaches, [
-    "gysapp-shell-v24-partial1",
-    "gysapp-shell-v24-partial2",
+    "gysapp-shell-v25-partial1",
+    "gysapp-shell-v25-partial2",
   ]);
 });
 
@@ -580,8 +601,8 @@ test("a later deployment cannot overwrite the active offline HTML", async () => 
   const buildId = "0123456789abcdef";
   const { handlers, writes } = loadServiceWorker({
     workerSource: source.replace(
-      'gysapp-shell-v24"',
-      `gysapp-shell-v24-${buildId}"`,
+      'gysapp-shell-v25"',
+      `gysapp-shell-v25-${buildId}"`,
     ),
     fetch: async () =>
       new Response(
@@ -607,8 +628,8 @@ test("a later deployment cannot overwrite the active offline HTML", async () => 
 test("deployment changes during installation cannot mix two releases", async () => {
   const { handlers } = loadServiceWorker({
     workerSource: source.replace(
-      'gysapp-shell-v24"',
-      'gysapp-shell-v24-0123456789abcdef"',
+      'gysapp-shell-v25"',
+      'gysapp-shell-v25-0123456789abcdef"',
     ),
     fetch: async (url) =>
       url.endsWith("offline-shell-assets.json")

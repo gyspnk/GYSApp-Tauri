@@ -886,6 +886,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "media.closePlayerTitle": "Tutup pemutar",
     "media.minimize": "Minimalkan pemutar",
     "media.restore": "Perbesar pemutar",
+    "media.movePlayer": "Geser pemutar ke tepi layar",
     "media.loopControl": "Mode ulang: {mode}",
     "media.loopTitle": "Ulang · {mode}",
     "media.loopOff": "Mati",
@@ -1091,8 +1092,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.connectRetry": "Sambungkan internet lalu coba lagi.",
     "kidung.chordLayoutRetry":
       "Chord tersedia; layout PDF akan dicoba lagi saat online.",
-    "kidung.chordPdfVerified": "Chord diverifikasi dari PDF canonical.",
-    "kidung.chordSourceVerified": "Chord diverifikasi dari sumber canonical.",
     "kidung.pdfForkOpened":
       "PDF Kidung Rohani dibuka dari database GYSApp-Fork.",
     "kidung.pdfCanonicalFallback": "PDF canonical dibuka sebagai fallback.",
@@ -1667,6 +1666,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "media.closePlayerTitle": "Close player",
     "media.minimize": "Minimize player",
     "media.restore": "Restore player",
+    "media.movePlayer": "Move player to screen edge",
     "media.loopControl": "Loop mode: {mode}",
     "media.loopTitle": "Loop · {mode}",
     "media.loopOff": "Off",
@@ -1872,8 +1872,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.connectRetry": "Connect to the internet and try again.",
     "kidung.chordLayoutRetry":
       "Chords are available; PDF layout will retry when you are online.",
-    "kidung.chordPdfVerified": "Chords verified from the canonical PDF.",
-    "kidung.chordSourceVerified": "Chords verified from the canonical source.",
     "kidung.pdfForkOpened":
       "Sacred Hymn PDF opened from the GYSApp-Fork database.",
     "kidung.pdfCanonicalFallback": "Canonical PDF opened as a fallback.",
@@ -2446,6 +2444,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "media.closePlayerTitle": "关闭播放器",
     "media.minimize": "最小化播放器",
     "media.restore": "恢复播放器",
+    "media.movePlayer": "将播放器移至屏幕边缘",
     "media.loopControl": "循环模式：{mode}",
     "media.loopTitle": "循环 · {mode}",
     "media.loopOff": "关闭",
@@ -2650,8 +2649,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.chordUnavailable": "和弦暂不可用",
     "kidung.connectRetry": "请连接网络后重试。",
     "kidung.chordLayoutRetry": "和弦可用；联网后将重试 PDF 布局。",
-    "kidung.chordPdfVerified": "和弦已通过规范 PDF 验证。",
-    "kidung.chordSourceVerified": "和弦已通过规范来源验证。",
     "kidung.pdfForkOpened": "已从 GYSApp-Fork 数据库打开圣诗 PDF。",
     "kidung.pdfCanonicalFallback": "已打开规范 PDF 作为备用。",
     "kidung.midiPlaying": "MIDI 正在播放；播放器可以最小化。",

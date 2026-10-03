@@ -1,7 +1,7 @@
+import { BUNDLED_SOUNDFONT, loadDefaultSoundfont } from "./soundfont.js";
 import type { NormalizedMidi } from "@gys/domain";
 import { MidiRenderCache, type RenderedPcm } from "./midi-render-cache.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 
 /**
  * The media player intentionally lives outside React.  A song can keep
@@ -13,8 +13,8 @@ import { getDistributedAssetManager } from "./distributed-asset-manager.js";
 export type WebMidiSnapshot = {
   status:
     "idle" | "loading" | "ready" | "playing" | "paused" | "stopped" | "error";
-  songId?: string;
-  title?: string;
+  songId?: string | undefined;
+  title?: string | undefined;
   duration: number;
   position: number;
   volume: number;
@@ -168,13 +168,11 @@ const initial: WebMidiSnapshot = {
   loadingProgress: 0,
 };
 
-const SOUND_FONT_CODE = "GeneralUser-GS";
-const SOUND_FONT_NAME = "GeneralUser-GS (terpasang)";
 type SoundfontLoader = () => Promise<Uint8Array | undefined>;
 
 export type MidiPreloadRequest = {
   songId: string;
-  title?: string;
+  title?: string | undefined;
   midi: NormalizedMidi;
   rawMidi: Uint8Array;
   sourceHash: string;
@@ -201,8 +199,9 @@ export function midiRenderKey(
   transpose: number,
   instrument: number,
   sampleRate = 44_100,
+  soundfont = BUNDLED_SOUNDFONT,
 ): string {
-  return `${sourceHash}:${SOUND_FONT_NAME}:${tempo}:${transpose}:${instrument}:${sampleRate}`;
+  return `${sourceHash}:${soundfont}:${tempo}:${transpose}:${instrument}:${sampleRate}`;
 }
 
 type PreloadRecord = {
@@ -299,6 +298,8 @@ export class BrowserMidiPlayer {
   private workerReady: Promise<void> | undefined;
   private workerReadyReject: ((reason?: unknown) => void) | undefined;
   private soundfont: Uint8Array | undefined;
+  private soundfontName = BUNDLED_SOUNDFONT;
+  private soundfontLoad: Promise<void> | undefined;
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
   private readonly renderCache = new MidiRenderCache();
@@ -320,10 +321,7 @@ export class BrowserMidiPlayer {
   private readonly settingsListeners = new Set<() => void>();
   private readonly endedListeners = new Set<() => void>();
 
-  public constructor(
-    private readonly loadSoundfont: SoundfontLoader = () =>
-      getDistributedAssetManager().getStore().getBytes(SOUND_FONT_CODE),
-  ) {}
+  public constructor(private readonly loadSoundfont?: SoundfontLoader) {}
 
   // React's external-store contract requires a stable snapshot reference
   // until a patch actually changes the store.
@@ -432,6 +430,7 @@ export class BrowserMidiPlayer {
     instrument: number,
     tempo?: number,
   ): Promise<boolean> {
+    await this.prepareSoundfont();
     const sampleRate = this.audio?.sampleRate ?? 44_100;
     const key = midiRenderKey(
       sourceHash,
@@ -439,6 +438,7 @@ export class BrowserMidiPlayer {
       clampTranspose(transpose),
       clampInstrument(instrument),
       sampleRate,
+      this.soundfontName,
     );
     if (this.rendered?.key === key) return true;
     if (this.renderInFlight.has(key)) return true;
@@ -459,6 +459,7 @@ export class BrowserMidiPlayer {
       clampTranspose(transpose),
       clampInstrument(instrument),
       sampleRate,
+      this.soundfontName,
     );
     if (this.rendered?.key === key) return true;
     if (this.renderInFlight.has(key)) return true;
@@ -510,7 +511,7 @@ export class BrowserMidiPlayer {
           loadingProgress: 100,
           duration: rendered.buffer.duration,
           position,
-          soundfont: SOUND_FONT_NAME,
+          soundfont: this.soundfontName,
         });
         this.startTimer();
         return;
@@ -551,6 +552,23 @@ export class BrowserMidiPlayer {
     this.cancelPreloads();
     await this.stopAudio();
     if (this.state.songId) this.patch({ status: "stopped", position: 0 });
+  }
+
+  /** Close the MIDI session, including in-flight playback, without dropping PCM caches. */
+  public async close(): Promise<void> {
+    const generation = this.operationGate.next();
+    this.cancelPreloads();
+    await this.stopAudio();
+    if (!this.operationGate.isCurrent(generation)) return;
+    this.patch({
+      status: "idle",
+      songId: undefined,
+      title: undefined,
+      position: 0,
+      duration: 0,
+      loadingProgress: 0,
+      error: undefined,
+    });
   }
 
   public async seek(position: number): Promise<void> {
@@ -680,6 +698,7 @@ export class BrowserMidiPlayer {
       request.rawMidi.byteLength === 0
     )
       return false;
+    await this.prepareSoundfont();
     const tempo = clampTempo(request.tempo ?? this.state.tempo);
     const transpose = clampTranspose(request.transpose ?? this.state.transpose);
     const instrument = clampInstrument(
@@ -692,6 +711,7 @@ export class BrowserMidiPlayer {
       transpose,
       instrument,
       sampleRate,
+      this.soundfontName,
     );
     if (await this.renderCache.get(key)) return true;
     const generation = this.preloadGeneration;
@@ -808,6 +828,7 @@ export class BrowserMidiPlayer {
   private async ensureRendered(generation: number): Promise<RenderedSong> {
     if (!this.rawMidi || !this.audio)
       throw new Error("Raw MIDI bytes are unavailable");
+    await this.prepareSoundfont();
     const rawMidi = this.rawMidi.slice();
     const sourceHash = this.sourceHash;
     const currentTempo = this.current?.tempo ?? 100;
@@ -822,6 +843,7 @@ export class BrowserMidiPlayer {
       transpose,
       instrument,
       audioSampleRate,
+      this.soundfontName,
     );
     if (this.rendered?.key === key) return this.rendered;
     this.patch({ loadingProgress: 34 });
@@ -856,12 +878,14 @@ export class BrowserMidiPlayer {
     announceProgress: boolean;
     operationGeneration?: number;
   }): Promise<RenderedPcm> {
+    await this.prepareSoundfont();
     const key = midiRenderKey(
       options.sourceHash,
       options.tempo,
       options.transpose,
       options.instrument,
       options.sampleRate,
+      this.soundfontName,
     );
     const cached = await this.renderCache.get(key);
     if (cached) return cached;
@@ -987,6 +1011,21 @@ export class BrowserMidiPlayer {
     return this.worker;
   }
 
+  private prepareSoundfont(): Promise<void> {
+    this.soundfontLoad ??= (async () => {
+      if (this.loadSoundfont) this.soundfont = await this.loadSoundfont();
+      else {
+        const font = await loadDefaultSoundfont();
+        this.soundfont = font.bytes;
+        this.soundfontName = font.name;
+      }
+    })().catch((error) => {
+      this.soundfontLoad = undefined;
+      throw error;
+    });
+    return this.soundfontLoad;
+  }
+
   private async ensureSoundfont(
     worker: Worker,
     announceProgress = true,
@@ -995,17 +1034,11 @@ export class BrowserMidiPlayer {
       return this.soundfontRequest;
     this.soundfontWorker = worker;
     this.soundfontRequest = (async () => {
-      if (!this.soundfont) {
-        this.soundfont = await this.loadSoundfont();
-        if (!this.soundfont)
-          throw new Error(
-            "GeneralUser-GS SoundFont belum terpasang. Unduh melalui Manajemen Aset.",
-          );
-        if (this.soundfont.byteLength < 1_000_000)
-          throw new Error("GeneralUser-GS SoundFont is incomplete");
-      }
+      await this.prepareSoundfont();
+      if (!this.soundfont || this.soundfont.byteLength < 1_000_000)
+        throw new Error("SoundFont is incomplete");
       if (announceProgress)
-        this.patch({ loadingProgress: 18, soundfont: SOUND_FONT_NAME });
+        this.patch({ loadingProgress: 18, soundfont: this.soundfontName });
       await this.request(worker, {
         type: "loadSoundFont",
         buffer: this.soundfont.slice().buffer,

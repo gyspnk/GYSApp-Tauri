@@ -39,6 +39,73 @@ function bytesFor(documentValue: ChordDocumentV2): Uint8Array {
 }
 
 describe("ChordRepository", () => {
+  it("startup sync skips unchanged note-aligned bytes across commits and downloads only changed files", async () => {
+    const noteDoc = {
+      version: 2 as const,
+      type: "note-aligned" as const,
+      pages: { "1": [{ noteIdx: 0, chord: "C" }] },
+    };
+    let currentDocument = noteDoc;
+    let bytes = new TextEncoder().encode(JSON.stringify(noteDoc));
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const hash = [...new Uint8Array(digest)]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+    const old = { ...ref, size: bytes.length, sha256: hash };
+    const cache = new MemoryChordCache();
+    await cache.putAtomic(old, noteDoc, bytes);
+    let fetches = 0;
+    let checks = 0;
+    const latest = { ...old, sourceCommit: "deadbee" };
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => {
+          checks++;
+          return {
+            manifest: {
+              ...manifest,
+              sourceCommit: latest.sourceCommit,
+              entries: [latest],
+            },
+          };
+        },
+        fetchChord: async () => {
+          fetches++;
+          return { bytes, document: currentDocument };
+        },
+      },
+      cache,
+    );
+    await expect(repository.syncAll()).resolves.toEqual({
+      checked: 1,
+      failed: 0,
+    });
+    await repository.syncAll();
+    expect(checks).toBe(2);
+    expect(fetches).toBe(0);
+    await cache.remove(ref.songId);
+    await repository.syncAll();
+    expect(fetches).toBe(1);
+    await repository.syncAll();
+    expect(fetches).toBe(1);
+    currentDocument = {
+      ...noteDoc,
+      pages: { "1": [{ noteIdx: 0, chord: "G" }] },
+    };
+    bytes = new TextEncoder().encode(JSON.stringify(currentDocument));
+    latest.sha256 = [
+      ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+    ]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+    latest.size = bytes.length;
+    await repository.syncAll();
+    expect(fetches).toBe(2);
+    expect(await cache.get(ref.songId)).toEqual(currentDocument);
+    await repository.syncAll();
+    expect(fetches).toBe(2);
+  });
+
   it("deduplicates simultaneous manifest requests", async () => {
     let calls = 0;
     const upstream: ChordUpstream = {

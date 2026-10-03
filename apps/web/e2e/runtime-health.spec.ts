@@ -74,7 +74,7 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
   );
   expect(serviceWorkerResponse.ok()).toBe(true);
   const serviceWorker = await serviceWorkerResponse.text();
-  expect(serviceWorker).toContain("gysapp-shell-v24");
+  expect(serviceWorker).toContain("gysapp-shell-v25");
   expect(serviceWorker).not.toContain("distributed-hymn-catalog");
   expect(serviceWorker).toContain("MAX_REMOTE_MEDIA_ENTRIES = 96");
   if (process.env.GYS_E2E_DEV !== "1") {
@@ -85,7 +85,7 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
     const buildAssets = await buildAssetsResponse.json();
     expect(buildAssets.version).toBe(1);
     expect(buildAssets.buildId).toMatch(/^[a-f0-9]{16}$/);
-    expect(serviceWorker).toContain(`gysapp-shell-v24-${buildAssets.buildId}`);
+    expect(serviceWorker).toContain(`gysapp-shell-v25-${buildAssets.buildId}`);
     expect(Object.keys(buildAssets.integrity).sort()).toEqual(
       [...buildAssets.assets].sort(),
     );

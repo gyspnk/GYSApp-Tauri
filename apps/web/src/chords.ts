@@ -60,9 +60,67 @@ export function chordSongIdFromPath(path: string): string {
   return `hymn-${key?.toUpperCase() ?? "000"}`;
 }
 
-export function createBrowserChordRepository(): ChordRepository {
+function newBrowserChordRepository(): ChordRepository {
+  const platform = createPlatformServices();
   const upstream: ChordUpstream = {
     async getManifest(etag, signal) {
+      try {
+        const response = await fetch(
+          `${RAW_ROOT}/main/docs/assets-chord-manifest.json`,
+          { cache: "no-cache", ...(signal ? { signal } : {}) },
+        );
+        if (!response.ok) throw new Error("Latest chord manifest unavailable");
+        const raw = (await response.json()) as {
+          schemaVersion: number;
+          sourceCommit: string;
+          files: Array<{
+            bookCode: string;
+            path: string;
+            size: number;
+            sha256: string;
+          }>;
+        };
+        if (raw.schemaVersion !== 1 || !Array.isArray(raw.files))
+          throw new Error("Invalid chord manifest");
+        const manifest = ChordManifestV1Schema.parse({
+          version: 1,
+          sourceRepo: "gyspnk/gyschordweb",
+          sourceCommit: raw.sourceCommit,
+          generatedAt: new Date().toISOString(),
+          entries: raw.files
+            .filter((file) => file.bookCode === "KR")
+            .map((file) => {
+              if (
+                !/^docs\/assets\/chord\/\d{3}[a-z]?_[^/]+\.chord\.json$/i.test(
+                  file.path,
+                )
+              )
+                throw new Error("Invalid chord source path");
+              return {
+                songId: chordSongIdFromPath(file.path),
+                path: file.path,
+                sourceCommit: raw.sourceCommit,
+                size: file.size,
+                sha256: file.sha256,
+              };
+            }),
+        });
+        if (
+          !manifest.entries.length ||
+          new Set(manifest.entries.map((entry) => entry.songId)).size !==
+            manifest.entries.length
+        )
+          throw new Error("Incomplete chord manifest");
+        await platform.keyValue.set("gys-latest-chord-manifest-v1", manifest);
+        return { manifest };
+      } catch (error) {
+        if (signal?.aborted) throw error;
+        const saved = await platform.keyValue.get(
+          "gys-latest-chord-manifest-v1",
+        );
+        const parsed = ChordManifestV1Schema.safeParse(saved);
+        if (parsed.success) return { manifest: parsed.data };
+      }
       const endpoint = bffUrl("/api/v1/chords/manifest");
       if (!endpoint) return fallbackManifest();
       try {
@@ -165,8 +223,28 @@ export function createBrowserChordRepository(): ChordRepository {
       throw failure;
     },
   };
-  return new ChordRepository(
-    upstream,
-    new BrowserChordCache(createPlatformServices()),
-  );
+  return new ChordRepository(upstream, new BrowserChordCache(platform));
+}
+
+let sharedRepository: ChordRepository | undefined;
+let startupSync: Promise<void> | undefined;
+export function createBrowserChordRepository(): ChordRepository {
+  return (sharedRepository ??= newBrowserChordRepository());
+}
+export function syncChordsOnStartup(): Promise<void> {
+  return (startupSync ??= createBrowserChordRepository()
+    .syncAll()
+    .then((result) => {
+      if (result.failed)
+        recordDiagnostic(
+          "info",
+          "chord.sync",
+          new Error(
+            `${result.failed}/${result.checked} chord updates deferred`,
+          ),
+        );
+    })
+    .catch((error) => {
+      recordDiagnostic("info", "chord.sync", error);
+    }));
 }

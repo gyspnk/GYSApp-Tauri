@@ -7,6 +7,9 @@ const dist = resolve(root, "apps/web/dist");
 const tauriConfigPath = resolve(root, "apps/native/src-tauri/tauri.conf.json");
 
 const required = [
+  "assets/soundfont/TimGM6mb.sf2",
+  "assets/soundfont/LICENSE-GPL-2.txt",
+  "assets/soundfont/README.txt",
   "offline/asset-manifest.json",
   "offline/pack-manifest.json",
   "offline/faith.json",
@@ -87,6 +90,16 @@ for (const font of provenance.fonts) {
     throw new Error(`Offline font integrity mismatch: ${font.file}`);
   required.push(emitted[0]);
 }
+
+const soundfont = await readFile(
+  resolve(dist, "assets/soundfont/TimGM6mb.sf2"),
+);
+if (
+  soundfont.length !== 5994284 ||
+  createHash("sha256").update(soundfont).digest("hex") !==
+    "82475b91a76de15cb28a104707d3247ba932e228bada3f47bba63c6b31aaf7a1"
+)
+  throw new Error("Packaged TimGM6mb provenance mismatch");
 
 let totalBytes = 0;
 for (const relative of required) {

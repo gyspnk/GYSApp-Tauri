@@ -153,7 +153,10 @@ if (
   existsSync("apps/web/public/offline/distributed-hymn-catalog.json") ||
   (await listFiles("apps/web/dist")).some(
     (path) =>
-      /\.(?:gyspkg|sf2)$/i.test(path) ||
+      (/\.(?:gyspkg|sf2)$/i.test(path) &&
+        !path
+          .replaceAll("\\", "/")
+          .endsWith("/assets/soundfont/TimGM6mb.sf2")) ||
       path.endsWith("distributed-hymn-catalog.json"),
   )
 )

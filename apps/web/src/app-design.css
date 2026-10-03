@@ -1267,3 +1267,697 @@
 .topbar .topbar-select .control-select-trigger {
   color: var(--navy);
 }
+
+/* Text hymn controls share the application header's soft blue fields. */
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .hymn-more-actions-summary,
+    .hymn-text-footer > button,
+    .hymn-scope-pill-btn,
+    .hymn-autoscroll-btn,
+    .hymn-reader-settings-summary,
+    .lyrics-ctrl-btn
+  ) {
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: 14px;
+  background: var(--blue-soft);
+  color: var(--navy);
+  box-shadow: none;
+}
+.hymn-detail-page.is-text-viewer .hymn-mode-toggle {
+  padding: 4px;
+  gap: 4px;
+  border-radius: 16px;
+  border-color: color-mix(in srgb, var(--blue) 18%, var(--line));
+  background: var(--blue-soft);
+}
+.hymn-detail-page.is-text-viewer .hymn-mode-button {
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--navy);
+  box-shadow: none;
+  font-weight: 600;
+}
+.hymn-detail-page.is-text-viewer .hymn-mode-button.is-active,
+.hymn-detail-page.is-text-viewer .hymn-action-primary,
+.hymn-detail-page.is-text-viewer .hymn-scope-pill-btn.is-active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  box-shadow: none;
+}
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .hymn-more-actions-summary,
+    .hymn-text-footer > button,
+    .hymn-mode-button
+  )
+  svg {
+  margin: 0;
+  color: inherit;
+  stroke-width: 1.7;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer {
+  gap: 6px;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.hymn-more-actions-panel, .hymn-reader-settings-panel) {
+  border-radius: 16px;
+  border-color: var(--line);
+  background: var(--surface);
+}
+.hymn-detail-page.is-text-viewer .detail-hero {
+  border-bottom: 0;
+  padding-bottom: 8px;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: 16px;
+  background: var(--blue-soft);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar .detail-actions {
+  display: flex;
+  width: auto;
+  gap: 4px;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-text-toolbar
+  :is(.hymn-action, .hymn-more-actions-summary, .hymn-partitur-toggle) {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--navy);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar .hymn-action-primary {
+  background: var(--blue);
+  color: white;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar .hymn-action-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.hymn-partitur-toggle svg {
+  margin: 0;
+}
+.hymn-partitur-toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar .detail-actions {
+  order: 0;
+}
+.hymn-detail-page.is-text-viewer .hymn-partitur-toggle {
+  order: 1;
+}
+.hymn-detail-page.is-text-viewer .hymn-more-actions {
+  order: 2;
+}
+.hymn-detail-page.is-text-viewer .detail-hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-title {
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-title h1 {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button > svg {
+  display: block;
+  margin: 0;
+  flex: 0 0 auto;
+}
+@media (max-width: 600px) {
+  .hymn-detail-page.is-text-viewer .detail-hero {
+    gap: 6px;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-title {
+    gap: 6px;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-title h1 {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
+    gap: 2px;
+    padding: 3px;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-toolbar .detail-actions {
+    gap: 2px;
+  }
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet,
+.hymn-detail-page.is-text-viewer .all-verses-sheet {
+  font-family: inherit;
+  font-weight: 450;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet p {
+  margin-block: 0.2em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hymn-detail-page.is-text-viewer .lyrics-sheet,
+  .hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching {
+    transition:
+      font-size 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      line-height 160ms ease;
+  }
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet p {
+  margin-block: 0.12em;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.lyrics-sheet, .all-verses-sheet)
+  .chord-capability {
+  padding-top: 0;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.lyrics-sheet, .all-verses-sheet)
+  .chord-rich-line {
+  padding-top: 1em;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.lyrics-sheet, .all-verses-sheet)
+  .chord-visual-row {
+  height: 1em;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.lyrics-sheet, .all-verses-sheet)
+  .chord-visual-marker {
+  font-size: calc(0.82em * var(--chord-font-scale, 1));
+  line-height: 1.15;
+  padding: 0;
+  color: var(--navy);
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet p {
+  max-width: 100%;
+}
+
+/* Keep lyric nodes mounted so the chord row can contract without a jump. */
+.hymn-detail-page.is-text-viewer .chord-capability.is-hidden .chord-rich-line {
+  padding-top: 0;
+}
+.chord-capability.is-hidden .chord-visual-row {
+  opacity: 0;
+  transform: translateY(0.25em);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hymn-detail-page.is-text-viewer .chord-rich-line {
+    transition: padding-top 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .chord-visual-row {
+    transition:
+      opacity 220ms ease,
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @starting-style {
+    .hymn-detail-page.is-text-viewer .chord-rich-line {
+      padding-top: 0;
+    }
+    .chord-visual-row {
+      opacity: 0;
+      transform: translateY(0.25em);
+    }
+  }
+  .hymn-detail-page .lyrics-sheet:not(.is-continuous) {
+    view-transition-name: hymn-lyrics;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  ::view-transition-old(hymn-lyrics) {
+    animation: hymn-lyrics-out 200ms ease both;
+  }
+  ::view-transition-new(hymn-lyrics) {
+    animation: hymn-lyrics-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  html:active-view-transition .verse-enter {
+    animation: none;
+  }
+}
+@keyframes hymn-lyrics-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes hymn-lyrics-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hymn-detail-page.is-text-viewer
+  .hymn-text-toolbar
+  .hymn-midi-toggle[aria-pressed="false"] {
+  background: transparent;
+  color: var(--navy);
+}
+
+/* A movable edge rail remains independent of the application's navigation. */
+.media-surface.is-edge-player {
+  z-index: calc(var(--z-modal, 60) + 1);
+}
+.media-surface.is-edge-player.is-minimized {
+  position: fixed;
+  top: clamp(
+    8px,
+    calc(var(--media-edge-y, 0.55) * 100dvh - 79px),
+    calc(100dvh - 166px)
+  );
+  bottom: auto;
+  left: 8px;
+  right: auto;
+  width: 56px;
+  max-width: 56px;
+  height: 158px;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, 44px);
+  gap: 4px;
+  padding: 8px 5px;
+  border-radius: 18px;
+  transform: none;
+  overflow: hidden;
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"] {
+  left: auto;
+  right: 8px;
+}
+.media-surface.is-edge-player.is-minimized
+  > :not(.media-drag-handle, .media-primary-control, .media-minimize) {
+  display: none !important;
+}
+.media-surface.is-edge-player.is-minimized
+  :is(.media-drag-handle, .media-primary-control, .media-minimize) {
+  width: 44px;
+  height: 44px;
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 0;
+  border-radius: 12px;
+}
+.media-surface.is-edge-player .media-drag-handle {
+  background: transparent;
+  color: var(--muted);
+  touch-action: none;
+}
+.media-surface.is-edge-player.is-edge-dragging {
+  left: var(--edge-drag-x) !important;
+  top: var(--edge-drag-y) !important;
+  right: auto !important;
+  animation: none;
+  transition: none;
+  cursor: grabbing;
+}
+
+/* Keep playback close to the title; secondary settings unfold on demand. */
+.media-surface.is-kidung-media:not(.is-minimized) {
+  grid-template-columns: minmax(0, 1fr) auto 36px 36px 36px;
+  grid-template-areas: "title transport stop mute minimize" "seek seek seek seek advanced";
+  gap: 4px 6px;
+  align-items: center;
+  padding: 10px 14px;
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-art,
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta-top {
+  display: none;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-main, .media-adjustments) {
+  display: contents;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  grid-area: title;
+  min-width: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+  font-size: 13px;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+  grid-area: seek;
+  width: 100%;
+  margin: 0;
+  gap: 8px;
+  font-size: 10px;
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-transport-controls {
+  align-self: center;
+  gap: 2px;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-control, .media-minimize) {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+  grid-area: advanced;
+  position: relative;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-summary {
+  min-height: 30px;
+  width: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-summary::after,
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-summary
+  > small {
+  display: none;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-controls[open]
+  > summary {
+  background: var(--surface-soft);
+  color: var(--blue);
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 14px);
+  width: min(420px, calc(100vw - 40px));
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px #163f6126;
+  animation: midi-settings-enter 180ms ease-out;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-volume-control {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+@keyframes midi-settings-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    width: calc(100% - 24px);
+    max-width: none;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    grid-template-columns: minmax(0, 1fr) auto 36px;
+    grid-template-areas: "title transport minimize" "seek seek advanced";
+    padding: 10px 12px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    > :is(.media-stop-control, .media-mute-control) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-surface.is-kidung-media .media-advanced-panel {
+    animation: none;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-transport-controls {
+  grid-area: transport !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+  grid-area: seek !important;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+  grid-area: advanced !important;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  grid-area: title !important;
+  grid-template-columns: minmax(0, 1fr);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-transport-controls
+  .media-control {
+  flex: 0 0 36px;
+  min-width: 36px;
+}
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: minmax(0, 1fr) auto 36px !important;
+    grid-template-areas: "title transport minimize" "seek seek advanced" !important;
+  }
+}
+
+/* Manual zoom wraps within the reader and retains vertical scrolling. */
+.hymn-detail-page.is-text-viewer :is(.lyrics-sheet, .all-verses-sheet) {
+  min-width: 0;
+  scrollbar-gutter: stable both-edges;
+}
+.hymn-detail-page.is-text-viewer :is(.lyrics-sheet, .all-verses-sheet) p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.hymn-detail-page.is-text-viewer .chord-visual-marker {
+  left: clamp(
+    0px,
+    var(--chord-position),
+    calc(100% - var(--chord-width, 2em))
+  ) !important;
+  transform: none;
+}
+/* Wrapped rows reserve a chord lane above every lyric row, not just the first. */
+.hymn-detail-page.is-text-viewer .chord-rich-line.is-wrapped .chord-text-layer {
+  line-height: 2.8;
+}
+.hymn-detail-page.is-text-viewer .chord-rich-line.is-wrapped .chord-visual-row {
+  transform: translateY(-0.1em);
+}
+.hymn-detail-page.is-text-viewer :is(.chord-text-layer, .chord-text-char) {
+  white-space: normal;
+}
+
+/* Reader chrome follows the viewport rather than a fixed desktop column. */
+.hymn-detail-page.is-text-viewer {
+  --reader-control: clamp(44px, calc(36px + 1.9vw), 64px);
+  --reader-icon: clamp(20px, calc(17px + 0.65vw), 28px);
+  width: 100%;
+  max-width: none;
+}
+.hymn-detail-page.is-text-viewer .detail-hero {
+  width: 100%;
+  gap: clamp(8px, 1vw, 18px);
+  padding-block: 8px;
+}
+.hymn-detail-page.is-text-viewer
+  :is(
+    .hymn-text-toolbar .hymn-action,
+    .hymn-text-toolbar .hymn-more-actions-summary,
+    .hymn-text-toolbar .hymn-partitur-toggle,
+    .hymn-text-title .viewer-chrome-button,
+    .hymn-text-footer > button
+  ) {
+  width: var(--reader-control);
+  height: var(--reader-control);
+  min-width: var(--reader-control);
+  min-height: var(--reader-control);
+  flex: 0 0 var(--reader-control);
+  border-radius: clamp(11px, 1vw, 16px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.hymn-detail-page.is-text-viewer
+  :is(.hymn-text-toolbar, .hymn-text-title, .hymn-text-footer)
+  svg {
+  width: var(--reader-icon);
+  height: var(--reader-icon);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar {
+  gap: clamp(2px, 0.4vw, 6px);
+  padding: clamp(3px, 0.4vw, 6px);
+  border-radius: clamp(16px, 1.5vw, 22px);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer {
+  width: 100%;
+  grid-template-columns:
+    var(--reader-control) var(--reader-control) minmax(0, 1fr)
+    var(--reader-control) var(--reader-control);
+  gap: clamp(6px, 0.6vw, 12px);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer.is-all-verses {
+  grid-template-columns: var(--reader-control) minmax(0, 1fr) var(
+      --reader-control
+    );
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > span {
+  font-size: clamp(12px, calc(10px + 0.4vw), 16px);
+}
+@media (max-width: 359px) {
+  .hymn-detail-page.is-text-viewer .detail-hero {
+    flex-wrap: wrap;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-title {
+    flex-basis: 100%;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
+    margin-left: auto;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized) {
+  --midi-control: clamp(36px, calc(28px + 1.5vw), 56px);
+  grid-template-columns: minmax(0, 1fr) auto var(--midi-control) !important;
+  grid-template-areas: "title transport minimize" "seek seek advanced" !important;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-control, .media-minimize) {
+  width: var(--midi-control);
+  height: var(--midi-control);
+  min-width: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  > .media-transport-controls
+  .media-control {
+  flex-basis: var(--midi-control);
+  min-width: var(--midi-control);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-control, .media-minimize)
+  svg {
+  width: clamp(18px, calc(15px + 0.6vw), 26px);
+  height: clamp(18px, calc(15px + 0.6vw), 26px);
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+  font-size: clamp(13px, calc(11px + 0.4vw), 17px);
+}
+body:has(.hymn-detail-page.is-text-viewer)
+  .media-surface.is-kidung-media:not(.is-minimized) {
+  bottom: calc(
+    clamp(44px, calc(36px + 1.9vw), 64px) + 28px + env(safe-area-inset-bottom)
+  );
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
+  grid-area: minimize !important;
+  align-self: center;
+  justify-self: end;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    --midi-control: 40px;
+    grid-template-columns: 124px minmax(0, 1fr) 40px !important;
+    grid-template-areas: "title title minimize" "transport seek advanced" !important;
+    gap: 2px 6px;
+    padding: 8px 10px;
+    align-items: center;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    align-self: center;
+    padding: 0;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 4px;
+    align-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time input {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    .media-seek-time
+    > span:last-child {
+    text-align: right;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-summary {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+}

@@ -304,7 +304,29 @@ describe("MIDI operation generation", () => {
 });
 
 describe("MIDI worker lifecycle", () => {
-  it("requires an installed distributed SoundFont", async () => {
+  it("closing clears the session and prevents playback until reopened", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    await player.load("hymn-001", "First hymn", {
+      ppq: 480,
+      tempo: 100,
+      events: [],
+    });
+    await player.close();
+    expect(player.snapshot()).toMatchObject({
+      status: "idle",
+      songId: undefined,
+      position: 0,
+      duration: 0,
+    });
+    await expect(player.play()).rejects.toThrow("MIDI is not loaded");
+    await player.load("hymn-001", "First hymn", {
+      ppq: 480,
+      tempo: 100,
+      events: [],
+    });
+    expect(player.snapshot().status).toBe("ready");
+  });
+  it("rejects missing SoundFont bytes from a custom loader", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const internal = player as unknown as {
       ensureSoundfont: (worker: Worker) => Promise<void>;
@@ -312,7 +334,7 @@ describe("MIDI worker lifecycle", () => {
 
     await expect(
       internal.ensureSoundfont(new FakeWorker() as unknown as Worker),
-    ).rejects.toThrow("GeneralUser-GS");
+    ).rejects.toThrow("SoundFont is incomplete");
   });
 
   it("discards and terminates a crashed worker before the next render", async () => {
@@ -441,6 +463,9 @@ describe("MIDI audio node lifecycle", () => {
 describe("MIDI render preload", () => {
   it("separates cache entries by every audible setting", () => {
     const base = midiRenderKey("abc", 100, 0, -1, 44_100);
+    expect(midiRenderKey("abc", 100, 0, -1, 44_100, "GeneralUser-GS")).not.toBe(
+      base,
+    );
 
     expect(midiRenderKey("abc", 110, 0, -1, 44_100)).not.toBe(base);
     expect(midiRenderKey("abc", 100, 1, -1, 44_100)).not.toBe(base);

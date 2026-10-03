@@ -11,6 +11,80 @@ import {
 } from "./chord-viewer.js";
 
 describe("shared chord capability", () => {
+  it("preserves original character offsets including spaces and punctuation", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      songId: "hymn-001",
+      title: "Offsets",
+      key: "C",
+      sourceCommit: "a3d1ea7",
+      sourcePath: "assets/chord/test.json",
+      verses: [
+        {
+          label: "1",
+          lines: [
+            { text: "Kudus, Allah!", chords: [{ token: "G", index: 7 }] },
+          ],
+        },
+      ],
+    });
+    expect(
+      matchChordLinesToLyrics(["Kudus, Allah!"], document, [], 0)[0]?.chords[0]
+        ?.index,
+    ).toBe(7);
+    expect(
+      matchChordLinesToLyrics(["1. Kudus Allah"], document, [], 0)[0]?.chords[0]
+        ?.index,
+    ).toBe(9);
+  });
+
+  it("keeps PDF chord positions geometric instead of treating them as character counts", () => {
+    const rects = [
+      { index: 0, left: 0, right: 80, top: 0, bottom: 20 },
+      { index: 1, left: 80, right: 100, top: 0, bottom: 20 },
+    ];
+    const rows = groupChordMarkersByVisualRow(
+      "Wi",
+      [{ token: "G", index: 1, position: 0.5 }],
+      rects,
+      { left: 0, width: 100 },
+    );
+    expect(rows[0]?.markers[0]?.position).toBe(0.5);
+    const wrapped = groupChordMarkersByVisualRow(
+      "Wi",
+      [{ token: "G", index: 1, position: 0.9 }],
+      [rects[0]!, { ...rects[1]!, left: 0, right: 20, top: 30 }],
+      { left: 0, width: 80 },
+    );
+    expect(wrapped[0]?.top).toBe(30);
+    expect(wrapped[0]?.markers[0]?.position).toBe(0.5);
+  });
+
+  it("reuses the canonical melody by line for unmatched later stanzas", () => {
+    const document = ChordDocumentV2Schema.parse({
+      version: 2,
+      type: "note-aligned",
+      pages: { "1": [{ noteIdx: 0, chord: "C" }] },
+    });
+    const layout = [
+      {
+        page: 1,
+        lines: [{ text: "Kudus Allah", chords: [{ chord: "C", pos: 0.4 }] }],
+      },
+    ];
+    const result = matchChordLinesToLyrics(
+      ["Pujilah Tuhan"],
+      document,
+      layout,
+      1,
+      ["Kudus Allah", "Pujilah Tuhan"],
+    );
+    expect(result[0]?.chords[0]).toMatchObject({ token: "C", position: 0.4 });
+    expect(
+      matchChordLinesToLyrics(["Baris tanpa melodi"], document, layout, 0)[0],
+    ).toBeUndefined();
+  });
+
   it("transposes roots and slash basses musically with accidental preference", () => {
     expect(transposeChord("C/G", 2)).toBe("D/A");
     expect(transposeChord("Bb/F", 1, "sharp")).toBe("B/F♯");

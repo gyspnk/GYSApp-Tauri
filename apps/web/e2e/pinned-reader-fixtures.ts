@@ -100,6 +100,24 @@ export async function preparePinnedReaderAssets(page: Page) {
     pinnedBytes(chordUrl, chord.sha256, chord.size),
     pinnedBytes(masterUrl, manifest.sha256, manifest.sizeBytes),
   ]);
+  await page.route(
+    "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json",
+    (route) =>
+      route.fulfill({
+        json: {
+          schemaVersion: 1,
+          sourceCommit: lock.sourceCommit,
+          files: [
+            {
+              bookCode: "KR",
+              path: `docs/${chord.path}`,
+              size: chord.size,
+              sha256: chord.sha256,
+            },
+          ],
+        },
+      }),
+  );
   await page.route(chordUrl, (route) =>
     route.fulfill({ body: chordBytes, contentType: "application/json" }),
   );

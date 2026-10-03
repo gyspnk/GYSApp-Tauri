@@ -38,6 +38,34 @@ afterEach(() => {
 });
 
 describe("chord manifest source compatibility", () => {
+  it("uses the latest immutable upstream manifest instead of the bundled commit", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 1,
+          sourceCommit: "deadbee",
+          files: [
+            {
+              bookCode: "KR",
+              path: `docs/${chordRef.path}`,
+              size: chordRef.size,
+              sha256: chordRef.sha256,
+            },
+          ],
+        }),
+      ),
+    );
+    const { createBrowserChordRepository } = await import("./chords.js");
+    const latest = await createBrowserChordRepository().refreshManifest();
+    expect(latest.sourceCommit).toBe("deadbee");
+    expect(latest.entries[0]).toMatchObject({
+      songId: "hymn-001",
+      sourceCommit: "deadbee",
+      sha256: chordRef.sha256,
+    });
+  });
+
   it.each([
     {
       name: "manifest commit",

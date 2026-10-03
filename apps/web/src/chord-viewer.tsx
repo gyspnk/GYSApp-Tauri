@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
 import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import { translate, type Locale } from "./i18n.js";
@@ -149,7 +149,7 @@ export function transposeBetweenKeys(
 
 export type ChordTextLine = {
   text: string;
-  chords: Array<{ token: string; index: number }>;
+  chords: Array<{ token: string; index: number; position?: number }>;
 };
 
 export type ChordTextCharRect = {
@@ -194,7 +194,7 @@ function roundedPosition(value: number): number {
  */
 export function groupChordMarkersByVisualRow(
   text: string,
-  chords: Array<{ token: string; index: number }>,
+  chords: Array<{ token: string; index: number; position?: number }>,
   charRects: ChordTextCharRect[],
   lineRect: ChordTextLineRect,
 ): ChordVisualRow[] {
@@ -227,7 +227,9 @@ export function groupChordMarkersByVisualRow(
         markers: chords.map((chord) => ({
           token: chord.token,
           index: chord.index,
-          position: roundedPosition(chord.index / Math.max(1, textLength - 1)),
+          position: roundedPosition(
+            chord.position ?? chord.index / Math.max(1, textLength - 1),
+          ),
         })),
       },
     ];
@@ -266,9 +268,30 @@ export function groupChordMarkersByVisualRow(
       rectByIndex.get(Math.max(0, Math.min(textLength - 1, index - 1))) ??
       validRects[validRects.length - 1];
     if (!fallback) continue;
-    const targetX = direct ? (direct.left + direct.right) / 2 : fallback.right;
+    let anchor = fallback;
+    let targetX = direct ? (direct.left + direct.right) / 2 : fallback.right;
+    if (chord.position !== undefined) {
+      if (rows.length === 1) {
+        targetX =
+          rows[0]!.rowLeft + clampUnit(chord.position) * rows[0]!.rowWidth;
+      } else {
+        // Preserve PDF geometry through wrapping, using rendered glyph widths.
+        const total = validRects.reduce(
+          (sum, rect) => sum + rect.right - rect.left,
+          0,
+        );
+        let remaining = clampUnit(chord.position) * total;
+        for (const rect of validRects) {
+          const glyphWidth = rect.right - rect.left;
+          anchor = rect;
+          if (remaining <= glyphWidth) break;
+          remaining -= glyphWidth;
+        }
+        targetX = anchor.left + Math.min(remaining, anchor.right - anchor.left);
+      }
+    }
     let row = rows.find(
-      (candidate) => Math.abs(candidate.top - (fallback.top - top)) < 2,
+      (candidate) => Math.abs(candidate.top - (anchor.top - top)) < 2,
     );
     if (!row)
       row = rows.find(
@@ -367,14 +390,15 @@ export function transposeChord(
 
 /**
  * Associate the canonical PDF-derived lyric lines with the app's verse text.
- * The association is intentionally conservative: an unmatched line receives
- * no chord rather than borrowing a chord from another verse.
+ * Match text conservatively. Note-aligned scores can reuse the same melody
+ * line across stanzas when the complete catalog verses are supplied.
  */
 export function matchChordLinesToLyrics(
   lyricLines: string[],
   document: ChordDocumentV2 | undefined,
   layout: ChordLayoutPage[],
   verseIndex: number,
+  verses: string[] = [],
 ): Array<ChordTextLine | undefined> {
   if (!document) return lyricLines.map(() => undefined);
   const candidates: ChordTextLine[] =
@@ -389,11 +413,12 @@ export function matchChordLinesToLyrics(
             chords: line.chords.map((chord) => ({
               token: chord.chord,
               index: Math.max(0, Math.round(chord.pos * line.text.length)),
+              position: chord.pos,
             })),
           })),
         );
   const used = new Set<number>();
-  return lyricLines.map((line) => {
+  return lyricLines.map((line, lineIndex) => {
     const target = normalizeText(stripVerseLabel(line));
     if (!target) return undefined;
     let bestIndex = -1;
@@ -407,9 +432,30 @@ export function matchChordLinesToLyrics(
         bestIndex = index;
       }
     });
-    if (bestIndex < 0 || bestScore < 0.6) return undefined;
-    used.add(bestIndex);
-    const matched = candidates[bestIndex];
+    let matched = bestScore >= 0.6 ? candidates[bestIndex] : undefined;
+    if (matched) used.add(bestIndex);
+    // The canonical note-aligned score shares its melody across stanzas.
+    // Explicit verse documents never borrow another verse's chords.
+    if (!matched && "pages" in document) {
+      for (const verse of verses) {
+        const verseLine = verse.split("\n")[lineIndex];
+        if (!verseLine) continue;
+        const sourceTarget = normalizeText(stripVerseLabel(verseLine));
+        let fallbackScore = 0.6;
+        for (const candidate of candidates) {
+          const score = chordLineScore(
+            sourceTarget,
+            normalizeText(stripVerseLabel(candidate.text)),
+          );
+          if (score >= fallbackScore) {
+            matched = candidate;
+            fallbackScore = score;
+            if (score === 1) break;
+          }
+        }
+        if (matched) break;
+      }
+    }
     if (!matched) return undefined;
     // gyschordweb parity: keep the APP's lyric text (the catalog can differ
     // from the chord document) and only take the chord tokens from the
@@ -419,6 +465,7 @@ export function matchChordLinesToLyrics(
       .map((chord) => ({
         token: chord.token,
         index: remapChordIndex(chord.index, matched.text, line),
+        ...(chord.position === undefined ? {} : { position: chord.position }),
       }))
       .filter((chord) => chord.index >= 0 && chord.index <= line.length);
     return { text: line, chords };
@@ -435,24 +482,31 @@ function remapChordIndex(
   documentText: string,
   appText: string,
 ): number {
+  const source = [...documentText];
+  const target = [...appText];
   const clamped = Math.max(
     0,
-    Math.min(documentText.length, Math.round(documentIndex)),
+    Math.min(source.length, Math.round(documentIndex)),
   );
-  const docNormalized = normalizeText(stripVerseLabel(documentText));
-  const appNormalized = normalizeText(stripVerseLabel(appText));
-  if (docNormalized && appNormalized) {
-    const fraction =
-      docNormalized.length > 0
-        ? Math.min(1, clamped / Math.max(1, docNormalized.length))
-        : 0;
-    return Math.round(fraction * appNormalized.length);
+  if (documentText === appText) return clamped;
+  const offsets = (text: string) => {
+    const labelLength = [...text].length - [...stripVerseLabel(text)].length;
+    return [...text].flatMap((char, index) =>
+      index >= labelLength && /[\p{L}\p{N}]/u.test(char) ? [index] : [],
+    );
+  };
+  const sourceOffsets = offsets(documentText);
+  const targetOffsets = offsets(appText);
+  if (
+    normalizeText(stripVerseLabel(documentText)) ===
+    normalizeText(stripVerseLabel(appText))
+  ) {
+    const ordinal = sourceOffsets.findIndex((index) => index >= clamped);
+    return ordinal < 0
+      ? target.length
+      : (targetOffsets[ordinal] ?? target.length);
   }
-  const fraction =
-    documentText.length > 0
-      ? Math.min(1, clamped / Math.max(1, documentText.length))
-      : 0;
-  return Math.round(fraction * appText.length);
+  return Math.round((clamped / Math.max(1, source.length)) * target.length);
 }
 
 function ChordLine({
@@ -524,7 +578,9 @@ function ChordLine({
   }, [line.chords, line.text]);
 
   return (
-    <span className="chord-rich-line">
+    <span
+      className={`chord-rich-line${visualRows.length > 1 ? " is-wrapped" : ""}`}
+    >
       <span className="chord-text-layer" ref={textRef}>
         {chars.map((character, index) => (
           <span
@@ -532,7 +588,7 @@ function ChordLine({
             data-chord-char-index={index}
             key={`${index}-${character}`}
           >
-            {character === " " ? " " : character}
+            {character}
           </span>
         ))}
       </span>
@@ -551,7 +607,12 @@ function ChordLine({
             <small
               className="chord-visual-marker"
               key={`${marker.index}-${marker.token}-${markerIndex}`}
-              style={{ left: `${marker.position * 100}%` }}
+              style={
+                {
+                  "--chord-position": `${marker.position * 100}%`,
+                  "--chord-width": `${transposeChord(marker.token, transpose, accidental).length * 0.8 + 0.3}em`,
+                } as CSSProperties
+              }
             >
               {transposeChord(marker.token, transpose, accidental)}
             </small>
@@ -565,11 +626,13 @@ function ChordLine({
 /** Shared chord capability for Text presentation. */
 export function ChordCapability({
   lines,
+  active = true,
   transpose = 0,
   accidental = "sharp",
   locale,
 }: {
   lines: Array<ChordTextLine | undefined>;
+  active?: boolean;
   transpose?: number;
   accidental?: "sharp" | "flat";
   locale: Locale;
@@ -596,8 +659,8 @@ export function ChordCapability({
         }, #ffffff)`;
   return (
     <span
-      className="chord-capability"
-      aria-label={translate(locale, "kidung.chordLayer")}
+      className={`chord-capability${active ? "" : " is-hidden"}`}
+      aria-label={active ? translate(locale, "kidung.chordLayer") : undefined}
       style={
         {
           "--chord-text-color": textColor,

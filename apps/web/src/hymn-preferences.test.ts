@@ -35,9 +35,9 @@ describe("hymn typography preferences", () => {
     });
     try {
       expect(readHymnTypography("hymn-001")).toEqual(DEFAULT_HYMN_TYPOGRAPHY);
-      writeHymnTypography("hymn-001", { fontSize: 40, lineHeight: 0.4 });
+      writeHymnTypography("hymn-001", { fontSize: 80, lineHeight: 0.4 });
       expect(readHymnTypography("hymn-001")).toEqual({
-        fontSize: 28,
+        fontSize: 56,
         lineHeight: 1.4,
       });
     } finally {

@@ -114,6 +114,30 @@ export class ChordRepository {
     return this.inFlight;
   }
 
+  /** One manifest check, then bounded background downloads for missing/changed files. */
+  public async syncAll(
+    signal?: AbortSignal,
+  ): Promise<{ checked: number; failed: number }> {
+    const manifest = await this.refreshManifest(signal, true);
+    let index = 0;
+    let failed = 0;
+    await Promise.all(
+      Array.from({ length: Math.min(3, manifest.entries.length) }, async () => {
+        while (index < manifest.entries.length) {
+          if (signal?.aborted) throw signal.reason;
+          const entry = manifest.entries[index++]!;
+          try {
+            await this.revalidateSong(entry.songId, signal);
+          } catch (error) {
+            if (signal?.aborted) throw error;
+            failed += 1;
+          }
+        }
+      }),
+    );
+    return { checked: manifest.entries.length, failed };
+  }
+
   public async getChord(
     songId: string,
     signal?: AbortSignal,
@@ -161,12 +185,13 @@ export class ChordRepository {
       this.negative.set(negativeKey, now);
       throw new ChordNotAvailableError(songId);
     }
-    const cachedRef = this.cache.getRef?.(songId);
     const cached = await this.cache.get(songId);
+    const cachedRef = this.cache.getRef?.(songId);
     if (
       cached &&
       cachedRef?.sha256 === ref.sha256 &&
-      cachedRef.sourceCommit === ref.sourceCommit &&
+      (cachedRef.sourceCommit === ref.sourceCommit ||
+        !("sourceCommit" in cached)) &&
       this.cache.isIntegrityVerified?.(songId) !== false
     )
       return cached;

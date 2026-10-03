@@ -810,7 +810,7 @@ test.describe("responsive reader navigation", () => {
     await expect(page.getByRole("tab", { name: "PDF" })).toBeVisible();
     await expect(
       page.getByRole("button", {
-        name: "Pasang SoundFont untuk memutar",
+        name: "Buka MIDI",
         exact: true,
       }),
     ).toBeVisible();
@@ -963,36 +963,25 @@ test.describe("responsive reader navigation", () => {
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
-  test("Kidung keeps Play visible and opens SoundFont assets when unavailable", async ({
+  test("Kidung plays with the bundled SoundFont without installing optional assets", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+    await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
+    const player = page.locator(".media-surface.is-kidung-media");
+    await expect(player).toBeVisible({ timeout: 30_000 });
+    await player.getByRole("button", { name: "Putar", exact: true }).click();
     await expect(
-      page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
-    ).toBeVisible({ timeout: 15_000 });
-    const play = page.getByRole("button", {
-      name: "Pasang SoundFont untuk memutar",
-      exact: true,
-    });
-    await expect(play).toBeVisible();
-    await expect(page.locator(".media-surface")).toHaveCount(0);
-    await play.click();
-    await expect(page).toHaveURL(/\/lainnya\?section=data$/);
-    await expect(page.locator(".distributed-assets-list")).toBeVisible();
-    await page.goBack();
-    await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
-    await expect(
-      page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
-    ).toBeVisible();
-    await page.goForward();
-    await expect(page).toHaveURL(/\/lainnya\?section=data$/);
-    await expect(page.locator(".distributed-assets-list")).toBeVisible();
-    await expect(
-      page.locator(".distributed-asset-group-label").filter({
-        hasText: "Soundfont",
-      }),
-    ).toBeVisible();
+      player.getByRole("button", { name: "Jeda", exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
+    await player.getByRole("button", { name: "Jeda", exact: true }).click();
+    await page.locator(".hymn-more-actions-summary").click();
+    await page.locator(".hymn-reader-settings-summary").click();
+    await page.locator(".hymn-music-settings > summary").click();
+    await expect(page.locator(".hymn-soundfont-active")).toContainText(
+      "TimGM6mb",
+    );
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
@@ -1029,7 +1018,7 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/kidung/hymn-001");
     await expect(
-      page.getByRole("button", { name: "Putar MIDI", exact: true }),
+      page.getByRole("button", { name: "Buka MIDI", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
     await page.locator(".hymn-more-actions-summary").click();
     await page.locator(".hymn-reader-settings-summary").click();

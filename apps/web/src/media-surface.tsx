@@ -5,6 +5,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
@@ -218,6 +219,82 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   const [minimized, setMinimized] = useState(
     () => localStorage.getItem("gys-media-minimized") !== "0",
   );
+  const [edge, setEdge] = useState<{ side: "left" | "right"; y: number }>(
+    () => {
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem("gys-midi-edge") ?? "null",
+        );
+        if (
+          (saved?.side === "left" || saved?.side === "right") &&
+          Number.isFinite(saved.y)
+        )
+          return { side: saved.side, y: Math.max(0, Math.min(1, saved.y)) };
+      } catch {
+        /* Use the default edge for a missing or malformed preference. */
+      }
+      return { side: "left", y: 0.55 };
+    },
+  );
+  const drag = useRef<
+    { id: number; dx: number; dy: number; x: number; y: number } | undefined
+  >(undefined);
+  useEffect(() => {
+    localStorage.setItem("gys-midi-edge", JSON.stringify(edge));
+  }, [edge]);
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 || !surfaceRef.current) return;
+    const rect = surfaceRef.current.getBoundingClientRect();
+    animationRef.current?.cancel();
+    drag.current = {
+      id: event.pointerId,
+      dx: event.clientX - rect.left,
+      dy: event.clientY - rect.top,
+      x: rect.left,
+      y: rect.top,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+  const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const current = drag.current;
+    const surface = surfaceRef.current;
+    if (!current || current.id !== event.pointerId || !surface) return;
+    current.x = Math.max(
+      0,
+      Math.min(
+        window.innerWidth - surface.offsetWidth,
+        event.clientX - current.dx,
+      ),
+    );
+    current.y = Math.max(
+      8,
+      Math.min(
+        window.innerHeight - surface.offsetHeight - 8,
+        event.clientY - current.dy,
+      ),
+    );
+    surface.style.setProperty("--edge-drag-x", `${current.x}px`);
+    surface.style.setProperty("--edge-drag-y", `${current.y}px`);
+    surface.classList.add("is-edge-dragging");
+  };
+  const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const current = drag.current;
+    const surface = surfaceRef.current;
+    if (!current || current.id !== event.pointerId || !surface) return;
+    transitionRect.current = surface.getBoundingClientRect();
+    drag.current = undefined;
+    surface.classList.remove("is-edge-dragging");
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    setEdge({
+      side:
+        current.x + surface.offsetWidth / 2 < window.innerWidth / 2
+          ? "left"
+          : "right",
+      y: (current.y + surface.offsetHeight / 2) / window.innerHeight,
+    });
+  };
   const [sidebarBounds, setSidebarBounds] = useState({ left: 12, width: 232 });
   const toggleDock = () => {
     transitionRect.current = surfaceRef.current?.getBoundingClientRect();
@@ -271,7 +348,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" },
     );
     return () => animationRef.current?.cancel();
-  }, [minimized]);
+  }, [minimized, edge]);
   useEffect(() => {
     mediaSessionBridge.setSpeechActive(speechActive);
   }, [speechActive, speechSnapshot.status]);
@@ -587,10 +664,64 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       </label>
     </>
   );
+  const secondaryControls = (
+    <>
+      <button
+        className="media-control media-secondary-control media-stop-control"
+        type="button"
+        onClick={() =>
+          void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
+        }
+        aria-label={translate(
+          locale,
+          speechActive ? "media.stopSpeech" : "media.stopMidi",
+        )}
+      >
+        <Icon name="stop" size={16} />
+      </button>
+      <button
+        className="media-control media-secondary-control media-mute-control"
+        type="button"
+        onClick={() =>
+          speechActive
+            ? speechPlayer.setVolume(speechSnapshot.volume > 0 ? 0 : 1)
+            : midiPlayer.setMuted(!snapshot.muted)
+        }
+        aria-label={
+          speechActive
+            ? speechSnapshot.volume > 0
+              ? translate(locale, "media.muteSpeech")
+              : translate(locale, "media.unmuteSpeech")
+            : snapshot.muted
+              ? translate(locale, "media.unmuteMidi")
+              : translate(locale, "media.muteMidi")
+        }
+        aria-pressed={
+          speechActive ? speechSnapshot.volume === 0 : snapshot.muted
+        }
+      >
+        <Icon
+          name={
+            speechActive
+              ? speechSnapshot.volume === 0
+                ? "volumeOff"
+                : "volume"
+              : snapshot.muted
+                ? "volumeOff"
+                : "volume"
+          }
+          size={16}
+        />
+      </button>
+    </>
+  );
+
   return (
     <aside
+      id="persistent-media-player"
       ref={surfaceRef}
-      className={`media-surface persistent-media${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media" : ""}${speechActive ? " is-speech-media" : ""}${sidebarBounds.width < 100 ? " is-rail-player" : ""}`}
+      className={`media-surface persistent-media${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media is-edge-player" : ""}${speechActive ? " is-speech-media" : ""}${sidebarBounds.width < 100 ? " is-rail-player" : ""}`}
+      data-edge={edge.side}
       data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
@@ -598,12 +729,81 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       }
       style={
         {
+          "--media-edge-y": edge.y,
           "--media-sidebar-left": `${sidebarBounds.left}px`,
           "--media-sidebar-width": `${sidebarBounds.width}px`,
         } as CSSProperties
       }
       aria-label={translate(locale, "shell.media")}
     >
+      {isKidungMedia && minimized && (
+        <button
+          type="button"
+          className="media-drag-handle"
+          aria-label={translate(locale, "media.movePlayer")}
+          title={translate(locale, "media.movePlayer")}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={finishDrag}
+          onPointerCancel={finishDrag}
+          onKeyDown={(event) => {
+            if (
+              ![
+                "ArrowLeft",
+                "ArrowRight",
+                "ArrowUp",
+                "ArrowDown",
+                "Home",
+                "End",
+              ].includes(event.key)
+            )
+              return;
+            event.preventDefault();
+            transitionRect.current =
+              surfaceRef.current?.getBoundingClientRect();
+            setEdge((current) => ({
+              side:
+                event.key === "ArrowLeft"
+                  ? "left"
+                  : event.key === "ArrowRight"
+                    ? "right"
+                    : current.side,
+              y:
+                event.key === "Home"
+                  ? 0
+                  : event.key === "End"
+                    ? 1
+                    : Math.max(
+                        0,
+                        Math.min(
+                          1,
+                          current.y +
+                            (event.key === "ArrowUp"
+                              ? -0.05
+                              : event.key === "ArrowDown"
+                                ? 0.05
+                                : 0),
+                        ),
+                      ),
+            }));
+          }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <circle cx="8" cy="6" r="1.5" />
+            <circle cx="16" cy="6" r="1.5" />
+            <circle cx="8" cy="12" r="1.5" />
+            <circle cx="16" cy="12" r="1.5" />
+            <circle cx="8" cy="18" r="1.5" />
+            <circle cx="16" cy="18" r="1.5" />
+          </svg>
+        </button>
+      )}
       <div className="media-art" aria-hidden="true">
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
@@ -754,25 +954,27 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           )}
         {!minimized && (
           <div className="media-adjustments">
-            <label className="media-volume-control">
-              <span>{translate(locale, "media.volumeShort")}</span>
-              <input
-                aria-label={translate(
-                  locale,
-                  speechActive ? "media.volumeSpeech" : "media.volumeMidi",
-                )}
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={speechActive ? speechSnapshot.volume : snapshot.volume}
-                onChange={(event) =>
-                  speechActive
-                    ? speechPlayer.setVolume(Number(event.target.value))
-                    : void midiPlayer.setVolume(Number(event.target.value))
-                }
-              />
-            </label>
+            {!isKidungMedia && (
+              <label className="media-volume-control">
+                <span>{translate(locale, "media.volumeShort")}</span>
+                <input
+                  aria-label={translate(
+                    locale,
+                    speechActive ? "media.volumeSpeech" : "media.volumeMidi",
+                  )}
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={speechActive ? speechSnapshot.volume : snapshot.volume}
+                  onChange={(event) =>
+                    speechActive
+                      ? speechPlayer.setVolume(Number(event.target.value))
+                      : void midiPlayer.setVolume(Number(event.target.value))
+                  }
+                />
+              </label>
+            )}
             {speechActive ? (
               <label className="media-speech-rate-control">
                 <span>{translate(locale, "media.speed")}</span>
@@ -819,13 +1021,47 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 {isKidungMedia ? (
                   <details className="media-advanced-controls">
                     <summary className="media-advanced-summary">
-                      <span>{translate(locale, "media.advanced")}</span>
+                      <span className="sr-only">
+                        {translate(locale, "media.advanced")}
+                      </span>
+                      <Icon name="settings" size={16} />
                       <small>
                         {chordKeyName(keyIndex, keyAccidental)} ·{" "}
                         {snapshot.tempo} BPM
                       </small>
                     </summary>
                     <div className="media-advanced-panel">
+                      <label className="media-volume-control">
+                        <span>{translate(locale, "media.volumeShort")}</span>
+                        <input
+                          aria-label={translate(
+                            locale,
+                            speechActive
+                              ? "media.volumeSpeech"
+                              : "media.volumeMidi",
+                          )}
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={
+                            speechActive
+                              ? speechSnapshot.volume
+                              : snapshot.volume
+                          }
+                          onChange={(event) =>
+                            speechActive
+                              ? speechPlayer.setVolume(
+                                  Number(event.target.value),
+                                )
+                              : void midiPlayer.setVolume(
+                                  Number(event.target.value),
+                                )
+                          }
+                        />
+                      </label>
+
+                      {secondaryControls}
                       {midiAdvancedControls}
                       <button
                         className="media-queue-badge"
@@ -922,57 +1158,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           <Icon name={playing ? "pause" : "play"} size={18} />
         </button>
       )}
-      {!minimized && (
-        <>
-          <button
-            className="media-control media-secondary-control media-stop-control"
-            type="button"
-            onClick={() =>
-              void (speechActive ? speechPlayer.stop() : midiPlayer.stop())
-            }
-            aria-label={translate(
-              locale,
-              speechActive ? "media.stopSpeech" : "media.stopMidi",
-            )}
-          >
-            <Icon name="stop" size={16} />
-          </button>
-          <button
-            className="media-control media-secondary-control media-mute-control"
-            type="button"
-            onClick={() =>
-              speechActive
-                ? speechPlayer.setVolume(speechSnapshot.volume > 0 ? 0 : 1)
-                : midiPlayer.setMuted(!snapshot.muted)
-            }
-            aria-label={
-              speechActive
-                ? speechSnapshot.volume > 0
-                  ? translate(locale, "media.muteSpeech")
-                  : translate(locale, "media.unmuteSpeech")
-                : snapshot.muted
-                  ? translate(locale, "media.unmuteMidi")
-                  : translate(locale, "media.muteMidi")
-            }
-            aria-pressed={
-              speechActive ? speechSnapshot.volume === 0 : snapshot.muted
-            }
-          >
-            <Icon
-              name={
-                speechActive
-                  ? speechSnapshot.volume === 0
-                    ? "volumeOff"
-                    : "volume"
-                  : snapshot.muted
-                    ? "volumeOff"
-                    : "volume"
-              }
-              size={16}
-            />
-          </button>
-        </>
-      )}
+      {!minimized && !isKidungMedia && secondaryControls}
       {speechActive && !minimized && (
         <button
           className="media-minimize media-close-button"

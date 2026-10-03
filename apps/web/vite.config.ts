@@ -88,8 +88,8 @@ function offlineBuildAssetsPlugin(): Plugin {
       await writeFile(
         path,
         source.replace(
-          'const CACHE = "gysapp-shell-v24";',
-          `const CACHE = "gysapp-shell-v24-${buildId}";`,
+          'const CACHE = "gysapp-shell-v25";',
+          `const CACHE = "gysapp-shell-v25-${buildId}";`,
         ),
       );
     },

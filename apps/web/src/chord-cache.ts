@@ -117,6 +117,12 @@ export class BrowserChordCache implements ChordCache {
       await this.platform.blobs.remove(previous.key);
     await this.persist();
     await this.gc();
+    if (typeof window !== "undefined")
+      window.dispatchEvent(
+        new CustomEvent("gys-chords-updated", {
+          detail: { songId: ref.songId },
+        }),
+      );
   }
 
   public async remove(songId: string): Promise<void> {

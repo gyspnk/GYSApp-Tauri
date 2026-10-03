@@ -691,6 +691,11 @@ function RoutedApp() {
   }
   const settings = useAppSettings();
   const locale = settings.locale;
+  useEffect(() => {
+    void import("./chords.js")
+      .then((module) => module.syncChordsOnStartup())
+      .catch((error) => recordDiagnostic("info", "chord.sync", error));
+  }, []);
   useEffect(() => installMidiQueueCoordinator(), []);
   useEffect(() => installMediaSessionBridge(), []);
   useEffect(() => installHeadphoneDisconnectGuard(), []);

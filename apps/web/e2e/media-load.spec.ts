@@ -4,6 +4,42 @@ import { readFile } from "node:fs/promises";
 
 test.use({ serviceWorkers: "block" });
 
+test("canonical PDF fallback keeps all hymn chord rows and their source tokens", async ({
+  page,
+}) => {
+  await preparePinnedReaderAssets(page);
+  await page.route(/ThenGB\/(?:GYSAPP-Fork|GYSApp-Data)\//i, (route) =>
+    route.fulfill({ status: 503, body: "fork unavailable" }),
+  );
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+  await page
+    .getByRole("button", { name: "Tampilkan chord", exact: true })
+    .click();
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".chord-visual-row")
+          .evaluateAll((rows) =>
+            rows.map((row) =>
+              [...row.querySelectorAll(".chord-visual-marker")].map(
+                (marker) => marker.textContent,
+              ),
+            ),
+          ),
+      { timeout: 20_000 },
+    )
+    .toEqual([
+      ["C", "Am", "G", "F", "C"],
+      ["G", "Am", "G", "D", "G"],
+      ["C", "Am", "C", "F", "C"],
+      ["Cm", "Em", "F", "Em", "Dm", "G", "C"],
+    ]);
+  await expect(
+    page.getByText("Posisi chord belum tersedia", { exact: false }),
+  ).toHaveCount(0);
+});
+
 test("text-first Kidung keeps PDF.js lazy until a PDF-backed feature is used", async ({
   page,
 }) => {

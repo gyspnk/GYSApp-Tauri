@@ -1,4 +1,4 @@
-const CACHE = "gysapp-shell-v24";
+const CACHE = "gysapp-shell-v25";
 const SHELL_STATE_CACHE = "gysapp-update-state-v1";
 const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
@@ -29,9 +29,10 @@ const CORE = [
   "offline/pack-manifest.json",
   "offline/fork-hymnal-manifest.json",
 ].map(withBase);
-// The synthesizer runtime is warmed after the shell is ready. SoundFonts remain
-// explicit verified downloads managed outside the service-worker core.
+// Warm the MIDI runtime and packaged bank after the shell is ready.
+// GeneralUser-GS remains an optional verified asset-manager download.
 const OPTIONAL = [
+  "assets/soundfont/TimGM6mb.sf2",
   "vendor/midi-render-worker.js",
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
@@ -140,7 +141,7 @@ async function cacheBuildAssets(cache) {
   const manifest = await response.json();
   if (manifest.version !== 1 || !Array.isArray(manifest.assets))
     throw new Error("Build manifest invalid");
-  const ownedBuild = CACHE.match(/v24-([a-f0-9]{16})$/)?.[1];
+  const ownedBuild = CACHE.match(/v25-([a-f0-9]{16})$/)?.[1];
   if (ownedBuild && manifest.buildId !== ownedBuild)
     throw new Error("Build manifest changed during installation");
   if (ownedBuild && !manifest.coreIntegrity)
@@ -258,7 +259,7 @@ self.addEventListener("activate", (event) => {
           typeof previous === "string" && previous.startsWith("gysapp-shell-")
             ? previous
             : oldShells
-                .filter((key) => !key.startsWith("gysapp-shell-v24-"))
+                .filter((key) => !key.startsWith("gysapp-shell-v25-"))
                 .at(-1);
         await preserveEditorialContent(oldShells);
         await putCached(
@@ -329,7 +330,7 @@ async function fetchAndCacheShell(request, waitUntil) {
   if (response.ok) {
     // Do not overwrite the active offline shell with HTML from a deployment
     // whose modules belong to a worker that has not finished installing.
-    const ownedBuild = CACHE.match(/v24-([a-f0-9]{16})$/)?.[1];
+    const ownedBuild = CACHE.match(/v25-([a-f0-9]{16})$/)?.[1];
     if (ownedBuild) {
       const html = await response.clone().text();
       if (!html.includes(`name="gys-build-id" content="${ownedBuild}"`))

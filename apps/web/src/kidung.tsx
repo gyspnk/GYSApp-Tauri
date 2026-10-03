@@ -1,3 +1,4 @@
+import { transitionReader } from "./reader-transition.js";
 import {
   lazy,
   Suspense,
@@ -76,7 +77,11 @@ import {
 } from "./hymn-view-mode.js";
 import {
   DEFAULT_HYMN_TYPOGRAPHY,
+  MIN_HYMN_FONT_SIZE,
+  MAX_HYMN_FONT_SIZE,
+  clampHymnFontSize,
   readHymnTypography,
+  hasHymnTypography,
   readNaturalChordPreference,
   writeHymnTypography,
   type HymnTypography,
@@ -318,7 +323,10 @@ export function HymnDetail({
     readMidiReaderState,
     readMidiReaderState,
   );
-  const midiAvailable = !item?.assetCode && soundfontInstalled;
+  const midiAvailable = !item?.assetCode;
+  const midiPlayerEnabled =
+    midiStatus === "loading" ||
+    Boolean(midiState.songId && midiState.status !== "idle");
   const verses = useMemo(() => getHymnVerses(item), [item]);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   const sequence = useMemo(
@@ -493,7 +501,6 @@ export function HymnDetail({
     if (
       !item ||
       !musicLock ||
-      !soundfontInstalled ||
       typeof navigator === "undefined" ||
       !navigator.onLine
     )
@@ -597,6 +604,17 @@ export function HymnDetail({
     if (saved === "pdf" && pdfStatus === "idle") void loadPdf();
     if (chordsVisible && chordStatus === "idle") void loadChord();
   }, [item, chordStatus, chordsVisible, pdfStatus]);
+  useEffect(() => {
+    const updated = (event: Event) => {
+      if (
+        (event as CustomEvent<{ songId: string }>).detail.songId === item?.id &&
+        chordsVisible
+      )
+        void loadChord();
+    };
+    window.addEventListener("gys-chords-updated", updated);
+    return () => window.removeEventListener("gys-chords-updated", updated);
+  }, [item?.id, chordsVisible]);
   const lyricLines = (verses[safeVerseIndex] ?? "").split("\n");
   const lyricText = lyricLines.join("\n");
   const chordLines = useMemo(
@@ -606,16 +624,23 @@ export function HymnDetail({
         chordDocument,
         chordLayout,
         safeVerseIndex,
+        verses,
       ),
-    [chordDocument, chordLayout, safeVerseIndex, lyricText],
+    [chordDocument, chordLayout, safeVerseIndex, lyricText, verses],
   );
   const allVersesChordLines = useMemo(() => {
-    if (!chordDocument || !chordsVisible) return [];
+    if (!chordDocument) return [];
     return verses.map((verseText, vIdx) => {
       const lines = verseText.split("\n");
-      return matchChordLinesToLyrics(lines, chordDocument, chordLayout, vIdx);
+      return matchChordLinesToLyrics(
+        lines,
+        chordDocument,
+        chordLayout,
+        vIdx,
+        verses,
+      );
     });
-  }, [chordDocument, chordLayout, chordsVisible, verses]);
+  }, [chordDocument, chordLayout, verses]);
 
   useEffect(() => {
     if (!autoScrollActive) {
@@ -645,6 +670,48 @@ export function HymnDetail({
     };
   }, [autoScrollActive, autoScrollSpeed]);
 
+  useEffect(() => {
+    if (viewerMode !== "lyrics") return;
+    const element = lyricsRef.current;
+    if (!element) return;
+    let target = readHymnTypography(songId).fontSize;
+    let timer: number | undefined;
+    const wheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      if (timer === undefined)
+        target = parseFloat(getComputedStyle(element).fontSize) || target;
+      const units =
+        event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? element.clientHeight
+            : 1;
+      target = clampHymnFontSize(
+        target * Math.exp(-event.deltaY * units * 0.002),
+      );
+      setFitFontSize(target);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        setTypography((current) =>
+          writeHymnTypography(songId, { ...current, fontSize: target }),
+        );
+      }, 180);
+    };
+    element.addEventListener("wheel", wheel, { passive: false });
+    return () => {
+      element.removeEventListener("wheel", wheel);
+      if (timer !== undefined) {
+        window.clearTimeout(timer);
+        writeHymnTypography(songId, {
+          ...readHymnTypography(songId),
+          fontSize: target,
+        });
+      }
+    };
+  }, [songId, item?.id, viewerMode, safeVerseIndex, viewScope]);
+
   useLayoutEffect(() => {
     if (viewerMode !== "lyrics") return;
     const element = lyricsRef.current;
@@ -652,16 +719,56 @@ export function HymnDetail({
     let frame = 0;
     const measure = () => {
       frame = 0;
-      // gyschordweb v9: hysteresis anti-oscillation - keep smaller size when chord wraps
-      element.style.fontSize = `${typography.fontSize}px`;
-      const next = autoFitFontSize({
-        preferredFontSize: typography.fontSize,
-        availableWidth: element.clientWidth,
-        measuredWidth: element.scrollWidth,
-        availableHeight: element.clientHeight,
-        measuredHeight: element.scrollHeight,
-        lastFittedFontSize: lastFitRef.current,
-      });
+      const adaptive =
+        Math.round(
+          Math.max(
+            18,
+            Math.min(
+              44,
+              Math.sqrt(element.clientWidth * element.clientHeight) * 0.05,
+            ),
+          ) * 10,
+        ) / 10;
+      const preferred = hasHymnTypography(songId)
+        ? typography.fontSize
+        : adaptive;
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      let lineFit = preferred;
+      if (context && !hasHymnTypography(songId)) {
+        const style = getComputedStyle(element);
+        context.font = `${style.fontWeight} ${preferred}px ${style.fontFamily}`;
+        const lines = Array.from(element.querySelectorAll("p"));
+        const widest = Math.max(
+          1,
+          ...lines.map(
+            (line) =>
+              context.measureText(
+                line.querySelector(".chord-text-layer")?.textContent ??
+                  line.textContent ??
+                  "",
+              ).width,
+          ),
+        );
+        lineFit = Math.max(
+          16,
+          Math.min(
+            preferred,
+            (preferred * (element.clientWidth - 12)) / widest,
+          ),
+        );
+      }
+      element.style.fontSize = `${lineFit}px`;
+      const next = hasHymnTypography(songId)
+        ? clampHymnFontSize(lineFit)
+        : autoFitFontSize({
+            preferredFontSize: lineFit,
+            availableWidth: element.clientWidth,
+            measuredWidth: element.scrollWidth,
+            availableHeight: element.clientHeight,
+            measuredHeight: element.scrollHeight,
+            lastFittedFontSize: lastFitRef.current,
+          });
       lastFitRef.current = next;
       element.style.fontSize = `${next}px`;
       setFitFontSize((current) => (current === next ? current : next));
@@ -863,7 +970,7 @@ export function HymnDetail({
   const goToNeighbor = (song: { id: string } | undefined) => {
     if (!song) return;
     if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-    navigate(`/kidung/${song.id}?mode=${viewerMode}`);
+    transitionReader(() => navigate(`/kidung/${song.id}?mode=${viewerMode}`));
   };
   const toggle = () => {
     if (!item) return;
@@ -886,14 +993,14 @@ export function HymnDetail({
     setTransitionDirection(delta > 0 ? "next" : "previous");
     hapticTick("light");
     if (target >= 0 && target < verses.length) {
-      setVerseIndex(target);
+      transitionReader(() => setVerseIndex(target));
       return;
     }
     const song = delta > 0 ? next : prev;
     if (song) {
       // gyschordweb _forceAutoPlayNext: keep playing across song changes.
       if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-      navigate(`/kidung/${song.id}?mode=${viewerMode}`);
+      transitionReader(() => navigate(`/kidung/${song.id}?mode=${viewerMode}`));
     }
   };
   const pointerDistance = () => {
@@ -925,8 +1032,8 @@ export function HymnDetail({
       const distance = pointerDistance();
       pinchStart.current = {
         distance,
-        fontSize: typography.fontSize,
-        nextFontSize: typography.fontSize,
+        fontSize: fitFontSize,
+        nextFontSize: fitFontSize,
       };
       swipeStart.current = undefined;
       setGestureActive(true);
@@ -942,9 +1049,8 @@ export function HymnDetail({
     if (!pinch || gesturePointers.current.size < 2 || pinch.distance <= 0)
       return;
     event.preventDefault();
-    const nextFontSize = Math.max(
-      16,
-      Math.min(28, pinch.fontSize * (pointerDistance() / pinch.distance)),
+    const nextFontSize = clampHymnFontSize(
+      pinch.fontSize * (pointerDistance() / pinch.distance),
     );
     pinch.nextFontSize = Math.round(nextFontSize * 10) / 10;
     setFitFontSize(pinch.nextFontSize);
@@ -1081,7 +1187,7 @@ export function HymnDetail({
           const { buildChordPresentationFromPdf } =
             await import("./chord-layout-pdf.js");
           const presentation = await buildChordPresentationFromPdf(
-            pdfAsset.src,
+            pdfAsset.bytes ?? pdfAsset.src,
             layoutPages,
             layoutResourceKey,
           );
@@ -1110,9 +1216,6 @@ export function HymnDetail({
       setChordLayout(nextLayout);
       setChordOverlays(nextOverlays);
       setChordStatus("ready");
-      if (nextLayout.length > 0 || Object.keys(nextOverlays).length > 0)
-        show(translate(locale, "kidung.chordPdfVerified"));
-      else show(translate(locale, "kidung.chordSourceVerified"));
     } catch (error) {
       if (controller.signal.aborted || run !== chordRun.current) return;
       const unavailable = error instanceof ChordNotAvailableError;
@@ -1188,32 +1291,6 @@ export function HymnDetail({
     if (midiPlayer.isLoading() || isMidiSwitchingRef.current) {
       show(translate(locale, "kidung.loadingMidi"));
       return;
-    }
-    if (midiState.songId === item.id) {
-      if (midiState.status === "playing") {
-        await speechPlayer.pause();
-        await midiPlayer.pause();
-        setMidiStatus("ready");
-        show(translate(locale, "kidung.midiReadyHint"));
-        return;
-      }
-      if (
-        midiState.status === "paused" ||
-        midiState.status === "ready" ||
-        midiState.status === "stopped"
-      ) {
-        try {
-          await speechPlayer.pause();
-          await midiPlayer.resumeContext();
-          await midiPlayer.play();
-          setMidiStatus("ready");
-          show(translate(locale, "kidung.midiPlaying"));
-        } catch {
-          setMidiStatus("error");
-          show(translate(locale, "kidung.midiUnavailable"));
-        }
-        return;
-      }
     }
     if (!musicLock) {
       setMidiStatus("error");
@@ -1347,6 +1424,20 @@ export function HymnDetail({
       }
     }
   };
+  const toggleMidiPlayer = async () => {
+    if (midiPlayerEnabled) {
+      ++midiLoadGeneration.current;
+      isMidiSwitchingRef.current = false;
+      (window as unknown as { isMidiSwitching?: boolean }).isMidiSwitching =
+        false;
+      autoplayRequestRef.current = false;
+      setMidiStatus("idle");
+      setMidiDockOpen(false);
+      await midiPlayer.close();
+      return;
+    }
+    await loadMidi();
+  };
   const renderedKey = chordKeyName(keyIndex, accidental);
   const updateTypography = (patch: Partial<HymnTypography>) => {
     setTypography((current) =>
@@ -1379,370 +1470,33 @@ export function HymnDetail({
         </div>
         {/* gyschordweb two-mode presentation: text and PDF are equal citizens
             switched straight from the header, persisted per hymn. */}
-        <div
-          className="hymn-mode-toggle"
-          role="tablist"
-          aria-label={translate(locale, "kidung.viewMode")}
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewerMode !== "pdf"}
-            className={`hymn-mode-button${viewerMode !== "pdf" ? " is-active" : ""}`}
-            onClick={() => selectViewerMode("lyrics")}
-          >
-            <Icon name="book" size={16} />
-            <span>{translate(locale, "kidung.text")}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewerMode === "pdf"}
-            className={`hymn-mode-button${viewerMode === "pdf" ? " is-active" : ""}`}
-            disabled={!item.pdfPath && !item.assetCode}
-            onClick={() => selectViewerMode("pdf")}
-          >
-            <Icon name="file" size={16} />
-            <span>PDF</span>
-          </button>
-        </div>
-      </section>
-      <section className="hymn-detail-surface">
         {viewerMode === "pdf" && (
-          <div className="gys-pdf-overlay">
-            <div
-              className={`hymn-pdf-viewer-chrome${
-                midiAvailable || !item.assetCode ? "" : " is-no-music"
-              }`}
-              role="toolbar"
-              aria-label={translate(locale, "kidung.pdfNavigation")}
+          <div
+            className="hymn-mode-toggle"
+            role="tablist"
+            aria-label={translate(locale, "kidung.viewMode")}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewerMode !== "pdf"}
+              className={`hymn-mode-button${viewerMode !== "pdf" ? " is-active" : ""}`}
+              onClick={() => selectViewerMode("lyrics")}
             >
-              <button
-                type="button"
-                className="viewer-chrome-button"
-                onClick={() => navigate("/kidung")}
-                aria-label={translate(locale, "kidung.back")}
-              >
-                <span aria-hidden="true">
-                  <Icon name="chevronLeft" size={18} />
-                </span>
-                <span className="viewer-chrome-copy">
-                  {translate(locale, "kidung.songs")}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="viewer-chrome-button hymn-pdf-song-nav"
-                onClick={() => goToNeighbor(prev)}
-                disabled={!prev}
-                aria-label={translate(locale, "kidung.previous")}
-                title={translate(locale, "kidung.previous")}
-              >
-                <Icon name="skipPrevious" size={18} />
-              </button>
-              <div
-                className="hymn-pdf-viewer-title"
-                id="pdf-viewer-title-wrapper"
-                ref={overlayTitleRef}
-                onClick={handleTitleTap}
-                title={translate(locale, "kidung.editChordHint")}
-              >
-                <strong id="pdf-viewer-title">{item.title}</strong>
-                <small id="pdf-viewer-number">
-                  No. {numberLabel(item.number, item.id)}
-                </small>
-              </div>
-              <button
-                type="button"
-                className="viewer-chrome-button hymn-pdf-song-nav"
-                onClick={() => goToNeighbor(next)}
-                disabled={!next}
-                aria-label={translate(locale, "kidung.next")}
-                title={translate(locale, "kidung.next")}
-              >
-                <Icon name="skipNext" size={18} />
-              </button>
-              {(midiAvailable || !item.assetCode) && (
-                <details
-                  className="pdf-music-menu"
-                  name="hymn-pdf-toolbar-menu"
-                  onToggle={(event) => {
-                    if (event.currentTarget.open) setNotice("");
-                  }}
-                >
-                  <summary
-                    className="viewer-chrome-button pdf-music-summary"
-                    aria-label={translate(locale, "kidung.musicOptions")}
-                    title={translate(locale, "kidung.musicOptions")}
-                  >
-                    <span aria-hidden="true">
-                      <Icon name="music" size={18} />
-                    </span>
-                    <span className="viewer-chrome-copy">
-                      {!item.assetCode && chordsVisible
-                        ? `${renderedKey}${
-                            transpose === 0
-                              ? ""
-                              : ` · ${transpose > 0 ? `+${transpose}` : transpose}`
-                          }`
-                        : translate(locale, "kidung.music")}
-                    </span>
-                  </summary>
-                  <div className="pdf-music-menu-panel">
-                    {midiAvailable && (
-                      <button
-                        type="button"
-                        className="quiet-button pdf-music-action"
-                        aria-expanded={midiDockOpen}
-                        onClick={() => {
-                          if (midiState.songId !== item.id) {
-                            void loadMidi().then(() => setMidiDockOpen(true));
-                          } else {
-                            setMidiDockOpen((open) => !open);
-                          }
-                        }}
-                        disabled={
-                          midiStatus === "loading" ||
-                          midiState.status === "loading"
-                        }
-                      >
-                        <Icon name="music" size={17} />
-                        <span>
-                          {midiDockOpen
-                            ? translate(locale, "kidung.closeMidi")
-                            : translate(locale, "kidung.openMidi")}
-                        </span>
-                      </button>
-                    )}
-                    {!item.assetCode && (
-                      <button
-                        type="button"
-                        className="quiet-button pdf-music-action"
-                        onClick={toggleChords}
-                        disabled={chordStatus === "loading"}
-                        aria-pressed={chordsVisible}
-                      >
-                        <Icon name="music" size={17} />
-                        <span>
-                          {chordStatus === "loading"
-                            ? translate(locale, "kidung.loadingChord")
-                            : chordsVisible
-                              ? translate(locale, "kidung.hideChord")
-                              : translate(locale, "kidung.showChord")}
-                        </span>
-                      </button>
-                    )}
-                    {!item.assetCode && (
-                      <div
-                        className="pdf-transpose-inline"
-                        role="group"
-                        aria-label={translate(locale, "kidung.transposePdf")}
-                      >
-                        <div className="pdf-key-control">
-                          <button
-                            type="button"
-                            className="viewer-chrome-button pdf-key-btn"
-                            onClick={() => setPdfKeyMenuOpen((open) => !open)}
-                            aria-expanded={pdfKeyMenuOpen}
-                            aria-haspopup="listbox"
-                            aria-label={translate(locale, "kidung.key")}
-                            title={translate(locale, "kidung.key")}
-                          >
-                            {chordKeyName(keyIndex, accidental)}
-                          </button>
-                          {pdfKeyMenuOpen && (
-                            <div
-                              className="pdf-key-dropdown"
-                              role="listbox"
-                              aria-label={translate(locale, "kidung.key")}
-                            >
-                              {Array.from({ length: 12 }, (_, value) => (
-                                <button
-                                  key={value}
-                                  type="button"
-                                  role="option"
-                                  aria-selected={value === keyIndex}
-                                  className={
-                                    value === keyIndex
-                                      ? "is-selected"
-                                      : undefined
-                                  }
-                                  onClick={() => {
-                                    setKeyIndex(value);
-                                    updateTranspose(
-                                      transposeBetweenKeys(
-                                        sourceKeyIndex,
-                                        value,
-                                      ),
-                                    );
-                                    setPdfKeyMenuOpen(false);
-                                  }}
-                                >
-                                  {chordKeyName(value, accidental)}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          className="viewer-chrome-button pdf-accidental-btn"
-                          onClick={() =>
-                            setAccidental((current) =>
-                              current === "sharp" ? "flat" : "sharp",
-                            )
-                          }
-                          aria-pressed={accidental === "flat"}
-                          aria-label={translate(locale, "kidung.notation")}
-                          title={translate(
-                            locale,
-                            accidental === "sharp"
-                              ? "kidung.sharp"
-                              : "kidung.flat",
-                          )}
-                        >
-                          {accidental === "sharp" ? "♯" : "♭"}
-                        </button>
-                        <div className="pdf-transpose-btns">
-                          <button
-                            type="button"
-                            className="viewer-chrome-button"
-                            onClick={() => updateTranspose(transpose - 1)}
-                            aria-label={translate(
-                              locale,
-                              "kidung.transposeDown",
-                            )}
-                          >
-                            −
-                          </button>
-                          <strong>
-                            {transpose > 0 ? `+${transpose}` : transpose}
-                          </strong>
-                          <button
-                            type="button"
-                            className="viewer-chrome-button"
-                            onClick={() => updateTranspose(transpose + 1)}
-                            aria-label={translate(locale, "kidung.transposeUp")}
-                          >
-                            +
-                          </button>
-                          {transpose !== 0 && (
-                            <button
-                              type="button"
-                              className="viewer-chrome-button pdf-transpose-reset"
-                              onClick={() => updateTranspose(0)}
-                              title={translate(locale, "kidung.resetTranspose")}
-                            >
-                              {translate(locale, "kidung.resetTranspose")}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </details>
-              )}
-              {midiAvailable && midiDockOpen && (
-                <div
-                  className="hymn-midi-dock pdf-midi-dock-context"
-                  role="group"
-                  aria-label={translate(locale, "kidung.midiPlayer")}
-                >
-                  <MidiControlsPanel locale={locale} />
-                </div>
-              )}
-              {chordEditorEnabled && (
-                <div
-                  className="chord-editor-toolbar"
-                  role="toolbar"
-                  aria-label={translate(locale, "kidung.chordEditor")}
-                >
-                  <strong className="chord-editor-label">
-                    {translate(locale, "kidung.chordEditor")}
-                  </strong>
-                  <button
-                    type="button"
-                    className="viewer-chrome-button"
-                    onClick={downloadEditorChords}
-                  >
-                    <span className="viewer-chrome-copy">
-                      {translate(locale, "kidung.save")}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="viewer-chrome-button"
-                    onClick={() => chordFileInput.current?.click()}
-                  >
-                    <span className="viewer-chrome-copy">
-                      {translate(locale, "kidung.import")}
-                    </span>
-                  </button>
-                  <input
-                    ref={chordFileInput}
-                    className="sr-only"
-                    type="file"
-                    accept=".json,.chord.json"
-                    onChange={(event) => {
-                      importEditorChords(event.target.files?.[0]);
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            {pdfStatus === "loading" && (
-              <div className="loading-panel" role="status">
-                {translate(locale, "kidung.pdfOpening")}
-              </div>
-            )}
-            {pdfStatus === "error" && (
-              <div className="error-panel" role="alert">
-                <strong>{translate(locale, "kidung.pdfFailed")}</strong>
-                <span>{translate(locale, "kidung.pdfRetry")}</span>
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => void loadPdf()}
-                >
-                  {translate(locale, "kidung.retry")}
-                </button>
-              </div>
-            )}
-            {pdfStatus === "ready" && (
-              <Suspense
-                fallback={
-                  <div className="loading-panel">
-                    {translate(locale, "kidung.pdfOpening")}
-                  </div>
-                }
-              >
-                <PdfReader
-                  src={pdfUrl ?? ""}
-                  {...(pdfBytes ? { data: pdfBytes } : {})}
-                  initialPage={pdfInitialPage}
-                  locale={locale}
-                  {...(pdfSource === "fork" && pdfPageCount
-                    ? {
-                        pageRange: {
-                          start: pdfInitialPage,
-                          count: pdfPageCount,
-                        },
-                      }
-                    : {})}
-                  progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
-                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
-                  title={item.title}
-                  variant="hymn"
-                  chordOverlays={
-                    chordEditorEnabled ? editableChords : pdfChordOverlays
-                  }
-                  chordsVisible={chordsVisible}
-                  editorEnabled={chordEditorEnabled}
-                  onEditChord={editChordAt}
-                />
-              </Suspense>
-            )}
+              <Icon name="book" size={16} />
+              <span>{translate(locale, "kidung.text")}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewerMode === "pdf"}
+              className={`hymn-mode-button${viewerMode === "pdf" ? " is-active" : ""}`}
+              disabled={!item.pdfPath && !item.assetCode}
+              onClick={() => selectViewerMode("pdf")}
+            >
+              <Icon name="file" size={16} />
+              <span>PDF</span>
+            </button>
           </div>
         )}
         <div className="hymn-text-toolbar">
@@ -1782,60 +1536,44 @@ export function HymnDetail({
             {!item.assetCode && (
               <button
                 type="button"
-                className="primary-button hymn-action hymn-action-primary"
-                onClick={() =>
-                  midiAvailable
-                    ? void loadMidi()
-                    : navigate("/lainnya?section=data")
-                }
-                title={
-                  midiAvailable
-                    ? translate(locale, "kidung.playMidi")
-                    : translate(locale, "kidung.installSoundfontToPlay")
-                }
-                disabled={
-                  midiStatus === "loading" || midiState.status === "loading"
-                }
-                aria-label={
-                  !midiAvailable
-                    ? translate(locale, "kidung.installSoundfontToPlay")
-                    : midiState.songId === item.id &&
-                        midiState.status === "playing"
-                      ? translate(locale, "kidung.pauseMidi")
-                      : midiStatus === "loading"
-                        ? translate(locale, "kidung.loadingMidi")
-                        : midiStatus === "ready"
-                          ? translate(locale, "kidung.midiReady")
-                          : translate(locale, "kidung.playMidi")
-                }
+                className="primary-button hymn-action hymn-action-primary hymn-midi-toggle"
+                onClick={() => void toggleMidiPlayer()}
+                aria-pressed={midiPlayerEnabled}
+                aria-controls="persistent-media-player"
+                title={translate(
+                  locale,
+                  midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
+                )}
+                aria-label={translate(
+                  locale,
+                  midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
+                )}
               >
                 <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon
-                    name={
-                      midiState.songId === item.id &&
-                      midiState.status === "playing"
-                        ? "pause"
-                        : "play"
-                    }
-                    size={17}
-                  />
+                  <Icon name="play" size={17} />
                 </span>
                 <span className="hymn-action-label">
-                  {!midiAvailable
-                    ? translate(locale, "kidung.installSoundfontToPlay")
-                    : midiState.songId === item.id &&
-                        midiState.status === "playing"
-                      ? translate(locale, "kidung.pauseMidi")
-                      : midiStatus === "loading"
-                        ? translate(locale, "kidung.loadingMidi")
-                        : midiStatus === "ready"
-                          ? translate(locale, "kidung.midiReady")
-                          : translate(locale, "kidung.playMidi")}
+                  {translate(
+                    locale,
+                    midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
+                  )}
                 </span>
               </button>
             )}
           </div>
 
+          {viewerMode !== "pdf" && (
+            <button
+              type="button"
+              className="hymn-partitur-toggle"
+              disabled={!item.pdfPath && !item.assetCode}
+              aria-label={translate(locale, "kidung.score")}
+              title={translate(locale, "kidung.score")}
+              onClick={() => selectViewerMode("pdf")}
+            >
+              <Icon name="file" size={18} />
+            </button>
+          )}
           <details className="hymn-more-actions" name="hymn-text-toolbar-menu">
             <summary
               className="hymn-more-actions-summary"
@@ -2079,7 +1817,7 @@ export function HymnDetail({
                           onPointerDown={() =>
                             holdStart(() =>
                               updateTypography({
-                                fontSize: typography.fontSize - 1,
+                                fontSize: fitFontSize - 1,
                               }),
                             )
                           }
@@ -2088,22 +1826,23 @@ export function HymnDetail({
                           onPointerCancel={holdStop}
                           onClick={tapStep(() =>
                             updateTypography({
-                              fontSize: typography.fontSize - 1,
+                              fontSize: fitFontSize - 1,
                             }),
                           )}
+                          disabled={fitFontSize <= MIN_HYMN_FONT_SIZE}
                           aria-label={translate(locale, "kidung.decreaseText")}
                         >
                           A−
                         </button>
                         <output aria-live="polite">
-                          {Math.round(typography.fontSize)} px
+                          {Math.round(fitFontSize)} px
                         </output>
                         <button
                           type="button"
                           onPointerDown={() =>
                             holdStart(() =>
                               updateTypography({
-                                fontSize: typography.fontSize + 1,
+                                fontSize: fitFontSize + 1,
                               }),
                             )
                           }
@@ -2112,9 +1851,10 @@ export function HymnDetail({
                           onPointerCancel={holdStop}
                           onClick={tapStep(() =>
                             updateTypography({
-                              fontSize: typography.fontSize + 1,
+                              fontSize: fitFontSize + 1,
                             }),
                           )}
+                          disabled={fitFontSize >= MAX_HYMN_FONT_SIZE}
                           aria-label={translate(locale, "kidung.increaseText")}
                         >
                           A+
@@ -2188,7 +1928,12 @@ export function HymnDetail({
                             <span>
                               {translate(locale, "kidung.activeSoundfont")}
                             </span>
-                            <strong>GeneralUser-GS</strong>
+                            <strong>
+                              {midiState.soundfont ??
+                                (soundfontInstalled
+                                  ? "GeneralUser-GS"
+                                  : "TimGM6mb")}
+                            </strong>
                           </output>
                           {midiState.status === "loading" && (
                             <div
@@ -2543,6 +2288,347 @@ export function HymnDetail({
             </div>
           </details>
         </div>
+      </section>
+      <section className="hymn-detail-surface">
+        {viewerMode === "pdf" && (
+          <div className="gys-pdf-overlay">
+            <div
+              className={`hymn-pdf-viewer-chrome${
+                midiAvailable || !item.assetCode ? "" : " is-no-music"
+              }`}
+              role="toolbar"
+              aria-label={translate(locale, "kidung.pdfNavigation")}
+            >
+              <button
+                type="button"
+                className="viewer-chrome-button"
+                onClick={() => navigate("/kidung")}
+                aria-label={translate(locale, "kidung.back")}
+              >
+                <span aria-hidden="true">
+                  <Icon name="chevronLeft" size={18} />
+                </span>
+                <span className="viewer-chrome-copy">
+                  {translate(locale, "kidung.songs")}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="viewer-chrome-button hymn-pdf-song-nav"
+                onClick={() => goToNeighbor(prev)}
+                disabled={!prev}
+                aria-label={translate(locale, "kidung.previous")}
+                title={translate(locale, "kidung.previous")}
+              >
+                <Icon name="skipPrevious" size={18} />
+              </button>
+              <div
+                className="hymn-pdf-viewer-title"
+                id="pdf-viewer-title-wrapper"
+                ref={overlayTitleRef}
+                onClick={handleTitleTap}
+                title={translate(locale, "kidung.editChordHint")}
+              >
+                <strong id="pdf-viewer-title">{item.title}</strong>
+                <small id="pdf-viewer-number">
+                  No. {numberLabel(item.number, item.id)}
+                </small>
+              </div>
+              <button
+                type="button"
+                className="viewer-chrome-button hymn-pdf-song-nav"
+                onClick={() => goToNeighbor(next)}
+                disabled={!next}
+                aria-label={translate(locale, "kidung.next")}
+                title={translate(locale, "kidung.next")}
+              >
+                <Icon name="skipNext" size={18} />
+              </button>
+              {(midiAvailable || !item.assetCode) && (
+                <details
+                  className="pdf-music-menu"
+                  name="hymn-pdf-toolbar-menu"
+                  onToggle={(event) => {
+                    if (event.currentTarget.open) setNotice("");
+                  }}
+                >
+                  <summary
+                    className="viewer-chrome-button pdf-music-summary"
+                    aria-label={translate(locale, "kidung.musicOptions")}
+                    title={translate(locale, "kidung.musicOptions")}
+                  >
+                    <span aria-hidden="true">
+                      <Icon name="music" size={18} />
+                    </span>
+                    <span className="viewer-chrome-copy">
+                      {!item.assetCode && chordsVisible
+                        ? `${renderedKey}${
+                            transpose === 0
+                              ? ""
+                              : ` · ${transpose > 0 ? `+${transpose}` : transpose}`
+                          }`
+                        : translate(locale, "kidung.music")}
+                    </span>
+                  </summary>
+                  <div className="pdf-music-menu-panel">
+                    {midiAvailable && (
+                      <button
+                        type="button"
+                        className="quiet-button pdf-music-action"
+                        aria-expanded={midiPlayerEnabled}
+                        aria-pressed={midiPlayerEnabled}
+                        onClick={() => {
+                          const opening = !midiPlayerEnabled;
+                          void toggleMidiPlayer().then(() =>
+                            setMidiDockOpen(
+                              opening && Boolean(midiPlayer.snapshot().songId),
+                            ),
+                          );
+                        }}
+                      >
+                        <Icon name="music" size={17} />
+                        <span>
+                          {translate(
+                            locale,
+                            midiPlayerEnabled
+                              ? "kidung.closeMidi"
+                              : "kidung.openMidi",
+                          )}
+                        </span>
+                      </button>
+                    )}
+                    {!item.assetCode && (
+                      <button
+                        type="button"
+                        className="quiet-button pdf-music-action"
+                        onClick={toggleChords}
+                        disabled={chordStatus === "loading"}
+                        aria-pressed={chordsVisible}
+                      >
+                        <Icon name="music" size={17} />
+                        <span>
+                          {chordStatus === "loading"
+                            ? translate(locale, "kidung.loadingChord")
+                            : chordsVisible
+                              ? translate(locale, "kidung.hideChord")
+                              : translate(locale, "kidung.showChord")}
+                        </span>
+                      </button>
+                    )}
+                    {!item.assetCode && (
+                      <div
+                        className="pdf-transpose-inline"
+                        role="group"
+                        aria-label={translate(locale, "kidung.transposePdf")}
+                      >
+                        <div className="pdf-key-control">
+                          <button
+                            type="button"
+                            className="viewer-chrome-button pdf-key-btn"
+                            onClick={() => setPdfKeyMenuOpen((open) => !open)}
+                            aria-expanded={pdfKeyMenuOpen}
+                            aria-haspopup="listbox"
+                            aria-label={translate(locale, "kidung.key")}
+                            title={translate(locale, "kidung.key")}
+                          >
+                            {chordKeyName(keyIndex, accidental)}
+                          </button>
+                          {pdfKeyMenuOpen && (
+                            <div
+                              className="pdf-key-dropdown"
+                              role="listbox"
+                              aria-label={translate(locale, "kidung.key")}
+                            >
+                              {Array.from({ length: 12 }, (_, value) => (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={value === keyIndex}
+                                  className={
+                                    value === keyIndex
+                                      ? "is-selected"
+                                      : undefined
+                                  }
+                                  onClick={() => {
+                                    setKeyIndex(value);
+                                    updateTranspose(
+                                      transposeBetweenKeys(
+                                        sourceKeyIndex,
+                                        value,
+                                      ),
+                                    );
+                                    setPdfKeyMenuOpen(false);
+                                  }}
+                                >
+                                  {chordKeyName(value, accidental)}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="viewer-chrome-button pdf-accidental-btn"
+                          onClick={() =>
+                            setAccidental((current) =>
+                              current === "sharp" ? "flat" : "sharp",
+                            )
+                          }
+                          aria-pressed={accidental === "flat"}
+                          aria-label={translate(locale, "kidung.notation")}
+                          title={translate(
+                            locale,
+                            accidental === "sharp"
+                              ? "kidung.sharp"
+                              : "kidung.flat",
+                          )}
+                        >
+                          {accidental === "sharp" ? "♯" : "♭"}
+                        </button>
+                        <div className="pdf-transpose-btns">
+                          <button
+                            type="button"
+                            className="viewer-chrome-button"
+                            onClick={() => updateTranspose(transpose - 1)}
+                            aria-label={translate(
+                              locale,
+                              "kidung.transposeDown",
+                            )}
+                          >
+                            −
+                          </button>
+                          <strong>
+                            {transpose > 0 ? `+${transpose}` : transpose}
+                          </strong>
+                          <button
+                            type="button"
+                            className="viewer-chrome-button"
+                            onClick={() => updateTranspose(transpose + 1)}
+                            aria-label={translate(locale, "kidung.transposeUp")}
+                          >
+                            +
+                          </button>
+                          {transpose !== 0 && (
+                            <button
+                              type="button"
+                              className="viewer-chrome-button pdf-transpose-reset"
+                              onClick={() => updateTranspose(0)}
+                              title={translate(locale, "kidung.resetTranspose")}
+                            >
+                              {translate(locale, "kidung.resetTranspose")}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
+              {midiAvailable && midiDockOpen && (
+                <div
+                  className="hymn-midi-dock pdf-midi-dock-context"
+                  role="group"
+                  aria-label={translate(locale, "kidung.midiPlayer")}
+                >
+                  <MidiControlsPanel locale={locale} />
+                </div>
+              )}
+              {chordEditorEnabled && (
+                <div
+                  className="chord-editor-toolbar"
+                  role="toolbar"
+                  aria-label={translate(locale, "kidung.chordEditor")}
+                >
+                  <strong className="chord-editor-label">
+                    {translate(locale, "kidung.chordEditor")}
+                  </strong>
+                  <button
+                    type="button"
+                    className="viewer-chrome-button"
+                    onClick={downloadEditorChords}
+                  >
+                    <span className="viewer-chrome-copy">
+                      {translate(locale, "kidung.save")}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="viewer-chrome-button"
+                    onClick={() => chordFileInput.current?.click()}
+                  >
+                    <span className="viewer-chrome-copy">
+                      {translate(locale, "kidung.import")}
+                    </span>
+                  </button>
+                  <input
+                    ref={chordFileInput}
+                    className="sr-only"
+                    type="file"
+                    accept=".json,.chord.json"
+                    onChange={(event) => {
+                      importEditorChords(event.target.files?.[0]);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            {pdfStatus === "loading" && (
+              <div className="loading-panel" role="status">
+                {translate(locale, "kidung.pdfOpening")}
+              </div>
+            )}
+            {pdfStatus === "error" && (
+              <div className="error-panel" role="alert">
+                <strong>{translate(locale, "kidung.pdfFailed")}</strong>
+                <span>{translate(locale, "kidung.pdfRetry")}</span>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => void loadPdf()}
+                >
+                  {translate(locale, "kidung.retry")}
+                </button>
+              </div>
+            )}
+            {pdfStatus === "ready" && (
+              <Suspense
+                fallback={
+                  <div className="loading-panel">
+                    {translate(locale, "kidung.pdfOpening")}
+                  </div>
+                }
+              >
+                <PdfReader
+                  src={pdfUrl ?? ""}
+                  {...(pdfBytes ? { data: pdfBytes } : {})}
+                  initialPage={pdfInitialPage}
+                  locale={locale}
+                  {...(pdfSource === "fork" && pdfPageCount
+                    ? {
+                        pageRange: {
+                          start: pdfInitialPage,
+                          count: pdfPageCount,
+                        },
+                      }
+                    : {})}
+                  progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
+                  {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
+                  title={item.title}
+                  variant="hymn"
+                  chordOverlays={
+                    chordEditorEnabled ? editableChords : pdfChordOverlays
+                  }
+                  chordsVisible={chordsVisible}
+                  editorEnabled={chordEditorEnabled}
+                  onEditChord={editChordAt}
+                />
+              </Suspense>
+            )}
+          </div>
+        )}
+
         {viewerMode !== "pdf" &&
           (viewScope === "all" ? (
             <div className="hymn-all-verses-container">
@@ -2564,14 +2650,13 @@ export function HymnDetail({
                       </span>
                     </div>
                     {vLines.map((line, index) => {
-                      const chordLine = chordsVisible
-                        ? vChordLines[index]
-                        : undefined;
+                      const chordLine = vChordLines[index];
                       return (
                         <p key={`${index}-${line}`}>
                           {chordLine && chordLine.chords.length > 0 ? (
                             <ChordCapability
                               lines={[chordLine]}
+                              active={chordsVisible}
                               transpose={transpose - capo}
                               accidental={accidental}
                               locale={locale}
@@ -2603,12 +2688,13 @@ export function HymnDetail({
               onPointerCancel={finishLyricsPointer}
             >
               {lyricLines.map((line, index) => {
-                const chordLine = chordsVisible ? chordLines[index] : undefined;
+                const chordLine = chordLines[index];
                 return (
                   <p key={`${index}-${line}`}>
                     {chordLine && chordLine.chords.length > 0 ? (
                       <ChordCapability
                         lines={[chordLine]}
+                        active={chordsVisible}
                         transpose={transpose - capo}
                         accidental={accidental}
                         locale={locale}
