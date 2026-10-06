@@ -284,3 +284,22 @@ for (const font of fonts.fonts) {
 console.log(
   "Editorial font provenance and licenses verified (4 bundled WOFF2 assets).",
 );
+
+const faithPdfs = await readJson("apps/web/public/assets/faith/manifest.json");
+if (faithPdfs.files.length !== 10)
+  throw new Error("Faith PDF bundle must include ten doctrine booklets");
+for (const item of faithPdfs.files) {
+  if (
+    !/^[A-Za-z-]+\.pdf$/.test(item.file) ||
+    item.source !==
+      `https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/${item.file}`
+  )
+    throw new Error("Faith PDF source is not an official booklet");
+  const bytes = await readFile(join("apps/web/public/assets/faith", item.file));
+  if (
+    bytes.length !== item.bytes ||
+    createHash("sha256").update(bytes).digest("hex") !== item.sha256 ||
+    bytes.subarray(0, 5).toString() !== "%PDF-"
+  )
+    throw new Error(`Faith PDF provenance mismatch: ${item.file}`);
+}

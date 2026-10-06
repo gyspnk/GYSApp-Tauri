@@ -118,3 +118,19 @@ for (const relative of required) {
 console.log(
   `Native asset boundary verified: ${required.length} files, ${totalBytes} bytes of offline/core runtime assets`,
 );
+
+const faithManifest = JSON.parse(
+  await readFile(resolve(dist, "assets/faith/manifest.json"), "utf8"),
+);
+if (faithManifest.files.length !== 10)
+  throw new Error("Packaged faith PDFs are missing");
+for (const item of faithManifest.files) {
+  if (!/^[A-Za-z-]+\.pdf$/.test(item.file))
+    throw new Error("Invalid packaged faith PDF path");
+  const bytes = await readFile(resolve(dist, "assets/faith", item.file));
+  if (
+    bytes.length !== item.bytes ||
+    createHash("sha256").update(bytes).digest("hex") !== item.sha256
+  )
+    throw new Error(`Packaged faith PDF mismatch: ${item.file}`);
+}

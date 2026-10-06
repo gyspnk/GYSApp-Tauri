@@ -1239,7 +1239,7 @@ export function PdfReader({
       onPointerMove={restoreToolbar}
     >
       <div
-        className={`pdf-toolbar${toolbarVisible ? "" : " is-collapsed"}`}
+        className={`pdf-toolbar${variant === "hymn" && !toolbarVisible ? " is-collapsed" : ""}`}
         onKeyDown={(event) => {
           if (event.key !== "Escape" || !advancedOpen) return;
           event.stopPropagation();
@@ -1263,7 +1263,7 @@ export function PdfReader({
             <Icon name="chevronLeft" size={18} />
             <span className="sr-only">{translate(locale, "pdf.previous")}</span>
           </button>
-          <span>
+          <span className={total > 1 ? "sr-only" : undefined}>
             {total
               ? translate(locale, "pdf.pageCounter", {
                   page: pageStart > 1 ? page - pageStart + 1 : page,
@@ -1275,7 +1275,9 @@ export function PdfReader({
           </span>
           {total > 1 && (
             <label className="pdf-page-jump">
-              {translate(locale, "pdf.jumpLabel")}
+              <span className="sr-only">
+                {translate(locale, "pdf.jumpLabel")}
+              </span>
               <input
                 type="number"
                 min={1}
@@ -1299,6 +1301,7 @@ export function PdfReader({
                   }
                 }}
               />
+              <span className="pdf-page-total">/ {total}</span>
             </label>
           )}
           <button

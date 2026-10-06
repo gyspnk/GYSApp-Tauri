@@ -1,9 +1,7 @@
 # e-GYS account integration
 
 Installed Tauri builds integrate with the live e-GYS v1 service. Web/PWA
-builds support Google through the BFF and expose explicit Apple/WhatsApp
-handoff actions to the official [`https://e.gys.or.id/login`](https://e.gys.or.id/login)
-page. The e-GYS v2 repository and generated contract are discovery evidence
+builds support Google, Apple and WhatsApp directly through the BFF. The e-GYS v2 repository and generated contract are discovery evidence
 only; no v2 provider exchange or polling flow is shipped at runtime.
 
 ## Native v1 flow
@@ -25,28 +23,46 @@ gate because it cannot be made truthful with a browser mock.
 
 ## Web/PWA flow
 
-The account screen and login dialog both expose **WhatsApp** and **Apple**
-actions. They open the complete official v1 login page in a new browser tab,
-independently of Google SDK availability. Users choose the provider on that
-page. These cross-site sessions synchronize with GYSApp only in the installed
-application. Opening the portal does not sign the browser application in.
+The account screen keeps all three provider buttons in one row. WhatsApp
+starts an inline login request with `POST /api/v1/auth/egys/whatsapp/start`;
+the BFF calls live v1 `/login/whatsapp-login-request` and binds the reference
+to a ten-minute HttpOnly cookie. The user sends the prepared message through
+WhatsApp; the official `wss://e.gys.or.id/wa-login/:ref` channel tracks the
+message and supplies an internal confirmation code automatically. There is no
+OTP input or manual confirmation in the application. The provider click reserves
+a messaging tab synchronously to avoid popup blocking; it navigates directly to
+the prepared WhatsApp send URL once tracking signals readiness, without a second
+send button. The button shows a small trailing countdown, with a 120-second deadline covering setup and verification. Expiry aborts requests, closes tracking and removes the badge; a pending blank tab is closed. Clicking WhatsApp again replaces the attempt, resets the countdown and opens a new prepared message. Old socket events and profile results are ignored after cancellation. Because the service rejects
+foreign browser origins, the Worker relays `/api/v1/auth/egys/whatsapp/track`
+to the official WebSocket using its required origin. The relay requires an
+allowed client origin and the HttpOnly reference cookie; clients cannot choose
+an upstream URL or send arbitrary upstream messages. Confirmation calls `/login/whatsapp-login-confirm` through
+the BFF. Canceling closes the socket and aborts outstanding requests.
 
-The local Google action is always visible, including offline, and opens the
-Google dialog without loading an SDK on the account screen. Google sign-in
-remains available in the dialog through Google Identity Services and
-`POST /api/v1/auth/egys/google`. The BFF submits the credential to the existing
-live v1 callback and stores the resulting session in an HttpOnly cookie.
-The web build does not call `/auth/providers`, `/auth/exchange/*`, or the v2
-WhatsApp start/state routes. Do not restore the old v2 endpoints against the
-current live v1 host.
+Apple uses the official Apple SDK, existing service ID `id.or.gys.e.client`,
+registered callback `https://e.gys.or.id/login`, popup authorization and a
+random state validated before exchange. `POST /api/v1/auth/egys/apple` calls
+live v1 `/auth/apple/callback` with `ismobile: 1`. Apple may require its own
+provider authorization window; GYSApp does not embed or open the e-GYS portal.
+Deployment origin compatibility still requires a real Apple account smoke test.
+
+Both callbacks store the upstream token in the same HttpOnly cookie as Google,
+return only `{ ok: true }`, then refresh `/api/v1/account/profile` so the header
+and account panel detect the member. Tokens are never stored in browser storage.
+Google retains its working Google Identity Services flow and BFF callback.
+The web build does not call draft v2 `/auth/providers`, `/auth/exchange/*`,
+or `/api/v1/auth/whatsapp/start` routes.
 
 ## Regression history
 
-The old WhatsApp popup fixes (`30a8696`, `ded8214`) belonged to the v2 client.
-Commit `50ab269` replaced the iframe with a Google-only browser dialog and left
-Apple/WhatsApp as explanatory text. Explicit provider actions now preserve the
-live v1 handoff, including when the Google script fails. Browser regression
-tests cover 320px, 390px and desktop widths plus native command dispatch.
+The old WhatsApp popup fixes (`30a8696`, `ded8214`) used draft v2 endpoints.
+Commit `50ab269` replaced the iframe with a Google-only browser dialog, and
+`ed4c6ee` exposed Apple/WhatsApp as portal links. The current implementation
+restores direct provider login using the active v1 endpoints instead of
+restoring either the draft v2 endpoints or a cross-origin login iframe.
+Browser tests verify inline account detection, absence of portal navigation,
+responsive controls and native command dispatch. Provider verification is
+mocked in automated tests; real-account authentication remains a smoke test.
 
 ## Configuration
 

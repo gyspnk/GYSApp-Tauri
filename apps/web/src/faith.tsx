@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 import { installReadingZoom } from "./reading-zoom.js";
-import { bffPdfUrl } from "./pdf-source.js";
+
 import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
 type FaithItem = { number: string; text: string };
@@ -102,7 +102,8 @@ const DK_READ_MORE = new Map<string, { pdf: string; source: string }>([
 ]);
 
 function faithPdfUrl(sourceUrl: string): string {
-  return bffPdfUrl(sourceUrl);
+  const filename = new URL(sourceUrl).pathname.split("/").at(-1)!;
+  return `${import.meta.env.BASE_URL}assets/faith/${filename}`;
 }
 
 const PDF_PROGRESS_PREFIX = "gys-faith-pdf-";
@@ -316,7 +317,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
     setPdfRead({
       number: item.number,
       title: translate(locale, "faith.pdfTitle", {
-        title: item.text.split(/[.!?]/)[0] ?? item.text,
+        title: entry.pdf
+          .split("/")
+          .at(-1)!
+          .replace(/\.pdf$/i, "")
+          .replaceAll("-", " "),
       }),
       url: entry.pdf,
     });
@@ -675,11 +680,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
             >
               <div className="faith-pdf-head">
                 <div className="faith-pdf-title">
-                  <small>{translate(locale, "faith.readMoreTitle")}</small>
                   <strong>{pdfRead.title}</strong>
                 </div>
                 {pdfProgress && (
-                  <span className="faith-pdf-stats">
+                  <span className="faith-pdf-stats sr-only">
                     {translate(locale, "faith.pdfStats", {
                       page: pdfProgress.page,
                       totalPages: pdfProgress.totalPages,
@@ -691,24 +695,34 @@ export function FaithPage({ locale }: { locale: Locale }) {
                   </span>
                 )}
                 <div className="faith-pdf-head-actions">
-                  <a
-                    className="quiet-button"
-                    href={pdfRead.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {translate(locale, "faith.pdfOfficial")}
-                  </a>
-                  {DK_READ_MORE.get(pdfRead.number)?.source && (
-                    <a
-                      className="quiet-button"
-                      href={DK_READ_MORE.get(pdfRead.number)?.source}
-                      target="_blank"
-                      rel="noreferrer"
+                  <details className="faith-pdf-sources">
+                    <summary
+                      aria-label={translate(locale, "faith.openOfficialSource")}
                     >
-                      {translate(locale, "faith.openOfficialSource")}
-                    </a>
-                  )}
+                      <Icon name="more" size={20} />
+                    </summary>
+                    <div className="faith-pdf-source-menu">
+                      {" "}
+                      <a
+                        className="quiet-button"
+                        href={pdfRead.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {translate(locale, "faith.pdfOfficial")}
+                      </a>
+                      {DK_READ_MORE.get(pdfRead.number)?.source && (
+                        <a
+                          className="quiet-button"
+                          href={DK_READ_MORE.get(pdfRead.number)?.source}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {translate(locale, "faith.openOfficialSource")}
+                        </a>
+                      )}
+                    </div>
+                  </details>
                   <button
                     className="bible-notes-close faith-pdf-close"
                     type="button"
@@ -716,7 +730,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                     title={translate(locale, "faith.closeReading")}
                     onClick={closeReadMore}
                   >
-                    ×
+                    <Icon name="cross" size={20} />
                   </button>
                 </div>
               </div>

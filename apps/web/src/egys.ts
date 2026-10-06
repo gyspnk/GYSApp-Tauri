@@ -229,3 +229,30 @@ export async function signOutEgys(): Promise<void> {
     clearEgysProfile();
   }
 }
+
+export async function requestEgysProvider<T>(
+  provider: string,
+  data: object = {},
+  signal?: AbortSignal,
+): Promise<T> {
+  const response = await request(apiUrl(`/api/v1/auth/egys/${provider}`), {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(data),
+    ...(signal ? { signal } : {}),
+  });
+  const body = await response.json();
+  if (!response.ok)
+    throw new Error(body?.error?.message || "Login e-GYS belum berhasil");
+  return body as T;
+}
+
+export function egysWhatsAppTrackingUrl(): string {
+  const url = new URL(
+    apiUrl("/api/v1/auth/egys/whatsapp/track"),
+    window.location.href,
+  );
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return url.toString();
+}

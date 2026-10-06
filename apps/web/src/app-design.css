@@ -1961,3 +1961,290 @@ body:has(.hymn-detail-page.is-text-viewer)
     min-height: 40px;
   }
 }
+
+.egys-inline-login {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.egys-inline-login label {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 140px;
+  font-size: 13px;
+}
+.egys-inline-login input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.egys-inline-login [role="alert"] {
+  width: 100%;
+  color: var(--danger, #b42318);
+}
+
+/* One document title above the page; everyday controls stay in a bottom dock. */
+.faith-pdf-overlay {
+  width: min(1200px, calc(100vw - 32px));
+  height: calc(100dvh - 32px);
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+}
+.faith-pdf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 14px;
+}
+.faith-pdf-title {
+  min-width: 0;
+}
+.faith-pdf-title strong {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.faith-pdf-head-actions {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.faith-pdf-head-actions :is(summary, .faith-pdf-close) {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+}
+.faith-pdf-sources {
+  position: relative;
+}
+.faith-pdf-sources summary {
+  list-style: none;
+}
+.faith-pdf-sources summary::-webkit-details-marker {
+  display: none;
+}
+.faith-pdf-source-menu {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 220px;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px #163f6124;
+  animation: midi-settings-enter 180ms ease-out;
+}
+.faith-pdf-source-menu a {
+  justify-content: flex-start;
+}
+.faith-pdf-progress {
+  display: block;
+  height: 2px;
+  flex: 0 0 2px;
+  border: 0;
+  margin: 0;
+}
+.faith-pdf-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+}
+.pdf-reader {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+}
+.faith-pdf-body > .pdf-reader {
+  width: 100%;
+  height: 100%;
+}
+.pdf-reader .pdf-stage {
+  order: 0;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-toolbar {
+  order: 1;
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+  background: var(--surface);
+  z-index: 12;
+}
+.pdf-reader .pdf-page-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+.pdf-reader .pdf-toolbar :is(button, .pdf-download) {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pdf-reader .pdf-page-jump {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 13px;
+}
+.pdf-reader .pdf-page-jump input {
+  width: 44px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 4px;
+  text-align: center;
+  border-radius: 9px;
+  appearance: textfield;
+}
+.pdf-reader .pdf-page-jump input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.pdf-reader .pdf-advanced-controls {
+  display: none;
+}
+.pdf-reader .pdf-advanced-controls.is-open {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  position: absolute;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  width: min(360px, calc(100vw - 40px));
+  max-height: 60dvh;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 12px 40px #163f6126;
+  animation: midi-settings-enter 180ms ease-out;
+}
+.pdf-reader .pdf-advanced-controls > label,
+.pdf-reader .pdf-zoom-reset {
+  display: none;
+}
+.pdf-reader .pdf-zoom-controls {
+  display: flex;
+  gap: 4px;
+}
+.pdf-reader .pdf-zoom-controls .pdf-zoom-indicator {
+  width: 64px;
+}
+.pdf-reader .pdf-layout-toggle {
+  display: flex;
+  gap: 4px;
+}
+@media (max-width: 600px) {
+  .faith-pdf-overlay {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .faith-pdf-head {
+    padding: 4px 8px;
+    min-height: 52px;
+  }
+  .pdf-reader .pdf-toolbar {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+}
+.faith-pdf-overlay {
+  width: 100%;
+  height: 100dvh;
+  border-radius: 0;
+}
+.faith-pdf-title {
+  flex: 1 1 0;
+  width: auto;
+  max-width: none;
+}
+.faith-pdf-head-actions {
+  width: auto;
+  flex-wrap: nowrap;
+}
+.faith-pdf-body .pdf-toolbar {
+  position: relative;
+}
+
+/* A small trailing badge keeps WhatsApp login within the provider row. */
+.egys-provider-whatsapp.is-tracking {
+  position: relative;
+  padding-inline-end: 46px;
+}
+.egys-whatsapp-countdown {
+  position: absolute;
+  inset-inline-end: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-grid;
+  place-items: center;
+  min-width: 35px;
+  height: 25px;
+  padding-inline: 4px;
+  border-radius: 7px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.egys-whatsapp-countdown.is-error {
+  color: #a33737;
+  background: #fff0f0;
+}
+@container (max-width: 420px) {
+  .egys-provider-whatsapp.is-tracking .egys-provider-label {
+    display: none;
+  }
+}

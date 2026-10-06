@@ -1,16 +1,19 @@
 import { translate, type Locale } from "./i18n.js";
+import type { ReactNode } from "react";
 
-/** The live v1 portal owns Apple/WhatsApp auth; native sessions use its existing bridge. */
+/** Web providers sign in directly; native builds retain the secure login bridge. */
 export function EgysLoginMethods({
   locale,
-  theme,
+  onProviderLogin,
   onNativeLogin,
   onGoogleLogin,
+  whatsappStatus,
 }: {
   locale: Locale;
-  theme: string;
+  onProviderLogin: (provider: "whatsapp" | "apple") => void;
   onNativeLogin?: (() => void) | undefined;
   onGoogleLogin?: () => void;
+  whatsappStatus?: ReactNode;
 }) {
   return (
     <div
@@ -69,45 +72,26 @@ export function EgysLoginMethods({
                 />
               )}
             </svg>
-            <span>{provider === "whatsapp" ? "WhatsApp" : "Apple"}</span>
+            <span className="egys-provider-label">
+              {provider === "whatsapp" ? "WhatsApp" : "Apple"}
+            </span>
           </>
         );
         const label = translate(
           locale,
           provider === "whatsapp" ? "more.whatsappLogin" : "more.appleLogin",
         );
-        return onNativeLogin ? (
+        return (
           <button
             key={provider}
             type="button"
-            className={`egys-provider egys-provider-${provider}`}
+            className={`egys-provider egys-provider-${provider}${provider === "whatsapp" && whatsappStatus ? " is-tracking" : ""}`}
             aria-label={label}
-            onClick={onNativeLogin}
+            onClick={onNativeLogin ?? (() => onProviderLogin(provider))}
           >
             {content}
+            {provider === "whatsapp" && whatsappStatus}
           </button>
-        ) : (
-          <a
-            key={provider}
-            className={`egys-provider egys-provider-${provider}`}
-            aria-label={label}
-            href={`https://e.gys.or.id/login?theme=${theme}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {content}
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-            >
-              <path d="M7 17 17 7M7 7h10v10" />
-            </svg>
-          </a>
         );
       })}
     </div>

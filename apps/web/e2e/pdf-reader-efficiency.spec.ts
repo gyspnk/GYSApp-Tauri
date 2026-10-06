@@ -247,7 +247,7 @@ test("hymn PDF page entry stays relative to its master-document window", async (
   await preparePinnedReaderAssets(page);
   await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 20_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.getByRole("button", { name: "Partitur", exact: true }).click();
   const reader = page.locator(".pdf-reader-hymn");
   await expect(
     reader.locator('canvas[data-pdf-rendered="true"]').first(),

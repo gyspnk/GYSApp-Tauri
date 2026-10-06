@@ -38,11 +38,15 @@ import {
   readEgysSessionTrace,
   saveEgysProfile,
   signInEgysWithGoogle,
+  requestEgysProvider,
   signOutEgys,
   trackEgysProfileSeen,
   type EgysSessionTrace,
 } from "./egys.js";
 import { renderEgysGoogleButton } from "./egys-google.js";
+import { useCallback } from "react";
+import { EgysWhatsApp } from "./egys-whatsapp.js";
+import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
 import { EgysLoginMethods } from "./egys-login-methods.js";
 import {
   clearMidiPlaylist,
@@ -371,6 +375,9 @@ export function MorePage({
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
   const [egysLoginOpen, setEgysLoginOpen] = useState(false);
+  const [egysProvider, setEgysProvider] = useState<"whatsapp" | "apple">();
+  const whatsAppWindow = useRef<Window | null>(null);
+  const [whatsAppAttempt, setWhatsAppAttempt] = useState(0);
   const [egysGoogleError, setEgysGoogleError] = useState("");
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [isEgysLoginClosing, setIsEgysLoginClosing] = useState(false);
@@ -615,6 +622,67 @@ export function MorePage({
       setEgysLoginOpen(false);
       setIsEgysLoginClosing(false);
     }, 200);
+  };
+
+  const completeProviderLogin = useCallback(async (signal?: AbortSignal) => {
+    const profile = await getEgysProfile();
+    if (signal?.aborted) return;
+    if (!profile) throw new Error("e-GYS profile was not returned");
+    setAccountProfile(profile);
+    saveEgysProfile(profile);
+    setEgysSession(trackEgysProfileSeen(profile));
+    setEgysProvider(undefined);
+  }, []);
+  useEffect(() => {
+    if (!nativeShell) void loadEgysApple().catch(() => undefined);
+  }, [nativeShell]);
+  const providerGeneration = useRef(0);
+  const closePendingWhatsAppWindow = useCallback(() => {
+    try {
+      if (whatsAppWindow.current?.location.href === "about:blank")
+        whatsAppWindow.current.close();
+    } catch {
+      // The messaging tab already navigated to WhatsApp.
+    }
+    whatsAppWindow.current = null;
+  }, []);
+  const cancelEgysProvider = useCallback(() => {
+    providerGeneration.current++;
+    closePendingWhatsAppWindow();
+    setEgysProvider(undefined);
+  }, [closePendingWhatsAppWindow]);
+  useEffect(
+    () => () => {
+      providerGeneration.current++;
+      closePendingWhatsAppWindow();
+    },
+    [closePendingWhatsAppWindow],
+  );
+  const startEgysProvider = (provider: "whatsapp" | "apple") => {
+    closePendingWhatsAppWindow();
+    if (provider === "whatsapp") {
+      // Reserve the messaging tab during the click, before asynchronous setup.
+      whatsAppWindow.current = window.open("about:blank", "_blank");
+      if (whatsAppWindow.current) whatsAppWindow.current.opener = null;
+      setWhatsAppAttempt((attempt) => attempt + 1);
+    }
+    const generation = ++providerGeneration.current;
+    setEgysGoogleError("");
+    setEgysProvider(provider);
+    if (provider === "apple")
+      void signInEgysApple()
+        .then(async (authorization) => {
+          if (generation !== providerGeneration.current) return;
+          await requestEgysProvider("apple", authorization);
+          if (generation === providerGeneration.current)
+            await completeProviderLogin();
+        })
+        .catch((error) => {
+          if (generation !== providerGeneration.current) return;
+          setEgysGoogleError(
+            error instanceof Error ? error.message : "Apple login unavailable",
+          );
+        });
   };
 
   const completeGoogleLogin = async (credential: string) => {
@@ -1106,7 +1174,17 @@ export function MorePage({
               <div className="egys-login-box">
                 <EgysLoginMethods
                   locale={locale}
-                  theme={theme}
+                  whatsappStatus={
+                    egysProvider === "whatsapp" ? (
+                      <EgysWhatsApp
+                        key={whatsAppAttempt}
+                        messagingWindow={whatsAppWindow.current}
+                        onComplete={completeProviderLogin}
+                        onCancel={cancelEgysProvider}
+                      />
+                    ) : undefined
+                  }
+                  onProviderLogin={startEgysProvider}
                   onGoogleLogin={() =>
                     nativeShell
                       ? void openNativeEgysLoginFlow()
@@ -1118,6 +1196,20 @@ export function MorePage({
                       : undefined
                   }
                 />
+                {egysProvider === "apple" && (
+                  <div className="egys-inline-login">
+                    <span role={egysGoogleError ? "alert" : "status"}>
+                      {egysGoogleError || "Menunggu Apple…"}
+                    </span>
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={cancelEgysProvider}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </article>
@@ -1869,7 +1961,13 @@ export function MorePage({
                 <p className="egys-google-fallback">
                   {translate(locale, "more.otherLoginMethods")}
                 </p>
-                <EgysLoginMethods locale={locale} theme={theme} />
+                <EgysLoginMethods
+                  locale={locale}
+                  onProviderLogin={(provider) => {
+                    closeEgysLogin();
+                    startEgysProvider(provider);
+                  }}
+                />
               </div>
               <div className="egys-login-footer">
                 <span>

@@ -1354,6 +1354,240 @@ export function createApp(
     return c.json({ ok: true });
   });
 
+  // Live v1 provider callbacks. Tokens remain in the HttpOnly session cookie.
+  const providerRequest = async (
+    c: AppContext,
+    path: string,
+    data: Record<string, string>,
+  ) => {
+    const base = egysBase(c);
+    if (!base) throw new Error("e-GYS is not configured");
+    const response = await fetch(`${base}${path}`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type":
+          path !== "/login/whatsapp-login-confirm"
+            ? "application/json"
+            : "application/x-www-form-urlencoded",
+      },
+      body:
+        path !== "/login/whatsapp-login-confirm"
+          ? JSON.stringify({ ...data, ismobile: 1 })
+          : new URLSearchParams(data),
+      signal: AbortSignal.timeout(8000),
+      redirect: "manual",
+    });
+    const payload = (await response.json()) as Record<string, unknown>;
+    if (!response.ok || payload.error === true)
+      throw new Error("e-GYS rejected the login request");
+    return payload;
+  };
+  const saveProviderSession = (
+    c: AppContext,
+    payload: Record<string, unknown>,
+  ) => {
+    const token = typeof payload.token === "string" ? payload.token.trim() : "";
+    if (!token || token.length > 16384 || /[\s\x00-\x1f]/.test(token))
+      return errorResponse(
+        c,
+        "UNAUTHORIZED",
+        "e-GYS returned no valid session",
+      );
+    setCookie(c, "egys_session", token, egysSessionCookieOptions(c));
+    return c.json({ ok: true });
+  };
+  app.post("/api/v1/auth/egys/whatsapp/start", async (c) => {
+    c.header("cache-control", "no-store");
+    try {
+      const payload = await providerRequest(
+        c,
+        "/login/whatsapp-login-request",
+        {},
+      );
+      const parsed = z
+        .object({
+          referenceid: z.string().regex(/^[a-zA-Z0-9_-]{1,200}$/),
+          mobilephone: z.string().regex(/^\+?[0-9]{6,20}$/),
+          content: z.string().min(1).max(4096),
+        })
+        .safeParse(payload);
+      if (!parsed.success)
+        return errorResponse(
+          c,
+          "INTEGRITY_ERROR",
+          "Invalid WhatsApp login request",
+        );
+      setCookie(c, "egys_wa_reference", parsed.data.referenceid, {
+        ...egysSessionCookieOptions(c),
+        maxAge: 600,
+      });
+      return c.json(parsed.data);
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "WhatsApp login is unavailable",
+      );
+    }
+  });
+  app.get("/api/v1/auth/egys/whatsapp/track", async (c) => {
+    const origin = c.req.header("origin");
+    const reference = getCookie(c, "egys_wa_reference");
+    const base = egysBase(c);
+    if (!origin || !originList(c, config.allowedOrigins).includes(origin))
+      return errorResponse(c, "FORBIDDEN", "Tracking origin is not allowed");
+    if (!reference || !/^[a-zA-Z0-9_-]{1,200}$/.test(reference) || !base)
+      return errorResponse(
+        c,
+        "UNAUTHORIZED",
+        "WhatsApp tracking session is unavailable",
+      );
+    if (c.req.header("upgrade")?.toLowerCase() !== "websocket")
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "WebSocket connection required",
+      );
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      let response: Response;
+      try {
+        response = await fetch(
+          `${base}/wa-login/${encodeURIComponent(reference)}`,
+          {
+            headers: { Upgrade: "websocket", Origin: new URL(base).origin },
+            signal: controller.signal,
+            redirect: "manual",
+          },
+        );
+      } finally {
+        clearTimeout(timer);
+      }
+      const upstream = (
+        response as Response & { webSocket?: WebSocket & { accept(): void } }
+      ).webSocket;
+      if (!upstream || response.status !== 101)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "WhatsApp tracking unavailable",
+        );
+      upstream.accept();
+      const pair = new WebSocketPair();
+      const client = pair[0];
+      const server = pair[1];
+      server.accept();
+      upstream.addEventListener("message", (event) => {
+        if (typeof event.data !== "string" || event.data.length > 8192) return;
+        try {
+          server.send(event.data);
+        } catch {
+          upstream.close();
+        }
+      });
+      upstream.addEventListener("close", () => {
+        try {
+          server.close();
+        } catch {}
+      });
+      upstream.addEventListener("error", () => {
+        try {
+          server.close(1011, "Tracking unavailable");
+          upstream.close();
+        } catch {}
+      });
+      server.addEventListener("close", () => {
+        try {
+          upstream.close();
+        } catch {}
+      });
+      // This is receive-only: callers cannot send arbitrary messages upstream.
+      return new Response(null, { status: 101, webSocket: client });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "WhatsApp tracking unavailable",
+      );
+    }
+  });
+
+  app.post("/api/v1/auth/egys/whatsapp/confirm", async (c) => {
+    c.header("cache-control", "no-store");
+    const parsed = z
+      .object({
+        otp: z.string().regex(/^[0-9]{4,12}$/),
+        mobilephone: z
+          .string()
+          .regex(/^\+?[0-9]{6,20}$/)
+          .optional(),
+      })
+      .safeParse(await c.req.json().catch(() => undefined));
+    const referenceid = getCookie(c, "egys_wa_reference");
+    if (!parsed.success || !referenceid)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "WhatsApp code or login request is invalid",
+      );
+    try {
+      const payload = await providerRequest(
+        c,
+        "/login/whatsapp-login-confirm",
+        {
+          referenceid,
+          otp: parsed.data.otp,
+          ...(parsed.data.mobilephone
+            ? { mobilephone: parsed.data.mobilephone }
+            : {}),
+          ismobile: "1",
+        },
+      );
+      const result = saveProviderSession(c, payload);
+      if (result.status === 200)
+        deleteCookie(c, "egys_wa_reference", egysSessionCookieOptions(c));
+      return result;
+    } catch {
+      return errorResponse(
+        c,
+        "UNAUTHORIZED",
+        "WhatsApp code could not be verified",
+      );
+    }
+  });
+  app.post("/api/v1/auth/egys/apple", async (c) => {
+    c.header("cache-control", "no-store");
+    const parsed = z
+      .object({
+        code: z.string().min(1).max(8192),
+        id_token: z.string().min(1).max(16384),
+      })
+      .safeParse(await c.req.json().catch(() => undefined));
+    if (!parsed.success)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Apple authorization is invalid",
+      );
+    try {
+      return saveProviderSession(
+        c,
+        await providerRequest(c, "/auth/apple/callback", {
+          ...parsed.data,
+          ismobile: "1",
+        }),
+      );
+    } catch {
+      return errorResponse(
+        c,
+        "UNAUTHORIZED",
+        "Apple login could not be verified",
+      );
+    }
+  });
+
   app.post("/api/v1/auth/logout", async (c) => {
     c.header("cache-control", "no-store");
     deleteCookie(c, "egys_session", egysSessionCookieOptions(c));
