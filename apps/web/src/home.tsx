@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -37,10 +38,7 @@ function SauhSkeleton({ locale }: { locale: Locale }) {
       aria-live="polite"
       data-testid="home-sauh-skeleton"
     >
-      <span className="sauh-skeleton-spinner" aria-hidden="true" />
-      <span className="sauh-skeleton-loading-text">
-        {translate(locale, "home.loadingSauh")}
-      </span>
+      <LoadingProgress label={translate(locale, "home.loadingSauh")} />
     </div>
   );
 }
@@ -396,7 +394,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           </div>
           {suaraStatus === "loading" && (
             <div className="loading-panel" role="status">
-              {translate(locale, "home.loadingSuara")}
+              <LoadingProgress label={translate(locale, "home.loadingSuara")} />
             </div>
           )}
           {suaraStatus === "error" && (
@@ -469,7 +467,9 @@ export function HomePage({ locale }: { locale: Locale }) {
           </div>
           {literatureStatus === "loading" && (
             <div className="loading-panel" role="status">
-              {translate(locale, "home.loadingLiterature")}
+              <LoadingProgress
+                label={translate(locale, "home.loadingLiterature")}
+              />
             </div>
           )}
           {literatureStatus === "error" && (

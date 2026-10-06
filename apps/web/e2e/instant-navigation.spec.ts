@@ -46,7 +46,7 @@ test("warm navigation reuses core payloads without optional downloads", async ({
   expect(pdfRequests).toBe(0);
 });
 
-test("PDF loading is compact and indeterminate before response bytes arrive", async ({
+test("branded PDF loading stays compact and indeterminate before response bytes arrive", async ({
   page,
 }) => {
   let release!: () => void;
@@ -64,9 +64,28 @@ test("PDF loading is compact and indeterminate before response bytes arrive", as
   const bar = loading.getByRole("progressbar");
   await expect(bar).toHaveCount(1);
   await expect(bar).not.toHaveAttribute("aria-valuenow");
+  const logo = loading.getByRole("img", { name: "Gereja Yesus Sejati" });
+  await expect(logo).toBeVisible();
+  await expect
+    .poll(() => logo.evaluate((el: HTMLImageElement) => el.naturalWidth))
+    .toBeGreaterThan(0);
+  expect((await bar.boundingBox())!.y).toBeGreaterThan(
+    (await logo.boundingBox())!.y + (await logo.boundingBox())!.height,
+  );
+  expect(
+    await bar
+      .locator(":scope > span")
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("loading-flow");
   expect(
     (await loading.locator(".pdf-loading-page").boundingBox())!.height,
-  ).toBeLessThan(110);
+  ).toBeLessThan(160);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await bar
+      .locator(":scope > span")
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("none");
   release();
   await expect(loading).toBeHidden();
   await expect(

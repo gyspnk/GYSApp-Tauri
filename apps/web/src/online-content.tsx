@@ -353,7 +353,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       )}
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          {translate(locale, "suara.loading")}
+          <LoadingProgress label={translate(locale, "suara.loading")} />
         </div>
       )}
       {state.status === "error" && (
@@ -533,7 +533,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       </div>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          {translate(locale, "suara.detailLoading")}
+          <LoadingProgress label={translate(locale, "suara.detailLoading")} />
         </div>
       )}
       {state.status === "error" && (

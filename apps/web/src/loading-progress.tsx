@@ -7,9 +7,12 @@ export function LoadingProgress({
 }) {
   return (
     <div className="loading-progress">
-      {label}
+      <img
+        src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
+        alt="Gereja Yesus Sejati"
+      />
       <span
-        className={`loading-progress-track${percent === undefined ? " is-indeterminate" : ""}`}
+        className="loading-progress-track"
         role="progressbar"
         aria-label={label}
         aria-valuenow={percent}
@@ -18,6 +21,7 @@ export function LoadingProgress({
           style={percent === undefined ? undefined : { width: `${percent}%` }}
         />
       </span>
+      {label}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 test("a new reader can start from Home without an empty activity dead end", async ({
@@ -227,3 +228,82 @@ for (const [locale, label] of [
     }
   });
 }
+
+for (const theme of ["light", "dark"] as const) {
+  test(`header and active navigation remain readable across layouts on ${theme}`, async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      (theme) =>
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({ version: 1, locale: "id", theme }),
+        ),
+      theme,
+    );
+    await page.route(/^https:\/\//, (route) => route.abort());
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/GYSApp-Tauri/kidung");
+      await expect(page.locator(".pujian-item").first()).toBeVisible();
+      const result = await new AxeBuilder({ page })
+        .include(".topbar")
+        .include(".navigation-shell")
+        .withRules(["color-contrast"])
+        .analyze();
+      expect(result.violations).toEqual([]);
+    }
+  });
+}
+
+test("reader icons stay centered and secondary actions retain readable labels", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+    const toolbar = page.locator(".hymn-text-toolbar");
+    await expect(toolbar).toBeVisible();
+    const offsets = await toolbar
+      .locator(".detail-actions > .hymn-action")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const box = button.getBoundingClientRect();
+          const icon = button.querySelector("svg")!.getBoundingClientRect();
+          return {
+            x: Math.abs(box.x + box.width / 2 - icon.x - icon.width / 2),
+            y: Math.abs(box.y + box.height / 2 - icon.y - icon.height / 2),
+          };
+        }),
+      );
+    for (const offset of offsets) {
+      expect(offset.x).toBeLessThanOrEqual(1);
+      expect(offset.y).toBeLessThanOrEqual(1);
+    }
+    await toolbar.locator(".hymn-more-actions-summary").click();
+    const labels = toolbar.locator(
+      ".hymn-more-actions-panel .hymn-action-label",
+    );
+    expect(await labels.count()).toBeGreaterThan(0);
+    for (const label of await labels.all()) {
+      await expect(label).toBeVisible();
+      const box = (await label.boundingBox())!;
+      expect(box.width).toBeGreaterThan(20);
+      expect(box.height).toBeGreaterThan(10);
+    }
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width);
+    await page.goto("/GYSApp-Tauri/bible");
+    const picker = page.locator(".reader-context-book-picker");
+    await expect(picker).toContainText("Kejadian 1");
+    const button = (await picker.boundingBox())!;
+    const chevron = (await picker
+      .locator(".picker-chevron svg")
+      .boundingBox())!;
+    expect(
+      Math.abs(button.y + button.height / 2 - chevron.y - chevron.height / 2),
+    ).toBeLessThanOrEqual(1);
+  }
+});

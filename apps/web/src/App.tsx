@@ -316,38 +316,37 @@ function Navigation({ locale }: { locale: Locale }) {
           opacity: indicatorStyle.opacity,
         }}
       />
-      {DESTINATIONS.map((destination) => (
-        <NavLink
-          key={destination.path}
-          ref={(el) => {
-            if (el) itemsRef.current.set(destination.path, el);
-            else itemsRef.current.delete(destination.path);
-          }}
-          onPointerEnter={() =>
-            void import("./route-preload.js")
-              .then((m) => m.preloadRoute(destination.path))
-              .catch(() => undefined)
-          }
-          onFocus={() =>
-            void import("./route-preload.js")
-              .then((m) => m.preloadRoute(destination.path))
-              .catch(() => undefined)
-          }
-          to={destination.path}
-          end={destination.path === "/"}
-          className={({ isActive }) =>
-            `nav-item${isActive ? " is-active" : ""}`
-          }
-          aria-label={translate(locale, destination.labelKey)}
-          title={translate(locale, destination.labelKey)}
-          data-nav-label={translate(locale, destination.labelKey)}
-        >
-          <Icon name={destination.icon} />
-          <span className="nav-copy">
-            <strong>{translate(locale, destination.labelKey)}</strong>
-          </span>
-        </NavLink>
-      ))}
+      {DESTINATIONS.map((destination) => {
+        const label = translate(locale, destination.labelKey);
+        const preload = () =>
+          void import("./route-preload.js")
+            .then((module) => module.preloadRoute(destination.path))
+            .catch(() => undefined);
+        return (
+          <NavLink
+            key={destination.path}
+            ref={(el) => {
+              if (el) itemsRef.current.set(destination.path, el);
+              else itemsRef.current.delete(destination.path);
+            }}
+            onPointerEnter={preload}
+            onFocus={preload}
+            to={destination.path}
+            end={destination.path === "/"}
+            className={({ isActive }) =>
+              `nav-item${isActive ? " is-active" : ""}`
+            }
+            aria-label={label}
+            title={label}
+            data-nav-label={label}
+          >
+            <Icon name={destination.icon} />
+            <span className="nav-copy">
+              <strong>{label}</strong>
+            </span>
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }

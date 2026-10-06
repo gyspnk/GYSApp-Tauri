@@ -1230,6 +1230,21 @@ export function PdfReader({
     if (!pdfReaderRef.current) return;
     return enhancePdfReader(pdfReaderRef.current);
   }, [variant, locale]);
+  useEffect(() => {
+    if (!advancedOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !pdfReaderRef.current
+          ?.querySelector(".pdf-toolbar")
+          ?.contains(event.target)
+      ) {
+        setAdvancedOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [advancedOpen]);
   const readerTitle = title ?? translate(locale, "pdf.readerTitle");
 
   return (

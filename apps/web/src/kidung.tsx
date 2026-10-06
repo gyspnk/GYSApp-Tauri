@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { transitionReader } from "./reader-transition.js";
 import {
   lazy,
@@ -948,7 +949,7 @@ export function HymnDetail({
     return (
       <div className="page">
         <div className="loading-panel" role="status">
-          {translate(locale, "kidung.catalogLoading")}
+          <LoadingProgress label={translate(locale, "kidung.catalogLoading")} />
         </div>
       </div>
     );
@@ -2576,7 +2577,9 @@ export function HymnDetail({
             </div>
             {pdfStatus === "loading" && (
               <div className="loading-panel" role="status">
-                {translate(locale, "kidung.pdfOpening")}
+                <LoadingProgress
+                  label={translate(locale, "kidung.pdfOpening")}
+                />
               </div>
             )}
             {pdfStatus === "error" && (
@@ -2596,7 +2599,9 @@ export function HymnDetail({
               <Suspense
                 fallback={
                   <div className="loading-panel">
-                    {translate(locale, "kidung.pdfOpening")}
+                    <LoadingProgress
+                      label={translate(locale, "kidung.pdfOpening")}
+                    />
                   </div>
                 }
               >
@@ -2709,7 +2714,9 @@ export function HymnDetail({
           ))}
         {chordsVisible && chordStatus === "loading" && (
           <div className="loading-panel" role="status">
-            {translate(locale, "kidung.chordVerifying")}
+            <LoadingProgress
+              label={translate(locale, "kidung.chordVerifying")}
+            />
           </div>
         )}
         {chordsVisible &&

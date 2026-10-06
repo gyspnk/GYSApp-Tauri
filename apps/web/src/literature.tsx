@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import {
   lazy,
   Suspense,
@@ -594,7 +595,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
 
       {status === "loading" && (
         <div className="loading-panel" role="status">
-          {translate(locale, "literature.loading")}
+          <LoadingProgress label={translate(locale, "literature.loading")} />
         </div>
       )}
       {status === "error" && (
@@ -1046,7 +1047,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     return (
       <div className="page">
         <div className="loading-panel" role="status">
-          {translate(locale, "literature.detailLoading")}
+          <LoadingProgress
+            label={translate(locale, "literature.detailLoading")}
+          />
         </div>
       </div>
     );
@@ -1155,7 +1158,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       </section>
       {directRead && isPdfItem && !readerOpen && !isPdfUnavailable && (
         <div className="loading-panel literature-direct-loading" role="status">
-          {translate(locale, "literature.preparePdf")}
+          <LoadingProgress label={translate(locale, "literature.preparePdf")} />
         </div>
       )}
       {isPdfUnavailable && (
@@ -1319,7 +1322,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 <Suspense
                   fallback={
                     <div className="loading-panel">
-                      {translate(locale, "literature.pdfViewerLoading")}
+                      <LoadingProgress
+                        label={translate(locale, "literature.pdfViewerLoading")}
+                      />
                     </div>
                   }
                 >
@@ -1363,7 +1368,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
           {articleStatus === "loading" && (
             <div className="loading-panel" role="status">
-              {translate(locale, "literature.articleLoading")}
+              <LoadingProgress
+                label={translate(locale, "literature.articleLoading")}
+              />
             </div>
           )}
           {articleStatus === "error" && (

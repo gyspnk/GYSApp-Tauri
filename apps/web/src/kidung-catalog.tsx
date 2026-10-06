@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
 import { useSyncExternalStore } from "react";
 import {
@@ -241,7 +242,7 @@ export function HymnCatalog({
       </div>
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
-          {translate(locale, "kidung.catalogLoading")}
+          <LoadingProgress label={translate(locale, "kidung.catalogLoading")} />
         </div>
       )}
       {state.status === "error" && (

@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
@@ -364,7 +365,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
       </h1>
       {!pack && (
         <div className="loading-panel" role="status">
-          {translate(locale, "faith.loading")}
+          <LoadingProgress label={translate(locale, "faith.loading")} />
         </div>
       )}
       {pack && !group && (
@@ -752,7 +753,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
                 <Suspense
                   fallback={
                     <div className="loading-panel" role="status">
-                      {translate(locale, "faith.loadingPdfViewer")}
+                      <LoadingProgress
+                        label={translate(locale, "faith.loadingPdfViewer")}
+                      />
                     </div>
                   }
                 >
