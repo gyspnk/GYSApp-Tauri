@@ -1,6 +1,13 @@
 name: Cloudflare Worker
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - apps/bff/**
+      - packages/contracts/**
+      - .github/workflows/worker.yml
+      - pnpm-lock.yaml
   workflow_dispatch:
 
 permissions:

@@ -24,7 +24,12 @@ export const loadCoreHymns = createHymnPayloadLoader(
   `${import.meta.env.BASE_URL}offline/hymn-catalog.json`,
   parseCatalog,
 );
-export const loadCoreHymnMetadata = createHymnPayloadLoader(
+const loadMetadata = createHymnPayloadLoader(
   `${import.meta.env.BASE_URL}offline/hymn-metadata.json`,
   parseHymnMetadata,
 );
+
+let cachedMetadata: Awaited<ReturnType<typeof loadMetadata>> | undefined;
+export const getCachedCoreHymnMetadata = () => cachedMetadata;
+export const loadCoreHymnMetadata = () =>
+  loadMetadata().then((items) => (cachedMetadata = items));

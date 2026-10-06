@@ -1299,91 +1299,100 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("uses live v1 provider callbacks and keeps tokens in HttpOnly cookies", async () => {
-    const originalFetch = globalThis.fetch;
-    const calls: Array<{ url: string; body: string }> = [];
-    globalThis.fetch = (async (input, init) => {
-      const url = String(input);
-      calls.push({ url, body: String(init?.body) });
-      return new Response(
-        JSON.stringify(
-          url.endsWith("whatsapp-login-request")
-            ? {
-                referenceid: "ref-123",
-                mobilephone: "62812345678",
-                content: "LOGIN ref-123",
-              }
-            : { token: "private-provider-token" },
-        ),
-        { headers: { "content-type": "application/json" } },
-      );
-    }) as typeof fetch;
-    try {
-      const app = createApp({
-        allowedOrigins: ["http://localhost:5173"],
-        chordManifest: manifest,
-        content: [],
-      });
-      const env = { EGYS_API_BASE_URL: "https://e.gys.or.id" };
-      const start = await app.request(
-        "/api/v1/auth/egys/whatsapp/start",
-        { method: "POST" },
-        env,
-      );
-      expect(start.status).toBe(200);
-      expect(start.headers.get("set-cookie")).toContain("HttpOnly");
-      const confirm = await app.request(
-        "/api/v1/auth/egys/whatsapp/confirm",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            cookie: "egys_wa_reference=ref-123",
-            origin: "http://localhost:5173",
+  it.each([
+    ["referenceid", "mobilephone"],
+    ["referenceId", "mobilePhone"],
+  ])(
+    "uses live v1 provider callbacks with %s and keeps tokens in HttpOnly cookies",
+    async (referenceKey, phoneKey) => {
+      const originalFetch = globalThis.fetch;
+      const calls: Array<{ url: string; body: string }> = [];
+      globalThis.fetch = (async (input, init) => {
+        const url = String(input);
+        calls.push({ url, body: String(init?.body) });
+        return new Response(
+          JSON.stringify(
+            url.endsWith("whatsapp-login-request")
+              ? {
+                  [referenceKey]: "ref-123",
+                  [phoneKey]: "62812345678",
+                  content: "LOGIN ref-123",
+                }
+              : { token: "private-provider-token" },
+          ),
+          { headers: { "content-type": "application/json" } },
+        );
+      }) as typeof fetch;
+      try {
+        const app = createApp({
+          allowedOrigins: ["http://localhost:5173"],
+          chordManifest: manifest,
+          content: [],
+        });
+        const env = { EGYS_API_BASE_URL: "https://e.gys.or.id" };
+        const start = await app.request(
+          "/api/v1/auth/egys/whatsapp/start",
+          { method: "POST" },
+          env,
+        );
+        expect(start.status).toBe(200);
+        expect(start.headers.get("set-cookie")).toContain("HttpOnly");
+        const confirm = await app.request(
+          "/api/v1/auth/egys/whatsapp/confirm",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              cookie: "egys_wa_reference=ref-123",
+              origin: "http://localhost:5173",
+            },
+            body: JSON.stringify({
+              otp: "123456",
+              referenceid: "attacker-ref",
+            }),
           },
-          body: JSON.stringify({ otp: "123456", referenceid: "attacker-ref" }),
-        },
-        env,
-      );
-      expect(await confirm.json()).toEqual({ ok: true });
-      expect(confirm.headers.get("set-cookie")).toContain(
-        "egys_session=private-provider-token",
-      );
-      expect(calls[1]).toMatchObject({
-        url: "https://e.gys.or.id/login/whatsapp-login-confirm",
-      });
-      expect(calls[1]!.body).toContain("referenceid=ref-123");
-      expect(calls[1]!.body).not.toContain("attacker-ref");
-      const apple = await app.request(
-        "/api/v1/auth/egys/apple",
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            code: "apple-code",
-            id_token: "apple-id-token",
-          }),
-        },
-        env,
-      );
-      expect(await apple.json()).toEqual({ ok: true });
-      expect(apple.headers.get("set-cookie")).toContain("HttpOnly");
-      expect(calls[2]!.url).toBe("https://e.gys.or.id/auth/apple/callback");
-      const invalid = await app.request(
-        "/api/v1/auth/egys/whatsapp/confirm",
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ otp: "123456" }),
-        },
-        env,
-      );
-      expect(invalid.status).not.toBe(200);
-      expect(calls).toHaveLength(3);
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-  });
+          env,
+        );
+        expect(await confirm.json()).toEqual({ ok: true });
+        expect(confirm.headers.get("set-cookie")).toContain(
+          "egys_session=private-provider-token",
+        );
+        expect(calls[1]).toMatchObject({
+          url: "https://e.gys.or.id/login/whatsapp-login-confirm",
+        });
+        expect(calls[1]!.body).toContain("referenceid=ref-123");
+        expect(calls[1]!.body).not.toContain("attacker-ref");
+        const apple = await app.request(
+          "/api/v1/auth/egys/apple",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              code: "apple-code",
+              id_token: "apple-id-token",
+            }),
+          },
+          env,
+        );
+        expect(await apple.json()).toEqual({ ok: true });
+        expect(apple.headers.get("set-cookie")).toContain("HttpOnly");
+        expect(calls[2]!.url).toBe("https://e.gys.or.id/auth/apple/callback");
+        const invalid = await app.request(
+          "/api/v1/auth/egys/whatsapp/confirm",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ otp: "123456" }),
+          },
+          env,
+        );
+        expect(invalid.status).not.toBe(200);
+        expect(calls).toHaveLength(3);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    },
+  );
 
   it("binds WhatsApp tracking to the cookie and trusted origin", async () => {
     const app = createApp({

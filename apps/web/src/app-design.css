@@ -2248,3 +2248,155 @@ body:has(.hymn-detail-page.is-text-viewer)
     display: none;
   }
 }
+
+/* Article readers use the available page field at every screen width. */
+.main-content:has(.online-content-page, .literature-detail-page) {
+  max-width: none;
+}
+.online-article-card,
+.online-article-body,
+.literature-reader-panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.online-article-body :is(p, li, blockquote) {
+  color: inherit;
+}
+
+/* Quiet, shared progress feedback; unknown network work has no invented percentage. */
+.loading-progress {
+  display: grid;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  padding-block: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.loading-progress-track {
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+.loading-progress-track > span {
+  display: block;
+  height: 100%;
+  width: var(--load-percent, 35%);
+  border-radius: inherit;
+  background: var(--blue);
+  transition: width 180ms ease;
+}
+.loading-progress-track.is-indeterminate > span {
+  animation: compact-load 1.2s ease-in-out infinite;
+}
+@keyframes compact-load {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(390%);
+  }
+}
+.non-reader-route-loading,
+.reader-route-loading {
+  min-height: 0;
+  padding: var(--page-start) var(--page-gutter);
+}
+.pdf-loading-page {
+  width: min(100%, 420px);
+  min-height: 0;
+  aspect-ratio: auto;
+  padding: 16px 20px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.pdf-loading-page .loading-progress {
+  text-align: start;
+}
+.loading-panel {
+  position: relative;
+  min-height: 0;
+  padding: 14px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+}
+.loading-panel::after {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 100%;
+  margin-top: 9px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--line) 35%,
+    var(--blue) 50%,
+    var(--line) 65%
+  );
+  background-size: 240% 100%;
+  animation: compact-load-background 1.2s ease-in-out infinite;
+}
+@keyframes compact-load-background {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-progress-track.is-indeterminate > span,
+  .loading-panel::after {
+    animation: none;
+  }
+  .loading-progress-track > span {
+    transition: none;
+  }
+}
+
+/* Skip painting offscreen catalog rows while keeping every title searchable. */
+.pujian-item {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 60px;
+}
+
+/* Theme snapshots fade as one surface, preserving text and scroll geometry. */
+:root.is-theme-transition::view-transition-old(root),
+:root.is-theme-transition::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: normal;
+}
+:root.is-theme-transition::view-transition {
+  pointer-events: none;
+}
+:root.is-theme-color-transition
+  :is(
+    .app-frame,
+    .topbar,
+    .navigation-shell,
+    .page,
+    article,
+    section,
+    .faith-row,
+    button,
+    input,
+    select
+  ) {
+  transition:
+    background-color 280ms ease,
+    color 280ms ease,
+    border-color 280ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root.is-theme-transition::view-transition-old(root),
+  :root.is-theme-transition::view-transition-new(root) {
+    animation: none;
+  }
+}

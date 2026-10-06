@@ -27,6 +27,11 @@ export function createBundledBibleLoader(
   };
 }
 
-export const loadBundledBiblePack = createBundledBibleLoader(
+const loadPack = createBundledBibleLoader(
   `${import.meta.env.BASE_URL}offline/bible/tb-reader.json`,
 );
+
+let cachedPack: BibleReaderPack | undefined;
+export const getCachedBundledBiblePack = () => cachedPack;
+export const loadBundledBiblePack = () =>
+  loadPack().then((pack) => (cachedPack = pack));

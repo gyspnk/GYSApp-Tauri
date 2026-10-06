@@ -126,6 +126,7 @@ async function resolveIssuePdfUrl(
 }
 
 import {
+  getCachedLiteratureCatalog,
   fetchLiteratureCatalog,
   literatureCategoryLabels,
   literatureCategoryLabel as categoryLabel,
@@ -179,7 +180,10 @@ type CatalogState =
   | { status: "error" };
 
 function useLiteratureCatalog() {
-  const [state, setState] = useState<CatalogState>({ status: "loading" });
+  const [state, setState] = useState<CatalogState>(() => {
+    const items = getCachedLiteratureCatalog();
+    return items ? { status: "ready", items } : { status: "loading" };
+  });
   useEffect(() => {
     const controller = new AbortController();
     void fetchLiteratureCatalog(controller.signal)
@@ -1098,6 +1102,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               <button
                 className="primary-button"
                 type="button"
+                onPointerEnter={() =>
+                  void import("./pdf.js").catch(() => undefined)
+                }
+                onFocus={() => void import("./pdf.js").catch(() => undefined)}
                 onClick={(event) => openReader(event.currentTarget)}
                 disabled={!pdfAsset}
               >

@@ -200,7 +200,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voiceVolume": "Volume bacaan suara",
     "bible.searchVerses": "Buka pencarian ayat di Alkitab",
     "bible.musicPlayer": "Pemutar Musik MIDI",
-    "bible.routeLoading": "Memuat {title}…",
     "bible.parallelOpen": "Buka paralel {text}",
     "bible.bookmarkVerse": "Tandai ayat {verse}",
     "bible.crossReferenceAria":
@@ -460,7 +459,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voiceVolume": "Voice volume",
     "bible.searchVerses": "Open Bible verse search",
     "bible.musicPlayer": "MIDI music player",
-    "bible.routeLoading": "Loading {title}…",
     "bible.parallelOpen": "Open parallel {text}",
     "bible.bookmarkVerse": "Bookmark verse {verse}",
     "bible.crossReferenceAria": "View {count} cross-references for {reference}",
@@ -712,7 +710,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voiceVolume": "朗读音量",
     "bible.searchVerses": "打开圣经经文搜索",
     "bible.musicPlayer": "MIDI 音乐播放器",
-    "bible.routeLoading": "正在加载{title}…",
     "bible.parallelOpen": "打开平行经文 {text}",
     "bible.bookmarkVerse": "收藏第 {verse} 节经文",
     "bible.crossReferenceAria": "查看 {reference} 的 {count} 个交叉引用",
@@ -813,6 +810,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutNarrowNote":
       "Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.",
     "pdf.download": "Unduh PDF",
+    "pdf.loadingDocument": "Memuat PDF…",
     "pdf.loading": "Memuat PDF… {percent}%",
     "pdf.loadingSlow":
       "PDF masih memuat lebih lama dari biasanya. Anda bisa menunggu atau mencoba lagi.",
@@ -1590,6 +1588,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutNarrowNote":
       "Two-page view switches to single-page view on narrow screens.",
     "pdf.download": "Download PDF",
+    "pdf.loadingDocument": "Loading PDF…",
     "pdf.loading": "Loading PDF… {percent}%",
     "pdf.loadingSlow":
       "The PDF is taking longer than usual. You can wait or try again.",
@@ -2366,6 +2365,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutGroup": "PDF 布局",
     "pdf.layoutNarrowNote": "窄屏时双页显示会切换为单页显示。",
     "pdf.download": "下载 PDF",
+    "pdf.loadingDocument": "正在加载 PDF…",
     "pdf.loading": "正在加载 PDF… {percent}%",
     "pdf.loadingSlow": "PDF 加载时间较长。您可以继续等待或重试。",
     "pdf.orientation": "双页显示在横向屏幕更舒适",

@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
 
-type Challenge = { referenceid: string; mobilephone: string; content: string };
+type Challenge = {
+  referenceid?: string;
+  referenceId?: string;
+  mobilephone?: string;
+  mobilePhone?: string;
+  content: string;
+};
 const LOGIN_TIMEOUT_MS = 120_000;
 
 /** Lives inside the provider button; clicking that button starts a fresh attempt. */
@@ -64,6 +70,25 @@ export function EgysWhatsApp({
     void requestEgysProvider<Challenge>("whatsapp/start", {}, controller.signal)
       .then((data) => {
         if (controller.signal.aborted) return;
+        const reference = data.referenceid ?? data.referenceId;
+        const phone = data.mobilephone ?? data.mobilePhone;
+        if (!reference || !phone || !data.content) {
+          fail("Respons WhatsApp tidak valid. Tekan WhatsApp lagi.");
+          return;
+        }
+        if (messagingWindow.closed) {
+          fail("Tab ditutup. Tekan WhatsApp lagi.");
+          return;
+        }
+        try {
+          messagingWindow.location.replace(
+            `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(data.content)}`,
+          );
+          launched = true;
+        } catch {
+          fail("WhatsApp tidak dapat dibuka. Tekan WhatsApp lagi.");
+          return;
+        }
         setStatus("Menghubungkan WhatsApp");
         socket = new WebSocket(egysWhatsAppTrackingUrl());
         socket.onerror = () => fail("Koneksi terputus. Tekan WhatsApp lagi.");
@@ -80,30 +105,16 @@ export function EgysWhatsApp({
           }
           if (message.type === "info" && !confirming) {
             setStatus("Menunggu pesan WhatsApp");
-            if (!launched) {
-              if (messagingWindow.closed) {
-                fail("Tab ditutup. Tekan WhatsApp lagi.");
-                return;
-              }
-              try {
-                messagingWindow.location.replace(
-                  `https://api.whatsapp.com/send?phone=${encodeURIComponent(data.mobilephone)}&text=${encodeURIComponent(data.content)}`,
-                );
-                launched = true;
-              } catch {
-                fail("WhatsApp tidak dapat dibuka. Tekan WhatsApp lagi.");
-              }
-            }
           }
           if (message.type === "error") {
             fail("Pesan belum dapat diverifikasi. Tekan WhatsApp lagi.");
             return;
           }
           if (
-            message.refid === data.referenceid &&
+            message.refid === reference &&
             /^[0-9]{4,12}$/.test(String(message.otp ?? ""))
           )
-            void confirm(String(message.otp), data.mobilephone);
+            void confirm(String(message.otp), phone);
         };
       })
       .catch((err) =>

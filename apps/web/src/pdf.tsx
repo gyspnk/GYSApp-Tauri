@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
 import { enhancePdfReader } from "./direct-manipulation.js";
 import {
@@ -541,6 +542,7 @@ export function PdfReader({
   );
   const [loadErrorStatus, setLoadErrorStatus] = useState<number | undefined>();
   const [loadProgress, setLoadProgress] = useState(0);
+  const [downloadPercent, setDownloadPercent] = useState<number>();
   const [loadPhase, setLoadPhase] = useState<
     "loading" | "slow" | "ready" | "error"
   >("loading");
@@ -812,6 +814,7 @@ export function PdfReader({
     setLoadErrorStatus(undefined);
     setLoadPhase("loading");
     setLoadProgress(8);
+    setDownloadPercent(undefined);
     let slowTimer: number | undefined;
     let lastProgress = 8;
     const clearSlowTimer = () => {
@@ -850,6 +853,7 @@ export function PdfReader({
         progress.total > 0
           ? Math.round((progress.loaded / progress.total) * 100)
           : 0;
+      setDownloadPercent(progress.total > 0 ? Math.min(100, pct) : undefined);
       const nextProgress = Math.max(8, Math.min(96, pct));
       setLoadProgress((current) => Math.max(current, nextProgress));
       if (nextProgress > lastProgress) {
@@ -1568,27 +1572,16 @@ export function PdfReader({
             }}
           >
             <div className="pdf-loading-page">
-              <p>
-                {translate(locale, "pdf.loading", { percent: loadProgress })}
-              </p>
-              <div
-                style={{
-                  width: 160,
-                  height: 4,
-                  background: "rgba(141,110,63,0.18)",
-                  borderRadius: 999,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${loadProgress}%`,
-                    height: "100%",
-                    background: "var(--accent, #8d6e3f)",
-                    transition: "width 0.2s ease",
-                  }}
-                />
-              </div>
+              <LoadingProgress
+                label={
+                  downloadPercent === undefined
+                    ? translate(locale, "pdf.loadingDocument")
+                    : translate(locale, "pdf.loading", {
+                        percent: downloadPercent,
+                      })
+                }
+                percent={downloadPercent}
+              />
               {loadPhase === "slow" && (
                 <div className="pdf-loading-slow">
                   <p>{translate(locale, "pdf.loadingSlow")}</p>

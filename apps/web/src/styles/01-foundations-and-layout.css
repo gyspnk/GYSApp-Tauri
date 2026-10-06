@@ -9,7 +9,7 @@ body {
   min-width: 320px;
   background: var(--canvas);
   color: var(--ink);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 button {
   font: inherit;
@@ -1600,7 +1600,7 @@ blockquote {
 
 .online-content-page {
   width: 100%;
-  max-width: 1180px;
+  max-width: none;
   margin-inline: auto;
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
@@ -1734,7 +1734,7 @@ blockquote {
   font-size: 1.02rem;
   line-height: 1.92;
   gap: 1.05rem;
-  color: #1f2f4a;
+  color: var(--ink);
   letter-spacing: 0.01em;
 }
 :root[data-theme="dark"] .sauh-page .sauh-article .online-article-body,
@@ -1832,7 +1832,7 @@ blockquote {
 
 @container suara-reader (min-width: 860px) {
   .suara-detail-page .online-article-card.suara-article-card {
-    max-width: 780px;
+    max-width: none;
     padding: 2.4rem 2.85rem;
   }
   .suara-detail-page .online-article-body.suara-article-body {
@@ -1888,7 +1888,7 @@ blockquote {
   font-size: 1.02rem;
   line-height: 1.95;
   gap: 1.1rem;
-  color: #1f2f4a;
+  color: var(--ink);
   letter-spacing: 0.01em;
 }
 

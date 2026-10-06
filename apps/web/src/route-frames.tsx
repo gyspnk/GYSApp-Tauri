@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
@@ -37,44 +38,17 @@ export function NonReaderRouteLoading({
 }) {
   const routeId = getNonReaderRouteId(pathname);
   const title = translate(locale, getRouteTitleKey(pathname));
+  const label = translate(locale, "shell.routeLoading", { title });
   return (
     <div
-      className={`route-loading non-reader-route-loading is-${routeId}`}
+      className="route-loading non-reader-route-loading"
       role="status"
       aria-live="polite"
       aria-busy="true"
-      aria-label={translate(locale, "shell.routeLoading", { title })}
       data-testid="non-reader-route-loading"
       data-route={routeId}
     >
-      <span className="route-loading-label">
-        {translate(locale, "shell.routeLoading", { title })}
-      </span>
-      <div className="route-loading-heading" aria-hidden="true">
-        <span className="route-loading-kicker" />
-        <span className="route-loading-title" />
-      </div>
-      <div className="route-loading-grid" aria-hidden="true">
-        <div className="route-loading-card is-feature">
-          <span className="route-loading-media" />
-          <span className="route-loading-line is-title" />
-          <span className="route-loading-line" />
-          <span className="route-loading-line is-medium" />
-        </div>
-        <div className="route-loading-card is-stack">
-          <span className="route-loading-line is-short" />
-          <span className="route-loading-line" />
-          <span className="route-loading-line is-medium" />
-          <span className="route-loading-line" />
-          <span className="route-loading-line is-short" />
-        </div>
-        <div className="route-loading-card is-list">
-          <span className="route-loading-line is-title" />
-          <span className="route-loading-line" />
-          <span className="route-loading-line is-medium" />
-          <span className="route-loading-line" />
-        </div>
-      </div>
+      <LoadingProgress label={label} />
     </div>
   );
 }

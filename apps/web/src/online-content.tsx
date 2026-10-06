@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./loading-progress.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
@@ -9,7 +10,7 @@ import {
   subscribeSauh,
 } from "./sauh.js";
 import { fetchSuara, getCachedSuara, subscribeSuara } from "./suara.js";
-import { fetchOnlineArticle } from "./online-article.js";
+import { fetchOnlineArticle, getCachedArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
 
@@ -424,22 +425,44 @@ type SuaraState =
       post: SuaraSejatiPost;
       body?: string;
       previewOnly?: boolean;
+      contentPending?: boolean;
     }
   | { status: "error"; post?: SuaraSejatiPost; message: string };
 
 export function SuaraDetailPage({ locale }: { locale: Locale }) {
   const { postId } = useParams();
-  const [state, setState] = useState<SuaraState>({ status: "loading" });
+  const [state, setState] = useState<SuaraState>(() => {
+    const post = getCachedSuara()?.find((item) => item.id === postId);
+    const article = post && getCachedArticle(post.url);
+    return post
+      ? {
+          status: "ready",
+          post,
+          body: article?.body ?? post.excerpt,
+          contentPending: !article,
+        }
+      : { status: "loading" };
+  });
 
   const load = () => {
     const controller = new AbortController();
-    setState({ status: "loading" });
+    if (!getCachedSuara()?.some((item) => item.id === postId))
+      setState({ status: "loading" });
     void (async () => {
       const posts = await fetchSuara(controller.signal);
       let post = posts.find((item) => item.id === postId);
       if (!post) throw new Error("Suara Sejati tidak ditemukan");
+      if (controller.signal.aborted) return;
+      const cached = getCachedArticle(post.url);
+      setState({
+        status: "ready",
+        post,
+        body: cached?.body ?? post.excerpt,
+        contentPending: !cached,
+      });
       try {
         const article = await fetchOnlineArticle(post.url, controller.signal);
+        if (controller.signal.aborted) return;
         post = getCachedSuara()?.find((item) => item.id === postId) ?? post;
         setState({ status: "ready", post, body: article.body });
       } catch (error) {
@@ -559,6 +582,9 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
                 {translate(locale, "suara.detailRetry")}
               </button>
             </aside>
+          )}
+          {state.contentPending && (
+            <LoadingProgress label={translate(locale, "suara.loading")} />
           )}
           <SuaraParagraphs text={state.body ?? state.post.excerpt} />
           <div className="detail-actions">

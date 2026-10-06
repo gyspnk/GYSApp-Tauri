@@ -95,7 +95,7 @@ function isStaleArticle(article: OnlineArticle): boolean {
   return isStaleSuaraCache(article) || isExpiredArticle(article);
 }
 
-function getCachedArticle(url: string): OnlineArticle | undefined {
+export function getCachedArticle(url: string): OnlineArticle | undefined {
   const mem = articleMemoryCache.get(url);
   if (mem && !isStaleArticle(mem)) return mem;
   if (mem && isStaleArticle(mem)) {

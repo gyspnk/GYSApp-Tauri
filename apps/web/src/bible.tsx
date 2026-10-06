@@ -84,7 +84,10 @@ import {
   type ManagedDistributedAsset,
 } from "./distributed-asset-manager.js";
 import { loadBibleReaderPack } from "./bible-distributed.js";
-import { loadBundledBiblePack } from "./bible-pack-loader.js";
+import {
+  loadBundledBiblePack,
+  getCachedBundledBiblePack,
+} from "./bible-pack-loader.js";
 import { Icon } from "./icons.js";
 import { ChapterPane } from "./bible-chapter.js";
 import {
@@ -154,7 +157,11 @@ const EMPTY_HIGHLIGHTS: Record<string, string> = {};
 export function BiblePage({ locale }: { locale: Locale }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const [packState, setPackState] = useState<PackState>({ status: "loading" });
+  const [packState, setPackState] = useState<PackState>(() => {
+    const pack =
+      readSavedVersion() === "b_tb" ? getCachedBundledBiblePack() : undefined;
+    return pack ? { status: "ready", pack } : { status: "loading" };
+  });
   const [selectedVersionCode, setSelectedVersionCode] =
     useState(readSavedVersion);
   const [bibleAssets, setBibleAssets] = useState<ManagedDistributedAsset[]>([]);
@@ -510,7 +517,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setPackState({ status: "loading" });
+    const cached =
+      selectedVersionCode === "b_tb" ? getCachedBundledBiblePack() : undefined;
+    setPackState(
+      cached ? { status: "ready", pack: cached } : { status: "loading" },
+    );
     const request =
       selectedVersionCode === "b_tb"
         ? loadBundledBiblePack()

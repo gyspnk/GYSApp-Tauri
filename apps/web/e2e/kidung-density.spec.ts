@@ -218,7 +218,7 @@ test("PDF reader keeps song navigation visible and transpose contextual", async 
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openFirstHymn(page);
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.getByRole("button", { name: "Partitur", exact: true }).click();
   await page.locator(".gys-pdf-overlay").waitFor({ state: "visible" });
 
   const chrome = page.locator(".hymn-pdf-viewer-chrome");

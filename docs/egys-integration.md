@@ -31,8 +31,7 @@ WhatsApp; the official `wss://e.gys.or.id/wa-login/:ref` channel tracks the
 message and supplies an internal confirmation code automatically. There is no
 OTP input or manual confirmation in the application. The provider click reserves
 a messaging tab synchronously to avoid popup blocking; it navigates directly to
-the prepared WhatsApp send URL once tracking signals readiness, without a second
-send button. The button shows a small trailing countdown, with a 120-second deadline covering setup and verification. Expiry aborts requests, closes tracking and removes the badge; a pending blank tab is closed. Clicking WhatsApp again replaces the attempt, resets the countdown and opens a new prepared message. Old socket events and profile results are ignored after cancellation. Because the service rejects
+the prepared WhatsApp send URL immediately after the start response, without waiting for a tracking readiness event or a second send button. Both camelCase and lowercase response fields are supported. The button shows a small trailing countdown, with a 120-second deadline covering setup and verification. Expiry aborts requests, closes tracking and removes the badge; a pending blank tab is closed. Clicking WhatsApp again replaces the attempt, resets the countdown and opens a new prepared message. Old socket events and profile results are ignored after cancellation. Because the service rejects
 foreign browser origins, the Worker relays `/api/v1/auth/egys/whatsapp/track`
 to the official WebSocket using its required origin. The relay requires an
 allowed client origin and the HttpOnly reference cookie; clients cannot choose
@@ -83,3 +82,5 @@ remains safely signed out.
 runtime authentication contract. A future v2 migration requires a separate
 review and explicit product decision; it must not silently re-enable the draft
 browser flow.
+
+The Worker deployment workflow also runs when backend files change on main. Deploying Pages alone does not update provider endpoints; a missing `/api/v1/auth/egys/whatsapp/track` route requires deploying the current Worker with the existing protected credentials.

@@ -420,6 +420,12 @@ export function FaithPage({ locale }: { locale: Locale }) {
                       <button
                         className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
                         type="button"
+                        onPointerEnter={() =>
+                          void import("./pdf.js").catch(() => undefined)
+                        }
+                        onFocus={() =>
+                          void import("./pdf.js").catch(() => undefined)
+                        }
                         onClick={(event) =>
                           openFaithPdf(item, event.currentTarget)
                         }

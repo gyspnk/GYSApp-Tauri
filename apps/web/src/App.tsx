@@ -206,14 +206,17 @@ function useAppSettings() {
     writeShellSettings(settings, storage);
     document.documentElement.lang = settings.locale;
   }, [settings, storage]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
   const setLocale = useCallback((locale: Locale) => {
     setSettings((current) => ({ ...current, locale }));
   }, []);
   const setTheme = useCallback((theme: Theme) => {
-    setSettings((current) => ({ ...current, theme }));
+    const update = () => setSettings((current) => ({ ...current, theme }));
+    void import("./theme-transition.js")
+      .then((module) => module.transitionTheme(update))
+      .catch(update);
   }, []);
   return {
     locale: settings.locale,
@@ -225,6 +228,17 @@ function useAppSettings() {
 
 function Navigation({ locale }: { locale: Locale }) {
   const location = useLocation();
+  useEffect(() => {
+    let cancelled = false;
+    void import("./route-preload.js")
+      .then((module) => {
+        if (!cancelled) module.warmNavigation();
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const navRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<Map<string, HTMLAnchorElement>>(new Map());
   const [indicatorStyle, setIndicatorStyle] = useState<{
@@ -309,6 +323,16 @@ function Navigation({ locale }: { locale: Locale }) {
             if (el) itemsRef.current.set(destination.path, el);
             else itemsRef.current.delete(destination.path);
           }}
+          onPointerEnter={() =>
+            void import("./route-preload.js")
+              .then((m) => m.preloadRoute(destination.path))
+              .catch(() => undefined)
+          }
+          onFocus={() =>
+            void import("./route-preload.js")
+              .then((m) => m.preloadRoute(destination.path))
+              .catch(() => undefined)
+          }
           to={destination.path}
           end={destination.path === "/"}
           className={({ isActive }) =>
@@ -595,59 +619,10 @@ function Shell({
             <RouteErrorBoundary locale={locale}>
               <Suspense
                 fallback={
-                  isReaderRoute ? (
-                    <div
-                      className="reader-route-loading route-loading"
-                      role="status"
-                      aria-live="polite"
-                      aria-busy="true"
-                    >
-                      <span className="reader-route-loading-label">
-                        {translate(locale, "bible.routeLoading", {
-                          title: translate(
-                            locale,
-                            location.pathname === "/bible"
-                              ? "page.bibleTitle"
-                              : "page.kidungTitle",
-                          ),
-                        })}
-                      </span>
-                      <div
-                        className="reader-route-loading-toolbar"
-                        aria-hidden="true"
-                      >
-                        <span className="reader-route-loading-control is-wide" />
-                        <span className="reader-route-loading-control" />
-                        <span className="reader-route-loading-control" />
-                      </div>
-                      <div
-                        className="reader-route-loading-surface"
-                        aria-hidden="true"
-                      >
-                        <div className="reader-route-loading-pane">
-                          <span className="reader-route-loading-line is-kicker" />
-                          <span className="reader-route-loading-line is-title" />
-                          <span className="reader-route-loading-line" />
-                          <span className="reader-route-loading-line is-short" />
-                          <span className="reader-route-loading-line" />
-                          <span className="reader-route-loading-line is-medium" />
-                        </div>
-                        <div className="reader-route-loading-pane">
-                          <span className="reader-route-loading-line is-kicker" />
-                          <span className="reader-route-loading-line is-title" />
-                          <span className="reader-route-loading-line" />
-                          <span className="reader-route-loading-line is-short" />
-                          <span className="reader-route-loading-line" />
-                          <span className="reader-route-loading-line is-medium" />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <NonReaderRouteLoading
-                      locale={locale}
-                      pathname={location.pathname}
-                    />
-                  )
+                  <NonReaderRouteLoading
+                    pathname={location.pathname}
+                    locale={locale}
+                  />
                 }
               >
                 <Outlet

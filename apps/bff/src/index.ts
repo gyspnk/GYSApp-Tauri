@@ -1411,7 +1411,11 @@ export function createApp(
           mobilephone: z.string().regex(/^\+?[0-9]{6,20}$/),
           content: z.string().min(1).max(4096),
         })
-        .safeParse(payload);
+        .safeParse({
+          referenceid: payload.referenceid ?? payload.referenceId,
+          mobilephone: payload.mobilephone ?? payload.mobilePhone,
+          content: payload.content,
+        });
       if (!parsed.success)
         return errorResponse(
           c,

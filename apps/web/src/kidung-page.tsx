@@ -1,5 +1,9 @@
 import { loadMusicLock as loadPinnedMusicLock } from "./music-assets.js";
-import { loadCoreHymns, loadCoreHymnMetadata } from "./hymn-payloads.js";
+import {
+  loadCoreHymns,
+  loadCoreHymnMetadata,
+  getCachedCoreHymnMetadata,
+} from "./hymn-payloads.js";
 import { lazy, useEffect, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
@@ -49,7 +53,10 @@ function useHymnData<T extends HymnMetadata>(
   parse: (value: unknown) => T[],
 ) {
   const [catalog, setCatalog] = useState<CatalogState<T>>(() => {
-    const cached = catalogCache.get(loadCore) as T[] | undefined;
+    const cached = (catalogCache.get(loadCore) ??
+      (loadCore === loadCoreHymnMetadata
+        ? getCachedCoreHymnMetadata()
+        : undefined)) as T[] | undefined;
     return cached ? { status: "ready", items: cached } : { status: "loading" };
   });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();

@@ -185,8 +185,8 @@ test("web providers authenticate inline and refresh the detected account", async
   await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
     route.fulfill({
       json: {
-        referenceid: "test-ref",
-        mobilephone: "628123456789",
+        referenceId: "test-ref",
+        mobilePhone: "628123456789",
         content: "LOGIN test-ref",
       },
     }),
@@ -266,7 +266,7 @@ test("web providers authenticate inline and refresh the detected account", async
   expect(context.pages()).toHaveLength(1);
 });
 
-test("WhatsApp timeout removes its badge and closes the pending tab", async ({
+test("WhatsApp timeout removes its badge without closing the messaging tab", async ({
   page,
   context,
 }) => {
@@ -281,6 +281,9 @@ test("WhatsApp timeout removes its badge and closes the pending tab", async ({
     }),
   );
   await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", () => {});
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp" }),
+  );
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const opened = page.waitForEvent("popup");
   await page
@@ -291,12 +294,13 @@ test("WhatsApp timeout removes its badge and closes the pending tab", async ({
     "aria-label",
     /Menghubungkan WhatsApp/,
   );
-  expect(messagingTab.url()).toBe("about:blank");
+  await expect(messagingTab).toHaveURL(/api\.whatsapp\.com\/send\?/);
   await page.clock.fastForward(119_000);
   await expect(page.getByRole("timer")).toHaveText("0:01");
   await page.clock.fastForward(1_000);
   await expect(page.getByRole("timer")).toHaveCount(0);
-  await expect.poll(() => context.pages().length).toBe(1);
+  expect(context.pages()).toHaveLength(2);
+  await messagingTab.close();
   await expect(page.locator(".egys-inline-login")).toHaveCount(0);
 });
 
