@@ -17,6 +17,7 @@ const IDB_KEY = "playlists";
 // domain package to localStorage.
 const controller = new MidiPlaylistController();
 let hydrated = false;
+let revision = 0;
 let stableSnapshot: MidiPlaylist = controller.snapshot();
 
 function openBackupDb(mode: "readonly" | "readwrite"): Promise<IDBDatabase> {
@@ -116,25 +117,39 @@ export function getAutoNextMode(): AutoNextMode {
 function hydrate(): void {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
-  const serialized = localStorage.getItem(STORAGE_KEY);
+  let serialized: string | null = null;
+  try {
+    serialized = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    // Restricted storage can still use the in-memory queue and IndexedDB mirror.
+  }
   if (serialized) {
     try {
       controller.import(serialized);
       stableSnapshot = controller.snapshot();
       return;
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* restricted storage */
+      }
     }
   }
   // gyschordweb parity: restore from IndexedDB when localStorage was evicted.
   if (typeof indexedDB !== "undefined") {
+    const restoreRevision = revision;
     void restorePlaylistFromIDB().then((restored) => {
-      if (!restored) return;
+      if (!restored || revision !== restoreRevision) return;
       try {
         const serializedBackup = JSON.stringify(restored);
-        localStorage.setItem(STORAGE_KEY, serializedBackup);
         controller.import(serializedBackup);
         stableSnapshot = controller.snapshot();
+        try {
+          localStorage.setItem(STORAGE_KEY, serializedBackup);
+        } catch {
+          /* keep restored queue in memory */
+        }
         window.dispatchEvent(new CustomEvent(EVENT_NAME));
       } catch {
         // The backup record can be stale/corrupt; keep localStorage as-is.
@@ -145,6 +160,7 @@ function hydrate(): void {
 
 function persist(): void {
   if (typeof window === "undefined") return;
+  revision += 1;
   stableSnapshot = controller.snapshot();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stableSnapshot));

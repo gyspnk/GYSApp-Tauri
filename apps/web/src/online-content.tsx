@@ -1,4 +1,5 @@
 import { LoadingProgress } from "./loading-progress.js";
+import { Icon } from "./icons.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
@@ -169,11 +170,10 @@ export function SauhPage({ locale }: { locale: Locale }) {
       >
         {state.status === "loading" && (
           <div className="sauh-inline-loading" role="status" aria-live="polite">
-            <span className="sauh-inline-spinner" aria-hidden="true" />
-            <div>
-              <strong>{translate(locale, "sauh.loadingTitle")}</strong>
-              <small>{translate(locale, "sauh.loadingBody")}</small>
-            </div>
+            <LoadingProgress label={translate(locale, "sauh.loadingTitle")} />
+            <span className="sr-only">
+              {translate(locale, "sauh.loadingBody")}
+            </span>
           </div>
         )}
         {(state.status === "empty" || state.status === "error") && (
@@ -300,13 +300,12 @@ export function SuaraPage({ locale }: { locale: Locale }) {
         <Link className="text-button" to="/">
           {translate(locale, "suara.backHome")}
         </Link>
-        <span>{translate(locale, "suara.title")}</span>
       </div>
       <section className="page-intro">
         <div>
           <p className="date-line">{translate(locale, "suara.eyebrow")}</p>
           <h1>{translate(locale, "suara.title")}</h1>
-          <p className="intro-copy">{translate(locale, "suara.intro")}</p>
+          <p className="sr-only">{translate(locale, "suara.intro")}</p>
         </div>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (
@@ -315,7 +314,10 @@ export function SuaraPage({ locale }: { locale: Locale }) {
           aria-label={translate(locale, "catalog.searchSuara")}
         >
           <label className="search-field">
-            <span>{translate(locale, "catalog.searchSuara")}</span>
+            <span className="sr-only">
+              {translate(locale, "catalog.searchSuara")}
+            </span>
+            <Icon name="search" size={18} />
             <input
               type="search"
               ref={searchRef}

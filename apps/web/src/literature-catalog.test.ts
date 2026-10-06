@@ -282,3 +282,41 @@ describe("Literature persistent + incremental catalog", () => {
     ]);
   });
 });
+
+it("preload and navigation share a cold catalog while an aborted caller leaves the shared request alive", async () => {
+  vi.resetModules();
+  const events = new EventTarget();
+  vi.stubGlobal("window", {
+    setTimeout,
+    clearTimeout,
+    location: { href: "http://localhost:4173/GYSApp-Tauri/", port: "4173" },
+    localStorage: { getItem: () => null, setItem: () => {} },
+    addEventListener: events.addEventListener.bind(events),
+    dispatchEvent: events.dispatchEvent.bind(events),
+  });
+  vi.stubGlobal("navigator", { onLine: true });
+  let complete!: () => void;
+  const ready = new Promise<void>((resolve) => (complete = resolve));
+  const request = vi.fn(async () => {
+    await ready;
+    return new Response(
+      JSON.stringify({
+        source: "tjc.org",
+        generatedAt: "2026-10-06T00:00:00Z",
+        items: [item({})],
+      }),
+    );
+  });
+  vi.stubGlobal("fetch", request);
+  const { fetchLiteratureCatalog } = await import("./literature-catalog.js");
+  const preload = fetchLiteratureCatalog();
+  const controller = new AbortController();
+  const cancelled = fetchLiteratureCatalog(controller.signal);
+  controller.abort();
+  await expect(cancelled).rejects.toMatchObject({ name: "AbortError" });
+  const navigation = fetchLiteratureCatalog();
+  complete();
+  expect(await preload).toEqual(await navigation);
+  expect(request).toHaveBeenCalledOnce();
+  vi.unstubAllGlobals();
+});

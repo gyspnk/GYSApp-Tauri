@@ -20,6 +20,43 @@ import { Icon } from "./icons.js";
 import { autoFitFontSize } from "./hymn-autofit.js";
 import { translate, type Locale } from "./i18n.js";
 import type { HymnCatalogEntry } from "@gys/contracts";
+import { createSnapshotSelector } from "./snapshot-selector.js";
+import { getHymnPdfMeta } from "./hymn-pdf-meta.js";
+import { Select } from "./select.js";
+
+const readLyricsMidiState = createSnapshotSelector(
+  midiPlayer.snapshot,
+  ({ position: _position, ...state }) => state,
+);
+
+function LyricsMidiProgress({ locale }: { locale: Locale }) {
+  const state = useSyncExternalStore(midiPlayer.subscribe, midiPlayer.snapshot);
+  return (
+    <>
+      <span className="lyrics-midi-label">
+        {formatMidiTime(state.position)}
+      </span>
+      <input
+        type="range"
+        className="lyrics-seek"
+        min={0}
+        max={Math.max(0.01, state.duration)}
+        step={0.1}
+        value={Math.min(state.duration, state.position)}
+        onChange={(event) =>
+          void midiPlayer
+            .seek(Number(event.target.value))
+            .catch(() => undefined)
+        }
+        aria-label={translate(locale, "kidung.lyrics.songPosition")}
+        disabled={state.status === "loading"}
+      />
+      <span className="lyrics-midi-label">
+        {formatMidiTime(state.duration)}
+      </span>
+    </>
+  );
+}
 
 const FONT_SIZE_KEY = "gys-lyrics-font-size";
 const LINE_SPACING_KEY = "gys-lyrics-line-spacing";
@@ -109,7 +146,6 @@ export function LyricsPanel({
   const [headerCollapsed, setHeaderCollapsed] = useState(() =>
     readBoolean(HEADER_COLLAPSED_KEY, false),
   );
-  const [keyMenuOpen, setKeyMenuOpen] = useState(false);
   const [accidental, setAccidental] = useState<"sharp" | "flat">(
     () =>
       (window.localStorage.getItem("gys-hymn-accidental") as
@@ -150,12 +186,13 @@ export function LyricsPanel({
   );
   const midiState = useSyncExternalStore(
     midiPlayer.subscribe,
-    midiPlayer.snapshot,
-    midiPlayer.snapshot,
+    readLyricsMidiState,
+    readLyricsMidiState,
   );
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   const verseLines = (verses[safeVerseIndex] ?? "").split("\n");
-  const keyIndex = ((midiSettings.transpose % 12) + 12) % 12;
+  const sourceKey = getHymnPdfMeta(item.id)?.keySemitone ?? 0;
+  const keyIndex = (((sourceKey + midiSettings.transpose) % 12) + 12) % 12;
 
   // Autofit: reduce the preferred font size until the verse fits both the
   // width and the height of the content area. Refits on resize, visualViewport
@@ -360,26 +397,7 @@ export function LyricsPanel({
                   size={17}
                 />
               </button>
-              <span className="lyrics-midi-label">
-                {formatMidiTime(midiState.position)}
-              </span>
-              <input
-                type="range"
-                className="lyrics-seek"
-                min={0}
-                max={Math.max(0.01, midiState.duration)}
-                step={0.1}
-                value={Math.min(midiState.duration, midiState.position)}
-                onChange={(event) =>
-                  void midiPlayer
-                    .seek(Number(event.target.value))
-                    .catch(() => undefined)
-                }
-                aria-label={translate(locale, "kidung.lyrics.songPosition")}
-              />
-              <span className="lyrics-midi-label">
-                {formatMidiTime(midiState.duration)}
-              </span>
+              <LyricsMidiProgress locale={locale} />
               <button
                 type="button"
                 className="lyrics-hdr-btn"
@@ -526,41 +544,23 @@ export function LyricsPanel({
                   </button>
                 </div>
                 <div className="lyrics-midi-group lyrics-key-group">
-                  <button
-                    type="button"
-                    className="lyrics-hdr-btn lyrics-key-btn"
-                    onClick={() => setKeyMenuOpen((open) => !open)}
-                    aria-haspopup="listbox"
-                    aria-expanded={keyMenuOpen}
-                    aria-label={translate(locale, "kidung.lyrics.selectKey")}
-                  >
-                    {chordKeyName(keyIndex, accidental)}
-                  </button>
-                  {keyMenuOpen && (
-                    <div className="lyrics-key-dropdown" role="listbox">
-                      {Array.from({ length: 12 }, (_, value) => (
-                        <button
-                          key={value}
-                          type="button"
-                          role="option"
-                          aria-selected={value === keyIndex}
-                          className={
-                            value === keyIndex ? "is-selected" : undefined
-                          }
-                          onClick={() => {
-                            void midiPlayer
-                              .setTranspose(
-                                transposeBetweenKeys(keyIndex, value),
-                              )
-                              .catch(() => undefined);
-                            setKeyMenuOpen(false);
-                          }}
-                        >
-                          {chordKeyName(value, accidental)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <Select
+                    className="lyrics-key-select"
+                    value={keyIndex}
+                    label={translate(locale, "kidung.lyrics.selectKey")}
+                    options={Array.from({ length: 12 }, (_, value) => ({
+                      value,
+                      label: chordKeyName(value, accidental),
+                    }))}
+                    onChange={(value) =>
+                      void midiPlayer
+                        .setTranspose(
+                          midiSettings.transpose +
+                            transposeBetweenKeys(keyIndex, value),
+                        )
+                        .catch(() => undefined)
+                    }
+                  />
                 </div>
                 <div className="lyrics-midi-group">
                   <button

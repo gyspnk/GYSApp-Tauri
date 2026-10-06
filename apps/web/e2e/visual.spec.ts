@@ -182,7 +182,7 @@ for (const viewport of [
     const accent = page.locator('[data-setting="accent"]');
     const palette = accent.locator(".accent-palette-grid");
     await expect(
-      page.getByRole("button", { name: "Pilih Tema" }),
+      page.getByRole("combobox", { name: "Pilih Tema" }),
     ).toBeVisible();
     await expect(palette).toBeHidden();
     await page.waitForTimeout(250);

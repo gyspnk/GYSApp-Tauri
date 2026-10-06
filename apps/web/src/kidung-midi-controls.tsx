@@ -4,7 +4,13 @@ import { midiPlayer } from "./midi-player.js";
 import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
 import { Icon } from "./icons.js";
 import { applyAutoNextMode, getAutoNextMode } from "./midi-playlist.js";
-import { formatMidiTime } from "./kidung-shared.js";
+import { HymnMidiProgress } from "./kidung-midi-progress.js";
+import { createSnapshotSelector } from "./snapshot-selector.js";
+
+const readControlState = createSnapshotSelector(
+  midiPlayer.snapshot,
+  ({ position: _position, ...state }) => state,
+);
 
 export function MidiControlsPanel({ locale }: { locale: Locale }) {
   const midiSettings = useSyncExternalStore(
@@ -14,8 +20,8 @@ export function MidiControlsPanel({ locale }: { locale: Locale }) {
   );
   const midiState = useSyncExternalStore(
     midiPlayer.subscribe,
-    midiPlayer.snapshot,
-    midiPlayer.snapshot,
+    readControlState,
+    readControlState,
   );
   const setTempo = (next: number) =>
     void midiPlayer.setTempo(next).catch(() => undefined);
@@ -73,33 +79,13 @@ export function MidiControlsPanel({ locale }: { locale: Locale }) {
           />
         </button>
         {isActive && midiState.duration > 0 && (
-          <div className="hymn-midi-seekbar">
-            <span className="hymn-midi-time hymn-midi-time-end">
-              {formatMidiTime(midiState.position)}
-            </span>
-            <input
-              className="hymn-midi-seek-input"
-              type="range"
-              min={0}
-              max={midiState.duration}
-              step={0.1}
-              value={Math.min(midiState.position, midiState.duration)}
-              onChange={(event) =>
-                void midiPlayer
-                  .seek(Number(event.target.value))
-                  .catch(() => undefined)
-              }
-              aria-label={translate(locale, "media.positionMidi")}
-            />
-            <span className="hymn-midi-time">
-              {formatMidiTime(midiState.duration)}
-            </span>
-          </div>
+          <HymnMidiProgress locale={locale} switching={false} />
         )}
         {midiState.status === "loading" && (
           <div
             className="midi-preload-bar"
             role="progressbar"
+            aria-label={translate(locale, "kidung.loadingMidi")}
             aria-valuenow={midiState.loadingProgress}
             aria-valuemin={0}
             aria-valuemax={100}

@@ -289,6 +289,7 @@ export class BrowserMidiPlayer {
   private scheduled: AudioNodePair[] = [];
   private bufferSource: AudioBufferSourceNode | undefined;
   private sourceGain: GainNode | undefined;
+  private readonly fadingSources = new Map<AudioBufferSourceNode, GainNode>();
   private crossfadeMs = 0;
   private timer: number | undefined;
   private startedAt = 0;
@@ -297,13 +298,23 @@ export class BrowserMidiPlayer {
   private worker: Worker | undefined;
   private workerReady: Promise<void> | undefined;
   private workerReadyReject: ((reason?: unknown) => void) | undefined;
+  private workerReadyTimer: number | undefined;
   private soundfont: Uint8Array | undefined;
   private soundfontName = BUNDLED_SOUNDFONT;
   private soundfontLoad: Promise<void> | undefined;
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
   private readonly renderCache = new MidiRenderCache();
-  private readonly renderInFlight = new Map<string, Promise<RenderedPcm>>();
+  private readonly renderInFlight = new Map<
+    string,
+    {
+      promise: Promise<RenderedPcm>;
+      options: {
+        operationGeneration?: number;
+        preloadGeneration?: number | undefined;
+      };
+    }
+  >();
   private readonly preloadQueue = new MidiPreloadQueue();
   private preloadGeneration = 0;
   private readonly operationGate = new MidiOperationGate();
@@ -360,7 +371,8 @@ export class BrowserMidiPlayer {
   ): Promise<boolean> {
     const generation = this.operationGate.next();
     this.cancelPreloads();
-    if (!options.keepPlaying || this.crossfadeMs <= 0) await this.stopAudio();
+    const keepPlaying = options.keepPlaying && this.crossfadeMs > 0;
+    if (!keepPlaying) await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
     const tempo = this.tempoOverride
       ? this.state.tempo
@@ -372,11 +384,9 @@ export class BrowserMidiPlayer {
     this.current = midi;
     this.rawMidi = options.rawMidi?.slice();
     this.sourceHash = options.sourceHash ?? "";
-    this.currentMidiUrl = options.midiUrl ?? this.currentMidiUrl;
-    if (options.midiUrl) this.currentMidiUrl = options.midiUrl;
-    else if (!this.currentMidiUrl)
-      this.currentMidiUrl = `midi:${songId}:${this.sourceHash}`;
-    this.rendered = undefined;
+    this.currentMidiUrl =
+      options.midiUrl ?? `midi:${songId}:${this.sourceHash}`;
+    if (!keepPlaying) this.releaseRendered();
     this.notes = buildNotes(midi);
     const duration = this.notes.reduce(
       (max, note) => Math.max(max, note.end),
@@ -442,8 +452,7 @@ export class BrowserMidiPlayer {
     );
     if (this.rendered?.key === key) return true;
     if (this.renderInFlight.has(key)) return true;
-    const cached = await this.renderCache.get(key);
-    return Boolean(cached);
+    return this.renderCache.has(key);
   }
   /** Synchronous fast-path check used by viewer-core generation gate */
   public hasPreloadedSync(
@@ -463,10 +472,26 @@ export class BrowserMidiPlayer {
     );
     if (this.rendered?.key === key) return true;
     if (this.renderInFlight.has(key)) return true;
-    return false;
+    return this.renderCache.has(key);
   }
   public cancelPreload(): void {
     this.cancelPreloads();
+  }
+
+  /** Prepare only the explicitly enabled song while its dock is already usable. */
+  public warmCurrent(): Promise<boolean> {
+    if (!this.current || !this.rawMidi || !this.state.songId)
+      return Promise.resolve(false);
+    return this.preload({
+      songId: this.state.songId,
+      title: this.state.title,
+      midi: this.current,
+      rawMidi: this.rawMidi,
+      sourceHash: this.sourceHash,
+      tempo: this.state.tempo,
+      transpose: this.state.transpose,
+      instrument: this.state.instrument,
+    });
   }
   public async resumeContext(): Promise<void> {
     try {
@@ -558,8 +583,16 @@ export class BrowserMidiPlayer {
   public async close(): Promise<void> {
     const generation = this.operationGate.next();
     this.cancelPreloads();
+    this.cancelWorker(new StaleMidiOperation());
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
+    await this.audio?.suspend?.();
+    if (!this.operationGate.isCurrent(generation)) return;
+    this.current = undefined;
+    this.rawMidi = undefined;
+    this.notes = [];
+    this.releaseRendered();
+    this.currentMidiUrl = "";
     this.patch({
       status: "idle",
       songId: undefined,
@@ -613,7 +646,7 @@ export class BrowserMidiPlayer {
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
-    this.rendered = undefined;
+    this.releaseRendered();
     this.patch({
       tempo: next,
       status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
@@ -641,7 +674,7 @@ export class BrowserMidiPlayer {
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
-    this.rendered = undefined;
+    this.releaseRendered();
     this.patch({
       transpose: next,
       status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
@@ -651,6 +684,7 @@ export class BrowserMidiPlayer {
 
   public async setInstrument(instrument: number): Promise<void> {
     const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
+    if (next === this.state.instrument) return;
     const wasPlaying = this.state.status === "playing";
     const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
@@ -658,7 +692,7 @@ export class BrowserMidiPlayer {
     if (wasPlaying) this.updatePositionFromClock();
     await this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
-    this.rendered = undefined;
+    this.releaseRendered();
     this.patch({
       instrument: next,
       status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
@@ -669,17 +703,9 @@ export class BrowserMidiPlayer {
   public destroy(): void {
     this.operationGate.next();
     this.cancelPreloads();
+    this.cancelWorker(new Error("MIDI player destroyed"));
     void this.stopAudio();
-    for (const pending of this.pending.values()) {
-      window.clearTimeout(pending.timer);
-      pending.reject(new Error("MIDI player destroyed"));
-    }
-    this.pending.clear();
-    this.worker?.terminate();
-    this.worker = undefined;
-    this.workerReadyReject?.(new Error("MIDI player destroyed"));
-    this.workerReadyReject = undefined;
-    this.workerReady = undefined;
+    this.releaseRendered();
     void this.audio?.close();
     this.audio = undefined;
   }
@@ -698,7 +724,9 @@ export class BrowserMidiPlayer {
       request.rawMidi.byteLength === 0
     )
       return false;
+    const generation = this.preloadGeneration;
     await this.prepareSoundfont();
+    if (generation !== this.preloadGeneration) return false;
     const tempo = clampTempo(request.tempo ?? this.state.tempo);
     const transpose = clampTranspose(request.transpose ?? this.state.transpose);
     const instrument = clampInstrument(
@@ -713,8 +741,7 @@ export class BrowserMidiPlayer {
       sampleRate,
       this.soundfontName,
     );
-    if (await this.renderCache.get(key)) return true;
-    const generation = this.preloadGeneration;
+    if (this.renderCache.has(key)) return true;
     return this.preloadQueue.enqueue(key, async () => {
       if (generation !== this.preloadGeneration) return false;
       try {
@@ -727,8 +754,9 @@ export class BrowserMidiPlayer {
           instrument,
           sampleRate,
           announceProgress: false,
+          preloadGeneration: generation,
         });
-        return true;
+        return generation === this.preloadGeneration;
       } catch (error) {
         if (error instanceof StaleMidiOperation) return false;
         const context = [request.songId, request.title]
@@ -770,17 +798,23 @@ export class BrowserMidiPlayer {
       ![...this.pending.values()].some((pending) => pending.kind === "render")
     )
       return;
-    const stale = new StaleMidiOperation();
+    this.cancelWorker(new StaleMidiOperation());
+  }
+
+  private cancelWorker(reason: Error): void {
     const worker = this.worker;
     this.worker = undefined;
-    this.workerReadyReject?.(stale);
+    if (this.workerReadyTimer !== undefined)
+      window.clearTimeout(this.workerReadyTimer);
+    this.workerReadyTimer = undefined;
+    this.workerReadyReject?.(reason);
     this.workerReadyReject = undefined;
     this.workerReady = undefined;
     this.soundfontWorker = undefined;
     this.soundfontRequest = undefined;
     for (const pending of this.pending.values()) {
       window.clearTimeout(pending.timer);
-      pending.reject(stale);
+      pending.reject(reason);
     }
     this.pending.clear();
     worker?.terminate();
@@ -825,6 +859,18 @@ export class BrowserMidiPlayer {
     return this.audio;
   }
 
+  private releaseRendered(): void {
+    if (this.rendered) void this.renderCache.pin(this.rendered.key, false);
+    this.rendered = undefined;
+  }
+
+  private retainRendered(key: string, buffer: AudioBuffer): RenderedSong {
+    if (this.rendered?.key !== key) this.releaseRendered();
+    this.renderCache.putAudioBuffer(key, buffer, true);
+    this.rendered = { key, buffer };
+    return this.rendered;
+  }
+
   private async ensureRendered(generation: number): Promise<RenderedSong> {
     if (!this.rawMidi || !this.audio)
       throw new Error("Raw MIDI bytes are unavailable");
@@ -846,6 +892,10 @@ export class BrowserMidiPlayer {
       this.soundfontName,
     );
     if (this.rendered?.key === key) return this.rendered;
+    const cachedBuffer = this.renderCache.getAudioBuffer(key);
+    if (cachedBuffer) {
+      return this.retainRendered(key, cachedBuffer);
+    }
     this.patch({ loadingProgress: 34 });
     const pcm = await this.renderPcm({
       rawMidi,
@@ -862,9 +912,9 @@ export class BrowserMidiPlayer {
     const buffer = this.audio.createBuffer(2, pcm.left.length, pcm.sampleRate);
     buffer.getChannelData(0).set(pcm.left);
     buffer.getChannelData(1).set(pcm.right);
-    this.rendered = { key, buffer };
+    const rendered = this.retainRendered(key, buffer);
     this.patch({ loadingProgress: 94 });
-    return this.rendered;
+    return rendered;
   }
 
   private async renderPcm(options: {
@@ -877,8 +927,19 @@ export class BrowserMidiPlayer {
     sampleRate: number;
     announceProgress: boolean;
     operationGeneration?: number;
+    preloadGeneration?: number | undefined;
   }): Promise<RenderedPcm> {
+    const assertCurrent = () => {
+      if (options.operationGeneration !== undefined)
+        throwIfStale(this.operationGate, options.operationGeneration);
+      else if (
+        options.preloadGeneration !== undefined &&
+        options.preloadGeneration !== this.preloadGeneration
+      )
+        throw new StaleMidiOperation();
+    };
     await this.prepareSoundfont();
+    assertCurrent();
     const key = midiRenderKey(
       options.sourceHash,
       options.tempo,
@@ -887,19 +948,22 @@ export class BrowserMidiPlayer {
       options.sampleRate,
       this.soundfontName,
     );
-    const cached = await this.renderCache.get(key);
+    const cached = this.renderCache.readPcm(key);
     if (cached) return cached;
     const existing = this.renderInFlight.get(key);
-    if (existing) return existing;
+    if (existing) {
+      // A later play owns the same render; the older caller still checks its gate.
+      if (options.operationGeneration !== undefined)
+        existing.options.operationGeneration = options.operationGeneration;
+      else if (existing.options.operationGeneration === undefined)
+        existing.options.preloadGeneration = options.preloadGeneration;
+      return existing.promise;
+    }
     const request = (async () => {
-      const secondCheck = await this.renderCache.get(key);
-      if (secondCheck) return secondCheck;
       const worker = await this.ensureWorker();
-      if (options.operationGeneration !== undefined)
-        throwIfStale(this.operationGate, options.operationGeneration);
+      assertCurrent();
       await this.ensureSoundfont(worker, options.announceProgress);
-      if (options.operationGeneration !== undefined)
-        throwIfStale(this.operationGate, options.operationGeneration);
+      assertCurrent();
       if (options.announceProgress) this.patch({ loadingProgress: 34 });
       const tempoRate = options.tempo / Math.max(30, options.sourceTempo);
       const message = await this.request(worker, {
@@ -911,33 +975,33 @@ export class BrowserMidiPlayer {
         instrument: options.instrument,
         tempoRate,
       });
-      if (options.operationGeneration !== undefined)
-        throwIfStale(this.operationGate, options.operationGeneration);
+      assertCurrent();
       if (message.type !== "rendered" || !message.left || !message.right)
         throw new Error(message.error ?? "FluidSynth did not return audio");
       const sampleRate = message.sampleRate ?? options.sampleRate;
-      const length = Math.min(message.left.length, message.right.length);
       const pcm: RenderedPcm = {
         sampleRate,
-        left: message.left.slice(0, length),
-        right: message.right.slice(0, length),
+        left: message.left,
+        right: message.right,
       };
-      await this.renderCache.put(key, pcm);
+      await this.renderCache.putOwned(key, pcm);
       return pcm;
     })();
-    this.renderInFlight.set(key, request);
+    this.renderInFlight.set(key, { promise: request, options });
     try {
       return await request;
     } finally {
-      if (this.renderInFlight.get(key) === request)
+      if (this.renderInFlight.get(key)?.promise === request)
         this.renderInFlight.delete(key);
     }
   }
 
   private async ensureWorker(): Promise<Worker> {
     if (this.worker && this.workerReady) {
+      const worker = this.worker;
       await this.workerReady;
-      return this.worker;
+      if (this.worker !== worker) throw new StaleMidiOperation();
+      return worker;
     }
     if (typeof Worker === "undefined")
       throw new Error("Web Worker is unavailable");
@@ -972,43 +1036,38 @@ export class BrowserMidiPlayer {
       const worker = this.worker;
       worker.addEventListener("error", () => {
         if (this.worker !== worker) return;
-        this.worker = undefined;
-        this.workerReadyReject?.(new Error("MIDI worker crashed"));
-        this.workerReadyReject = undefined;
-        this.workerReady = undefined;
-        this.soundfontWorker = undefined;
-        this.soundfontRequest = undefined;
-        for (const pending of this.pending.values())
-          pending.reject(new Error("MIDI worker crashed"));
-        this.pending.clear();
-        worker.terminate();
+        this.cancelWorker(new Error("MIDI worker crashed"));
       });
     }
+    const worker = this.worker;
     this.workerReady ??= new Promise<void>((resolve, reject) => {
       this.workerReadyReject = reject;
-      const timer = window.setTimeout(() => {
-        this.workerReadyReject = undefined;
-        this.workerReady = undefined;
-        reject(new Error("MIDI worker startup timed out"));
+      this.workerReadyTimer = window.setTimeout(() => {
+        if (this.worker === worker)
+          this.cancelWorker(new Error("MIDI worker startup timed out"));
       }, 30_000);
       const onReady = (event: MessageEvent<WorkerMessage>) => {
-        if (event.data.type !== "ready") return;
-        window.clearTimeout(timer);
+        if (event.data.type !== "ready" || this.worker !== worker) return;
+        window.clearTimeout(this.workerReadyTimer);
+        this.workerReadyTimer = undefined;
         this.workerReadyReject = undefined;
-        this.worker?.removeEventListener("message", onReady as EventListener);
+        worker.removeEventListener("message", onReady as EventListener);
         resolve();
       };
-      this.worker?.addEventListener("message", onReady as EventListener);
-      this.worker?.postMessage({ type: "init" });
+      worker.addEventListener("message", onReady as EventListener);
+      worker.postMessage({ type: "init" });
     });
     try {
       await this.workerReady;
     } catch (error) {
-      this.workerReadyReject = undefined;
-      this.workerReady = undefined;
+      if (this.worker === worker)
+        this.cancelWorker(
+          error instanceof Error ? error : new Error(String(error)),
+        );
       throw error;
     }
-    return this.worker;
+    if (this.worker !== worker) throw new StaleMidiOperation();
+    return worker;
   }
 
   private prepareSoundfont(): Promise<void> {
@@ -1037,6 +1096,7 @@ export class BrowserMidiPlayer {
       await this.prepareSoundfont();
       if (!this.soundfont || this.soundfont.byteLength < 1_000_000)
         throw new Error("SoundFont is incomplete");
+      if (this.worker !== worker) throw new StaleMidiOperation();
       if (announceProgress)
         this.patch({ loadingProgress: 18, soundfont: this.soundfontName });
       await this.request(worker, {
@@ -1044,10 +1104,11 @@ export class BrowserMidiPlayer {
         buffer: this.soundfont.slice().buffer,
       });
     })();
+    const request = this.soundfontRequest;
     try {
-      await this.soundfontRequest;
+      await request;
     } catch (error) {
-      this.soundfontRequest = undefined;
+      if (this.soundfontRequest === request) this.soundfontRequest = undefined;
       throw error;
     }
   }
@@ -1074,7 +1135,13 @@ export class BrowserMidiPlayer {
       if (midiBuffer instanceof ArrayBuffer) transfer.push(midiBuffer);
       if (soundfontBuffer instanceof ArrayBuffer)
         transfer.push(soundfontBuffer);
-      worker.postMessage({ ...payload, id }, transfer);
+      try {
+        worker.postMessage({ ...payload, id }, transfer);
+      } catch (error) {
+        window.clearTimeout(timer);
+        this.pending.delete(id);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
     });
   }
 
@@ -1084,22 +1151,24 @@ export class BrowserMidiPlayer {
     // with a gain crossfade instead of cutting it instantly (gapless).
     const previous = this.bufferSource;
     const previousGain = this.sourceGain;
-    if (previous && this.crossfadeMs > 0 && this.state.status === "playing") {
-      previous.onended = () => {
+    const crossfade = previous && previousGain && this.crossfadeMs > 0;
+    if (crossfade) {
+      this.fadingSources.set(previous, previousGain);
+      const disconnectPrevious = () => {
+        this.fadingSources.delete(previous);
         previous.disconnect();
-        previousGain?.disconnect();
+        previousGain.disconnect();
       };
+      previous.onended = disconnectPrevious;
       const now = audio.currentTime;
       const fade = this.crossfadeMs / 1000;
-      if (previousGain) {
-        try {
-          previousGain.gain.cancelScheduledValues(now);
-          previousGain.gain.setValueAtTime(previousGain.gain.value, now);
-          previousGain.gain.linearRampToValueAtTime(0.0001, now + fade);
-          previous.stop(now + fade + 0.05);
-        } catch {
-          // Already stopped.
-        }
+      try {
+        previousGain.gain.cancelScheduledValues(now);
+        previousGain.gain.setValueAtTime(previousGain.gain.value, now);
+        previousGain.gain.linearRampToValueAtTime(0.0001, now + fade);
+        previous.stop(now + fade + 0.05);
+      } catch {
+        disconnectPrevious();
       }
     } else {
       void this.stopAudio();
@@ -1107,9 +1176,9 @@ export class BrowserMidiPlayer {
     const source = audio.createBufferSource();
     source.buffer = buffer;
     const gain = audio.createGain();
-    gain.gain.value = previous && this.crossfadeMs > 0 ? 0.0001 : 1;
+    gain.gain.value = crossfade ? 0.0001 : 1;
     source.connect(gain).connect(this.master!);
-    if (previous && this.crossfadeMs > 0) {
+    if (crossfade) {
       const now = audio.currentTime;
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.linearRampToValueAtTime(1, now + this.crossfadeMs / 1000);
@@ -1123,13 +1192,14 @@ export class BrowserMidiPlayer {
     this.positionAtStart = safePosition;
     this.startedAt = audio.currentTime;
     source.onended = () => {
-      if (this.bufferSource !== source || this.state.status !== "playing")
-        return;
+      if (this.bufferSource !== source) return;
       this.bufferSource = undefined;
       this.sourceGain = undefined;
       source.disconnect();
       gain.disconnect();
       this.clearTimer();
+      // A previous deck can finish while the next song is still rendering.
+      if (this.state.status !== "playing") return;
       this.patch({ status: "stopped", position: 0 });
       for (const listener of this.endedListeners) listener();
     };
@@ -1193,6 +1263,17 @@ export class BrowserMidiPlayer {
 
   private async stopAudio(): Promise<void> {
     this.clearTimer();
+    for (const [source, gain] of this.fadingSources) {
+      source.onended = null;
+      try {
+        source.stop();
+      } catch {
+        /* already stopped */
+      }
+      source.disconnect();
+      gain.disconnect();
+    }
+    this.fadingSources.clear();
     if (this.bufferSource) {
       try {
         this.bufferSource.onended = null;

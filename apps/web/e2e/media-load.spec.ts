@@ -113,7 +113,7 @@ test("canonical chord and fork PDF assets open from hymn detail", async ({
   await page.locator(".hymn-more-actions-summary").click();
   await page.locator(".hymn-reader-settings-summary").click();
   await page.locator(".hymn-music-settings > summary").click();
-  await page.getByRole("button", { name: "Nada dasar" }).click();
+  await page.getByRole("combobox", { name: "Nada dasar" }).click();
   await page.getByRole("option", { name: "D", exact: true }).click();
   await expect(page.locator(".transpose-control strong")).toHaveText("+2");
   await expect(page.locator(".lyrics-sheet")).toBeVisible();

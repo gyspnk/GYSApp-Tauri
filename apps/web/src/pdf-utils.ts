@@ -165,7 +165,7 @@ export function pdfRasterScale(
   );
 }
 
-/** A spread shares the available width and still fits the viewport height. */
+/** Fit the usable content box; callers subtract actual stage padding once. */
 export function pdfFitScale(
   width: number,
   height: number,
@@ -176,8 +176,8 @@ export function pdfFitScale(
   return Math.max(
     Number.EPSILON,
     Math.min(
-      Math.max(1, width - 32 - (columns - 1) * 18) / columns / pageWidth,
-      Math.max(1, height - 32) / pageHeight,
+      Math.max(1, width - (columns - 1) * 18) / columns / pageWidth,
+      Math.max(1, height) / pageHeight,
     ),
   );
 }

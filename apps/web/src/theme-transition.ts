@@ -11,13 +11,24 @@ export function transitionTheme(update: () => void): void {
   clearTimeout(timer);
   const root = document.documentElement;
   root.classList.remove("is-theme-transition", "is-theme-color-transition");
+  // Dropdown focus may leave a native smooth scroll running underneath the fade.
+  window.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
+  const position = {
+    left: scrollX,
+    top: scrollY,
+    behavior: "instant",
+  } as const;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     update();
     return;
   }
   root.classList.add("is-theme-transition");
   const apply = () => {
-    if (current === generation) flushSync(update);
+    if (current === generation) {
+      flushSync(update);
+      // Cancel a compositor scroll frame already queued before the snapshot.
+      window.scrollTo(position);
+    }
   };
   const cleanup = () => {
     if (current === generation) {

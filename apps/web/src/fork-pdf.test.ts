@@ -208,3 +208,36 @@ describe("GYSApp-Fork hymn PDF mapping", () => {
     expect(requests).not.toContain(packageUrl);
   });
 });
+
+it("neighboring scores share one immutable source probe", async () => {
+  vi.resetModules();
+  const manifest = {
+    sourceRepo: "ThenGB/GYSAPP-Fork",
+    sourceCommit: "4f0d39b",
+    generatedAt: "2026-08-14T00:00:00.000Z",
+    bookCode: "KR",
+    masterPath: "assets/data/pdf/kr/kr_master.pdf",
+    pageCount: 649,
+    songs: {
+      "001": { startPage: 5, pageCount: 1, source: "001.pdf" },
+      "002": { startPage: 6, pageCount: 1, source: "002.pdf" },
+    },
+  };
+  const request = vi.fn(async (input: RequestInfo | URL) =>
+    String(input).includes("offline/")
+      ? new Response(JSON.stringify(manifest))
+      : new Response("%PDF-", { status: 206 }),
+  );
+  vi.stubGlobal("fetch", request);
+  const { loadForkHymnalPdf } = await import("./fork-pdf.js");
+  const [first, second] = await Promise.all([
+    loadForkHymnalPdf(1),
+    loadForkHymnalPdf(2),
+  ]);
+  expect(first.src).toBe(second.src);
+  expect([first.initialPage, second.initialPage]).toEqual([5, 6]);
+  await loadForkHymnalPdf(1);
+  expect(
+    request.mock.calls.filter(([input]) => !String(input).includes("offline/")),
+  ).toHaveLength(1);
+});

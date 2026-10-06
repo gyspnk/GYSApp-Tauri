@@ -147,9 +147,38 @@ function bffCandidates(): string[] {
   );
 }
 
-export async function fetchLiteratureCatalog(
+let initialCatalogRequest: Promise<LiteratureItem[]> | undefined;
+
+/** A navigation and its preload share transport; one cancelled caller does not abort another. */
+export function fetchLiteratureCatalog(
   signal?: AbortSignal,
 ): Promise<LiteratureItem[]> {
+  if (signal?.aborted) return Promise.reject(signal.reason);
+  if (!initialCatalogRequest) {
+    const request = loadLiteratureCatalog().finally(() => {
+      if (initialCatalogRequest === request) initialCatalogRequest = undefined;
+    });
+    initialCatalogRequest = request;
+  }
+  const request = initialCatalogRequest;
+  if (!signal) return request;
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener("abort", abort, { once: true });
+    void request.then(
+      (value) => {
+        signal.removeEventListener("abort", abort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function loadLiteratureCatalog(): Promise<LiteratureItem[]> {
   if (!catalogMemoryCache?.length) {
     const hydrated = readPersistedCatalog();
     if (hydrated?.length) catalogMemoryCache = hydrated;
@@ -161,7 +190,7 @@ export async function fetchLiteratureCatalog(
   const snapshotUrl = `${import.meta.env.BASE_URL}offline/literature.json`;
   try {
     const response = await fetch(snapshotUrl, {
-      ...(signal ? { signal } : {}),
+      signal: AbortSignal.timeout(10_000),
       cache: "force-cache",
     });
     if (response.ok) {
@@ -180,11 +209,10 @@ export async function fetchLiteratureCatalog(
         return items;
       }
     }
-  } catch (error) {
-    if (signal?.aborted) throw error;
+  } catch {
+    // Try the configured catalog source after the local snapshot fails.
   }
-  const controller = signal ? undefined : new AbortController();
-  const catalog = await loadCatalog(signal ?? controller!.signal);
+  const catalog = await loadCatalog(AbortSignal.timeout(10_000));
   const items = [
     ...new Map(catalog.items.map((item) => [item.id, item])).values(),
   ];

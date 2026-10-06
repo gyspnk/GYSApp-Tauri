@@ -76,6 +76,28 @@ describe("MidiSession", () => {
 });
 
 describe("RenderCache", () => {
+  it("checks presence without copying PCM and retains the recently checked render", async () => {
+    const cache = new RenderCache(10);
+    const pcm = new Uint8Array(5);
+    await cache.put("a", pcm);
+    await cache.put("b", pcm);
+    expect(cache.has("missing")).toBe(false);
+    expect(cache.has("a")).toBe(true);
+    const copy = Uint8Array.prototype.slice;
+    Uint8Array.prototype.slice = () => {
+      throw new Error("PCM should not be copied");
+    };
+    try {
+      expect(cache.has("a")).toBe(true);
+    } finally {
+      Uint8Array.prototype.slice = copy;
+    }
+    await cache.put("c", pcm);
+    expect(cache.has("a")).toBe(true);
+    expect(cache.has("b")).toBe(false);
+    expect(cache.stats().bytes).toBe(10);
+  });
+
   it("evicts least recently used unpinned renders under the 96 MB cap", async () => {
     const cache = new RenderCache(10);
     await cache.put("a", new Uint8Array(6));

@@ -1,7 +1,7 @@
+import { PdfReader, preloadPdfReader } from "./pdf-reader-loader.js";
 import { LoadingProgress } from "./loading-progress.js";
 import { transitionReader } from "./reader-transition.js";
 import {
-  lazy,
   Suspense,
   useEffect,
   useLayoutEffect,
@@ -95,12 +95,6 @@ import {
   formatMidiTime,
   uniqueItems,
 } from "./kidung-shared.js";
-import { MidiControlsPanel } from "./kidung-midi-controls.js";
-const PdfReader = lazy(() =>
-  import("./pdf.js").then(({ PdfReader: Component }) => ({
-    default: Component,
-  })),
-);
 
 type HymnPdfAsset = {
   src: string;
@@ -215,7 +209,6 @@ export function HymnDetail({
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   // gyschordweb chord editor (note-aligned): 5 taps on title toggles it,
   // edited chords are local until the user saves the .chord.json.
-  const [midiDockOpen, setMidiDockOpen] = useState(false);
   const [chordEditorEnabled, setChordEditorEnabled] = useState(false);
   const [lyricsPanelOpen, setLyricsPanelOpen] = useState(false);
   const [pdfKeyMenuOpen, setPdfKeyMenuOpen] = useState(false);
@@ -328,6 +321,23 @@ export function HymnDetail({
   const midiPlayerEnabled =
     midiStatus === "loading" ||
     Boolean(midiState.songId && midiState.status !== "idle");
+  useEffect(() => {
+    if (
+      !midiPlayerEnabled ||
+      midiState.songId !== songId ||
+      !["ready", "paused", "stopped"].includes(midiState.status)
+    )
+      return;
+    void midiPlayer.warmCurrent().catch(() => undefined);
+  }, [
+    midiPlayerEnabled,
+    songId,
+    midiState.songId,
+    midiState.status,
+    midiState.tempo,
+    midiState.transpose,
+    midiState.instrument,
+  ]);
   const verses = useMemo(() => getHymnVerses(item), [item]);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
   const sequence = useMemo(
@@ -444,16 +454,7 @@ export function HymnDetail({
     document.body.classList.toggle("gys-viewer-active", viewerMode === "pdf");
     return () => document.body.classList.remove("gys-viewer-active");
   }, [viewerMode]);
-  // gyschordweb fitViewerTitle: single-line autofit for the overlay title.
   const overlayTitleRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (viewerMode !== "pdf") return;
-    return observeSingleLineFit(
-      overlayTitleRef.current,
-      ".hymn-pdf-viewer-title strong",
-      { maxPx: 16, minPx: 11 },
-    );
-  }, [viewerMode, item?.title]);
   // gyschordweb handleGlobalKeydown (viewer-active): song nav + transpose.
   useEffect(() => {
     if (viewerMode !== "pdf") return;
@@ -511,7 +512,11 @@ export function HymnDetail({
         connection?: { saveData?: boolean; effectiveType?: string };
       }
     ).connection;
-    if (connection?.saveData || connection?.effectiveType === "2g") return;
+    if (
+      connection?.saveData ||
+      /(^|-)2g$/.test(connection?.effectiveType ?? "")
+    )
+      return;
     const run = ++preloadRun.current;
     // gyschordweb prefs.preloadEnabled/preloadCount: mode-aware neighbours.
     const viewPrefs = readHymnViewerPrefs();
@@ -532,61 +537,105 @@ export function HymnDetail({
         candidates.map((candidate) => [candidate.id, candidate]),
       ).values(),
     ];
-    const prefetchedPdf = new Set<string>();
-    for (const candidate of uniqueNeighbors) {
-      void chordRepository.getChord(candidate.id).catch(() => undefined);
-      // gyschordweb _prefetchPdf: low-priority PDF warm-up for neighbours.
-      const pdfRef = findMusicAsset(musicLock, "pdf", candidate.pdfPath);
-      if (pdfRef && !prefetchedPdf.has(pdfRef.sha256)) {
-        prefetchedPdf.add(pdfRef.sha256);
-        void loadMusicAsset(pdfRef).catch(() => undefined);
-      }
-      const ref = findMusicAsset(musicLock, "midi", candidate.midiPath);
-      if (!ref) continue;
-      // Both directions get the complete warm path: binary -> parser -> PCM.
-      // MidiLoader and loadMusicAsset both deduplicate by immutable hash, so
-      // this never creates a second network request when the user taps play.
-      void (async () => {
-        try {
-          // gyschordweb parity: skip if already pre-rendered with same profile
-          const already = await midiPlayer
-            .hasPreloaded(
-              ref.sha256,
-              midiSettings.transpose,
-              midiSettings.instrument,
-              midiSettings.tempo,
-            )
-            .catch(() => false);
-          if (already) return;
-          const bytes = await loadMusicAsset(ref);
-          if (run !== preloadRun.current) return;
-          const loaded = await midiLoader.load({
-            id: candidate.id,
-            url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`,
-            sourceHash: ref.sha256,
-            bytes,
-          });
-          if (run !== preloadRun.current) return;
-          await midiPlayer.preload({
-            songId: candidate.id,
-            title: candidate.title,
-            midi: loaded.midi,
-            rawMidi: bytes,
-            sourceHash: ref.sha256,
-            tempo: midiSettings.tempo,
-            transpose: midiSettings.transpose,
-            instrument: midiSettings.instrument,
-          });
-        } catch {
-          // Neighbor warm-up is an opportunistic optimisation. The foreground
-          // load still reports the actionable error if the user selects it.
+    const warm = () => {
+      if (run !== preloadRun.current) return;
+      const prefetchedPdf = new Set<string>();
+      for (const candidate of uniqueNeighbors) {
+        if (chordsVisible)
+          void chordRepository.getChord(candidate.id).catch(() => undefined);
+        // Text readers must not download neighbouring scores or render audio.
+        if (
+          viewerMode === "pdf" &&
+          pdfStatus === "ready" &&
+          !candidate.assetCode
+        ) {
+          void (async () => {
+            try {
+              // All KR songs share one master: warm its page descriptors,
+              // rather than downloading a second per-song PDF collection.
+              const asset = await loadForkHymnalPdf(candidate.id);
+              if (run !== preloadRun.current) return;
+              const { pdfDocuments } = await import("./pdf-document-cache.js");
+              if (run !== preloadRun.current) return;
+              const lease = pdfDocuments.acquire(asset.src);
+              try {
+                const document = await lease.promise;
+                if (run === preloadRun.current)
+                  await document.getPage(asset.initialPage);
+              } finally {
+                lease.release();
+              }
+            } catch {
+              if (run !== preloadRun.current) return;
+              const pdfRef = findMusicAsset(
+                musicLock,
+                "pdf",
+                candidate.pdfPath,
+              );
+              if (pdfRef && !prefetchedPdf.has(pdfRef.sha256)) {
+                prefetchedPdf.add(pdfRef.sha256);
+                void loadMusicAsset(pdfRef).catch(() => undefined);
+              }
+            }
+          })();
         }
-      })();
-    }
+        // Give the foreground song the worker first; warm neighbours once
+        // actual playback has started, rather than competing with its render.
+        if (!midiPlayerEnabled || midiState.status !== "playing") continue;
+        const ref = findMusicAsset(musicLock, "midi", candidate.midiPath);
+        if (
+          !ref ||
+          midiPlayer.hasPreloadedSync(
+            ref.sha256,
+            midiSettings.transpose,
+            midiSettings.instrument,
+            midiSettings.tempo,
+          )
+        )
+          continue;
+        void (async () => {
+          try {
+            const bytes = await loadMusicAsset(ref);
+            if (run !== preloadRun.current) return;
+            const loaded = await midiLoader.load({
+              id: candidate.id,
+              url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`,
+              sourceHash: ref.sha256,
+              bytes,
+            });
+            if (run !== preloadRun.current) return;
+            await midiPlayer.preload({
+              songId: candidate.id,
+              title: candidate.title,
+              midi: loaded.midi,
+              rawMidi: bytes,
+              sourceHash: ref.sha256,
+              tempo: midiSettings.tempo,
+              transpose: midiSettings.transpose,
+              instrument: midiSettings.instrument,
+            });
+          } catch {
+            // Foreground loads retain their own actionable error state.
+          }
+        })();
+      }
+    };
+    const idle =
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback(warm, { timeout: 1000 })
+        : undefined;
+    const timer = idle === undefined ? window.setTimeout(warm, 400) : undefined;
     return () => {
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+      if (timer !== undefined) window.clearTimeout(timer);
       if (preloadRun.current === run) preloadRun.current += 1;
     };
   }, [
+    chordsVisible,
+    viewerMode,
+    pdfStatus,
+    midiPlayerEnabled,
+    midiState.status,
     chordRepository,
     item,
     midiLoader,
@@ -601,10 +650,15 @@ export function HymnDetail({
   useEffect(() => {
     if (!item || autoLoadedSong.current === item.id) return;
     autoLoadedSong.current = item.id;
-    const saved = viewerMode;
-    if (saved === "pdf" && pdfStatus === "idle") void loadPdf();
     if (chordsVisible && chordStatus === "idle") void loadChord();
   }, [item, chordStatus, chordsVisible, pdfStatus]);
+  useEffect(() => {
+    if (requestedMode === "pdf" || requestedMode === "lyrics")
+      setViewerMode(requestedMode);
+  }, [requestedMode]);
+  useEffect(() => {
+    if (item && viewerMode === "pdf" && pdfStatus === "idle") void loadPdf();
+  }, [item, viewerMode, pdfStatus]);
   useEffect(() => {
     const updated = (event: Event) => {
       if (
@@ -1199,7 +1253,7 @@ export function HymnDetail({
           // Chord JSON remains useful offline even when its optional PDF
           // coordinate source is unavailable; the viewer renders a clear
           // degraded note-index fallback below.
-          show(translate(locale, "kidung.chordLayoutRetry"));
+          // Keep the usable note-index fallback without interrupting reading.
         }
       }
       setChordDocument(nextDocument);
@@ -1221,11 +1275,7 @@ export function HymnDetail({
       if (controller.signal.aborted || run !== chordRun.current) return;
       const unavailable = error instanceof ChordNotAvailableError;
       setChordStatus(unavailable ? "unavailable" : "error");
-      show(
-        unavailable
-          ? translate(locale, "kidung.chordUnavailable")
-          : `${translate(locale, "kidung.chordUnavailable")}; ${translate(locale, "kidung.connectRetry")}`,
-      );
+      // The inline error/retry panel already explains unavailable chords.
     } finally {
       if (chordAbort.current === controller) chordAbort.current = undefined;
     }
@@ -1237,7 +1287,7 @@ export function HymnDetail({
     setPdfStatus("loading");
     setPdfVersion(undefined);
     try {
-      const asset = await loadPdfAsset();
+      const [asset] = await Promise.all([loadPdfAsset(), preloadPdfReader()]);
       const nextUrl =
         asset.src ||
         (asset.bytes
@@ -1261,24 +1311,20 @@ export function HymnDetail({
         return nextUrl;
       });
       setPdfStatus("ready");
-      show(
-        asset.source === "fork"
-          ? translate(locale, "kidung.pdfForkOpened")
-          : translate(locale, "kidung.pdfCanonicalFallback"),
-      );
     } catch {
       if (run !== pdfRun.current) return;
       setPdfStatus("error");
-      show(
-        `${translate(locale, "kidung.pdfFailed")}. ${translate(locale, "kidung.pdfRetry")}`,
-      );
     }
   };
   const selectViewerMode = (mode: HymnViewerMode) => {
     writeHymnViewerMode(item.id, mode);
     const next = new URLSearchParams(searchParams);
     next.set("mode", mode);
-    navigate({ search: next.toString() }, { replace: true });
+    if (mode === "pdf") void preloadPdfReader().catch(() => undefined);
+    transitionReader(() => {
+      setViewerMode(mode);
+      navigate({ search: next.toString() }, { replace: true });
+    });
   };
   const toggleChords = () => {
     const next = !chordsVisible;
@@ -1290,7 +1336,6 @@ export function HymnDetail({
   const loadMidi = async () => {
     // Mirror gyschordweb MidiEngine guards: isLoading/isSwitching + generation gate
     if (midiPlayer.isLoading() || isMidiSwitchingRef.current) {
-      show(translate(locale, "kidung.loadingMidi"));
       return;
     }
     if (!musicLock) {
@@ -1325,15 +1370,8 @@ export function HymnDetail({
         : midiPlayer.hasTransposePreference()
           ? midiPlayer.settingsSnapshot().transpose
           : midiDefaults.transpose;
-      const preloaded = await midiPlayer.hasPreloaded(
-        ref.sha256,
-        targetTranspose,
-        midiSettings.instrument,
-        midiSettings.tempo,
-      );
-      if (preloaded) {
-        // No delay - match viewer-core navDelayMs=0
-      }
+      // Opening the player needs MIDI bytes, not a rendered soundfont buffer.
+      // Playback/preloading prepares audio independently after the dock is ready.
       const rawUrl = `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`;
       const bytes = await loadMusicAsset(ref);
       if (midiLoadGeneration.current !== thisGeneration) return;
@@ -1378,23 +1416,21 @@ export function HymnDetail({
             setSourceKeyIndex(resolvedMeta.keySemitone);
             keyInitialized.current = true;
           }
-          if (!userSetTransposeRef.current) {
-            transposeRef.current = resolvedTranspose;
-            setTranspose(resolvedTranspose);
+          const hasOverride =
+            userSetTransposeRef.current || midiPlayer.hasTransposePreference();
+          const currentTranspose = hasOverride
+            ? midiPlayer.settingsSnapshot().transpose
+            : resolvedTranspose;
+          userSetTransposeRef.current = hasOverride;
+          transposeRef.current = currentTranspose;
+          setTranspose(currentTranspose);
+          if (!hasOverride) {
             void midiPlayer
-              .setTranspose(resolvedTranspose, { userOverride: false })
+              .setTranspose(currentTranspose, { userOverride: false })
               .catch(() => undefined);
           }
           const sourceKey = resolvedMeta.keySemitone ?? sourceKeyIndex;
-          setKeyIndex(
-            (((sourceKey +
-              (userSetTransposeRef.current
-                ? transposeRef.current
-                : resolvedTranspose)) %
-              12) +
-              12) %
-              12,
-          );
+          setKeyIndex((((sourceKey + currentTranspose) % 12) + 12) % 12);
         });
       }
       const queueIndex = getMidiPlaylist().items.findIndex(
@@ -1402,7 +1438,6 @@ export function HymnDetail({
       );
       if (queueIndex >= 0) selectMidiPlaylistItem(queueIndex);
       setMidiStatus("ready");
-      show(translate(locale, "kidung.midiReadyHint"));
     } catch (error) {
       if (midiLoadGeneration.current !== thisGeneration) return;
       setMidiStatus("error");
@@ -1433,7 +1468,6 @@ export function HymnDetail({
         false;
       autoplayRequestRef.current = false;
       setMidiStatus("idle");
-      setMidiDockOpen(false);
       await midiPlayer.close();
       return;
     }
@@ -1508,6 +1542,7 @@ export function HymnDetail({
                 className="quiet-button hymn-action"
                 onClick={toggleChords}
                 disabled={chordStatus === "loading"}
+                aria-busy={chordStatus === "loading"}
                 title={
                   chordsVisible
                     ? translate(locale, "kidung.hideChord")
@@ -1522,7 +1557,10 @@ export function HymnDetail({
                       : translate(locale, "kidung.showChord")
                 }
               >
-                <span className="hymn-action-icon" aria-hidden="true">
+                <span
+                  className={`hymn-action-icon${chordStatus === "loading" ? " is-loading" : ""}`}
+                  aria-hidden="true"
+                >
                   <Icon name="music" size={17} />
                 </span>
                 <span className="hymn-action-label">
@@ -1540,6 +1578,7 @@ export function HymnDetail({
                 className="primary-button hymn-action hymn-action-primary hymn-midi-toggle"
                 onClick={() => void toggleMidiPlayer()}
                 aria-pressed={midiPlayerEnabled}
+                aria-busy={midiStatus === "loading"}
                 aria-controls="persistent-media-player"
                 title={translate(
                   locale,
@@ -1550,7 +1589,10 @@ export function HymnDetail({
                   midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
                 )}
               >
-                <span className="hymn-action-icon" aria-hidden="true">
+                <span
+                  className={`hymn-action-icon${midiStatus === "loading" ? " is-loading" : ""}`}
+                  aria-hidden="true"
+                >
                   <Icon name="play" size={17} />
                 </span>
                 <span className="hymn-action-label">
@@ -1570,6 +1612,10 @@ export function HymnDetail({
               disabled={!item.pdfPath && !item.assetCode}
               aria-label={translate(locale, "kidung.score")}
               title={translate(locale, "kidung.score")}
+              onPointerEnter={() =>
+                void preloadPdfReader().catch(() => undefined)
+              }
+              onFocus={() => void preloadPdfReader().catch(() => undefined)}
               onClick={() => selectViewerMode("pdf")}
             >
               <Icon name="file" size={18} />
@@ -1940,6 +1986,10 @@ export function HymnDetail({
                             <div
                               className="midi-preload-bar"
                               role="progressbar"
+                              aria-label={translate(
+                                locale,
+                                "kidung.loadingMidi",
+                              )}
                               aria-valuenow={midiState.loadingProgress}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -2309,19 +2359,9 @@ export function HymnDetail({
                 <span aria-hidden="true">
                   <Icon name="chevronLeft" size={18} />
                 </span>
-                <span className="viewer-chrome-copy">
+                <span className="sr-only">
                   {translate(locale, "kidung.songs")}
                 </span>
-              </button>
-              <button
-                type="button"
-                className="viewer-chrome-button hymn-pdf-song-nav"
-                onClick={() => goToNeighbor(prev)}
-                disabled={!prev}
-                aria-label={translate(locale, "kidung.previous")}
-                title={translate(locale, "kidung.previous")}
-              >
-                <Icon name="skipPrevious" size={18} />
               </button>
               <div
                 className="hymn-pdf-viewer-title"
@@ -2337,13 +2377,12 @@ export function HymnDetail({
               </div>
               <button
                 type="button"
-                className="viewer-chrome-button hymn-pdf-song-nav"
-                onClick={() => goToNeighbor(next)}
-                disabled={!next}
-                aria-label={translate(locale, "kidung.next")}
-                title={translate(locale, "kidung.next")}
+                className="viewer-chrome-button hymn-pdf-text-toggle"
+                aria-label={translate(locale, "kidung.text")}
+                title={translate(locale, "kidung.text")}
+                onClick={() => selectViewerMode("lyrics")}
               >
-                <Icon name="skipNext" size={18} />
+                <span aria-hidden="true">Aa</span>
               </button>
               {(midiAvailable || !item.assetCode) && (
                 <details
@@ -2361,15 +2400,6 @@ export function HymnDetail({
                     <span aria-hidden="true">
                       <Icon name="music" size={18} />
                     </span>
-                    <span className="viewer-chrome-copy">
-                      {!item.assetCode && chordsVisible
-                        ? `${renderedKey}${
-                            transpose === 0
-                              ? ""
-                              : ` · ${transpose > 0 ? `+${transpose}` : transpose}`
-                          }`
-                        : translate(locale, "kidung.music")}
-                    </span>
                   </summary>
                   <div className="pdf-music-menu-panel">
                     {midiAvailable && (
@@ -2378,13 +2408,10 @@ export function HymnDetail({
                         className="quiet-button pdf-music-action"
                         aria-expanded={midiPlayerEnabled}
                         aria-pressed={midiPlayerEnabled}
-                        onClick={() => {
-                          const opening = !midiPlayerEnabled;
-                          void toggleMidiPlayer().then(() =>
-                            setMidiDockOpen(
-                              opening && Boolean(midiPlayer.snapshot().songId),
-                            ),
-                          );
+                        onClick={(event) => {
+                          const menu = event.currentTarget.closest("details");
+                          if (menu) menu.open = false;
+                          void toggleMidiPlayer();
                         }}
                       >
                         <Icon name="music" size={17} />
@@ -2526,15 +2553,6 @@ export function HymnDetail({
                   </div>
                 </details>
               )}
-              {midiAvailable && midiDockOpen && (
-                <div
-                  className="hymn-midi-dock pdf-midi-dock-context"
-                  role="group"
-                  aria-label={translate(locale, "kidung.midiPlayer")}
-                >
-                  <MidiControlsPanel locale={locale} />
-                </div>
-              )}
               {chordEditorEnabled && (
                 <div
                   className="chord-editor-toolbar"
@@ -2622,6 +2640,12 @@ export function HymnDetail({
                   {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
                   title={item.title}
                   variant="hymn"
+                  itemNavigation={{
+                    ...(prev ? { previous: () => goToNeighbor(prev) } : {}),
+                    ...(next ? { next: () => goToNeighbor(next) } : {}),
+                    previousLabel: translate(locale, "kidung.previous"),
+                    nextLabel: translate(locale, "kidung.next"),
+                  }}
                   chordOverlays={
                     chordEditorEnabled ? editableChords : pdfChordOverlays
                   }
@@ -2713,11 +2737,9 @@ export function HymnDetail({
             </article>
           ))}
         {chordsVisible && chordStatus === "loading" && (
-          <div className="loading-panel" role="status">
-            <LoadingProgress
-              label={translate(locale, "kidung.chordVerifying")}
-            />
-          </div>
+          <span className="sr-only" role="status">
+            {translate(locale, "kidung.chordVerifying")}
+          </span>
         )}
         {chordsVisible &&
           (chordStatus === "error" || chordStatus === "unavailable") && (

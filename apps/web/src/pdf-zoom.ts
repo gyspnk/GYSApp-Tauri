@@ -1,0 +1,214 @@
+import { clampPdfZoomPercent } from "./pdf-utils.js";
+
+export type PdfZoomController = {
+  readonly percent: number;
+  zoomTo: (percent: number) => void;
+  refresh: () => void;
+  dispose: () => void;
+};
+
+/** Store logical geometry separately from the bounded bitmap backing it. */
+export function sizePdfCanvas(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+  renderedPercent: number,
+  displayedPercent = renderedPercent,
+) {
+  canvas.dataset.pdfWidth = String(width);
+  canvas.dataset.pdfHeight = String(height);
+  canvas.dataset.pdfZoom = String(renderedPercent);
+  canvas.style.width = `${(width * displayedPercent) / renderedPercent}px`;
+  canvas.style.height = `${(height * displayedPercent) / renderedPercent}px`;
+}
+
+/** Native listeners consume browser pinch/zoom; one animation owns geometry
+ * and preserves the content point under the cursor or two-finger midpoint. */
+export function installPdfZoom(
+  stage: HTMLElement,
+  onZoom: (percent: number) => void,
+): PdfZoomController {
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  let percent = 100,
+    target = 100,
+    frame = 0,
+    previousTime = 0;
+  let anchor:
+    | {
+        element: HTMLElement;
+        x: number;
+        y: number;
+        screenX: number;
+        screenY: number;
+      }
+    | undefined;
+  let pinch: { distance: number; percent: number } | undefined;
+  const capture = (clientX?: number, clientY?: number) => {
+    const bounds = stage.getBoundingClientRect();
+    const screenX = clientX ?? bounds.left + stage.clientWidth / 2;
+    const screenY = clientY ?? bounds.top + stage.clientHeight / 2;
+    const hit = document
+      .elementFromPoint(screenX, screenY)
+      ?.closest<HTMLElement>(".pdf-page-frame");
+    const candidates =
+      hit && stage.contains(hit)
+        ? [hit]
+        : Array.from(
+            stage.querySelectorAll<HTMLCanvasElement>("canvas[data-pdf-width]"),
+            (canvas) => canvas.parentElement!,
+          );
+    let closest: { element: HTMLElement; box: DOMRect } | undefined;
+    let nearest = Infinity;
+    for (const element of candidates) {
+      const box = element.getBoundingClientRect();
+      if (!box.width || !box.height) continue;
+      const distance = Math.hypot(
+        Math.max(box.left - screenX, 0, screenX - box.right),
+        Math.max(box.top - screenY, 0, screenY - box.bottom),
+      );
+      if (distance < nearest) {
+        closest = { element, box };
+        nearest = distance;
+      }
+    }
+    if (!closest?.box.width || !closest.box.height) return;
+    anchor = {
+      element: closest.element,
+      x: (screenX - closest.box.left) / closest.box.width,
+      y: (screenY - closest.box.top) / closest.box.height,
+      screenX,
+      screenY,
+    };
+  };
+  const refresh = () => {
+    const canvases = stage.querySelectorAll<HTMLCanvasElement>(
+      "canvas[data-pdf-width]",
+    );
+    for (const canvas of canvases) {
+      const ratio = percent / Number(canvas.dataset.pdfZoom);
+      canvas.style.width = `${Number(canvas.dataset.pdfWidth) * ratio}px`;
+      canvas.style.height = `${Number(canvas.dataset.pdfHeight) * ratio}px`;
+      const virtualPage = canvas.closest<HTMLElement>(
+        ".pdf-vertical-page, .pdf-horizontal-page",
+      );
+      if (virtualPage) virtualPage.style.minHeight = canvas.style.height;
+    }
+    for (const layer of stage.querySelectorAll<HTMLElement>(
+      ".pdf-detail-layer[data-pdf-zoom]",
+    )) {
+      const canvas =
+        layer.parentElement?.querySelector<HTMLCanvasElement>(
+          ":scope > canvas",
+        );
+      if (canvas)
+        layer.style.transform = `scale(${(Number(canvas.dataset.pdfWidth) * percent) / Number(canvas.dataset.pdfZoom) / parseFloat(layer.style.width)})`;
+    }
+    stage.style.setProperty("--pdf-chord-scale", String(percent / 100));
+    if (
+      percent === 100 &&
+      target === 100 &&
+      (stage.dataset.pdfLayout === "single" ||
+        stage.dataset.pdfLayout === "two")
+    ) {
+      stage.scrollLeft = stage.scrollTop = 0;
+    } else if (anchor?.element.isConnected) {
+      const bounds = anchor.element.getBoundingClientRect();
+      stage.scrollLeft +=
+        bounds.left + bounds.width * anchor.x - anchor.screenX;
+      stage.scrollTop += bounds.top + bounds.height * anchor.y - anchor.screenY;
+    }
+  };
+  const tick = (time: number) => {
+    const elapsed = previousTime ? Math.min(time - previousTime, 64) : 16;
+    previousTime = time;
+    percent += (target - percent) * (1 - Math.exp(-elapsed / 55));
+    const finished = Math.abs(target - percent) < 0.02;
+    if (finished) percent = target;
+    refresh();
+    if (finished) {
+      frame = previousTime = 0;
+      anchor = undefined;
+      stage.dispatchEvent(new Event("pdfzoomend"));
+    } else frame = requestAnimationFrame(tick);
+  };
+  const update = (next: number, clientX?: number, clientY?: number) => {
+    next = clampPdfZoomPercent(next);
+    if (next === target) return;
+    if (!pinch) capture(clientX, clientY);
+    target = next;
+    onZoom(target);
+    if (reducedMotion.matches) {
+      cancelAnimationFrame(frame);
+      frame = previousTime = 0;
+      percent = target;
+      refresh();
+      anchor = undefined;
+      stage.dispatchEvent(new Event("pdfzoomend"));
+    } else if (!frame) frame = requestAnimationFrame(tick);
+  };
+  const wheel = (event: WheelEvent) => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const units =
+      event.deltaMode === 1
+        ? 16
+        : event.deltaMode === 2
+          ? stage.clientHeight
+          : 1;
+    update(
+      target * Math.exp(-event.deltaY * units * 0.002),
+      event.clientX,
+      event.clientY,
+    );
+  };
+  const distance = (touches: TouchList) =>
+    Math.hypot(
+      touches[0]!.clientX - touches[1]!.clientX,
+      touches[0]!.clientY - touches[1]!.clientY,
+    );
+  const start = (event: TouchEvent) => {
+    if (event.touches.length !== 2) return;
+    event.preventDefault();
+    const initial = distance(event.touches);
+    if (!initial) return;
+    capture(
+      (event.touches[0]!.clientX + event.touches[1]!.clientX) / 2,
+      (event.touches[0]!.clientY + event.touches[1]!.clientY) / 2,
+    );
+    pinch = { distance: initial, percent: target };
+  };
+  const move = (event: TouchEvent) => {
+    if (!pinch || event.touches.length !== 2) return;
+    event.preventDefault();
+    if (anchor) {
+      anchor.screenX =
+        (event.touches[0]!.clientX + event.touches[1]!.clientX) / 2;
+      anchor.screenY =
+        (event.touches[0]!.clientY + event.touches[1]!.clientY) / 2;
+    }
+    update((pinch.percent * distance(event.touches)) / pinch.distance);
+  };
+  const end = () => {
+    pinch = undefined;
+  };
+  stage.addEventListener("wheel", wheel, { passive: false });
+  stage.addEventListener("touchstart", start, { passive: false });
+  stage.addEventListener("touchmove", move, { passive: false });
+  stage.addEventListener("touchend", end);
+  stage.addEventListener("touchcancel", end);
+  return {
+    get percent() {
+      return percent;
+    },
+    zoomTo: update,
+    refresh,
+    dispose() {
+      cancelAnimationFrame(frame);
+      stage.removeEventListener("wheel", wheel);
+      stage.removeEventListener("touchstart", start);
+      stage.removeEventListener("touchmove", move);
+      stage.removeEventListener("touchend", end);
+      stage.removeEventListener("touchcancel", end);
+    },
+  };
+}

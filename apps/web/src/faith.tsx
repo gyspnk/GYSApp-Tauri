@@ -1,28 +1,26 @@
+import { PdfReader as FaithPdfReader } from "./pdf-reader-loader.js";
 import { LoadingProgress } from "./loading-progress.js";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 import { installReadingZoom } from "./reading-zoom.js";
+import {
+  getCachedFaithPack,
+  loadFaithPack,
+  type FaithPack,
+  type FaithItem,
+} from "./faith-payloads.js";
 
 import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
-type FaithItem = { number: string; text: string };
-type FaithGroup = { language: string; title: string; content: FaithItem[] };
-type FaithPack = { faith: FaithGroup[] };
 type FaithPdfProgress = {
   page: number;
   totalPages: number;
   percent: number;
   lastOpenedAt: string;
 };
-
-const FaithPdfReader = lazy(() =>
-  import("./pdf.js").then(({ PdfReader: Component }) => ({
-    default: Component,
-  })),
-);
 
 /**
  * “Baca lebih lanjut” opens the matching TJC Dasar Kepercayaan doctrine PDF
@@ -145,22 +143,6 @@ function writeFaithPdfProgress(
   }
 }
 
-function isFaithPack(value: unknown): value is FaithPack {
-  if (!value || typeof value !== "object") return false;
-  const faith = (value as { faith?: unknown }).faith;
-  return (
-    Array.isArray(faith) &&
-    faith.length > 0 &&
-    faith.every(
-      (group) =>
-        group &&
-        typeof group === "object" &&
-        typeof (group as { language?: unknown }).language === "string" &&
-        Array.isArray((group as { content?: unknown }).content),
-    )
-  );
-}
-
 export function FaithPage({ locale }: { locale: Locale }) {
   const pageRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -168,7 +150,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
     if (pageRef.current) return installReadingZoom(pageRef.current);
   }, []);
   const [searchParams] = useSearchParams();
-  const [pack, setPack] = useState<FaithPack | undefined>();
+  const [pack, setPack] = useState<FaithPack | undefined>(getCachedFaithPack);
   const [query, setQuery] = useState("");
   // Seperti Alkitab: tidak ada seleksi otomatis — user memilih sendiri.
   const [selected, setSelected] = useState<string>(
@@ -208,21 +190,17 @@ export function FaithPage({ locale }: { locale: Locale }) {
   };
 
   useEffect(() => {
-    const controller = new AbortController();
-    void fetch(`${import.meta.env.BASE_URL}offline/faith.json`, {
-      signal: controller.signal,
-      cache: "force-cache",
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Faith pack unavailable");
-        const json: unknown = await response.json();
-        if (!isFaithPack(json)) throw new Error("Faith pack is invalid");
-        setPack(json);
+    let active = true;
+    void loadFaithPack()
+      .then((data) => {
+        if (active) setPack(data);
       })
       .catch(() => {
-        if (!controller.signal.aborted) setPack({ faith: [] });
+        if (active) setPack({ faith: [] });
       });
-    return () => controller.abort();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const group =

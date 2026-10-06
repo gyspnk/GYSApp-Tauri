@@ -15,6 +15,7 @@ const KEY_BYTES = Uint8Array.from(
   (value) => value.charCodeAt(0),
 );
 let mapping: Promise<HymnalPdfManifest> | undefined;
+const sourceRequests = new Map<string, Promise<string>>();
 const packageRequests = new Map<string, Promise<Uint8Array>>();
 
 async function sha256(bytes: Uint8Array) {
@@ -31,7 +32,10 @@ async function loadMapping() {
       return HymnalPdfManifestSchema.parse(await response.json());
     },
   );
-  return mapping;
+  return mapping.catch((error) => {
+    mapping = undefined;
+    throw error;
+  });
 }
 
 async function decodePackage(bytes: Uint8Array) {
@@ -265,6 +269,26 @@ export function forkPdfSourceUrls(
   );
 }
 
+async function hasPdfHeader(response: Response): Promise<boolean> {
+  const reader = response.body?.getReader();
+  if (!reader) return false;
+  const header = new Uint8Array(5);
+  let length = 0;
+  try {
+    while (length < header.length) {
+      const { value, done } = await reader.read();
+      if (done) return false;
+      const part = value.subarray(0, header.length - length);
+      header.set(part, length);
+      length += part.length;
+    }
+    return looksLikePdf(header);
+  } finally {
+    // Some CDNs ignore Range. A source probe must not buffer a whole hymnal.
+    void reader.cancel().catch(() => undefined);
+  }
+}
+
 export async function resolveForkPdfSource(
   sources: readonly string[],
   fetcher: typeof fetch = fetch,
@@ -272,6 +296,7 @@ export async function resolveForkPdfSource(
   for (const source of sources) {
     try {
       const response = await fetcher(source, {
+        signal: AbortSignal.timeout(8000),
         cache: "force-cache",
         headers: {
           accept: "application/pdf,application/octet-stream",
@@ -279,8 +304,7 @@ export async function resolveForkPdfSource(
         },
       });
       if (!response.ok && response.status !== 206) continue;
-      if (looksLikePdf(new Uint8Array(await response.arrayBuffer())))
-        return source;
+      if (await hasPdfHeader(response)) return source;
     } catch {
       // Continue to the next immutable source.
     }
@@ -303,7 +327,18 @@ export async function loadForkHymnalPdf(numberOrKey: number | string) {
   const manifest = await loadMapping();
   const song = manifest.songs[forkManifestSongKey(numberOrKey)];
   if (!song) throw new Error("Song is not mapped in the fork PDF database");
-  const src = await resolveForkPdfSource(forkPdfSourceUrls(manifest));
+  const key = `${manifest.sourceCommit}:${manifest.masterPath}`;
+  let source = sourceRequests.get(key);
+  if (!source) {
+    source = resolveForkPdfSource(forkPdfSourceUrls(manifest));
+    sourceRequests.set(key, source);
+    void source.catch(() => {
+      if (sourceRequests.get(key) === source) sourceRequests.delete(key);
+    });
+    while (sourceRequests.size > 8)
+      sourceRequests.delete(sourceRequests.keys().next().value!);
+  }
+  const src = await source;
   return {
     src,
     initialPage: song.startPage,

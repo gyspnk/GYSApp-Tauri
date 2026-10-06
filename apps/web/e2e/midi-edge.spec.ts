@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { preparePinnedMidiAsset } from "./pinned-reader-fixtures.js";
 
 for (const width of [390, 768, 1440]) {
   test(`MIDI edge player drags, restores, and persists across routes at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
+    await preparePinnedMidiAsset(page);
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
     const player = page.locator(".media-surface.is-kidung-media");
@@ -72,5 +74,37 @@ for (const width of [390, 768, 1440]) {
           (await player.boundingBox())!.height,
       )
       .toBeLessThanOrEqual(892);
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`MIDI dock animation starts at its previous rectangle at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await preparePinnedMidiAsset(page);
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+    await page.locator(".hymn-midi-toggle").click();
+    const player = page.locator(".media-surface.is-kidung-media");
+    for (const label of ["Perbesar pemutar", "Minimalkan pemutar"]) {
+      const before = (await player.boundingBox())!;
+      await player.getByRole("button", { name: label, exact: true }).click();
+      const start = await player.evaluate(async (element) => {
+        const animation = element
+          .getAnimations()
+          .find((a) => a.effect?.getTiming().duration === 320);
+        if (!animation) throw new Error("Dock transition animation is missing");
+        animation.pause();
+        animation.currentTime = 0;
+        await new Promise(requestAnimationFrame);
+        const r = element.getBoundingClientRect();
+        const result = { x: r.x, y: r.y, width: r.width, height: r.height };
+        animation.finish();
+        return result;
+      });
+      for (const key of ["x", "y", "width", "height"] as const) {
+        expect(Math.abs(start[key] - before[key]), key).toBeLessThanOrEqual(1);
+      }
+    }
   });
 }

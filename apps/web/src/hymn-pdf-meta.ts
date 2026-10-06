@@ -11,7 +11,7 @@ import {
   MIDI_TEMPO_FALLBACK_BPM,
   parsePdfKeyToSemitone,
 } from "./pdf-meta.js";
-import { loadForkHymnalPdfBytes } from "./fork-pdf.js";
+import { loadForkHymnalPdf } from "./fork-pdf.js";
 import type { HymnCatalogEntry } from "@gys/contracts";
 
 export type HymnPdfMeta = {
@@ -35,29 +35,27 @@ export function resolveHymnMidiDefaults(
 
 const cache = new Map<string, Promise<HymnPdfMeta>>();
 const settledCache = new Map<string, HymnPdfMeta>();
+const listeners = new Set<() => void>();
 
-let pdfjsPromise: Promise<typeof import("pdfjs-dist")> | undefined;
-/**
- * Load pdf.js on first use so text-first hymn pages never pull the library
- * or the worker into the Kidung route's first-load chunk graph.
- */
-async function loadPdfJs(): Promise<typeof import("pdfjs-dist")> {
-  pdfjsPromise ??= import("pdfjs-dist").then(async (pdfjs) => {
-    const { workerSrc } = await import("./pdf-worker.js");
-    pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-    return pdfjs;
-  });
-  return pdfjsPromise;
+export function subscribeHymnPdfMeta(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-export async function extractPdfMetaFromBytes(
-  bytes: Uint8Array,
+async function extractPdfMeta(
+  source: string | Uint8Array,
+  pageNumber = 1,
 ): Promise<HymnPdfMeta> {
-  const { getDocument } = await loadPdfJs();
-  const task = getDocument({ data: bytes.slice() });
+  const { pdfDocuments } = await import("./pdf-document-cache.js");
+  const lease = pdfDocuments.acquire(
+    typeof source === "string" ? source : "",
+    typeof source === "string" ? undefined : source,
+  );
   try {
-    const doc = await task.promise;
-    const page = await doc.getPage(1);
+    const doc = await lease.promise;
+    const page = await doc.getPage(pageNumber);
     const content = await page.getTextContent();
     const text = content.items
       .flatMap((item) => ("str" in item ? [item.str] : []))
@@ -71,26 +69,33 @@ export async function extractPdfMetaFromBytes(
       preloadTranspose: detectPreloadTransposeFromPdfText(text),
     };
   } finally {
-    await task.destroy().catch(() => undefined);
+    lease.release();
   }
 }
 
-/** Warm the cache from the same immutable fork bytes the chord layer uses. */
+export function extractPdfMetaFromBytes(
+  bytes: Uint8Array,
+): Promise<HymnPdfMeta> {
+  return extractPdfMeta(bytes);
+}
+
+/** Read the song's mapped first page from the shared range-backed master. */
 export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
   const existing = cache.get(item.id);
   if (existing) return existing;
-  const request = loadForkHymnalPdfBytes(item.number)
-    .then(({ bytes }) => extractPdfMetaFromBytes(bytes))
-    .catch(
-      () =>
-        ({
-          tempo: MIDI_TEMPO_FALLBACK_BPM,
-          preloadTranspose: 0,
-        }) as HymnPdfMeta,
-    )
+  const request = loadForkHymnalPdf(item.id)
+    .then(({ src, initialPage }) => extractPdfMeta(src, initialPage))
     .then((meta) => {
       settledCache.set(item.id, meta);
+      listeners.forEach((listener) => listener());
       return meta;
+    })
+    .catch(() => {
+      if (cache.get(item.id) === request) cache.delete(item.id);
+      return {
+        tempo: MIDI_TEMPO_FALLBACK_BPM,
+        preloadTranspose: 0,
+      } satisfies HymnPdfMeta;
     });
   cache.set(item.id, request);
   void request.catch(() => cache.delete(item.id));

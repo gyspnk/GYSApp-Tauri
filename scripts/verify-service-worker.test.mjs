@@ -36,6 +36,7 @@ function loadServiceWorker({
     URL,
     Response,
     crypto: webcrypto,
+    AbortSignal,
     btoa,
     caches: {
       match: cache.match,
@@ -344,6 +345,75 @@ test("editorial snapshots use a cache that survives shell version changes", asyn
   await Promise.all(pendingWrites);
 
   assert.deepEqual(openedCaches, ["gysapp-content-v1"]);
+});
+
+test("cached editorial data is immediate while concurrent requests share one refresh", async () => {
+  let release;
+  const blocked = new Promise((resolve) => {
+    release = resolve;
+  });
+  let calls = 0;
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async () => {
+      calls++;
+      await blocked;
+      return new Response("new snapshot");
+    },
+    cacheMatch: async () => new Response("cached snapshot"),
+  });
+  const background = [];
+  const read = () => {
+    let result;
+    handlers.get("fetch")({
+      request: {
+        method: "GET",
+        mode: "cors",
+        url: "https://gyspnk.github.io/GYSApp-Tauri/offline/faith.json",
+      },
+      respondWith(task) {
+        result = task;
+      },
+      waitUntil(task) {
+        background.push(task);
+      },
+    });
+    return result;
+  };
+  const responses = await Promise.all([read(), read(), read()]);
+  for (const response of responses)
+    assert.equal(await response.text(), "cached snapshot");
+  assert.equal(calls, 1);
+  release();
+  await Promise.all(background);
+  assert.equal(writes.length, 1);
+  assert.equal(await writes[0][1].text(), "new snapshot");
+});
+
+test("API responses bypass the public shell cache", async () => {
+  const { handlers, writes } = loadServiceWorker({
+    fetch: async () =>
+      new Response("account", {
+        headers: { "cache-control": "private, no-store" },
+      }),
+  });
+  let result;
+  const background = [];
+  handlers.get("fetch")({
+    request: {
+      method: "GET",
+      mode: "cors",
+      url: "https://gyspnk.github.io/GYSApp-Tauri/api/v1/me",
+    },
+    respondWith(task) {
+      result = task;
+    },
+    waitUntil(task) {
+      background.push(task);
+    },
+  });
+  assert.equal(result, undefined);
+  await Promise.all(background);
+  assert.equal(writes.length, 0);
 });
 
 test("PDF responses are not duplicated into the unbounded shell cache", async () => {

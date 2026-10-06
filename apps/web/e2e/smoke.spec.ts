@@ -6,7 +6,7 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Bacaan & nyanyian" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("combobox", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
   await expect(
     page.getByRole("heading", { name: "Readings & hymns" }),
@@ -22,7 +22,7 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/");
-  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("combobox", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
   await expect(page.getByText("Today’s Sauh", { exact: true })).toBeVisible();
   await expect(page.locator(".home-suara-section .date-line")).toHaveText(
@@ -47,7 +47,7 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
     page.getByText("Tampilan & Bahasa", { exact: true }),
   ).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Language", exact: true }).click();
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
   await page.getByRole("option", { name: "中文" }).click();
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
@@ -67,7 +67,7 @@ test("feature-critical hymn actions follow the selected locale", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("button", { name: "Bahasa" }).click();
+  await page.getByRole("combobox", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
@@ -75,12 +75,12 @@ test("feature-critical hymn actions follow the selected locale", async ({
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("button", { name: "Show chords" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("button", { name: "Language" }).click();
+  await page.getByRole("combobox", { name: "Language" }).click();
   await page.getByRole("option", { name: "中文" }).click();
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("button", { name: "语言" }).click();
+  await page.getByRole("combobox", { name: "语言" }).click();
   await page.getByRole("option", { name: "ID" }).click();
 });
 
@@ -734,31 +734,35 @@ test("Bible drag release defaults incomplete book and chapter choices to verse o
   ).toBeHidden();
 });
 
-test("Bible text selection exposes contextual copy/share/note actions", async ({
+test("Bible blocks native content actions while retaining verse notes", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 15_000,
   });
-  await page.evaluate(() => {
-    const node = document.querySelector(".verse-text");
-    if (!node) throw new Error("Verse text is not rendered");
-    const range = document.createRange();
-    range.selectNodeContents(node);
-    const selection = window.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-  });
-  await expect(
-    page.getByRole("toolbar", { name: "Tindakan teks terpilih" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Catat", exact: true }).click();
+  const verse = page.locator(".verse-text").first();
+  await expect(verse).toHaveCSS("user-select", "none");
+  const nativeActions = await verse.evaluate((node) =>
+    ["selectstart", "copy", "contextmenu"].map((type) =>
+      node.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })),
+    ),
+  );
+  expect(nativeActions).toEqual([false, false, false]);
+  await verse.click();
   await page
     .getByRole("toolbar", { name: "Aksi ayat terpilih" })
     .getByRole("button", { name: "Catatan ayat", exact: true })
     .click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
+  const note = page.getByLabel("Catatan pribadi");
+  await note.fill("Refleksi pribadi");
+  await note.press("Control+a");
+  expect(
+    await note.evaluate((element: HTMLTextAreaElement) =>
+      element.value.slice(element.selectionStart, element.selectionEnd),
+    ),
+  ).toBe("Refleksi pribadi");
 });
 
 test("selected Bible verse exposes a floating bottom action toolbar", async ({
@@ -1025,7 +1029,7 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
   await expect(page).toHaveURL(/\/kidung$/);
   await page
     .getByRole("group", { name: "Mode tampilan kidung" })
-    .getByRole("button", { name: "Teks", exact: true })
+    .getByRole("button", { name: "Partitur", exact: true })
     .click();
   await page
     .getByRole("button", {
@@ -1062,10 +1066,10 @@ test("hymn catalog keeps search and collection controls in its header", async ({
   await expect(
     page.getByRole("heading", { name: "Kidung", exact: true }),
   ).toBeVisible({ timeout: 15_000 });
-  const header = page.locator(".hymn-page-header");
+  const header = page.locator(".kidung-index-toolbar");
   await expect(header).toBeVisible();
   await expect(header.getByLabel("Cari lagu")).toBeVisible();
-  await expect(header.locator('summary[aria-label="Koleksi"]')).toBeVisible();
+  await expect(header.getByRole("combobox", { name: "Koleksi" })).toBeVisible();
   await expect(
     page.getByText(
       "Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau iringan MIDI.",

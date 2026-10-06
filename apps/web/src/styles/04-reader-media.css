@@ -1615,17 +1615,6 @@ body.gys-viewer-active {
     min-height: min(560px, calc(100vh - 230px));
     padding: 16px 10px 22px;
   }
-  /* gyschordweb parity: the fit-size caps only apply at 100% zoom. Once the
-     reader zooms in, the JS-set canvas pixel size must be honored so the zoom
-     is visible instead of being re-scaled back to the fit box. */
-  .pdf-reader-hymn .pdf-stage.is-fit canvas {
-    max-height: calc(100vh - 404px);
-    width: auto;
-  }
-  .pdf-reader-hymn .pdf-stage.is-zoomed canvas {
-    max-height: none;
-    width: auto;
-  }
   .pdf-reader-hymn .pdf-pages {
     width: 100%;
   }
@@ -1686,19 +1675,6 @@ body.gys-viewer-active {
   min-height: 0;
   padding: 16px 12px 28px;
 }
-/* gyschordweb parity: the 500px page-frame cap only applies at 100% zoom so
-   a zoomed-in canvas is not re-scaled back to the fit width. */
-.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
-  .pdf-reader-hymn
-  .pdf-page-frame.is-fit {
-  width: min(100%, 500px);
-}
-.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
-  .pdf-reader-hymn
-  .pdf-page-frame.is-zoomed {
-  width: auto;
-  max-width: none;
-}
 @media (max-width: 599px) {
   .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
     .main-content {
@@ -1720,18 +1696,6 @@ body.gys-viewer-active {
     .pdf-stage {
     min-height: calc(100vh - 130px);
     padding: 10px 6px 20px;
-  }
-  .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
-    .pdf-reader-hymn
-    .pdf-stage
-    canvas.is-fit {
-    max-height: calc(100vh - 170px);
-  }
-  .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
-    .pdf-reader-hymn
-    .pdf-stage.is-zoomed
-    canvas {
-    max-height: none;
   }
 }
 

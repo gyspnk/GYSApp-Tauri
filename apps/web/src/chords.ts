@@ -18,22 +18,7 @@ function bffUrl(path: string): string | undefined {
 }
 
 async function fallbackManifest(): Promise<{ manifest: ChordManifestV1 }> {
-  const lockResponse = await fetch(
-    `${import.meta.env.BASE_URL}offline/music-lock.json`,
-    { cache: "no-cache" },
-  );
-  if (!lockResponse.ok) throw new Error("offline music lock unavailable");
-  const lock = (await lockResponse.json()) as {
-    sourceCommit: string;
-    generatedAt: string;
-    items: Array<{
-      id: string;
-      kind: string;
-      path: string;
-      size: number;
-      sha256: string;
-    }>;
-  };
+  const lock = await loadMusicLock();
   return {
     manifest: {
       version: 1,
@@ -62,13 +47,30 @@ export function chordSongIdFromPath(path: string): string {
 
 function newBrowserChordRepository(): ChordRepository {
   const platform = createPlatformServices();
+  let savedManifest: Promise<ChordManifestV1 | undefined> | undefined;
+  const loadSavedManifest = () =>
+    (savedManifest ??= platform.keyValue
+      .get("gys-latest-chord-manifest-v1")
+      .then((saved) => {
+        const parsed = ChordManifestV1Schema.safeParse(saved);
+        return parsed.success ? parsed.data : undefined;
+      })
+      .catch(() => undefined));
   const upstream: ChordUpstream = {
     async getManifest(etag, signal) {
+      const saved = await loadSavedManifest();
+      const timeout = AbortSignal.timeout(6000);
+      const requestSignal = signal
+        ? AbortSignal.any([signal, timeout])
+        : timeout;
       try {
         const response = await fetch(
           `${RAW_ROOT}/main/docs/assets-chord-manifest.json`,
-          { cache: "no-cache", ...(signal ? { signal } : {}) },
+          // Browser HTTP cache handles conditional validation without a CORS
+          // preflight: raw GitHub rejects explicit If-None-Match preflights.
+          { cache: "no-cache", signal: requestSignal },
         );
+        if (response.status === 304 && saved) return { manifest: saved };
         if (!response.ok) throw new Error("Latest chord manifest unavailable");
         const raw = (await response.json()) as {
           schemaVersion: number;
@@ -111,30 +113,40 @@ function newBrowserChordRepository(): ChordRepository {
             manifest.entries.length
         )
           throw new Error("Incomplete chord manifest");
-        await platform.keyValue.set("gys-latest-chord-manifest-v1", manifest);
-        return { manifest };
+        const unchanged =
+          saved?.sourceCommit === manifest.sourceCommit &&
+          saved.entries.length === manifest.entries.length &&
+          saved.entries.every((entry, index) => {
+            const next = manifest.entries[index]!;
+            return (
+              entry.songId === next.songId &&
+              entry.path === next.path &&
+              entry.sha256 === next.sha256 &&
+              entry.size === next.size
+            );
+          });
+        if (!unchanged) {
+          // Disk availability must not turn a valid live manifest into a failure.
+          await platform.keyValue
+            .set("gys-latest-chord-manifest-v1", manifest)
+            .catch(() => undefined);
+          savedManifest = Promise.resolve(manifest);
+        }
+        return { manifest: unchanged ? saved : manifest };
       } catch (error) {
         if (signal?.aborted) throw error;
-        const saved = await platform.keyValue.get(
-          "gys-latest-chord-manifest-v1",
-        );
-        const parsed = ChordManifestV1Schema.safeParse(saved);
-        if (parsed.success) return { manifest: parsed.data };
+        if (saved) return { manifest: saved };
       }
       const endpoint = bffUrl("/api/v1/chords/manifest");
       if (!endpoint) return fallbackManifest();
       try {
-        const response = await fetch(
-          endpoint,
-          signal
-            ? {
-                signal,
-                ...(etag ? { headers: { "if-none-match": etag } } : {}),
-              }
-            : etag
-              ? { headers: { "if-none-match": etag } }
-              : {},
-        );
+        const fallbackTimeout = AbortSignal.timeout(4000);
+        const response = await fetch(endpoint, {
+          signal: signal
+            ? AbortSignal.any([signal, fallbackTimeout])
+            : fallbackTimeout,
+          ...(etag ? { headers: { "if-none-match": etag } } : {}),
+        });
         if (response.status === 304 && etag)
           return {
             notModified: true,
@@ -188,21 +200,24 @@ function newBrowserChordRepository(): ChordRepository {
         .map((segment) => encodeURIComponent(segment))
         .join("/");
       const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+      const lock = base
+        ? await loadMusicLock().catch(() => undefined)
+        : undefined;
       const candidates = [
-        base
-          ? `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(ref.sourceCommit)}&path=${encodeURIComponent(ref.path)}`
+        base && lock?.sourceCommit === ref.sourceCommit
+          ? `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(ref.sourceCommit)}&path=${encodeURIComponent(ref.path.replace(/^docs\//, ""))}`
           : undefined,
         `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
       ].filter((value): value is string => Boolean(value));
       let lastError: unknown;
       for (const url of candidates) {
         try {
-          const response = await fetch(
-            url,
-            signal
-              ? { signal, cache: "force-cache" }
-              : { cache: "force-cache" },
-          );
+          const response = await fetch(url, {
+            signal: signal
+              ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
+              : AbortSignal.timeout(10_000),
+            cache: "force-cache",
+          });
           if (!response.ok)
             throw new Error(`chord request failed: ${response.status}`);
           const bytes = new Uint8Array(await response.arrayBuffer());
@@ -245,6 +260,16 @@ export function syncChordsOnStartup(): Promise<void> {
         );
     })
     .catch((error) => {
+      if (error instanceof Error && error.name === "AbortError") return;
       recordDiagnostic("info", "chord.sync", error);
     }));
+}
+
+export async function stopChordSynchronization(): Promise<void> {
+  const sync = startupSync;
+  // A delayed shell import must not restart startup downloads after a reset.
+  startupSync = Promise.resolve();
+  await sharedRepository?.dispose();
+  await sync;
+  sharedRepository = undefined;
 }

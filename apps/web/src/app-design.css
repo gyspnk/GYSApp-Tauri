@@ -1,8 +1,8 @@
 /* Application composition. Reader geometry and media motion stay in
    feature styles; this file owns the shell, home and catalog hierarchy. */
 :root {
-  --page-gutter: clamp(20px, 3vw, 36px);
-  --page-start: 24px;
+  --page-gutter: clamp(12px, 1.6vw, 24px);
+  --page-start: 16px;
   --shell-paper: var(--surface);
   --shell-ink: var(--ink);
   --shell-selected: var(--blue-soft);
@@ -70,6 +70,19 @@
   border-bottom: 0;
   box-shadow: 0 1px 0 var(--line);
 }
+/* The main area is one continuous surface. Apply its gutter once, rather
+   than nesting padded cards inside a capped, floating page. */
+.app-frame .workspace .main-content {
+  max-width: none;
+  margin: 0;
+  background: var(--surface);
+}
+.app-frame:not(.is-reader-route) .main-content {
+  padding: var(--page-start) var(--page-gutter) var(--page-end);
+}
+.app-frame .main-content:has(.bible-reader) {
+  padding: 0;
+}
 .search-trigger {
   background: var(--surface);
   border-radius: 14px;
@@ -91,7 +104,7 @@
 }
 .page.home-page:not(.hymn-page) .page-intro h1 {
   font-family: var(--font-reading);
-  font-size: clamp(32px, 3.2vw, 48px);
+  font-size: clamp(28px, 3vw, 42px);
   font-weight: 550;
   letter-spacing: -0.045em;
 }
@@ -109,11 +122,22 @@
 }
 
 /* Three direct actions form a compact toolbar, rather than explanatory cards. */
+.home-welcome {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.home-welcome .page-intro {
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
 .home-portals {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin: 16px 0 0;
+  margin: 0;
 }
 .home-portal {
   display: flex;
@@ -182,10 +206,10 @@
   margin-top: 0;
 }
 .home-grid .continue-panel {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  padding: 24px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
 }
 .continue-grid {
   gap: 0;
@@ -205,28 +229,31 @@
   font-weight: 650;
   font-size: 20px;
 }
+.home-media-section .section-title-row :is(.date-line, .text-button) {
+  color: var(--navy);
+}
 .home-suara-shelf {
   gap: 16px;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-library-item {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
   transition:
     border-color var(--motion-fast),
     box-shadow var(--motion-fast);
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-library-item:hover {
-  border-color: var(--blue);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--blue);
+  box-shadow: none;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-media {
-  border-radius: 0;
+  border-radius: 12px;
   overflow: hidden;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-content {
-  padding: 16px;
+  padding: 12px 0;
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -251,9 +278,9 @@
   margin: 0;
 }
 .pujian-list {
-  border-radius: var(--radius-card);
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border-radius: 0;
+  border: 0;
+  background: transparent;
 }
 .pujian-item {
   padding-block: 4px;
@@ -288,9 +315,178 @@
   font-weight: 650;
   line-height: 1.2;
 }
+.app-frame.is-reader-route .main-content:has(.kidung-tool-page) {
+  padding: var(--page-start) var(--page-gutter) var(--page-end);
+}
+.kidung-tool-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+}
+.kidung-tool-page > .kidung-local-nav {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  padding: 0;
+  margin: 0;
+}
+.kidung-tool-page > .kidung-tool-heading {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 0;
+  border: 0;
+}
+.kidung-tool-page > :is(.kidung-settings-layout, .kidung-queue-surface) {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
 .kidung-settings-section h2 {
   font-family: inherit;
-  font-size: 20px;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.kidung-tool-page .kidung-settings-layout {
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+@media (min-width: 700px) {
+  .kidung-tool-page .kidung-settings-layout {
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+  }
+  .kidung-settings-section[aria-labelledby="kidung-player-heading"] {
+    grid-column: 2;
+    grid-row: 1 / 4;
+  }
+}
+.kidung-settings-section {
+  gap: 14px;
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.kidung-settings-section > .date-line {
+  margin: 0;
+}
+.kidung-settings-controls {
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+}
+.kidung-settings-switch {
+  align-items: center;
+  padding: 12px 0;
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line);
+}
+.kidung-settings-switch:hover {
+  background: transparent;
+}
+.kidung-settings-switch > span {
+  flex: 1;
+  min-width: 0;
+}
+/* Real checkbox semantics, with a clear switch track and moving thumb. */
+:is(.kidung-settings-switch, .kidung-inline-toggle) > input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+:is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 20%, transparent);
+  transition: transform 200ms var(--ease-out);
+}
+:is(.kidung-settings-switch, .kidung-inline-toggle) > input:checked {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+:is(.kidung-settings-switch, .kidung-inline-toggle) > input:checked::before {
+  background: var(--on-accent);
+  transform: translateX(14px);
+}
+:is(.kidung-settings-switch, .kidung-inline-toggle) > input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+@media (forced-colors: active) {
+  :is(.kidung-settings-switch, .kidung-inline-toggle) > input[type="checkbox"] {
+    appearance: auto;
+  }
+  :is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.kidung-settings-switch, .kidung-inline-toggle) > input,
+  :is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+    transition: none;
+  }
+}
+.kidung-tool-page .kidung-queue-surface {
+  gap: 16px;
+}
+.kidung-queue-options {
+  gap: 10px;
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.kidung-queue-options > button {
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.kidung-queue-options > button:disabled {
+  opacity: 0.45;
+}
+.kidung-tool-page .kidung-empty-state {
+  padding: 28px 20px;
+  text-align: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: 16px;
+}
+@media (max-width: 599px) {
+  .kidung-tool-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .kidung-tool-page > .kidung-local-nav {
+    grid-column: 1;
+    justify-self: stretch;
+  }
+  .kidung-tool-page > .kidung-tool-heading {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .kidung-settings-section {
+    padding: 16px 0;
+  }
+  .kidung-queue-options > .control-select {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
 .kidung-catalog-topbar {
   align-items: end;
@@ -304,13 +500,20 @@
   border-inline: 0;
   background: transparent;
 }
+.literature-page .literature-intro {
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  justify-content: space-between;
+}
 .literature-row {
   padding-block: 16px;
-  padding-inline: 16px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  margin-bottom: 8px;
+  padding-inline: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  margin-bottom: 0;
 }
 .more-card {
   border-radius: var(--radius-card);
@@ -409,29 +612,31 @@
   touch-action: pan-y;
   border-block: 0;
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 .faith-page .faith-row {
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 16px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
+  padding: 18px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
   content-visibility: visible;
 }
 .faith-row > .faith-number {
-  width: auto;
-  height: auto;
+  width: 36px;
+  height: 36px;
   margin: 0;
   align-self: start;
-  justify-items: start;
+  place-items: center;
+  border-radius: 10px;
   font-family: inherit;
-  font-size: 24px;
-  font-weight: 550;
-  color: var(--blue);
-  line-height: 1.6;
-  background: transparent;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1;
+  background: var(--blue-soft);
 }
 .faith-page .faith-statement {
   margin: 0;
@@ -487,12 +692,12 @@
   }
 }
 .home-grid .verse-panel {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-feature);
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
 }
 .home-grid .sauh-card-content {
-  padding: clamp(20px, 3vw, 32px);
+  padding: 16px 0;
 }
 .home-grid .sauh-title {
   font-family: var(--font-reading);
@@ -504,13 +709,20 @@
   line-height: 1.75;
 }
 .literature-shelf-item {
-  border-radius: 14px;
-  padding: 12px;
-  background: var(--surface);
-  box-shadow: 0 3px 12px color-mix(in srgb, var(--ink) 4%, transparent);
+  grid-template-rows: auto 1fr;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .literature-shelf-item:hover {
   border-color: var(--blue);
+}
+.literature-featured .section-title-row h2 {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
 }
 .img-fallback-placeholder:has(.img-fallback-art) {
   position: relative;
@@ -580,9 +792,6 @@
   }
 }
 @media (max-width: 599px) {
-  .app-frame:not(.is-reader-route) .main-content {
-    padding: 20px 16px var(--page-end);
-  }
   .home-portal {
     gap: 6px;
     padding-inline: 6px;
@@ -601,13 +810,16 @@
   .faith-page .faith-row {
     grid-template-columns: 28px minmax(0, 1fr);
     gap: 12px;
-    padding: 16px;
+    padding: 16px 0;
   }
   .faith-page .faith-statement {
     --faith-font-size: 0.875rem;
   }
   .faith-row > .faith-number {
-    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    border-radius: 8px;
   }
   .faith-page .faith-row-heading {
     flex-wrap: wrap;
@@ -616,7 +828,7 @@
     padding-top: 16px;
   }
   .kidung-tool-page > .kidung-local-nav {
-    padding-top: 16px;
+    padding-top: 0;
   }
   .kidung-tool-page .kidung-tool-heading {
     flex-direction: row;
@@ -627,26 +839,9 @@
     width: auto;
     flex: none;
   }
-  .literature-page .literature-intro {
-    display: flex;
-    flex-direction: row;
-    align-items: end;
-    justify-content: space-between;
-  }
   .literature-intro > .pack-badge {
     flex: none;
     margin-bottom: 4px;
-  }
-  .literature-page .literature-toolbar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .literature-toolbar > .search-field {
-    grid-column: 1 / -1;
-  }
-  .literature-toolbar .control-select {
-    min-width: 0;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -699,14 +894,16 @@
 
 /* Collection discovery and settings have distinct visual hierarchy. */
 .more-library-hub {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 .more-library-hub h2,
 .more-settings-heading {
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 650;
-  letter-spacing: -0.02em;
-  margin: 0 0 16px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 12px;
 }
 .more-library-grid {
   display: grid;
@@ -716,12 +913,12 @@
 .more-library-link {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-height: 132px;
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
+  gap: 14px;
+  min-height: 104px;
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 .more-library-icon {
   display: grid;
@@ -731,7 +928,7 @@
   flex: none;
   border-radius: 14px;
   background: var(--blue-soft);
-  color: var(--ink);
+  color: var(--blue);
 }
 .more-library-link > span:nth-child(2) {
   min-width: 0;
@@ -758,27 +955,68 @@
   background: var(--blue-soft);
 }
 .more-settings-heading {
-  margin-top: 32px;
+  margin-top: 24px;
 }
 .more-page .more-settings-list {
   width: 100%;
   min-width: 0;
-  gap: 12px;
+  gap: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
 .more-page .more-setting-section {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+.more-page .more-setting-section:last-child {
+  border-bottom: 0;
+}
+.more-page .more-setting-section:first-child > summary {
+  border-radius: 0;
+}
+.more-page .more-setting-section:last-child > summary {
+  border-radius: 0;
 }
 .more-page .more-account-title {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
+}
+.more-page .egys-member-badge {
+  overflow-wrap: anywhere;
 }
 .more-page .more-setting-row {
   padding: 16px 20px;
-  min-height: 64px;
-  border-radius: var(--radius-card);
+  min-height: 60px;
+  border-radius: 0;
+}
+.more-page .more-setting-row > strong {
+  flex: 1;
+}
+.more-setting-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--blue);
+}
+.more-setting-icon > svg {
+  margin: 0;
+}
+.more-page .more-setting-row:hover,
+.more-page .more-setting-section[open] > summary {
+  background: color-mix(in srgb, var(--blue-soft) 45%, var(--surface));
+}
+.more-page .more-setting-row:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -3px;
 }
 .more-page .more-setting-section > :not(summary) {
   margin-inline: 20px;
@@ -786,18 +1024,36 @@
 }
 @media (max-width: 1199px) {
   .more-library-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
   .more-library-link {
-    min-height: 104px;
-    padding: 20px;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: center;
+    min-height: 112px;
+    padding: 14px 10px;
+    gap: 10px;
+  }
+  .more-library-link strong {
+    font-size: 14px;
+  }
+  .more-library-link > span:nth-child(2) {
+    flex: none;
+  }
+  .more-library-link small,
+  .more-library-link > svg {
+    display: none;
+  }
+  .more-library-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 }
 @media (max-width: 599px) {
   .more-library-link {
-    padding: 16px;
-    gap: 12px;
+    padding: 12px 8px;
+    gap: 8px;
   }
   .more-page .more-setting-row {
     padding: 16px;
@@ -827,7 +1083,7 @@
     flex-direction: row;
     align-items: center;
     gap: 24px;
-    padding: 20px 24px;
+    padding: 12px 0;
   }
   .home-grid:has(.continue-panel .empty-inline)
     .continue-panel
@@ -841,10 +1097,106 @@
 
 /* Search feedback is shared by the two reading catalogs. */
 .catalog-search {
-  margin-block: 24px;
+  margin-block: 18px 12px;
 }
 .catalog-search .search-field {
-  max-width: 640px;
+  max-width: none;
+}
+/* One input surface across the reading catalogs; labels stay accessible. */
+:is(.literature-toolbar, .catalog-search) .search-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 48px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  letter-spacing: normal;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+:is(.literature-toolbar, .catalog-search) .search-field > svg {
+  flex: none;
+  margin: 0;
+  color: var(--blue);
+}
+:is(.literature-toolbar, .catalog-search) .search-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+:is(.literature-toolbar, .catalog-search) .search-field:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 14%, transparent);
+}
+.literature-page .literature-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(140px, 180px));
+  align-items: end;
+  gap: 10px;
+  margin-block: 18px 4px;
+}
+.literature-toolbar > .search-field {
+  grid-column: auto;
+}
+.literature-toolbar .control-select {
+  min-width: 0;
+}
+.literature-toolbar .control-select-trigger {
+  min-height: 48px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.literature-page > .catalog-filter-status {
+  margin-bottom: 12px;
+}
+.suara-page > .detail-back {
+  margin-bottom: 8px;
+}
+@media (max-width: 1199px) {
+  .literature-page .literature-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .literature-toolbar > .search-field {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1200px) {
+  .home-welcome {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 24px;
+  }
+  .home-portals {
+    min-width: 340px;
+  }
+  .home-portal {
+    padding-inline: 16px;
+  }
+  .home-grid .sauh-offline-state {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .home-grid .sauh-offline-state > small {
+    grid-column: 1;
+  }
+  .home-grid .sauh-offline-state > button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    margin: 0;
+  }
 }
 .catalog-filter-status {
   display: flex;
@@ -1090,7 +1442,7 @@
     background: transparent;
   }
   .navigation-shell .nav-copy strong {
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.2;
   }
   .navigation-shell .nav-active-indicator {
@@ -1162,8 +1514,11 @@
 }
 @media (max-width: 959px) {
   .app-frame.is-reader-route .bible-reader {
-    width: calc(100% + 24px);
-    margin-inline: -12px;
+    width: 100%;
+    margin-inline: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
   .bible-reader .verse-list {
     padding-inline: 12px;
@@ -1697,11 +2052,12 @@
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
   grid-area: advanced;
-  position: relative;
+  position: static;
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-summary {
-  min-height: 30px;
-  width: 36px;
+  min-height: var(--midi-control);
+  height: var(--midi-control);
+  width: var(--midi-control);
   padding: 0;
   border: 0;
   background: transparent;
@@ -1725,8 +2081,8 @@
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
   position: absolute;
-  right: 0;
-  bottom: calc(100% + 14px);
+  right: 12px;
+  bottom: calc(100% + 10px);
   width: min(420px, calc(100vw - 40px));
   padding: 12px;
   background: var(--surface);
@@ -1897,7 +2253,7 @@
   }
 }
 .media-surface.is-kidung-media:not(.is-minimized) {
-  --midi-control: clamp(36px, calc(28px + 1.5vw), 56px);
+  --midi-control: clamp(44px, calc(28px + 1.5vw), 56px);
   grid-template-columns: minmax(0, 1fr) auto var(--midi-control) !important;
   grid-template-areas: "title transport minimize" "seek seek advanced" !important;
 }
@@ -2316,6 +2672,18 @@ body:has(.hymn-detail-page.is-text-viewer)
 .online-article-body :is(p, li, blockquote) {
   color: inherit;
 }
+.app-frame .online-content-page .online-article-card {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.literature-detail-page .literature-reading-panel {
+  max-width: none;
+}
 
 /* One branded loader, with motion confined to the progress track. */
 .loading-progress {
@@ -2523,16 +2891,23 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 18px;
 }
 .home-grid .verse-panel:has(.sauh-offline-state) .sauh-card-content {
-  padding-block: 24px;
+  padding-block: 12px;
+}
+.home-grid .sauh-offline-state {
+  margin: 0;
+  gap: 8px;
+}
+.home-grid .sauh-offline-state strong {
+  font-size: 17px;
+}
+.home-grid .sauh-offline-state .quiet-button {
+  margin-top: 4px;
 }
 .more-page h2,
 .more-page .more-account-title {
   font-family: inherit;
   font-weight: 650;
   letter-spacing: -0.02em;
-}
-.more-library-link {
-  min-height: 112px;
 }
 .more-page .more-library-link small {
   margin-top: 4px;
@@ -2547,9 +2922,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding-block: 0;
 }
 .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
-  border-color: var(--line);
-  background: var(--surface);
-  border-radius: 16px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
 }
 .hymn-detail-page.is-text-viewer .hymn-text-title h1 {
   font-family: inherit;
@@ -2604,7 +2979,56 @@ body:has(.hymn-detail-page.is-text-viewer)
   border: 0;
 }
 .pdf-reader .pdf-page-frame {
-  box-shadow: 0 6px 24px color-mix(in srgb, var(--ink) 9%, transparent);
+  box-shadow: none;
+}
+/* Fit uses the actual content box. Center short pages in both axes, while
+   oversized pages grow from a reachable scroll origin. */
+.pdf-reader .pdf-stage:is([data-pdf-layout="single"], [data-pdf-layout="two"]) {
+  display: block;
+  scrollbar-gutter: auto;
+  overflow-anchor: none;
+}
+.pdf-reader :is(.pdf-layout-single, .pdf-layout-two) {
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  align-items: center;
+}
+.pdf-reader .pdf-page-frame {
+  width: max-content;
+  max-width: none;
+  flex: none;
+}
+.pdf-reader .pdf-page-frame > canvas {
+  display: block;
+  max-width: none;
+  max-height: none;
+}
+.pdf-reader :is(.pdf-horizontal-page, .pdf-vertical-page) {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pdf-reader .pdf-vertical-page.is-fit {
+  width: 100%;
+}
+.pdf-detail-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.pdf-detail-layer > canvas {
+  position: absolute;
+  display: block;
+  box-shadow: none;
+}
+.pdf-reader .pdf-chord-layer {
+  z-index: 2;
 }
 @media (prefers-reduced-motion: reduce) {
   .topbar .topbar-actions,
@@ -2614,5 +3038,366 @@ body:has(.hymn-detail-page.is-text-viewer)
   .more-setting-row,
   .pdf-reader .pdf-toolbar button {
     transition: none;
+  }
+}
+
+/* Viewer controls retain their footprint while data or audio prepares. */
+.hymn-action-icon.is-loading {
+  position: relative;
+}
+.hymn-action-icon.is-loading > svg {
+  opacity: 0.25;
+}
+.hymn-action-icon.is-loading::after {
+  position: absolute;
+  inset: 1px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  content: "";
+  animation: reader-control-loading 800ms linear infinite;
+}
+@keyframes reader-control-loading {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+  margin-bottom: var(--reader-media-space, 0px);
+  transition:
+    margin-bottom 220ms var(--ease-out),
+    font-size 160ms var(--ease-out),
+    line-height 160ms var(--ease-out);
+}
+.media-load-track {
+  position: absolute;
+  inset: auto 10px 0;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--blue-soft);
+}
+.media-load-track > span {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  transform-origin: left;
+  transition: transform 180ms var(--ease-out);
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+  --midi-control: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 8px;
+  max-height: min(420px, calc(100dvh - 170px - var(--reader-media-space, 0px)));
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.media-utility-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.media-surface.is-kidung-media .media-utility-controls .media-volume-control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.media-utility-controls .media-volume-control > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  display: grid;
+  grid-template-columns: 44px minmax(54px, auto) 44px minmax(116px, 1fr) 44px;
+  gap: 4px;
+  align-items: center;
+}
+.media-key-control .control-select-label,
+.lyrics-key-select .control-select-label {
+  display: none;
+}
+.control-select-option:is(.is-active, .is-selected, :hover) {
+  color: var(--ink);
+}
+.media-key-control .control-select-trigger,
+.lyrics-key-select .control-select-trigger {
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: 8px;
+  gap: 3px;
+  color: var(--blue);
+  font-size: 14px;
+}
+.lyrics-key-select .control-select-trigger {
+  min-width: 64px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+  grid-column: auto;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  color: var(--ink);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-transpose strong {
+  flex: 1;
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-transpose button {
+  color: var(--ink);
+  font-size: 16px;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  :is(.media-tempo-control, .media-instrument-control) {
+  grid-column: auto;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  :is(.media-tempo-toggle, .media-instrument-control select) {
+  width: 100%;
+  color: var(--ink);
+  font-size: 12px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 12px;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-panel
+  .media-tempo-toggle {
+  justify-content: center;
+  gap: 6px;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-panel
+  .media-queue-badge {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .control-select-menu {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  max-height: 160px;
+  margin-block: 4px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-popover {
+  position: static;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 8px 10px;
+  box-shadow: none;
+  animation: midi-settings-enter 180ms ease-out;
+}
+.media-surface.is-kidung-media .media-tempo-popover input {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+}
+@media (min-width: 1000px), (min-width: 600px) and (max-height: 500px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns:
+      minmax(80px, 1fr) auto minmax(100px, 1.5fr) var(--midi-control)
+      var(--midi-control) !important;
+    grid-template-areas: "title transport seek advanced minimize" !important;
+    column-gap: 8px;
+  }
+}
+@media (max-width: 600px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    --midi-control: 44px;
+    grid-template-columns: auto minmax(0, 1fr) 44px !important;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-summary {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+}
+@media (max-width: 360px) {
+  .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+    grid-column: 1 / 3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hymn-action-icon.is-loading::after {
+    animation: none;
+  }
+  .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous),
+  .media-load-track > span {
+    transition: none;
+  }
+}
+
+/* A quiet score stage: title and mode above, one shared navigation dock below. */
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome {
+  position: relative;
+  top: auto;
+  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  gap: 6px;
+  padding: max(4px, env(safe-area-inset-top)) 8px 4px;
+  border-bottom: 0;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome.is-no-music {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title {
+  justify-items: start;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: start;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title small {
+  font-size: 10px;
+  line-height: 1.25;
+}
+.hymn-detail-page.is-pdf-viewer .viewer-chrome-button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  padding: 0;
+  border-radius: 12px;
+  color: var(--blue);
+  background: transparent;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle {
+  background: var(--blue-soft);
+  color: var(--ink);
+  font-family: inherit;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle > span {
+  font-size: 17px;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .pdf-reader-hymn
+  .pdf-stage {
+  padding: 8px;
+}
+.pdf-reader .pdf-toolbar,
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .pdf-reader-hymn
+  .pdf-toolbar {
+  display: flex;
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  padding: 4px 12px max(4px, env(safe-area-inset-bottom));
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+/* Readers share one stage; the document alone retains its paper shape. */
+.gys-pdf-overlay,
+.faith-pdf-overlay,
+.literature-pdf-overlay,
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome,
+.faith-pdf-overlay .faith-pdf-head,
+.literature-pdf-overlay .literature-reader-panel > .section-title-row {
+  background: var(--surface-soft);
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .main-content {
+  padding-inline: var(--page-gutter);
+}
+.app-frame.is-reader-route .hymn-detail-page.is-text-viewer {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+.gys-pdf-overlay .pdf-reader .pdf-page-navigation {
+  display: flex;
+  gap: 4px;
+}
+.pdf-reader .pdf-item-navigation {
+  display: flex;
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+.pdf-reader .pdf-loading.is-page-loading {
+  inset: 0 0 auto;
+  height: 2px;
+  min-height: 0;
+  padding: 0 !important;
+  background: var(--blue-soft);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pdf-reader .pdf-loading.is-page-loading > * {
+  display: none;
+}
+.pdf-reader .pdf-loading.is-page-loading::after {
+  content: "";
+  width: 40%;
+  height: 2px;
+  background: var(--blue);
+  animation: reader-page-loading 900ms ease-in-out infinite;
+}
+@keyframes reader-page-loading {
+  from {
+    transform: translateX(-150%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+.literature-pdf-overlay .literature-reader-panel > .section-title-row {
+  gap: 8px;
+  min-height: 52px;
+  padding: max(4px, env(safe-area-inset-top)) 8px 4px 16px;
+  border: 0;
+}
+.literature-pdf-overlay .literature-reader-panel > .section-title-row h2 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+.literature-pdf-head-actions .text-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  color: var(--blue);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdf-reader .pdf-loading.is-page-loading::after {
+    animation: none;
+    width: 100%;
   }
 }

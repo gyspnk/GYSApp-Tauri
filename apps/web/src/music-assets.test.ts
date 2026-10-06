@@ -131,6 +131,59 @@ describe("music asset path resolution", () => {
 });
 
 describe("persistent music asset cache", () => {
+  it("reads warm MIDI without rescanning the PDF cache and retries a failed bundled manifest", async () => {
+    const cached = new Map<string, Response>();
+    const cache = {
+      match: vi.fn(async (url: string) => cached.get(url)?.clone()),
+      put: async (url: string, value: Response) => {
+        cached.set(url, value.clone());
+      },
+      delete: async (url: string) => cached.delete(url),
+      keys: vi.fn(async () =>
+        [...cached.keys()].map((url) => new Request(url)),
+      ),
+    };
+    const cacheStorage = { open: async () => cache };
+    vi.stubGlobal("caches", cacheStorage);
+    vi.stubGlobal("window", {
+      caches: cacheStorage,
+      location: { origin: "https://cache.test" },
+    });
+    const ref = {
+      ...lock.items.find((item) => item.kind === "midi")!,
+      size: 1,
+      sha256: "ab".repeat(32),
+    };
+    vi.stubGlobal("crypto", {
+      subtle: { digest: async () => new Uint8Array(32).fill(0xab).buffer },
+    });
+    let manifests = 0;
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("asset-manifest.json")) {
+        if (++manifests === 1)
+          return new Response("temporarily unavailable", { status: 503 });
+        return new Response(JSON.stringify({ ...assetManifest, items: [] }));
+      }
+      if (url.endsWith("music-lock.json"))
+        return new Response(JSON.stringify(lock));
+      return new Response(new Uint8Array([7]));
+    });
+    vi.stubGlobal("fetch", fetch);
+    vi.resetModules();
+    const { loadMusicAsset } = await import("./music-assets.js");
+    await loadMusicAsset(ref);
+    await loadMusicAsset(ref);
+    await loadMusicAsset(ref);
+    expect(manifests).toBe(2);
+    expect(cache.keys).not.toHaveBeenCalled();
+    expect(
+      fetch.mock.calls.filter(([input]) =>
+        String(input).startsWith("https://raw.githubusercontent.com/"),
+      ),
+    ).toHaveLength(1);
+  });
+
   it("bounds cached PDFs to 16 MiB without evicting MIDI assets", async () => {
     const cached = new Map<string, Response>();
     const keyOf = (request: Request | string) =>

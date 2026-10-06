@@ -1058,6 +1058,9 @@ export function MorePage({
           open
         >
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="person" size={20} />
+            </span>
             <h2 className="more-account-title">
               {accountProfile
                 ? (accountProfile.displayName ??
@@ -1217,6 +1220,9 @@ export function MorePage({
 
         <details className="more-setting-section" data-setting="appearance">
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="sun" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryAppearance")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1360,6 +1366,9 @@ export function MorePage({
 
         <details className="more-setting-section" data-setting="audio">
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="volume" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryAudio")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1374,6 +1383,9 @@ export function MorePage({
 
         <details className="more-setting-section" data-setting="hymns">
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="music" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryHymns")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1384,7 +1396,9 @@ export function MorePage({
                 type="button"
                 onClick={() => setPlaylistOpen((open) => !open)}
               >
-                <span className="more-icon">♫</span>
+                <span className="more-icon">
+                  <Icon name="queueMusic" size={22} />
+                </span>
                 <strong>{translate(locale, "more.midiQueue")}</strong>
                 <small>
                   {playlist.items.length
@@ -1402,7 +1416,9 @@ export function MorePage({
                 type="button"
                 onClick={() => setReminderOpen((open) => !open)}
               >
-                <span className="more-icon">◷</span>
+                <span className="more-icon">
+                  <Icon name="sun" size={22} />
+                </span>
                 <strong>{translate(locale, "more.reminder")}</strong>
                 <small>{translate(locale, "more.reminderDesc")}</small>
               </button>
@@ -1416,6 +1432,9 @@ export function MorePage({
           open={initialSection === "data"}
         >
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="download" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryOffline")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1579,6 +1598,9 @@ export function MorePage({
 
         <details className="more-setting-section" data-setting="backup">
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="copy" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryBackup")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1588,7 +1610,9 @@ export function MorePage({
               type="button"
               onClick={() => setBackupOpen((open) => !open)}
             >
-              <span className="more-icon">↥</span>
+              <span className="more-icon">
+                <Icon name="download" size={22} />
+              </span>
               <strong>{translate(locale, "more.backupImport")}</strong>
               <small>{translate(locale, "more.backupImportDesc")}</small>
             </button>
@@ -1601,6 +1625,9 @@ export function MorePage({
           open={initialSection === "help"}
         >
           <summary className="more-setting-row">
+            <span className="more-setting-icon">
+              <Icon name="checkCircle" size={20} />
+            </span>
             <strong>{translate(locale, "more.categoryAbout")}</strong>
             <Icon name="chevronDown" size={18} />
           </summary>

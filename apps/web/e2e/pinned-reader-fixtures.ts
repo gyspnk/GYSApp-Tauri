@@ -125,3 +125,28 @@ export async function preparePinnedReaderAssets(page: Page) {
     route.fulfill({ body: pdfBytes, contentType: "application/pdf" }),
   );
 }
+
+/** MIDI-only tests should not download an entire hymnal or depend on CDN CORS. */
+export async function preparePinnedMidiAsset(page: Page) {
+  const lock = JSON.parse(
+    await readFile(
+      new URL("../public/offline/music-lock.json", import.meta.url),
+      "utf8",
+    ),
+  ) as {
+    sourceCommit: string;
+    items: Array<{ kind: string; path: string; sha256: string; size: number }>;
+  };
+  const midi = lock.items.find(
+    (item) => item.kind === "midi" && /\/001_/.test(item.path),
+  );
+  if (!midi)
+    throw new Error(
+      "Canonical hymn 001 MIDI fixture is missing from the music lock",
+    );
+  const url = `https://raw.githubusercontent.com/gyspnk/gyschordweb/${lock.sourceCommit}/docs/${midi.path.split("/").map(encodeURIComponent).join("/")}`;
+  const bytes = await pinnedBytes(url, midi.sha256, midi.size);
+  await page.route(url, (route) =>
+    route.fulfill({ body: bytes, contentType: "audio/midi" }),
+  );
+}

@@ -65,7 +65,7 @@ describe("PDF raster budgets and spread fit", () => {
   });
   it("fits both pages including the gutter inside the viewport", () => {
     const scale = pdfFitScale(1024, 600, 595, 842, 2);
-    expect(595 * scale * 2 + 18 + 32).toBeLessThanOrEqual(1024);
-    expect(842 * scale + 32).toBeLessThanOrEqual(600);
+    expect(595 * scale * 2 + 18).toBeLessThanOrEqual(1024);
+    expect(842 * scale).toBeLessThanOrEqual(600);
   });
 });

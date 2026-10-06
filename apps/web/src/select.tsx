@@ -51,6 +51,16 @@ export function Select<T extends string | number>({
   const activeOptionId = open ? `${id}-option-${activeIndex}` : undefined;
 
   useEffect(() => setActiveIndex(index), [index]);
+  useLayoutEffect(() => {
+    const menu = menuRef.current;
+    const option = menu?.children[activeIndex] as HTMLElement | undefined;
+    if (!open || !menu || !option) return;
+    const bounds = menu.getBoundingClientRect();
+    const active = option.getBoundingClientRect();
+    if (active.top < bounds.top) menu.scrollTop += active.top - bounds.top - 5;
+    else if (active.bottom > bounds.bottom)
+      menu.scrollTop += active.bottom - bounds.bottom + 5;
+  }, [open, activeIndex]);
   useEffect(() => {
     if (!open) return;
     const close = (event: PointerEvent) => {
@@ -78,11 +88,27 @@ export function Select<T extends string | number>({
     };
 
     updateDirection();
-    window.addEventListener("resize", updateDirection);
-    window.addEventListener("scroll", updateDirection, true);
+    let frame: number | undefined;
+    const schedule = (event: Event) => {
+      if (
+        event.target instanceof Node &&
+        menuRef.current?.contains(event.target)
+      )
+        return;
+      frame ??= requestAnimationFrame(() => {
+        frame = undefined;
+        updateDirection();
+      });
+    };
+    window.addEventListener("resize", schedule);
+    window.addEventListener("scroll", schedule, {
+      capture: true,
+      passive: true,
+    });
     return () => {
-      window.removeEventListener("resize", updateDirection);
-      window.removeEventListener("scroll", updateDirection, true);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+      if (frame !== undefined) cancelAnimationFrame(frame);
     };
   }, [open, options.length]);
 
@@ -111,13 +137,15 @@ export function Select<T extends string | number>({
   const choose = (next: SelectOption<T>) => {
     onChange(next.value);
     setOpen(false);
-    triggerRef.current?.focus();
+    triggerRef.current?.focus({ preventScroll: true });
   };
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (disabled) return;
     if (event.key === "Escape") {
-      event.preventDefault();
-      setOpen(false);
+      if (open) {
+        event.preventDefault();
+        setOpen(false);
+      }
       return;
     }
     if (event.key === "Enter" || event.key === " ") {
@@ -151,7 +179,14 @@ export function Select<T extends string | number>({
   };
 
   return (
-    <div className={`control-select ${className}`} ref={rootRef}>
+    <div
+      className={`control-select ${className}`}
+      ref={rootRef}
+      onBlur={(event) => {
+        if (!rootRef.current?.contains(event.relatedTarget as Node | null))
+          setOpen(false);
+      }}
+    >
       {label && (
         <span className="control-select-label" id={`${id}-label`}>
           {label}
@@ -161,17 +196,13 @@ export function Select<T extends string | number>({
         ref={triggerRef}
         className="control-select-trigger"
         type="button"
+        role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={id}
         aria-activedescendant={activeOptionId}
         aria-label={label}
         disabled={disabled || !selected}
-        onBlur={(event) => {
-          if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
-            setOpen(false);
-          }
-        }}
         onClick={toggleOpen}
         onKeyDown={onKeyDown}
       >
@@ -195,6 +226,9 @@ export function Select<T extends string | number>({
           className={`control-select-menu${opensUp ? " is-open-up" : ""}${animated ? " is-animated" : ""}`}
           id={id}
           role="listbox"
+          tabIndex={0}
+          aria-activedescendant={activeOptionId}
+          onKeyDown={onKeyDown}
           aria-label={label}
           aria-labelledby={label ? `${id}-label` : undefined}
         >
@@ -207,7 +241,7 @@ export function Select<T extends string | number>({
               role="option"
               aria-selected={option.value === value}
               tabIndex={-1}
-              onMouseEnter={() => setActiveIndex(optionIndex)}
+              onPointerMove={() => setActiveIndex(optionIndex)}
               onClick={() => choose(option)}
             >
               <span className="control-select-option-content">

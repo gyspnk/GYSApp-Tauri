@@ -4,7 +4,8 @@ import {
   loadCoreHymnMetadata,
   getCachedCoreHymnMetadata,
 } from "./hymn-payloads.js";
-import { lazy, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { preloadable } from "./preloadable.js";
 import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
@@ -24,24 +25,26 @@ type KidungShellContext = {
   setTheme?: (theme: ShellTheme) => void;
 };
 
-const HymnCatalog = lazy(() =>
+const HymnCatalog = preloadable(() =>
   import("./kidung-catalog.js").then((module) => ({
     default: module.HymnCatalog,
   })),
 );
-const HymnDetail = lazy(() =>
+const HymnDetail = preloadable(() =>
   import("./kidung.js").then((module) => ({ default: module.HymnDetail })),
 );
-const HymnPlaylistPage = lazy(() =>
+const HymnPlaylistPage = preloadable(() =>
   import("./kidung-playlist-page.js").then((module) => ({
     default: module.HymnPlaylistPage,
   })),
 );
-const HymnSettingsPage = lazy(() =>
+const HymnSettingsPage = preloadable(() =>
   import("./kidung-settings-page.js").then((module) => ({
     default: module.HymnSettingsPage,
   })),
 );
+
+export const preloadKidungCatalog = HymnCatalog.preload;
 
 // Retain the last successful catalog across reader/list navigation. Installed
 // collections still refresh in the background and on asset-change events.

@@ -135,3 +135,34 @@ test("desktop collapse preference does not replace mobile bottom navigation", as
   expect(box!.width).toBeGreaterThan(360);
   expect(box!.y + box!.height).toBeLessThanOrEqual(844);
 });
+
+test("desktop navigation remains reachable while long content scrolls", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 600 });
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(page.locator(".faith-row")).toHaveCount(10);
+  const nav = page.locator(".navigation-shell");
+  const initial = (await nav.boundingBox())!;
+  await page.evaluate(() => scrollTo({ top: 1200, behavior: "instant" }));
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(300);
+  expect(
+    Math.abs((await nav.boundingBox())!.y - initial.y),
+  ).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "Ciutkan navigasi" }).click();
+  await expect
+    .poll(async () => (await nav.boundingBox())!.width)
+    .toBeLessThan(100);
+  expect(
+    Math.abs((await nav.boundingBox())!.y - initial.y),
+  ).toBeLessThanOrEqual(1);
+  for (const link of await nav.locator(".nav-item").all()) {
+    const box = (await link.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(initial.y);
+    expect(box.y + box.height).toBeLessThanOrEqual(600);
+  }
+  await page.getByRole("button", { name: "Perluas navigasi" }).click();
+  await expect
+    .poll(async () => (await nav.boundingBox())!.width)
+    .toBeGreaterThan(200);
+});

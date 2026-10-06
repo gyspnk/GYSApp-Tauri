@@ -1,6 +1,11 @@
+import {
+  PdfReader as LiteraturePdfReader,
+  preloadPdfReader,
+} from "./pdf-reader-loader.js";
+import { transitionReader } from "./reader-transition.js";
+import { preloadRoute } from "./route-preload.js";
 import { LoadingProgress } from "./loading-progress.js";
 import {
-  lazy,
   Suspense,
   useCallback,
   useDeferredValue,
@@ -45,12 +50,6 @@ import {
 } from "./literature-progress.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
-
-const LiteraturePdfReader = lazy(() =>
-  import("./pdf.js").then(({ PdfReader: Component }) => ({
-    default: Component,
-  })),
-);
 
 const ISSUE_PDF_CACHE = new Map<string, string>();
 
@@ -384,7 +383,10 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         aria-label={translate(locale, "literature.filter")}
       >
         <label className="search-field">
-          <span>{translate(locale, "literature.search")}</span>
+          <span className="sr-only">
+            {translate(locale, "literature.search")}
+          </span>
+          <Icon name="search" size={18} />
           <input
             type="search"
             ref={searchRef}
@@ -456,14 +458,9 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             aria-labelledby="literature-featured-title"
           >
             <div className="section-title-row">
-              <div>
-                <p className="date-line">
-                  {translate(locale, "literature.latest")}
-                </p>
-                <h2 id="literature-featured-title">
-                  {translate(locale, "literature.continueReading")}
-                </h2>
-              </div>
+              <h2 id="literature-featured-title">
+                {translate(locale, "literature.latest")}
+              </h2>
               <span>
                 {translate(locale, "literature.featuredCount", {
                   count: featured.length,
@@ -475,6 +472,16 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 <Link
                   className="literature-shelf-item"
                   to={literatureHref(item)}
+                  onPointerEnter={() =>
+                    void preloadRoute(literatureHref(item)).catch(
+                      () => undefined,
+                    )
+                  }
+                  onFocus={() =>
+                    void preloadRoute(literatureHref(item)).catch(
+                      () => undefined,
+                    )
+                  }
                   key={item.id}
                 >
                   <Cover
@@ -533,6 +540,16 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     <Link
                       className="literature-recent-link"
                       to={literatureHref(item)}
+                      onPointerEnter={() =>
+                        void preloadRoute(literatureHref(item)).catch(
+                          () => undefined,
+                        )
+                      }
+                      onFocus={() =>
+                        void preloadRoute(literatureHref(item)).catch(
+                          () => undefined,
+                        )
+                      }
                     >
                       <Cover
                         locale={locale}
@@ -634,6 +651,16 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                   <Link
                     className="literature-row"
                     to={literatureHref(item)}
+                    onPointerEnter={() =>
+                      void preloadRoute(literatureHref(item)).catch(
+                        () => undefined,
+                      )
+                    }
+                    onFocus={() =>
+                      void preloadRoute(literatureHref(item)).catch(
+                        () => undefined,
+                      )
+                    }
                     key={item.id}
                   >
                     <Cover
@@ -715,10 +742,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const readerOpenerRef = useRef<HTMLElement | null>(null);
   const closeReader = () => {
     if (directRead) {
-      navigate("/literatur");
+      transitionReader(() => navigate("/literatur"));
       return;
     }
-    setReaderOpen(false);
+    transitionReader(() => setReaderOpen(false));
   };
   const [articleOpen, setArticleOpen] = useState(false);
   const [articleStatus, setArticleStatus] = useState<
@@ -956,14 +983,17 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       if (!item || !pdfAsset) return;
       const generation = ++pdfReaderGeneration.current;
       rememberDialogOpener(readerOpenerRef, trigger);
-      const data = await readCachedLiteraturePdf(pdfAsset).catch(
-        () => undefined,
-      );
+      const [data] = await Promise.all([
+        pdfData ?? readCachedLiteraturePdf(pdfAsset).catch(() => undefined),
+        preloadPdfReader().catch(() => undefined),
+      ]);
       if (generation !== pdfReaderGeneration.current) return;
-      setPdfData(data);
-      setReaderOpen(true);
+      transitionReader(() => {
+        setPdfData(data);
+        setReaderOpen(true);
+      });
     },
-    [item, pdfAsset],
+    [item, pdfAsset, pdfData],
   );
 
   useDialogFocus({
@@ -1106,9 +1136,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 className="primary-button"
                 type="button"
                 onPointerEnter={() =>
-                  void import("./pdf.js").catch(() => undefined)
+                  void preloadPdfReader().catch(() => undefined)
                 }
-                onFocus={() => void import("./pdf.js").catch(() => undefined)}
+                onFocus={() => void preloadPdfReader().catch(() => undefined)}
                 onClick={(event) => openReader(event.currentTarget)}
                 disabled={!pdfAsset}
               >
@@ -1294,7 +1324,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             >
               <div className="literature-reader-panel">
                 <div className="section-title-row">
-                  <h2>PDF · {item.title}</h2>
+                  <h2>{item.title}</h2>
                   <div className="literature-pdf-head-actions">
                     <a
                       className="text-button literature-pdf-source-link"
@@ -1305,7 +1335,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       title={translate(locale, "literature.officialPdf")}
                     >
                       <Icon name="file" size={16} />
-                      <span>{translate(locale, "literature.officialPdf")}</span>
+                      <span className="sr-only">
+                        {translate(locale, "literature.officialPdf")}
+                      </span>
                     </a>
                     <button
                       className="text-button literature-pdf-close"
@@ -1315,7 +1347,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       title={translate(locale, "literature.closeReader")}
                     >
                       <Icon name="cross" size={16} />
-                      <span>{translate(locale, "literature.closeReader")}</span>
+                      <span className="sr-only">
+                        {translate(locale, "literature.closeReader")}
+                      </span>
                     </button>
                   </div>
                 </div>

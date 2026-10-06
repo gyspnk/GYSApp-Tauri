@@ -170,7 +170,7 @@ test("reduced motion covers search, settings disclosures, menus and loading artw
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.locator('[data-setting="appearance"] > summary').click();
-  await page.getByRole("button", { name: "Pilih Tema", exact: true }).click();
+  await page.getByRole("combobox", { name: "Pilih Tema", exact: true }).click();
   await expect(page.getByRole("listbox")).toBeVisible();
   for (const selector of [
     ".route-view",

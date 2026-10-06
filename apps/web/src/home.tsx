@@ -230,36 +230,42 @@ export function HomePage({ locale }: { locale: Locale }) {
   }).format(new Date());
   return (
     <div className="page home-page">
-      <section className="page-intro">
-        <div>
-          <p className="date-line">{today}</p>
-          <h1>{translate(locale, "home.title")}</h1>
-        </div>
-      </section>
-      <nav
-        className="home-portals"
-        aria-label={translate(locale, "home.overview")}
-      >
-        {(
-          [
-            ["/bible", "bible"],
-            ["/kidung", "kidung"],
-            ["/iman", "iman"],
-          ] as const
-        ).map(([path, key]) => (
-          <Link className="home-portal" to={path} key={path}>
-            <Icon
-              name={
-                key === "kidung" ? "music" : key === "iman" ? "faith" : "bible"
-              }
-              size={28}
-            />
-            <span className="portal-copy">
-              <strong>{translate(locale, `nav.${key}`)}</strong>
-            </span>
-          </Link>
-        ))}
-      </nav>
+      <header className="home-welcome">
+        <section className="page-intro">
+          <div>
+            <p className="date-line">{today}</p>
+            <h1>{translate(locale, "home.title")}</h1>
+          </div>
+        </section>
+        <nav
+          className="home-portals"
+          aria-label={translate(locale, "home.overview")}
+        >
+          {(
+            [
+              ["/bible", "bible"],
+              ["/kidung", "kidung"],
+              ["/iman", "iman"],
+            ] as const
+          ).map(([path, key]) => (
+            <Link className="home-portal" to={path} key={path}>
+              <Icon
+                name={
+                  key === "kidung"
+                    ? "music"
+                    : key === "iman"
+                      ? "faith"
+                      : "bible"
+                }
+                size={28}
+              />
+              <span className="portal-copy">
+                <strong>{translate(locale, `nav.${key}`)}</strong>
+              </span>
+            </Link>
+          ))}
+        </nav>
+      </header>
       <section
         className="home-grid"
         aria-label={translate(locale, "home.overview")}

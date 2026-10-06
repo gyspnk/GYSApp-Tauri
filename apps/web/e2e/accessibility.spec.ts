@@ -190,7 +190,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     );
 
     await page.getByRole("button", { name: "Menu Alkitab" }).click();
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
 
     await expect(
@@ -206,7 +206,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     ).toBeVisible();
     await expect(page.getByText("Menu Bacaan", { exact: true })).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "阅读菜单" })).toBeVisible();
     await expect(page.getByText("Menu Bacaan", { exact: true })).toHaveCount(0);
@@ -237,13 +237,15 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
 
     const settings = page.locator(".kidung-settings-layout");
     await expect(
-      settings.getByRole("button", { name: "Bahasa", exact: true }),
+      settings.getByRole("combobox", { name: "Bahasa", exact: true }),
     ).toBeVisible();
     await expect(
-      settings.getByRole("button", { name: "Tema", exact: true }),
+      settings.getByRole("combobox", { name: "Tema", exact: true }),
     ).toBeVisible();
 
-    await settings.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await settings
+      .getByRole("combobox", { name: "Bahasa", exact: true })
+      .click();
     await settings
       .getByRole("option", { name: "English", exact: true })
       .click();
@@ -281,7 +283,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     );
 
     await settings
-      .getByRole("button", { name: "Language", exact: true })
+      .getByRole("combobox", { name: "Language", exact: true })
       .click();
     await settings
       .getByRole("option", { name: "Chinese", exact: true })
@@ -328,14 +330,14 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("button", { name: "Cari di seluruh aplikasi" }),
     ).toBeVisible();
     await expect(page.locator(".search-trigger > span")).toHaveText("Cari");
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "Search across the app" }),
     ).toBeVisible();
     await expect(page.locator(".search-trigger > span")).toHaveText("Search");
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "搜索整个应用" }),
@@ -401,7 +403,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     const idTrigger = page.getByRole("button", {
       name: "Cari di seluruh aplikasi",
     });
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     const enTrigger = page.getByRole("button", {
       name: "Search across the app",
@@ -417,7 +419,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await enDialog.getByRole("button", { name: "Close", exact: true }).click();
     await expect(enTrigger).toBeFocused();
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     const zhTrigger = page.getByRole("button", { name: "搜索整个应用" });
     await zhTrigger.click();
@@ -455,7 +457,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.goto("/GYSApp-Tauri/iman");
     await expect(page.locator(".faith-page")).toBeVisible({ timeout: 15_000 });
 
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "Open faith topic 1 PDF" }),
@@ -492,7 +494,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     ).toBeVisible();
     await page.getByRole("button", { name: "Close reading" }).click();
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "打开信仰要点 1 PDF" }),
@@ -518,7 +520,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("heading", { name: "Literatur", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
 
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Literature", exact: true }),
@@ -548,7 +550,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("link", { name: /Open reading/ }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "文献", exact: true }),
@@ -578,7 +580,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("link", { name: "← Semua literatur", exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     await expect(
       page.getByRole("link", { name: "← All literature", exact: true }),
@@ -615,7 +617,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("button", { name: "Try again", exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Language", exact: true }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("link", { name: "← 全部文献", exact: true }),
@@ -627,7 +629,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("button", { name: "重试", exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "语言", exact: true }).click();
+    await page.getByRole("combobox", { name: "语言", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
     await page.route("**/api/v1/content/pdf**", (route) =>
       route.fulfill({ status: 503, body: "literature PDF unavailable" }),

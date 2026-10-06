@@ -1,9 +1,5 @@
-import {
-  getDocument,
-  GlobalWorkerOptions,
-  type PDFPageProxy,
-} from "pdfjs-dist";
-import { workerSrc } from "./pdf-worker.js";
+import type { PDFPageProxy } from "pdfjs-dist";
+import { pdfDocuments } from "./pdf-document-cache.js";
 import {
   buildChordedLines,
   extractLyricLines,
@@ -13,9 +9,6 @@ import {
   type ChordLayoutEntry,
   type PdfTextItem,
 } from "./chord-layout.js";
-import { pdfDocumentSourceOptions } from "./pdf-utils.js";
-
-GlobalWorkerOptions.workerSrc = workerSrc;
 
 export type ChordLayoutPage = {
   page: number;
@@ -124,13 +117,12 @@ export async function buildChordPresentationFromPdf(
   pages: Record<string, ChordLayoutEntry[]>,
   resourceKey?: string,
 ): Promise<ChordPresentationLayout> {
-  const task = getDocument(
-    typeof source === "string"
-      ? pdfDocumentSourceOptions(source)
-      : pdfDocumentSourceOptions("", source),
+  const lease = pdfDocuments.acquire(
+    typeof source === "string" ? source : "",
+    typeof source === "string" ? undefined : source,
   );
-  const document = await task.promise;
   try {
+    const document = await lease.promise;
     const output: ChordLayoutPage[] = [];
     const overlays: Record<string, ChordOverlayMarker[]> = {};
     const pageNumbers = Object.keys(pages)
@@ -187,7 +179,7 @@ export async function buildChordPresentationFromPdf(
     }
     return { layout: output, overlays };
   } finally {
-    await task.destroy();
+    lease.release();
   }
 }
 

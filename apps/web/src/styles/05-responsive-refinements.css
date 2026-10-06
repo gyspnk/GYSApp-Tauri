@@ -1255,35 +1255,9 @@ body:has(.home-page)::-webkit-scrollbar {
 
 /* ── Sauh inline loading/error inside the main content card ── */
 .sauh-inline-loading {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 28px 20px;
-}
-.sauh-inline-loading div {
   display: grid;
-  gap: 4px;
-}
-.sauh-inline-loading strong {
-  font-size: 15px;
-}
-.sauh-inline-loading small {
-  color: var(--muted);
-  font-size: 12px;
-}
-.sauh-inline-spinner {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  border: 3px solid color-mix(in srgb, var(--blue) 22%, transparent);
-  border-top-color: var(--blue);
-  border-radius: 50%;
-  animation: sauh-spin 0.8s linear infinite;
-}
-@keyframes sauh-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  place-items: center;
+  padding: 28px 20px;
 }
 .sauh-inline-error {
   display: grid;

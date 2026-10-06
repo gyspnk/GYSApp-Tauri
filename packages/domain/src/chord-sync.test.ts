@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   ChordDocumentV2,
   ChordManifestV1,
@@ -39,6 +39,58 @@ function bytesFor(documentValue: ChordDocumentV2): Uint8Array {
 }
 
 describe("ChordRepository", () => {
+  it("drains every startup worker on disposal without committing late downloads", async () => {
+    const cache = Object.assign(new MemoryChordCache(), {
+      dispose: vi.fn(async () => undefined),
+    });
+    const put = vi.spyOn(cache, "putAtomic");
+    const downloads: Array<{
+      signal: AbortSignal | undefined;
+      finish: () => void;
+    }> = [];
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => ({
+          manifest: {
+            ...manifest,
+            entries: [1, 2, 3].map((number) => ({
+              ...ref,
+              songId: `hymn-00${number}`,
+            })),
+          },
+        }),
+        fetchChord: (_ref, signal) =>
+          new Promise((resolve) => {
+            downloads.push({
+              signal,
+              finish: () => resolve({ bytes: bytesFor(document), document }),
+            });
+          }),
+      },
+      cache,
+    );
+    const sync = repository.syncAll().catch((error: unknown) => error);
+    await vi.waitFor(() => expect(downloads).toHaveLength(3));
+    let finished = false;
+    const disposal = repository.dispose().then(() => {
+      finished = true;
+    });
+    expect(downloads.every((download) => download.signal?.aborted)).toBe(true);
+    downloads[0]!.finish();
+    downloads[1]!.finish();
+    await Promise.resolve();
+    expect(finished).toBe(false);
+    expect(cache.dispose).not.toHaveBeenCalled();
+    downloads[2]!.finish();
+    await disposal;
+    expect(await sync).toMatchObject({ name: "AbortError" });
+    expect(put).not.toHaveBeenCalled();
+    expect(cache.dispose).toHaveBeenCalledOnce();
+    await expect(repository.getChord(ref.songId)).rejects.toMatchObject({
+      name: "AbortError",
+    });
+  });
+
   it("startup sync skips unchanged note-aligned bytes across commits and downloads only changed files", async () => {
     const noteDoc = {
       version: 2 as const,

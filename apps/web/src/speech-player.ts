@@ -4,7 +4,7 @@ import type {
   SpeechProvider,
   SpeechVoice,
 } from "@gys/contracts";
-import { BrowserSpeechProvider } from "./platform.js";
+import { BrowserSpeechProvider } from "./browser-speech.js";
 import { midiPlayer } from "./midi-player.js";
 import { EdgeSpeechProvider, isEdgeSpeechConfigured } from "./edge-speech.js";
 import { resolveSpeechVoiceForText } from "./bible-language.js";

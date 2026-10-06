@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ContentCache, contentEtag } from "./content-cache.js";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -71,6 +72,12 @@ const DISTRIBUTED_HYMN_INDEXES = Object.fromEntries(
 ) as Record<string, { url: string; sizeBytes: number }>;
 const EGYS_V1_GOOGLE_CLIENT_ID =
   "748303683851-46ea0qkq8ti4r6lh8ss5aivf60ct71u7.apps.googleusercontent.com";
+const IMMUTABLE_FETCH_CACHE = {
+  cf: {
+    cacheEverything: true,
+    cacheTtlByStatus: { "200-299": 31536000, "400-599": 0 },
+  },
+};
 const EgysGoogleLoginSchema = z.object({
   credential: z.string().trim().min(1).max(16_384),
 });
@@ -175,11 +182,6 @@ function originList(c: AppContext, fallback: readonly string[]): string[] {
     .map((value) => value.trim())
     .filter(Boolean);
   return configured?.length ? configured : [...fallback];
-}
-
-function etagForContent(items: readonly OnlineContent[]): string {
-  const version = items.map((item) => `${item.id}:${item.updatedAt}`).join("|");
-  return `W/"content-${version.length}-${version.slice(0, 48)}"`;
 }
 
 function egysBase(c: AppContext): string | undefined {
@@ -377,48 +379,31 @@ export function createApp(
   const rateLimit = config.rateLimit ?? { max: 120, windowMs: 60_000 };
   const buckets = new Map<string, { startedAt: number; count: number }>();
   let lastBucketSweep = 0;
-  const catalogEtag = etagForContent(content);
-  let literatureCache:
-    | {
-        catalog: Awaited<ReturnType<typeof fetchLiteratureCatalog>>;
-        etag: string;
-        expiresAt: number;
-      }
-    | undefined;
-  let literatureInflight:
-    | Promise<{
-        catalog: Awaited<ReturnType<typeof fetchLiteratureCatalog>>;
-        etag: string;
-        expiresAt: number;
-      }>
-    | undefined;
-  let suaraCache:
-    | {
-        items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
-        etag: string;
-        generatedAt: string;
-        expiresAt: number;
-      }
-    | undefined;
-  let suaraInflight:
-    | Promise<{
-        items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
-        etag: string;
-        generatedAt: string;
-        expiresAt: number;
-      }>
-    | undefined;
-  const articleCache = new Map<
-    string,
-    { article: Awaited<ReturnType<typeof fetchArticle>>; expiresAt: number }
-  >();
-  const articleInflight = new Map<
-    string,
-    Promise<{
-      article: Awaited<ReturnType<typeof fetchArticle>>;
-      expiresAt: number;
-    }>
-  >();
+  const catalogEtag = contentEtag(content);
+  const literatureCache = new ContentCache<{
+    catalog: Awaited<ReturnType<typeof fetchLiteratureCatalog>>;
+    etag: string;
+  }>(5 * 60_000);
+  const suaraCache = new ContentCache<{
+    items: Awaited<ReturnType<typeof fetchSuaraSejati>>;
+    etag: string;
+    generatedAt: string;
+  }>(5 * 60_000);
+  const articleCache = new ContentCache<{
+    article: Awaited<ReturnType<typeof fetchArticle>>;
+    etag: string;
+  }>(10 * 60_000);
+  const sauhCache = new ContentCache<ReturnType<typeof normalizeSauhPosts>>(
+    60_000,
+    5 * 60_000,
+  );
+  const deferContent = (c: AppContext) => (task: Promise<unknown>) => {
+    try {
+      c.executionCtx.waitUntil(task);
+    } catch {
+      /* Node/preview has no Worker execution context. */
+    }
+  };
 
   app.use("*", async (c, next) => {
     const origin = c.req.header("origin");
@@ -516,10 +501,11 @@ export function createApp(
     return c.body(null, 204);
   });
 
-  app.get("/api/v1/content/catalog", (c) => {
-    c.header("etag", catalogEtag);
+  app.get("/api/v1/content/catalog", async (c) => {
+    const etag = await catalogEtag;
+    c.header("etag", etag);
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
-    if (c.req.header("if-none-match") === catalogEtag) return c.body(null, 304);
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
     return c.json({ items: content });
   });
 
@@ -595,6 +581,7 @@ export function createApp(
       return errorResponse(c, "NOT_FOUND", "Distributed hymn index is unknown");
     try {
       const upstream = await fetch(index.url, {
+        ...IMMUTABLE_FETCH_CACHE,
         headers: { accept: "application/json" },
         signal: c.req.raw.signal,
       });
@@ -629,24 +616,15 @@ export function createApp(
 
   app.get("/api/v1/content/literature", async (c) => {
     try {
-      const now = Date.now();
-      if (!literatureCache || literatureCache.expiresAt <= now) {
-        literatureInflight ??= (async () => {
-          const catalog = await fetchLiteratureCatalog(
-            allowlistedTjcSource(c.env?.LITERATURE_SOURCE_URL),
-          );
-          const etag = `W/\"literature-${catalog.items.length}-${catalog.items[0]?.updatedAt ?? "empty"}\"`;
-          const next = { catalog, etag, expiresAt: Date.now() + 5 * 60_000 };
-          literatureCache = next;
-          return next;
-        })().finally(() => {
-          literatureInflight = undefined;
-        });
-        await literatureInflight;
-      }
-      const cached = literatureCache;
-      if (!cached) throw new Error("Literature cache was not populated");
-      const { catalog, etag } = cached;
+      const source = allowlistedTjcSource(c.env?.LITERATURE_SOURCE_URL);
+      const { catalog, etag } = await literatureCache.get(
+        source ?? "default",
+        async () => {
+          const catalog = await fetchLiteratureCatalog(source);
+          return { catalog, etag: await contentEtag(catalog.items) };
+        },
+        deferContent(c),
+      );
       c.header("etag", etag);
       c.header(
         "cache-control",
@@ -668,17 +646,27 @@ export function createApp(
     const sourceUrl = allowlistedTjcSource(c.env?.SAUH_SOURCE_URL);
     if (sourceUrl) {
       try {
-        const url = new URL(sourceUrl);
-        url.searchParams.set("categories", "229");
-        url.searchParams.set("per_page", "6");
-        url.searchParams.set("orderby", "date");
-        url.searchParams.set("order", "desc");
-        url.searchParams.set("_embed", "wp:featuredmedia");
-        const upstream = await fetch(url, {
-          headers: { accept: "application/json" },
+        const day = new Date().toLocaleDateString("en-CA", {
+          timeZone: "Asia/Jakarta",
         });
-        if (upstream.ok)
-          items = onlyTodaySauh(normalizeSauhPosts(await upstream.json()));
+        items = await sauhCache.get(
+          `${sourceUrl}:${day}`,
+          async () => {
+            const url = new URL(sourceUrl);
+            url.searchParams.set("categories", "229");
+            url.searchParams.set("per_page", "6");
+            url.searchParams.set("orderby", "date");
+            url.searchParams.set("order", "desc");
+            url.searchParams.set("_embed", "wp:featuredmedia");
+            const upstream = await fetch(url, {
+              headers: { accept: "application/json" },
+              signal: AbortSignal.timeout(8000),
+            });
+            if (!upstream.ok) throw new Error("Sauh source unavailable");
+            return onlyTodaySauh(normalizeSauhPosts(await upstream.json()));
+          },
+          deferContent(c),
+        );
       } catch (error) {
         console.warn(
           "Sauh upstream unavailable; using packaged fallback",
@@ -691,7 +679,7 @@ export function createApp(
         Boolean(item && typeof item === "object" && "updatedAt" in item),
       ),
     );
-    const etag = `${catalogEtag}-sauh-${JSON.stringify(items).length}`;
+    const etag = await contentEtag(items);
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     c.header("etag", etag);
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);
@@ -874,42 +862,26 @@ export function createApp(
     )
       return errorResponse(c, "FORBIDDEN", "Article source is not allowlisted");
     const key = url.toString();
-    const now = Date.now();
-    let entry = articleCache.get(key);
-    if (!entry || entry.expiresAt <= now) {
-      const shared = articleInflight.get(key);
-      try {
-        if (shared) {
-          entry = await shared;
-        } else {
-          // The shared fetch must not inherit one caller's disconnect: another
-          // simultaneous reader may still be waiting for the same article.
-          const pending = fetchArticle(key).then((article) => {
-            const next = { article, expiresAt: Date.now() + 10 * 60_000 };
-            if (articleCache.size >= 32) {
-              const oldest = articleCache.keys().next().value;
-              if (oldest) articleCache.delete(oldest);
-            }
-            articleCache.set(key, next);
-            return next;
-          });
-          articleInflight.set(key, pending);
-          try {
-            entry = await pending;
-          } finally {
-            if (articleInflight.get(key) === pending)
-              articleInflight.delete(key);
-          }
-        }
-      } catch {
-        return errorResponse(
-          c,
-          "UPSTREAM_UNAVAILABLE",
-          "Article source is unavailable",
-        );
-      }
+    let entry: Awaited<ReturnType<typeof articleCache.get>>;
+    try {
+      entry = await articleCache.get(
+        key,
+        async () => {
+          // One shared upstream request survives an individual reader disconnect.
+          const article = await fetchArticle(key);
+          const { fetchedAt: _fetchedAt, ...payload } = article;
+          return { article, etag: await contentEtag(payload) };
+        },
+        deferContent(c),
+      );
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Article source is unavailable",
+      );
     }
-    const etag = `W/\"article-${entry.article.id}-${entry.article.fetchedAt}\"`;
+    const { etag } = entry;
     c.header("etag", etag);
     c.header(
       "cache-control",
@@ -960,6 +932,7 @@ export function createApp(
             "application/octet-stream,application/json,application/pdf,*/*",
           ...(range ? { range } : {}),
         },
+        ...IMMUTABLE_FETCH_CACHE,
         signal: c.req.raw.signal,
       });
       if (!upstream.ok && upstream.status !== 206)
@@ -1041,6 +1014,7 @@ export function createApp(
           accept: "application/pdf,application/octet-stream",
           ...(range ? { range } : {}),
         },
+        ...IMMUTABLE_FETCH_CACHE,
         signal: c.req.raw.signal,
       });
       if (!upstream.ok && upstream.status !== 206)
@@ -1097,29 +1071,19 @@ export function createApp(
 
   app.get("/api/v1/content/suara-sejati", async (c) => {
     try {
-      const now = Date.now();
-      if (!suaraCache || suaraCache.expiresAt <= now) {
-        suaraInflight ??= (async () => {
-          const items = await fetchSuaraSejati(
-            allowlistedTjcSource(c.env?.SUARA_SOURCE_URL),
-          );
-          const etag = `W/\"suara-sejati-${items.length}-${items[0]?.publishedAt ?? "empty"}\"`;
-          const next = {
+      const source = allowlistedTjcSource(c.env?.SUARA_SOURCE_URL);
+      const { items, etag, generatedAt } = await suaraCache.get(
+        source ?? "default",
+        async () => {
+          const items = await fetchSuaraSejati(source);
+          return {
             items,
-            etag,
+            etag: await contentEtag(items),
             generatedAt: new Date().toISOString(),
-            expiresAt: Date.now() + 5 * 60_000,
           };
-          suaraCache = next;
-          return next;
-        })().finally(() => {
-          suaraInflight = undefined;
-        });
-        await suaraInflight;
-      }
-      const cached = suaraCache;
-      if (!cached) throw new Error("Suara Sejati cache was not populated");
-      const { items, etag, generatedAt } = cached;
+        },
+        deferContent(c),
+      );
       c.header(
         "cache-control",
         "public, max-age=300, stale-while-revalidate=3600",
@@ -1142,12 +1106,12 @@ export function createApp(
     }
   });
 
-  app.get("/api/v1/content/:kind", (c) => {
+  app.get("/api/v1/content/:kind", async (c) => {
     const kind = ContentKindSchema.safeParse(c.req.param("kind"));
     if (!kind.success)
       return errorResponse(c, "VALIDATION_ERROR", "Unknown content kind");
     const items = content.filter((item) => item.kind === kind.data);
-    const etag = `${catalogEtag}-${kind.data}`;
+    const etag = `W/"${(await catalogEtag).slice(3, -1)}-${kind.data}"`;
     c.header("etag", etag);
     c.header("cache-control", "public, max-age=60, stale-while-revalidate=300");
     if (c.req.header("if-none-match") === etag) return c.body(null, 304);

@@ -32,6 +32,9 @@ export interface ChordCache {
   gc(): Promise<void>;
   getRef?(songId: string): ChordRef | undefined;
   isIntegrityVerified?(songId: string): boolean | undefined;
+  /** Metadata-only startup check; opening a chord still verifies its stored bytes. */
+  isCurrent?(ref: ChordRef): Promise<boolean>;
+  dispose?(): Promise<void>;
 }
 
 const MANIFEST_TTL_MS = 6 * 60 * 60 * 1000;
@@ -63,8 +66,10 @@ async function sha256(bytes: Uint8Array): Promise<string> {
 }
 
 export class ChordRepository {
+  private readonly lifetime = new AbortController();
   private currentManifest: ChordManifestV1 | undefined;
   private currentEtag: string | undefined;
+  private refs = new Map<string, ChordRef>();
   private fetchedAt = Number.NEGATIVE_INFINITY;
   private lastAttemptAt = Number.NEGATIVE_INFINITY;
   private inFlight: Promise<ChordManifestV1> | undefined;
@@ -83,6 +88,8 @@ export class ChordRepository {
     signal?: AbortSignal,
     force = false,
   ): Promise<ChordManifestV1> {
+    signal = this.requestSignal(signal);
+    signal.throwIfAborted();
     const age = this.now() - this.fetchedAt;
     if (!force && this.currentManifest && age < MANIFEST_TTL_MS)
       return this.currentManifest;
@@ -97,6 +104,7 @@ export class ChordRepository {
     this.inFlight = this.upstream
       .getManifest(this.currentEtag, signal)
       .then((result) => {
+        signal.throwIfAborted();
         if (result.notModified && this.currentManifest) {
           this.fetchedAt = this.now();
           return this.currentManifest;
@@ -104,6 +112,7 @@ export class ChordRepository {
         if (!result.manifest) throw new Error("manifest response has no body");
         const next = ChordManifestV1Schema.parse(result.manifest);
         this.currentManifest = next;
+        this.refs = new Map(next.entries.map((entry) => [entry.songId, entry]));
         this.currentEtag = result.etag;
         this.fetchedAt = this.now();
         return next;
@@ -118,15 +127,17 @@ export class ChordRepository {
   public async syncAll(
     signal?: AbortSignal,
   ): Promise<{ checked: number; failed: number }> {
+    signal = this.requestSignal(signal);
     const manifest = await this.refreshManifest(signal, true);
     let index = 0;
     let failed = 0;
-    await Promise.all(
+    const workers = await Promise.allSettled(
       Array.from({ length: Math.min(3, manifest.entries.length) }, async () => {
         while (index < manifest.entries.length) {
           if (signal?.aborted) throw signal.reason;
           const entry = manifest.entries[index++]!;
           try {
+            if (await this.cache.isCurrent?.(entry)) continue;
             await this.revalidateSong(entry.songId, signal);
           } catch (error) {
             if (signal?.aborted) throw error;
@@ -135,6 +146,8 @@ export class ChordRepository {
         }
       }),
     );
+    const interrupted = workers.find((worker) => worker.status === "rejected");
+    if (interrupted?.status === "rejected") throw interrupted.reason;
     return { checked: manifest.entries.length, failed };
   }
 
@@ -142,7 +155,10 @@ export class ChordRepository {
     songId: string,
     signal?: AbortSignal,
   ): Promise<ChordDocumentV2> {
+    signal = this.requestSignal(signal);
+    signal.throwIfAborted();
     const cached = await this.cache.get(songId);
+    signal.throwIfAborted();
     if (cached) {
       void this.revalidateSong(songId, signal).catch(() => undefined);
       return cached;
@@ -154,6 +170,8 @@ export class ChordRepository {
     songId: string,
     signal?: AbortSignal,
   ): Promise<ChordDocumentV2> {
+    signal = this.requestSignal(signal);
+    signal.throwIfAborted();
     const existing = this.inFlightSongs.get(songId);
     if (existing) return existing;
     const request = this.revalidateSongFresh(songId, signal);
@@ -180,7 +198,7 @@ export class ChordRepository {
     if (recordedAt !== undefined && now - recordedAt < NEGATIVE_RETENTION_MS)
       throw new ChordNotAvailableError(songId);
     this.negative.delete(negativeKey);
-    const ref = manifest.entries.find((entry) => entry.songId === songId);
+    const ref = this.refs.get(songId);
     if (!ref) {
       this.negative.set(negativeKey, now);
       throw new ChordNotAvailableError(songId);
@@ -196,6 +214,7 @@ export class ChordRepository {
     )
       return cached;
     const fetched = await this.upstream.fetchChord(ref, signal);
+    signal?.throwIfAborted();
     const document = ChordDocumentV2Schema.parse(fetched.document);
     if (fetched.bytes.byteLength !== ref.size)
       throw new ChordIntegrityError(
@@ -210,9 +229,26 @@ export class ChordRepository {
       (document.songId !== songId || document.sourceCommit !== ref.sourceCommit)
     )
       throw new ChordIntegrityError("document provenance mismatch");
+    signal?.throwIfAborted();
     await this.cache.putAtomic(ref, document, fetched.bytes);
     this.negative.delete(negativeKey);
     return document;
+  }
+
+  /** Drain in-flight work before the durable storage reset boundary. */
+  public async dispose(): Promise<void> {
+    this.lifetime.abort();
+    await Promise.allSettled([
+      ...(this.inFlight ? [this.inFlight] : []),
+      ...this.inFlightSongs.values(),
+    ]);
+    await this.cache.dispose?.();
+  }
+
+  private requestSignal(signal?: AbortSignal): AbortSignal {
+    return signal
+      ? AbortSignal.any([signal, this.lifetime.signal])
+      : this.lifetime.signal;
   }
 }
 

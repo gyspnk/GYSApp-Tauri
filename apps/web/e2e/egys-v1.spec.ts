@@ -388,7 +388,7 @@ test("Lainnya renders unified settings and account panels cleanly", async ({
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
   await page.locator('[data-setting="appearance"] > summary').click();
   await expect(
-    page.getByRole("button", { name: "Pilih Tema", exact: true }),
+    page.getByRole("combobox", { name: "Pilih Tema", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".accent-palette-grid")).toBeHidden();
   await page.locator('[data-setting="offline"] > summary').click();

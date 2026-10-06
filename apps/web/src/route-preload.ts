@@ -1,13 +1,4 @@
-/** Shared import promises keep navigation and background warm-up deduplicated. */
-export const routeModules = {
-  home: () => import("./home.js"),
-  bible: () => import("./bible.js"),
-  kidung: () => import("./kidung-page.js"),
-  faith: () => import("./faith.js"),
-  more: () => import("./more.js"),
-  literature: () => import("./literature.js"),
-  articles: () => import("./online-content.js"),
-};
+import { routeModules } from "./route-pages.js";
 type RouteId = keyof typeof routeModules;
 const pending = new Map<RouteId, Promise<unknown>>();
 const routes: Record<string, RouteId> = {
@@ -22,20 +13,27 @@ const routes: Record<string, RouteId> = {
 };
 
 export function preloadRoute(path: string): Promise<unknown> {
-  const id = routes[path];
+  const pathname = path.split(/[?#]/)[0] ?? "/";
+  const id = routes[pathname] ?? routes[`/${pathname.split("/")[1]}`];
   if (!id) return Promise.resolve();
   if (!pending.has(id)) {
     const task = routeModules[id]()
       .then(async (module) => {
+        if (id === "faith")
+          await import("./faith-payloads.js").then((m) => m.loadFaithPack());
         if (id === "bible")
           await import("./bible-pack-loader.js").then((m) =>
             m.loadBundledBiblePack(),
           );
         if (id === "kidung")
           await Promise.all([
-            import("./kidung-catalog.js"),
+            import("./kidung-page.js").then((m) => m.preloadKidungCatalog()),
             import("./hymn-payloads.js").then((m) => m.loadCoreHymnMetadata()),
           ]);
+        if (id === "literature")
+          await import("./literature-catalog.js").then((m) =>
+            m.fetchLiteratureCatalog(),
+          );
         performance.mark(`gys-route-preloaded:${id}`);
         return module;
       })
@@ -45,7 +43,15 @@ export function preloadRoute(path: string): Promise<unknown> {
       });
     pending.set(id, task);
   }
-  return pending.get(id)!;
+  const route = pending.get(id)!;
+  return (pathname.startsWith("/literatur/") &&
+    /[?&]read=1(?:&|$)/.test(path)) ||
+    (pathname.startsWith("/kidung/") && /[?&]mode=pdf(?:&|$)/.test(path))
+    ? Promise.all([
+        route,
+        import("./pdf-reader-loader.js").then((m) => m.preloadPdfReader()),
+      ])
+    : route;
 }
 
 /** Warm sequentially after first paint, avoiding optional downloads and data-saving connections. */
@@ -60,7 +66,15 @@ export function warmNavigation(): () => void {
   let cancelled = false;
   let timer: number;
   let idle: number | undefined;
-  const paths = ["/iman", "/kidung", "/bible", "/lainnya", "/", "/literatur"];
+  const paths = [
+    "/iman",
+    "/kidung",
+    "/bible",
+    "/lainnya",
+    "/",
+    "/literatur",
+    "/suara",
+  ];
   const next = () => {
     if (cancelled || !paths.length) return;
     const run = () => {
@@ -72,7 +86,7 @@ export function warmNavigation(): () => void {
         });
     };
     if (typeof window.requestIdleCallback === "function")
-      idle = window.requestIdleCallback(run);
+      idle = window.requestIdleCallback(run, { timeout: 1000 });
     else timer = window.setTimeout(run, 100);
   };
   timer = window.setTimeout(next, 200);

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-test("More shows compact setting categories and hides details until requested", async ({
+test("More keeps login visible and other settings collapsed until requested", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -11,7 +11,7 @@ test("More shows compact setting categories and hides details until requested", 
   const rows = page.locator(".more-setting-section");
   await expect(rows).toHaveCount(7);
   await expect(rows.locator(":scope > summary")).toHaveText([
-    "Akun",
+    "Akun e-GYS",
     "Tampilan",
     "Audio & Suara",
     "Kidung",
@@ -23,16 +23,24 @@ test("More shows compact setting categories and hides details until requested", 
     await rows.nth(index).locator(":scope > summary").scrollIntoViewIfNeeded();
     await expect(rows.nth(index).locator(":scope > summary")).toBeInViewport();
   }
+  await expect(page.locator(".more-setting-section[open]")).toHaveAttribute(
+    "data-setting",
+    "account",
+  );
+  await expect(page.locator(".account-card")).toBeVisible();
+  await rows.nth(0).locator(":scope > summary").click();
   await expect(page.locator(".more-setting-section[open]")).toHaveCount(0);
   await expect(page.locator(".account-card")).toBeHidden();
-  await expect(page.getByRole("button", { name: "Pilih Tema" })).toBeHidden();
+  await expect(page.getByRole("combobox", { name: "Pilih Tema" })).toBeHidden();
   await expect(page.locator(".distributed-assets-list")).toBeHidden();
 
   await rows.nth(0).locator(":scope > summary").click();
   await expect(page.locator(".account-card")).toBeVisible();
   await rows.nth(0).locator(":scope > summary").click();
   await rows.nth(1).locator(":scope > summary").click();
-  await expect(page.getByRole("button", { name: "Pilih Tema" })).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "Pilih Tema" }),
+  ).toBeVisible();
   await expect(page.locator(".theme-pill-grid")).toHaveCount(0);
   await expect(page.locator(".accent-palette-grid")).toBeHidden();
 });
@@ -44,7 +52,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.locator('[data-setting="appearance"] > summary').click();
 
-  const themePicker = page.getByRole("button", {
+  const themePicker = page.getByRole("combobox", {
     name: "Pilih Tema",
     exact: true,
   });
@@ -77,7 +85,9 @@ test("appearance choices are contextual and preserve theme, accent, and language
     )
     .toBe("#059669");
 
-  await page.getByRole("button", { name: "Pilih Bahasa", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Pilih Bahasa", exact: true })
+    .click();
   await page
     .getByRole("listbox", { name: "Pilih Bahasa", exact: true })
     .getByRole("option", { name: /English$/ })
@@ -121,7 +131,7 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
   });
   const categories = {
     id: [
-      "Akun",
+      "Akun e-GYS",
       "Tampilan",
       "Audio & Suara",
       "Kidung",
@@ -130,7 +140,7 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
       "Tentang & Bantuan",
     ],
     en: [
-      "Account",
+      "e-GYS account",
       "Appearance",
       "Audio & voice",
       "Hymns",
@@ -139,7 +149,7 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
       "About & help",
     ],
     zh: [
-      "账户",
+      "e-GYS 账户",
       "外观",
       "音频与语音",
       "圣诗",

@@ -108,7 +108,9 @@ for (const locale of ["id", "en", "zh"] as const) {
       labels.music,
     );
     for (const name of [labels.previous, labels.next]) {
-      const button = chrome.getByRole("button", { name, exact: true });
+      const button = page
+        .locator(".pdf-reader-hymn")
+        .getByRole("button", { name, exact: true });
       await expect(button).toBeVisible();
       const bounds = await button.boundingBox();
       expect(bounds!.width).toBeGreaterThanOrEqual(44);

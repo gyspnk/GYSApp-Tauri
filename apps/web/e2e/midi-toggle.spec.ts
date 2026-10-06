@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { preparePinnedMidiAsset } from "./pinned-reader-fixtures.js";
 
 for (const width of [390, 768, 1440]) {
   test(`viewer MIDI toggle closes playing audio and reopens the player at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 1000 });
+    await preparePinnedMidiAsset(page);
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     const toggle = page.locator(".hymn-midi-toggle");
     const player = page.locator(".media-surface.is-kidung-media");

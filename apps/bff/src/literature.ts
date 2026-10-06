@@ -149,7 +149,10 @@ function parseSection(
 }
 
 async function readHtml(url: string) {
-  const response = await fetch(url, { headers: { accept: "text/html" } });
+  const response = await fetch(url, {
+    headers: { accept: "text/html" },
+    signal: AbortSignal.timeout(8000),
+  });
   if (!response.ok)
     throw new Error(`literature source returned ${response.status}`);
   return response.text();

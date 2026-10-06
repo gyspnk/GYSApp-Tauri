@@ -115,6 +115,71 @@ class FakeBufferSourceNode {
 }
 
 describe("MIDI operation generation", () => {
+  it("shares an in-flight render when play is requested again instead of leaving loading stuck", async () => {
+    vi.stubGlobal("Worker", FakeWorker);
+    try {
+      const player = new BrowserMidiPlayer();
+      const internal = player as unknown as {
+        ensureAudio: () => AudioContext;
+        prepareSoundfont: () => Promise<void>;
+        ensureWorker: () => Promise<Worker>;
+        ensureSoundfont: () => Promise<void>;
+        request: () => Promise<unknown>;
+        startBuffer: ReturnType<typeof vi.fn>;
+        startTimer: ReturnType<typeof vi.fn>;
+      };
+      const channels = [new Float32Array(2), new Float32Array(2)];
+      internal.ensureAudio = () =>
+        ({
+          resume: async () => undefined,
+          sampleRate: 44_100,
+          createBuffer: () => ({
+            duration: 2,
+            length: 2,
+            numberOfChannels: 2,
+            getChannelData: (i: number) => channels[i],
+          }),
+        }) as unknown as AudioContext;
+      // ensureRendered reads the established context, as it does in real play().
+      (internal as unknown as { audio: AudioContext }).audio =
+        internal.ensureAudio();
+      internal.prepareSoundfont = async () => undefined;
+      internal.ensureWorker = async () => new FakeWorker() as unknown as Worker;
+      internal.ensureSoundfont = async () => undefined;
+      let finish!: (value: unknown) => void;
+      const response = new Promise((resolve) => {
+        finish = resolve;
+      });
+      const request = vi.fn(() => response);
+      internal.request = request;
+      internal.startBuffer = vi.fn();
+      internal.startTimer = vi.fn();
+      await player.load(
+        "hymn-001",
+        "First hymn",
+        { ppq: 480, tempo: 100, events: [] },
+        { rawMidi: new Uint8Array([1]), sourceHash: "immutable" },
+      );
+      const first = player.play();
+      await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+      const second = player.play();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      finish({
+        type: "rendered",
+        left: channels[0],
+        right: channels[1],
+        sampleRate: 44_100,
+      });
+      await Promise.all([first, second]);
+      expect(request).toHaveBeenCalledOnce();
+      expect(internal.startBuffer).toHaveBeenCalledOnce();
+      expect(player.snapshot().status).toBe("playing");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it("does not cancel an active render when a setting is reapplied unchanged", async () => {
     const worker = new FakeWorker();
     const player = new BrowserMidiPlayer();
@@ -157,6 +222,7 @@ describe("MIDI operation generation", () => {
     try {
       await player.setTempo(player.snapshot().tempo, { userOverride: false });
       await player.setTranspose(player.snapshot().transpose);
+      await player.setInstrument(player.snapshot().instrument);
 
       expect(worker.terminated).toBe(false);
       expect(pending.size).toBe(1);
@@ -304,6 +370,48 @@ describe("MIDI operation generation", () => {
 });
 
 describe("MIDI worker lifecycle", () => {
+  it("clears request timers after transfer failures, crashes, and closing an idle worker", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("window", {
+      location: { href: "http://localhost/" },
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+    });
+    try {
+      const player = new BrowserMidiPlayer();
+      const internal = player as unknown as {
+        ensureWorker: () => Promise<Worker>;
+        request: (
+          worker: Worker,
+          payload: Record<string, unknown>,
+        ) => Promise<unknown>;
+      };
+      const first = await internal.ensureWorker();
+      expect(vi.getTimerCount()).toBe(0);
+      const send = vi.spyOn(first, "postMessage").mockImplementation(() => {
+        throw new Error("transfer failed");
+      });
+      await expect(internal.request(first, { type: "render" })).rejects.toThrow(
+        "transfer failed",
+      );
+      expect(vi.getTimerCount()).toBe(0);
+      send.mockRestore();
+      const request = internal.request(first, { type: "render" });
+      expect(vi.getTimerCount()).toBe(1);
+      first.dispatchEvent(new Event("error"));
+      await expect(request).rejects.toThrow("MIDI worker crashed");
+      expect(vi.getTimerCount()).toBe(0);
+      const second = await internal.ensureWorker();
+      await player.close();
+      expect((second as unknown as FakeWorker).terminated).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("closing clears the session and prevents playback until reopened", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     await player.load("hymn-001", "First hymn", {
@@ -383,6 +491,7 @@ describe("MIDI audio node lifecycle", () => {
       sourceGain?: GainNode;
       crossfadeMs: number;
       startBuffer: (buffer: AudioBuffer, position: number) => void;
+      stopAudio: () => Promise<void>;
     };
     internal.audio = {
       currentTime: 5,
@@ -425,7 +534,7 @@ describe("MIDI audio node lifecycle", () => {
     }
   });
 
-  it("disconnects the previous deck after crossfade without ending the new track", () => {
+  it("crossfades an active deck while playback metadata is loading, then disconnects it without ending the new track", () => {
     const player = new BrowserMidiPlayer();
     const previous = new FakeBufferSourceNode();
     const previousGain = new FakeGainNode();
@@ -435,6 +544,11 @@ describe("MIDI audio node lifecycle", () => {
     internal.bufferSource = previous as unknown as AudioBufferSourceNode;
     internal.sourceGain = previousGain as unknown as GainNode;
     internal.crossfadeMs = 1_000;
+    internal.state = {
+      ...internal.state,
+      status: "loading",
+      songId: "hymn-002",
+    };
     const ended = vi.fn();
     player.subscribeEnded(ended);
     vi.stubGlobal("window", {
@@ -447,7 +561,13 @@ describe("MIDI audio node lifecycle", () => {
     try {
       internal.startBuffer({ duration: 2 } as AudioBuffer, 0);
 
-      expect(previous.stop).toHaveBeenCalledOnce();
+      expect(previous.stop).toHaveBeenCalledWith(6.05);
+      expect(previousGain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        0.0001,
+        6,
+      );
+      expect(nextGain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(1, 6);
+      expect(previous.disconnect).not.toHaveBeenCalled();
       expect(previous.onended).toBeTypeOf("function");
       previous.onended?.();
       expect(previous.disconnect).toHaveBeenCalledOnce();
@@ -458,9 +578,129 @@ describe("MIDI audio node lifecycle", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it("releases a deck that ends during the next render without resetting loading metadata", () => {
+    const player = new BrowserMidiPlayer();
+    const source = new FakeBufferSourceNode();
+    const gain = new FakeGainNode();
+    const internal = preparePlayer(player, source, gain);
+    vi.stubGlobal("window", { AudioContext: class {} });
+    try {
+      internal.startBuffer({ duration: 2 } as AudioBuffer, 0);
+      internal.state = {
+        ...internal.state,
+        status: "loading",
+        songId: "hymn-002",
+      };
+      source.onended?.();
+      expect(source.disconnect).toHaveBeenCalledOnce();
+      expect(gain.disconnect).toHaveBeenCalledOnce();
+      expect(internal.bufferSource).toBeUndefined();
+      expect(player.snapshot()).toMatchObject({
+        status: "loading",
+        songId: "hymn-002",
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("stops both overlapping decks immediately when the player is closed", async () => {
+    const player = new BrowserMidiPlayer();
+    const previous = new FakeBufferSourceNode();
+    const previousGain = new FakeGainNode();
+    const next = new FakeBufferSourceNode();
+    const nextGain = new FakeGainNode();
+    const internal = preparePlayer(player, next, nextGain);
+    internal.bufferSource = previous as unknown as AudioBufferSourceNode;
+    internal.sourceGain = previousGain as unknown as GainNode;
+    internal.crossfadeMs = 1_000;
+    vi.stubGlobal("window", { AudioContext: class {} });
+    try {
+      internal.startBuffer({ duration: 2 } as AudioBuffer, 0);
+      await player.close();
+      expect(previous.stop).toHaveBeenLastCalledWith();
+      expect(next.stop).toHaveBeenCalledOnce();
+      expect(previous.disconnect).toHaveBeenCalledOnce();
+      expect(previousGain.disconnect).toHaveBeenCalledOnce();
+      expect(next.disconnect).toHaveBeenCalledOnce();
+      expect(nextGain.disconnect).toHaveBeenCalledOnce();
+      expect(previous.onended).toBeNull();
+      expect(next.onended).toBeNull();
+      expect(player.snapshot().status).toBe("idle");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });
 
 describe("MIDI render preload", () => {
+  it("does not send a cancelled preload to render after worker startup finishes", async () => {
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("Worker", FakeWorker);
+    try {
+      const player = new BrowserMidiPlayer(
+        async () => new Uint8Array(1_000_000),
+      );
+      const internal = player as unknown as {
+        ensureWorker: () => Promise<Worker>;
+        ensureSoundfont: () => Promise<void>;
+        request: () => Promise<unknown>;
+      };
+      let finish!: (worker: Worker) => void;
+      const worker = new Promise<Worker>((resolve) => {
+        finish = resolve;
+      });
+      const startup = vi.fn(() => worker);
+      internal.ensureWorker = startup;
+      internal.ensureSoundfont = async () => undefined;
+      const request = vi.fn(async () => ({
+        type: "rendered",
+        left: new Float32Array(1),
+        right: new Float32Array(1),
+      }));
+      internal.request = request;
+      const pending = player.preload({
+        songId: "hymn-002",
+        sourceHash: "immutable",
+        midi: { ppq: 480, tempo: 100, events: [] },
+        rawMidi: new Uint8Array([1]),
+      });
+      await vi.waitFor(() => expect(startup).toHaveBeenCalledOnce());
+      player.cancelPreloads();
+      finish(new FakeWorker() as unknown as Worker);
+      await expect(pending).resolves.toBe(false);
+      expect(request).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  it("does not resume a cancelled preload after its soundfont finishes loading", async () => {
+    let finish!: (bytes: Uint8Array) => void;
+    const font = new Promise<Uint8Array>((resolve) => {
+      finish = resolve;
+    });
+    const player = new BrowserMidiPlayer(() => font);
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("Worker", FakeWorker);
+    try {
+      const pending = player.preload({
+        songId: "hymn-002",
+        title: "Neighbour",
+        sourceHash: "immutable",
+        midi: { ppq: 480, tempo: 100, events: [] },
+        rawMidi: new Uint8Array([1]),
+      });
+      player.cancelPreloads();
+      finish(new Uint8Array([1, 2]));
+      await expect(pending).resolves.toBe(false);
+      expect(player.preloadStats()).toEqual({ queued: 0, inFlight: 0 });
+      expect(player.snapshot().status).toBe("idle");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("separates cache entries by every audible setting", () => {
     const base = midiRenderKey("abc", 100, 0, -1, 44_100);
     expect(midiRenderKey("abc", 100, 0, -1, 44_100, "GeneralUser-GS")).not.toBe(

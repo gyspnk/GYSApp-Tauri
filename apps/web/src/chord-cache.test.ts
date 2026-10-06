@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   AtomicBlobStore,
   ChordDocumentV2,
@@ -110,6 +110,167 @@ async function sha256(value: Uint8Array): Promise<string> {
 }
 
 describe("BrowserChordCache", () => {
+  it("cancels advisory writes when its repository is disposed for reset", async () => {
+    vi.useFakeTimers();
+    try {
+      const services = platform();
+      const cache = new BrowserChordCache(services);
+      await cache.putAtomic(ref, document, bytes);
+      await cache.get(ref.songId);
+      const write = vi.spyOn(services.keyValue, "set");
+      await cache.dispose();
+      await vi.advanceTimersByTimeAsync(1200);
+      expect(write).not.toHaveBeenCalled();
+      await expect(cache.get(ref.songId)).rejects.toThrow("disposed");
+      await expect(cache.putAtomic(ref, document, bytes)).rejects.toThrow(
+        "disposed",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("deduplicates verified reads and keeps warm readers off storage", async () => {
+    const services = platform();
+    const cache = new BrowserChordCache(services);
+    await cache.putAtomic(ref, document, bytes);
+    const read = vi.spyOn(services.blobs, "get");
+    const write = vi.spyOn(services.keyValue, "set");
+    await Promise.all(Array.from({ length: 8 }, () => cache.get(ref.songId)));
+    for (let index = 0; index < 8; index++) await cache.get(ref.songId);
+    expect(read).toHaveBeenCalledOnce();
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it("preserves the durable previous chord when committing the new pointer fails", async () => {
+    const services = platform();
+    const cache = new BrowserChordCache(services);
+    await cache.putAtomic(ref, document, bytes);
+    const changed = { ...document, title: "Revised hymn" };
+    const nextBytes = new TextEncoder().encode(JSON.stringify(changed));
+    const nextRef = {
+      ...ref,
+      size: nextBytes.length,
+      sha256: await sha256(nextBytes),
+    };
+    vi.spyOn(services.keyValue, "set").mockRejectedValueOnce(
+      new Error("disk full"),
+    );
+    await expect(cache.putAtomic(nextRef, changed, nextBytes)).rejects.toThrow(
+      "disk full",
+    );
+    await expect(
+      new BrowserChordCache(services).get(ref.songId),
+    ).resolves.toEqual(document);
+    await expect(cache.get(ref.songId)).resolves.toEqual(document);
+    await expect(
+      services.blobs.get(`chord/${ref.songId}/${nextRef.sha256}`),
+    ).resolves.toBeUndefined();
+  });
+
+  it("startup reads one index and only downloads the changed chord in a 400-song cache", async () => {
+    const services = platform();
+    const noteDoc: ChordDocumentV2 = {
+      version: 2,
+      type: "note-aligned",
+      pages: { "1": [{ noteIdx: 0, chord: "C" }] },
+    };
+    const content = new TextEncoder().encode(JSON.stringify(noteDoc));
+    const hash = await sha256(content);
+    const entries = Array.from({ length: 400 }, (_, index) => ({
+      ...ref,
+      songId: `hymn-${String(index + 1).padStart(3, "0")}`,
+      size: content.length,
+      sha256: hash,
+    }));
+    for (const entry of entries)
+      await services.blobs.putAtomic(`chord/${entry.songId}/${hash}`, content);
+    await services.keyValue.set(
+      "gys-chord-cache-index-v1",
+      Object.fromEntries(
+        entries.map((entry) => [
+          entry.songId,
+          {
+            format: 2,
+            noteAligned: true,
+            ref: entry,
+            key: `chord/${entry.songId}/${hash}`,
+            bytes: entry.size,
+            lastAccess: 1,
+            pinned: false,
+          },
+        ]),
+      ),
+    );
+    const latest = entries.map((entry) => ({
+      ...entry,
+      sourceCommit: "deadbee",
+    }));
+    const changedDoc: ChordDocumentV2 = {
+      ...noteDoc,
+      pages: { "1": [{ noteIdx: 0, chord: "G" }] },
+    };
+    const changedBytes = new TextEncoder().encode(JSON.stringify(changedDoc));
+    latest[399]!.sha256 = await sha256(changedBytes);
+    const readIndex = vi.spyOn(services.keyValue, "get");
+    const readBytes = vi.spyOn(services.blobs, "get");
+    const writeIndex = vi.spyOn(services.keyValue, "set");
+    const fetchChord = vi.fn(async () => ({
+      bytes: changedBytes,
+      document: changedDoc,
+    }));
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => ({
+          manifest: {
+            version: 1,
+            sourceRepo: "gyspnk/gyschordweb",
+            sourceCommit: "deadbee",
+            generatedAt: "2026-10-06T00:00:00.000Z",
+            entries: latest,
+          },
+        }),
+        fetchChord,
+      },
+      new BrowserChordCache(services),
+    );
+    await expect(repository.syncAll()).resolves.toEqual({
+      checked: 400,
+      failed: 0,
+    });
+    await repository.syncAll();
+    expect(readIndex).toHaveBeenCalledOnce();
+    expect(readBytes).toHaveBeenCalledOnce();
+    expect(writeIndex).toHaveBeenCalledOnce();
+    expect(fetchChord).toHaveBeenCalledOnce();
+  });
+
+  it("repairs a payload evicted separately from the startup index when opened", async () => {
+    const services = platform();
+    const cache = new BrowserChordCache(services);
+    await cache.putAtomic(ref, document, bytes);
+    await services.blobs.remove(`chord/${ref.songId}/${ref.sha256}`);
+    const fetchChord = vi.fn(async () => ({ bytes, document }));
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => ({
+          manifest: {
+            version: 1,
+            sourceRepo: "gyspnk/gyschordweb",
+            sourceCommit: ref.sourceCommit,
+            generatedAt: "2026-10-06T00:00:00.000Z",
+            entries: [ref],
+          },
+        }),
+        fetchChord,
+      },
+      cache,
+    );
+    await repository.syncAll();
+    expect(fetchChord).not.toHaveBeenCalled();
+    await expect(repository.getChord(ref.songId)).resolves.toEqual(document);
+    expect(fetchChord).toHaveBeenCalledOnce();
+  });
   it("persists an atomic pointer and preserves pinned entries", async () => {
     const services = platform();
     const cache = new BrowserChordCache(services);

@@ -1,4 +1,17 @@
 import {
+  HomePage,
+  BiblePage,
+  BibleHeader,
+  KidungPage,
+  FaithPage,
+  MorePage,
+  LiteraturePage,
+  LiteratureDetailPage,
+  SauhPage,
+  SuaraPage,
+  SuaraDetailPage,
+} from "./route-pages.js";
+import {
   NonReaderRouteLoading,
   NotFoundPage,
   RouteErrorBoundary,
@@ -39,7 +52,7 @@ import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
-import { getShellSettingsStorage } from "./platform.js";
+import { getShellSettingsStorage } from "./settings.js";
 import {
   readShellSettings,
   writeShellSettings,
@@ -51,12 +64,6 @@ import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
 } from "./shell-preferences.js";
-
-const BibleHeader = lazy(() =>
-  import("./bible-header.js").then(({ BibleHeader: Header }) => ({
-    default: Header,
-  })),
-);
 
 const MediaSurface = lazy(() =>
   import("./media-surface.js").then(({ MediaSurface: Surface }) => ({
@@ -83,48 +90,6 @@ function hasMediaSession(): boolean {
   );
 }
 
-const HomePage = lazy(() =>
-  import("./home.js").then(({ HomePage: Page }) => ({ default: Page })),
-);
-const BiblePage = lazy(() =>
-  import("./bible.js").then(({ BiblePage: Page }) => ({ default: Page })),
-);
-const KidungPage = lazy(() =>
-  import("./kidung-page.js").then(({ KidungPage: Page }) => ({
-    default: Page,
-  })),
-);
-const FaithPage = lazy(() =>
-  import("./faith.js").then(({ FaithPage: Page }) => ({ default: Page })),
-);
-const LiteraturePage = lazy(() =>
-  import("./literature.js").then(({ LiteraturePage: Page }) => ({
-    default: Page,
-  })),
-);
-const LiteratureDetailPage = lazy(() =>
-  import("./literature.js").then(({ LiteratureDetailPage: Page }) => ({
-    default: Page,
-  })),
-);
-const SauhPage = lazy(() =>
-  import("./online-content.js").then(({ SauhPage: Page }) => ({
-    default: Page,
-  })),
-);
-const SuaraPage = lazy(() =>
-  import("./online-content.js").then(({ SuaraPage: Page }) => ({
-    default: Page,
-  })),
-);
-const SuaraDetailPage = lazy(() =>
-  import("./online-content.js").then(({ SuaraDetailPage: Page }) => ({
-    default: Page,
-  })),
-);
-const MorePage = lazy(() =>
-  import("./more.js").then(({ MorePage: Page }) => ({ default: Page })),
-);
 const GlobalSearch = lazy(() =>
   import("./global-search.js").then(({ GlobalSearch: Search }) => ({
     default: Search,
@@ -613,7 +578,11 @@ function Shell({
         <main className="main-content" id="main-content" tabIndex={-1}>
           <div
             className="route-view"
-            key={`${location.pathname}${location.search}`}
+            key={
+              /^\/kidung\/[^/]+$/.test(location.pathname)
+                ? location.pathname
+                : `${location.pathname}${location.search}`
+            }
           >
             <RouteErrorBoundary locale={locale}>
               <Suspense
@@ -666,9 +635,12 @@ function RoutedApp() {
   const settings = useAppSettings();
   const locale = settings.locale;
   useEffect(() => {
-    void import("./chords.js")
-      .then((module) => module.syncChordsOnStartup())
-      .catch((error) => recordDiagnostic("info", "chord.sync", error));
+    const timer = window.setTimeout(() => {
+      void import("./chords.js")
+        .then((module) => module.syncChordsOnStartup())
+        .catch((error) => recordDiagnostic("info", "chord.sync", error));
+    }, 500);
+    return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => installMidiQueueCoordinator(), []);
   useEffect(() => installMediaSessionBridge(), []);

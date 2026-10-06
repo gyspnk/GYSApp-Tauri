@@ -13,8 +13,10 @@ const MAX_CACHED_PDF_BYTES = 16 * 1024 * 1024;
 let lockPromise: Promise<UpstreamMusicLock> | undefined;
 let bundledMusicPathsPromise: Promise<Set<string>> | undefined;
 const inFlight = new Map<string, Promise<Uint8Array>>();
-const MAX_MEMORY_HINTS = 96;
-const recentlyUsed = new Map<string, number>();
+const assetIndexes = new WeakMap<
+  UpstreamMusicLock,
+  Map<string, UpstreamMusicItem>
+>();
 
 async function sha256(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
@@ -92,22 +94,31 @@ export function findMusicAsset(
   kind: UpstreamMusicItem["kind"],
   path: string,
 ): UpstreamMusicItem | undefined {
-  const candidates = lock.items.filter((item) => item.kind === kind);
-  const exact = candidates.find((item) => item.path === path);
-  if (exact) return exact;
-  const normalized = normalizedAssetName(path);
-  const byName = candidates.find(
-    (item) => normalizedAssetName(item.path) === normalized,
+  let index = assetIndexes.get(lock);
+  if (!index) {
+    index = new Map();
+    for (const item of lock.items) {
+      const name = normalizedAssetName(item.path);
+      const number = name.match(
+        /^(\d{3}[a-z]?)(?:_|\s|\.(?:mid|midi|pdf)$)/i,
+      )?.[1];
+      for (const key of [
+        `${item.kind}:path:${item.path}`,
+        `${item.kind}:name:${name}`,
+        ...(number ? [`${item.kind}:number:${number}`] : []),
+      ]) {
+        if (!index.has(key)) index.set(key, item);
+      }
+    }
+    assetIndexes.set(lock, index);
+  }
+  const name = normalizedAssetName(path);
+  const number = name.match(/^(\d{3}[a-z]?)(?:_|\s)/i)?.[1];
+  return (
+    index.get(`${kind}:path:${path}`) ??
+    index.get(`${kind}:name:${name}`) ??
+    (number ? index.get(`${kind}:number:${number}`) : undefined)
   );
-  if (byName) return byName;
-  const key = normalized.match(/^(\d{3}[a-z]?)(?:_|\s)/i)?.[1];
-  if (!key) return undefined;
-  return candidates.find((item) => {
-    const candidate = normalizedAssetName(item.path);
-    const stem = candidate.replace(/\.(?:mid|midi|pdf)$/i, "");
-    const normalizedKey = key.toLocaleLowerCase();
-    return stem === normalizedKey || stem.startsWith(`${normalizedKey}_`);
-  });
 }
 
 function localUrl(ref: Pick<UpstreamMusicItem, "path">): string {
@@ -137,7 +148,10 @@ async function bundledMusicPaths(): Promise<Set<string>> {
           .map((item) => item.path),
       );
     })
-    .catch(() => new Set<string>());
+    .catch(() => {
+      bundledMusicPathsPromise = undefined;
+      return new Set<string>();
+    });
   return bundledMusicPathsPromise;
 }
 
@@ -196,12 +210,6 @@ async function cachedResponse(
   if (!response) return undefined;
   try {
     const bytes = await readAndVerify(response, ref);
-    await pruneCachedPdfs(
-      cache,
-      ref.kind === "pdf" && bytes.byteLength <= MAX_CACHED_PDF_BYTES
-        ? url
-        : undefined,
-    );
     return bytes;
   } catch {
     await cache.delete(url);
@@ -232,12 +240,11 @@ async function networkResponse(
         }),
       );
     }
-    await pruneCachedPdfs(
-      cache,
-      ref.kind === "pdf" && bytes.byteLength <= MAX_CACHED_PDF_BYTES
-        ? url
-        : undefined,
-    );
+    if (ref.kind === "pdf")
+      await pruneCachedPdfs(
+        cache,
+        bytes.byteLength <= MAX_CACHED_PDF_BYTES ? url : undefined,
+      );
   }
   return bytes;
 }
@@ -245,10 +252,6 @@ async function networkResponse(
 export async function loadMusicAsset(
   ref: UpstreamMusicItem,
 ): Promise<Uint8Array> {
-  recentlyUsed.delete(ref.sha256);
-  recentlyUsed.set(ref.sha256, Date.now());
-  while (recentlyUsed.size > MAX_MEMORY_HINTS)
-    recentlyUsed.delete(recentlyUsed.keys().next().value as string);
   const existing = inFlight.get(ref.sha256);
   if (existing) return existing;
   const request = (async () => {
@@ -337,7 +340,6 @@ export async function musicAssetStats(): Promise<{
 
 export async function clearMusicAssetCache(): Promise<void> {
   inFlight.clear();
-  recentlyUsed.clear();
   if (typeof window !== "undefined" && "caches" in window)
     await caches.delete(CACHE_NAME);
 }

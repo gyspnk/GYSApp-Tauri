@@ -13,12 +13,17 @@ export function installReadingZoom(element: HTMLElement): () => void {
       : Array.from(element.querySelectorAll<HTMLElement>(".verse-row"))
           .map((row) => ({ row, box: row.getBoundingClientRect() }))
           .filter(({ box }) => box.bottom > 0 && box.top < innerHeight);
+    // Batch reads, then writes: interleaving cancellation and measurement for
+    // every row forced repeated style recalculation during each zoom frame.
+    for (const { row } of visibleRows) rowMotion.get(row)?.cancel();
     scale = next;
     element.style.setProperty("--reading-text-scale", String(scale));
+    const offsets = visibleRows.map(({ row, box }) => ({
+      row,
+      offset: box.top - row.getBoundingClientRect().top,
+    }));
     // FLIP keeps visible verses moving continuously when a line wraps.
-    for (const { row, box } of visibleRows) {
-      rowMotion.get(row)?.cancel();
-      const offset = box.top - row.getBoundingClientRect().top;
+    for (const { row, offset } of offsets) {
       if (Math.abs(offset) < 0.5) {
         rowMotion.delete(row);
         continue;

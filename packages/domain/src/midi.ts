@@ -142,6 +142,14 @@ export class RenderCache {
   private sequence = 0;
   public constructor(private readonly limitBytes = 96 * 1024 * 1024) {}
 
+  /** A presence check updates recency without copying a multi-megabyte render. */
+  public has(key: string): boolean {
+    const entry = this.entries.get(key);
+    if (!entry) return false;
+    entry.lastAccess = ++this.sequence;
+    return true;
+  }
+
   public async get(key: string): Promise<Uint8Array | undefined> {
     const entry = this.entries.get(key);
     if (!entry) return undefined;

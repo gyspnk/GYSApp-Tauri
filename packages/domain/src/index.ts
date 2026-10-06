@@ -59,6 +59,17 @@ export class MemoryChordCache {
     return this.entries.get(songId)?.ref;
   }
 
+  public async isCurrent(ref: ChordRef): Promise<boolean> {
+    const entry = this.entries.get(ref.songId);
+    return Boolean(
+      entry &&
+      entry.ref.sha256 === ref.sha256 &&
+      entry.ref.size === ref.size &&
+      (entry.ref.sourceCommit === ref.sourceCommit ||
+        !("sourceCommit" in entry.document)),
+    );
+  }
+
   public async pin(songId: string, pinned: boolean): Promise<void> {
     const entry = this.entries.get(songId);
     if (entry) entry.pinned = pinned;

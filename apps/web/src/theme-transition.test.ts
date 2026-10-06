@@ -4,6 +4,9 @@ const classes = new Set<string>();
 beforeEach(() => {
   vi.resetModules();
   classes.clear();
+  vi.stubGlobal("window", { scrollTo: vi.fn() });
+  vi.stubGlobal("scrollX", 0);
+  vi.stubGlobal("scrollY", 120);
   vi.stubGlobal("matchMedia", () => ({ matches: false }));
   vi.stubGlobal("document", {
     documentElement: {

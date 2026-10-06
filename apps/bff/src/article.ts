@@ -331,7 +331,9 @@ export async function fetchArticle(
 ): Promise<OnlineArticle> {
   const response = await fetch(url, {
     headers: { accept: "text/html,application/xhtml+xml" },
-    ...(signal ? { signal } : {}),
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(8000)])
+      : AbortSignal.timeout(8000),
   });
   if (!response.ok)
     throw new Error(`article source returned ${response.status}`);

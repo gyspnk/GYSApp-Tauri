@@ -11,6 +11,16 @@ export type ShellSettings = {
 /** The small storage surface used here keeps the boundary easy to test. */
 export type ShellStorage = Pick<Storage, "getItem" | "setItem">;
 
+/** Browser-backed shell preferences exposed through the platform boundary. */
+export function getShellSettingsStorage(): ShellStorage | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
 export const SHELL_SETTINGS_KEY = "gys-shell-settings-v1";
 export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
   version: 1,

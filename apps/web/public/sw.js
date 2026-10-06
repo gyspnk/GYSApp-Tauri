@@ -4,6 +4,7 @@ const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
+const editorialRequests = new Map();
 let cacheWritesPaused = false;
 // Covers are useful offline, but the service worker must not turn a long
 // browsing session into an unbounded disk cache. The verified asset manager
@@ -37,10 +38,8 @@ const OPTIONAL = [
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",
 ].map(withBase);
-// Editorial content snapshots change independently of the shell between
-// deploys. These must revalidate against the network first (falling back to
-// cache offline) so a GitHub Pages deploy is picked up without waiting for a
-// full shell update; shell-vendored code/data keeps cache-first below.
+// Editorial snapshots paint from disk immediately and refresh in the
+// background, independently of shell upgrades. Share concurrent refreshes.
 const CONTENT_JSON = [
   "offline/sauh.json",
   "offline/suara-sejati.json",
@@ -343,6 +342,23 @@ async function fetchAndCacheShell(request, waitUntil) {
   return response;
 }
 
+function refreshEditorial(request, cache) {
+  const existing = editorialRequests.get(request.url);
+  if (existing) return existing;
+  const task = fetch(request, {
+    cache: "no-cache",
+    signal: AbortSignal.timeout(8000),
+  })
+    .then(async (response) => {
+      if (!response.ok) throw new Error(String(response.status));
+      await putCached(cache, request, response.clone());
+      return response;
+    })
+    .finally(() => editorialRequests.delete(request.url));
+  editorialRequests.set(request.url, task);
+  return task;
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const requestUrl = new URL(event.request.url);
@@ -362,7 +378,6 @@ self.addEventListener("fetch", (event) => {
       caches.open(REMOTE_MEDIA_CACHE).then((cache) =>
         cache.match(event.request).then(async (cached) => {
           if (cached) {
-            await pruneRemoteMediaCache(cache);
             return cached;
           }
           const response = await fetch(event.request);
@@ -376,6 +391,9 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
+  // Public shell storage must not intercept authenticated or ranged API reads.
+  if (/\/api\//.test(requestUrl.pathname)) return;
 
   const isNavigation =
     event.request.mode === "navigate" ||
@@ -396,24 +414,18 @@ self.addEventListener("fetch", (event) => {
   if (CONTENT_JSON.includes(requestUrl.pathname)) {
     event.respondWith(
       (async () => {
-        try {
-          const response = await fetch(event.request, { cache: "no-cache" });
-          if (!response.ok) throw new Error(String(response.status));
-          const copy = response.clone();
-          event.waitUntil(
-            putNamedCached(CONTENT_CACHE, event.request, copy).catch(
-              () => undefined,
-            ),
-          );
-          return response;
-        } catch {
-          // offline / transient failure: serve the cached snapshot below
+        const cache = await caches.open(CONTENT_CACHE);
+        const cached = await cache.match(event.request);
+        const refresh = refreshEditorial(event.request, cache);
+        if (cached) {
+          event.waitUntil(refresh.catch(() => undefined));
+          return cached;
         }
-        return (
-          (await caches
-            .open(CONTENT_CACHE)
-            .then((cache) => cache.match(event.request))) ?? Response.error()
-        );
+        try {
+          return (await refresh).clone();
+        } catch {
+          return Response.error();
+        }
       })(),
     );
     return;
@@ -440,7 +452,13 @@ self.addEventListener("fetch", (event) => {
           cached ??
           fetch(event.request)
             .then((response) => {
-              if (!response.ok || isPdfResponse(requestUrl, response))
+              if (
+                !response.ok ||
+                isPdfResponse(requestUrl, response) ||
+                /(?:private|no-store)/i.test(
+                  response.headers.get("cache-control") ?? "",
+                )
+              )
                 return response;
               const copy = response.clone();
               event.waitUntil(

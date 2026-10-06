@@ -66,12 +66,33 @@ export function installControlMotion(): () => void {
       );
     }
   };
+  const dismiss = (event: PointerEvent | KeyboardEvent) => {
+    if (event.defaultPrevented) return;
+    const escape = event instanceof KeyboardEvent && event.key === "Escape";
+    if (event instanceof KeyboardEvent && !escape) return;
+    document
+      .querySelectorAll<HTMLDetailsElement>(
+        ".hymn-more-actions[open], .media-advanced-controls[open], .pdf-music-menu[open]",
+      )
+      .forEach((details) => {
+        const containsTarget =
+          event.target instanceof Node && details.contains(event.target);
+        if (!escape && containsTarget) return;
+        details.open = false;
+        if (escape && containsTarget)
+          details
+            .querySelector<HTMLElement>(":scope > summary")
+            ?.focus({ preventScroll: true });
+      });
+  };
   document.addEventListener("pointerdown", press);
   document.addEventListener("keydown", press);
   document.addEventListener("pointerup", release);
   document.addEventListener("pointercancel", release);
   document.addEventListener("keyup", release);
   document.addEventListener("toggle", toggle, true);
+  document.addEventListener("pointerdown", dismiss);
+  document.addEventListener("keydown", dismiss);
   window.addEventListener("blur", release);
   reduced.addEventListener("change", release);
   return () => {
@@ -82,6 +103,8 @@ export function installControlMotion(): () => void {
     document.removeEventListener("pointercancel", release);
     document.removeEventListener("keyup", release);
     document.removeEventListener("toggle", toggle, true);
+    document.removeEventListener("pointerdown", dismiss);
+    document.removeEventListener("keydown", dismiss);
     window.removeEventListener("blur", release);
     reduced.removeEventListener("change", release);
   };

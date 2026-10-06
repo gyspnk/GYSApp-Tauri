@@ -66,6 +66,7 @@ export async function fetchSuaraSejati(
   sourceUrl = SOURCE,
 ): Promise<SuaraSejatiPost[]> {
   const source = new URL(sourceUrl);
+  const signal = AbortSignal.timeout(15_000);
   source.searchParams.set("per_page", String(PAGE_SIZE));
   const sourcePosts: unknown[] = [];
   let page = 1;
@@ -74,6 +75,7 @@ export async function fetchSuaraSejati(
     source.searchParams.set("page", String(page));
     const response = await fetch(source.toString(), {
       headers: { accept: "application/json" },
+      signal,
     });
     if (!response.ok)
       throw new Error(`Suara Sejati source returned ${response.status}`);
