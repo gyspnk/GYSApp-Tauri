@@ -2845,9 +2845,9 @@ try {
       "Packaged Faith note restore",
   );
   await page.goto(new URL("/", origin).href);
-  await page.getByRole("button", { name: "Bahasa", exact: true }).click();
+  await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
   await page.getByRole("option", { name: "EN", exact: true }).click();
-  await page.getByRole("button", { name: "Theme", exact: true }).click();
+  await page.getByRole("combobox", { name: "Theme", exact: true }).click();
   await page.getByRole("option", { name: "Dark", exact: true }).click();
   await page.waitForFunction(() => {
     const settings = JSON.parse(
@@ -2937,10 +2937,12 @@ try {
     "MIDI settings did not survive restarting packaged Tauri",
   );
   await restoredPage
-    .getByRole("button", { name: "Language", exact: true })
+    .getByRole("combobox", { name: "Language", exact: true })
     .click();
   await restoredPage.getByRole("option", { name: "ID", exact: true }).click();
-  await restoredPage.getByRole("button", { name: "Tema", exact: true }).click();
+  await restoredPage
+    .getByRole("combobox", { name: "Tema", exact: true })
+    .click();
   await restoredPage
     .getByRole("option", { name: "Terang", exact: true })
     .click();

@@ -116,6 +116,8 @@ MIDI Stop opens its disclosure when needed; speech Stop does not use that menu.
 Play dismisses advanced controls, so keyboard tempo edits reopen the disclosure
 and tempo popover before focusing the range. The real FluidSynth cache browser
 case covers Stop, replay, disclosure dismissal and the subsequent End edit.
+Header language/theme selectors expose the combobox role; native preference
+restore checks use their localized accessible names before and after restart.
 
 Single-page PDF navigation changes hymns; multi-page scores expose both page
 and hymn navigation. Continuous wheel zoom and computed typography do not have

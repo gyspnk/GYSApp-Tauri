@@ -7,6 +7,22 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — complete MIDI soak and native shell selectors
+
+- Delivered `fc8405a` passes Pages and every CI job: **697 browser passes,
+  three existing optional-package skips and no retries**, with the same
+  700-case inventory. Shards finish in **8.7 / 8.9 / 7.7 minutes**.
+- Windows now passes live Edge speech, FluidSynth cancellation and all musical
+  controls, maximum-tempo playback, the two full upstream tracks, **120 further
+  queue transitions** and the original **16 MiB retained-heap bound**. The
+  preferences and Faith note save assertions also pass. It then stops before
+  graceful restart because the harness still looks for header language/theme
+  selectors as buttons. Both controls now expose the combobox role. All four
+  localized selectors before/after restart are corrected; the browser follows
+  EN/dark, reload and ID/light through the same controls successfully. Runtime
+  source and native assertions are unchanged. Hosted restart proof remains
+  required for this follow-up.
+
 ### 2026-10-07 — hosted browser pass and keyboard tempo access
 
 - Delivered `84c8eda` passes Pages and every CI job. The complete **700-case**
