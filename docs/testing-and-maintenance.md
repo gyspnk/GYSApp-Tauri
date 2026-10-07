@@ -100,7 +100,10 @@ then rerun without snapshot updates. Immutable reader assets, frozen snapshot
 clocks and blocked provider SDKs isolate visual/performance tests from upstream
 availability; provider behavior remains covered by its own contracts.
 Chromium disables LCD text rasterization so hosted and local glyph edges use
-the same grayscale rendering; strict screenshot thresholds remain unchanged.
+the same grayscale rendering.
+The Bible filter screenshot permits one differing SVG edge pixel. Bundled
+reading fonts include U+2212 so minus controls do not change width with the
+host's fallback font; CDP checks the font actually used, not only CSS loading.
 
 Closed animated/native disclosures can retain a box while their contents are
 not interactive. Check visibility before auditing target sizes. Verse bookmark
@@ -118,6 +121,9 @@ native disclosure timeline allows sampling its intermediate size under load.
 Chord spacing probes pause the real transition at creation and sample its
 midpoint in both directions. Theme tests delay the lazy module to verify that
 selection cancels pending focus scroll before loading, not after it completes.
+PDF zoom caps delayed-frame steps; active-page tracking also samples after
+placeholder rendering. The cold real-MIDI play assertion allows 15 seconds for
+lazy WASM/PCM preparation within its existing 35-second test budget.
 
 The native Stop regression accepts current-request cancellation or nonempty
 completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
@@ -127,6 +133,9 @@ chord markers and the completed loading state, then verify stored bytes. Their
 mutable manifest endpoint is pinned to the immutable corruption/upgrade bytes;
 the previous manifest and cache state are restored afterward. Live incremental
 manifest updates remain covered separately by startup/repository contracts.
+The native Home fixture survives document reloads through session state until
+explicit cleanup. Its browser regression forces reloads before and after
+recovery and verifies monotonic requests, preserved availability and cleanup.
 
 ## Hooks and delivery
 

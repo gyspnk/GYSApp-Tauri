@@ -250,6 +250,7 @@ const MIDI_NEXT_FIXTURE_HASH = createHash("sha256")
   .digest("hex");
 
 async function prepareMidiDockFixture(page: Page) {
+  await preparePinnedReaderAssets(page);
   await page.addInitScript(() => {
     localStorage.setItem("gys-media-minimized", "0");
     const handlers: Record<string, (details?: unknown) => unknown> = {};
@@ -469,9 +470,12 @@ test("MIDI dock transport and sound controls update playback state", async ({
   const media = page.locator(".media-surface.is-kidung-media");
   const play = media.locator(".media-primary-control");
   const position = media.getByLabel("Posisi MIDI");
+  await expect(page.locator(".hymn-midi-toggle")).toHaveAttribute("aria-busy", "false");
+  await expect(media.locator(".media-load-track")).toHaveCount(0);
   await expect(position).toHaveAttribute("max", "10");
   await play.click();
-  await expect(play).toHaveAttribute("aria-label", "Jeda");
+  // The first play lazily compiles WASM and renders real PCM on hosted CPUs.
+  await expect(play).toHaveAttribute("aria-label", "Jeda", { timeout: 15_000 });
   await position.focus();
   await position.press("ArrowRight");
   await expect

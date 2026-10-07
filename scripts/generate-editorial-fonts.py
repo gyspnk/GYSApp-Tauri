@@ -35,7 +35,7 @@ for family, filename, name, expected_digest in SOURCES:
     if hashlib.sha256(data).hexdigest() != expected_digest:
         raise RuntimeError(f"Source checksum mismatch: {filename}")
     license_data = urllib.request.urlopen(base + "OFL.txt", timeout=60).read()
-    (OUTPUT / (name + "-OFL.txt")).write_bytes(license_data)
+    (OUTPUT / (name + "-OFL.txt")).write_bytes(license_data.replace(b"\r\n", b"\n"))
     font = TTFont(io.BytesIO(data), recalcTimestamp=False)
     if family == "sourcesans3":
         names = {1: "GYS Reading Sans", 2: "Regular", 3: "GYSReadingSans-Subset-1", 4: "GYS Reading Sans", 6: "GYSReadingSans", 16: "GYS Reading Sans", 17: "Regular", 25: "GYSReadingSans"}
@@ -50,7 +50,7 @@ for family, filename, name, expected_digest in SOURCES:
     if family == "notoserifsc":
         chars = {ord(c) for c in corpus if "\u3000" <= c <= "\u9fff" or "\uff00" <= c <= "\uffef"}
     else:
-        chars = set(range(0x20, 0x250)) | set(range(0x1e00, 0x1f00)) | set(range(0x2000, 0x2070)) | set(range(0x20a0, 0x20d0))
+        chars = set(range(0x20, 0x250)) | set(range(0x1e00, 0x1f00)) | set(range(0x2000, 0x2070)) | set(range(0x20a0, 0x20d0)) | {0x2212}
     sub.populate(unicodes=chars)
     sub.subset(font)
     font.flavor = "woff2"

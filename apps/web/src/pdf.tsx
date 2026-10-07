@@ -309,6 +309,9 @@ function VerticalPdfPage({
               canvas.getContext("2d")!.drawImage(buffer, 0, 0);
               canvas.dataset.pdfPageNumber = String(pageNumber);
               zoomController.current?.refresh();
+              // Recheck the active page after a placeholder acquires its final
+              // size, even when the viewport does not emit another scroll.
+              stage?.dispatchEvent(new Event("pdfpageready"));
             }
           })
           .finally(() => {
@@ -644,8 +647,10 @@ export function PdfReader({
       });
     };
     stage.addEventListener("scroll", onScroll, { passive: true });
+    stage.addEventListener("pdfpageready", onScroll);
     return () => {
       stage.removeEventListener("scroll", onScroll);
+      stage.removeEventListener("pdfpageready", onScroll);
       if (frame !== undefined) cancelAnimationFrame(frame);
     };
   }, [effectiveLayout, markActivePage]);

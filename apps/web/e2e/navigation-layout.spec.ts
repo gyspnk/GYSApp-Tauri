@@ -752,6 +752,10 @@ test.describe("responsive reader navigation", () => {
   test("lazy route errors keep the shell and expose a working retry", async ({
     page,
   }) => {
+    // Exercise the fallback after the one automatic chunk reload is exhausted.
+    await page.addInitScript(() =>
+      sessionStorage.setItem("gys_chunk_reload", "1"),
+    );
     let abortedFaithChunk = false;
     let failFaithChunk = true;
     await page.route("**/assets/faith-*.js", async (route) => {
@@ -784,9 +788,7 @@ test.describe("responsive reader navigation", () => {
 
     failFaithChunk = false;
     await retry.click();
-    await expect(
-      page.getByRole("heading", { name: "Dasar Kepercayaan" }),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".faith-rows")).toBeVisible({ timeout: 15_000 });
   });
 
   test("focused hymn reader keeps navigation and actions accessible", async ({

@@ -277,6 +277,8 @@ test("Bible search filters 1440x900 visual baseline", async ({ page }) => {
   await expect(page).toHaveScreenshot("bible-search-filters-1440x900.png", {
     animations: "disabled",
     caret: "hide",
+    // Hosted SVG rasterization can differ at one chevron edge pixel.
+    maxDiffPixels: 1,
   });
 });
 

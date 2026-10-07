@@ -2,6 +2,36 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "allow" });
 
+test("reader minus controls use the bundled font without system fallback", async ({
+  page,
+  context,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+  await page.locator(".hymn-more-actions-summary").click();
+  await page.locator(".hymn-reader-settings-summary").click();
+  await expect(
+    page.locator(".reader-preferences button").first(),
+  ).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  const session = await context.newCDPSession(page);
+  await session.send("DOM.enable");
+  await session.send("CSS.enable");
+  const { root } = await session.send("DOM.getDocument");
+  const { nodeId } = await session.send("DOM.querySelector", {
+    nodeId: root.nodeId,
+    selector: ".reader-preferences button:first-of-type",
+  });
+  const { fonts } = await session.send("CSS.getPlatformFontsForNode", {
+    nodeId,
+  });
+  expect(fonts).toHaveLength(1);
+  expect(fonts[0]!.familyName).toBe("GYS Reading Sans");
+  expect(fonts[0]!.isCustomFont).toBe(true);
+  await session.detach();
+});
+
 test("an installed shell retains its reading fonts before switching language offline", async ({
   page,
   context,

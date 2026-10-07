@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { installNativeHomeFixture } from "./native-home-fixture.mjs";
 import { edgeStopEvidence } from "../../../scripts/edge-stop-evidence.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
@@ -553,77 +554,17 @@ try {
   await page.locator(".home-grid").waitFor({ state: "visible" });
   const homeReadyMs = Date.now() - homeStartedAt;
   const homeFailurePage = page;
-  await homeFailurePage.addInitScript((recoverySauh) => {
-    if (window.sessionStorage.getItem("gys-native-home-fixture-used") === "1")
-      return;
-    window.sessionStorage.setItem("gys-native-home-fixture-used", "1");
-    for (const storage of [window.localStorage, window.sessionStorage]) {
-      for (let index = storage.length - 1; index >= 0; index--) {
-        const key = storage.key(index);
-        if (
-          key === "gys-activity-v1" ||
-          key === "gys_suara_feed_v3" ||
-          key === "gys_literature_catalog_v5" ||
-          key?.startsWith("gys_sauh_v2_day_")
-        )
-          storage.removeItem(key);
-      }
-    }
-    window.__gysNativeHomeRequests = {
-      sauh: 0,
-      suara: 0,
-      literature: 0,
-      publisher: 0,
-    };
-    window.__gysNativeHomeFeedsAvailable = false;
-    const fixtures = new Map([
-      ["/offline/sauh.json", ["sauh", { items: [] }]],
-      [
-        "/offline/suara-sejati.json",
-        ["suara", { source: "tjc.org", items: [] }],
-      ],
-      [
-        "/offline/literature.json",
-        ["literature", { source: "tjc.org", items: [] }],
-      ],
-    ]);
-    const nativeFetch = window.fetch.bind(window);
-    window.fetch = (input, init) => {
-      const requestUrl = input instanceof Request ? input.url : String(input);
-      const url = new URL(requestUrl, window.location.href);
-      const fixture =
-        url.origin === window.location.origin
-          ? fixtures.get(
-              url.pathname.slice(url.pathname.lastIndexOf("/offline/")),
-            )
-          : undefined;
-      if (fixture) {
-        const [name, emptyValue] = fixture;
-        window.__gysNativeHomeRequests[name] += 1;
-        if (window.__gysNativeHomeFeedsAvailable)
-          return nativeFetch(input, init);
-        return Promise.resolve(
-          new Response(JSON.stringify(emptyValue), {
-            headers: { "content-type": "application/json" },
-          }),
-        );
-      }
-      if (url.origin !== window.location.origin) {
-        window.__gysNativeHomeRequests.publisher += 1;
-        if (
-          window.__gysNativeHomeFeedsAvailable &&
-          url.pathname.includes("/wp-json/wp/v2/posts")
-        )
-          return Promise.resolve(
-            new Response(JSON.stringify([recoverySauh]), {
-              headers: { "content-type": "application/json" },
-            }),
-          );
-        return Promise.reject(new TypeError("Failed to fetch"));
-      }
-      return nativeFetch(input, init);
-    };
-  }, recoverySauh);
+  await homeFailurePage.evaluate(() => {
+    sessionStorage.setItem(
+      "gys-native-home-fixture-v1",
+      JSON.stringify({
+        requests: { sauh: 0, suara: 0, literature: 0, publisher: 0 },
+        available: false,
+        initialized: false,
+      }),
+    );
+  });
+  await homeFailurePage.addInitScript(installNativeHomeFixture, recoverySauh);
   await homeFailurePage.goto(new URL("/", runtimeOrigin).href);
   await homeFailurePage.locator(".home-grid").waitFor({ state: "visible" });
   const homeSauhError = homeFailurePage.locator(".sauh-offline-state");
@@ -665,7 +606,7 @@ try {
     const previous = homeRetryRequests[requestKey];
     await errorPanel.locator("button").click();
     await homeFailurePage.waitForFunction(
-      ({ key, count }) => window.__gysNativeHomeRequests[key] > count,
+      ({ key, count }) => (window.__gysNativeHomeRequests?.[key] ?? 0) > count,
       { key: requestKey, count: previous },
       { timeout: 5_000 },
     );
@@ -738,6 +679,7 @@ try {
     externalRequestsBlocked: true,
     noHorizontalOverflow: true,
   };
+  await homeFailurePage.evaluate(() => window.__gysNativeHomeRestore());
   const initialServiceWorker = await page.evaluate(() => ({
     supported: "serviceWorker" in navigator,
     controller: navigator.serviceWorker?.controller?.scriptURL ?? null,

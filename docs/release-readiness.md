@@ -7,6 +7,39 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — font, PDF and reload resilience follow-up
+
+- Hosted `89a8330` passed Pages, build, unit/type/provenance, Rust and secret
+  checks. Its full browser suite reported 688 clean passes, two passes on retry,
+  four failures and three existing optional-package skips. LCD normalization
+  removed seven of the nine earlier visual failures. The remaining reader
+  controls revealed missing U+2212 in the bundled font: their minus sign used
+  different system fonts and shifted neighboring labels. Regenerated pinned
+  fonts include that glyph; a Chromium platform-font check proves custom-font
+  rendering. The one-pixel Bible chevron difference has a narrowly scoped
+  one-pixel allowance; other strict visual thresholds remain unchanged.
+- The lazy-route failure fixture now exercises recovery after the single
+  automatic chunk reload is exhausted and checks the current Faith list. PDF
+  zoom limits each delayed-frame step, and continuous readers recheck the active
+  page when a placeholder receives its rendered dimensions. Repeated wheel,
+  pinch, pan, page-memory/scroll, route-retry and font/offline contracts pass.
+- Windows passed build, quick suites and the 30-process benchmark, then its
+  Home fixture disappeared across a document reload. The fixture now persists
+  counters and recovery availability until explicit cleanup, restores fetch
+  afterward and tolerates a document temporarily missing its probe. Both Home
+  resilience and forced-reload contracts pass three repetitions: **6/6 in
+  13.1 seconds**, without retries.
+- The first real MIDI play lazily prepares WASM/PCM. Its single cold-play
+  assertion now uses the existing 15-second render budget, with pinned metadata
+  and loading-state checks, while retaining the 35-second whole-test limit.
+  Five repetitions pass **5/5 in 21.2 seconds**, without retries. Native cache
+  recovery/upgrade proof still requires the next complete Windows run.
+- Build and generated font/license integrity pass. The initial JS graph remains
+  **175.4 / 180 KiB**; the native boundary remains **25 files**, now
+  **38,622,842 bytes**, including regenerated fonts from the current corpus.
+  The corrected reader-controls baseline was inspected; the full visual suite
+  passes **31/31 in 59.1 seconds**, without retries or further snapshot updates.
+
 ### 2026-10-07 — hosted CI follow-up after delivery
 
 - Delivered `826af28` to `main`. Pages, build, deterministic verification,

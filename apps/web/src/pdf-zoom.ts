@@ -126,7 +126,8 @@ export function installPdfZoom(
     }
   };
   const tick = (time: number) => {
-    const elapsed = previousTime ? Math.min(time - previousTime, 64) : 16;
+    // A delayed frame must not turn continuous zoom into a large geometry jump.
+    const elapsed = previousTime ? Math.min(time - previousTime, 16) : 16;
     previousTime = time;
     percent += (target - percent) * (1 - Math.exp(-elapsed / 55));
     const finished = Math.abs(target - percent) < 0.02;
