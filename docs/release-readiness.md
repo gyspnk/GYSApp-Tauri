@@ -7,6 +7,21 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — compact native transport fixture follow-up
+
+- Delivered `24ad29e`; Pages, build, deterministic verification, Rust and secret
+  checks passed. Windows passed quick suites, 30 relaunches, Home recovery,
+  corrupt-chord repair, verified offline reuse, one-fetch legacy offline
+  revalidation/upgrade and PDF fallback/corrupt-cache repair. It then tried to
+  click the MIDI Stop button inside a closed advanced disclosure.
+- The native fixture now follows the visible disclosure path and restores its
+  previous state afterward. For the render-cancellation contract it opens the
+  menu before Play, preserving the assertion that Stop terminates active work.
+  The same helper exercises real browser FluidSynth playback/cache: **3/3 in
+  9.1 seconds**, with three workers and no retries. Stopping resets position,
+  preserves rendered buffers and returns the menu to its closed state. The
+  remaining complete Windows media soak still requires a follow-up run.
+
 ### 2026-10-07 — delayed MIDI metadata and offline refresh follow-up
 
 - Hosted `e2ac956` passed Pages, build, deterministic verification, Rust and

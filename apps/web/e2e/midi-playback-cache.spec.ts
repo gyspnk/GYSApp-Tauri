@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickMediaStop } from "../scripts/native-media-controls.mjs";
 import {
   preparePinnedMidiAsset,
   preparePinnedReaderAssets,
@@ -88,4 +89,14 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   ).toBeVisible();
   expect(await counts()).toEqual(changed);
   await expect(player).toHaveAttribute("data-backend", "fluidsynth");
+  await expect(player.locator(".media-stop-control")).toBeHidden();
+  await clickMediaStop(page);
+  await expect(
+    player.getByRole("button", { name: "Putar", exact: true }),
+  ).toBeVisible();
+  await expect(player.getByLabel("Posisi MIDI")).toHaveValue("0");
+  await expect(player.locator(".media-advanced-controls")).not.toHaveAttribute(
+    "open",
+  );
+  expect(await counts()).toEqual(changed);
 });

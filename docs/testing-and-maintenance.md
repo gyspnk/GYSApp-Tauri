@@ -132,8 +132,13 @@ advance the queue during sidebar animation checks.
 The native Stop regression accepts current-request cancellation or nonempty
 completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
 rejects stale, empty and error diagnostics; packaged Windows execution remains
-necessary to prove the whole native flow. Cache smoke tests wait for rendered
-chord markers and the completed loading state, then verify stored bytes. Their
+necessary to prove the whole native flow.
+The shared native transport helper opens MIDI's advanced disclosure before
+using Stop and restores the previous disclosure afterward. Render-cancellation
+checks expose Stop before Play so menu motion cannot consume the cancellation
+window. Its browser contract checks real FluidSynth Stop, position and PCM reuse.
+Cache smoke tests wait for rendered chord markers and the completed loading
+state, then verify stored bytes. Their
 mutable manifest endpoint is pinned to the immutable corruption/upgrade bytes;
 the previous manifest and cache state are restored afterward. Live incremental
 manifest updates remain covered separately by startup/repository contracts.

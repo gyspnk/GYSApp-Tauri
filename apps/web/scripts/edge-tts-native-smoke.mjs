@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { installNativeHomeFixture } from "./native-home-fixture.mjs";
+import { clickMediaStop } from "./native-media-controls.mjs";
 import { edgeStopEvidence } from "../../../scripts/edge-stop-evidence.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
@@ -1019,7 +1020,7 @@ try {
   );
   await readerButton.click();
   await waitForDiagnostic(page, "tts.edge.receive");
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await page.waitForFunction(
     (label) =>
       document
@@ -1091,7 +1092,7 @@ try {
         ?.getAttribute("aria-label") ?? "",
     ),
   );
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await page.waitForFunction(
     (label) =>
       document
@@ -1139,7 +1140,7 @@ try {
     /^Playing [1-9]\d* audio bytes$/,
     "The repeated request did not enter playback",
   );
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await page.waitForFunction(
     (label) =>
       document
@@ -1222,7 +1223,7 @@ try {
     assert.equal(localSpeechPlayback.language, localSpeechVoice.language);
     assert.equal(localSpeechPlayback.local, true);
     if (localSpeechPlayback.started) {
-      await page.locator(".media-stop-control").click();
+      await clickMediaStop(page);
       await page.waitForFunction(
         (label) =>
           document
@@ -2032,13 +2033,16 @@ try {
   const upstreamMidiPrimary = upstreamMidiSurface.locator(
     ".media-primary-control",
   );
+  // Stop lives in the compact dock's advanced menu. Expose it before the
+  // render begins so this assertion still measures cancellation during work.
+  await upstreamMidiSurface.locator(".media-advanced-summary").click();
   await upstreamMidiPrimary.click();
   await page.waitForFunction(
     () => window.__gysMidiSmoke?.activeRenders.size > 0,
     null,
     { timeout: 20_000, polling: 5 },
   );
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await waitForMidiButtonLabel(page, "Putar", 10_000);
   await page.waitForFunction(
     () => window.__gysMidiSmoke?.cancelledRenders > 0,
@@ -2052,6 +2056,7 @@ try {
     midiCancelledRenders > 0,
     "Stopping during FluidSynth rendering did not terminate the active worker",
   );
+  await upstreamMidiSurface.locator(".media-advanced-summary").click();
   const recoveredMidiCache = await page.evaluate(async (url) => {
     const response = await (
       await caches.open("gys-music-assets-v1")
@@ -2305,7 +2310,7 @@ try {
   );
   await waitForMidiButtonLabel(page, "Jeda");
 
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await waitForMidiButtonLabel(page, "Putar", 10_000);
   assert.equal(Number(await upstreamMidiPosition.inputValue()), 0);
   await upstreamMidiPrimary.click();
@@ -2487,7 +2492,7 @@ try {
     `Native queue advanced before hymn-002 completed: ${fullQueueSecondMs}ms for ${fullQueueSecondDuration}s`,
   );
 
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await waitForMidiButtonLabel(page, "Putar", 10_000);
   assert.deepEqual(
     blockedCachedMusicRequests,
@@ -2679,7 +2684,7 @@ try {
     }
   }
   const midiAutoplayMs = Date.now() - midiStartedAt;
-  await page.locator(".media-stop-control").click();
+  await clickMediaStop(page);
   await page.waitForFunction(
     () =>
       document
