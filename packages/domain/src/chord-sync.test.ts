@@ -39,6 +39,86 @@ function bytesFor(documentValue: ChordDocumentV2): Uint8Array {
 }
 
 describe("ChordRepository", () => {
+  it("backs off failed automatic legacy refreshes while allowing an explicit retry", async () => {
+    const cache = Object.assign(new MemoryChordCache(), {
+      isCurrent: async () => false,
+      isIntegrityVerified: () => false,
+    });
+    const content = bytesFor(document);
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      content as BufferSource,
+    );
+    const contentRef = {
+      ...ref,
+      size: content.byteLength,
+      sha256: [...new Uint8Array(digest)]
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join(""),
+    };
+    await cache.putAtomic(contentRef, document, content);
+    const fetch = vi.fn().mockRejectedValue(new Error("offline"));
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => ({
+          manifest: { ...manifest, entries: [contentRef] },
+        }),
+        fetchChord: fetch,
+      },
+      cache,
+      () => 0,
+    );
+    await expect(repository.syncAll()).resolves.toEqual({
+      checked: 1,
+      failed: 1,
+    });
+    await expect(repository.getChord(ref.songId)).resolves.toEqual(document);
+    await expect(repository.syncAll()).resolves.toEqual({
+      checked: 1,
+      failed: 1,
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+    fetch.mockResolvedValue({ bytes: content, document });
+    await expect(repository.revalidateSong(ref.songId)).resolves.toEqual(
+      document,
+    );
+    expect(fetch).toHaveBeenCalledTimes(2);
+    await repository.dispose();
+  });
+
+  it("retries automatic refresh after the cooldown or an immutable source change", async () => {
+    const cache = Object.assign(new MemoryChordCache(), {
+      isCurrent: async () => false,
+      isIntegrityVerified: () => false,
+    });
+    await cache.putAtomic(ref, document, bytesFor(document));
+    let now = 0;
+    let current = manifest;
+    const fetch = vi.fn().mockRejectedValue(new Error("offline"));
+    const repository = new ChordRepository(
+      {
+        getManifest: async () => ({ manifest: current }),
+        fetchChord: fetch,
+      },
+      cache,
+      () => now,
+    );
+    await repository.syncAll();
+    await repository.syncAll();
+    expect(fetch).toHaveBeenCalledOnce();
+    now = 60_001;
+    await repository.syncAll();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    current = {
+      ...manifest,
+      sourceCommit: "deadbee",
+      entries: [{ ...ref, sourceCommit: "deadbee" }],
+    };
+    await repository.syncAll();
+    expect(fetch).toHaveBeenCalledTimes(3);
+    await repository.dispose();
+  });
+
   it("drains every startup worker on disposal without committing late downloads", async () => {
     const cache = Object.assign(new MemoryChordCache(), {
       dispose: vi.fn(async () => undefined),

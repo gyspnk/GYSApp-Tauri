@@ -7,6 +7,33 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — delayed MIDI metadata and offline refresh follow-up
+
+- Hosted `e2ac956` passed Pages, build, deterministic verification, Rust and
+  secret checks. Browser shard 2 passed 348 cases, including the repaired visual
+  and PDF contracts, and failed one Suara fixture due to an unmocked literature
+  preload. Shard 1 passed 345 cases with three existing optional-package skips,
+  one MIDI failure and one speech pause pass on retry; its 15-minute job budget
+  expired at completion. The Suara fixture now supplies that background feed.
+- The MIDI trace exposed a production race: simultaneous delayed PDF tempo and
+  transpose updates could cancel the first playback restart while seeing its
+  temporary paused state. Play now publishes loading intent before resuming
+  AudioContext. A regression failed with `paused` before the fix and passes
+  afterward; all **29 player/queue units** pass. The speech test fixture now
+  pauses its timer rather than advancing utterances while supposedly paused.
+  Four repetitions of the affected MIDI/sidebar browser cases pass **16/16
+  in 30.8 seconds**, with three workers and no retries. Build and type checks
+  pass; the initial JS graph remains within budget at **175.6 / 180 KiB**.
+- Windows passed build, quick suites, 30 process relaunches, Home recovery,
+  one-fetch corrupt-chord repair and zero-fetch verified offline reuse. Its
+  legacy-offline phase found two sequential refresh attempts instead of one.
+  Failed automatic refreshes now back off for 60 seconds per immutable source;
+  explicit retry and source changes remain immediate. Two regression units
+  failed before the fix; all **10 repository units**, **17 browser cache units**
+  and the startup cache browser contract pass afterward. Suara passes **6/6
+  in 16.8 seconds**, without retries. The complete hosted/native follow-up is
+  still required; these local results do not claim the failed run is green.
+
 ### 2026-10-07 — font, PDF and reload resilience follow-up
 
 - Hosted `89a8330` passed Pages, build, unit/type/provenance, Rust and secret

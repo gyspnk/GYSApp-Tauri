@@ -75,6 +75,11 @@ export class ChordRepository {
   private inFlight: Promise<ChordManifestV1> | undefined;
   /** A song may be opened by several surfaces at once; share one verified fetch. */
   private readonly inFlightSongs = new Map<string, Promise<ChordDocumentV2>>();
+  /** Avoid repeated offline legacy upgrades; explicit retries bypass this gate. */
+  private readonly failedRefreshes = new Map<
+    string,
+    { ref: ChordRef; at: number }
+  >();
   /** Missing songs are remembered per immutable source commit for rollback safety. */
   private readonly negative = new Map<string, number>();
 
@@ -138,6 +143,10 @@ export class ChordRepository {
           const entry = manifest.entries[index++]!;
           try {
             if (await this.cache.isCurrent?.(entry)) continue;
+            if (!this.canAutomaticallyRefresh(entry.songId)) {
+              failed += 1;
+              continue;
+            }
             await this.revalidateSong(entry.songId, signal);
           } catch (error) {
             if (signal?.aborted) throw error;
@@ -160,7 +169,8 @@ export class ChordRepository {
     const cached = await this.cache.get(songId);
     signal.throwIfAborted();
     if (cached) {
-      void this.revalidateSong(songId, signal).catch(() => undefined);
+      if (this.canAutomaticallyRefresh(songId))
+        void this.revalidateSong(songId, signal).catch(() => undefined);
       return cached;
     }
     return this.revalidateSong(songId, signal);
@@ -177,11 +187,31 @@ export class ChordRepository {
     const request = this.revalidateSongFresh(songId, signal);
     this.inFlightSongs.set(songId, request);
     try {
-      return await request;
+      const document = await request;
+      this.failedRefreshes.delete(songId);
+      return document;
+    } catch (error) {
+      const ref = this.refs.get(songId);
+      if (ref && !signal.aborted)
+        this.failedRefreshes.set(songId, { ref, at: this.now() });
+      throw error;
     } finally {
       if (this.inFlightSongs.get(songId) === request)
         this.inFlightSongs.delete(songId);
     }
+  }
+
+  private canAutomaticallyRefresh(songId: string): boolean {
+    const failed = this.failedRefreshes.get(songId);
+    const ref = this.refs.get(songId);
+    return (
+      !failed ||
+      !ref ||
+      ref.sourceCommit !== failed.ref.sourceCommit ||
+      ref.sha256 !== failed.ref.sha256 ||
+      ref.size !== failed.ref.size ||
+      this.now() - failed.at >= MANIFEST_COOLDOWN_MS
+    );
   }
 
   private async revalidateSongFresh(

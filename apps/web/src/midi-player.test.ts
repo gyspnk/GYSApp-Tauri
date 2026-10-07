@@ -132,6 +132,41 @@ class FakeBufferSourceNode {
 }
 
 describe("MIDI operation generation", () => {
+  it("keeps playback active when delayed PDF tempo and transpose arrive together", async () => {
+    const player = new BrowserMidiPlayer();
+    const internal = player as unknown as {
+      ensureAudio: () => AudioContext;
+      scheduleOscillator: ReturnType<typeof vi.fn>;
+      startTimer: ReturnType<typeof vi.fn>;
+      updatePositionFromClock: ReturnType<typeof vi.fn>;
+    };
+    internal.ensureAudio = () =>
+      ({ resume: async () => undefined, currentTime: 0 }) as AudioContext;
+    internal.scheduleOscillator = vi.fn();
+    internal.startTimer = vi.fn();
+    internal.updatePositionFromClock = vi.fn();
+    await player.load("hymn-002", "Second hymn", {
+      ppq: 480,
+      tempo: 100,
+      events: [],
+    });
+    await player.play();
+    expect(player.snapshot().status).toBe("playing");
+
+    await Promise.all([
+      player.setTempo(88, { userOverride: false }),
+      player.setTranspose(-1, { userOverride: false }),
+    ]);
+
+    expect(player.snapshot()).toMatchObject({
+      status: "playing",
+      tempo: 88,
+      transpose: -1,
+    });
+    expect(internal.scheduleOscillator).toHaveBeenCalledTimes(2);
+    expect(player.hasTransposePreference()).toBe(false);
+  });
+
   it("shares an in-flight render when play is requested again instead of leaving loading stuck", async () => {
     vi.stubGlobal("Worker", FakeWorker);
     try {

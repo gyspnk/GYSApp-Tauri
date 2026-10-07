@@ -124,6 +124,10 @@ selection cancels pending focus scroll before loading, not after it completes.
 PDF zoom caps delayed-frame steps; active-page tracking also samples after
 placeholder rendering. The cold real-MIDI play assertion allows 15 seconds for
 lazy WASM/PCM preparation within its existing 35-second test budget.
+Playback intent is published before AudioContext resume so simultaneous delayed
+PDF tempo/transpose updates preserve playback. The speech fixture pauses its
+utterance timer and resumes the remaining duration; a no-op pause would falsely
+advance the queue during sidebar animation checks.
 
 The native Stop regression accepts current-request cancellation or nonempty
 completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
@@ -133,6 +137,10 @@ chord markers and the completed loading state, then verify stored bytes. Their
 mutable manifest endpoint is pinned to the immutable corruption/upgrade bytes;
 the previous manifest and cache state are restored afterward. Live incremental
 manifest updates remain covered separately by startup/repository contracts.
+Failed automatic chord refreshes back off for 60 seconds per immutable source
+fingerprint. Cached legacy chords remain usable offline; explicit song retries
+and changed commits/hashes/sizes bypass the cooldown. Reopening a reader after
+a failed startup refresh does not issue another redundant offline request.
 The native Home fixture survives document reloads through session state until
 explicit cleanup. Its browser regression forces reloads before and after
 recovery and verifies monotonic requests, preserved availability and cleanup.

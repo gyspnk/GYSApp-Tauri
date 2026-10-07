@@ -105,14 +105,41 @@ async function openSpeechPlayerAtDesktop(
       localService: true,
       default: true,
     };
+    let active: { onend?: () => void } | undefined;
+    let timer: number | undefined;
+    let remaining = 1_200;
+    let started = 0;
+    const schedule = () => {
+      started = performance.now();
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        const ended = active;
+        active = undefined;
+        ended?.onend?.();
+      }, remaining);
+    };
     const synthesis = {
       getVoices: () => [voice],
       speak: (utterance: { onend?: () => void }) => {
-        window.setTimeout(() => utterance.onend?.(), 1_200);
+        window.clearTimeout(timer);
+        active = utterance;
+        remaining = 1_200;
+        schedule();
       },
-      cancel: () => undefined,
-      pause: () => undefined,
-      resume: () => undefined,
+      cancel: () => {
+        window.clearTimeout(timer);
+        timer = undefined;
+        active = undefined;
+      },
+      pause: () => {
+        if (timer === undefined) return;
+        remaining = Math.max(0, remaining - (performance.now() - started));
+        window.clearTimeout(timer);
+        timer = undefined;
+      },
+      resume: () => {
+        if (active && timer === undefined) schedule();
+      },
       addEventListener: () => undefined,
       removeEventListener: () => undefined,
     };

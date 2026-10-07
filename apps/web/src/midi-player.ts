@@ -515,6 +515,9 @@ export class BrowserMidiPlayer {
       throw new Error("MIDI is not loaded");
     const generation = this.operationGate.next();
     const audio = this.ensureAudio();
+    // Publish playback intent before resuming the context. Concurrent PDF
+    // defaults must see an active request, rather than cancel a paused restart.
+    this.patch({ status: "loading", loadingProgress: 8, error: undefined });
     await audio.resume();
     if (!this.operationGate.isCurrent(generation)) return;
     const position = Math.min(this.state.position, this.state.duration);

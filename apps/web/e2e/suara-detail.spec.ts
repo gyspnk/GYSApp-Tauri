@@ -73,6 +73,10 @@ async function installSuaraFixtures(
     id: fixturePost.id,
     url: fixturePost.url,
   };
+  // Navigation preloads literature independently of the visible Suara route.
+  await page.route("**/api/v1/content/literature*", (route) =>
+    route.fulfill({ json: { source: "tjc.org", items: [] } }),
+  );
   await page.route("**/offline/suara-sejati.json", async (route) => {
     if (options.feedDelayMs) {
       await new Promise((resolve) => setTimeout(resolve, options.feedDelayMs));
