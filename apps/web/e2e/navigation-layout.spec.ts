@@ -1109,7 +1109,13 @@ test.describe("responsive reader navigation", () => {
       name: "Geser judul untuk berpindah pasal",
     });
     await handle.click();
-    const searchInput = page.getByPlaceholder("Cari kitab atau isi ayat…");
+    await page
+      .getByRole("dialog", { name: "Pilih Kitab" })
+      .getByRole("combobox", { name: "Kitab", exact: true })
+      .click();
+    const searchInput = page.getByRole("searchbox", {
+      name: "Cari kitab atau isi ayat",
+    });
     await expect(searchInput).toBeVisible();
     await searchInput.fill("Kejadian");
     await page.getByRole("button", { name: "Tutup", exact: false }).click();

@@ -53,10 +53,14 @@ test("direct literature PDF exposes the document in the first mobile viewport", 
     )
     .toBeLessThan(700);
 
-  const tools = page.locator(".literature-reading-tools");
-  await expect(tools).toBeVisible();
-  await expect(tools).not.toHaveAttribute("open", "");
-  await expect(tools.locator("summary")).toContainText(/kemajuan.*offline/i);
+  // Immersive PDF controls are in the viewer; the outer progress card is hidden.
+  await expect(page.locator(".literature-reading-tools")).toBeHidden();
+  const settings = page.locator(".pdf-advanced-toggle");
+  await expect(settings).toBeVisible();
+  await settings.click();
+  await expect(page.locator(".pdf-advanced-controls")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".pdf-advanced-controls")).toBeHidden();
 
   await expect
     .poll(() =>

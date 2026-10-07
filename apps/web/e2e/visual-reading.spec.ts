@@ -663,6 +663,7 @@ test("AMOLED Faith overlay unavailable state keeps localized source actions", as
 
     const overlay = page.locator(".faith-pdf-overlay");
     await expect(overlay).toBeVisible();
+    await overlay.locator(".faith-pdf-sources > summary").click();
     await expect(
       overlay.getByRole("link", { name: copies[locale].official }),
     ).toHaveAttribute("href", /Yesus-Kristus\.pdf/);

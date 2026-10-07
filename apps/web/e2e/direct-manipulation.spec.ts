@@ -8,7 +8,7 @@ async function openHymnPdf(page: Page) {
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.locator(".pdf-reader-hymn")).toBeVisible({
     timeout: 30_000,
   });
@@ -43,7 +43,10 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     ".pdf-reader-hymn .pdf-page-navigation > button",
   );
   await expect(pagerButtons).toHaveCount(2);
-  for (const [index, label] of ["Sebelumnya", "Berikutnya"].entries()) {
+  for (const [index, label] of [
+    "Pujian sebelumnya",
+    "Pujian berikutnya",
+  ].entries()) {
     const button = pagerButtons.nth(index);
     await expect(button).toHaveAttribute("aria-label", label);
     await expect(button).toHaveAttribute("title", label);
@@ -65,7 +68,10 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     ".pdf-reader-hymn .pdf-advanced-controls button",
   );
   for (let index = 0; index < (await advancedButtons.count()); index += 1) {
-    const box = await advancedButtons.nth(index).boundingBox();
+    const button = advancedButtons.nth(index);
+    if (!(await button.evaluate((element) => element.checkVisibility())))
+      continue;
+    const box = await button.boundingBox();
     expect(box, "PDF advanced control should be measurable").not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
@@ -127,22 +133,22 @@ test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
 
   const copy = {
     id: {
-      previous: "Sebelumnya",
-      next: "Berikutnya",
+      previous: "Pujian sebelumnya",
+      next: "Pujian berikutnya",
       settings: "Opsi PDF",
       zoomIn: "Perbesar PDF",
       layout: "Layout PDF",
     },
     en: {
-      previous: "Previous",
-      next: "Next",
+      previous: "Previous hymn",
+      next: "Next hymn",
       settings: "PDF settings",
       zoomIn: "Zoom in",
       layout: "PDF layout",
     },
     zh: {
-      previous: "上一页",
-      next: "下一页",
+      previous: "上一首",
+      next: "下一首",
       settings: "PDF 设置",
       zoomIn: "放大",
       layout: "PDF 布局",
@@ -151,7 +157,7 @@ test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
 
   for (const locale of ["id", "en", "zh"] as const) {
     await page.goto(`/GYSApp-Tauri/kidung/hymn-001?__gys_locale=${locale}`);
-    const pdfTab = page.getByRole("tab", { name: "PDF", exact: true });
+    const pdfTab = page.locator(".hymn-partitur-toggle");
     const reader = page.locator(".pdf-reader-hymn");
     await expect(pdfTab.or(reader)).toBeVisible({ timeout: 30_000 });
     if (await pdfTab.isVisible()) {

@@ -28,10 +28,9 @@ test("prepared catalog opens previously unvisited Kidung sections offline", asyn
   await expect(page.locator(".kidung-tool-heading h1")).toHaveText("Playlist");
   await page.locator('.kidung-local-nav a[href$="/kidung"]').click();
   await expect(page.locator(".pujian-item")).toHaveCount(533);
-  await page
-    .getByRole("group", { name: "Mode tampilan kidung" })
-    .getByRole("button", { name: "Teks", exact: true })
-    .click();
+  const mode = page.locator(".kidung-mode-cycle");
+  if ((await mode.getAttribute("aria-pressed")) === "true") await mode.click();
+  await expect(mode).toHaveAttribute("aria-pressed", "false");
   await page.locator(".pujian-title").first().click();
   await expect(page.locator(".hymn-detail-page")).toBeVisible();
   await expect(page.locator(".lyrics-sheet").first()).toBeVisible();
@@ -50,7 +49,7 @@ test("a verified local PDF remains readable after returning offline", async ({
   );
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.locator(".lyrics-sheet").first()).toBeVisible();
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(
     page.locator("canvas[data-pdf-rendered='true']").first(),
   ).toBeVisible({ timeout: 20000 });

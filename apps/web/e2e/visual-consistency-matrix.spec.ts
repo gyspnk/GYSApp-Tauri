@@ -64,6 +64,12 @@ async function prepare(page: Page): Promise<void> {
     window.localStorage.setItem("gys-locale", locale);
     window.localStorage.setItem("gys-theme", theme);
   });
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.abort(),
+  );
+  await page.route("https://appleid.cdn-apple.com/**", (route) =>
+    route.abort(),
+  );
   await page.route("**/api/v1/content/**", (route) => route.abort());
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.abort(),

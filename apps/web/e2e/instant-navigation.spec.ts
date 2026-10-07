@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 test("warm navigation reuses core payloads without optional downloads", async ({
   page,
 }) => {
+  // Measure route readiness independently of the intentional page snapshot fade.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   let bibleRequests = 0;
   let hymnRequests = 0;
   let faithRequests = 0;
@@ -53,6 +55,7 @@ test("warm navigation reuses core payloads without optional downloads", async ({
 test("preloaded first visits render without the React Suspense reveal delay", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/");
   await page.waitForFunction(() =>
@@ -76,7 +79,7 @@ test("preloaded first visits render without the React Suspense reveal delay", as
           const check = () => {
             const content = document.querySelector(selector);
             if (content && content.getBoundingClientRect().width > 0)
-              requestAnimationFrame(() => resolve(performance.now() - start));
+              resolve(performance.now() - start);
             else requestAnimationFrame(check);
           };
           requestAnimationFrame(check);

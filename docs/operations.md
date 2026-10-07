@@ -81,8 +81,25 @@ platform pipeline as completed.
 | Tauri login window rejects a message | Only the official origin and three allowlisted logged-in commands with an opaque valid token are accepted. Keyring errors do not fall back to localStorage.                                          |
 
 Browser API tokens remain in HttpOnly cookies and native tokens in the OS
-keyring. Keep logs redacted. Provider SDK scripts load only for that requested
-provider; application fonts, PDF and audio engines remain locally bundled.
+keyring. Keep logs redacted. Provider SDKs load at the account feature boundary
+to prepare direct authorization; application fonts, PDF and audio engines remain
+locally bundled. A Google client must allow the deployed origin. Its SDK can
+render a button on localhost while rejecting real authorization there; do not
+interpret a screenshot as live account acceptance.
+
+## CI diagnosis
+
+Inspect the latest run for each workflow and its commit, rather than treating
+an older failed deployment as the current state. Browser failures and a timed-out
+shard can coexist while build, Rust, Pages and Worker jobs pass. Read each failed
+assertion and preserve all applicable checks during repair.
+
+Native Edge Stop has two valid outcomes: cancel a pending network request, or
+stop playback after synthesis already returned nonempty audio. The smoke receipt
+records `speechStopEvidence`; old dated receipts retain their original schema.
+Use uploaded `native-smoke-failure.*` for a new Windows failure and browser trace/
+error contexts for failed or cancelled CI shards. Local pre-push success proves
+local validation; only a subsequent hosted run proves GitHub checks are green.
 
 ## Literature and PDF diagnosis
 

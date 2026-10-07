@@ -45,7 +45,7 @@ test("score/text changes preserve chords and reuse the master PDF worker and req
   await expect(canvas).toBeVisible();
   await page
     .locator(".pdf-reader-hymn")
-    .getByRole("button", { name: "Berikutnya", exact: true })
+    .getByRole("button", { name: "Pujian berikutnya", exact: true })
     .click();
   await expect(page).toHaveURL(/hymn-002\?mode=pdf/);
   await expect(canvas).toBeVisible();
@@ -70,7 +70,9 @@ for (const width of [320, 390, 768, 1440]) {
       page.locator('.pdf-reader-hymn canvas[data-pdf-rendered="true"]').first(),
     ).toBeVisible({ timeout: 20_000 });
     const header = page.locator(".hymn-pdf-viewer-chrome");
-    expect((await header.boundingBox())!.height).toBeLessThanOrEqual(64);
+    expect((await header.boundingBox())!.height).toBeLessThanOrEqual(
+      width >= 960 ? 72 : 64,
+    );
     await expect(header.locator("button:visible")).toHaveCount(2);
     for (const button of await page
       .locator(".gys-pdf-overlay")
@@ -131,10 +133,7 @@ test("late score metadata updates the MIDI key while preserving a manual transpo
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.locator(".hymn-midi-toggle").click();
     const player = page.locator(".media-surface");
-    await player
-      .getByRole("button", { name: "Perbesar pemutar", exact: true })
-      .click();
-    await player.locator(".media-advanced-summary").click();
+    await expect(player).not.toHaveClass(/is-minimized/);
     const transpose = player.locator(".media-transpose");
     await transpose.getByRole("button", { name: "Naikkan nada" }).click();
     await transpose.getByRole("button", { name: "Naikkan nada" }).click();

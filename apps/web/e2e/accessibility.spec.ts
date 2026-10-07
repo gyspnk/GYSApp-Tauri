@@ -489,6 +489,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(page.getByRole("alert")).toContainText("HTTP 404", {
       timeout: 15_000,
     });
+    await page.locator(".faith-pdf-sources > summary").click();
     await expect(
       page.getByRole("link", { name: "Open official source page ↗" }),
     ).toBeVisible();
@@ -529,19 +530,19 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("searchbox", { name: "Search literature" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Category", exact: true }),
+      page.getByRole("combobox", { name: "Category", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Sort", exact: true }),
+      page.getByRole("combobox", { name: "Sort", exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Category", exact: true }).click();
+    await page.getByRole("combobox", { name: "Category", exact: true }).click();
     await expect(page.getByRole("listbox", { name: "Category" })).toBeVisible();
     await expect(
       page.getByRole("option", { name: "All collections", exact: true }),
     ).toBeVisible();
     await page.getByRole("option", { name: /Testimonies/ }).click();
-    await page.getByRole("button", { name: "Sort", exact: true }).click();
+    await page.getByRole("combobox", { name: "Sort", exact: true }).click();
     await expect(
       page.getByRole("option", { name: "Newest", exact: true }),
     ).toBeVisible();
@@ -559,10 +560,10 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("searchbox", { name: "搜索文献" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "分类", exact: true }),
+      page.getByRole("combobox", { name: "分类", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "排序", exact: true }),
+      page.getByRole("combobox", { name: "排序", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /打开阅读/ })).toBeVisible();
   });

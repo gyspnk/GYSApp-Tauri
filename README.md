@@ -72,8 +72,9 @@ provides narrow storage, keyring, lifecycle and login commands.
 
 ### Account boundary
 
-Web/PWA authenticates through the BFF directly. Google uses Google Identity
-Services; Apple uses its official popup SDK and validates authorization state.
+Web/PWA authenticates through the BFF directly. Google's dynamic Identity
+Services button is inline in the account row, using an icon on compact screens;
+Apple uses its official popup SDK and validates authorization state.
 WhatsApp reserves a messaging tab on the provider click, opens the prepared
 send link and tracks the official internal reference through a BFF WebSocket
 relay. There is no OTP entry or login overlay. A trailing 120-second countdown

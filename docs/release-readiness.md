@@ -7,6 +7,75 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — CI repair and production verification (local)
+
+- The latest hosted main CI at `40e3b32` failed browser contracts and timed out
+  one shard; its build, unit, Rust and secret checks passed. Pages and Worker
+  deployments at the same commit passed. The latest failed native Edge run was
+  older, at `e2bad98`, and waited for a network abort after synthesis could
+  already have completed. These are hosted diagnoses, not new hosted results.
+- `pnpm verify:prepush` passes **552 Vitest + 59 Node policy/script tests**,
+  types, formatting and generated/documentation gates. The production build,
+  native asset boundary (**25 files / 38,620,770 bytes**) and initial JS budget
+  (**175.4 / 180 KiB**) pass.
+- A broad production run exercised **642 browser cases**: 595 passed, 44 failed
+  and three optional package cases were skipped. All 44 failing contracts then
+  passed in corrected follow-up runs, including the three renamed contracts.
+  No new skip was added, and screenshot pixel thresholds remain unchanged.
+  Updated controls retain geometry, hit-testing, accessibility and behavior
+  checks. Fourteen affected zoom, chord, MIDI, preload and responsive cases
+  pass in **46.2 seconds**, with three workers and no retry.
+- **56 existing visual PNGs** were refreshed and inspected across phone,
+  tablet, desktop, reader/menu and theme states. The complete two-file visual
+  suite then passed **57/57 in 59.0 seconds**, without updates or retries. These
+  runs collectively cover the 697-case browser inventory; they are not a new
+  single uninterrupted full-suite pass.
+- The native harness now checks current-request Stop evidence, rendered chord
+  markers/cache integrity and the current compact selectors. Its syntax and
+  the four pure Stop regressions pass locally. Packaged Windows execution is
+  unavailable in this Linux workspace; GitHub/Windows outcomes require a new
+  hosted run after delivery. These checks were recorded before the delivery
+  commit; hosted outcomes are recorded by Actions.
+
+### 2026-10-07 — Sauh Home geometry confirmed before delivery
+
+- At 390, 768 and 1440 px, the Home quotation matches its content column's left
+  edge and width within 1 px. The image frame clips all four corners at 14 px,
+  fills the available column, and stays between 170 and 260 px high in the
+  sampled layouts. There is no horizontal overflow or browser exception.
+- Six Home/article geometry checks and three thumbnail decode contracts pass.
+  The decode contracts pass **3/3 in 6.1 seconds**, without retries or skips;
+  loading and decoded frames retain the same position and dimensions. Combined
+  screenshots use the verified official packaged reflection and image fixture.
+- Manual authorization now includes committing and pushing the reviewed CI,
+  account/navigation and Sauh refinements to `main`. Hosted outcomes remain
+  separate from these local checks.
+
+### 2026-10-07 — inline Google and navigation follow-up (local)
+
+- Google's own dynamic GIS control now renders in the account row, with icon
+  mode for compact widths, locale-aware loading, bounded retry and unmount-safe
+  callbacks. The duplicate application dialog, portal fallback and unused
+  modal styles/translations are removed. SDK box sizing is isolated from the
+  app reset so its compact logo remains visible.
+- Route listeners survive router callback changes. Links, global search,
+  history and browsers without snapshots share one incoming fade; the legacy
+  entrance is suppressed. History/programmatic changes invalidate earlier
+  route preloads, and deferred snapshot callbacks cannot overwrite a newer
+  destination. The cold-link/Back regression was reproduced before the fix.
+- The final production browser gate passes **35/35 in 48.4 seconds**, with
+  two workers, no retry and no skip. All **552 Vitest tests** (431 web) and
+  **55 Node policy/script tests** pass. Build, types, formatting, documentation,
+  generated provenance and native asset-boundary checks pass. Initial JS is
+  **175.4 KiB / 180 KiB**, including bootstrap.
+- Inspected real-SDK screenshots at 390/768/1440 px show aligned controls,
+  visible Google logos, no document/control overflow and no page exception.
+  The official client rejects localhost authorization with an origin error;
+  real account acceptance is not claimed. Automated exchanges use provider
+  fixtures. These changes remain local pending manual delivery authorization.
+
+The following receipt describes the earlier committed reader/player slice.
+
 ### 2026-10-07 — reader, authentication, persistent MIDI and complete documentation
 
 - Production build, workspace typecheck/lint and all deterministic unit/policy/

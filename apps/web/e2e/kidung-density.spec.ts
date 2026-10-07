@@ -223,10 +223,14 @@ test("PDF reader keeps song navigation visible and transpose contextual", async 
 
   const chrome = page.locator(".hymn-pdf-viewer-chrome");
   await expect(
-    chrome.getByRole("button", { name: "Sebelumnya", exact: true }),
+    page
+      .locator(".pdf-page-navigation")
+      .getByRole("button", { name: "Pujian sebelumnya", exact: true }),
   ).toBeVisible();
   await expect(
-    chrome.getByRole("button", { name: "Berikutnya", exact: true }),
+    page
+      .locator(".pdf-page-navigation")
+      .getByRole("button", { name: "Pujian berikutnya", exact: true }),
   ).toBeVisible();
   await expect(chrome.locator(".pdf-transpose-inline")).toBeHidden();
   await expect(

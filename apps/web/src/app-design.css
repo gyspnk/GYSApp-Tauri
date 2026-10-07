@@ -736,7 +736,6 @@
     height: 100%;
     min-height: 320px;
     margin: 0;
-    border-radius: 0;
     aspect-ratio: auto;
   }
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
@@ -1549,6 +1548,7 @@
   align-items: start;
 }
 .bible-reader .verse-number {
+  position: relative;
   width: 24px;
   min-width: 24px;
   height: calc(
@@ -1562,6 +1562,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.bible-reader .verse-number::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(40px, 100%);
+  height: max(40px, 100%);
+  transform: translate(-50%, -50%);
 }
 .control-select-menu.is-animated {
   animation: none;
@@ -1825,7 +1834,7 @@
 .hymn-detail-page.is-text-viewer
   :is(.lyrics-sheet, .all-verses-sheet)
   .chord-rich-line {
-  padding-top: 1em;
+  padding-top: 1.25em;
 }
 .hymn-detail-page.is-text-viewer
   :is(.lyrics-sheet, .all-verses-sheet)
@@ -3286,7 +3295,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   color: var(--blue);
   background: transparent;
 }
-.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle {
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle.reader-mode-button {
   background: var(--blue-soft);
   color: var(--ink);
   font-family: inherit;
@@ -3323,7 +3332,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
   border-radius: clamp(11px, 1vw, 14px);
   background: var(--blue-soft);
-  color: var(--navy);
+  color: var(--ink);
   box-shadow: none;
 }
 @media (hover: hover) {
@@ -3462,6 +3471,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 /* Snapshot motion owns reader navigation for the entire mount. Toggling a
    legacy entrance animation off and on would replay it after the snapshot. */
 :root.has-view-transitions :is(.route-view, .verse-enter),
+:root.has-route-transitions .route-view,
 .hymn-detail-surface,
 .route-view:has(.hymn-detail-page) {
   animation: none;
@@ -3495,7 +3505,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   ::view-transition-old(pdf-document) {
     animation: reader-content-out 180ms ease both;
   }
-  ::view-transition-new(app-page),
+  ::view-transition-new(app-page) {
+    animation: fade-in 260ms var(--ease-out) both;
+  }
   ::view-transition-new(pdf-document) {
     animation: reader-content-in 260ms var(--ease-out) both;
   }
@@ -3533,6 +3545,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .home-grid .verse-panel {
   min-height: 0;
+  padding: 0;
   transform: none;
 }
 .home-grid .sauh-card-media {
@@ -3541,10 +3554,18 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: clamp(170px, 27vw, 240px);
   min-height: 0;
   flex: none;
+  border-radius: 14px;
 }
 .home-grid .sauh-card-media .sauh-image-wrap {
   width: 100%;
   height: 100%;
+  border-radius: inherit;
+}
+.home-grid
+  .verse-panel:has(.sauh-image-wrap[data-image-state="missing"])
+  .sauh-card-media {
+  height: 72px;
+  min-height: 0;
 }
 .home-grid .sauh-card-content {
   padding: 18px 0 8px;
@@ -3555,6 +3576,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .home-grid .sauh-card-body blockquote {
   margin-block: 10px 16px;
+  max-width: none;
   line-height: 1.65;
 }
 .home-page .page-intro {
@@ -3615,11 +3637,14 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin-block: 0 1em;
   text-align: justify;
 }
-.online-article-card > blockquote {
+.app-frame .online-content-page .online-article-card > blockquote {
+  display: block;
+  max-width: none;
+  overflow: visible;
   border-inline-start: 3px solid var(--blue);
   background: var(--blue-soft);
-  padding: 14px 18px;
-  margin: 16px 0;
+  padding: 10px 12px;
+  margin: 8px 0;
   line-height: 1.7;
   color: var(--ink);
   font-family: var(--font-reading);

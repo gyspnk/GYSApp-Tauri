@@ -108,6 +108,16 @@ for (const width of [390, 1440]) {
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.locator(".hymn-midi-toggle").click();
     const player = page.locator(".media-surface.is-kidung-media");
+    // Capture and pause at creation, before slow CI protocol roundtrips can
+    // consume the entire animation. This still measures the real FLIP keyframe.
+    await player.evaluate((element) => {
+      const animate = element.animate.bind(element);
+      element.animate = (keyframes, options) => {
+        const animation = animate(keyframes, options);
+        if (animation.effect?.getTiming().duration === 320) animation.pause();
+        return animation;
+      };
+    });
     for (const label of ["Perbesar pemutar", "Minimalkan pemutar"]) {
       const before = (await player.boundingBox())!;
       await player.getByRole("button", { name: label, exact: true }).click();

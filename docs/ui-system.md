@@ -18,6 +18,11 @@ Reserved thumbnail ratios prevent initial oversized artwork. Catalog rows,
 search fields and header controls share consistent corners, accent, icon
 weight and focus treatment.
 
+Sauh thumbnails clip loading and decoded media to the same rounded frame.
+The Home card uses the page gutter once at every breakpoint; highlighted article
+quotations fill their reading column with compact padding and show the complete
+verse on phones.
+
 Navigation is a fixed sidebar/rail on desktop and a bottom bar on phones.
 Collapsing the rail preserves icon/toggle positions while its label column clips
 and fades. Kidung catalog, playlist and settings retain the same local-nav
@@ -43,6 +48,9 @@ Targets are contextual rather than forced to one giant size. Keep icons centered
 inside the actual hit rectangle. A visually half-hidden edge tab retains a full
 reachable hit area; form labels and accessible names identify its actions.
 Selected/disabled/busy states cannot rely solely on color or misleading text.
+The inline Google SDK owns its branded icon/text control. Its subtree restores
+default content-box sizing at zero specificity, letting provider styles retain
+their own explicit dimensions instead of shrinking the compact logo to zero.
 
 ## Animation ownership
 
@@ -54,6 +62,12 @@ Selected/disabled/busy states cannot rely solely on color or misleading text.
 - `route-transitions.ts` and `reader-transition.ts` own content snapshots.
   The shell/player stay stable. Legacy entrance effects are suppressed on
   snapshot-capable browsers so lyrics do not animate twice.
+  Navigation listeners remain installed across route changes and read the
+  current router callback. History/programmatic navigation and browsers without
+  native snapshots share the 260 ms incoming page fade/easing; fallback motion
+  also suppresses the legacy entrance. Opacity avoids trapping fixed descendants.
+  History/programmatic changes cancel earlier route-preload generations, and
+  snapshot callbacks recheck the current generation before committing or scrolling.
 - Theme transitions freeze pending smooth scrolling and retain state/position.
 - Lyric/chord row spacing and score-overlay opacity animate their own content.
   Chord labels remain above notation while enabling/disabling.

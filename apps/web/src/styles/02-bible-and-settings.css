@@ -1513,8 +1513,7 @@
     background var(--motion-fast) var(--ease-out),
     border-color var(--motion-fast) var(--ease-out);
 }
-.egys-login-box,
-.egys-login-google-container {
+.egys-login-box {
   container-type: inline-size;
 }
 .egys-provider-all {
@@ -1549,206 +1548,63 @@
   background: var(--blue-soft);
 }
 
-/* e-GYS Login Overlay Modal */
-.egys-login-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  background: rgba(10, 24, 46, 0.48);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: fade-in 200ms var(--ease-out);
-  transition: opacity 200ms var(--ease-out);
-}
-.egys-login-backdrop.is-closing {
-  opacity: 0;
-  pointer-events: none;
-}
-.egys-login-overlay {
-  width: min(540px, 96vw);
-  max-height: 85dvh;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--surface);
-  box-shadow:
-    0 24px 64px -12px rgba(0, 0, 0, 0.28),
-    var(--shadow-lift);
-  overflow: hidden;
-  animation: slide-up 240ms cubic-bezier(0.16, 1, 0.3, 1);
-  transition:
-    transform 200ms var(--ease-out),
-    opacity 200ms var(--ease-out);
-}
-.egys-login-backdrop.is-closing .egys-login-overlay {
-  opacity: 0;
-  transform: translateY(20px) scale(0.96);
-}
-@media (max-width: 680px) {
-  .egys-login-backdrop {
-    display: flex;
-    align-items: flex-end;
-    padding: 0;
-  }
-  .egys-login-overlay {
-    width: 100%;
-    max-height: 92dvh;
-    border-radius: 22px 22px 0 0;
-    border-bottom: 0;
-    animation: selected-verse-in-mobile 240ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .egys-login-backdrop.is-closing .egys-login-overlay {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-}
-.egys-login-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
-  flex: 0 0 auto;
-}
-.egys-login-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.egys-login-title strong {
-  color: var(--ink);
-  font-size: 16px;
-  letter-spacing: -0.01em;
-}
-.egys-login-title small {
-  color: var(--blue);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: var(--blue-soft);
-  padding: 3px 7px;
-  border-radius: 6px;
-}
-.egys-login-close {
-  flex: 0 0 auto;
-  width: 34px;
-  min-height: 34px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-soft);
-  color: var(--ink);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  transition: all var(--motion-fast) var(--ease-out);
-}
-.egys-login-close:hover,
-.egys-login-close:focus-visible {
-  border-color: var(--blue);
-  background: var(--blue-soft);
-  color: var(--blue);
-  transform: scale(1.05);
-}
-.egys-login-frame-container {
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  background: var(--surface-soft);
-}
-.egys-login-google-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 24px;
-  overflow: auto;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-  text-align: center;
-}
-.egys-login-google-container .egys-provider-methods {
-  margin: 0;
-}
-.egys-login-google-container p {
-  max-width: 420px;
-  margin: 0;
+/* Inline Google Identity Services host. */
+:where(.egys-google-button *) {
+  /* Keep the app's universal border-box reset out of Google's content boxes.
+     Provider selectors retain precedence for their explicitly sized controls. */
+  box-sizing: content-box;
 }
 .egys-google-button {
   display: flex;
   justify-content: center;
-  width: min(100%, 320px);
+  width: 100%;
   min-height: 44px;
 }
-.egys-google-status,
-.egys-google-error,
-.egys-google-fallback {
-  font-size: 12px;
+.egys-provider-all .egys-google-control {
+  position: relative;
+  padding: 2px;
+  border-color: transparent;
+  background: transparent;
+  cursor: auto;
 }
-.egys-google-error {
-  color: #b3261e;
+.egys-google-control .egys-google-button {
+  position: absolute;
+  inset: 2px;
+  width: auto;
+  min-height: 40px;
+  align-items: center;
 }
-.egys-google-fallback {
-  max-width: 360px;
+.egys-google-button > div {
+  max-width: 100%;
 }
-.egys-login-iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-}
-.egys-login-footer {
+.egys-google-control .egys-google-fallback {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 18px;
-  border-top: 1px solid var(--line);
-  background: var(--surface);
-  font-size: 11.5px;
-  color: var(--muted);
-  flex: 0 0 auto;
-}
-.egys-login-footer span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.egys-login-footer-actions {
-  display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.egys-google-fallback > svg {
   flex-shrink: 0;
 }
-@media (max-width: 680px) {
-  .egys-login-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 12px 16px max(16px, env(safe-area-inset-bottom, 16px));
+@container (max-width: 640px) {
+  .egys-provider-all:has(.egys-google-control) {
+    grid-template-columns: 44px repeat(2, minmax(0, 1fr));
   }
-  .egys-login-footer-actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 8px;
+  .egys-google-fallback > span {
+    display: none;
   }
-  .egys-login-footer-actions button,
-  .egys-login-footer-actions a {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
+}
+.egys-google-error {
+  color: var(--danger, #b3261e);
+  font-size: 12px;
 }
 
 /* Theme and language values stay visible while their full pickers stay closed. */

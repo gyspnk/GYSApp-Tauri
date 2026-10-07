@@ -42,10 +42,20 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: "Kejadian 1" })).toBeVisible();
   await expectTouchTarget(page.getByRole("button", { name: "Menu Alkitab" }));
-  await expectTouchTarget(
-    page.getByRole("button", { name: "Tandai ayat 1", exact: true }),
-    40,
-  );
+  const bookmark = page.getByRole("button", {
+    name: "Tandai ayat 1",
+    exact: true,
+  });
+  await expectPseudoTouchTarget(bookmark, 40);
+  expect(
+    await bookmark.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return (
+        document.elementFromPoint(rect.left - 6, rect.top + rect.height / 2) ===
+        element
+      );
+    }),
+  ).toBe(true);
   const crossReference = page.getByRole("button", {
     name: "Lihat 54 rujukan silang untuk Kejadian 1:1",
     exact: true,

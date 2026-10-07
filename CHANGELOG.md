@@ -2,8 +2,35 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-07 — CI contract and native smoke repair
+
+- Migrate browser contracts to the compact collection picker, explicit Bible
+  address draft, unified PDF options and single-page hymn navigation. Preserve
+  multi-page page navigation, PDF integrity and source-key chord checks.
+- Restore icon-only Kidung navigation at 320 px, verse bookmark hit areas,
+  readable mode-button colors, compact missing-artwork placeholders and a clear
+  chord lane above lyrics.
+- Measure animation keyframes and intermediate disclosure sizes directly,
+  avoiding protocol timing races on busy CI runners. Keep touch, accessibility,
+  overflow, cache and visual regression gates enabled.
+- Accept a native Stop after either current-request cancellation or completed
+  synthesis with real audio; reject stale/error/empty evidence. Capture bounded
+  native failure diagnostics and retain browser artifacts on cancellation.
+
 ### 2026-10-07 — reader/player refinements and documentation refresh
 
+- Align Sauh highlights with the full reading column, reduce quotation padding
+  and remove the extra tablet card inset. Round the Home thumbnail frame during
+  loading and display, and keep article quotations fully visible on phones.
+- Render Google's official dynamic sign-in button directly in the account row,
+  with compact icon mode and in-place SDK recovery. Remove the duplicate Google
+  application dialog, its portal fallback, styles and translations. Keep late
+  SDK callbacks from initializing an unmounted control.
+- Keep one navigation listener across router updates. Match incoming page fades
+  for links, global-search results, history and snapshot-free browsers, without
+  replaying the legacy entrance or transforming fixed dialog containers.
+  Cancel stale route preloads when history changes so a slow link cannot override
+  the page chosen by Back.
 - Make startup theme/logo/progress stable before React; keep fixed navigation
   and persistent playback independent of page scrolling. Improve adaptive Home,
   cover geometry, full-width themed articles and consistent local Kidung controls.

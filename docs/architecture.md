@@ -376,7 +376,7 @@ sequenceDiagram
 A trailing 120-second countdown replaces a login overlay. Retry cancels/replaces
 the prior attempt; transient socket loss reconnects the same reference within
 its deadline. Confirmation uses the sender phone, never the bot's start phone.
-Google uses GIS, Apple its official popup SDK and random-state check; browser
+Google renders its dynamic GIS button inline, Apple uses its official popup SDK and random-state check; browser
 tokens are not returned to JavaScript. Provider windows are expected handoffs.
 
 ```mermaid

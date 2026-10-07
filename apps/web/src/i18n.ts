@@ -1426,18 +1426,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "Kosongkan",
     "more.playlistNote":
       "Format antrean tervalidasi dan dapat dipulihkan melalui backup aplikasi.",
-    "more.loginDialog": "Login e-GYS resmi",
-    "more.loginTitle": "Login e-GYS Resmi",
-    "more.googleModalDescription":
-      "Login dengan akun Google. Setelah berhasil, aplikasi akan langsung memeriksa dan menampilkan akun e-GYS Anda.",
     "more.googleLogin": "Login dengan Google",
     "more.whatsappLogin": "Login dengan WhatsApp",
     "more.appleLogin": "Login dengan Apple",
-    "more.otherLoginMethods": "Atau lanjutkan dengan",
-    "more.checkingLogin": "Memeriksa akun e-GYS…",
-    "more.secureCredentials":
-      "Credential Google diproses melalui koneksi aman aplikasi",
-    "more.officialPortal": "Portal resmi e-GYS ↗",
     "more.close": "Tutup",
     "more.confirmDeleteData":
       "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
@@ -2191,18 +2182,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "Clear",
     "more.playlistNote":
       "The queue format is validated and can be restored through an app backup.",
-    "more.loginDialog": "Official e-GYS login",
-    "more.loginTitle": "Official e-GYS Login",
-    "more.googleModalDescription":
-      "Sign in with your Google account. After success, the app will check and display your e-GYS account.",
     "more.googleLogin": "Sign in with Google",
     "more.whatsappLogin": "Sign in with WhatsApp",
     "more.appleLogin": "Sign in with Apple",
-    "more.otherLoginMethods": "Or continue with",
-    "more.checkingLogin": "Checking e-GYS account…",
-    "more.secureCredentials":
-      "Google credentials are processed through the app's secure connection",
-    "more.officialPortal": "Official e-GYS portal ↗",
     "more.close": "Close",
     "more.confirmDeleteData":
       "Delete all GYS data on this device? Notes, reading progress, preferences, and local cache will be deleted.",
@@ -2944,17 +2926,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.apply": "应用",
     "more.clear": "清空",
     "more.playlistNote": "队列格式经过验证，可通过应用备份恢复。",
-    "more.loginDialog": "e-GYS 官方登录",
-    "more.loginTitle": "e-GYS 官方登录",
-    "more.googleModalDescription":
-      "使用 Google 账户登录。成功后，应用将检查并显示您的 e-GYS 账户。",
     "more.googleLogin": "使用 Google 登录",
     "more.whatsappLogin": "使用 WhatsApp 登录",
     "more.appleLogin": "使用 Apple 登录",
-    "more.otherLoginMethods": "或继续使用",
-    "more.checkingLogin": "正在检查 e-GYS 账户…",
-    "more.secureCredentials": "Google 凭据通过应用的安全连接处理",
-    "more.officialPortal": "e-GYS 官方门户 ↗",
     "more.close": "关闭",
     "more.confirmDeleteData":
       "删除此设备上的所有 GYS 数据？笔记、阅读进度、偏好和本地缓存将被删除。",

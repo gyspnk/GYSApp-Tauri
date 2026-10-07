@@ -20,9 +20,14 @@ export async function navigateSmooth(
   clearTimeout(timer);
   if (current === navigationGeneration)
     await transitionReader(
-      () => navigate(path),
+      () => {
+        if (current === navigationGeneration) navigate(path);
+      },
       "page",
-      () => window.scrollTo({ top: 0, left: 0, behavior: "instant" }),
+      () => {
+        if (current === navigationGeneration)
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      },
     );
 }
 
@@ -65,22 +70,27 @@ export function installRouteTransitions(navigate: (path: string) => void) {
     );
   };
   document.addEventListener("click", click, true);
+  const cancelPendingNavigation = () => {
+    navigationGeneration++;
+  };
+  window.addEventListener("popstate", cancelPendingNavigation);
+  document.documentElement.classList.add("has-route-transitions");
   const main = document.querySelector(".main-content");
   let arrival: Animation | undefined;
   const observer = new MutationObserver(() => {
     // History and programmatic navigation also animate, without replaying
     // the entrance after a native view transition has finished.
-    if (
-      document.documentElement.classList.contains("is-reader-transition") ||
-      matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
+    if (document.documentElement.classList.contains("is-reader-transition"))
       return;
+    // A history/button navigation supersedes an earlier link's async preload.
+    cancelPendingNavigation();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const page = main?.querySelector<HTMLElement>(":scope > .route-view");
     if (!page) return;
     arrival?.cancel();
     arrival = page.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 180,
-      easing: "ease-out",
+      duration: 260,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
     });
   });
   if (main) observer.observe(main, { childList: true });
@@ -88,6 +98,8 @@ export function installRouteTransitions(navigate: (path: string) => void) {
     navigationGeneration++;
     observer.disconnect();
     arrival?.cancel();
+    document.documentElement.classList.remove("has-route-transitions");
     document.removeEventListener("click", click, true);
+    window.removeEventListener("popstate", cancelPendingNavigation);
   };
 }

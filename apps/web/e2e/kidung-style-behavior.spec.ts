@@ -23,17 +23,16 @@ for (const theme of ["light", "dark", "amoled"]) {
           ? "var(--accent)"
           : "color-mix(in srgb, var(--accent) 80%, #ffffff)";
       const expected = getComputedStyle(probe).color;
-      probe.style.color =
-        "color-mix(in srgb, var(--kidung-accent) 72%, var(--ink))";
+      probe.style.color = "var(--ink)";
       const expectedActive = getComputedStyle(probe).color;
       const active = getComputedStyle(
-        reader.querySelector(".hymn-mode-button.is-active")!,
+        reader.querySelector(".hymn-partitur-toggle")!,
       ).color;
       probe.remove();
       return { actual, expected, active, expectedActive };
     }, theme);
     expect(colors.actual).toBe(colors.expected);
-    await expect(page.locator(".hymn-mode-button.is-active")).toHaveCSS(
+    await expect(page.locator(".hymn-partitur-toggle")).toHaveCSS(
       "color",
       colors.expectedActive,
     );
@@ -44,10 +43,11 @@ test("catalog rows and navigation stay flat when hovered", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/kidung");
   const row = page.locator(".pujian-item").first();
   await expect(row).toBeVisible();
-  await expect(row).toHaveCSS("border-radius", "0px");
+  const before = await row.boundingBox();
   await row.hover();
   await expect(row).toHaveCSS("box-shadow", "none");
   await expect(row).toHaveCSS("transform", "none");
+  expect(await row.boundingBox()).toEqual(before);
   const link = page.locator(".kidung-local-nav a").first();
   await link.hover();
   await expect(link).toHaveCSS("transform", "none");
@@ -77,16 +77,16 @@ for (const locale of ["id", "en", "zh"] as const) {
     ).toBeVisible({ timeout: 20000 });
     const labels = {
       id: {
-        previous: "Sebelumnya",
-        next: "Berikutnya",
+        previous: "Pujian sebelumnya",
+        next: "Pujian berikutnya",
         navigation: "Navigasi viewer Kidung",
         music: "Opsi musik",
         reader: "Pengaturan baca",
         spacing: "Teks & jarak",
       },
       en: {
-        previous: "Previous",
-        next: "Next",
+        previous: "Previous hymn",
+        next: "Next hymn",
         navigation: "Hymn viewer navigation",
         music: "Music options",
         reader: "Reader settings",

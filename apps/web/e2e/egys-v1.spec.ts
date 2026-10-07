@@ -1,5 +1,82 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.abort(),
+  );
+});
+
+test("the compact Google SDK logo retains its intrinsic content box", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 700 });
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.google = { accounts: { id: {
+      initialize() {}, cancel() {}, renderButton(host) {
+        host.innerHTML = '<div role="button" aria-label="Login dengan Google" style="width:40px;height:40px"><div style="width:20px;height:20px;padding:10px"><svg viewBox="0 0 48 48" style="display:block"><path fill="#4285f4" d="M0 0h48v48H0z" /></svg></div></div>';
+      }
+    } } };`,
+    }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const logo = page.locator(".egys-google-button svg");
+  await expect(logo).toBeVisible();
+  const bounds = await logo.boundingBox();
+  expect(bounds!.width).toBeGreaterThanOrEqual(18);
+  expect(bounds!.height).toBeGreaterThanOrEqual(18);
+});
+
+test("Google signs in from the inline provider row without an application dialog", async ({
+  page,
+}) => {
+  let loggedIn = false;
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.google = { accounts: { id: {
+      initialize(options) { this.callback = options.callback; },
+      renderButton(host) {
+        const button = document.createElement("button");
+        button.textContent = "Login dengan Google";
+        button.onclick = () => this.callback({ credential: "gis-credential" });
+        host.replaceChildren(button);
+      }, cancel() {}
+    } } };`,
+    }),
+  );
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({
+      json: {
+        profile: loggedIn
+          ? { id: "google-member", displayName: "Jemaat Google", locale: "id" }
+          : null,
+      },
+    }),
+  );
+  await page.route("**/api/v1/auth/egys/google", (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      credential: "gis-credential",
+    });
+    loggedIn = true;
+    return route.fulfill({ json: { ok: true } });
+  });
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const account = page.locator('[data-setting="account"]');
+  const google = account
+    .locator(".egys-google-button")
+    .getByRole("button", { name: "Login dengan Google" });
+  await expect(google).toBeVisible();
+  await google.click();
+  await expect(
+    account.getByRole("heading", { name: "Jemaat Google", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page).toHaveURL(/lainnya\?section=account$/);
+});
+
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   test(`Apple and WhatsApp remain available before Google loads at ${width}px`, async ({
     page,
@@ -78,12 +155,11 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await account
       .getByRole("button", { name: "Login dengan Google", exact: true })
       .click();
-    const dialog = page.getByRole("dialog", { name: "Login e-GYS resmi" });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(account.getByRole("alert")).toBeVisible();
     for (const name of ["Login dengan WhatsApp", "Login dengan Apple"])
       await expect(
-        dialog.getByRole("button", { name, exact: true }),
+        account.getByRole("button", { name, exact: true }),
       ).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
@@ -91,7 +167,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   });
 }
 
-test("Google stays visible and opens its dialog while offline", async ({
+test("Google stays visible and retries inline while offline", async ({
   page,
   context,
 }) => {
@@ -105,9 +181,10 @@ test("Google stays visible and opens its dialog while offline", async ({
   await expect(google).toBeVisible();
   await expect(google).toBeEnabled();
   await google.click();
-  const dialog = page.getByRole("dialog", { name: "Login e-GYS resmi" });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.locator('[data-setting="account"]').getByRole("alert"),
+  ).toBeVisible();
 });
 
 test("native Apple and WhatsApp actions open the existing official login bridge", async ({
@@ -522,35 +599,30 @@ test("Lainnya renders unified settings and account panels cleanly", async ({
   ).toBeVisible();
 });
 
-test("clicking e-GYS login opens the login flow in an overlay modal without redirecting", async ({
+test("Google retries a failed SDK within the same provider row", async ({
   page,
 }) => {
-  await page.goto("/GYSApp-Tauri/lainnya");
-  const loginBtn = page.getByRole("button", {
-    name: "Login dengan Google",
-    exact: true,
+  let attempts = 0;
+  await page.route("https://accounts.google.com/gsi/client*", (route) => {
+    if (++attempts === 1) return route.abort();
+    return route.fulfill({
+      contentType: "application/javascript",
+      body: `window.google = { accounts: { id: {
+        initialize() {}, cancel() {},
+        renderButton(host) { const button = document.createElement("button"); button.textContent = "Login dengan Google"; host.replaceChildren(button); }
+      } } };`,
+    });
   });
-  await expect(loginBtn).toBeVisible();
-  const pageUrl = page.url();
-  await loginBtn.click();
-  await expect(page).toHaveURL(pageUrl);
-
-  const overlay = page.getByRole("dialog", { name: /Login e-GYS resmi/i });
-  await expect(overlay).toBeVisible();
-  await expect(overlay.getByLabel("Login dengan Google")).toBeVisible();
-  const officialPortal = overlay.getByRole("link", {
-    name: /Portal resmi e-GYS/i,
-  });
-  await expect(officialPortal).toHaveAttribute(
-    "href",
-    /^https:\/\/e\.gys\.or\.id\/login\?theme=/,
-  );
-  await expect(officialPortal).toHaveAttribute("target", "_blank");
-
-  // Close overlay
-  const closeBtn = overlay.locator(".egys-login-close");
-  await closeBtn.click();
-  await expect(overlay).toBeHidden();
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const account = page.locator('[data-setting="account"]');
+  await expect(account.getByRole("alert")).toBeVisible();
+  await account
+    .getByRole("button", { name: "Login dengan Google", exact: true })
+    .click();
+  await expect(account.locator(".egys-google-button button")).toBeVisible();
+  await expect(account.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  expect(attempts).toBe(2);
 });
 
 test("active e-GYS session displays the member profile badge", async ({

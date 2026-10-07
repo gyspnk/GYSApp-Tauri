@@ -79,7 +79,7 @@ Resource budgets, offline artifact checks and performance use production mode.
 | `kidung-player-refinement.spec.ts`                            | No binary/audio preload while text-only/MIDI off, reachable lyric/settings controls.                                          |
 | `pdf-shared-viewer.spec.ts`, PDF reader/zoom/pan suites       | Maximal fit, sharp zoom, shared documents, page/hymn navigation and touch/mouse pan.                                          |
 | `literature-loading.spec.ts`, source/lease units              | Trusted source discovery, large ranged PDFs, first frame, retry and offline reload.                                           |
-| `egys-v1.spec.ts`, Apple/BFF units                            | Direct providers, reference/sender-phone confirmation, retries/deadlines, SDK loading and session detection.                  |
+| `egys-v1.spec.ts`, Google/Apple/BFF units                     | Direct providers, reference/sender-phone confirmation, retries/deadlines, inline GIS, SDK lifecycle and session detection.    |
 | `menu-motion.spec.ts` / `use-menu-presence`                   | Exit motion, inert close state, focus, nested Escape and rapid reversal.                                                      |
 | `page-transitions.spec.ts`, `reader-motion.spec.ts`           | One content transition, stable shell/player and restored scroll.                                                              |
 | `ui-session-refinement.spec.ts`                               | Consistent section controls, media persistence, image/article geometry and responsive theme state.                            |
@@ -89,6 +89,36 @@ Resource budgets, offline artifact checks and performance use production mode.
 are cached outside source. Synthetic PDFs in `pdf-fixtures.ts` cover layout or
 failure contracts; do not call them real-publisher validation. Live source and
 real account/device tests must name their runtime, configuration and outcome.
+
+## CI browser and native contracts
+
+Full CI uses two shards with three workers per shard against one verified
+production build. Preserve failure traces, including cancelled jobs; diagnose
+individual assertions before changing timeouts, retries or visual thresholds.
+Refresh snapshots only after checking actual geometry, contrast and controls,
+then rerun without snapshot updates. Immutable reader assets, frozen snapshot
+clocks and blocked provider SDKs isolate visual/performance tests from upstream
+availability; provider behavior remains covered by its own contracts.
+
+Closed animated/native disclosures can retain a box while their contents are
+not interactive. Check visibility before auditing target sizes. Verse bookmark
+pseudo-elements expand the hit area to 40 px; compact MIDI targets are 36 px for
+mouse layouts and 40 px on phones, with 44 px utility controls. Check actual hit
+testing and keyboard access, not only painted icon dimensions.
+
+Single-page PDF navigation changes hymns; multi-page scores expose both page
+and hymn navigation. Continuous wheel zoom and computed typography do not have
+the old discrete/inline-style values. Chord expectations include the PDF source
+key and natural transpose. The Bible picker edits a draft and requires explicit
+opening. Preload timing excludes intentional motion; motion tests separately
+inspect actual keyframes or intermediate disclosure sizes. A longer test-only
+native disclosure timeline allows sampling its intermediate size under load.
+
+The native Stop regression accepts current-request cancellation or nonempty
+completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
+rejects stale, empty and error diagnostics; packaged Windows execution remains
+necessary to prove the whole native flow. Cache smoke tests wait for rendered
+chord markers and verify stored bytes, rather than a removed load notification.
 
 ## Hooks and delivery
 

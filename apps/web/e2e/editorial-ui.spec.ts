@@ -12,6 +12,18 @@ test("unavailable reflection preserves readable columns at desktop breakpoints",
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/GYSApp-Tauri/");
     await expect(page.locator(".sauh-offline-state")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator(".home-grid").evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations({ subtree: true })
+          .filter(
+            (animation) =>
+              animation.effect?.getTiming().iterations !== Infinity,
+          )
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
     const verse = (await page.locator(".verse-panel").boundingBox())!;
     const reading = (await page.locator(".continue-panel").boundingBox())!;
     const shelf = (await page.locator(".home-suara-section").boundingBox())!;
@@ -85,19 +97,30 @@ test("first visit offers working reading destinations and a visible hymn index t
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
-test("desktop chapter lines have a comfortable reading width while split mode fills the available space", async ({
+test("desktop chapter and split readers fill the available content width", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.locator(".verse-row").first()).toBeVisible();
   const single = await page.locator(".bible-reader").boundingBox();
-  expect(single!.width).toBeLessThanOrEqual(832);
+  const region = await page.locator(".bible-page").boundingBox();
+  expect(single!.width).toBeGreaterThan(region!.width - 48);
+  expect(single!.x).toBeGreaterThanOrEqual(region!.x);
+  expect(single!.x + single!.width).toBeLessThanOrEqual(
+    region!.x + region!.width,
+  );
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByText("Tampilan Belah", { exact: true }).click();
   await expect(page.locator(".bible-pane")).toHaveCount(2);
   const split = await page.locator(".bible-reader").boundingBox();
-  expect(split!.width).toBeGreaterThan(single!.width + 100);
+  expect(Math.abs(split!.width - single!.width)).toBeLessThanOrEqual(1);
+  const panes = await page
+    .locator(".bible-pane")
+    .evaluateAll((elements) =>
+      elements.map((el) => el.getBoundingClientRect().width),
+    );
+  expect(Math.abs(panes[0]! - panes[1]!)).toBeLessThanOrEqual(1);
 });
 
 test("offline cover placeholders stay legible and rows do not move on hover", async ({

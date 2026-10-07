@@ -5,7 +5,6 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
-import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import {
   type AccountProfile,
@@ -43,7 +42,7 @@ import {
   trackEgysProfileSeen,
   type EgysSessionTrace,
 } from "./egys.js";
-import { renderEgysGoogleButton } from "./egys-google.js";
+import { EgysGoogleButton } from "./egys-google-button.js";
 import { useCallback } from "react";
 import { EgysWhatsApp } from "./egys-whatsapp.js";
 import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
@@ -374,13 +373,10 @@ export function MorePage({
   );
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
-  const [egysLoginOpen, setEgysLoginOpen] = useState(false);
   const [egysProvider, setEgysProvider] = useState<"whatsapp" | "apple">();
   const whatsAppWindow = useRef<Window | null>(null);
   const [whatsAppAttempt, setWhatsAppAttempt] = useState(0);
   const [egysGoogleError, setEgysGoogleError] = useState("");
-  const googleButtonRef = useRef<HTMLDivElement>(null);
-  const [isEgysLoginClosing, setIsEgysLoginClosing] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<PlatformFile>();
@@ -615,15 +611,6 @@ export function MorePage({
     return () => controller.abort();
   }, [nativeShell]);
 
-  const closeEgysLogin = () => {
-    if (isEgysLoginClosing) return;
-    setIsEgysLoginClosing(true);
-    window.setTimeout(() => {
-      setEgysLoginOpen(false);
-      setIsEgysLoginClosing(false);
-    }, 200);
-  };
-
   const completeProviderLogin = useCallback(async (signal?: AbortSignal) => {
     const profile = await getEgysProfile();
     if (signal?.aborted) return;
@@ -650,6 +637,7 @@ export function MorePage({
     providerGeneration.current++;
     closePendingWhatsAppWindow();
     setEgysProvider(undefined);
+    setEgysGoogleError("");
   }, [closePendingWhatsAppWindow]);
   useEffect(
     () => () => {
@@ -685,54 +673,32 @@ export function MorePage({
         });
   };
 
-  const completeGoogleLogin = async (credential: string) => {
-    setAuthBusy(true);
-    setEgysGoogleError("");
-    try {
-      await signInEgysWithGoogle(credential);
-      const profile = await getEgysProfile();
-      if (!profile) throw new Error("e-GYS profile was not returned");
-      setAccountProfile(profile);
-      saveEgysProfile(profile);
-      setEgysSession(trackEgysProfileSeen(profile));
-      show(translate(locale, "more.greeting", { name: profile.displayName }));
-      closeEgysLogin();
-    } catch (error) {
-      recordDiagnostic("error", "egys.google-login.complete", error);
-      setEgysGoogleError(
-        error instanceof Error && error.message
-          ? error.message
-          : translate(locale, "more.googleDetectFailed"),
-      );
-      show(translate(locale, "more.loginFailed"));
-    } finally {
-      setAuthBusy(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!egysLoginOpen || nativeShell || !googleButtonRef.current) return;
-    let disposed = false;
-    let cleanup: (() => void) | undefined;
-    const host = googleButtonRef.current;
-    setEgysGoogleError("");
-    void renderEgysGoogleButton(host, (credential) =>
-      completeGoogleLogin(credential),
-    )
-      .then((nextCleanup) => {
-        if (disposed) nextCleanup();
-        else cleanup = nextCleanup;
-      })
-      .catch((error: unknown) => {
-        if (disposed) return;
-        recordDiagnostic("warn", "egys.google-script", error);
-        setEgysGoogleError(translate(locale, "more.googleButtonFailed"));
-      });
-    return () => {
-      disposed = true;
-      cleanup?.();
-    };
-  }, [egysLoginOpen, nativeShell]);
+  const completeGoogleLogin = useCallback(
+    async (credential: string) => {
+      setAuthBusy(true);
+      setEgysGoogleError("");
+      try {
+        await signInEgysWithGoogle(credential);
+        const profile = await getEgysProfile();
+        if (!profile) throw new Error("e-GYS profile was not returned");
+        setAccountProfile(profile);
+        saveEgysProfile(profile);
+        setEgysSession(trackEgysProfileSeen(profile));
+        show(translate(locale, "more.greeting", { name: profile.displayName }));
+      } catch (error) {
+        recordDiagnostic("error", "egys.google-login.complete", error);
+        setEgysGoogleError(
+          error instanceof Error && error.message
+            ? error.message
+            : translate(locale, "more.googleDetectFailed"),
+        );
+        show(translate(locale, "more.loginFailed"));
+      } finally {
+        setAuthBusy(false);
+      }
+    },
+    [locale],
+  );
 
   const show = (message: string) => {
     setNotice(message);
@@ -1188,17 +1154,27 @@ export function MorePage({
                     ) : undefined
                   }
                   onProviderLogin={startEgysProvider}
-                  onGoogleLogin={() =>
-                    nativeShell
-                      ? void openNativeEgysLoginFlow()
-                      : setEgysLoginOpen(true)
-                  }
+                  {...(nativeShell
+                    ? { onGoogleLogin: () => void openNativeEgysLoginFlow() }
+                    : {
+                        googleButton: (
+                          <EgysGoogleButton
+                            locale={locale}
+                            onCredential={completeGoogleLogin}
+                          />
+                        ),
+                      })}
                   onNativeLogin={
                     nativeShell
                       ? () => void openNativeEgysLoginFlow()
                       : undefined
                   }
                 />
+                {egysGoogleError && egysProvider !== "apple" && (
+                  <p className="egys-google-error" role="alert">
+                    {egysGoogleError}
+                  </p>
+                )}
                 {egysProvider === "apple" && (
                   <div className="egys-inline-login">
                     <span role={egysGoogleError ? "alert" : "status"}>
@@ -1940,90 +1916,6 @@ export function MorePage({
           <small>{translate(locale, "more.playlistNote")}</small>
         </section>
       )}
-      {egysLoginOpen &&
-        createPortal(
-          <div
-            className={`egys-login-backdrop${isEgysLoginClosing ? " is-closing" : ""}`}
-            role="dialog"
-            aria-modal="true"
-            aria-label={translate(locale, "more.loginDialog")}
-            onClick={closeEgysLogin}
-          >
-            <div
-              className="egys-login-overlay"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="egys-login-head">
-                <div className="egys-login-title">
-                  <Icon name="person" size={18} />
-                  <strong>{translate(locale, "more.loginTitle")}</strong>
-                  <small>Gereja Yesus Sejati</small>
-                </div>
-                <button
-                  className="egys-login-close"
-                  type="button"
-                  aria-label={translate(locale, "more.close")}
-                  onClick={closeEgysLogin}
-                >
-                  ×
-                </button>
-              </div>
-              <div className="egys-login-frame-container egys-login-google-container">
-                <p>{translate(locale, "more.googleModalDescription")}</p>
-                <div
-                  ref={googleButtonRef}
-                  className="egys-google-button"
-                  aria-label={translate(locale, "more.googleLogin")}
-                />
-                {authBusy && (
-                  <p className="egys-google-status" role="status">
-                    {translate(locale, "more.checkingLogin")}
-                  </p>
-                )}
-                {egysGoogleError && (
-                  <p className="egys-google-error" role="alert">
-                    {egysGoogleError}
-                  </p>
-                )}
-                <p className="egys-google-fallback">
-                  {translate(locale, "more.otherLoginMethods")}
-                </p>
-                <EgysLoginMethods
-                  locale={locale}
-                  onProviderLogin={(provider) => {
-                    closeEgysLogin();
-                    startEgysProvider(provider);
-                  }}
-                />
-              </div>
-              <div className="egys-login-footer">
-                <span>
-                  <Icon name="checkCircle" size={14} />
-                  {translate(locale, "more.secureCredentials")}
-                </span>
-                <div className="egys-login-footer-actions">
-                  <a
-                    className="text-button"
-                    href={`https://e.gys.or.id/login?theme=${theme}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    style={{ textDecoration: "none" }}
-                  >
-                    {translate(locale, "more.officialPortal")}
-                  </a>
-                  <button
-                    type="button"
-                    className="quiet-button"
-                    onClick={closeEgysLogin}
-                  >
-                    {translate(locale, "more.close")}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
       {notice && (
         <div className="toast" role="status">
           {notice}

@@ -1,5 +1,136 @@
 import { expect, test } from "@playwright/test";
 
+test("back navigation cancels a link still waiting for a cold route", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.addInitScript(() =>
+    Object.defineProperty(navigator, "connection", {
+      value: { saveData: true },
+    }),
+  );
+  let release: () => void = () => {};
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(/\/faith-[^/]+\.js$/, async (route) => {
+    await pending;
+    await route.continue();
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await page.locator('.primary-nav a[href$="/kidung"]').click();
+  await expect(page.locator(".hymn-page")).toBeVisible();
+  await expect(page.locator("html")).not.toHaveClass(/is-reader-transition/);
+  const loading = page.waitForRequest(/\/faith-[^/]+\.js$/);
+  await page.locator('.primary-nav a[href$="/iman"]').click();
+  await loading;
+  await page.goBack();
+  release();
+  await expect(page.locator(".home-grid")).toBeVisible();
+  await page.waitForTimeout(250);
+  await expect(page).toHaveURL(/GYSApp-Tauri\/$/);
+});
+
+test("history arrivals keep the same page motion after multiple route changes", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.addInitScript(() => {
+    const original = Element.prototype.animate;
+    const arrivals: Array<{ duration: unknown; frames: unknown }> = [];
+    (window as unknown as { pageArrivals: typeof arrivals }).pageArrivals =
+      arrivals;
+    Element.prototype.animate = function (frames, options) {
+      if (this.classList.contains("route-view"))
+        arrivals.push({
+          duration: typeof options === "object" ? options.duration : options,
+          frames,
+        });
+      return original.call(this, frames, options);
+    };
+  });
+  await page.goto("/GYSApp-Tauri/");
+  for (const [path, selector] of [
+    ["iman", ".faith-page"],
+    ["kidung", ".hymn-page"],
+  ]) {
+    await page.locator(`.primary-nav a[href$="/${path}"]`).click();
+    await expect(page.locator(selector!)).toBeVisible();
+    await expect(page.locator("html")).not.toHaveClass(/is-reader-transition/);
+  }
+  await page.evaluate(() => {
+    (window as unknown as { pageArrivals: unknown[] }).pageArrivals.length = 0;
+  });
+  await page.goBack();
+  await expect(page.locator(".faith-page")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as { pageArrivals: unknown[] }).pageArrivals,
+      ),
+    )
+    .toEqual([{ duration: 260, frames: [{ opacity: 0 }, { opacity: 1 }] }]);
+  await page.evaluate(() => {
+    (window as unknown as { pageArrivals: unknown[] }).pageArrivals.length = 0;
+  });
+  await page.getByRole("button", { name: "Cari di seluruh aplikasi" }).click();
+  await page
+    .getByLabel("Cari Alkitab, Kidung, Literatur, Iman, atau media")
+    .fill("Pujilah Allah Yang Maha Esa");
+  await page
+    .getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ })
+    .first()
+    .click();
+  await expect(page.locator(".hymn-detail-page")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as { pageArrivals: unknown[] }).pageArrivals,
+      ),
+    )
+    .toEqual([{ duration: 260, frames: [{ opacity: 0 }, { opacity: 1 }] }]);
+});
+
+test("navigation without native snapshots fades once with no legacy entrance", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.addInitScript(() => {
+    Object.defineProperty(document, "startViewTransition", {
+      value: undefined,
+    });
+    const original = Element.prototype.animate;
+    const samples: Array<{ css: number; duration: unknown }> = [];
+    (window as unknown as { fallbackPages: typeof samples }).fallbackPages =
+      samples;
+    Element.prototype.animate = function (frames, options) {
+      if (this.classList.contains("route-view"))
+        samples.push({
+          css: this.getAnimations().filter(
+            (animation) => animation instanceof CSSAnimation,
+          ).length,
+          duration: typeof options === "object" ? options.duration : options,
+        });
+      return original.call(this, frames, options);
+    };
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await page.locator('.primary-nav a[href$="/iman"]').click();
+  await expect(page.locator(".faith-page")).toBeVisible();
+  await page.locator('.primary-nav a[href$="/kidung"]').click();
+  await expect(page.locator(".hymn-page")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as { fallbackPages: unknown[] }).fallbackPages,
+      ),
+    )
+    .toEqual([
+      { css: 0, duration: 260 },
+      { css: 0, duration: 260 },
+    ]);
+});
+
 test("navigation from a scrolled catalog starts the destination at its top", async ({
   page,
 }) => {

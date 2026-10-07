@@ -133,6 +133,12 @@ async function prepare(page: Page): Promise<void> {
       }
     }
   });
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.abort(),
+  );
+  await page.route("https://appleid.cdn-apple.com/**", (route) =>
+    route.abort(),
+  );
   await page.route("**/api/v1/content/**", (route) => route.abort());
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.abort(),

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
 // Representative visual baselines cover phone, tablet, and desktop widths.
 const viewports = [
@@ -51,8 +52,14 @@ const transparentPixel = Buffer.from(
 );
 
 async function prepare(page: Page): Promise<void> {
-  await page.clock.setFixedTime(new Date("2026-08-18T08:00:00+07:00"));
+  await page.clock.setFixedTime(new Date("2026-09-28T10:00:00Z"));
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.abort(),
+  );
+  await page.route("https://appleid.cdn-apple.com/**", (route) =>
+    route.abort(),
+  );
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.abort(),
   );
@@ -64,6 +71,7 @@ async function prepare(page: Page): Promise<void> {
   await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
     route.fulfill({ body: transparentPixel, contentType: "image/png" }),
   );
+  await preparePinnedReaderAssets(page);
 }
 
 for (const surface of surfaces) {
@@ -111,7 +119,11 @@ for (const surface of surfaces) {
           .evaluateAll((elements) =>
             elements.flatMap((element) => {
               const rect = element.getBoundingClientRect();
-              return rect.width > 0 &&
+              return element.checkVisibility({
+                checkOpacity: true,
+                checkVisibilityCSS: true,
+              }) &&
+                rect.width > 0 &&
                 rect.height > 0 &&
                 (rect.width < 43.5 || rect.height < 43.5)
                 ? [
@@ -334,7 +346,7 @@ for (const viewport of [viewports[0], viewports[2]]) {
     await expect(
       page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("tab", { name: "PDF" }).click();
+    await page.locator(".hymn-partitur-toggle").click();
     const pdf = page.locator(".pdf-reader-hymn");
     await expect(pdf).toBeVisible({ timeout: 30_000 });
     await expect(
@@ -362,7 +374,7 @@ for (const viewport of [viewports[0], viewports[2]]) {
       await expect
         .poll(() =>
           title.evaluate((element) =>
-            Number.parseFloat(element.style.fontSize),
+            Number.parseFloat(getComputedStyle(element).fontSize),
           ),
         )
         .toBeGreaterThanOrEqual(11);
@@ -379,11 +391,12 @@ test("hymn PDF viewer renders a verified page and exposes a download", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
+  await prepare(page);
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".pdf-download")).toHaveAttribute(
     "download",

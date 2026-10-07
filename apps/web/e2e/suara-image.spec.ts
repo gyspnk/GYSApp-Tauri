@@ -79,7 +79,8 @@ test("Suara Sejati and Literature images display loading bar and load cleanly", 
   expect(firstSuaraImage).toMatch(
     /^https:\/\/tjcorguploads\.s3\.amazonaws\.com\//,
   );
-  expect(firstSuaraImage).not.toMatch(/-\d+x\d+\.[^/]+$/i);
+  // Shelves retain the publisher's small thumbnail instead of fetching originals.
+  expect(firstSuaraImage).toMatch(/-\d+x\d+\.[^/]+$/i);
 
   // Navigate to Literatur page
   await page.goto("/GYSApp-Tauri/literatur");

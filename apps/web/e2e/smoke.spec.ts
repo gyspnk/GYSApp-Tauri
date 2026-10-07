@@ -1,4 +1,33 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function setBibleAddress(
+  page: Page,
+  book: string,
+  chapter: number,
+  verse = 1,
+) {
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await picker.getByRole("combobox", { name: "Kitab", exact: true }).click();
+  await picker
+    .getByRole("searchbox", { name: "Cari kitab atau isi ayat" })
+    .fill(book);
+  await picker.getByRole("option", { name: book, exact: true }).click();
+  const chapterField = picker.getByRole("combobox", {
+    name: "Pasal",
+    exact: true,
+  });
+  await chapterField.click();
+  await chapterField.pressSequentially(String(chapter));
+  const verseField = picker.getByRole("combobox", {
+    name: "Ayat",
+    exact: true,
+  });
+  await verseField.click();
+  await verseField.pressSequentially(String(verse));
+  await expect(picker).toBeVisible();
+  await picker.getByRole("button", { name: "Buka ayat", exact: true }).click();
+  await expect(picker).toBeHidden();
+}
 
 test("shell navigation and locale switch are usable", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/");
@@ -775,15 +804,14 @@ test("selected Bible verse exposes a floating bottom action toolbar", async ({
   await handle.click();
   const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
   await expect(picker).toBeVisible();
-  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Yohanes");
-  await page.getByRole("button", { name: "Yohanes", exact: true }).click();
-  await page.getByRole("button", { name: "3", exact: true }).click();
-  await page.getByRole("button", { name: "Buka Seluruh Pasal" }).click();
+  await setBibleAddress(page, "Yohanes", 3);
+  await picker
+    .getByRole("button", { name: "Buka ayat", exact: true })
+    .waitFor({ state: "hidden" });
   await expect(page.locator(".verse-row").first()).toBeVisible({
     timeout: 15_000,
   });
-  await page.locator(".verse-row").first().click();
-
+  // Opening an explicit address already selects verse 1.
   const toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
   await expect(toolbar).toBeVisible();
   await expect(toolbar).toHaveCSS("position", "fixed");
@@ -815,17 +843,14 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
     .click();
   const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
   await expect(picker).toBeVisible();
-  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Yohanes");
-  await page.getByRole("button", { name: "Yohanes", exact: true }).click();
-  await page.getByRole("button", { name: "3", exact: true }).click();
-  await page.getByRole("button", { name: "Buka Seluruh Pasal" }).click();
+  await setBibleAddress(page, "Yohanes", 3);
+  await picker
+    .getByRole("button", { name: "Buka ayat", exact: true })
+    .waitFor({ state: "hidden" });
   await expect(page.getByRole("heading", { name: /Yohanes 3/ })).toBeVisible({
     timeout: 15_000,
   });
 
-  await page
-    .getByRole("button", { name: /Adalah seorang Farisi yang bernama/ })
-    .dispatchEvent("click");
   const toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
   await expect(toolbar).toBeVisible();
   const bounds = await toolbar.boundingBox();
@@ -1530,25 +1555,19 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
       ),
     )
     .toBe(true);
-  const longBook = page.getByRole("button", { name: "Kidung Agung" });
+  await dialog.getByRole("combobox", { name: "Kitab", exact: true }).click();
+  const longBook = dialog.getByRole("option", {
+    name: "Kidung Agung",
+    exact: true,
+  });
   await expect(longBook).toBeVisible();
   expect(
-    await longBook.evaluate(
-      (element) => getComputedStyle(element).whiteSpace === "normal",
-    ),
-  ).toBe(true);
+    await longBook.evaluate((element) => getComputedStyle(element).whiteSpace),
+  ).toBe("normal");
+  await page.keyboard.press("Escape");
+  await setBibleAddress(page, "Matius", 5, 3);
 
-  // Filter book by name and select
-  await page.getByPlaceholder("Cari kitab atau isi ayat…").fill("Matius");
-  await page.getByRole("button", { name: "Matius", exact: true }).click();
-
-  // Select Chapter 5
-  await page.getByRole("button", { name: "5", exact: true }).click();
-
-  // Select Verse 3 (Beatitudes)
-  await page.getByRole("button", { name: "3", exact: true }).click();
-
-  // Modal dialog closes and reader navigates to Matius 5 with verse 3 selected
+  // Applying the complete draft selects the requested verse.
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("heading", { name: /Matius 5/ })).toBeVisible();
   await expect(page.locator(".verse-row.is-selected")).toContainText(

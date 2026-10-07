@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { edgeStopEvidence } from "../../../scripts/edge-stop-evidence.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { createServer } from "node:net";
@@ -344,6 +345,7 @@ const profile = await mkdtemp(resolve(tmpdir(), "gysapp-edge-smoke-"));
 let port;
 let app;
 let browser;
+let diagnosticPage;
 
 try {
   const musicLock = JSON.parse(
@@ -510,6 +512,7 @@ try {
     localStorage.setItem("gys-media-minimized", "0");
   });
   const page = context.pages()[0] ?? (await context.newPage());
+  diagnosticPage = page;
   page.once("crash", () => console.error("Native WebView renderer crashed"));
   page.on("pageerror", (error) =>
     console.error(`Native WebView uncaught error: ${error.message}`),
@@ -1066,16 +1069,31 @@ try {
 
   const readerButton = page.locator(".reader-speech-btn");
   const idleLabel = await readerButton.getAttribute("aria-label");
+  const previousSpeechDiagnostics = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").map(
+      (event) => event.id,
+    ),
+  );
   await readerButton.click();
   await waitForDiagnostic(page, "tts.edge.receive");
   await page.locator(".media-stop-control").click();
-  await waitForDiagnostic(page, "tts.edge.abort");
   await page.waitForFunction(
     (label) =>
       document
         .querySelector(".reader-speech-btn")
         ?.getAttribute("aria-label") === label,
     idleLabel,
+  );
+  const stoppedSpeechDiagnostics = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]"),
+  );
+  const speechStopEvidence = edgeStopEvidence(
+    stoppedSpeechDiagnostics,
+    previousSpeechDiagnostics,
+  );
+  assert.ok(
+    speechStopEvidence,
+    "Stop must cancel the current request or stop its already synthesized audio",
   );
 
   const voiceSettings = await openSpeechSettings(page);
@@ -1303,23 +1321,26 @@ try {
     timeout: 20_000,
   });
   const collectionFilter = page.locator(
-    ".kidung-desktop-filter .control-select",
+    ".kidung-header-filter .control-select",
   );
   await collectionFilter.locator(".control-select-trigger").click();
   const collectionLabels = await collectionFilter
     .locator(".control-select-option")
     .allTextContents();
   const expectedCollectionLabels = [
-    "Semua koleksi",
+    "Semua",
     ...[...new Set(hymnCatalog.items.map((item) => item.book))]
       .sort()
       .map((book) =>
-        book
-          .split("-")
-          .map(
-            (word) => word.charAt(0).toLocaleUpperCase("id-ID") + word.slice(1),
-          )
-          .join(" "),
+        book === "rohani"
+          ? "KR"
+          : book
+              .split("-")
+              .map(
+                (word) =>
+                  word.charAt(0).toLocaleUpperCase("id-ID") + word.slice(1),
+              )
+              .join(" "),
       ),
   ];
   assert.deepEqual(
@@ -1343,7 +1364,7 @@ try {
     await collectionFilter.locator(".control-select-trigger").click();
   }
   await collectionFilter
-    .getByRole("option", { name: "Semua koleksi", exact: true })
+    .getByRole("option", { name: "Semua", exact: true })
     .click();
 
   await page.goto(new URL("/kidung/hymn-051A", origin).href);
@@ -1503,7 +1524,8 @@ try {
       })
       .waitFor({ state: "visible", timeout: 20_000 });
     await ensureChordVisible(page);
-    await page.getByText(/Chord diverifikasi dari/).waitFor({
+    // Verified cache assertions below prove integrity; the old load toast is gone.
+    await page.locator(".chord-visual-marker").first().waitFor({
       state: "visible",
       timeout: 30_000,
     });
@@ -1551,7 +1573,8 @@ try {
       })
       .waitFor({ state: "visible", timeout: 20_000 });
     await ensureChordVisible(page);
-    await page.getByText(/Chord diverifikasi dari/).waitFor({
+    // Verified cache assertions below prove integrity; the old load toast is gone.
+    await page.locator(".chord-visual-marker").first().waitFor({
       state: "visible",
       timeout: 30_000,
     });
@@ -1609,7 +1632,8 @@ try {
       })
       .waitFor({ state: "visible", timeout: 20_000 });
     await ensureChordVisible(page);
-    await page.getByText(/Chord diverifikasi dari/).waitFor({
+    // Verified cache assertions below prove integrity; the old load toast is gone.
+    await page.locator(".chord-visual-marker").first().waitFor({
       state: "visible",
       timeout: 30_000,
     });
@@ -1775,7 +1799,7 @@ try {
   await page
     .getByRole("heading", { name: "Pujilah Allah Yang Maha Esa", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
-  await page.getByRole("tab", { name: "PDF", exact: true }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   const pdfReader = page.locator(".pdf-reader-hymn");
   await pdfReader.waitFor({ state: "visible", timeout: 30_000 });
   const renderedPdfPage = pdfReader.locator('canvas[data-pdf-rendered="true"]');
@@ -1800,7 +1824,7 @@ try {
     blockedPdfRequests.some((url) => url.includes("raw.githubusercontent.com")),
     "Smoke did not block the remote Fork PDF before testing the local fallback",
   );
-  await page.getByRole("button", { name: "Kembali ke lirik" }).click();
+  await page.locator(".hymn-pdf-text-toggle").click();
 
   const recoveryPdfAssetUrl = rawMusicAssetUrl(
     recoveryPdfItem.path,
@@ -1849,7 +1873,7 @@ try {
       { cause: error },
     );
   }
-  await page.getByRole("tab", { name: "PDF", exact: true }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   const recoveredPdfReader = page.locator(".pdf-reader-hymn");
   await recoveredPdfReader.waitFor({ state: "visible", timeout: 30_000 });
   await recoveredPdfReader
@@ -1886,8 +1910,17 @@ try {
     false,
     "Offline cached PDF replay attempted to fetch the upstream PDF",
   );
-  await page.getByRole("button", { name: "Kembali ke lirik" }).click();
+  await page.locator(".hymn-pdf-text-toggle").click();
   await context.unroute("**/*");
+  // Seed a known preference for the edit/restart contract. Adaptive defaults
+  // are covered separately and must not determine this persistence fixture.
+  await page.evaluate(() => {
+    const store = JSON.parse(
+      localStorage.getItem("gys-hymn-typography-v1") ?? "null",
+    ) ?? { version: 1, songs: {} };
+    store.songs["hymn-001"] = { fontSize: 18, lineHeight: 1.65 };
+    localStorage.setItem("gys-hymn-typography-v1", JSON.stringify(store));
+  });
   await page.goto(new URL("/kidung/hymn-001", origin).href);
   await page
     .getByRole("heading", { name: "Pujilah Allah Yang Maha Esa", exact: true })
@@ -2015,9 +2048,9 @@ try {
   });
   await page.goto(new URL("/kidung/hymn-001", origin).href);
   await page
-    .getByRole("button", { name: "Putar MIDI", exact: true })
+    .getByRole("button", { name: "Buka MIDI", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
-  await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
+  await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
   const upstreamMidiSurface = page.locator(".media-surface.is-kidung-media");
   await upstreamMidiSurface.waitFor({ state: "visible", timeout: 20_000 });
   const upstreamMidiPrimary = upstreamMidiSurface.locator(
@@ -2078,9 +2111,9 @@ try {
   }
   await page.reload();
   await page
-    .getByRole("button", { name: "Putar MIDI", exact: true })
+    .getByRole("button", { name: "Buka MIDI", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
-  await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
+  await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
   await upstreamMidiPrimary.click();
   try {
     await page.waitForFunction(
@@ -2207,6 +2240,7 @@ try {
   await upstreamMidiPrimary.click();
   await waitForMidiButtonLabel(page, "Jeda", 5_000);
 
+  await upstreamMidiSurface.locator(".media-advanced-summary").click();
   const midiVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
   const initialMidiVolume = Number(await midiVolume.inputValue());
   await midiVolume.focus();
@@ -2222,7 +2256,11 @@ try {
 
   await upstreamMidiSurface.locator(".media-advanced-summary").click();
   const midiTranspose = upstreamMidiSurface.locator(".media-transpose");
-  await midiTranspose.locator("button").last().click();
+  const resetTranspose = midiTranspose.locator(".media-transpose-reset");
+  if (await resetTranspose.isEnabled()) await resetTranspose.click();
+  await midiTranspose
+    .getByRole("button", { name: "Naikkan nada", exact: true })
+    .click();
   await page.waitForFunction(
     () =>
       document.querySelector(
@@ -2244,22 +2282,23 @@ try {
   await waitForMidiButtonLabel(page, "Jeda");
 
   const midiInstrument = upstreamMidiSurface.locator(
-    ".media-instrument-control select",
+    ".media-instrument-control",
   );
-  const initialMidiInstrument = await midiInstrument.inputValue();
-  await midiInstrument.selectOption("40");
-  await page.waitForFunction(
-    () =>
-      document.querySelector(
-        ".media-surface.is-kidung-media .media-instrument-control select",
-      )?.value === "40",
-    null,
-    { timeout: 5_000 },
-  );
+  const instrumentTrigger = midiInstrument.getByRole("combobox");
+  const initialInstrumentLabel = await instrumentTrigger.innerText();
+  await instrumentTrigger.click();
+  const initialInstrumentIndex = await midiInstrument
+    .getByRole("option", { selected: true })
+    .evaluate((option) => [...option.parentElement.children].indexOf(option));
+  await midiInstrument.getByRole("option", { name: /Violin/ }).click();
+  assert.equal((await instrumentTrigger.innerText()).trim(), "Violin");
   await waitForMidiButtonLabel(page, "Jeda");
-  await midiInstrument.selectOption(initialMidiInstrument);
+  await instrumentTrigger.click();
+  await midiInstrument.getByRole("option").nth(initialInstrumentIndex).click();
+  assert.equal(await instrumentTrigger.innerText(), initialInstrumentLabel);
   await waitForMidiButtonLabel(page, "Jeda");
 
+  await upstreamMidiSurface.locator(".media-advanced-summary").click();
   await upstreamMidiSurface.locator(".media-tempo-toggle").click();
   const midiTempo = upstreamMidiSurface.locator(".media-tempo-popover input");
   const initialMidiTempo = Number(await midiTempo.inputValue());
@@ -2351,10 +2390,10 @@ try {
   });
   await page.reload();
   await page
-    .getByRole("button", { name: "Putar MIDI", exact: true })
+    .getByRole("button", { name: "Buka MIDI", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
   const fullQueueSurface = page.locator(".media-surface.is-kidung-media");
-  await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
+  await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
   await fullQueueSurface.waitFor({ state: "visible", timeout: 20_000 });
   await fullQueueSurface.locator(".media-primary-control").click();
   try {
@@ -2535,10 +2574,10 @@ try {
     ["hymn-001", "hymn-002"],
   );
   await page
-    .getByRole("button", { name: "Putar MIDI", exact: true })
+    .getByRole("button", { name: "Buka MIDI", exact: true })
     .waitFor({ state: "visible", timeout: 20_000 });
   const midiStartedAt = Date.now();
-  await page.getByRole("button", { name: "Putar MIDI", exact: true }).click();
+  await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
   const midiSurface = page.locator(".media-surface.is-kidung-media");
   await midiSurface.waitFor({ state: "visible", timeout: 20_000 });
   await midiSurface.locator(".media-primary-control").click();
@@ -2691,9 +2730,13 @@ try {
   const persistenceAdvanced = upstreamMidiSurface.locator(
     ".media-advanced-controls",
   );
-  if (!(await persistenceAdvanced.evaluate((element) => element.open)))
+  if (await persistenceAdvanced.evaluate((element) => element.open))
     await persistenceAdvanced.locator("summary").click();
   const persistenceTranspose = upstreamMidiSurface.locator(".media-transpose");
+  const persistenceReset = persistenceTranspose.locator(
+    ".media-transpose-reset",
+  );
+  if (await persistenceReset.isEnabled()) await persistenceReset.click();
   await persistenceTranspose.locator("button").first().click();
   await page.waitForFunction(
     () =>
@@ -2713,9 +2756,11 @@ try {
     { timeout: 5_000 },
   );
   const persistenceInstrument = upstreamMidiSurface.locator(
-    ".media-instrument-control select",
+    ".media-instrument-control",
   );
-  await persistenceInstrument.selectOption("40");
+  await persistenceInstrument.getByRole("combobox").click();
+  await persistenceInstrument.getByRole("option", { name: /Violin/ }).click();
+  await persistenceAdvanced.locator("summary").click();
   const persistenceVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
   await persistenceVolume.focus();
   await persistenceVolume.press("ArrowLeft");
@@ -2847,6 +2892,7 @@ try {
   );
   const restoredPage =
     restoredContext.pages()[0] ?? (await restoredContext.newPage());
+  diagnosticPage = restoredPage;
   await restoredPage.waitForFunction(
     () => location.href !== "about:blank",
     null,
@@ -3063,7 +3109,7 @@ try {
     "Per-song line spacing did not survive restarting packaged Tauri",
   );
   await restoredPage
-    .getByRole("button", { name: "Putar MIDI", exact: true })
+    .getByRole("button", { name: "Buka MIDI", exact: true })
     .click();
   const restoredMidiSurface = restoredPage.locator(
     ".media-surface.is-kidung-media",
@@ -3079,10 +3125,12 @@ try {
     routeMidiPreferences.volume,
   );
   assert.equal(
-    await restoredMidiSurface
-      .locator(".media-instrument-control select")
-      .inputValue(),
-    String(routeMidiPreferences.instrument),
+    (
+      await restoredMidiSurface
+        .locator(".media-instrument-control .control-select-value")
+        .innerText()
+    ).trim(),
+    "Violin",
   );
   assert.equal(
     (
@@ -3122,7 +3170,7 @@ try {
       bibleSearchBudgetMs: BIBLE_BROAD_SEARCH_BUDGET_MS,
       bibleSearchInitialResults: 40,
       bibleSearchExpandedResults: bibleExpandedSearchResults,
-      abortedSynthesis: true,
+      speechStopEvidence,
       selectedVoice: "id-ID-GadisNeural",
       localTtsPlayback: localSpeechPlayback,
       receivedAudio: audio.find((event) =>
@@ -3185,6 +3233,27 @@ try {
       bibleHistoryRestart: "passed",
     }),
   );
+} catch (error) {
+  const evidence = await diagnosticPage
+    ?.evaluate(() => ({
+      route: location.pathname,
+      speechButton: document
+        .querySelector(".reader-speech-btn")
+        ?.getAttribute("aria-label"),
+      player: document.querySelector(".media-surface")?.className,
+      diagnostics: JSON.parse(
+        localStorage.getItem("gys-diagnostics-v1") ?? "[]",
+      ),
+    }))
+    .catch(() => ({ unavailable: true }));
+  await writeFile(
+    resolve("native-smoke-failure.json"),
+    JSON.stringify({ error: String(error), evidence }, null, 2),
+  ).catch(() => undefined);
+  await diagnosticPage
+    ?.screenshot({ path: resolve("native-smoke-failure.png") })
+    .catch(() => undefined);
+  throw error;
 } finally {
   await browser?.close().catch(() => undefined);
   await closeAppTree(app);

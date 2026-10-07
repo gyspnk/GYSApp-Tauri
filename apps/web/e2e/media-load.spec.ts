@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 test.use({ serviceWorkers: "block" });
 
-test("canonical PDF fallback keeps all hymn chord rows and their source tokens", async ({
+test("canonical PDF fallback keeps all chord rows aligned with the detected PDF key", async ({
   page,
 }) => {
   await preparePinnedReaderAssets(page);
@@ -30,10 +30,11 @@ test("canonical PDF fallback keeps all hymn chord rows and their source tokens",
       { timeout: 20_000 },
     )
     .toEqual([
-      ["C", "Am", "G", "F", "C"],
-      ["G", "Am", "G", "D", "G"],
-      ["C", "Am", "C", "F", "C"],
-      ["Cm", "Em", "F", "Em", "Dm", "G", "C"],
+      // The verified score is E-flat; the default natural key is D.
+      ["D", "Bm", "A", "G", "D"],
+      ["A", "Bm", "A", "E", "A"],
+      ["D", "Bm", "D", "G", "D"],
+      ["Dm", "F♯m", "G", "F♯m", "Em", "A", "D"],
     ]);
   await expect(
     page.getByText("Posisi chord belum tersedia", { exact: false }),
@@ -114,10 +115,10 @@ test("canonical chord and fork PDF assets open from hymn detail", async ({
   await page.locator(".hymn-reader-settings-summary").click();
   await page.locator(".hymn-music-settings > summary").click();
   await page.getByRole("combobox", { name: "Nada dasar" }).click();
-  await page.getByRole("option", { name: "D", exact: true }).click();
+  await page.getByRole("option", { name: "F", exact: true }).click();
   await expect(page.locator(".transpose-control strong")).toHaveText("+2");
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.locator(".pdf-reader")).toBeVisible({
     timeout: 30_000,
   });
@@ -150,7 +151,7 @@ test("PDF failure exposes an actionable retry without leaving the hymn shell", a
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
   ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.getByRole("alert")).toContainText("PDF gagal dimuat", {
     timeout: 20_000,
   });
@@ -342,6 +343,16 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   page,
 }) => {
   await preparePinnedReaderAssets(page);
+  // A saved value makes the edit/reload contract independent of first-visit autofit.
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "gys-hymn-typography-v1",
+      JSON.stringify({
+        version: 1,
+        songs: { "hymn-133": { fontSize: 18, lineHeight: 1.5 } },
+      }),
+    ),
+  );
   await page.goto("/GYSApp-Tauri/kidung/hymn-133");
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.locator(".hymn-more-actions-summary").click();
@@ -352,17 +363,17 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     "data-autofit-font-size",
     "19",
   );
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await page
     .locator(".pdf-toolbar")
-    .getByRole("button", { name: "Berikutnya" })
+    .getByRole("button", { name: "Berikutnya", exact: true })
     .click();
   await page.reload();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await page
     .locator(".pdf-toolbar")
-    .getByRole("button", { name: "Sebelumnya" })
+    .getByRole("button", { name: "Sebelumnya", exact: true })
     .click();
   const resumeButton = page.locator('[data-pdf-resume="true"]');
   await expect(resumeButton).toBeVisible({ timeout: 15_000 });
@@ -410,7 +421,7 @@ test("rapid hymn/viewer changes keep the latest route and do not leak stale PDF 
   // entity. The keyed detail boundary plus run guards must leave the second
   // hymn in a text-first state rather than displaying hymn-001's late PDF.
   await page.getByRole("button", { name: "Tampilkan chord" }).click();
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   await page.getByRole("button", { name: "← Semua kidung" }).click();
   await expect(page).toHaveURL(/\/kidung$/);
   await page.goto("/GYSApp-Tauri/kidung/hymn-002?mode=lyrics");

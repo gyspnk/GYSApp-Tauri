@@ -326,28 +326,51 @@ test("settings disclosures collapse with intermediate heights", async ({
       ),
     )
     .toBe(1);
+  await details.evaluate(async (node) => {
+    getComputedStyle(node, "::details-content").blockSize;
+    await Promise.all(
+      node
+        .getAnimations({ subtree: true })
+        .map((animation) => animation.finished),
+    );
+  });
   const expanded = (await details.boundingBox())!.height;
-  await details
-    .locator(":scope > summary")
-    .evaluate((node) => (node as HTMLElement).click());
+  const duration = await details.evaluate(
+    (node) => getComputedStyle(node, "::details-content").transitionDuration,
+  );
+  expect(
+    duration
+      .split(",")
+      .every((part) => parseFloat(part) > 0 && parseFloat(part) <= 0.2),
+  ).toBe(true);
+  // Chromium's native details pseudo-element does not expose its block-size
+  // transition through getAnimations(). Stretch only this probe's timeline,
+  // while checking the real duration above, so busy CI cannot skip every frame.
+  await page.addStyleTag({
+    content:
+      '.more-setting-section[data-setting="appearance"]::details-content { transition-duration: 1s; }',
+  });
   const heights = await details.evaluate(
     (node) =>
       new Promise<number[]>((resolve) => {
-        const heights: number[] = [],
-          start = performance.now();
-        const sample = () => {
+        (node.querySelector(":scope > summary") as HTMLElement).click();
+        const heights: number[] = [];
+        let started: number | undefined;
+        const sample = (time: number) => {
+          started ??= time;
           heights.push(node.getBoundingClientRect().height);
-          if (performance.now() - start < 260) requestAnimationFrame(sample);
+          if (time - started < 450) requestAnimationFrame(sample);
           else resolve(heights);
         };
         requestAnimationFrame(sample);
       }),
   );
-  const collapsed = heights.at(-1)!;
-  expect(expanded - collapsed).toBeGreaterThan(50);
-  expect(
-    heights.some((height) => height > collapsed + 2 && height < expanded - 2),
-  ).toBe(true);
+  await expect
+    .poll(() => details.evaluate((node) => node.getBoundingClientRect().height))
+    .toBeLessThan(expanded - 50);
+  expect(heights.some((height) => height < expanded - 2 && height > 90)).toBe(
+    true,
+  );
 });
 
 test("Bible menu fades and slides out, restores focus and reopens smoothly", async ({

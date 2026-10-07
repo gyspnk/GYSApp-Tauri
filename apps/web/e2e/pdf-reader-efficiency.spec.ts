@@ -155,6 +155,21 @@ test("long PDF renders only nearby pages and releases offscreen bitmap memory", 
   await expect
     .poll(() => reader.locator('canvas[data-pdf-rendered="true"]').count())
     .toBeLessThanOrEqual(5);
+  // Bitmap readiness precedes completion of the smooth jump. Wait for the
+  // viewport to reach that page before testing a separate manual scroll.
+  await expect
+    .poll(() =>
+      reader.locator(".pdf-stage").evaluate((stage) => {
+        const bounds = stage.getBoundingClientRect();
+        return document
+          .elementFromPoint(
+            bounds.left + bounds.width / 2,
+            bounds.top + bounds.height / 2,
+          )
+          ?.closest<HTMLElement>("[data-pdf-page]")?.dataset.pdfPage;
+      }),
+    )
+    .toBe("30");
   await reader
     .locator('[data-pdf-page="20"]')
     .evaluate((element) =>

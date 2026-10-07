@@ -59,7 +59,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 20_000 });
 
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   const reader = page.locator(".pdf-reader-hymn");
   await expect(reader).toBeVisible({ timeout: 30_000 });
   const renderedPage = reader
@@ -116,14 +116,13 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
     0,
   );
 
-  const unavailablePager = reader.locator(
-    ".pdf-page-navigation > button:disabled",
-  );
-  const unavailablePagerCount = await unavailablePager.count();
-  expect(unavailablePagerCount).toBe(2);
-  for (let index = 0; index < unavailablePagerCount; index += 1) {
-    await expect(unavailablePager.nth(index)).toBeHidden();
-  }
+  // A single-page score uses the compact pager for adjacent hymns.
+  await expect(
+    reader.getByRole("button", { name: "Pujian sebelumnya", exact: true }),
+  ).toBeVisible();
+  await expect(
+    reader.getByRole("button", { name: "Pujian berikutnya", exact: true }),
+  ).toBeVisible();
 
   const options = page.getByRole("button", { name: "Opsi PDF" });
   await options.click();
@@ -149,11 +148,12 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
 
   await page.setViewportSize({ width: 768, height: 1024 });
   await reader.getByRole("button", { name: "Tampilan 2 halaman" }).click();
+  // A one-page score cannot manufacture a second page, even on a tablet.
   await expect(reader.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
-    "two",
+    "single",
   );
-  await expect(reader.locator(".pdf-orientation-warning")).toBeVisible();
+  await expect(reader.locator(".pdf-orientation-warning")).toHaveCount(0);
   await page.setViewportSize({ width: 1024, height: 768 });
   await expect(reader.locator(".pdf-orientation-warning")).toHaveCount(0);
   await reader.getByRole("button", { name: "Tampilan 1 halaman" }).click();
@@ -174,7 +174,8 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
     deltaY: -120,
     ctrlKey: true,
   });
-  await expect(zoom).toHaveText("125%");
+  // Wheel zoom is continuous; a 120px wheel delta scales by exp(0.24).
+  await expect(zoom).toHaveText("127%");
   await zoom.dblclick();
   await expect(zoom).toHaveText("100%");
 
@@ -227,7 +228,7 @@ test("hymn PDF toolbar collapses after idle and returns on reader input", async 
   await expect(
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 20_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   const reader = page.locator(".pdf-reader-hymn");
   await expect(
     reader.locator('canvas[data-pdf-rendered="true"]').first(),
@@ -250,13 +251,14 @@ test("hymn PDF enters fullscreen and downloads the current PDF asset", async ({
   await expect(
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 20_000 });
-  await page.getByRole("tab", { name: "PDF" }).click();
+  await page.locator(".hymn-partitur-toggle").click();
   const reader = page.locator(".pdf-reader-hymn");
   const stage = reader.locator(".pdf-stage");
   await expect(
     reader.locator('canvas[data-pdf-rendered="true"]').first(),
   ).toBeVisible({ timeout: 30_000 });
 
+  await reader.locator(".pdf-advanced-toggle").click();
   await reader.getByRole("button", { name: "Layar penuh" }).click();
   await expect
     .poll(() =>

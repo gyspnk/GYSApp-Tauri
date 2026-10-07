@@ -635,19 +635,26 @@ function Shell({
 
 function RoutedApp() {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  useLayoutEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
   useEffect(() => {
     let active = true;
     let dispose: (() => void) | undefined;
     void import("./route-transitions.js")
       .then((module) => {
-        if (active) dispose = module.installRouteTransitions(navigate);
+        if (active)
+          dispose = module.installRouteTransitions((path) =>
+            navigateRef.current(path),
+          );
       })
       .catch(() => undefined);
     return () => {
       active = false;
       dispose?.();
     };
-  }, [navigate]);
+  }, []);
   if (
     navigator.webdriver &&
     new URLSearchParams(window.location.search).get("__gys_shell_error") === "1"

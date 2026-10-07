@@ -26,7 +26,9 @@ for (const width of [320, 390, 1440]) {
     await expect(page).toHaveURL(/mode=pdf/);
     await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
     await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
-    await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Pujian berikutnya", exact: true })
+      .click();
     await expect(page).toHaveURL(/hymn-002\?mode=pdf$/);
     await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
     await page

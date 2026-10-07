@@ -50,10 +50,7 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.locator('summary[aria-label="Koleksi"]').click();
-    const collectionPanel = page.locator(".kidung-mobile-filter-panel");
-    await expect(collectionPanel).toBeVisible();
-    await collectionPanel.locator(".control-select-trigger").click();
+    await page.getByRole("combobox", { name: "Koleksi", exact: true }).click();
     await expect(page.getByRole("option", { name: "english" })).toHaveCount(0);
     await expect(page.getByRole("option", { name: "mandarin" })).toHaveCount(0);
   });
@@ -150,12 +147,12 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    const filter = page.locator(".kidung-desktop-filter .control-select");
+    const filter = page.locator(".kidung-header-filter .control-select");
     await filter.locator(".control-select-trigger").click();
     await expect(filter.locator(".control-select-option")).toHaveText([
-      "Semua koleksi",
+      "Semua",
       "English",
-      "Rohani",
+      "KR",
     ]);
     await page.getByRole("option", { name: "English", exact: true }).click();
     await expect(

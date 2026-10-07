@@ -164,7 +164,11 @@ stops the attempt; pressing the same provider again replaces it with a new
 request. If the badge reports a failure, retry after verifying popup/network
 access. Do not substitute a different message/reference.
 
-Google/Apple use their provider authorization UI. A successful exchange refreshes
+Google's dynamic sign-in button appears directly in the account row; small
+layouts use its Google icon. It opens provider authorization immediately and
+does not require a second login button in an application overlay. If its SDK
+cannot load, the visible Google action retries in place after network recovery.
+Apple uses its provider authorization UI. A successful exchange refreshes
 the account/profile photo. Tauri authenticates in its allowlisted official e-GYS
 login window and stores the token in the OS keyring. Logging out removes the
 local credential/session boundary; browser tokens are not kept in localStorage.

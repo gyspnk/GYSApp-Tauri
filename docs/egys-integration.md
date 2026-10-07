@@ -83,7 +83,13 @@ against the live official login page on 2026-10-06.
 Both callbacks store the upstream token in the same HttpOnly cookie as Google,
 return only `{ ok: true }`, then refresh `/api/v1/account/profile` so the header
 and account panel detect the member. Tokens are never stored in browser storage.
-Google retains its working Google Identity Services flow and BFF callback.
+Google Identity Services renders its dynamic button directly in the provider
+row. It can display personalized account information when Google permits it;
+compact layouts use Google's icon button rather than clipping a wide label.
+Authorization starts from that button without an application login dialog.
+The SDK loader shares requests, times out after ten seconds and retries in the
+same row after failure. Unmounted controls ignore late SDK/credential callbacks.
+The existing Google BFF exchange and profile detection remain unchanged.
 The web build does not call draft v2 `/auth/providers`, `/auth/exchange/*`,
 or `/api/v1/auth/whatsapp/start` routes.
 

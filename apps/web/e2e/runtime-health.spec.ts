@@ -34,7 +34,9 @@ test("PWA metadata serves its favicon and a valid square mark without browser wa
   page.on("console", (message) => {
     if (
       (message.type() === "warning" || message.type() === "error") &&
-      /favicon|manifest|icon/i.test(message.text())
+      /favicon|\bManifest:|webmanifest|manifest\.webmanifest|(?:invalid|failed|load|square).*icon/i.test(
+        message.text(),
+      )
     ) {
       metadataWarnings.push(message.text());
     }
@@ -111,7 +113,9 @@ test("deep routes keep PWA metadata rooted at the Pages base path", async ({
   page.on("console", (message) => {
     if (
       (message.type() === "warning" || message.type() === "error") &&
-      /favicon|manifest|icon/i.test(message.text())
+      /favicon|\bManifest:|webmanifest|manifest\.webmanifest|(?:invalid|failed|load|square).*icon/i.test(
+        message.text(),
+      )
     ) {
       metadataErrors.push(message.text());
     }

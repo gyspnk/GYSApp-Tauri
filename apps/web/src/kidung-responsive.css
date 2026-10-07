@@ -10,4 +10,8 @@
   .kidung-local-nav a > svg {
     display: none;
   }
+
+  .kidung-controls-field .kidung-local-nav a > svg {
+    display: block;
+  }
 }

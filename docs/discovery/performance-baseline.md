@@ -1,7 +1,7 @@
 # Repeatable performance baseline
 
 Current guidance, reviewed 2026-10-07. The latest local production build records
-**178.5 KiB initial JavaScript gzip**, including `startup.js`, below the unchanged
+**175.4 KiB initial JavaScript gzip**, including `startup.js`, below the unchanged
 180 KiB gate. This is a build-size result, not a deployed latency measurement.
 
 The application improves first usable paint through saved-theme bootstrap,

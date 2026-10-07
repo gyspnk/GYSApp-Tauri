@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.use({ serviceWorkers: "block" });
 
 // Regression guard for the narrowest supported phone layout.
-test("320px Kidung local navigation keeps every label fully readable", async ({
+test("320px Kidung local navigation keeps icon targets reachable and labels accessible", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 720 });
@@ -14,26 +14,16 @@ test("320px Kidung local navigation keeps every label fully readable", async ({
   await expect(links).toHaveCount(3);
 
   for (let index = 0; index < (await links.count()); index += 1) {
-    const metrics = await links.nth(index).evaluate((link) => {
-      const label = link.querySelector("span");
-      if (!(label instanceof HTMLElement)) return null;
-      const linkRect = link.getBoundingClientRect();
-      const labelRect = label.getBoundingClientRect();
-      return {
-        linkLeft: linkRect.left,
-        linkRight: linkRect.right,
-        labelLeft: labelRect.left,
-        labelRight: labelRect.right,
-        labelScrollWidth: label.scrollWidth,
-        labelClientWidth: label.clientWidth,
-      };
-    });
-
-    expect(metrics).not.toBeNull();
-    expect(metrics!.labelLeft).toBeGreaterThanOrEqual(metrics!.linkLeft - 1);
-    expect(metrics!.labelRight).toBeLessThanOrEqual(metrics!.linkRight + 1);
-    expect(metrics!.labelScrollWidth).toBeLessThanOrEqual(
-      metrics!.labelClientWidth + 1,
-    );
+    const link = links.nth(index);
+    await expect(link).toHaveAccessibleName(/\S/);
+    const icon = link.locator("svg");
+    await expect(icon).toBeVisible();
+    const bounds = (await link.boundingBox())!;
+    expect(bounds.width).toBeGreaterThanOrEqual(44);
+    expect(bounds.height).toBeGreaterThanOrEqual(44);
+    const glyph = (await icon.boundingBox())!;
+    expect(glyph.x).toBeGreaterThanOrEqual(bounds.x);
+    expect(glyph.x + glyph.width).toBeLessThanOrEqual(bounds.x + bounds.width);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
   }
 });

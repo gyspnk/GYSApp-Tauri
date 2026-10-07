@@ -219,6 +219,10 @@ test("Suara detail exposes localized loading and retryable missing-post state", 
     if (message.type() === "error") errors.push(message.text());
   });
 
+  page.on("response", (response) => {
+    if (response.status() >= 400)
+      errors.push(`HTTP ${response.status()} ${response.url()}`);
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/GYSApp-Tauri/suara/missing-test-post?__gys_locale=en`);
   const detail = page.getByTestId("suara-detail-page");

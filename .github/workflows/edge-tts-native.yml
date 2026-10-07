@@ -11,6 +11,7 @@ on:
       - "apps/web/src/edge-speech.ts"
       - "apps/web/src/speech-player.ts"
       - "apps/web/scripts/**"
+      - "scripts/edge-stop-evidence*.mjs"
       - "apps/web/package.json"
       - ".github/workflows/edge-tts-native.yml"
 
@@ -91,6 +92,14 @@ jobs:
           if-no-files-found: ignore
       - name: Exercise full media soak and live keyless Edge
         run: pnpm test:native:soak
+      - name: Upload native smoke diagnostics on failure
+        if: ${{ failure() || cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-smoke-failures-${{ github.run_id }}
+          path: apps/web/native-smoke-failure.*
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Remove temporary WebView2 debugging policy
         if: always()
         shell: pwsh
