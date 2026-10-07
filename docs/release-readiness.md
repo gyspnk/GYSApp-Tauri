@@ -7,6 +7,24 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — hosted browser pass and keyboard tempo access
+
+- Delivered `84c8eda` passes Pages and every CI job. The complete **700-case**
+  browser inventory reports **697 passes, three existing optional-package
+  skips and no retries**; shards finish in **9.0 / 9.3 / 7.6 minutes**. Sauh's
+  responsive highlight sizing and four rounded image corners remain verified.
+- Packaged Windows passes its offline startup/storage/media/assets suites and
+  **30 process relaunches**, then verifies live Edge pause/stop/repeat and real
+  FluidSynth render cancellation, volume, transpose, instrument and relative
+  tempo edits. The later maximum-tempo step fails because clicking Play closes
+  advanced controls and the harness sends End to an inert range. This is
+  reproduced in Chromium: tempo remains 77 instead of 220. The shared helper
+  now reopens advanced controls, preserves an already open tempo popover and
+  waits for actual focus before keyboard edits, including restart preferences.
+  The same real MIDI cache/replay contract passes **3/3 in 15.1 seconds**, with
+  retries disabled and no runtime changes.
+  Complete hosted/native results remain to be verified for this follow-up.
+
 ### 2026-10-07 — neutral visual state and native Stop readiness
 
 - Hosted `ec7722e` passed Pages, build, deterministic/Rust/secret gates and two

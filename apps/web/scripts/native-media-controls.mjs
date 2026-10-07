@@ -16,6 +16,21 @@ export async function focusMediaControl(control) {
   );
 }
 
+/** Play closes the advanced disclosure; reopen it before keyboard tempo edits. */
+export async function focusMidiTempo(page) {
+  const surface = page.locator(".media-surface.is-kidung-media");
+  const advanced = surface.locator(".media-advanced-controls");
+  await advanced.waitFor({ state: "attached" });
+  if (!(await advanced.evaluate((element) => element.open)))
+    await surface.locator(".media-advanced-summary").click();
+  const toggle = surface.locator(".media-tempo-toggle");
+  if ((await toggle.getAttribute("aria-expanded")) !== "true")
+    await toggle.click();
+  const tempo = surface.locator(".media-tempo-popover input");
+  await focusMediaControl(tempo);
+  return tempo;
+}
+
 /** Follow the same disclosure path as a user, preserving the menu afterward. */
 export async function clickMediaStop(page) {
   const surface = page.locator(".media-surface");

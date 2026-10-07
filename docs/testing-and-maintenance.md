@@ -92,7 +92,7 @@ real account/device tests must name their runtime, configuration and outcome.
 
 ## CI browser and native contracts
 
-Full CI uses two shards with three workers per shard against one verified
+Full CI uses three shards with three workers per shard against one verified
 production build. Preserve failure traces, including cancelled jobs; diagnose
 individual assertions before changing timeouts, retries or visual thresholds.
 Refresh snapshots only after checking actual geometry, contrast and controls,
@@ -110,6 +110,12 @@ not interactive. Check visibility before auditing target sizes. Verse bookmark
 pseudo-elements expand the hit area to 40 px; compact MIDI targets are 36 px for
 mouse layouts and 40 px on phones, with 44 px utility controls. Check actual hit
 testing and keyboard access, not only painted icon dimensions.
+
+The shared native media helpers await mounted Stop controls and actual focus.
+MIDI Stop opens its disclosure when needed; speech Stop does not use that menu.
+Play dismisses advanced controls, so keyboard tempo edits reopen the disclosure
+and tempo popover before focusing the range. The real FluidSynth cache browser
+case covers Stop, replay, disclosure dismissal and the subsequent End edit.
 
 Single-page PDF navigation changes hymns; multi-page scores expose both page
 and hymn navigation. Continuous wheel zoom and computed typography do not have

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   clickMediaStop,
   focusMediaControl,
+  focusMidiTempo,
 } from "../scripts/native-media-controls.mjs";
 import {
   preparePinnedMidiAsset,
@@ -109,4 +110,17 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   const initialVolume = Number(await volume.inputValue());
   await volume.press("ArrowLeft");
   await expect(volume).toHaveValue(String(initialVolume - 0.01));
+  const tempo = await focusMidiTempo(page);
+  const initialTempo = Number(await tempo.inputValue());
+  await tempo.press("ArrowRight");
+  await expect(tempo).toHaveValue(String(initialTempo + 1));
+  await clickMediaStop(page);
+  await play.click();
+  await expect(player.locator(".media-advanced-controls")).not.toHaveAttribute(
+    "open",
+  );
+  await focusMidiTempo(page);
+  await expect(tempo).toBeFocused();
+  await tempo.press("End");
+  await expect(tempo).toHaveValue("220");
 });

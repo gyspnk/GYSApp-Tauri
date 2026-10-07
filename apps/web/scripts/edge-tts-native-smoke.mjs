@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { installNativeHomeFixture } from "./native-home-fixture.mjs";
-import { clickMediaStop, focusMediaControl } from "./native-media-controls.mjs";
+import {
+  clickMediaStop,
+  focusMediaControl,
+  focusMidiTempo,
+} from "./native-media-controls.mjs";
 import { edgeStopEvidence } from "../../../scripts/edge-stop-evidence.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
@@ -2297,11 +2301,8 @@ try {
   assert.equal(await instrumentTrigger.innerText(), initialInstrumentLabel);
   await waitForMidiButtonLabel(page, "Jeda");
 
-  await upstreamMidiSurface.locator(".media-advanced-summary").click();
-  await upstreamMidiSurface.locator(".media-tempo-toggle").click();
-  const midiTempo = upstreamMidiSurface.locator(".media-tempo-popover input");
+  const midiTempo = await focusMidiTempo(page);
   const initialMidiTempo = Number(await midiTempo.inputValue());
-  await focusMediaControl(midiTempo);
   await midiTempo.press("ArrowRight");
   await page.waitForFunction(
     (tempo) =>
@@ -2338,6 +2339,7 @@ try {
   );
   assert.ok(fullTrackStartPosition < 1);
 
+  await focusMidiTempo(page);
   await midiTempo.press("End");
   await page.waitForFunction(
     () =>
@@ -2763,14 +2765,7 @@ try {
   const persistenceVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
   await focusMediaControl(persistenceVolume);
   await persistenceVolume.press("ArrowLeft");
-  const persistenceTempoToggle = upstreamMidiSurface.locator(
-    ".media-tempo-toggle",
-  );
-  if ((await persistenceTempoToggle.getAttribute("aria-expanded")) !== "true")
-    await persistenceTempoToggle.click();
-  const persistenceTempo = upstreamMidiSurface.locator(
-    ".media-tempo-popover input",
-  );
+  const persistenceTempo = await focusMidiTempo(page);
   await persistenceTempo.press("End");
   const persistenceVolumeValue = Number(await persistenceVolume.inputValue());
   await page.waitForFunction(
