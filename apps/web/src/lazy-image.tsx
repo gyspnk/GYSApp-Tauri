@@ -14,14 +14,17 @@ export function getLazyImageState(
   return loaded ? "loaded" : "loading";
 }
 
-function resolveOriginalImageUrl(src?: string): string | undefined {
+function resolveOriginalImageUrl(
+  src?: string,
+  fullSize = false,
+): string | undefined {
   if (!src) return undefined;
   if (src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("/"))
     return src;
   try {
     const url = new URL(src);
     const stripWordPressSize = (pathname: string) =>
-      pathname.replace(/-\d+x\d+(?=\.[^./]+$)/i, "");
+      fullSize ? pathname.replace(/-\d+x\d+(?=\.[^./]+$)/i, "") : pathname;
     if (
       ["tjc.org", "www.tjc.org"].includes(url.hostname.toLowerCase()) &&
       url.pathname.startsWith("/id/wp-content/uploads/")
@@ -105,9 +108,12 @@ function ImageContent({
   const imageRef = useRef<HTMLImageElement>(null);
   const candidates = [
     ...new Set(
-      [resolveProxiedImageUrl(src), resolveOriginalImageUrl(src), src].filter(
-        (value): value is string => Boolean(value),
-      ),
+      [
+        resolveProxiedImageUrl(src),
+        resolveOriginalImageUrl(src),
+        resolveOriginalImageUrl(src, true),
+        src,
+      ].filter((value): value is string => Boolean(value)),
     ),
   ];
   const effectiveSrc = candidates[attempt];
@@ -191,7 +197,17 @@ function ImageContent({
           loading={loading}
           decoding={decoding}
           fetchPriority={fetchPriority}
-          onLoad={() => {
+          onLoad={async (event) => {
+            const image = event.currentTarget;
+            // Reveal a decoded bitmap inside its reserved frame; its natural
+            // dimensions never change the card's layout.
+            await image.decode?.().catch(() => undefined);
+            if (
+              imageRef.current !== image ||
+              (image.src !== effectiveSrc &&
+                image.getAttribute("src") !== effectiveSrc)
+            )
+              return;
             setLoaded(true);
             setError(false);
             onLoad?.();

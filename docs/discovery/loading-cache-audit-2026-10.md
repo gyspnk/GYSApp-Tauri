@@ -1,5 +1,14 @@
 # Loading, cache, and interaction audit — October 2026
 
+Current guide review: **2026-10-07**. This is a chronological implementation
+receipt: earlier timings, test counts, budgets and control layouts describe
+that stage. Current behavior is maintained in [cache/preload](../cache-and-preload.md),
+[UI system](../ui-system.md) and [release readiness](../release-readiness.md).
+Latest player: visible instrument/key/transpose, compact 36/40 px controls and
+one half-circle edge tab. Current PCM default is 128 MiB; final initial JS is
+178.5 KiB gzip. The user has authorized commit/push; hosted Worker/Pages outcomes
+remain separate from local receipts.
+
 The audit covers shared web/Tauri storage, chord synchronization, public BFF
 content, route preloading, PDF/MIDI assets, service-worker behavior, and the main
 reading and settings surfaces. Account endpoints retain their private storage
@@ -267,3 +276,207 @@ and CDP touchscreen pinch without shell zoom, sharp 2x/3x tiles, 800% bounds,
 reduced motion, spread preferences, PDF paging/resize/virtualization and
 shared-document/chord state. Production initial JavaScript remains 179.2 KiB;
 the rendering improvements load with the optional PDF reader.
+
+## Shared viewer and provider follow-up
+
+Faith, literature and hymn PDF readers use the same maximal centered fit,
+gesture animation and visible-region vector tiles. Multi-page hymns now keep
+previous/next hymn actions in the primary dock, alongside page navigation,
+with separate accessible names and 44 px minimum targets at 320 px and up.
+Spreads paint together after both pages finish; page changes crossfade the
+completed document while zoom/resize retain continuous geometry updates.
+Sharp detail layers wait for the correct page's preview instead of painting
+over a previous page during navigation.
+
+Internal links crossfade page content while the shell and persistent media
+stay fixed. Superseded taps discard old transition callbacks; reduced motion
+and unsupported snapshot APIs navigate immediately. The animation module is
+loaded after the shell; initial JavaScript is 179.4 KiB, below the 180 KiB budget.
+
+The WhatsApp confirmation now forwards the sender phone reported by the
+official WebSocket, instead of the bot phone from the challenge. Transient
+disconnects reconnect the same reference within the existing timeout. Apple
+SDK script loading now settles successfully and can retry after a timeout;
+service configuration matches the live portal checked on 2026-10-06. Browser
+provider tests cover different sender/bot phones, duplicate events, stale
+references, reconnect, timeout and cold SDK loading. Real-account verification
+remains outside the automated tests.
+
+## Sidebar and lyric motion follow-up
+
+Desktop navigation keeps a fixed icon column and toggle position while the
+rail width interpolates. Labels clip and fade in their own column, without
+switching link widths or alignment mid-animation. Desktop selection also
+skips the smaller-screen indicator's layout measurements during resizing.
+
+Reader transitions animate one content layer: the page, PDF, or active verse.
+Snapshot-capable browsers permanently disable legacy entrance animations,
+preventing their restart when a transition ends. Incoming verse typography is
+fitted before capture; chord spacing and manual zoom retain their independent
+animations. Browsers without snapshots use one lyric entrance, and reduced
+motion remains immediate. Browser regression tests sample icon/control
+positions during rapid sidebar reversals and record verse animation instances
+through completion at 390, 768 and 1440 px. Initial JavaScript is 179.5 KiB.
+
+## Menu motion and viewer controls
+
+Native disclosures now animate opening and closing through their content
+pseudo-element. Flow sections interpolate height; floating menus retain their
+position. React dropdowns, PDF tools, tempo/key menus, the Bible drawer, book
+picker, main search and appearance panel remain mounted until their CSS exit
+completes. Rapid toggles
+reverse the same transition; closing surfaces become inert immediately.
+Reduced motion closes surfaces without a delayed unmount. Escape dismisses a
+nested menu before its containing dialog. Removed overlapping
+entrance animations and preserved Escape, focus and outside-click behavior.
+
+Text and score mode controls share a 44–56 px target, 20–24 px glyph scale,
+corner radius, accent and hover treatment. The MIDI dock uses the same footer
+size token and reserves its fractional border-box height without overlapping
+lyrics. Web Audio cleanup is synchronous, preventing delayed PDF tempo metadata
+from cancelling a simultaneous user transpose; a regression test reproduces
+that conflict before the fix.
+
+Validation: 416 web unit tests, type checking, production build and the bundle
+budget passed. Browser checks cover exit frames, rapid reversals, placement,
+focus, reduced motion, controls at 320–1440 px, MIDI layout and reader/theme
+transitions. Initial JavaScript is 179.7 KiB, below the 180 KiB budget.
+
+## Literature PDF transport and first paint
+
+Official Warta Sejati and Pelita Kecil PDFs are present on the publisher's
+S3 host, which omits browser CORS headers. The deployed Worker checked on
+2026-10-06 still rejects that host with HTTP 403. Official PDF sources now
+use the public content Worker even when the optional build variable is empty;
+packaged PDFs retain their existing paths. The proxy exposes range headers
+through CORS and forwards streaming responses and Last-Modified, avoiding a
+full-file download when opening a large issue. HTML error pages are rejected
+before trying the publisher's mirror. Native WebKit and Windows origins are
+included in the Worker configuration, and Cloudflare visitors no longer share
+the anonymous rate-limit bucket.
+
+A shared publisher URL/parser boundary resolves issue links, relative embeds
+and HTML-escaped queries. The new PDF-source endpoint requests just WordPress
+content and shares cached results. The browser persists up to 64 validated
+links for 24 hours, deduplicates requests and bounds request duration. Older
+Workers fall back to public metadata; unsuccessful resolution remains
+retryable. A separate contracts export keeps these helpers out of the initial
+application graph. The Worker deployment workflow now builds contracts before
+Wrangler resolves their generated exports.
+
+Direct readers mount one dialog and retain its header while metadata, cached
+bytes and PDF.js become ready. Catalog refreshes no longer reset the viewer or
+reading progress. Newly downloaded bytes are immediately reused offline.
+Retry invalidates only the current document, cancels a released pending task
+and preserves shared chord leases. Repeated failures no longer purge PDF.js
+or reload the entire application. Native PDF source disclosures also participate
+in the dialog's keyboard focus loop.
+
+Home starts with its persisted literature catalog and keeps it visible during
+refresh. A small external bootstrap restores the saved theme before React;
+the first paint displays the church logo and animated loading track instead
+of an empty light screen. Bootstrap bytes are cached with integrity, included
+in the shell build identity and counted in the initial JavaScript budget.
+
+Live validation used the actual local Worker handler against official
+WordPress/S3 endpoints: Pelita Kecil 46 (2 pages), Warta bulletin 4 (21 pages),
+Allah Menguji Abraham (96 pages) and Kitab Markus (324 pages) all rendered.
+Warta's first page used approximately 7 MB of ranged responses from its 91 MB
+PDF; network speed and document structure still determine cold-load time.
+Browser checks cover 390/768/1440 px, source fallback/cache reuse, repeated
+errors, slow-request retry, downloaded offline reload, saved dark first paint,
+header stability, fit/zoom and item navigation. Web unit tests (424), contracts
+(20), BFF (63), type checking, production build and Worker dry-run passed.
+The combined bootstrap/module budget remains below 180 KiB gzip.
+
+At the time of this receipt, deployment was pending manual commit/push approval. Screenshots
+use official PDFs through the corrected local Worker; the online Worker must
+be updated before production S3 loading can use these fixes.
+
+## Persistent MIDI, score interaction and stable reading surfaces
+
+MIDI opens with transport, seek and adjacent-hymn controls. Volume, stop, mute,
+instrument, key, transpose, tempo and queue remain available in one compact
+menu. The dock can close, expand or minimize to either edge across routes;
+dragging interrupts its movement without stretching the controls. Its measured
+height reserves reading space only while expanded. Mobile lyric menus stay
+above the dock, and the main navigation rail keeps its viewport position while
+the document scrolls. Catalog, playlist and settings use identical navigation
+button positions and sizes.
+
+Chord extraction reads key and coordinates from the same immutable PDF lease
+used by the viewer. Canonical chord files may use another base key: hymn 001's
+chords are C while its source score is Es. The chord base offset now bridges
+that difference before applying the user's transpose and capo, while the key
+control remains relative to the score. Metadata is published to the shared
+cache, avoiding another PDF parse. Chord labels sit above the notation and
+fade in and out without replacing the layer. Enlarged PDFs support mouse/pen
+drag, single-touch pan and anchored two-finger zoom.
+
+Home reserves thumbnail geometry before decoding and reveals the decoded
+image with an opacity transition. Publisher thumbnail derivatives load before
+full-size fallbacks. Sauh and Suara use a responsive article composition with
+readable dark text colors and an image column on larger screens. Route intent
+preloads local modules and data with a bounded wait; navigation restores the
+destination's scroll position before capturing its incoming frame. MIDI and
+other local caches reuse the shared hymn payload instead of fetching it again.
+
+Validation includes 425 web unit tests, type checking, production build and
+the 180 KiB bundle budget (179.3 KiB initial gzip including bootstrap). Browser
+checks cover real pinned MIDI/PDF/chord assets, playback, key/transpose,
+mouse and touch panning, dock persistence, menu access, route motion, stable
+thumbnail geometry and article columns at 390/768/1440 px. Eighteen screenshot
+surfaces across six views have no runtime errors, horizontal overflow or
+WCAG A/AA violations detected by axe. This receipt preceded the final authorized commit/push; see the release ledger.
+
+## MIDI musical controls and dock refinement
+
+Instrument, key and transpose now remain visible in the expanded player.
+An animated instrument listbox replaces the native dropdown, with program
+numbers, keyboard navigation and viewport-bounded height. Transpose buttons
+disable at the audio engine's limits; absolute key changes retain a valid
+octave at those limits. Musical controls are isolated in their own component
+and stylesheet. Utility controls share one smaller menu; the desktop surface
+has a bounded width and mobile controls keep 40 px targets.
+
+The playing indicator uses four CSS-transformed bars without a clock-driven
+React render. Play/pause glyphs and transpose values animate locally; dock
+movement preserves icon sizes and playback state. Button press feedback uses
+the shared delegated motion handler. Reduced motion removes these animations.
+Instrument/key/transpose survive docking and route navigation, and existing
+scrub behavior commits one audio update on release. Validation covers real
+MIDI playback, render-cache reuse, keyboard selectors, interruptions, reduced
+motion, small portrait/landscape viewports, and light/dark screenshot states.
+
+## Bible address picker and numeric entry
+
+The book picker now keeps book, chapter and verse in one compact address row.
+A first tap on a number arms replacement by the next digit; a second tap opens
+its dropdown. The shared keypad supports digit correction and desktop keyboard
+entry without opening a phone keyboard. Book and verse-content searches remain
+available inside the book dropdown. Every choice edits a local draft; only the
+open-verse button changes the reader. Closing the picker discards the draft.
+
+Chapter bounds come from the active book and verse bounds from the actual
+loaded translation. Their index is built only while the picker is visible;
+out-of-range drafts disable navigation. Dropdowns retain their closing motion,
+keyboard selection and focus restoration, including touch-triggered opening.
+Picker styles load with the Bible route, replacing the old tab/grid styles.
+Validation covers 320/390/768/1440 px, short landscape, three locales, touch
+entry, keyboard search, draft cancellation, Psalm 119:176 and explicit opening.
+
+## Compact MIDI player and edge tab
+
+The expanded surface uses two rows on tablet/desktop and three on phones,
+keeping instrument, key and transpose together. Controls use 36 px mouse or
+40 px touch targets; secondary settings retain 44 px touch targets. The maximum
+width is 900 px, with tighter spacing and consistently sized icons.
+
+Minimizing leaves one half-circle flush with either viewport edge. Its visible
+width is 28 px inside a 44 × 60 px hit area. Tap restores all controls; dragging
+moves it without restoring, with a small movement threshold to distinguish the
+two gestures. Arrow keys move the same tab. Hover, focus and dragging reveal
+more of the tab; playback animates the equalizer without React clock updates.
+The dock transition retains its previous position and honors reduced motion.
+Validation covers real MIDI playback across routes, touch drag/tap, both edges,
+320/390/768/1440 px controls, selectors, scrub behavior and accessibility.

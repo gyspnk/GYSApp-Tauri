@@ -1,5 +1,10 @@
 # Faith UI follow-up — 2 October 2026
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 Based on `origin/main` at `85743fe` (merged PR #9). Cards and search follow the
 content width; the heading remains accessible without a visible title. All ten
 statements remain complete and justified. Phone text defaults to 14px in rem,

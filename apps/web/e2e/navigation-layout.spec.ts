@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
 async function hasNoHorizontalOverflow(page: Page) {
   return page.evaluate(
@@ -686,12 +687,12 @@ test.describe("responsive reader navigation", () => {
   }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
-    let holdNextScript = false;
-    await page.route("**/*.js", async (route) => {
-      if (holdNextScript && route.request().url().includes("/assets/")) {
-        holdNextScript = false;
-        await new Promise((resolve) => setTimeout(resolve, 2_000));
-      }
+    let releaseChunk!: () => void;
+    const heldChunk = new Promise<void>((resolve) => {
+      releaseChunk = resolve;
+    });
+    await page.route("**/assets/faith-*.js", async (route) => {
+      await heldChunk;
       await route.continue();
     });
 
@@ -700,7 +701,6 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Bacaan & nyanyian" }),
     ).toBeVisible();
-    holdNextScript = true;
     await page
       .locator('.navigation-shell .nav-item[aria-label="Iman"]')
       .click();
@@ -744,9 +744,8 @@ test.describe("responsive reader navigation", () => {
       );
     }
 
-    await expect(
-      page.getByRole("heading", { name: "Dasar Kepercayaan" }),
-    ).toBeVisible({ timeout: 15_000 });
+    releaseChunk();
+    await expect(page.locator(".faith-rows")).toBeVisible();
     expect(pageErrors).toEqual([]);
   });
 
@@ -807,7 +806,9 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByRole("button", { name: "Tampilkan chord" }),
     ).toBeVisible();
-    await expect(page.getByRole("tab", { name: "PDF" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Partitur", exact: true }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", {
         name: "Buka MIDI",
@@ -1037,12 +1038,14 @@ test.describe("responsive reader navigation", () => {
   test("Kidung PDF mode presents a compact viewer chrome before the sheet", async ({
     page,
   }) => {
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await preparePinnedReaderAssets(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/kidung/hymn-001");
     await expect(
       page.getByRole("heading", { name: /Pujilah Allah Yang Maha Esa/ }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("tab", { name: "PDF" }).click();
+    await page.getByRole("button", { name: "Partitur", exact: true }).click();
 
     await expect(page.locator(".pdf-reader-hymn")).toBeVisible({
       timeout: 30_000,
@@ -1304,7 +1307,7 @@ test.describe("responsive reader navigation", () => {
         await page.goto(`/GYSApp-Tauri/?__gys_locale=${selected.locale}`);
 
         if (viewport.width >= 600) {
-          const themeTrigger = page.getByRole("button", {
+          const themeTrigger = page.getByRole("combobox", {
             name: selected.theme,
             exact: true,
           });
@@ -1351,7 +1354,7 @@ test.describe("responsive reader navigation", () => {
       ]) {
         await page.setViewportSize(viewport);
         await page.goto(`/GYSApp-Tauri/kidung?__gys_locale=${selected.locale}`);
-        const themeTrigger = page.getByRole("button", {
+        const themeTrigger = page.getByRole("combobox", {
           name: selected.theme,
           exact: true,
         });
@@ -1383,9 +1386,8 @@ test.describe("responsive reader navigation", () => {
       .click();
     const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
     await expect(dialog).toBeVisible();
-    await expect(
-      page.getByPlaceholder("Cari kitab atau isi ayat…"),
-    ).toBeFocused();
+    await expect(dialog.locator('[data-picker-field="chapter"]')).toBeFocused();
+    await dialog.locator('[data-picker-field="book"]').click();
 
     // Verify scope pills: Semua, PL, PB, and active book (Kejadian Saja)
     await expect(
@@ -1411,7 +1413,11 @@ test.describe("responsive reader navigation", () => {
     await expect(verseResult).not.toContainText("<");
     await verseResult.click();
 
-    // Navigates and closes modal
+    // Search chooses a draft; the reader changes only after confirmation.
+    await expect(dialog).toBeVisible();
+    await dialog
+      .getByRole("button", { name: "Buka ayat", exact: true })
+      .click();
     await expect(dialog).toBeHidden();
     await expect(
       page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }),
@@ -1460,13 +1466,7 @@ test.describe("responsive reader navigation", () => {
       const dialog = page.getByRole("dialog", { name: selected.picker });
       await expect(dialog).toBeVisible();
       await expect(
-        dialog.getByPlaceholder(
-          selected.locale === "id"
-            ? "Cari kitab atau isi ayat…"
-            : selected.locale === "en"
-              ? "Search books or verse text…"
-              : "搜索书卷或经文内容…",
-        ),
+        dialog.locator('[data-picker-field="chapter"]'),
       ).toBeFocused();
 
       const focusable = dialog.locator(
@@ -1558,11 +1558,13 @@ test.describe("responsive reader navigation", () => {
         const dialog = page.getByRole("dialog", { name: selected.picker });
         await expect(dialog).toBeVisible();
         await expect(
-          dialog.getByRole("tablist", { name: selected.steps }),
+          dialog.getByRole("group", { name: selected.steps }),
         ).toBeVisible();
+        await dialog.locator('[data-picker-field="book"]').click();
         await expect(
           dialog.getByPlaceholder(selected.placeholder),
         ).toBeVisible();
+        await dialog.locator('[data-picker-field="book"]').click();
         await expect(
           dialog.getByRole("button", { name: selected.close }),
         ).toBeVisible();

@@ -5,29 +5,16 @@
  * the same-origin BFF when available. PDF.js then owns range loading; this
  * module deliberately does not prefetch or copy the whole document.
  */
-function isTjcPdfSource(sourceUrl: string): boolean {
-  try {
-    const url = new URL(sourceUrl);
-    return [
-      "tjc.org",
-      "www.tjc.org",
-      "tjcorguploads.s3.amazonaws.com",
-    ].includes(url.hostname.toLowerCase());
-  } catch {
-    return false;
-  }
+import { isOfficialPdfUrl } from "@gys/contracts/literature-source";
+
+/** Public content is available even in builds without optional login config. */
+export function publicContentEndpoint(route: string): string {
+  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
+  return `${base ? base.replace(/\/$/, "") : import.meta.env.DEV ? "" : "https://gysapp-tauri-bff.pas-presensi.workers.dev"}/api/v1/content/${route}`;
 }
 
 export function bffPdfUrl(sourceUrl: string): string {
-  const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-  const endpoint = base
-    ? `${base.replace(/\/$/, "")}/api/v1/content/pdf`
-    : import.meta.env.DEV &&
-        typeof window !== "undefined" &&
-        isTjcPdfSource(sourceUrl)
-      ? "/api/v1/content/pdf"
-      : undefined;
-  return endpoint
-    ? `${endpoint}?url=${encodeURIComponent(sourceUrl)}`
+  return isOfficialPdfUrl(sourceUrl)
+    ? `${publicContentEndpoint("pdf")}?url=${encodeURIComponent(sourceUrl)}`
     : sourceUrl;
 }

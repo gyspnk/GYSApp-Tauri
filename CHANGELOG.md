@@ -2,6 +2,48 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-07 — reader/player refinements and documentation refresh
+
+- Make startup theme/logo/progress stable before React; keep fixed navigation
+  and persistent playback independent of page scrolling. Improve adaptive Home,
+  cover geometry, full-width themed articles and consistent local Kidung controls.
+- Give route, verse, menu, chord and dock changes one smooth motion owner,
+  including retained exit animation, inert closing menus, focus restoration and
+  reduced-motion behavior. Remove duplicate lyric entrance effects.
+- Fit hymn/literature/faith PDFs centrally, support anchored 100–800% Ctrl+wheel/
+  pinch, sharp detail rendering and mouse/touch pan. Keep page and hymn navigation
+  distinct, bound idle document leases and retry only the failed source.
+- Restore trusted official literature/S3 PDF resolution and streamed Range/CORS
+  transport. Build shared contract exports before Worker deployment so hosted
+  routes receive the same validated source boundary as the frontend.
+- Restore direct web WhatsApp prepared-message/tracking and Apple callbacks on
+  live v1, automatic internal confirmation, sender-phone handling, bounded
+  countdown/reconnect and retryable SDK loading. Preserve Google and the native
+  official WebView/keyring boundary; no app login overlay or manual OTP entry.
+- Provide complete compact persistent MIDI controls, including instrument,
+  key, transpose and icon reset. Minimize to a draggable left/right half-circle
+  edge tab with tap/keyboard restore, playback animation and preserved session.
+  Apply source-PDF key offsets before user chord transpose/capo.
+- Replace Bible quick-navigation overlays with a mobile address picker: one
+  numeric draft/keypad, first-input replacement, second-tap chapter/verse
+  dropdown, exact book limits and explicit opening.
+- Retain deduplicated constrained preload, packaged TimGM, setting-aware bounded
+  audio reuse and incremental chord metadata sync. Opening text/player controls
+  does not start unnecessary synthesis or bulk score loading.
+- Refresh the README and all current technical references; add a complete user
+  guide, cache/preload, UI/motion, operations and testing guides. Update ADRs,
+  provenance, feature/dependency maps, maintenance and release receipts while
+  keeping dated plans/audits clearly historical.
+- Validate 549 Vitest tests, 55 Node policy/script tests and 79 focused production
+  browser cases without retries/skips, plus build/type/lint/provenance/native
+  asset/budget gates. Initial JS is 178.5 KiB under 180 KiB. Live-account,
+  hosted deployment and signed/device acceptance remain separate evidence.
+
+### Earlier unreleased changes
+
+The following entries retain their original delivery scope. Portal handoff,
+player geometry and source inventories have since evolved as described above.
+
 - Restore explicit Google, WhatsApp and Apple login actions in one responsive
   row. Keep Google visible offline, retain the native v1 bridge and official
   browser handoff, and make settings fill the content width. Use the account

@@ -204,6 +204,11 @@ export function SauhPage({ locale }: { locale: Locale }) {
         )}
         {state.status === "ready" && (
           <>
+            <p className="date-line">
+              {translate(locale, "sauh.title")} ·{" "}
+              {translate(locale, "sauh.directSource")}
+            </p>
+            <h1>{state.post.title}</h1>
             <LazyImage
               locale={locale}
               className="online-article-image"
@@ -220,11 +225,6 @@ export function SauhPage({ locale }: { locale: Locale }) {
               loading="eager"
               fetchPriority="high"
             />
-            <p className="date-line">
-              {translate(locale, "sauh.title")} ·{" "}
-              {translate(locale, "sauh.directSource")}
-            </p>
-            <h1>{state.post.title}</h1>
             {state.post.reference && (
               <p className="online-article-reference">{state.post.reference}</p>
             )}

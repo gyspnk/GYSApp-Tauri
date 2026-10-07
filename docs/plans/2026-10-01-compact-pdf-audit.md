@@ -1,5 +1,10 @@
 # Compact UI and PDF viewer audit
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 The user requested a more compact warm editorial UI, a functional and efficient
 PDF viewer, a button-position audit and appropriate animation. This extends the
 [editorial audit](2026-10-01-editorial-ui-audit.md) without reducing 44px control

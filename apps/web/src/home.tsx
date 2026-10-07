@@ -18,6 +18,7 @@ import {
 } from "./suara.js";
 import {
   fetchLiteratureCatalog,
+  getCachedLiteratureCatalog,
   literatureCategoryLabel,
   subscribeLiterature,
 } from "./literature-catalog.js";
@@ -165,13 +166,15 @@ export function HomePage({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, [loadSuara]);
 
-  const [literature, setLiterature] = useState<LiteratureItem[]>([]);
+  const [literature, setLiterature] = useState<LiteratureItem[]>(
+    () => getCachedLiteratureCatalog() ?? [],
+  );
   const [literatureStatus, setLiteratureStatus] = useState<
     "loading" | "ready" | "error"
-  >("loading");
+  >(() => (literature.length ? "ready" : "loading"));
 
   const loadLiterature = useCallback((signal?: AbortSignal) => {
-    setLiteratureStatus("loading");
+    if (!getCachedLiteratureCatalog()?.length) setLiteratureStatus("loading");
     void fetchLiteratureCatalog(signal)
       .then((items) => {
         if (signal?.aborted) return;

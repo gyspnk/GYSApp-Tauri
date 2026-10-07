@@ -1,0 +1,123 @@
+# Testing and maintenance
+
+Reviewed 2026-10-07. Use the smallest checks that cover the affected boundary;
+full CI/release verification remains available. Never count mocked provider
+success, a skipped deployment or an old screenshot as new production evidence.
+
+## Verification ladder
+
+| Work                         | Required local checks                                                                                                       |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Documentation                | Format changed prose, `pnpm verify:docs`, validate relative links and current facts against source/manifests.               |
+| Pure/domain/backend behavior | Relevant Vitest/Node tests, workspace typecheck; generated/contract changes also require provenance.                        |
+| Reader/player/UI behavior    | Production build, affected browser/keyboard/touch/Axe contracts and inspected screenshots.                                  |
+| Loading/cache/PDF/audio      | Real immutable fixtures, warm/cold or duplicate-request assertions, cancellation/retry/offline scenarios and bundle budget. |
+| Native boundary              | Rust format/check/test/clippy, packaged asset verification and available platform smoke.                                    |
+| Release                      | `pnpm verify:release`, full browser/native gates and explicit protected provider/signing/device evidence.                   |
+
+No new test is needed merely to restate reversible CSS. Behavioral tests should
+prove a meaningful invariant: tap versus drag, explicit draft application,
+actual transpose, source identity, stale result cancellation, one scrub commit,
+last-good cache or reachable controls.
+
+## Commands
+
+```sh
+pnpm build:test-deps
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm verify:generated
+pnpm verify:docs
+pnpm verify:native-assets
+pnpm verify:bundle
+pnpm format:check
+```
+
+`pnpm test` includes contracts/domain/testkit/BFF/web units, policy and root
+script regressions. `pnpm lint` is the package lint/type boundary. The initial
+JS gzip budget is 180 KiB, including `startup.js`; the individual main application
+chunk ceiling is 250 KiB. PDF.js/search/WASM/synth engines remain lazy/on demand.
+
+For behavior after a verified build:
+
+```sh
+GYS_E2E_PREBUILT=1 pnpm test:e2e bible-picker-mobile.spec.ts midi-edge.spec.ts midi-player-design.spec.ts --fully-parallel --workers=2 --retries=0
+GYS_E2E_PREBUILT=1 pnpm test:e2e literature-loading.spec.ts pdf-shared-viewer.spec.ts egys-v1.spec.ts --fully-parallel --workers=2 --retries=0
+pnpm test:e2e:changed
+```
+
+The common Playwright server is production preview on 4173. Service workers are
+blocked in ordinary UI contexts to avoid mid-test activation reloads; actual
+service-worker lifecycle is verified separately. Do not build while browser
+checks/captures run against hashed assets. `--fully-parallel` isolates independent
+cases; use a bounded worker count when audio/PDF allocation shares a host.
+Use retries for known upstream fixture transport instability, never to declare
+a deterministic behavior fixed without an isolated passing result.
+
+For quick HMR iteration:
+
+```sh
+pnpm dev:native
+pnpm test:watch
+pnpm test:e2e:dev smoke.spec.ts --workers=1
+pnpm test:e2e:dev --ui
+```
+
+The dev wrapper builds small dependencies and starts Vite; stop production
+preview first. It is rejected in CI and with the prebuilt production flag.
+Resource budgets, offline artifact checks and performance use production mode.
+
+## Regression map
+
+| Spec / unit family                                            | Contract                                                                                                                      |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `bible-picker-mobile.spec.ts` / `bible-picker-number.test.ts` | Draft numeric replacement, second-tap dropdown, limits, explicit opening, keyboard and short screens.                         |
+| `midi-edge.spec.ts`                                           | Both edges, pointer/touch drag versus restore, previous-position animation, cross-route persistence and fullscreen placement. |
+| `midi-player-design.spec.ts`                                  | Instrument/key/transpose, real playback, compact sizes, reduce motion and Axe.                                                |
+| `midi-scrub.spec.ts`, playback-cache/player units             | One update on release, setting-aware cache and stale render safety.                                                           |
+| `kidung-player-refinement.spec.ts`                            | No binary/audio preload while text-only/MIDI off, reachable lyric/settings controls.                                          |
+| `pdf-shared-viewer.spec.ts`, PDF reader/zoom/pan suites       | Maximal fit, sharp zoom, shared documents, page/hymn navigation and touch/mouse pan.                                          |
+| `literature-loading.spec.ts`, source/lease units              | Trusted source discovery, large ranged PDFs, first frame, retry and offline reload.                                           |
+| `egys-v1.spec.ts`, Apple/BFF units                            | Direct providers, reference/sender-phone confirmation, retries/deadlines, SDK loading and session detection.                  |
+| `menu-motion.spec.ts` / `use-menu-presence`                   | Exit motion, inert close state, focus, nested Escape and rapid reversal.                                                      |
+| `page-transitions.spec.ts`, `reader-motion.spec.ts`           | One content transition, stable shell/player and restored scroll.                                                              |
+| `ui-session-refinement.spec.ts`                               | Consistent section controls, media persistence, image/article geometry and responsive theme state.                            |
+| Chord/asset/storage/SW suites                                 | Integrity, incremental sync, cold/warm reuse, failed pointer commits, reset and interrupted/mixed updates.                    |
+
+`pinned-reader-fixtures.ts` uses immutable checked real assets; test downloads
+are cached outside source. Synthetic PDFs in `pdf-fixtures.ts` cover layout or
+failure contracts; do not call them real-publisher validation. Live source and
+real account/device tests must name their runtime, configuration and outcome.
+
+## Hooks and delivery
+
+`pnpm install` configures `.githooks`. Pre-commit validates formatted staged text
+and relevant docs/generated metadata; it does not rewrite work or fetch upstream.
+Pre-push runs formatting, documentation, generated provenance, types and all unit/
+policy/script checks. It omits expensive network/native/browser rebuilds for
+ordinary iteration; those remain explicit local and CI gates.
+
+`pnpm verify:release` adds authenticated local e-GYS source checks, strict chord
+audit, native checks, build/packaged assets, budget and full production browser
+verification. Keep ignored upstream snapshots out of Git. CI never clones the
+private e-GYS source; generated metadata is reviewed locally.
+
+Push only after explicit user authorization. For delivery directly to `main`,
+fetch/check the remote first, preserve any remote changes, use a normal
+fast-forward push and verify remote SHA equality afterward. Do not claim Pages/
+Worker completion from the Git push alone.
+
+## Evidence and documentation
+
+Current guides live in [docs/README.md](README.md). Dated audits/plans preserve
+historical results; add a new dated receipt instead of rewriting old timings,
+platform outcomes or source revisions. Source inventories come from generated
+JSON and strict verification. Current maintenance owners belong in the codebase
+map, with a validated new frontier and unchanged cadence policy unless actually
+reviewed.
+
+Use a combined ordered screenshot when reporting several layouts; screenshots
+must come from the tested final build. Keep scratch scripts, full logs and image
+capture intermediates outside Git. Evidence must distinguish local mocked
+provider tests, live public PDFs, hosted workflows and actual signed/device runs.

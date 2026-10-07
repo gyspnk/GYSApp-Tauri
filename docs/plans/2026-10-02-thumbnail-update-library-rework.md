@@ -1,5 +1,10 @@
 # Thumbnail, pembaruan, dan desain perpustakaan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 Basis: working tree PR #9 (`codex/gysapp-loading-debug-efficiency`).
 Tanggal: 2 Oktober 2026. Pekerjaan melanjutkan polish sebelumnya dan
 mempertahankan file screenshot pengguna yang sudah ada.

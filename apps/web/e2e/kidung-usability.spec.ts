@@ -490,11 +490,13 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await expect(mute).toHaveAttribute("aria-pressed", "false");
 
   const transpose = media.locator(".media-transpose");
-  await transpose.locator("button").last().click();
+  await transpose.getByRole("button", { name: "Naikkan nada", exact: true }).click();
   await expect(transpose.locator("strong")).toHaveText("+1");
-  const instrument = media.locator(".media-instrument-control select");
-  await instrument.selectOption("40");
-  await expect(instrument).toHaveValue("40");
+  const instrument = media.locator(".media-instrument-control").getByRole("combobox");
+  await instrument.click();
+  await media.getByRole("option", { name: /Violin/ }).click();
+  await expect(instrument).toHaveText("Violin");
+  await media.locator(".media-advanced-summary").click();
   await media.locator(".media-tempo-toggle").click();
   const tempo = media.locator(".media-tempo-popover input");
   const currentTempo = Number(await tempo.inputValue());

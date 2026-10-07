@@ -26,11 +26,14 @@ export function createPdfDocumentCache<T>(
     readers: number;
     listeners: Set<(progress: Progress) => void>;
     timer?: ReturnType<typeof setTimeout>;
+    destroyed?: boolean;
   };
   const entries = new Map<string, Entry>();
   const byteKeys = new WeakMap<Uint8Array, number>();
   let nextByteKey = 0;
   const destroy = (key: string, entry: Entry) => {
+    if (entry.destroyed) return;
+    entry.destroyed = true;
     if (entries.get(key) === entry) entries.delete(key);
     clearTimeout(entry.timer);
     void entry.task.destroy().catch(() => undefined);
@@ -44,6 +47,15 @@ export function createPdfDocumentCache<T>(
       destroy(key, entry);
   };
   return {
+    /** Retry only this source; existing readers finish with their own lease. */
+    invalidate(src: string, data?: Uint8Array) {
+      const key = data ? `bytes:${byteKeys.get(data)}` : src;
+      const entry = entries.get(key);
+      if (!entry) return;
+      entries.delete(key);
+      clearTimeout(entry.timer);
+      if (entry.readers === 0) destroy(key, entry);
+    },
     acquire(
       src: string,
       data?: Uint8Array,
@@ -73,7 +85,9 @@ export function createPdfDocumentCache<T>(
           released = true;
           if (onProgress) current.listeners.delete(onProgress);
           current.readers--;
-          if (current.readers === 0 && entries.get(key) === current) {
+          if (current.readers === 0 && entries.get(key) !== current) {
+            destroy(key, current);
+          } else if (current.readers === 0) {
             // Move the released document to the end of the LRU.
             entries.delete(key);
             entries.set(key, current);

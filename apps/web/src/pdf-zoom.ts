@@ -43,6 +43,12 @@ export function installPdfZoom(
       }
     | undefined;
   let pinch: { distance: number; percent: number } | undefined;
+  let pan: { x: number; y: number; pointer?: number } | undefined;
+  const interactive = (target: EventTarget | null) =>
+    target instanceof Element &&
+    Boolean(
+      target.closest("button, a, input, select, textarea, [contenteditable]"),
+    );
   const capture = (clientX?: number, clientY?: number) => {
     const bounds = stage.getBoundingClientRect();
     const screenX = clientX ?? bounds.left + stage.clientWidth / 2;
@@ -81,6 +87,7 @@ export function installPdfZoom(
     };
   };
   const refresh = () => {
+    stage.dataset.pdfPannable = String(percent > 100.1);
     const canvases = stage.querySelectorAll<HTMLCanvasElement>(
       "canvas[data-pdf-width]",
     );
@@ -167,7 +174,18 @@ export function installPdfZoom(
       touches[0]!.clientY - touches[1]!.clientY,
     );
   const start = (event: TouchEvent) => {
+    if (
+      event.touches.length === 1 &&
+      percent > 100 &&
+      !interactive(event.target)
+    ) {
+      const touch = event.touches[0]!;
+      pan = { x: touch.clientX, y: touch.clientY };
+      anchor = undefined;
+      return;
+    }
     if (event.touches.length !== 2) return;
+    pan = undefined;
     event.preventDefault();
     const initial = distance(event.touches);
     if (!initial) return;
@@ -178,6 +196,14 @@ export function installPdfZoom(
     pinch = { distance: initial, percent: target };
   };
   const move = (event: TouchEvent) => {
+    if (pan && event.touches.length === 1 && !pinch) {
+      event.preventDefault();
+      const touch = event.touches[0]!;
+      stage.scrollLeft += pan.x - touch.clientX;
+      stage.scrollTop += pan.y - touch.clientY;
+      pan = { x: touch.clientX, y: touch.clientY };
+      return;
+    }
     if (!pinch || event.touches.length !== 2) return;
     event.preventDefault();
     if (anchor) {
@@ -190,12 +216,46 @@ export function installPdfZoom(
   };
   const end = () => {
     pinch = undefined;
+    pan = undefined;
+  };
+  const pointerDown = (event: PointerEvent) => {
+    if (
+      event.pointerType === "touch" ||
+      event.button !== 0 ||
+      percent <= 100 ||
+      interactive(event.target)
+    )
+      return;
+    anchor = undefined;
+    pan = { x: event.clientX, y: event.clientY, pointer: event.pointerId };
+    stage.setPointerCapture(event.pointerId);
+    stage.dataset.pdfDragging = "true";
+    event.preventDefault();
+  };
+  const pointerMove = (event: PointerEvent) => {
+    if (!pan || pan.pointer !== event.pointerId) return;
+    stage.scrollLeft += pan.x - event.clientX;
+    stage.scrollTop += pan.y - event.clientY;
+    pan.x = event.clientX;
+    pan.y = event.clientY;
+  };
+  const pointerEnd = (event: PointerEvent) => {
+    if (pan?.pointer !== event.pointerId) return;
+    pan = undefined;
+    delete stage.dataset.pdfDragging;
+    if (stage.hasPointerCapture(event.pointerId))
+      stage.releasePointerCapture(event.pointerId);
   };
   stage.addEventListener("wheel", wheel, { passive: false });
   stage.addEventListener("touchstart", start, { passive: false });
   stage.addEventListener("touchmove", move, { passive: false });
   stage.addEventListener("touchend", end);
   stage.addEventListener("touchcancel", end);
+  stage.addEventListener("pointerdown", pointerDown);
+  stage.addEventListener("pointermove", pointerMove);
+  stage.addEventListener("pointerup", pointerEnd);
+  stage.addEventListener("pointercancel", pointerEnd);
+  stage.addEventListener("lostpointercapture", pointerEnd);
   return {
     get percent() {
       return percent;
@@ -209,6 +269,13 @@ export function installPdfZoom(
       stage.removeEventListener("touchmove", move);
       stage.removeEventListener("touchend", end);
       stage.removeEventListener("touchcancel", end);
+      stage.removeEventListener("pointerdown", pointerDown);
+      stage.removeEventListener("pointermove", pointerMove);
+      stage.removeEventListener("pointerup", pointerEnd);
+      stage.removeEventListener("pointercancel", pointerEnd);
+      stage.removeEventListener("lostpointercapture", pointerEnd);
+      delete stage.dataset.pdfDragging;
+      delete stage.dataset.pdfPannable;
     },
   };
 }

@@ -45,6 +45,16 @@ const HymnSettingsPage = preloadable(() =>
 );
 
 export const preloadKidungCatalog = HymnCatalog.preload;
+export function preloadKidungView(path: string): Promise<unknown> {
+  if (path.split(/[?#]/)[0]?.startsWith("/kidung/"))
+    return Promise.all([HymnDetail.preload(), loadCoreHymns()]);
+  const section = new URLSearchParams(path.split("?")[1]).get("section");
+  return section === "playlist"
+    ? HymnPlaylistPage.preload()
+    : section === "settings"
+      ? HymnSettingsPage.preload()
+      : HymnCatalog.preload();
+}
 
 // Retain the last successful catalog across reader/list navigation. Installed
 // collections still refresh in the background and on asset-change events.

@@ -63,10 +63,6 @@
 .hymn-reader-settings-summary::-webkit-details-marker {
   display: none;
 }
-.hymn-more-actions:not([open]) > .hymn-more-actions-panel,
-.hymn-reader-settings:not([open]) > .song-controls {
-  display: none !important;
-}
 .hymn-more-actions-panel,
 .hymn-reader-settings > .song-controls {
   position: absolute;
@@ -1837,9 +1833,7 @@ body:has(.home-page)::-webkit-scrollbar {
     top: var(--topbar-height, 58px);
     align-self: start;
     height: calc(100dvh - var(--topbar-height, 58px));
-    padding-inline: 20px;
-    transition: padding var(--sidebar-motion-duration)
-      var(--sidebar-motion-ease);
+    padding-inline: 12px;
   }
   .app-frame.is-reader-route .navigation-shell {
     top: 0;
@@ -1881,12 +1875,33 @@ body:has(.home-page)::-webkit-scrollbar {
     outline-offset: 3px;
   }
   .navigation-shell .nav-item {
+    /* Keep the icon column fixed while the rail and label column resize. */
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    align-items: center;
+    justify-content: stretch;
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+    gap: 0;
+    padding: 0;
+    border: 0;
     transition:
       color var(--motion-fast, 150ms) var(--ease-out, ease-out),
-      transform var(--motion-fast, 150ms) var(--ease-out, ease-out),
-      gap var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      padding var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      width var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+      background-color var(--motion-fast, 150ms) var(--ease-out, ease-out);
+  }
+  .navigation-shell .nav-item > svg {
+    justify-self: center;
+  }
+  .navigation-shell .nav-copy {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: none;
+    transition: opacity var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
   }
   .navigation-shell .nav-item.is-active {
     background: var(--blue-soft);
@@ -1898,47 +1913,9 @@ body:has(.home-page)::-webkit-scrollbar {
   .workspace.is-sidebar-collapsed {
     grid-template-columns: var(--sidebar-collapsed-width) minmax(0, 1fr);
   }
-  .workspace.is-sidebar-collapsed .navigation-shell {
-    padding-inline: 12px;
-  }
-  .workspace.is-sidebar-collapsed .nav-item {
-    justify-content: center;
-    gap: 0;
-    padding-inline: 0;
-    width: 44px;
-    min-width: 44px;
-    justify-self: center;
-  }
-  .workspace:not(.is-sidebar-collapsed) .nav-item {
-    width: 100%;
-    min-width: 44px;
-    justify-self: stretch;
-  }
-  .workspace.is-sidebar-collapsed .nav-copy,
-  .workspace.is-sidebar-collapsed .sidebar-foot {
-    width: 0;
-    min-width: 0;
+  .workspace.is-sidebar-collapsed .nav-copy {
     opacity: 0;
-    overflow: hidden;
     pointer-events: none;
-    transform: translateX(-6px);
-    white-space: nowrap;
-    max-width: 0;
-    transition:
-      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
-  }
-  .workspace:not(.is-sidebar-collapsed) .nav-copy,
-  .workspace:not(.is-sidebar-collapsed) .sidebar-foot {
-    width: 180px;
-    max-width: 180px;
-    transition:
-      width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      max-width var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      opacity var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-      transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
   }
 }
 @media (max-width: 959px) {

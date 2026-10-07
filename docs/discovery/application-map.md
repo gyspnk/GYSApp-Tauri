@@ -1,16 +1,30 @@
 # Application map
 
-The clean-room rewrite keeps five top-level destinations so navigation and
-media state remain stable across platforms:
+Current runtime, reviewed 2026-10-07. The same shell owns locale, theme,
+route recovery, search and persistent media across web/PWA/Tauri.
 
-1. Home — greeting/date/account, continue reading/song, Sauh, announcement,
-   daily verse, and shortcuts.
-2. Bible — books, chapter reader, search, history, bookmark, notes, sharing,
-   versions, and TTS.
-3. Kidung — six hymn books, text/chord/PDF modes, MIDI player, and playlists.
-4. Iman — ten faith topics in Indonesian/English/Chinese with search and PDF.
-5. Lainnya — literature/media, managers, settings, account, backup, reports,
-   and maintenance.
+| Route                                 | Owner                                                  | Main behavior                                                                                                               |
+| ------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                   | `home.tsx`                                             | Cached-first Home, current Sauh, continue reading and publication shortcuts.                                                |
+| `/bible`                              | `bible.tsx`                                            | TB/split reader, lazy search, annotations, voice and numeric address picker. Validated book/chapter/verse query deep links. |
+| `/kidung`                             | `kidung-catalog.tsx`                                   | Category/number/title catalog; compact shared local navigation and text/score selection.                                    |
+| `/kidung/:songId`                     | `kidung.tsx`                                           | Text or PDF score (`mode=lyrics` / `mode=pdf`), shared chord/musical state and verse/song navigation.                       |
+| Kidung playlist/settings destinations | `kidung-playlist-page.tsx`, `kidung-settings-page.tsx` | Lazy sibling views; local navigation keeps identical positions.                                                             |
+| `/iman`                               | `faith.tsx`                                            | Complete ten beliefs, localized search, notes and local official PDF booklets.                                              |
+| `/literatur`, `/literatur/:id`        | `literature.tsx`, catalog/reader helpers               | Catalog/filter/history/favorites; internal article/PDF opening and versioned resume.                                        |
+| `/sauh`                               | `online-content.tsx`, `sauh.ts`                        | Publisher daily reading with cached snapshot and internal article.                                                          |
+| `/suara`, `/suara/:postId`            | `online-content.tsx`, `suara.ts`, `online-article.ts`  | Feed and trusted sanitized article.                                                                                         |
+| `/lainnya`                            | `more.tsx`                                             | Collection/settings/account/data/backup/report tools.                                                                       |
 
-The shell owns route-persistent media, offline status, locale, theme, and
-error boundaries. Feature modules own domain state behind repository ports.
+`route-pages.ts` defines lazy route modules; `route-preload.ts` prepares intent
+and bounded idle warming. `route-transitions.ts` animates content while shell
+and `media-surface.tsx` persist. Desktop navigation is fixed/scroll-independent.
+There is no connectivity badge in the header and no chord-loaded toast.
+
+MIDI minimize is an edge half-circle, separate from the application's navigation
+rail. The TTS session retains its source context. PDF, article and lyric modes
+are internal reading presentations rather than external tabs; provider messaging/
+authorization windows are an explicit authentication handoff.
+
+See [the user guide](../user-guide.md) for gesture/draft/mode semantics and
+[architecture](../architecture.md) for storage/security ownership.

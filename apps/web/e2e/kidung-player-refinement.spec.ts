@@ -16,6 +16,9 @@ test("text-only reader leaves binary and audio preload dormant", async ({
   await preparePinnedReaderAssets(page);
   await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
+  await expect(page.locator(".hymn-midi-toggle")).not.toHaveAttribute(
+    "aria-controls",
+  );
   await page.waitForTimeout(1200);
   expect(binaries).toEqual([]);
   await page
@@ -33,6 +36,9 @@ for (const width of [320, 390, 768, 1440]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 780 });
+    await page.addInitScript(() =>
+      localStorage.setItem("gys-media-minimized", "1"),
+    );
     await preparePinnedReaderAssets(page);
     await preparePinnedMidiAsset(page);
     let releaseFont!: () => void;
@@ -56,6 +62,10 @@ for (const width of [320, 390, 768, 1440]) {
       // The soundfont is deliberately pending: opening must only need local MIDI.
       await expect(player).toBeVisible({ timeout: 2500 });
       await expect(toggle).toHaveAttribute("aria-busy", "false");
+      await expect(toggle).toHaveAttribute(
+        "aria-controls",
+        "persistent-media-player",
+      );
       await expect(page.locator(".hymn-detail-page > .toast")).toHaveCount(0);
       await player
         .getByRole("button", { name: "Perbesar pemutar", exact: true })
@@ -68,13 +78,16 @@ for (const width of [320, 390, 768, 1440]) {
             (await player.boundingBox())!.y,
         )
         .toBeLessThanOrEqual(0);
-      await player.locator(".media-advanced-summary").click();
       const advanced = player.locator(".media-advanced-controls");
       const transpose = player.locator(".media-transpose");
       const key = player.getByRole("combobox", {
         name: "Pilih nada dasar",
         exact: true,
       });
+      // PDF metadata can settle while the compact player opens. Read both
+      // controls only after the same source key/default transpose is visible.
+      await expect(key).toHaveText("D");
+      await expect(transpose.locator("strong")).toHaveText("-1");
       const initialTranspose = Number(
         await transpose.locator("strong").innerText(),
       );
@@ -124,7 +137,8 @@ for (const width of [320, 390, 768, 1440]) {
       await key.click();
       await key.press("Escape");
       await expect(key).toHaveAttribute("aria-expanded", "false");
-      await expect(advanced).toHaveAttribute("open", "");
+      await expect(advanced).not.toHaveAttribute("open", "");
+      await player.locator(".media-advanced-summary").click();
       await key.press("Escape");
       await expect(advanced).not.toHaveAttribute("open", "");
       await player.locator(".media-advanced-summary").click();
@@ -165,6 +179,7 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(player.getByRole("progressbar")).toHaveCount(0);
       await toggle.click();
       await expect(player).toHaveCount(0);
+      await expect(toggle).not.toHaveAttribute("aria-controls");
       await expect
         .poll(() =>
           page.evaluate(() =>

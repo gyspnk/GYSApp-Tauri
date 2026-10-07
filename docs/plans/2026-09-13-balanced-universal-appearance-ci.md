@@ -1,5 +1,10 @@
 # Balanced Universal Appearance + CI Implementation Plan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 > **For Codex/ChatGPT:** execute this plan task-by-task with red-green-refactor. Draft PR runs selective browser feedback; final ready-for-review head must run the full exact-head browser/native/build gates.
 
 **Goal:** Adapt the useful `gyschordweb` Appearance Studio parity into a universal GYSApp readability system, add coherent motion without regressions, and shorten draft-PR browser feedback while preserving the final full-suite gate.

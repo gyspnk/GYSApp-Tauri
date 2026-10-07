@@ -1,5 +1,10 @@
 # Loading, debug efficiency and UI implementation
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 Baseline: GYSApp-Tauri `287d48c`, gyschordweb `e8e7efe`.
 Primary native validation: Windows/WebView2. Android needs device verification.
 Initial commits were prepared through the GitHub connector while the session

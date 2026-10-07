@@ -32,6 +32,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build Worker dependencies
+        run: pnpm --filter @gys/contracts build
       - name: Deploy Worker
         if: ${{ env.CF_API_TOKEN != '' && env.CF_ACCOUNT_ID != '' }}
         run: pnpm --filter @gys/bff exec wrangler deploy

@@ -187,6 +187,7 @@ test("install caches the app shell and editorial snapshots", async () => {
   await installation;
 
   assert.ok(writes.some(([request]) => request === "/GYSApp-Tauri/"));
+  assert.ok(writes.some(([request]) => request === "/GYSApp-Tauri/startup.js"));
   assert.ok(openedCaches.includes("gysapp-content-v1"));
   assert.ok(
     writes.some(([request]) => request === "/GYSApp-Tauri/offline/sauh.json"),

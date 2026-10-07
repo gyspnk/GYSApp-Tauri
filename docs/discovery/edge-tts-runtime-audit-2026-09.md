@@ -1,5 +1,10 @@
 # Edge TTS runtime audit — September 2026
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](feature-parity-matrix.md) for the present implementation.
+
 **Audit date:** 2026-09-28
 **Upstream application reference:**
 `gyspnk/gyschordweb@e8e7efe1189b5746a2bb542348e221844091c8d1`

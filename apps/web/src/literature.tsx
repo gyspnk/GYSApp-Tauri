@@ -51,7 +51,10 @@ import {
 import { recordDiagnostic } from "./diagnostics.js";
 import { rememberDialogOpener, useDialogFocus } from "./dialog-focus.js";
 
-const ISSUE_PDF_CACHE = new Map<string, string>();
+import {
+  getCachedIssuePdfUrl,
+  resolveIssuePdfUrl,
+} from "./literature-pdf-source.js";
 
 function validateLiteraturePdf(bytes: Uint8Array): void {
   if (new TextDecoder().decode(bytes.subarray(0, 5)) !== "%PDF-")
@@ -70,59 +73,6 @@ async function readCachedLiteraturePdf(
     await assetStore.remove(asset);
     return undefined;
   }
-}
-
-/**
- * Warta Sejati “issue” pages are hub posts: the actual newsletter PDF lives
- * inside the post content as a tjc.org `.pdf` link. Resolve it once so the
- * Baca-lanjut flow opens the PDF viewer (jump halaman, nomor halaman, resume)
- * instead of the raw text fallback.
- */
-async function resolveIssuePdfUrl(
-  sourceUrl: string,
-): Promise<string | undefined> {
-  const cached = ISSUE_PDF_CACHE.get(sourceUrl);
-  if (cached) return cached;
-  try {
-    const slug = new URL(sourceUrl).pathname.split("/").filter(Boolean).pop();
-    if (!slug) return undefined;
-    const endpoint = new URL("https://tjc.org/id/wp-json/wp/v2/posts");
-    endpoint.searchParams.set("slug", slug);
-    endpoint.searchParams.set("per_page", "1");
-    const response = await fetch(endpoint, {
-      headers: { accept: "application/json" },
-    });
-    if (!response.ok) return undefined;
-    const payload: unknown = await response.json();
-    const first = Array.isArray(payload) ? payload[0] : undefined;
-    const rendered =
-      first && typeof first === "object"
-        ? (first as { content?: { rendered?: unknown } }).content?.rendered
-        : undefined;
-    const matches =
-      typeof rendered === "string"
-        ? rendered.match(/https:\/\/[^"'<>\s]+\.pdf(?:\?[^"'<>\s]*)?/gi)
-        : undefined;
-    const direct = matches?.find((value) => {
-      try {
-        const url = new URL(value);
-        return [
-          "tjc.org",
-          "www.tjc.org",
-          "tjcorguploads.s3.amazonaws.com",
-        ].includes(url.hostname.toLowerCase());
-      } catch {
-        return false;
-      }
-    });
-    if (direct) {
-      ISSUE_PDF_CACHE.set(sourceUrl, direct);
-      return direct;
-    }
-  } catch {
-    // offline/transient failure: keep the text reader fallback
-  }
-  return undefined;
 }
 
 import {
@@ -737,7 +687,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [notice, setNotice] = useState("");
   const [readerOpen, setReaderOpen] = useState(false);
   const [pdfData, setPdfData] = useState<Uint8Array>();
-  const pdfReaderGeneration = useRef(0);
+  const [preparedAsset, setPreparedAsset] = useState<AssetManifestItem>();
   const readerDialogRef = useRef<HTMLDivElement | null>(null);
   const readerOpenerRef = useRef<HTMLElement | null>(null);
   const closeReader = () => {
@@ -755,37 +705,52 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const articleScrollTimer = useRef<number | undefined>(undefined);
   const articleRestoreFrame = useRef<number | undefined>(undefined);
   const resourceVersion = literatureResourceVersion(item?.publishedAt);
-  const [issuePdfUrl, setIssuePdfUrl] = useState<string>();
+  const [sourceAttempt, setSourceAttempt] = useState(0);
+  const [issueSource, setIssueSource] = useState<{
+    source: string;
+    url?: string;
+  }>(() => ({
+    source: item?.url ?? "",
+    ...(item?.format === "issue" && getCachedIssuePdfUrl(item.url)
+      ? { url: getCachedIssuePdfUrl(item.url)! }
+      : {}),
+  }));
   const [issuePdfStatus, setIssuePdfStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
   useEffect(() => {
     if (item?.format !== "issue") {
-      setIssuePdfUrl(undefined);
+      setIssueSource({ source: "" });
       setIssuePdfStatus("idle");
       return;
     }
     let cancelled = false;
-    setIssuePdfUrl(undefined);
-    setIssuePdfStatus("loading");
+    const cached = getCachedIssuePdfUrl(item.url);
+    setIssueSource({ source: item.url, ...(cached ? { url: cached } : {}) });
+    setIssuePdfStatus(cached ? "ready" : "loading");
     void resolveIssuePdfUrl(item.url).then((url) => {
       if (cancelled) return;
-      setIssuePdfUrl(url);
+      setIssueSource({ source: item.url, ...(url ? { url } : {}) });
       setIssuePdfStatus(url ? "ready" : "error");
     });
     return () => {
       cancelled = true;
     };
-  }, [item]);
+  }, [item?.id, item?.url, item?.format, sourceAttempt]);
   const actualPdfUrl =
     item?.format === "pdf"
       ? item.url
       : item?.format === "issue"
-        ? issuePdfUrl
+        ? issueSource.source === item.url
+          ? issueSource.url
+          : undefined
         : undefined;
   const isPdfItem = item?.format === "pdf" || item?.format === "issue";
   const isPdfUnavailable =
-    isPdfItem && item?.format === "issue" && issuePdfStatus === "error";
+    isPdfItem &&
+    item?.format === "issue" &&
+    issueSource.source === item.url &&
+    issuePdfStatus === "error";
   const pdfSourceUrl = actualPdfUrl ? bffPdfUrl(actualPdfUrl) : undefined;
   const pdfAsset = useMemo(
     () =>
@@ -801,12 +766,12 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             lastUpdated: resourceVersion,
           }
         : undefined,
-    [item, actualPdfUrl, isPdfItem, pdfSourceUrl, resourceVersion],
+    [item?.id, actualPdfUrl, isPdfItem, pdfSourceUrl, resourceVersion],
   );
+  const pdfAssetRef = useRef(pdfAsset);
+  pdfAssetRef.current = pdfAsset;
 
   useEffect(() => {
-    pdfReaderGeneration.current += 1;
-    setPdfData(undefined);
     setReaderOpen(false);
     if (!item) return;
     const existing = readLiteratureProgress(
@@ -833,21 +798,28 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     setArticleOpen(false);
     setArticleStatus("idle");
     setArticleBody(undefined);
+  }, [item?.id, resourceVersion]);
+
+  useEffect(() => {
     let cancelled = false;
+    setPdfData(undefined);
+    setPreparedAsset(undefined);
     setDownloadStatus(pdfAsset ? "checking" : "idle");
-    void (async () => {
-      if (!pdfAsset) {
-        return;
-      }
-      const cached = await readCachedLiteraturePdf(pdfAsset).catch(
-        () => undefined,
-      );
-      if (!cancelled) setDownloadStatus(cached ? "ready" : "idle");
-    })();
+    if (pdfAsset) {
+      void preloadPdfReader().catch(() => undefined);
+      void readCachedLiteraturePdf(pdfAsset)
+        .catch(() => undefined)
+        .then((data) => {
+          if (cancelled) return;
+          setPdfData(data);
+          setPreparedAsset(pdfAsset);
+          setDownloadStatus(data ? "ready" : "idle");
+        });
+    }
     return () => {
       cancelled = true;
     };
-  }, [item, pdfAsset, resourceVersion]);
+  }, [pdfAsset]);
 
   useEffect(() => {
     progressRef.current = progress;
@@ -978,36 +950,19 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   }, [item, updateProgress]);
 
-  const openReader = useCallback(
-    async (trigger?: HTMLElement | null) => {
-      if (!item || !pdfAsset) return;
-      const generation = ++pdfReaderGeneration.current;
-      rememberDialogOpener(readerOpenerRef, trigger);
-      const [data] = await Promise.all([
-        pdfData ?? readCachedLiteraturePdf(pdfAsset).catch(() => undefined),
-        preloadPdfReader().catch(() => undefined),
-      ]);
-      if (generation !== pdfReaderGeneration.current) return;
-      transitionReader(() => {
-        setPdfData(data);
-        setReaderOpen(true);
-      });
-    },
-    [item, pdfAsset, pdfData],
-  );
-
+  const openReader = (trigger?: HTMLElement | null) => {
+    if (!isPdfItem) return;
+    rememberDialogOpener(readerOpenerRef, trigger);
+    transitionReader(() => setReaderOpen(true));
+  };
+  const showReader = isPdfItem && (readerOpen || directRead);
   useDialogFocus({
-    open: readerOpen && isPdfItem,
+    open: showReader,
     dialogRef: readerDialogRef,
     openerRef: readerOpenerRef,
     onClose: closeReader,
     initialFocusSelector: ".literature-pdf-close",
   });
-
-  useEffect(() => {
-    if (!directRead || !isPdfItem || !pdfAsset || readerOpen) return;
-    openReader();
-  }, [directRead, isPdfItem, pdfAsset, readerOpen, openReader]);
 
   const toggle = () => {
     if (!item) return;
@@ -1029,7 +984,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     if (!item || !pdfAsset) return;
     setDownloadStatus("downloading");
     try {
-      await assetStore.download(pdfAsset, undefined, validateLiteraturePdf);
+      const data = await assetStore.download(
+        pdfAsset,
+        undefined,
+        validateLiteraturePdf,
+      );
+      if (pdfAssetRef.current !== pdfAsset) return;
+      setPdfData(data);
       const current = progressRef.current;
       const next: LiteratureProgress = {
         version: 2,
@@ -1140,7 +1101,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                 }
                 onFocus={() => void preloadPdfReader().catch(() => undefined)}
                 onClick={(event) => openReader(event.currentTarget)}
-                disabled={!pdfAsset}
               >
                 {isPdfUnavailable
                   ? translate(locale, "literature.pdfUnavailable")
@@ -1186,11 +1146,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
-      {directRead && isPdfItem && !readerOpen && !isPdfUnavailable && (
-        <div className="loading-panel literature-direct-loading" role="status">
-          <LoadingProgress label={translate(locale, "literature.preparePdf")} />
-        </div>
-      )}
       {isPdfUnavailable && (
         <div className="error-panel literature-reader-error" role="alert">
           <strong>{translate(locale, "literature.pdfUnavailableTitle")}</strong>
@@ -1305,8 +1260,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               translate(locale, "literature.progressStored")}
         </small>
       </section>
-      {readerOpen &&
-        isPdfItem &&
+      {showReader &&
         createPortal(
           <div
             className="literature-pdf-backdrop"
@@ -1353,25 +1307,52 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                     </button>
                   </div>
                 </div>
-                <Suspense
-                  fallback={
-                    <div className="loading-panel">
-                      <LoadingProgress
-                        label={translate(locale, "literature.pdfViewerLoading")}
-                      />
-                    </div>
-                  }
-                >
-                  <LiteraturePdfReader
-                    src={pdfSourceUrl ?? item.url}
-                    {...(pdfData ? { data: pdfData } : {})}
-                    initialPage={resumePage}
-                    locale={locale}
-                    title={item.title}
-                    progressKey={`literature:${item.id}:${resourceVersion}`}
-                    onPageChange={onPageChange}
-                  />
-                </Suspense>
+                {isPdfUnavailable ? (
+                  <div
+                    className="literature-pdf-preparing error-panel"
+                    role="alert"
+                  >
+                    <strong>
+                      {translate(locale, "literature.pdfUnavailableTitle")}
+                    </strong>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => setSourceAttempt((attempt) => attempt + 1)}
+                    >
+                      {translate(locale, "pdf.retry")}
+                    </button>
+                  </div>
+                ) : pdfSourceUrl && preparedAsset === pdfAsset ? (
+                  <Suspense
+                    fallback={
+                      <div className="literature-pdf-preparing">
+                        <LoadingProgress
+                          label={translate(
+                            locale,
+                            "literature.pdfViewerLoading",
+                          )}
+                        />
+                      </div>
+                    }
+                  >
+                    <LiteraturePdfReader
+                      src={pdfSourceUrl}
+                      {...(pdfData ? { data: pdfData } : {})}
+                      initialPage={resumePage}
+                      locale={locale}
+                      title={item.title}
+                      progressKey={`literature:${item.id}:${resourceVersion}`}
+                      onPageChange={onPageChange}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="literature-pdf-preparing" role="status">
+                    <LoadingProgress
+                      label={translate(locale, "literature.preparePdf")}
+                    />
+                  </div>
+                )}
               </div>
             </section>
           </div>,

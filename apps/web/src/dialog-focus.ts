@@ -6,6 +6,7 @@ export const DIALOG_FOCUSABLE_SELECTOR = [
   "select:not([disabled])",
   "textarea:not([disabled])",
   "a[href]",
+  'summary:not([tabindex="-1"])',
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
@@ -18,6 +19,7 @@ function focusableElements(container: HTMLElement): HTMLElement[] {
     (element) =>
       !element.hidden &&
       element.getClientRects().length > 0 &&
+      !element.closest("[inert]") &&
       element.getAttribute("aria-hidden") !== "true",
   );
 }
@@ -81,6 +83,7 @@ export function useDialogFocus({
     });
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       if (event.key === "Escape") {
         event.preventDefault();
         onCloseRef.current();

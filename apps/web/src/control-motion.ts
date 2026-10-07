@@ -46,24 +46,11 @@ export function installControlMotion(): () => void {
   };
   const toggle = (event: Event) => {
     const details = event.target;
-    if (
-      reduced.matches ||
-      !(details instanceof HTMLDetailsElement) ||
-      !details.open
-    )
-      return;
+    if (!(details instanceof HTMLDetailsElement)) return;
     for (const child of details.children) {
       if (child.tagName === "SUMMARY") continue;
-      child.animate(
-        [
-          { opacity: 0, translate: "0 -4px" },
-          { opacity: 1, translate: "0 0" },
-        ],
-        {
-          duration: 200,
-          easing: "cubic-bezier(.22, 1, .36, 1)",
-        },
-      );
+      // Exit remains visible briefly, but its controls stop accepting input.
+      if (child instanceof HTMLElement) child.inert = !details.open;
     }
   };
   const dismiss = (event: PointerEvent | KeyboardEvent) => {
@@ -72,17 +59,19 @@ export function installControlMotion(): () => void {
     if (event instanceof KeyboardEvent && !escape) return;
     document
       .querySelectorAll<HTMLDetailsElement>(
-        ".hymn-more-actions[open], .media-advanced-controls[open], .pdf-music-menu[open]",
+        ".hymn-more-actions[open], .hymn-reader-settings[open], .media-advanced-controls[open], .pdf-music-menu[open], .faith-pdf-sources[open], .kidung-row-menu[open]",
       )
       .forEach((details) => {
         const containsTarget =
           event.target instanceof Node && details.contains(event.target);
         if (!escape && containsTarget) return;
         details.open = false;
-        if (escape && containsTarget)
+        if (escape && containsTarget) {
+          event.preventDefault();
           details
             .querySelector<HTMLElement>(":scope > summary")
             ?.focus({ preventScroll: true });
+        }
       });
   };
   document.addEventListener("pointerdown", press);

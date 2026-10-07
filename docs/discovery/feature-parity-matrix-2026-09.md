@@ -1,5 +1,10 @@
 # GYSApp feature parity matrix — September 2026
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](feature-parity-matrix.md) for the present implementation.
+
 **Reference:** `gyspnk/gyschordweb@e8e7efe1189b5746a2bb542348e221844091c8d1`
 **Rewrite baseline:** `db53050e71857129669f620114a61d9af2eedcb4`
 **Audit date:** 2026-09-28

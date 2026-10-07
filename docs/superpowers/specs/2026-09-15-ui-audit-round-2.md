@@ -1,5 +1,10 @@
 # UI Audit Round 2
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../../README.md)
+> and [current feature matrix](../../discovery/feature-parity-matrix.md) for the present implementation.
+
 Approved direction: 2026-09-15.
 
 ## Goal

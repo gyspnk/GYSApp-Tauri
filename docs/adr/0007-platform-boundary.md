@@ -15,3 +15,12 @@ through the keyring plugin, native dialogs/filesystem access, notifications,
 WebView lifecycle, and deep-link registration. A locked or unavailable OS
 credential store remains an actionable runtime error; the adapter never falls
 back to browser storage.
+
+## Implementation review — 2026-10-07
+
+Tauri ships the shared compact reader/player UI, local TimGM/PDF/audio assets,
+and an official v1 login WebView/keyring boundary. Browser/PWA uses direct BFF
+Google/Apple/WhatsApp callbacks and HttpOnly session. Native deliberately does
+not register the browser PWA worker; legacy owned registrations are retired.
+Physical OS media/audio-focus, signing and real-account tests remain explicit
+platform gates. [Native shell](../../apps/native/README.md) documents ownership.

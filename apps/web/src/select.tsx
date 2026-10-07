@@ -7,6 +7,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Icon, type IconName } from "./icons.js";
+import { useMenuPresence } from "./use-menu-presence.js";
 
 export type SelectOption<T extends string | number> = {
   value: T;
@@ -41,6 +42,7 @@ export function Select<T extends string | number>({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const menuPresent = useMenuPresence(open, menuRef);
   const [opensUp, setOpensUp] = useState(false);
   const index = Math.max(
     0,
@@ -72,7 +74,6 @@ export function Select<T extends string | number>({
 
   useLayoutEffect(() => {
     if (!open) {
-      setOpensUp(false);
       return;
     }
 
@@ -84,7 +85,12 @@ export function Select<T extends string | number>({
       const menuHeight = Math.min(280, menu.scrollHeight);
       const spaceBelow = window.innerHeight - triggerBox.bottom - 7;
       const spaceAbove = triggerBox.top - 7;
-      setOpensUp(spaceBelow < menuHeight && spaceAbove > spaceBelow);
+      const up = spaceBelow < menuHeight && spaceAbove > spaceBelow;
+      menu.style.setProperty(
+        "--select-available-space",
+        `${Math.max(44, up ? spaceAbove : spaceBelow)}px`,
+      );
+      setOpensUp(up);
     };
 
     updateDirection();
@@ -111,28 +117,6 @@ export function Select<T extends string | number>({
       if (frame !== undefined) cancelAnimationFrame(frame);
     };
   }, [open, options.length]);
-
-  useLayoutEffect(() => {
-    const menu = menuRef.current;
-    if (
-      !open ||
-      !animated ||
-      !menu ||
-      matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-    const animation = menu.animate(
-      [
-        {
-          opacity: 0,
-          transform: `translateY(${opensUp ? 6 : -6}px) scale(.97)`,
-        },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
-      ],
-      { duration: 200, easing: "cubic-bezier(.22, 1, .36, 1)" },
-    );
-    return () => animation.cancel();
-  }, [open, opensUp, animated]);
 
   const choose = (next: SelectOption<T>) => {
     onChange(next.value);
@@ -199,7 +183,7 @@ export function Select<T extends string | number>({
         role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-controls={id}
+        aria-controls={menuPresent ? id : undefined}
         aria-activedescendant={activeOptionId}
         aria-label={label}
         disabled={disabled || !selected}
@@ -220,12 +204,16 @@ export function Select<T extends string | number>({
           <Icon name="chevronDown" size={13} />
         </span>
       </button>
-      {open && (
+      {menuPresent && (
         <div
           ref={menuRef}
           className={`control-select-menu${opensUp ? " is-open-up" : ""}${animated ? " is-animated" : ""}`}
           id={id}
           role="listbox"
+          data-menu-open={open}
+          data-menu-instant={!animated || undefined}
+          inert={!open}
+          aria-hidden={!open}
           tabIndex={0}
           aria-activedescendant={activeOptionId}
           onKeyDown={onKeyDown}

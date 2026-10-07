@@ -15,6 +15,7 @@ const withBase = (path) => `${BASE}${path}`;
 const CORE = [
   "",
   "index.html",
+  "startup.js",
   "manifest.webmanifest",
   "offline/bible/tb-reader.json",
   "offline/bible/manifest.json",

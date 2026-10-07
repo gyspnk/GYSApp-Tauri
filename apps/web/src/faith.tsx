@@ -1,4 +1,5 @@
 import { PdfReader as FaithPdfReader } from "./pdf-reader-loader.js";
+import { transitionReader } from "./reader-transition.js";
 import { LoadingProgress } from "./loading-progress.js";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -291,26 +292,30 @@ export function FaithPage({ locale }: { locale: Locale }) {
     const entry = DK_READ_MORE.get(item.number);
     if (!entry) return;
     rememberDialogOpener(pdfOpenerRef, trigger);
-    setSelected("");
-    setPdfProgress(readFaithPdfProgress(item.number));
-    setPdfRead({
-      number: item.number,
-      title: translate(locale, "faith.pdfTitle", {
-        title: entry.pdf
-          .split("/")
-          .at(-1)!
-          .replace(/\.pdf$/i, "")
-          .replaceAll("-", " "),
-      }),
-      url: entry.pdf,
+    transitionReader(() => {
+      setSelected("");
+      setPdfProgress(readFaithPdfProgress(item.number));
+      setPdfRead({
+        number: item.number,
+        title: translate(locale, "faith.pdfTitle", {
+          title: entry.pdf
+            .split("/")
+            .at(-1)!
+            .replace(/\.pdf$/i, "")
+            .replaceAll("-", " "),
+        }),
+        url: entry.pdf,
+      });
     });
   };
   const openReadMore = (trigger?: HTMLElement | null) => {
     if (active) openFaithPdf(active, trigger);
   };
   const closeReadMore = () => {
-    setPdfRead(undefined);
-    setPdfProgress(undefined);
+    transitionReader(() => {
+      setPdfRead(undefined);
+      setPdfProgress(undefined);
+    });
   };
 
   useDialogFocus({

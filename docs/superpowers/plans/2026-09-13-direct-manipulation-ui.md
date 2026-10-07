@@ -1,5 +1,10 @@
 # Direct-Manipulation UI Simplification Implementation Plan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../../README.md)
+> and [current feature matrix](../../discovery/feature-parity-matrix.md) for the present implementation.
+
 > Follow this plan task-by-task with test-first changes and CI evidence before completion.
 
 **Goal:** Reduce persistent UI chrome across reader surfaces by using natural gesture/keyboard interactions, contextual secondary controls, transient feedback, and one consistent motion/accessibility system.

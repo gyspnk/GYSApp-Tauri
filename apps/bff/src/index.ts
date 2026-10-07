@@ -17,6 +17,11 @@ import {
   DistributedAssetTrackManifestSchema,
   SuaraSejatiFeedSchema,
 } from "@gys/contracts";
+import {
+  isOfficialPdfUrl,
+  literatureIssuePostUrl,
+  extractOfficialPdfUrl,
+} from "@gys/contracts/literature-source";
 import { z } from "zod";
 import { chordManifest as generatedChordManifest } from "./chord-manifest.js";
 import { normalizeSauhPosts, onlyTodaySauh } from "./sauh.js";
@@ -397,6 +402,7 @@ export function createApp(
     60_000,
     5 * 60_000,
   );
+  const issuePdfCache = new ContentCache<string>(24 * 60 * 60_000);
   const deferContent = (c: AppContext) => (task: Promise<unknown>) => {
     try {
       c.executionCtx.waitUntil(task);
@@ -457,7 +463,9 @@ export function createApp(
         "Cookie-authenticated state changes require a trusted origin",
       );
     const key =
-      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+      c.req.header("cf-connecting-ip") ??
+      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "anonymous";
     const now = Date.now();
     if (now - lastBucketSweep > rateLimit.windowMs) {
       for (const [bucketKey, value] of buckets) {
@@ -686,8 +694,45 @@ export function createApp(
     return c.json({ items });
   });
 
+  app.get("/api/v1/content/pdf-source", async (c) => {
+    const source = c.req.query("url");
+    const endpoint =
+      source && source.length <= 2048
+        ? literatureIssuePostUrl(source)
+        : undefined;
+    if (!source || !endpoint)
+      return errorResponse(c, "FORBIDDEN", "Issue source is not allowlisted");
+    try {
+      const url = await issuePdfCache.get(
+        source,
+        async () => {
+          const response = await fetch(endpoint, {
+            headers: { accept: "application/json" },
+            signal: AbortSignal.timeout(8_000),
+          });
+          if (!response.ok) throw new Error("Issue metadata unavailable");
+          const resolved = extractOfficialPdfUrl(await response.json(), source);
+          if (!resolved) throw new Error("Issue PDF unavailable");
+          return resolved;
+        },
+        deferContent(c),
+      );
+      c.header(
+        "cache-control",
+        "public, max-age=3600, stale-while-revalidate=86400",
+      );
+      return c.json({ url });
+    } catch {
+      return errorResponse(c, "UPSTREAM_UNAVAILABLE", "Issue PDF unavailable");
+    }
+  });
+
   app.get("/api/v1/content/pdf", async (c) => {
     c.header("cross-origin-resource-policy", "cross-origin");
+    c.header(
+      "access-control-expose-headers",
+      "Accept-Ranges, Content-Length, Content-Range, ETag, Last-Modified",
+    );
     const rawUrl = c.req.query("url");
     if (!rawUrl || rawUrl.length > 2_048)
       return errorResponse(c, "VALIDATION_ERROR", "PDF url is required");
@@ -697,16 +742,7 @@ export function createApp(
     } catch {
       return errorResponse(c, "VALIDATION_ERROR", "PDF url is invalid");
     }
-    const allowedPdfHost =
-      url.hostname === "tjc.org" ||
-      url.hostname === "www.tjc.org" ||
-      (url.hostname === "tjcorguploads.s3.amazonaws.com" &&
-        url.pathname.startsWith("/tjcorg/wp-content/uploads/"));
-    if (
-      url.protocol !== "https:" ||
-      !allowedPdfHost ||
-      !/\.pdf$/i.test(url.pathname)
-    )
+    if (!isOfficialPdfUrl(url.href))
       return errorResponse(c, "FORBIDDEN", "PDF source is not allowlisted");
     try {
       const candidates: string[] = [url.toString()];
@@ -735,6 +771,8 @@ export function createApp(
             signal: c.req.raw.signal,
           });
           if (!upstream.ok && upstream.status !== 206) continue;
+          if (/text\/html/i.test(upstream.headers.get("content-type") ?? ""))
+            continue;
           c.header("content-type", "application/pdf");
           c.header(
             "cache-control",
@@ -746,6 +784,7 @@ export function createApp(
             "content-range",
             "accept-ranges",
             "etag",
+            "last-modified",
           ]) {
             const value = upstream.headers.get(header);
             if (value) c.header(header, value);
@@ -1442,7 +1481,6 @@ export function createApp(
           "UPSTREAM_UNAVAILABLE",
           "WhatsApp tracking unavailable",
         );
-      upstream.accept();
       const pair = new WebSocketPair();
       const client = pair[0];
       const server = pair[1];
@@ -1471,6 +1509,9 @@ export function createApp(
           upstream.close();
         } catch {}
       });
+      // Install listeners before accepting so an immediately delivered message
+      // cannot be missed on connection or reconnect.
+      upstream.accept();
       // This is receive-only: callers cannot send arbitrary messages upstream.
       return new Response(null, { status: 101, webSocket: client });
     } catch {
@@ -1487,10 +1528,7 @@ export function createApp(
     const parsed = z
       .object({
         otp: z.string().regex(/^[0-9]{4,12}$/),
-        mobilephone: z
-          .string()
-          .regex(/^\+?[0-9]{6,20}$/)
-          .optional(),
+        mobilephone: z.string().regex(/^\+?[0-9]{6,20}$/),
       })
       .safeParse(await c.req.json().catch(() => undefined));
     const referenceid = getCookie(c, "egys_wa_reference");
@@ -1507,9 +1545,7 @@ export function createApp(
         {
           referenceid,
           otp: parsed.data.otp,
-          ...(parsed.data.mobilephone
-            ? { mobilephone: parsed.data.mobilephone }
-            : {}),
+          mobilephone: parsed.data.mobilephone,
           ismobile: "1",
         },
       );

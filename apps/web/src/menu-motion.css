@@ -1,0 +1,176 @@
+/* One entrance/exit owner for native disclosures and React menu surfaces. */
+[data-menu-open] {
+  animation: none !important;
+  opacity: 0;
+  scale: 0.98;
+  pointer-events: none;
+  transform-origin: top right;
+  transition:
+    opacity 160ms var(--ease-out),
+    scale 180ms var(--ease-out);
+}
+[data-menu-open="true"] {
+  opacity: 1;
+  scale: 1;
+  pointer-events: auto;
+}
+[data-menu-open].is-open-up,
+.pdf-advanced-controls[data-menu-open],
+.media-tempo-popover[data-menu-open] {
+  transform-origin: bottom right;
+}
+@starting-style {
+  [data-menu-open="true"] {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+[data-menu-instant="true"] {
+  transition: none;
+}
+.reader-hamburger-backdrop[data-menu-open] {
+  scale: 1;
+  transition: opacity 160ms var(--ease-out);
+}
+.reader-hamburger-drawer[data-menu-open] {
+  scale: 1;
+  translate: 16px 0;
+  transition:
+    opacity 160ms var(--ease-out),
+    translate 200ms var(--ease-out);
+}
+.reader-hamburger-drawer[data-menu-open="true"] {
+  translate: 0 0;
+}
+@starting-style {
+  .reader-hamburger-drawer[data-menu-open="true"] {
+    translate: 16px 0;
+  }
+}
+:is(
+  .ui-preferences-dialog-layer,
+  .search-backdrop,
+  .bible-picker-backdrop
+)[data-menu-open] {
+  scale: 1;
+  transition: opacity 180ms var(--ease-out);
+}
+.ui-preferences-dialog-layer[data-menu-open] .ui-preferences-scrim {
+  animation: none;
+}
+:is(
+    .ui-preferences-dialog-layer,
+    .search-backdrop,
+    .bible-picker-backdrop
+  )[data-menu-open]
+  > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+  animation: none;
+  scale: 0.98;
+  transition: scale 180ms var(--ease-out);
+}
+:is(
+    .ui-preferences-dialog-layer,
+    .search-backdrop,
+    .bible-picker-backdrop
+  )[data-menu-open="true"]
+  > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+  scale: 1;
+}
+@starting-style {
+  :is(
+      .ui-preferences-dialog-layer,
+      .search-backdrop,
+      .bible-picker-backdrop
+    )[data-menu-open="true"]
+    > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+    scale: 0.98;
+  }
+}
+.drawer-speech-motion[data-menu-open] {
+  scale: 1;
+  interpolate-size: allow-keywords;
+  block-size: 0;
+  overflow: clip;
+  transition:
+    opacity 160ms var(--ease-out),
+    block-size 180ms var(--ease-out);
+}
+.drawer-speech-motion[data-menu-open="true"] {
+  block-size: auto;
+  overflow: visible;
+}
+@starting-style {
+  .drawer-speech-motion[data-menu-open="true"] {
+    block-size: 0;
+  }
+}
+
+@supports selector(::details-content) {
+  details::details-content {
+    opacity: 0;
+    transition:
+      opacity 160ms var(--ease-out),
+      content-visibility 180ms allow-discrete;
+  }
+  details[open]::details-content {
+    opacity: 1;
+  }
+  details > :not(summary) {
+    animation: none !important;
+  }
+  details:not([open]) > :not(summary) {
+    pointer-events: none;
+  }
+  /* Flow disclosures resize; floating panels keep their containing block. */
+  details:not(
+      :is(
+        .hymn-more-actions,
+        .hymn-reader-settings,
+        .media-advanced-controls,
+        .pdf-music-menu,
+        .faith-pdf-sources,
+        .kidung-row-menu
+      )
+    )::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    overflow: clip;
+    transition:
+      opacity 160ms var(--ease-out),
+      block-size 180ms var(--ease-out),
+      content-visibility 180ms allow-discrete;
+  }
+  details[open]:not(
+      :is(
+        .hymn-more-actions,
+        .hymn-reader-settings,
+        .media-advanced-controls,
+        .pdf-music-menu,
+        .faith-pdf-sources,
+        .kidung-row-menu
+      )
+    )::details-content {
+    block-size: auto;
+    overflow: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-menu-open],
+  .reader-hamburger-backdrop[data-menu-open],
+  .reader-hamburger-drawer[data-menu-open],
+  :is(
+    .ui-preferences-dialog-layer,
+    .search-backdrop,
+    .bible-picker-backdrop
+  )[data-menu-open],
+  :is(
+      .ui-preferences-dialog-layer,
+      .search-backdrop,
+      .bible-picker-backdrop
+    )[data-menu-open]
+    > :is(.ui-preferences-panel, .global-search, .bible-picker-modal),
+  .drawer-speech-motion[data-menu-open],
+  details::details-content {
+    transition: none;
+  }
+}

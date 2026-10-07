@@ -15,13 +15,13 @@ describe("getLazyImageState", () => {
 describe("resolveProxiedImageUrl", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("normalizes a WordPress derivative to the official original", () => {
+  it("preserves the small WordPress preview on the official mirror", () => {
     expect(
       resolveProxiedImageUrl(
         "https://tjc.org/id/wp-content/uploads/sites/43/2026/09/sauh-300x198.png",
       ),
     ).toBe(
-      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/sauh.png",
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2026/09/sauh-300x198.png",
     );
   });
 
@@ -34,16 +34,16 @@ describe("resolveProxiedImageUrl", () => {
     expect(url.origin).toBe("https://bff.example");
     expect(url.pathname).toBe("/api/v1/content/image");
     expect(url.searchParams.get("url")).toBe(
-      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover.jpg",
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover-300x200.jpg",
     );
   });
 
-  it("restores originals from official mirror derivatives and leaves external URLs unchanged", () => {
+  it("preserves mirror previews and leaves external URLs unchanged", () => {
     const mirror =
       "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover-150x150.jpg";
     const external = "https://images.example/cover.jpg";
     expect(resolveProxiedImageUrl(mirror)).toBe(
-      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover.jpg",
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover-150x150.jpg",
     );
     expect(resolveProxiedImageUrl(external)).toBe(external);
   });

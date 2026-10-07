@@ -38,7 +38,13 @@ if (!main || main.gzip > mainLimit) {
     `Initial application chunk exceeds 250 KiB gzip: ${main?.file ?? "missing"} (${main?.gzip ?? 0} bytes)`,
   );
 }
-const initialTotal = initial.reduce((sum, row) => sum + row.gzip, 0);
+// The small classic bootstrap executes before the module graph as well.
+const startupBytes = await readFile(
+  join(process.cwd(), "apps", "web", "dist", "startup.js"),
+);
+const initialTotal =
+  initial.reduce((sum, row) => sum + row.gzip, 0) +
+  gzipSync(startupBytes, { level: 9 }).byteLength;
 const initialLimit = 180 * 1024;
 if (initialTotal > initialLimit)
   throw new Error(
@@ -50,7 +56,7 @@ console.log("Web bundle budget (gzip):");
 for (const row of rows.slice(0, 12))
   console.log(`  ${row.file}: ${format(row.gzip)} (${format(row.bytes)} raw)`);
 console.log(
-  `Initial JS gzip total: ${format(initialTotal)} across ${initial.length} files`,
+  `Initial JS gzip total: ${format(initialTotal)} across ${initial.length} modules + startup.js`,
 );
 console.log(
   `Budgets: ${format(initialLimit)} initial graph; ${format(mainLimit)} for ${main.file}`,

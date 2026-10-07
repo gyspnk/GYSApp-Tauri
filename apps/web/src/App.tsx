@@ -17,6 +17,7 @@ import {
   RouteErrorBoundary,
 } from "./route-frames.js";
 import { useReadinessMarker } from "./readiness.js";
+import { useMenuPresence } from "./use-menu-presence.js";
 import {
   Component,
   lazy,
@@ -41,6 +42,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
 import { translate, type Locale } from "./i18n.js";
@@ -225,6 +227,9 @@ function Navigation({ locale }: { locale: Locale }) {
   }, [location.pathname]);
 
   const updateIndicator = useCallback(() => {
+    // Desktop selection is painted by the link; skip measurements as its
+    // sidebar width animates. The indicator is used on smaller screens.
+    if (window.matchMedia("(min-width: 960px)").matches) return;
     if (!navRef.current || !activePath) {
       setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
       return;
@@ -454,6 +459,8 @@ function Shell({
 }: ReturnType<typeof useAppSettings>) {
   useReadinessMarker("gys-shell-ready");
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchLayerRef = useRef<HTMLDivElement>(null);
+  const searchPresent = useMenuPresence(searchOpen, searchLayerRef);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     readSidebarCollapsed(
@@ -611,11 +618,12 @@ function Shell({
           <MediaSurface locale={locale} />
         </Suspense>
       )}
-      {searchOpen ? (
+      {searchPresent ? (
         <Suspense fallback={null}>
           <GlobalSearch
             locale={locale}
-            open
+            open={searchOpen}
+            layerRef={searchLayerRef}
             onClose={closeSearch}
             returnFocusRef={searchTriggerRef}
           />
@@ -626,6 +634,20 @@ function Shell({
 }
 
 function RoutedApp() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    let active = true;
+    let dispose: (() => void) | undefined;
+    void import("./route-transitions.js")
+      .then((module) => {
+        if (active) dispose = module.installRouteTransitions(navigate);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+      dispose?.();
+    };
+  }, [navigate]);
   if (
     navigator.webdriver &&
     new URLSearchParams(window.location.search).get("__gys_shell_error") === "1"

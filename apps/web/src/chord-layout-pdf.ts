@@ -1,6 +1,13 @@
 import type { PDFPageProxy } from "pdfjs-dist";
 import { pdfDocuments } from "./pdf-document-cache.js";
 import {
+  extractPdfKeyFromText,
+  extractPdfTempoFromText,
+  parsePdfKeyToSemitone,
+  detectPreloadTransposeFromPdfText,
+} from "./pdf-meta.js";
+import type { HymnPdfMeta } from "./hymn-pdf-meta.js";
+import {
   buildChordedLines,
   extractLyricLines,
   extractPageNotes,
@@ -27,11 +34,13 @@ export type ChordOverlayMarker = {
 export type ChordPresentationLayout = {
   layout: ChordLayoutPage[];
   overlays: Record<string, ChordOverlayMarker[]>;
+  metadata?: HymnPdfMeta;
 };
 
 type ExtractedPageLayout = {
   notes: ReturnType<typeof extractPageNotes>;
   lyrics: ReturnType<typeof extractLyricLines>;
+  metadata: HymnPdfMeta;
 };
 
 // PDF text extraction is considerably more expensive than updating chord
@@ -125,6 +134,7 @@ export async function buildChordPresentationFromPdf(
     const document = await lease.promise;
     const output: ChordLayoutPage[] = [];
     const overlays: Record<string, ChordOverlayMarker[]> = {};
+    let metadata: HymnPdfMeta | undefined;
     const pageNumbers = Object.keys(pages)
       .map(Number)
       .filter(
@@ -150,11 +160,23 @@ export async function buildChordPresentationFromPdf(
             viewport.height,
           );
           const lyrics = extractLyricLines(items, viewport.width);
-          const next = { notes, lyrics } satisfies ExtractedPageLayout;
+          const text = items.map((item) => item.str).join(" ");
+          const key = extractPdfKeyFromText(text);
+          const next = {
+            notes,
+            lyrics,
+            metadata: {
+              ...(key ? { key } : {}),
+              keySemitone: parsePdfKeyToSemitone(key),
+              tempo: extractPdfTempoFromText(text),
+              preloadTranspose: detectPreloadTransposeFromPdfText(text),
+            },
+          } satisfies ExtractedPageLayout;
           rememberPageLayout(resourceKey, pageNumber, next);
           return next;
         })());
       const { notes, lyrics } = pageLayout;
+      metadata ??= pageLayout.metadata;
       if (notes.notes.length === 0) continue;
       const markers: ChordOverlayMarker[] = [];
       for (const entry of entries) {
@@ -165,7 +187,15 @@ export async function buildChordPresentationFromPdf(
           noteIdx: entry.noteIdx,
           chord: entry.chord,
           xPct: Math.max(0, Math.min(100, note.xPct)),
-          yPct: Math.max(0, Math.min(100, note.yPct)),
+          // PDF coordinates mark the notation baseline. Place the chord
+          // above the full glyph plus a small page-relative gap, at every zoom.
+          yPct: Math.max(
+            0,
+            Math.min(
+              100,
+              note.yPct - ((note.fontSize + 3) / viewport.height) * 100,
+            ),
+          ),
         });
       }
       if (markers.length > 0) overlays[String(pageNumber)] = markers;
@@ -177,7 +207,7 @@ export async function buildChordPresentationFromPdf(
       );
       if (lines.length > 0) output.push({ page: pageNumber, lines });
     }
-    return { layout: output, overlays };
+    return { layout: output, overlays, ...(metadata ? { metadata } : {}) };
   } finally {
     lease.release();
   }

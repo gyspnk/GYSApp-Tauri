@@ -1,5 +1,10 @@
 # e-GYS account integration
 
+Runtime review: **2026-10-07**. Provider tests prove the application protocol
+with mocked provider responses; real-account acceptance and the deployed
+Worker version remain separate requirements. See [operations](operations.md)
+for bindings, deployment and symptom-based troubleshooting.
+
 Installed Tauri builds integrate with the live e-GYS v1 service. Web/PWA
 builds support Google, Apple and WhatsApp directly through the BFF. The e-GYS v2 repository and generated contract are discovery evidence
 only; no v2 provider exchange or polling flow is shipped at runtime.
@@ -23,6 +28,28 @@ gate because it cannot be made truthful with a browser mock.
 
 ## Web/PWA flow
 
+```mermaid
+sequenceDiagram
+  participant UI as Account button
+  participant BFF as Worker
+  participant WA as WhatsApp
+  participant V1 as Official e-GYS v1
+  UI->>UI: Reserve messaging tab; start 120-second attempt
+  UI->>BFF: POST whatsapp/start
+  BFF->>V1: Create reference
+  BFF-->>UI: Prepared message and bot phone; HttpOnly reference cookie
+  UI->>WA: Open prepared send link
+  UI->>BFF: Open whatsapp/track
+  BFF->>V1: Relay WebSocket using official origin
+  WA->>V1: Send message with internal reference
+  V1-->>UI: Sender phone and internal confirmation code through relay
+  UI->>BFF: POST whatsapp/confirm
+  BFF->>V1: Confirm sender and reference
+  BFF-->>UI: HttpOnly session; ok only
+  UI->>BFF: Refresh account/profile
+  BFF-->>UI: Normalized member and avatar
+```
+
 The account screen keeps all three provider buttons in one row. WhatsApp
 starts an inline login request with `POST /api/v1/auth/egys/whatsapp/start`;
 the BFF calls live v1 `/login/whatsapp-login-request` and binds the reference
@@ -35,7 +62,12 @@ the prepared WhatsApp send URL immediately after the start response, without wai
 foreign browser origins, the Worker relays `/api/v1/auth/egys/whatsapp/track`
 to the official WebSocket using its required origin. The relay requires an
 allowed client origin and the HttpOnly reference cookie; clients cannot choose
-an upstream URL or send arbitrary upstream messages. Confirmation calls `/login/whatsapp-login-confirm` through
+an upstream URL or send arbitrary upstream messages. Confirmation uses the sender's
+`mobilePhone` from the tracking event; the start response's `mobilephone` belongs
+to the bot and must only be used in the send link. A transient socket disconnect
+reconnects the same reference with bounded backoff within the existing deadline,
+without sending another WhatsApp message or creating a second challenge. Duplicate
+confirmation events are ignored. Confirmation calls `/login/whatsapp-login-confirm` through
 the BFF. Canceling closes the socket and aborts outstanding requests.
 
 Apple uses the official Apple SDK, existing service ID `id.or.gys.e.client`,
@@ -44,6 +76,9 @@ random state validated before exchange. `POST /api/v1/auth/egys/apple` calls
 live v1 `/auth/apple/callback` with `ismobile: 1`. Apple may require its own
 provider authorization window; GYSApp does not embed or open the e-GYS portal.
 Deployment origin compatibility still requires a real Apple account smoke test.
+The SDK loader resolves on script load, shares concurrent requests and can retry
+after failure or timeout. The service ID, redirect and callback were checked
+against the live official login page on 2026-10-06.
 
 Both callbacks store the upstream token in the same HttpOnly cookie as Google,
 return only `{ ok: true }`, then refresh `/api/v1/account/profile` so the header
@@ -51,6 +86,27 @@ and account panel detect the member. Tokens are never stored in browser storage.
 Google retains its working Google Identity Services flow and BFF callback.
 The web build does not call draft v2 `/auth/providers`, `/auth/exchange/*`,
 or `/api/v1/auth/whatsapp/start` routes.
+
+### Public application endpoints
+
+All paths below are relative to the configured BFF origin. The upstream
+reference and credential are distinct from the returned normalized profile.
+
+| Method / path                             | Contract                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/v1/auth/egys/google`           | Verify GIS credential/audience and establish the live v1 session.                                                                    |
+| `POST /api/v1/auth/egys/whatsapp/start`   | Create one official reference, set its HttpOnly cookie and return the prepared messaging fields.                                     |
+| `GET /api/v1/auth/egys/whatsapp/track`    | Cookie/origin-bound WebSocket upgrade; reconnect the same reference until its deadline.                                              |
+| `POST /api/v1/auth/egys/whatsapp/confirm` | Exchange the tracking event's sender phone and internal code using the cookie-bound reference; the client ignores superseded events. |
+| `POST /api/v1/auth/egys/apple`            | Exchange the official Apple authorization with live v1; frontend validates random state before submission.                           |
+| `GET /api/v1/account/profile`             | Normalize the authenticated member; the header consumes this state for the avatar.                                                   |
+| `POST /api/v1/auth/logout`                | Clear the browser session cookie; native logout also clears its keyring token. Challenge cancellation has a separate owner.          |
+
+Provider buttons remain responsive within a single row, including when the
+account disclosure is collapsed and reopened. Google stays visible when the
+network/backend is unavailable; visibility does not imply an authenticated
+session. WhatsApp uses only the inline trailing countdown/status, with no app
+login overlay, OTP field or separate send action.
 
 ## Regression history
 

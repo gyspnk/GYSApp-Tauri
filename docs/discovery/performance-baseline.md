@@ -1,20 +1,33 @@
 # Repeatable performance baseline
 
-The release baseline is run by a fixture script on the same browser, soundfont,
-throttle, and host for canonical and rewrite implementations. Each scenario has
-cold and warm runs and reports median/p95 for viewer-ready, first position,
-seek, CPU, and heap. The relative gate is p50 no slower than canonical and p95,
-CPU, and memory no worse than 10% without an approved ADR.
+Current guidance, reviewed 2026-10-07. The latest local production build records
+**178.5 KiB initial JavaScript gzip**, including `startup.js`, below the unchanged
+180 KiB gate. This is a build-size result, not a deployed latency measurement.
 
-The first discovery numbers are provisional: viewer-ready ~2.15 s, first
-position ~1.14 s, seek ~0.42 s, heap ~167 MB, and GeneralUser ~29.2 MB. They
-must be repeated before a parity or GA claim.
+The application improves first usable paint through saved-theme bootstrap,
+verified cached snapshots, route-intent/idle warming, metadata-before-lyrics,
+lazy Bible search/PDF/synthesis, and incremental chord sync. Text-only entry
+keeps optional audio/PDF work dormant. Setting-aware PCM cache checks avoid
+buffer copies; shared PDF leases avoid duplicate loading.
 
-The release Playwright suite now records five browser navigation samples for
-the initial shell (DOMContentLoaded, first contentful paint when exposed,
-elapsed time, and initial module URL counts), then reports median and p95. It
-fails if the p95 shell time exceeds the local 8 s usability budget or if the
-same initial application module is requested more than once. This is a rewrite
-sanity gate, not a substitute for the
-canonical-vs-rewrite p50/p95 benchmark above; the official MIDI comparison
-still requires the same fixture, browser, soundfont, throttle, and hardware.
+## Reproducible measurements
+
+Use the same browser/runtime, immutable song/document, SoundFont, host/network
+throttle and hardware for canonical versus rewrite comparisons. Record cold and
+warm samples and median/p95 for usable viewer, first audible sample, seek, CPU
+and memory. Use 30 samples/one worker for dedicated performance profiling;
+ordinary navigation smoke uses five. A synthetic/local fixture cannot stand in
+for an actual publisher or device first-audio result.
+
+The relative release requirement remains p50 no slower than canonical, with
+p95/CPU/memory no worse than 10% absent an approved architectural decision.
+Historical initial observations (~2.15 s viewer, ~1.14 s position, ~0.42 s seek,
+~167 MB heap) are provisional discovery data and must be rerun before a parity
+claim. The local 8 s shell sanity threshold and duplicate-module assertion are
+independent of this canonical comparison.
+
+Commands: `pnpm test:performance`, `pnpm test:performance:browser-roadmap`,
+`pnpm test:performance:native`, `pnpm verify:bundle`. Dated JSON reports in
+`docs/performance/` keep their measured revision/runtime. The
+[October audit](loading-cache-audit-2026-10.md) records individual cache/navigation
+probes; [release readiness](../release-readiness.md) names remaining platform gates.

@@ -1,5 +1,10 @@
 # GYSApp parity, TTS, media, and shell redesign
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../../README.md)
+> and [current feature matrix](../../discovery/feature-parity-matrix.md) for the present implementation.
+
 ## Purpose
 
 Bring `GYSApp-Tauri` to current behavioral parity with the parts of `gyspnk/gyschordweb` it intentionally consumes, repair Edge-compatible TTS so it has a useful no-key path, and redesign the application shell/media controls so they feel deliberate on desktop and mobile without replacing the product with a generic dashboard skin.

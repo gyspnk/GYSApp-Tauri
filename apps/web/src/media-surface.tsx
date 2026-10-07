@@ -6,6 +6,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type ChangeEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,17 +19,16 @@ import {
   applyAutoNextMode,
   getAutoNextMode,
 } from "./midi-playlist.js";
-import {
-  playNextMidiPlaylistItem,
-  playPreviousMidiPlaylistItem,
-} from "./midi-queue.js";
+import { playAdjacentMidiHymn } from "./midi-queue.js";
 import { mediaSessionBridge } from "./media-session.js";
-import { chordKeyName, transposeBetweenKeys } from "./chord-viewer.js";
-import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
-import { Select } from "./select.js";
+import { chordKeyName } from "./chord-viewer.js";
+import { MidiMusicControls } from "./midi-music-controls.js";
 import { Icon } from "./icons.js";
 import { getHymnPdfMeta, subscribeHymnPdfMeta } from "./hymn-pdf-meta.js";
 import { createSnapshotSelector } from "./snapshot-selector.js";
+import { useMenuPresence } from "./use-menu-presence.js";
+import { navigateSmooth } from "./route-transitions.js";
+import { loadCoreHymnMetadata } from "./hymn-payloads.js";
 
 const readMediaState = createSnapshotSelector(
   midiPlayer.snapshot,
@@ -239,6 +239,8 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     writePreference("gys-hymn-accidental", keyAccidental);
   }, [keyAccidental]);
   const [tempoOpen, setTempoOpen] = useState(false);
+  const tempoRef = useRef<HTMLDivElement>(null);
+  const tempoPresent = useMenuPresence(tempoOpen, tempoRef);
   const tempoRange = useMediaRange(
     snapshot.tempo,
     (value) => void midiPlayer.setTempo(value).catch(() => undefined),
@@ -305,7 +307,10 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   // gyschordweb mini-player lyrics toggle: jump into the hymn text view.
   const openHymnLyrics = () => {
     if (snapshot.songId)
-      navigate(`/kidung/${encodeURIComponent(snapshot.songId)}?mode=lyrics`);
+      void navigateSmooth(
+        navigate,
+        `/kidung/${encodeURIComponent(snapshot.songId)}?mode=lyrics`,
+      );
   };
   const mediaTitle = speechActive
     ? (speechSnapshot.context?.label ??
@@ -338,7 +343,9 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   const transitionRect = useRef<DOMRect | undefined>(undefined);
   const animationRef = useRef<Animation | undefined>(undefined);
   const [minimized, setMinimized] = useState(
-    () => readPreference("gys-media-minimized") !== "0",
+    () =>
+      readPreference("gys-media-minimized") === "1" ||
+      (readPreference("gys-media-minimized") === null && !isKidungMedia),
   );
   const [edge, setEdge] = useState<{ side: "left" | "right"; y: number }>(
     () => {
@@ -358,8 +365,19 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     },
   );
   const drag = useRef<
-    { id: number; dx: number; dy: number; x: number; y: number } | undefined
+    | {
+        id: number;
+        dx: number;
+        dy: number;
+        x: number;
+        y: number;
+        startX: number;
+        startY: number;
+        moved: boolean;
+      }
+    | undefined
   >(undefined);
+  const suppressDragClick = useRef(false);
   useEffect(() => {
     writePreference("gys-midi-edge", JSON.stringify(edge));
   }, [edge]);
@@ -367,20 +385,36 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     if (event.button !== 0 || !surfaceRef.current) return;
     const rect = surfaceRef.current.getBoundingClientRect();
     animationRef.current?.cancel();
+    suppressDragClick.current = false;
     drag.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
       id: event.pointerId,
       dx: event.clientX - rect.left,
       dy: event.clientY - rect.top,
       x: rect.left,
       y: rect.top,
     };
+    surfaceRef.current.style.setProperty("--edge-drag-x", `${rect.left}px`);
+    surfaceRef.current.style.setProperty("--edge-drag-y", `${rect.top}px`);
+    surfaceRef.current.classList.add("is-edge-dragging");
     event.currentTarget.setPointerCapture(event.pointerId);
-    event.preventDefault();
   };
   const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const current = drag.current;
     const surface = surfaceRef.current;
     if (!current || current.id !== event.pointerId || !surface) return;
+    if (!current.moved) {
+      if (
+        Math.hypot(
+          event.clientX - current.startX,
+          event.clientY - current.startY,
+        ) < 6
+      )
+        return;
+      current.moved = true;
+    }
     current.x = Math.max(
       0,
       Math.min(
@@ -403,11 +437,20 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     const current = drag.current;
     const surface = surfaceRef.current;
     if (!current || current.id !== event.pointerId || !surface) return;
-    transitionRect.current = surface.getBoundingClientRect();
+    if (current.moved) transitionRect.current = surface.getBoundingClientRect();
     drag.current = undefined;
     surface.classList.remove("is-edge-dragging");
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
+    if (!current.moved) {
+      // Touch browsers can omit the compatibility click after a captured drag.
+      if (event.pointerType === "touch" && event.type !== "pointercancel") {
+        suppressDragClick.current = true;
+        toggleDock();
+      }
+      return;
+    }
+    suppressDragClick.current = true;
     setEdge({
       side:
         current.x + surface.offsetWidth / 2 < window.innerWidth / 2
@@ -415,6 +458,48 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           : "right",
       y: (current.y + surface.offsetHeight / 2) / window.innerHeight,
     });
+  };
+  const moveDockWithKeyboard = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+  ) => {
+    if (
+      ![
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "Home",
+        "End",
+      ].includes(event.key)
+    )
+      return;
+    event.preventDefault();
+    transitionRect.current = surfaceRef.current?.getBoundingClientRect();
+    setEdge((current) => ({
+      side:
+        event.key === "ArrowLeft"
+          ? "left"
+          : event.key === "ArrowRight"
+            ? "right"
+            : current.side,
+      y:
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? 1
+            : Math.max(
+                0,
+                Math.min(
+                  1,
+                  current.y +
+                    (event.key === "ArrowUp"
+                      ? -0.05
+                      : event.key === "ArrowDown"
+                        ? 0.05
+                        : 0),
+                ),
+              ),
+    }));
   };
   const [sidebarBounds, setSidebarBounds] = useState({ left: 12, width: 232 });
   const toggleDock = () => {
@@ -424,7 +509,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   };
   useEffect(() => {
     const syncPreference = () =>
-      setMinimized(readPreference("gys-media-minimized") !== "0");
+      setMinimized(readPreference("gys-media-minimized") === "1");
     window.addEventListener("gys-media-preference-change", syncPreference);
     return () =>
       window.removeEventListener("gys-media-preference-change", syncPreference);
@@ -435,10 +520,10 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   useLayoutEffect(() => {
     const surface = surfaceRef.current;
     if (!surface || minimized || !isKidungMedia) return;
-    const measure = () =>
+    const measure = (entries?: ResizeObserverEntry[]) =>
       document.documentElement.style.setProperty(
         "--reader-media-space",
-        `${surface.offsetHeight + 20}px`,
+        `${Math.ceil(entries?.[0]?.borderBoxSize[0]?.blockSize ?? surface.offsetHeight + 1) + 20}px`,
       );
     const observer = new ResizeObserver(measure);
     observer.observe(surface);
@@ -478,14 +563,15 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     animationRef.current = surface.animate(
       [
         {
-          transform: `translate(${previous.left - next.left}px, ${previous.top - next.top}px) scale(${previous.width / next.width}, ${previous.height / next.height})`,
+          transform: `translate(${previous.left - next.left}px, ${previous.top - next.top}px)`,
+          opacity: 0.15,
         },
-        { transform: "none" },
+        { transform: "none", opacity: 1 },
       ],
       { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" },
     );
     return () => animationRef.current?.cancel();
-  }, [minimized, edge]);
+  }, [minimized, edge, hasMediaSession]);
   useEffect(() => {
     mediaSessionBridge.setSpeechActive(speechActive);
   }, [speechActive, speechSnapshot.status]);
@@ -538,7 +624,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 .seek(0)
                 .then(() => midiPlayer.play())
                 .catch(() => undefined)
-            : playPreviousMidiPlaylistItem().catch(() => undefined);
+            : playAdjacentMidiHymn(-1).catch(() => undefined);
         },
       ],
       [
@@ -546,7 +632,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
         () =>
           latestMediaKindRef.current === "speech"
             ? speechPlayer.next()
-            : playNextMidiPlaylistItem().catch(() => undefined),
+            : playAdjacentMidiHymn(1).catch(() => undefined),
       ],
       [
         "seekbackward",
@@ -611,6 +697,29 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     speechSnapshot.status,
     snapshot.status,
   ]);
+  const [neighbors, setNeighbors] = useState({ previous: false, next: false });
+  useEffect(() => {
+    if (!isKidungMedia || !snapshot.songId) return;
+    let active = true;
+    void loadCoreHymnMetadata()
+      .then((catalog) => {
+        if (!active) return;
+        const current = catalog.find((song) => song.id === snapshot.songId);
+        const songs = catalog.filter(
+          (song) =>
+            song.book === current?.book && !song.assetCode && song.midiPath,
+        );
+        const index = songs.findIndex((song) => song.id === snapshot.songId);
+        setNeighbors({
+          previous: index > 0,
+          next: index >= 0 && index < songs.length - 1,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [isKidungMedia, snapshot.songId]);
   if (!hasMediaSession) return null;
   const playing = speechActive
     ? speechSnapshot.status === "speaking"
@@ -618,10 +727,13 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   const currentPlaylistIndex = playlist.items.findIndex(
     (item) => item.songId === snapshot.songId,
   );
-  const canPlayPrevious = currentPlaylistIndex > 0;
-  const canPlayNext =
-    currentPlaylistIndex >= 0 &&
-    currentPlaylistIndex < playlist.items.length - 1;
+  const queueActive = currentPlaylistIndex >= 0 && playlist.items.length > 1;
+  const canPlayPrevious = queueActive
+    ? currentPlaylistIndex > 0
+    : neighbors.previous;
+  const canPlayNext = queueActive
+    ? currentPlaylistIndex < playlist.items.length - 1
+    : neighbors.next;
   const togglePlayback = () => {
     if (speechActive) {
       if (speechSnapshot.status === "error") {
@@ -656,22 +768,6 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           <Icon name="repeat" size={16} />
           <small aria-hidden="true">{loopBadge}</small>
         </button>
-        <Select
-          className="media-key-control"
-          value={keyIndex}
-          label={translate(locale, "media.keySelect")}
-          options={Array.from({ length: 12 }, (_, value) => ({
-            value,
-            label: chordKeyName(value, keyAccidental),
-          }))}
-          onChange={(value) =>
-            void midiPlayer
-              .setTranspose(
-                snapshot.transpose + transposeBetweenKeys(keyIndex, value),
-              )
-              .catch(() => undefined)
-          }
-        />
         <button
           className="media-control"
           type="button"
@@ -690,27 +786,6 @@ export function MediaSurface({ locale }: { locale: Locale }) {
         >
           {keyAccidental === "sharp" ? "♯" : "♭"}
         </button>
-        <div className="media-transpose">
-          <button
-            type="button"
-            onClick={() => void midiPlayer.setTranspose(snapshot.transpose - 1)}
-            aria-label={translate(locale, "media.transposeDown")}
-          >
-            −
-          </button>
-          <strong>
-            {snapshot.transpose > 0
-              ? `+${snapshot.transpose}`
-              : snapshot.transpose}
-          </strong>
-          <button
-            type="button"
-            onClick={() => void midiPlayer.setTranspose(snapshot.transpose + 1)}
-            aria-label={translate(locale, "media.transposeUp")}
-          >
-            +
-          </button>
-        </div>
         <button
           className="media-control"
           type="button"
@@ -735,28 +810,13 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           <small>BPM</small>
         </button>
       </div>
-      <label className="media-instrument-control">
-        <span>{translate(locale, "media.instrument")}</span>
-        <select
-          aria-label={translate(locale, "media.instrumentMidi")}
-          value={snapshot.instrument}
-          onChange={(event) =>
-            void midiPlayer
-              .setInstrument(Number(event.target.value))
-              .catch(() => undefined)
-          }
-        >
-          <option value={-1}>{midiInstrumentLabel(-1)}</option>
-          {GM_INSTRUMENTS.map((name, program) => (
-            <option key={program} value={program}>
-              {String(program + 1).padStart(3, "0")} · {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      {tempoOpen && (
+      {tempoPresent && (
         <div
+          ref={tempoRef}
           className="media-tempo-popover"
+          data-menu-open={tempoOpen}
+          inert={!tempoOpen}
+          aria-hidden={!tempoOpen}
           role="group"
           aria-label={translate(locale, "media.tempoDialog")}
         >
@@ -831,6 +891,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       ref={surfaceRef}
       className={`media-surface persistent-media${minimized ? " is-minimized" : ""}${isKidungMedia ? " is-kidung-media is-edge-player" : ""}${speechActive ? " is-speech-media" : ""}${sidebarBounds.width < 100 ? " is-rail-player" : ""}`}
       data-edge={edge.side}
+      data-playing={playing}
       data-backend={
         speechActive
           ? (speechSnapshot.providerId ?? "speech")
@@ -845,82 +906,14 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       }
       aria-label={translate(locale, "shell.media")}
     >
-      {isKidungMedia && minimized && (
-        <button
-          type="button"
-          className="media-drag-handle"
-          aria-label={translate(locale, "media.movePlayer")}
-          title={translate(locale, "media.movePlayer")}
-          onPointerDown={startDrag}
-          onPointerMove={moveDrag}
-          onPointerUp={finishDrag}
-          onPointerCancel={finishDrag}
-          onKeyDown={(event) => {
-            if (
-              ![
-                "ArrowLeft",
-                "ArrowRight",
-                "ArrowUp",
-                "ArrowDown",
-                "Home",
-                "End",
-              ].includes(event.key)
-            )
-              return;
-            event.preventDefault();
-            transitionRect.current =
-              surfaceRef.current?.getBoundingClientRect();
-            setEdge((current) => ({
-              side:
-                event.key === "ArrowLeft"
-                  ? "left"
-                  : event.key === "ArrowRight"
-                    ? "right"
-                    : current.side,
-              y:
-                event.key === "Home"
-                  ? 0
-                  : event.key === "End"
-                    ? 1
-                    : Math.max(
-                        0,
-                        Math.min(
-                          1,
-                          current.y +
-                            (event.key === "ArrowUp"
-                              ? -0.05
-                              : event.key === "ArrowDown"
-                                ? 0.05
-                                : 0),
-                        ),
-                      ),
-            }));
-          }}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <circle cx="8" cy="6" r="1.5" />
-            <circle cx="16" cy="6" r="1.5" />
-            <circle cx="8" cy="12" r="1.5" />
-            <circle cx="16" cy="12" r="1.5" />
-            <circle cx="8" cy="18" r="1.5" />
-            <circle cx="16" cy="18" r="1.5" />
-          </svg>
-        </button>
-      )}
       <div className="media-art" aria-hidden="true">
         <Icon name={speechActive ? "bible" : "music"} size={19} />
       </div>
-      {minimized && (
+      {minimized && !isKidungMedia && (
         <button
           className="media-mini-context"
           type="button"
-          onClick={() => mediaPath && navigate(mediaPath)}
+          onClick={() => mediaPath && void navigateSmooth(navigate, mediaPath)}
           disabled={!mediaPath}
           aria-label={translate(locale, "media.openSource", {
             title: mediaTitle ?? translate(locale, "media.source"),
@@ -970,7 +963,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             <button
               className="media-context-link"
               type="button"
-              onClick={() => navigate(mediaPath)}
+              onClick={() => void navigateSmooth(navigate, mediaPath)}
               title={translate(locale, "media.openSource", {
                 title: mediaTitle ?? translate(locale, "media.source"),
               })}
@@ -978,6 +971,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 title: mediaTitle ?? translate(locale, "media.source"),
               })}
             >
+              {isKidungMedia && <MidiActivity />}
               <strong>{mediaTitle}</strong>
             </button>
           ) : (
@@ -1035,7 +1029,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 className="media-control"
                 type="button"
                 onClick={() =>
-                  void playPreviousMidiPlaylistItem().catch(() => undefined)
+                  void playAdjacentMidiHymn(-1).catch(() => undefined)
                 }
                 aria-label={translate(locale, "media.previousSong")}
               >
@@ -1045,7 +1039,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 className="media-control"
                 type="button"
                 onClick={() =>
-                  void playNextMidiPlaylistItem().catch(() => undefined)
+                  void playAdjacentMidiHymn(1).catch(() => undefined)
                 }
                 aria-label={translate(locale, "media.nextSong")}
               >
@@ -1100,6 +1094,15 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                   </div>
                 )}
                 <MidiSeek locale={locale} times />
+                {isKidungMedia && (
+                  <MidiMusicControls
+                    locale={locale}
+                    keyIndex={keyIndex}
+                    accidental={keyAccidental}
+                    transpose={snapshot.transpose}
+                    instrument={snapshot.instrument}
+                  />
+                )}
                 {isKidungMedia ? (
                   <details className="media-advanced-controls">
                     <summary className="media-advanced-summary">
@@ -1150,7 +1153,12 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                       <button
                         className="media-queue-badge"
                         type="button"
-                        onClick={() => navigate("/kidung?section=playlist")}
+                        onClick={() =>
+                          void navigateSmooth(
+                            navigate,
+                            "/kidung?section=playlist",
+                          )
+                        }
                         aria-label={`${translate(locale, "media.queueOpen")}${playlist.items.length ? ` · ${translate(locale, "media.queueSongCount", { count: playlist.items.length })}` : ""}`}
                         title={`${translate(locale, "media.queueTitle")}${playlist.items.length ? ` · ${playlist.items.length}` : ""}`}
                       >
@@ -1176,14 +1184,14 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             speechActive ? "media.controlsSpeech" : "media.controlsMidi",
           )}
         >
-          {(speechActive || playlist.items.length > 1) && (
+          {
             <button
               className="media-control media-secondary-control media-previous-control"
               type="button"
               onClick={() =>
                 speechActive
                   ? void speechPlayer.previous().catch(() => undefined)
-                  : void playPreviousMidiPlaylistItem().catch(() => undefined)
+                  : void playAdjacentMidiHymn(-1).catch(() => undefined)
               }
               aria-label={translate(
                 locale,
@@ -1197,7 +1205,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             >
               <Icon name="skipPrevious" size={17} />
             </button>
-          )}
+          }
           <button
             className="media-control media-primary-control"
             type="button"
@@ -1208,16 +1216,18 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 : translate(locale, "shell.play")
             }
           >
-            <Icon name={playing ? "pause" : "play"} size={18} />
+            <span className="media-play-glyph" key={playing ? "pause" : "play"}>
+              <Icon name={playing ? "pause" : "play"} size={18} />
+            </span>
           </button>
-          {(speechActive || playlist.items.length > 1) && (
+          {
             <button
               className="media-control media-secondary-control media-next-control"
               type="button"
               onClick={() =>
                 speechActive
                   ? void speechPlayer.next().catch(() => undefined)
-                  : void playNextMidiPlaylistItem().catch(() => undefined)
+                  : void playAdjacentMidiHymn(1).catch(() => undefined)
               }
               aria-label={translate(
                 locale,
@@ -1232,9 +1242,9 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             >
               <Icon name="skipNext" size={17} />
             </button>
-          )}
+          }
         </div>
-      ) : (
+      ) : isKidungMedia ? null : (
         <button
           className="media-control media-primary-control"
           type="button"
@@ -1245,32 +1255,75 @@ export function MediaSurface({ locale }: { locale: Locale }) {
               : translate(locale, "shell.play")
           }
         >
-          <Icon name={playing ? "pause" : "play"} size={18} />
+          <span className="media-play-glyph" key={playing ? "pause" : "play"}>
+            <Icon name={playing ? "pause" : "play"} size={18} />
+          </span>
         </button>
       )}
       {!minimized && !isKidungMedia && secondaryControls}
-      {speechActive && !minimized && (
+      {!minimized && (
         <button
-          className="media-minimize media-close-button"
+          className="media-control media-secondary-control media-close-button"
           type="button"
-          onClick={() => speechPlayer.togglePlayer(false)}
-          aria-label={translate(locale, "media.closePlayer")}
+          onClick={() =>
+            speechActive
+              ? speechPlayer.togglePlayer(false)
+              : void midiPlayer.close()
+          }
+          aria-label={
+            speechActive
+              ? translate(locale, "media.closePlayer")
+              : translate(locale, "kidung.closeMidi")
+          }
           title={translate(locale, "media.closePlayerTitle")}
         >
           <Icon name="cross" size={16} />
         </button>
       )}
       <button
-        className="media-minimize"
+        className={`media-minimize${isKidungMedia && minimized ? " media-drag-handle" : ""}`}
         type="button"
-        onClick={toggleDock}
+        onClick={(event) => {
+          const wasDragged = suppressDragClick.current;
+          suppressDragClick.current = false;
+          if (!wasDragged || event.detail === 0) toggleDock();
+        }}
+        onPointerDown={(event) => {
+          suppressDragClick.current = false;
+          if (isKidungMedia && minimized) startDrag(event);
+        }}
+        onPointerMove={isKidungMedia && minimized ? moveDrag : undefined}
+        onPointerUp={isKidungMedia && minimized ? finishDrag : undefined}
+        onPointerCancel={isKidungMedia && minimized ? finishDrag : undefined}
+        onKeyDown={
+          isKidungMedia && minimized ? moveDockWithKeyboard : undefined
+        }
+        aria-description={
+          isKidungMedia && minimized
+            ? translate(locale, "media.movePlayer")
+            : undefined
+        }
+        title={
+          isKidungMedia && minimized
+            ? translate(locale, "media.movePlayer")
+            : undefined
+        }
         aria-expanded={!minimized}
         aria-label={translate(
           locale,
           minimized ? "media.restore" : "media.minimize",
         )}
       >
-        <Icon name={minimized ? "fullscreen" : "chevronDown"} size={16} />
+        {isKidungMedia && minimized ? (
+          <span
+            className="media-edge-glyph"
+            key={playing ? "playing" : "paused"}
+          >
+            {playing ? <MidiActivity /> : <Icon name="musicNote" size={16} />}
+          </span>
+        ) : (
+          <Icon name={minimized ? "fullscreen" : "chevronDown"} size={16} />
+        )}
       </button>
       {!speechActive && snapshot.status === "loading" && (
         <div
@@ -1295,4 +1348,15 @@ export function MediaSurface({ locale }: { locale: Locale }) {
 function formatDuration(value: number): string {
   const seconds = Math.max(0, Math.floor(value));
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function MidiActivity() {
+  return (
+    <span className="media-activity" aria-hidden="true">
+      <i />
+      <i />
+      <i />
+      <i />
+    </span>
+  );
 }

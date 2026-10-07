@@ -43,7 +43,13 @@ export function preloadRoute(path: string): Promise<unknown> {
       });
     pending.set(id, task);
   }
-  const route = pending.get(id)!;
+  const route =
+    id === "kidung"
+      ? Promise.all([
+          pending.get(id)!,
+          import("./kidung-page.js").then((m) => m.preloadKidungView(path)),
+        ])
+      : pending.get(id)!;
   return (pathname.startsWith("/literatur/") &&
     /[?&]read=1(?:&|$)/.test(path)) ||
     (pathname.startsWith("/kidung/") && /[?&]mode=pdf(?:&|$)/.test(path))

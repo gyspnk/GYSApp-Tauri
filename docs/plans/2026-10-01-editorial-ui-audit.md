@@ -1,5 +1,10 @@
 # Warm editorial UI audit
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 The user authorized a full UI audit and implementation, and chose "Editorial
 hangat seperti buku nyanyian". This replaces the previous pale blue appearance
 with warm paper, strong reading typography and quiet index/list structure.

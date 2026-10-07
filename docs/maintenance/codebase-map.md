@@ -10,6 +10,26 @@ stable adapters, faster verified paths, explicit deletion evidence, and
 compact agent context. Existing behavior and source-of-truth parity remain
 more important than line-count reduction.
 
+## Current implementation owners — 2026-10-07
+
+This table describes the current source. The dated decisions and validation
+receipts below retain their original scope, counts and pending-work statements;
+they must not be read as the status of this build.
+
+| Responsibility                 | Current boundary                                                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First paint / theme / progress | `startup.js`, `startup.css`, `main.tsx`; early saved theme and logo/progress before React, then the shell readiness handoff.                                                                |
+| Route intent / transitions     | `route-pages.ts`, `route-preload.ts`, `route-transitions.ts`; deduplicated imports, restricted idle warming, one content animation with persistent shell/media.                             |
+| Bible address selection        | `bible-picker.tsx`, `bible-picker-number.ts`, `bible-picker.css`; one draft model, exact translation bounds, keypad and explicit navigation.                                                |
+| Shared PDF                     | `pdf.tsx`, `pdf-zoom.ts`, `pdf-detail-layer.tsx`, `pdf-document-cache.ts`; fitted sharp rendering, mouse/touch pan, bounded leases and single-document retry.                               |
+| Publisher PDF transport        | `literature-pdf-source.ts`, `pdf-source.ts`, contracts `literature-source.ts`, BFF content routes; trusted metadata resolution, S3 proxy and preserved Range.                               |
+| Persistent MIDI                | `media-surface.tsx`, `midi-music-controls.tsx`, `midi-player.css`; compact complete music controls, half-circle edge minimize, persistent session and one geometry animation.               |
+| Chord / audio resources        | Existing chord session/cache and MIDI resource/render owners; metadata-only sync, source-bound score mapping and bounded setting-aware PCM reuse.                                           |
+| Account providers              | `egys-google.ts`, `egys-whatsapp.tsx`, `egys-apple.ts`, BFF v1 routes, native auth bridge; inline web callbacks/tracking, native official WebView/keyring.                                  |
+| Shared menu presence           | `use-menu-presence.ts`, `menu-motion.css`, `dialog-focus.ts`; exit animation, inert closing content and restored focus.                                                                     |
+| Home / articles / covers       | `home.tsx`, `online-content.tsx`, `lazy-image.tsx`; stable aspect-ratio placeholders, cached-first content, adaptive themed reading.                                                        |
+| Current documentation          | [Index](../README.md), [architecture](../architecture.md), [cache](../cache-and-preload.md), [UI](../ui-system.md), [tests](../testing-and-maintenance.md), [operations](../operations.md). |
+
 ## Working rules
 
 - One frontier decision per session.
@@ -407,6 +427,18 @@ with a 37-flow smoke suite after the one-flow deduplication.
   provider prerequisites retain their separate evidence requirements.
 
 ## Frontier
+
+### Current: CF-212 — reconcile complete reader/player and documentation delivery
+
+The requested reader, provider, MIDI and Bible-picker refinements are implemented
+and the current documentation now describes their actual owners and limits.
+Current local evidence is recorded in the final CF-212 receipt below and in
+[release readiness](../release-readiness.md). Remaining acceptance depends on
+real provider accounts, the deployed Worker, physical/native runtimes and signed
+artifacts; these do not become complete from browser mocks or a source push.
+
+The following resolved frontiers are historical receipts. Their old dirty-tree
+and no-push statements refer to the date of each measurement.
 
 ### Resolved: CF-063 — reader surface centering
 
@@ -950,7 +982,8 @@ Apple authorization after the provider-side configuration is confirmed.
 ## Not yet specified
 
 - remaining `Shell` online/search/wake-lock extraction boundary after runtime tracing;
-- stylesheet split order after selector ownership and visual coverage;
+- further style consolidation after geometry evidence; the base import layers
+  are already split and their current order is documented in `styles/README.md`;
 - BFF route split after route-level error/security coupling is measured;
 - whether duplicate localhost tooling should consolidate into the root wrapper;
 
@@ -1981,3 +2014,24 @@ The separate mocked-BFF run passes all six asset cases. Final preview build
 73e3c2881d9ef054 matches dist and activates successfully. All five plan stages
 are complete for local browser scope; external/native/device limits remain
 explicit. No push or deployment is performed.
+
+- `2026-10-07 / CF-212`: reconcile the complete current documentation and deliver
+  the authorized reader/provider/MIDI/Bible-picker refinements together. Establish
+  one current index, detailed mode/user guidance, explicit cache and preload
+  owners/bounds, config/deployment diagnostics, UI/motion/focus contracts and a
+  reproducible testing ladder. Update source/dependency/parity maps, eight ADR
+  reviews, native/style references and disclosure guidance. Mark dated plans and
+  audits historical rather than rewriting their evidence. Preserve canonical
+  assets, generated contracts, test thresholds and existing maintenance cadence.
+
+Validation for CF-212: production build, workspace types/lint, generated
+provenance, native asset boundary and production dependency audit pass. All
+549 Vitest and 55 Node policy/script tests pass. The final selected production
+browser gate passes 79/79 in 2.3 minutes with two workers, no retries and no
+skips; covered flows include Bible drafts/keypad, v1 providers, literature/PDF,
+menus, page transitions and responsive persistent media. The initial graph is
+178.5 KiB under 180 KiB. Documentation formatting, verifier and relative-link
+checks pass. This receipt proves local behavior and
+mocked provider integration, not real-account acceptance, hosted Worker success,
+physical-device or signed native release. Remote commit delivery is verified
+separately from deployment; old receipts retain their original no-push status.

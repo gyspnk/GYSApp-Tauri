@@ -13,18 +13,6 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(expanded!.width).toBeGreaterThan(200);
   expect(expanded!.y).toBeCloseTo(topbar!.y + topbar!.height, 0);
 
-  const motionContract = await page
-    .locator(".workspace")
-    .evaluate((element) => {
-      const style = getComputedStyle(element);
-      return {
-        duration: style.getPropertyValue("--sidebar-motion-duration").trim(),
-        easing: style.getPropertyValue("--sidebar-motion-ease").trim(),
-      };
-    });
-  expect(Number.parseFloat(motionContract.duration)).toBeCloseTo(0.24, 2);
-  expect(motionContract.easing).toContain("cubic-bezier(.22, 1, .36, 1)");
-
   const collapse = page.getByRole("button", { name: "Ciutkan navigasi" });
   await expect(collapse).toBeVisible();
   await expect(collapse).toHaveAttribute("aria-expanded", "true");
@@ -41,15 +29,36 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(controlBox!.y + controlBox!.height).toBeLessThanOrEqual(firstItem!.y);
   const expandedItem = await nav.locator(".nav-item.is-active").boundingBox();
   expect(expandedItem).not.toBeNull();
+  const icon = (await nav.locator(".nav-item.is-active > svg").boundingBox())!;
   await collapse.evaluate((element) => (element as HTMLButtonElement).click());
 
   const inFlight = await page.evaluate(
     () =>
-      new Promise<Array<{ navWidth: number; itemWidth: number }>>((resolve) => {
-        const frames: Array<{ navWidth: number; itemWidth: number }> = [];
+      new Promise<
+        Array<{
+          navWidth: number;
+          itemWidth: number;
+          iconX: number;
+          toggleX: number;
+        }>
+      >((resolve) => {
+        const frames: Array<{
+          navWidth: number;
+          itemWidth: number;
+          iconX: number;
+          toggleX: number;
+        }> = [];
         const started = performance.now();
         const sample = () => {
+          const icon = document
+            .querySelector(".navigation-shell .nav-item.is-active > svg")!
+            .getBoundingClientRect();
+          const toggle = document
+            .querySelector(".sidebar-collapse-toggle")!
+            .getBoundingClientRect();
           frames.push({
+            iconX: icon.x + icon.width / 2,
+            toggleX: toggle.x + toggle.width / 2,
             navWidth:
               document
                 .querySelector<HTMLElement>(".navigation-shell")
@@ -79,6 +88,12 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
         frame.itemWidth < expandedItem!.width,
     ),
   ).toBe(true);
+  for (const frame of inFlight) {
+    expect(Math.abs(frame.iconX - icon.x - icon.width / 2)).toBeLessThan(1);
+    expect(
+      Math.abs(frame.toggleX - controlBox!.x - controlBox!.width / 2),
+    ).toBeLessThan(1);
+  }
 
   await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
   await expect
@@ -117,6 +132,96 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   await expect(page.locator(".workspace")).toHaveClass(/is-sidebar-collapsed/);
   await expect(
     page.getByRole("button", { name: "Perluas navigasi" }),
+  ).toBeVisible();
+});
+
+test("home sidebar reverses smoothly without moving icons, controls, or scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 600 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".home-grid")).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => scrollTo({ top: 100, behavior: "instant" }));
+  const frames = await page.evaluate(
+    () =>
+      new Promise<
+        Array<{
+          width: number;
+          iconX: number;
+          toggleX: number;
+          y: number;
+          scroll: number;
+          overflow: number;
+        }>
+      >((resolve) => {
+        const toggle = document.querySelector<HTMLButtonElement>(
+          ".sidebar-collapse-toggle",
+        )!;
+        const frames: Array<{
+          width: number;
+          iconX: number;
+          toggleX: number;
+          y: number;
+          scroll: number;
+          overflow: number;
+        }> = [];
+        const started = performance.now();
+        const sample = () => {
+          const nav = document
+            .querySelector(".navigation-shell")!
+            .getBoundingClientRect();
+          const icon = document
+            .querySelector(".nav-item.is-active > svg")!
+            .getBoundingClientRect();
+          const button = toggle.getBoundingClientRect();
+          frames.push({
+            width: nav.width,
+            iconX: icon.x + icon.width / 2,
+            toggleX: button.x + button.width / 2,
+            y: button.y,
+            scroll: scrollY,
+            overflow: document.documentElement.scrollWidth - innerWidth,
+          });
+          if (performance.now() - started < 550) requestAnimationFrame(sample);
+          else resolve(frames);
+        };
+        sample();
+        toggle.click();
+        setTimeout(() => toggle.click(), 50);
+        setTimeout(() => toggle.click(), 110);
+      }),
+  );
+  expect(frames.some((frame) => frame.width > 85 && frame.width < 200)).toBe(
+    true,
+  );
+  expect(frames.at(-1)!.width).toBeCloseTo(80, 0);
+  for (const frame of frames) {
+    expect(frame.width).toBeGreaterThanOrEqual(79);
+    expect(frame.width).toBeLessThanOrEqual(209);
+    expect(Math.abs(frame.iconX - frames[0]!.iconX)).toBeLessThan(1);
+    expect(Math.abs(frame.toggleX - frames[0]!.toggleX)).toBeLessThan(1);
+    expect(Math.abs(frame.y - frames[0]!.y)).toBeLessThan(1);
+    expect(Math.abs(frame.scroll - frames[0]!.scroll)).toBeLessThan(2);
+    expect(frame.overflow).toBeLessThanOrEqual(1);
+  }
+  await page
+    .getByRole("button", { name: "Perluas navigasi", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      page
+        .locator(".navigation-shell")
+        .evaluate((node) => node.getBoundingClientRect().width),
+    )
+    .toBeCloseTo(208, 0);
+  await page.setViewportSize({ width: 768, height: 800 });
+  await expect(page.locator(".sidebar-collapse-toggle")).toBeHidden();
+  await expect(page.locator(".nav-item.is-active .nav-copy")).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 600 });
+  await expect(
+    page.getByRole("button", { name: "Ciutkan navigasi", exact: true }),
   ).toBeVisible();
 });
 

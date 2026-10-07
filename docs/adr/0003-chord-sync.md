@@ -34,3 +34,12 @@ drain every active worker and serialized mutation, and cancel advisory writes.
 A delayed startup import cannot restart synchronization during that reset.
 Subsequent reads may create a fresh repository; full startup sync resumes on the
 next application launch.
+
+## Implementation review — 2026-10-07
+
+The disk cap is 25 MiB and verified parsed memory is bounded to 32 entries /
+1 MiB. Startup concurrency is three songs. The current manifest has 161
+canonical files, with 3,738 strict mapped score positions. Displayed PDF key/
+geometry and canonical chord key are bridged before user transpose/capo; do not
+reuse geometry from a different PDF identity. See
+[chord source map](../discovery/chord-data-source-map.md).

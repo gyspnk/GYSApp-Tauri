@@ -27,6 +27,7 @@ vi.mock("pdfjs-dist", () => ({
 import {
   _resetHymnPdfMetaCacheForTest,
   getHymnPdfMeta,
+  rememberHymnPdfMeta,
   resolveHymnMidiDefaults,
   warmHymnPdfMeta,
 } from "./hymn-pdf-meta.js";
@@ -34,6 +35,19 @@ import {
 const item = { id: "hymn-001", number: 1 } as HymnCatalogEntry;
 
 describe("per-song hymn PDF metadata cache", () => {
+  it("reuses the displayed score's published key without opening the master again", async () => {
+    _resetHymnPdfMetaCacheForTest();
+    const before = vi.mocked(loadForkHymnalPdf).mock.calls.length;
+    const displayed = {
+      key: "Es",
+      keySemitone: 3,
+      tempo: 76,
+      preloadTranspose: -1,
+    };
+    rememberHymnPdfMeta(item.id, displayed);
+    expect(await warmHymnPdfMeta(item)).toBe(displayed);
+    expect(vi.mocked(loadForkHymnalPdf).mock.calls.length).toBe(before);
+  });
   beforeEach(() => {
     _resetHymnPdfMetaCacheForTest();
     getPage.mockClear();

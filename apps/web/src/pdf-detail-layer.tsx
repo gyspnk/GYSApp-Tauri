@@ -45,7 +45,14 @@ export function PdfDetailLayer({
       const width = Number(canvas.dataset.pdfWidth);
       const height = Number(canvas.dataset.pdfHeight);
       const dpr = Math.min(3, window.devicePixelRatio || 1);
-      if (!width || !height) return;
+      if (
+        !width ||
+        !height ||
+        canvas.dataset.pdfPageNumber !== String(pageNumber)
+      ) {
+        clear();
+        return;
+      }
       if (canvas.width / width >= dpr - 0.01) {
         clear();
         return;
@@ -134,7 +141,13 @@ export function PdfDetailLayer({
     const paint = new MutationObserver(schedule);
     paint.observe(canvas, {
       attributes: true,
-      attributeFilter: ["data-pdf-zoom", "data-pdf-width", "width", "height"],
+      attributeFilter: [
+        "data-pdf-zoom",
+        "data-pdf-width",
+        "data-pdf-page-number",
+        "width",
+        "height",
+      ],
     });
     stage.addEventListener("scroll", schedule, { passive: true });
     stage.addEventListener("pdfzoomend", schedule);

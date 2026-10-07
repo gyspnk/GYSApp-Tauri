@@ -1,8 +1,4 @@
-import {
-  HymnCatalogEntrySchema,
-  type HymnCatalogEntry,
-  type MidiPlaylistItem,
-} from "@gys/contracts";
+import type { HymnCatalogEntry, MidiPlaylistItem } from "@gys/contracts";
 import { MidiLoader } from "@gys/domain";
 import { midiPlayer } from "./midi-player.js";
 import {
@@ -40,25 +36,12 @@ export function shuffleHistorySnapshot(): string[] {
 }
 
 async function loadCatalog(): Promise<CatalogState> {
-  catalogPromise ??= fetch(
-    `${import.meta.env.BASE_URL}offline/hymn-catalog.json`,
-    {
-      cache: "force-cache",
-    },
-  ).then(async (response) => {
-    if (!response.ok) throw new Error("Offline hymn catalog unavailable");
-    const value: unknown = await response.json();
-    if (
-      !value ||
-      typeof value !== "object" ||
-      !Array.isArray((value as { items?: unknown }).items)
-    )
-      throw new Error("Hymn catalog is invalid");
-    return (value as { items: unknown[] }).items.flatMap((item) => {
-      const parsed = HymnCatalogEntrySchema.safeParse(item);
-      return parsed.success ? [parsed.data] : [];
+  catalogPromise ??= import("./hymn-payloads.js")
+    .then((m) => m.loadCoreHymns())
+    .catch((error) => {
+      catalogPromise = undefined;
+      throw error;
     });
-  });
   return catalogPromise;
 }
 
@@ -185,6 +168,31 @@ export async function playPreviousMidiPlaylistItem(): Promise<void> {
   }
   const previous = previousMidiPlaylistItem();
   if (previous) await playMidiPlaylistItem(previous.songId);
+}
+
+/** Manual transport uses the queue when present, otherwise adjacent hymns
+ * in the current collection. This does not change the auto-next preference. */
+export async function playAdjacentMidiHymn(direction: -1 | 1): Promise<void> {
+  const current = midiPlayer.snapshot().songId;
+  const playlist = getMidiPlaylist();
+  if (
+    playlist.items.length > 1 &&
+    playlist.items.some((item) => item.songId === current)
+  ) {
+    await (direction === 1
+      ? playNextMidiPlaylistItem()
+      : playPreviousMidiPlaylistItem());
+    return;
+  }
+  const catalog = await loadCatalog();
+  const hymn = catalog.find((item) => item.id === current);
+  if (!hymn) return;
+  const songs = catalog.filter(
+    (item) => item.book === hymn.book && item.midiPath && !item.assetCode,
+  );
+  const index = songs.findIndex((item) => item.id === current);
+  const next = index >= 0 ? songs[index + direction] : undefined;
+  if (next) await loadItem({ songId: next.id, title: next.title });
 }
 
 export function installMidiQueueCoordinator(): () => void {

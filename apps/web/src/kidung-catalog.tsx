@@ -30,6 +30,7 @@ import {
 } from "./kidung-shared.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
 import { KidungLocalNav } from "./kidung-local-nav.js";
+import { navigateSmooth } from "./route-transitions.js";
 
 export function HymnCatalog({
   locale,
@@ -124,7 +125,10 @@ export function HymnCatalog({
       event.clientX,
       event.clientY,
     );
-    navigate(`/kidung/${songId}?mode=${pdfMode ? "pdf" : "lyrics"}`);
+    void navigateSmooth(
+      navigate,
+      `/kidung/${songId}?mode=${pdfMode ? "pdf" : "lyrics"}`,
+    );
   };
   const onRowQueue = (
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -142,6 +146,7 @@ export function HymnCatalog({
       <div className="kidung-index-toolbar">
         <div className="kidung-controls-field">
           <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
+          <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
             <div className="kidung-header-filter">
               <Select
@@ -163,7 +168,6 @@ export function HymnCatalog({
               />
             </div>
           )}
-          <KidungLocalNav active="songs" locale={locale} />
           <div
             role="group"
             aria-label={translate(locale, "kidung.viewMode")}

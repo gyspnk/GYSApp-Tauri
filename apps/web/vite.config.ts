@@ -57,6 +57,7 @@ function offlineBuildAssetsPlugin(): Plugin {
       buildId = createHash("sha256")
         .update(buildId)
         .update(JSON.stringify(manifest.integrity))
+        .update(await readFile(resolve(directory, "startup.js")))
         .digest("hex")
         .slice(0, 16);
       manifest.buildId = buildId;
@@ -74,6 +75,9 @@ function offlineBuildAssetsPlugin(): Plugin {
       );
       manifest.coreIntegrity["offline/pack-manifest.json"] =
         `sha256-${createHash("sha256").update(packBytes).digest("base64")}`;
+      manifest.coreIntegrity["startup.js"] = `sha256-${createHash("sha256")
+        .update(await readFile(resolve(directory, "startup.js")))
+        .digest("base64")}`;
       await writeFile(manifestPath, JSON.stringify(manifest));
       const indexPath = resolve(directory, "index.html");
       await writeFile(
@@ -175,7 +179,7 @@ function devImageProxyPlugin(): Plugin {
             return res.end("Proxy error");
           }
         }
-        if (req.url && req.url.startsWith("/api/v1/content/pdf")) {
+        if (req.url && req.url.startsWith("/api/v1/content/pdf?")) {
           const parsed = new URL(req.url, "http://localhost:5173");
           const targetUrl = parsed.searchParams.get("url");
           if (!targetUrl) {

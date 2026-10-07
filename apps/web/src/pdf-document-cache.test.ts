@@ -98,3 +98,42 @@ it("failed parse removes its worker so a subsequent open can recover", async () 
   recovered.release();
   cache.clearIdle();
 });
+
+it("retry cancels a released pending task without waiting for idle expiry", () => {
+  const tasks = Array.from({ length: 2 }, () => ({
+    promise: new Promise<string>(() => {}),
+    destroy: vi.fn(async () => {}),
+  }));
+  const create = vi
+    .fn()
+    .mockReturnValueOnce(tasks[0])
+    .mockReturnValueOnce(tasks[1]);
+  const cache = createPdfDocumentCache<string>(create);
+  const held = cache.acquire("slow.pdf");
+  cache.invalidate("slow.pdf");
+  expect(tasks[0]!.destroy).not.toHaveBeenCalled();
+  held.release();
+  expect(tasks[0]!.destroy).toHaveBeenCalledOnce();
+  const retry = cache.acquire("slow.pdf");
+  expect(retry.promise).not.toBe(held.promise);
+  expect(create).toHaveBeenCalledTimes(2);
+  retry.release();
+  cache.clearIdle();
+});
+
+it("retry preserves a shared chord lease and leaves unrelated cached documents intact", () => {
+  const { cache, tasks, create } = setup();
+  const reader = cache.acquire("master.pdf");
+  const chords = cache.acquire("master.pdf");
+  cache.acquire("other.pdf").release();
+  cache.invalidate("master.pdf");
+  reader.release();
+  expect(tasks[0]!.destroy).not.toHaveBeenCalled();
+  const retry = cache.acquire("master.pdf");
+  expect(create).toHaveBeenCalledTimes(3);
+  expect(tasks[1]!.destroy).not.toHaveBeenCalled();
+  chords.release();
+  expect(tasks[0]!.destroy).toHaveBeenCalledOnce();
+  retry.release();
+  cache.clearIdle();
+});

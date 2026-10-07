@@ -6,7 +6,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#f5f1e8" />
+    <meta name="theme-color" content="#ffffff" />
+    <script vite-ignore src="%BASE_URL%startup.js"></script>
+    <link rel="stylesheet" href="/src/startup.css" />
     <meta name="description" content="GYSApp — Gereja Yesus Sejati" />
     <link
       rel="icon"
@@ -22,7 +24,12 @@
     <title>GYSApp</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="shell-startup" role="status" aria-label="GYSApp">
+        <img src="%BASE_URL%assets/gys-logo.png" alt="Gereja Yesus Sejati" />
+        <span class="shell-startup-track"><span></span></span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -73,6 +73,23 @@ describe("MIDI song tempo defaults", () => {
 
     expect(player.snapshot().transpose).toBe(-2);
   });
+
+  it("keeps a user transpose when delayed tempo metadata arrives in the same turn", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    await player.load("hymn-001", "First hymn", {
+      ppq: 480,
+      tempo: 100,
+      events: [],
+    });
+
+    await Promise.all([
+      player.setTranspose(1),
+      player.setTempo(76, { userOverride: false }),
+    ]);
+
+    expect(player.snapshot()).toMatchObject({ transpose: 1, tempo: 76 });
+    expect(player.hasTransposePreference()).toBe(true);
+  });
 });
 
 class FakeWorker extends EventTarget {

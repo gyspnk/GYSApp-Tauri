@@ -452,7 +452,19 @@ test("faith PDF overlay keeps both official links reachable across locales and w
     }),
   );
   await page.route("**/*.{pdf,PDF}", (route) =>
-    route.fulfill({ status: 503, body: "faith PDF unavailable" }),
+    route.fulfill({
+      status: 503,
+      body: "faith PDF unavailable",
+      headers: { "access-control-allow-origin": "*" },
+    }),
+  );
+
+  await page.route("**/api/v1/content/pdf?**", (route) =>
+    route.fulfill({
+      status: 503,
+      body: "faith PDF unavailable",
+      headers: { "access-control-allow-origin": "*" },
+    }),
   );
 
   for (const locale of ["id", "en", "zh"] as const) {
@@ -466,6 +478,14 @@ test("faith PDF overlay keeps both official links reachable across locales and w
 
       const overlay = page.locator(".faith-pdf-overlay");
       await expect(overlay).toBeVisible();
+      const close = page.getByRole("button", {
+        name: copies[locale].close,
+        exact: true,
+      });
+      await expect(close).toBeVisible();
+      await expect(close).toBeFocused();
+      const sources = overlay.locator(".faith-pdf-sources > summary");
+      await sources.click();
       const links = overlay.locator(".faith-pdf-head-actions a");
       await expect(links).toHaveCount(2);
       await expect(
@@ -474,12 +494,6 @@ test("faith PDF overlay keeps both official links reachable across locales and w
       await expect(
         page.getByRole("link", { name: copies[locale].source, exact: true }),
       ).toHaveAttribute("href", /dk-yesus-kristus/);
-      const close = page.getByRole("button", {
-        name: copies[locale].close,
-        exact: true,
-      });
-      await expect(close).toBeVisible();
-      await expect(close).toBeFocused();
 
       for (const control of [links.nth(0), links.nth(1), close]) {
         const box = await control.boundingBox();
@@ -490,11 +504,7 @@ test("faith PDF overlay keeps both official links reachable across locales and w
       const headerGeometry = await overlay
         .locator(".faith-pdf-head")
         .evaluate((element) => {
-          const boxes = [
-            ".faith-pdf-title",
-            ".faith-pdf-stats",
-            ".faith-pdf-head-actions",
-          ]
+          const boxes = [".faith-pdf-title", ".faith-pdf-head-actions"]
             .map((selector) =>
               element
                 .querySelector<HTMLElement>(selector)
@@ -527,6 +537,8 @@ test("faith PDF overlay keeps both official links reachable across locales and w
         )
         .toBe(true);
 
+      await sources.click();
+      await expect(links.first()).toBeHidden();
       if (locale === "id" && viewport === 320) {
         // The failed PDF adds a Retry button asynchronously. Establish the
         // error-state focus order before asserting its first/last boundaries.
@@ -534,7 +546,7 @@ test("faith PDF overlay keeps both official links reachable across locales and w
           timeout: 15_000,
         });
         const focusable = overlay.locator(
-          'button:not([disabled]):not([aria-hidden="true"]):visible, input:not([disabled]):not([aria-hidden="true"]):visible, select:not([disabled]):not([aria-hidden="true"]):visible, textarea:not([disabled]):not([aria-hidden="true"]):visible, a[href]:not([aria-hidden="true"]):visible, [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"]):visible',
+          'summary, button:not([disabled]):not([aria-hidden="true"]):visible, input:not([disabled]):not([aria-hidden="true"]):visible, select:not([disabled]):not([aria-hidden="true"]):visible, textarea:not([disabled]):not([aria-hidden="true"]):visible, a[href]:not([aria-hidden="true"]):visible, [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"]):visible',
         );
         await focusable.last().focus();
         await page.keyboard.press("Tab");
@@ -575,6 +587,7 @@ test("faith PDF 404 keeps the official source and exposes a quiet retry", async 
       status: 404,
       contentType: "text/plain",
       body: "official PDF not found",
+      headers: { "access-control-allow-origin": "*" },
     });
   await page.route("**/api/v1/content/pdf**", notFound);
   await page.route("**/Yesus-Kristus.pdf**", notFound);
@@ -586,9 +599,11 @@ test("faith PDF 404 keeps the official source and exposes a quiet retry", async 
     timeout: 20_000,
   });
   await expect(page.locator('[data-pdf-error-status="404"]')).toBeVisible();
+  await page.locator(".faith-pdf-sources > summary").click();
   await expect(
     page.getByRole("link", { name: "Buka halaman sumber resmi ↗" }),
   ).toHaveAttribute("href", /dk-yesus-kristus/);
+  await page.locator(".faith-pdf-sources > summary").click();
   await expect(page.getByRole("button", { name: "Coba lagi" })).toBeVisible();
 
   await page.getByRole("button", { name: "Coba lagi" }).click();

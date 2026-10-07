@@ -6,6 +6,8 @@
   --shell-paper: var(--surface);
   --shell-ink: var(--ink);
   --shell-selected: var(--blue-soft);
+  --reader-control: clamp(44px, 4vw, 56px);
+  --reader-icon: clamp(20px, 1.7vw, 24px);
 }
 
 @media (min-width: 960px) {
@@ -21,17 +23,11 @@
   .navigation-shell .nav-item {
     color: var(--shell-ink);
     min-height: 52px;
-    padding: 12px;
-    gap: 12px;
     border-radius: 12px;
   }
   .navigation-shell .nav-copy strong {
     font-size: 14px;
     font-weight: 550;
-  }
-  .workspace:not(.is-sidebar-collapsed) .nav-copy {
-    width: auto;
-    max-width: 132px;
   }
   .navigation-shell .nav-item.is-active {
     background: var(--shell-selected);
@@ -42,7 +38,8 @@
   }
   .navigation-shell .sidebar-collapse-toggle {
     top: 4px;
-    right: 8px;
+    left: 18px;
+    right: auto;
     border: 0;
     border-radius: 8px;
     background: transparent;
@@ -52,9 +49,6 @@
   .navigation-shell .sidebar-collapse-toggle:hover {
     background: var(--blue-soft);
     color: var(--blue);
-  }
-  .workspace.is-sidebar-collapsed .navigation-shell .sidebar-collapse-toggle {
-    right: calc(50% - 22px);
   }
   .navigation-shell .nav-item:hover {
     background: var(--blue-soft);
@@ -183,24 +177,6 @@
 }
 .home-grid .verse-panel:not(:has(.sauh-card-media)) {
   min-height: 0;
-}
-/* A failed preview is a small label, not a screen-sized empty illustration. */
-.home-grid
-  .sauh-card-media:has(
-    [data-image-state="error"],
-    [data-image-state="missing"]
-  ) {
-  position: relative;
-  inset: auto;
-  height: 72px;
-  min-height: 0;
-  aspect-ratio: auto;
-}
-.home-grid .sauh-card-media .img-fallback-placeholder {
-  flex-direction: row;
-  gap: 12px;
-  justify-content: start;
-  padding-inline: 24px;
 }
 .home-grid .sauh-card-content {
   margin-top: 0;
@@ -750,23 +726,23 @@
   display: none;
 }
 @media (min-width: 960px) {
-  .home-grid .verse-panel:has([data-image-state="loaded"]) {
+  .home-grid .verse-panel:has(.sauh-card-media) {
     display: grid;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     padding: 0;
     min-height: 320px;
   }
-  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-card-media {
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-media {
     height: 100%;
     min-height: 320px;
     margin: 0;
     border-radius: 0;
     aspect-ratio: auto;
   }
-  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-card-content {
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
     align-self: center;
   }
-  .home-grid .verse-panel:has([data-image-state="loaded"]) .sauh-image {
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -1417,8 +1393,6 @@
   }
   .navigation-shell .nav-item {
     min-height: 48px;
-    padding: 10px 14px;
-    gap: 12px;
   }
   .navigation-shell .nav-item.is-active {
     border-color: color-mix(in srgb, var(--blue) 18%, transparent);
@@ -1724,11 +1698,7 @@
 }
 .hymn-detail-page.is-text-viewer
   .hymn-text-toolbar
-  :is(
-    .detail-actions > .hymn-action,
-    .hymn-more-actions-summary,
-    .hymn-partitur-toggle
-  ) {
+  :is(.detail-actions > .hymn-action, .hymn-more-actions-summary) {
   min-width: 44px;
   min-height: 44px;
   width: 44px;
@@ -1900,9 +1870,6 @@
       transform: translateY(0.25em);
     }
   }
-  .hymn-detail-page .lyrics-sheet:not(.is-continuous) {
-    view-transition-name: hymn-lyrics;
-  }
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 280ms;
@@ -1913,9 +1880,6 @@
   }
   ::view-transition-new(hymn-lyrics) {
     animation: hymn-lyrics-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  html:active-view-transition .verse-enter {
-    animation: none;
   }
 }
 @keyframes hymn-lyrics-out {
@@ -2182,9 +2146,7 @@
 }
 
 /* Reader chrome follows the viewport rather than a fixed desktop column. */
-.hymn-detail-page.is-text-viewer {
-  --reader-control: clamp(44px, calc(36px + 1.9vw), 64px);
-  --reader-icon: clamp(20px, calc(17px + 0.65vw), 28px);
+.hymn-detail-page {
   width: 100%;
   max-width: none;
 }
@@ -2206,7 +2168,7 @@
   min-width: var(--reader-control);
   min-height: var(--reader-control);
   flex: 0 0 var(--reader-control);
-  border-radius: clamp(11px, 1vw, 16px);
+  border-radius: clamp(11px, 1vw, 14px);
   display: grid;
   place-items: center;
   padding: 0;
@@ -2225,6 +2187,10 @@
   gap: clamp(2px, 0.4vw, 6px);
   padding: clamp(3px, 0.4vw, 6px);
   border-radius: clamp(16px, 1.5vw, 22px);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-toolbar .hymn-more-actions {
+  width: var(--reader-control);
+  flex: 0 0 var(--reader-control);
 }
 .hymn-detail-page.is-text-viewer .hymn-text-footer {
   width: 100%;
@@ -2281,9 +2247,7 @@
 }
 body:has(.hymn-detail-page.is-text-viewer)
   .media-surface.is-kidung-media:not(.is-minimized) {
-  bottom: calc(
-    clamp(44px, calc(36px + 1.9vw), 64px) + 28px + env(safe-area-inset-bottom)
-  );
+  bottom: calc(var(--reader-control) + 28px + env(safe-area-inset-bottom));
 }
 
 .media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
@@ -2446,10 +2410,23 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .faith-pdf-progress {
   display: block;
+  width: 100%;
   height: 2px;
   flex: 0 0 2px;
   border: 0;
   margin: 0;
+  appearance: none;
+  background: var(--line);
+  color: var(--blue);
+}
+.faith-pdf-progress::-webkit-progress-bar {
+  background: var(--line);
+}
+.faith-pdf-progress::-webkit-progress-value {
+  background: var(--blue);
+}
+.faith-pdf-progress::-moz-progress-bar {
+  background: var(--blue);
 }
 .faith-pdf-body {
   flex: 1;
@@ -2942,7 +2919,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-detail-page.is-text-viewer
   .hymn-text-toolbar
-  :is(.hymn-action, .hymn-more-actions-summary, .hymn-partitur-toggle):hover,
+  :is(.hymn-action, .hymn-more-actions-summary):hover,
 .hymn-detail-page.is-text-viewer
   :is(.viewer-chrome-button, .hymn-text-footer > button):hover:enabled {
   background: var(--blue-soft);
@@ -3068,6 +3045,17 @@ body:has(.hymn-detail-page.is-text-viewer)
     margin-bottom 220ms var(--ease-out),
     font-size 160ms var(--ease-out),
     line-height 160ms var(--ease-out);
+}
+@media (max-width: 700px) {
+  .hymn-detail-page.is-text-viewer .hymn-more-actions-panel {
+    bottom: calc(
+      max(12px, env(safe-area-inset-bottom)) + var(--reader-media-space, 0px)
+    );
+    max-height: min(
+      72dvh,
+      calc(100dvh - 100px - var(--reader-media-space, 0px))
+    );
+  }
 }
 .media-load-track {
   position: absolute;
@@ -3253,13 +3241,18 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome {
   position: relative;
   top: auto;
-  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  grid-template-columns: var(--reader-control) minmax(0, 1fr) repeat(
+      2,
+      var(--reader-control)
+    );
   gap: 6px;
-  padding: max(4px, env(safe-area-inset-top)) 8px 4px;
+  padding: max(8px, env(safe-area-inset-top)) 8px 8px;
   border-bottom: 0;
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome.is-no-music {
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: var(--reader-control) minmax(0, 1fr) var(
+      --reader-control
+    );
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title {
   justify-items: start;
@@ -3283,8 +3276,10 @@ body:has(.hymn-detail-page.is-text-viewer)
   line-height: 1.25;
 }
 .hymn-detail-page.is-pdf-viewer .viewer-chrome-button {
-  width: 44px;
-  height: 44px;
+  width: var(--reader-control);
+  height: var(--reader-control);
+  min-width: var(--reader-control);
+  min-height: var(--reader-control);
   border: 0;
   padding: 0;
   border-radius: 12px;
@@ -3297,7 +3292,45 @@ body:has(.hymn-detail-page.is-text-viewer)
   font-family: inherit;
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle > span {
-  font-size: 17px;
+  font-size: var(--reader-icon);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome svg {
+  width: var(--reader-icon);
+  height: var(--reader-icon);
+  margin: 0;
+  stroke-width: 1.7;
+}
+@media (max-width: 767px) {
+  .hymn-detail-page.is-pdf-viewer .pdf-music-menu-panel {
+    bottom: calc(var(--reader-control) + 28px + env(safe-area-inset-bottom));
+    max-height: min(
+      72dvh,
+      calc(100dvh - var(--reader-control) - 112px - env(safe-area-inset-bottom))
+    );
+  }
+}
+.hymn-detail-page
+  :is(.hymn-text-toolbar, .hymn-pdf-viewer-chrome)
+  .reader-mode-button {
+  width: var(--reader-control);
+  height: var(--reader-control);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: clamp(11px, 1vw, 14px);
+  background: var(--blue-soft);
+  color: var(--navy);
+  box-shadow: none;
+}
+@media (hover: hover) {
+  .hymn-detail-page .reader-mode-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--blue) 14%, var(--surface));
+    border-color: var(--blue);
+  }
 }
 .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
   .pdf-reader-hymn
@@ -3340,10 +3373,16 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: flex;
   gap: 4px;
 }
-.pdf-reader .pdf-item-navigation {
-  display: flex;
+.pdf-reader .pdf-toolbar.has-item-navigation {
   gap: 4px;
-  grid-column: 1 / -1;
+  padding-inline: 8px;
+}
+.pdf-reader .has-item-navigation .pdf-page-jump input {
+  width: 32px;
+}
+.pdf-reader .pdf-song-navigation {
+  color: var(--blue);
+  background: var(--blue-soft);
 }
 .pdf-reader .pdf-loading.is-page-loading {
   inset: 0 0 auto;
@@ -3395,9 +3434,518 @@ body:has(.hymn-detail-page.is-text-viewer)
   border-radius: 12px;
   color: var(--blue);
 }
+.literature-detail-page.is-direct-reader > :not(.literature-pdf-backdrop) {
+  display: none;
+}
+.literature-pdf-preparing {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-soft);
+}
+:root.has-view-transitions .literature-pdf-backdrop {
+  animation: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .pdf-reader .pdf-loading.is-page-loading::after {
     animation: none;
     width: 100%;
+  }
+}
+
+/* Snapshot motion owns reader navigation for the entire mount. Toggling a
+   legacy entrance animation off and on would replay it after the snapshot. */
+:root.has-view-transitions :is(.route-view, .verse-enter),
+.hymn-detail-surface,
+.route-view:has(.hymn-detail-page) {
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root.is-reader-transition[data-reader-transition="page"]:not(
+      .is-theme-transition
+    )
+    .route-view {
+    view-transition-name: app-page;
+  }
+  :root.is-reader-transition[data-reader-transition="pdf"]:not(
+      .is-theme-transition
+    )
+    .pdf-stage {
+    view-transition-name: pdf-document;
+  }
+  :root.is-reader-transition[data-reader-transition="lyrics"]:not(
+      .is-theme-transition
+    )
+    .lyrics-sheet:not(.is-continuous) {
+    view-transition-name: hymn-lyrics;
+    /* Fit the incoming verse before its snapshot; zoom keeps its own easing. */
+    transition: none;
+  }
+  :root.is-reader-transition::view-transition-old(root),
+  :root.is-reader-transition::view-transition-new(root) {
+    animation: none;
+  }
+  ::view-transition-old(app-page),
+  ::view-transition-old(pdf-document) {
+    animation: reader-content-out 180ms ease both;
+  }
+  ::view-transition-new(app-page),
+  ::view-transition-new(pdf-document) {
+    animation: reader-content-in 260ms var(--ease-out) both;
+  }
+  ::view-transition {
+    pointer-events: none;
+  }
+}
+@keyframes reader-content-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes reader-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stable media geometry: loading, decoded and failed images share one frame. */
+.img-skeleton-wrapper > .img-with-skeleton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+.img-skeleton-wrapper > .img-with-skeleton.is-loaded {
+  opacity: 1;
+}
+.home-grid .verse-panel {
+  min-height: 0;
+  transform: none;
+}
+.home-grid .sauh-card-media {
+  position: relative;
+  inset: auto;
+  height: clamp(170px, 27vw, 240px);
+  min-height: 0;
+  flex: none;
+}
+.home-grid .sauh-card-media .sauh-image-wrap {
+  width: 100%;
+  height: 100%;
+}
+.home-grid .sauh-card-content {
+  padding: 18px 0 8px;
+}
+.home-grid .sauh-title {
+  font-size: clamp(22px, 1.9vw, 29px);
+  margin-block: 8px;
+}
+.home-grid .sauh-card-body blockquote {
+  margin-block: 10px 16px;
+  line-height: 1.65;
+}
+.home-page .page-intro {
+  align-items: center;
+  gap: 16px;
+}
+.home-portal {
+  min-height: 52px;
+}
+.home-grid {
+  gap: clamp(18px, 2vw, 28px);
+  padding-top: 16px;
+}
+.home-grid .section-title-row {
+  align-items: center;
+  min-height: 44px;
+}
+.home-grid .continue-item {
+  gap: 12px;
+  min-height: 72px;
+}
+.home-grid .continue-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+@media (min-width: 960px) {
+  .home-grid .verse-panel:has(.sauh-card-media) {
+    min-height: 0;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(16px, 2vw, 24px);
+    align-items: stretch;
+  }
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-media {
+    height: 100%;
+    min-height: 260px;
+    max-height: 340px;
+  }
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
+    padding: 12px 0;
+  }
+}
+.app-frame .online-content-page .online-article-card > h1 {
+  font-family: var(--font-reading);
+  font-size: clamp(25px, 2.7vw, 38px);
+  line-height: 1.22;
+  margin-block: 10px 18px;
+  text-wrap: balance;
+}
+.app-frame .online-content-page .online-article-body {
+  width: 100%;
+  max-width: none;
+  font-size: clamp(15px, 0.5vw + 12px, 18px);
+  line-height: 1.8;
+  color: var(--ink);
+}
+.online-article-body > p {
+  margin-block: 0 1em;
+  text-align: justify;
+}
+.online-article-card > blockquote {
+  border-inline-start: 3px solid var(--blue);
+  background: var(--blue-soft);
+  padding: 14px 18px;
+  margin: 16px 0;
+  line-height: 1.7;
+  color: var(--ink);
+  font-family: var(--font-reading);
+}
+.online-content-page :is(.sauh-article-image-wrap, .suara-article-image-wrap) {
+  width: 100%;
+  height: clamp(180px, 30vw, 340px);
+  min-height: 0;
+  aspect-ratio: auto;
+  margin-block: 0 20px;
+  border-radius: 12px;
+}
+.online-content-page .online-article-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.online-article-card .date-line {
+  margin-block: 0 8px;
+  color: var(--muted);
+}
+.online-article-card .detail-actions {
+  padding-block: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.online-article-reference {
+  color: var(--blue);
+  font-weight: 600;
+}
+@media (min-width: 1000px) {
+  .online-content-page
+    :is(.sauh-article, .suara-article-card):has(.img-skeleton-wrapper) {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.8fr);
+    column-gap: clamp(24px, 3vw, 48px);
+    align-items: start;
+  }
+  .app-frame .online-content-page .online-article-card > * {
+    grid-column: 2;
+  }
+  .app-frame .online-content-page .online-article-card > .img-skeleton-wrapper {
+    grid-column: 1;
+    grid-row: 1 / span 8;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    max-height: 500px;
+    position: sticky;
+    top: calc(var(--topbar-height, 58px) + 20px);
+  }
+}
+
+/* A shared leading navigation field keeps the same controls in place. */
+.hymn-page {
+  --kidung-gutter: clamp(16px, 2vw, 28px);
+}
+.app-frame:not(.is-reader-route) .main-content:has(.hymn-page) {
+  padding-inline: var(--kidung-gutter, clamp(16px, 2vw, 28px));
+}
+.kidung-controls-field {
+  gap: 8px;
+}
+.kidung-tool-page > .kidung-local-nav {
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  margin: 0 0 16px;
+}
+.hymn-page .kidung-local-nav-links {
+  gap: 4px;
+}
+.hymn-page .kidung-local-nav a {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.hymn-page .kidung-local-nav a svg {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+.hymn-page .kidung-index-toolbar {
+  margin-bottom: 10px;
+}
+@media (min-width: 600px) {
+  .navigation-shell {
+    position: sticky;
+    top: var(--topbar-height, 58px);
+    height: calc(100dvh - var(--topbar-height, 58px));
+    align-self: start;
+    overflow-y: auto;
+    overflow-x: clip;
+    overscroll-behavior: contain;
+  }
+  .app-frame.is-reader-route .navigation-shell {
+    top: 0;
+    height: 100dvh;
+  }
+}
+.app-frame:has(.is-edge-player) .sidebar-media-anchor {
+  flex-basis: 0;
+}
+.app-frame:not(.is-reader-route):has(.persistent-media:not(.is-minimized))
+  .main-content {
+  padding-bottom: calc(var(--page-end, 24px) + var(--reader-media-space, 0px));
+}
+
+@media (max-width: 600px) {
+  .home-page .page-intro {
+    align-items: stretch;
+  }
+  .home-portal {
+    min-height: 48px;
+  }
+}
+.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group),
+.pdf-transpose-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+:is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+}
+:is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) strong {
+  min-width: 28px;
+  flex: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-music-menu-panel .pdf-transpose-inline {
+  display: grid;
+  grid-template-columns: minmax(64px, 1fr) 44px;
+  gap: 8px;
+}
+.pdf-music-menu-panel .pdf-transpose-btns {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.pdf-music-menu-panel .pdf-key-btn {
+  width: 100%;
+  font-size: 17px;
+}
+.pdf-music-menu-panel .pdf-music-action {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.pdf-music-action[aria-pressed="true"] {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+.pdf-music-menu-panel .pdf-music-action svg {
+  flex: none;
+}
+.pdf-stage[data-pdf-pannable="true"] {
+  cursor: grab;
+  touch-action: none;
+}
+.pdf-stage[data-pdf-dragging="true"] {
+  cursor: grabbing;
+}
+.pdf-chord-layer[data-chords-visible] {
+  opacity: 0;
+  transform: translateY(-3px);
+  transition:
+    opacity 180ms ease,
+    transform 220ms var(--ease-out);
+}
+.pdf-chord-layer[data-chords-visible="true"] {
+  opacity: 1;
+  transform: none;
+  animation: chord-arrival 220ms var(--ease-out);
+}
+@keyframes chord-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pdf-chord-marker {
+  transform: translate(-50%, -100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton-wrapper > .img-with-skeleton,
+  .pdf-chord-layer[data-chords-visible] {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Article media and copy occupy their own columns; legacy score grids never
+   place the text underneath a spanning thumbnail. */
+.app-frame .online-content-page .online-article-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+}
+.app-frame .online-content-page .online-article-card > h1 {
+  max-width: none;
+}
+.app-frame .online-content-page .img-skeleton-wrapper > .online-article-image {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: cover;
+  margin: 0;
+}
+.app-frame .online-content-page .online-article-body {
+  line-height: 1.8;
+  gap: 0;
+}
+@media (min-width: 1000px) {
+  .app-frame
+    .online-content-page
+    .online-article-card:has(.img-skeleton-wrapper) {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.8fr);
+    gap: 0 clamp(24px, 3vw, 48px);
+  }
+  .app-frame .online-content-page .online-article-card > * {
+    grid-column: 2;
+    grid-row: auto;
+  }
+  .app-frame .online-content-page .online-article-card > .img-skeleton-wrapper {
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    align-self: start;
+    margin: 0;
+  }
+}
+.media-surface.is-edge-player.is-minimized {
+  top: clamp(
+    64px,
+    calc(var(--media-edge-y, 0.55) * 100dvh - 79px),
+    calc(100dvh - 158px - var(--media-edge-bottom, 12px))
+  );
+}
+@media (max-width: 599px) {
+  .media-surface.is-edge-player.is-minimized {
+    --media-edge-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Catalog, playlist and settings share one leading navigation footprint. */
+.app-frame .workspace .main-content:has(.hymn-page) {
+  padding: var(--page-start) clamp(16px, 2vw, 28px) var(--page-end);
+}
+.hymn-page .kidung-index-toolbar {
+  padding-top: 0;
+}
+.kidung-tool-page > .kidung-local-nav {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: start;
+  align-self: start;
+  padding: 4px;
+  margin: 0;
+  width: fit-content;
+}
+.kidung-tool-page > .kidung-tool-heading {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.hymn-page .kidung-local-nav-links {
+  display: flex;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.hymn-page .kidung-local-nav-links a {
+  flex: 0 0 104px;
+  width: 104px;
+  min-width: 104px;
+  min-height: 44px;
+  font-size: 13px;
+  padding: 8px 10px;
+}
+.hymn-page .kidung-controls-field .kidung-local-nav {
+  flex: 0 0 auto;
+  width: auto;
+  justify-content: flex-start;
+}
+.hymn-page .kidung-controls-field .kidung-local-nav-links {
+  width: auto;
+}
+@media (max-width: 600px) {
+  .hymn-page .kidung-local-nav-links a {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+  .hymn-page .kidung-local-nav-links a > span {
+    display: none;
+  }
+  .hymn-page .kidung-controls-field .control-select-trigger {
+    min-width: 76px;
+    padding-inline: 8px;
   }
 }

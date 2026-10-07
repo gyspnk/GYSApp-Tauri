@@ -1,5 +1,10 @@
 # Parity, UI, and TTS Redesign Implementation Plan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../../README.md)
+> and [current feature matrix](../../discovery/feature-parity-matrix.md) for the present implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Bring GYSApp-Tauri to the current canonical gyschordweb parity point, repair Edge-compatible no-key TTS, and make the shell/media UX compact, responsive, accessible, and deliberately designed.

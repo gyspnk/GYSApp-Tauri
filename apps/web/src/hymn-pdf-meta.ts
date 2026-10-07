@@ -44,6 +44,12 @@ export function subscribeHymnPdfMeta(listener: () => void): () => void {
   };
 }
 
+/** Publish metadata detected from the exact PDF displayed by the reader. */
+export function rememberHymnPdfMeta(songId: string, meta: HymnPdfMeta): void {
+  settledCache.set(songId, meta);
+  listeners.forEach((listener) => listener());
+}
+
 async function extractPdfMeta(
   source: string | Uint8Array,
   pageNumber = 1,
@@ -81,6 +87,8 @@ export function extractPdfMetaFromBytes(
 
 /** Read the song's mapped first page from the shared range-backed master. */
 export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
+  const settled = settledCache.get(item.id);
+  if (settled) return Promise.resolve(settled);
   const existing = cache.get(item.id);
   if (existing) return existing;
   const request = loadForkHymnalPdf(item.id)

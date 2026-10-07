@@ -1,559 +1,448 @@
 # GYSApp architecture
 
-The application is a clean-room pnpm monorepo. Runtime code depends on
-contracts and domain ports rather than on an upstream repository checkout.
+Reviewed 2026-10-07. Runtime uses clean-room contracts/domain ports and generated
+assets rather than source checkout imports. Current application behavior is
+summarized in the [user guide](user-guide.md); source/benchmark receipts retain
+their original dates.
 
 ```mermaid
 flowchart TB
-  UI[React 19 web/PWA + Tauri WebView shell]
-  ROUTER[React Router shell and global media surface]
-  FEATURES[Home · Bible · Kidung · Literatur · Iman · More]
-  DOMAIN[Domain repositories and state boundaries]
-  CONTRACTS[Zod contracts and generated provenance]
-  BFF[Hono Worker /api/v1]
-  LOCAL[IndexedDB/Cache Storage + localStorage]
-  SOURCES[TJC WordPress · gyschordweb · GYSApp-Data]
-  EGYS[e-GYS API]
-
-  UI --> ROUTER --> FEATURES --> DOMAIN
-  DOMAIN --> CONTRACTS
-  DOMAIN --> LOCAL
-  FEATURES --> BFF
-  BFF --> CONTRACTS
-  BFF --> SOURCES
-  BFF --> EGYS
-```
-
-Online devotional content follows the same shell and cache boundary as
-offline readers. Home selects the current Sauh record once; the route-level
-Sauh and Suara screens reuse that record instead of opening duplicate tabs.
-Home paints the verified Sauh and Suara snapshots before live revalidation;
-the Suara BFF response is always a validated `SuaraSejatiFeed` envelope with a
-stable `generatedAt` for its cached body.
-When a Suara item is selected, only the allowlisted TJC article endpoint is
-fetched through the BFF. The worker strips executable/embedded markup, limits
-the body, validates `OnlineArticle`, and returns a reader document. The source
-link remains available as an explicit secondary action. A Pages preview with
-no `VITE_BFF_BASE_URL` uses the same allowlisted WordPress post feed and client
-sanitizer as a compatibility fallback; it never injects upstream HTML.
-
-```mermaid
-sequenceDiagram
-  participant Home as Home / Daily Verse
-  participant Shell as App shell router
-  participant BFF as Hono article boundary
-  participant TJC as TJC article
-  Home->>Shell: Link to /sauh or /suara/:postId
-  Shell->>BFF: GET /api/v1/content/article?url=...
-  BFF->>TJC: HTTPS allowlisted fetch
-  TJC-->>BFF: HTML
-  BFF->>BFF: strip scripts + decode entities + bound text
-  BFF-->>Shell: OnlineArticle (validated)
-  Shell-->>Home: in-app reader + explicit source link
+  UI[React 19 web / PWA / Tauri WebView]
+  SHELL[Router, settings, search and persistent media]
+  FEATURE[Home / Bible / Kidung / Faith / Literature / Articles]
+  DOMAIN[Domain repositories and media coordination]
+  CONTRACT[Zod schemas and generated identities]
+  STORE[IndexedDB / Cache Storage / app-data]
+  BFF[Hono Worker: public and protected APIs]
+  UPSTREAM[TJC / immutable music / e-GYS v1]
+  UI --> SHELL --> FEATURE
+  FEATURE --> DOMAIN --> CONTRACT
+  DOMAIN --> STORE
+  FEATURE --> BFF --> CONTRACT
+  BFF --> UPSTREAM
 ```
 
 ## Module responsibilities
 
-| Area                    | Responsibility                                                                                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src`          | Route-level UI, responsive shell, browser adapters, global search, media surface, asset lifecycle, literature resume, and feature controllers.                                                                 |
-| `packages/contracts`    | Zod schemas and TypeScript types shared by the web, BFF, and tests.                                                                                                                                            |
-| `packages/domain`       | Search, Bible, chord, MIDI, media, cache, and platform-independent repository behavior.                                                                                                                        |
-| `apps/bff`              | Origin/CORS/CSRF/rate-limit boundary, upstream validation, streamed distributed-asset and PDF/canonical music proxies, typed Edge speech proxy, cache headers, typed errors, and the e-GYS v1 profile adapter. |
-| `apps/native/src-tauri` | Tauri shell boundary, platform commands, the allowlisted e-GYS v1 login WebView, OS-keyring token storage, and its validated bridge.                                                                           |
-| `scripts`               | Deterministic upstream/asset generation, local sync, provenance, and release checks.                                                                                                                           |
-| `docs`                  | Discovery evidence, ADRs, integration contracts, test/release evidence, and runbooks.                                                                                                                          |
+| Owner                                       | Responsibility                                                                                                   |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/App.tsx`, route/shell modules | Persistent shell, responsive navigation, locale/theme, error recovery and lazy route composition.                |
+| Feature modules                             | Rendering and feature state; defer binary/worker work until requested.                                           |
+| `packages/contracts`                        | Schemas, generated locks, publisher URL extraction and security/transport shapes.                                |
+| `packages/domain`                           | Platform-independent search/cache/chord/media/backup behavior and ports.                                         |
+| `apps/bff/src/index.ts`                     | Origin/CSRF/rate boundary, typed errors, upstream validation, range/proxy transport, provider cookies and relay. |
+| `apps/native/src-tauri`                     | Narrow app-data/keyring/dialog/lifecycle/voice/login commands and origin-constrained shell.                      |
+| `scripts`                                   | Reviewed generation, source provenance, deterministic hooks, package/build/test gates and profiling.             |
+
+Public literature URL/parser helpers use the dedicated
+`@gys/contracts/literature-source` export so optional source logic does not pull
+unrelated contracts into startup. Build contracts before Wrangler resolves it.
+Feature CSS/payloads follow the same lazy ownership where useful.
 
 ## Platform capability boundary
 
-`PlatformServices` is the only feature-facing platform seam. It now exposes
-the durable `database`, ordinary `keyValue`, atomic `blobs`, transient
-`secrets`, notifications, file dialogs, sharing, speech providers, deep-link
-subscriptions, lifecycle events, external links, and capability detection.
-The browser adapter uses IndexedDB/Cache Storage and real browser APIs where
-they exist. The Tauri adapter keeps verified data in native app-data and now
-bridges file dialogs, deep links, notifications, and OS-backed secure secrets
-through Tauri commands/plugins. Capability flags describe the selected native
-adapter, while command results are still validated at the boundary and device
-contract tests remain part of the signed-artifact gate. No adapter claims a
-capability that it cannot execute, and the ephemeral secret boundary is never
-used for authentication tokens.
+Browser/Tauri adapters implement the shared platform interfaces: key/value,
+atomic blobs, database access, secret capability, notifications, dialogs/share,
+external links, speech/deep links and lifecycle. Browser secret capability is
+not persistent credential storage. Native secret failure is actionable and
+never silently falls back to localStorage.
+
+Native key/value/blob files live under versioned app-data roots, with path-safe
+hex keys, payload bounds, unique temporary files and atomic replacement. Tauri
+frontend capability grants remain narrow; raw keyring commands are not exposed
+as generic frontend access. Native uses packaged assets and retires owned legacy
+PWA registrations rather than installing the browser worker.
 
 ## Data and persistence flow
 
 ```mermaid
 flowchart LR
-  REMOTE[Remote manifest/API] --> VALIDATE[Zod + URL/size/SHA validation]
-  VALIDATE --> TEMP[Temporary download]
-  TEMP --> ATOMIC[Atomic Cache Storage/blob replace]
-  ATOMIC --> POINTER[Versioned local pointer]
-  POINTER --> READER[Reader/player/viewer]
-  POINTER --> GC[Size/TTL/LRU cleanup]
-  MIGRATE[Old local schema] --> CHECK[Version detect + migration]
-  CHECK --> POINTER
+  SOURCE[Bundled projection / validated upstream] --> CHECK[Schema, origin, size and integrity]
+  CHECK --> MODEL[Normalized domain data]
+  MODEL --> DEVICE[Versioned pointers and device stores]
+  DEVICE --> VIEW[Internal reader]
+  LEGACY[Old device schema] --> MIGRATE[Validate / migrate affected records] --> DEVICE
 ```
 
-Critical user state is intentionally small and versioned: activity, favorites,
-literature locations, preferences, diagnostics, and backup metadata. A migration must preserve
-valid records, validate the result, and invalidate only the affected domain
-when a record cannot be recovered.
+Activity, favorites, reading locations, annotations, preferences and backup
+metadata are small/versioned. Cache identity uses actual immutable source/hash
+or publication resource version, not fetch timestamps. Invalid records affect
+only their domain; transient failures must not replace last-good data.
+
+Public/private responses have separate ownership. Service-worker public caches
+exclude account/provider responses. Browser opaque tokens stay HttpOnly; Tauri
+bridge tokens stay in the OS keyring. Article text is sanitized/validated before
+rendering; immersive selection suppression is not an authorization boundary.
 
 ## Asset lifecycle
 
-Music and local pack assets use immutable source commits and SHA-256 records in
-the generated asset manifest. Literature
-cover URLs come from the TJC WordPress source where available; the generated
-snapshot currently contains 279 verified cover mappings and explicit fallback
-records for 18 entries whose source does not expose a cover. The service worker
-caches TJC media only after an image request succeeds, and the PDF/MIDI/chord
-loaders verify bytes before activating a cache entry. PDF literature is fetched
-through `/api/v1/content/pdf` when a BFF is configured; the proxy allowlists
-only `https://tjc.org/*.pdf` and preserves HTTP range requests for PDF.js.
-
-The browser pack manager can check a configured `VITE_ASSET_MANIFEST_URL` (or
-the immutable Pages manifest when no override is present). It parses the
-versioned manifest, rejects duplicate IDs and untrusted origins, diffs content
-identity rather than generated timestamps, stages only changed local assets,
-validates every size/SHA-256 before the Cache Storage pointer changes, and
-persists the active manifest. Removed local entries are cleaned after the new
-pointer is active; a failed stage therefore leaves the previous pack usable.
-
-Literature records keep a versioned page/scroll location. The catalog renders a
-deduplicated “Terakhir dilihat” shelf and validates a saved page against the
-current resource version before offering resume.
-
-The PWA service worker keeps its install path small and deterministic. Cache
-`gysapp-shell-v15` precaches the shell plus the compact core offline indexes.
-SoundFonts and other distributed packages are installed only through Asset
-Management, verified, and kept outside the initial shell. HTML navigations use
-a network-first refresh and fall
-back to the cached `index.html` only when the network is unavailable, so
-existing clients observe new Pages deployments.
-
-The Bible reader uses the generated TB pack as a single source of truth. The
-browser strips the pack's layout markers before display, while a lazy module
-worker builds and queries the normalized 31,172-verse index off the main thread.
-Worker startup is bounded and falls back to the same typed repository when a
-worker is unavailable; stale requests are cancelled so a slow query cannot
-overwrite a newer one. Split columns, bookmarks, highlights, notes, and query
-history live in versioned local keys and remain available offline. The split
-controller owns ratio clamping, pointer lifecycle, keyboard-safe persistence,
-and the mobile guard independently of the reader component.
-
-Bible chapter presentation belongs to `bible-chapter.tsx`; marker parsing,
-entity decoding and literal query highlighting belong to `bible-verse-text.tsx`.
-Verse text is memoized independently of selection, notes, bookmarks and speech
-state. Parsed segments depend on raw text; compiled query expressions depend on
-the query and are reused across segments. Next-chapter and secondary chapter
-lists depend on navigation and pack state rather than unrelated UI updates.
-The reader remains responsible for loading, search, annotation persistence and
-split orchestration; these module boundaries do not add lazy loading delays.
-
-The global media surface subscribes to the external MIDI and speech stores,
-not React render ticks. It exposes the active source as an internal route (and
-verse hash for Bible speech), and keeps title/progress visible in the sidebar.
-A ResizeObserver measures the sidebar anchor; the expanded player spans the
-bottom of the viewport. A 320ms Web Animation moves the same surface between
-those bounds without restarting either playback engine. Reduced motion skips
-that animation, and phones retain a compact dock above navigation. Collapsed
-rails and fullscreen scores keep play/expand controls reachable. Media Session
-handlers use live refs so position updates do not recreate the handler set.
-
-Kidung subscribes only to the MIDI settings store (tempo/transpose/instrument),
-not the 4 Hz playback-position store. This keeps the reader shell stable while
-the persistent surface updates its progress indicator.
-
-The Kidung catalog offers PDF and text modes, with PDF selected on a new list
-visit. Song routes carry `mode=pdf` or `mode=lyrics`; closing a PDF goes directly
-to the song list. Core catalog data renders before installed collections finish
-hydrating. Successful catalogs remain in memory across reader/list navigation,
-while installed collections refresh on mount and asset-change events.
-
-All ten Faith statements are rendered in full on the page. Official doctrine
-PDFs and personal notes remain separate actions.
-
-The Kidung catalog builds a normalized search index once per loaded catalog
-revision. Queries use token/prefix AND matching and preserve quoted phrases;
-the UI never lower-cases the full lyric corpus on every keystroke. The vertical
-PDF reader uses the same bounded-resource principle: pages outside the
-IntersectionObserver preload window cancel their render task and release their
-canvas. The observer root is the actual scroll stage, and active-page tracking
-is separate from preloading. PDF raster zoom coalesces updates for 100ms;
-private render buffers isolate cancelled tasks from their successors. Logical
-zoom retains the 100–800% range while each bitmap is bounded to 4 million
-pixels, 8192px per side and a maximum device pixel ratio of 2. The stage's
-ResizeObserver refreshes fit rendering after resize/fullscreen, and page input
-commits on Enter/blur rather than decoding each intermediate digit. BFF Literature and Suara Sejati cache boundaries share in-flight
-upstream requests, so concurrent shell mounts cannot create duplicate fetches.
-Global search and its Bible worker dependencies are imported only after the
-search dialog opens. The bundle gate derives its initial graph from the entry
-HTML instead of counting lazy route chunks as startup work.
-
-```mermaid
-flowchart LR
-  PACK[TB reader pack] --> CLIENT[BibleSearchClient]
-  CLIENT --> WORKER[Lazy search worker]
-  WORKER --> INDEX[Normalized verse index]
-  CLIENT --> FALLBACK[Typed repository fallback]
-  INDEX --> RESULTS[Search results]
-  RESULTS --> READER[Responsive Bible reader]
-```
-
-Kidung detail is one viewer with two presentation modes: Lyrics and PDF. Chord
-is a capability layered on either presentation, so it is never a third route or
-an independent viewer. The selected presentation and chord visibility are
-persisted per hymn in separate versioned, bounded preference keys. A verified
-note-aligned v2 document is loaded once; its PDF text model is cached by
-`hymnId:resourceHash`, then reused for both the Text chord-line association and
-the DOM marker layer above PDF.js canvases. Transpose and accidental changes
-only update marker labels and do not rerender the PDF.
-
-Text presentation is a focused `100dvh` reader: the application shell is hidden,
-the lyrics own the remaining scroll area, and compact top/bottom controls expose
-presentation, active SoundFont/instrument, tempo, song, and verse navigation.
-Both adjacent MIDI tracks preload against those active playback settings.
-
-The reader also stores bounded typography preferences per hymn. The PDF layout
-preference supports single, two-page, vertical, and horizontal scrolling; the
-effective layout downgrades a two-page spread to one page below 720 px so a
-phone never receives two unreadable canvases. The global MIDI session keeps the
-same transpose and exposes source-program playback or each of the 128 General
-MIDI programs; render-cache keys include tempo, transpose, instrument, source
-hash, soundfont, and sample rate.
-
-```mermaid
-stateDiagram-v2
-  [*] --> Lyrics
-  Lyrics --> Lyrics: show/hide shared chord layer
-  Lyrics --> PDF: select PDF
-  PDF --> PDF: show/hide shared chord layer
-  PDF --> Lyrics: select lirik
-  PDF --> PDF: verified cache/revalidate
-```
+Canonical music is pinned to
+`gyschordweb@e8e7efe1189b5746a2bb542348e221844091c8d1`: 1,229 entries,
+533 scores, 533 MIDI, 161 chords, two SoundFonts. Functional Fork data remains
+`4f0d39b`; its KR master/ranges are a separate identity. Generated files, not
+prose, own size/SHA/count evidence. TimGM and local synthesis runtime are
+packaged; GeneralUser is an optional verified installation. Ten official
+Indonesian Faith PDFs are local on-demand files with their own provenance map.
 
 ```mermaid
 stateDiagram-v2
   [*] --> Missing
-  Missing --> Downloading: version/hash differs
+  Missing --> Downloading: user request or changed manifest
   Downloading --> Verifying: response complete
-  Verifying --> Active: schema + size + SHA pass
-  Verifying --> ActiveOld: validation fails and old copy is valid
-  Active --> Stale: newer manifest
+  Verifying --> Active: schema / size / SHA pass
+  Verifying --> ActiveOld: update fails and old data remains valid
+  Active --> Stale: metadata identifies changed content
   Stale --> Downloading
-  Active --> Evicted: unpinned LRU/GC
-  ActiveOld --> Downloading: retry online
+  Active --> Evicted: unpinned retention / device eviction
+  ActiveOld --> Downloading: explicit or bounded retry
 ```
+
+Offline pack updates stage changed assets, validate all identities, activate a
+new pointer atomically, then remove retired content. Chord startup compares
+pointer metadata without reading unchanged payloads. Reset aborts/disposes sync,
+drains pending mutations/advisory writes, then clears owned storage. A late
+startup task cannot repopulate cleared storage during reset.
 
 ## Feature lifecycle diagrams
 
-The 14 diagrams below form the complete operational architecture and lifecycle map for GYS App, corresponding to specifications R1 through R14. They define the structural boundaries that remain stable across routes, platform adapters, and deployment targets.
-
-### 1. Content-First UI & Contextual Toolbar Flow
+### Startup and route preload
 
 ```mermaid
-flowchart TB
-  SCROLL["Scroll / Touch Interaction in Reader"] --> DETECT["useToolbarAutoHide Hook"]
-  DETECT -->|Scroll Down| HIDE["Compact / Auto-Hide Top Toolbar"]
-  DETECT -->|Scroll Up / Tap| RESTORE["Smoothly Restore Toolbar"]
-  SHELL["Stratified UI Layout"] --> L0["Content Layer (z-index: 0)"]
-  SHELL --> L10["Navigation Layer (z-index: 10)"]
-  SHELL --> L20["Persistent Media Layer (z-index: 20)"]
-  SHELL --> L30["Contextual Toolbar Layer (z-index: 30)"]
-  SHELL --> L40["Popovers / Bottom Sheets (z-index: 40)"]
-  SHELL --> L50["Modals / Dialogs (z-index: 50)"]
-  READER["Active Reader Viewport"] --> WAKE["useWakeLock (Screen Lock)"]
-  WAKE -->|Enter Reader| ACQUIRE["navigator.wakeLock.request('screen')"]
-  WAKE -->|Leave Reader / Pause| RELEASE["wakeLock.release()"]
-  THUMB["Mobile Thumb Zone (Lower 40%)"] --> ACTIONS["Search, Bookmark, Font Controls, Audio, Chords"]
+sequenceDiagram
+  participant Boot as startup.js
+  participant Shell as React shell
+  participant Disk as Pack / snapshot caches
+  participant Warm as Idle / link intent
+  participant Route as Lazy route
+  Boot->>Boot: Restore saved theme; church logo / progress
+  Boot->>Shell: Mount stable shell
+  Shell->>Disk: Reuse local metadata / editorial snapshot
+  Shell->>Warm: Sequential optional warming after paint
+  Warm->>Route: Shared module/data promise; bounded navigation wait
+  Route->>Disk: Reuse verified data
+  Note over Warm: Save-Data / slow connections suppress optional warm-up
 ```
 
-### 2. Kidung Rohani Domain & Musical State Diagram
+Route rejection clears its preload promise for retry. Catalog metadata precedes
+lyrics; Bible search precedes neither the chapter nor first paint. Score/reader
+intent can prepare PDF.js; text-only/MIDI-off entry does not fetch neighboring
+scores or prepare soundfont/PCM work.
 
 ### Kidung
 
-`kidung-page.tsx` selects independently loaded catalog (`kidung-catalog.tsx`),
-reader (`kidung.tsx`), playlist (`kidung-playlist-page.tsx`) and settings
-(`kidung-settings-page.tsx`) views. Navigation and formatting live in
-`kidung-local-nav.tsx` and `kidung-shared.ts`; MIDI reader controls live in
-`kidung-midi-controls.tsx`. Settings do not load song data. Catalog queue buttons
-observe the playlist snapshot, while the shell coordinator loads PDF song
-metadata only when starting playback. Vite emits `offline-shell-assets.json`;
-service-worker installation prepares same-origin build assets without executing
-lazy views, so their first offline use does not require a previous route visit.
-Shared playback and persistence remain
-owned by the existing domain controllers.
+```mermaid
+flowchart TB
+  HYMN[Hymn identity] --> RESOLVE[Immutable resource resolver]
+  RESOLVE --> LYRIC[Deferred lyrics]
+  RESOLVE --> PDF[Displayed PDF source]
+  RESOLVE --> CHORD[Verified chord v2]
+  RESOLVE --> MIDI[Locked MIDI]
+  LYRIC --> STATE[Viewer state / preferences]
+  PDF --> STATE
+  CHORD --> STATE
+  MIDI --> STATE
+  STATE --> MODE[Text or score presentation]
+  STATE --> MUSIC[Shared key / transpose / accidental / tempo / instrument]
+  STATE --> LAYER[Optional chord layer]
+```
+
+The catalog, playlist and settings are independent lazy sibling views with
+consistent navigation. Text and score are distinct presentations; chord is a
+capability, not a third mode. Text auto-fits the viewport/lines on first opening
+and respects saved typography overrides. Long lyric/chord lines retain scrolling
+instead of being clipped. Score exit returns to the list via its back action.
 
 ```mermaid
 stateDiagram-v2
-  [*] --> HymnDomainModel: Hymn ID, Title, Lyrics, PDF, Chords, MIDI
-  state HymnDomainModel {
-    [*] --> PresentationMode
-    PresentationMode --> LyricsMode: Select Text/Lirik
-    PresentationMode --> PDFMode: Select PDF/Not Angka
-    LyricsMode --> PDFMode: Switch Mode (Shared State Retained)
-    PDFMode --> LyricsMode: Switch Mode (Shared State Retained)
-  }
-  state SharedMusicalState {
-    TransposeOffset: ±Semitone Shift (Shortest Path)
-    KeyCalculation: Canonical Source Key -> Target Key
-    AccidentalMode: Sharp (#) or Flat (b)
-    ChordVisibility: Visible or Hidden (Shared across modes)
-    MIDIPreferences: Tempo, Program (0-127), Volume, Mute
-  }
-  HymnDomainModel --> SharedMusicalState
-  SharedMusicalState --> GlobalMediaSession: Synchronized Audio Transport
+  [*] --> Catalog
+  Catalog --> Text: open text presentation
+  Catalog --> Score: open score presentation
+  Text --> Score: presentation action
+  Score --> Text: presentation action
+  Text --> Text: shared chord visibility / typography
+  Score --> Score: shared chord visibility / page / zoom
+  Score --> Catalog: exit reader
+  Text --> Catalog: back to list
 ```
 
-### 3. PDF Note Extraction & DOM Chord Overlay Pipeline
+### Chord source, key and geometry
 
 ```mermaid
 flowchart LR
-  PDFDOC["PDF Document (Fork KR Master / Canonical)"] --> PDFJS["PDF.js Render"]
-  PDFJS --> CANVAS["Canvas Surface"]
-  PDFJS --> TEXTCONTENT["PDF Text Content"]
-  TEXTCONTENT --> EXTRACT["Dominant Notation Font & Note Extraction"]
-  EXTRACT --> CACHE["pageNotesCache (resourceHash + page)"]
-  CHORDJSON["Note-Aligned v2 Chords (Sentinels -1, 99999)"] --> MAPPER["Coordinate & Index Mapper"]
-  CACHE --> MAPPER
-  TRANSPOSE["Shortest-Path Transpose & Accidental Mode"] --> MAPPER
-  MAPPER --> OVERLAY["DOM Marker Overlay Layer (Zero Canvas Re-render)"]
-  OVERLAY --> CANVAS
+  PDF[Displayed immutable PDF lease] --> TEXT[Text / note extraction]
+  TEXT --> NOTES[Hash and page keyed notes/layout]
+  PDF --> KEY[Score base key metadata]
+  CHORD[Canonical chord v2] --> ASSOC[Note / lyric association]
+  NOTES --> ASSOC
+  KEY --> OFFSET[Canonical-to-score base offset]
+  OFFSET --> LABEL[User transpose / capo / accidental]
+  ASSOC --> LABEL
+  LABEL --> OVERLAY[Text rows or DOM markers above notation]
 ```
 
-### 4. Text Mode Note-Row ↔ Lyric-Line Chord Association
+Hymn 001 demonstrates the source-key distinction: canonical chords are C while
+its score is Es. The base offset bridges that difference before user transpose;
+key labels remain relative to the displayed score. Text/PDF share verified notes
+and metadata; marker visibility/labels do not decode a second PDF or replace the
+canvas. The strict source audit maps 3,738 entries without orphan/invalid geometry.
+
+### Incremental cache and MIDI pipeline
 
 ```mermaid
 flowchart LR
-  LYRICS["Structured Lyrics Corpus (Verses, Chorus, Lines)"] --> ASSOC["Positional Association Engine"]
-  CHORDDATA["Note-Aligned v2 Chord JSON"] --> ASSOC
-  NOTEMAP["PDF Note-Row Geometry"] --> ASSOC
-  ASSOC --> WRAP["Measured Visual Lyric Rows & Character Wrapping"]
-  WRAP --> AUTOFIT["Responsive Auto-Fit Scaling (Min 14 px)"]
-  AUTOFIT --> TYPO["Per-Hymn Typography (Font 16–28 px, Line Height 1.4–2.2)"]
-  TYPO --> DOM["Relative DOM Chord Marker Overlay"]
+  MANIFEST[Launch / age / reconnect / manual manifest check] --> DIFF[Verified pointer metadata diff]
+  DIFF --> SAME[Unchanged: no payload read or download]
+  DIFF --> CHANGED[Missing / changed / legacy]
+  CHANGED --> VERIFY[Bounded download and byte verification]
+  VERIFY --> POINTER[Serialized atomic pointer commit]
+  POINTER --> READ[Verified parsed-memory reuse]
+  VERIFY --> OLD[Failure retains valid previous payload]
 ```
 
-### 5. Unified Cache & Preload Resolution Flow
-
-```mermaid
-flowchart TD
-  REQ["Resource Request (Hymn, Bible, Literature, Devotional)"] --> KEY["Immutable Hash / Version Key"]
-  KEY --> CHECK{"Local Cache Hit?"}
-  CHECK -->|Yes| HIT["Read from IndexedDB / Cache Storage"]
-  HIT --> RETURN["Instant Normalized Model Return"]
-  CHECK -->|No| FETCH["Fetch Remote / Upstream Asset"]
-  FETCH --> VALIDATE{"Validate Zod Schema, Size & SHA-256"}
-  VALIDATE -->|Valid| ATOMIC["Atomic Cache Write & Pointer Swap"]
-  ATOMIC --> RETURN
-  VALIDATE -->|Network Error| TRANSIENT["Retryable Error (Never Poison Cache)"]
-  VALIDATE -->|Missing Resource| NEGATIVE["14-Day TTL Negative Cache Entry"]
-```
-
-### 6. MIDI Synthesis & Preload Queue Pipeline
+Chord synchronization has a 60-second cooldown, one manifest in flight,
+three-song startup concurrency, 25 MiB disk LRU/pin retention and a bounded
+32-entry/1 MiB parsed cache. See [cache/preload](cache-and-preload.md).
 
 ```mermaid
 flowchart LR
-  MIDI["Canonical MIDI File"] --> SYNTH["Local FluidSynth WASM / Installed GeneralUser-GS"]
-  SYNTH --> PCMCACHE["Bounded 96 MB PCM Audio Cache"]
-  PCMCACHE --> GEN{"Shared Generation Token Guard"}
-  GEN -->|Active Generation| AUDIO["One Global Web Audio Context"]
-  GEN -->|Stale / Superseded| DISCARD["Discard Obsolete WASM Render"]
-  QUEUE["Serial Preload Queue (Prev/Next Hymn)"] -. Background .-> SYNTH
-  FOREGROUND["User Selects Song / Seeks / Changes Tempo"] -->|Cancel Preload| GEN
+  SOURCE[Locked MIDI + source hash] --> MODEL[Shared raw / parsed model]
+  MODEL --> ID[Bank + tempo + transpose + instrument + sample rate]
+  ID --> CACHE[128 MiB default PCM / AudioBuffer LRU]
+  CACHE --> HIT[Reuse completed render]
+  ID --> WORKER[Local FluidSynth worker + packaged TimGM]
+  WORKER --> CACHE
+  USER[Play gesture] --> AUDIO[One Web Audio session]
+  HIT --> AUDIO
+  NEIGHBOR[Active-playback neighbor warming] -. foreground priority .-> ID
 ```
 
-### 7. Alkitab Split Reader & Navigation State
-
-### Alkitab and voice
-
-```mermaid
-flowchart TB
-  TBBIBLE["TB 31,172-Verse Pack"] --> SEARCHWORKER["Lazy Search Worker (PL 39 / PB 27, 3-Tier Ranking)"]
-  TBBIBLE --> SPLIT["SplitManager Controller"]
-  SPLIT --> PANE1["Primary Reading Pane (Persistent Font & Offset)"]
-  SPLIT --> DIVIDER["Draggable Divider (50/50 Haptic Snap & Persistence)"]
-  SPLIT --> PANE2["Secondary Reading Pane (Independent / Sync Scroll)"]
-  NAV["Quick Title Drag Navigation"] --> PICKER["Direct Rapid Overlay (Kitab -> Pasal -> Ayat)"]
-  SEARCHWORKER --> DEEPLINK["Direct Verse Route (/bible?book=&chapter=&verse=)"]
-  DEEPLINK --> PANE1
-```
-
-### 8. Alkitab Suara (TTS) VoiceEngine Flow
-
-```mermaid
-flowchart LR
-  VERSES["Spoken Verses Queue"] --> SANITIZE["Sanitize Markup, Footnotes & Tokens"]
-  SANITIZE --> VOICEENGINE["VoiceEngine Orchestrator"]
-  VOICEENGINE --> PREFERRED["Online / Edge Natural TTS (Preferred)"]
-  VOICEENGINE --> FALLBACK["Local / System Web Speech Fallback"]
-  VOICEENGINE --> TRANSPORT["Audio Transport & Playback Stream"]
-  TRANSPORT --> HIGHLIGHT["Synchronized Verse Highlight & Auto-Scroll"]
-  TRANSPORT --> HEADPHONE["Headphone Disconnect Guard (Auto-Pause)"]
-  TRANSPORT --> ARBITRATION["Global Audio Focus (MIDI ↔ TTS Arbitration)"]
-```
-
-### 9. Persistent Global Media Controller & Floating Player
+Presence checks do not clone PCM. Cache owns either PCM or the playable buffer
+for a key. Generation checks discard stale render/load results; preload respects
+active settings and cancellation. Audio position/time fragments subscribe
+separately from the settings/viewer. Oscillator fallback is explicitly labeled,
+not represented as SoundFont parity.
 
 ### Persistent media
 
 ```mermaid
 flowchart TB
-  SESSION["Active Media Session (TTS / MIDI)"] --> CONTROLLER["GlobalMediaController (SPA-wide)"]
-  CONTROLLER --> ROUTE["Persists Across All SPA Route Transitions"]
-  CONTROLLER --> FLOAT["Minimized Floating Player Surface"]
-  FLOAT --> DRAG["Pointer Drag & Keyboard Arrow Navigation"]
-  FLOAT --> CLAMP["Viewport Boundary Clamping & Safe-Area Padding"]
-  FLOAT --> AVOID["Bottom Nav & Form Collision Avoidance"]
-  FLOAT --> BACK["Context Tap -> Navigate to Active Verse / Song"]
-  CONTROLLER --> MAX["Maximized Player Sheet (Full Controls)"]
-  CONTROLLER --> MEDIASESSION["Media Session API (Lock Screen & Notification)"]
+  MIDI[MIDI player] --> COORD[One audible-session coordinator]
+  TTS[Speech queue] --> COORD
+  COORD --> GLOBAL[Persistent shell media surface]
+  GLOBAL --> FULL[Compact transport + instrument/key/transpose]
+  FULL --> EDGE[Animated half-circle left / right]
+  EDGE --> FULL
+  EDGE --> MOVE[Pointer / touch / keyboard position]
+  GLOBAL --> ROUTE[Session and preferences survive route / scroll]
 ```
 
-### 10. Literature ReadingLocation & Resume Pipeline
+Starting MIDI pauses TTS; starting TTS pauses MIDI, without automatically
+resuming the previous session. Expanded MIDI is two rows on tablet/desktop,
+three on phone, maximum 900 px wide, with 36 px mouse/40 px touch controls.
+Utilities remain in one bounded menu. Expanded height reserves reader space.
+
+Minimize exposes one 28 px visible half-circle inside a 44 × 60 px hit area,
+flush to either edge. A 6 px drag threshold distinguishes move from restore.
+Touch taps restore on release even when a browser omits its compatibility click
+after dragging; generated clicks cannot double-toggle. Keyboard arrows/Home/End
+move the same control. Rectangle-based movement preserves glyph sizes, and
+playing equalizer bars do not cause clock-driven React rerenders. TTS retains
+its source-aware minimized context.
+
+### Alkitab and voice
+
+```mermaid
+flowchart TB
+  PACK[Bundled TB / installed translation] --> CHAPTER[Sanitized memoized chapter]
+  CHAPTER --> SINGLE[Reader]
+  CHAPTER --> SPLIT[Bounded split panes]
+  PACK --> SEARCH[Lazy worker / typed fallback]
+  SINGLE --> PICKER[Book / chapter / verse draft]
+  PICKER --> KEYPAD[First digit replaces armed value]
+  PICKER --> DROPDOWN[Second field tap opens list]
+  KEYPAD --> APPLY[Explicit open; validated address]
+  DROPDOWN --> APPLY
+  APPLY --> SINGLE
+```
+
+The 66-book/31,172-verse TB projection is shared between reading and search.
+The worker is created on actual search, bounds startup and cancels stale queries;
+main-thread fallback is lazy. Chapter/verse limits come from active translation
+data. The picker retains focus/inert modal ownership; cancel discards its draft.
+Annotations/history and split geometry persist locally. Text is justified and
+fills adaptive reading fields with smooth bounded scale/preferences.
+
+```mermaid
+flowchart LR
+  VERSE[Verse range / source context] --> QUEUE[Speech orchestrator]
+  QUEUE --> CAP[Detected runtime / voice catalog]
+  CAP --> NATIVE[Native Edge/system transport]
+  CAP --> GATE[Configured web gateway]
+  CAP --> SYSTEM[Browser/system voices]
+  QUEUE --> PREF[Device rate / pitch / volume]
+  QUEUE --> PLAYER[Persistent media and audio coordination]
+```
+
+Browser direct Edge does not invent compatibility headers. Native transport,
+optional gateway and local system voices are separate capabilities. An unavailable
+provider remains an explicit fallback/error, not a false successful speech state.
 
 ### Literature and PDF
 
 ```mermaid
-flowchart LR
-  CATALOG["TJC Literature Catalog (279 Covered + 18 Fallback)"] --> SHELF["Shelves, Categories & Search"]
-  SHELF --> VIEWER["In-App PDF.js / Article Document Viewer"]
-  VIEWER --> LOC["Debounced ReadingLocation (Page, Scroll, Progress %, Version)"]
-  LOC --> PERSIST["Versioned Persistence in Storage"]
-  PERSIST --> RECENT["Deduplicated 'Terakhir Dilihat' Shelf"]
-  RECENT --> RESUME["'Lanjutkan Membaca' & 'Kembali ke Posisi Terakhir' CTA"]
+sequenceDiagram
+  participant UI as Literature reader
+  participant Link as Validated link cache
+  participant BFF as Public content Worker
+  participant TJC as WordPress / TJC S3
+  participant PDF as Shared PDF.js lease
+  UI->>Link: Resolve issue's official PDF
+  Link->>BFF: pdf-source metadata when missing/stale
+  BFF->>TJC: Trusted bounded publisher lookup
+  BFF-->>Link: Validated PDF URL
+  UI->>PDF: Stable reader / shared source lease
+  PDF->>BFF: PDF Range request
+  BFF->>TJC: Forward range to allowlisted source/mirror
+  TJC-->>PDF: Streamed bytes, CORS-exposed range headers
+  PDF-->>UI: Completed first page / saved location
 ```
 
-### 11. e-GYS v1 native login and local audit sync
+The link cache holds 64 validated URLs for 24 hours. Official literature PDFs
+use the configured or public fallback Worker, including trusted S3, even if
+optional login configuration is absent. Proxy signature/type checks reject
+HTML errors; streams preserve range and Last-Modified. A stale hosted Worker
+needs its own deployment. The catalog's 300-item projection, favorites and
+versioned reading locations are independent of full publication bytes.
+
+```mermaid
+flowchart LR
+  REQUEST[Reader or chord request] --> LEASE[Shared source / bytes document lease]
+  LEASE --> PREVIEW[Completed page / spread preview]
+  PREVIEW --> FIT[Maximal centered fitted geometry]
+  FIT --> GESTURE[Anchored wheel / pinch; pointer / touch pan]
+  GESTURE --> DETAIL[Sharp visible-region vector tiles]
+  LEASE --> IDLE[Two idle workers / 30-second lifetime]
+  RETRY[Retry current source] --> RELEASE[Cancel / invalidate own task only]
+  RELEASE --> LEASE
+```
+
+Faith, Literature and Kidung share that viewer. Zoom spans 100–800% of fitted
+size; spreads paint together, and page changes crossfade completed content.
+Preview geometry remains continuous during zoom/resize; detail never paints
+over the wrong page. Virtualized page canvases/operator lists and idle workers
+are released. Multi-page hymns retain distinct page and song actions.
+
+### Articles, thumbnails and Faith
+
+```mermaid
+flowchart LR
+  SNAP[Cached Sauh / Suara / literature metadata] --> FIRST[Immediate usable content]
+  LIVE[Trusted live publisher] --> VALIDATE[Schema / source / sanitized text]
+  VALIDATE --> REFRESH[Shared background refresh]
+  REFRESH --> FIRST
+  IMAGE[Reserved aspect / derivative fallback] --> DECODE[Decode] --> FADE[Opacity reveal]
+  FIRST --> ARTICLE[Adaptive theme-aware internal article]
+  FAITH[Full ten-belief localized pack] --> BELIEF[Justified text / note / local booklet]
+```
+
+Sauh selection follows the Jakarta day/publisher slug; fallback does not invent
+current-day content. Article layouts support readable dark themes and adaptive
+columns. Image geometry is fixed before download/decode. Faith search and full
+texts fill their field; official local PDFs avoid remote booklet CORS failure.
 
 ### e-GYS authentication and local contract sync
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  participant User as App User
-  participant Login as Official e.gys.or.id v1 WebView
-  participant BFF as Hono BFF Boundary
-  participant EGYS as e-GYS Native API
-  participant Hook as Local Pre-Commit Hook (sync-egys.mjs)
-
-  User->>Login: Authenticate on official v1 page
-  Login-->>User: Allowlisted bridge command + opaque token
-  User->>User: Store token in OS keyring
-  User->>BFF: Request profile with native bearer boundary
-  BFF->>EGYS: GET /api/v1/users/profile
-  EGYS-->>User: Real Validated Domain Data
-  Note over Hook: Developer Local Sync Workflow
-  Hook->>Hook: git ls-remote HEAD check & shallow clone .tmp-egys-*
-  Hook->>Hook: Extract Springdoc/OpenAPI route contract & diff
-  Hook-->>User: Stage derived egys-contract.ts only (zero upstream code committed)
+  participant User
+  participant UI as Web provider row
+  participant BFF
+  participant WhatsApp
+  participant V1 as Official e-GYS v1
+  User->>UI: Click WhatsApp; reserve messaging tab
+  UI->>BFF: Start; bind reference HttpOnly cookie
+  BFF->>V1: whatsapp-login-request
+  BFF-->>UI: Bot phone + prepared message/reference
+  UI->>WhatsApp: Navigate prepared send link
+  UI->>BFF: Reference-bound tracking WebSocket
+  BFF->>V1: Origin-compatible official socket relay
+  User->>WhatsApp: Send message
+  V1-->>UI: Internal code + sender phone + matching reference
+  UI->>BFF: Confirm automatically; no OTP entry
+  BFF->>V1: whatsapp-login-confirm
+  BFF-->>UI: HttpOnly session / ok; refresh profile
 ```
 
-### 12. Web Cache & Service Worker Strategy
+A trailing 120-second countdown replaces a login overlay. Retry cancels/replaces
+the prior attempt; transient socket loss reconnects the same reference within
+its deadline. Confirmation uses the sender phone, never the bot's start phone.
+Google uses GIS, Apple its official popup SDK and random-state check; browser
+tokens are not returned to JavaScript. Provider windows are expected handoffs.
+
+```mermaid
+flowchart LR
+  APP[Tauri] --> LOGIN[Official origin-allowlisted v1 login WebView]
+  LOGIN --> BRIDGE[Three logged-in commands + valid opaque token]
+  BRIDGE --> KEYRING[OS keyring]
+  KEYRING --> BFF[BFF profile normalization]
+  SYNC[Explicit maintainer-local sync] --> V2[Generated v2 discovery only]
+  V2 -. no runtime provider migration .-> AUDIT[Contract/provenance review]
+```
+
+Local sync is explicit/authenticated, not a commit-hook fetch or CI private clone.
+See [e-GYS integration](egys-integration.md) for routes/cookies/configuration.
+Real-account/native origin acceptance is separate from mocked regressions.
 
 ### Web cache, packaged assets, and release workflow
 
 ```mermaid
-flowchart TD
-  SW["Service Worker v15 Install"] --> CORE["Precache Shell & Compact Core Indexes"]
-  CORE --> ACTIVATE["Activate & First Usable Paint"]
-  ACTIVATE --> OPTIONAL["Optional Packages Installed Explicitly via Asset Management"]
-  ACTIVATE --> TJCCACHE["Bounded TJC Media Cache (96 entries LRU)"]
-  ACTIVATE --> MANIFEST["Versioned Offline Manifest & Atomic Pointer Swap"]
+flowchart TB
+  SW[Shell generation v25 + build identity] --> CORE[Verified bootstrap / code / core indexes]
+  CORE --> ACTIVE[Usable active shell]
+  ACTIVE --> EDITORIAL[Retained snapshot cache]
+  ACTIVE --> WARM[Optional post-ready TimGM / local runtime warming]
+  ACTIVE --> MEDIA[Bounded successful covers]
+  USER[Requested binary / pack] --> VERIFY[Size / SHA / atomic activation]
+  UPDATE[Prepared newer build] --> PROTECT[Protect active reader / editor / audio] --> ACTIVE
 ```
 
-### 13. Packaged Native Asset Strategy
+Public/private caches remain separated. Save-Data/slow connections suppress
+optional warming. Native packages ship required data/audio/logo assets, checked
+by `verify:native-assets`; packaged files and runtime storage are different.
 
 ```mermaid
 flowchart LR
-  TAURI["Tauri Native Package (NSIS/MSI/APK)"] --> ASSETS["17 Bundled Runtime Assets (29.6 MiB)"]
-  ASSETS --> SEEDS["TB Bible, KR Hymn Catalog/PDF, Lyrics, FluidSynth Runtime"]
-  TAURI --> BRIDGE["PlatformServices Native Bridge (Rust Command Layer)"]
-  BRIDGE --> CAPS["Payload Caps: 128 MB Blobs, 8 MB Key-Value/DB"]
-  BRIDGE --> APPDATA["OS App-Data Directory Storage"]
-  APPDATA --> ATOMIC["Path-Safe Hex Keys & Unique Temp File Replacement"]
-```
-
-### 14. Local iteration and pull request verification
-
-```mermaid
-flowchart LR
-  DEV["Feature branch"] --> PRECOMMIT["Read-only staged formatting and relevant metadata checks"]
-  PRECOMMIT --> PREPUSH["Offline format, docs, provenance, type and unit checks"]
-  PREPUSH --> PR["Push branch and open PR"]
-  PR --> CI["Production build, budgets, full browser suite and native checks"]
-  RELEASE["pnpm verify:release"] --> FULL["Local upstream sync, chord audit and full release gates"]
+  WORK[Reviewed changes] --> COMMIT[Index format / docs checks]
+  COMMIT --> PUSH[Deterministic pre-push types / units / provenance]
+  PUSH --> CI[Verified build / budgets / browser / native checks]
+  PUSH --> PAGES[Main Pages workflow]
+  PUSH --> WORKER[Backend change + protected Worker credentials]
+  MANUAL[Explicit native packaging] --> SIGN[Protected signing / device acceptance]
 ```
 
 ## Release gates
 
-Local `pnpm verify:prepush` provides deterministic iteration checks without
-upstream synchronization or browser/native rebuilds. The complete original
-release plan is available through `pnpm verify:release`: local upstream
-revision/contract verification, chord audit, native checks, tests, production
-build, native asset and bundle verification, and Playwright using that build.
-GitHub Actions verifies the checked-in derived contract and never clones or
-fetches the private upstream repository. Explicit local synchronization remains
-an authenticated maintainer operation.
+Ordinary pre-push runs deterministic formatting/docs/provenance/types/units.
+Full `verify:release` adds explicit local source sync/revision checks, strict
+chord audit, native validation, build/assets/budgets and full browser tests.
+HMR tests are local-only; resource/performance gates use production artifacts.
+Do not rebuild while a browser suite loads emitted chunks.
 
-`pnpm test:e2e:dev` runs UI behavior against Vite/HMR after building workspace
-dependencies. It is a local iteration tool; CI and bundle/performance assertions
-continue to use the production build. The server resolver rejects dev mode
-in CI or together with a prebuilt-production flag.
+Main pushes trigger CI/Pages and relevant Worker deployment. Missing protected
+Worker credentials produce an explicit skip, not deployed backend success.
+Remote SHA, hosted workflows, real providers, signed installation/device runs
+and canonical hardware performance each require their own receipt. The current
+Preview/Beta scope does not imply GA.
 
-## Native platform boundary
+## UI and maintenance ownership
 
-Tauri exposes the shared `PlatformServices` key-value/blob boundary through
-typed invoke commands. Records and verified media blobs are written under the
-OS app-data directory with hex-encoded keys and unique temporary files before
-atomic replacement; malformed base64 or corrupt JSON is rejected at the
-boundary. The browser adapter remains the PWA fallback, while Tauri webviews
-select the native adapter through the global invoke bridge. External URL
-handoff is restricted to `http`/`https` and uses the allowlisted shell opener;
-the in-app PDF/chord/document readers never use this path.
+Church-blue tokens, icon-based grouped controls, adaptive width and compact
+reader frames are current. `menu-motion.css`, `control-motion.ts`, retained
+presence and view-transition modules each own one motion layer. Reduced motion
+is immediate; nested Escape/focus/hit testing remain functional while closing.
+Legacy lyric entrance is suppressed when a snapshot owns the transition.
 
-```mermaid
-sequenceDiagram
-  participant Reader as Kidung/PDF reader
-  participant Cache as Cache Storage
-  participant Worker as BFF music proxy
-  participant Raw as gyschordweb immutable commit
-  Reader->>Cache: get(source hash)
-  alt cached and verified
-    Cache-->>Reader: bytes
-  else missing or corrupt
-    Reader->>Worker: GET /api/v1/content/music?commit&path
-    Worker->>Raw: GET immutable path (+ Range)
-    Raw-->>Worker: binary response
-    Worker-->>Reader: CORS-safe binary response
-    Reader->>Reader: verify size + SHA-256
-    Reader->>Cache: atomic replace pointer
-  end
-```
-
-The KR hymn presentation follows the same path through
-`/api/v1/content/fork-pdf`, but its source is locked independently to
-`ThenGB/GYSApp-Fork@4f0d39b` and `assets/data/pdf/kr/kr_master.pdf`. The route
-accepts only that commit/path pair, preserves byte ranges, and is optional:
-Pages and native previews still fall back to the immutable raw source when the
-Worker is not configured. The page database in
-`offline/fork-hymnal-manifest.json` and the binary therefore cannot drift.
-
-## Editorial typography and accent ownership
-
-`styles/00-tokens.css` owns the default GYS blue/white tokens, optional themes
-and bundled font faces. `app-design.css` owns the compact shell, direct home
-actions and catalog hierarchy; it follows the older `calm-liturgical.css`
-refinements. `persistent-media.css` owns docking geometry. Feature files retain
-reader controls, highlights, split layouts and user preferences. `--accent` stores the user's exact custom selection;
-`--accent-fill` keeps that color on filled actions, while `--blue`/`--navy`
-blend toward theme ink for readable text. `--on-accent` chooses a contrasting
-foreground; reset removes inline overrides so theme defaults resume.
-
-Font source/license/regeneration ownership is in
-[the font guide](../apps/web/src/assets/fonts/README.md). The Vite shell manifest
-includes WOFF2 assets with exact emitted-byte hashes; browser installation
-verifies them with the rest of the versioned shell. Native packaging verifies
-the same hashes and serves fonts from packaged assets without PWA workers.
-Chinese UI glyph coverage is explicit; user-content glyphs outside the subset
-use system fallback. The [editorial audit](plans/2026-10-01-editorial-ui-audit.md)
-records intentional baseline changes and remaining device/release gates.
+See [UI system](ui-system.md), [cache/preload](cache-and-preload.md),
+[operations](operations.md), [testing](testing-and-maintenance.md) and the
+[current codebase map](maintenance/codebase-map.md). ADRs preserve accepted
+boundaries; historical dated documents do not override current guide behavior.

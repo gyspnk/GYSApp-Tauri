@@ -199,7 +199,7 @@ test("web providers authenticate inline and refresh the detected account", async
   await page.route("**/api/v1/auth/egys/whatsapp/confirm", async (route) => {
     expect(route.request().postDataJSON()).toEqual({
       otp: "123456",
-      mobilephone: "628123456789",
+      mobilephone: "628987654321",
     });
     loggedIn = true;
     await route.fulfill({ json: { ok: true } });
@@ -245,7 +245,7 @@ test("web providers authenticate inline and refresh the detected account", async
     JSON.stringify({
       refid: "test-ref",
       otp: "123456",
-      mobilePhone: "628123456789",
+      mobilePhone: "628987654321",
     }),
   );
   await expect(
@@ -292,7 +292,7 @@ test("WhatsApp timeout removes its badge without closing the messaging tab", asy
   const messagingTab = await opened;
   await expect(page.getByRole("timer")).toHaveAttribute(
     "aria-label",
-    /Menghubungkan WhatsApp/,
+    /Menunggu pesan WhatsApp/,
   );
   await expect(messagingTab).toHaveURL(/api\.whatsapp\.com\/send\?/);
   await page.clock.fastForward(119_000);
@@ -379,6 +379,131 @@ test("WhatsApp reports blocked tabs without starting a challenge", async ({
     page.locator(".egys-whatsapp-countdown[role=alert]"),
   ).toHaveAttribute("aria-label", /Izinkan tab WhatsApp/);
   expect(started).toBe(false);
+});
+
+test("WhatsApp reconnects the same request and confirms the sender exactly once", async ({
+  page,
+  context,
+}) => {
+  await page.clock.install();
+  let loggedIn = false,
+    starts = 0,
+    confirmations = 0;
+  const sockets: Array<{
+    send(data: string): void;
+    close(options?: { code?: number; reason?: string }): void;
+  }> = [];
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({
+      json: {
+        profile: loggedIn
+          ? { id: "sender", displayName: "Pengirim WhatsApp", locale: "id" }
+          : null,
+      },
+    }),
+  );
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) => {
+    starts++;
+    return route.fulfill({
+      json: {
+        referenceid: "reconnect-ref",
+        mobilephone: "628111111111",
+        content: "LOGIN reconnect-ref",
+      },
+    });
+  });
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp" }),
+  );
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    sockets.push(ws);
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) => {
+    confirmations++;
+    expect(route.request().postDataJSON()).toEqual({
+      otp: "123456",
+      mobilephone: "628222222222",
+    });
+    loggedIn = true;
+    return route.fulfill({ json: { ok: true } });
+  });
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await expect.poll(() => sockets.length).toBe(1);
+  sockets[0]!.close({ code: 1011, reason: "Temporary mobile disconnect" });
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menghubungkan kembali/,
+  );
+  await page.clock.fastForward(1000);
+  await expect.poll(() => sockets.length).toBe(2);
+  expect(starts).toBe(1);
+  for (const payload of [
+    "null",
+    "bad-json",
+    JSON.stringify({
+      refid: "another-request",
+      otp: "123456",
+      mobilePhone: "628222222222",
+    }),
+    JSON.stringify({ refid: "reconnect-ref", otp: "123456" }),
+  ])
+    sockets[1]!.send(payload);
+  expect(confirmations).toBe(0);
+  const confirmation = JSON.stringify({
+    refid: "reconnect-ref",
+    otp: "123456",
+    mobilePhone: "628222222222",
+  });
+  sockets[1]!.send(confirmation);
+  sockets[1]!.send(confirmation);
+  await expect(
+    page.getByRole("heading", { name: "Pengirim WhatsApp", exact: true }),
+  ).toBeVisible();
+  expect(confirmations).toBe(1);
+  await expect(page.locator(".egys-whatsapp-countdown")).toHaveCount(0);
+});
+
+test("Apple completes after a real cold script load instead of hanging at initialization", async ({
+  page,
+}) => {
+  let loggedIn = false;
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("https://appleid.cdn-apple.com/**", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.AppleID = { auth: { init(options) { this.state = options.state; }, async signIn() { return { authorization: { code: "cold-code", id_token: "cold-token", state: this.state } }; } } };`,
+    }),
+  );
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({
+      json: {
+        profile: loggedIn
+          ? { id: "apple", displayName: "Akun Apple", locale: "id" }
+          : null,
+      },
+    }),
+  );
+  await page.route("**/api/v1/auth/egys/apple", (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: "cold-code",
+      id_token: "cold-token",
+    });
+    loggedIn = true;
+    return route.fulfill({ json: { ok: true } });
+  });
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  await page
+    .getByRole("button", { name: "Login dengan Apple", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Akun Apple", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
 test("Lainnya renders unified settings and account panels cleanly", async ({

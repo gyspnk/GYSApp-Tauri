@@ -29,10 +29,13 @@ export function EgysWhatsApp({
     let socket: WebSocket | undefined;
     let launched = false;
     let confirming = false;
+    let reconnect = 0;
+    let retries = 0;
     const stop = (closePending = true) => {
       controller.abort();
       clearInterval(ticker);
       clearTimeout(timeout);
+      clearTimeout(reconnect);
       socket?.close();
       if (closePending && !launched) messagingWindow?.close();
     };
@@ -89,33 +92,57 @@ export function EgysWhatsApp({
           fail("WhatsApp tidak dapat dibuka. Tekan WhatsApp lagi.");
           return;
         }
-        setStatus("Menghubungkan WhatsApp");
-        socket = new WebSocket(egysWhatsAppTrackingUrl());
-        socket.onerror = () => fail("Koneksi terputus. Tekan WhatsApp lagi.");
-        socket.onclose = () => {
-          if (!confirming) fail("Sesi berakhir. Tekan WhatsApp lagi.");
-        };
-        socket.onmessage = (event) => {
-          if (controller.signal.aborted) return;
-          let message;
-          try {
-            message = JSON.parse(event.data);
-          } catch {
-            return;
-          }
-          if (message.type === "info" && !confirming) {
+        const connect = () => {
+          if (controller.signal.aborted || confirming) return;
+          clearTimeout(reconnect);
+          setStatus("Menghubungkan WhatsApp");
+          const current = new WebSocket(egysWhatsAppTrackingUrl());
+          socket = current;
+          current.onopen = () => {
+            if (controller.signal.aborted || socket !== current) return;
+            retries = 0;
             setStatus("Menunggu pesan WhatsApp");
-          }
-          if (message.type === "error") {
-            fail("Pesan belum dapat diverifikasi. Tekan WhatsApp lagi.");
-            return;
-          }
-          if (
-            message.refid === reference &&
-            /^[0-9]{4,12}$/.test(String(message.otp ?? ""))
-          )
-            void confirm(String(message.otp), phone);
+          };
+          current.onerror = () => {
+            if (current.readyState < WebSocket.CLOSING) current.close();
+          };
+          current.onclose = () => {
+            if (controller.signal.aborted || confirming || socket !== current)
+              return;
+            setStatus("Menghubungkan kembali WhatsApp");
+            reconnect = window.setTimeout(
+              connect,
+              Math.min(5000, 1000 * 2 ** retries++),
+            );
+          };
+          current.onmessage = (event) => {
+            if (controller.signal.aborted || socket !== current) return;
+            let message;
+            try {
+              message = JSON.parse(event.data);
+            } catch {
+              return;
+            }
+            if (!message || typeof message !== "object") return;
+            if (message.type === "info" && !confirming)
+              setStatus("Menunggu pesan WhatsApp");
+            if (message.type === "error") {
+              fail("Pesan belum dapat diverifikasi. Tekan WhatsApp lagi.");
+              return;
+            }
+            // The challenge phone belongs to the bot. Confirmation requires
+            // the sender's phone reported by the official tracking channel.
+            const sender = message.mobilePhone ?? message.mobilephone;
+            if (
+              message.refid === reference &&
+              /^[0-9]{4,12}$/.test(String(message.otp ?? "")) &&
+              typeof sender === "string" &&
+              /^\+?[0-9]{6,20}$/.test(sender)
+            )
+              void confirm(String(message.otp), sender);
+          };
         };
+        connect();
       })
       .catch((err) =>
         fail(err instanceof Error ? err.message : "WhatsApp tidak tersedia"),

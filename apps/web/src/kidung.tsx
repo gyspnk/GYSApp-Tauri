@@ -1,6 +1,7 @@
 import { PdfReader, preloadPdfReader } from "./pdf-reader-loader.js";
 import { LoadingProgress } from "./loading-progress.js";
 import { transitionReader } from "./reader-transition.js";
+import { useMenuPresence } from "./use-menu-presence.js";
 import {
   Suspense,
   useEffect,
@@ -55,6 +56,7 @@ import { loadForkHymnalPdf } from "./fork-pdf.js";
 import { loadInstalledDistributedHymnalPdf } from "./distributed-hymnals.js";
 import {
   getHymnPdfMeta,
+  rememberHymnPdfMeta,
   resolveHymnMidiDefaults,
   warmHymnPdfMeta,
 } from "./hymn-pdf-meta.js";
@@ -177,6 +179,7 @@ export function HymnDetail({
     "idle" | "loading" | "ready" | "error" | "unavailable"
   >("idle");
   const [chordDocument, setChordDocument] = useState<ChordDocumentV2>();
+  const [chordBaseOffset, setChordBaseOffset] = useState(0);
   const [chordLayout, setChordLayout] = useState<ChordLayoutPage[]>([]);
   const [chordOverlays, setChordOverlays] = useState<
     Record<string, PdfChordOverlayMarker[]>
@@ -212,6 +215,8 @@ export function HymnDetail({
   const [chordEditorEnabled, setChordEditorEnabled] = useState(false);
   const [lyricsPanelOpen, setLyricsPanelOpen] = useState(false);
   const [pdfKeyMenuOpen, setPdfKeyMenuOpen] = useState(false);
+  const pdfKeyMenuRef = useRef<HTMLDivElement>(null);
+  const pdfKeyMenuPresent = useMenuPresence(pdfKeyMenuOpen, pdfKeyMenuRef);
   const [editableChords, setEditableChords] = useState<
     Record<string, PdfChordOverlayMarker[]>
   >({});
@@ -835,7 +840,8 @@ export function HymnDetail({
           ? window.requestAnimationFrame(measure)
           : window.setTimeout(measure, 0);
     };
-    schedule();
+    // A verse snapshot must include its fitted type, not a later resize.
+    measure();
     const observer =
       typeof ResizeObserver === "function"
         ? new ResizeObserver(schedule)
@@ -859,6 +865,7 @@ export function HymnDetail({
     accidental,
     chordDocument,
     chordLayout,
+    chordBaseOffset,
     chordsVisible,
     lyricText,
     safeVerseIndex,
@@ -874,11 +881,15 @@ export function HymnDetail({
           page,
           markers.map((marker) => ({
             ...marker,
-            chord: transposeChord(marker.chord, transpose - capo, accidental),
+            chord: transposeChord(
+              marker.chord,
+              transpose - capo + chordBaseOffset,
+              accidental,
+            ),
           })),
         ]),
       ),
-    [accidental, chordOverlays, transpose, capo],
+    [accidental, chordOverlays, transpose, capo, chordBaseOffset],
   );
   const editChordAt = (pageKey: string, noteIdx: number, current: string) => {
     const input = window.prompt(
@@ -902,7 +913,7 @@ export function HymnDetail({
   const downloadEditorChords = () => {
     // gyschordweb saveNoteChordConfigurationFile: reverse-transpose on save so
     // the file stays relative to the original source data.
-    const reverse = -(transpose - capo);
+    const reverse = -(transpose - capo + chordBaseOffset);
     const pages: Record<string, Array<{ noteIdx: number; chord: string }>> = {};
     for (const [page, markers] of Object.entries(editableChords)) {
       pages[page] = markers
@@ -974,7 +985,7 @@ export function HymnDetail({
                 noteIdx,
                 chord: transposeChord(
                   entry.chord,
-                  transpose - capo,
+                  transpose - capo + chordBaseOffset,
                   accidental,
                 ),
                 xPct: anchorNote.xPct,
@@ -1048,7 +1059,7 @@ export function HymnDetail({
     setTransitionDirection(delta > 0 ? "next" : "previous");
     hapticTick("light");
     if (target >= 0 && target < verses.length) {
-      transitionReader(() => setVerseIndex(target));
+      transitionReader(() => setVerseIndex(target), "lyrics");
       return;
     }
     const song = delta > 0 ? next : prev;
@@ -1207,9 +1218,9 @@ export function HymnDetail({
     const controller = new AbortController();
     chordAbort.current = controller;
     setChordStatus("loading");
+    setChordBaseOffset(0);
     setChordLayout([]);
     setChordOverlays({});
-    void warmHymnPdfMeta(item).catch(() => undefined);
     try {
       const nextDocument = await chordRepository.getChord(
         item.id,
@@ -1249,6 +1260,27 @@ export function HymnDetail({
           if (controller.signal.aborted || run !== chordRun.current) return;
           nextLayout = presentation.layout;
           nextOverlays = presentation.overlays;
+          const meta = presentation.metadata;
+          if (meta?.keySemitone != null) {
+            const documentKey = chordKeyIndex(
+              inferChordDocumentKey(nextDocument) ?? "",
+            );
+            setChordBaseOffset(
+              documentKey === undefined
+                ? 0
+                : transposeBetweenKeys(documentKey, meta.keySemitone),
+            );
+            rememberHymnPdfMeta(item.id, meta);
+            const offset = userSetTransposeRef.current
+              ? transposeRef.current
+              : resolveHymnMidiDefaults(meta, readNaturalChordPreference())
+                  .transpose;
+            setSourceKeyIndex(meta.keySemitone);
+            setKeyIndex((((meta.keySemitone + offset) % 12) + 12) % 12);
+            setTranspose(offset);
+            transposeRef.current = offset;
+            keyInitialized.current = true;
+          }
         } catch {
           // Chord JSON remains useful offline even when its optional PDF
           // coordinate source is unavailable; the viewer renders a clear
@@ -1579,7 +1611,11 @@ export function HymnDetail({
                 onClick={() => void toggleMidiPlayer()}
                 aria-pressed={midiPlayerEnabled}
                 aria-busy={midiStatus === "loading"}
-                aria-controls="persistent-media-player"
+                aria-controls={
+                  midiState.songId && midiState.status !== "idle"
+                    ? "persistent-media-player"
+                    : undefined
+                }
                 title={translate(
                   locale,
                   midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
@@ -1593,7 +1629,10 @@ export function HymnDetail({
                   className={`hymn-action-icon${midiStatus === "loading" ? " is-loading" : ""}`}
                   aria-hidden="true"
                 >
-                  <Icon name="play" size={17} />
+                  <Icon
+                    name={midiPlayerEnabled ? "cross" : "music"}
+                    size={17}
+                  />
                 </span>
                 <span className="hymn-action-label">
                   {translate(
@@ -1608,7 +1647,7 @@ export function HymnDetail({
           {viewerMode !== "pdf" && (
             <button
               type="button"
-              className="hymn-partitur-toggle"
+              className="hymn-partitur-toggle reader-mode-button"
               disabled={!item.pdfPath && !item.assetCode}
               aria-label={translate(locale, "kidung.score")}
               title={translate(locale, "kidung.score")}
@@ -1957,11 +1996,12 @@ export function HymnDetail({
                         <button
                           type="button"
                           className="text-button"
+                          aria-label={translate(locale, "kidung.resetText")}
                           onClick={() =>
                             updateTypography(DEFAULT_HYMN_TYPOGRAPHY)
                           }
                         >
-                          {translate(locale, "kidung.resetText")}
+                          <Icon name="repeat" size={17} />
                         </button>
                       </div>
                     </div>
@@ -2266,7 +2306,7 @@ export function HymnDetail({
                               onClick={() => updateTranspose(0)}
                               title={translate(locale, "kidung.resetTranspose")}
                             >
-                              {translate(locale, "kidung.resetTranspose")}
+                              <Icon name="repeat" size={17} />
                             </button>
                           )}
                         </div>
@@ -2327,7 +2367,7 @@ export function HymnDetail({
                               onClick={() => setCapo(0)}
                               title={translate(locale, "kidung.resetCapo")}
                             >
-                              {translate(locale, "kidung.resetCapo")}
+                              <Icon name="repeat" size={17} />
                             </button>
                           )}
                         </div>
@@ -2353,7 +2393,7 @@ export function HymnDetail({
               <button
                 type="button"
                 className="viewer-chrome-button"
-                onClick={() => navigate("/kidung")}
+                onClick={() => transitionReader(() => navigate("/kidung"))}
                 aria-label={translate(locale, "kidung.back")}
               >
                 <span aria-hidden="true">
@@ -2377,12 +2417,14 @@ export function HymnDetail({
               </div>
               <button
                 type="button"
-                className="viewer-chrome-button hymn-pdf-text-toggle"
+                className="viewer-chrome-button hymn-pdf-text-toggle reader-mode-button"
                 aria-label={translate(locale, "kidung.text")}
                 title={translate(locale, "kidung.text")}
                 onClick={() => selectViewerMode("lyrics")}
               >
-                <span aria-hidden="true">Aa</span>
+                <span className="reader-mode-glyph" aria-hidden="true">
+                  Aa
+                </span>
               </button>
               {(midiAvailable || !item.assetCode) && (
                 <details
@@ -2414,7 +2456,10 @@ export function HymnDetail({
                           void toggleMidiPlayer();
                         }}
                       >
-                        <Icon name="music" size={17} />
+                        <Icon
+                          name={midiPlayerEnabled ? "cross" : "music"}
+                          size={17}
+                        />
                         <span>
                           {translate(
                             locale,
@@ -2433,7 +2478,7 @@ export function HymnDetail({
                         disabled={chordStatus === "loading"}
                         aria-pressed={chordsVisible}
                       >
-                        <Icon name="music" size={17} />
+                        <Icon name="musicNote" size={17} />
                         <span>
                           {chordStatus === "loading"
                             ? translate(locale, "kidung.loadingChord")
@@ -2461,9 +2506,13 @@ export function HymnDetail({
                           >
                             {chordKeyName(keyIndex, accidental)}
                           </button>
-                          {pdfKeyMenuOpen && (
+                          {pdfKeyMenuPresent && (
                             <div
+                              ref={pdfKeyMenuRef}
                               className="pdf-key-dropdown"
+                              data-menu-open={pdfKeyMenuOpen}
+                              inert={!pdfKeyMenuOpen}
+                              aria-hidden={!pdfKeyMenuOpen}
                               role="listbox"
                               aria-label={translate(locale, "kidung.key")}
                             >
@@ -2544,7 +2593,7 @@ export function HymnDetail({
                               onClick={() => updateTranspose(0)}
                               title={translate(locale, "kidung.resetTranspose")}
                             >
-                              {translate(locale, "kidung.resetTranspose")}
+                              <Icon name="repeat" size={17} />
                             </button>
                           )}
                         </div>
@@ -2643,8 +2692,8 @@ export function HymnDetail({
                   itemNavigation={{
                     ...(prev ? { previous: () => goToNeighbor(prev) } : {}),
                     ...(next ? { next: () => goToNeighbor(next) } : {}),
-                    previousLabel: translate(locale, "kidung.previous"),
-                    nextLabel: translate(locale, "kidung.next"),
+                    previousLabel: translate(locale, "kidung.previousSong"),
+                    nextLabel: translate(locale, "kidung.nextSong"),
                   }}
                   chordOverlays={
                     chordEditorEnabled ? editableChords : pdfChordOverlays
@@ -2686,7 +2735,7 @@ export function HymnDetail({
                             <ChordCapability
                               lines={[chordLine]}
                               active={chordsVisible}
-                              transpose={transpose - capo}
+                              transpose={transpose - capo + chordBaseOffset}
                               accidental={accidental}
                               locale={locale}
                             />
@@ -2724,7 +2773,7 @@ export function HymnDetail({
                       <ChordCapability
                         lines={[chordLine]}
                         active={chordsVisible}
-                        transpose={transpose - capo}
+                        transpose={transpose - capo + chordBaseOffset}
                         accidental={accidental}
                         locale={locale}
                       />

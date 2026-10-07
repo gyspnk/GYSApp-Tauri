@@ -361,6 +361,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const startQuickNav = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    pickerTriggerRef.current = event.currentTarget;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     suppressQuickNavClickRef.current = false;

@@ -241,11 +241,13 @@ export function GlobalSearch({
   open,
   onClose,
   returnFocusRef,
+  layerRef,
 }: {
   locale: Locale;
   open: boolean;
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLButtonElement | null>;
+  layerRef?: RefObject<HTMLDivElement | null>;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -297,7 +299,7 @@ export function GlobalSearch({
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" && !event.defaultPrevented) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -429,10 +431,13 @@ export function GlobalSearch({
     if (entry.href) navigate(entry.href);
   };
 
-  if (!open) return null;
   return (
     <div
+      ref={layerRef}
       className="search-backdrop"
+      data-menu-open={open}
+      inert={!open}
+      aria-hidden={!open}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();

@@ -1,5 +1,68 @@
 # Release readiness ledger
 
+Reviewed **2026-10-07**. This ledger records measured outcomes, not a blanket
+GA declaration. The current implementation is documented in the
+[documentation index](README.md); older receipts below describe their dated
+revisions and retain their original timings, failures and follow-up decisions.
+
+## Current evidence
+
+### 2026-10-07 — reader, authentication, persistent MIDI and complete documentation
+
+- Production build, workspace typecheck/lint and all deterministic unit/policy/
+  script gates pass. Vitest reports **549 tests**: contracts 20, domain 36,
+  testkit 2, BFF 63 and web 428 across 104 files. Node policy/script checks add
+  **55 passes**, with no failure or skip.
+- The final production browser gate passes **79/79** in **2.3 minutes**, with
+  two workers, retries disabled and no skipped case. It covers the numeric
+  Bible picker, v1 account behavior, literature loading, shared PDF zoom/pan,
+  menu exit motion, route transitions and responsive UI/media persistence.
+  Separate player-focused receipts include full musical controls, edge tab
+  restore/drag, 36/40 px targets and reduced-motion/Axe checks. This is local
+  Chromium evidence; account authorization responses are mocked.
+- Generated provenance passes: **1,229 music entries**, **533 hymns**, eleven
+  offline core projections and **299/300 official literature covers**. The
+  remaining publisher item has no official cover and uses its designed fallback.
+  Editorial font licenses/integrity also pass. The canonical source is
+  `e8e7efe1189b5746a2bb542348e221844091c8d1` with 161 chord files.
+- Native asset-boundary verification passes: **25 files / 38,620,770 bytes**
+  of offline/core runtime assets. This checks the generated distribution;
+  it is not a new native execution or signed-installer receipt.
+- The initial JS gzip graph is **178.5 KiB / 180 KiB**, across 21 modules plus
+  `startup.js`. Startup bytes participate in build integrity and the budget;
+  PDF.js, synth/WASM and Bible search remain lazy. `pnpm audit --prod` reports
+  no known vulnerabilities at the time of this check.
+- The current docs cover all app modes, the numeric picker draft semantics,
+  complete compact MIDI/edge behavior, PDF transport/fit/sharp zoom/pan, real
+  source-key mapping, cache/preload/reset owners and capacities, provider
+  endpoints, UI/motion/focus, environment bindings and delivery diagnostics.
+  Dated plans/audits are explicitly historical; ADR reviews and CF-212 track
+  the current implementation without rewriting older measurements.
+
+The public literature proxy accepts official S3 publication URLs and preserves
+Range headers. Actual public Pelita Kecil 46, Warta Sejati 4, Allah Menguji
+Abraham and Markus PDFs rendered against the local Worker handler during the
+implementation audit. Hosted operation still depends on deployment of this
+Worker; the localhost result does not prove the hosted API has updated.
+
+### Acceptance still requiring independent evidence
+
+- Real WhatsApp message tracking, Google/Apple account acceptance and native
+  provider/keyring behavior on the deployed origins with configured credentials.
+- Current hosted Pages/Worker workflow results and live source availability.
+  Pushing source triggers workflows; it does not establish their outcome.
+- Signed installation/upgrade, physical-device input/audio, the cross-platform
+  voice/media matrix and canonical-versus-rewrite MIDI performance release gate.
+- The complete current browser matrix and refreshed visual baselines where
+  required for a GA release. The focused 79-case gate is not described as the
+  full suite or a new physical/native audit.
+
+## Historical evidence
+
+The following milestone description and receipts describe previous revisions.
+In particular, old dirty-tree, formatter, no-push and pending-work statements
+refer to their recorded dates; current local outcomes are listed above.
+
 The rewrite is intentionally milestone-driven:
 
 - **Preview:** typed contracts, domain ports, BFF boundary, Quiet Sanctuary
@@ -17,7 +80,7 @@ single navigation surface, route-level loading, local PDF worker split, BFF
 cache validators, and bundle budget are implemented and verified. It does not
 claim GA parity until the remaining reports and platform artifacts exist.
 
-## Current evidence
+### Earlier milestone receipts
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`,
   `pnpm verify:generated`, `pnpm verify:bundle`, and `pnpm audit --prod` pass.

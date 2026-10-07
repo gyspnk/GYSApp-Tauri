@@ -372,7 +372,7 @@ export class BrowserMidiPlayer {
     const generation = this.operationGate.next();
     this.cancelPreloads();
     const keepPlaying = options.keepPlaying && this.crossfadeMs > 0;
-    if (!keepPlaying) await this.stopAudio();
+    if (!keepPlaying) this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
     const tempo = this.tempoOverride
       ? this.state.tempo
@@ -555,7 +555,7 @@ export class BrowserMidiPlayer {
       }
     }
 
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.positionAtStart = position;
     this.startedAt = audio.currentTime;
@@ -568,14 +568,14 @@ export class BrowserMidiPlayer {
     if (this.state.status !== "playing") return;
     this.operationGate.next();
     this.updatePositionFromClock();
-    await this.stopAudio();
+    this.stopAudio();
     this.patch({ status: "paused" });
   }
 
   public async stop(): Promise<void> {
     this.operationGate.next();
     this.cancelPreloads();
-    await this.stopAudio();
+    this.stopAudio();
     if (this.state.songId) this.patch({ status: "stopped", position: 0 });
   }
 
@@ -584,7 +584,7 @@ export class BrowserMidiPlayer {
     const generation = this.operationGate.next();
     this.cancelPreloads();
     this.cancelWorker(new StaleMidiOperation());
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     await this.audio?.suspend?.();
     if (!this.operationGate.isCurrent(generation)) return;
@@ -611,7 +611,7 @@ export class BrowserMidiPlayer {
     const next = Math.max(0, Math.min(this.state.duration, position));
     const playing = this.state.status === "playing";
     if (playing) this.updatePositionFromClock();
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.patch({
       position: next,
@@ -644,7 +644,7 @@ export class BrowserMidiPlayer {
     const generation = this.operationGate.next();
     this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.releaseRendered();
     this.patch({
@@ -672,7 +672,7 @@ export class BrowserMidiPlayer {
     const generation = this.operationGate.next();
     this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.releaseRendered();
     this.patch({
@@ -690,7 +690,7 @@ export class BrowserMidiPlayer {
     const generation = this.operationGate.next();
     this.cancelPreloads();
     if (wasPlaying) this.updatePositionFromClock();
-    await this.stopAudio();
+    this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return;
     this.releaseRendered();
     this.patch({
@@ -704,7 +704,7 @@ export class BrowserMidiPlayer {
     this.operationGate.next();
     this.cancelPreloads();
     this.cancelWorker(new Error("MIDI player destroyed"));
-    void this.stopAudio();
+    this.stopAudio();
     this.releaseRendered();
     void this.audio?.close();
     this.audio = undefined;
@@ -1171,7 +1171,7 @@ export class BrowserMidiPlayer {
         disconnectPrevious();
       }
     } else {
-      void this.stopAudio();
+      this.stopAudio();
     }
     const source = audio.createBufferSource();
     source.buffer = buffer;
@@ -1245,10 +1245,9 @@ export class BrowserMidiPlayer {
         this.state.position >= this.state.duration - 0.02 &&
         !this.bufferSource
       ) {
-        void this.stopAudio().then(() => {
-          this.patch({ status: "stopped", position: 0 });
-          for (const listener of this.endedListeners) listener();
-        });
+        this.stopAudio();
+        this.patch({ status: "stopped", position: 0 });
+        for (const listener of this.endedListeners) listener();
       }
     }, 250);
   }
@@ -1261,7 +1260,9 @@ export class BrowserMidiPlayer {
     });
   }
 
-  private async stopAudio(): Promise<void> {
+  // Web Audio stops synchronously. Yielding here can let background metadata
+  // invalidate a simultaneous user setting before it reaches the snapshot.
+  private stopAudio(): void {
     this.clearTimer();
     for (const [source, gain] of this.fadingSources) {
       source.onended = null;

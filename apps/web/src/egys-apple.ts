@@ -23,7 +23,6 @@ export function loadEgysApple(): Promise<void> {
       "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
     script.onload = () => {
       window.clearTimeout(timer);
-      return;
       window.AppleID ? resolve() : reject(new Error("Apple SDK unavailable"));
     };
     script.onerror = () => {

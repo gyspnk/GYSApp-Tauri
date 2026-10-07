@@ -1,5 +1,10 @@
 # UI Audit Round 2 Implementation Plan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../../README.md)
+> and [current feature matrix](../../discovery/feature-parity-matrix.md) for the present implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Normalize Literatur, Iman, Preferences, theme behavior, and responsive reading states using evidence-first UI changes while preserving the already-stable Kidung experience.

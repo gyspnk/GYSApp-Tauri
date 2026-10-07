@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useCallback,
   useRef,
   useState,
   useSyncExternalStore,
@@ -14,6 +15,7 @@ import {
   type UiFont,
 } from "./ui-preferences.js";
 import { translate, type Locale } from "./i18n.js";
+import { useMenuPresence } from "./use-menu-presence.js";
 
 type PreferenceOption<T extends string> = {
   value: T;
@@ -163,7 +165,9 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState(false);
   const openerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
-  const close = () => setOpen(false);
+  const layerRef = useRef<HTMLDivElement>(null);
+  const present = useMenuPresence(open, layerRef);
+  const close = useCallback(() => setOpen(false), []);
   const densityOptions = DENSITY_OPTIONS.map((option) => ({
     ...option,
     label: translate(locale, `more.density.${option.value}`),
@@ -198,9 +202,15 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
   );
 
   const dialog =
-    open && typeof document !== "undefined"
+    present && typeof document !== "undefined"
       ? createPortal(
-          <div className="ui-preferences-dialog-layer">
+          <div
+            ref={layerRef}
+            className="ui-preferences-dialog-layer"
+            data-menu-open={open}
+            inert={!open}
+            aria-hidden={!open}
+          >
             <button
               type="button"
               className="ui-preferences-scrim"

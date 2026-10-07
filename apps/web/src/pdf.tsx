@@ -7,6 +7,8 @@ import {
   type PdfZoomController,
 } from "./pdf-zoom.js";
 import { PdfDetailLayer } from "./pdf-detail-layer.js";
+import { transitionReader } from "./reader-transition.js";
+import { useMenuPresence } from "./use-menu-presence.js";
 import {
   useCallback,
   useId,
@@ -76,7 +78,7 @@ function PdfChordLayer({
     [],
   );
   useEffect(() => subscribeAccentColor(() => setAccent(getAccentColor())), []);
-  if (!visible || !markers?.length) return null;
+  if (!markers?.length) return null;
   const textColor = chordTextColor(chordUiPrefs, accent);
   const fillColor = chordFillColor(chordUiPrefs, accent);
   const fillStyle =
@@ -127,6 +129,8 @@ function PdfChordLayer({
   return (
     <div
       className="pdf-chord-layer"
+      data-chords-visible={visible}
+      aria-hidden={!visible}
       aria-label={translate(locale, "pdf.chordOverlay")}
       style={chordStyle}
     >
@@ -303,6 +307,7 @@ function VerticalPdfPage({
                 zoomController.current?.percent,
               );
               canvas.getContext("2d")!.drawImage(buffer, 0, 0);
+              canvas.dataset.pdfPageNumber = String(pageNumber);
               zoomController.current?.refresh();
             }
           })
@@ -468,6 +473,8 @@ export function PdfReader({
     setPageDraft(String(page - pageStart + 1));
   }, [page, pageStart]);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const advancedRef = useRef<HTMLDivElement>(null);
+  const advancedPresent = useMenuPresence(advancedOpen, advancedRef);
   const [fullscreenActive, setFullscreenActive] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const downloadPdf = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -574,6 +581,9 @@ export function PdfReader({
   const verticalStageRef = useRef<HTMLDivElement>(null);
   const pdfStageRef = useRef<HTMLDivElement>(null);
   const pdfReaderRef = useRef<HTMLElement>(null);
+  const lastPaint = useRef<
+    { document: PDFDocumentProxy; page: number } | undefined
+  >(undefined);
   const zoomController = useRef<PdfZoomController | null>(null);
   const hydratingLayout = useRef(true);
   useEffect(() => {
@@ -859,22 +869,6 @@ export function PdfReader({
         }
         if (!disposed) setLoadErrorStatus(pdfHttpStatus(error));
         if (!disposed) recordDiagnostic("error", "pdf.document", error);
-        consecutiveFailures.current += 1;
-        if (
-          !disposed &&
-          consecutiveFailures.current >= 2 &&
-          typeof navigator !== "undefined" &&
-          navigator.onLine
-        ) {
-          let alreadyPurged = false;
-          try {
-            const at = sessionStorage.getItem("gys-pdf-purged-at");
-            alreadyPurged = at !== null && Date.now() - Number(at) < 120_000;
-          } catch {
-            // ignore
-          }
-          if (!alreadyPurged) void purgePdfCacheAndReload();
-        }
       });
     return () => {
       lease.release();
@@ -956,6 +950,7 @@ export function PdfReader({
     let disposed = false;
     const renderTasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
     const pdfPages: PDFPageProxy[] = [];
+    const buffers: HTMLCanvasElement[] = [];
     const pageNumbers =
       effectiveLayout === "single"
         ? [page]
@@ -1003,6 +998,7 @@ export function PdfReader({
           scale: scale * dpr,
         });
         const buffer = document.createElement("canvas");
+        buffers.push(buffer);
         buffer.width = viewport.width;
         buffer.height = viewport.height;
         const renderTask = pdfPage.render({
@@ -1011,9 +1007,17 @@ export function PdfReader({
           viewport,
         });
         renderTasks.push(renderTask);
-        try {
-          await renderTask.promise;
-          if (!disposed) {
+        await renderTask.promise;
+        return { canvas, buffer, logicalViewport, pageNumber };
+      }),
+    )
+      .then(async (paintedPages) => {
+        if (disposed) return;
+        const commit = () => {
+          if (disposed) return;
+          for (const painted of paintedPages) {
+            if (!painted) continue;
+            const { canvas, buffer, logicalViewport, pageNumber } = painted;
             canvas.width = buffer.width;
             canvas.height = buffer.height;
             sizePdfCanvas(
@@ -1024,19 +1028,22 @@ export function PdfReader({
               zoomController.current?.percent,
             );
             canvas.getContext("2d")!.drawImage(buffer, 0, 0);
-            zoomController.current?.refresh();
+            canvas.dataset.pdfPageNumber = String(pageNumber);
           }
-        } finally {
-          buffer.width = buffer.height = 0;
-        }
-      }),
-    )
-      .then(() => {
-        if (!disposed) {
+          zoomController.current?.refresh();
+          lastPaint.current = { document: documentProxy, page };
           setLoadPhase("ready");
           setStatus("ready");
           setHasPainted(true);
-        }
+        };
+        // Commit a complete spread together. Only page changes take snapshots;
+        // gesture zoom and resize keep their existing continuous animation.
+        if (
+          lastPaint.current?.document === documentProxy &&
+          lastPaint.current.page !== page
+        )
+          await transitionReader(commit, "pdf");
+        else commit();
       })
       .catch((error: unknown) => {
         if (!disposed) {
@@ -1044,6 +1051,14 @@ export function PdfReader({
           setStatus("error");
         }
         if (!disposed) recordDiagnostic("error", "pdf.page", error);
+        // Stop late getPage results from allocating a second spread buffer
+        // after another page failed and the batch has already been released.
+        disposed = true;
+      })
+      .finally(async () => {
+        for (const task of renderTasks) task.cancel();
+        await Promise.allSettled(renderTasks.map((task) => task.promise));
+        for (const buffer of buffers) buffer.width = buffer.height = 0;
       });
     return () => {
       disposed = true;
@@ -1136,42 +1151,8 @@ export function PdfReader({
     resumePage !== page &&
     resumePage >= pageStart &&
     resumePage <= pageStart + total - 1;
-  // gyschordweb `_recoverPdfStack` parity: two consecutive load failures with
-  // the same source indicate a poisoned cached PDF.js chunk — purge it from
-  // the service-worker caches and reload once per session.
-  const consecutiveFailures = useRef(0);
-  const purgePdfCacheAndReload = async () => {
-    const done = (await new Promise<boolean>((resolve) => {
-      try {
-        if (!navigator.serviceWorker?.controller) {
-          resolve(false);
-          return;
-        }
-        const channel = new MessageChannel();
-        const timeout = window.setTimeout(() => resolve(false), 1500);
-        channel.port1.onmessage = (event) => {
-          if (event.data?.type === "gys-purge-urls-done") {
-            window.clearTimeout(timeout);
-            resolve(true);
-          }
-        };
-        navigator.serviceWorker.controller.postMessage(
-          { type: "gys-purge-urls", urls: ["pdf.worker", "pdfjs"] },
-          [channel.port2],
-        );
-      } catch {
-        resolve(false);
-      }
-    })) as boolean;
-    try {
-      sessionStorage.setItem("gys-pdf-purged-at", String(Date.now()));
-    } catch {
-      // ignore
-    }
-    if (done) window.location.reload();
-  };
   const retry = () => {
-    consecutiveFailures.current = 0;
+    pdfDocuments.invalidate(src, data);
     setStatus("loading");
     setLoadErrorStatus(undefined);
     setLoadPhase("loading");
@@ -1199,6 +1180,7 @@ export function PdfReader({
   }, [advancedOpen]);
   const readerTitle = title ?? translate(locale, "pdf.readerTitle");
   const navigateItems = Boolean(itemNavigation && total === 1);
+  const showItemNavigation = Boolean(itemNavigation && total > 1);
 
   return (
     <section
@@ -1211,7 +1193,7 @@ export function PdfReader({
       onPointerMove={restoreToolbar}
     >
       <div
-        className={`pdf-toolbar${variant === "hymn" && !toolbarVisible ? " is-collapsed" : ""}`}
+        className={`pdf-toolbar${showItemNavigation ? " has-item-navigation" : ""}${variant === "hymn" && !toolbarVisible ? " is-collapsed" : ""}`}
         onKeyDown={(event) => {
           if (event.key !== "Escape" || !advancedOpen) return;
           event.stopPropagation();
@@ -1222,6 +1204,18 @@ export function PdfReader({
             ?.focus();
         }}
       >
+        {showItemNavigation && (
+          <button
+            className="pdf-song-navigation"
+            type="button"
+            onClick={itemNavigation?.previous}
+            disabled={!itemNavigation?.previous}
+            aria-label={itemNavigation?.previousLabel}
+            title={itemNavigation?.previousLabel}
+          >
+            <Icon name="skipPrevious" size={18} />
+          </button>
+        )}
         <div className="pdf-page-navigation">
           <button
             type="button"
@@ -1329,6 +1323,18 @@ export function PdfReader({
             </button>
           )}
         </div>
+        {showItemNavigation && (
+          <button
+            className="pdf-song-navigation"
+            type="button"
+            onClick={itemNavigation?.next}
+            disabled={!itemNavigation?.next}
+            aria-label={itemNavigation?.nextLabel}
+            title={itemNavigation?.nextLabel}
+          >
+            <Icon name="skipNext" size={18} />
+          </button>
+        )}
         {
           <button
             className="pdf-advanced-toggle"
@@ -1355,8 +1361,11 @@ export function PdfReader({
           </button>
         }
         <div
+          ref={advancedRef}
           id={toolsId}
-          className={`pdf-advanced-controls${advancedOpen ? " is-open" : ""}`}
+          className={`pdf-advanced-controls${advancedPresent ? " is-open" : ""}`}
+          data-menu-open={advancedOpen}
+          aria-hidden={!advancedOpen}
           inert={!advancedOpen}
         >
           <div
@@ -1522,30 +1531,6 @@ export function PdfReader({
               <Icon name="fullscreen" size={18} />
             </button>
           }
-          {itemNavigation && total > 1 && (
-            <div
-              className="pdf-item-navigation"
-              role="group"
-              aria-label={translate(locale, "kidung.songs")}
-            >
-              <button
-                type="button"
-                onClick={itemNavigation.previous}
-                disabled={!itemNavigation.previous}
-                aria-label={itemNavigation.previousLabel}
-              >
-                <Icon name="skipPrevious" size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={itemNavigation.next}
-                disabled={!itemNavigation.next}
-                aria-label={itemNavigation.nextLabel}
-              >
-                <Icon name="skipNext" size={18} />
-              </button>
-            </div>
-          )}
           {layout === "two" && effectiveLayout === "single" && (
             <small className="pdf-layout-note">
               {translate(locale, "pdf.layoutNarrowNote")}

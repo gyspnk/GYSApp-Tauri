@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./literature-source": {
+      "types": "./dist/literature-source.d.ts",
+      "import": "./dist/literature-source.js"
     }
   },
   "scripts": {

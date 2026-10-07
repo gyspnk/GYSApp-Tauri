@@ -1,0 +1,438 @@
+/* MIDI's persistent surface: transport, musical controls, then utilities. */
+.media-surface.is-kidung-media:not(.is-minimized) {
+  --midi-control: 36px;
+  grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1.2fr) repeat(
+      3,
+      var(--midi-control)
+    ) !important;
+  grid-template-areas:
+    "title transport seek advanced close minimize"
+    "music music music music music music" !important;
+  padding: 8px;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--navy) 12%, transparent);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-control, .media-minimize)
+  svg {
+  width: 18px;
+  height: 18px;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-seek-time input {
+  min-height: 24px;
+}
+@media (pointer: coarse) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    --midi-control: 40px;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-controls
+  > .media-advanced-summary {
+  width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-close-button {
+  display: grid;
+  grid-area: close !important;
+}
+.media-surface.is-kidung-media[data-playing="true"] {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+}
+.media-surface.is-kidung-media .media-context-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.media-surface.is-kidung-media .media-context-link strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  padding: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-primary-control {
+  border-radius: 50%;
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--blue) 20%, transparent);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-secondary-control, .media-minimize, .media-advanced-summary) {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-secondary-control, .media-minimize, .media-advanced-summary):hover,
+.media-surface.is-kidung-media .media-advanced-controls[open] > summary {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.media-surface.is-kidung-media .media-play-glyph {
+  display: grid;
+  place-items: center;
+  animation: midi-glyph-in 180ms var(--ease-out);
+}
+.media-surface.is-kidung-media .media-music-controls {
+  grid-area: music;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px calc(
+      3 * var(--midi-control) + 32px
+    );
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+  animation: midi-music-in 240ms var(--ease-out);
+}
+.media-music-controls .control-select {
+  min-width: 0;
+  width: 100%;
+  grid-column: auto !important;
+}
+.media-music-controls .control-select-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.media-music-controls .control-select-trigger {
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 13px;
+  box-shadow: none;
+  transform: none;
+}
+.media-music-controls .control-select-trigger:hover,
+.media-music-controls .control-select-trigger[aria-expanded="true"] {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.media-music-controls .media-instrument-control .control-select-value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.media-music-controls .media-instrument-control .control-select-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+  color: var(--blue);
+}
+.media-music-controls .media-key-control .control-select-trigger {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.media-music-controls .control-select-menu {
+  max-height: min(280px, var(--select-available-space, 280px));
+  border-radius: 14px;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--navy) 16%, transparent);
+}
+.media-music-controls .media-instrument-control .control-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.media-music-controls .control-select-option small {
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.media-music-controls .media-transpose {
+  grid-column: auto !important;
+  display: grid;
+  grid-template-columns:
+    var(--midi-control) minmax(24px, 1fr) var(--midi-control)
+    var(--midi-control);
+  gap: 2px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.media-music-controls .media-transpose button {
+  width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  border: 0;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 18px;
+}
+.media-music-controls .media-transpose button:hover:enabled {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+.media-music-controls .media-transpose button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.media-music-controls .media-transpose-value {
+  text-align: center;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  animation: midi-glyph-in 160ms ease-out;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+  width: min(360px, calc(100vw - 40px));
+  grid-template-columns: minmax(0, 1fr);
+  max-height: min(400px, calc(100dvh - var(--reader-media-space, 0px) - 86px));
+  padding: 12px;
+  border-radius: 18px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  display: flex;
+  justify-content: space-between;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-tempo-toggle {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+/* A generous invisible hit area surrounds the half-circle at the viewport edge. */
+.media-surface.persistent-media.is-edge-player.is-minimized {
+  top: clamp(
+    64px,
+    calc(var(--media-edge-y, 0.55) * 100dvh - 30px),
+    calc(100dvh - 60px - var(--media-edge-bottom, 12px))
+  );
+  left: 0;
+  right: auto;
+  width: 44px;
+  max-width: 44px;
+  height: 60px;
+  grid-template-columns: 44px;
+  grid-template-rows: 1fr;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.media-surface.persistent-media.is-edge-player.is-minimized[data-edge="right"] {
+  left: auto;
+  right: 0;
+}
+.media-surface.is-edge-player.is-minimized > .media-drag-handle {
+  position: relative;
+  grid-row: 1;
+  width: 44px;
+  height: 60px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: transparent;
+  color: var(--on-accent, white);
+  cursor: grab;
+  touch-action: none;
+  scale: 1;
+}
+.media-surface.is-edge-player.is-minimized > .media-drag-handle::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: -28px;
+  width: 56px;
+  height: 56px;
+  border: 1px solid color-mix(in srgb, var(--blue) 78%, white);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--blue) 24%, transparent);
+  transition: transform 220ms var(--ease-out);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle::before {
+  left: auto;
+  right: -28px;
+}
+.media-edge-glyph {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 60px;
+  pointer-events: none;
+  animation: midi-glyph-in 180ms var(--ease-out);
+  transition: transform 220ms var(--ease-out);
+}
+.media-surface.is-edge-player[data-edge="right"] .media-edge-glyph {
+  left: auto;
+  right: 6px;
+}
+.media-surface.is-edge-player.is-minimized .media-activity {
+  color: inherit;
+  width: 16px;
+}
+.media-surface.is-edge-player.is-minimized
+  > .media-drag-handle:is(:hover, :focus-visible)::before,
+.media-surface.is-edge-dragging > .media-drag-handle::before {
+  transform: translateX(14px);
+}
+.media-surface.is-edge-player.is-minimized
+  > .media-drag-handle:is(:hover, :focus-visible)
+  .media-edge-glyph,
+.media-surface.is-edge-dragging .media-edge-glyph {
+  transform: translateX(8px);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle:is(:hover, :focus-visible)::before,
+.media-surface.is-edge-dragging[data-edge="right"]
+  > .media-drag-handle::before {
+  transform: translateX(-14px);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle:is(:hover, :focus-visible)
+  .media-edge-glyph,
+.media-surface.is-edge-dragging[data-edge="right"] .media-edge-glyph {
+  transform: translateX(-8px);
+}
+.media-surface.is-edge-dragging .media-drag-handle {
+  cursor: grabbing;
+}
+.media-activity {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 18px;
+  height: 14px;
+  color: var(--muted);
+}
+.media-activity i {
+  width: 2px;
+  height: 12px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: scaleY(0.35);
+}
+.media-activity i:nth-child(2) {
+  transform: scaleY(0.75);
+}
+.media-activity i:nth-child(3) {
+  transform: scaleY(0.5);
+}
+.media-surface[data-playing="true"] .media-activity {
+  color: var(--blue);
+}
+.media-surface[data-playing="true"] .media-activity i {
+  animation: midi-activity 850ms ease-in-out infinite alternate;
+}
+.media-activity i:nth-child(2) {
+  animation-delay: -300ms;
+}
+.media-activity i:nth-child(3) {
+  animation-delay: -580ms;
+}
+.media-activity i:nth-child(4) {
+  animation-delay: -150ms;
+}
+@keyframes midi-activity {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes midi-glyph-in {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes midi-music-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 680px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 679px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: auto minmax(0, 1fr) repeat(3, var(--midi-control)) !important;
+    grid-template-areas:
+      "title title advanced close minimize"
+      "transport seek seek seek seek"
+      "music music music music music" !important;
+    --midi-control: 40px;
+    gap: 4px;
+    padding: 8px;
+  }
+}
+@media (max-width: 480px) {
+  .media-music-controls .media-instrument-control .control-select-icon {
+    display: none;
+  }
+  .media-music-controls .control-select-trigger {
+    font-size: 12px;
+    gap: 2px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+    font-size: 12px;
+  }
+  .media-surface.is-kidung-media .media-context-link .media-activity {
+    display: none;
+  }
+}
+@media (max-height: 500px) and (min-width: 481px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    gap: 3px 6px;
+    padding-block: 6px;
+  }
+  .media-surface.is-kidung-media .media-music-controls {
+    padding-top: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-surface.is-kidung-media
+    :is(
+      .media-edge-glyph,
+      .media-play-glyph,
+      .media-transpose-value,
+      .media-music-controls,
+      .media-activity i
+    ) {
+    animation: none;
+  }
+  .media-surface.is-edge-player.is-minimized > .media-drag-handle::before,
+  .media-edge-glyph {
+    transition: none;
+  }
+}

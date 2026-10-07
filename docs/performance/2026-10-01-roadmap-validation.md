@@ -1,5 +1,10 @@
 # Roadmap validation — 2026-10-01
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 This continues PR #9 against `gyspnk/gyschordweb` at
 `e8e7efe1189b5746a2bb542348e221844091c8d1`. Measurements describe the stated
 runtime and condition; the reference-device targets remain release gates.

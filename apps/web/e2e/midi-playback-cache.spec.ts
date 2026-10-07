@@ -44,33 +44,41 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
   await page.locator(".hymn-midi-toggle").click();
   const player = page.locator(".media-surface.is-kidung-media");
-  await player
-    .getByRole("button", { name: "Perbesar pemutar", exact: true })
-    .click();
+  await expect(player).not.toHaveClass(/is-minimized/);
   await expect(
     player.locator(".media-previous-control, .media-next-control"),
-  ).toHaveCount(0);
+  ).toHaveCount(2);
+  await expect(player.locator(".media-previous-control")).toBeDisabled();
+  await expect(player.locator(".media-next-control")).toBeEnabled();
+  // PDF defaults can supersede an early warm before metadata settles. Count
+  // cache reuse from the final key instead of assuming one worker at startup.
+  await expect(
+    player.getByRole("combobox", { name: "Pilih nada dasar" }),
+  ).toHaveText("D");
   await expect
-    .poll(counts, { timeout: 30_000 })
-    .toEqual({ renders: 1, workers: 1 });
+    .poll(() => counts().then((value) => value.renders), { timeout: 30_000 })
+    .toBeGreaterThan(0);
+  const warmed = await counts();
+  expect(warmed.workers).toBeGreaterThan(0);
   const play = player.getByRole("button", { name: "Putar", exact: true });
   await expect(play).toBeVisible();
   await play.click();
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  await player.locator(".media-advanced-summary").click();
+  expect(await counts()).toEqual(warmed);
   const transpose = player.locator(".media-transpose");
   await transpose.getByRole("button", { name: "Naikkan nada" }).click();
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible({ timeout: 30_000 });
-  await expect.poll(counts).toEqual({ renders: 2, workers: 1 });
+  const changed = { renders: warmed.renders + 1, workers: warmed.workers };
+  await expect.poll(counts).toEqual(changed);
   await transpose.getByRole("button", { name: "Turunkan nada" }).click();
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  expect(await counts()).toEqual({ renders: 2, workers: 1 });
+  expect(await counts()).toEqual(changed);
   await page.locator(".hymn-midi-toggle").click();
   await expect(player).toHaveCount(0);
   await page.locator(".hymn-midi-toggle").click();
@@ -78,6 +86,6 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  expect(await counts()).toEqual({ renders: 2, workers: 1 });
+  expect(await counts()).toEqual(changed);
   await expect(player).toHaveAttribute("data-backend", "fluidsynth");
 });

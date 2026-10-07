@@ -1,5 +1,10 @@
 # PR #9 — audit dan perbaikan UI lanjutan
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 Tanggal: 2 Oktober 2026. Basis kerja: PR #9, branch
 `codex/gysapp-loading-debug-efficiency`, commit `8d81e6e`.
 Main ditarik dengan fast-forward sebelum berpindah ke branch PR. Screenshot

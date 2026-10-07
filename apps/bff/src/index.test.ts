@@ -10,6 +10,21 @@ const manifest = {
 };
 
 describe("BFF public boundary", () => {
+  it("keeps Cloudflare visitors in separate rate-limit buckets", async () => {
+    const app = createApp({
+      allowedOrigins: [],
+      chordManifest: manifest,
+      content: [],
+      rateLimit: { max: 1, windowMs: 60_000 },
+    });
+    const request = (ip: string) =>
+      app.request("/api/v1/content/catalog", {
+        headers: { "cf-connecting-ip": ip },
+      });
+    expect((await request("192.0.2.1")).status).toBe(200);
+    expect((await request("192.0.2.1")).status).toBe(429);
+    expect((await request("192.0.2.2")).status).toBe(200);
+  });
   it("streams an allowlisted distributed package selected from its trusted manifest", async () => {
     const originalFetch = globalThis.fetch;
     const bytes = new Uint8Array([1, 2, 3, 4]);
@@ -383,6 +398,13 @@ describe("BFF public boundary", () => {
       expect(proxied.headers.get("cross-origin-resource-policy")).toBe(
         "cross-origin",
       );
+      expect(proxied.headers.get("access-control-expose-headers")).toContain(
+        "Content-Range",
+      );
+      expect(proxied.headers.get("access-control-expose-headers")).toContain(
+        "Accept-Ranges",
+      );
+      expect(proxied.headers.get("content-range")).toBe("bytes 0-4/5");
       expect(seenRange).toBe("bytes=0-4");
       const s3Proxied = await app.request(
         `/api/v1/content/pdf?url=${encodeURIComponent(
@@ -396,12 +418,82 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("resolves and caches an official issue PDF with minimal WordPress metadata", async () => {
+    const originalFetch = globalThis.fetch;
+    const pdf =
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/Pelita-Kecil-46-WEB.pdf";
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify([
+            { content: { rendered: `<iframe src="${pdf}"></iframe>` } },
+          ]),
+        ),
+      );
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: ["https://good.example"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const path = `/api/v1/content/pdf-source?url=${encodeURIComponent("https://tjc.org/id/pelitakecil/pk46/")}`;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await app.request(path, {
+          headers: { Origin: "https://good.example" },
+        });
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({ url: pdf });
+        expect(response.headers.get("access-control-allow-origin")).toBe(
+          "https://good.example",
+        );
+      }
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(String(fetchMock.mock.calls[0]![0])).toContain(
+        "slug=pk46&per_page=1&_fields=content",
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("rejects unsafe issue pages and reports missing PDF metadata for retry", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response("[]"));
+    globalThis.fetch = fetchMock;
+    try {
+      const app = createApp({
+        allowedOrigins: [],
+        chordManifest: manifest,
+        content: [],
+      });
+      const unsafe = await app.request(
+        `/api/v1/content/pdf-source?url=${encodeURIComponent("https://evil.example/id/warta-sejati/ws-4/")}`,
+      );
+      expect(unsafe.status).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled();
+      const missing = await app.request(
+        `/api/v1/content/pdf-source?url=${encodeURIComponent("https://tjc.org/id/warta-sejati/ws-4/")}`,
+      );
+      expect(missing.status).toBe(503);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("tries the official S3 mirror when a TJC PDF path is unavailable", async () => {
     const originalFetch = globalThis.fetch;
     const bytes = new Uint8Array([37, 80, 68, 70, 45]);
     const fetchMock = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response("Not found", { status: 404 }))
+      .mockResolvedValueOnce(
+        new Response("<html>Publisher error</html>", {
+          headers: { "content-type": "text/html" },
+        }),
+      )
       .mockResolvedValueOnce(
         new Response(bytes, {
           status: 200,
@@ -1348,6 +1440,7 @@ describe("BFF public boundary", () => {
             },
             body: JSON.stringify({
               otp: "123456",
+              mobilephone: "628987654321",
               referenceid: "attacker-ref",
             }),
           },
@@ -1361,6 +1454,7 @@ describe("BFF public boundary", () => {
           url: "https://e.gys.or.id/login/whatsapp-login-confirm",
         });
         expect(calls[1]!.body).toContain("referenceid=ref-123");
+        expect(calls[1]!.body).toContain("mobilephone=628987654321");
         expect(calls[1]!.body).not.toContain("attacker-ref");
         const apple = await app.request(
           "/api/v1/auth/egys/apple",
@@ -1377,6 +1471,25 @@ describe("BFF public boundary", () => {
         expect(await apple.json()).toEqual({ ok: true });
         expect(apple.headers.get("set-cookie")).toContain("HttpOnly");
         expect(calls[2]!.url).toBe("https://e.gys.or.id/auth/apple/callback");
+        expect(JSON.parse(calls[2]!.body)).toEqual({
+          code: "apple-code",
+          id_token: "apple-id-token",
+          ismobile: 1,
+        });
+        const missingSender = await app.request(
+          "/api/v1/auth/egys/whatsapp/confirm",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              cookie: "egys_wa_reference=ref-123",
+              origin: "http://localhost:5173",
+            },
+            body: JSON.stringify({ otp: "123456" }),
+          },
+          env,
+        );
+        expect(missingSender.status).toBe(400);
         const invalid = await app.request(
           "/api/v1/auth/egys/whatsapp/confirm",
           {

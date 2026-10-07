@@ -1,5 +1,10 @@
 # Rencana rework UI menyeluruh — 2 Oktober 2026
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](../discovery/feature-parity-matrix.md) for the present implementation.
+
 Basis: working tree PR #9. Perubahan thumbnail/pembaruan dan screenshot pengguna
 sebelumnya dipertahankan. Goal ini lebih luas daripada polish sebelumnya;
 build hijau saja bukan bukti bahwa desain seluruh aplikasi telah selesai.

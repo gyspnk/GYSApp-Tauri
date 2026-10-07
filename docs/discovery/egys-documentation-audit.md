@@ -1,5 +1,8 @@
 # eGYS documentation audit
 
+Reviewed 2026-10-07: the v2 material below is pinned discovery evidence; it does
+not replace the live-v1 runtime contract.
+
 **Checked:** 2026-08-17
 **Source checkout:** `D:/GitHub Repo/gysapp-tauri/.tmp-egys-cdfc3d1`
 **Source commit:** `a7a25e8c752b5d5cdc566beb44c60f51075f7267`
@@ -44,5 +47,8 @@ Therefore the live v1 endpoints such as `/login/whatsapp-login-request`, OTP con
 The v2 contract above is retained only as pinned discovery evidence. Runtime
 authentication deliberately does not expose its provider, exchange, or
 WhatsApp polling routes. Tauri uses the isolated live-v1 WebView/keyring bridge;
-web/PWA opens the official v1 login page without receiving a token. A future v2
+web/PWA uses live-v1 Google/Apple/WhatsApp BFF callbacks with an HttpOnly
+session. WhatsApp sends the prepared message and tracks its internal reference
+through the official WebSocket relay, without user-entered OTP. Apple validates
+popup state; Google retains GIS. See [current e-GYS integration](../egys-integration.md). A future v2
 migration requires a new explicit decision and production-service verification.

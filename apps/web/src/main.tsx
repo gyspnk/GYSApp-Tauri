@@ -1,4 +1,3 @@
-import { installControlMotion } from "./control-motion.js";
 import { installImmersiveInteractions } from "./immersive-interactions.js";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -20,11 +19,20 @@ import "./kidung-responsive.css";
 import "./calm-liturgical.css";
 import "./persistent-media.css";
 import "./app-design.css";
+import "./menu-motion.css";
+import "./midi-player.css";
 
 runStorageMigrations();
 initializeUiPreferences();
+document.documentElement.classList.toggle(
+  "has-view-transitions",
+  typeof document.startViewTransition === "function",
+);
 installImmersiveInteractions();
-installControlMotion();
+void import("./control-motion.js").then(({ installControlMotion }) => {
+  const dispose = installControlMotion();
+  import.meta.hot?.dispose(dispose);
+});
 installGlobalDiagnostics();
 
 if (typeof window !== "undefined") {

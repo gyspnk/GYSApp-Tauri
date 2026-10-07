@@ -1,0 +1,59 @@
+html {
+  background: #fff;
+}
+html[data-theme="dark"] {
+  background: #101820;
+}
+html[data-theme="amoled"] {
+  background: #000;
+}
+html[data-theme="sepia"] {
+  background: #f4efe4;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    background: #101820;
+  }
+}
+.shell-startup {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 24px;
+}
+.shell-startup img {
+  width: min(240px, 60vw);
+  height: auto;
+}
+.shell-startup-track {
+  width: 140px;
+  height: 3px;
+  background: #178dc526;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.shell-startup-track > span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: #078ac7;
+  border-radius: inherit;
+  animation: shell-loading 1.2s ease-in-out infinite;
+}
+@keyframes shell-loading {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(240%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-startup-track > span {
+    animation: none;
+    width: 100%;
+  }
+}

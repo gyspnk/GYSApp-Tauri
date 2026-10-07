@@ -1,297 +1,197 @@
 # GYSApp-Tauri
 
-Clean-room, offline-first companion for GYS hymn, Bible, chord, MIDI, and
-faith content. The project is a public MIT pnpm monorepo with a React web/PWA,
-Hono BFF, and Tauri native shell.
+An offline-first Gereja Yesus Sejati companion for Alkitab, Kidung, Dasar
+Kepercayaan, literature, Sauh Bagi Jiwa and Suara Sejati. One React application
+runs as a web/PWA and inside the Tauri shell, with a Hono Worker for public
+content and protected e-GYS integration.
 
-## Status
+**Documentation reviewed: 2026-10-07.** Current delivery remains Preview/Beta.
+Local browser checks are evidence of the named behavior, not a claim of signed
+native releases, successful production authentication or guaranteed instant
+network loading. Historical audits retain their original dates and results.
 
-The rewrite starts from an empty history. Functional discovery is sourced from
-`ThenGB/GYSAPP-Fork@4f0d39b`; canonical music and assets are sourced from
-`gyspnk/gyschordweb@a3d1ea7`. Both upstreams are read-only. Discovery evidence,
-provenance, and architectural decisions live in [`docs/`](./docs).
+## Current application
 
-The current Preview/Beta implementation provides typed contracts, a testable
-domain boundary, the Quiet Sanctuary web shell, a secure BFF boundary, local
-TB Bible/hymn/faith readers, a lazy PDF reader backed by the GYSApp-Fork
-hymnal database, canonical GYSChordWeb chord/MIDI assets, real TJC literature
-and Suara Sejati feeds, today's Sauh Bagi Jiwa, encrypted backup/import, and a
-native e-GYS session/profile adapter. Literature keeps a persistent “Terakhir
-dilihat” shelf with version-aware page resume, while the local PDF.js reader
-uses an allowlisted BFF range proxy when deployed. The KR master is served
-through a commit/path-locked GYSApp-Fork proxy when available and falls back to
-the immutable raw source. Kidung preloads the adjacent MIDI tracks with the
-active tempo, transpose, and instrument and never eagerly downloads heavy PDFs.
-The TB reader runs its 31,172-verse search index in a lazy worker with a
-bounded startup fallback; queries match book display names and testament ranges (Perjanjian
-Lama/Baru) as well as verse text (book-name hits rank first), persisted
-A−/A+ typography controls adapt the verse size for both split panes, and
-the cross-space search (⌘K) covers
-Alkitab,
-Kidung, Literatur, Iman, Sauh, and Suara Sejati: Bible verse results
-deep-link into the internal reader through a validated
-`/bible?book/chapter/verse` route. The global player keeps a compact
-minimized context link back to the active verse or hymn.
-Upstream-backed features keep checked-in, integrity-verified snapshots and a
-generated asset manifest so the app remains useful offline and can revalidate
-without downloading unchanged assets.
+| Surface            | Implemented behavior                                                                                                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Beranda            | Cached devotional/catalog content first, reserved thumbnail geometry, decoded-image fade, responsive continue-reading and article links.                                                        |
+| Alkitab            | Bundled TB reader, lazy search worker, split reading, annotations, voice playback, justified verses and smooth reader zoom. Book/chapter/verse drafts use a mobile keypad and explicit opening. |
+| Kidung             | 533 source-backed entries, shared category/playlist/settings/mode controls, separate text and score modes, responsive lyrics, optional canonical chords and persistent MIDI.                    |
+| Iman               | Full text of all ten beliefs in ID/EN/ZH, full-width search and justified reading, compact note/PDF actions, ten locally served official Indonesian PDF booklets.                               |
+| Literatur          | 300-entry packaged catalog, favorites/history/resume, internal articles and PDF.js reader, validated source discovery and range loading through the public content Worker.                      |
+| Sauh / Suara       | Trusted publisher content, cached first paint, sanitized internal articles, adaptive columns and readable dark themes.                                                                          |
+| Settings / account | Adaptive collapsible settings, ID/EN/ZH, theme transitions, data/backup tools and a single Google/WhatsApp/Apple provider row.                                                                  |
 
-## Architecture at a glance
+The default accent is Church blue. Desktop navigation uses a fixed sidebar/rail;
+mobile uses bottom navigation. Route, theme, menu, chord and media transitions
+honor reduced motion. The header displays a detected account photo and does
+not add online/offline status clutter.
+
+MIDI transport, seek, instrument, key and transpose remain available while
+expanded. Utilities occupy one menu. The player uses two rows on tablet/desktop
+and three on phones, with 36 px mouse or 40 px touch controls. Minimize leaves
+a 28 px visible half-circle at either screen edge inside a 44 × 60 px hit area.
+Tap restores; drag or arrow keys move it; playback and settings survive routes.
+TTS retains its own source-aware dock and coordinates audio ownership with MIDI.
+
+All internal PDF viewers share maximal initial fit, centered pages, Ctrl+wheel
+and pinch zoom, mouse/touch panning, compact controls, saved reading locations
+and sharp visible-region detail rendering. Zoom is 100–800% of the fitted page.
+Two-page hymns keep both page and previous/next-song navigation.
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  UI[React/Tauri UI] --> DOMAIN[Domain repositories]
-  DOMAIN --> LOCAL[Versioned local persistence]
-  DOMAIN --> BFF[Hono BFF]
-  BFF --> CONTENT[TJC + canonical music assets]
-  BFF --> EGYS[e-GYS v1 profile API]
-  TAURI[Tauri v1 login WebView] --> EGYS
+  UI[React web / PWA / Tauri] --> CONTRACTS[Typed validated contracts]
+  UI --> DOMAIN[Domain repositories and media coordination]
+  DOMAIN --> LOCAL[Versioned device storage]
+  UI --> BFF[Hono public / protected API]
+  BFF --> CONTENT[TJC and immutable music]
+  BFF --> EGYS[Live e-GYS v1]
+  NATIVE[Tauri login WebView] --> KEYRING[OS keyring] --> BFF
 ```
-
-The UI never imports raw upstream source. `packages/contracts` validates every
-boundary, `packages/domain` owns reusable reader/cache/media behavior, the BFF
-handles origin/security/cookie concerns, and `scripts/sync-egys.mjs` produces
-only reviewed derived contract metadata from an ignored local e-GYS checkout.
-The web/PWA opens the official e-GYS v1 login page without receiving a token.
-Only Tauri hosts the allowlisted v1 login WebView, stores its bridge token in
-the OS keyring, and requests profile or membership data through the BFF.
-
-## Feature map
 
 ```mermaid
 flowchart TB
-  SHELL["One responsive app shell"] --> HOME["Home / Sauh / Suara"]
-  SHELL --> BIBLE["TB reader + split/search/TTS"]
-  SHELL --> HYMNS["Kidung lyrics/chord/PDF/MIDI"]
-  SHELL --> LIT["Literature shelves + resume/PDF"]
-  SHELL --> MORE["Iman / account / settings / backup"]
-  BIBLE --> MEDIA["One global MediaController"]
-  HYMNS --> MEDIA
-  MEDIA --> DOCK["Persistent sidebar / animated bottom dock"]
-  HYMNS --> MUSICCACHE["Immutable hash cache + preloading"]
-  LIT --> PDF["Local PDF.js + lazy pages"]
-  BIBLE --> WORKER["Lazy Bible search worker"]
-  SHELL --> CACHE["Verified core Cache Storage / app-data"]
-  CACHE --> OFFLINE["Offline core"]
+  SHELL[Responsive shell] --> ROUTES[Home / Bible / Kidung / Iman / More]
+  ROUTES --> READERS[Internal article and PDF readers]
+  ROUTES --> PLAYER[Route-persistent MIDI / speech]
+  SHELL --> WARM[Bounded route-intent and idle preload]
+  WARM --> CACHE[Verified indexes / binary caches / document leases]
+  CACHE --> OFFLINE[Previously installed or cached content]
+  USER[Playback / reading / install] --> OPTIONAL[PDF / MIDI / GeneralUser]
+  WARM --> CHORDS[Incremental changed-chord sync]
 ```
 
-```mermaid
-flowchart LR
-  RAW["Canonical upstream/API"] --> VALIDATE["Zod + size/hash + sanitizer"]
-  VALIDATE --> NORMALIZE["Normalized domain model"]
-  NORMALIZE --> PERSIST["Versioned persistence/cache"]
-  PERSIST --> UI["Internal route/viewer"]
-  UI --> PLAYER["Shared media state"]
-  WEB["Web/PWA"] --> LOGIN["Official e-GYS v1 login page"]
-  NATIVE["Tauri allowlisted WebView"] --> KEYRING["OS keyring"] --> BFF["Hono BFF"]
-  BFF --> PROFILE["e-GYS v1 profile/branch/membership"]
-```
+`packages/contracts` defines schema/URL/provenance boundaries;
+`packages/domain` owns platform-independent cache, reader and audio behavior.
+`apps/web/src` owns route UI and browser adapters. `apps/bff` handles origin,
+cookie, validation, streaming and upstream concerns. `apps/native/src-tauri`
+provides narrow storage, keyring, lifecycle and login commands.
 
-The detailed Literature, Kidung, Bible, persistent-media, e-GYS, cache, and
-packaged-asset diagrams live in [`docs/architecture.md`](./docs/architecture.md).
+### Account boundary
 
-### Kidung viewer contract
+Web/PWA authenticates through the BFF directly. Google uses Google Identity
+Services; Apple uses its official popup SDK and validates authorization state.
+WhatsApp reserves a messaging tab on the provider click, opens the prepared
+send link and tracks the official internal reference through a BFF WebSocket
+relay. There is no OTP entry or login overlay. A trailing 120-second countdown
+expires automatically; clicking WhatsApp again starts a new attempt. Confirmation
+uses the sender phone from the socket event, not the bot phone from the challenge.
+The opaque login token stays in an HttpOnly cookie; profile refresh detects the
+member. Provider authorization may use its own external window.
 
-Kidung has one `Hymn` entity and two presentation modes. Chord is a shared
-capability, so the same verified note-aligned v2 source can be shown in Text or
-as a DOM overlay above the PDF canvas. The focused Text viewer keeps the title,
-chord/PDF/settings actions, lyrics, and song/verse navigation within one viewport.
-Switching presentation preserves transpose, key, accidental, MIDI, and the
-global media session.
+Tauri uses the origin-allowlisted official v1 login WebView and stores the bridge
+token in the OS keyring. The generated e-GYS v2 contract remains discovery-only.
+See [the account guide](docs/egys-integration.md) for endpoints, deployment and
+real-account acceptance requirements.
 
-```mermaid
-flowchart TB
-  HYMN["Hymn domain"] --> RESOLVER["Resource resolver"]
-  RESOLVER --> LYRICS["Lyrics data"]
-  RESOLVER --> PDF["PDF resource"]
-  RESOLVER --> CHORD["Chord JSON v2"]
-  RESOLVER --> MIDI["MIDI resource"]
-  LYRICS --> STATE["Viewer state"]
-  PDF --> STATE
-  CHORD --> STATE
-  MIDI --> STATE
-  STATE --> PRESENTATION["Presentation: Text or PDF"]
-  STATE --> CAPABILITY["Chord: visible or hidden"]
-  STATE --> MUSIC["Shared transpose · key · accidental · instrument · tempo"]
-```
+### Content and cache
 
-The Text presentation exposes bounded per-hymn typography controls (16–28 px
-and 1.4–2.2 line height), applies a responsive 14 px minimum auto-fit for
-long chord/lyric lines, and persists the user's preference without reloading
-the chord/PDF resource. Key selection computes the shortest musical transpose
-from the canonical source key rather than changing a label only. PDF presentation keeps single, two-page, vertical, and horizontal
-layouts; a two-page preference automatically falls back to a readable single
-page below 720 px. The MIDI surface exposes the 128 General MIDI programs plus
-the source-file program, and its volume, mute, tempo, transpose, and instrument
-preferences survive a new session. PDF page progress is keyed by the immutable
-source version and the reader offers a return-to-saved-page action after
-navigation, while invalid saved pages are clamped safely.
+The reviewed canonical music source is
+`gyspnk/gyschordweb@e8e7efe1189b5746a2bb542348e221844091c8d1`:
+533 PDFs, 533 MIDI files, 161 chord documents and two SoundFonts, totaling 1,229
+locked entries. The chord geometry audit maps all 3,738 entries without orphan
+or invalid positions. The functional Fork source remains
+`ThenGB/GYSAPP-Fork@4f0d39b`; its KR master/map is distinct from canonical scores.
+Runtime code does not import either upstream checkout.
 
-```mermaid
-flowchart LR
-  PDF0["PDF resource"] --> PAGE["PDF.js page"] --> CANVAS["Canvas"]
-  PAGE --> CONTENT["PDF text content"] --> NOTES["Note extraction"]
-  NOTES --> CACHE["pageNotesCache (resource hash + page)"]
-  CACHE --> MARKERS["Note-aligned chord layer"] --> OVERLAY["DOM marker overlay"]
-  LYRICS0["Lyrics data"] --> ASSOC["Chord/lyric association"]
-  CACHE --> ASSOC
-  CHORD0["Chord JSON v2"] --> ASSOC
-  ASSOC --> RELATIVE["Relative chord position"] --> TEXT["Text presentation"]
-```
+The application ships TimGM6mb (5,994,284 bytes) and the local FluidSynth runtime.
+GeneralUser-GS (32,319,396 bytes) is an optional integrity-checked download.
+Startup does not synthesize MIDI or download neighboring audio while MIDI is off.
+Every launch schedules a chord-manifest check after first paint; unchanged
+verified entries avoid payload reads and downloads. Changed or missing content
+uses bounded synchronization and atomic pointers.
 
-```mermaid
-flowchart LR
-  REQUEST["Resource request"] --> KEY["Immutable version/hash key"] --> HIT{"Cache hit?"}
-  HIT -->|yes| REUSE["Reuse normalized result"]
-  HIT -->|no| LOAD["Load → parse → validate"] --> STORE["Atomic cache + pointer"]
-  LOAD -->|transient failure| RETRY["Retry later; do not poison cache"]
-```
+Service-worker shell generation v25 prepares verified application assets and
+compact indexes. Editorial snapshots paint from disk and refresh in the
+background. TimGM/runtime warming follows shell readiness; MIDI/PDF assets load
+on demand and chord sync retrieves only missing/changed payloads.
+Save-Data/slow connections restrict optional warm-up.
+Offline availability depends on successful installation/cache retention;
+protected account responses are excluded from public caches.
 
-```mermaid
-flowchart LR
-  MIDI0["MIDI resource"] --> LOOKUP["Preload lookup: URL + tempo + transpose + instrument"]
-  LOOKUP --> WORKER["Worker / local synth engine"] --> AUDIO["One global audio session"]
-  ADJACENT["Previous/next preload"] -. lower priority .-> LOOKUP
-  FOREGROUND["Selected song"] -->|priority| WORKER
-```
+## Development and verification
 
-```mermaid
-flowchart LR
-  COMMIT["git commit"] --> INDEX["Check staged text without rewriting"]
-  INDEX --> PUSH["Local format, docs, provenance, types and unit tests"]
-  PUSH --> CI["PR build, bundle, browser and native verification"]
-  RELEASE["pnpm verify:release"] --> SYNC["Explicit local e-GYS sync and full gates"]
-  WEB["Web/PWA"] --> LOGIN["Official e-GYS v1 login page"]
-  APP["Tauri"] --> WEBVIEW["Allowlisted v1 login WebView"] --> BRIDGE["Validated login bridge"]
-  BRIDGE --> KEYRING["OS keyring"] --> BFF["BFF profile request"] --> API["e-GYS v1 API"]
-```
+Requires Node ≥24 and pnpm 11.21.0. Dependency versions are locked in
+`pnpm-lock.yaml` and package manifests.
 
-## Development
-
-```bash
+```sh
 corepack enable
-pnpm install
-pnpm test
-pnpm typecheck
+pnpm install --frozen-lockfile
 pnpm build
+pnpm typecheck
+pnpm test
+pnpm verify:generated
 pnpm verify:docs
+pnpm verify:bundle
 pnpm dev
 ```
 
-`pnpm install` enables the repository-managed `.githooks` path. Pre-commit
-checks the staged text without rewriting files or accessing upstream. Pre-push
-runs deterministic formatting, documentation, provenance, type and unit checks.
-The PR's CI checks the production build, bundle, full browser suite and native
-boundary. `pnpm verify:release` retains the complete release gate, including
-explicit local upstream synchronization and chord audit. Use `pnpm sync:egys`
-to refresh the pinned discovery contract deliberately; authentication comes
-from the developer's existing Git credential manager/SSH setup.
-
-For Faith/sidebar UI checks against a build already produced with `pnpm build`:
+Use `pnpm build:test-deps` before a fresh unit-test/watch run. `pnpm dev` serves
+Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuild
+`dist` underneath an active browser run.
 
 ```sh
-GYS_E2E_PREBUILT=1 pnpm test:e2e e2e/faith-zoom.spec.ts e2e/sidebar-collapse.spec.ts --fully-parallel --retries=0
-```
-
-This focused suite verifies gestures, three-locale responsive layout/search and
-sidebar persistence without retries or external fixtures. `pnpm test:e2e:changed`
-selects affected browser contracts and distributes isolated tests across the
-bounded worker pool; full release and CI verification remain available.
-
-For quick iteration:
-
-```sh
-pnpm dev:native
-pnpm test:watch
-pnpm test:e2e:dev e2e/smoke.spec.ts -g "shell navigation" --workers=1
-pnpm test:e2e:dev --ui
+GYS_E2E_PREBUILT=1 pnpm test:e2e bible-picker-mobile.spec.ts midi-edge.spec.ts midi-player-design.spec.ts --fully-parallel --workers=2 --retries=0
+pnpm test:e2e:changed
 pnpm test:performance
+pnpm verify:native-assets
 ```
 
-The dev browser command builds the small workspace dependencies and starts
-Vite with HMR, without bundling the frontend. Stop any preview on port 4173
-before using it. Use dev mode for UI behavior; bundle/resource assertions and
-performance measurements require `pnpm test:e2e` or the production preview.
-Dev mode is rejected in CI and cannot be combined with `GYS_E2E_PREBUILT=1`.
-`pnpm test:e2e:ui` retains the production-preview UI mode. On a clean checkout,
-run `pnpm build:test-deps` before unit watch. The dedicated performance command
-records 30 samples with one worker; ordinary smoke uses five samples. See
-[the implementation and remaining acceptance gates](docs/plans/2026-09-30-loading-debug-efficiency.md).
+Browser mode uses production assets. `pnpm test:e2e:dev` is the local HMR
+alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Selective tests
+use conservative dependency routing; shared unknown changes select the full
+suite. Full browser, native and signed-device gates remain separate from quick
+iteration. See [testing and maintenance](docs/testing-and-maintenance.md).
 
-## Documentation map
+Repository hooks check staged formatting at commit and deterministic formatting,
+documentation, provenance, types and unit tests at push. Neither hook silently
+syncs the private e-GYS repository. `pnpm verify:release` is the explicit full
+release gate, including authenticated local source checks and native/browser
+verification. Never stage ignored `.tmp-egys-*` checkouts or credentials.
 
-- [`docs/architecture.md`](./docs/architecture.md) — module boundaries,
-  persistence, asset lifecycle, Mermaid diagrams, and release gates.
-- [`docs/egys-integration.md`](./docs/egys-integration.md) — verified e-GYS
-  auth contract, browser/native authentication boundary, API profile mapping,
-  synchronization, and sequence diagrams.
-- [`docs/discovery/`](./docs/discovery/) — source provenance, generated locks,
-  contract snapshots, and discovery evidence.
-- [`docs/release-readiness.md`](./docs/release-readiness.md) — Preview/Beta/GA
-  evidence ledger and protected deployment prerequisites.
-- [`CHANGELOG.md`](./CHANGELOG.md) — user-visible changes in the current
-  hardening slice.
+## Deployment
 
-Node 24 and pnpm 11 are used in CI. PDF.js, fonts, and application code are
-bundled locally. The web/PWA opens the official e-GYS v1 login page; the
-installed Tauri application owns the native v1 session bridge. e-GYS and BFF
-credentials remain deployment secrets.
+A push to `main` triggers CI and GitHub Pages at `/GYSApp-Tauri/`. Backend or
+contract changes also trigger the Worker workflow. Pages and Worker are separate
+artifacts: a successful push is not a successful deployment receipt.
 
-## Delivery and performance
+- Pages: set the source to **GitHub Actions**. `VITE_BFF_BASE_URL` selects the
+  deployed BFF for account/public APIs. Official literature PDFs also have a
+  public Worker fallback when this optional build variable is absent.
+- Worker: configure protected `CLOUDFLARE_API_TOKEN` and
+  `CLOUDFLARE_ACCOUNT_ID`. Without them the workflow explicitly skips deployment.
+  `EGYS_API_BASE_URL` must resolve to live `https://e.gys.or.id`.
+- Worker origins must include the actual Pages/dev/native origin. Literature
+  PDF streaming must allow trusted TJC and `tjcorguploads.s3.amazonaws.com` URLs
+  and expose range response headers.
+- `VITE_ASSET_MANIFEST_URL` optionally points to an independent HTTPS offline
+  manifest. Leave it unset for the bundled integrity-checked manifest.
+- Windows installer packaging is manual. Signing uses protected PFX secrets;
+  Android/iOS toolchains, signing, native account and device acceptance are
+  required before claiming a release on those platforms.
 
-The web app is configured for a GitHub Pages project deployment at
-`/GYSApp-Tauri/`. The Pages workflow builds every workspace package, verifies
-generated provenance, runs the bundle budget, and publishes the static PWA.
-PDF.js, its worker, the TB search worker, and FluidSynth stay lazy-loaded.
-GeneralUser-GS is installed separately through Asset Management. Use
-`pnpm verify:bundle` to enforce the checked bundle budget.
+[Deployment and troubleshooting](docs/operations.md) describes variables,
+provider/PDF failures, caches and post-push checks.
 
-The shell uses one responsive navigation surface across desktop, rail, and
-mobile breakpoints. Offline TB/hymn/faith packs remain local, while larger
-Bible database, PDF, MIDI, and chord assets are loaded on demand, verified by
-size/hash, and cached by source version to keep first install and first paint
-predictable.
+## Documentation
 
-For a deployment that publishes updated offline packs independently of the
-Pages build, set `VITE_ASSET_MANIFEST_URL` to its HTTPS manifest endpoint. The
-More screen then checks the versioned manifest, downloads only changed local
-assets, validates them, atomically swaps the active pointer, and retains the
-last known-good pack if any download fails. Without the variable, Pages uses
-its immutable bundled manifest and still supports local verification/repair.
+Start at [the documentation index](docs/README.md). It separates current guides
+from historical plans and dated receipts.
 
-The PWA service worker installs only the shell and small verified offline
-indexes. It does not warm a SoundFont or MIDI payload in the background.
-
-## Deployment prerequisites
-
-Pushes to `main` trigger GitHub Pages. Configure the repository's
-Pages source as **GitHub Actions**. The optional Worker workflow needs
-`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; set `EGYS_API_BASE_URL` and
-`EGYS_UPSTREAM_COMMIT` as protected Worker variables/secrets when the e-GYS
-backend is ready. An optional Pages repository variable,
-`VITE_ASSET_MANIFEST_URL`, can point at an independently published HTTPS pack
-manifest; leave it empty to use the immutable bundled manifest. The private
-e-GYS repository is intentionally never cloned
-or fetched by GitHub Actions: authenticated maintainers explicitly run
-`pnpm sync:egys` or `pnpm verify:release` locally and review derived metadata
-before staging it. Without the protected deployment values, the web build still works
-and shows an honest unavailable-session state instead of fabricating account
-data.
-
-The native Windows packaging workflow is manual (`Native Windows installer`).
-It runs the same generated-contract and documentation gates before invoking the
-Tauri 2.11 CLI, and uploads the NSIS/MSI output together with a commit
-provenance file. Leave `signed=false` for an auditable unsigned installer; a
-release candidate must set `signed=true` and provide the protected
-`WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD` secrets. The
-workflow signs both NSIS and MSI packages with `signtool` and removes the PFX
-from the runner after upload.
-The signing material is never part of the repository or the Pages build. Set
-the public `VITE_BFF_BASE_URL` repository variable as well; the native bundle
-needs it to read the live e-GYS v1 profile through the BFF after the official
-login window completes.
+- [User guide](docs/user-guide.md): reader, account, zoom, player and offline flows.
+- [Architecture](docs/architecture.md): modules, lifecycles and Mermaid diagrams.
+- [Cache and preload reference](docs/cache-and-preload.md): identities, bounds and recovery.
+- [UI and motion](docs/ui-system.md): layout, sizing, interaction and accessibility.
+- [Testing and maintenance](docs/testing-and-maintenance.md): commands, evidence and hooks.
+- [Feature status](docs/discovery/feature-parity-matrix.md): current implementation and open gates.
+- [Release readiness](docs/release-readiness.md): current checks and dated historical evidence.
+- [Changelog](CHANGELOG.md): current user-facing changes.
 
 ## License
 
-MIT. Upstream provenance and asset licensing notes are documented in
-[`docs/discovery/asset-inventory.md`](./docs/discovery/asset-inventory.md).
+MIT for this repository's application code. Publisher content, fonts,
+SoundFonts and FluidSynth retain their individual attribution/licenses;
+see [asset inventory](docs/discovery/asset-inventory.md) and bundled notices.

@@ -1,5 +1,10 @@
 # GYSApp UI audit — September 2026
 
+> Historical plan/audit/receipt. Its dates, measurements and acceptance scope
+> remain attached to the original revision. Current behavior and outstanding
+> delivery gates were reviewed on 2026-10-07; use the [documentation index](../README.md)
+> and [current feature matrix](feature-parity-matrix.md) for the present implementation.
+
 **Audit date:** 2026-09-28
 **Scope:** Local rewrite, with the current Kidung catalog and the already
 implemented responsive shell/reader surfaces reviewed against the supplied
