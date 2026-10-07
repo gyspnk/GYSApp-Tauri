@@ -7,6 +7,24 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — neutral visual state and native Stop readiness
+
+- Hosted `ec7722e` passed Pages, build, deterministic/Rust/secret gates and two
+  browser shards. Those shards reported 463 clean passes, one warm-navigation
+  pass on retry and three existing optional-package skips. Shard 3 passed 232
+  cases and failed only the settings screenshot: 121 pixels showed the cursor's
+  incidental hover after content moved beneath it. Geometry and glyphs match.
+  The fixture now moves the cursor away and captures the neutral state. The
+  inspected single baseline is refreshed; all **31 visual cases pass in
+  59.9 seconds**, without retries or further updates.
+- Windows reached the full soak after its quick suites and 30 relaunches, then
+  the Stop helper mistook a not-yet-mounted speech control for MIDI's hidden
+  control. It now waits for the surface, restores minimized players and opens
+  advanced controls only for MIDI. Real speech/MIDI Stop, focus and cache
+  contracts pass **12/12 in 22.9 seconds**, without retries. No runtime source
+  changes are included in this follow-up; complete hosted/native results remain
+  to be verified on the delivered revision.
+
 ### 2026-10-07 — native focus and bounded PDF preloading follow-up
 
 - Hosted `312cc45` passed Pages and all CI jobs. Full browser CI reports **693

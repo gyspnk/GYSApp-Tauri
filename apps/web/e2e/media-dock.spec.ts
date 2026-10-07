@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { clickMediaStop } from "../scripts/native-media-controls.mjs";
 
 type TestLocale = "id" | "en" | "zh";
 type TestMediaSessionWindow = Window & {
@@ -554,5 +555,9 @@ for (const width of [390, 768, 1440]) {
       .getByRole("button", { name: "Perbesar pemutar", exact: true })
       .click();
     expect(await readMediaPlaybackState(page)).toBe("paused");
+    await media.locator(".media-minimize").click();
+    await expect(media).toHaveClass(/is-minimized/);
+    await clickMediaStop(page);
+    await expect.poll(() => readMediaPlaybackState(page)).toBe("none");
   });
 }

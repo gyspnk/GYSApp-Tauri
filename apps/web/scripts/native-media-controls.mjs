@@ -19,8 +19,17 @@ export async function focusMediaControl(control) {
 /** Follow the same disclosure path as a user, preserving the menu afterward. */
 export async function clickMediaStop(page) {
   const surface = page.locator(".media-surface");
+  await surface.waitFor({ state: "visible" });
+  const classes = await surface.getAttribute("class");
+  if (classes.includes("is-minimized"))
+    await surface.locator(".media-minimize").click();
+  const advanced = surface.locator(".media-advanced-controls");
+  if (classes.includes("is-kidung-media"))
+    await advanced.waitFor({ state: "attached" });
   const stop = surface.locator(".media-stop-control");
-  const opened = !(await stop.isVisible());
+  const opened =
+    (await advanced.count()) > 0 &&
+    !(await advanced.evaluate((element) => element.open));
   const summary = surface.locator(".media-advanced-summary");
   if (opened) await summary.click();
   await stop.click();

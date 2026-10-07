@@ -138,8 +138,11 @@ completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
 rejects stale, empty and error diagnostics; packaged Windows execution remains
 necessary to prove the whole native flow.
 The shared native transport helper opens MIDI's advanced disclosure before
-using Stop and restores the previous disclosure afterward. Render-cancellation
-checks expose Stop before Play so menu motion cannot consume the cancellation
+using Stop and restores the previous disclosure afterward.
+It first waits for the media surface and restores a minimized player; speech
+controls never take the MIDI disclosure path. Responsive browser contracts
+verify both providers stop correctly and preserve playable MIDI caches.
+Render-cancellation checks expose Stop before Play so menu motion cannot consume the cancellation
 window. Its browser contract checks real FluidSynth Stop, position and PCM reuse.
 Disclosure inert state also updates after click default action, independently
 of delayed native toggle delivery. Native range actions await actual focus

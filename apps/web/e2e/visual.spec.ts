@@ -333,6 +333,8 @@ test("Kidung reader settings 390x844 visual baseline", async ({ page }) => {
   await expect(
     panel.locator(".hymn-reader-settings > .song-controls"),
   ).toBeVisible();
+  // Opening the group moves content under the cursor; capture its neutral state.
+  await page.mouse.move(0, 0);
   await page.waitForTimeout(250);
   await expect(page).toHaveScreenshot("kidung-reader-settings-390x844.png", {
     animations: "disabled",
