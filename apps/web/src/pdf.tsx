@@ -238,13 +238,13 @@ function VerticalPdfPage({
       },
       {
         root: stageRef.current,
-        rootMargin: "720px 720px",
+        rootMargin: `${Math.round((stageRef.current?.clientHeight ?? 720) / 2)}px ${Math.round((stageRef.current?.clientWidth ?? 720) / 2)}px`,
         threshold: 0.01,
       },
     );
     observer.observe(host);
     return () => observer.disconnect();
-  }, [pageNumber, stageRef]);
+  }, [pageNumber, stageRef, viewportRevision]);
 
   useEffect(() => {
     if (!nearViewport || !canvasRef.current || !hostRef.current) return;

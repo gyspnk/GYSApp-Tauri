@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { installNativeHomeFixture } from "./native-home-fixture.mjs";
-import { clickMediaStop } from "./native-media-controls.mjs";
+import { clickMediaStop, focusMediaControl } from "./native-media-controls.mjs";
 import { edgeStopEvidence } from "../../../scripts/edge-stop-evidence.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
@@ -2224,10 +2224,28 @@ try {
   await upstreamMidiSurface.locator(".media-advanced-summary").click();
   const midiVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
   const initialMidiVolume = Number(await midiVolume.inputValue());
-  await midiVolume.focus();
+  await focusMediaControl(midiVolume);
   await midiVolume.press("ArrowLeft");
+  await page.waitForFunction(
+    (volume) =>
+      Number(
+        document.querySelector('.media-surface input[aria-label="Volume MIDI"]')
+          ?.value,
+      ) < volume,
+    initialMidiVolume,
+    { timeout: 5_000 },
+  );
   assert.ok(Number(await midiVolume.inputValue()) < initialMidiVolume);
   await midiVolume.press("ArrowRight");
+  await page.waitForFunction(
+    (volume) =>
+      Number(
+        document.querySelector('.media-surface input[aria-label="Volume MIDI"]')
+          ?.value,
+      ) === volume,
+    initialMidiVolume,
+    { timeout: 5_000 },
+  );
   assert.equal(Number(await midiVolume.inputValue()), initialMidiVolume);
   const midiMute = upstreamMidiSurface.locator(".media-mute-control");
   await midiMute.click();
@@ -2283,7 +2301,7 @@ try {
   await upstreamMidiSurface.locator(".media-tempo-toggle").click();
   const midiTempo = upstreamMidiSurface.locator(".media-tempo-popover input");
   const initialMidiTempo = Number(await midiTempo.inputValue());
-  await midiTempo.focus();
+  await focusMediaControl(midiTempo);
   await midiTempo.press("ArrowRight");
   await page.waitForFunction(
     (tempo) =>
@@ -2743,7 +2761,7 @@ try {
   await persistenceInstrument.getByRole("option", { name: /Violin/ }).click();
   await persistenceAdvanced.locator("summary").click();
   const persistenceVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
-  await persistenceVolume.focus();
+  await focusMediaControl(persistenceVolume);
   await persistenceVolume.press("ArrowLeft");
   const persistenceTempoToggle = upstreamMidiSurface.locator(
     ".media-tempo-toggle",

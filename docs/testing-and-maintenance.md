@@ -141,6 +141,13 @@ The shared native transport helper opens MIDI's advanced disclosure before
 using Stop and restores the previous disclosure afterward. Render-cancellation
 checks expose Stop before Play so menu motion cannot consume the cancellation
 window. Its browser contract checks real FluidSynth Stop, position and PCM reuse.
+Disclosure inert state also updates after click default action, independently
+of delayed native toggle delivery. Native range actions await actual focus
+before sending a key and await the committed value afterward. The delayed-toggle
+browser regression preserves keyboard focus and prevents closed-menu input.
+PDF toolbar size assertions sample after button release motion settles, keeping
+the 44 px requirement. Continuous PDF preload margins track half the viewer's
+width/height and are refreshed on resize; offscreen bitmap limits remain strict.
 Cache smoke tests wait for rendered chord markers and the completed loading
 state, then verify stored bytes. Their
 mutable manifest endpoint is pinned to the immutable corruption/upgrade bytes;

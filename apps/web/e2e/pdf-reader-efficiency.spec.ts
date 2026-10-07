@@ -49,6 +49,13 @@ for (const width of [320, 360, 390, 768, 1440]) {
     await reader.locator(".pdf-advanced-toggle").click();
     const buttons = reader.locator(".pdf-toolbar button:visible");
     for (const button of await buttons.all()) {
+      // The release animation briefly scales the clicked control below 44px.
+      await expect
+        .poll(async () => (await button.boundingBox())?.width ?? 0)
+        .toBeGreaterThanOrEqual(43.99);
+      await expect
+        .poll(async () => (await button.boundingBox())?.height ?? 0)
+        .toBeGreaterThanOrEqual(43.99);
       const box = (await button.boundingBox())!;
       expect(box.width).toBeGreaterThanOrEqual(43.99);
       expect(box.height).toBeGreaterThanOrEqual(43.99);

@@ -7,6 +7,30 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — native focus and bounded PDF preloading follow-up
+
+- Hosted `312cc45` passed Pages and all CI jobs. Full browser CI reports **693
+  clean passes, three passes on retry and three existing optional-package
+  skips**. Three shards finish in **8.9 / 6.5 / 7.5 minutes**, reducing the
+  longest browser stage from 13.6 minutes without removing coverage. Retries
+  were a warm-navigation timing check, an in-progress button release scale and
+  a six-bitmap continuous PDF window.
+- Windows passed the earlier recovery/upgrade/PDF checks and cancellation of
+  an active FluidSynth render, then its immediate volume focus/key assertion
+  ran before the entering disclosure became focusable. Disclosure inert state
+  now follows click default action without waiting for queued native toggle.
+  The new delayed-toggle regression failed against the old build. Native range
+  helpers wait for actual focus, and assertions wait for the committed value.
+- Continuous PDF preloading now uses half the current viewer's dimensions and
+  adapts on resize, instead of a fixed 720 px margin. Offscreen bitmap bounds
+  and all five compact toolbar widths pass three repetitions. Size assertions
+  wait for release motion to settle while retaining their original 44 px gate.
+  Three real FluidSynth cache/Stop/focus repetitions also pass. The native and
+  complete hosted follow-up remains required for this revision. The full menu
+  motion suite passes **16/16 in 56.5 seconds**, without retries; the delayed
+  toggle case passes four additional repetitions. Build/types and the initial
+  JS budget (**175.6 / 180 KiB**) pass.
+
 ### 2026-10-07 — compact native transport fixture follow-up
 
 - Delivered `24ad29e`; Pages and all CI jobs passed. The complete browser suite

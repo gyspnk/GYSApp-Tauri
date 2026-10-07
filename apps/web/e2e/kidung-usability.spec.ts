@@ -473,6 +473,11 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await expect(page.locator(".hymn-midi-toggle")).toHaveAttribute("aria-busy", "false");
   await expect(media.locator(".media-load-track")).toHaveCount(0);
   await expect(position).toHaveAttribute("max", "10");
+  // This test edits musical controls after the pinned song's PDF defaults.
+  // A separate player regression covers defaults arriving during playback.
+  await expect(media.locator(".media-advanced-summary")).toContainText("88 BPM", {
+    timeout: 15_000,
+  });
   await play.click();
   // The first play lazily compiles WASM and renders real PCM on hosted CPUs.
   await expect(play).toHaveAttribute("aria-label", "Jeda", { timeout: 15_000 });

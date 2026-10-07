@@ -44,14 +44,25 @@ export function installControlMotion(): () => void {
     });
     pressed.clear();
   };
-  const toggle = (event: Event) => {
-    const details = event.target;
-    if (!(details instanceof HTMLDetailsElement)) return;
+  const syncDisclosure = (details: HTMLDetailsElement) => {
     for (const child of details.children) {
       if (child.tagName === "SUMMARY") continue;
       // Exit remains visible briefly, but its controls stop accepting input.
       if (child instanceof HTMLElement) child.inert = !details.open;
     }
+  };
+  const toggle = (event: Event) => {
+    if (event.target instanceof HTMLDetailsElement)
+      syncDisclosure(event.target);
+  };
+  const activateDisclosure = (event: MouseEvent) => {
+    const summary =
+      event.target instanceof Element ? event.target.closest("summary") : null;
+    const details = summary?.parentElement;
+    if (!(details instanceof HTMLDetailsElement)) return;
+    // The native default action runs after click dispatch; toggle is queued
+    // separately and can arrive after the user's next focus/key action.
+    queueMicrotask(() => syncDisclosure(details));
   };
   const dismiss = (event: PointerEvent | KeyboardEvent) => {
     if (event.defaultPrevented) return;
@@ -66,6 +77,7 @@ export function installControlMotion(): () => void {
           event.target instanceof Node && details.contains(event.target);
         if (!escape && containsTarget) return;
         details.open = false;
+        syncDisclosure(details);
         if (escape && containsTarget) {
           event.preventDefault();
           details
@@ -80,6 +92,7 @@ export function installControlMotion(): () => void {
   document.addEventListener("pointercancel", release);
   document.addEventListener("keyup", release);
   document.addEventListener("toggle", toggle, true);
+  document.addEventListener("click", activateDisclosure);
   document.addEventListener("pointerdown", dismiss);
   document.addEventListener("keydown", dismiss);
   window.addEventListener("blur", release);
@@ -92,6 +105,7 @@ export function installControlMotion(): () => void {
     document.removeEventListener("pointercancel", release);
     document.removeEventListener("keyup", release);
     document.removeEventListener("toggle", toggle, true);
+    document.removeEventListener("click", activateDisclosure);
     document.removeEventListener("pointerdown", dismiss);
     document.removeEventListener("keydown", dismiss);
     window.removeEventListener("blur", release);

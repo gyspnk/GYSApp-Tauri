@@ -92,6 +92,8 @@ loading. Completed spreads paint together; page navigation crossfades the
 completed page, while zoom/resize retain the current preview. Visible-region
 vector detail tiles provide sharper enlarged content without allocating the
 whole document at extreme zoom. Idle page canvases/operator lists are released.
+Continuous readers preload half a viewport beyond each edge; the margin adapts
+on resize rather than retaining a fixed pixel buffer on smaller screens.
 Ctrl+wheel/pinch uses anchored smooth geometry; enlarged pages accept pointer/
 single-touch pan. Retry cancels/invalidate-releases only the current source,
 not unrelated documents or the PDF runtime.

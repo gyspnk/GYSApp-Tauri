@@ -1,5 +1,52 @@
 import { expect, test, type Page } from "@playwright/test";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
+import { focusMediaControl } from "../scripts/native-media-controls.mjs";
+
+test("native disclosure restores focus before its delayed toggle event", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const state = window as Window & { delayDetailsToggle?: boolean };
+    document.addEventListener(
+      "toggle",
+      (event) => {
+        if (state.delayDetailsToggle) event.stopImmediatePropagation();
+      },
+      true,
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+  const summary = page.locator(".hymn-more-actions-summary");
+  const menu = page.locator(".hymn-more-actions-panel");
+  await summary.click();
+  await summary.click();
+  await expect(menu).toHaveAttribute("inert", "");
+  const inert = await page.evaluate(async () => {
+    (window as Window & { delayDetailsToggle: boolean }).delayDetailsToggle =
+      true;
+    const summary = document.querySelector<HTMLElement>(
+      ".hymn-more-actions-summary",
+    )!;
+    const menu = document.querySelector<HTMLElement>(
+      ".hymn-more-actions-panel",
+    )!;
+    summary.click();
+    await Promise.resolve();
+    return menu.inert;
+  });
+  expect(inert).toBe(false);
+  const control = menu.locator("button").first();
+  await focusMediaControl(control);
+  await expect(control).toBeFocused();
+  const closedInert = await page.evaluate(async () => {
+    document.querySelector<HTMLElement>(".hymn-more-actions-summary")!.click();
+    await Promise.resolve();
+    return document.querySelector<HTMLElement>(".hymn-more-actions-panel")!
+      .inert;
+  });
+  expect(closedInert).toBe(true);
+});
 
 async function sampleExit(
   page: Page,

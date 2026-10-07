@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { clickMediaStop } from "../scripts/native-media-controls.mjs";
+import {
+  clickMediaStop,
+  focusMediaControl,
+} from "../scripts/native-media-controls.mjs";
 import {
   preparePinnedMidiAsset,
   preparePinnedReaderAssets,
@@ -99,4 +102,11 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
     "open",
   );
   expect(await counts()).toEqual(changed);
+  await player.locator(".media-advanced-summary").click();
+  const volume = player.getByLabel("Volume MIDI");
+  await focusMediaControl(volume);
+  await expect(volume).toBeFocused();
+  const initialVolume = Number(await volume.inputValue());
+  await volume.press("ArrowLeft");
+  await expect(volume).toHaveValue(String(initialVolume - 0.01));
 });

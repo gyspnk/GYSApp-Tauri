@@ -138,7 +138,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Three machines keep the 699-case suite below the job budget even
+        # Three machines keep the full suite below the job budget even
         # when cold PDF/audio work contends on the hosted two-core runners.
         shard: [1, 2, 3]
     steps:
