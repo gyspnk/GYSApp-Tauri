@@ -144,31 +144,75 @@ test("chord toggle preserves lyrics and animates row spacing in both directions"
   await line.evaluate((el) =>
     el.setAttribute("data-motion-probe", "preserved"),
   );
-  await page
-    .getByRole("button", { name: "Sembunyikan chord", exact: true })
-    .click();
-  await expect(line).toHaveAttribute("data-motion-probe", "preserved");
-  await expect
-    .poll(() =>
-      line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
-    )
-    .toBe(0);
-  await expect(page.locator(".chord-capability.is-hidden")).toHaveCount(4);
-  await page
-    .getByRole("button", { name: "Tampilkan chord", exact: true })
-    .click();
-  const movement = await line.evaluate((el) => ({
-    padding: parseFloat(getComputedStyle(el).paddingTop),
-    animations: el.getAnimations().length,
-    font: parseFloat(getComputedStyle(el).fontSize),
-  }));
-  expect(movement.animations).toBeGreaterThan(0);
-  expect(movement.padding).toBeLessThan(movement.font);
-  await expect
-    .poll(() =>
-      line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
-    )
-    .toBeGreaterThan(15);
+  for (const hide of [true, false]) {
+    const movement = await page
+      .getByRole("button", {
+        name: hide ? "Sembunyikan chord" : "Tampilkan chord",
+        exact: true,
+      })
+      .evaluate(
+        (button) =>
+          new Promise<{ padding: number; font: number; duration: number }>(
+            (resolve, reject) => {
+              const el = document.querySelector<HTMLElement>(
+                '[data-motion-probe="preserved"]',
+              )!;
+              let frames = 0;
+              const sample = () => {
+                const transition = el
+                  .getAnimations()
+                  .find(
+                    (animation) =>
+                      animation instanceof CSSTransition &&
+                      animation.transitionProperty === "padding-top",
+                  );
+                if (!transition) {
+                  if (++frames < 60) requestAnimationFrame(sample);
+                  else
+                    reject(new Error("Chord spacing transition did not start"));
+                  return;
+                }
+                // Freeze at creation, before any browser protocol round trip can
+                // consume the animation on a busy runner. Verify both directions.
+                const duration = Number(
+                  transition.effect!.getTiming().duration,
+                );
+                transition.pause();
+                transition.currentTime = duration / 2;
+                const style = getComputedStyle(el);
+                resolve({
+                  padding: parseFloat(style.paddingTop),
+                  font: parseFloat(style.fontSize),
+                  duration,
+                });
+              };
+              (button as HTMLElement).click();
+              requestAnimationFrame(sample);
+            },
+          ),
+      );
+    await expect(line).toHaveAttribute("data-motion-probe", "preserved");
+    expect(movement.duration).toBeGreaterThan(0);
+    expect(movement.padding).toBeGreaterThan(0);
+    expect(movement.padding).toBeLessThan(movement.font * 1.25);
+    await line.evaluate((el) => {
+      for (const animation of el.getAnimations()) animation.play();
+    });
+    if (hide) {
+      await expect
+        .poll(() =>
+          line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
+        )
+        .toBe(0);
+      await expect(page.locator(".chord-capability.is-hidden")).toHaveCount(4);
+    } else {
+      await expect
+        .poll(() =>
+          line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
+        )
+        .toBeGreaterThan(15);
+    }
+  }
 });
 
 for (const reducedMotion of ["no-preference", "reduce"] as const) {

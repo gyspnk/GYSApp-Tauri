@@ -58,7 +58,7 @@ for (const reduced of [false, true]) {
   });
 }
 
-test("theme snapshots stop an unfinished smooth focus scroll", async ({
+test("theme snapshots stop smooth focus scroll before the lazy module loads", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -69,35 +69,20 @@ test("theme snapshots stop an unfinished smooth focus scroll", async ({
       return start(callback);
     };
   });
+  await page.route("**/theme-transition-*.js", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.locator('[data-setting="appearance"] > summary').click();
   const select = page.locator(".appearance-setting-select").first();
   await select.locator(".control-select-trigger").click();
-  // Warm the deferred theme module before exercising an in-flight scroll.
-  await select.getByRole("option", { name: "Terang", exact: true }).click();
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        document.documentElement.classList.contains("is-theme-transition"),
-      ),
-    )
-    .toBe(true);
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        document.documentElement.classList.contains("is-theme-transition"),
-      ),
-    )
-    .toBe(false);
-  await select.locator(".control-select-trigger").click();
   await select
     .getByRole("option", { name: "Gelap", exact: true })
-    .evaluate(async (option) => {
-      window.scrollTo({ top: 0, behavior: "instant" });
+    .evaluate((option) => {
+      window.scrollTo({ top: 123, behavior: "instant" });
       window.scrollTo({ top: 400, behavior: "smooth" });
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      );
+      // The pending scroll must stop on selection, before the delayed import.
       (option as HTMLElement).click();
     });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -112,6 +97,7 @@ test("theme snapshots stop an unfinished smooth focus scroll", async ({
     start: (window as Window & { themeScrollStart: number }).themeScrollStart,
     end: scrollY,
   }));
+  expect(position.start).toBeGreaterThan(0);
   expect(position.start).toBeLessThan(400);
   expect(Math.abs(position.end - position.start)).toBeLessThan(2);
 });

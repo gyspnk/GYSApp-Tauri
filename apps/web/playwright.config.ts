@@ -17,6 +17,9 @@ export default defineConfig({
   workers: 2,
   use: {
     baseURL: "http://127.0.0.1:4173",
+    // Keep glyph edges grayscale on local and hosted Linux runners. LCD
+    // subpixel rasterization otherwise changes colors without changing layout.
+    launchOptions: { args: ["--disable-lcd-text"] },
     trace: "retain-on-failure",
     // Service workers reload the page when they take control (SKIP_WAITING +
     // controllerchange). Existing contexts reload mid-test otherwise, so e2e

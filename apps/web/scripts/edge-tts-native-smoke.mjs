@@ -309,10 +309,11 @@ async function ensureChordVisible(page) {
     exact: true,
   });
   if (await show.count()) await show.click();
-  else
-    await page
-      .getByRole("button", { name: "Sembunyikan chord", exact: true })
-      .waitFor({ state: "visible", timeout: 10_000 });
+  // Markers may already exist while canonical revalidation is still pending.
+  // The loading button changes back only after the request and layout finish.
+  await page
+    .getByRole("button", { name: "Sembunyikan chord", exact: true })
+    .waitFor({ state: "visible", timeout: 30_000 });
 }
 
 async function closeAppTree(app, force = true) {
@@ -1404,6 +1405,26 @@ try {
   };
   const recoveryChordCacheKey = `chord/${encodeURIComponent(recoveryChordSongId)}/${recoveryChordItem.sha256}`;
   const recoveryChordIndexKey = "gys-chord-cache-index-v1";
+  const chordManifestKey = "gys-latest-chord-manifest-v1";
+  const chordManifestUrl =
+    "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json";
+  // This integrity test uses immutable bytes. Keep the mutable startup manifest
+  // on the same commit so upstream releases cannot bypass its corrupt fixture.
+  const chordManifestRoute = (route) =>
+    route.fulfill({
+      json: {
+        schemaVersion: 1,
+        sourceCommit: musicLock.sourceCommit,
+        files: [
+          {
+            bookCode: "KR",
+            path: `docs/${recoveryChordItem.path.replace(/^docs\//, "")}`,
+            size: recoveryChordItem.size,
+            sha256: recoveryChordItem.sha256,
+          },
+        ],
+      },
+    });
   const recoveryChordRawUrl = rawMusicAssetUrl(
     recoveryChordItem.path,
     musicLock.sourceCommit,
@@ -1413,7 +1434,7 @@ try {
     musicLock.sourceCommit,
   );
   const previousChordCacheState = await page.evaluate(
-    async ({ indexKey, songId, blobKey }) => {
+    async ({ indexKey, songId, blobKey, manifestKey }) => {
       const invoke = window.__TAURI_INTERNALS__?.invoke?.bind(
         window.__TAURI_INTERNALS__,
       );
@@ -1426,12 +1447,14 @@ try {
         entry,
         entryBlob: entry ? await invoke("blob_get", { key: entry.key }) : null,
         testBlob: await invoke("blob_get", { key: blobKey }),
+        manifest: await invoke("key_value_get", { key: manifestKey }),
       };
     },
     {
       indexKey: recoveryChordIndexKey,
       songId: recoveryChordSongId,
       blobKey: recoveryChordCacheKey,
+      manifestKey: chordManifestKey,
     },
   );
   let chordRecoveryFetches = 0;
@@ -1454,6 +1477,7 @@ try {
     resolveChordOfflineFetch = resolve;
   });
   try {
+    await context.route(chordManifestUrl, chordManifestRoute);
     const corruptedChordBytes = await page.evaluate(
       async ({ ref, indexKey, blobKey, base64 }) => {
         const invoke = window.__TAURI_INTERNALS__?.invoke?.bind(
@@ -1743,16 +1767,18 @@ try {
       .unroute(recoveryChordUrl, chordRecoveryRoute)
       .catch(() => undefined);
     if (chordOfflineRoute)
-      await context
-        .unroute(recoveryChordUrl, chordOfflineRoute)
-        .catch(() => undefined);
+      for (const url of new Set([recoveryChordUrl, recoveryChordRawUrl]))
+        await context.unroute(url, chordOfflineRoute).catch(() => undefined);
     if (legacyChordUpgradeRoute)
       await context
         .unroute(recoveryChordUrl, legacyChordUpgradeRoute)
         .catch(() => undefined);
+    await context
+      .unroute(chordManifestUrl, chordManifestRoute)
+      .catch(() => undefined);
     await page
       .evaluate(
-        async ({ indexKey, songId, blobKey, previous }) => {
+        async ({ indexKey, songId, blobKey, manifestKey, previous }) => {
           const invoke = window.__TAURI_INTERNALS__?.invoke?.bind(
             window.__TAURI_INTERNALS__,
           );
@@ -1775,11 +1801,19 @@ try {
           await restoreBlob(blobKey, previous.testBlob);
           if (previous.entry && previous.entry.key !== blobKey)
             await restoreBlob(previous.entry.key, previous.entryBlob);
+          if (previous.manifest === null || previous.manifest === undefined)
+            await invoke("key_value_remove", { key: manifestKey });
+          else
+            await invoke("key_value_set", {
+              key: manifestKey,
+              value: previous.manifest,
+            });
         },
         {
           indexKey: recoveryChordIndexKey,
           songId: recoveryChordSongId,
           blobKey: recoveryChordCacheKey,
+          manifestKey: chordManifestKey,
           previous: previousChordCacheState,
         },
       )

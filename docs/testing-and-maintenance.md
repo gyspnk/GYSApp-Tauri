@@ -99,6 +99,8 @@ Refresh snapshots only after checking actual geometry, contrast and controls,
 then rerun without snapshot updates. Immutable reader assets, frozen snapshot
 clocks and blocked provider SDKs isolate visual/performance tests from upstream
 availability; provider behavior remains covered by its own contracts.
+Chromium disables LCD text rasterization so hosted and local glyph edges use
+the same grayscale rendering; strict screenshot thresholds remain unchanged.
 
 Closed animated/native disclosures can retain a box while their contents are
 not interactive. Check visibility before auditing target sizes. Verse bookmark
@@ -113,12 +115,18 @@ key and natural transpose. The Bible picker edits a draft and requires explicit
 opening. Preload timing excludes intentional motion; motion tests separately
 inspect actual keyframes or intermediate disclosure sizes. A longer test-only
 native disclosure timeline allows sampling its intermediate size under load.
+Chord spacing probes pause the real transition at creation and sample its
+midpoint in both directions. Theme tests delay the lazy module to verify that
+selection cancels pending focus scroll before loading, not after it completes.
 
 The native Stop regression accepts current-request cancellation or nonempty
 completed synthesis followed by an idle reader. `edge-stop-evidence.test.mjs`
 rejects stale, empty and error diagnostics; packaged Windows execution remains
 necessary to prove the whole native flow. Cache smoke tests wait for rendered
-chord markers and verify stored bytes, rather than a removed load notification.
+chord markers and the completed loading state, then verify stored bytes. Their
+mutable manifest endpoint is pinned to the immutable corruption/upgrade bytes;
+the previous manifest and cache state are restored afterward. Live incremental
+manifest updates remain covered separately by startup/repository contracts.
 
 ## Hooks and delivery
 

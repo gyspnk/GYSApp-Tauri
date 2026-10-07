@@ -180,6 +180,8 @@ function useAppSettings() {
     setSettings((current) => ({ ...current, locale }));
   }, []);
   const setTheme = useCallback((theme: Theme) => {
+    // Freeze dropdown focus scroll before the lazy transition import can wait.
+    window.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
     const update = () => setSettings((current) => ({ ...current, theme }));
     void import("./theme-transition.js")
       .then((module) => module.transitionTheme(update))

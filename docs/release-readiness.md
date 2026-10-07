@@ -7,6 +7,34 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-07 — hosted CI follow-up after delivery
+
+- Delivered `826af28` to `main`. Pages, build, deterministic verification,
+  Rust and secret checks passed on GitHub; browser shard 1 passed. Shard 2
+  failed nine strict screenshots with 18–340 differing pixels and reported two
+  animation cases passing only on retry. Inspected actual/diff crops show LCD
+  glyph rasterization differences, rather than geometry changes. Chromium now
+  disables LCD text rendering; no visual threshold or baseline was relaxed.
+- Chord motion checks now pause the actual spacing transition at its midpoint
+  in both directions. Repetition also reproduced a real theme bug: pending
+  focus scroll could finish while the deferred transition module loaded. Theme
+  selection now freezes scroll immediately, with a delayed-module regression
+  that failed against the previous production build.
+- The packaged Windows workflow passed startup/storage/media/assets, its
+  30-process benchmark and the earlier Stop assertion, then failed the chord
+  corruption fixture's fetch count. Its live manifest used `6410749`, while
+  fixture bytes came from pinned `e8e7efe`; the newer source bypassed the seeded
+  corrupt blob. The cache test now pins that manifest, waits for loading to
+  finish and restores manifest/cache state. Byte/hash, one-fetch recovery,
+  zero-fetch offline reuse and legacy upgrade assertions remain intact.
+- Domain sync and browser chord/cache units pass **25/25** locally. The final
+  production visual/reader/theme suite passes **41/41 in 1.4 minutes**, without
+  retries or snapshot updates. Five repetitions of each corrected motion case
+  pass **10/10 in 28.8 seconds**, with three workers. Build, types, docs, native
+  boundary and the unchanged **175.4 / 180 KiB** initial JS budget pass. Windows
+  native execution and hosted browser results require the follow-up workflow;
+  these diagnostics do not claim that the failed delivered run is green.
+
 ### 2026-10-07 — CI repair and production verification (local)
 
 - The latest hosted main CI at `40e3b32` failed browser contracts and timed out
