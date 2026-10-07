@@ -41,7 +41,7 @@ async function openSharedReader(page: Page, kind: "faith" | "literature") {
   const reader = page.locator(".pdf-reader");
   await expect(
     reader.locator('canvas[data-pdf-rendered="true"]').first(),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   return reader;
 }
 

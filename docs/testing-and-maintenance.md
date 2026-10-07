@@ -124,6 +124,10 @@ selection cancels pending focus scroll before loading, not after it completes.
 PDF zoom caps delayed-frame steps; active-page tracking also samples after
 placeholder rendering. The cold real-MIDI play assertion allows 15 seconds for
 lazy WASM/PCM preparation within its existing 35-second test budget.
+Shared PDF geometry checks also allow 15 seconds for initial worker/page paint;
+the subsequent interaction and measured performance limits remain unchanged.
+Full hosted CI distributes every browser case across three shards, each with
+three workers, while retaining its 15-minute per-job limit.
 Playback intent is published before AudioContext resume so simultaneous delayed
 PDF tempo/transpose updates preserve playback. The speech fixture pauses its
 utterance timer and resumes the remaining duration; a no-op pause would falsely

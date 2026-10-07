@@ -138,7 +138,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        # Three machines keep the 699-case suite below the job budget even
+        # when cold PDF/audio work contends on the hosted two-core runners.
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -158,10 +160,10 @@ jobs:
       # runtime libraries, so skip redundant apt/font installation and fetch
       # only the headless shell used by Playwright.
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
-      - name: Run full browser shard ${{ matrix.shard }}/2
+      - name: Run full browser shard ${{ matrix.shard }}/3
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test --config=playwright.ci.config.ts --shard=${{ matrix.shard }}/2
+        run: pnpm --filter @gys/web exec playwright test --config=playwright.ci.config.ts --shard=${{ matrix.shard }}/3
       - name: Upload shard diagnostics on failure
         if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@v4

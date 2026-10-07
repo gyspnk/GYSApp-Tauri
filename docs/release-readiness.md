@@ -9,8 +9,17 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ### 2026-10-07 — compact native transport fixture follow-up
 
-- Delivered `24ad29e`; Pages, build, deterministic verification, Rust and secret
-  checks passed. Windows passed quick suites, 30 relaunches, Home recovery,
+- Delivered `24ad29e`; Pages and all CI jobs passed. The complete browser suite
+  reports **695 clean passes, one pass on retry and three existing optional
+  package skips**. MIDI and speech pause regressions pass without retry. The
+  remaining retry was initial PDF paint taking longer than the generic
+  five-second UI assertion. Only asynchronous initial PDF readiness now uses
+  a 15-second budget; zoom/geometry and performance gates remain unchanged.
+  Three shards distribute the same **699 cases**, retaining three workers and
+  the existing 15-minute job limit, to shorten hosted wall time. Inventory
+  checks confirm **233/233/233 cases**; the shared PDF contracts pass **20/20
+  in 55.5 seconds**, with three workers, no retries or snapshot updates. Windows
+  passed quick suites, 30 relaunches, Home recovery,
   corrupt-chord repair, verified offline reuse, one-fetch legacy offline
   revalidation/upgrade and PDF fallback/corrupt-cache repair. It then tried to
   click the MIDI Stop button inside a closed advanced disclosure.
