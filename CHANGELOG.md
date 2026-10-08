@@ -2,6 +2,23 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-08 — literature transport and session settings
+
+- Load PDF.js concurrently with literature metadata/cache lookup; prefer the
+  official upload CDN, preserve streaming/ranges, and bound response-header
+  waits without aborting large document bodies.
+- Use 512 KiB PDF chunks and an isolated, bounded-range quota so multi-request
+  rendering does not consume ordinary account/API budgets. Immutable chord
+  downloads prefer their CORS-enabled CDN with the pinned BFF as fallback.
+- Default Kidung to text on each new app runtime; remember presentation during
+  SPA navigation only. Keep explicit mode deep links, saved typography/chords
+  and PDF reading progress. Ignore the old persisted presentation preference.
+- Flatten accent, offline diagnostics and device reset sections inside settings;
+  retain top-level animated disclosures and destructive reset confirmation.
+- Record single-pass packaging compression measurements without adopting the
+  larger installed binary. Production literature requires the updated Worker;
+  deployment is deliberately deferred.
+
 ### 2026-10-08 — native package size
 
 - Compare Rust `s`/`z` profiles, five SQLite page sizes, ten PDF rewrites and

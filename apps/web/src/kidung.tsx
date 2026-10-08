@@ -194,7 +194,7 @@ export function HymnDetail({
   const [viewerMode, setViewerMode] = useState<HymnViewerMode>(() =>
     requestedMode === "pdf" || requestedMode === "lyrics"
       ? requestedMode
-      : readHymnViewerMode(songId),
+      : readHymnViewerMode(),
   );
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
@@ -658,8 +658,10 @@ export function HymnDetail({
     if (chordsVisible && chordStatus === "idle") void loadChord();
   }, [item, chordStatus, chordsVisible, pdfStatus]);
   useEffect(() => {
-    if (requestedMode === "pdf" || requestedMode === "lyrics")
+    if (requestedMode === "pdf" || requestedMode === "lyrics") {
       setViewerMode(requestedMode);
+      writeHymnViewerMode(requestedMode);
+    }
   }, [requestedMode]);
   useEffect(() => {
     if (item && viewerMode === "pdf" && pdfStatus === "idle") void loadPdf();
@@ -1036,7 +1038,7 @@ export function HymnDetail({
   const goToNeighbor = (song: { id: string } | undefined) => {
     if (!song) return;
     if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-    transitionReader(() => navigate(`/kidung/${song.id}?mode=${viewerMode}`));
+    transitionReader(() => navigate(`/kidung/${song.id}`));
   };
   const toggle = () => {
     if (!item) return;
@@ -1066,7 +1068,7 @@ export function HymnDetail({
     if (song) {
       // gyschordweb _forceAutoPlayNext: keep playing across song changes.
       if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-      transitionReader(() => navigate(`/kidung/${song.id}?mode=${viewerMode}`));
+      transitionReader(() => navigate(`/kidung/${song.id}`));
     }
   };
   const pointerDistance = () => {
@@ -1315,7 +1317,7 @@ export function HymnDetail({
   const loadPdf = async () => {
     const run = ++pdfRun.current;
     setViewerMode("pdf");
-    writeHymnViewerMode(item.id, "pdf");
+    writeHymnViewerMode("pdf");
     setPdfStatus("loading");
     setPdfVersion(undefined);
     try {
@@ -1349,9 +1351,9 @@ export function HymnDetail({
     }
   };
   const selectViewerMode = (mode: HymnViewerMode) => {
-    writeHymnViewerMode(item.id, mode);
+    writeHymnViewerMode(mode);
     const next = new URLSearchParams(searchParams);
-    next.set("mode", mode);
+    next.delete("mode");
     if (mode === "pdf") void preloadPdfReader().catch(() => undefined);
     transitionReader(() => {
       setViewerMode(mode);

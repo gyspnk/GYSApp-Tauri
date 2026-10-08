@@ -30,7 +30,6 @@ const PORTABLE_BACKUP_KEYS = new Set([
   "gys-report-draft",
   "gys-reminder-time-v1",
   "gys-midi-playlist-v1",
-  "gys-hymn-view-mode-v1",
   "gys-hymn-chord-visibility-v1",
   "gys-accent-color",
   "gys-bible-secondary-version",

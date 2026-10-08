@@ -78,13 +78,7 @@ test("automatic PDF fallback waits for a delayed music lock", async ({
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.abort(),
   );
-  await page.addInitScript(() =>
-    localStorage.setItem(
-      "gys-hymn-view-mode-v1",
-      JSON.stringify({ version: 1, modes: { "hymn-001": "pdf" } }),
-    ),
-  );
-  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=pdf");
   await expect(page.locator(".hymn-detail-page")).toBeVisible();
   await page.waitForTimeout(250);
   release();

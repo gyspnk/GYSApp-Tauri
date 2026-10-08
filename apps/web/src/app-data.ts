@@ -1,3 +1,4 @@
+import { resetHymnViewerMode } from "./hymn-view-mode.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage } from "./platform.js";
 
@@ -23,4 +24,5 @@ export async function clearAppData() {
     recordDiagnostic("warn", "storage.reset", error);
   }
   if (resetError) throw resetError;
+  resetHymnViewerMode();
 }

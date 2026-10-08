@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { ContentCache, contentEtag } from "./content-cache.js";
+import { fetchOfficialPdf } from "./pdf-proxy.js";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -462,10 +463,25 @@ export function createApp(
         "FORBIDDEN",
         "Cookie-authenticated state changes require a trusted origin",
       );
-    const key =
+    const client =
       c.req.header("cf-connecting-ip") ??
       c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
       "anonymous";
+    // PDF.js uses multiple byte requests per page; do not consume account quotas.
+    // Only finite, <=8 MiB ranges for validated public PDFs get this budget.
+    const range = /^bytes=(\d+)-(\d+)$/.exec(c.req.header("range") ?? "");
+    const rangeStart = Number(range?.[1]);
+    const rangeEnd = Number(range?.[2]);
+    const pdfRange =
+      c.req.method === "GET" &&
+      c.req.path === "/api/v1/content/pdf" &&
+      isOfficialPdfUrl(c.req.query("url") ?? "") &&
+      Number.isSafeInteger(rangeStart) &&
+      Number.isSafeInteger(rangeEnd) &&
+      rangeEnd >= rangeStart &&
+      rangeEnd - rangeStart < 8 * 1024 * 1024;
+    const key = `${pdfRange ? "pdf" : "api"}:${client}`;
+    const maxRequests = rateLimit.max * (pdfRange ? 4 : 1);
     const now = Date.now();
     if (now - lastBucketSweep > rateLimit.windowMs) {
       for (const [bucketKey, value] of buckets) {
@@ -481,7 +497,7 @@ export function createApp(
         : current;
     bucket.count += 1;
     buckets.set(key, bucket);
-    if (bucket.count > rateLimit.max) {
+    if (bucket.count > maxRequests) {
       c.header(
         "retry-after",
         String(Math.ceil((bucket.startedAt + rateLimit.windowMs - now) / 1000)),
@@ -745,57 +761,31 @@ export function createApp(
     if (!isOfficialPdfUrl(url.href))
       return errorResponse(c, "FORBIDDEN", "PDF source is not allowlisted");
     try {
-      const candidates: string[] = [url.toString()];
-      if (
-        ["tjc.org", "www.tjc.org"].includes(url.hostname) &&
-        url.pathname.includes("wp-content/uploads/")
-      ) {
-        candidates.push(
-          `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}`,
-          `https://tjcorguploads.s3.amazonaws.com${url.pathname.replace(/^\/id/, "")}`,
+      const upstream = await fetchOfficialPdf(
+        url,
+        c.req.header("range"),
+        c.req.raw.signal,
+      );
+      if (upstream) {
+        c.header("content-type", "application/pdf");
+        c.header(
+          "cache-control",
+          "public, max-age=86400, stale-while-revalidate=604800",
         );
-      } else if (url.hostname === "tjcorguploads.s3.amazonaws.com") {
-        candidates.push(
-          `https://tjc.org/id${url.pathname.replace(/^\/tjcorg/, "")}`,
-        );
-      }
-
-      const range = c.req.header("range");
-      for (const candidate of candidates) {
-        try {
-          const upstream = await fetch(candidate, {
-            headers: {
-              accept: "application/pdf",
-              ...(range ? { range } : {}),
-            },
-            signal: c.req.raw.signal,
-          });
-          if (!upstream.ok && upstream.status !== 206) continue;
-          if (/text\/html/i.test(upstream.headers.get("content-type") ?? ""))
-            continue;
-          c.header("content-type", "application/pdf");
-          c.header(
-            "cache-control",
-            "public, max-age=86400, stale-while-revalidate=604800",
-          );
-          c.header("cross-origin-resource-policy", "cross-origin");
-          for (const header of [
-            "content-length",
-            "content-range",
-            "accept-ranges",
-            "etag",
-            "last-modified",
-          ]) {
-            const value = upstream.headers.get(header);
-            if (value) c.header(header, value);
-          }
-          return new Response(upstream.body, {
-            status: upstream.status,
-            headers: c.res.headers,
-          });
-        } catch {
-          // try the publisher's mirrored host
+        for (const header of [
+          "content-length",
+          "content-range",
+          "accept-ranges",
+          "etag",
+          "last-modified",
+        ]) {
+          const value = upstream.headers.get(header);
+          if (value) c.header(header, value);
         }
+        return new Response(upstream.body, {
+          status: upstream.status,
+          headers: c.res.headers,
+        });
       }
       return errorResponse(c, "UPSTREAM_UNAVAILABLE", "PDF source unavailable");
     } catch {

@@ -2072,12 +2072,6 @@ body:has(.home-page)::-webkit-scrollbar {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.device-data-summary::-webkit-details-marker {
-  display: none;
 }
 
 .device-data-summary > span:first-child {
@@ -2088,16 +2082,6 @@ body:has(.home-page)::-webkit-scrollbar {
 .device-data-summary small,
 .device-data-body small {
   color: var(--muted);
-}
-
-.device-data-chevron {
-  font-size: 1.35rem;
-  line-height: 1;
-  transition: transform 160ms ease;
-}
-
-.device-data-tools[open] .device-data-chevron {
-  transform: rotate(90deg);
 }
 
 .device-data-body {

@@ -39,53 +39,56 @@ afterEach(() => {
 });
 
 describe("chord manifest source compatibility", () => {
-  it("downloads newer immutable chord files directly instead of calling an incompatible pinned BFF", async () => {
-    vi.stubEnv("VITE_BFF_BASE_URL", "https://bff.example");
-    const doc = {
-      version: 2,
-      type: "note-aligned",
-      pages: { "1": [{ noteIdx: 0, chord: "C" }] },
-    };
-    const bytes = new TextEncoder().encode(JSON.stringify(doc));
-    const hash = Array.from(
-      new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
-      (value) => value.toString(16).padStart(2, "0"),
-    ).join("");
-    const requests: string[] = [];
-    vi.stubGlobal(
-      "fetch",
-      vi.fn<typeof globalThis.fetch>(async (input) => {
-        const url = String(input);
-        requests.push(url);
-        if (url.endsWith("assets-chord-manifest.json"))
-          return jsonResponse({
-            schemaVersion: 1,
-            sourceCommit: "deadbee",
-            files: [
-              {
-                bookCode: "KR",
-                path: `docs/${chordRef.path}`,
-                size: bytes.length,
-                sha256: hash,
-              },
-            ],
-          });
-        if (url.endsWith("music-lock.json")) return jsonResponse(musicLock);
-        if (url.endsWith(".chord.json")) return new Response(bytes);
-        throw new Error(`Unexpected request: ${url}`);
-      }),
-    );
-    const { createBrowserChordRepository } = await import("./chords.js");
-    expect(await createBrowserChordRepository().getChord("hymn-001")).toEqual(
-      doc,
-    );
-    expect(requests.some((url) => url.startsWith("https://bff.example"))).toBe(
-      false,
-    );
-    expect(requests.filter((url) => url.endsWith(".chord.json"))).toHaveLength(
-      1,
-    );
-  });
+  it.each([sourceCommit, "deadbee"])(
+    "downloads immutable chords from the CDN before the BFF (%s)",
+    async (currentCommit) => {
+      vi.stubEnv("VITE_BFF_BASE_URL", "https://bff.example");
+      const doc = {
+        version: 2,
+        type: "note-aligned",
+        pages: { "1": [{ noteIdx: 0, chord: "C" }] },
+      };
+      const bytes = new TextEncoder().encode(JSON.stringify(doc));
+      const hash = Array.from(
+        new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+        (value) => value.toString(16).padStart(2, "0"),
+      ).join("");
+      const requests: string[] = [];
+      vi.stubGlobal(
+        "fetch",
+        vi.fn<typeof globalThis.fetch>(async (input) => {
+          const url = String(input);
+          requests.push(url);
+          if (url.endsWith("assets-chord-manifest.json"))
+            return jsonResponse({
+              schemaVersion: 1,
+              sourceCommit: currentCommit,
+              files: [
+                {
+                  bookCode: "KR",
+                  path: `docs/${chordRef.path}`,
+                  size: bytes.length,
+                  sha256: hash,
+                },
+              ],
+            });
+          if (url.endsWith("music-lock.json")) return jsonResponse(musicLock);
+          if (url.endsWith(".chord.json")) return new Response(bytes);
+          throw new Error(`Unexpected request: ${url}`);
+        }),
+      );
+      const { createBrowserChordRepository } = await import("./chords.js");
+      expect(await createBrowserChordRepository().getChord("hymn-001")).toEqual(
+        doc,
+      );
+      expect(
+        requests.some((url) => url.startsWith("https://bff.example")),
+      ).toBe(false);
+      expect(
+        requests.filter((url) => url.endsWith(".chord.json")),
+      ).toHaveLength(1);
+    },
+  );
 
   it("checks each launch without rewriting an unchanged saved manifest", async () => {
     const upstream = {

@@ -47,7 +47,7 @@ test("score/text changes preserve chords and reuse the master PDF worker and req
     .locator(".pdf-reader-hymn")
     .getByRole("button", { name: "Pujian berikutnya", exact: true })
     .click();
-  await expect(page).toHaveURL(/hymn-002\?mode=pdf/);
+  await expect(page).toHaveURL(/hymn-002/);
   await expect(canvas).toBeVisible();
   expect(masterRequests.length).toBe(openedRequests);
   expect(perSongRequests).toEqual([]);

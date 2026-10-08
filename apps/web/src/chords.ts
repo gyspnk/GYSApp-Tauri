@@ -203,11 +203,13 @@ function newBrowserChordRepository(): ChordRepository {
       const lock = base
         ? await loadMusicLock().catch(() => undefined)
         : undefined;
+      // Immutable GitHub bytes already have CORS; keep background sync off
+      // account/API quotas. The pinned proxy remains a network fallback.
       const candidates = [
+        `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
         base && lock?.sourceCommit === ref.sourceCommit
           ? `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(ref.sourceCommit)}&path=${encodeURIComponent(ref.path.replace(/^docs\//, ""))}`
           : undefined,
-        `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
       ].filter((value): value is string => Boolean(value));
       let lastError: unknown;
       for (const url of candidates) {

@@ -783,13 +783,17 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     setArticleBody(undefined);
   }, [item?.id, resourceVersion]);
 
+  // Load the viewer concurrently with issue metadata and offline storage.
+  useEffect(() => {
+    if (isPdfItem) void preloadPdfReader().catch(() => undefined);
+  }, [isPdfItem]);
+
   useEffect(() => {
     let cancelled = false;
     setPdfData(undefined);
     setPreparedAsset(undefined);
     setDownloadStatus(pdfAsset ? "checking" : "idle");
     if (pdfAsset) {
-      void preloadPdfReader().catch(() => undefined);
       void readCachedLiteraturePdf(pdfAsset)
         .catch(() => undefined)
         .then((data) => {

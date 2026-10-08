@@ -67,7 +67,10 @@ the previous audible session.
 The catalog keeps category, Kidung/Playlist/Pengaturan and text/score controls
 in one compact field. Categories include **Semua** and **KR**; use the number/
 title search to find a hymn, including lettered A/B variants. A row opens the
-current presentation. Lyrics and score are distinct modes; leaving the score
+current presentation. Each new app launch/reload defaults to text; switching
+to score is remembered across navigation within that runtime only. Explicit
+`?mode=pdf` links still request a score. Typography, chord visibility and reading
+progress remain saved independently. Lyrics and score are distinct modes; leaving the score
 viewer returns to the hymn list through its back action.
 
 ### Text and chords
@@ -172,6 +175,10 @@ Apple uses its provider authorization UI. A successful exchange refreshes
 the account/profile photo. Tauri authenticates in its allowlisted official e-GYS
 login window and stores the token in the OS keyring. Logging out removes the
 local credential/session boundary; browser tokens are not kept in localStorage.
+
+Settings retain one disclosure per category. Opening Appearance shows theme,
+accent palette and language together; offline diagnostics and device reset
+have no second disclosure. Reset still asks for confirmation.
 
 ## Offline data, backups and recovery
 

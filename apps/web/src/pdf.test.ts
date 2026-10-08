@@ -40,7 +40,7 @@ describe("PDF reader controls", () => {
     const urlOptions = pdfDocumentSourceOptions("https://cdn.example/kr.pdf");
     expect(urlOptions).toMatchObject({
       url: "https://cdn.example/kr.pdf",
-      rangeChunkSize: 64 * 1024,
+      rangeChunkSize: 512 * 1024,
       disableAutoFetch: true,
       disableStream: true,
     });

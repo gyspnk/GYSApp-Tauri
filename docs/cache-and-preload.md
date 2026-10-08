@@ -1,6 +1,6 @@
 # Cache, loading and preload reference
 
-Reviewed 2026-10-07. This describes implementation bounds; cold network, device
+Reviewed 2026-10-08. This describes implementation bounds; cold network, device
 performance and storage eviction remain external to a cache-hit guarantee.
 
 ## Startup and route intent
@@ -85,7 +85,19 @@ Official literature URLs use the public content Worker even when the optional
 login/build BFF variable is empty. Source discovery requests the minimal
 publisher metadata and validates TJC/S3 URLs. Streaming preserves Range,
 Content-Range, Accept-Ranges and Last-Modified; CORS exposes the headers needed
-by PDF.js. HTML error pages are rejected before trusted mirror fallback.
+by PDF.js. Upload paths prefer the official S3 mirror before the publisher;
+HTML error pages are rejected and their bodies cancelled before fallback.
+Each upstream connection has an eight-second response-header budget; the
+successful streaming body remains governed by reader cancellation, not a
+whole-book timeout. Viewer modules start concurrently with issue discovery.
+
+Remote PDFs use 512 KiB chunks instead of 64 KiB to reduce sequential round
+trips, without auto-fetching the whole book. PDF.js can coalesce adjacent
+chunks: finite official PDF ranges up to 8 MiB use a separate per-client
+budget (480/minute with the default configuration); other API requests retain
+120/minute. Invalid/unbounded ranges and foreign URLs retain the normal quota.
+Immutable chord downloads prefer raw GitHub's existing browser CORS path;
+the pinned BFF remains a fallback. Verified cache identity is unchanged.
 
 PDF.js and its worker stay lazy. Shared document leases deduplicate viewer/chord
 loading. Completed spreads paint together; page navigation crossfades the

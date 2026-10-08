@@ -1,6 +1,6 @@
 # GYSApp architecture
 
-Reviewed 2026-10-07. Runtime uses clean-room contracts/domain ports and generated
+Reviewed 2026-10-08. Runtime uses clean-room contracts/domain ports and generated
 assets rather than source checkout imports. Current application behavior is
 summarized in the [user guide](user-guide.md); source/benchmark receipts retain
 their original dates.
@@ -38,6 +38,18 @@ Public literature URL/parser helpers use the dedicated
 `@gys/contracts/literature-source` export so optional source logic does not pull
 unrelated contracts into startup. Build contracts before Wrangler resolves it.
 Feature CSS/payloads follow the same lazy ownership where useful.
+
+`pdf-proxy.ts` owns mirror selection, bounded connection waits and streaming
+cancellation; `index.ts` retains URL validation, CORS, quotas and response
+headers. Kidung presentation is one runtime-memory value shared by catalog
+and detail, eliminating persisted per-song mode serialization while retaining
+separate durable typography/chord/progress records. Settings keep a single
+level of animated category disclosures.
+
+The [2026-10-08 follow-up audit](performance/2026-10-08-follow-up.md) records
+packaging tradeoffs, real-publication rendering and deployment limitations.
+These are focused changes to existing owners, not a claim that every module
+has reached its smallest possible implementation.
 
 ## Platform capability boundary
 

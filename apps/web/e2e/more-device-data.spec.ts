@@ -12,11 +12,9 @@ test("reset is secondary, guarded, and cancel-safe", async ({ page }) => {
 
   const advanced = page.getByTestId("device-data-tools");
   await expect(advanced).toBeVisible();
-  await expect(advanced).not.toHaveAttribute("open", "");
+  await expect(page.locator(".more-setting-section details")).toHaveCount(0);
 
   const reset = page.getByRole("button", { name: /reset perangkat/i });
-  await expect(reset).toBeHidden();
-  await advanced.locator("summary").click();
   await expect(reset).toBeVisible();
 
   page.once("dialog", async (dialog) => {

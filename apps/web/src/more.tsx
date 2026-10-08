@@ -1238,11 +1238,11 @@ export function MorePage({
                 />
               </div>
 
-              <details
+              <section
                 className="appearance-setting-disclosure"
                 data-setting="accent"
               >
-                <summary className="appearance-setting-row">
+                <div className="appearance-setting-row">
                   <span className="appearance-setting-name">
                     {translate(locale, "more.accent")}
                   </span>
@@ -1254,8 +1254,7 @@ export function MorePage({
                     />
                     {selectedAccentLabel}
                   </span>
-                  <Icon name="chevronDown" size={18} />
-                </summary>
+                </div>
                 <div
                   className="accent-palette-grid"
                   role="radiogroup"
@@ -1314,7 +1313,7 @@ export function MorePage({
                     </span>
                   </label>
                 </div>
-              </details>
+              </section>
 
               <div className="appearance-setting-row">
                 <span className="appearance-setting-name">
@@ -1501,10 +1500,8 @@ export function MorePage({
                     </small>
                   )}
                 </div>
-                <details className="offline-pack-diagnostics">
-                  <summary className="text-button">
-                    {translate(locale, "more.offlineDiagnostics")}
-                  </summary>
+                <div className="offline-pack-diagnostics">
+                  <span>{translate(locale, "more.offlineDiagnostics")}</span>
                   <small>
                     Manifest v{manifest?.version ?? 1} ·{" "}
                     {manifest
@@ -1513,7 +1510,7 @@ export function MorePage({
                         )
                       : translate(locale, "more.loading")}
                   </small>
-                </details>
+                </div>
               </article>
 
               <DistributedAssetPanel
@@ -1532,19 +1529,16 @@ export function MorePage({
                 onRemove={(code) => void removeDistributedAsset(code)}
               />
             </div>
-            <details
+            <section
               className="more-card more-card-wide device-data-tools"
               data-testid="device-data-tools"
             >
-              <summary className="device-data-summary">
+              <div className="device-data-summary">
                 <span>
                   <strong>{translate(locale, "more.deviceData")}</strong>
                   <small>{translate(locale, "more.deviceDataDesc")}</small>
                 </span>
-                <span className="device-data-chevron" aria-hidden="true">
-                  ›
-                </span>
-              </summary>
+              </div>
               <div className="device-data-body">
                 <div>
                   <strong>{translate(locale, "more.resetDevice")}</strong>
@@ -1568,7 +1562,7 @@ export function MorePage({
                   {translate(locale, "more.resetDevice")}
                 </button>
               </div>
-            </details>
+            </section>
           </div>
         </details>
 

@@ -1,81 +1,42 @@
-import { describe, expect, it } from "vitest";
-import {
-  readHymnChordVisibility,
-  isHymnViewerMode,
-  readHymnViewerMode,
-  writeHymnChordVisibility,
-  writeHymnViewerMode,
-} from "./hymn-view-mode.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-function createStorage(initial?: string): Storage {
-  let value = initial ?? null;
-  return {
-    getItem: () => value,
-    setItem: (_key, next) => {
-      value = next;
+let saved: Map<string, string>;
+beforeEach(() => {
+  vi.resetModules();
+  saved = new Map();
+  vi.stubGlobal("window", {
+    localStorage: {
+      getItem: (key: string) => saved.get(key) ?? null,
+      setItem: (key: string, value: string) => saved.set(key, value),
     },
-    removeItem: () => {
-      value = null;
-    },
-    clear: () => {
-      value = null;
-    },
-    key: () => null,
-    get length() {
-      return value === null ? 0 : 1;
-    },
-  };
-}
+  });
+});
+afterEach(() => vi.unstubAllGlobals());
 
-describe("hymn viewer mode preference", () => {
-  it("accepts only the two presentation modes", () => {
+describe("hymn presentation session", () => {
+  it("accepts text and PDF; chord remains a capability", async () => {
+    const { isHymnViewerMode } = await import("./hymn-view-mode.js");
     expect(isHymnViewerMode("lyrics")).toBe(true);
     expect(isHymnViewerMode("pdf")).toBe(true);
-    // Chord is a capability layered on either presentation, not a third page.
     expect(isHymnViewerMode("chord")).toBe(false);
-    expect(isHymnViewerMode("lyrics+pdf")).toBe(false);
   });
-
-  it("round-trips a per-song preference and ignores corrupt data", () => {
-    const storage = createStorage();
-    const originalWindow = globalThis.window;
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: { localStorage: storage },
-    });
-    try {
-      expect(readHymnViewerMode("hymn-001")).toBe("lyrics");
-      writeHymnViewerMode("hymn-001", "pdf");
-      expect(readHymnViewerMode("hymn-001")).toBe("pdf");
-      expect(readHymnChordVisibility("hymn-001")).toBe(false);
-      writeHymnChordVisibility("hymn-001", true);
-      expect(readHymnChordVisibility("hymn-001")).toBe(true);
-      storage.setItem("gys-hymn-view-mode-v1", "{broken");
-      expect(readHymnViewerMode("hymn-001")).toBe("lyrics");
-    } finally {
-      Object.defineProperty(globalThis, "window", {
-        configurable: true,
-        value: originalWindow,
-      });
-    }
-  });
-
-  it("migrates the removed legacy chord page to the text presentation", () => {
-    const storage = createStorage(
-      JSON.stringify({ version: 1, modes: { "hymn-001": "chord" } }),
+  it("ignores a legacy persisted PDF mode and remembers a switch within the app", async () => {
+    saved.set(
+      "gys-hymn-view-mode-v1",
+      JSON.stringify({ version: 1, modes: { "hymn-001": "pdf" } }),
     );
-    const originalWindow = globalThis.window;
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: { localStorage: storage },
-    });
-    try {
-      expect(readHymnViewerMode("hymn-001")).toBe("lyrics");
-    } finally {
-      Object.defineProperty(globalThis, "window", {
-        configurable: true,
-        value: originalWindow,
-      });
-    }
+    const mode = await import("./hymn-view-mode.js");
+    expect(mode.readHymnViewerMode()).toBe("lyrics");
+    mode.writeHymnViewerMode("pdf");
+    expect(mode.readHymnViewerMode()).toBe("pdf");
+  });
+  it("starts a new app runtime in text while keeping the saved chord preference", async () => {
+    const first = await import("./hymn-view-mode.js");
+    first.writeHymnViewerMode("pdf");
+    first.writeHymnChordVisibility("hymn-001", true);
+    vi.resetModules();
+    const reopened = await import("./hymn-view-mode.js");
+    expect(reopened.readHymnViewerMode()).toBe("lyrics");
+    expect(reopened.readHymnChordVisibility("hymn-001")).toBe(true);
   });
 });

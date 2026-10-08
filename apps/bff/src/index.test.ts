@@ -484,7 +484,7 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("tries the official S3 mirror when a TJC PDF path is unavailable", async () => {
+  it("falls back to the publisher when its S3 mirror is unavailable", async () => {
     const originalFetch = globalThis.fetch;
     const bytes = new Uint8Array([37, 80, 68, 70, 45]);
     const fetchMock = vi
@@ -514,7 +514,7 @@ describe("BFF public boundary", () => {
       );
       expect(response.status).toBe(200);
       expect(await response.arrayBuffer()).toEqual(bytes.buffer);
-      expect(String(fetchMock.mock.calls[1]?.[0])).toContain(
+      expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
         "tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/file.pdf",
       );
     } finally {
@@ -811,6 +811,50 @@ describe("BFF public boundary", () => {
     });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ voices: [] });
+  });
+
+  it("isolates bounded official PDF ranges from ordinary API quotas", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response("%PDF-", {
+          status: 206,
+          headers: { "content-type": "application/pdf" },
+        }),
+    );
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+        rateLimit: { max: 1, windowMs: 60_000 },
+      });
+      const path = `/api/v1/content/pdf?url=${encodeURIComponent("https://tjc.org/file.pdf")}`;
+      const init = { headers: { range: "bytes=0-1572863" } };
+      for (let i = 0; i < 4; i++)
+        expect((await app.request(path, init)).status).toBe(206);
+      expect((await app.request(path, init)).status).toBe(429);
+      expect((await app.request("/api/v1/content/catalog")).status).toBe(200);
+      expect((await app.request("/api/v1/content/catalog")).status).toBe(429);
+      // Invalid sources and unbounded/oversized ranges use the ordinary bucket.
+      expect(
+        (await app.request(path, { headers: { range: "bytes=0-" } })).status,
+      ).toBe(429);
+      expect(
+        (await app.request(path, { headers: { range: "bytes=0-9999999" } }))
+          .status,
+      ).toBe(429);
+      expect(
+        (
+          await app.request(
+            "/api/v1/content/pdf?url=https://evil.example/file.pdf",
+            init,
+          )
+        ).status,
+      ).toBe(429);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("applies a configurable per-client rate limit", async () => {

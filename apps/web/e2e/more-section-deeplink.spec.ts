@@ -42,7 +42,7 @@ test("More keeps login visible and other settings collapsed until requested", as
     page.getByRole("combobox", { name: "Pilih Tema" }),
   ).toBeVisible();
   await expect(page.locator(".theme-pill-grid")).toHaveCount(0);
-  await expect(page.locator(".accent-palette-grid")).toBeHidden();
+  await expect(page.locator(".accent-palette-grid")).toBeVisible();
 });
 
 test("appearance choices are contextual and preserve theme, accent, and language", async ({
@@ -68,8 +68,7 @@ test("appearance choices are contextual and preserve theme, accent, and language
 
   const accent = page.locator('[data-setting="accent"]');
   const palette = accent.locator(".accent-palette-grid");
-  await expect(palette).toBeHidden();
-  await accent.locator(":scope > summary").click();
+  await expect(palette).toBeVisible();
   const emerald = palette.getByRole("radio", {
     name: "Warna aksen Zamrud",
     exact: true,
@@ -173,7 +172,7 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
     await expect(
       page.locator(".appearance-settings .appearance-setting-name"),
     ).toHaveText(appearanceLabels[locale]);
-    await expect(page.locator(".accent-palette-grid")).toBeHidden();
+    await expect(page.locator(".accent-palette-grid")).toBeVisible();
     await expect
       .poll(() =>
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),

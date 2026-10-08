@@ -227,14 +227,14 @@ for (const width of [320, 390, 768, 1440]) {
     await reader
       .getByRole("button", { name: "Pujian berikutnya", exact: true })
       .click();
-    await expect(page).toHaveURL(/kidung\/hymn-134\?mode=pdf/);
+    await expect(page).toHaveURL(/kidung\/hymn-134/);
     await expect(
       reader.locator('canvas[data-pdf-rendered="true"]').first(),
     ).toBeVisible();
     await reader
       .getByRole("button", { name: "Pujian sebelumnya", exact: true })
       .click();
-    await expect(page).toHaveURL(/kidung\/hymn-133\?mode=pdf/);
+    await expect(page).toHaveURL(/kidung\/hymn-133/);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width);

@@ -49,7 +49,7 @@ export function pdfDocumentSourceOptions(
   if (data) return { data: data.slice() };
   return {
     url: src,
-    rangeChunkSize: 64 * 1024,
+    rangeChunkSize: 512 * 1024,
     disableAutoFetch: true,
     disableStream: true,
   };

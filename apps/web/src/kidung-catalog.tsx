@@ -30,6 +30,7 @@ import {
 } from "./kidung-shared.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
 import { KidungLocalNav } from "./kidung-local-nav.js";
+import { readHymnViewerMode, writeHymnViewerMode } from "./hymn-view-mode.js";
 import { navigateSmooth } from "./route-transitions.js";
 
 export function HymnCatalog({
@@ -44,7 +45,13 @@ export function HymnCatalog({
   useReadinessMarker("gys-hymn-catalog-ready", state.status === "ready");
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const pdfMode = searchParams.get("mode") !== "lyrics";
+  const [pdfMode, setPdfMode] = useState(() => {
+    const requested = searchParams.get("mode");
+    return (
+      requested === "pdf" ||
+      (requested !== "lyrics" && readHymnViewerMode() === "pdf")
+    );
+  });
   const [query, setQuery] = useState("");
   const [book, setBook] = useState("all");
   const deferredQuery = useDeferredValue(query);
@@ -125,10 +132,8 @@ export function HymnCatalog({
       event.clientX,
       event.clientY,
     );
-    void navigateSmooth(
-      navigate,
-      `/kidung/${songId}?mode=${pdfMode ? "pdf" : "lyrics"}`,
-    );
+    writeHymnViewerMode(pdfMode ? "pdf" : "lyrics");
+    void navigateSmooth(navigate, `/kidung/${songId}`);
   };
   const onRowQueue = (
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -185,16 +190,19 @@ export function HymnCatalog({
                 locale,
                 pdfMode ? "kidung.score" : "kidung.text",
               )}
-              onClick={() =>
+              onClick={() => {
+                const mode = pdfMode ? "lyrics" : "pdf";
+                writeHymnViewerMode(mode);
+                setPdfMode(mode === "pdf");
                 setSearchParams(
                   (current) => {
                     const next = new URLSearchParams(current);
-                    next.set("mode", pdfMode ? "lyrics" : "pdf");
+                    next.delete("mode");
                     return next;
                   },
                   { replace: true },
-                )
-              }
+                );
+              }}
             >
               <span
                 key={pdfMode ? "pdf" : "lyrics"}

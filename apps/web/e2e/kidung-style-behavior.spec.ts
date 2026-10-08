@@ -6,7 +6,7 @@ for (const theme of ["light", "dark", "amoled"]) {
   test(`reader accent follows the selected theme at runtime (${theme})`, async ({
     page,
   }) => {
-    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await expect(page.locator(".hymn-detail-page")).toBeVisible();
     await page.evaluate((theme) => {
       document.documentElement.dataset.theme = theme;
@@ -63,15 +63,11 @@ for (const locale of ["id", "en", "zh"] as const) {
         "gys-shell-settings-v1",
         JSON.stringify({ version: 1, locale, theme: "light" }),
       );
-      localStorage.setItem(
-        "gys-hymn-view-mode-v1",
-        JSON.stringify({ version: 1, modes: { "hymn-001": "pdf" } }),
-      );
     }, locale);
     await page.route("https://raw.githubusercontent.com/**", (route) =>
       route.abort(),
     );
-    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=pdf");
     await expect(
       page.locator("canvas[data-pdf-rendered='true']").first(),
     ).toBeVisible({ timeout: 20000 });
@@ -163,13 +159,7 @@ test("a PDF-only distributed song has no empty music disclosure", async ({
     });
     await route.fulfill({ json: corpus });
   });
-  await page.addInitScript(() =>
-    localStorage.setItem(
-      "gys-hymn-view-mode-v1",
-      JSON.stringify({ version: 1, modes: { "hymne-999": "pdf" } }),
-    ),
-  );
-  await page.goto("/GYSApp-Tauri/kidung/hymne-999");
+  await page.goto("/GYSApp-Tauri/kidung/hymne-999?mode=pdf");
   const chrome = page.locator(".hymn-pdf-viewer-chrome.is-no-music");
   await expect(chrome).toBeVisible();
   await expect(chrome).toContainText("PDF-only fixture");

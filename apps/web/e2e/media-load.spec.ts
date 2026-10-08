@@ -344,7 +344,8 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
 }) => {
   await preparePinnedReaderAssets(page);
   // A saved value makes the edit/reload contract independent of first-visit autofit.
-  await page.addInitScript(() =>
+  await page.goto("/GYSApp-Tauri/kidung");
+  await page.evaluate(() =>
     localStorage.setItem(
       "gys-hymn-typography-v1",
       JSON.stringify({
@@ -370,6 +371,9 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     .getByRole("button", { name: "Berikutnya", exact: true })
     .click();
   await page.reload();
+  await expect(page.locator(".lyrics-sheet")).toBeVisible();
+  await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
   await page
     .locator(".pdf-toolbar")

@@ -19,17 +19,21 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
     await expect(
+      modes.getByRole("button", { name: "Teks", exact: true }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await modes.getByRole("button", { name: "Teks", exact: true }).click();
+    await expect(
       modes.getByRole("button", { name: "Partitur", exact: true }),
     ).toHaveAttribute("aria-pressed", "true");
     const row = page.locator(".pujian-title").first();
     await row.click();
-    await expect(page).toHaveURL(/mode=pdf/);
+    await expect(page).not.toHaveURL(/mode=/);
     await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
     await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
     await page
       .getByRole("button", { name: "Pujian berikutnya", exact: true })
       .click();
-    await expect(page).toHaveURL(/hymn-002\?mode=pdf$/);
+    await expect(page).toHaveURL(/hymn-002$/);
     await expect(page.locator(".pdf-reader")).toBeVisible({ timeout: 30_000 });
     await page
       .getByRole("button", { name: "← Semua kidung", exact: true })
@@ -39,7 +43,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
     await modes.getByRole("button", { name: "Partitur", exact: true }).click();
     await row.click();
-    await expect(page).toHaveURL(/mode=lyrics/);
+    await expect(page).not.toHaveURL(/mode=/);
     await expect(page.locator(".lyrics-sheet")).toBeVisible();
     await expect(page.locator(".pdf-reader")).toHaveCount(0);
   });

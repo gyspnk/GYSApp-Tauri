@@ -63,6 +63,8 @@ test("a verified local PDF remains readable after returning offline", async ({
     .toBe(true);
   await context.setOffline(true);
   await page.reload();
+  await expect(page.locator(".lyrics-sheet")).toBeVisible();
+  await page.locator(".hymn-partitur-toggle").click();
   await expect(
     page.locator("canvas[data-pdf-rendered='true']").first(),
   ).toBeVisible({ timeout: 20000 });

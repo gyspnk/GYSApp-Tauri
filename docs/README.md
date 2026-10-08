@@ -1,7 +1,7 @@
 # Application documentation
 
 Reviewed against the working implementation and generated inventories on
-**2026-10-07**. Current docs describe shipped code; deployment, provider-account
+**2026-10-08**. Current docs describe shipped code; deployment, provider-account
 success, signed binaries and physical-device results require their own evidence.
 
 ## Current guides
