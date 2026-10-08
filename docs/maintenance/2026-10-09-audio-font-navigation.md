@@ -40,7 +40,7 @@ Cloudflare production deployment remains pending owner credentials; follow the
 The APK build in [37854922569](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37854922569)
 passes packaging, signing and alignment checks: 36,278,195 bytes, ARM64,
 compressed JNI and 16 KiB ELF alignment. Its application source is `8bbadcd`;
-subsequent commits refine tests only.
+subsequent commits refine tests and remove duplicate favorite-label glyphs only.
 
 The first native run confirms that neither Home startup nor navigation to More
 owns Android audio focus. Font checking initially stopped because Chromium
@@ -56,3 +56,7 @@ Browser regression assertions account for system text size and wrapped chord
 rows; mobile/tablet screenshot baselines reflect the intentionally larger fonts.
 The updated visual fixtures retain viewport/overflow checks and were reviewed
 for Home, Kidung, Lainnya, lyrics, Faith and literature.
+
+The remaining hosted visual differences were isolated to the Unicode star in
+favorite labels (228 pixels, font fallback differs between hosts). Those labels
+now rely on their existing SVG heart icon, retaining strict screenshot assertions.
