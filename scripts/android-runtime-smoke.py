@@ -157,7 +157,6 @@ def main():
 
 
 if __name__ == "__main__":
-    args_output = None
     try:
         main()
     finally:
