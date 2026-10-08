@@ -542,6 +542,11 @@ test("faith PDF source menu fades without clipping its floating content", async 
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
   await page.locator('button[aria-label*="PDF"]').first().click();
+  // Sample disclosure frames after the first PDF render, so CPU-heavy decoding
+  // does not consume the complete close transition between sampled frames.
+  await expect(
+    page.locator('.faith-pdf-overlay canvas[data-pdf-rendered="true"]').first(),
+  ).toBeVisible({ timeout: 30_000 });
   const menu = page.locator(".faith-pdf-source-menu");
   const summary = page.locator(".faith-pdf-sources > summary");
   await summary.click();

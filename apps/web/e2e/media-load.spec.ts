@@ -387,6 +387,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     /is-open/,
   );
   await pdfOptions.click();
+  await page.locator(".pdf-reader-hymn .pdf-layout-menu-toggle").click();
   await page
     .locator(".pdf-layout-toggle")
     .getByRole("button", { name: "Mendatar" })
@@ -395,13 +396,22 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
     "data-pdf-layout",
     "horizontal",
   );
+  await page.locator(".pdf-reader-hymn .pdf-layout-menu-toggle").click();
+  await page
+    .getByRole("button", { name: "Tampilan 2 halaman", exact: true })
+    .click();
+  await expect(page.locator(".pdf-stage")).toHaveAttribute(
+    "data-pdf-layout",
+    "two",
+  );
   await pdfOptions.click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".pdf-advanced-controls")).not.toHaveClass(
     /is-open/,
   );
   await pdfOptions.click();
-  await page.getByRole("button", { name: "2 halaman" }).click();
+  await page.locator(".pdf-reader-hymn .pdf-layout-menu-toggle").click();
+  await expect(page.getByRole("button", { name: "2 halaman" })).toBeDisabled();
   await expect(page.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
     "single",

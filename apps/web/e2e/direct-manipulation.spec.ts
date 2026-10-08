@@ -36,6 +36,7 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
   await expect(options).toBeVisible();
   await options.click();
   await expect(advanced).toBeVisible();
+  await page.locator(".pdf-reader-hymn .pdf-layout-menu-toggle").click();
   await expect(
     page.locator(".pdf-reader-hymn .pdf-layout-toggle"),
   ).toBeVisible();
@@ -180,6 +181,9 @@ test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
     ).toBeVisible();
     await reader
       .getByRole("button", { name: copy[locale].settings, exact: true })
+      .click();
+    await reader
+      .getByRole("button", { name: copy[locale].layout, exact: true })
       .click();
     await expect(
       reader.getByRole("group", { name: copy[locale].layout, exact: true }),
