@@ -132,15 +132,6 @@ def main():
     args = parser.parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    # Current emulator Goldfish mapper aborts when RegionSampling reads a DMA
-    # color buffer. Disable system luma sampling on this disposable userdebug
-    # emulator, then restart its framework before any app installation.
-    adb("wait-for-device", timeout=90)
-    adb("root")
-    adb("wait-for-device", timeout=45)
-    adb("shell", "setprop", "debug.sf.luma_sampling", "0")
-    adb("shell", "stop")
-    adb("shell", "start")
     deadline = time.monotonic() + 300
     while time.monotonic() < deadline:
         try:

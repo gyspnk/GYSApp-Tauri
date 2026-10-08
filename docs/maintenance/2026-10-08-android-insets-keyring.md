@@ -80,10 +80,10 @@ Emulator 36.6.11 from the official archive and checks its published SHA-256. And
 
 Both Google images exposed a SurfaceFlinger/Goldfish mapper assertion before app
 installation: `!rcEnc->featureInfo()->hasReadColorBufferDma`. Emulator feature
-flags did not prevent it. The smoke harness disables `debug.sf.luma_sampling` and
-restarts the disposable userdebug emulator framework before installing the app;
-this is a test-environment workaround, never an APK configuration change. System
-adaptive luminance sampling is therefore outside this test's acceptance scope.
+flags did not prevent it. Earlier harness runs disabled `debug.sf.luma_sampling` and restarted the
+emulator framework before installation. That workaround was insufficient for
+system screenshots/rotation and is removed from the pinned-emulator harness.
+No system sampling property or root restart is applied by the current test.
 
 [Android 17 runtime run 37782899001](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37782899001)
 then opened Home and Lainnya, retained the app process after the account credential
