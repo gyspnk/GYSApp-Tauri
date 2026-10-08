@@ -104,6 +104,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apk", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--android-version", default="17", choices=["16", "17"])
     args = parser.parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
@@ -118,8 +119,8 @@ def main():
     else:
         raise RuntimeError("Android emulator did not complete boot")
     version = adb("shell", "getprop", "ro.build.version.release").decode().strip()
-    if version != "17":
-        raise RuntimeError("Expected Android 17, got " + version)
+    if version != args.android_version:
+        raise RuntimeError("Expected Android " + args.android_version + ", got " + version)
     # Fresh preview images finish services/ART setup after boot_completed.
     time.sleep(20)
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
@@ -177,7 +178,7 @@ def main():
     wait_label(output, "Lainnya", "cold-restart")
     if not alive():
         raise RuntimeError("App exited on cold restart")
-    print("PASS Android 17 More/insets/cold-restart smoke", flush=True)
+    print(f"PASS Android {args.android_version} More/insets/cold-restart smoke", flush=True)
 
 
 if __name__ == "__main__":

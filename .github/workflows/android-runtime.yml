@@ -1,4 +1,4 @@
-name: Android 17 runtime
+name: Android runtime
 
 on:
   workflow_call:
@@ -6,12 +6,21 @@ on:
       apk_run_id:
         required: true
         type: string
+      android_version:
+        default: "17"
+        type: string
   workflow_dispatch:
     inputs:
       apk_run_id:
         description: "Native Android APK workflow run ID containing the verified ARM64 artifact"
         required: true
         type: string
+
+      android_version:
+        description: "Android system image to validate (17 is preview)"
+        default: "17"
+        type: choice
+        options: ["17", "16"]
 
 permissions:
   contents: read
@@ -23,6 +32,8 @@ jobs:
     timeout-minutes: 20
     env:
       ANDROID_AVD_HOME: /tmp/gys-android-avd
+      ANDROID_API: ${{ inputs.android_version == '17' && '37.0' || '36' }}
+      ANDROID_VERSION: ${{ inputs.android_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -39,16 +50,16 @@ jobs:
           path: android-artifacts
           run-id: ${{ inputs.apk_run_id }}
           github-token: ${{ github.token }}
-      - name: Enable KVM and install Android 17
+      - name: Enable KVM and install Android ${{ inputs.android_version }}
         run: |
           mkdir -p "$ANDROID_AVD_HOME"
           test -c /dev/kvm
           sudo chmod a+rw /dev/kvm
           # Android 17 preview images require the current preview emulator.
           sdkmanager --channel=3 "emulator"
-          sdkmanager "system-images;android-37.0;google_apis;x86_64"
-          printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-37.0;google_apis;x86_64" --device pixel_2
-      - name: Exercise packaged APK on Android 17
+          sdkmanager "system-images;android-$ANDROID_API;google_apis;x86_64"
+          printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-$ANDROID_API;google_apis;x86_64" --device pixel_2
+      - name: Exercise packaged APK on Android ${{ inputs.android_version }}
         run: |
           mkdir -p android-qa
           sha256sum -c android-artifacts/SHA256SUMS-android.txt
@@ -57,15 +68,15 @@ jobs:
           trap 'result=$?; if [ "$result" -ne 0 ]; then cat android-qa/emulator.log; fi' EXIT
           # API 37 Goldfish mapper asserts when host advertises read-color DMA.
           # Disable its direct-memory prerequisite in the emulator only.
-          "$ANDROID_HOME/emulator/emulator" -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -feature -GLDirectMem -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
+          "$ANDROID_HOME/emulator/emulator" -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -feature -GLDirectMem,-HasSharedSlotsHostMemoryAllocator -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
           emulator_pid=$!
           sleep 3
           if ! kill -0 "$emulator_pid" 2>/dev/null; then exit 1; fi
-          python3 scripts/android-runtime-smoke.py --apk android-artifacts/GYSApp-0.1.0-android-arm64-preview.apk --output android-qa
+          python3 scripts/android-runtime-smoke.py --apk android-artifacts/GYSApp-0.1.0-android-arm64-preview.apk --output android-qa --android-version "$ANDROID_VERSION"
       - name: Upload native screenshots and logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-17-runtime-${{ github.run_id }}
+          name: android-${{ inputs.android_version }}-runtime-${{ github.run_id }}
           path: android-qa/
           if-no-files-found: warn
