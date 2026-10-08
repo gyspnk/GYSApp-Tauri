@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "tauri": "tauri",
     "build": "cargo check --manifest-path src-tauri/Cargo.toml",
     "bundle:windows": "pnpm exec tauri build --bundles nsis",
     "bundle:android": "pnpm exec tauri android build --apk --debug",

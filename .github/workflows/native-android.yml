@@ -63,11 +63,11 @@ jobs:
       - run: pnpm verify:docs
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Generate Android project
-        run: pnpm --filter @gys/native exec tauri android init --ci
+        run: pnpm --filter @gys/native tauri android init --ci
       # This manually dispatched preview uses the Android debug signing identity.
       # Store/upgradable production releases require the owner's stable keystore.
       - name: Build ARM64 preview APK
-        run: pnpm --filter @gys/native exec tauri android build --apk --debug --target aarch64 --ci
+        run: pnpm --filter @gys/native tauri android build --apk --debug --target aarch64 --ci
       - name: Verify and collect APK
         run: |
           mkdir -p android-artifacts
