@@ -64,14 +64,14 @@
 }
 .selected-verse-context strong {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .selected-verse-context span {
   display: -webkit-box;
   overflow: hidden;
   color: var(--muted);
   font-family: var(--font-reading);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -86,7 +86,7 @@
 .selected-verse-actions .quiet-button {
   min-height: 36px;
   padding-inline: 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .selected-verse-highlights {
   display: inline-flex;
@@ -104,7 +104,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.25rem;
   transition: all var(--motion-fast);
 }
 .selected-verse-close:hover,
@@ -159,7 +159,7 @@
 .reader-heading h2 {
   margin: 0;
   font-family: var(--font-reading);
-  font-size: calc(var(--bible-font-size, 18px) * 1.25);
+  font-size: calc(var(--bible-font-size, 1.125rem) * 1.25);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.35;
@@ -167,7 +167,7 @@
 }
 .reader-heading .date-line {
   margin-bottom: 6px;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .verse-list {
   padding: 0 30px 26px;
@@ -221,7 +221,7 @@
   background: transparent;
   color: var(--ink);
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 18px);
+  font-size: var(--bible-font-size, 1.125rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.45;
@@ -248,7 +248,7 @@
 .bible-pericope-title {
   text-align: center;
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 18px);
+  font-size: var(--bible-font-size, 1.125rem);
   font-weight: 700;
   color: var(--ink);
 }
@@ -269,7 +269,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 80%, var(--blue-soft));
   color: var(--blue);
-  font-size: calc(var(--bible-font-size, 18px) * 0.61);
+  font-size: calc(var(--bible-font-size, 1.125rem) * 0.61);
   font-weight: 600;
   font-style: italic;
   cursor: pointer;
@@ -294,7 +294,7 @@
   border-radius: 999px;
   background: var(--surface);
   color: var(--blue);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 750;
   cursor: pointer;
   flex: 0 0 auto;
@@ -389,14 +389,14 @@
 }
 .bible-crossref-header small {
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 700;
 }
 .bible-crossref-header strong {
   color: var(--ink);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .bible-crossref-header button {
   width: 32px;
@@ -408,7 +408,7 @@
   background: var(--surface-soft);
   color: var(--muted);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   transition: all var(--motion-fast) var(--ease-out);
 }
@@ -453,7 +453,7 @@
 }
 .bible-crossref-ref-tag {
   color: var(--navy);
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   font-weight: 750;
 }
 .bible-crossref-nav-btn {
@@ -465,7 +465,7 @@
   border-radius: 999px;
   background: var(--surface);
   color: var(--blue);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 650;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
@@ -480,7 +480,7 @@
 .bible-crossref-snippet {
   margin: 0;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   cursor: pointer;
   opacity: 0.92;
@@ -491,7 +491,7 @@
 .bible-crossref-hint {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: center;
 }
 .bible-notes-backdrop {
@@ -566,21 +566,21 @@
 }
 .bible-notes-header small {
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 750;
 }
 .bible-notes-header strong {
   color: var(--ink);
-  font-size: 18px;
+  font-size: 1.125rem;
   letter-spacing: -0.015em;
   line-height: 1.3;
 }
 .bible-notes-count {
   flex: 1;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: right;
   font-weight: 500;
 }
@@ -595,7 +595,7 @@
   background: var(--surface-soft);
   color: var(--ink);
   cursor: pointer;
-  font-size: 19px;
+  font-size: 1.1875rem;
   line-height: 1;
   transition: all var(--motion-fast) var(--ease-out);
 }
@@ -619,7 +619,7 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -659,7 +659,7 @@
   background: color-mix(in srgb, var(--blue) 5%, transparent);
 }
 .bible-notes-item-open strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--blue);
   font-weight: 700;
 }
@@ -669,7 +669,7 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   opacity: 0.9;
 }
@@ -682,7 +682,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 1.125rem;
   transition: all var(--motion-fast) var(--ease-out);
 }
 .bible-notes-item-delete:hover {
@@ -706,13 +706,13 @@
   text-align: left;
   cursor: pointer;
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 18px);
+  font-size: var(--bible-font-size, 1.125rem);
   line-height: var(--bible-line-height, 1.72);
 }
 .verse-content {
   min-width: 0;
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 18px);
+  font-size: var(--bible-font-size, 1.125rem);
   line-height: var(--bible-line-height, 1.72);
 }
 .verse-content .verse-text {
@@ -755,7 +755,7 @@
   border-radius: 5px;
   background: color-mix(in srgb, var(--blue-soft) 65%, var(--surface));
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 750;
   line-height: 1;
   vertical-align: super;
@@ -794,7 +794,7 @@
   padding: 14px 18px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .bible-side-panel {
   display: grid;
@@ -816,7 +816,7 @@
 }
 .bible-selection-panel > strong {
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   letter-spacing: -0.01em;
   line-height: 1.4;
 }
@@ -870,7 +870,7 @@
   display: grid;
   gap: 8px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .bible-note-field textarea {
@@ -883,7 +883,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   line-height: 1.6;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
   transition:
@@ -925,12 +925,12 @@
   background: var(--surface-soft);
 }
 .bible-bookmark-item strong {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .bible-bookmark-item span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -943,7 +943,7 @@
   background: var(--surface-soft);
   color: var(--muted);
   cursor: pointer;
-  font-size: calc(var(--bible-font-size, 18px) * 0.66);
+  font-size: calc(var(--bible-font-size, 1.125rem) * 0.66);
   font-weight: 650;
   line-height: 1;
 }
@@ -979,7 +979,7 @@
 .song-controls label > span,
 .transpose-control > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -992,7 +992,7 @@
   border-radius: 7px;
   background: var(--surface-soft);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .hymn-list {
   max-height: 610px;
@@ -1020,12 +1020,12 @@
 }
 .hymn-list-item span {
   color: var(--blue);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .hymn-list-item strong {
   overflow: hidden;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1034,7 +1034,7 @@
   display: block;
   padding: 12px 15px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .hymn-detail {
   padding: 28px;
@@ -1050,12 +1050,12 @@
 .hymn-heading h2 {
   margin: 0;
   max-width: 600px;
-  font-size: clamp(22px, 2.5vw, 32px);
+  font-size: clamp(1.375rem, 2.5vw, 2rem);
   letter-spacing: -0.04em;
 }
 .hymn-heading .date-line {
   margin-bottom: 9px;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .hymn-actions {
   display: flex;
@@ -1066,7 +1066,7 @@
 .hymn-actions button {
   min-height: 39px;
   padding-inline: 12px;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .song-controls {
   display: flex;
@@ -1101,7 +1101,7 @@
   min-width: 27px;
   color: var(--blue);
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .lyrics-sheet {
   max-width: 700px;
@@ -1109,7 +1109,7 @@
   padding: 24px 10px 18px;
   color: var(--ink);
   font-family: var(--font-reading);
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.65;
   touch-action: pan-y;
 }
@@ -1132,7 +1132,7 @@
   background: var(--surface);
   box-shadow: var(--shadow);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
   animation: toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes toast-in {
@@ -1167,7 +1167,7 @@
   display: block;
   padding: 17px 17px 8px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -1181,7 +1181,7 @@
   border-radius: 7px;
   background: var(--surface-soft);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .faith-list button {
   display: grid;
@@ -1205,11 +1205,11 @@
 }
 .faith-list button span {
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .faith-list button strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   line-height: 1.35;
 }
@@ -1225,7 +1225,7 @@
   border-radius: 50%;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 650;
 }
 .faith-copy {
@@ -1233,7 +1233,7 @@
   margin-bottom: 32px;
   color: var(--navy);
   font-family: var(--font-reading);
-  font-size: clamp(22px, 3vw, 31px);
+  font-size: clamp(1.375rem, 3vw, 1.9375rem);
   line-height: 1.45;
   letter-spacing: -0.025em;
 }
@@ -1246,7 +1246,7 @@
 }
 .faith-actions button {
   min-height: 40px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .faith-note {
   display: grid;
@@ -1256,7 +1256,7 @@
 }
 .faith-note span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1269,14 +1269,14 @@
   background: var(--surface-soft);
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 .more-page > .page-intro {
   padding-bottom: 20px;
 }
 .more-page > .page-intro h1 {
-  font-size: clamp(28px, 3vw, 36px);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
 }
 .more-category-bar {
   display: flex;
@@ -1298,7 +1298,7 @@
   border-radius: 20px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
@@ -1336,7 +1336,7 @@
 }
 .more-setting-row > strong {
   min-width: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 650;
 }
 .more-setting-row > svg {
@@ -1355,7 +1355,7 @@
 .more-settings-content > p {
   margin: 0 0 12px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 .more-settings-link {
@@ -1425,14 +1425,14 @@
   border-bottom: 1px dashed color-mix(in srgb, var(--gold) 40%, var(--line));
 }
 .member-church-title {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--gold);
 }
 .member-status-pill {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 12px;
@@ -1450,7 +1450,7 @@
 }
 .info-label {
   display: block;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1459,16 +1459,16 @@
 }
 .info-value {
   display: block;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--ink);
 }
 .member-name {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--navy);
 }
 .info-value-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--ink);
 }
 .member-badge-actions {
@@ -1504,7 +1504,7 @@
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -1528,7 +1528,7 @@
   justify-content: center;
   gap: clamp(4px, 1cqw, 10px);
   padding: clamp(8px, 1.2cqw, 14px) clamp(4px, 1.4cqw, 20px);
-  font-size: clamp(11px, calc(9px + 0.6cqw), 15px);
+  font-size: clamp(0.6875rem, calc(0.5625rem + 0.6cqw), 0.9375rem);
 }
 .egys-provider-all .egys-provider > svg {
   margin: 0;
@@ -1604,7 +1604,7 @@
 }
 .egys-google-error {
   color: var(--danger, #b3261e);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 /* Theme and language values stay visible while their full pickers stay closed. */
@@ -1623,7 +1623,7 @@
 .appearance-setting-name {
   min-width: 0;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .appearance-setting-select {
@@ -1645,7 +1645,7 @@
   background: transparent;
   box-shadow: none;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .appearance-setting-select .control-select-menu {
@@ -1659,7 +1659,7 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .appearance-accent-swatch {
@@ -1681,18 +1681,18 @@
 }
 .more-card-heading .date-line {
   margin-bottom: 7px;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .more-card h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 1.375rem;
   letter-spacing: -0.03em;
 }
 .more-card > p {
   max-width: 650px;
   margin: 12px 0 16px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 .more-page .pack-manager-actions > button,
@@ -1714,7 +1714,7 @@
 }
 .pack-manager-actions > small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .offline-pack-diagnostics {
   display: flex;
@@ -1723,12 +1723,12 @@
   gap: 6px 12px;
   margin-top: 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .offline-pack-diagnostics > small {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .distributed-assets-list {
   display: grid;
@@ -1753,13 +1753,13 @@
 .distributed-asset-group-label strong {
   flex: 1;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .distributed-asset-group-label span {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 .distributed-asset-row {
@@ -1776,12 +1776,12 @@
 }
 .distributed-asset-copy strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .distributed-asset-copy small,
 .distributed-asset-actions .account-sync-note {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .distributed-asset-copy progress {
   width: min(360px, 100%);
@@ -1802,11 +1802,11 @@
 }
 .pack-stats strong {
   color: var(--navy);
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .pack-stats small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .more-action {
   display: grid;
@@ -1826,11 +1826,11 @@
   transform: translateY(-1px);
 }
 .more-action strong {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .more-action small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .more-icon {
@@ -1842,7 +1842,7 @@
   border-radius: 8px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 19px;
+  font-size: 1.1875rem;
 }
 .report-card {
   display: grid;
@@ -1857,14 +1857,14 @@
   background: var(--surface-soft);
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .report-card .primary-button {
   justify-self: start;
 }
 .report-card .form-status {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .media-surface {
@@ -1942,11 +1942,11 @@
   white-space: nowrap;
 }
 .media-mini-context strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .media-mini-context small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 .media-surface.is-dragging {
   transition: none;
@@ -1994,7 +1994,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .media-progress input,
 .media-adjustments input {
@@ -2009,7 +2009,7 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .media-adjustments label {
   display: grid;
@@ -2026,7 +2026,7 @@
   background: var(--surface-soft);
   color: var(--ink);
   font: inherit;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .media-transpose {
   display: flex;
@@ -2063,7 +2063,7 @@
   display: grid;
   gap: 3px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .speech-controls select {
   min-width: 124px;
@@ -2075,7 +2075,7 @@
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .speech-controls input {
   width: 90px;
@@ -2085,13 +2085,13 @@
 .media-meta small,
 .media-meta span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .media-meta strong {
-  font-size: 12px;
+  font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2121,7 +2121,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .media-minimize:hover {
   background: var(--surface-soft);
@@ -2142,7 +2142,7 @@
 .sauh-title {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(17px, 1.8vw, 20px);
+  font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
   font-weight: 750;
   line-height: 1.35;
   letter-spacing: -0.02em;
@@ -2157,7 +2157,7 @@
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .sauh-offline-state {
   display: grid;
@@ -2181,7 +2181,7 @@
 }
 .sauh-offline-state strong {
   color: var(--navy);
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1.4;
 }
 .sauh-offline-state .quiet-button {
@@ -2348,7 +2348,7 @@
     margin-top: 24px;
   }
   .intro-copy {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   .home-grid {
     grid-template-columns: 1fr;
@@ -2373,7 +2373,7 @@
   }
   blockquote {
     margin: 26px 0 22px;
-    font-size: 25px;
+    font-size: 1.5625rem;
   }
   .feature-empty {
     margin-top: 55px;
@@ -2411,13 +2411,13 @@
     padding: 22px 19px 14px;
   }
   .reader-heading h2 {
-    font-size: calc(var(--bible-font-size, 18px) * 1.25);
+    font-size: calc(var(--bible-font-size, 1.125rem) * 1.25);
   }
   .verse-list {
     padding-inline: 19px;
   }
   .verse-row p {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
   .verse-row {
     scroll-margin-block: 260px 100px;
@@ -2519,7 +2519,7 @@
   }
   .lyrics-sheet {
     padding-inline: 0;
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
   .faith-layout {
     grid-template-columns: 1fr;
@@ -2533,7 +2533,7 @@
     padding: 24px 20px;
   }
   .faith-copy {
-    font-size: 22px;
+    font-size: 1.375rem;
   }
   .more-secondary-grid {
     grid-template-columns: 1fr;
@@ -2579,7 +2579,7 @@
   }
   .navigation-shell .nav-copy strong {
     display: block;
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 650;
   }
   .navigation-shell .nav-copy small {
@@ -2609,7 +2609,7 @@
     display: none;
   }
   .media-meta strong {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .media-control {
     width: 44px;

@@ -1492,7 +1492,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const splitStyle = {
     "--bible-split": `${splitRatio}%`,
-    "--bible-font-size": `${typography.fontSize}px`,
+    "--bible-font-size": `${typography.fontSize / 16}rem`,
     "--bible-line-height": `${typography.lineHeight}`,
   } as CSSProperties & {
     "--bible-split": string;

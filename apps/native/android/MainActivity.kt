@@ -1,12 +1,38 @@
 package id.or.gys.app
 
 import android.os.Bundle
+import android.content.res.Configuration
+import android.webkit.WebView
+import kotlin.math.roundToInt
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : TauriActivity() {
+  private var appWebView: WebView? = null
+
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    appWebView = webView
+    updateTextScale()
+  }
+
+  private fun updateTextScale() {
+    // WebView defaults to 100 even when Android accessibility font size changes.
+    appWebView?.settings?.textZoom = (resources.configuration.fontScale * 100).roundToInt()
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    updateTextScale()
+  }
+
+  override fun onResume() {
+    super.onResume()
+    updateTextScale()
+  }
+
   private external fun initializeCredentialContext(context: android.content.Context)
 
   override fun onCreate(savedInstanceState: Bundle?) {

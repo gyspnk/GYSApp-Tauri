@@ -26,7 +26,7 @@
     border-radius: 12px;
   }
   .navigation-shell .nav-copy strong {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 550;
   }
   .navigation-shell .nav-item.is-active {
@@ -88,7 +88,7 @@
 }
 .page:not(.hymn-page) :is(.page-intro h1, .faith-page-title) {
   font-family: inherit;
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.035em;
@@ -98,7 +98,7 @@
 }
 .page.home-page:not(.hymn-page) .page-intro h1 {
   font-family: var(--font-reading);
-  font-size: clamp(28px, 3vw, 42px);
+  font-size: clamp(1.75rem, 3vw, 2.625rem);
   font-weight: 550;
   letter-spacing: -0.045em;
 }
@@ -106,7 +106,7 @@
   font-family: inherit;
 }
 .date-line {
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -160,7 +160,7 @@
   flex: none;
 }
 .portal-copy strong {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 .home-grid {
@@ -203,7 +203,7 @@
 .home-media-section .section-title-row h2 {
   font-family: inherit;
   font-weight: 650;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 .home-media-section .section-title-row :is(.date-line, .text-button) {
   color: var(--navy);
@@ -236,7 +236,7 @@
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-content strong {
   font-family: inherit;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.45;
   max-height: none;
@@ -249,7 +249,7 @@
 }
 .hymn-index-heading h1 {
   font-family: inherit;
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   font-weight: 650;
   margin: 0;
 }
@@ -268,7 +268,7 @@
 }
 .hymn-page .pujian-nomor {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink);
   display: grid;
@@ -279,7 +279,7 @@
   background: var(--blue-soft);
 }
 .pujian-title-label {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 550;
 }
 .hymn-page .pujian-title {
@@ -287,7 +287,7 @@
 }
 .kidung-tool-heading h1 {
   font-family: inherit;
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   font-weight: 650;
   line-height: 1.2;
 }
@@ -318,7 +318,7 @@
 }
 .kidung-settings-section h2 {
   font-family: inherit;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.35;
 }
 .kidung-tool-page .kidung-settings-layout {
@@ -432,7 +432,7 @@
 .kidung-queue-options > button {
   min-height: 44px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .kidung-queue-options > button:disabled {
   opacity: 0.45;
@@ -508,7 +508,7 @@
   width: min(560px, calc(100% - 32px));
   padding: 16px;
   border-radius: var(--radius-card);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .app-update-banner button {
   border: 1px solid var(--line);
@@ -549,11 +549,11 @@
 }
 .faith-page .faith-search-bar input {
   min-height: 32px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 @media (min-width: 960px) {
   .faith-page .faith-search-bar input {
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 .faith-page .faith-search-bar input:focus-visible {
@@ -608,7 +608,7 @@
   place-items: center;
   border-radius: 10px;
   font-family: inherit;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--navy);
   line-height: 1;
@@ -620,7 +620,7 @@
   max-width: none;
   font-family: var(--font-reading);
   font-size: calc(
-    var(--faith-font-size, clamp(18px, 1.4vw, 20px)) *
+    var(--faith-font-size, clamp(1.125rem, 1.4vw, 1.25rem)) *
       var(--reading-text-scale, 1)
   );
   font-weight: 400;
@@ -645,7 +645,7 @@
   padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.4;
 }
 .faith-page .faith-row-heading {
@@ -677,7 +677,7 @@
 }
 .home-grid .sauh-title {
   font-family: var(--font-reading);
-  font-size: clamp(24px, 2.1vw, 32px);
+  font-size: clamp(1.5rem, 2.1vw, 2rem);
   line-height: 1.3;
 }
 .home-grid .sauh-card-body blockquote {
@@ -697,7 +697,7 @@
 }
 .literature-featured .section-title-row h2 {
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 650;
 }
 .img-fallback-placeholder:has(.img-fallback-art) {
@@ -775,7 +775,7 @@
     height: 20px;
   }
   .portal-copy strong {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .home-grid .verse-panel,
   .home-grid .sauh-card-media {
@@ -792,7 +792,7 @@
   .faith-row > .faith-number {
     width: 28px;
     height: 28px;
-    font-size: 14px;
+    font-size: 0.875rem;
     border-radius: 8px;
   }
   .faith-page .faith-row-heading {
@@ -872,7 +872,7 @@
 }
 .more-library-hub h2,
 .more-settings-heading {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -910,13 +910,13 @@
 }
 .more-library-link strong {
   display: block;
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1.3;
 }
 .more-library-link small {
   display: block;
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--muted);
 }
@@ -960,7 +960,7 @@
   min-width: 0;
   overflow-wrap: anywhere;
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .more-page .egys-member-badge {
   overflow-wrap: anywhere;
@@ -1009,7 +1009,7 @@
     gap: 10px;
   }
   .more-library-link strong {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   .more-library-link > span:nth-child(2) {
     flex: none;
@@ -1108,7 +1108,7 @@
   box-shadow: none;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--ink);
 }
 :is(.literature-toolbar, .catalog-search) .search-field:focus-within {
@@ -1180,7 +1180,7 @@
   gap: 16px;
   min-height: 48px;
   padding-block: 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--muted);
 }
 .catalog-filter-status .quiet-button {
@@ -1194,7 +1194,7 @@
   border-radius: var(--radius-card);
   background: var(--blue-soft);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.6;
 }
 .reader-preview-note p {
@@ -1218,13 +1218,13 @@
 }
 .catalog-search .empty-state strong,
 .literature-page > .empty-state strong {
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.4;
 }
 .catalog-search .empty-state span,
 .literature-page > .empty-state span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 .suara-article-image-wrap:is(
@@ -1275,7 +1275,7 @@
 }
 .topbar .language-select .control-select-value {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 .topbar .control-select-chevron {
@@ -1414,7 +1414,7 @@
     background: transparent;
   }
   .navigation-shell .nav-copy strong {
-    font-size: 11px;
+    font-size: 0.6875rem;
     line-height: 1.2;
   }
   .navigation-shell .nav-active-indicator {
@@ -1525,7 +1525,9 @@
   user-select: text;
 }
 .bible-reader .verse-content {
-  font-size: calc(var(--bible-font-size, 18px) * var(--reading-text-scale, 1));
+  font-size: calc(
+    var(--bible-font-size, 1.125rem) * var(--reading-text-scale, 1)
+  );
 }
 .app-frame.is-reader-route .bible-reader {
   min-height: calc(100dvh - 58px);
@@ -1793,7 +1795,7 @@
     gap: 6px;
   }
   .hymn-detail-page.is-text-viewer .hymn-text-title h1 {
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.3;
   }
   .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
@@ -1999,14 +2001,14 @@
   white-space: nowrap;
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
   grid-area: seek;
   width: 100%;
   margin: 0;
   gap: 8px;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .media-surface.is-kidung-media:not(.is-minimized) > .media-transport-controls {
   align-self: center;
@@ -2213,7 +2215,7 @@
     );
 }
 .hymn-detail-page.is-text-viewer .hymn-text-footer > span {
-  font-size: clamp(12px, calc(10px + 0.4vw), 16px);
+  font-size: clamp(0.75rem, calc(0.625rem + 0.4vw), 1rem);
 }
 @media (max-width: 359px) {
   .hymn-detail-page.is-text-viewer .detail-hero {
@@ -2251,7 +2253,7 @@
   height: clamp(18px, calc(15px + 0.6vw), 26px);
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
-  font-size: clamp(13px, calc(11px + 0.4vw), 17px);
+  font-size: clamp(0.8125rem, calc(0.6875rem + 0.4vw), 1.0625rem);
 }
 body:has(.hymn-detail-page.is-text-viewer)
   .media-surface.is-kidung-media:not(.is-minimized) {
@@ -2284,7 +2286,7 @@ body:has(.hymn-detail-page.is-text-viewer)
     padding: 0;
   }
   .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.35;
   }
   .media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
@@ -2327,7 +2329,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 6px;
   flex: 1;
   min-width: 140px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .egys-inline-login input {
   width: 100%;
@@ -2366,7 +2368,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
 }
 .faith-pdf-title strong {
-  font-size: 14px;
+  font-size: 0.875rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2496,7 +2498,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: center;
   gap: 5px;
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .pdf-reader .pdf-page-jump input {
   width: 44px;
@@ -2550,13 +2552,13 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .pdf-reader .pdf-zoom-controls > button {
   color: var(--ink);
-  font-size: 20px;
+  font-size: 1.25rem;
   border: 0;
   background: transparent;
 }
 .pdf-reader .pdf-zoom-controls .pdf-zoom-indicator {
   width: 100%;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -2629,7 +2631,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   border-radius: 7px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
@@ -2681,7 +2683,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding-block: 16px;
   color: var(--muted);
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
@@ -2883,7 +2885,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 8px;
 }
 .home-grid .sauh-offline-state strong {
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .home-grid .sauh-offline-state .quiet-button {
   margin-top: 4px;
@@ -3104,7 +3106,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: center;
 }
 .media-utility-controls .media-volume-control > span {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
@@ -3127,7 +3129,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding-inline: 8px;
   gap: 3px;
   color: var(--blue);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .lyrics-key-select .control-select-trigger {
   min-width: 64px;
@@ -3143,11 +3145,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   flex: 1;
   min-width: 24px;
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-transpose button {
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
 }
 .media-surface.is-kidung-media
   .media-advanced-panel
@@ -3159,7 +3161,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   :is(.media-tempo-toggle, .media-instrument-control select) {
   width: 100%;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
   grid-column: 1 / -1;
@@ -3171,7 +3173,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0;
   border-radius: 10px;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .media-surface.is-kidung-media:not(.is-minimized)
   .media-advanced-panel
@@ -3272,7 +3274,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.25;
   white-space: normal;
   display: -webkit-box;
@@ -3280,7 +3282,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   -webkit-line-clamp: 2;
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title small {
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.25;
 }
 .hymn-detail-page.is-pdf-viewer .viewer-chrome-button {
@@ -3431,7 +3433,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .literature-pdf-overlay .literature-reader-panel > .section-title-row h2 {
   margin: 0;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .literature-pdf-head-actions .text-button {
@@ -3571,7 +3573,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 18px 0 8px;
 }
 .home-grid .sauh-title {
-  font-size: clamp(22px, 1.9vw, 29px);
+  font-size: clamp(1.375rem, 1.9vw, 1.8125rem);
   margin-block: 8px;
 }
 .home-grid .sauh-card-body blockquote {
@@ -3670,7 +3672,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .article-progress-main output {
   min-width: 4ch;
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -3703,7 +3705,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 6px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--ink);
   background: var(--surface);
 }
@@ -3722,7 +3724,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .app-frame .online-content-page .online-article-card > h1 {
   font-family: var(--font-reading);
-  font-size: clamp(25px, 2.7vw, 38px);
+  font-size: clamp(1.5625rem, 2.7vw, 2.375rem);
   line-height: 1.22;
   margin-block: 10px 18px;
   text-wrap: balance;
@@ -3730,7 +3732,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .app-frame .online-content-page .online-article-body {
   width: 100%;
   max-width: none;
-  font-size: clamp(15px, 0.5vw + 12px, 18px);
+  font-size: clamp(0.9375rem, 0.5vw + 0.75rem, 1.125rem);
   line-height: 1.8;
   color: var(--ink);
 }
@@ -3904,7 +3906,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .pdf-music-menu-panel .pdf-key-btn {
   width: 100%;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .pdf-music-menu-panel .pdf-music-action {
   display: flex;
@@ -4049,7 +4051,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   width: 104px;
   min-width: 104px;
   min-height: 44px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   padding: 8px 10px;
 }
 .hymn-page .kidung-controls-field .kidung-local-nav {

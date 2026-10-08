@@ -494,8 +494,9 @@ export class BrowserMidiPlayer {
     });
   }
   public async resumeContext(): Promise<void> {
+    if (!this.audio || !this.isPlaying()) return;
     try {
-      await this.ensureAudio().resume();
+      await this.audio.resume();
     } catch {
       // Private browsing or suspended context must not block UI
     }

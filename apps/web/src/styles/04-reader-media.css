@@ -28,7 +28,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -54,7 +54,7 @@
   display: block;
   margin-top: 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 /* e-GYS profile check state: same visual language as loading-panel. */
@@ -67,7 +67,7 @@
   border-radius: 11px;
   background: var(--surface);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   animation: loading-pulse 1.8s ease-in-out infinite;
 }
 .account-loading-box p {
@@ -105,7 +105,7 @@
   color: var(--ink);
   cursor: pointer;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
   transition:
     border-color 0.16s ease,
@@ -125,7 +125,7 @@
   border-radius: 11px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 /* Bible empty search result state inherits panel language above. */
 /* Kidung playlist tool pages. */
@@ -142,7 +142,7 @@
 }
 .kidung-saved-playlists h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .kidung-saved-playlist-row {
   display: flex;
@@ -198,7 +198,7 @@
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .hymn-midi-dock-play {
   display: inline-grid;
@@ -244,7 +244,7 @@
 .chord-editor-label {
   flex: none;
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   white-space: nowrap;
 }
 /* Segmented groups inside the PDF toolbar (layout toggle & zoom). */
@@ -265,7 +265,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -308,7 +308,7 @@
   gap: 7px;
   min-height: 38px;
   padding-inline: 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   white-space: nowrap;
 }
 .hymn-action-icon {
@@ -316,7 +316,7 @@
   width: 16px;
   place-items: center;
   flex: 0 0 16px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1;
 }
 .song-controls {
@@ -331,12 +331,12 @@
   gap: 6px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .reader-preferences > span {
   margin-right: 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -370,7 +370,7 @@
   display: grid;
   gap: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .transpose-control > div {
   display: inline-flex;
@@ -404,7 +404,7 @@
 }
 .account-sync-note {
   color: var(--blue) !important;
-  font-size: 10px !important;
+  font-size: 0.625rem !important;
 }
 .account-profile-details > div {
   display: grid;
@@ -414,12 +414,12 @@
 }
 .account-profile-details dt {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .account-profile-details dd {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .utility-panel {
   display: grid;
@@ -434,7 +434,7 @@
   max-width: 720px;
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 .playlist-settings {
@@ -452,7 +452,7 @@
   gap: 8px;
   min-height: 42px;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 .control-check input {
@@ -499,14 +499,14 @@
 }
 .playlist-item-main > span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .playlist-item-main strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .playlist-item-actions {
   display: flex;
@@ -630,7 +630,7 @@
   }
   .hymn-detail-page .detail-hero h1 {
     margin-bottom: 0;
-    font-size: 19px;
+    font-size: 1.1875rem;
   }
   /* Outranks the global is-text-viewer flex rule above (0-3-0 vs 0-4-0):
      phones navigate songs from the text footer / pdf chrome instead. */
@@ -933,7 +933,7 @@
   color: var(--blue);
   font-variant-numeric: tabular-nums;
   font-weight: 750;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .pujian-title {
   flex: 1 1 auto;
@@ -943,7 +943,7 @@
   background: transparent;
   color: var(--ink);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.4;
   padding: 4px 0;
   cursor: pointer;
@@ -972,7 +972,7 @@
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
@@ -1035,7 +1035,7 @@
     box-shadow: var(--shadow-lift);
     color: var(--ink);
     content: attr(data-nav-label);
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 650;
     opacity: 0;
     pointer-events: none;
@@ -1365,7 +1365,7 @@ body.gys-viewer-active {
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1384,11 +1384,11 @@ body.gys-viewer-active {
 .pdf-transpose-btns strong {
   min-width: 24px;
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 .pdf-transpose-reset {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .hymn-midi-dock-row + .hymn-midi-dock-row {
   margin-top: 8px;
@@ -1397,7 +1397,7 @@ body.gys-viewer-active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .hymn-midi-dock-play {
   flex: 0 0 auto;
@@ -1424,7 +1424,7 @@ body.gys-viewer-active {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 .viewer-chrome-button:hover:not(:disabled),
@@ -1439,7 +1439,7 @@ body.gys-viewer-active {
 }
 .viewer-chrome-button > span:first-child,
 .viewer-chrome-button > span:last-child {
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1;
 }
 .viewer-chrome-midi {
@@ -1469,11 +1469,11 @@ body.gys-viewer-active {
   width: 100%;
   min-width: 0;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .hymn-pdf-viewer-title small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .hymn-detail-page.is-pdf-viewer > .detail-hero {
   display: none;
@@ -1522,7 +1522,7 @@ body.gys-viewer-active {
     padding-inline: 7px;
   }
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .pdf-reader-hymn .pdf-toolbar {
     display: grid;
@@ -1574,7 +1574,7 @@ body.gys-viewer-active {
     background: var(--surface-soft);
     color: var(--ink);
     cursor: pointer;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 650;
   }
   .pdf-reader-hymn .pdf-advanced-controls {
@@ -1732,7 +1732,7 @@ body.gys-viewer-active {
   padding: 6px 14px;
   border-radius: 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -1761,7 +1761,7 @@ body.gys-viewer-active {
   border-radius: 999px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 .kidung-tool-page {
@@ -1777,7 +1777,7 @@ body.gys-viewer-active {
 }
 .kidung-tool-heading h1 {
   margin: 0;
-  font-size: clamp(24px, 3vw, 32px);
+  font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
   color: var(--ink);
 }
@@ -1815,7 +1815,7 @@ body.gys-viewer-active {
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .kidung-inline-toggle input,
 .kidung-settings-switch input {
@@ -1829,7 +1829,7 @@ body.gys-viewer-active {
 .kidung-inline-error {
   margin: 14px 0 0;
   color: var(--danger, #b42318);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .kidung-empty-state {
   display: grid;
@@ -1843,7 +1843,7 @@ body.gys-viewer-active {
 }
 .kidung-empty-state strong {
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
 }
 .kidung-playlist-list {
   list-style: none;
@@ -1899,14 +1899,14 @@ body.gys-viewer-active {
 }
 .kidung-playlist-song strong {
   font-family: var(--font-reading);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--ink);
 }
 .kidung-playlist-song small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .kidung-playlist-index {
   display: inline-flex;
@@ -1917,7 +1917,7 @@ body.gys-viewer-active {
   border-radius: 8px;
   background: var(--surface-soft);
   color: var(--blue);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
@@ -1927,7 +1927,7 @@ body.gys-viewer-active {
 .kidung-playlist-actions .text-button {
   min-height: 32px;
   padding-inline: 8px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   border-radius: 8px;
 }
 .kidung-saved-playlists {
@@ -1939,7 +1939,7 @@ body.gys-viewer-active {
   box-shadow: var(--shadow-xs);
 }
 .kidung-saved-playlists h2 {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   margin: 0 0 16px;
   color: var(--ink);
@@ -1980,7 +1980,7 @@ body.gys-viewer-active {
 .kidung-settings-disclosure > summary::after {
   content: "⌄";
   color: var(--blue);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .kidung-settings-disclosure[open] > summary::after {
   content: "⌃";
@@ -1997,7 +1997,7 @@ body.gys-viewer-active {
 }
 .kidung-settings-section h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--ink);
 }
@@ -2033,13 +2033,13 @@ body.gys-viewer-active {
   gap: 4px;
 }
 .kidung-settings-switch strong {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 650;
   color: var(--ink);
 }
 .kidung-settings-switch small {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 .kidung-settings-summary {
@@ -2050,11 +2050,11 @@ body.gys-viewer-active {
   padding-top: 14px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .kidung-settings-summary strong {
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .hymn-page .pujian-list {
   display: grid;
@@ -2205,7 +2205,7 @@ body.gys-viewer-active {
   gap: 6px;
 }
 .media-speech-rate-control span {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--muted);
 }
 .media-speech-rate-control select {
@@ -2216,7 +2216,7 @@ body.gys-viewer-active {
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 @media (max-width: 720px) {
@@ -2348,7 +2348,7 @@ body.gys-viewer-active {
     gap: 18px;
   }
   .kidung-local-nav a {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .kidung-settings-controls,
   .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
@@ -2423,7 +2423,7 @@ body.gys-viewer-active {
   .primary-button {
     min-height: 44px;
     padding-inline: 12px;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .control-select-trigger {
     min-height: 44px;
@@ -2459,7 +2459,7 @@ body.gys-viewer-active {
 
 @media (max-width: 599px) {
   body {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
   .topbar {
     height: var(--topbar-height, 58px);
@@ -2522,7 +2522,7 @@ body.gys-viewer-active {
   }
   .navigation-shell .nav-copy strong {
     overflow: hidden;
-    font-size: 10px;
+    font-size: 0.625rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -2547,14 +2547,14 @@ body.gys-viewer-active {
   }
   h1 {
     margin-bottom: 8px;
-    font-size: clamp(24px, 7vw, 28px);
+    font-size: clamp(1.5rem, 7vw, 1.75rem);
     line-height: 1.1;
   }
   h2 {
-    font-size: clamp(20px, 6vw, 24px);
+    font-size: clamp(1.25rem, 6vw, 1.5rem);
   }
   .intro-copy {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.5;
   }
   .page-intro-actions,
@@ -2580,11 +2580,11 @@ body.gys-viewer-active {
   }
   .home-page .page-intro h1 {
     margin-bottom: 4px;
-    font-size: clamp(21px, 6vw, 23px);
+    font-size: clamp(1.3125rem, 6vw, 1.4375rem);
   }
   .home-page .page-intro .date-line {
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 0.625rem;
   }
   .home-grid .continue-panel {
     order: -1;
@@ -2624,19 +2624,19 @@ body.gys-viewer-active {
     display: -webkit-box;
     margin: 14px 0 12px;
     overflow: hidden;
-    font-size: clamp(18px, 5vw, 22px);
+    font-size: clamp(1.125rem, 5vw, 1.375rem);
     line-height: 1.35;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }
   .verse-panel blockquote {
     margin: 0;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.5;
   }
   .sauh-title {
     margin-bottom: 0;
-    font-size: 17px;
+    font-size: 1.0625rem;
     font-weight: 750;
   }
   .verse-actions {
@@ -2651,7 +2651,7 @@ body.gys-viewer-active {
     min-width: 0;
     flex: initial;
     padding-inline: 14px;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .continue-item {
     grid-template-columns: 40px minmax(0, 1fr) 18px;
@@ -2712,7 +2712,7 @@ body.gys-viewer-active {
     max-width: 100%;
     gap: 8px;
     padding-inline: 11px;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .text-button {
     min-height: 40px;
@@ -2776,7 +2776,7 @@ body.gys-viewer-active {
   }
   .bible-page-heading h1,
   .hymn-page-heading h1 {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
   .bible-page-header .page-intro-actions,
   .hymn-page-header .hymn-catalog-controls {

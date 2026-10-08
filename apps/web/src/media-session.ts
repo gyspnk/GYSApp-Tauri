@@ -67,18 +67,6 @@ export class MediaSessionBridge {
     document.addEventListener("visibilitychange", () =>
       this.onVisibilityChange(),
     );
-    const warm = () => {
-      const audio = this.ensureSilentAudio();
-      const playPromise = audio.play();
-      if (playPromise)
-        void playPromise
-          .then(() => {
-            if (!midiPlayer.isPlaying()) audio.pause();
-          })
-          .catch(() => undefined);
-    };
-    document.body.addEventListener("click", warm, { once: true });
-    document.body.addEventListener("touchstart", warm, { once: true });
     this.sync();
   }
 
@@ -258,7 +246,7 @@ export class MediaSessionBridge {
       void this.requestWakeLock();
       if (this.silentAudio?.paused) this.playSilentAudio();
     }
-    void midiPlayer.resumeContext();
+    if (midiPlayer.isPlaying()) void midiPlayer.resumeContext();
     this.sync();
   }
 

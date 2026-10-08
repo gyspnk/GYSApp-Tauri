@@ -2,6 +2,13 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-09 — Android audio, text scale and hymn navigation
+
+- Avoid silent audio activation during ordinary navigation or idle app resume.
+- Respect Android system font scale and browser text size; enlarge the standard
+  mobile baseline while keeping icon and PDF dimensions independent.
+- Return directly to the hymn list after changing songs with next/previous.
+
 ### 2026-10-08 — Android system insets and credential startup
 
 - Apply status/navigation bar, display cutout and keyboard insets once at the

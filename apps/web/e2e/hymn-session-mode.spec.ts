@@ -30,3 +30,19 @@ test("Kidung starts with text, keeps mode during navigation, resets after reload
   await page.reload();
   await expect(page.locator(".lyrics-sheet")).toBeVisible();
 });
+
+test("Back after switching hymns returns directly to the hymn list", async ({
+  page,
+}) => {
+  await preparePinnedReaderAssets(page);
+  await page.goto("/GYSApp-Tauri/kidung");
+  await page.locator(".pujian-title").first().click();
+  await expect(page.locator(".lyrics-sheet")).toBeVisible();
+  const first = page.url();
+  await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await expect(page).not.toHaveURL(first);
+  await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/kidung$/);
+  await expect(page.locator(".pujian-title").first()).toBeVisible();
+});

@@ -20,7 +20,7 @@
 
 .literature-arrow {
   color: var(--blue);
-  font-size: 24px;
+  font-size: 1.5rem;
   transition: transform var(--motion-fast) var(--ease-out);
 }
 
@@ -74,7 +74,7 @@
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   outline: none;
 }
 
@@ -148,13 +148,13 @@
   border-radius: 10px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 800;
 }
 
 .faith-selection-header strong {
   color: var(--ink);
-  font-size: 18px;
+  font-size: 1.125rem;
   letter-spacing: -0.015em;
 }
 
@@ -169,7 +169,7 @@
   background: var(--surface-soft);
   color: var(--ink);
   cursor: pointer;
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1;
 }
 
@@ -186,7 +186,7 @@
   gap: 8px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .faith-selection-toolbar .quiet-button.has-note {
@@ -226,7 +226,7 @@
 
 .faith-row-heading strong {
   font-family: var(--font-reading);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 450;
   line-height: 1.6;
   min-width: 0;
@@ -249,7 +249,7 @@
   background: transparent;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 750;
   letter-spacing: 0.04em;
   flex-shrink: 0;
@@ -258,7 +258,7 @@
 
 .faith-row-note-dot {
   color: var(--blue);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .faith-row-actions {
@@ -274,7 +274,7 @@
   max-width: 850px;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(16px, 1.6vw, 19px);
+  font-size: clamp(1rem, 1.6vw, 1.1875rem);
   line-height: 1.8;
 }
 
@@ -363,7 +363,7 @@
   flex: 1;
   min-width: 0;
   color: var(--ink);
-  font-size: 17.5px;
+  font-size: 1.09375rem;
   letter-spacing: -0.015em;
   line-height: 1.35;
 }
@@ -372,7 +372,7 @@
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  font-size: clamp(15px, 1.5vw, 17px);
+  font-size: clamp(0.9375rem, 1.5vw, 1.0625rem);
   line-height: 1.75;
   color: var(--ink);
   padding: 2px 2px 8px;
@@ -467,7 +467,7 @@
 
 .faith-pdf-title small {
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 700;
@@ -482,7 +482,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--ink);
-  font-size: 15.5px;
+  font-size: 0.96875rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -491,7 +491,7 @@
   flex: 1;
   min-width: 0;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -510,7 +510,7 @@
   align-items: center;
   justify-content: center;
   padding-inline: 12px;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   white-space: nowrap;
 }
 
@@ -653,7 +653,7 @@
 }
 
 .literature-recent-item strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .literature-recent-item small {
@@ -675,7 +675,7 @@
   border: 0;
   color: var(--muted);
   background: transparent;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1;
 }
 
@@ -727,7 +727,7 @@
 }
 
 .literature-shelf-item strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -812,13 +812,13 @@
 }
 .literature-cover .img-fallback-placeholder > strong {
   font-family: var(--font-reading);
-  font-size: 23px;
+  font-size: 1.4375rem;
   font-weight: 500;
 }
 .literature-cover .img-fallback-placeholder > small {
   max-width: 100%;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   opacity: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -832,7 +832,7 @@
 }
 
 .literature-cover small {
-  font-size: 8px;
+  font-size: 0.5rem;
   line-height: 1.15;
   text-align: left;
   opacity: 0.82;
@@ -840,7 +840,7 @@
 
 .literature-cover strong {
   align-self: end;
-  font-size: 23px;
+  font-size: 1.4375rem;
   letter-spacing: 0.04em;
 }
 
@@ -887,17 +887,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .literature-copy small {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .literature-copy em {
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-style: normal;
 }
 
@@ -922,7 +922,7 @@
 .literature-detail-copy h1 {
   max-width: 760px;
   margin: 5px 0 12px;
-  font-size: clamp(27px, 3.5vw, 40px);
+  font-size: clamp(1.6875rem, 3.5vw, 2.5rem);
   letter-spacing: -0.04em;
 }
 
@@ -932,7 +932,7 @@
   gap: 8px;
   margin: 17px 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .literature-detail-meta span {
@@ -964,7 +964,7 @@
 
 .literature-progress-note {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .literature-reader-panel {
@@ -1079,13 +1079,13 @@
     padding-inline: 8px;
     opacity: 1;
     pointer-events: auto;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }
 
 .error-copy {
   color: var(--danger, #a43b3b);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .literature-reader-error {
@@ -1165,7 +1165,7 @@
   }
 
   .literature-detail-copy h1 {
-    font-size: clamp(23px, 7vw, 32px);
+    font-size: clamp(1.4375rem, 7vw, 2rem);
   }
 
   .literature-detail-copy .detail-actions {
@@ -1338,7 +1338,7 @@
   .faith-pdf-stats {
     width: 100%;
     text-align: left;
-    font-size: 11px;
+    font-size: 0.6875rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

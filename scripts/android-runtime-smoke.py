@@ -124,6 +124,27 @@ def capture(output, name):
     print(f"PASS {name}: WebView={viewport}, safe={safe}", flush=True)
 
 
+def assert_idle_audio_focus(output, name):
+    dump = adb("shell", "dumpsys", "audio").decode(errors="replace")
+    (output / f"{name}-audio.txt").write_text(dump)
+    marker = "Audio Focus stack entries"
+    if marker not in dump:
+        raise RuntimeError("Android audio focus diagnostics unavailable")
+    stack = re.split(r"No external focus policy|External focus policy|In ring or call:",
+                     dump.split(marker, 1)[1], maxsplit=1)[0]
+    if PACKAGE in stack:
+        raise RuntimeError("Idle application owns audio focus: " + stack)
+    print("PASS " + name + ": application does not own audio focus", flush=True)
+
+
+def open_more(output, component, name):
+    adb("shell", "am", "start", "-W", "-n", component, timeout=90)
+    node = wait_label(output, "Lainnya", name + "-home")
+    l, t, r, b = bounds(node)
+    adb("shell", "input", "tap", str((l + r) // 2), str((t + b) // 2))
+    wait_label(output, "Akun e-GYS", name + "-loaded")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apk", required=True)
@@ -173,6 +194,7 @@ def main():
     adb("logcat", "-c")
     adb("shell", "am", "start", "-W", "-n", component, timeout=90)
     node = wait_label(output, "Lainnya", "home")
+    assert_idle_audio_focus(output, "home-idle")
     l, t, r, b = bounds(node)
     print("Tapping More: " + str(node.attrib), flush=True)
     # Coordinates come exclusively from the current UI hierarchy.
@@ -183,6 +205,24 @@ def main():
             raise RuntimeError("App exited after entering More (credential read)")
         time.sleep(1)
     capture(output, "more-portrait")
+    assert_idle_audio_focus(output, "more-idle")
+    heading = wait_label(output, "Jelajahi koleksi", "text-normal")
+    _, top, _, bottom = bounds(heading)
+    normal_height = bottom - top
+    try:
+        adb("shell", "settings", "put", "system", "font_scale", "2.0")
+        adb("shell", "am", "force-stop", PACKAGE)
+        open_more(output, component, "text-large")
+        heading = wait_label(output, "Jelajahi koleksi", "text-large")
+        _, top, _, bottom = bounds(heading)
+        if bottom - top <= normal_height * 1.25:
+            raise RuntimeError(f"System font scale did not enlarge text: {normal_height} -> {bottom - top}")
+        capture(output, "more-large-text")
+        print(f"PASS Android font_scale=2.0: heading height {normal_height} -> {bottom - top}", flush=True)
+    finally:
+        adb("shell", "settings", "put", "system", "font_scale", "1.0")
+        adb("shell", "am", "force-stop", PACKAGE)
+    open_more(output, component, "text-restored")
     overlays = adb("shell", "cmd", "overlay", "list").decode()
     for overlay, name in [
         ("com.android.internal.systemui.navbar.threebutton", "more-threebutton"),

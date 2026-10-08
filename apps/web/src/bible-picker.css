@@ -32,7 +32,7 @@
   flex: 1;
   margin: 0;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
 }
 .bible-address-picker button {
@@ -69,7 +69,7 @@
 .bible-address-field > span {
   padding-inline: 4px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .bible-address-trigger {
@@ -93,7 +93,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -152,7 +152,7 @@
   border-radius: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
   box-shadow: none;
 }
 .bible-picker-testament-pills {
@@ -166,7 +166,7 @@
   border-radius: 9px;
   background: transparent;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .bible-picker-testament-pills button[aria-pressed="true"] {
   background: var(--blue-soft);
@@ -187,7 +187,7 @@
   background: transparent;
   color: var(--ink);
   text-align: left;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .bible-address-options button:is(.is-active, :hover, [aria-selected="true"]) {
   background: var(--blue-soft);
@@ -214,13 +214,13 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 .bible-address-options p {
   margin: 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .bible-picker-numpad {
   display: grid;
@@ -236,7 +236,7 @@
   border-radius: 12px;
   background: var(--surface-soft);
   color: var(--ink);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 550;
   font-variant-numeric: tabular-nums;
   transition: background-color 140ms;
@@ -265,7 +265,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .bible-picker-preview strong {
   color: var(--ink);
@@ -282,7 +282,7 @@
   border-radius: 12px;
   background: var(--accent-fill);
   color: var(--on-accent);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
 }
 .bible-picker-open:disabled {

@@ -69,7 +69,7 @@
 .reader-context-title span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-overflow: ellipsis;
@@ -79,7 +79,7 @@
 .reader-context-title strong {
   overflow: hidden;
   color: var(--navy);
-  font-size: 14px;
+  font-size: 0.875rem;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -175,7 +175,7 @@
   align-items: center;
   gap: 8px;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .hamburger-drawer-title strong {
   font-weight: 700;
@@ -191,7 +191,7 @@
   background: var(--surface-soft);
   color: var(--muted);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem;
   transition: all var(--motion-fast) var(--ease-out);
 }
 .hamburger-drawer-close:hover {
@@ -209,7 +209,7 @@
 
 .hamburger-section-label {
   color: var(--blue);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -231,7 +231,7 @@
   justify-content: space-between;
 }
 .hamburger-size-badge {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--blue);
   background: var(--blue-soft);
@@ -270,12 +270,12 @@
 }
 .typography-step-btn .step-label {
   font-family: var(--font-reading);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1;
 }
 .typography-step-btn small {
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -289,13 +289,13 @@
   padding: 0 4px;
 }
 .typography-size-indicator strong {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 750;
   color: var(--ink);
   line-height: 1;
 }
 .typography-size-indicator small {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--muted);
 }
 
@@ -362,13 +362,13 @@
   min-width: 0;
 }
 .hamburger-item-text strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
   color: var(--ink);
   line-height: 1.25;
 }
 .hamburger-item-text small {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--muted);
   line-height: 1.25;
 }
@@ -400,7 +400,7 @@
   transform: translateX(16px);
 }
 .hamburger-badge {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   color: var(--blue);
   background: var(--blue-soft);
@@ -431,7 +431,7 @@
 }
 .drawer-speech-hint {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.45;
 }
 .drawer-speech-row-header {
@@ -440,12 +440,12 @@
   justify-content: space-between;
 }
 .drawer-speech-label {
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 650;
   color: var(--ink);
 }
 .drawer-speech-val {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--blue);
   background: var(--surface);
@@ -470,7 +470,7 @@
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
@@ -494,7 +494,7 @@
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   outline: none;
   transition: border-color var(--motion-fast) var(--ease-out);
 }
@@ -522,14 +522,14 @@
     min-height: 38px;
     height: 38px;
     padding: 0 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
     gap: 4px;
   }
   .reader-version-select-wrap .reader-context-select .control-select-trigger {
     min-height: var(--control-hit, 44px);
     min-width: var(--control-hit, 44px);
     padding-inline: 6px;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .reader-context-actions {
     gap: 4px;
@@ -591,7 +591,7 @@
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -634,7 +634,7 @@
   min-width: 44px;
   padding-inline: 8px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .reader-typography-wrapper {
   position: relative;
@@ -650,7 +650,7 @@
 }
 .reader-typography-btn .typography-icon-label {
   font-family: var(--font-reading);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -680,7 +680,7 @@
   background: var(--surface-soft);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--ink);
   transition:
@@ -693,7 +693,7 @@
   color: var(--blue);
 }
 .reader-typography-popover output {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   min-width: 34px;
   text-align: center;
@@ -714,7 +714,7 @@
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
   white-space: nowrap;
   transition:
@@ -752,7 +752,7 @@
 .bible-reader-title {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(20px, 2.2vw, 26px);
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
   font-weight: 750;
   letter-spacing: -0.02em;
 }
@@ -761,7 +761,7 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -791,7 +791,7 @@
     display: none;
   }
   .app-frame.is-reader-route .bible-page-heading h1 {
-    font-size: 22px;
+    font-size: 1.375rem;
   }
   .app-frame.is-reader-route .bible-page-header .page-intro-actions {
     grid-column: 2;
@@ -826,7 +826,7 @@
   }
   .app-frame.is-reader-route .reader-action-group .quiet-button {
     padding-inline: 5px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .app-frame.is-reader-route .reader-heading {
     padding: 14px 19px 8px;
@@ -857,7 +857,7 @@
   .reader-context-book-picker {
     min-height: 36px;
     padding: 0 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
     gap: 4px;
   }
   .reader-version-select-wrap {
@@ -866,19 +866,19 @@
   .reader-version-select-wrap .reader-context-select .control-select-trigger {
     min-height: var(--control-hit, 44px);
     padding-inline: 4px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .reader-context-button {
     min-width: var(--control-hit, 44px);
     min-height: var(--control-hit, 44px);
     padding-inline: 6px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .reader-context-button .control-copy {
     display: none;
   }
   .reader-context-title strong {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .reader-context-settings {
     display: none;
@@ -944,7 +944,7 @@
   display: block;
   margin-bottom: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
 }
 .control-select-trigger {
@@ -1078,7 +1078,7 @@
 }
 .control-select-option small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .control-select-option:hover,
 .control-select-option.is-active {
@@ -1110,7 +1110,7 @@
   min-height: var(--control-hit, 44px);
   height: var(--control-hit, 44px);
   padding: 0 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 550;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1173,7 +1173,7 @@
   gap: 6px;
   flex: 1 1 260px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
 }
 .search-field input {
@@ -1189,7 +1189,7 @@
 }
 .catalog-heading h2 {
   margin: 0;
-  font-size: clamp(21px, 2.5vw, 28px);
+  font-size: clamp(1.3125rem, 2.5vw, 1.75rem);
 }
 .catalog-heading small,
 .section-title-row > span {
@@ -1208,7 +1208,7 @@
 }
 .catalog-note {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .detail-back {
   display: flex;
@@ -1217,7 +1217,7 @@
   gap: 10px;
   margin-bottom: 20px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .detail-hero {
   display: flex;

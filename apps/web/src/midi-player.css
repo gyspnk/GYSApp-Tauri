@@ -113,7 +113,7 @@
   border-radius: 10px;
   background: var(--surface-soft);
   color: var(--ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   box-shadow: none;
   transform: none;
 }
@@ -134,7 +134,7 @@
   color: var(--blue);
 }
 .media-music-controls .media-key-control .control-select-trigger {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--ink);
 }
@@ -148,11 +148,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .media-music-controls .control-select-option small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .media-music-controls .media-transpose {
@@ -176,7 +176,7 @@
   padding: 0;
   border-radius: 10px;
   background: transparent;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .media-music-controls .media-transpose button:hover:enabled {
   color: var(--blue);
@@ -188,7 +188,7 @@
 }
 .media-music-controls .media-transpose-value {
   text-align: center;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
   animation: midi-glyph-in 160ms ease-out;
 }
@@ -401,11 +401,11 @@
     display: none;
   }
   .media-music-controls .control-select-trigger {
-    font-size: 12px;
+    font-size: 0.75rem;
     gap: 2px;
   }
   .media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .media-surface.is-kidung-media .media-context-link .media-activity {
     display: none;

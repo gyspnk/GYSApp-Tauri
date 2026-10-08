@@ -94,7 +94,7 @@
 
 .ui-preferences-entry-copy small {
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   line-height: 1.45;
 }
 
@@ -131,7 +131,7 @@
   border-radius: 7px;
   color: var(--blue);
   font-family: var(--font-reading);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -202,7 +202,7 @@
 
 .ui-preferences-eyebrow {
   color: var(--blue) !important;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -220,7 +220,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1;
   transition:
     color var(--motion-fast) var(--ease-out),
@@ -258,7 +258,7 @@
 .ui-preferences-section-heading p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   line-height: 1.45;
 }
 
@@ -268,7 +268,7 @@
   border-radius: 999px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 700;
 }
 
@@ -323,13 +323,13 @@
   border-radius: 9px;
   background: var(--surface-soft);
   color: var(--navy);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 750;
 }
 
 .ui-preference-sample.is-hymnal {
   font-family: var(--font-reading);
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 .ui-preference-sample.is-sans {
@@ -349,13 +349,13 @@
 }
 
 .ui-preference-choice-copy strong {
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   line-height: 1.25;
 }
 
 .ui-preference-choice-copy small {
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   line-height: 1.35;
 }
 
@@ -367,7 +367,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 50%;
   color: var(--surface);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
@@ -387,7 +387,7 @@
 
 .ui-preferences-footer > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -494,5 +494,16 @@
   .ui-preference-choice {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* Mobile text starts at 18px with a 16px browser default; system text size
+   remains the base and Android WebView applies its fontScale separately. */
+@media (max-width: 959px), (pointer: coarse) {
+  :root[data-ui-density="standard"] {
+    font-size: 112.5%;
+  }
+  :root[data-ui-density="comfortable"] {
+    font-size: 118.75%;
   }
 }

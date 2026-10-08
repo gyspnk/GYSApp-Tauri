@@ -112,7 +112,7 @@
 .hymn-instrument-select > span,
 .hymn-tempo-control > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .hymn-soundfont-active {
   flex-direction: column;
@@ -177,7 +177,7 @@
 .hymn-detail-page.is-text-viewer .detail-hero h1 {
   margin: 0;
   overflow: hidden;
-  font-size: clamp(17px, 2.2vw, 22px);
+  font-size: clamp(1.0625rem, 2.2vw, 1.375rem);
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -275,7 +275,7 @@
 }
 .hymn-text-footer > span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-align: center;
 }
@@ -295,7 +295,7 @@
     padding: 5px 0;
   }
   .hymn-detail-page.is-text-viewer .detail-hero h1 {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
   .hymn-text-toolbar {
     justify-content: center;
@@ -495,12 +495,12 @@
     gap: 8px;
   }
   .sauh-title {
-    font-size: clamp(20px, 2vw, 24px);
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
     font-weight: 800;
     line-height: 1.32;
   }
   .verse-panel blockquote {
-    font-size: clamp(15px, 1.4vw, 17.5px);
+    font-size: clamp(0.9375rem, 1.4vw, 1.09375rem);
     line-height: 1.65;
   }
   /* Kolom Lanjutkan: Compact & clean */
@@ -557,7 +557,7 @@
     gap: 3px;
   }
   .suara-card-content strong {
-    font-size: 13.5px;
+    font-size: 0.84375rem;
     font-weight: 750;
     line-height: 1.32;
     display: -webkit-box;
@@ -567,7 +567,7 @@
     max-height: 36px;
   }
   .suara-card-content small {
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.35;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -732,7 +732,7 @@
   }
   .reader-context-book-picker {
     padding-inline: 6px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }
 
@@ -785,7 +785,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .media-close-button {
   margin-left: 2px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1;
 }
 
@@ -847,12 +847,12 @@ body:has(.home-page)::-webkit-scrollbar {
   text-align: left;
 }
 .navigation-shell .nav-copy strong {
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   font-weight: 650;
   line-height: 1.25;
 }
 .navigation-shell .nav-copy small {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--muted);
   line-height: 1.25;
 }
@@ -949,10 +949,10 @@ body:has(.home-page)::-webkit-scrollbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .accent-swatch-name {
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 550;
   color: var(--ink);
 }
@@ -980,7 +980,7 @@ body:has(.home-page)::-webkit-scrollbar {
   border: none;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
@@ -1022,7 +1022,7 @@ body:has(.home-page)::-webkit-scrollbar {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1056,7 +1056,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: var(--blue-soft);
 }
 .transpose-reset-btn {
-  font-size: 11px !important;
+  font-size: 0.6875rem !important;
   font-weight: 600 !important;
   padding: 0 8px !important;
   min-width: auto !important;
@@ -1068,7 +1068,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .capo-control > span {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
 }
 
@@ -1104,7 +1104,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .hymn-verse-number-badge {
   display: inline-block;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--blue);
   background: var(--blue-soft);
@@ -1114,7 +1114,7 @@ body:has(.home-page)::-webkit-scrollbar {
   text-transform: uppercase;
 }
 .hymn-all-verses-summary {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--muted);
 }
@@ -1153,11 +1153,11 @@ body:has(.home-page)::-webkit-scrollbar {
 .hymn-autoscroll-btn {
   min-height: 28px;
   padding-inline: 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .hymn-autoscroll-speed-select {
   min-height: 28px;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .hymn-more-actions-summary,
 .hymn-reader-settings-summary {
@@ -1174,7 +1174,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .detail-hero .detail-neighbor-button {
   min-height: 32px;
   padding-inline: 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 @media (max-width: 599px) {
   .hymn-text-toolbar .detail-actions .hymn-action {
@@ -1225,7 +1225,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .hymn-midi-time {
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: 0.75rem;
   min-width: 32px;
   color: var(--muted);
 }
@@ -1261,11 +1261,11 @@ body:has(.home-page)::-webkit-scrollbar {
   padding: 28px 20px;
 }
 .sauh-inline-error strong {
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .sauh-inline-error span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 .sauh-inline-error .detail-actions {
@@ -1325,7 +1325,7 @@ body:has(.home-page)::-webkit-scrollbar {
   min-width: 0;
 }
 .chord-ui-slider span {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .chord-ui-slider input {
@@ -1336,7 +1336,7 @@ body:has(.home-page)::-webkit-scrollbar {
   display: block;
   margin-top: 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1350,7 +1350,7 @@ body:has(.home-page)::-webkit-scrollbar {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1393,7 +1393,7 @@ body:has(.home-page)::-webkit-scrollbar {
   min-width: 52px;
   padding: 0 8px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .media-loop-control[aria-pressed="true"] {
   color: var(--blue);
@@ -1407,7 +1407,7 @@ body:has(.home-page)::-webkit-scrollbar {
   min-width: 40px;
   padding: 0 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 .media-key-dropdown {
@@ -1432,7 +1432,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1460,7 +1460,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .media-midi-actions .media-transpose strong {
   min-width: 24px;
   text-align: center;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 /* gyschordweb mini tempo toggle + popover */
@@ -1479,16 +1479,16 @@ body:has(.home-page)::-webkit-scrollbar {
   background: var(--surface-soft);
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .media-tempo-toggle strong {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 .media-tempo-toggle small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 .media-tempo-popover {
   position: absolute;
@@ -1510,7 +1510,7 @@ body:has(.home-page)::-webkit-scrollbar {
   accent-color: var(--blue);
 }
 .media-tempo-popover span {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1584,7 +1584,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .lyrics-midi-label {
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -1604,14 +1604,14 @@ body:has(.home-page)::-webkit-scrollbar {
   text-align: center;
 }
 .lyrics-song-number {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   color: var(--blue);
   white-space: nowrap;
 }
 .lyrics-title h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -1669,7 +1669,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .lyrics-tempo-input {
   width: 52px;
@@ -1681,7 +1681,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: center;
 }
 .lyrics-key-group {
@@ -1693,7 +1693,7 @@ body:has(.home-page)::-webkit-scrollbar {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .lyrics-key-dropdown {
@@ -1720,7 +1720,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1734,13 +1734,13 @@ body:has(.home-page)::-webkit-scrollbar {
 .lyrics-transpose-label {
   min-width: 24px;
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 .lyrics-verse-indicator {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
@@ -1786,14 +1786,14 @@ body:has(.home-page)::-webkit-scrollbar {
   background: color-mix(in srgb, var(--blue) 14%, transparent);
 }
 .hymn-loop-label {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
 }
 .kidung-settings-note {
   display: block;
   margin-top: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 
@@ -2180,7 +2180,7 @@ body:has(.home-page)::-webkit-scrollbar {
   border-radius: 999px;
   background: var(--surface-soft);
   color: var(--blue);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 750;
   cursor: pointer;
 }
@@ -2192,7 +2192,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .media-queue-badge span {
   color: inherit;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -2362,7 +2362,7 @@ body:has(.home-page)::-webkit-scrollbar {
   flex: 0 0 auto;
   color: var(--muted);
   content: "⌄";
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1;
 }
 
@@ -2374,7 +2374,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .media-surface.is-kidung-media .media-advanced-summary > span {
   color: var(--ink);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -2383,7 +2383,7 @@ body:has(.home-page)::-webkit-scrollbar {
   min-width: 0;
   overflow: hidden;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2508,7 +2508,7 @@ body:has(.home-page)::-webkit-scrollbar {
   border-bottom: 1px solid var(--line);
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 

@@ -203,7 +203,7 @@ export function LyricsPanel({
     let frame = 0;
     const measure = () => {
       frame = 0;
-      element.style.fontSize = `${fontSize}px`;
+      element.style.fontSize = `${fontSize / 16}rem`;
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
       const next = autoFitFontSize({
@@ -219,7 +219,7 @@ export function LyricsPanel({
         lastFittedFontSize: lastFitRef.current,
       });
       lastFitRef.current = next;
-      element.style.fontSize = `${next}px`;
+      element.style.fontSize = `${next / 16}rem`;
       setFitFontSize(next);
     };
     const schedule = () => {
@@ -696,7 +696,10 @@ export function LyricsPanel({
             <div
               ref={verseTextRef}
               className={`lyrics-verse-text${showChords ? " lyrics-chords-on" : ""}${isPinching ? " is-pinching" : ""}`}
-              style={{ fontSize: `${fitFontSize}px`, lineHeight: lineSpacing }}
+              style={{
+                fontSize: `${fitFontSize / 16}rem`,
+                lineHeight: lineSpacing,
+              }}
             >
               {verseLines.map((line, index) => {
                 const chordLine = showChords

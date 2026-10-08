@@ -820,7 +820,7 @@ export function HymnDetail({
           ),
         );
       }
-      element.style.fontSize = `${lineFit}px`;
+      element.style.fontSize = `${lineFit / 16}rem`;
       const next = hasHymnTypography(songId)
         ? clampHymnFontSize(lineFit)
         : autoFitFontSize({
@@ -832,7 +832,7 @@ export function HymnDetail({
             lastFittedFontSize: lastFitRef.current,
           });
       lastFitRef.current = next;
-      element.style.fontSize = `${next}px`;
+      element.style.fontSize = `${next / 16}rem`;
       setFitFontSize((current) => (current === next ? current : next));
     };
     const schedule = () => {
@@ -1038,7 +1038,7 @@ export function HymnDetail({
   const goToNeighbor = (song: { id: string } | undefined) => {
     if (!song) return;
     if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-    transitionReader(() => navigate(`/kidung/${song.id}`));
+    transitionReader(() => navigate(`/kidung/${song.id}`, { replace: true }));
   };
   const toggle = () => {
     if (!item) return;
@@ -1068,7 +1068,7 @@ export function HymnDetail({
     if (song) {
       // gyschordweb _forceAutoPlayNext: keep playing across song changes.
       if (midiPlayer.isPlaying()) autoplayRequestRef.current = true;
-      transitionReader(() => navigate(`/kidung/${song.id}`));
+      transitionReader(() => navigate(`/kidung/${song.id}`, { replace: true }));
     }
   };
   const pointerDistance = () => {
@@ -2720,7 +2720,7 @@ export function HymnDetail({
                     key={`${item.id}-verse-${vIdx}`}
                     className="lyrics-sheet is-continuous"
                     style={{
-                      fontSize: `${fitFontSize}px`,
+                      fontSize: `${fitFontSize / 16}rem`,
                       lineHeight: typography.lineHeight,
                     }}
                   >
@@ -2758,7 +2758,7 @@ export function HymnDetail({
               ref={lyricsRef}
               aria-label={`${item.title}, bait ${safeVerseIndex + 1}`}
               style={{
-                fontSize: `${fitFontSize}px`,
+                fontSize: `${fitFontSize / 16}rem`,
                 lineHeight: typography.lineHeight,
               }}
               data-autofit-font-size={fitFontSize}
