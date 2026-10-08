@@ -99,3 +99,9 @@ and process evidence only; empty screenshot output is not visual evidence.
 The harness now checks the PNG signature and the workflow preserves executable
 permissions when extracting the pinned emulator. Final rotation/restart/PNG
 acceptance remains pending until a successful full run.
+
+The pre-37 renderer also reproduced the assertion with legacy graphics transport.
+The next run forces the supported Minigbm feature, which selects
+`virtio-gpu-pipe` transport instead of the legacy Goldfish pipe. No sampling
+property, root restart, or application graphics flag is applied. Rotation and
+valid native screenshots remain unverified until that full run completes.

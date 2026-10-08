@@ -68,7 +68,7 @@ jobs:
           printf 'APK source commit: '
           cat android-artifacts/commit.txt
           trap 'result=$?; if [ "$result" -ne 0 ]; then cat android-qa/emulator.log; fi' EXIT
-          /tmp/gys-emulator/emulator/emulator -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -feature -GLDirectMem,-HasSharedSlotsHostMemoryAllocator -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
+          /tmp/gys-emulator/emulator/emulator -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -feature Minigbm -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
           emulator_pid=$!
           sleep 3
           if ! kill -0 "$emulator_pid" 2>/dev/null; then exit 1; fi
