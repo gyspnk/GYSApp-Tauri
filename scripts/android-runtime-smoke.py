@@ -2,6 +2,7 @@
 import argparse
 import re
 import subprocess
+import sys
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -120,6 +121,7 @@ def main():
     if version != "17":
         raise RuntimeError("Expected Android 17, got " + version)
     adb("shell", "input", "keyevent", "82")
+    print(adb("shell", "df", "-h", "/data").decode(), flush=True)
     adb("install", "-r", args.apk, timeout=180)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity", timeout=90)
@@ -168,6 +170,9 @@ if __name__ == "__main__":
             output = Path(args.output)
             output.mkdir(parents=True, exist_ok=True)
             try:
-                (output / "logcat.txt").write_bytes(adb("logcat", "-d"))
+                logcat = adb("logcat", "-d")
+                (output / "logcat.txt").write_bytes(logcat)
+                if sys.exc_info()[0] is not None:
+                    print(logcat.decode(errors="replace")[-24000:], flush=True)
             except Exception as error:
                 (output / "logcat-error.txt").write_text(str(error))
