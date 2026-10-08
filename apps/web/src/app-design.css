@@ -729,7 +729,6 @@
   .home-grid .verse-panel:has(.sauh-card-media) {
     display: grid;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    padding: 0;
     min-height: 320px;
   }
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-media {
@@ -3545,7 +3544,8 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .home-grid .verse-panel {
   min-height: 0;
-  padding: 0;
+  padding: clamp(12px, 1.3vw, 18px);
+  border-radius: 18px;
   transform: none;
 }
 .home-grid .sauh-card-media {
@@ -3575,6 +3575,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin-block: 8px;
 }
 .home-grid .sauh-card-body blockquote {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
   margin-block: 10px 16px;
   max-width: none;
   line-height: 1.65;
@@ -3597,6 +3600,8 @@ body:has(.hymn-detail-page.is-text-viewer)
 .home-grid .continue-item {
   gap: 12px;
   min-height: 72px;
+  padding-inline: 12px;
+  border-radius: 12px;
 }
 .home-grid .continue-icon {
   flex: none;
@@ -3617,6 +3622,102 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
     padding: 12px 0;
+  }
+}
+.home-grid .continue-panel {
+  padding: clamp(12px, 1.3vw, 18px);
+  border-radius: 18px;
+}
+.home-grid :is(.verse-panel, .continue-panel):hover {
+  background: color-mix(in srgb, var(--blue-soft) 25%, var(--surface));
+}
+.home-grid :is(.suara-library-item, .literature-shelf-item) {
+  padding: 10px;
+  border-radius: 14px;
+}
+.home-grid :is(.suara-library-item, .literature-shelf-item):hover {
+  background: var(--surface-soft);
+}
+.article-progress-strip {
+  position: sticky;
+  top: var(--topbar-height, 58px);
+  z-index: var(--z-toolbar);
+  padding-block: 6px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  backdrop-filter: blur(12px);
+}
+.article-progress-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--blue);
+}
+.article-progress-main progress {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  accent-color: var(--blue);
+  overflow: hidden;
+}
+.article-progress-main progress::-webkit-progress-bar {
+  background: var(--surface-soft);
+}
+.article-progress-main progress::-webkit-progress-value {
+  background: var(--blue);
+  transition: width 180ms ease-out;
+}
+.article-progress-main output {
+  min-width: 4ch;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.article-resume-toggle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+.article-resume-options {
+  position: absolute;
+  top: 100%;
+  inset-inline: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+.article-resume-options button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface);
+}
+.article-resume-options button:is(:hover, :focus-visible) {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+.literature-article-page .online-article-card {
+  padding-inline: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-progress-main progress::-webkit-progress-value {
+    transition: none;
   }
 }
 .app-frame .online-content-page .online-article-card > h1 {

@@ -13,9 +13,14 @@ on:
         required: true
         default: false
         type: boolean
+      release_tag:
+        description: "Optional existing release to attach the installer to"
+        required: false
+        default: ""
+        type: string
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: native-windows-${{ inputs.ref || github.ref }}
@@ -35,6 +40,7 @@ jobs:
       WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       WINDOWS_TIMESTAMP_URL: ${{ secrets.WINDOWS_TIMESTAMP_URL }}
       SIGNED_BUILD: ${{ inputs.signed }}
+      GYS_RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,6 +58,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "apps/native/src-tauri -> target"
+          shared-key: native-windows-release-v1
+          cache-on-failure: true
 
       - name: Reject a requested signed build without the certificate
         if: ${{ inputs.signed && env.WINDOWS_CERTIFICATE_BASE64 == '' }}
@@ -90,7 +101,7 @@ jobs:
         run: |
           $provenance = [ordered]@{
             repository = "${{ github.repository }}"
-            commit = "${{ github.sha }}"
+            commit = (git rev-parse HEAD)
             workflow = "${{ github.workflow }}"
             run = "${{ github.run_id }}"
             target = "x86_64-pc-windows-msvc"
@@ -108,6 +119,19 @@ jobs:
             apps/native/src-tauri/target/release/bundle/nsis/*.exe
             apps/native/src-tauri/target/release/bundle/msi/*.msi
             apps/native/src-tauri/target/release/bundle/native-provenance.json
+      - name: Attach installer to the requested release
+        if: ${{ inputs.release_tag != '' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $installer = Get-ChildItem "apps/native/src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          if (-not $installer) { throw "Windows installer was not produced" }
+          $checksums = "apps/native/src-tauri/target/release/bundle/SHA256SUMS-windows.txt"
+          $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLower()
+          "$hash  $($installer.Name)" | Set-Content -Path $checksums -Encoding utf8
+          gh release upload $env:GYS_RELEASE_TAG $installer.FullName $checksums "apps/native/src-tauri/target/release/bundle/native-provenance.json" --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Uploading the Windows installer failed" }
 
       - name: Remove signing material
         if: ${{ always() && inputs.signed }}

@@ -4,6 +4,10 @@ type MessageValues = Record<string, string | number>;
 
 export const messages: Record<Locale, Record<string, string>> = {
   id: {
+    "article.positions": "Posisi baca",
+    "article.lastPosition": "Terakhir {percent}%",
+    "article.furthestPosition": "Terjauh {percent}%",
+    "article.fromStart": "Dari awal",
     "suara.backCollection": "Kembali ke kesaksian",
     "suara.previewOnly":
       "Menampilkan ringkasan. Buka sumber resmi untuk membaca artikel lengkap, atau coba muat lagi.",
@@ -257,6 +261,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.crossReferenceHint": "{count} ayat terkait — ketuk untuk membuka",
   },
   en: {
+    "article.positions": "Reading positions",
+    "article.lastPosition": "Last {percent}%",
+    "article.furthestPosition": "Furthest {percent}%",
+    "article.fromStart": "From start",
     "suara.backCollection": "Back to testimonies",
     "suara.previewOnly":
       "Showing a summary. Open the official source for the full article, or try loading again.",
@@ -510,6 +518,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.crossReferenceHint": "{count} related verses — tap to open",
   },
   zh: {
+    "article.positions": "阅读位置",
+    "article.lastPosition": "上次 {percent}%",
+    "article.furthestPosition": "最远 {percent}%",
+    "article.fromStart": "从头开始",
     "suara.backCollection": "返回见证馆藏",
     "suara.previewOnly":
       "当前显示摘要。请打开官方来源阅读完整文章，或重试加载。",

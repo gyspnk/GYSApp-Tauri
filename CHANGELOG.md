@@ -2,6 +2,23 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-08 — reader navigation and preview packaging
+
+- Anchor PDF zoom feedback outside the scrollable page content, keeping the
+  viewer controls stationary during zoom and pan.
+- Reset document scroll for every page change, including history and routes
+  entered before transition code finishes loading.
+- Open literature articles at `/literatur/:itemId/read`. Sauh, Suara and
+  literature readers share a compact progress strip and explicit choices for
+  the last position, furthest position or beginning. Earlier pages update the
+  bookmark without reducing maximum progress or clearing completion.
+- Inset Home hover surfaces around text and thumbnails, preserving rounded
+  image frames and adaptive columns.
+- Timestamp article cache freshness at retrieval, keeping older publisher
+  articles reusable instead of immediately expiring them.
+- Add manually dispatched Android ARM64 preview packaging and optional release
+  attachment for Android/Windows. Normal pushes do not package native releases.
+
 ### 2026-10-07 — CI contract and native smoke repair
 
 - Migrate browser contracts to the compact collection picker, explicit Bible

@@ -2,6 +2,8 @@ import {
   PdfReader as LiteraturePdfReader,
   preloadPdfReader,
 } from "./pdf-reader-loader.js";
+import { ArticleProgress } from "./article-progress.js";
+import { navigateSmooth } from "./route-transitions.js";
 import { transitionReader } from "./reader-transition.js";
 import { preloadRoute } from "./route-preload.js";
 import { LoadingProgress } from "./loading-progress.js";
@@ -17,6 +19,7 @@ import {
 import {
   Link,
   useNavigate,
+  useLocation,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -32,7 +35,7 @@ import { Icon } from "./icons.js";
 import { Select } from "./select.js";
 import { isFavorite, subscribeFavorites, toggleFavorite } from "./favorites.js";
 import { assetStore } from "./asset-store.js";
-import { fetchOnlineArticle } from "./online-article.js";
+import { fetchOnlineArticle, getCachedArticle } from "./online-article.js";
 import { LazyImage } from "./lazy-image.js";
 import { bffPdfUrl } from "./pdf-source.js";
 import {
@@ -157,27 +160,6 @@ function dateLabel(value: string | undefined, locale: Locale) {
   } catch {
     return translate(locale, "literature.archiveLabel");
   }
-}
-
-function readDocumentScrollRatio(): number {
-  if (typeof window === "undefined" || typeof document === "undefined")
-    return 0;
-  const root = document.documentElement;
-  const max = Math.max(0, root.scrollHeight - window.innerHeight);
-  return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-}
-
-function scrollDocumentToRatio(
-  ratio: number,
-  behavior: ScrollBehavior = "smooth",
-) {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-  const root = document.documentElement;
-  const max = Math.max(0, root.scrollHeight - window.innerHeight);
-  window.scrollTo({
-    top: max * Math.min(1, Math.max(0, ratio)),
-    behavior,
-  });
 }
 
 function Cover({
@@ -673,6 +655,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const directRead = searchParams.get("read") === "1";
+  const directArticleRead = useLocation().pathname.endsWith("/read");
   const catalogState = useLiteratureCatalog();
   const item =
     catalogState.status === "ready"
@@ -697,13 +680,10 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
     transitionReader(() => setReaderOpen(false));
   };
-  const [articleOpen, setArticleOpen] = useState(false);
   const [articleStatus, setArticleStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [articleBody, setArticleBody] = useState<string>();
-  const articleScrollTimer = useRef<number | undefined>(undefined);
-  const articleRestoreFrame = useRef<number | undefined>(undefined);
   const resourceVersion = literatureResourceVersion(item?.publishedAt);
   const [sourceAttempt, setSourceAttempt] = useState(0);
   const [issueSource, setIssueSource] = useState<{
@@ -787,15 +767,18 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
       lastOpenedAt: new Date().toISOString(),
       resourceVersion,
       ...(validExisting?.location ? { location: validExisting.location } : {}),
+      ...(validExisting?.furthestLocation
+        ? { furthestLocation: validExisting.furthestLocation }
+        : {}),
+      ...(validExisting?.completed ? { completed: true } : {}),
       ...(validExisting?.downloadedAt
         ? { downloadedAt: validExisting.downloadedAt }
         : {}),
     };
-    saveLiteratureProgress(item.id, opened);
-    setProgress(opened);
-    progressRef.current = opened;
+    const saved = saveLiteratureProgress(item.id, opened);
+    setProgress(saved);
+    progressRef.current = saved;
     setFavorite(isFavorite("literature", item.id));
-    setArticleOpen(false);
     setArticleStatus("idle");
     setArticleBody(undefined);
   }, [item?.id, resourceVersion]);
@@ -871,57 +854,31 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           : {}),
         ...(completed ? { completed: true } : {}),
       };
-      saveLiteratureProgress(item.id, next);
-      progressRef.current = next;
-      setProgress(next);
+      const saved = saveLiteratureProgress(item.id, next);
+      progressRef.current = saved;
+      setProgress(saved);
     },
     [item, resourceVersion],
   );
 
   useEffect(() => {
-    if (!articleOpen || articleStatus !== "ready" || !articleBody) return;
-    const saved = progressRef.current?.location;
-    if (
-      saved?.kind === "scroll" &&
-      isResumeLocationValid(
-        saved,
-        resourceVersion,
-        undefined,
-        progressRef.current?.resourceVersion,
-      )
-    ) {
-      articleRestoreFrame.current = window.requestAnimationFrame(() => {
-        articleRestoreFrame.current = undefined;
-        scrollDocumentToRatio(saved.ratio, "auto");
-      });
-    }
-    const saveScroll = () => {
-      if (articleScrollTimer.current !== undefined) return;
-      articleScrollTimer.current = window.setTimeout(() => {
-        articleScrollTimer.current = undefined;
-        const ratio = readDocumentScrollRatio();
-        updateProgress(ratio * 100, { kind: "scroll", ratio }, ratio >= 0.98);
-      }, 350);
-    };
-    window.addEventListener("scroll", saveScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", saveScroll);
-      if (articleScrollTimer.current !== undefined) {
-        window.clearTimeout(articleScrollTimer.current);
-        articleScrollTimer.current = undefined;
-      }
-      if (articleRestoreFrame.current !== undefined) {
-        window.cancelAnimationFrame(articleRestoreFrame.current);
-        articleRestoreFrame.current = undefined;
-      }
-    };
-  }, [
-    articleBody,
-    articleOpen,
-    articleStatus,
-    resourceVersion,
-    updateProgress,
-  ]);
+    if (!directArticleRead || !item || item.format !== "article") return;
+    const controller = new AbortController();
+    const cached = getCachedArticle(item.url);
+    setArticleBody(cached?.body);
+    setArticleStatus(cached ? "ready" : "loading");
+    if (!cached)
+      void fetchOnlineArticle(item.url, controller.signal)
+        .then((article) => {
+          if (controller.signal.aborted) return;
+          setArticleBody(article.body);
+          setArticleStatus("ready");
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) setArticleStatus("error");
+        });
+    return () => controller.abort();
+  }, [directArticleRead, item?.id, item?.url, sourceAttempt]);
 
   const onPageChange = useCallback(
     (page: number, totalPages: number) => {
@@ -936,19 +893,13 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     [item, updateProgress],
   );
 
-  const openArticle = useCallback(async () => {
-    if (!item || item.format !== "article") return;
-    setArticleOpen(true);
-    setArticleStatus("loading");
-    try {
-      const article = await fetchOnlineArticle(item.url);
-      setArticleBody(article.body);
-      setArticleStatus("ready");
-      updateProgress(Math.max(1, progressRef.current?.percent ?? 0));
-    } catch {
-      setArticleStatus("error");
-    }
-  }, [item, updateProgress]);
+  const openArticle = () => {
+    if (item?.format === "article")
+      void navigateSmooth(
+        navigate,
+        `/literatur/${encodeURIComponent(item.id)}/read`,
+      );
+  };
 
   const openReader = (trigger?: HTMLElement | null) => {
     if (!isPdfItem) return;
@@ -1002,9 +953,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         downloadedAt: new Date().toISOString(),
         ...(current?.completed ? { completed: true } : {}),
       };
-      saveLiteratureProgress(item.id, next);
-      progressRef.current = next;
-      setProgress(next);
+      const saved = saveLiteratureProgress(item.id, next);
+      progressRef.current = saved;
+      setProgress(saved);
       setDownloadStatus("ready");
       flash(translate(locale, "literature.pdfSaved"));
     } catch {
@@ -1053,6 +1004,64 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             {translate(locale, "literature.backToCatalog")}
           </Link>
         </div>
+      </div>
+    );
+  if (directArticleRead && item.format === "article")
+    return (
+      <div className="page online-content-page literature-article-page">
+        <div className="detail-back">
+          <Link className="text-button" to="/literatur">
+            ← {translate(locale, "literature.backToLiterature")}
+          </Link>
+          <span>{categoryLabel(locale, item.category)}</span>
+        </div>
+        <ArticleProgress
+          key={`${item.id}:${resourceVersion}`}
+          id={item.id}
+          resourceVersion={resourceVersion}
+          locale={locale}
+          ready={articleStatus === "ready"}
+        />
+        <section
+          className="online-article-card literature-article-reader"
+          data-testid="literature-article-reader"
+          aria-label={translate(locale, "literature.articleReaderTitle", {
+            title: item.title,
+          })}
+        >
+          <h1>{item.title}</h1>
+          {articleStatus === "loading" && (
+            <LoadingProgress
+              label={translate(locale, "literature.articleLoading")}
+            />
+          )}
+          {articleStatus === "error" && (
+            <div className="error-panel" role="alert">
+              <strong>
+                {translate(locale, "literature.articleErrorTitle")}
+              </strong>
+              <span>{translate(locale, "literature.articleErrorBody")}</span>
+              <button
+                type="button"
+                className="quiet-button"
+                onClick={() => setSourceAttempt((value) => value + 1)}
+              >
+                {translate(locale, "literature.retry")}
+              </button>
+            </div>
+          )}
+          {articleStatus === "ready" && (
+            <article className="online-article-body">
+              {articleBody
+                ?.split(/\n+/)
+                .map((paragraph) => paragraph.trim())
+                .filter(Boolean)
+                .map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+            </article>
+          )}
+        </section>
       </div>
     );
   const itemCategoryLabel = categoryLabel(locale, item.category);
@@ -1235,7 +1244,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
               <button
                 className="quiet-button"
                 type="button"
-                onClick={() => scrollDocumentToRatio(resumeScrollRatio)}
+                onClick={openArticle}
               >
                 {translate(locale, "literature.returnToPosition", {
                   percent: Math.round(resumeScrollRatio * 100),
@@ -1358,64 +1367,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           </div>,
           document.body,
         )}
-      {articleOpen && item.format === "article" && (
-        <section
-          className="literature-reader-panel"
-          aria-label={translate(locale, "literature.articleReaderTitle", {
-            title: item.title,
-          })}
-          data-testid="literature-article-reader"
-          data-reading-location={
-            resumeScrollRatio === undefined
-              ? "start"
-              : `${Math.round(resumeScrollRatio * 100)}%`
-          }
-        >
-          <div className="section-title-row">
-            <h2>{item.title}</h2>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setArticleOpen(false)}
-            >
-              {translate(locale, "literature.closeReader")}
-            </button>
-          </div>
-          {articleStatus === "loading" && (
-            <div className="loading-panel" role="status">
-              <LoadingProgress
-                label={translate(locale, "literature.articleLoading")}
-              />
-            </div>
-          )}
-          {articleStatus === "error" && (
-            <div className="error-panel" role="alert">
-              <strong>
-                {translate(locale, "literature.articleErrorTitle")}
-              </strong>
-              <span>{translate(locale, "literature.articleErrorBody")}</span>
-              <button
-                className="quiet-button"
-                type="button"
-                onClick={() => void openArticle()}
-              >
-                {translate(locale, "literature.retry")}
-              </button>
-            </div>
-          )}
-          {articleStatus === "ready" && articleBody && (
-            <article className="online-article-body">
-              {articleBody
-                .split(/\n{2,}/)
-                .map((paragraph) => paragraph.trim())
-                .filter(Boolean)
-                .map((paragraph, index) => (
-                  <p key={`${index}-${paragraph.slice(0, 16)}`}>{paragraph}</p>
-                ))}
-            </article>
-          )}
-        </section>
-      )}
       {notice && (
         <div className="toast" role="status">
           {notice}

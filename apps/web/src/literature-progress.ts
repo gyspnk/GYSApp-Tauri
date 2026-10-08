@@ -9,6 +9,7 @@ export type LiteratureProgress = {
   lastOpenedAt: string;
   resourceVersion: string;
   location?: LiteratureLocation;
+  furthestLocation?: LiteratureLocation;
   downloadedAt?: string;
   completed?: boolean;
 };
@@ -94,6 +95,9 @@ export function normalizeLiteratureProgress(
       : resourceVersion;
   if (!Number.isFinite(percent) || percent < 0 || percent > 100) return;
   const location = validLocation(entry.location) ? entry.location : undefined;
+  const furthestLocation = validLocation(entry.furthestLocation)
+    ? entry.furthestLocation
+    : location;
   return {
     version: 2,
     percent: Math.round(Math.min(100, Math.max(0, percent))),
@@ -101,6 +105,7 @@ export function normalizeLiteratureProgress(
     lastOpenedAt,
     resourceVersion: version,
     ...(location ? { location } : {}),
+    ...(furthestLocation ? { furthestLocation } : {}),
     ...(isIsoDate(entry.downloadedAt)
       ? { downloadedAt: entry.downloadedAt }
       : {}),
@@ -141,12 +146,41 @@ export function readLiteratureProgress(
 export function saveLiteratureProgress(
   id: string,
   progress: LiteratureProgress,
-): void {
-  if (typeof window === "undefined") return;
+): LiteratureProgress {
+  if (typeof window === "undefined") return progress;
   const next = readLiteratureProgress();
-  next[id] = progress;
+  const previous = next[id];
+  const compatible = previous?.resourceVersion === progress.resourceVersion;
+  const ratio = (location?: LiteratureLocation) =>
+    !location
+      ? -1
+      : location.kind === "scroll"
+        ? location.ratio
+        : location.page / location.totalPages;
+  const previousFurthest = compatible
+    ? (previous.furthestLocation ?? previous.location)
+    : undefined;
+  const furthest =
+    ratio(progress.furthestLocation) > ratio(previousFurthest)
+      ? progress.furthestLocation
+      : previousFurthest;
+  const location =
+    progress.location ?? (compatible ? previous.location : undefined);
+  const furthestLocation =
+    ratio(location) > ratio(furthest) ? location : furthest;
+  const saved: LiteratureProgress = {
+    ...progress,
+    percent: Math.max(progress.percent, compatible ? previous.percent : 0),
+    ...(location ? { location } : {}),
+    ...(furthestLocation ? { furthestLocation } : {}),
+    ...(progress.completed || (compatible && previous.completed)
+      ? { completed: true }
+      : {}),
+  };
+  next[id] = saved;
   localStorage.setItem(LITERATURE_PROGRESS_KEY, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
+  return saved;
 }
 
 export function removeLiteratureProgress(id: string): void {

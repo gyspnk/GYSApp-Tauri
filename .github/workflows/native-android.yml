@@ -1,0 +1,99 @@
+name: Native Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit, branch, or tag to package"
+        required: true
+        type: string
+      release_tag:
+        description: "Optional existing release to attach the APK to"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: native-android-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
+      GYS_RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android toolchain
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "apps/native/src-tauri -> target"
+          shared-key: native-android-arm64-v1
+          cache-on-failure: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify:generated
+      - run: pnpm verify:docs
+      - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
+      - name: Generate Android project
+        run: pnpm --filter @gys/native exec tauri android init --ci
+      # This manually dispatched preview uses the Android debug signing identity.
+      # Store/upgradable production releases require the owner's stable keystore.
+      - name: Build ARM64 preview APK
+        run: pnpm --filter @gys/native exec tauri android build --apk --debug --target aarch64 --ci
+      - name: Verify and collect APK
+        run: |
+          mkdir -p android-artifacts
+          apk_path=$(find apps/native/src-tauri/gen/android/app/build/outputs/apk -name '*.apk' -type f -print -quit)
+          test -n "$apk_path"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$apk_path"
+          cp "$apk_path" android-artifacts/GYSApp-0.1.0-android-arm64-preview.apk
+          git rev-parse HEAD > android-artifacts/commit.txt
+          sha256sum android-artifacts/*.apk > android-artifacts/SHA256SUMS-android.txt
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from "node:fs";
+          import { execFileSync } from "node:child_process";
+          writeFileSync("android-artifacts/native-provenance-android.json", JSON.stringify({
+            repository: process.env.GITHUB_REPOSITORY,
+            commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+            run: process.env.GITHUB_RUN_ID,
+            target: "aarch64-linux-android",
+            signing: "Android debug identity",
+            ndk: "27.2.12479018",
+            generatedAt: new Date().toISOString(),
+          }, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gysapp-android-arm64-${{ github.run_id }}
+          path: android-artifacts/
+          if-no-files-found: error
+      - name: Attach APK to the requested release
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GYS_RELEASE_TAG" android-artifacts/*.apk android-artifacts/SHA256SUMS-android.txt android-artifacts/native-provenance-android.json --repo "$GITHUB_REPOSITORY" --clobber

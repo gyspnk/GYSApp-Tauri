@@ -1499,7 +1499,7 @@ test("literature article exposes an explicit jump to the saved scroll position",
   await page.getByRole("button", { name: "Lanjutkan membaca" }).click();
   await expect(page.getByTestId("literature-article-reader")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: /Kembali ke posisi/ }),
+    page.getByRole("button", { name: "Terakhir 55%", exact: true }),
   ).toBeVisible();
 });
 

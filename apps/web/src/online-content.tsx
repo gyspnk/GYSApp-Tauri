@@ -14,6 +14,7 @@ import { fetchSuara, getCachedSuara, subscribeSuara } from "./suara.js";
 import { fetchOnlineArticle, getCachedArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
+import { ArticleProgress } from "./article-progress.js";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -164,6 +165,14 @@ export function SauhPage({ locale }: { locale: Locale }) {
         </span>
       </div>
       {state.status !== "ready" && <h1>{translate(locale, "sauh.title")}</h1>}
+      {state.status === "ready" && (
+        <ArticleProgress
+          key={`${state.post.id}:${state.post.updatedAt}`}
+          id={`article:sauh:${state.post.id}`}
+          resourceVersion={state.post.updatedAt}
+          locale={locale}
+        />
+      )}
       <article
         className={`online-article-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
         data-sauh-status={state.status}
@@ -555,6 +564,15 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
             {translate(locale, "suara.detailRetry")}
           </button>
         </div>
+      )}
+      {state.status === "ready" && (
+        <ArticleProgress
+          key={`${state.post.id}:${state.post.publishedAt}`}
+          id={`article:suara:${state.post.id}`}
+          resourceVersion={state.post.publishedAt}
+          locale={locale}
+          ready={!state.contentPending}
+        />
       )}
       {state.status === "ready" && (
         <article className="online-article-card suara-article-card">

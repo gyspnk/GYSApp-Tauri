@@ -1,11 +1,11 @@
 import { translate, type Locale } from "./i18n.js";
 
 function createZoomHud(
-  stage: HTMLElement,
+  reader: HTMLElement,
   value: string,
   locale: Locale,
 ): HTMLElement {
-  const existing = stage.querySelector<HTMLElement>(".pdf-zoom-hud");
+  const existing = reader.querySelector<HTMLElement>(".pdf-zoom-hud");
   if (existing) return existing;
   const hud = document.createElement("div");
   hud.className = "pdf-zoom-hud";
@@ -13,7 +13,8 @@ function createZoomHud(
   hud.setAttribute("aria-live", "polite");
   hud.setAttribute("aria-label", translate(locale, "pdf.zoomGroup"));
   hud.textContent = value;
-  stage.append(hud);
+  // Chrome belongs to the reader viewport, outside the zoom/pan scrollport.
+  reader.append(hud);
   return hud;
 }
 
@@ -57,7 +58,7 @@ export function enhancePdfReader(reader: HTMLElement): () => void {
         ? "zh"
         : "id";
   const hud = createZoomHud(
-    stage,
+    reader,
     indicator.textContent?.trim() || "100%",
     locale,
   );

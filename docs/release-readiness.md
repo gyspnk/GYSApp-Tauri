@@ -7,6 +7,29 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-08 — stationary PDF chrome, isolated scroll and article reader
+
+- Reproduced the zoom HUD leaving the viewport during PDF gesture zoom, window
+  scroll leaking across history navigation, and reading progress falling from
+  100% to 20% when revisiting earlier content. Regression contracts now pass.
+- PDF feedback mounts outside the scrollport. The shell owns scroll reset for
+  pathname changes and manual history restoration. Literature articles open at
+  `/literatur/:itemId/read`; article readers share a sticky progress strip and
+  last/furthest/start choices. Resource-compatible progress and completion are
+  monotonic, while the last bookmark continues to move in either direction.
+- **50 focused production browser cases pass without retries**, including
+  mobile/desktop gesture zoom, high-density detail, dark article contrast,
+  history scroll, overlays and reader motion. The expanded resume regression
+  then passes with leaving/reentering, furthest resume and return to start;
+  **six final regression/legacy smoke cases pass without retries**. Three Home
+  screenshots are refreshed after adding internal hover padding. Type checks,
+  complete deterministic tests and the initial bundle budget pass.
+- Android ARM64 debug-signed APK and Windows x64 installer packaging are
+  explicitly requested for this delivery. Both manual workflows can attach
+  hashes and exact checked-out commit provenance to a draft preview release.
+  Hosted CI, package builds and publication remain pending at this receipt;
+  signing/store/device acceptance is not claimed by preview builds.
+
 ### 2026-10-08 — hosted pass and native search timing
 
 - Delivered `83c24e3` passes Pages and all three hosted browser shards:

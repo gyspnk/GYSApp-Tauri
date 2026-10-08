@@ -223,11 +223,6 @@ export async function fetchOnlineArticle(
         const cleaned = cleanSuaraRawContent(rawContent, source.toString());
         const body = stripHtml(cleaned).slice(0, 200_000);
         if (body) {
-          const modified =
-            typeof record.modified === "string" &&
-            Number.isFinite(Date.parse(record.modified))
-              ? new Date(record.modified).toISOString()
-              : new Date().toISOString();
           const article = OnlineArticleSchema.parse({
             id: String(record.id ?? slug),
             title:
@@ -237,7 +232,7 @@ export async function fetchOnlineArticle(
             body,
             url: source.toString(),
             source: "tjc.org",
-            fetchedAt: modified,
+            fetchedAt: new Date().toISOString(),
           });
           setCachedArticle(url, article);
           return article;

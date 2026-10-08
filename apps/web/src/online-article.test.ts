@@ -19,6 +19,7 @@ describe("online article compatibility reader", () => {
       ]),
     );
     vi.stubGlobal("fetch", fetchMock);
+    const retrievedAt = Date.now();
     const article = await fetchOnlineArticle(
       "https://tjc.org/id/suarasejati/judul/",
     );
@@ -32,5 +33,10 @@ describe("online article compatibility reader", () => {
       expect.any(URL),
       expect.objectContaining({ headers: { accept: "application/json" } }),
     );
+    expect(Date.parse(article.fetchedAt)).toBeGreaterThanOrEqual(retrievedAt);
+    expect(
+      await fetchOnlineArticle("https://tjc.org/id/suarasejati/judul/"),
+    ).toEqual(article);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

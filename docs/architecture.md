@@ -350,6 +350,23 @@ current-day content. Article layouts support readable dark themes and adaptive
 columns. Image geometry is fixed before download/decode. Faith search and full
 texts fill their field; official local PDFs avoid remote booklet CORS failure.
 
+Literature metadata and article reading have separate routes:
+`/literatur/:itemId` and `/literatur/:itemId/read`. Article content comes from
+the shared sanitized cache/loader. Sauh, Suara and literature share
+`article-progress.tsx`: a sticky progress strip with explicit resume choices.
+The v2 progress record keeps `location` as the last position and
+`furthestLocation` as the maximum position. Compatible resource versions retain
+maximum percentage and completion when rereading; a changed resource starts a
+new record. Legacy records derive the furthest position from their bookmark.
+Scroll writes are throttled and the captured position flushes on leaving.
+Article cache freshness uses retrieval time, independently of the publisher's
+modification date, so older articles still reuse their fresh local content.
+
+The shell resets window scroll in a layout effect for pathname changes and
+owns manual browser-history scroll restoration. Reader-specific PDF scroll and
+explicit article resume remain local. PDF zoom HUDs mount on the reader shell,
+outside its scrollport, so gestures move the paper while UI stays anchored.
+
 ### e-GYS authentication and local contract sync
 
 ```mermaid

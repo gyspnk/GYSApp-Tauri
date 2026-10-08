@@ -174,6 +174,13 @@ artifacts: a successful push is not a successful deployment receipt.
   Android/iOS toolchains, signing, native account and device acceptance are
   required before claiming a release on those platforms.
 
+Manual preview delivery uses **Native Windows installer** and **Native Android
+APK** in Actions. Set `ref` to the exact reviewed commit and `release_tag` to an
+existing draft release to attach the packages. Android produces an ARM64
+debug-signed preview APK; Windows defaults to an unsigned x64 NSIS installer.
+These workflows do not run on ordinary pushes. Protected production signing
+and real-device acceptance remain separate from preview artifact builds.
+
 [Deployment and troubleshooting](docs/operations.md) describes variables,
 provider/PDF failures, caches and post-push checks.
 

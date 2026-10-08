@@ -209,6 +209,21 @@ Worker completion from the Git push alone.
 
 ## Evidence and documentation
 
+`reader-state-regressions.spec.ts` exercises history scroll isolation, stationary
+PDF chrome during gesture zoom/pan on phone/desktop, and a dedicated article
+route with independent last/furthest resume. Literature progress units verify
+monotonic progress/completion and resource-version reset. Home hover padding is
+also checked in responsive rendered screenshots.
+
+Native packaging is explicitly dispatched, never added to normal push jobs.
+`native-android.yml` builds a debug-signed ARM64 preview APK using pinned Android
+SDK/NDK tools. `native-windows.yml` builds the Windows x64 NSIS installer; signing
+is optional through protected certificate inputs. Both accept an exact `ref`
+and optional `release_tag` for attaching artifacts to an existing draft release.
+Android release/store signing needs the owner's stable keystore; a debug-signed
+preview is not evidence of signed production/device acceptance. Verify actual
+artifact hashes and workflow commit provenance before publishing the draft.
+
 Current guides live in [docs/README.md](README.md). Dated audits/plans preserve
 historical results; add a new dated receipt instead of rewriting old timings,
 platform outcomes or source revisions. Source inventories come from generated

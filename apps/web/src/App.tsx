@@ -480,6 +480,16 @@ function Shell({
     location.pathname === "/bible" ||
     location.pathname === "/kidung" ||
     location.pathname.startsWith("/kidung/");
+  useLayoutEffect(() => {
+    const previous = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+    return () => {
+      history.scrollRestoration = previous;
+    };
+  }, []);
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [location.pathname]);
   const midiStatus = useSyncExternalStore(
     midiPlayer.subscribe,
     () => midiPlayer.snapshot().status,
@@ -696,6 +706,10 @@ function RoutedApp() {
         <Route path="/literatur" element={<LiteraturePage locale={locale} />} />
         <Route
           path="/literatur/:itemId"
+          element={<LiteratureDetailPage locale={locale} />}
+        />
+        <Route
+          path="/literatur/:itemId/read"
           element={<LiteratureDetailPage locale={locale} />}
         />
         <Route
