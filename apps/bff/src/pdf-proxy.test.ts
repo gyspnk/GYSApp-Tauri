@@ -64,6 +64,34 @@ describe("official PDF streaming", () => {
     expect(await result?.text()).toBe("%PDF-");
   });
 
+  it("retains the legacy bucket-root mirror after canonical CDN and publisher failure", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response("missing", { status: 404 }))
+      .mockResolvedValueOnce(
+        new Response("<html>unavailable</html>", {
+          headers: { "content-type": "text/html" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response("%PDF-", {
+          headers: { "content-type": "application/pdf" },
+        }),
+      );
+    const result = await fetchOfficialPdf(
+      new URL("https://tjc.org/id/wp-content/uploads/old.pdf"),
+      undefined,
+      new AbortController().signal,
+      fetcher,
+    );
+    expect(await result?.text()).toBe("%PDF-");
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/old.pdf",
+      "https://tjc.org/id/wp-content/uploads/old.pdf",
+      "https://tjcorguploads.s3.amazonaws.com/wp-content/uploads/old.pdf",
+    ]);
+  });
+
   it("does not retry after the reader cancels", async () => {
     const controller = new AbortController();
     controller.abort();

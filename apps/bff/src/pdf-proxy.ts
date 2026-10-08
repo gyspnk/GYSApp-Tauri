@@ -13,6 +13,10 @@ export async function fetchOfficialPdf(
     candidates.unshift(
       `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}`,
     );
+    // Retain older uploads stored at the bucket root as the final fallback.
+    candidates.push(
+      `https://tjcorguploads.s3.amazonaws.com${url.pathname.replace(/^\/id/, "")}`,
+    );
   } else if (url.hostname === "tjcorguploads.s3.amazonaws.com") {
     candidates.push(
       `https://tjc.org/id${url.pathname.replace(/^\/tjcorg/, "")}`,
