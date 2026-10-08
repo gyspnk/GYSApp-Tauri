@@ -206,14 +206,14 @@ def main():
         time.sleep(1)
     capture(output, "more-portrait")
     assert_idle_audio_focus(output, "more-idle")
-    heading = wait_label(output, "Jelajahi koleksi", "text-normal")
+    heading = wait_label(output, "JELAJAHI KOLEKSI", "text-normal")
     _, top, _, bottom = bounds(heading)
     normal_height = bottom - top
     try:
         adb("shell", "settings", "put", "system", "font_scale", "2.0")
         adb("shell", "am", "force-stop", PACKAGE)
         open_more(output, component, "text-large")
-        heading = wait_label(output, "Jelajahi koleksi", "text-large")
+        heading = wait_label(output, "JELAJAHI KOLEKSI", "text-large")
         _, top, _, bottom = bounds(heading)
         if bottom - top <= normal_height * 1.25:
             raise RuntimeError(f"System font scale did not enlarge text: {normal_height} -> {bottom - top}")

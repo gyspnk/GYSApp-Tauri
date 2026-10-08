@@ -20,8 +20,10 @@
 
 - 437 web unit tests pass, including regressions that previously activated
   silent audio on unrelated gestures and created an idle context on resume.
-- 13 browser regressions pass without retries: hymn mode/history, text scaling
-  on mobile/desktop, MIDI toggle, persistent dock and dock animation.
+- 52 distinct browser regressions pass across targeted runs: hymn mode/history,
+  system text scaling, MIDI toggle/dock, Bible and lyrics zoom, Faith pinch,
+  appearance at 200% text, PDF loading and reader preferences. Legacy fixed-pixel
+  zoom assertions now measure the base size relative to the system font size.
 - Android ARM64 release Kotlin compilation passes. The Actions smoke additionally
   checks idle audio focus and enlarged text under Android `font_scale=2.0`.
 - Other applications' actual playback interruption and device-specific font
@@ -32,3 +34,15 @@ The preceding Android 17 credential/inset fix passed native Actions run
 [37786619576](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37786619576).
 Cloudflare production deployment remains pending owner credentials; follow the
 [Worker setup guide](../cloudflare-worker-setup.md).
+
+## Native Actions evidence
+
+The APK build in [37854922569](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37854922569)
+passes packaging, signing and alignment checks: 36,278,195 bytes, ARM64,
+compressed JNI and 16 KiB ELF alignment. Its application source is `8bbadcd`;
+subsequent commits refine tests only.
+
+The first native run confirms that neither Home startup nor navigation to More
+owns Android audio focus. Font checking initially stopped because Chromium
+exposes the styled heading as `JELAJAHI KOLEKSI`, including CSS capitalization.
+The test now uses that observed label; a follow-up run uses the same APK.
