@@ -113,3 +113,42 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "$GYS_RELEASE_TAG" android-artifacts/*.apk android-artifacts/SHA256SUMS-android.txt android-artifacts/native-provenance-android.json --repo "$GITHUB_REPOSITORY" --clobber
+
+  android-17-smoke:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gysapp-android-arm64-${{ github.run_id }}
+          path: android-artifacts
+      - name: Enable KVM and install Android 17
+        run: |
+          test -c /dev/kvm
+          sudo chmod a+rw /dev/kvm
+          sdkmanager "emulator" "system-images;android-37.0;google_apis;x86_64"
+          printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-37.0;google_apis;x86_64" --device pixel_2
+      - name: Exercise packaged APK on Android 17
+        run: |
+          mkdir -p android-qa
+          "$ANDROID_HOME/emulator/emulator" -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -memory 4096 > android-qa/emulator.log 2>&1 &
+          python3 scripts/android-runtime-smoke.py --apk android-artifacts/GYSApp-0.1.0-android-arm64-preview.apk --output android-qa
+      - name: Upload native screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-17-runtime-${{ github.run_id }}
+          path: android-qa/
+          if-no-files-found: warn

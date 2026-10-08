@@ -65,3 +65,6 @@ runtime and scope; keep remaining deployment/account prerequisites explicit.
 Run `pnpm verify:docs`, formatting and generated-provenance checks before
 committing. A manual commit/push instruction authorizes delivery; no requested
 push should be described as complete before the remote branch SHA is verified.
+
+- [Cloudflare Worker setup](cloudflare-worker-setup.md): lengkap dari API token,
+  GitHub secrets dan binding e-GYS hingga deploy, rebuild dan verifikasi PDF.

@@ -1,3 +1,6 @@
+#[cfg(target_os = "android")]
+mod android_context;
+
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
@@ -254,6 +257,8 @@ fn secret_account(key: &str) -> Result<String, String> {
 #[tauri::command]
 fn secret_get(app: AppHandle, key: String) -> Result<Option<String>, String> {
     let account = secret_account(&key)?;
+    #[cfg(target_os = "android")]
+    android_context::ensure_ready()?;
     app.keyring()
         .store
         .get_password(&account)
@@ -266,6 +271,8 @@ fn secret_set(app: AppHandle, key: String, value: String) -> Result<(), String> 
     if value.len() > 32_768 {
         return Err("native secret value is too large".to_owned());
     }
+    #[cfg(target_os = "android")]
+    android_context::ensure_ready()?;
     app.keyring()
         .store
         .set_password(&account, &value)
@@ -275,6 +282,8 @@ fn secret_set(app: AppHandle, key: String, value: String) -> Result<(), String> 
 #[tauri::command]
 fn secret_remove(app: AppHandle, key: String) -> Result<(), String> {
     let account = secret_account(&key)?;
+    #[cfg(target_os = "android")]
+    android_context::ensure_ready()?;
     app.keyring()
         .store
         .delete(&account)

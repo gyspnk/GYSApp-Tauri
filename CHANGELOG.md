@@ -2,6 +2,15 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-08 — Android system insets and credential startup
+
+- Apply status/navigation bar, display cutout and keyboard insets once at the
+  Android content host, including rotation and navigation mode changes.
+- Initialize the Android keyring context before frontend IPC to prevent the
+  uninitialized-context panic when Lainnya requests the account profile.
+- Install tracked Activity/JNI keep rules after Android project generation;
+  preserve release shrinking and preview packaging.
+
 ### 2026-10-08 — literature transport and session settings
 
 - Load PDF.js concurrently with literature metadata/cache lookup; prefer the

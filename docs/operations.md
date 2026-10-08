@@ -4,6 +4,8 @@ Reviewed 2026-10-07. Web, Worker and native releases are separate artifacts.
 A pushed commit proves source delivery; deployment success and live-account
 acceptance must be checked separately.
 
+Panduan langkah demi langkah: [setup Cloudflare Worker](cloudflare-worker-setup.md).
+
 ## Build and runtime configuration
 
 | Variable                                                       | Owner                                        | Purpose                                                                                          |
@@ -145,3 +147,32 @@ geometry identity.
 
 See [cache/preload](cache-and-preload.md) for ownership/bounds and
 [testing](testing-and-maintenance.md) for reproducible regressions.
+
+## Android viewport and secure-storage startup
+
+After `tauri android init --ci`, run `node scripts/configure-android-preview.mjs`
+before building. The script installs the tracked Activity and JNI keep rules from
+`apps/native/android`; editing the ignored generated Android tree alone does not
+survive regeneration. It also retains the preview packaging optimizations.
+
+The Activity initializes the keyring's NDK context using a process-lifetime global
+application reference before Tauri starts. Wry maintains its own context and does
+not initialize `ndk-context`; without this bridge, the first credential read
+(including the account profile on Lainnya) panics in the Android keyring backend.
+Activity recreation reuses the application reference rather than an old Activity.
+Credential commands reject an unavailable context before entering the keyring
+backend, so an unconfigured shell returns an IPC error instead of panicking.
+
+The native content host owns the safe viewport, using the union of visible
+system bars and display cutout insets. Its bottom inset uses the maximum of
+navigation and keyboard insets, avoiding addition of both. Insets are consumed
+once at the host so fixed web controls use the same safe viewport. Check portrait,
+landscape, gesture/three-button navigation, a simulated cutout, and keyboard
+open/close on a device or emulator before claiming device acceptance.
+
+Run `node --test scripts/configure-android-preview.test.mjs` to verify regenerated
+shell installation, original ProGuard preservation and repeated configuration.
+Rust/Kotlin compilation and browser tests alone do not verify Android runtime.
+
+See the [Android insets/startup validation receipt](maintenance/2026-10-08-android-insets-keyring.md)
+for the local build evidence and the unverified Android 17 runtime checks.

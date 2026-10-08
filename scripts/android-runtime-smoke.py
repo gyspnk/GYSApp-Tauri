@@ -1,0 +1,174 @@
+"""Android runtime smoke against the actual packaged APK (no browser mocks)."""
+import argparse
+import re
+import subprocess
+import time
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+PACKAGE = "id.or.gys.app"
+
+
+def adb(*args, timeout=45):
+    result = subprocess.run(["adb", *args], capture_output=True, timeout=timeout)
+    if result.returncode:
+        raise RuntimeError(result.stderr.decode(errors="replace"))
+    return result.stdout
+
+
+def alive():
+    return bool(adb("shell", "pidof", PACKAGE).strip())
+
+
+def hierarchy(output, name):
+    adb("shell", "uiautomator", "dump", "/sdcard/gys-window.xml")
+    raw = adb("exec-out", "cat", "/sdcard/gys-window.xml")
+    (output / f"{name}.xml").write_bytes(raw)
+    return ET.fromstring(raw)
+
+
+def bounds(node):
+    values = [int(value) for value in re.findall(r"\d+", node.attrib["bounds"])]
+    return tuple(values)
+
+
+def find_label(tree, label):
+    for node in tree.iter("node"):
+        if label in (node.get("text"), node.get("content-desc")):
+            return node
+    return None
+
+
+def wait_label(output, label, name):
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        if not alive():
+            raise RuntimeError("App process exited while waiting for " + label)
+        tree = hierarchy(output, name)
+        node = find_label(tree, label)
+        if node is not None:
+            return node
+        time.sleep(2)
+    raise RuntimeError("Accessible control not found: " + label)
+
+
+def capture(output, name):
+    tree = hierarchy(output, name)
+    webviews = [n for n in tree.iter("node") if n.get("class") == "android.webkit.WebView"]
+    if not webviews:
+        raise RuntimeError("No accessible application WebView")
+    viewport = bounds(webviews[0])
+    window = adb("shell", "dumpsys", "window").decode(errors="replace")
+    (output / f"{name}-window.txt").write_text(window)
+    size = adb("shell", "wm", "size").decode()
+    w, h = map(int, re.findall(r"(\d+)x(\d+)", size)[-1])
+    # XML root uses the current orientation; wm size reports natural orientation.
+    root_bounds = bounds(next(tree.iter("node")))
+    if root_bounds[2] > root_bounds[3] and w < h:
+        w, h = h, w
+    safe = [0, 0, w, h]
+    sources = 0
+    for line in window.splitlines():
+        if "InsetsSource" not in line or not re.search(r"statusBars|navigationBars|displayCutout", line):
+            continue
+        if re.search(r"(?:mVisible|visible)=false", line):
+            continue
+        frame = re.search(r"(?:mFrame|frame)=\[(\d+),(\d+)\]\[(\d+),(\d+)\]", line)
+        if not frame:
+            continue
+        l, t, r, b = map(int, frame.groups())
+        if r <= l or b <= t:
+            continue
+        sources += 1
+        if l == 0 and r == w:
+            if t == 0 and b < h / 4:
+                safe[1] = max(safe[1], b)
+            if b == h and t > h * 3 / 4:
+                safe[3] = min(safe[3], t)
+        if t == 0 and b == h:
+            if l == 0 and r < w / 4:
+                safe[0] = max(safe[0], r)
+            if r == w and l > w * 3 / 4:
+                safe[2] = min(safe[2], l)
+    if not sources:
+        raise RuntimeError("System inset sources unavailable in dumpsys")
+    if not (viewport[0] >= safe[0] and viewport[1] >= safe[1]
+            and viewport[2] <= safe[2] and viewport[3] <= safe[3]):
+        raise RuntimeError(f"WebView {viewport} overlaps native safe viewport {safe}")
+    (output / f"{name}.png").write_bytes(adb("exec-out", "screencap", "-p"))
+    print(f"PASS {name}: WebView={viewport}, safe={safe}", flush=True)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--apk", required=True)
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
+    output = Path(args.output)
+    output.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + 300
+    while time.monotonic() < deadline:
+        try:
+            if adb("shell", "getprop", "sys.boot_completed", timeout=10).strip() == b"1":
+                break
+        except (RuntimeError, subprocess.TimeoutExpired):
+            pass
+        time.sleep(3)
+    else:
+        raise RuntimeError("Android emulator did not complete boot")
+    version = adb("shell", "getprop", "ro.build.version.release").decode().strip()
+    if version != "17":
+        raise RuntimeError("Expected Android 17, got " + version)
+    adb("shell", "input", "keyevent", "82")
+    adb("install", "-r", args.apk, timeout=180)
+    adb("logcat", "-c")
+    adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity", timeout=90)
+    node = wait_label(output, "Lainnya", "home")
+    l, t, r, b = bounds(node)
+    # Coordinates come exclusively from the current UI hierarchy.
+    adb("shell", "input", "tap", str((l + r) // 2), str((t + b) // 2))
+    wait_label(output, "Akun e-GYS", "more-loaded")
+    for _ in range(10):
+        if not alive():
+            raise RuntimeError("App exited after entering More (credential read)")
+        time.sleep(1)
+    capture(output, "more-portrait")
+    overlays = adb("shell", "cmd", "overlay", "list").decode()
+    for overlay, name in [
+        ("com.android.internal.systemui.navbar.threebutton", "more-threebutton"),
+        ("com.android.internal.systemui.navbar.gestural", "more-gesture"),
+        ("com.android.internal.display.cutout.emulation.tall", "more-cutout"),
+    ]:
+        if overlay not in overlays:
+            raise RuntimeError("Required emulator overlay missing: " + overlay)
+        adb("shell", "cmd", "overlay", "enable-exclusive", "--category", "--user", "0", overlay)
+        time.sleep(3)
+        capture(output, name)
+    adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
+    adb("shell", "settings", "put", "system", "user_rotation", "1")
+    time.sleep(4)
+    capture(output, "more-landscape-cutout")
+    adb("shell", "am", "force-stop", PACKAGE)
+    adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity", timeout=90)
+    wait_label(output, "Lainnya", "cold-restart")
+    if not alive():
+        raise RuntimeError("App exited on cold restart")
+    print("PASS Android 17 More/insets/cold-restart smoke", flush=True)
+
+
+if __name__ == "__main__":
+    args_output = None
+    try:
+        main()
+    finally:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--apk")
+        parser.add_argument("--output")
+        args, _ = parser.parse_known_args()
+        if args.output:
+            output = Path(args.output)
+            output.mkdir(parents=True, exist_ok=True)
+            try:
+                (output / "logcat.txt").write_bytes(adb("logcat", "-d"))
+            except Exception as error:
+                (output / "logcat-error.txt").write_text(str(error))
