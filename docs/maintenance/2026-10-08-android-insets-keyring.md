@@ -1,7 +1,7 @@
 # Android insets and credential startup — 2026-10-08
 
 Source: main baseline `5a32f6483065453a0070ae86cc7ddd7d22dce9e5` plus the
-uncommitted Android shell changes. The follow-up authorizes commit/push to main and GitHub Actions validation.
+Android shell implementation in commit `03e80a66`. The follow-up authorizes commit/push to main and GitHub Actions validation.
 Local runtime observations below remain distinct from the new accelerated
 Android 17 smoke job.
 
@@ -62,3 +62,33 @@ On an Android 17 device or an accelerated emulator, verify cold Home startup,
 opening/reopening Lainnya, Activity recreation, portrait/landscape, display
 cutouts, gesture/three-button navigation and keyboard open/close. Confirm no
 native panic/abort in logcat and no controls beneath system bars.
+
+## GitHub Actions evidence
+
+[CI run 37774500209](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37774500209)
+passed build, unit/type/structural checks, native desktop compilation, secret scan
+and all browser regression shards for the application patch.
+[Android package run 37774659956](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37774659956)
+built and verified a signed release-profile ARM64 preview APK: 36,277,727 bytes,
+compressed JNI and 16 KiB ELF alignment. Its package job succeeded; its first
+runtime job failed before app launch because the emulator could not find the AVD.
+
+The reusable `android-runtime.yml` workflow can test that same APK artifact without
+rebuilding it. Generated AVD paths are explicit, storage is sufficient, and the
+user must be unlocked before resolving a credential-protected launcher. API 37
+uses the current preview emulator. Android 16 is available as a comparison input.
+
+Both Google images exposed a SurfaceFlinger/Goldfish mapper assertion before app
+installation: `!rcEnc->featureInfo()->hasReadColorBufferDma`. Emulator feature
+flags did not prevent it. The smoke harness disables `debug.sf.luma_sampling` and
+restarts the disposable userdebug emulator framework before installing the app;
+this is a test-environment workaround, never an APK configuration change. System
+adaptive luminance sampling is therefore outside this test's acceptance scope.
+
+[Android 17 runtime run 37782899001](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37782899001)
+then opened Home and Lainnya, retained the app process after the account credential
+read, and passed portrait, three-button, gesture and simulated-cutout safe-viewport
+checks. That run remained red: the landscape UiAutomator dump was not valid XML.
+The harness now uses unique dump paths and bounded retries for transient dump
+failures so an old portrait snapshot cannot stand in for a landscape capture.
+Rotation and cold restart acceptance still require a successful follow-up run.

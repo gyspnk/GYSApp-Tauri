@@ -22,10 +22,24 @@ def alive():
 
 
 def hierarchy(output, name):
-    adb("shell", "uiautomator", "dump", "/sdcard/gys-window.xml")
-    raw = adb("exec-out", "cat", "/sdcard/gys-window.xml")
-    (output / f"{name}.xml").write_bytes(raw)
-    return ET.fromstring(raw)
+    # Rotation can briefly leave UiAutomator without an idle hierarchy. Unique
+    # paths prevent a failed dump from reusing an earlier portrait snapshot.
+    last_error = None
+    for attempt in range(5):
+        path = f"/sdcard/gys-window-{time.monotonic_ns()}.xml"
+        try:
+            result = adb("shell", "uiautomator", "dump", path)
+            (output / f"{name}-dump.txt").write_bytes(result)
+            raw = adb("exec-out", "cat", path)
+            (output / f"{name}.xml").write_bytes(raw)
+            return ET.fromstring(raw)
+        except (ET.ParseError, RuntimeError) as error:
+            last_error = error
+            if not alive():
+                raise RuntimeError("App exited while capturing " + name) from error
+            if attempt < 4:
+                time.sleep(2)
+    raise RuntimeError("Unable to capture current hierarchy: " + name) from last_error
 
 
 def bounds(node):
