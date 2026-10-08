@@ -65,13 +65,16 @@ test.describe("Faith phone touch zoom", () => {
     isMobile: true,
     hasTouch: true,
   });
-  test("pinch enlarges/shrinks 14px text without zooming the shell", async ({
+  test("pinch scales system-sized text without zooming the shell", async ({
     page,
     context,
   }) => {
     await page.goto("/GYSApp-Tauri/iman");
     const text = page.locator(".faith-statement").first();
-    await expect(text).toHaveCSS("font-size", "14px");
+    await expect(text).toBeVisible();
+    const size = () =>
+      text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const initial = await size();
     const touch = await context.newCDPSession(page);
     const points = (spread: number) => [
       { x: 190 - spread / 2, y: 230, id: 1 },
@@ -85,12 +88,12 @@ test.describe("Faith phone touch zoom", () => {
       type: "touchMove",
       touchPoints: points(200),
     });
-    await expect(text).toHaveCSS("font-size", "28px");
+    await expect.poll(size).toBeCloseTo(initial * 2, 1);
     await touch.send("Input.dispatchTouchEvent", {
       type: "touchMove",
       touchPoints: points(50),
     });
-    await expect(text).toHaveCSS("font-size", "10.5px");
+    await expect.poll(size).toBeCloseTo(initial * 0.75, 1);
     await touch.send("Input.dispatchTouchEvent", {
       type: "touchEnd",
       touchPoints: [],
@@ -102,7 +105,7 @@ test.describe("Faith phone touch zoom", () => {
       ),
     ).toBe(false);
     await page.reload();
-    await expect(text).toHaveCSS("font-size", "14px");
+    await expect.poll(size).toBeCloseTo(initial, 1);
   });
 });
 
@@ -124,10 +127,12 @@ for (const width of [320, 1440]) {
       const paragraphs = page.locator(".faith-statement");
       await expect(paragraphs).toHaveCount(10);
       await expect(paragraphs.first()).toHaveCSS("text-align", "justify");
-      await expect(paragraphs.first()).toHaveCSS(
-        "font-size",
-        width < 600 ? "14px" : "20px",
-      );
+      const baseFontSize = (element: HTMLElement | SVGElement) =>
+        (parseFloat(getComputedStyle(element).fontSize) * 16) /
+        parseFloat(getComputedStyle(document.documentElement).fontSize);
+      await expect
+        .poll(() => paragraphs.first().evaluate(baseFontSize))
+        .toBeCloseTo(width < 600 ? 14 : 20, 1);
       await expect(page.locator(".faith-hint, .connection-status")).toHaveCount(
         0,
       );
@@ -157,10 +162,9 @@ for (const width of [320, 1440]) {
         { exact: true },
       );
       await expect(input).toHaveCount(1);
-      await expect(input).toHaveCSS(
-        "font-size",
-        width >= 960 ? "16px" : "14px",
-      );
+      await expect
+        .poll(() => input.evaluate(baseFontSize))
+        .toBeCloseTo(width >= 960 ? 16 : 14, 1);
       await input.fill("2");
       await expect(paragraphs).toHaveCount(1);
       await expect(page.locator(".faith-number")).toHaveText("02");

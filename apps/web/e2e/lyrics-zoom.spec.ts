@@ -13,6 +13,12 @@ for (const width of [390, 768, 1440]) {
       .click();
     await expect(page.locator(".chord-rich-line").first()).toBeVisible();
     const sheet = page.locator(".lyrics-sheet");
+    const baseFontSize = () =>
+      sheet.evaluate(
+        (el) =>
+          (parseFloat(getComputedStyle(el).fontSize) * 16) /
+          parseFloat(getComputedStyle(document.documentElement).fontSize),
+      );
     const zoom = async (deltaY: number) => {
       await sheet.evaluate(
         (el, deltaY) =>
@@ -28,17 +34,11 @@ for (const width of [390, 768, 1440]) {
       );
     };
     await zoom(-10000);
-    await expect
-      .poll(() =>
-        sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-      )
-      .toBe(56);
+    await expect.poll(baseFontSize).toBe(56);
     await page.waitForTimeout(400);
     await zoom(-10000);
     await page.waitForTimeout(400);
-    expect(
-      await sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-    ).toBe(56);
+    expect(await baseFontSize()).toBe(56);
     const collisions = await sheet.evaluate((el) => {
       const lyrics = [...el.querySelectorAll("[data-chord-char-index]")]
         .filter((char) => char.textContent?.trim())
@@ -62,22 +62,12 @@ for (const width of [390, 768, 1440]) {
     expect(overflow.width).toBeLessThanOrEqual(2);
     expect(overflow.page).toBeLessThanOrEqual(2);
     await page.reload();
-    await expect
-      .poll(() =>
-        sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-      )
-      .toBe(56);
+    await expect.poll(baseFontSize).toBe(56);
     await zoom(10000);
-    await expect
-      .poll(() =>
-        sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-      )
-      .toBe(16);
+    await expect.poll(baseFontSize).toBe(16);
     await page.waitForTimeout(400);
     await zoom(10000);
     await page.waitForTimeout(400);
-    expect(
-      await sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
-    ).toBe(16);
+    expect(await baseFontSize()).toBe(16);
   });
 }
