@@ -2308,6 +2308,7 @@ blockquote {
   display: grid;
   gap: 18px;
   align-content: start;
+  justify-content: stretch;
   justify-items: center;
 }
 .pdf-pages.pdf-layout-horizontal {

@@ -491,6 +491,11 @@ test.describe("responsive reader navigation", () => {
   test("legacy and unknown routes stay explicit across locales and devices", async ({
     page,
   }) => {
+    // Google provider behavior has dedicated contracts; this route/UI audit
+    // must not depend on the SDK accepting a localhost OAuth origin.
+    await page.route("https://accounts.google.com/gsi/client*", (route) =>
+      route.fulfill({ contentType: "application/javascript", body: "void 0;" }),
+    );
     // Settings may check release tracks in the background. Route this unrelated
     // transport deterministically; runtime errors remain asserted below.
     await page.route("**/GYSApp-Data/main/latest/*-manifest.json", (route) =>

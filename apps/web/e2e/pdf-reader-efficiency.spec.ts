@@ -129,6 +129,39 @@ test("PDF commits page input once, fits spreads, resizes, and bounds rapid zoom"
 test("long PDF renders only nearby pages and releases offscreen bitmap memory", async ({
   page,
 }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    const NativeObserver = IntersectionObserver;
+    window.IntersectionObserver = class extends NativeObserver {
+      constructor(
+        callback: IntersectionObserverCallback,
+        options?: IntersectionObserverInit,
+      ) {
+        super((entries, observer) => {
+          const latest = entries.at(-1);
+          // Reproduce the browser's queued enter/exit batch deterministically.
+          if (
+            latest?.target.getAttribute("data-pdf-page") === "2" &&
+            !latest.isIntersecting
+          ) {
+            const earlier: IntersectionObserverEntry = {
+              target: latest.target,
+              time: Math.max(0, latest.time - 1),
+              rootBounds: latest.rootBounds,
+              boundingClientRect: latest.boundingClientRect,
+              intersectionRect: latest.boundingClientRect,
+              intersectionRatio: 1,
+              isIntersecting: true,
+            };
+            callback([earlier, ...entries], observer);
+          } else callback(entries, observer);
+        }, options);
+      }
+    };
+  });
+  const session = await page.context().newCDPSession(page);
+  await session.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   const reader = await openReader(page);
   await reader.locator(".pdf-advanced-toggle").click();
   await reader.getByRole("button", { name: "Vertikal" }).click();
@@ -144,6 +177,15 @@ test("long PDF renders only nearby pages and releases offscreen bitmap memory", 
     "data-pdf-rendered",
     "false",
   );
+  const stage = reader.locator(".pdf-stage");
+  await stage.evaluate((element) => {
+    element.setAttribute("data-jump-scroll-ended", "false");
+    element.addEventListener(
+      "scrollend",
+      () => element.setAttribute("data-jump-scroll-ended", "true"),
+      { once: true },
+    );
+  });
   const jump = reader.locator(".pdf-page-jump input");
   await jump.fill("30");
   await jump.press("Enter");
@@ -152,13 +194,19 @@ test("long PDF renders only nearby pages and releases offscreen bitmap memory", 
     "true",
     { timeout: 15_000 },
   );
+  // Reaching the page can happen before native smooth scrolling finishes.
+  await expect(stage).toHaveAttribute("data-jump-scroll-ended", "true", {
+    timeout: 15_000,
+  });
   await expect
     .poll(() =>
       reader
-        .locator('[data-pdf-page="1"] canvas')
-        .evaluate((element: HTMLCanvasElement) => element.width),
+        .locator('[data-pdf-page="1"] canvas, [data-pdf-page="2"] canvas')
+        .evaluateAll((elements: HTMLCanvasElement[]) =>
+          elements.every((element) => element.width === 0),
+        ),
     )
-    .toBe(0);
+    .toBe(true);
   await expect
     .poll(() => reader.locator('canvas[data-pdf-rendered="true"]').count())
     .toBeLessThanOrEqual(5);
@@ -182,9 +230,26 @@ test("long PDF renders only nearby pages and releases offscreen bitmap memory", 
     .evaluate((element) =>
       element.scrollIntoView({ behavior: "instant", block: "start" }),
     );
-  await expect(reader.locator(".pdf-page-navigation > span")).toHaveText(
-    "Halaman 20 / 48",
+  const activePage = reader.locator(".pdf-page-navigation > span");
+  await expect(activePage).toHaveText("Halaman 20 / 48");
+  // Progress saves must not restore a stale page between consecutive frames.
+  const labels = await activePage.evaluate(async (element) => {
+    const samples = new Set<string>();
+    for (let frame = 0; frame < 12; frame++) {
+      await new Promise(requestAnimationFrame);
+      samples.add(element.textContent ?? "");
+    }
+    return [...samples];
+  });
+  expect(labels).toEqual(["Halaman 20 / 48"]);
+  await page.reload();
+  await expect(reader.locator('[data-pdf-page="20"] canvas')).toHaveAttribute(
+    "data-pdf-rendered",
+    "true",
+    { timeout: 15_000 },
   );
+  await expect(activePage).toHaveText("Halaman 20 / 48");
+  expect(errors).toEqual([]);
 });
 
 test("PDF motion respects reduced-motion preference", async ({ page }) => {

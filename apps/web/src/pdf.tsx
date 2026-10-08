@@ -13,6 +13,7 @@ import {
   useCallback,
   useId,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -232,7 +233,8 @@ function VerticalPdfPage({
     }
     const observer = new IntersectionObserver(
       (entries) => {
-        const isNearViewport = entries.some((entry) => entry.isIntersecting);
+        // Scroll under load can batch an enter and exit for the same page.
+        const isNearViewport = entries.at(-1)?.isIntersecting ?? false;
         setNearViewport(isNearViewport);
         setStatus((current) => (isNearViewport ? current : "idle"));
       },
@@ -701,12 +703,17 @@ export function PdfReader({
     }
   }, [layout, progressKey]);
 
-  useEffect(() => {
+  const restoreDocumentProgress = useEffectEvent(() => {
     if (!progressKey) return;
     const saved = readPdfPage(progressKey);
     setResumePage(saved);
     setPage(saved ?? initialPage);
-  }, [initialPage, progressKey]);
+  });
+  useEffect(() => {
+    // initialPage also reflects parent progress saves. Restore only when the
+    // document changes, otherwise stale saves race with the current viewport.
+    restoreDocumentProgress();
+  }, [progressKey]);
 
   // gyschordweb handleGlobalKeydown: viewer keyboard shortcuts.
   useEffect(() => {

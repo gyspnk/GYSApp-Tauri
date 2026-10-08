@@ -1,11 +1,45 @@
 # Release readiness ledger
 
-Reviewed **2026-10-07**. This ledger records measured outcomes, not a blanket
+Reviewed **2026-10-08**. This ledger records measured outcomes, not a blanket
 GA declaration. The current implementation is documented in the
 [documentation index](README.md); older receipts below describe their dated
 revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
+
+### 2026-10-08 — native restart pass and PDF progress feedback
+
+- Delivered `a8a4bfe` passes Pages and the complete packaged Windows workflow
+  ([native run 37614375367](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37614375367)).
+  It verifies offline Home recovery, Bible search in **1,060 ms**, live Edge
+  playback/stop/repeat, FluidSynth controls and cache corruption repair, two
+  full upstream tracks, **120 queue transitions**, **1,210,266 retained heap
+  bytes** and saved shell/reader/audio preferences after graceful restart.
+  Runner local-voice playback and BFF-dependent Faith PDF progress retain their
+  existing configuration-dependent skips.
+- Hosted browser CI exposed a PDF progress feedback race under load: the parent
+  sends updated progress back as `initialPage`, and the reader restores stale
+  saved pages on each update. Restoration now runs only on a document progress
+  key change. Vertical pages also stretch their grid column before decoding;
+  inherited flex centering previously resized placeholders from 300/820 px to
+  the full reading width and displaced the saved page after reload.
+  IntersectionObserver still bounds decoded pages and releases offscreen
+  bitmaps. Under load it can deliver an enter and exit in one batch; checking
+  any historical entry retained offscreen canvases. The latest entry now wins.
+  The regression injects the queued enter/exit case for page 2 and verifies
+  both initial pages release their bitmaps, stable labels across consecutive
+  frames and restored progress after reload, at fourfold CPU throttling and
+  with the original five-bitmap bound. It fails against the previous observer
+  and passes **3/3 in 18.6 seconds** after the fix, without retries. Bitmap/CSS
+  virtualization is retained. All **59 PDF/reader cases pass in 1.9 minutes**
+  without retries, including Faith, Literature, Kidung, sharp zoom, mouse/touch
+  panning, reduced motion and offline recovery. Initial JS remains **175.6 KiB**
+  against its 180 KiB budget.
+- The unrelated navigation audit now fulfills the Google SDK request with an
+  inert script. Google's live button iframe rejects the CI localhost OAuth
+  origin with HTTP 403; dedicated provider contracts still cover the Google
+  flow, and strict navigation console/error assertions remain intact.
+  Final hosted results for this follow-up remain to be verified.
 
 ### 2026-10-07 — complete MIDI soak and native shell selectors
 

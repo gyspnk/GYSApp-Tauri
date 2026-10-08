@@ -130,7 +130,18 @@ Chord spacing probes pause the real transition at creation and sample its
 midpoint in both directions. Theme tests delay the lazy module to verify that
 selection cancels pending focus scroll before loading, not after it completes.
 PDF zoom caps delayed-frame steps; active-page tracking also samples after
-placeholder rendering. The cold real-MIDI play assertion allows 15 seconds for
+placeholder rendering. Progress restoration reads the latest initial page only
+when the document progress key changes; saving progress must not rewind an
+active scroll. The vertical grid stretches its column before first paint so
+placeholder sizing matches the decoded page width. Page visibility uses the
+latest IntersectionObserver entry; a busy scroll may queue both enter and exit
+before one callback. The regression injects that batch and verifies offscreen
+bitmap release. The long-PDF contract uses
+fourfold CPU throttling, waits for
+native smooth-scroll completion, verifies stable labels across consecutive
+frames, retains the five-bitmap bound and checks page restoration after reload.
+The route/locale audit stubs Google's unrelated SDK to avoid localhost OAuth
+origin failures; dedicated provider tests verify sign-in behavior. The cold real-MIDI play assertion allows 15 seconds for
 lazy WASM/PCM preparation within its existing 35-second test budget.
 Shared PDF geometry checks also allow 15 seconds for initial worker/page paint;
 the subsequent interaction and measured performance limits remain unchanged.
