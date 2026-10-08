@@ -187,6 +187,7 @@ test("literature articles enter a dedicated reader and offer separate resume pos
   await page.getByRole("button", { name: "Posisi baca", exact: true }).click();
   await page.getByRole("button", { name: "Dari awal", exact: true }).click();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  // Restoring a fractional position rounds to a physical scroll pixel.
   expect(
     await page.evaluate(
       () =>
@@ -194,5 +195,5 @@ test("literature articles enter a dedicated reader and offer separate resume pos
           "reader-article"
         ].furthestLocation.ratio,
     ),
-  ).toBe(0.7);
+  ).toBeCloseTo(0.7, 3);
 });

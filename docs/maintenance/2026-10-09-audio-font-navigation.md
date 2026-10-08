@@ -60,3 +60,6 @@ for Home, Kidung, Lainnya, lyrics, Faith and literature.
 The remaining hosted visual differences were isolated to the Unicode star in
 favorite labels (228 pixels, font fallback differs between hosts). Those labels
 now rely on their existing SVG heart icon, retaining strict screenshot assertions.
+
+Article resume assertions allow subpixel scroll rounding (70% can restore as
+70.0059%) while retaining exact 70% progress and reset/back navigation checks.
