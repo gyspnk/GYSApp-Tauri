@@ -25,7 +25,9 @@ concurrency:
 jobs:
   packaged-native-smoke:
     runs-on: windows-latest
-    timeout-minutes: 20
+    # Full LTO, 30 process relaunches, full-track media soak and cache cleanup
+    # exceeded 20 minutes on a cold runner even after all acceptance steps passed.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
