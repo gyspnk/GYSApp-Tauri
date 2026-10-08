@@ -30,6 +30,7 @@ import {
   pdfHttpStatus,
   pdfPageWindow,
   pdfLayoutForViewport,
+  pdfSpreadStart,
   pdfPercentScale,
   pdfRasterScale,
   pdfFitScale,
@@ -51,6 +52,32 @@ import { Icon } from "./icons.js";
 import { translate, type Locale } from "./i18n.js";
 
 const PDF_SLOW_LOAD_DELAY_MS = 2500;
+
+function scrollToPdfPage(
+  stage: HTMLElement | null,
+  target: HTMLElement | null | undefined,
+  layout: PdfLayout,
+  behavior: ScrollBehavior,
+) {
+  if (!stage || !target) return;
+  const box = stage.getBoundingClientRect(),
+    page = target.getBoundingClientRect(),
+    style = getComputedStyle(stage);
+  stage.scrollTo({
+    left:
+      layout === "horizontal"
+        ? stage.scrollLeft +
+          page.left -
+          box.left -
+          parseFloat(style.paddingLeft)
+        : stage.scrollLeft,
+    top:
+      layout === "vertical"
+        ? stage.scrollTop + page.top - box.top - parseFloat(style.paddingTop)
+        : stage.scrollTop,
+    behavior,
+  });
+}
 
 export type PdfChordOverlayMarker = {
   noteIdx: number;
@@ -274,7 +301,20 @@ function VerticalPdfPage({
             parseFloat(padding?.paddingLeft ?? "0") -
             parseFloat(padding?.paddingRight ?? "0"),
         );
-        const fitScale = availableWidth / baseViewport.width;
+        const availableHeight = Math.max(
+          1,
+          (stage?.clientHeight ?? 720) -
+            parseFloat(padding?.paddingTop ?? "0") -
+            parseFloat(padding?.paddingBottom ?? "0"),
+        );
+        const fitScale = horizontal
+          ? pdfFitScale(
+              availableWidth,
+              availableHeight,
+              baseViewport.width,
+              baseViewport.height,
+            )
+          : availableWidth / baseViewport.width;
         const scale = pdfPercentScale(zoomPercent, fitScale, fitScale);
         const logicalViewport = nextPage.getViewport({ scale });
         const dpr = pdfRasterScale(
@@ -478,6 +518,12 @@ export function PdfReader({
     setPageDraft(String(page - pageStart + 1));
   }, [page, pageStart]);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const layoutPresent = useMenuPresence(layoutOpen, layoutRef);
+  useEffect(() => {
+    if (!advancedOpen) setLayoutOpen(false);
+  }, [advancedOpen]);
   const advancedRef = useRef<HTMLDivElement>(null);
   const advancedPresent = useMenuPresence(advancedOpen, advancedRef);
   const [fullscreenActive, setFullscreenActive] = useState(false);
@@ -620,6 +666,11 @@ export function PdfReader({
     total === 1 && layout === "two"
       ? "single"
       : pdfLayoutForViewport(layout, viewportWidth);
+  const renderedPage =
+    effectiveLayout === "two" ? pdfSpreadStart(page, pageStart, total) : page;
+  useEffect(() => {
+    if (effectiveLayout === "two") setPage(renderedPage);
+  }, [effectiveLayout, renderedPage]);
   const markActivePage = useCallback((nextPage: number) => {
     setPage((current) => (current === nextPage ? current : nextPage));
   }, []);
@@ -662,6 +713,8 @@ export function PdfReader({
     if (!stage) return;
     let timer: number | undefined;
     const observer = new ResizeObserver(() => {
+      setViewportWidth(stage.clientWidth);
+      zoomController.current?.refresh();
       window.clearTimeout(timer);
       timer = window.setTimeout(
         () => setViewportRevision((value) => value + 1),
@@ -673,12 +726,6 @@ export function PdfReader({
       observer.disconnect();
       window.clearTimeout(timer);
     };
-  }, []);
-
-  useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener("resize", onResize, { passive: true });
-    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -966,7 +1013,9 @@ export function PdfReader({
     const pageNumbers =
       effectiveLayout === "single"
         ? [page]
-        : [page, page + 1].filter((value) => value <= pageStart + total - 1);
+        : [renderedPage, renderedPage + 1].filter(
+            (value) => value <= pageStart + total - 1,
+          );
     const canvases = [canvasRef.current, secondaryCanvasRef.current];
     const stageBox = pdfStageRef.current;
     const stageStyle = stageBox && getComputedStyle(stageBox);
@@ -1081,6 +1130,7 @@ export function PdfReader({
     documentProxy,
     effectiveLayout,
     page,
+    renderedPage,
     pageStart,
     total,
     renderZoomPercent,
@@ -1121,23 +1171,29 @@ export function PdfReader({
   ]);
 
   const goToPage = (next: number) => {
-    const bounded = Math.max(
+    const requested = Math.max(
       pageStart,
       Math.min(pageStart + Math.max(0, total - 1), Math.trunc(next)),
     );
+    const bounded =
+      effectiveLayout === "two"
+        ? pdfSpreadStart(requested, pageStart, total)
+        : requested;
     setPage(bounded);
     if (effectiveLayout !== "vertical" && effectiveLayout !== "horizontal")
-      return;
+      return bounded;
     const target = verticalStageRef.current?.querySelector<HTMLElement>(
       `[data-pdf-page="${bounded}"]`,
     );
-    target?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    scrollToPdfPage(
+      pdfStageRef.current,
+      target,
+      effectiveLayout,
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "instant"
         : "smooth",
-      block: effectiveLayout === "vertical" ? "start" : "nearest",
-      inline: effectiveLayout === "horizontal" ? "center" : "nearest",
-    });
+    );
+    return bounded;
   };
   useEffect(() => {
     if (
@@ -1146,14 +1202,11 @@ export function PdfReader({
     )
       return;
     const frame = requestAnimationFrame(() => {
+      zoomController.current?.refresh();
       const target = verticalStageRef.current?.querySelector<HTMLElement>(
         `[data-pdf-page="${page}"]`,
       );
-      target?.scrollIntoView({
-        behavior: "instant",
-        block: effectiveLayout === "vertical" ? "start" : "nearest",
-        inline: effectiveLayout === "horizontal" ? "start" : "nearest",
-      });
+      scrollToPdfPage(pdfStageRef.current, target, effectiveLayout, "instant");
     });
     return () => cancelAnimationFrame(frame);
   }, [documentProxy, effectiveLayout]);
@@ -1178,6 +1231,13 @@ export function PdfReader({
   useEffect(() => {
     if (!advancedOpen) return;
     const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !pdfReaderRef.current
+          ?.querySelector(".pdf-layout-selector")
+          ?.contains(event.target)
+      )
+        setLayoutOpen(false);
       if (
         event.target instanceof Node &&
         !pdfReaderRef.current
@@ -1210,6 +1270,13 @@ export function PdfReader({
           if (event.key !== "Escape" || !advancedOpen) return;
           event.stopPropagation();
           event.preventDefault();
+          if (layoutOpen) {
+            setLayoutOpen(false);
+            pdfReaderRef.current
+              ?.querySelector<HTMLButtonElement>(".pdf-layout-menu-toggle")
+              ?.focus();
+            return;
+          }
           setAdvancedOpen(false);
           pdfReaderRef.current
             ?.querySelector<HTMLButtonElement>(".pdf-advanced-toggle")
@@ -1279,8 +1346,8 @@ export function PdfReader({
                 onChange={(event) => setPageDraft(event.target.value)}
                 onBlur={(event) => {
                   const next = Number(event.currentTarget.value) || 1;
-                  goToPage(pageStart + next - 1);
-                  setPageDraft(String(Math.max(1, Math.min(total, next))));
+                  const bounded = goToPage(pageStart + next - 1);
+                  setPageDraft(String(bounded - pageStart + 1));
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") event.currentTarget.blur();
@@ -1316,7 +1383,9 @@ export function PdfReader({
             disabled={
               navigateItems
                 ? !itemNavigation?.next
-                : total === 0 || page >= pageStart + total - 1
+                : total === 0 ||
+                  page + (effectiveLayout === "two" ? 2 : 1) >=
+                    pageStart + total
             }
           >
             <Icon
@@ -1464,54 +1533,62 @@ export function PdfReader({
               }
             />
           </label>
-          <div
-            className="pdf-layout-toggle"
-            role="group"
-            aria-label={translate(locale, "pdf.layoutGroup")}
-          >
-            {(["single", "two", "vertical", "horizontal"] as const).map(
-              (value) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={layout === value ? "is-active" : ""}
-                  onClick={() => setLayout(value)}
-                  aria-pressed={layout === value}
-                  aria-label={translate(
-                    locale,
-                    value === "single"
-                      ? "pdf.layout.single"
-                      : value === "two"
-                        ? "pdf.layout.two"
-                        : value === "vertical"
-                          ? "pdf.layout.vertical"
-                          : "pdf.layout.horizontal",
-                  )}
-                  title={translate(
-                    locale,
-                    value === "single"
-                      ? "pdf.layout.single"
-                      : value === "two"
-                        ? "pdf.layout.two"
-                        : value === "vertical"
-                          ? "pdf.layout.verticalTitle"
-                          : "pdf.layout.horizontalTitle",
-                  )}
-                >
-                  <Icon
-                    name={
-                      value === "single"
-                        ? "file"
-                        : value === "two"
-                          ? "columns"
-                          : value === "vertical"
-                            ? "swapVert"
-                            : "book"
+          <div className="pdf-layout-selector">
+            {variant === "hymn" && (
+              <button
+                type="button"
+                className="pdf-layout-menu-toggle"
+                aria-label={translate(locale, "pdf.layoutGroup")}
+                title={translate(locale, "pdf.layoutGroup")}
+                aria-expanded={layoutOpen}
+                aria-haspopup="true"
+                aria-controls={`${toolsId}-layout`}
+                onClick={() => setLayoutOpen((value) => !value)}
+              >
+                <Icon
+                  name={
+                    effectiveLayout === "single"
+                      ? "file"
+                      : effectiveLayout === "two"
+                        ? "columns"
+                        : effectiveLayout === "vertical"
+                          ? "swapVert"
+                          : "book"
+                  }
+                  size={18}
+                />
+              </button>
+            )}
+            <div
+              ref={layoutRef}
+              id={`${toolsId}-layout`}
+              className="pdf-layout-toggle"
+              role="group"
+              aria-label={translate(locale, "pdf.layoutGroup")}
+              {...(variant === "hymn"
+                ? {
+                    className: `pdf-layout-toggle pdf-layout-options${layoutPresent ? " is-open" : ""}`,
+                    "data-menu-open": layoutOpen,
+                    "aria-hidden": !layoutOpen,
+                    inert: !layoutOpen,
+                  }
+                : {})}
+            >
+              {(["single", "two", "vertical", "horizontal"] as const).map(
+                (value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={effectiveLayout === value ? "is-active" : ""}
+                    onClick={() => {
+                      setLayout(value);
+                      setLayoutOpen(false);
+                    }}
+                    aria-pressed={effectiveLayout === value}
+                    disabled={
+                      value === "two" && (total < 2 || viewportWidth < 720)
                     }
-                    size={15}
-                  />
-                  <span className="sr-only">
-                    {translate(
+                    aria-label={translate(
                       locale,
                       value === "single"
                         ? "pdf.layout.single"
@@ -1521,10 +1598,45 @@ export function PdfReader({
                             ? "pdf.layout.vertical"
                             : "pdf.layout.horizontal",
                     )}
-                  </span>
-                </button>
-              ),
-            )}
+                    title={translate(
+                      locale,
+                      value === "single"
+                        ? "pdf.layout.single"
+                        : value === "two"
+                          ? "pdf.orientation"
+                          : value === "vertical"
+                            ? "pdf.layout.verticalTitle"
+                            : "pdf.layout.horizontalTitle",
+                    )}
+                  >
+                    <Icon
+                      name={
+                        value === "single"
+                          ? "file"
+                          : value === "two"
+                            ? "columns"
+                            : value === "vertical"
+                              ? "swapVert"
+                              : "book"
+                      }
+                      size={15}
+                    />
+                    <span className="sr-only">
+                      {translate(
+                        locale,
+                        value === "single"
+                          ? "pdf.layout.single"
+                          : value === "two"
+                            ? "pdf.layout.two"
+                            : value === "vertical"
+                              ? "pdf.layout.vertical"
+                              : "pdf.layout.horizontal",
+                      )}
+                    </span>
+                  </button>
+                ),
+              )}
+            </div>
           </div>
           {
             <button
@@ -1630,23 +1742,6 @@ export function PdfReader({
             </div>
           </div>
         )}
-        {status === "ready" &&
-          effectiveLayout === "two" &&
-          typeof window !== "undefined" &&
-          window.matchMedia?.("(orientation: portrait)").matches && (
-            <div
-              className="pdf-orientation-warning"
-              role="note"
-              style={{
-                fontSize: "0.75rem",
-                opacity: 0.7,
-                padding: "4px 8px",
-                textAlign: "center",
-              }}
-            >
-              {translate(locale, "pdf.orientation")}
-            </div>
-          )}
         {status === "error" && (
           <div
             className="pdf-error-state"

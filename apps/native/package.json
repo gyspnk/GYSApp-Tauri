@@ -7,7 +7,7 @@
     "tauri": "tauri",
     "build": "cargo check --manifest-path src-tauri/Cargo.toml",
     "bundle:windows": "pnpm exec tauri build --bundles nsis",
-    "bundle:android": "pnpm exec tauri android build --apk --debug",
+    "bundle:android": "node ../../scripts/configure-android-preview.mjs && pnpm exec tauri android build --apk --target aarch64",
     "typecheck": "cargo check --manifest-path src-tauri/Cargo.toml",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
     "lint": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",

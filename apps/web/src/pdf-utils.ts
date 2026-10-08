@@ -106,6 +106,19 @@ export function nextPdfPage(
   return Math.max(1, Math.min(total, page + delta));
 }
 
+/** Spreads are stable batches relative to the document's readable window. */
+export function pdfSpreadStart(
+  page: number,
+  start: number,
+  total: number,
+): number {
+  const bounded = Math.max(
+    start,
+    Math.min(start + Math.max(0, total - 1), page),
+  );
+  return start + Math.floor((bounded - start) / 2) * 2;
+}
+
 /**
  * Keep the first pages available before IntersectionObserver has delivered its
  * first callback, then render only pages inside the preload window. The

@@ -1,4 +1,10 @@
 fn main() {
+    // Keep ARM64 libraries loadable on both 4 KiB and 16 KiB Android devices.
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("android")
+        && std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("aarch64")
+    {
+        println!("cargo:rustc-link-arg=-Wl,-z,max-page-size=16384");
+    }
     let attributes =
         tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[
             "platform_name",

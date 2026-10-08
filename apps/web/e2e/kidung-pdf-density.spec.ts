@@ -126,6 +126,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
 
   const options = page.getByRole("button", { name: "Opsi PDF" });
   await options.click();
+  await reader.getByRole("button", { name: "Layout PDF", exact: true }).click();
   await reader.getByRole("button", { name: "Vertikal" }).click();
   await expect(reader.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
@@ -135,6 +136,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
   await expect(verticalPage).toHaveAttribute("data-pdf-rendered", "true", {
     timeout: 30_000,
   });
+  await reader.getByRole("button", { name: "Layout PDF", exact: true }).click();
   await reader.getByRole("button", { name: "Mendatar" }).click();
   await expect(reader.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
@@ -147,7 +149,11 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
   );
 
   await page.setViewportSize({ width: 768, height: 1024 });
-  await reader.getByRole("button", { name: "Tampilan 2 halaman" }).click();
+  await reader.getByRole("button", { name: "Layout PDF", exact: true }).click();
+  await expect(
+    reader.getByRole("button", { name: "Tampilan 2 halaman" }),
+  ).toBeDisabled();
+  await reader.getByRole("button", { name: "Tampilan 1 halaman" }).click();
   // A one-page score cannot manufacture a second page, even on a tablet.
   await expect(reader.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",
@@ -156,6 +162,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
   await expect(reader.locator(".pdf-orientation-warning")).toHaveCount(0);
   await page.setViewportSize({ width: 1024, height: 768 });
   await expect(reader.locator(".pdf-orientation-warning")).toHaveCount(0);
+  await reader.getByRole("button", { name: "Layout PDF", exact: true }).click();
   await reader.getByRole("button", { name: "Tampilan 1 halaman" }).click();
   await expect(reader.locator(".pdf-stage")).toHaveAttribute(
     "data-pdf-layout",

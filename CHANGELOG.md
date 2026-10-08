@@ -2,8 +2,27 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-08 — native package size
+
+- Compare Rust `s`/`z` profiles, five SQLite page sizes, ten PDF rewrites and
+  five NSIS dictionaries. Select `z`, compact Bible pages without changing any
+  schema/row/row ID, and deduplicate one faith booklet losslessly.
+- Compress preview JNI libraries at packaging time and keep ARM64 ELF load
+  segments compatible with 16 KiB Android devices. Retain original PDF source
+  provenance and verify all pages, pixels, text, annotations and links.
+- Use size-oriented Rust release optimization, LTO and symbol stripping for
+  Android and Windows, preserving panic unwinding and all runtime plugins.
+- Package Android previews as non-debuggable release builds with R8/resource
+  shrinking while retaining preview signing and generated ProGuard rules.
+- Verify offline assets in both packaging jobs and record artifact byte sizes
+  in provenance. Preserve local Bible, faith PDFs, MIDI soundfont and fonts.
+
 ### 2026-10-08 — reader navigation and preview packaging
 
+- Keep two-page batches aligned to the readable document window, including
+  even-page entry and final spreads. Detect the layout from available reader width.
+- Give horizontal PDFs stable page slots, page-fit rendering and local wheel,
+  mouse and touch scrolling. Keep Kidung PDF tools in one row with a layout menu.
 - Anchor PDF zoom feedback outside the scrollable page content, keeping the
   viewer controls stationary during zoom and pan.
 - Reset document scroll for every page change, including history and routes

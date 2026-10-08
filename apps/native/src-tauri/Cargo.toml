@@ -30,3 +30,12 @@ url = "2"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
+
+# Keep unwinding and all runtime features; remove build-only metadata instead.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = "symbols"
+debug = 0
+incremental = false

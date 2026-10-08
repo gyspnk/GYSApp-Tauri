@@ -87,6 +87,15 @@ export function installPdfZoom(
     };
   };
   const refresh = () => {
+    const style = getComputedStyle(stage);
+    stage.style.setProperty(
+      "--pdf-slot-width",
+      `${stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)}px`,
+    );
+    stage.style.setProperty(
+      "--pdf-slot-height",
+      `${stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)}px`,
+    );
     stage.dataset.pdfPannable = String(percent > 100.1);
     const canvases = stage.querySelectorAll<HTMLCanvasElement>(
       "canvas[data-pdf-width]",
@@ -98,7 +107,12 @@ export function installPdfZoom(
       const virtualPage = canvas.closest<HTMLElement>(
         ".pdf-vertical-page, .pdf-horizontal-page",
       );
-      if (virtualPage) virtualPage.style.minHeight = canvas.style.height;
+      if (virtualPage)
+        virtualPage.style.minHeight = virtualPage.classList.contains(
+          "pdf-horizontal-page",
+        )
+          ? ""
+          : canvas.style.height;
     }
     for (const layer of stage.querySelectorAll<HTMLElement>(
       ".pdf-detail-layer[data-pdf-zoom]",
@@ -155,14 +169,23 @@ export function installPdfZoom(
     } else if (!frame) frame = requestAnimationFrame(tick);
   };
   const wheel = (event: WheelEvent) => {
-    if (!event.ctrlKey && !event.metaKey) return;
-    event.preventDefault();
     const units =
       event.deltaMode === 1
         ? 16
         : event.deltaMode === 2
           ? stage.clientHeight
           : 1;
+    if (!event.ctrlKey && !event.metaKey) {
+      if (stage.dataset.pdfLayout === "horizontal") {
+        event.preventDefault();
+        stage.scrollLeft +=
+          (Math.abs(event.deltaX) > Math.abs(event.deltaY)
+            ? event.deltaX
+            : event.deltaY) * units;
+      }
+      return;
+    }
+    event.preventDefault();
     update(
       target * Math.exp(-event.deltaY * units * 0.002),
       event.clientX,
@@ -177,7 +200,7 @@ export function installPdfZoom(
   const start = (event: TouchEvent) => {
     if (
       event.touches.length === 1 &&
-      percent > 100 &&
+      (percent > 100 || stage.dataset.pdfLayout === "horizontal") &&
       !interactive(event.target)
     ) {
       const touch = event.touches[0]!;
@@ -223,7 +246,7 @@ export function installPdfZoom(
     if (
       event.pointerType === "touch" ||
       event.button !== 0 ||
-      percent <= 100 ||
+      (percent <= 100 && stage.dataset.pdfLayout !== "horizontal") ||
       interactive(event.target)
     )
       return;

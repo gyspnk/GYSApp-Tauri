@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-01T01:07:43.817Z",
+  "generatedAt": "2026-10-08T06:22:39.494Z",
   "items": [
     {
       "id": "bible-tb",
       "kind": "bible",
       "source": "local",
       "path": "offline/bible/b_tb.db",
-      "version": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
-      "sha256": "096f979df8e6b2eee915b1eb60ee2fb7e61b1d40988b9ced8bccaf1a8b8c64fe",
-      "bytes": 21340160,
+      "version": "a21c147b5ab13043fa175d1b8990a1901639f241732792ef2dc43c84a382b30f",
+      "sha256": "a21c147b5ab13043fa175d1b8990a1901639f241732792ef2dc43c84a382b30f",
+      "bytes": 12922880,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "bible-tb-reader",
@@ -22,7 +22,7 @@
       "sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
       "bytes": 7939120,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "hymn-catalog",
@@ -33,7 +33,7 @@
       "sha256": "88f283e04e16a08abd1546bea89648f6fef0c2619bf576b2b783bf3b126765f0",
       "bytes": 917610,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "hymn-metadata",
@@ -44,7 +44,7 @@
       "sha256": "fdc12d4483573b5e1b8333cb3bc21efccd664db74fda8a3e129ca859e42c637b",
       "bytes": 179002,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "distributed-asset-catalog",
@@ -55,7 +55,7 @@
       "sha256": "583db19136e42fe2b565a0defc508971454e040303c803461335dbcfaff7eee3",
       "bytes": 7505,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "music-lock",
@@ -66,7 +66,7 @@
       "sha256": "9c88c2b1b05b24bc5a237c19b775fae6ad55ef734d69319df33faefa663132c8",
       "bytes": 313267,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "faith-topics",
@@ -77,7 +77,7 @@
       "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
       "bytes": 8311,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "sauh-feed",
@@ -88,7 +88,7 @@
       "sha256": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0",
       "bytes": 22208,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "literature-catalog",
@@ -99,7 +99,7 @@
       "sha256": "4a9e8d9ed769f3d4a925d822cc937cd4150e7fce3f12753e148c4642d15075be",
       "bytes": 163677,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "suara-sejati",
@@ -110,7 +110,7 @@
       "sha256": "eb04a568ee0e6a83120d4e864ad94e5695baa7f8ed29bdeb4517b0f80d230bd1",
       "bytes": 90609,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "fork-hymnal-map",
@@ -121,7 +121,7 @@
       "sha256": "df14db981bf30bb6481e3f6ed0aff6cc185a0c0642a539b55a718bf015ea88b5",
       "bytes": 60815,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "music-seed:assets/pdf/001_Pujilah Allah Yang Maha Esa.pdf",
@@ -132,7 +132,7 @@
       "sha256": "44c545e4bba6ab9aa63a533697cc81663be47b2ffac59ffe8da1f184f65cf887",
       "bytes": 13540,
       "status": "available",
-      "lastUpdated": "2026-10-01T01:07:43.817Z"
+      "lastUpdated": "2026-10-08T06:22:39.494Z"
     },
     {
       "id": "literature-cover:kesaksian-https-3A-2F-2Ftjc.org-2Fid-2Fkesaksian-2Fpimpinan-tuhan-di-masa-sukar-2F",

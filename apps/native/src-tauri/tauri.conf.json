@@ -44,6 +44,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/icon.ico"]
+    "icon": ["icons/icon.ico"],
+    "windows": {
+      "nsis": {
+        "compression": "lzma",
+        "installerHooks": "../nsis-size-hooks.nsh"
+      }
+    }
   }
 }

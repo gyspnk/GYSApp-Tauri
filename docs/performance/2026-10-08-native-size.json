@@ -1,0 +1,108 @@
+{
+  "androidBaselineBytes": 224979531,
+  "androidFinalBytes": 36273975,
+  "windowsBaselineBytes": 37749587,
+  "windowsFinalBytes": 33621057,
+  "androidNativeBytes": 41028880,
+  "androidSha256": "7df01198db0e3c58fdda3572bb5650f0d125b876663510988416c9588b23c32f",
+  "windowsSha256": "896235aa8309ac054fdceae88dc5eb2ad0f8970c49c5af3ea2bc8009779a490c",
+  "androidSignatureVerified": true,
+  "androidNonDebuggable": true,
+  "androidElfPageAlignment": 16384,
+  "androidZipAlignmentVerified": true,
+  "jniCompressed": true,
+  "profile": "z",
+  "lto": "fat",
+  "allRuntimePluginsRetained": true,
+  "jniEntryPointsVerified": 25,
+  "windowsCrossBuilt": true,
+  "physicalDeviceQaCompleted": false,
+  "windowsRuntimeQaCompleted": false,
+  "published": false,
+  "pythonChecksPassed": 6,
+  "browserViewerChecksPassed": 12,
+  "browserRetries": 0,
+  "sourceBaseCommit": "5a3a9643f2b9497f6a456f21a6f6f130e42e30bf",
+  "sourceHasUncommittedChanges": true,
+  "androidCandidates": {
+    "s": {
+      "apkBytes": 44258115,
+      "libraryBytes": 42244720
+    },
+    "z": {
+      "apkBytes": 43042275,
+      "libraryBytes": 41028880
+    }
+  },
+  "sqliteCandidates": [
+    {
+      "pageSize": 1024,
+      "bytes": 14009344,
+      "brotliBytes": 3567031
+    },
+    {
+      "pageSize": 2048,
+      "bytes": 13246464,
+      "brotliBytes": 3494890
+    },
+    {
+      "pageSize": 4096,
+      "bytes": 12922880,
+      "brotliBytes": 3456976
+    },
+    {
+      "pageSize": 8192,
+      "bytes": 12812288,
+      "brotliBytes": 3457088
+    },
+    {
+      "pageSize": 16384,
+      "bytes": 12828672,
+      "brotliBytes": 3479751
+    }
+  ],
+  "nsisDictionaryCandidates": [
+    {
+      "dictionaryMiB": 8,
+      "installerBytes": 37714535
+    },
+    {
+      "dictionaryMiB": 16,
+      "installerBytes": 37688254
+    },
+    {
+      "dictionaryMiB": 32,
+      "installerBytes": 37673894
+    },
+    {
+      "dictionaryMiB": 64,
+      "installerBytes": 37670989
+    }
+  ],
+  "pdfLosslessValidation": {
+    "pages": 26,
+    "dpi": 144,
+    "allPixelHashesEqual": true,
+    "allTextEqual": true,
+    "metadataLinksAndAnnotationsEqual": true,
+    "bytes": 2096784
+  },
+  "finalDictionarySaturation": [
+    {
+      "dictionaryMiB": 64,
+      "wrapperBytes": 33461056
+    },
+    {
+      "dictionaryMiB": 128,
+      "wrapperBytes": 33461056
+    }
+  ],
+  "additionalApkRepackAudit": {
+    "compressionLevel": 9,
+    "unsignedBytes": 36252453,
+    "alignedSignedBytes": 36308650,
+    "decodedPayloadIdentical": true,
+    "signatureVerified": true,
+    "decision": "Reject: distributable APK is 34675 bytes larger than standard Gradle output"
+  }
+}

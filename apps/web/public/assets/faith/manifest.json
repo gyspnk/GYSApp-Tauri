@@ -3,8 +3,17 @@
     {
       "file": "Yesus-Kristus.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Yesus-Kristus.pdf",
-      "bytes": 3544443,
-      "sha256": "79b4e0aadbc2c11c4fc63f2bd4eb15e29fe3a2f6608754535fa4806836b26f79"
+      "bytes": 2096784,
+      "sha256": "d47a342d816b4bfd6c82cccd266977780c4bcf621b1aa187d69cb58a3b7e2ffa",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 3544443,
+        "sourceSha256": "79b4e0aadbc2c11c4fc63f2bd4eb15e29fe3a2f6608754535fa4806836b26f79",
+        "verifiedPages": 26,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Alkitab.pdf",

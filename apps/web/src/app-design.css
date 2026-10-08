@@ -4075,3 +4075,73 @@ body:has(.hymn-detail-page.is-text-viewer)
     padding-inline: 8px;
   }
 }
+
+/* Horizontal pages keep stable viewport-sized slots before and after paint. */
+.pdf-reader .pdf-stage[data-pdf-layout="horizontal"] {
+  display: block;
+  scrollbar-gutter: auto;
+  overflow-anchor: none;
+  touch-action: none;
+}
+.pdf-reader .pdf-pages.pdf-layout-horizontal .pdf-horizontal-page {
+  flex: 0 0 auto;
+  width: calc(var(--pdf-slot-width, 100vw) * var(--pdf-chord-scale, 1));
+  height: calc(var(--pdf-slot-height, 70vh) * var(--pdf-chord-scale, 1));
+  min-height: 0;
+  aspect-ratio: auto;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+  scroll-margin: 0;
+  overflow: clip;
+}
+.pdf-reader-hymn .pdf-advanced-controls.is-open {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  padding: 8px;
+  overflow: visible;
+}
+.pdf-reader-hymn .pdf-zoom-controls {
+  display: flex;
+  flex: none;
+  width: 136px;
+  gap: 0;
+  padding: 0;
+}
+.pdf-reader-hymn .pdf-zoom-controls .pdf-zoom-indicator {
+  width: 48px;
+  min-width: 48px;
+}
+.pdf-layout-selector {
+  position: relative;
+}
+.pdf-reader-hymn .pdf-layout-selector {
+  flex: none;
+}
+.pdf-reader-hymn .pdf-layout-options {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 14px);
+  right: 0;
+  width: 200px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #163f6126;
+  z-index: 1;
+}
+.pdf-reader-hymn .pdf-layout-options.is-open {
+  display: grid;
+}
+.pdf-reader-hymn :is(.pdf-advanced-toggle, .pdf-fullscreen-toggle)::before {
+  content: none;
+}
+.pdf-reader-hymn .pdf-layout-note {
+  display: none;
+}
+.pdf-layout-options[data-menu-open] {
+  transform-origin: bottom right;
+}

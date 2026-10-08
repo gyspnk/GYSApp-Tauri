@@ -35,6 +35,7 @@ success, signed binaries and physical-device results require their own evidence.
 | [Provenance](discovery/provenance.md)                             | Source revisions and reviewed generation boundaries.                  |
 | [Architecture risks](discovery/architecture-risks.md)             | Actual operational limitations and migration safeguards.              |
 | [Performance baseline](discovery/performance-baseline.md)         | Current build budget and reproducible comparison requirements.        |
+| [Native size audit](performance/2026-10-08-native-size.md)        | Repeated APK/NSIS comparisons, lossless assets and native QA limits.  |
 | [October loading audit](discovery/loading-cache-audit-2026-10.md) | Dated rationale and regression receipts for recent loading/UI work.   |
 
 ADRs in [adr/](adr/) retain accepted decisions and describe current implementation

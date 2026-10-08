@@ -328,6 +328,10 @@ flowchart LR
 
 Faith, Literature and Kidung share that viewer. Zoom spans 100–800% of fitted
 size; spreads paint together, and page changes crossfade completed content.
+Spread batches start at the readable page window, so an even page rejoins its
+preceding page. Actual stage width determines whether two pages fit. Horizontal
+pages reserve stable viewport-sized slots before rasterization; wheel and pan
+stay within the reader. Kidung zoom/tools share a row with an animated layout menu.
 Preview geometry remains continuous during zoom/resize; detail never paints
 over the wrong page. Virtualized page canvases/operator lists and idle workers
 are released. Multi-page hymns retain distinct page and song actions.
