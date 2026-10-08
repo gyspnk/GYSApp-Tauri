@@ -151,7 +151,6 @@ test.describe("responsive reader navigation", () => {
     await page
       .locator('.more-setting-section[data-setting="appearance"] > summary')
       .click();
-    await page.locator('[data-setting="accent"] > summary').click();
     await expect(
       page.getByRole("radiogroup", { name: "Pilih Warna Aksen" }),
     ).toBeVisible();
@@ -888,7 +887,8 @@ test.describe("responsive reader navigation", () => {
       page.getByText("Bait 3 dari 3", { exact: true }),
     ).toBeVisible();
     await touchSwipe(page);
-    await expect(page).toHaveURL(/hymn-002\?mode=lyrics$/);
+    await expect(page).toHaveURL(/hymn-002$/);
+    await expect(page.locator(".lyrics-sheet")).toBeVisible();
   });
 
   test("hymn pinch zoom is smooth and persists its text size", async ({

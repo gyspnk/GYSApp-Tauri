@@ -335,10 +335,8 @@ test("offline pack manager keeps one update action and reports manifest status",
   );
   await expect(page.locator(".pack-manager-actions button")).toHaveCount(2);
   const diagnostics = page.locator(".offline-pack-diagnostics");
-  await expect(diagnostics.locator("summary")).toHaveText("Diagnostik");
+  await expect(diagnostics.locator("span")).toHaveText("Diagnostik");
   await expect(diagnostics.locator("small")).toContainText(/Manifest v1/);
-  await expect(diagnostics.locator("small")).not.toBeVisible();
-  await diagnostics.locator("summary").click();
   await expect(diagnostics.locator("small")).toBeVisible();
 });
 
@@ -1052,17 +1050,17 @@ test("literature behaves as a searchable ebook shelf and hymn opens by detail ro
     .first()
     .click();
   await expect(page).toHaveURL(/\/kidung$/);
-  await page
-    .getByRole("group", { name: "Mode tampilan kidung" })
-    .getByRole("button", { name: "Partitur", exact: true })
-    .click();
+  await expect(page.locator(".kidung-mode-cycle")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
   await page
     .getByRole("button", {
       name: "Pujilah Allah Yang Maha Esa",
       exact: true,
     })
     .click();
-  await expect(page).toHaveURL(/\/kidung\/hymn-001\?mode=lyrics$/);
+  await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
   await expect(page.getByText("Bait 1 dari 3", { exact: true })).toBeVisible();
 });
 
@@ -1185,7 +1183,7 @@ test("device reset clears browser preferences, durable blobs, and app caches", a
 
   await page.goto("/GYSApp-Tauri/lainnya?section=data");
   const deviceData = page.getByTestId("device-data-tools");
-  await deviceData.locator("summary").click();
+  await expect(deviceData.locator("summary")).toHaveCount(0);
   page.once("dialog", (dialog) => dialog.accept());
   await deviceData
     .getByRole("button", { name: "Reset perangkat", exact: true })

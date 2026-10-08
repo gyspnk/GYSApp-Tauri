@@ -1,6 +1,6 @@
 # User guide
 
-Current behavior, reviewed 2026-10-07. Labels follow the selected ID/EN/ZH locale;
+Current behavior, reviewed 2026-10-08. Labels follow the selected ID/EN/ZH locale;
 examples here use Indonesian labels. Some online/account actions need the
 configured backend and an internet connection.
 

@@ -190,12 +190,12 @@ for (const viewport of [
     await prepare(page);
     await page.goto("/GYSApp-Tauri/lainnya");
 
-    await page.locator('[data-setting="appearance"] > summary').click();
+    const appearance = page.locator('[data-setting="appearance"]');
     const accent = page.locator('[data-setting="accent"]');
     const palette = accent.locator(".accent-palette-grid");
     await expect(
       page.getByRole("combobox", { name: "Pilih Tema" }),
-    ).toBeVisible();
+    ).toBeHidden();
     await expect(palette).toBeHidden();
     await page.waitForTimeout(250);
     await expect(page).toHaveScreenshot(
@@ -203,7 +203,7 @@ for (const viewport of [
       { animations: "disabled", caret: "hide" },
     );
 
-    await accent.locator(":scope > summary").click();
+    await appearance.locator(":scope > summary").click();
     await expect(palette).toBeVisible();
     await expect(page.locator(".theme-pill-grid")).toHaveCount(0);
     await expect
