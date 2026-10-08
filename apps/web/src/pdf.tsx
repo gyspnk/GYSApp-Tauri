@@ -1598,16 +1598,18 @@ export function PdfReader({
                             ? "pdf.layout.vertical"
                             : "pdf.layout.horizontal",
                     )}
-                    title={translate(
-                      locale,
-                      value === "single"
-                        ? "pdf.layout.single"
-                        : value === "two"
-                          ? "pdf.orientation"
-                          : value === "vertical"
-                            ? "pdf.layout.verticalTitle"
-                            : "pdf.layout.horizontalTitle",
-                    )}
+                    title={
+                      value === "two"
+                        ? translate(locale, "pdf.orientation")
+                        : translate(
+                            locale,
+                            value === "single"
+                              ? "pdf.layout.single"
+                              : value === "vertical"
+                                ? "pdf.layout.verticalTitle"
+                                : "pdf.layout.horizontalTitle",
+                          )
+                    }
                   >
                     <Icon
                       name={
