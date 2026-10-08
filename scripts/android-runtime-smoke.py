@@ -122,7 +122,18 @@ def main():
         raise RuntimeError("Expected Android 17, got " + version)
     # Fresh preview images finish services/ART setup after boot_completed.
     time.sleep(20)
-    adb("shell", "input", "keyevent", "82")
+    adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
+    adb("shell", "wm", "dismiss-keyguard")
+    deadline = time.monotonic() + 60
+    while time.monotonic() < deadline:
+        state = adb("shell", "am", "get-started-user-state", "0").decode().strip()
+        if "RUNNING_UNLOCKED" in state:
+            break
+        time.sleep(2)
+    else:
+        print(adb("shell", "dumpsys", "user").decode(), flush=True)
+        raise RuntimeError("Emulator user remains locked: " + state)
+    print("Emulator user: " + state, flush=True)
     print(adb("shell", "df", "-h", "/data").decode(), flush=True)
     adb("install", "-r", args.apk, timeout=180)
     package_info = adb("shell", "dumpsys", "package", PACKAGE)
