@@ -13,7 +13,7 @@ PACKAGE = "id.or.gys.app"
 def adb(*args, timeout=45):
     result = subprocess.run(["adb", *args], capture_output=True, timeout=timeout)
     if result.returncode:
-        raise RuntimeError(result.stderr.decode(errors="replace"))
+        raise RuntimeError((result.stdout + result.stderr).decode(errors="replace"))
     return result.stdout
 
 
@@ -125,8 +125,17 @@ def main():
     adb("shell", "input", "keyevent", "82")
     print(adb("shell", "df", "-h", "/data").decode(), flush=True)
     adb("install", "-r", args.apk, timeout=180)
+    package_info = adb("shell", "dumpsys", "package", PACKAGE)
+    (output / "package.txt").write_bytes(package_info)
+    print(package_info.decode(errors="replace")[:16000], flush=True)
+    component = adb("shell", "cmd", "package", "resolve-activity", "--brief",
+                    "-a", "android.intent.action.MAIN", "-c",
+                    "android.intent.category.LAUNCHER", PACKAGE).decode().strip().splitlines()[-1]
+    if not component.startswith(PACKAGE + "/"):
+        raise RuntimeError("Installed APK has no launchable activity: " + component)
+    print("Launching installed APK: " + component, flush=True)
     adb("logcat", "-c")
-    adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity", timeout=90)
+    adb("shell", "am", "start", "-W", "-n", component, timeout=90)
     node = wait_label(output, "Lainnya", "home")
     l, t, r, b = bounds(node)
     # Coordinates come exclusively from the current UI hierarchy.
@@ -153,7 +162,7 @@ def main():
     time.sleep(4)
     capture(output, "more-landscape-cutout")
     adb("shell", "am", "force-stop", PACKAGE)
-    adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity", timeout=90)
+    adb("shell", "am", "start", "-W", "-n", component, timeout=90)
     wait_label(output, "Lainnya", "cold-restart")
     if not alive():
         raise RuntimeError("App exited on cold restart")
