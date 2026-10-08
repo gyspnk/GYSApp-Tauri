@@ -75,8 +75,8 @@ runtime job failed before app launch because the emulator could not find the AVD
 
 The reusable `android-runtime.yml` workflow can test that same APK artifact without
 rebuilding it. Generated AVD paths are explicit, storage is sufficient, and the
-user must be unlocked before resolving a credential-protected launcher. API 37
-uses the current preview emulator. Android 16 is available as a comparison input.
+user must be unlocked before resolving a credential-protected launcher. The workflow now pins
+Emulator 36.6.11 from the official archive and checks its published SHA-256. Android 16 is available as a comparison input.
 
 Both Google images exposed a SurfaceFlinger/Goldfish mapper assertion before app
 installation: `!rcEnc->featureInfo()->hasReadColorBufferDma`. Emulator feature
@@ -92,3 +92,10 @@ checks. That run remained red: the landscape UiAutomator dump was not valid XML.
 The harness now uses unique dump paths and bounded retries for transient dump
 failures so an old portrait snapshot cannot stand in for a landscape capture.
 Rotation and cold restart acceptance still require a successful follow-up run.
+
+Run 37783744680 additionally showed the same mapper assertion in `screencap` and
+`system_server` during rotation. Earlier positive viewport checks are geometry
+and process evidence only; empty screenshot output is not visual evidence.
+The harness now checks the PNG signature and the workflow preserves executable
+permissions when extracting the pinned emulator. Final rotation/restart/PNG
+acceptance remains pending until a successful full run.

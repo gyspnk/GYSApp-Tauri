@@ -59,8 +59,7 @@ jobs:
           # Pin the pre-37 stable renderer: 37.x crashes in Goldfish DMA readback.
           curl -fL --retry 3 https://dl.google.com/android/repository/emulator-linux_x64-15507667.zip -o "$RUNNER_TEMP/gys-emulator.zip"
           printf '1eade4cf2df6ea8eeead4902c635897ba12aaa32aac4389eaae0fdb498a5b830  %s\n' "$RUNNER_TEMP/gys-emulator.zip" | sha256sum -c -
-          python3 -m zipfile -e "$RUNNER_TEMP/gys-emulator.zip" /tmp/gys-emulator
-          chmod +x /tmp/gys-emulator/emulator/emulator /tmp/gys-emulator/emulator/qemu/linux-x86_64/qemu-system-x86_64-headless
+          unzip -q "$RUNNER_TEMP/gys-emulator.zip" -d /tmp/gys-emulator
           printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-$ANDROID_API;google_apis;x86_64" --device pixel_2
       - name: Exercise packaged APK on Android ${{ inputs.android_version }}
         run: |
