@@ -35,8 +35,14 @@ def bounds(node):
 
 def find_label(tree, label):
     for node in tree.iter("node"):
-        if label in (node.get("text"), node.get("content-desc")):
-            return node
+        values = (node.get("text", ""), node.get("content-desc", ""))
+        # Chromium exposes disclosure summaries as a combined account+badge
+        # label on Android; accept that exact leading account heading too.
+        if any(value == label or (label == "Akun e-GYS" and value.startswith(label + " "))
+               for value in values):
+            l, t, r, b = bounds(node)
+            if r > l and b > t:
+                return node
     return None
 
 
@@ -50,6 +56,7 @@ def wait_label(output, label, name):
         if node is not None:
             return node
         time.sleep(2)
+    print(ET.tostring(tree, encoding="unicode"), flush=True)
     raise RuntimeError("Accessible control not found: " + label)
 
 
@@ -159,6 +166,7 @@ def main():
     adb("shell", "am", "start", "-W", "-n", component, timeout=90)
     node = wait_label(output, "Lainnya", "home")
     l, t, r, b = bounds(node)
+    print("Tapping More: " + str(node.attrib), flush=True)
     # Coordinates come exclusively from the current UI hierarchy.
     adb("shell", "input", "tap", str((l + r) // 2), str((t + b) // 2))
     wait_label(output, "Akun e-GYS", "more-loaded")
