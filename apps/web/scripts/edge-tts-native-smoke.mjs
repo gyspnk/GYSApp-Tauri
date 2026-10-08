@@ -753,6 +753,10 @@ try {
     { timeout: 5_000 },
   );
   const searchInput = page.getByLabel("Cari Alkitab", { exact: true });
+  await page.evaluate(() => {
+    performance.clearMarks("gys-bible-search-start");
+    performance.clearMarks("gys-bible-search-ready");
+  });
   await searchInput.fill("Allah");
   const searchStartedAt = Date.now();
   await bibleSearchForm
@@ -760,7 +764,27 @@ try {
     .click();
   const searchResults = page.locator(".result-item");
   await searchResults.nth(39).waitFor({ state: "visible", timeout: 10_000 });
-  const bibleSearchMs = Date.now() - searchStartedAt;
+  const bibleSearchAutomationMs = Date.now() - searchStartedAt;
+  await page.waitForFunction(
+    () => {
+      const start = performance
+        .getEntriesByName("gys-bible-search-start")
+        .at(-1);
+      const ready = performance
+        .getEntriesByName("gys-bible-search-ready")
+        .at(-1);
+      return start && ready && ready.startTime >= start.startTime;
+    },
+    null,
+    { timeout: 10_000 },
+  );
+  // Match the process benchmark: submission to the rendered results frame.
+  // Controller click/actionability and CDP polling remain reported separately.
+  const bibleSearchMs = await page.evaluate(
+    () =>
+      performance.getEntriesByName("gys-bible-search-ready").at(-1).startTime -
+      performance.getEntriesByName("gys-bible-search-start").at(-1).startTime,
+  );
   assert.equal(
     await searchResults.count(),
     40,
@@ -3163,6 +3187,7 @@ try {
       bibleReadyMs,
       bibleBroadSearch: "passed",
       bibleSearchMs,
+      bibleSearchAutomationMs,
       bibleSearchBudgetMs: BIBLE_BROAD_SEARCH_BUDGET_MS,
       bibleSearchInitialResults: 40,
       bibleSearchExpandedResults: bibleExpandedSearchResults,

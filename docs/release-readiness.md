@@ -7,6 +7,27 @@ revisions and retain their original timings, failures and follow-up decisions.
 
 ## Current evidence
 
+### 2026-10-08 — hosted pass and native search timing
+
+- Delivered `83c24e3` passes Pages and all three hosted browser shards:
+  **697 passes, three existing optional-package skips and no retries**, in
+  **8.6 / 8.9 / 7.7 minutes**
+  ([CI run 37708661624](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37708661624)).
+  The reviewed Sauh Home/article layouts at 390/768/1440 px retain full-column
+  quotes, 14 px Home image corners, no overflow and no runtime errors.
+- Windows passes short startup/storage/media/asset suites and all **30 process
+  relaunches**. Its first-search median/p95 are **365.3 / 447.8 ms**, and indexed
+  searches **29.8 / 31.1 ms**. The subsequent soak stops at the broad-search guard:
+  its old 1,702 ms sample includes controller click/actionability and CDP polling.
+  The guard now uses the same existing submission/rendered-frame marks as the
+  process benchmark, with its **1,500 ms bound unchanged**. Controller wall time
+  remains separately reported as `bibleSearchAutomationMs`; 40/80-row and first
+  verse assertions remain intact. No application source changes are included.
+- The exact harness block is exercised in Chromium: a 1,700 ms controller delay
+  fails the previous wall-clock guard at 2,031 ms; the revised guard measures
+  232.9 ms with 2,040 ms controller time. Delaying the actual search worker still
+  fails at 1,905.4 ms. Full hosted/native proof for this follow-up remains pending.
+
 ### 2026-10-08 — native restart pass and PDF progress feedback
 
 - Delivered `a8a4bfe` passes Pages and the complete packaged Windows workflow

@@ -118,6 +118,12 @@ and tempo popover before focusing the range. The real FluidSynth cache browser
 case covers Stop, replay, disclosure dismissal and the subsequent End edit.
 Header language/theme selectors expose the combobox role; native preference
 restore checks use their localized accessible names before and after restart.
+The native broad-search gate keeps its 1,500 ms bound from
+`gys-bible-search-start` to the rendered `gys-bible-search-ready` frame. Clear
+both marks before a fresh query and require a ready mark after its start; retain
+40/80-row and first-verse assertions. Controller click/actionability and CDP
+polling time is reported separately as `bibleSearchAutomationMs`, matching the
+existing process/browser benchmarks rather than inflating application latency.
 
 Single-page PDF navigation changes hymns; multi-page scores expose both page
 and hymn navigation. Continuous wheel zoom and computed typography do not have
