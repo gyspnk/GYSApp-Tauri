@@ -120,6 +120,8 @@ def main():
     version = adb("shell", "getprop", "ro.build.version.release").decode().strip()
     if version != "17":
         raise RuntimeError("Expected Android 17, got " + version)
+    # Fresh preview images finish services/ART setup after boot_completed.
+    time.sleep(20)
     adb("shell", "input", "keyevent", "82")
     print(adb("shell", "df", "-h", "/data").decode(), flush=True)
     adb("install", "-r", args.apk, timeout=180)
@@ -173,6 +175,7 @@ if __name__ == "__main__":
                 logcat = adb("logcat", "-d")
                 (output / "logcat.txt").write_bytes(logcat)
                 if sys.exc_info()[0] is not None:
+                    print(adb("logcat", "-b", "crash", "-d").decode(errors="replace"), flush=True)
                     print(logcat.decode(errors="replace")[-24000:], flush=True)
             except Exception as error:
                 (output / "logcat-error.txt").write_text(str(error))

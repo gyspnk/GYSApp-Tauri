@@ -44,7 +44,9 @@ jobs:
           mkdir -p "$ANDROID_AVD_HOME"
           test -c /dev/kvm
           sudo chmod a+rw /dev/kvm
-          sdkmanager "emulator" "system-images;android-37.0;google_apis;x86_64"
+          # Android 17 preview images require the current preview emulator.
+          sdkmanager --channel=3 "emulator"
+          sdkmanager "system-images;android-37.0;google_apis;x86_64"
           printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-37.0;google_apis;x86_64" --device pixel_2
       - name: Exercise packaged APK on Android 17
         run: |
