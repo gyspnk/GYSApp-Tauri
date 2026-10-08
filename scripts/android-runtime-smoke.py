@@ -117,7 +117,10 @@ def capture(output, name):
     if not (viewport[0] >= safe[0] and viewport[1] >= safe[1]
             and viewport[2] <= safe[2] and viewport[3] <= safe[3]):
         raise RuntimeError(f"WebView {viewport} overlaps native safe viewport {safe}")
-    (output / f"{name}.png").write_bytes(adb("exec-out", "screencap", "-p"))
+    screenshot = adb("exec-out", "screencap", "-p")
+    if not screenshot.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise RuntimeError("Native screencap returned an invalid PNG: " + name)
+    (output / f"{name}.png").write_bytes(screenshot)
     print(f"PASS {name}: WebView={viewport}, safe={safe}", flush=True)
 
 

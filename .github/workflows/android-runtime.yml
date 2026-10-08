@@ -55,9 +55,12 @@ jobs:
           mkdir -p "$ANDROID_AVD_HOME"
           test -c /dev/kvm
           sudo chmod a+rw /dev/kvm
-          # Android 17 preview images require the current preview emulator.
-          sdkmanager --channel=3 "emulator"
           sdkmanager "system-images;android-$ANDROID_API;google_apis;x86_64"
+          # Pin the pre-37 stable renderer: 37.x crashes in Goldfish DMA readback.
+          curl -fL --retry 3 https://dl.google.com/android/repository/emulator-linux_x64-15507667.zip -o "$RUNNER_TEMP/gys-emulator.zip"
+          printf '1eade4cf2df6ea8eeead4902c635897ba12aaa32aac4389eaae0fdb498a5b830  %s\n' "$RUNNER_TEMP/gys-emulator.zip" | sha256sum -c -
+          python3 -m zipfile -e "$RUNNER_TEMP/gys-emulator.zip" /tmp/gys-emulator
+          chmod +x /tmp/gys-emulator/emulator/emulator /tmp/gys-emulator/emulator/qemu/linux-x86_64/qemu-system-x86_64-headless
           printf 'no\n' | avdmanager create avd --force --name gys-api37 --package "system-images;android-$ANDROID_API;google_apis;x86_64" --device pixel_2
       - name: Exercise packaged APK on Android ${{ inputs.android_version }}
         run: |
@@ -66,7 +69,7 @@ jobs:
           printf 'APK source commit: '
           cat android-artifacts/commit.txt
           trap 'result=$?; if [ "$result" -ne 0 ]; then cat android-qa/emulator.log; fi' EXIT
-          "$ANDROID_HOME/emulator/emulator" -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
+          /tmp/gys-emulator/emulator/emulator -avd gys-api37 -accel on -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -feature -GLDirectMem,-HasSharedSlotsHostMemoryAllocator -memory 4096 -partition-size 4096 > android-qa/emulator.log 2>&1 &
           emulator_pid=$!
           sleep 3
           if ! kill -0 "$emulator_pid" 2>/dev/null; then exit 1; fi
