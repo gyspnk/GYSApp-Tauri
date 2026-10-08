@@ -70,8 +70,12 @@ for (const width of [320, 390, 768, 1440]) {
       page.locator('.pdf-reader-hymn canvas[data-pdf-rendered="true"]').first(),
     ).toBeVisible({ timeout: 20_000 });
     const header = page.locator(".hymn-pdf-viewer-chrome");
+    const textScale = await page.evaluate(
+      () =>
+        parseFloat(getComputedStyle(document.documentElement).fontSize) / 16,
+    );
     expect((await header.boundingBox())!.height).toBeLessThanOrEqual(
-      width >= 960 ? 72 : 64,
+      (width >= 960 ? 72 : 64) * textScale,
     );
     await expect(header.locator("button:visible")).toHaveCount(2);
     for (const button of await page

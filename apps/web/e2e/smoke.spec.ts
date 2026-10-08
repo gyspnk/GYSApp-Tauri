@@ -124,16 +124,24 @@ test("compact section headings stay smaller than page and catalog titles", async
   await expect(sectionHeading).toBeVisible({ timeout: 15_000 });
   await expect
     .poll(() =>
-      sectionHeading.evaluate((node) => getComputedStyle(node).fontSize),
+      sectionHeading.evaluate(
+        (node) =>
+          (parseFloat(getComputedStyle(node).fontSize) * 16) /
+          parseFloat(getComputedStyle(document.documentElement).fontSize),
+      ),
     )
-    .toBe("14px");
+    .toBeCloseTo(14, 1);
 
   await page.setViewportSize({ width: 1440, height: 960 });
   await expect
     .poll(() =>
-      sectionHeading.evaluate((node) => getComputedStyle(node).fontSize),
+      sectionHeading.evaluate(
+        (node) =>
+          (parseFloat(getComputedStyle(node).fontSize) * 16) /
+          parseFloat(getComputedStyle(document.documentElement).fontSize),
+      ),
     )
-    .toBe("14px");
+    .toBeCloseTo(14, 1);
   await expect
     .poll(() =>
       page

@@ -1768,27 +1768,49 @@ test("Kidung default chord markers have clear space above their lyric lines", as
     timeout: 20_000,
   });
 
-  const gaps = await page
-    .locator(".chord-capability")
-    .evaluateAll((capabilities) =>
-      capabilities.map((capability) => {
-        const lyrics = capability.querySelector(".chord-text-layer");
-        const markers = [
-          ...capability.querySelectorAll(".chord-visual-marker"),
-        ];
-        if (!lyrics || markers.length === 0) return Number.NaN;
-        const glyphs = document.createRange();
-        glyphs.selectNodeContents(lyrics);
-        const lyricTop = glyphs.getBoundingClientRect().top;
-        const markerBottom = Math.max(
-          ...markers.map((marker) => marker.getBoundingClientRect().bottom),
+  // Measure each visual row: larger system fonts may wrap one lyric line.
+  const gaps = () =>
+    page.locator(".chord-rich-line").evaluateAll((lines) =>
+      lines.flatMap((line) => {
+        const lyrics = line.querySelector(".chord-text-layer")!;
+        const chars = [
+          ...lyrics.querySelectorAll("[data-chord-char-index]"),
+        ].filter((char) => char.textContent?.trim());
+        return [...line.querySelectorAll<HTMLElement>(".chord-visual-row")].map(
+          (row) => {
+            const anchorTop =
+              lyrics.getBoundingClientRect().top + parseFloat(row.style.top);
+            const matching = chars.filter(
+              (char) =>
+                Math.abs(char.getBoundingClientRect().top - anchorTop) < 2,
+            );
+            const lyricTop = Math.min(
+              ...matching.map((char) => {
+                const range = document.createRange();
+                range.selectNodeContents(char);
+                return range.getBoundingClientRect().top;
+              }),
+            );
+            const markers = [...row.querySelectorAll(".chord-visual-marker")];
+            if (!matching.length || !markers.length) return -Infinity;
+            return (
+              lyricTop -
+              Math.max(
+                ...markers.map(
+                  (marker) => marker.getBoundingClientRect().bottom,
+                ),
+              )
+            );
+          },
         );
-        return lyricTop - markerBottom;
       }),
     );
-
-  expect(gaps.length).toBeGreaterThan(0);
-  for (const gap of gaps) expect(gap).toBeGreaterThanOrEqual(4);
+  await expect
+    .poll(async () => {
+      const values = await gaps();
+      return values.length ? Math.min(...values) : -Infinity;
+    })
+    .toBeGreaterThanOrEqual(4);
 });
 
 test("all-verses mode uses one scroll surface for every complete stanza", async ({

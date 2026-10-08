@@ -46,3 +46,13 @@ The first native run confirms that neither Home startup nor navigation to More
 owns Android audio focus. Font checking initially stopped because Chromium
 exposes the styled heading as `JELAJAHI KOLEKSI`, including CSS capitalization.
 The test now uses that observed label; a follow-up run uses the same APK.
+
+The follow-up [Android 17 run 37856493769](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37856493769)
+passes all native checks. At system font scale 2.0 the heading grows from 52 to
+103 physical pixels while the WebView safe viewport stays unchanged. Three-button
+and gesture navigation, tall cutout, landscape and cold restart also pass.
+
+Browser regression assertions account for system text size and wrapped chord
+rows; mobile/tablet screenshot baselines reflect the intentionally larger fonts.
+The updated visual fixtures retain viewport/overflow checks and were reviewed
+for Home, Kidung, Lainnya, lyrics, Faith and literature.
