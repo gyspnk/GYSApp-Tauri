@@ -175,4 +175,7 @@ shell installation, original ProGuard preservation and repeated configuration.
 Rust/Kotlin compilation and browser tests alone do not verify Android runtime.
 
 See the [Android insets/startup validation receipt](maintenance/2026-10-08-android-insets-keyring.md)
-for the local build evidence and the unverified Android 17 runtime checks.
+for local builds and the successful Android 17 Actions smoke. The runtime
+workflow pins Emulator 36.6.11 with Minigbm/virtio GPU transport to avoid the
+legacy Google image mapper assertion; archive SHA-256 and screenshot PNG
+signatures are checked. Keyboard and physical-device acceptance remain separate.

@@ -105,3 +105,35 @@ The next run forces the supported Minigbm feature, which selects
 `virtio-gpu-pipe` transport instead of the legacy Goldfish pipe. No sampling
 property, root restart, or application graphics flag is applied. Rotation and
 valid native screenshots remain unverified until that full run completes.
+
+## Successful Android 17 acceptance
+
+[Runtime run 37786619576](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37786619576)
+passed using the actual ARM64 APK from application commit `03e80a66`, with the
+harness/workflow at `0df0742`. Application code is identical between those commits;
+follow-ups only changed validation, runner configuration and documentation.
+Emulator 36.6.11 with explicit Minigbm/virtio GPU transport booted the Android 17
+image and avoided the legacy mapper assertion without root or system-sampling
+workarounds. The APK configuration is unchanged by emulator graphics selection.
+
+Passed: Home launch, opening Lainnya and retaining its process after the account
+credential read, three-button navigation, gesture navigation, simulated tall
+cutout, landscape rotation with cutout, and cold restart. Five native captures
+passed their safe-viewport assertions and PNG signature checks. Final geometry:
+
+| State            | WebView bounds       | Native safe bounds   |
+| ---------------- | -------------------- | -------------------- |
+| Portrait gesture | `(0,63,1080,1857)`   | `(0,63,1080,1857)`   |
+| Three-button     | `(0,63,1080,1794)`   | `(0,63,1080,1794)`   |
+| Tall cutout      | `(0,126,1080,1857)`  | `(0,126,1080,1857)`  |
+| Landscape cutout | `(126,63,1920,1017)` | `(126,63,1920,1017)` |
+
+[Screenshots, XML and logcat artifact](https://github.com/gyspnk/GYSApp-Tauri/actions/runs/37786619576/artifacts/11555180815)
+contains the acceptance evidence. Earlier failed runs remain historical diagnostic
+records, not visual acceptance. Physical-device behavior, real login providers,
+keyboard open/close and performance measurements were not tested by this smoke.
+
+The Cloudflare workflow was also checked: run `37774664495` completed but its
+**Deploy Worker** step was skipped because protected credentials were absent.
+Production Worker deployment is still pending the owner setup described in
+[the complete Worker guide](../cloudflare-worker-setup.md).
