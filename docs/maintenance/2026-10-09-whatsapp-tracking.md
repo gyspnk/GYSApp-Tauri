@@ -33,6 +33,8 @@ dan perintah handoff `whatsappopen` berhasil. Ini tidak membuktikan siklus penuh
 pada perangkat Android, pengiriman pesan oleh akun nyata, atau konfirmasi akun.
 Tidak ada kode akun pengguna atau token yang dicetak dalam hasil probe.
 
-Perubahan masih lokal. Cookie backend baru memerlukan deploy Worker dari kode
-terbaru; perubahan Android memerlukan build dan instal APK baru. Deploy produksi
-sebelumnya belum memuat perbaikan cookie ini.
+Perubahan telah di-push ke main dalam commit 7444569. Worker terbaru berhasil
+deploy melalui Actions run 37872219262. Probe produksi dengan pembatasan cookie
+pihak ketiga aktif kini menerima event `info` dan cookie referensi terpartisi.
+Perubahan WebView Android tetap membutuhkan instal APK rilis baru. Konfirmasi
+login lengkap dengan pesan dari akun pengguna belum diuji pada perangkat nyata.

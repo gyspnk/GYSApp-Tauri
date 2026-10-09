@@ -18,4 +18,4 @@ Tes membandingkan computed style lintas bagian, memastikan empat perpindahan
 memakai tepat empat transisi, dan memeriksa fallback benar-benar memulai animasi.
 Screenshot membandingkan ketiga bagian pada ketiga ukuran layar.
 
-Perubahan masih lokal, belum commit/push.
+Perubahan telah di-push ke main dalam commit 7444569 untuk rilis preview 9 Oktober 2026.

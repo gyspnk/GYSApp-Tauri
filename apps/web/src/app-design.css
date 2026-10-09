@@ -4219,7 +4219,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 12px;
   justify-content: center;
 }
-.home-grid .sauh-skeleton {
+.home-grid .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
+  position: static;
+  inset: auto;
   display: grid;
   place-items: center;
   width: 100%;

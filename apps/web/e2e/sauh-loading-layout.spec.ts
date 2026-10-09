@@ -31,14 +31,22 @@ for (const width of [320, 390, 768, 1440]) {
           .querySelector(".loading-progress-label")!
           .getBoundingClientRect();
         const logo = node.querySelector("img")!.getBoundingClientRect();
-        return [label, logo].map((rect) => ({
-          left: rect.left - panel.left,
-          right: panel.right - rect.right,
-          top: rect.top - panel.top,
-          bottom: panel.bottom - rect.bottom,
-        }));
+        const heading = node
+          .closest(".verse-panel")!
+          .querySelector(".section-heading")!
+          .getBoundingClientRect();
+        return {
+          gap: logo.top - heading.bottom,
+          items: [label, logo].map((rect) => ({
+            left: rect.left - panel.left,
+            right: panel.right - rect.right,
+            top: rect.top - panel.top,
+            bottom: panel.bottom - rect.bottom,
+          })),
+        };
       });
-      for (const item of bounds)
+      expect(bounds.gap).toBeGreaterThanOrEqual(0);
+      for (const item of bounds.items)
         for (const distance of Object.values(item))
           expect(distance).toBeGreaterThanOrEqual(0);
       if (scale === 1 && width !== 320)
