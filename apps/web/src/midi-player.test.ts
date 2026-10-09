@@ -132,6 +132,37 @@ class FakeBufferSourceNode {
 }
 
 describe("MIDI operation generation", () => {
+  it("honors pause during audio preparation and prevents a late play", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    await player.load("hymn-001", "First hymn", {
+      ppq: 480,
+      tempo: 100,
+      events: [],
+    });
+    let resume!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    const internal = player as unknown as {
+      ensureAudio: () => AudioContext;
+      scheduleOscillator: ReturnType<typeof vi.fn>;
+      startTimer: ReturnType<typeof vi.fn>;
+    };
+    internal.ensureAudio = () =>
+      ({ resume: () => pending }) as unknown as AudioContext;
+    internal.scheduleOscillator = vi.fn();
+    internal.startTimer = vi.fn();
+    const playing = player.play();
+    expect(player.snapshot().status).toBe("loading");
+    await player.pause();
+    expect(player.snapshot().status).toBe("paused");
+    resume();
+    await playing;
+    expect(player.snapshot().status).toBe("paused");
+    expect(internal.scheduleOscillator).not.toHaveBeenCalled();
+    expect(internal.startTimer).not.toHaveBeenCalled();
+  });
+
   it("keeps playback active when delayed PDF tempo and transpose arrive together", async () => {
     const player = new BrowserMidiPlayer();
     const internal = player as unknown as {

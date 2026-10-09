@@ -236,9 +236,6 @@ const MIDI_FIXTURE = Buffer.from([
   0x07, 0xa1, 0x20, 0x00, 0xc0, 0x00, 0x00, 0x90, 0x3c, 0x64, 0x83, 0x60, 0x80,
   0x3c, 0x40, 0x00, 0xff, 0x2f, 0x00,
 ]);
-const MIDI_FIXTURE_HASH = createHash("sha256")
-  .update(MIDI_FIXTURE)
-  .digest("hex");
 const MIDI_NEXT_FIXTURE = Buffer.from([
   0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, 0x01,
   0xe0, 0x4d, 0x54, 0x72, 0x6b, 0x00, 0x00, 0x00, 0x17, 0x00, 0xff, 0x51, 0x03,
@@ -249,7 +246,8 @@ const MIDI_NEXT_FIXTURE_HASH = createHash("sha256")
   .update(MIDI_NEXT_FIXTURE)
   .digest("hex");
 
-async function prepareMidiDockFixture(page: Page) {
+async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
+  const firstHash = createHash("sha256").update(firstMidi).digest("hex");
   await preparePinnedReaderAssets(page);
   await page.addInitScript(() => {
     localStorage.setItem("gys-media-minimized", "0");
@@ -292,7 +290,7 @@ async function prepareMidiDockFixture(page: Page) {
         const fixtures = new Map([
           [
             "assets/midi/001_Pujilah Allah Yang Maha Esa.mid",
-            { bytes: MIDI_FIXTURE, hash: MIDI_FIXTURE_HASH },
+            { bytes: firstMidi, hash: firstHash },
           ],
           [
             "assets/midi/002_Pujilah Allah Yang Mahakudus.mid",
@@ -315,7 +313,7 @@ async function prepareMidiDockFixture(page: Page) {
     if (/\.mid(?:\?|$)/i.test(url) || url.includes("/api/v1/content/music")) {
       const bytes = url.includes("002_Pujilah")
         ? MIDI_NEXT_FIXTURE
-        : MIDI_FIXTURE;
+        : firstMidi;
       await route.fulfill({
         body: bytes,
         headers: { "content-type": "application/octet-stream" },
@@ -545,7 +543,9 @@ test("MIDI Media Session publishes metadata and routes system transport actions"
       }),
     );
   });
-  await prepareMidiDockFixture(page);
+  // Keep the first note sustained: automatic end-of-track advancement must
+  // not race this test of explicit play/pause/next transport commands.
+  await prepareMidiDockFixture(page, MIDI_NEXT_FIXTURE);
 
   const title = page.locator(
     ".media-surface.is-kidung-media .media-context-link strong",

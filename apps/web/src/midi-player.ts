@@ -569,7 +569,8 @@ export class BrowserMidiPlayer {
   }
 
   public async pause(): Promise<void> {
-    if (this.state.status !== "playing") return;
+    if (this.state.status !== "playing" && this.state.status !== "loading")
+      return;
     this.operationGate.next();
     this.updatePositionFromClock();
     this.stopAudio();

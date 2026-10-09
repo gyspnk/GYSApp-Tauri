@@ -1,0 +1,80 @@
+name: Requested native release
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/release-request.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: requested-native-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate the explicit release request
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const request = JSON.parse(fs.readFileSync('.github/release-request.json', 'utf8'));
+          if (!/^v[0-9][A-Za-z0-9.-]+$/.test(request.tag) || typeof request.notes !== 'string') throw new Error('Invalid release request');
+          fs.appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_TAG=${request.tag}\n`);
+          fs.writeFileSync('release-notes.md', request.notes);
+          NODE
+          gh release view "$GYS_RELEASE_TAG" --json isDraft --jq '.isDraft' | grep -qx true
+          gh release edit "$GYS_RELEASE_TAG" --target "$GITHUB_SHA"
+      - name: Dispatch both builds from this exact commit
+        run: |
+          gh workflow run native-android.yml --ref "$GITHUB_SHA" -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
+          gh workflow run native-windows.yml --ref "$GITHUB_SHA" -f ref="$GITHUB_SHA" -f signed=false -f release_tag="$GYS_RELEASE_TAG"
+      - name: Wait for native packaging, Android runtime, and CI
+        run: |
+          set -euo pipefail
+          for workflow in native-android.yml native-windows.yml ci.yml; do
+            run_id=""
+            for attempt in $(seq 1 30); do
+              run_id=$(gh run list --workflow "$workflow" --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId // empty')
+              if [ -n "$run_id" ]; then break; fi
+              sleep 2
+            done
+            test -n "$run_id"
+            gh run watch "$run_id" --interval 20 --exit-status
+          done
+      - name: Verify the downloaded release assets and publish
+        run: |
+          set -euo pipefail
+          gh release download "$GYS_RELEASE_TAG" --dir release-assets
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const crypto = require('node:crypto');
+          const lines = [];
+          for (const [platform, provenance] of [['android','native-provenance-android.json'],['windows','native-provenance.json']]) {
+            const metadata = JSON.parse(fs.readFileSync(path.join('release-assets', provenance), 'utf8'));
+            if (metadata.commit !== process.env.GITHUB_SHA) throw new Error('Artifact source mismatch');
+            const checksums = fs.readFileSync(`release-assets/SHA256SUMS-${platform}.txt`, 'utf8');
+            for (const line of checksums.trim().split('\n')) {
+              const match = line.match(/^([a-f0-9]{64})\s+\*?(.+)$/);
+              if (!match) throw new Error('Invalid checksum manifest');
+              const filename = path.basename(match[2].trim());
+              const bytes = fs.readFileSync(path.join('release-assets', filename));
+              if (crypto.createHash('sha256').update(bytes).digest('hex') !== match[1]) throw new Error('Artifact checksum mismatch');
+              if (bytes.length !== metadata.artifactBytes) throw new Error('Artifact byte count mismatch');
+              lines.push(`- ${filename}: ${bytes.length.toLocaleString('en-US')} bytes, SHA256 verified.`);
+            }
+          }
+          fs.appendFileSync('release-notes.md', `\n\nSource: ${process.env.GITHUB_SHA}.\n\n${lines.join('\n')}\n\nCI and Android 17 runtime checks passed. Preview Android signing; Windows installer remains unsigned.\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          NODE
+          gh release edit "$GYS_RELEASE_TAG" --notes-file release-notes.md --draft=false
