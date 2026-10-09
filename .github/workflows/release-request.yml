@@ -37,8 +37,9 @@ jobs:
           gh release edit "$GYS_RELEASE_TAG" --target "$GITHUB_SHA"
       - name: Dispatch both builds from this exact commit
         run: |
-          gh workflow run native-android.yml --ref "$GITHUB_SHA" -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
-          gh workflow run native-windows.yml --ref "$GITHUB_SHA" -f ref="$GITHUB_SHA" -f signed=false -f release_tag="$GYS_RELEASE_TAG"
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh workflow run native-android.yml --ref main -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
+          gh workflow run native-windows.yml --ref main -f ref="$GITHUB_SHA" -f signed=false -f release_tag="$GYS_RELEASE_TAG"
       - name: Wait for native packaging, Android runtime, and CI
         run: |
           set -euo pipefail
