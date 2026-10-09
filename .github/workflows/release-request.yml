@@ -32,6 +32,7 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_TAG=${request.tag}\n`);
           fs.writeFileSync('release-notes.md', request.notes);
           NODE
+          GYS_RELEASE_TAG=$(node -p "JSON.parse(require('node:fs').readFileSync('.github/release-request.json', 'utf8')).tag")
           gh release view "$GYS_RELEASE_TAG" --json isDraft --jq '.isDraft' | grep -qx true
           gh release edit "$GYS_RELEASE_TAG" --target "$GITHUB_SHA"
       - name: Dispatch both builds from this exact commit
