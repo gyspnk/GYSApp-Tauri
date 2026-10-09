@@ -25,8 +25,33 @@ remain unchanged. No new runtime decoder or first-launch conversion was added.
 | SQLite bytes                 | 12,922,880 | 7,016,448 | 5,906,432 (45.7%) |
 | Asset Brotli quality 9 bytes |  3,456,976 | 1,942,638 | 1,514,338 (43.8%) |
 
-Actual APK and EXE savings must be measured after native packaging. Baseline is
-`v0.1.0-preview.20261009`: APK 36,270,303 bytes; EXE 33,513,644 bytes.
+## Published native measurements
+
+Release [`v0.1.0-preview.20261009.1`](https://github.com/gyspnk/GYSApp-Tauri/releases/tag/v0.1.0-preview.20261009.1)
+packages source `394b2e336ff2ca404984134298c6c056f498ed98`.
+Both downloaded public artifacts match their SHA256 manifests, source commits,
+and provenance byte counts. APK signature, ZIP alignment, ARM64 compressed JNI,
+and 16 KiB ELF load alignment were verified again locally.
+
+| Artifact        | Previous release bytes | Published bytes |              Saved |
+| --------------- | ---------------------: | --------------: | -----------------: |
+| ARM64 APK       |             36,270,303 |      34,777,923 | 1,492,380 (4.115%) |
+| Windows x64 EXE |             33,513,644 |      31,996,329 | 1,517,315 (4.527%) |
+
+CI passed 742 browser cases with no retries and three BFF-dependent skips. The
+new integration test projects the actual packaged SQLite with SQL.js and compares
+all books, verses, pericopes and numeric cross-references with the canonical reader.
+Five compactor tests and eight loading bounds/font-scale cases passed locally.
+Initial browser JavaScript remains within the 180 KiB budget at 178.9 KiB gzip.
+The 30-navigation local browser audit measured median 373.3 ms / p95 394.2 ms,
+with no repeated application module downloads. These measurements do not imply
+remote provider latency or Android cold-launch timings.
+
+The packaged APK passed Android 17 emulator checks for More/cold restart, idle
+audio focus, font_scale 2.0, cutouts in portrait/landscape and gesture/three-button
+navigation. This is a preview APK signed with the debug identity; Windows remains
+unsigned, with no Windows-device runtime test performed. Full hashes and verified
+active row counts are in the companion JSON audit.
 All ten doctrine PDFs, the complete TimGM6mb soundfont, Bible SQL and JSON fallback
 remain bundled. A compact-tuple reader projection saved only 126,059 Brotli bytes;
 it was not applied because the archive candidate gives a larger saving with no

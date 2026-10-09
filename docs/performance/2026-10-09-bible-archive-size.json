@@ -1,0 +1,58 @@
+{
+  "sourceCommit": "394b2e336ff2ca404984134298c6c056f498ed98",
+  "before": {
+    "bytes": 12922880,
+    "sha256": "a21c147b5ab13043fa175d1b8990a1901639f241732792ef2dc43c84a382b30f"
+  },
+  "after": {
+    "bytes": 7016448,
+    "sha256": "08173f05e2bbbcb1bfba7b4b12e78d57cbf67004e1fc92ad5879b9ba27b8f57c"
+  },
+  "unchangedActiveRows": {
+    "pericope": 2305,
+    "book": 66,
+    "chapter": 1189,
+    "pericope_paralel": 788,
+    "ref": 3568,
+    "bible": 31172
+  },
+  "readerSha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
+  "browserSamples": 30,
+  "browserMedianMs": 373.3,
+  "browserP95Ms": 394.2,
+  "release": "v0.1.0-preview.20261009.1",
+  "artifacts": {
+    "android": {
+      "file": "GYSApp-0.1.0-android-arm64-preview.apk",
+      "beforeBytes": 36270303,
+      "bytes": 34777923,
+      "savedBytes": 1492380,
+      "savedPercent": 4.115,
+      "sha256": "d27ae8dce9375069675877e1487373726e0c89a6473db24d302136dfa1d0a84d"
+    },
+    "windows": {
+      "file": "GYSApp_0.1.0_x64-setup.exe",
+      "beforeBytes": 33513644,
+      "bytes": 31996329,
+      "savedBytes": 1517315,
+      "savedPercent": 4.527,
+      "sha256": "d4099496999193ba15a24b77ad388c90aefda6b0e75ed21a7b3317b4bde83c91"
+    }
+  },
+  "checks": {
+    "ci": "passed",
+    "browserPassed": 742,
+    "browserSkipped": 3,
+    "browserRetries": 0,
+    "android17": "passed",
+    "runtimeScope": [
+      "More/cold restart",
+      "idle audio focus",
+      "font scale 2.0",
+      "portrait/landscape cutout",
+      "gesture/three-button navigation"
+    ],
+    "windowsRuntime": "not performed; unsigned installer",
+    "androidSigning": "preview debug identity"
+  }
+}
