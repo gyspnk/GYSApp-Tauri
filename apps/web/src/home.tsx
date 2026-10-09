@@ -39,7 +39,10 @@ function SauhSkeleton({ locale }: { locale: Locale }) {
       aria-live="polite"
       data-testid="home-sauh-skeleton"
     >
-      <LoadingProgress label={translate(locale, "home.loadingSauh")} />
+      <LoadingProgress
+        label={translate(locale, "home.loadingSauh")}
+        showLogo={false}
+      />
     </div>
   );
 }

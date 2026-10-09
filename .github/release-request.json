@@ -1,5 +1,5 @@
 {
-  "tag": "v0.1.0-preview.20261009",
-  "notes": "Sauh loading preserves the complete label, logo, and progress bar across mobile, tablet, desktop, and enlarged fonts. Includes responsive navigation, compact profile menus, accurate PDF progress with animated stall notices, WhatsApp tracking cookie fixes, and MIDI pause cancellation during audio preparation.\n\nSix bundled doctrine PDFs save 903,447 source bytes losslessly; archive savings are smaller because native compression is already enabled. Offline Bible, all ten doctrine PDFs, and TimGM6mb remain bundled. Local browser audit: median 374 ms, p95 385 ms across 30 runs. Real-account WhatsApp confirmation and Windows device runtime QA remain separate checks.",
-  "requestId": "2026-10-09-final-3"
+  "tag": "v0.1.0-preview.20261009.1",
+  "notes": "Compact Sauh loading removes its logo while retaining the complete label and animated progress bar. The bundled Bible database omits the unused bible_old archive: 12,922,880 to 7,016,448 bytes. All active schemas, rows, row IDs, metadata, and the full reader projection are verified unchanged. All 66 books, 31,172 verses, pericopes, cross-references, offline fallback, ten faith PDFs and all TimGM6mb instruments remain available.\n\nNative artifact reductions are measured after packaging; removing the archive saves 1,514,338 bytes at asset Brotli quality 9 before outer archive compression. No additional runtime decompressor or first-run database generation is required.",
+  "requestId": "2026-10-09-compact-sauh-bible-1"
 }

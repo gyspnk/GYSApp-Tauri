@@ -4209,11 +4209,11 @@ body:has(.hymn-detail-page.is-text-viewer)
    inside the old image-less hero geometry. */
 .home-grid .verse-panel:has(.sauh-skeleton) {
   height: auto;
-  min-height: 200px;
+  min-height: 120px;
 }
 .home-grid .sauh-card-content:has(.sauh-skeleton) {
   height: auto;
-  min-height: 176px;
+  min-height: 96px;
   flex: 1 0 auto;
   margin: 0;
   padding: 12px;
@@ -4226,7 +4226,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   place-items: center;
   width: 100%;
   height: auto;
-  min-height: 144px;
+  min-height: 64px;
   flex: 1 0 auto;
   padding: 12px 0;
 }

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 for (const width of [320, 390, 768, 1440]) {
   for (const scale of [1, 1.5]) {
-    test(`Sauh loading fits its logo and complete label at ${width}px and ${scale}x`, async ({
+    test(`Compact Sauh loading fits its complete label at ${width}px and ${scale}x`, async ({
       page,
     }, testInfo) => {
       await page.setViewportSize({ width, height: 900 });
@@ -22,6 +22,7 @@ for (const width of [320, 390, 768, 1440]) {
       await page.goto("/GYSApp-Tauri/");
       const skeleton = page.getByTestId("home-sauh-skeleton");
       await expect(skeleton).toBeVisible();
+      await expect(skeleton.locator("img")).toHaveCount(0);
       await expect(skeleton.locator(".loading-progress-label")).toHaveText(
         "Memuat Sauh Bagi Jiwa…",
       );
@@ -30,14 +31,16 @@ for (const width of [320, 390, 768, 1440]) {
         const label = node
           .querySelector(".loading-progress-label")!
           .getBoundingClientRect();
-        const logo = node.querySelector("img")!.getBoundingClientRect();
+        const track = node
+          .querySelector(".loading-progress-track")!
+          .getBoundingClientRect();
         const heading = node
           .closest(".verse-panel")!
           .querySelector(".section-heading")!
           .getBoundingClientRect();
         return {
-          gap: logo.top - heading.bottom,
-          items: [label, logo].map((rect) => ({
+          gap: track.top - heading.bottom,
+          items: [label, track].map((rect) => ({
             left: rect.left - panel.left,
             right: panel.right - rect.right,
             top: rect.top - panel.top,

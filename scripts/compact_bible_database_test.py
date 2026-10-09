@@ -70,6 +70,35 @@ class CompactBibleTests(unittest.TestCase):
         self.assertEqual(self.database.read_bytes(), original)
         self.assertEqual(list(self.database.parent.glob("*.db")), [self.database])
 
+    def test_legacy_removal_preserves_active_rows_and_is_opt_in(self):
+        self.create_database()
+        with closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("create table bible (id integer primary key, text text)")
+            connection.execute("insert into bible values (42, 'Active scripture')")
+            connection.execute("create table bible_old (id integer unique, text text)")
+            connection.executemany("insert into bible_old values (?, ?)", [(i, 'Archive' * 1000) for i in range(100)])
+            connection.commit()
+        original = self.database.read_bytes()
+        compact.compact_database(self.database, drop_legacy=True)
+        self.assertEqual(self.database.read_bytes(), original)
+        compact.compact_database(self.database, write=True)
+        with closing(sqlite3.connect(self.database)) as connection:
+            self.assertEqual(connection.execute("select count(*) from bible_old").fetchone(), (100,))
+        before, after = compact.compact_database(self.database, write=True, drop_legacy=True)
+        self.assertLess(after, before)
+        with closing(sqlite3.connect(self.database)) as connection:
+            self.assertEqual(connection.execute("select rowid,* from bible").fetchall(), [(42, 42, 'Active scripture')])
+            self.assertEqual(connection.execute("select name from sqlite_master where tbl_name='bible_old'").fetchall(), [])
+        self.assertEqual(compact.compact_database(self.database, write=True, drop_legacy=True), (after, after))
+
+    def test_legacy_removal_requires_active_bible(self):
+        with closing(sqlite3.connect(self.database)) as connection:
+            connection.execute("create table bible_old (text text)")
+        original = self.database.read_bytes()
+        with self.assertRaisesRegex(ValueError, "active bible table"):
+            compact.compact_database(self.database, write=True, drop_legacy=True)
+        self.assertEqual(self.database.read_bytes(), original)
+
 
 if __name__ == "__main__":
     unittest.main()

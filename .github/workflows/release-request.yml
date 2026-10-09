@@ -33,7 +33,11 @@ jobs:
           fs.writeFileSync('release-notes.md', request.notes);
           NODE
           GYS_RELEASE_TAG=$(node -p "JSON.parse(require('node:fs').readFileSync('.github/release-request.json', 'utf8')).tag")
-          gh release view "$GYS_RELEASE_TAG" --json isDraft --jq '.isDraft' | grep -qx true
+          if ! gh release view "$GYS_RELEASE_TAG" --json isDraft > release-state.json; then
+            gh release create "$GYS_RELEASE_TAG" --draft --prerelease --target "$GITHUB_SHA" --title "$GYS_RELEASE_TAG" --notes-file release-notes.md
+            gh release view "$GYS_RELEASE_TAG" --json isDraft > release-state.json
+          fi
+          node -e "if (JSON.parse(require('node:fs').readFileSync('release-state.json', 'utf8')).isDraft !== true) throw new Error('Refusing to overwrite a published release')"
           gh release edit "$GYS_RELEASE_TAG" --target "$GITHUB_SHA"
       - name: Dispatch both builds from this exact commit
         run: |

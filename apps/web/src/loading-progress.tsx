@@ -1,16 +1,20 @@
 export function LoadingProgress({
   label,
   percent,
+  showLogo = true,
 }: {
   label: string;
   percent?: number | undefined;
+  showLogo?: boolean;
 }) {
   return (
     <div className="loading-progress">
-      <img
-        src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
-        alt="Gereja Yesus Sejati"
-      />
+      {showLogo && (
+        <img
+          src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
+          alt="Gereja Yesus Sejati"
+        />
+      )}
       <span
         className="loading-progress-track"
         role="progressbar"

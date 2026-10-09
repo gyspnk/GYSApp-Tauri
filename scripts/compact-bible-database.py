@@ -1,4 +1,4 @@
-"""Losslessly compact the packaged Bible database; refresh manifests afterwards."""
+"""Compact the packaged Bible database; optionally omit its unused legacy archive."""
 
 import argparse
 import os
@@ -9,11 +9,15 @@ from itertools import zip_longest
 from pathlib import Path
 
 
-def compact_database(source: Path, write: bool = False) -> tuple[int, int]:
+def compact_database(source: Path, write: bool = False, drop_legacy: bool = False) -> tuple[int, int]:
     before = source.stat().st_size
     with closing(sqlite3.connect(source.resolve().as_uri() + "?mode=ro", uri=True)) as original:
+        legacy = drop_legacy and original.execute("select 1 from sqlite_master where type='table' and name='bible_old'").fetchone()
+        if legacy and not original.execute("select 1 from sqlite_master where type='table' and name='bible'").fetchone():
+            raise ValueError("Cannot remove legacy Bible without the active bible table")
         if (
-            original.execute("pragma freelist_count").fetchone()[0] == 0
+            not legacy
+            and original.execute("pragma freelist_count").fetchone()[0] == 0
             and original.execute("pragma page_size").fetchone()[0] == 4096
         ):
             return before, before
@@ -24,10 +28,16 @@ def compact_database(source: Path, write: bool = False) -> tuple[int, int]:
             original.execute("pragma page_size=4096")
             original.execute("vacuum into ?", (temporary,))
             with closing(sqlite3.connect(candidate)) as compact:
+                if legacy:
+                    compact.execute("drop table bible_old")
+                    compact.execute("vacuum")
                 schema = "select type,name,tbl_name,sql from sqlite_master order by type,name"
-                if original.execute(schema).fetchall() != compact.execute(schema).fetchall():
+                active_schema = [row for row in original.execute(schema) if not (legacy and row[2] == "bible_old")]
+                if active_schema != compact.execute(schema).fetchall():
                     raise ValueError("Compaction changed the database schema")
                 for (name,) in original.execute("select name from sqlite_master where type='table'"):
+                    if legacy and name == "bible_old":
+                        continue
                     table = '"' + name.replace('"', '""') + '"'
                     query = f"select rowid,* from {table} order by rowid"
                     sentinel = object()
@@ -57,7 +67,8 @@ def compact_database(source: Path, write: bool = False) -> tuple[int, int]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--drop-legacy", action="store_true", help="Omit the unused bible_old archive; verify every active table and row ID")
     arguments = parser.parse_args()
     source = Path(__file__).resolve().parents[1] / "apps/web/public/offline/bible/b_tb.db"
-    before, after = compact_database(source, arguments.write)
+    before, after = compact_database(source, arguments.write, arguments.drop_legacy)
     print(f"Bible SQLite: {before:,} -> {after:,} bytes; schema, rows and row IDs verified")
