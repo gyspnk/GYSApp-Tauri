@@ -807,10 +807,11 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutNarrowNote":
       "Tampilan 2 halaman dialihkan ke 1 halaman pada layar sempit.",
     "pdf.download": "Unduh PDF",
+    "pdf.preparingPage": "Menyiapkan halaman…",
     "pdf.loadingDocument": "Memuat PDF…",
     "pdf.loading": "Memuat PDF… {percent}%",
     "pdf.loadingSlow":
-      "PDF masih memuat lebih lama dari biasanya. Anda bisa menunggu atau mencoba lagi.",
+      "Unduhan belum berlanjut. Tunggu sebentar atau coba lagi.",
     "pdf.orientation": "Tampilan 2 halaman lebih nyaman dalam landscape",
     "pdf.error404":
       "PDF resmi tidak tersedia (HTTP 404). Buka halaman sumber resmi untuk memeriksa dokumen terbaru.",
@@ -1326,6 +1327,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.assetDownloadAction": "Unduh {title}",
     "more.catalogUnavailable": "Katalog aset tambahan belum dapat dimuat.",
     "more.accountMember": "Akun Jemaat",
+    "account.openPortal": "Buka e-GYS",
+    "account.signOut": "Keluar",
     "more.accountEgys": "Akun e-GYS",
     "more.connected": "Terhubung",
     "more.guest": "Tamu",
@@ -1563,6 +1566,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutNarrowNote":
       "Two-page view switches to single-page view on narrow screens.",
     "pdf.download": "Download PDF",
+    "pdf.preparingPage": "Preparing page…",
     "pdf.loadingDocument": "Loading PDF…",
     "pdf.loading": "Loading PDF… {percent}%",
     "pdf.loadingSlow":
@@ -2082,6 +2086,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.catalogUnavailable":
       "The additional asset catalog could not be loaded.",
     "more.accountMember": "Member account",
+    "account.openPortal": "Open e-GYS",
+    "account.signOut": "Sign out",
     "more.accountEgys": "e-GYS account",
     "more.connected": "Connected",
     "more.guest": "Guest",
@@ -2318,6 +2324,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "pdf.layoutGroup": "PDF 布局",
     "pdf.layoutNarrowNote": "窄屏时双页显示会切换为单页显示。",
     "pdf.download": "下载 PDF",
+    "pdf.preparingPage": "正在准备页面…",
     "pdf.loadingDocument": "正在加载 PDF…",
     "pdf.loading": "正在加载 PDF… {percent}%",
     "pdf.loadingSlow": "PDF 加载时间较长。您可以继续等待或重试。",
@@ -2829,6 +2836,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.assetDownloadAction": "下载 {title}",
     "more.catalogUnavailable": "无法加载其他资产目录。",
     "more.accountMember": "会友账户",
+    "account.openPortal": "打开 e-GYS",
+    "account.signOut": "退出登录",
     "more.accountEgys": "e-GYS 账户",
     "more.connected": "已连接",
     "more.guest": "访客",

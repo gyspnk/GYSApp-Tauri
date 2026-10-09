@@ -1,0 +1,210 @@
+.account-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.account-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 120;
+  width: min(304px, calc(100vw - 28px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 48px rgb(0 35 64 / 18%);
+}
+.account-popover-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 12px;
+}
+.account-menu-avatar,
+.profile-card-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--blue) 12%, var(--surface));
+  color: var(--blue);
+}
+.account-menu-avatar img,
+.profile-card-avatar img,
+.more-setting-icon .account-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.account-menu-avatar > svg,
+.profile-card-avatar > svg {
+  width: 24px;
+  height: 24px;
+}
+.account-popover-identity > div {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.account-popover-identity strong {
+  font-size: 0.92rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.account-popover-identity span:not(.account-menu-avatar),
+.account-popover-email {
+  color: var(--muted);
+  font-size: 0.76rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.account-popover-identity > svg {
+  flex-shrink: 0;
+  color: var(--blue);
+}
+.account-popover-email {
+  margin: -4px 4px 10px;
+}
+.account-popover-actions {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid var(--line);
+  padding-top: 7px;
+}
+.account-popover-actions > :is(a, button),
+.account-menu-login > a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  width: 100%;
+  border: 0;
+  border-radius: 11px;
+  padding: 9px 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+.account-popover-actions > :is(a, button):hover,
+.account-menu-login > a:hover {
+  background: color-mix(in srgb, var(--blue) 9%, var(--surface));
+  color: var(--blue);
+}
+.account-popover-actions span {
+  flex: 1;
+  text-align: start;
+}
+.account-popover-actions svg,
+.account-menu-login svg {
+  flex-shrink: 0;
+}
+.account-menu-login {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+.account-menu-login[aria-busy="true"] {
+  pointer-events: none;
+  opacity: 0.65;
+}
+.account-menu-login .egys-google-button {
+  width: 100%;
+}
+.account-menu-login > a {
+  justify-content: space-between;
+}
+.account-menu-error {
+  margin: 8px 4px 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.more-account-section .more-setting-icon {
+  overflow: hidden;
+}
+.more-page .more-account-section .egys-member-badge {
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.more-account-section .member-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+}
+.more-account-section .member-church-title {
+  flex: 1;
+  font-size: 0.85rem;
+}
+.more-account-section .member-badge-body {
+  padding: 14px;
+}
+.more-account-section .member-info-grid {
+  gap: 12px;
+}
+.more-account-section .member-info-row {
+  margin-bottom: 10px;
+}
+.more-account-section .member-badge-actions {
+  padding: 0 14px 14px;
+}
+.more-account-section .egys-login-trace {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-popover-actions > :is(a, button),
+  .account-menu-login > a {
+    transition: none;
+  }
+}
+
+.more-page .more-account-section .egys-member-badge {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+.more-account-section .member-badge-header {
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+.more-account-section .member-church-title {
+  color: var(--blue);
+  letter-spacing: 0.03em;
+}
+.more-page .more-account-section .member-badge-body {
+  display: grid;
+  gap: 16px 24px;
+  padding: 14px;
+}
+.more-page .more-account-section .member-info-row {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.more-page .more-account-section .member-info-grid {
+  margin: 0;
+}
+.more-page .more-account-section .member-name {
+  font-size: 1rem;
+}
+@media (min-width: 600px) {
+  .more-page .more-account-section .member-badge-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

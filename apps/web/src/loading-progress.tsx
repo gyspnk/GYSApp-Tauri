@@ -15,13 +15,15 @@ export function LoadingProgress({
         className="loading-progress-track"
         role="progressbar"
         aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
         aria-valuenow={percent}
       >
         <span
           style={percent === undefined ? undefined : { width: `${percent}%` }}
         />
       </span>
-      {label}
+      <span className="loading-progress-label">{label}</span>
     </div>
   );
 }

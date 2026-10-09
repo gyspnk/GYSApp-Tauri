@@ -1,5 +1,6 @@
 """Losslessly deduplicate the audited booklet (requires PyMuPDF==1.26.6)."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -15,7 +16,10 @@ root = Path(__file__).resolve().parents[1]
 directory = root / "apps/web/public/assets/faith"
 manifest_path = directory / "manifest.json"
 manifest = json.loads(manifest_path.read_text())
-item = next(item for item in manifest["files"] if item["file"] == "Yesus-Kristus.pdf")
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("file", nargs="?", default="Yesus-Kristus.pdf")
+args = parser.parse_args()
+item = next(item for item in manifest["files"] if item["file"] == args.file)
 source = directory / item["file"]
 if item.get("optimization"):
     raise SystemExit("Audited lossless booklet is already compacted")

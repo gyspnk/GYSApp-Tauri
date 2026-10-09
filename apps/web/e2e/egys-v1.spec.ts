@@ -171,7 +171,7 @@ test("Google stays visible and retries inline while offline", async ({
   page,
   context,
 }) => {
-  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const google = page.getByRole("button", {
     name: "Login dengan Google",
     exact: true,
@@ -293,9 +293,13 @@ test("web providers authenticate inline and refresh the detected account", async
     loggedIn = false;
     await route.fulfill({ json: { ok: true } });
   });
-  await context.route("https://api.whatsapp.com/**", (route) =>
-    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
-  );
+  await context.route("https://api.whatsapp.com/**", (route) => {
+    expect(
+      tracking,
+      "tracking subscribes before the message link opens",
+    ).toBeDefined();
+    return route.fulfill({ body: "WhatsApp", contentType: "text/html" });
+  });
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const messagingTab = page.waitForEvent("popup");
   await page
@@ -586,7 +590,7 @@ test("Apple completes after a real cold script load instead of hanging at initia
 test("Lainnya renders unified settings and account panels cleanly", async ({
   page,
 }) => {
-  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
   await page.locator('[data-setting="appearance"] > summary').click();
   await expect(
@@ -643,7 +647,7 @@ test("active e-GYS session displays the member profile badge", async ({
     );
   });
 
-  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(
     page.getByRole("heading", { name: "Sdr. Yohanes" }),
   ).toBeVisible();
@@ -653,4 +657,53 @@ test("active e-GYS session displays the member profile badge", async ({
   await expect(
     page.getByRole("button", { name: /Keluar dari Akun Ini/i }),
   ).toBeVisible();
+});
+
+test("partitioned BFF login cookies survive browser third-party-cookie restrictions", async ({
+  page,
+  context,
+}) => {
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Network.enable");
+  await cdp.send("Network.setCookieControls", {
+    enableThirdPartyCookieRestriction: true,
+    disableThirdPartyCookieMetadata: true,
+    disableThirdPartyCookieHeuristics: true,
+  });
+  const appOrigin = "https://gys-app.example";
+  const bffOrigin = "https://gys-bff.example";
+  await page.route(`${appOrigin}/**`, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Login cookie transport</title>",
+    }),
+  );
+  let cookieHeader = "";
+  await page.route(`${bffOrigin}/**`, (route) => {
+    if (route.request().url().endsWith("/track"))
+      cookieHeader = route.request().headers().cookie ?? "";
+    return route.fulfill({
+      body: "{}",
+      contentType: "application/json",
+      headers: {
+        "access-control-allow-origin": appOrigin,
+        "access-control-allow-credentials": "true",
+        ...(route.request().url().endsWith("/start")
+          ? {
+              "set-cookie":
+                "egys_wa_reference=test-bound-ref; Path=/; Secure; HttpOnly; SameSite=None; Partitioned",
+            }
+          : {}),
+      },
+    });
+  });
+  await page.goto(appOrigin);
+  await page.evaluate(async (bff) => {
+    await fetch(`${bff}/start`, { credentials: "include" });
+    await fetch(`${bff}/track`, { credentials: "include" });
+  }, bffOrigin);
+  expect(cookieHeader).toContain("egys_wa_reference=test-bound-ref");
+  expect(await page.evaluate(() => document.cookie)).not.toContain(
+    "egys_wa_reference",
+  );
 });

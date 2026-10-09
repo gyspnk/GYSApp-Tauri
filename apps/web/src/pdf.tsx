@@ -1,3 +1,7 @@
+import {
+  createPdfLoadActivity,
+  pdfDownloadPercent,
+} from "./pdf-load-progress.js";
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
 import { enhancePdfReader } from "./direct-manipulation.js";
@@ -50,8 +54,6 @@ import {
 import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
 import { Icon } from "./icons.js";
 import { translate, type Locale } from "./i18n.js";
-
-const PDF_SLOW_LOAD_DELAY_MS = 2500;
 
 function scrollToPdfPage(
   stage: HTMLElement | null,
@@ -619,6 +621,15 @@ export function PdfReader({
   const [loadPhase, setLoadPhase] = useState<
     "loading" | "slow" | "ready" | "error"
   >("loading");
+  const loadingLayerRef = useRef<HTMLDivElement>(null);
+  const loadingLayerOpen = status === "loading";
+  const loadingLayerPresent = useMenuPresence(
+    loadingLayerOpen,
+    loadingLayerRef,
+  );
+  const slowNoticeRef = useRef<HTMLDivElement>(null);
+  const slowNoticeOpen = loadingLayerOpen && loadPhase === "slow";
+  const slowNoticePresent = useMenuPresence(slowNoticeOpen, slowNoticeRef);
   useReadinessMarker("gys-pdf-page-ready", status === "ready", page);
   const markPageReady = useCallback(() => {
     setLoadPhase("ready");
@@ -847,6 +858,7 @@ export function PdfReader({
 
   useEffect(() => {
     let disposed = false;
+    let documentReady = false;
     documentRef.current = null;
     setDocumentProxy(null);
     setHasPainted(false);
@@ -855,10 +867,10 @@ export function PdfReader({
     setStatus("loading");
     setLoadErrorStatus(undefined);
     setLoadPhase("loading");
-    setLoadProgress(8);
+    setLoadProgress(0);
     setDownloadPercent(undefined);
     let slowTimer: number | undefined;
-    let lastProgress = 8;
+    const activity = createPdfLoadActivity(performance.now());
     const clearSlowTimer = () => {
       if (slowTimer !== undefined) window.clearTimeout(slowTimer);
       slowTimer = undefined;
@@ -867,7 +879,7 @@ export function PdfReader({
       clearSlowTimer();
       slowTimer = window.setTimeout(() => {
         if (!disposed) setLoadPhase("slow");
-      }, PDF_SLOW_LOAD_DELAY_MS);
+      }, activity.delay());
     };
     const cleanup = () => {
       disposed = true;
@@ -882,16 +894,11 @@ export function PdfReader({
     }
     scheduleSlowNotice();
     const lease = pdfDocuments.acquire(src, data, (progress) => {
-      if (disposed) return;
-      const pct =
-        progress.total > 0
-          ? Math.round((progress.loaded / progress.total) * 100)
-          : 0;
-      setDownloadPercent(progress.total > 0 ? Math.min(100, pct) : undefined);
-      const nextProgress = Math.max(8, Math.min(96, pct));
-      setLoadProgress((current) => Math.max(current, nextProgress));
-      if (nextProgress > lastProgress) {
-        lastProgress = nextProgress;
+      if (disposed || documentReady) return;
+      const pct = pdfDownloadPercent(progress.loaded, progress.total);
+      setDownloadPercent(pct);
+      setLoadProgress(pct ?? 0);
+      if (activity.update(progress.loaded, performance.now())) {
         setLoadPhase("loading");
         scheduleSlowNotice();
       }
@@ -899,6 +906,7 @@ export function PdfReader({
     void lease.promise
       .then((document) => {
         if (disposed) return;
+        documentReady = true;
         const pageWindow = pdfPageWindow(
           pageRange?.start ?? 1,
           pageRange?.count,
@@ -917,6 +925,7 @@ export function PdfReader({
         );
         setDocumentProxy(document);
         setLoadProgress(100);
+        setDownloadPercent(undefined);
         setLoadPhase("ready");
         clearSlowTimer();
       })
@@ -1221,7 +1230,7 @@ export function PdfReader({
     setStatus("loading");
     setLoadErrorStatus(undefined);
     setLoadPhase("loading");
-    setLoadProgress(8);
+    setLoadProgress(0);
     setLoadAttempt((attempt) => attempt + 1);
   };
   useEffect(() => {
@@ -1690,8 +1699,12 @@ export function PdfReader({
         onTouchEnd={onStageTouchEnd}
         onClick={restoreToolbar}
       >
-        {status === "loading" && (
+        {loadingLayerPresent && (
           <div
+            ref={loadingLayerRef}
+            data-menu-open={loadingLayerOpen}
+            inert={!loadingLayerOpen}
+            aria-hidden={!loadingLayerOpen}
             className={`pdf-loading${hasPainted ? " is-page-loading" : ""}${loadPhase === "slow" ? " is-slow" : ""}`}
             role="status"
             aria-live="polite"
@@ -1706,16 +1719,25 @@ export function PdfReader({
             <div className="pdf-loading-page">
               <LoadingProgress
                 label={
-                  downloadPercent === undefined
-                    ? translate(locale, "pdf.loadingDocument")
-                    : translate(locale, "pdf.loading", {
-                        percent: downloadPercent,
-                      })
+                  documentProxy
+                    ? translate(locale, "pdf.preparingPage")
+                    : downloadPercent === undefined
+                      ? translate(locale, "pdf.loadingDocument")
+                      : translate(locale, "pdf.loading", {
+                          percent: downloadPercent,
+                        })
                 }
                 percent={downloadPercent}
               />
-              {loadPhase === "slow" && (
-                <div className="pdf-loading-slow">
+              {slowNoticePresent && (
+                <div
+                  ref={slowNoticeRef}
+                  className="pdf-loading-slow"
+                  data-menu-open={slowNoticeOpen}
+                  inert={!slowNoticeOpen}
+                  aria-hidden={!slowNoticeOpen}
+                >
+                  <Icon name="file" size={18} />
                   <p>{translate(locale, "pdf.loadingSlow")}</p>
                   <div className="pdf-loading-actions">
                     <button
@@ -1724,6 +1746,7 @@ export function PdfReader({
                       data-pdf-retry="true"
                       onClick={retry}
                     >
+                      <Icon name="repeat" size={16} />
                       {translate(locale, "pdf.retry")}
                     </button>
                     {downloadUrl && (

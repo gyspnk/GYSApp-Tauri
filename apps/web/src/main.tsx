@@ -15,10 +15,10 @@ import "./kidung-ux.css";
 import "./direct-manipulation.css";
 import "./kidung-touch-targets.css";
 import "./reading-surfaces.css";
-import "./kidung-responsive.css";
 import "./calm-liturgical.css";
 import "./persistent-media.css";
 import "./app-design.css";
+import "./kidung-responsive.css";
 import "./menu-motion.css";
 import "./midi-player.css";
 

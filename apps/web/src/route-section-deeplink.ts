@@ -1,4 +1,5 @@
 const MORE_SECTION_TARGETS: Record<string, string> = {
+  account: '.more-setting-section[data-setting="account"] > .more-setting-row',
   data: '.more-setting-section[data-setting="offline"] > .more-setting-row',
   help: ".report-card",
 };
@@ -45,6 +46,7 @@ export function installRouteSectionDeepLinks(
   if (!root) return () => undefined;
 
   let alignedLocation = "";
+  let revealedAccountLocation = "";
   let trackedLocation = "";
   let userInterrupted = false;
   let frame = 0;
@@ -52,13 +54,14 @@ export function installRouteSectionDeepLinks(
   const revealLinkedSection = () => {
     const selector = resolveRouteSectionTarget(window.location);
     if (!selector) {
+      revealedAccountLocation = "";
       alignedLocation = "";
       trackedLocation = "";
       userInterrupted = false;
       return;
     }
 
-    const locationKey = `${window.location.pathname}${window.location.search}`;
+    const locationKey = `${window.location.pathname}${window.location.search}:${window.history.state?.key ?? ""}`;
     if (trackedLocation !== locationKey) {
       trackedLocation = locationKey;
       alignedLocation = "";
@@ -69,6 +72,15 @@ export function installRouteSectionDeepLinks(
 
     const target = document.querySelector<HTMLElement>(selector);
     if (!target) return;
+    if (
+      new URLSearchParams(window.location.search).get("section") ===
+        "account" &&
+      revealedAccountLocation !== locationKey
+    ) {
+      const disclosure = target.closest("details");
+      if (disclosure && !disclosure.open) disclosure.open = true;
+      revealedAccountLocation = locationKey;
+    }
 
     // The More route renders the account card before its asynchronous profile
     // check finishes. Scrolling while that loading box is still present leaves

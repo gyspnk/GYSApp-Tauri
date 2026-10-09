@@ -1467,12 +1467,14 @@ describe("BFF public boundary", () => {
         });
         const env = { EGYS_API_BASE_URL: "https://e.gys.or.id" };
         const start = await app.request(
-          "/api/v1/auth/egys/whatsapp/start",
-          { method: "POST" },
+          "https://gysapp-tauri-bff.example/api/v1/auth/egys/whatsapp/start",
+          { method: "POST", headers: { origin: "http://localhost:5173" } },
           env,
         );
         expect(start.status).toBe(200);
         expect(start.headers.get("set-cookie")).toContain("HttpOnly");
+        expect(start.headers.get("set-cookie")).toContain("Partitioned");
+        expect(start.headers.get("set-cookie")).toContain("Secure");
         const confirm = await app.request(
           "/api/v1/auth/egys/whatsapp/confirm",
           {

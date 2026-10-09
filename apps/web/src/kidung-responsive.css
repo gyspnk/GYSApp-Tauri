@@ -15,3 +15,166 @@
     display: block;
   }
 }
+
+/* Fill phone/tablet fields without a trailing empty cell. Category text keeps
+   its natural width; navigation shares the remainder and Aa stays a clear tap. */
+@media (max-width: 1100px) {
+  .hymn-page .kidung-controls-field {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(0, max-content) 44px;
+    gap: 3px;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav,
+  .hymn-page .kidung-controls-field .kidung-header-filter {
+    width: 100%;
+    min-width: 0;
+    grid-area: auto;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav {
+    container-type: inline-size;
+    container-name: kidung-nav;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(44px, 1fr));
+    gap: 3px;
+    width: 100%;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav a {
+    width: 100%;
+    min-width: 44px;
+    position: relative;
+    padding-inline: 6px;
+    gap: 6px;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav a > span {
+    display: none;
+  }
+  @container kidung-nav (min-width: 24em) {
+    .hymn-page .kidung-controls-field .kidung-local-nav a > span {
+      display: block;
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: hidden;
+      clip-path: none;
+      min-width: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+  .hymn-page .kidung-controls-field .control-select-trigger {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 6px;
+    gap: 6px;
+  }
+  .hymn-page .kidung-controls-field .kidung-collection-select {
+    min-width: 0;
+  }
+  .hymn-page .kidung-controls-field .kidung-mode-control {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav small {
+    position: absolute;
+    inset-inline-end: 3px;
+    top: 3px;
+    margin: 0;
+    max-width: calc(100% - 6px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.625rem;
+    line-height: 16px;
+    padding-inline: 3px;
+  }
+}
+
+/* One navigation treatment in catalog, playlist and preferences. */
+.hymn-page .kidung-local-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 6px;
+  border-radius: 11px;
+  line-height: 1.25;
+}
+.hymn-page .kidung-local-nav a > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.hymn-page .kidung-local-nav small {
+  position: absolute;
+  inset-inline-end: 3px;
+  top: 3px;
+  margin: 0;
+  font-size: 0.625rem;
+  line-height: 16px;
+  padding-inline: 3px;
+}
+.hymn-page .kidung-nav-indicator {
+  border-radius: 11px;
+  background: var(--blue-soft);
+}
+.hymn-page.kidung-tool-page > .kidung-local-nav {
+  width: min(100%, 480px);
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
+  border-radius: 16px;
+  background: var(--surface);
+  container-type: inline-size;
+  container-name: kidung-nav;
+}
+.hymn-page.kidung-tool-page .kidung-local-nav-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 3px;
+  width: 100%;
+}
+.hymn-page.kidung-tool-page .kidung-local-nav a {
+  width: 100%;
+  min-width: 44px;
+}
+@media (max-width: 1100px) {
+  .hymn-page.kidung-tool-page .kidung-local-nav a > span {
+    display: none;
+  }
+  @container kidung-nav (min-width: 24em) {
+    .hymn-page.kidung-tool-page .kidung-local-nav a > span {
+      display: block;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+@media (min-width: 1101px) {
+  .hymn-page.kidung-tool-page > .kidung-local-nav {
+    width: 326px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root.is-reader-transition[data-reader-transition="page"]
+    .kidung-local-nav-links {
+    view-transition-name: kidung-navigation;
+  }
+  :root.is-reader-transition[data-reader-transition="page"]
+    .kidung-nav-indicator {
+    view-transition-name: kidung-selection;
+  }
+  ::view-transition-group(kidung-navigation),
+  ::view-transition-group(kidung-selection) {
+    animation-duration: 260ms;
+    animation-timing-function: var(--ease-out);
+  }
+  ::view-transition-old(kidung-navigation),
+  ::view-transition-new(kidung-navigation) {
+    animation: none;
+  }
+}

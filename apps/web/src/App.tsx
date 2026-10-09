@@ -61,7 +61,7 @@ import {
   type ShellTheme,
 } from "./settings.js";
 import { Icon } from "./icons.js";
-import { AccountAvatar } from "./account-avatar.js";
+import { AccountMenu } from "./account-menu.js";
 import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -441,13 +441,7 @@ function Header({
             },
           ]}
         />
-        <Link
-          className="account-button"
-          to="/lainnya"
-          aria-label={translate(locale, "shell.account")}
-        >
-          <AccountAvatar />
-        </Link>
+        <AccountMenu locale={locale} />
       </div>
     </header>
   );

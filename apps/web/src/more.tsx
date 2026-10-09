@@ -39,6 +39,7 @@ import {
   signInEgysWithGoogle,
   requestEgysProvider,
   signOutEgys,
+  subscribeEgysProfile,
   trackEgysProfileSeen,
   type EgysSessionTrace,
 } from "./egys.js";
@@ -61,6 +62,7 @@ import {
 import { Select } from "./select.js";
 import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { Icon, type IconName } from "./icons.js";
+import { AccountAvatar } from "./account-avatar.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { createPlatformServices } from "./platform.js";
 import { clearAppData } from "./app-data.js";
@@ -370,6 +372,14 @@ export function MorePage({
   );
   const [accountLoading, setAccountLoading] = useState(
     () => !readCachedEgysProfile(),
+  );
+  useEffect(
+    () =>
+      subscribeEgysProfile(() => {
+        setAccountProfile(readCachedEgysProfile());
+        setEgysSession(readEgysSessionTrace());
+      }),
+    [],
   );
   const [egysUnavailable, setEgysUnavailable] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
@@ -1021,11 +1031,10 @@ export function MorePage({
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
-          open
         >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
-              <Icon name="person" size={20} />
+              <AccountAvatar />
             </span>
             <h2 className="more-account-title">
               {accountProfile
@@ -1054,6 +1063,9 @@ export function MorePage({
             ) : accountProfile ? (
               <div className="egys-member-badge">
                 <div className="member-badge-header">
+                  <span className="profile-card-avatar">
+                    <AccountAvatar />
+                  </span>
                   <span className="member-church-title">
                     Gereja Yesus Sejati
                   </span>

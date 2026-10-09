@@ -25,6 +25,7 @@ export function createPdfDocumentCache<T>(
     task: Task<T>;
     readers: number;
     listeners: Set<(progress: Progress) => void>;
+    progress?: Progress;
     timer?: ReturnType<typeof setTimeout>;
     destroyed?: boolean;
   };
@@ -68,15 +69,20 @@ export function createPdfDocumentCache<T>(
         const task = createTask(src, data);
         entry = { task, readers: 0, listeners: new Set() };
         const current = entry;
-        task.onProgress = (progress) =>
+        task.onProgress = (progress) => {
+          current.progress = progress;
           current.listeners.forEach((listener) => listener(progress));
+        };
         entries.set(key, entry);
         void task.promise.catch(() => destroy(key, current));
       }
       const current = entry;
       clearTimeout(current.timer);
       current.readers++;
-      if (onProgress) current.listeners.add(onProgress);
+      if (onProgress) {
+        current.listeners.add(onProgress);
+        if (current.progress) onProgress(current.progress);
+      }
       let released = false;
       return {
         promise: current.task.promise,

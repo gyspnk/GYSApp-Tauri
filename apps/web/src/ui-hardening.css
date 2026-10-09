@@ -198,3 +198,9 @@ button.text-button {
   min-height: 44px;
   padding: 8px 12px;
 }
+/* Keep the app viewport anchored at both scroll boundaries. Native Android
+   also disables WebView edge stretch; this covers browser/WebView scrolling. */
+html,
+body {
+  overscroll-behavior: none;
+}

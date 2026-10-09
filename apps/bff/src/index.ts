@@ -216,6 +216,9 @@ function egysSessionCookieOptions(c: AppContext) {
     path: "/",
     sameSite: secureCookie(c) ? ("None" as const) : ("Lax" as const),
     secure: secureCookie(c),
+    // Keep the BFF session available when browsers block unpartitioned
+    // third-party cookies. The partition remains bound to the app's site.
+    ...(secureCookie(c) ? { partitioned: true } : {}),
   };
 }
 

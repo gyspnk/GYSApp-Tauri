@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { recordDiagnostic } from "./diagnostics.js";
 import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
 
 type Challenge = {
@@ -48,6 +49,7 @@ export function EgysWhatsApp({
     }, LOGIN_TIMEOUT_MS);
     const fail = (message: string) => {
       if (controller.signal.aborted) return;
+      recordDiagnostic("warn", "egys.whatsapp", new Error(message));
       setError(message);
       stop();
     };
@@ -83,15 +85,18 @@ export function EgysWhatsApp({
           fail("Tab ditutup. Tekan WhatsApp lagi.");
           return;
         }
-        try {
-          messagingWindow.location.replace(
-            `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(data.content)}`,
-          );
-          launched = true;
-        } catch {
-          fail("WhatsApp tidak dapat dibuka. Tekan WhatsApp lagi.");
-          return;
-        }
+        const launchWhatsApp = () => {
+          if (launched || controller.signal.aborted) return;
+          try {
+            messagingWindow.location.replace(
+              `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(data.content)}`,
+            );
+            launched = true;
+          } catch {
+            fail("WhatsApp tidak dapat dibuka. Tekan WhatsApp lagi.");
+            return;
+          }
+        };
         const connect = () => {
           if (controller.signal.aborted || confirming) return;
           clearTimeout(reconnect);
@@ -101,6 +106,8 @@ export function EgysWhatsApp({
           current.onopen = () => {
             if (controller.signal.aborted || socket !== current) return;
             retries = 0;
+            // Subscribe first so a quickly sent message cannot beat tracking.
+            launchWhatsApp();
             setStatus("Menunggu pesan WhatsApp");
           };
           current.onerror = () => {
@@ -109,6 +116,11 @@ export function EgysWhatsApp({
           current.onclose = () => {
             if (controller.signal.aborted || confirming || socket !== current)
               return;
+            recordDiagnostic(
+              "warn",
+              "egys.whatsapp.tracking",
+              new Error(`Tracking disconnected (${current.readyState})`),
+            );
             setStatus("Menghubungkan kembali WhatsApp");
             reconnect = window.setTimeout(
               connect,

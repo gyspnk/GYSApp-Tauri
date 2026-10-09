@@ -1,6 +1,8 @@
 import { useAnimatedIndicator } from "./animated-indicator.js";
 import { useSyncExternalStore } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { navigateSmooth } from "./route-transitions.js";
+import { preloadRoute } from "./route-preload.js";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
@@ -14,6 +16,7 @@ export function KidungLocalNav({
   active: KidungSection;
   locale: Locale;
 }) {
+  const navigate = useNavigate();
   const motion = useAnimatedIndicator(active, 'a[aria-current="page"]');
   const playlist = useSyncExternalStore(
     subscribeMidiPlaylist,
@@ -63,6 +66,29 @@ export function KidungLocalNav({
             title={link.label}
             key={link.id}
             to={link.to}
+            onPointerEnter={() => {
+              void preloadRoute(link.to).catch(() => undefined);
+            }}
+            onFocus={() => {
+              void preloadRoute(link.to).catch(() => undefined);
+            }}
+            onClick={(event) => {
+              if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+              )
+                return;
+              if (active === link.id) {
+                event.preventDefault();
+                return;
+              }
+              event.preventDefault();
+              void navigateSmooth(navigate, link.to);
+            }}
             aria-current={active === link.id ? "page" : undefined}
           >
             <Icon name={link.icon} size={15} />

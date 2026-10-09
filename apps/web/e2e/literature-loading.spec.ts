@@ -249,3 +249,49 @@ test("cached Home literature stays visible while the snapshot refreshes", async 
   release();
   await expect(page.locator(".home-literature-shelf")).toBeVisible();
 });
+
+for (const width of [390, 768, 1440]) {
+  test(`PDF stall notice respects byte inactivity and stays compact at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 720 });
+    await page.clock.install();
+    await prepare(page, "buku");
+    let release!: () => void;
+    let requested = false;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/v1/content/pdf?**", async (route) => {
+      requested = true;
+      await gate;
+      await route.fulfill({
+        body: documentBytes(4),
+        contentType: "application/pdf",
+      });
+    });
+    await page.goto("/GYSApp-Tauri/literatur/buku?read=1");
+    await expect.poll(() => requested).toBe(true);
+    const progress = page.locator('.pdf-loading [role="progressbar"]');
+    await expect(progress).toBeVisible();
+    await expect(progress).not.toHaveAttribute("aria-valuenow");
+    await page.clock.fastForward(10_000);
+    await expect(page.locator(".pdf-loading-slow")).toHaveCount(0);
+    await page.clock.fastForward(3_000);
+    const notice = page.locator(".pdf-loading-slow");
+    await expect(notice).toBeVisible();
+    const bounds = await notice.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    await page.clock.runFor(250);
+    await page.screenshot({
+      path: testInfo.outputPath(`pdf-loading-${width}.png`),
+    });
+    release();
+    await page.clock.resume();
+    await expect(
+      page.locator('canvas[data-pdf-rendered="true"]').first(),
+    ).toBeVisible();
+    await expect(notice).toHaveCount(0);
+  });
+}

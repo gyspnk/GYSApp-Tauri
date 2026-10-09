@@ -28,6 +28,8 @@ export type IconName =
   | "arrow"
   | "book"
   | "search"
+  | "logout"
+  | "externalLink"
   | "person"
   | "columns"
   | "copy"
@@ -171,6 +173,8 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <path d="m21 21-4.35-4.35" />
     </>
   ),
+  logout: <path d="M9 4H4v16h5M9 12h12M16 7l5 5-5 5" />,
+  externalLink: <path d="M14 3h7v7M21 3 10 14M10 3H3v18h18v-7" />,
   person: (
     <>
       <circle cx="12" cy="7" r="4" />

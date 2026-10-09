@@ -4147,3 +4147,91 @@ body:has(.hymn-detail-page.is-text-viewer)
 .pdf-layout-options[data-menu-open] {
   transform-origin: bottom right;
 }
+
+/* Quiet, compact stalled-download notice; it never obscures the reader controls. */
+.pdf-loading-slow {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+  color: var(--muted);
+  text-align: start;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  animation: pdf-notice-in 180ms var(--ease-out) both;
+}
+.pdf-loading-slow > svg {
+  margin-top: 2px;
+  color: var(--blue);
+}
+.pdf-loading-slow p {
+  margin: 0;
+}
+.pdf-loading-actions {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pdf-loading-actions :is(button, a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: inherit;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdf-loading-slow {
+    animation: none;
+  }
+}
+
+@keyframes pdf-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A loading logo/label must define the card height instead of flex shrinking
+   inside the old image-less hero geometry. */
+.home-grid .verse-panel:has(.sauh-skeleton) {
+  height: auto;
+  min-height: 200px;
+}
+.home-grid .sauh-card-content:has(.sauh-skeleton) {
+  height: auto;
+  min-height: 176px;
+  flex: 1 0 auto;
+  margin: 0;
+  padding: 12px;
+  justify-content: center;
+}
+.home-grid .sauh-skeleton {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto;
+  min-height: 144px;
+  flex: 1 0 auto;
+  padding: 12px 0;
+}
+.loading-progress-label {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}

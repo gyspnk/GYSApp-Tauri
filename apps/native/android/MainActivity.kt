@@ -3,6 +3,7 @@ package id.or.gys.app
 import android.os.Bundle
 import android.content.res.Configuration
 import android.webkit.WebView
+import android.webkit.CookieManager
 import kotlin.math.roundToInt
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -15,6 +16,12 @@ class MainActivity : TauriActivity() {
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
     appWebView = webView
+    // BFF auth uses HttpOnly SameSite=None cookies on workers.dev; the native
+    // tauri.localhost origin is cross-site. Android disables these by default.
+    CookieManager.getInstance().setAcceptCookie(true)
+    CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+    // Android's edge stretch moves the whole viewport at scroll boundaries.
+    webView.overScrollMode = View.OVER_SCROLL_NEVER
     updateTextScale()
   }
 

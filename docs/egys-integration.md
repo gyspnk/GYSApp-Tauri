@@ -53,12 +53,12 @@ sequenceDiagram
 The account screen keeps all three provider buttons in one row. WhatsApp
 starts an inline login request with `POST /api/v1/auth/egys/whatsapp/start`;
 the BFF calls live v1 `/login/whatsapp-login-request` and binds the reference
-to a ten-minute HttpOnly cookie. The user sends the prepared message through
+to a ten-minute HttpOnly cookie. HTTPS reference and session cookies are Secure, SameSite=None, and Partitioned so browser third-party-cookie restrictions do not discard the app-bound session. Android WebViews explicitly accept cookies for the cross-site BFF authentication path. The user sends the prepared message through
 WhatsApp; the official `wss://e.gys.or.id/wa-login/:ref` channel tracks the
 message and supplies an internal confirmation code automatically. There is no
 OTP input or manual confirmation in the application. The provider click reserves
 a messaging tab synchronously to avoid popup blocking; it navigates directly to
-the prepared WhatsApp send URL immediately after the start response, without waiting for a tracking readiness event or a second send button. Both camelCase and lowercase response fields are supported. The button shows a small trailing countdown, with a 120-second deadline covering setup and verification. Expiry aborts requests, closes tracking and removes the badge; a pending blank tab is closed. Clicking WhatsApp again replaces the attempt, resets the countdown and opens a new prepared message. Old socket events and profile results are ignored after cancellation. Because the service rejects
+the prepared WhatsApp send URL once the tracking WebSocket opens. This subscribes before the user can send a message, without adding a second send button. Both camelCase and lowercase response fields are supported. The button shows a small trailing countdown, with a 120-second deadline covering setup and verification. Expiry aborts requests, closes tracking and removes the badge; a pending blank tab is closed. Clicking WhatsApp again replaces the attempt, resets the countdown and opens a new prepared message. Old socket events and profile results are ignored after cancellation. Because the service rejects
 foreign browser origins, the Worker relays `/api/v1/auth/egys/whatsapp/track`
 to the official WebSocket using its required origin. The relay requires an
 allowed client origin and the HttpOnly reference cookie; clients cannot choose
@@ -146,3 +146,12 @@ review and explicit product decision; it must not silently re-enable the draft
 browser flow.
 
 The Worker deployment workflow also runs when backend files change on main. Deploying Pages alone does not update provider endpoints; a missing `/api/v1/auth/egys/whatsapp/track` route requires deploying the current Worker with the existing protected credentials.
+
+### Compact account surfaces
+
+The Settings profile disclosure starts closed. The header avatar opens an animated
+account popover with name, branch/email, account settings, e-GYS portal and sign-out.
+Google authentication runs directly inside the popover; WhatsApp/Apple use the
+existing provider row at `/lainnya?section=account`. This deep link reveals the
+profile once per navigation and still permits manual collapse. Profile change
+events update the header and Settings together.

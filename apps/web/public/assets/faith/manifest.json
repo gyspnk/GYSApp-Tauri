@@ -18,20 +18,47 @@
     {
       "file": "Alkitab.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Alkitab.pdf",
-      "bytes": 2399756,
-      "sha256": "f936a1984d18c597c25b09f48d77f7a3d7cf4e7419d58ef2bfac5ef68506524e"
+      "bytes": 1739245,
+      "sha256": "e01940f5bedcf8d49f3cc6187959099d25682aa5e32f765f43235436a099caad",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 2399756,
+        "sourceSha256": "f936a1984d18c597c25b09f48d77f7a3d7cf4e7419d58ef2bfac5ef68506524e",
+        "verifiedPages": 21,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Gereja.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Gereja.pdf",
-      "bytes": 1886854,
-      "sha256": "4bafc16473302cdb6c3660a501a6bd601b3849d18da0c7fe057ef417e8e042b2"
+      "bytes": 1863330,
+      "sha256": "a631caa23803e2f9daec814bd120f422563ea28d853f8e4f10480a81592dc524",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 1886854,
+        "sourceSha256": "4bafc16473302cdb6c3660a501a6bd601b3849d18da0c7fe057ef417e8e042b2",
+        "verifiedPages": 22,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Baptisan.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Baptisan.pdf",
-      "bytes": 1888390,
-      "sha256": "dee605541cd89b6f709caf82ec89a82bff2dd8aec7df128eb495f42484b69400"
+      "bytes": 1866068,
+      "sha256": "374286ccd3cb5afb64fee696833eb5e206cc3576cfd33bc606c341dadfed2a5e",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 1888390,
+        "sourceSha256": "dee605541cd89b6f709caf82ec89a82bff2dd8aec7df128eb495f42484b69400",
+        "verifiedPages": 20,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Roh-Kudus.pdf",
@@ -42,8 +69,17 @@
     {
       "file": "Basuh-Kaki.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Basuh-Kaki.pdf",
-      "bytes": 1650740,
-      "sha256": "971ecad20b0c7161a2c0c4f44f9faf272f0a63b0182e38e22d46d993124e7027"
+      "bytes": 1629516,
+      "sha256": "7da383e0851911d09b2dcb75a35fee944a5c6926a6913d8a5c0789ffc6fe7f82",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 1650740,
+        "sourceSha256": "971ecad20b0c7161a2c0c4f44f9faf272f0a63b0182e38e22d46d993124e7027",
+        "verifiedPages": 18,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Perjamuan-Kudus.pdf",
@@ -60,14 +96,32 @@
     {
       "file": "Keselamatan.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Keselamatan.pdf",
-      "bytes": 1984411,
-      "sha256": "2fd137556924df8d2c5cc7413d4ce38c606ad3fb35964efb5d0b73281b1b1d38"
+      "bytes": 1912713,
+      "sha256": "53dc4b0e5bdabde490f58028b5582234d1dd96bde355b7bc55f9c89547982877",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 1984411,
+        "sourceSha256": "2fd137556924df8d2c5cc7413d4ce38c606ad3fb35964efb5d0b73281b1b1d38",
+        "verifiedPages": 26,
+        "pixelComparisonDpi": 144
+      }
     },
     {
       "file": "Kedatangan-Kristus.pdf",
       "source": "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Kedatangan-Kristus.pdf",
-      "bytes": 1926138,
-      "sha256": "9143f0d00fa3b2ef585f55fb556e64f79086b9664796ddbe22147f7737457c65"
+      "bytes": 1821970,
+      "sha256": "86e39ae6615672291da32b2a5cf1f0239354a558626d6fe85abbdec6f8b08e22",
+      "optimization": {
+        "operation": "lossless-object-deduplication",
+        "tool": "PyMuPDF",
+        "version": "1.26.6",
+        "sourceBytes": 1926138,
+        "sourceSha256": "9143f0d00fa3b2ef585f55fb556e64f79086b9664796ddbe22147f7737457c65",
+        "verifiedPages": 20,
+        "pixelComparisonDpi": 144
+      }
     }
   ]
 }

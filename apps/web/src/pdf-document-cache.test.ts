@@ -137,3 +137,15 @@ it("retry preserves a shared chord lease and leaves unrelated cached documents i
   retry.release();
   cache.clearIdle();
 });
+
+it("replays current byte progress when a reader joins an existing download", () => {
+  const { cache, tasks } = setup();
+  const preload = cache.acquire("preloaded.pdf");
+  tasks[0]!.onProgress?.({ loaded: 700, total: 1000 });
+  const listener = vi.fn();
+  const viewer = cache.acquire("preloaded.pdf", undefined, listener);
+  expect(listener).toHaveBeenCalledWith({ loaded: 700, total: 1000 });
+  viewer.release();
+  preload.release();
+  cache.clearIdle();
+});
