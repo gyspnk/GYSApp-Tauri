@@ -1,0 +1,43 @@
+{
+  "sourceCommit": "114f28e5f81923db3473fed9775d7cc490b8aeb7",
+  "releaseTag": "v0.1.0-preview.20261009",
+  "artifacts": [
+    {
+      "file": "GYSApp-0.1.0-android-arm64-preview.apk",
+      "bytes": 36270303,
+      "previousReleaseBytes": 36274675,
+      "savedBytes": 4372,
+      "sha256": "bd152235822b608febe02be9a632019a7a7b86c0418260d3e704b952525909e9"
+    },
+    {
+      "file": "GYSApp_0.1.0_x64-setup.exe",
+      "bytes": 33513644,
+      "previousReleaseBytes": 33521682,
+      "savedBytes": 8038,
+      "sha256": "264cda59b00d061e5848b840c151cecfe0a0bb5382f19f83ebe931fc219b0ec4"
+    }
+  ],
+  "browser": {
+    "samples": 30,
+    "medianMilliseconds": 373.7,
+    "p95Milliseconds": 385.3
+  },
+  "losslessPdfSourceBytesSaved": 903447,
+  "androidArm64": true,
+  "androidSignatureVerified": true,
+  "android16KiBElfAndZipAlignmentVerified": true,
+  "windowsSigned": false,
+  "published": true,
+  "android17RuntimeQaPassed": true,
+  "windowsNativeRuntimeQaCompleted": false,
+  "checks": {
+    "ciRun": 37875240588,
+    "androidRun": 37875257828,
+    "windowsRun": 37875260212,
+    "releaseRun": 37875240608,
+    "browserPassedFirstAttempt": 741,
+    "browserPassedOnRetry": 1,
+    "browserSkipped": 3,
+    "transportFocusedRepetitionsPassed": 10
+  }
+}
