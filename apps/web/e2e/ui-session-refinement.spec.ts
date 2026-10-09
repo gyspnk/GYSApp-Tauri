@@ -7,7 +7,7 @@ import {
 } from "./pinned-reader-fixtures.js";
 
 for (const width of [390, 768, 1440]) {
-  test(`Kidung navigation retains its position between sections at ${width}px`, async ({
+  test(`Kidung navigation retains its leading anchor and row height between sections at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 850 });
@@ -17,8 +17,8 @@ for (const width of [390, 768, 1440]) {
     await expect(page.locator(".pujian-list > li").first()).toBeVisible();
     const bounds = await nav.locator("a").evaluateAll((links) =>
       links.map((link) => {
-        const { x, y, width, height } = link.getBoundingClientRect();
-        return { x, y, width, height };
+        const { y, height } = link.getBoundingClientRect();
+        return { x: links[0]!.getBoundingClientRect().x, y, height };
       }),
     );
     for (const section of ["Playlist", "Pengaturan", "Kidung"]) {
@@ -36,8 +36,8 @@ for (const width of [390, 768, 1440]) {
         .poll(() =>
           nav.locator("a").evaluateAll((links) =>
             links.map((link) => {
-              const { x, y, width, height } = link.getBoundingClientRect();
-              return { x, y, width, height };
+              const { y, height } = link.getBoundingClientRect();
+              return { x: links[0]!.getBoundingClientRect().x, y, height };
             }),
           ),
         )

@@ -2,9 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
-test("More keeps login visible and other settings collapsed until requested", async ({
-  page,
-}) => {
+test("More keeps all settings collapsed until requested", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/lainnya");
 
@@ -23,12 +21,6 @@ test("More keeps login visible and other settings collapsed until requested", as
     await rows.nth(index).locator(":scope > summary").scrollIntoViewIfNeeded();
     await expect(rows.nth(index).locator(":scope > summary")).toBeInViewport();
   }
-  await expect(page.locator(".more-setting-section[open]")).toHaveAttribute(
-    "data-setting",
-    "account",
-  );
-  await expect(page.locator(".account-card")).toBeVisible();
-  await rows.nth(0).locator(":scope > summary").click();
   await expect(page.locator(".more-setting-section[open]")).toHaveCount(0);
   await expect(page.locator(".account-card")).toBeHidden();
   await expect(page.getByRole("combobox", { name: "Pilih Tema" })).toBeHidden();

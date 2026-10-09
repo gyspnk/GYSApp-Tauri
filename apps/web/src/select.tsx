@@ -81,6 +81,17 @@ export function Select<T extends string | number>({
       const trigger = triggerRef.current;
       const menu = menuRef.current;
       if (!trigger || !menu) return;
+      menu.style.left = "";
+      menu.style.right = "";
+      const menuBox = menu.getBoundingClientRect();
+      const offset = Math.max(
+        8 - menuBox.left,
+        Math.min(0, window.innerWidth - 8 - menuBox.right),
+      );
+      if (offset !== 0) {
+        menu.style.left = `${offset}px`;
+        menu.style.right = "auto";
+      }
       const triggerBox = trigger.getBoundingClientRect();
       const menuHeight = Math.min(280, menu.scrollHeight);
       const spaceBelow = window.innerHeight - triggerBox.bottom - 7;

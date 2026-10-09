@@ -272,12 +272,12 @@ for (const width of [390, 768, 1440]) {
     });
     await page.goto("/GYSApp-Tauri/literatur/buku?read=1");
     await expect.poll(() => requested).toBe(true);
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000));
     const progress = page.locator('.pdf-loading [role="progressbar"]');
     await expect(progress).toBeVisible();
     await expect(progress).not.toHaveAttribute("aria-valuenow");
-    await page.clock.fastForward(10_000);
     await expect(page.locator(".pdf-loading-slow")).toHaveCount(0);
-    await page.clock.fastForward(3_000);
+    await page.clock.fastForward(13_000);
     const notice = page.locator(".pdf-loading-slow");
     await expect(notice).toBeVisible();
     const bounds = await notice.boundingBox();

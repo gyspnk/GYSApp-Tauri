@@ -42,6 +42,7 @@ test("Back after switching hymns returns directly to the hymn list", async ({
   await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
   await expect(page).not.toHaveURL(first);
   await page.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await expect(page).toHaveURL(/hymn-003/);
   await page.goBack();
   await expect(page).toHaveURL(/\/kidung$/);
   await expect(page.locator(".pujian-title").first()).toBeVisible();

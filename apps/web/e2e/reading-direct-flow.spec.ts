@@ -261,9 +261,9 @@ test("slow literature PDF exposes a bounded retry without changing its source", 
   const reader = page.locator(".pdf-reader");
   await expect(reader).toHaveAttribute("data-pdf-loading-phase", "loading");
   await expect(reader).toHaveAttribute("data-pdf-loading-phase", "slow", {
-    timeout: 6_000,
+    timeout: 16_000,
   });
-  await expect(page.getByText(/PDF masih memuat lebih lama/i)).toBeVisible();
+  await expect(page.getByText(/Unduhan belum berlanjut/i)).toBeVisible();
   await expect(page.getByRole("link", { name: "PDF resmi ↗" })).toBeVisible();
   await expect
     .poll(() =>
