@@ -64,8 +64,9 @@ the previous audible session.
 
 ## Kidung
 
-The catalog keeps category, Kidung/Playlist/Pengaturan and text/score controls
-in one compact field. Categories include **Semua** and **KR**; use the number/
+The catalog keeps category, Kidung/Playlist and text/score controls
+in one compact field. Kidung preferences live in **Lainnya → Kidung**, alongside
+the main app settings; old Kidung settings links redirect there. Categories include **Semua** and **KR**; use the number/
 title search to find a hymn, including lettered A/B variants. A row opens the
 current presentation. Each new app launch/reload defaults to text; switching
 to score is remembered across navigation within that runtime only. Explicit
@@ -103,17 +104,27 @@ the player does not force playback; press Play to authorize audio. TimGM is
 packaged by default, so no separate SoundFont install is needed for ordinary
 playback. GeneralUser is an optional download in data/asset settings.
 
-The expanded player provides previous/play-pause/next, seek/time, instrument,
-key, transpose and icon reset. The utility menu holds volume, mute, stop, tempo,
-loop/queue and related secondary controls. All 128 General MIDI programs are
+The expanded player keeps previous/play-pause/next, seek/time and tempo in at most
+two rows. Its utility menu provides instrument, key, transpose and icon reset. The visible BPM button opens a 30–220 BPM tempo
+slider without opening the utility menu. Touch scrubbing previews the value and
+applies it on release; keyboard arrows adjust it immediately, and Escape closes
+the control. The utility menu holds volume, mute, stop, loop/queue and related
+secondary controls. All 128 General MIDI programs are
 selectable from the active SoundFont; piano (program 0) is the default. MIDI-file
 program and bank changes are ignored. Installing/removing GeneralUser refreshes
 the active bank. Playback requires SoundFont synthesis; an unavailable bank or
 synthesis worker reports an error. Tempo is 30–220 BPM; transpose is −24 to +24
-semitones. Preferences persist. A seek drag previews its position and commits
+semitones. Initial playback waits for PDF tempo/key detection (76 BPM when the
+PDF is unavailable). Each new song starts with its PDF tempo and key policy;
+manual tempo/transposition changes apply to the current song. In **Lainnya → Kidung**,
+**Avoid flats/sharps** selects the nearest natural tonic; when off, playback
+uses the original PDF pitch. Changing this toggle replaces a manual transpose.
+Other preferences persist. A seek drag previews its position and commits
 one audio update on release.
 
-Minimize leaves a small animated half-circle attached to the left or right
+Minimize uses a 200 ms exit and 480 ms entrance, releasing the space reserved
+for lyrics after the dock finishes appearing. Rapid toggles cancel pending motion;
+reduced motion remains immediate. Minimize leaves a small animated half-circle attached to the left or right
 screen edge. Tap to restore full controls. Drag it to move vertically or to the
 opposite edge; keyboard arrows move it, and Home/End reach the safe bounds.
 Hover/focus reveals more of the tab. The equalizer animates while playback is
@@ -143,7 +154,10 @@ load failure until its backend deployment is updated.
 All internal PDFs support:
 
 - Initial maximal fit and centered placement; 100% means the fitted page size.
-- Smooth Ctrl+wheel/pinch zoom up to 800%, with sharp visible-region detail.
+- Smooth Ctrl+wheel zoom up to 800%; pinch follows the fingers once per frame
+  without snapping on release. PDF bitmap/detail replacement waits until the
+  gesture finishes, including pauses with fingers still down. Painted pages stay
+  visible during resolution refresh; the initial reveal does not replay on zoom.
 - Mouse/pen drag and single-touch pan after enlargement.
 - Compact page navigation, fullscreen, source/download and contextual tools.
 - Version-aware saved location; invalid saved pages are clamped safely.

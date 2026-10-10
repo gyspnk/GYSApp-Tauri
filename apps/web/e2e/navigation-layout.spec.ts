@@ -947,7 +947,7 @@ test.describe("responsive reader navigation", () => {
       .toBeGreaterThan(initialSize);
   });
 
-  test("Kidung local navigation keeps playlist and settings in the same space", async ({
+  test("Kidung local navigation keeps only playlist and catalog", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -960,10 +960,7 @@ test.describe("responsive reader navigation", () => {
     await expect(
       localNav.getByRole("link", { name: "Playlist" }),
     ).toHaveAttribute("aria-current", "page");
-    await localNav.getByRole("link", { name: "Pengaturan" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Pengaturan", exact: true }),
-    ).toBeVisible();
+    await expect(localNav.getByRole("link")).toHaveCount(2);
     await localNav.getByRole("link", { name: "Kidung" }).click();
     await expect(page.locator(".pujian-list > li").first()).toBeVisible({
       timeout: 15_000,

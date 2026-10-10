@@ -12,7 +12,7 @@ const instruments = GM_INSTRUMENTS.map((label, value) => ({
   icon: "musicNote" as const,
 }));
 
-/** Musical controls stay available without opening the utility menu. */
+/** Musical controls share the utility panel to keep the dock compact. */
 export function MidiMusicControls({
   locale,
   keyIndex,

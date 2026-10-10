@@ -69,7 +69,9 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
   ).toBeVisible();
   await expectTouchTarget(page.locator(".pujian-title").first(), 40);
   await expectFullyInViewport(
-    page.getByRole("link", { name: "Pengaturan", exact: true }),
+    page
+      .locator(".kidung-local-nav")
+      .getByRole("link", { name: "Playlist", exact: true }),
     phoneWidth,
   );
   await expectFullyInViewport(

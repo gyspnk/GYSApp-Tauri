@@ -42,21 +42,24 @@ test("catalog and settings stay usable without loading the hymn reader", async (
     "aria-pressed",
     "true",
   );
-  await page.locator('.kidung-local-nav a[href$="section=settings"]').click();
+  await page.locator('a.nav-item[href$="/lainnya"]').click();
+  await page.locator('[data-setting="hymns"] > summary').click();
   await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
   expect(readerRequests).toEqual([]);
 });
 
-test("Kidung settings open without fetching song data", async ({ page }) => {
+test("Kidung settings open without fetching the catalog or song assets", async ({
+  page,
+}) => {
   const dataRequests: string[] = [];
   page.on("request", (request) => {
-    if (/\/offline\/(hymn-catalog|music-lock)\.json/.test(request.url()))
+    if (
+      /\/offline\/hymn-catalog\.json|\.(?:mid|pdf)(?:\?|$)/i.test(request.url())
+    )
       dataRequests.push(request.url());
   });
   await page.goto("/GYSApp-Tauri/kidung?section=settings");
   await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
-  await expect(
-    page.locator(".kidung-local-nav a[aria-current=page]"),
-  ).toHaveAttribute("href", /section=settings/);
+  await expect(page).toHaveURL(/\/lainnya\?section=kidung$/);
   expect(dataRequests).toEqual([]);
 });

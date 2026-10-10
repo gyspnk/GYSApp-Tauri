@@ -415,6 +415,12 @@ export class BrowserMidiPlayer {
     const keepPlaying = options.keepPlaying && this.crossfadeMs > 0;
     if (!keepPlaying) this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
+    // Manual tempo belongs to the current song; each new PDF-backed song
+    // starts at its own detected tempo, including after a cold launch.
+    if (options.tempo !== undefined && this.state.songId !== songId)
+      this.tempoOverride = false;
+    if (options.transpose !== undefined && this.state.songId !== songId)
+      this.transposeOverride = false;
     const tempo = this.tempoOverride
       ? this.state.tempo
       : options.tempo !== undefined
@@ -545,8 +551,11 @@ export class BrowserMidiPlayer {
   public getCurrentTranspose(): number {
     return this.state.transpose;
   }
-  public hasTransposePreference(): boolean {
-    return this.transposeOverride;
+  public hasTransposePreference(songId?: string): boolean {
+    return (
+      this.transposeOverride &&
+      (songId === undefined || songId === this.state.songId)
+    );
   }
   public getCurrentInstrument(): number {
     return this.state.instrument;
@@ -729,6 +738,13 @@ export class BrowserMidiPlayer {
       status: wasPlaying ? "paused" : wasLoading ? "ready" : this.state.status,
     });
     if (wasPlaying || wasLoading) await this.play();
+  }
+
+  /** Selecting the PDF key policy replaces a previous manual transpose. */
+  public async applyTransposeDefault(transpose: number): Promise<void> {
+    this.transposeOverride = false;
+    this.persistPreferences();
+    await this.setTranspose(transpose, { userOverride: false });
   }
 
   public async setInstrument(instrument: number): Promise<void> {

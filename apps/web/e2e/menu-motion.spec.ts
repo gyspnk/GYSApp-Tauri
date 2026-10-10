@@ -195,10 +195,14 @@ for (const width of [390, 1440]) {
     await page.route(/^https:\/\//, (route) => route.abort());
     await page.setViewportSize({ width, height: 650 });
     await page.goto("/GYSApp-Tauri/kidung?section=settings");
+    await page.locator('[data-setting="appearance"] > summary').click();
     const root = page
-      .locator('[aria-labelledby="kidung-appearance-heading"] .control-select')
-      .last();
-    const trigger = root.getByRole("combobox", { name: "Tema", exact: true });
+      .locator('[data-setting="appearance"] .control-select')
+      .first();
+    const trigger = root.getByRole("combobox", {
+      name: "Pilih Tema",
+      exact: true,
+    });
     const menu = root.locator(".control-select-menu");
     await trigger.click();
     await expect

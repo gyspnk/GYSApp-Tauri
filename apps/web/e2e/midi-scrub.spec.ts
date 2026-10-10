@@ -7,7 +7,7 @@ for (const viewport of [
   { width: 667, height: 375 },
   { width: 1440, height: 800 },
 ]) {
-  test(`MIDI scrubbing commits once and inline tempo stays usable at ${viewport.width}px`, async ({
+  test(`MIDI scrubbing commits once and visible tempo stays usable at ${viewport.width}px`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -65,7 +65,6 @@ for (const viewport of [
     await seek.press("ArrowRight");
     await expect.poll(async () => (await starts()).length).toBe(before + 2);
 
-    await player.locator(".media-advanced-summary").click();
     await player.locator(".media-tempo-toggle").click();
     const tempo = player.locator(".media-tempo-popover input");
     await tempo.scrollIntoViewIfNeeded();
@@ -87,7 +86,7 @@ for (const viewport of [
       `${value + 1} BPM`,
     );
     const settings = (await player
-      .locator(".media-advanced-panel")
+      .locator(".media-tempo-popover")
       .boundingBox())!;
     expect(settings.y).toBeGreaterThanOrEqual(0);
     expect(settings.y + settings.height).toBeLessThanOrEqual(

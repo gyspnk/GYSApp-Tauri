@@ -78,6 +78,7 @@ for (const width of [320, 390, 768, 1440]) {
             (await player.boundingBox())!.y,
         )
         .toBeLessThanOrEqual(0);
+      await player.locator(".media-advanced-summary").click();
       const advanced = player.locator(".media-advanced-controls");
       const transpose = player.locator(".media-transpose");
       const key = player.getByRole("combobox", {
@@ -137,6 +138,8 @@ for (const width of [320, 390, 768, 1440]) {
       await key.click();
       await key.press("Escape");
       await expect(key).toHaveAttribute("aria-expanded", "false");
+      await expect(advanced).toHaveAttribute("open", "");
+      await key.press("Escape");
       await expect(advanced).not.toHaveAttribute("open", "");
       await player.locator(".media-advanced-summary").click();
       await key.press("Escape");

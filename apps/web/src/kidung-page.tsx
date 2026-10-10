@@ -6,24 +6,16 @@ import {
 } from "./hymn-payloads.js";
 import { useEffect, useState } from "react";
 import { preloadable } from "./preloadable.js";
-import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
 import { getDistributedAssetManager } from "./distributed-asset-manager.js";
-import type { ShellTheme } from "./settings.js";
 import {
   type CatalogState,
   parseCatalog,
   parseHymnMetadata,
 } from "./kidung-shared.js";
-
-type KidungShellContext = {
-  locale?: Locale;
-  theme?: ShellTheme;
-  setLocale?: (locale: Locale) => void;
-  setTheme?: (theme: ShellTheme) => void;
-};
 
 const HymnCatalog = preloadable(() =>
   import("./kidung-catalog.js").then((module) => ({
@@ -38,12 +30,6 @@ const HymnPlaylistPage = preloadable(() =>
     default: module.HymnPlaylistPage,
   })),
 );
-const HymnSettingsPage = preloadable(() =>
-  import("./kidung-settings-page.js").then((module) => ({
-    default: module.HymnSettingsPage,
-  })),
-);
-
 export const preloadKidungCatalog = HymnCatalog.preload;
 export function preloadKidungView(path: string): Promise<unknown> {
   if (path.split(/[?#]/)[0]?.startsWith("/kidung/"))
@@ -51,9 +37,7 @@ export function preloadKidungView(path: string): Promise<unknown> {
   const section = new URLSearchParams(path.split("?")[1]).get("section");
   return section === "playlist"
     ? HymnPlaylistPage.preload()
-    : section === "settings"
-      ? HymnSettingsPage.preload()
-      : HymnCatalog.preload();
+    : HymnCatalog.preload();
 }
 
 // Retain the last successful catalog across reader/list navigation. Installed
@@ -180,19 +164,9 @@ function KidungCatalogDataPage({
 export function KidungPage({ locale }: { locale: Locale }) {
   const { songId } = useParams();
   const [searchParams] = useSearchParams();
-  const shellContext = useOutletContext<KidungShellContext | undefined>();
   const section = searchParams.get("section");
   if (!songId && section === "settings")
-    return (
-      <HymnSettingsPage
-        locale={locale}
-        theme={shellContext?.theme ?? "light"}
-        {...(shellContext?.setLocale
-          ? { setLocale: shellContext.setLocale }
-          : {})}
-        {...(shellContext?.setTheme ? { setTheme: shellContext.setTheme } : {})}
-      />
-    );
+    return <Navigate to="/lainnya?section=kidung" replace />;
 
   return songId ? (
     <KidungReaderDataPage locale={locale} songId={songId} />

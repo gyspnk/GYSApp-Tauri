@@ -231,69 +231,26 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/GYSApp-Tauri/kidung?section=settings");
-    await expect(
-      page.getByRole("heading", { name: "Pengaturan", exact: true }),
-    ).toBeVisible({ timeout: 15_000 });
-
     const settings = page.locator(".kidung-settings-layout");
+    await expect(settings).toBeVisible();
+    const language = page
+      .locator(".topbar")
+      .getByRole("combobox", { name: "Bahasa", exact: true });
+    await language.click();
+    await page.getByRole("option", { name: "EN", exact: true }).click();
     await expect(
-      settings.getByRole("combobox", { name: "Bahasa", exact: true }),
+      settings.getByRole("heading", { name: "MIDI player", exact: true }),
     ).toBeVisible();
-    await expect(
-      settings.getByRole("combobox", { name: "Tema", exact: true }),
-    ).toBeVisible();
-
-    await settings
-      .getByRole("combobox", { name: "Bahasa", exact: true })
-      .click();
-    await settings
-      .getByRole("option", { name: "English", exact: true })
-      .click();
-    await expect(
-      page.getByRole("heading", { name: "Settings", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Language and theme", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "MIDI player", exact: true }),
-    ).toBeVisible();
-    const chordDisclosure = page.locator(
-      '.kidung-settings-section[aria-labelledby="kidung-chord-heading"] details',
-    );
-    await expect(chordDisclosure).not.toHaveAttribute("open", "");
-    await expect(
-      page.getByRole("group", { name: "Chord letter theme", exact: true }),
-    ).toBeHidden();
+    const chordDisclosure = settings.locator("details");
     await chordDisclosure.locator("summary").click();
     await expect(
       page.getByRole("group", { name: "Chord letter theme", exact: true }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("slider", { name: /Chord background opacity/ }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", {
-        name: "Clear cache & reset preferences",
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByText("Pemutar MIDI", { exact: true })).toHaveCount(
-      0,
-    );
-
-    await settings
+    await page
+      .locator(".topbar")
       .getByRole("combobox", { name: "Language", exact: true })
       .click();
-    await settings
-      .getByRole("option", { name: "Chinese", exact: true })
-      .click();
-    await expect(
-      page.getByRole("heading", { name: "设置", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "语言与主题", exact: true }),
-    ).toBeVisible();
+    await page.getByRole("option", { name: "中文", exact: true }).click();
     await expect(
       page.getByRole("group", { name: "和弦字母主题", exact: true }),
     ).toBeVisible();

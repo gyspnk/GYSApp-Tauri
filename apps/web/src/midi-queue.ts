@@ -51,19 +51,11 @@ async function loadItem(
 ): Promise<void> {
   // The shell installs queue coordination before any audio is requested.
   // Load PDF-derived song defaults only with playback, alongside the catalog.
-  const [
-    catalog,
-    { getHymnPdfMeta, resolveHymnMidiDefaults, warmHymnPdfMeta },
-  ] = await Promise.all([loadCatalog(), import("./hymn-pdf-meta.js")]);
+  const [catalog, { resolveHymnMidiDefaults, warmHymnPdfMeta }] =
+    await Promise.all([loadCatalog(), import("./hymn-pdf-meta.js")]);
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
   const songMetaPromise = warmHymnPdfMeta(hymn);
-  const songMeta = getHymnPdfMeta(hymn.id);
-  const naturalChords = readNaturalChordPreference();
-  const midiDefaults = resolveHymnMidiDefaults(songMeta, naturalChords);
-  const transpose = midiPlayer.hasTransposePreference()
-    ? midiPlayer.settingsSnapshot().transpose
-    : midiDefaults.transpose;
   const lock = await loadMusicLock();
   const ref = findMusicAsset(lock, "midi", hymn.midiPath);
   if (!ref) throw new Error(`MIDI ${hymn.title} tidak tersedia`);
@@ -77,6 +69,12 @@ async function loadItem(
     sourceHash: ref.sha256,
     bytes,
   });
+  const songMeta = await songMetaPromise;
+  const naturalChords = readNaturalChordPreference();
+  const midiDefaults = resolveHymnMidiDefaults(songMeta, naturalChords);
+  const transpose = midiPlayer.hasTransposePreference(hymn.id)
+    ? midiPlayer.settingsSnapshot().transpose
+    : midiDefaults.transpose;
   // keepPlaying: A/B crossfade keeps the previous buffer audible while the
   // next buffer renders (gyschordweb _deckA/_deckB gapless behaviour).
   const previousWasPlaying =
@@ -95,27 +93,6 @@ async function loadItem(
     },
   );
   if (!loadedIntoPlayer) return;
-  if (!songMeta) {
-    void songMetaPromise.then((resolvedMeta) => {
-      const current = midiPlayer.snapshot();
-      if (current.songId !== hymn.id) return;
-      if (resolvedMeta.tempo !== undefined)
-        void midiPlayer
-          .setTempo(resolvedMeta.tempo, { userOverride: false })
-          .catch(() => undefined);
-      const resolvedTranspose = resolveHymnMidiDefaults(
-        resolvedMeta,
-        naturalChords,
-      ).transpose;
-      if (
-        !midiPlayer.hasTransposePreference() &&
-        current.transpose === midiDefaults.transpose
-      )
-        void midiPlayer
-          .setTranspose(resolvedTranspose, { userOverride: false })
-          .catch(() => undefined);
-    });
-  }
   await midiPlayer.play();
 }
 

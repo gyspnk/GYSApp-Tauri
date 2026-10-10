@@ -342,6 +342,18 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   const surfaceRef = useRef<HTMLElement>(null);
   const transitionRect = useRef<DOMRect | undefined>(undefined);
   const animationRef = useRef<Animation | undefined>(undefined);
+  const dockTransitionRun = useRef(0);
+  const dockEntrance = useRef(false);
+  const pendingDock = useRef<boolean | undefined>(undefined);
+  const [dockSettled, setDockSettled] = useState(true);
+  useEffect(
+    () => () => {
+      dockTransitionRun.current++;
+      animationRef.current?.cancel();
+      document.documentElement.style.removeProperty("--reader-media-space");
+    },
+    [],
+  );
   const [minimized, setMinimized] = useState(
     () =>
       readPreference("gys-media-minimized") === "1" ||
@@ -503,13 +515,51 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   };
   const [sidebarBounds, setSidebarBounds] = useState({ left: 12, width: 232 });
   const toggleDock = () => {
-    transitionRect.current = surfaceRef.current?.getBoundingClientRect();
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    const next = !(pendingDock.current ?? minimized);
+    const run = ++dockTransitionRun.current;
+    const opacity = getComputedStyle(surface).opacity;
     animationRef.current?.cancel();
-    setMinimized((value) => !value);
+    pendingDock.current = next;
+    if (
+      next === minimized ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      pendingDock.current = undefined;
+      dockEntrance.current = false;
+      setDockSettled(true);
+      setMinimized(next);
+      return;
+    }
+    setDockSettled(false);
+    const exit = surface.animate([{ opacity }, { opacity: 0 }], {
+      duration: 200,
+      easing: "ease-in",
+      fill: "forwards",
+    });
+    exit.id = "gys-midi-dock-exit";
+    animationRef.current = exit;
+    void exit.finished
+      .then(() => {
+        if (run !== dockTransitionRun.current) return;
+        pendingDock.current = undefined;
+        dockEntrance.current = true;
+        transitionRect.current = surface.getBoundingClientRect();
+        setMinimized(next);
+      })
+      .catch(() => undefined);
   };
   useEffect(() => {
-    const syncPreference = () =>
+    const syncPreference = () => {
+      dockTransitionRun.current++;
+      pendingDock.current = undefined;
+      dockEntrance.current = false;
+      setDockSettled(true);
+      transitionRect.current = undefined;
+      animationRef.current?.cancel();
       setMinimized(readPreference("gys-media-minimized") === "1");
+    };
     window.addEventListener("gys-media-preference-change", syncPreference);
     return () =>
       window.removeEventListener("gys-media-preference-change", syncPreference);
@@ -519,7 +569,11 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   }, [minimized]);
   useLayoutEffect(() => {
     const surface = surfaceRef.current;
-    if (!surface || minimized || !isKidungMedia) return;
+    if (!surface || !isKidungMedia || minimized) {
+      if (!isKidungMedia || dockSettled)
+        document.documentElement.style.removeProperty("--reader-media-space");
+      return;
+    }
     const measure = (entries?: ResizeObserverEntry[]) =>
       document.documentElement.style.setProperty(
         "--reader-media-space",
@@ -530,9 +584,8 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     measure();
     return () => {
       observer.disconnect();
-      document.documentElement.style.removeProperty("--reader-media-space");
     };
-  }, [minimized, isKidungMedia]);
+  }, [minimized, isKidungMedia, dockSettled]);
   useLayoutEffect(() => {
     const anchor = document.querySelector<HTMLElement>(".sidebar-media-anchor");
     if (!anchor) return;
@@ -553,24 +606,37 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     const surface = surfaceRef.current;
     const previous = transitionRect.current;
     transitionRect.current = undefined;
-    if (
-      !surface ||
-      !previous ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
+    if (!surface || !previous) return;
+    animationRef.current?.cancel();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      dockEntrance.current = false;
+      setDockSettled(true);
       return;
+    }
     const next = surface.getBoundingClientRect();
-    animationRef.current = surface.animate(
+    const entering = dockEntrance.current;
+    dockEntrance.current = false;
+    const animation = surface.animate(
       [
         {
-          transform: `translate(${previous.left - next.left}px, ${previous.top - next.top}px)`,
-          opacity: 0.15,
+          transform: entering
+            ? "translateY(8px)"
+            : `translate(${previous.left - next.left}px, ${previous.top - next.top}px)`,
+          opacity: entering ? 0 : 1,
         },
         { transform: "none", opacity: 1 },
       ],
-      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" },
+      { duration: entering ? 480 : 340, easing: "cubic-bezier(.2,.8,.2,1)" },
     );
-    return () => animationRef.current?.cancel();
+    animation.id = entering ? "gys-midi-dock-enter" : "gys-midi-edge-move";
+    animationRef.current = animation;
+    const run = dockTransitionRun.current;
+    void animation.finished
+      .then(() => {
+        if (run === dockTransitionRun.current) setDockSettled(true);
+      })
+      .catch(() => undefined);
+    return () => animation.cancel();
   }, [minimized, edge, hasMediaSession]);
   useEffect(() => {
     mediaSessionBridge.setSpeechActive(speechActive);
@@ -752,6 +818,54 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       () => undefined,
     );
   };
+  const midiTempoControls = (
+    <div className="media-tempo-control">
+      <button
+        type="button"
+        className="media-tempo-toggle"
+        onClick={() => setTempoOpen((open) => !open)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setTempoOpen(false);
+        }}
+        aria-expanded={tempoOpen}
+        aria-label={translate(locale, "media.tempoControl")}
+        title={translate(locale, "media.tempoControl")}
+      >
+        <Icon name="metronome" size={14} />
+        <strong>{snapshot.tempo}</strong>
+        <small>BPM</small>
+      </button>
+      {tempoPresent && (
+        <div
+          ref={tempoRef}
+          className="media-tempo-popover"
+          data-menu-open={tempoOpen}
+          inert={!tempoOpen}
+          aria-hidden={!tempoOpen}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setTempoOpen(false);
+              event.currentTarget.parentElement
+                ?.querySelector<HTMLButtonElement>("button")
+                ?.focus();
+            }
+          }}
+          role="group"
+          aria-label={translate(locale, "media.tempoDialog")}
+        >
+          <input
+            aria-label={translate(locale, "media.tempoInput")}
+            type="range"
+            min="30"
+            max="220"
+            step="1"
+            {...tempoRange}
+          />
+          <span>{tempoRange.value} BPM</span>
+        </div>
+      )}
+    </div>
+  );
   const midiAdvancedControls = (
     <>
       <div className="media-midi-actions">
@@ -796,41 +910,6 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           <Icon name="menuBook" size={16} />
         </button>
       </div>
-      <div className="media-tempo-control">
-        <button
-          type="button"
-          className="media-tempo-toggle"
-          onClick={() => setTempoOpen((open) => !open)}
-          aria-expanded={tempoOpen}
-          aria-label={translate(locale, "media.tempoControl")}
-          title={translate(locale, "media.tempoControl")}
-        >
-          <Icon name="tune" size={14} />
-          <strong>{snapshot.tempo}</strong>
-          <small>BPM</small>
-        </button>
-      </div>
-      {tempoPresent && (
-        <div
-          ref={tempoRef}
-          className="media-tempo-popover"
-          data-menu-open={tempoOpen}
-          inert={!tempoOpen}
-          aria-hidden={!tempoOpen}
-          role="group"
-          aria-label={translate(locale, "media.tempoDialog")}
-        >
-          <input
-            aria-label={translate(locale, "media.tempoInput")}
-            type="range"
-            min="30"
-            max="220"
-            step="1"
-            {...tempoRange}
-          />
-          <span>{tempoRange.value} BPM</span>
-        </div>
-      )}
     </>
   );
   const secondaryControls = (
@@ -1094,15 +1173,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                   </div>
                 )}
                 <MidiSeek locale={locale} times />
-                {isKidungMedia && (
-                  <MidiMusicControls
-                    locale={locale}
-                    keyIndex={keyIndex}
-                    accidental={keyAccidental}
-                    transpose={snapshot.transpose}
-                    instrument={snapshot.instrument}
-                  />
-                )}
+                {isKidungMedia && midiTempoControls}
                 {isKidungMedia ? (
                   <details className="media-advanced-controls">
                     <summary className="media-advanced-summary">
@@ -1116,6 +1187,16 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                       </small>
                     </summary>
                     <div className="media-advanced-panel">
+                      {isKidungMedia && (
+                        <MidiMusicControls
+                          locale={locale}
+                          keyIndex={keyIndex}
+                          accidental={keyAccidental}
+                          transpose={snapshot.transpose}
+                          instrument={snapshot.instrument}
+                        />
+                      )}
+
                       <div className="media-utility-controls">
                         <label className="media-volume-control">
                           <span>{translate(locale, "media.volumeShort")}</span>
@@ -1169,7 +1250,10 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                     </div>
                   </details>
                 ) : (
-                  midiAdvancedControls
+                  <>
+                    {midiAdvancedControls}
+                    {midiTempoControls}
+                  </>
                 )}
               </>
             )}

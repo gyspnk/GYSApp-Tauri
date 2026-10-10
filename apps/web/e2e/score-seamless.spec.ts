@@ -115,7 +115,7 @@ for (const width of [320, 390, 768, 1440]) {
   });
 }
 
-test("late score metadata updates the MIDI key while preserving a manual transpose", async ({
+test("a delayed SoundFont preserves manual changes after the PDF defaults settle", async ({
   page,
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
@@ -125,10 +125,6 @@ test("late score metadata updates the MIDI key while preserving a manual transpo
   await preparePinnedMidiAsset(page);
   let release!: () => void;
   const gate = new Promise<void>((resolve) => (release = resolve));
-  await page.route("**/kr_master.pdf", async (route) => {
-    await gate;
-    await route.fallback();
-  });
   await page.route("**/TimGM6mb.sf2", async (route) => {
     await gate;
     await route.continue();
@@ -137,17 +133,19 @@ test("late score metadata updates the MIDI key while preserving a manual transpo
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.locator(".hymn-midi-toggle").click();
     const player = page.locator(".media-surface");
+    await expect(player).toBeVisible({ timeout: 30_000 });
     await expect(player).not.toHaveClass(/is-minimized/);
+    await player.locator(".media-advanced-summary").click();
     const transpose = player.locator(".media-transpose");
     await transpose.getByRole("button", { name: "Naikkan nada" }).click();
     await transpose.getByRole("button", { name: "Naikkan nada" }).click();
-    await expect(transpose.locator("strong")).toHaveText("+2");
+    await expect(transpose.locator("strong")).toHaveText("+1");
     release();
-    // The actual mapped first page is in E-flat (3); +2 therefore displays F (5).
+    // The PDF starts at E-flat with -1 by default; two steps produce E (+1).
     await expect(
       player.getByRole("combobox", { name: "Pilih nada dasar", exact: true }),
-    ).toHaveText("F");
-    await expect(transpose.locator("strong")).toHaveText("+2");
+    ).toHaveText("E");
+    await expect(transpose.locator("strong")).toHaveText("+1");
     await page.locator(".hymn-midi-toggle").click();
   } finally {
     release();

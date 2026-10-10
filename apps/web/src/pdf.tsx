@@ -81,6 +81,17 @@ function scrollToPdfPage(
   });
 }
 
+// Retain the visible bitmap when an earlier raster task finishes during a new zoom.
+async function waitForZoomIdle(
+  stage: HTMLElement | null,
+  disposed: () => boolean,
+) {
+  while (stage?.dataset.pdfZooming === "true" && !disposed())
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
+}
+
 export type PdfChordOverlayMarker = {
   noteIdx: number;
   chord: string;
@@ -250,6 +261,7 @@ function VerticalPdfPage({
   const [nearViewport, setNearViewport] = useState(() =>
     shouldRenderPdfPage(pageNumber, false),
   );
+  const [hasPainted, setHasPainted] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     pageNumber <= 2 ? "loading" : "idle",
   );
@@ -339,7 +351,8 @@ function VerticalPdfPage({
           viewport,
         });
         return renderTask.promise
-          .then(() => {
+          .then(async () => {
+            await waitForZoomIdle(stage, () => disposed);
             if (!disposed) {
               canvas.width = buffer.width;
               canvas.height = buffer.height;
@@ -351,6 +364,7 @@ function VerticalPdfPage({
                 zoomController.current?.percent,
               );
               canvas.getContext("2d")!.drawImage(buffer, 0, 0);
+              setHasPainted(true);
               canvas.dataset.pdfPageNumber = String(pageNumber);
               zoomController.current?.refresh();
               // Recheck the active page after a placeholder acquires its final
@@ -395,6 +409,7 @@ function VerticalPdfPage({
   useEffect(() => {
     if (!nearViewport && canvasRef.current) {
       canvasRef.current.width = canvasRef.current.height = 0;
+      setHasPainted(false);
     }
   }, [nearViewport]);
 
@@ -412,7 +427,8 @@ function VerticalPdfPage({
       >
         <canvas
           ref={canvasRef}
-          aria-hidden={status !== "ready"}
+          aria-hidden={!hasPainted || status === "error"}
+          data-pdf-painted={hasPainted && nearViewport ? "true" : "false"}
           data-pdf-rendered={
             status === "ready" && nearViewport ? "true" : "false"
           }
@@ -437,7 +453,7 @@ function VerticalPdfPage({
             : {})}
         />
       </div>
-      {status !== "ready" && (
+      {(status === "error" || !hasPainted) && (
         <span className="pdf-page-placeholder" aria-live="polite">
           {status === "error"
             ? translate(locale, "pdf.pageError")
@@ -509,13 +525,6 @@ export function PdfReader({
   const [viewportRevision, setViewportRevision] = useState(0);
   const [pageDraft, setPageDraft] = useState("");
   const toolsId = useId();
-  useEffect(() => {
-    const timer = window.setTimeout(
-      () => setRenderZoomPercent(zoomPercent),
-      100,
-    );
-    return () => window.clearTimeout(timer);
-  }, [zoomPercent]);
   useEffect(() => {
     setPageDraft(String(page - pageStart + 1));
   }, [page, pageStart]);
@@ -647,19 +656,30 @@ export function PdfReader({
     { document: PDFDocumentProxy; page: number } | undefined
   >(undefined);
   const zoomController = useRef<PdfZoomController | null>(null);
+  const controllerZoomEcho = useRef<number | undefined>(undefined);
   const hydratingLayout = useRef(true);
   useEffect(() => {
     const stage = pdfStageRef.current;
     if (!stage) return;
-    const controller = installPdfZoom(stage, setZoomPercent);
+    const controller = installPdfZoom(stage, (next) => {
+      controllerZoomEcho.current = next;
+      setZoomPercent(next);
+    });
     zoomController.current = controller;
+    const settled = () => setRenderZoomPercent(controller.percent);
+    stage.addEventListener("pdfzoomend", settled);
     return () => {
+      stage.removeEventListener("pdfzoomend", settled);
       controller.dispose();
       zoomController.current = null;
     };
   }, []);
   useEffect(() => {
-    zoomController.current?.zoomTo(zoomPercent);
+    const echoed = controllerZoomEcho.current === zoomPercent;
+    controllerZoomEcho.current = undefined;
+    // Gesture updates already own geometry. Feeding them back through zoomTo
+    // would enqueue a second frame or restart zoom when a pan interrupts it.
+    if (!echoed) zoomController.current?.zoomTo(zoomPercent);
   }, [zoomPercent]);
   const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(
     null,
@@ -1083,6 +1103,7 @@ export function PdfReader({
       }),
     )
       .then(async (paintedPages) => {
+        await waitForZoomIdle(stageBox, () => disposed);
         if (disposed) return;
         const commit = () => {
           if (disposed) return;
@@ -1837,6 +1858,7 @@ export function PdfReader({
                 ref={canvasRef}
                 aria-label={translate(locale, "pdf.pageAria", { page })}
                 aria-hidden={!hasPainted || status === "error"}
+                data-pdf-painted={hasPainted ? "true" : "false"}
                 data-pdf-rendered={status === "ready" ? "true" : "false"}
               />
               {documentProxy && (
@@ -1870,6 +1892,13 @@ export function PdfReader({
                   status === "error" ||
                   effectiveLayout !== "two" ||
                   page + 1 >= pageStart + total
+                }
+                data-pdf-painted={
+                  hasPainted &&
+                  effectiveLayout === "two" &&
+                  page + 1 < pageStart + total
+                    ? "true"
+                    : "false"
                 }
                 data-pdf-rendered={
                   status === "ready" &&

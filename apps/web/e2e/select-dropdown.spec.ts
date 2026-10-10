@@ -9,11 +9,17 @@ test("opening a listbox under a stationary cursor preserves the keyboard selecti
   for (const width of [320, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/GYSApp-Tauri/kidung?section=settings");
+    await page.locator('[data-setting="appearance"] > summary').click();
     const theme = page
-      .locator('[aria-labelledby="kidung-appearance-heading"] .control-select')
-      .last();
-    const trigger = theme.getByRole("combobox", { name: "Tema", exact: true });
+      .locator('[data-setting="appearance"] .control-select')
+      .first();
+    const trigger = theme.getByRole("combobox", {
+      name: "Pilih Tema",
+      exact: true,
+    });
     await trigger.focus();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("Enter");
     await page.keyboard.press("Enter");
     const options = theme.getByRole("option");
     const last = (await options.last().boundingBox())!;
@@ -22,15 +28,18 @@ test("opening a listbox under a stationary cursor preserves the keyboard selecti
     await page.keyboard.press("Enter");
     await expect(options.first()).toHaveClass(/is-active/);
     await page.keyboard.press("ArrowDown");
-    await expect(options.nth(1)).toHaveClass(/is-active/);
+    await page.keyboard.press("ArrowDown");
+    await expect(options.nth(2)).toHaveClass(/is-active/);
     await page.keyboard.press("Enter");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await expect(trigger).toBeFocused();
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.locator('[data-setting="appearance"] > summary').click();
     // Start the next viewport from the same first option.
     await trigger.focus();
     await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   }

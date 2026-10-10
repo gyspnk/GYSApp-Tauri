@@ -435,7 +435,7 @@ export function HymnDetail({
     setFitFontSize(readHymnTypography(songId).fontSize);
     // gyschordweb originalPdfKey: a detected PDF key is the display base;
     // natural-chord preference seeds a default -1 transpose for black keys.
-    const hasTransposePreference = midiPlayer.hasTransposePreference();
+    const hasTransposePreference = midiPlayer.hasTransposePreference(songId);
     userSetTransposeRef.current = hasTransposePreference;
     const meta = getHymnPdfMeta(songId);
     const natural = readNaturalChordPreference();
@@ -1434,16 +1434,6 @@ export function HymnDetail({
     setMidiStatus("loading");
     const songMetaPromise = warmHymnPdfMeta(item);
     try {
-      const songMeta = getHymnPdfMeta(item.id);
-      const midiDefaults = resolveHymnMidiDefaults(
-        songMeta,
-        readNaturalChordPreference(),
-      );
-      const targetTranspose = userSetTransposeRef.current
-        ? transposeRef.current
-        : midiPlayer.hasTransposePreference()
-          ? midiPlayer.settingsSnapshot().transpose
-          : midiDefaults.transpose;
       // Opening the player needs MIDI bytes, not a rendered soundfont buffer.
       // Playback/preloading prepares audio independently after the dock is ready.
       const rawUrl = `https://raw.githubusercontent.com/gyspnk/gyschordweb/${musicLock.sourceCommit}/docs/${ref.path}`;
@@ -1456,6 +1446,17 @@ export function HymnDetail({
         bytes,
       });
       if (midiLoadGeneration.current !== thisGeneration) return;
+      const songMeta = await songMetaPromise;
+      if (midiLoadGeneration.current !== thisGeneration) return;
+      const midiDefaults = resolveHymnMidiDefaults(
+        songMeta,
+        readNaturalChordPreference(),
+      );
+      const targetTranspose = userSetTransposeRef.current
+        ? transposeRef.current
+        : midiPlayer.hasTransposePreference(songId)
+          ? midiPlayer.settingsSnapshot().transpose
+          : midiDefaults.transpose;
       await midiPlayer.resumeContext();
       const loadedIntoPlayer = await midiPlayer.load(
         item.id,
@@ -1471,42 +1472,15 @@ export function HymnDetail({
       );
       if (midiLoadGeneration.current !== thisGeneration) return;
       if (!loadedIntoPlayer) return;
-      if (!songMeta) {
-        void songMetaPromise.then((resolvedMeta) => {
-          if (midiLoadGeneration.current !== thisGeneration) return;
-          if (resolvedMeta.tempo !== undefined) {
-            void midiPlayer
-              .setTempo(resolvedMeta.tempo, { userOverride: false })
-              .catch(() => undefined);
-          }
-          const resolvedTranspose = resolveHymnMidiDefaults(
-            resolvedMeta,
-            readNaturalChordPreference(),
-          ).transpose;
-          if (
-            resolvedMeta.keySemitone !== undefined &&
-            resolvedMeta.keySemitone !== null
-          ) {
-            setSourceKeyIndex(resolvedMeta.keySemitone);
-            keyInitialized.current = true;
-          }
-          const hasOverride =
-            userSetTransposeRef.current || midiPlayer.hasTransposePreference();
-          const currentTranspose = hasOverride
-            ? midiPlayer.settingsSnapshot().transpose
-            : resolvedTranspose;
-          userSetTransposeRef.current = hasOverride;
-          transposeRef.current = currentTranspose;
-          setTranspose(currentTranspose);
-          if (!hasOverride) {
-            void midiPlayer
-              .setTranspose(currentTranspose, { userOverride: false })
-              .catch(() => undefined);
-          }
-          const sourceKey = resolvedMeta.keySemitone ?? sourceKeyIndex;
-          setKeyIndex((((sourceKey + currentTranspose) % 12) + 12) % 12);
-        });
+      if (songMeta.keySemitone != null) {
+        setSourceKeyIndex(songMeta.keySemitone);
+        keyInitialized.current = true;
+        setKeyIndex(
+          (((songMeta.keySemitone + targetTranspose) % 12) + 12) % 12,
+        );
       }
+      transposeRef.current = targetTranspose;
+      setTranspose(targetTranspose);
       const queueIndex = getMidiPlaylist().items.findIndex(
         (entry) => entry.songId === item.id,
       );
@@ -1635,7 +1609,7 @@ export function HymnDetail({
                   className={`hymn-action-icon${chordStatus === "loading" ? " is-loading" : ""}`}
                   aria-hidden="true"
                 >
-                  <Icon name="music" size={17} />
+                  <Icon name="chord" size={17} />
                 </span>
                 <span className="hymn-action-label">
                   {chordStatus === "loading"
@@ -1671,10 +1645,7 @@ export function HymnDetail({
                   className={`hymn-action-icon${midiStatus === "loading" ? " is-loading" : ""}`}
                   aria-hidden="true"
                 >
-                  <Icon
-                    name={midiPlayerEnabled ? "cross" : "music"}
-                    size={17}
-                  />
+                  <Icon name="piano" size={17} />
                 </span>
                 <span className="hymn-action-label">
                   {translate(
@@ -1763,7 +1734,7 @@ export function HymnDetail({
                   >
                     <span className="hymn-action-icon" aria-hidden="true">
                       <Icon
-                        name={autoScrollActive ? "pause" : "play"}
+                        name={autoScrollActive ? "pause" : "south"}
                         size={16}
                       />
                     </span>
@@ -1803,7 +1774,7 @@ export function HymnDetail({
                 aria-label={translate(locale, "kidung.fullscreenLyrics")}
               >
                 <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name="menuBook" size={17} />
+                  <Icon name="fullscreen" size={17} />
                 </span>
                 <span className="hymn-action-label">
                   {translate(locale, "kidung.fullscreenLyrics")}

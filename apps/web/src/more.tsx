@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useEffect,
   useRef,
   useState,
@@ -335,6 +337,12 @@ async function saveBackup(envelope: unknown): Promise<boolean> {
   });
 }
 
+const HymnSettingsPanel = lazy(() =>
+  import("./kidung-settings-page.js").then((module) => ({
+    default: module.HymnSettingsPanel,
+  })),
+);
+
 export function MorePage({
   locale,
   theme,
@@ -349,6 +357,9 @@ export function MorePage({
   const nativeShell = isTauriShell();
   const initialSection = new URLSearchParams(window.location.search).get(
     "section",
+  );
+  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(
+    initialSection === "kidung",
   );
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
@@ -1368,7 +1379,15 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="hymns">
+        <details
+          className="more-setting-section"
+          data-setting="hymns"
+          open={hymnSettingsOpen}
+          onToggle={(event) => {
+            if (event.target === event.currentTarget)
+              setHymnSettingsOpen(event.currentTarget.open);
+          }}
+        >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="music" size={20} />
@@ -1377,6 +1396,18 @@ export function MorePage({
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
+            {hymnSettingsOpen && (
+              <Suspense
+                fallback={
+                  <p role="status">
+                    {translate(locale, "kidung.catalogLoading")}
+                  </p>
+                }
+              >
+                <HymnSettingsPanel locale={locale} />
+              </Suspense>
+            )}
+
             <div className="more-secondary-grid">
               <button
                 className="more-card more-action"

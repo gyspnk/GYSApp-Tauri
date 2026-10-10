@@ -22,8 +22,10 @@ test("prepared catalog opens previously unvisited Kidung sections offline", asyn
     .toBe(true);
   await context.setOffline(true);
 
-  await page.locator('.kidung-local-nav a[href$="section=settings"]').click();
+  await page.locator('a.nav-item[href$="/lainnya"]').click();
+  await page.locator('[data-setting="hymns"] > summary').click();
   await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
+  await page.locator('a.nav-item[href$="/kidung"]').click();
   await page.locator('.kidung-local-nav a[href$="section=playlist"]').click();
   await expect(page.locator(".kidung-tool-heading h1")).toHaveText("Playlist");
   await page.locator('.kidung-local-nav a[href$="/kidung"]').click();

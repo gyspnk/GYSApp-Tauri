@@ -97,7 +97,7 @@ for (const width of [390, 768, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-  test(`MIDI dock animation starts at its previous rectangle at ${width}px`, async ({
+  test(`MIDI dock exit retains its previous rectangle at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 800 });
@@ -114,7 +114,7 @@ for (const width of [390, 1440]) {
       const animate = element.animate.bind(element);
       element.animate = (keyframes, options) => {
         const animation = animate(keyframes, options);
-        if (animation.effect?.getTiming().duration === 320) animation.pause();
+        if (animation.effect?.getTiming().duration === 200) animation.pause();
         return animation;
       };
     });
@@ -124,7 +124,7 @@ for (const width of [390, 1440]) {
       const start = await player.evaluate(async (element) => {
         const animation = element
           .getAnimations()
-          .find((a) => a.effect?.getTiming().duration === 320);
+          .find((a) => a.effect?.getTiming().duration === 200);
         if (!animation) throw new Error("Dock transition animation is missing");
         animation.pause();
         animation.currentTime = 0;
@@ -134,7 +134,13 @@ for (const width of [390, 1440]) {
         animation.finish();
         return result;
       });
-      for (const key of ["x", "y"] as const) {
+      await expect(player).toHaveClass(
+        label === "Perbesar pemutar" ? /^(?!.*is-minimized)/ : /is-minimized/,
+      );
+      await expect
+        .poll(() => player.evaluate((el) => getComputedStyle(el).opacity))
+        .toBe("1");
+      for (const key of ["x", "y", "width", "height"] as const) {
         expect(Math.abs(start[key] - before[key]), key).toBeLessThanOrEqual(1);
       }
     }
@@ -196,6 +202,7 @@ test.describe("touch edge tab", () => {
       .toBe(346);
     await tab.tap();
     await expect(player).not.toHaveClass(/is-minimized/);
+    await player.locator(".media-advanced-summary").tap();
     await expect(
       player.getByRole("combobox", { name: "Instrumen MIDI", exact: true }),
     ).toBeVisible();

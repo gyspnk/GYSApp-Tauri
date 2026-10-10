@@ -16,6 +16,7 @@ for (const width of [320, 390, 768, 1440]) {
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.locator(".hymn-midi-toggle").click();
     const player = page.locator(".media-surface.is-kidung-media");
+    await expect(player).toBeVisible({ timeout: 30_000 });
     const instrument = player.getByRole("combobox", {
       name: "Instrumen MIDI",
       exact: true,
@@ -28,6 +29,58 @@ for (const width of [320, 390, 768, 1440]) {
     await expect(
       player.locator(".media-advanced-controls"),
     ).not.toHaveAttribute("open", "");
+    const tempo = player.getByRole("button", {
+      name: "Atur tempo MIDI",
+      exact: true,
+    });
+    await expect(tempo).toBeVisible();
+    await tempo.click();
+    const tempoInput = player.getByRole("slider", {
+      name: "Tempo MIDI",
+      exact: true,
+    });
+    await expect(tempoInput).toBeVisible();
+    const tempoBox = (await player
+      .locator(".media-tempo-popover")
+      .boundingBox())!;
+    expect(tempoBox.x).toBeGreaterThanOrEqual(0);
+    expect(tempoBox.x + tempoBox.width).toBeLessThanOrEqual(width);
+
+    await tempoInput.press("Home");
+    await expect(tempoInput).toHaveValue("30");
+    await tempoInput.press("End");
+    await expect(tempoInput).toHaveValue("220");
+    await tempoInput.press("ArrowLeft");
+    await expect(tempo).toContainText("219");
+    await tempo.press("Escape");
+    await expect(tempoInput).not.toBeVisible();
+    const toolbar = page.locator(".hymn-text-toolbar");
+    const chordIcon = await toolbar
+      .locator(".detail-actions button")
+      .first()
+      .locator("svg")
+      .innerHTML();
+    const midiIcon = await toolbar.locator(".hymn-midi-toggle svg").innerHTML();
+    expect(chordIcon).not.toBe(midiIcon);
+    await page.locator(".hymn-more-actions-summary").click();
+    const menu = page.locator(".hymn-more-actions-panel");
+    await expect(menu).toBeVisible();
+    if (width < 700) {
+      const menuBox = (await menu.boundingBox())!;
+      expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(
+        (await player.boundingBox())!.y,
+      );
+    }
+    expect(
+      await menu.evaluate(
+        (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length,
+      ),
+    ).toBe(6);
+    if ([390, 768, 1440].includes(width)) {
+      await page.screenshot({ path: `/tmp/gys-kidung-simple-${width}.png` });
+    }
+    await page.locator(".hymn-more-actions-summary").click();
+    await player.locator(".media-advanced-summary").click();
     await expect(instrument).toBeVisible();
     await expect(key).toHaveText("D");
     await expect(transpose.locator("strong")).toHaveText("-1");
@@ -53,7 +106,9 @@ for (const width of [320, 390, 768, 1440]) {
     await expect(transpose.locator("strong")).toHaveText("-2");
     await expect(key).toHaveText("C♯");
     for (const control of await player
-      .locator(".media-music-controls button")
+      .locator(
+        ".media-music-controls .control-select-trigger, .media-music-controls .media-transpose > button",
+      )
       .all()) {
       if (!(await control.isVisible())) continue;
       const box = (await control.boundingBox())!;
@@ -70,7 +125,8 @@ for (const width of [320, 390, 768, 1440]) {
       expect(box.height).toBe(width < 680 ? 40 : 36);
     }
     const row = (await player.locator(".media-music-controls").boundingBox())!;
-    expect(row.height).toBeLessThan(50);
+    expect(row.height).toBeLessThan(110);
+    await player.locator(".media-advanced-summary").click();
     expect((await player.boundingBox())!.height).toBeLessThan(
       width < 680 ? 164 : 110,
     );
@@ -107,6 +163,7 @@ for (const width of [320, 390, 768, 1440]) {
     await player
       .getByRole("button", { name: "Perbesar pemutar", exact: true })
       .click();
+    await player.locator(".media-advanced-summary").click();
     await expect(instrument).toHaveText("Violin");
     await expect(key).toHaveText("C♯");
     await expect(transpose.locator("strong")).toHaveText("-2");

@@ -55,7 +55,8 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   ).toHaveCount(2);
   await expect(player.locator(".media-previous-control")).toBeDisabled();
   await expect(player.locator(".media-next-control")).toBeEnabled();
-  // PDF defaults can supersede an early warm before metadata settles. Count
+  await player.locator(".media-advanced-summary").click();
+  // PDF defaults settle before the player becomes ready. Count
   // cache reuse from the final key instead of assuming one worker at startup.
   await expect(
     player.getByRole("combobox", { name: "Pilih nada dasar" }),
@@ -72,6 +73,7 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
   expect(await counts()).toEqual(warmed);
+  await player.locator(".media-advanced-summary").click();
   const transpose = player.locator(".media-transpose");
   await transpose.getByRole("button", { name: "Naikkan nada" }).click();
   await expect(

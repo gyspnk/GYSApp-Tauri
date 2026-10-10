@@ -1,13 +1,10 @@
 /* MIDI's persistent surface: transport, musical controls, then utilities. */
 .media-surface.is-kidung-media:not(.is-minimized) {
   --midi-control: 36px;
-  grid-template-columns: minmax(100px, 1fr) auto minmax(100px, 1.2fr) repeat(
-      3,
-      var(--midi-control)
-    ) !important;
-  grid-template-areas:
-    "title transport seek advanced close minimize"
-    "music music music music music music" !important;
+  grid-template-columns:
+    minmax(100px, 1fr) auto minmax(100px, 1.2fr)
+    80px repeat(3, var(--midi-control)) !important;
+  grid-template-areas: "title transport seek tempo advanced close minimize" !important;
   padding: 8px;
   gap: 6px;
   border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
@@ -386,11 +383,10 @@
 }
 @media (max-width: 679px) {
   .media-surface.is-kidung-media:not(.is-minimized) {
-    grid-template-columns: auto minmax(0, 1fr) repeat(3, var(--midi-control)) !important;
+    grid-template-columns: minmax(0, 1fr) 80px repeat(3, var(--midi-control)) !important;
     grid-template-areas:
-      "title title advanced close minimize"
-      "transport seek seek seek seek"
-      "music music music music music" !important;
+      "title tempo advanced close minimize"
+      "transport transport seek seek seek" !important;
     --midi-control: 40px;
     gap: 4px;
     padding: 8px;
@@ -435,4 +431,88 @@
   .media-edge-glyph {
     transition: none;
   }
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-adjustments
+  > .media-tempo-control {
+  grid-area: tempo;
+  align-self: center;
+  min-width: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-adjustments
+  > .media-tempo-control
+  > button {
+  width: 100%;
+  min-height: var(--midi-control);
+  height: var(--midi-control);
+  justify-content: center;
+  padding-inline: 4px;
+}
+.media-surface.is-kidung-media
+  .media-adjustments
+  > .media-tempo-control
+  .media-tempo-popover {
+  width: min(280px, calc(100vw - 40px));
+  min-width: 0;
+}
+.media-surface.is-kidung-media.is-minimized
+  .media-adjustments
+  > .media-tempo-control {
+  display: none;
+}
+
+.media-surface.is-kidung-media .media-adjustments > .media-tempo-control {
+  position: static;
+}
+.media-surface.is-kidung-media
+  .media-adjustments
+  > .media-tempo-control
+  .media-tempo-popover {
+  right: 8px;
+  bottom: calc(var(--reader-media-space, 180px) - 10px);
+  z-index: calc(var(--z-popover) + 1);
+}
+
+/* One owner animates the dock; inherited entry/transform motion must not race it. */
+.media-surface.is-kidung-media {
+  animation: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-area: auto;
+  grid-column: 1 / -1;
+  animation: none;
+  padding-block: 0 8px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+}
+.media-surface.is-kidung-media .media-edge-glyph {
+  animation: none;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-template-columns: minmax(0, 1fr) 64px;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-music-controls
+  .media-transpose {
+  grid-column: 1 / -1;
+  justify-self: end;
+  width: calc(3 * var(--midi-control) + 32px);
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-music-controls
+  .media-transpose
+  button {
+  width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media .media-advanced-panel {
+  --midi-control: 44px;
 }

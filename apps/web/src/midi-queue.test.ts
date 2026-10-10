@@ -134,6 +134,29 @@ describe("MIDI playlist song defaults", () => {
     expect(mocks.player.play).toHaveBeenCalledOnce();
   });
 
+  it("waits for delayed PDF metadata before preparing or playing the queued song", async () => {
+    mocks.getHymnPdfMeta.mockReturnValue(undefined);
+    let finish!: (meta: { tempo: number; preloadTranspose: number }) => void;
+    mocks.warmHymnPdfMeta.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const pending = playMidiPlaylistItem("hymn-002");
+    await vi.waitFor(() => expect(mocks.parseMidi).toHaveBeenCalled());
+    expect(mocks.player.load).not.toHaveBeenCalled();
+    expect(mocks.player.play).not.toHaveBeenCalled();
+    finish({ tempo: 92, preloadTranspose: -1 });
+    await pending;
+    expect(mocks.player.load).toHaveBeenCalledWith(
+      "hymn-002",
+      "Next hymn",
+      expect.anything(),
+      expect.objectContaining({ tempo: 92, transpose: -1 }),
+    );
+    expect(mocks.player.play).toHaveBeenCalledOnce();
+  });
+
   it("uses neutral transpose when natural-chord mode is disabled", async () => {
     mocks.naturalChords.mockReturnValue(false);
 

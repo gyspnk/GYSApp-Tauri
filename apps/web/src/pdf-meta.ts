@@ -113,7 +113,7 @@ export function isBlackKeySemitone(semitone: number): boolean {
 
 /**
  * gyschordweb natural-chord preference: songs written in a black-key key get a
- * default upward preload transpose of -1 so every chord stays natural.
+ * default downward semitone transpose of -1 to make the tonic natural.
  */
 export function detectPreloadTransposeFromPdfText(pdfText: string): number {
   const key = extractPdfKeyFromText(pdfText);

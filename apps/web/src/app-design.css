@@ -1684,7 +1684,9 @@
 }
 .hymn-detail-page.is-text-viewer .hymn-more-actions-panel {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  padding: 8px;
 }
 .hymn-detail-page.is-text-viewer .detail-hero {
   border-bottom: 0;
@@ -4246,4 +4248,104 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching {
   transition: none;
+}
+
+/* Plain action rows keep the hymn menu easy to scan. */
+.hymn-detail-page.is-text-viewer .hymn-more-actions-panel > .hymn-action {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.hymn-detail-page .hymn-more-actions-panel > .hymn-action:hover {
+  background: var(--blue-soft);
+}
+.hymn-detail-page .hymn-more-actions-panel .hymn-action-icon {
+  flex: 0 0 22px;
+}
+.hymn-detail-page .hymn-more-actions-panel .hymn-segmented-toolbar {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .hymn-reader-settings-summary {
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 700px) {
+  :root:has(.media-surface.is-kidung-media:not(.is-minimized))
+    .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel {
+    bottom: calc(
+      88px + env(safe-area-inset-bottom) + var(--reader-media-space, 0px)
+    );
+    max-height: calc(100dvh - 176px - var(--reader-media-space, 0px));
+  }
+}
+
+/* Overflow actions form one icon row; verse/scroll choices share the second. */
+.hymn-detail-page.is-text-viewer .hymn-more-actions-panel > .hymn-action {
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  > .hymn-action
+  .hymn-action-label,
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .reader-settings-copy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  > .hymn-reader-settings {
+  grid-column: auto;
+  width: auto;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .hymn-reader-settings-summary {
+  min-width: 44px;
+  width: 100%;
+  justify-content: center;
+  padding-inline: 0;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  > .hymn-reader-settings[open] {
+  grid-column: 1 / -1;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .hymn-segmented-toolbar {
+  padding-block: 6px 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--line);
+}
+
+.hymn-detail-page.is-text-viewer .hymn-segmented-toolbar {
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 4px;
+}
+.hymn-detail-page.is-text-viewer .hymn-autoscroll-btn {
+  min-width: 44px;
+  padding-inline: 8px;
+}
+.hymn-detail-page.is-text-viewer .hymn-autoscroll-btn .hymn-action-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

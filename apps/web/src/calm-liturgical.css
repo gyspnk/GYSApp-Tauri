@@ -742,7 +742,7 @@ summary:focus-visible {
 .pdf-reader .pdf-pages.pdf-layout-two > .pdf-page-frame {
   min-width: 0;
 }
-.pdf-reader .pdf-page-frame canvas[data-pdf-rendered="true"] {
+.pdf-reader .pdf-page-frame canvas[data-pdf-painted="true"] {
   animation: pdf-page-reveal 140ms var(--ease-out) both;
 }
 @keyframes pdf-page-reveal {
@@ -760,7 +760,7 @@ summary:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .pdf-reader .pdf-toolbar *,
-  .pdf-reader .pdf-page-frame canvas[data-pdf-rendered="true"] {
+  .pdf-reader .pdf-page-frame canvas[data-pdf-painted="true"] {
     animation: none !important;
     transition: none !important;
   }

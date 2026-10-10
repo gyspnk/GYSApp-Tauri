@@ -377,7 +377,7 @@ test("Kidung settings stays readable from phone to desktop", async ({
   ]) {
     await page.setViewportSize(viewport);
     await page.goto("/GYSApp-Tauri/kidung?section=settings");
-    await page.locator(".kidung-tool-page").waitFor({
+    await page.locator(".kidung-settings-layout").waitFor({
       state: "visible",
       timeout: 20_000,
     });

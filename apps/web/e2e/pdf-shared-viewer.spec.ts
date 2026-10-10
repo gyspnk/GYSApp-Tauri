@@ -1,49 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
-import { documentBytes } from "./pdf-fixtures.js";
+import { expect, test } from "@playwright/test";
+import { openSharedReader } from "./pdf-shared-viewer-fixtures.js";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
-
-async function openSharedReader(page: Page, kind: "faith" | "literature") {
-  await page.route(/^https:\/\//, (route) => route.abort());
-  if (kind === "faith") {
-    await page.goto("/GYSApp-Tauri/iman");
-    await page.locator('button[aria-label*="PDF"]').first().click();
-  } else {
-    await page.route("**/offline/literature.json", (route) =>
-      route.fulfill({
-        json: {
-          source: "tjc.org",
-          generatedAt: "2026-10-06T00:00:00Z",
-          items: [
-            {
-              id: "shared-pdf",
-              category: "buku",
-              title: "Literatur PDF",
-              description: "",
-              url: "https://tjc.org/id/shared-viewer.pdf",
-              format: "pdf",
-              publishedAt: "2026-10-01T00:00:00Z",
-              updatedAt: "2026-10-01T00:00:00Z",
-              source: "tjc.org",
-            },
-          ],
-        },
-      }),
-    );
-    await page.route("**/api/v1/content/pdf?**", (route) =>
-      route.fulfill({
-        body: documentBytes(4),
-        contentType: "application/pdf",
-        headers: { "access-control-allow-origin": "*" },
-      }),
-    );
-    await page.goto("/GYSApp-Tauri/literatur/shared-pdf?read=1");
-  }
-  const reader = page.locator(".pdf-reader");
-  await expect(
-    reader.locator('canvas[data-pdf-rendered="true"]').first(),
-  ).toBeVisible({ timeout: 15_000 });
-  return reader;
-}
 
 for (const width of [390, 768, 1440])
   for (const kind of ["faith", "literature"] as const) {
@@ -369,6 +326,95 @@ for (const kind of ["faith", "literature", "hymn"] as const) {
         (await reader.locator(".pdf-toolbar").boundingBox())!.y,
       ).toBeCloseTo(toolbar!.y, 1);
       expect(page.url()).not.toContain("hymn-134");
+    });
+  }
+}
+
+for (const kind of ["faith", "literature", "hymn"] as const) {
+  for (const [layout, label] of [
+    ["single", "Tampilan 1 halaman"],
+    ["two", "Tampilan 2 halaman"],
+    ["vertical", "Vertikal"],
+    ["horizontal", "Mendatar"],
+  ] as const) {
+    test(`${kind} ${layout}: zoom keeps its bitmap stable until geometry settles`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 768, height: 900 });
+      let reader;
+      if (kind === "hymn") {
+        await page.route(/^https:\/\//, (route) => route.abort());
+        await preparePinnedReaderAssets(page);
+        await page.goto("/GYSApp-Tauri/kidung/hymn-133?mode=pdf");
+        reader = page.locator(".pdf-reader-hymn");
+        await expect(
+          reader.locator('canvas[data-pdf-rendered="true"]').first(),
+        ).toBeVisible();
+      } else reader = await openSharedReader(page, kind);
+      await reader.locator(".pdf-advanced-toggle").click();
+      if (kind === "hymn")
+        await reader.locator(".pdf-layout-menu-toggle").click();
+      await reader.getByRole("button", { name: label, exact: true }).click();
+      const stage = reader.locator(".pdf-stage");
+      await expect(stage).toHaveAttribute("data-pdf-layout", layout);
+      await expect(
+        stage.locator('canvas[data-pdf-rendered="true"]').first(),
+      ).toBeVisible();
+      for (const deltaY of [-350, 350]) {
+        const trace = await stage.evaluate(
+          (el, deltaY) =>
+            new Promise<{ premature: number; samples: number[] }>((resolve) => {
+              const canvas = el.querySelector<HTMLCanvasElement>(
+                ".pdf-page-frame > canvas",
+              )!;
+              const initial = canvas.dataset.pdfZoom;
+              let settled = false,
+                premature = 0;
+              const samples: number[] = [];
+              el.addEventListener(
+                "pdfzoomend",
+                () => {
+                  settled = true;
+                },
+                { once: true },
+              );
+              const box = canvas.getBoundingClientRect();
+              el.dispatchEvent(
+                new WheelEvent("wheel", {
+                  ctrlKey: true,
+                  deltaY,
+                  clientX: box.x + box.width / 2,
+                  clientY: box.y + box.height / 2,
+                  bubbles: true,
+                  cancelable: true,
+                }),
+              );
+              const start = performance.now();
+              const sample = () => {
+                if (!settled && canvas.dataset.pdfZoom !== initial) premature++;
+                samples.push(canvas.getBoundingClientRect().width);
+                if (performance.now() - start < 700)
+                  requestAnimationFrame(sample);
+                else resolve({ premature, samples });
+              };
+              requestAnimationFrame(sample);
+            }),
+          deltaY,
+        );
+        expect(trace.premature).toBe(0);
+        for (let i = 1; i < trace.samples.length; i++)
+          if (deltaY < 0)
+            expect(trace.samples[i]!).toBeGreaterThanOrEqual(
+              trace.samples[i - 1]! - 1,
+            );
+          else
+            expect(trace.samples[i]!).toBeLessThanOrEqual(
+              trace.samples[i - 1]! + 1,
+            );
+      }
+      await stage.focus();
+      await page.keyboard.press("Control+0");
+      await expect(reader.locator(".pdf-zoom-indicator")).toHaveText("100%");
     });
   }
 }

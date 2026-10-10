@@ -63,7 +63,7 @@ describe("MIDI song tempo defaults", () => {
     expect(player.snapshot().tempo).toBe(84);
   });
 
-  it("keeps a manually selected global tempo when loading another song", async () => {
+  it("starts a new song at its PDF tempo after a manual adjustment", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
     const setItem = vi.fn();
@@ -73,14 +73,37 @@ describe("MIDI song tempo defaults", () => {
       await player.setTempo(150);
       await player.load("hymn-002", "Next hymn", midi, { tempo: 84 });
 
-      expect(player.snapshot().tempo).toBe(150);
+      expect(player.snapshot().tempo).toBe(84);
       expect(JSON.parse(setItem.mock.calls.at(-1)![1])).toMatchObject({
-        tempo: 150,
-        tempoOverride: true,
+        tempo: 84,
+        tempoOverride: false,
       });
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it("keeps manual tempo for the current song but resets it for the next PDF", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+    await player.load("first", "First", midi, { tempo: 84 });
+    await player.setTempo(150);
+    await player.load("first", "First", midi, { tempo: 84 });
+    expect(player.snapshot().tempo).toBe(150);
+    await player.load("second", "Second", midi, { tempo: 92 });
+    expect(player.snapshot().tempo).toBe(92);
+  });
+
+  it("restores the original PDF pitch when its natural-key policy is disabled", async () => {
+    const player = new BrowserMidiPlayer(async () => undefined);
+    const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+    await player.load("first", "First", midi, { transpose: -1 });
+    await player.setTranspose(-2);
+    await player.applyTransposeDefault(0);
+    expect(player.snapshot().transpose).toBe(0);
+    expect(player.hasTransposePreference()).toBe(false);
+    await player.load("next", "Next", midi, { transpose: 0 });
+    expect(player.snapshot().transpose).toBe(0);
   });
 
   it("uses each new song's explicit PDF transpose target", async () => {
@@ -97,14 +120,14 @@ describe("MIDI song tempo defaults", () => {
     expect(player.snapshot().transpose).toBe(0);
   });
 
-  it("keeps a user-selected transpose when loading another song", async () => {
+  it("uses the new PDF pitch instead of a previous manual transpose", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
 
     await player.setTranspose(-2);
     await player.load("hymn-001", "First hymn", midi, { transpose: 0 });
 
-    expect(player.snapshot().transpose).toBe(-2);
+    expect(player.snapshot().transpose).toBe(0);
   });
 
   it("keeps metadata defaults separate from a user transpose preference", async () => {

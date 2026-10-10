@@ -4,6 +4,9 @@ export type IconName =
   | "home"
   | "bible"
   | "music"
+  | "piano"
+  | "chord"
+  | "metronome"
   | "faith"
   | "more"
   | "sun"
@@ -73,6 +76,24 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
       <path d="M9 18V5l12-2v13" />
       <circle cx="6" cy="18" r="3" />
       <circle cx="18" cy="16" r="3" />
+    </>
+  ),
+  piano: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M9 5v14M15 5v14M6 5v8h3M12 5v8h3M18 5v8h3" />
+    </>
+  ),
+  chord: (
+    <>
+      <path d="M5 4h14M5 10h14M5 16h14M5 4v16M12 4v16M19 4v16" />
+      <circle cx="12" cy="7" r="2" fill="currentColor" stroke="none" />
+      <circle cx="5" cy="13" r="2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  metronome: (
+    <>
+      <path d="m9 3-5 18h16L15 3ZM12 16l6-9M8 17h8" />
     </>
   ),
   faith: (

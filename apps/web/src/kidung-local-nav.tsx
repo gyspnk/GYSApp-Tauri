@@ -7,7 +7,7 @@ import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 import { getMidiPlaylist, subscribeMidiPlaylist } from "./midi-playlist.js";
 
-type KidungSection = "songs" | "playlist" | "settings";
+type KidungSection = "songs" | "playlist";
 
 export function KidungLocalNav({
   active,
@@ -40,12 +40,6 @@ export function KidungLocalNav({
       label: translate(locale, "kidung.playlist"),
       to: "/kidung?section=playlist",
       icon: "queueMusic",
-    },
-    {
-      id: "settings",
-      label: translate(locale, "kidung.settings"),
-      to: "/kidung?section=settings",
-      icon: "settings",
     },
   ];
   return (

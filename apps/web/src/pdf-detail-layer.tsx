@@ -131,6 +131,7 @@ export function PdfDetailLayer({
     const schedule = () => {
       cancel();
       window.clearTimeout(timer);
+      if (stage.dataset.pdfZooming === "true") return;
       timer = window.setTimeout(() => {
         void render();
       }, 120);
@@ -150,6 +151,7 @@ export function PdfDetailLayer({
       ],
     });
     stage.addEventListener("scroll", schedule, { passive: true });
+    stage.addEventListener("pdfzoomstart", schedule);
     stage.addEventListener("pdfzoomend", schedule);
     schedule();
     return () => {
@@ -160,6 +162,7 @@ export function PdfDetailLayer({
       resize.disconnect();
       paint.disconnect();
       stage.removeEventListener("scroll", schedule);
+      stage.removeEventListener("pdfzoomstart", schedule);
       stage.removeEventListener("pdfzoomend", schedule);
       clear();
       void Promise.allSettled(pending).then(() => cleanupPdfPage(detailPage));

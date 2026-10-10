@@ -5,7 +5,7 @@ export type HymnTypography = {
 };
 
 /**
- * gyschordweb `prefs.preferNaturalChords`: a default upward transpose (-1)
+ * gyschordweb `prefs.preferNaturalChords`: a default downward semitone transpose (-1)
  * is applied for songs whose PDF key lands on a black key.
  */
 const NATURAL_CHORD_KEY = "gys-hymn-natural-chords";

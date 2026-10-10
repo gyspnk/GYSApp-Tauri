@@ -505,7 +505,6 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await mute.click();
   await expect(mute).toHaveAttribute("aria-pressed", "false");
 
-  await media.locator(".media-advanced-summary").click();
   const transpose = media.locator(".media-transpose");
   const initialTranspose = Number(await transpose.locator("strong").textContent());
   await transpose.getByRole("button", { name: "Naikkan nada", exact: true }).click();
@@ -526,6 +525,9 @@ test("MIDI dock transport and sound controls update playback state", async ({
     `${currentTempo + 1} BPM`,
   );
 
+  // Tempo is now on the visible dock; opening it closes the utility disclosure.
+  await tempo.press("Escape");
+  await media.locator(".media-advanced-summary").click();
   await media.locator(".media-stop-control").click();
   await expect(play).toHaveAttribute("aria-label", "Putar");
 });
@@ -1435,7 +1437,7 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
     if (viewport.width >= 768) {
       await page.goto("/GYSApp-Tauri/kidung?section=settings");
       await expect(
-        page.getByRole("heading", { name: "Pengaturan", exact: true }),
+        page.locator(".kidung-settings-section").first(),
       ).toBeVisible({ timeout: 20_000 });
       await page.evaluate(() => window.scrollTo(0, 0));
       const lowerSelect = page

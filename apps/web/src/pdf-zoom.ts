@@ -141,6 +141,15 @@ export function installPdfZoom(
     }
   };
   const tick = (time: number) => {
+    if (pinch) {
+      // Direct manipulation follows the latest fingers once per frame. Keep
+      // raster replacement suspended throughout the gesture, including pauses.
+      percent = target;
+      previousTime = frame = 0;
+      refresh();
+      onZoom(percent);
+      return;
+    }
     // A delayed frame must not turn continuous zoom into a large geometry jump.
     const elapsed = previousTime ? Math.min(time - previousTime, 16) : 16;
     previousTime = time;
@@ -151,21 +160,27 @@ export function installPdfZoom(
     if (finished) {
       frame = previousTime = 0;
       anchor = undefined;
+      delete stage.dataset.pdfZooming;
       stage.dispatchEvent(new Event("pdfzoomend"));
     } else frame = requestAnimationFrame(tick);
   };
   const update = (next: number, clientX?: number, clientY?: number) => {
     next = clampPdfZoomPercent(next);
-    if (next === target) return;
+    if (next === target && !pinch) return;
     if (!pinch) capture(clientX, clientY);
     target = next;
-    onZoom(target);
-    if (reducedMotion.matches) {
+    if (stage.dataset.pdfZooming !== "true") {
+      stage.dataset.pdfZooming = "true";
+      stage.dispatchEvent(new Event("pdfzoomstart"));
+    }
+    if (!pinch) onZoom(target);
+    if (reducedMotion.matches && !pinch) {
       cancelAnimationFrame(frame);
       frame = previousTime = 0;
       percent = target;
       refresh();
       anchor = undefined;
+      delete stage.dataset.pdfZooming;
       stage.dispatchEvent(new Event("pdfzoomend"));
     } else if (!frame) frame = requestAnimationFrame(tick);
   };
@@ -198,13 +213,18 @@ export function installPdfZoom(
       touches[0]!.clientX - touches[1]!.clientX,
       touches[0]!.clientY - touches[1]!.clientY,
     );
-  const settleZoom = () => {
-    const wasAnimating = Boolean(frame);
+  const settleZoom = (finishTarget = false) => {
+    const wasAnimating = Boolean(frame) || stage.dataset.pdfZooming === "true";
     cancelAnimationFrame(frame);
     frame = previousTime = 0;
+    // Pan starts from the paper the user currently sees, not a pending wheel
+    // target. Finger release commits the last coalesced pinch position.
+    if (!finishTarget) target = percent;
     percent = target;
     refresh();
+    if (wasAnimating) onZoom(Math.round(target));
     anchor = undefined;
+    delete stage.dataset.pdfZooming;
     if (wasAnimating) stage.dispatchEvent(new Event("pdfzoomend"));
   };
   const start = (event: TouchEvent) => {
@@ -227,11 +247,14 @@ export function installPdfZoom(
     event.preventDefault();
     const initial = distance(event.touches);
     if (!initial) return;
+    cancelAnimationFrame(frame);
+    frame = previousTime = 0;
+    target = percent;
     capture(
       (event.touches[0]!.clientX + event.touches[1]!.clientX) / 2,
       (event.touches[0]!.clientY + event.touches[1]!.clientY) / 2,
     );
-    pinch = { distance: initial, percent: target };
+    pinch = { distance: initial, percent };
   };
   const move = (event: TouchEvent) => {
     if (pan && event.touches.length === 1 && !pinch) {
@@ -257,7 +280,7 @@ export function installPdfZoom(
     update((pinch.percent * distance(event.touches)) / pinch.distance);
   };
   const end = (event: TouchEvent) => {
-    if (pinch) settleZoom();
+    if (pinch) settleZoom(true);
     pinch = undefined;
     pan = undefined;
     if (
@@ -330,6 +353,7 @@ export function installPdfZoom(
       stage.removeEventListener("lostpointercapture", pointerEnd);
       delete stage.dataset.pdfDragging;
       delete stage.dataset.pdfPannable;
+      delete stage.dataset.pdfZooming;
     },
   };
 }

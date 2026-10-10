@@ -19,7 +19,7 @@ for (const width of [390, 768, 1440]) {
     let original: unknown;
     for (const [index, label] of [
       "Playlist",
-      "Pengaturan",
+      "Kidung",
       "Kidung",
       "Playlist",
       "Kidung",
@@ -74,7 +74,7 @@ for (const width of [390, 768, 1440]) {
           (window as unknown as { sectionTransitions: number })
             .sectionTransitions,
       ),
-    ).toBe(4);
+    ).toBe(3);
   });
 }
 
@@ -94,7 +94,7 @@ test("section links retain smooth fallback motion without View Transitions", asy
       configurable: true,
     });
   });
-  await page.goto("/GYSApp-Tauri/kidung?section=settings");
+  await page.goto("/GYSApp-Tauri/kidung?section=playlist");
   await page.locator('.kidung-local-nav a[aria-current="page"]').waitFor();
   await expect(page.locator("html")).toHaveClass(/has-route-transitions/);
   const before = await page.evaluate(
@@ -132,4 +132,23 @@ test("section navigation respects reduced motion", async ({ page }) => {
       .locator(".route-view")
       .evaluate((node) => node.getAnimations().length),
   ).toBe(0);
+});
+
+test("Kidung preferences live in main settings and legacy links redirect", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  await expect(page.locator(".kidung-local-nav a")).toHaveCount(2);
+  await expect(
+    page.locator('.kidung-local-nav a[href*="settings"]'),
+  ).toHaveCount(0);
+  await page.goto("/GYSApp-Tauri/kidung?section=settings");
+  await expect(page).toHaveURL(/\/lainnya\?section=kidung$/);
+  const settings = page.locator('[data-setting="hymns"]');
+  await expect(settings).toHaveAttribute("open", "");
+  await expect(
+    settings.getByRole("checkbox", { name: /Hindari mol\/kres/ }),
+  ).toBeVisible();
+  await expect(settings.locator(".kidung-settings-section")).toHaveCount(2);
+  await expect(page.locator(".kidung-local-nav")).toHaveCount(0);
 });
