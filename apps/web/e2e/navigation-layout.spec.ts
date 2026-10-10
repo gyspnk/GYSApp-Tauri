@@ -1036,7 +1036,7 @@ test.describe("responsive reader navigation", () => {
       page.getByText("GeneralUser-GS", { exact: true }),
     ).toBeVisible();
     const instrument = page.getByLabel("Instrumen MIDI");
-    await expect(instrument).toHaveValue("-1");
+    await expect(instrument).toHaveValue("0");
     await instrument.selectOption("40");
     await expect(instrument).toHaveValue("40");
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
