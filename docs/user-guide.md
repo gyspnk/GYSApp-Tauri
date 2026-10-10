@@ -105,8 +105,11 @@ playback. GeneralUser is an optional download in data/asset settings.
 
 The expanded player provides previous/play-pause/next, seek/time, instrument,
 key, transpose and icon reset. The utility menu holds volume, mute, stop, tempo,
-loop/queue and related secondary controls. File instruments and all 128 General
-MIDI programs are selectable. Tempo is 30–220 BPM; transpose is −24 to +24
+loop/queue and related secondary controls. All 128 General MIDI programs are
+selectable from the active SoundFont; piano (program 0) is the default. MIDI-file
+program and bank changes are ignored. Installing/removing GeneralUser refreshes
+the active bank. Playback requires SoundFont synthesis; an unavailable bank or
+synthesis worker reports an error. Tempo is 30–220 BPM; transpose is −24 to +24
 semitones. Preferences persist. A seek drag previews its position and commits
 one audio update on release.
 

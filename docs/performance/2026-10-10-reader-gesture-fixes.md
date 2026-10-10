@@ -87,3 +87,18 @@ these are local results, not GitHub Actions evidence.
 - Remote main was checked again after verification and remained the baseline
   SHA. The user subsequently authorized committing these verified fixes
   directly to main. Native build, tag and release restrictions remain in force.
+
+## CI follow-up
+
+The initial full CI run on `f1cc0ec` exposed seven failures in older MIDI tests:
+four keyboard-selection cases still counted the removed file-instrument option,
+and three transport tests installed a one-byte SoundFont placeholder that had
+previously played through the oscillator fallback. The keyboard now starts at
+preset 0; transport fixtures install real SF2 bytes, with matching size/checksum.
+Their generic MIDI route now falls through to the earlier pinned PDF handlers,
+so tempo metadata no longer depends on external browser TLS/network access.
+
+All four responsive MIDI design cases and the three auto-next/dock/Media Session
+cases passed locally with retries disabled after these fixture corrections.
+The application continues to require the active bank; no oscillator fallback
+was restored. The user guide and capability matrix reflect this policy.

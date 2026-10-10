@@ -37,8 +37,8 @@ for (const width of [320, 390, 768, 1440]) {
     expect(rect.y).toBeGreaterThanOrEqual(0);
     expect(rect.y + rect.height).toBeLessThanOrEqual(780);
     await instrument.press("Home");
-    // First option preserves file instruments; program 40 is Violin.
-    for (let index = 0; index < 41; index++)
+    // Piano starts at program 0; program 40 is Violin.
+    for (let index = 0; index < 40; index++)
       await instrument.press("ArrowDown");
     await instrument.press("Enter");
     await expect(instrument).toHaveText("Violin");

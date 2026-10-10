@@ -320,7 +320,8 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
       });
       return;
     }
-    await route.continue();
+    // Preserve the earlier pinned PDF/chord handlers for non-MIDI requests.
+    await route.fallback();
   });
 
   await page.goto("/GYSApp-Tauri/");
@@ -329,7 +330,15 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
     const cacheKey =
       "https://gysapp.local/distributed-assets/GeneralUser-GS/e2e";
     const cache = await caches.open(cacheName);
-    await cache.put(cacheKey, new Response(new Uint8Array([0])));
+    // Playback tests need a valid SF2, not the old one-byte badge placeholder.
+    // Reuse the packaged bank as fixture bytes for an installed optional bank.
+    const bank = await fetch("/GYSApp-Tauri/assets/soundfont/TimGM6mb.sf2")
+      .then((response) => response.arrayBuffer());
+    const checksum = Array.from(
+      new Uint8Array(await crypto.subtle.digest("SHA-256", bank)),
+      (byte) => byte.toString(16).padStart(2, "0"),
+    ).join("");
+    await cache.put(cacheKey, new Response(bank));
     localStorage.setItem(
       "gys-distributed-assets-v1",
       JSON.stringify({
@@ -339,11 +348,11 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
           version: "e2e",
           releaseTag: "e2e",
           installFileName: "GeneralUser-GS.sf2",
-          packageSizeBytes: 1,
-          packageChecksumSha256: "e2e",
+          packageSizeBytes: bank.byteLength,
+          packageChecksumSha256: checksum,
           cacheName,
           cacheKey,
-          payloadBytes: 1,
+          payloadBytes: bank.byteLength,
           installedAt: "2026-09-20T00:00:00.000Z",
         },
       }),
