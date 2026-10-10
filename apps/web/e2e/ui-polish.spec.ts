@@ -256,7 +256,7 @@ for (const theme of ["light", "dark"] as const) {
   });
 }
 
-test("reader icons stay centered and secondary actions retain readable labels", async ({
+test("reader icons stay centered and compact actions retain accessible names", async ({
   page,
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
@@ -282,15 +282,17 @@ test("reader icons stay centered and secondary actions retain readable labels", 
       expect(offset.y).toBeLessThanOrEqual(1);
     }
     await toolbar.locator(".hymn-more-actions-summary").click();
-    const labels = toolbar.locator(
-      ".hymn-more-actions-panel .hymn-action-label",
+    const actions = toolbar.locator(
+      ".hymn-more-actions-panel > button.hymn-action, .hymn-autoscroll-btn, .hymn-reader-settings-summary",
     );
-    expect(await labels.count()).toBeGreaterThan(0);
-    for (const label of await labels.all()) {
-      await expect(label).toBeVisible();
-      const box = (await label.boundingBox())!;
-      expect(box.width).toBeGreaterThan(20);
-      expect(box.height).toBeGreaterThan(10);
+    expect(await actions.count()).toBeGreaterThan(0);
+    for (const action of await actions.all()) {
+      await expect(action).toHaveAccessibleName(/\S/);
+      const box = (await action.boundingBox())!;
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      if (await action.locator("svg").count())
+        await expect(action.locator("svg").first()).toBeVisible();
     }
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),

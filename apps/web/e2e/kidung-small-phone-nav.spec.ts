@@ -11,7 +11,8 @@ test("320px Kidung local navigation keeps icon targets reachable and labels acce
   await page.locator(".kidung-local-nav").waitFor({ state: "visible" });
 
   const links = page.locator(".kidung-local-nav a");
-  await expect(links).toHaveCount(3);
+  await expect(links).toHaveCount(2);
+  await expect(links).toHaveText(["Kidung", "Playlist"]);
 
   for (let index = 0; index < (await links.count()); index += 1) {
     const link = links.nth(index);

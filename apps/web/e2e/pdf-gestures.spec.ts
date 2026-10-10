@@ -241,6 +241,11 @@ test("native touchscreen pinch and Ctrl wheel stay inside the reader on a 3x dis
   await page.locator(".pdf-stage").focus();
   await page.keyboard.press("Control+0");
   await expect(page.locator(".pdf-zoom-indicator")).toHaveText("100%");
+  // The indicator reports the target before continuous geometry settles.
+  await expect(page.locator(".pdf-stage")).not.toHaveAttribute(
+    "data-pdf-zooming",
+    "true",
+  );
   const cdp = await context.newCDPSession(page);
   const points = (distance: number) => [
     { id: 0, x: 195 - distance / 2, y: 380 },

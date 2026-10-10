@@ -187,6 +187,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
   await expect(zoom).toHaveText("100%");
 
   const stage = reader.locator(".pdf-stage");
+  await expect(stage).not.toHaveAttribute("data-pdf-zooming", "true");
   await stage.evaluate((element) => {
     const target = element as HTMLElement;
     const makeTouch = (identifier: number, x: number, y: number) =>
@@ -214,6 +215,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
     send("touchend", [], [first, zoomedSecond]);
   });
   await expect(zoom).toHaveText("200%");
+  await expect(stage).not.toHaveAttribute("data-pdf-zooming", "true");
 
   const stageBounds = await stage.boundingBox();
   expect(stageBounds).not.toBeNull();
@@ -222,6 +224,7 @@ test("hymn PDF supports layout, orientation, and zoom controls", async ({
   await page.touchscreen.tap(stageX, stageY);
   await page.touchscreen.tap(stageX, stageY);
   await expect(zoom).toHaveText("100%");
+  await expect(stage).not.toHaveAttribute("data-pdf-zooming", "true");
   await page.touchscreen.tap(stageX, stageY);
   await page.touchscreen.tap(stageX, stageY);
   await expect(zoom).toHaveText("180%");

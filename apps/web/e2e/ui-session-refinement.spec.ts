@@ -21,7 +21,7 @@ for (const width of [390, 768, 1440]) {
         return { x: links[0]!.getBoundingClientRect().x, y, height };
       }),
     );
-    for (const section of ["Playlist", "Pengaturan", "Kidung"]) {
+    for (const section of ["Playlist", "Kidung"]) {
       await expect(page.locator("html")).not.toHaveClass(
         /is-reader-transition/,
       );
@@ -43,6 +43,9 @@ for (const width of [390, 768, 1440]) {
         )
         .toEqual(bounds);
     }
+    await expect(
+      nav.getByRole("link", { name: "Pengaturan", exact: true }),
+    ).toHaveCount(0);
     const controls = page.locator(".kidung-controls-field");
     const field = (await controls.boundingBox())!;
     const mode = (await controls
