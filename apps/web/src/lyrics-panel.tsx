@@ -1,3 +1,4 @@
+import { useGestureFont } from "./gesture-font.js";
 import {
   useEffect,
   useLayoutEffect,
@@ -162,6 +163,9 @@ export function LyricsPanel({
     undefined,
   );
   const lastFitRef = useRef(0);
+  const manualFont = useRef(false);
+  const gestureFont = useGestureFont(verseTextRef);
+  const gestureTarget = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     writeValue(FONT_SIZE_KEY, fontSize);
@@ -190,6 +194,22 @@ export function LyricsPanel({
     readLyricsMidiState,
   );
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
+  useEffect(() => {
+    setIsPinching(false);
+    return () => {
+      gestureFont.cancel();
+      const ids = [...gesturePointers.current.keys()];
+      gesturePointers.current.clear();
+      pinchStart.current = undefined;
+      swipeStart.current = undefined;
+      for (const id of ids) {
+        if (gestureTarget.current?.hasPointerCapture(id))
+          gestureTarget.current.releasePointerCapture(id);
+      }
+      gestureTarget.current = null;
+    };
+  }, [item.id, safeVerseIndex]);
+
   const verseLines = (verses[safeVerseIndex] ?? "").split("\n");
   const sourceKey = getHymnPdfMeta(item.id)?.keySemitone ?? 0;
   const keyIndex = (((sourceKey + midiSettings.transpose) % 12) + 12) % 12;
@@ -201,29 +221,33 @@ export function LyricsPanel({
     const element = verseTextRef.current;
     if (!element) return;
     let frame = 0;
+    let disposed = false;
     const measure = () => {
       frame = 0;
+      if (disposed || pinchStart.current) return;
       element.style.fontSize = `${fontSize / 16}rem`;
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
-      const next = autoFitFontSize({
-        preferredFontSize: fontSize,
-        availableWidth: element.clientWidth,
-        measuredWidth: element.scrollWidth,
-        ...(parent
-          ? {
-              availableHeight: parent.clientHeight - 12,
-              measuredHeight: parent.scrollHeight,
-            }
-          : {}),
-        lastFittedFontSize: lastFitRef.current,
-      });
+      const next = manualFont.current
+        ? fontSize
+        : autoFitFontSize({
+            preferredFontSize: fontSize,
+            availableWidth: element.clientWidth,
+            measuredWidth: element.scrollWidth,
+            ...(parent
+              ? {
+                  availableHeight: parent.clientHeight - 12,
+                  measuredHeight: parent.scrollHeight,
+                }
+              : {}),
+            lastFittedFontSize: lastFitRef.current,
+          });
       lastFitRef.current = next;
       element.style.fontSize = `${next / 16}rem`;
       setFitFontSize(next);
     };
     const schedule = () => {
-      if (frame) return;
+      if (disposed || frame || pinchStart.current) return;
       frame =
         typeof window.requestAnimationFrame === "function"
           ? window.requestAnimationFrame(measure)
@@ -241,6 +265,7 @@ export function LyricsPanel({
     });
     document.fonts?.ready?.then(schedule).catch(() => undefined);
     return () => {
+      disposed = true;
       observer?.disconnect();
       if (frame) {
         if (typeof window.cancelAnimationFrame === "function")
@@ -254,6 +279,7 @@ export function LyricsPanel({
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== "touch") return;
+    gestureTarget.current = event.currentTarget;
     gesturePointers.current.set(event.pointerId, {
       x: event.clientX,
       y: event.clientY,
@@ -274,7 +300,7 @@ export function LyricsPanel({
       if (first && second) {
         pinchStart.current = {
           distance: Math.hypot(second.x - first.x, second.y - first.y),
-          base: fontSize,
+          base: fitFontSize,
         };
       }
       swipeStart.current = undefined;
@@ -298,10 +324,20 @@ export function LyricsPanel({
       14,
       Math.min(72, pinch.base * (distance / pinch.distance)),
     );
-    setFontSize(Math.round(next * 10) / 10);
+    gestureFont.queue(Math.round(next * 10) / 10);
   };
 
   const onPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!gesturePointers.current.has(event.pointerId)) return;
+    const cancelled = event.type !== "pointerup";
+    if (cancelled) {
+      const ids = [...gesturePointers.current.keys()];
+      gesturePointers.current.clear();
+      for (const id of ids)
+        if (event.currentTarget.hasPointerCapture(id))
+          event.currentTarget.releasePointerCapture(id);
+    }
+
     const wasPinching = Boolean(pinchStart.current);
     const start = swipeStart.current;
     gesturePointers.current.delete(event.pointerId);
@@ -313,13 +349,25 @@ export function LyricsPanel({
     }
     if (wasPinching) {
       if (gesturePointers.current.size < 2) {
+        const base = pinchStart.current?.base;
+        const size = cancelled ? undefined : gestureFont.finish();
+        if (cancelled) {
+          gestureFont.cancel();
+          if (verseTextRef.current && base !== undefined)
+            verseTextRef.current.style.fontSize = `${base / 16}rem`;
+        }
         pinchStart.current = undefined;
         setIsPinching(false);
+        if (size !== undefined) {
+          manualFont.current = true;
+          setFitFontSize(size);
+          setFontSize(size);
+        }
       }
       return;
     }
     swipeStart.current = undefined;
-    if (!start) return;
+    if (!start || cancelled) return;
     const deltaX = event.clientX - start.x;
     const deltaY = event.clientY - start.y;
     if (
@@ -486,9 +534,6 @@ export function LyricsPanel({
                       "kidung.lyrics.selectInstrument",
                     )}
                   >
-                    <option value={-1}>
-                      {translate(locale, "kidung.lyrics.instrumentFromFile")}
-                    </option>
                     {GM_INSTRUMENTS.map((name, program) => (
                       <option key={program} value={program}>
                         {String(program + 1).padStart(3, "0")} · {name}
@@ -690,6 +735,7 @@ export function LyricsPanel({
           onPointerMove={onPointerMove}
           onPointerUp={onPointerEnd}
           onPointerCancel={onPointerEnd}
+          onLostPointerCapture={onPointerEnd}
           onWheel={onWheel}
         >
           <div className="lyrics-verse-container">

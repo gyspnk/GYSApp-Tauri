@@ -43,7 +43,8 @@ export function installPdfZoom(
       }
     | undefined;
   let pinch: { distance: number; percent: number } | undefined;
-  let pan: { x: number; y: number; pointer?: number } | undefined;
+  let pan:
+    { x: number; y: number; pointer?: number; touch?: number } | undefined;
   const interactive = (target: EventTarget | null) =>
     target instanceof Element &&
     Boolean(
@@ -197,6 +198,15 @@ export function installPdfZoom(
       touches[0]!.clientX - touches[1]!.clientX,
       touches[0]!.clientY - touches[1]!.clientY,
     );
+  const settleZoom = () => {
+    const wasAnimating = Boolean(frame);
+    cancelAnimationFrame(frame);
+    frame = previousTime = 0;
+    percent = target;
+    refresh();
+    anchor = undefined;
+    if (wasAnimating) stage.dispatchEvent(new Event("pdfzoomend"));
+  };
   const start = (event: TouchEvent) => {
     if (
       event.touches.length === 1 &&
@@ -204,11 +214,15 @@ export function installPdfZoom(
       !interactive(event.target)
     ) {
       const touch = event.touches[0]!;
-      pan = { x: touch.clientX, y: touch.clientY };
+      settleZoom();
+      pan = { x: touch.clientX, y: touch.clientY, touch: touch.identifier };
+      return;
+    }
+    if (event.touches.length !== 2) {
+      pinch = pan = undefined;
       anchor = undefined;
       return;
     }
-    if (event.touches.length !== 2) return;
     pan = undefined;
     event.preventDefault();
     const initial = distance(event.touches);
@@ -223,9 +237,13 @@ export function installPdfZoom(
     if (pan && event.touches.length === 1 && !pinch) {
       event.preventDefault();
       const touch = event.touches[0]!;
+      if (touch.identifier !== pan.touch) {
+        pan = undefined;
+        return;
+      }
       stage.scrollLeft += pan.x - touch.clientX;
       stage.scrollTop += pan.y - touch.clientY;
-      pan = { x: touch.clientX, y: touch.clientY };
+      pan = { x: touch.clientX, y: touch.clientY, touch: touch.identifier };
       return;
     }
     if (!pinch || event.touches.length !== 2) return;
@@ -238,9 +256,18 @@ export function installPdfZoom(
     }
     update((pinch.percent * distance(event.touches)) / pinch.distance);
   };
-  const end = () => {
+  const end = (event: TouchEvent) => {
+    if (pinch) settleZoom();
     pinch = undefined;
     pan = undefined;
+    if (
+      event.type === "touchend" &&
+      event.touches.length === 1 &&
+      (percent > 100 || stage.dataset.pdfLayout === "horizontal")
+    ) {
+      const touch = event.touches[0]!;
+      pan = { x: touch.clientX, y: touch.clientY, touch: touch.identifier };
+    }
   };
   const pointerDown = (event: PointerEvent) => {
     if (
@@ -250,7 +277,7 @@ export function installPdfZoom(
       interactive(event.target)
     )
       return;
-    anchor = undefined;
+    settleZoom();
     pan = { x: event.clientX, y: event.clientY, pointer: event.pointerId };
     stage.setPointerCapture(event.pointerId);
     stage.dataset.pdfDragging = "true";
@@ -288,6 +315,9 @@ export function installPdfZoom(
     refresh,
     dispose() {
       cancelAnimationFrame(frame);
+      if (pan?.pointer !== undefined && stage.hasPointerCapture(pan.pointer))
+        stage.releasePointerCapture(pan.pointer);
+      pinch = pan = anchor = undefined;
       stage.removeEventListener("wheel", wheel);
       stage.removeEventListener("touchstart", start);
       stage.removeEventListener("touchmove", move);

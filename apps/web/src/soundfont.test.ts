@@ -2,6 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { loadDefaultSoundfont } from "./soundfont.js";
 
 describe("packaged MIDI bank", () => {
+  it("surfaces an unreadable active bank instead of silently replacing its sound", async () => {
+    const fetcher = vi.fn();
+    await expect(
+      loadDefaultSoundfont(fetcher, async () => {
+        throw new Error("Active bank unreadable");
+      }),
+    ).rejects.toThrow("Active bank unreadable");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
   it("plays with the bundled bank when no optional font is installed", async () => {
     const bytes = new Uint8Array(5_994_284);
     bytes.set(new TextEncoder().encode("sfbk"), 8);

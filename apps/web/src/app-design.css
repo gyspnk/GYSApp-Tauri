@@ -1817,8 +1817,7 @@
   margin-block: 0.2em;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .hymn-detail-page.is-text-viewer .lyrics-sheet,
-  .hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching {
+  .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-pinching) {
     transition:
       font-size 160ms cubic-bezier(0.22, 1, 0.36, 1),
       line-height 160ms ease;
@@ -2972,6 +2971,9 @@ body:has(.hymn-detail-page.is-text-viewer)
    oversized pages grow from a reachable scroll origin. */
 .pdf-reader .pdf-stage:is([data-pdf-layout="single"], [data-pdf-layout="two"]) {
   display: block;
+  /* place-items on the base stage also aligns block children in modern
+     Chromium. Unsafe center puts enlarged paper before scrollLeft=0. */
+  justify-items: normal;
   scrollbar-gutter: auto;
   overflow-anchor: none;
 }
@@ -4236,4 +4238,12 @@ body:has(.hymn-detail-page.is-text-viewer)
   white-space: normal;
   overflow-wrap: anywhere;
   line-height: 1.5;
+}
+
+/* Pointer previews must follow the fingers, including the later verse cascade. */
+.lyrics-content {
+  touch-action: pan-y;
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching {
+  transition: none;
 }

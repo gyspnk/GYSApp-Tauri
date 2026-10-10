@@ -103,6 +103,7 @@ export function getAccentForeground(color: string): string | undefined {
 
 export function applyAccentToDocument(color: string): void {
   if (typeof document === "undefined") return;
+  syncNativeAccent(color || DEFAULT_ACCENT_COLOR);
   const root = document.documentElement;
   if (!color || color === DEFAULT_ACCENT_COLOR) {
     root.style.removeProperty("--accent");
@@ -131,6 +132,27 @@ export function applyAccentToDocument(color: string): void {
       "--navy",
       `color-mix(in srgb, ${color} 20%, var(--ink))`,
     );
+  }
+}
+
+/** The Android listener accepts a color only, from the native main-frame origin. */
+function syncNativeAccent(color = currentAccent): void {
+  if (typeof window === "undefined") return;
+  const match = /^#([a-f0-9]{6}|[a-f0-9]{3})$/i.exec(color);
+  if (!match) return;
+  const hex =
+    match[1]!.length === 3
+      ? [...match[1]!].map((digit) => digit + digit).join("")
+      : match[1]!;
+  const bridge = (
+    window as Window & {
+      GysStatusAccent?: { postMessage: (color: string) => void };
+    }
+  ).GysStatusAccent;
+  try {
+    bridge?.postMessage(`#${hex.toLowerCase()}`);
+  } catch {
+    /* Shell teardown must not break web appearance. */
   }
 }
 
@@ -163,4 +185,11 @@ export function setAccentStorageForTesting(storage: AccentStorage): void {
 // Auto-initialize on import in browser
 if (typeof window !== "undefined") {
   applyAccentToDocument(currentAccent);
+  window.addEventListener("pageshow", () => syncNativeAccent());
+  window.addEventListener("gys-native-accent-request", () =>
+    syncNativeAccent(),
+  );
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") syncNativeAccent();
+  });
 }

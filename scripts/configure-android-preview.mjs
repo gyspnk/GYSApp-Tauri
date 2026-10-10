@@ -12,6 +12,12 @@ export async function configureAndroid(
   const marker = "// GYSApp optimized preview";
   const source = await readFile(project, "utf8");
   const additions = [];
+  const messagingMarker = "// GYSApp origin-scoped status accent";
+  if (!source.includes(messagingMarker)) {
+    additions.push(
+      `${messagingMarker}\ndependencies {\n    implementation("androidx.webkit:webkit:1.14.0")\n}\n`,
+    );
+  }
   if (!source.includes(marker)) {
     // Keep Tauri's generated ProGuard rules and plugin consumer rules intact.
     // The preview signing identity is independent of the optimized Rust profile.

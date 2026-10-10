@@ -1,3 +1,4 @@
+import { useGestureFont } from "./gesture-font.js";
 import { PdfReader, preloadPdfReader } from "./pdf-reader-loader.js";
 import { LoadingProgress } from "./loading-progress.js";
 import { transitionReader } from "./reader-transition.js";
@@ -46,7 +47,7 @@ const readMidiReaderState = createSnapshotSelector(
   midiPlayer.snapshot,
   ({ position: _position, ...reader }) => reader,
 );
-import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
+import { GM_INSTRUMENTS } from "./midi-instruments.js";
 import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
 import { Icon } from "./icons.js";
@@ -309,6 +310,9 @@ export function HymnDetail({
   const chordRepository = useMemo(createBrowserChordRepository, []);
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const lyricsRef = useRef<HTMLElement>(null);
+  const gestureFont = useGestureFont(lyricsRef);
+  const gestureTarget = useRef<HTMLElement | null>(null);
+
   const [fitFontSize, setFitFontSize] = useState(
     () => readHymnTypography(songId).fontSize,
   );
@@ -345,6 +349,22 @@ export function HymnDetail({
   ]);
   const verses = useMemo(() => getHymnVerses(item), [item]);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
+  useEffect(() => {
+    setGestureActive(false);
+    return () => {
+      gestureFont.cancel();
+      const ids = [...gesturePointers.current.keys()];
+      gesturePointers.current.clear();
+      pinchStart.current = undefined;
+      swipeStart.current = undefined;
+      for (const id of ids) {
+        if (gestureTarget.current?.hasPointerCapture(id))
+          gestureTarget.current.releasePointerCapture(id);
+      }
+      gestureTarget.current = null;
+    };
+  }, [songId, safeVerseIndex, viewerMode]);
+
   const sequence = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
     [state],
@@ -781,6 +801,7 @@ export function HymnDetail({
     let frame = 0;
     const measure = () => {
       frame = 0;
+      if (pinchStart.current) return;
       const adaptive =
         Math.round(
           Math.max(
@@ -1081,6 +1102,7 @@ export function HymnDetail({
   };
   const onLyricsPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.pointerType !== "touch") return;
+    gestureTarget.current = event.currentTarget;
     gesturePointers.current.set(event.pointerId, {
       x: event.clientX,
       y: event.clientY,
@@ -1121,9 +1143,19 @@ export function HymnDetail({
       pinch.fontSize * (pointerDistance() / pinch.distance),
     );
     pinch.nextFontSize = Math.round(nextFontSize * 10) / 10;
-    setFitFontSize(pinch.nextFontSize);
+    gestureFont.queue(pinch.nextFontSize);
   };
   const finishLyricsPointer = (event: ReactPointerEvent<HTMLElement>) => {
+    if (!gesturePointers.current.has(event.pointerId)) return;
+    const cancelled = event.type !== "pointerup";
+    if (cancelled) {
+      const ids = [...gesturePointers.current.keys()];
+      gesturePointers.current.clear();
+      for (const id of ids)
+        if (event.currentTarget.hasPointerCapture(id))
+          event.currentTarget.releasePointerCapture(id);
+    }
+
     const wasPinching = Boolean(pinchStart.current);
     const start = swipeStart.current;
     gesturePointers.current.delete(event.pointerId);
@@ -1135,21 +1167,29 @@ export function HymnDetail({
     }
     if (wasPinching) {
       if (gesturePointers.current.size < 2) {
-        const nextFontSize = pinchStart.current?.nextFontSize;
+        const base = pinchStart.current?.fontSize;
+        const nextFontSize = cancelled ? undefined : gestureFont.finish();
+        if (cancelled) {
+          gestureFont.cancel();
+          if (lyricsRef.current && base !== undefined)
+            lyricsRef.current.style.fontSize = `${base / 16}rem`;
+        }
         pinchStart.current = undefined;
         setGestureActive(false);
-        if (nextFontSize !== undefined)
-          setTypography((current) =>
+        if (nextFontSize !== undefined) {
+          setFitFontSize(nextFontSize);
+          setTypography(
             writeHymnTypography(item.id, {
-              ...current,
+              ...typography,
               fontSize: nextFontSize,
             }),
           );
+        }
       }
       return;
     }
     swipeStart.current = undefined;
-    if (!start) return;
+    if (!start || cancelled) return;
     const deltaX = event.clientX - start.x;
     const deltaY = event.clientY - start.y;
     if (
@@ -2083,9 +2123,6 @@ export function HymnDetail({
                                   .catch(() => undefined)
                               }
                             >
-                              <option value={-1}>
-                                {midiInstrumentLabel(-1)}
-                              </option>
                               {GM_INSTRUMENTS.map((name, program) => (
                                 <option key={program} value={program}>
                                   {String(program + 1).padStart(3, "0")} ·{" "}
@@ -2766,6 +2803,7 @@ export function HymnDetail({
               onPointerMove={onLyricsPointerMove}
               onPointerUp={finishLyricsPointer}
               onPointerCancel={finishLyricsPointer}
+              onLostPointerCapture={finishLyricsPointer}
             >
               {lyricLines.map((line, index) => {
                 const chordLine = chordLines[index];

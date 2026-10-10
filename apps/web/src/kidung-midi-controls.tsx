@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { translate, type Locale } from "./i18n.js";
 import { midiPlayer } from "./midi-player.js";
-import { GM_INSTRUMENTS, midiInstrumentLabel } from "./midi-instruments.js";
+import { GM_INSTRUMENTS } from "./midi-instruments.js";
 import { Icon } from "./icons.js";
 import { applyAutoNextMode, getAutoNextMode } from "./midi-playlist.js";
 import { HymnMidiProgress } from "./kidung-midi-progress.js";
@@ -109,7 +109,6 @@ export function MidiControlsPanel({ locale }: { locale: Locale }) {
                 .catch(() => undefined)
             }
           >
-            <option value={-1}>{midiInstrumentLabel(-1)}</option>
             {GM_INSTRUMENTS.map((name, program) => (
               <option key={program} value={program}>
                 {String(program + 1).padStart(3, "0")} · {name}

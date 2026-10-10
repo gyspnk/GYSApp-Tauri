@@ -1,3 +1,4 @@
+import { createChapterSwipe } from "./chapter-swipe.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
 import {
@@ -261,7 +262,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [quickNavDrag, setQuickNavDrag] = useState<
     QuickNavDragState | undefined
   >(undefined);
-  const touchStartX = useRef<number | undefined>(undefined);
+  const chapterSwipe = useRef(createChapterSwipe());
   const searchAbortRef = useRef<AbortController | undefined>(undefined);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const quickNavRef = useRef<
@@ -1439,16 +1440,25 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const onVerseTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length === 1)
-      touchStartX.current = event.touches[0]?.clientX;
+    if (
+      event.target instanceof Element &&
+      event.target.closest("button, a, input, textarea, [contenteditable]")
+    ) {
+      chapterSwipe.current.cancel();
+      return;
+    }
+    chapterSwipe.current.start(event.touches, event.timeStamp);
+  };
+  const onVerseTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    chapterSwipe.current.move(event.touches);
   };
   const onVerseTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const start = touchStartX.current;
-    touchStartX.current = undefined;
-    if (start === undefined) return;
-    const end = event.changedTouches[0]?.clientX;
-    if (end === undefined || Math.abs(end - start) < 64) return;
-    navigateBy(end < start ? 1 : -1);
+    const delta = chapterSwipe.current.end(
+      event.changedTouches,
+      event.touches.length,
+      event.timeStamp,
+    );
+    if (delta !== undefined) navigateBy(delta);
   };
 
   const hasSavedNotes = Object.keys(notes).length > 0;
@@ -1642,6 +1652,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onSelect={selectVerse}
               onBookmark={toggleBookmark}
               onTouchStart={onVerseTouchStart}
+              onTouchMove={onVerseTouchMove}
+              onTouchCancel={() => {
+                chapterSwipe.current.cancel();
+                chapterSwipe.current.end([], 0, 0);
+              }}
               onTouchEnd={onVerseTouchEnd}
             />
             {splitView && (

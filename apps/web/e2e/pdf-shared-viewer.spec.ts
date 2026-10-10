@@ -240,3 +240,135 @@ for (const width of [320, 390, 768, 1440]) {
     ).toBeLessThanOrEqual(width);
   });
 }
+
+for (const kind of ["faith", "literature", "hymn"] as const) {
+  for (const [layout, label] of [
+    ["single", "Tampilan 1 halaman"],
+    ["two", "Tampilan 2 halaman"],
+    ["vertical", "Vertikal"],
+    ["horizontal", "Mendatar"],
+  ] as const) {
+    test(`${kind} ${layout}: zoomed left and right edges remain reachable by mouse and real touch`, async ({
+      page,
+      context,
+    }) => {
+      await page.setViewportSize({ width: 768, height: 900 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      let reader;
+      if (kind === "hymn") {
+        await page.route(/^https:\/\//, (route) => route.abort());
+        await preparePinnedReaderAssets(page);
+        await page.goto("/GYSApp-Tauri/kidung/hymn-133?mode=pdf");
+        reader = page.locator(".pdf-reader-hymn");
+        await expect(
+          reader.locator('canvas[data-pdf-rendered="true"]').first(),
+        ).toBeVisible();
+      } else reader = await openSharedReader(page, kind);
+      await reader.locator(".pdf-advanced-toggle").click();
+      if (kind === "hymn")
+        await reader.locator(".pdf-layout-menu-toggle").click();
+      await reader.getByRole("button", { name: label, exact: true }).click();
+      const stage = reader.locator(".pdf-stage");
+      await expect(stage).toHaveAttribute("data-pdf-layout", layout);
+      await stage.focus();
+      for (let i = 0; i < 6; i++) await page.keyboard.press("Control+=");
+      await expect(stage).toHaveAttribute("data-pdf-pannable", "true");
+      const paper = stage.locator(".pdf-page-frame > canvas").first();
+      await expect
+        .poll(() => paper.evaluate((el) => parseFloat(el.style.width)))
+        .toBeGreaterThan(800);
+      const geometry = () =>
+        stage.evaluate((el) => {
+          const box = el.getBoundingClientRect();
+          const paper = el
+            .querySelector(".pdf-page-frame > canvas")!
+            .getBoundingClientRect();
+          return {
+            left: paper.left - box.left + el.scrollLeft,
+            right: paper.right - box.left + el.scrollLeft,
+            width: el.clientWidth,
+            scroll: el.scrollLeft,
+            max: el.scrollWidth - el.clientWidth,
+          };
+        });
+      const before = await geometry();
+      expect(
+        before.left,
+        "left edge must have a non-negative scroll origin",
+      ).toBeGreaterThanOrEqual(-1);
+      const toolbar = await reader.locator(".pdf-toolbar").boundingBox();
+      await stage.evaluate((el) => {
+        el.scrollLeft = 0;
+      });
+      const box = (await stage.boundingBox())!;
+      const drag = async (from: number, to: number) => {
+        await page.mouse.move(box.x + from, box.y + 100);
+        await page.mouse.down();
+        await page.mouse.move(box.x + to, box.y + 100, { steps: 8 });
+        await page.mouse.up();
+      };
+      await drag(600, 100);
+      expect((await geometry()).scroll).toBeGreaterThan(100);
+      await drag(100, 650);
+      expect((await geometry()).scroll).toBeLessThan(2);
+      const cdp = await context.newCDPSession(page);
+      await cdp.send("Emulation.setTouchEmulationEnabled", {
+        enabled: true,
+        maxTouchPoints: 2,
+      });
+      const send = (type: string, x: number) =>
+        cdp.send("Input.dispatchTouchEvent", {
+          type,
+          touchPoints:
+            type === "touchEnd"
+              ? []
+              : [{ x: box.x + x, y: box.y + 100, id: 1 }],
+        });
+      await send("touchStart", 600);
+      await send("touchMove", 350);
+      await send("touchMove", 100);
+      await send("touchEnd", 0);
+      expect((await geometry()).scroll).toBeGreaterThan(100);
+      await send("touchStart", 100);
+      await send("touchMove", 400);
+      await send("touchMove", 650);
+      await send("touchEnd", 0);
+      expect((await geometry()).scroll).toBeLessThan(2);
+      await stage.evaluate((el) => {
+        el.scrollLeft = 100;
+      });
+      const pair = (spread: number) => [
+        { x: box.x + 300 - spread / 2, y: box.y + 130, id: 11 },
+        { x: box.x + 300 + spread / 2, y: box.y + 130, id: 12 },
+      ];
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: pair(100),
+      });
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: pair(110),
+      });
+      const remaining = pair(110).slice(0, 1);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        // CDP lists the finger being released, rather than remaining touches.
+        touchPoints: pair(110).slice(1),
+      });
+      const continuation = (await geometry()).scroll;
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ ...remaining[0]!, x: remaining[0]!.x - 80 }],
+      });
+      expect((await geometry()).scroll).toBeGreaterThan(continuation + 60);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      expect(
+        (await reader.locator(".pdf-toolbar").boundingBox())!.y,
+      ).toBeCloseTo(toolbar!.y, 1);
+      expect(page.url()).not.toContain("hymn-134");
+    });
+  }
+}

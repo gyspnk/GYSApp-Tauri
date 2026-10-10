@@ -34,6 +34,8 @@ export function ChapterPane({
   onBookmark,
   onTouchStart,
   onTouchEnd,
+  onTouchMove,
+  onTouchCancel,
 }: {
   locale: Locale;
   book: BibleBook;
@@ -60,6 +62,8 @@ export function ChapterPane({
   onSelect: (verse: BibleVerse) => void;
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
+  onTouchMove?: (event: TouchEvent<HTMLDivElement>) => void;
+  onTouchCancel?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
 }) {
   const chapterPericopes = useMemo(() => {
@@ -140,6 +144,8 @@ export function ChapterPane({
         onScroll={onScroll}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onTouchMove={onTouchMove}
+        onTouchCancel={onTouchCancel}
       >
         {verses.map((verse) => {
           const selected = selectedVerseId === verse.id;

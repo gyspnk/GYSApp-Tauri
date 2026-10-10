@@ -1,4 +1,8 @@
-import { BUNDLED_SOUNDFONT, loadDefaultSoundfont } from "./soundfont.js";
+import {
+  BUNDLED_SOUNDFONT,
+  loadDefaultSoundfont,
+  getActiveSoundfontName,
+} from "./soundfont.js";
 import type { NormalizedMidi } from "@gys/domain";
 import { MidiRenderCache, type RenderedPcm } from "./midi-render-cache.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -6,9 +10,8 @@ import { recordDiagnostic } from "./diagnostics.js";
 /**
  * The media player intentionally lives outside React.  A song can keep
  * playing while routes change, and the shell only subscribes to this small
- * external snapshot.  FluidSynth is the preferred backend; the oscillator
- * path remains a compatibility fallback for browsers which do not allow a
- * worker/WASM context to start.
+ * external snapshot.  Playback uses the active SoundFont bank through FluidSynth. A failed
+ * synthesis request surfaces an error instead of silently changing timbre.
  */
 export type WebMidiSnapshot = {
   status:
@@ -21,10 +24,10 @@ export type WebMidiSnapshot = {
   muted: boolean;
   tempo: number;
   transpose: number;
-  /** -1 keeps each program embedded in the MIDI file; 0–127 selects GM. */
+  /** Selected GM preset (0–127) from the active SoundFont; MIDI programs are ignored. */
   instrument: number;
   backend: "idle" | "fluidsynth" | "oscillator";
-  soundfont?: string;
+  soundfont?: string | undefined;
   loadingProgress: number;
   error?: string | undefined;
 };
@@ -160,10 +163,7 @@ const initial: WebMidiSnapshot = {
     -24,
     Math.min(24, Math.trunc(savedMidiPreferences.transpose ?? 0)),
   ),
-  instrument: Math.max(
-    -1,
-    Math.min(127, Math.trunc(savedMidiPreferences.instrument ?? -1)),
-  ),
+  instrument: clampInstrument(savedMidiPreferences.instrument ?? 0),
   backend: "idle",
   loadingProgress: 0,
 };
@@ -180,7 +180,7 @@ export type MidiPreloadRequest = {
   tempo?: number;
   /** Shared transpose setting. Defaults to the current player setting. */
   transpose?: number;
-  /** GM program override, or -1 to keep embedded programs. */
+  /** Selected preset in the active SoundFont. Legacy -1 migrates to piano. */
   instrument?: number;
 };
 
@@ -201,7 +201,7 @@ export function midiRenderKey(
   sampleRate = 44_100,
   soundfont = BUNDLED_SOUNDFONT,
 ): string {
-  return `${sourceHash}:${soundfont}:${tempo}:${transpose}:${instrument}:${sampleRate}`;
+  return `${sourceHash}:${soundfont}:${tempo}:${transpose}:${clampInstrument(instrument)}:${sampleRate}`;
 }
 
 type PreloadRecord = {
@@ -304,6 +304,7 @@ export class BrowserMidiPlayer {
   private soundfontLoad: Promise<void> | undefined;
   private soundfontRequest: Promise<void> | undefined;
   private soundfontWorker: Worker | undefined;
+  private soundfontRefresh: Promise<void> | undefined;
   private readonly renderCache = new MidiRenderCache();
   private readonly renderInFlight = new Map<
     string,
@@ -333,6 +334,46 @@ export class BrowserMidiPlayer {
   private readonly endedListeners = new Set<() => void>();
 
   public constructor(private readonly loadSoundfont?: SoundfontLoader) {}
+
+  /** Asset installation/removal changes the active bank even in a live session. */
+  public refreshActiveSoundfont(): Promise<void> {
+    if (this.loadSoundfont || !this.soundfont) return Promise.resolve();
+    this.soundfontRefresh ??= (async () => {
+      const name = await getActiveSoundfontName();
+      if (name === this.soundfontName) return;
+      const restart =
+        this.state.status === "playing" || this.state.status === "loading";
+      const generation = this.operationGate.next();
+      this.cancelPreloads();
+      if (this.state.status === "playing") this.updatePositionFromClock();
+      this.stopAudio();
+      this.releaseRendered();
+      this.cancelWorker(new StaleMidiOperation());
+      this.soundfontLoad = undefined;
+      this.patch({
+        soundfont: undefined,
+        status: restart ? "loading" : this.state.status,
+      });
+      try {
+        await this.prepareSoundfont();
+        if (!this.operationGate.isCurrent(generation)) return;
+        this.patch({ soundfont: this.soundfontName });
+        if (restart) await this.play();
+      } catch (error) {
+        if (this.operationGate.isCurrent(generation))
+          this.patch({
+            status: "error",
+            loadingProgress: 0,
+            error:
+              error instanceof Error ? error.message : "SoundFont unavailable",
+          });
+        throw error;
+      }
+    })().finally(() => {
+      this.soundfontRefresh = undefined;
+    });
+    return this.soundfontRefresh;
+  }
 
   // React's external-store contract requires a stable snapshot reference
   // until a patch actually changes the store.
@@ -546,26 +587,29 @@ export class BrowserMidiPlayer {
         return;
       } catch (error) {
         if (error instanceof StaleMidiOperation) return;
-        // A blocked WASM worker should not make an otherwise valid MIDI file
-        // unusable.  Keep a clear compatibility backend and continue with the
-        // small Web Audio renderer below.
+        if (!this.operationGate.isCurrent(generation)) return;
         recordDiagnostic("warn", "midi.fluidsynth", error);
         this.patch({
-          backend: "oscillator",
+          status: "error",
+          backend: "fluidsynth",
           loadingProgress: 0,
           error:
-            error instanceof Error ? error.message : "FluidSynth unavailable",
+            error instanceof Error ? error.message : "SoundFont unavailable",
         });
+        throw error;
       }
+    } else {
+      const error = new Error(
+        "SoundFont playback requires the MIDI synthesis worker",
+      );
+      this.patch({
+        status: "error",
+        backend: "fluidsynth",
+        loadingProgress: 0,
+        error: error.message,
+      });
+      throw error;
     }
-
-    this.stopAudio();
-    if (!this.operationGate.isCurrent(generation)) return;
-    this.positionAtStart = position;
-    this.startedAt = audio.currentTime;
-    this.scheduleOscillator(position);
-    this.patch({ status: "playing", backend: "oscillator", error: undefined });
-    this.startTimer();
   }
 
   public async pause(): Promise<void> {
@@ -688,7 +732,7 @@ export class BrowserMidiPlayer {
   }
 
   public async setInstrument(instrument: number): Promise<void> {
-    const next = Math.max(-1, Math.min(127, Math.trunc(instrument)));
+    const next = clampInstrument(instrument);
     if (next === this.state.instrument) return;
     const wasPlaying = this.state.status === "playing";
     const wasLoading = this.state.status === "loading";
@@ -1221,8 +1265,7 @@ export class BrowserMidiPlayer {
       if (end <= 0 || start > this.state.duration - position + 0.1) continue;
       const oscillator = this.audio.createOscillator();
       const gain = this.audio.createGain();
-      const program =
-        this.state.instrument >= 0 ? this.state.instrument : note.program;
+      const program = this.state.instrument;
       oscillator.type = waveformForProgram(program);
       oscillator.frequency.value =
         440 * 2 ** ((note.note + this.state.transpose - 69) / 12);
@@ -1366,7 +1409,10 @@ function clampTranspose(value: number): number {
 }
 
 function clampInstrument(value: number): number {
-  return Math.max(-1, Math.min(127, Math.trunc(value)));
+  return Math.max(
+    0,
+    Math.min(127, Number.isFinite(value) ? Math.trunc(value) : 0),
+  );
 }
 
 function buildNotes(midi: NormalizedMidi): Note[] {
@@ -1426,3 +1472,10 @@ function waveformForProgram(program: number): OscillatorType {
 }
 
 export const midiPlayer = new BrowserMidiPlayer();
+if (typeof window !== "undefined") {
+  window.addEventListener("gys-distributed-assets-change", () => {
+    void midiPlayer
+      .refreshActiveSoundfont()
+      .catch((error) => recordDiagnostic("warn", "midi.soundfont", error));
+  });
+}

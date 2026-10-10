@@ -8,6 +8,51 @@ import {
 } from "./midi-player.js";
 
 describe("MIDI song tempo defaults", () => {
+  it("uses a selected SoundFont preset across songs and migrates legacy file-program selection", async () => {
+    const player = new BrowserMidiPlayer();
+    await player.load("first", "First", {
+      ppq: 96,
+      tempo: 100,
+      events: [{ type: "program", tick: 0, channel: 0, program: 99 }],
+    });
+    expect(player.snapshot().instrument).toBe(0);
+    await player.setInstrument(40);
+    await player.load("second", "Second", {
+      ppq: 96,
+      tempo: 100,
+      events: [{ type: "program", tick: 0, channel: 0, program: 15 }],
+    });
+    expect(player.snapshot().instrument).toBe(40);
+    await player.setInstrument(-1);
+    expect(player.snapshot().instrument).toBe(0);
+    await player.setInstrument(NaN);
+    expect(player.snapshot().instrument).toBe(0);
+  });
+
+  it("reports unavailable SoundFont synthesis without playing oscillator substitutes", async () => {
+    const player = new BrowserMidiPlayer();
+    await player.load("first", "First", { ppq: 96, tempo: 100, events: [] });
+    vi.stubGlobal("Worker", undefined);
+    const internal = player as unknown as {
+      ensureAudio: () => AudioContext;
+      scheduleOscillator: ReturnType<typeof vi.fn>;
+    };
+    internal.ensureAudio = () =>
+      ({ resume: async () => undefined }) as AudioContext;
+    internal.scheduleOscillator = vi.fn();
+    try {
+      await expect(player.play()).rejects.toThrow(
+        "SoundFont playback requires",
+      );
+      expect(player.snapshot()).toMatchObject({
+        status: "error",
+        backend: "fluidsynth",
+      });
+      expect(internal.scheduleOscillator).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it("uses the new song's PDF tempo when no manual override exists", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
@@ -167,13 +212,17 @@ describe("MIDI operation generation", () => {
     const player = new BrowserMidiPlayer();
     const internal = player as unknown as {
       ensureAudio: () => AudioContext;
-      scheduleOscillator: ReturnType<typeof vi.fn>;
+      rawMidi: Uint8Array;
+      ensureRendered: ReturnType<typeof vi.fn>;
+      startBuffer: ReturnType<typeof vi.fn>;
       startTimer: ReturnType<typeof vi.fn>;
       updatePositionFromClock: ReturnType<typeof vi.fn>;
     };
     internal.ensureAudio = () =>
       ({ resume: async () => undefined, currentTime: 0 }) as AudioContext;
-    internal.scheduleOscillator = vi.fn();
+    vi.stubGlobal("Worker", FakeWorker);
+    internal.ensureRendered = vi.fn(async () => ({ buffer: { duration: 1 } }));
+    internal.startBuffer = vi.fn();
     internal.startTimer = vi.fn();
     internal.updatePositionFromClock = vi.fn();
     await player.load("hymn-002", "Second hymn", {
@@ -181,6 +230,7 @@ describe("MIDI operation generation", () => {
       tempo: 100,
       events: [],
     });
+    internal.rawMidi = new Uint8Array([1]);
     await player.play();
     expect(player.snapshot().status).toBe("playing");
 
@@ -194,7 +244,8 @@ describe("MIDI operation generation", () => {
       tempo: 88,
       transpose: -1,
     });
-    expect(internal.scheduleOscillator).toHaveBeenCalledTimes(2);
+    expect(internal.startBuffer).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
     expect(player.hasTransposePreference()).toBe(false);
   });
 
@@ -792,7 +843,7 @@ describe("MIDI render preload", () => {
 
     expect(midiRenderKey("abc", 110, 0, -1, 44_100)).not.toBe(base);
     expect(midiRenderKey("abc", 100, 1, -1, 44_100)).not.toBe(base);
-    expect(midiRenderKey("abc", 100, 0, 0, 44_100)).not.toBe(base);
+    expect(midiRenderKey("abc", 100, 0, 1, 44_100)).not.toBe(base);
     expect(midiRenderKey("abc", 100, 0, -1, 48_000)).not.toBe(base);
     expect(midiRenderKey("def", 100, 0, -1, 44_100)).not.toBe(base);
   });

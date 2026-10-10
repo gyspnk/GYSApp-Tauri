@@ -31,6 +31,7 @@ test("fresh Android generation installs the shell and preserves build rules on r
     );
     assert.match(configured, /isMinifyEnabled = true/);
     assert.match(configured, /jniLibs.useLegacyPackaging = true/);
+    assert.match(configured, /androidx.webkit:webkit:1.14.0/);
     assert.equal(
       await readFile(activity, "utf8"),
       await readFile(

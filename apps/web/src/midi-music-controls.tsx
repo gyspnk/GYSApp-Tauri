@@ -32,15 +32,7 @@ export function MidiMusicControls({
         className="media-instrument-control"
         label={translate(locale, "media.instrumentMidi")}
         value={instrument}
-        options={[
-          {
-            value: -1,
-            shortLabel: "MIDI",
-            label: translate(locale, "kidung.lyrics.instrumentFromFile"),
-            icon: "musicNote",
-          },
-          ...instruments,
-        ]}
+        options={instruments}
         onChange={(value) =>
           void midiPlayer.setInstrument(value).catch(() => undefined)
         }

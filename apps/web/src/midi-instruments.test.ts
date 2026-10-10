@@ -6,7 +6,7 @@ describe("GM MIDI instrument catalogue", () => {
     expect(GM_INSTRUMENTS).toHaveLength(128);
     expect(GM_INSTRUMENTS[0]).toBe("Acoustic Grand Piano");
     expect(GM_INSTRUMENTS[127]).toBe("Gunshot");
-    expect(midiInstrumentLabel(-1)).toBe("Instrumen dari file");
+    expect(midiInstrumentLabel(-1)).toBe("Acoustic Grand Piano");
     expect(midiInstrumentLabel(200)).toBe("Program 128");
   });
 });

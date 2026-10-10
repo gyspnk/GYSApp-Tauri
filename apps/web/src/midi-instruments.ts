@@ -131,6 +131,6 @@ export const GM_INSTRUMENTS = [
 ] as const;
 
 export function midiInstrumentLabel(program: number): string {
-  if (program < 0) return "Instrumen dari file";
+  if (program < 0 || !Number.isFinite(program)) return GM_INSTRUMENTS[0];
   return GM_INSTRUMENTS[program] ?? `Program ${Math.min(127, program) + 1}`;
 }

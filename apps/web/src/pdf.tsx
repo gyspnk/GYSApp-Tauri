@@ -852,9 +852,10 @@ export function PdfReader({
     }
   }, [page, progressKey, total]);
 
+  const reportPageChange = useEffectEvent(() => onPageChange?.(page, total));
   useEffect(() => {
-    if (total > 0) onPageChange?.(page, total);
-  }, [onPageChange, page, total]);
+    if (total > 0) reportPageChange();
+  }, [page, total]);
 
   useEffect(() => {
     let disposed = false;
@@ -1697,6 +1698,10 @@ export function PdfReader({
         ref={pdfStageRef}
         onTouchStart={onStageTouchStart}
         onTouchEnd={onStageTouchEnd}
+        onTouchCancel={() => {
+          touchStartSingle.current = null;
+          lastTapRef.current = null;
+        }}
         onClick={restoreToolbar}
       >
         {loadingLayerPresent && (

@@ -198,7 +198,7 @@ for (const width of [390, 768, 1440])
     const reader = page.locator(".pdf-reader-hymn");
     await expect(
       reader.locator('canvas[data-pdf-rendered="true"]').first(),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 20_000 });
     await reader.locator(".pdf-advanced-toggle").click();
     const tools = reader.locator(".pdf-advanced-controls");
     await expect

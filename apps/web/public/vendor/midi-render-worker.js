@@ -281,7 +281,7 @@ function renderMidi(msg) {
     var tempoRate = Number(msg.tempoRate);
     if (!Number.isFinite(tempoRate) || tempoRate <= 0) tempoRate = 1;
     var transpose = msg.transpose || 0;
-    var instrument = (msg.instrument != null && msg.instrument >= 0) ? msg.instrument : -1;
+    var instrument = Number.isFinite(msg.instrument) ? Math.max(0, Math.min(127, Math.trunc(msg.instrument))) : 0;
     var midiData = (Math.abs(tempoRate - 1) > 0.0001)
       ? _scaleMidiTempo(msg.midiBuffer, tempoRate)
       : msg.midiBuffer;
@@ -311,6 +311,11 @@ function renderMidi(msg) {
           var ch = eventData.getChannel();
           var isDrum = (ch === 9);
 
+          // File programs/bank selection must never override the active bank
+          // and chosen preset. Percussion keeps the active bank's standard kit.
+          if (eventType === 0xC0 || (eventType === 0xB0 &&
+              (eventData.getControl() === 0 || eventData.getControl() === 32))) return true;
+
           // Note On
           if (eventType === 0x90 && !isDrum && transpose !== 0) {
             var key = eventData.getKey();
@@ -323,8 +328,8 @@ function renderMidi(msg) {
           }
           // Force the selected preset on live note events because many files
           // never emit usable program-change events during playback.
-          if (!isDrum && instrument >= 0 && eventType === 0x90) {
-            _s.midiProgramSelect(ch, sfId, 0, instrument);
+          if (eventType === 0x90) {
+            _s.midiProgramSelect(ch, sfId, isDrum ? 128 : 0, isDrum ? 0 : instrument);
           }
           return false; // Let FluidSynth process the (modified) event normally
         });
