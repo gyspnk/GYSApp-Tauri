@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { SpeechProvider } from "@gys/contracts";
 import { SpeechOrchestrator } from "./speech.js";
 
@@ -21,6 +21,37 @@ function provider(
 }
 
 describe("SpeechOrchestrator", () => {
+  it("never falls back to another voice after the caller cancels speech", async () => {
+    const controller = new AbortController();
+    const fallback = vi.fn(async () => undefined);
+    const edge = provider("edge", false, async () => {
+      controller.abort();
+      throw controller.signal.reason;
+    });
+    const orchestrator = new SpeechOrchestrator([
+      edge,
+      provider("system", true, fallback),
+    ]);
+    await expect(
+      orchestrator.speak("Stop", {}, controller.signal),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it("does not start speech if cancellation arrives while a provider is becoming ready", async () => {
+    const controller = new AbortController();
+    const speak = vi.fn(async () => undefined);
+    const voice = provider("system", true, speak);
+    voice.status = async () => {
+      controller.abort();
+      return { available: true, offline: true };
+    };
+    await expect(
+      new SpeechOrchestrator([voice]).speak("Stop", {}, controller.signal),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(speak).not.toHaveBeenCalled();
+  });
+
   it("falls back from Edge compatibility speech to a local provider", async () => {
     const calls: string[] = [];
     const edge = provider("edge", false, async () => {

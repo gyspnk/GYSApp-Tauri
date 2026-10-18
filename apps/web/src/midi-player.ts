@@ -679,12 +679,15 @@ export class BrowserMidiPlayer {
   }
 
   public async setVolume(volume: number): Promise<void> {
+    if (!Number.isFinite(volume)) return;
     const next = Math.max(0, Math.min(1, volume));
+    if (next === this.state.volume) return;
     if (this.master) this.master.gain.value = this.state.muted ? 0 : next;
     this.patch({ volume: next });
   }
 
   public async setMuted(muted: boolean): Promise<void> {
+    if (muted === this.state.muted) return;
     if (this.master) this.master.gain.value = muted ? 0 : this.state.volume;
     this.patch({ muted });
   }
@@ -693,10 +696,16 @@ export class BrowserMidiPlayer {
     tempo: number,
     options: { userOverride?: boolean } = {},
   ): Promise<void> {
+    if (!Number.isFinite(tempo)) return;
     if (options.userOverride === false && this.tempoOverride) return;
+    const overrideChanged =
+      options.userOverride !== false && !this.tempoOverride;
     if (options.userOverride !== false) this.tempoOverride = true;
     const next = Math.max(30, Math.min(220, Math.round(tempo)));
-    if (next === this.state.tempo) return;
+    if (next === this.state.tempo) {
+      if (overrideChanged) this.persistPreferences();
+      return;
+    }
     const wasPlaying = this.state.status === "playing";
     const wasLoading = this.state.status === "loading";
     const generation = this.operationGate.next();
@@ -716,6 +725,7 @@ export class BrowserMidiPlayer {
     transpose: number,
     options: { userOverride?: boolean } = {},
   ): Promise<void> {
+    if (!Number.isFinite(transpose)) return;
     if (options.userOverride === false && this.transposeOverride) return;
     const overrideChanged =
       options.userOverride !== false && !this.transposeOverride;

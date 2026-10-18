@@ -1,8 +1,10 @@
 {
   "version": "1",
   "translation": "TB",
-  "generatedAt": "2026-10-09T04:09:10.797Z",
-  "sha256": "08173f05e2bbbcb1bfba7b4b12e78d57cbf67004e1fc92ad5879b9ba27b8f57c",
-  "bytes": 7016448,
+  "format": "json",
+  "path": "tb-reader.json",
+  "generatedAt": "2026-10-11T14:44:32.743Z",
+  "sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
+  "bytes": 7939120,
   "books": 66
 }

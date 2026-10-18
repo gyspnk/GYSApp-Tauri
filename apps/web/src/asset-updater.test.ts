@@ -4,10 +4,10 @@ import { applyAssetManifestUpdate } from "./asset-updater.js";
 import type { AssetManifestV1 } from "@gys/contracts";
 
 const item = {
-  id: "bible-tb",
+  id: "bible-tb-reader",
   kind: "bible" as const,
   source: "local" as const,
-  path: "offline/bible/b_tb.db",
+  path: "offline/bible/tb-reader.json",
   version: "sha-a",
   sha256: "a".repeat(64),
   bytes: 3,
@@ -84,7 +84,7 @@ describe("asset manifest updates", () => {
       manifest([item, removed]),
       manifest([changed, added]),
     );
-    expect(diff.changed.map(({ id }) => id)).toEqual(["bible-tb"]);
+    expect(diff.changed.map(({ id }) => id)).toEqual(["bible-tb-reader"]);
     expect(diff.added.map(({ id }) => id)).toEqual(["hymn-catalog"]);
     expect(diff.removed.map(({ id }) => id)).toEqual(["faith-topics"]);
     expect(diff.hasUpdate).toBe(true);
@@ -92,7 +92,7 @@ describe("asset manifest updates", () => {
 
   it("rejects duplicate IDs before an active pointer can be published", () => {
     expect(() => parseAssetManifest(manifest([item, item]))).toThrow(
-      "Duplicate asset id: bible-tb",
+      "Duplicate asset id: bible-tb-reader",
     );
   });
 

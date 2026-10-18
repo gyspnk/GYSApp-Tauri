@@ -1,12 +1,12 @@
 /* MIDI's persistent surface: transport, musical controls, then utilities. */
 .media-surface.is-kidung-media:not(.is-minimized) {
-  --midi-control: 36px;
+  --midi-control: 32px;
   grid-template-columns:
-    minmax(100px, 1fr) auto minmax(100px, 1.2fr)
-    80px repeat(3, var(--midi-control)) !important;
-  grid-template-areas: "title transport seek tempo advanced close minimize" !important;
-  padding: 8px;
-  gap: 6px;
+    66px var(--midi-control) minmax(0, 1fr) var(--midi-control)
+    66px !important;
+  grid-template-areas: "title title title minimize close" "tempo playback playback playback advanced" !important;
+  padding: 4px 8px;
+  gap: 2px 4px;
   border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
   border-radius: 16px;
   background: var(--surface);
@@ -26,7 +26,7 @@
 }
 @media (pointer: coarse) {
   .media-surface.is-kidung-media:not(.is-minimized) {
-    --midi-control: 40px;
+    --midi-control: 44px;
   }
 }
 .media-surface.is-kidung-media:not(.is-minimized)
@@ -192,7 +192,7 @@
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
   width: min(360px, calc(100vw - 40px));
   grid-template-columns: minmax(0, 1fr);
-  max-height: min(400px, calc(100dvh - var(--reader-media-space, 0px) - 86px));
+  max-height: min(480px, calc(100dvh - var(--reader-media-space, 0px) - 86px));
   padding: 12px;
   border-radius: 18px;
 }
@@ -383,13 +383,14 @@
 }
 @media (max-width: 679px) {
   .media-surface.is-kidung-media:not(.is-minimized) {
-    grid-template-columns: minmax(0, 1fr) 80px repeat(3, var(--midi-control)) !important;
+    grid-template-columns:
+      66px var(--midi-control) minmax(0, 1fr) var(--midi-control)
+      66px !important;
     grid-template-areas:
-      "title tempo advanced close minimize"
-      "transport transport seek seek seek" !important;
-    --midi-control: 40px;
-    gap: 4px;
-    padding: 8px;
+      "title title title minimize close"
+      "tempo playback playback playback advanced" !important;
+    gap: 2px 4px;
+    padding: 4px 8px;
   }
 }
 @media (max-width: 480px) {
@@ -513,6 +514,536 @@
   height: var(--midi-control);
   min-height: var(--midi-control);
 }
-.media-surface.is-kidung-media .media-advanced-panel {
+
+/* The same two rows at every width: context/progress, then centred transport. */
+.media-surface.is-kidung-media:not(.is-minimized) .media-transport-controls {
+  gap: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-seek-time {
+  padding-inline: 6px;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-summary
+  small {
+  display: none;
+}
+.media-surface.is-kidung-media .media-panel-heading {
+  margin: 0;
+  padding: 2px 0 6px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 8px;
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-column: 1 / -1 !important;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .control-select
+  > .control-select-label {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  display: block;
+  margin: 0 0 5px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+  grid-column: 2 !important;
+  width: 100%;
+  align-self: end;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-utility-controls {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-volume-control {
+  flex: 1;
+  min-width: 0;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  gap: 8px;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  height: 44px;
+  padding: 4px;
+  background: transparent;
+  border: 0;
+}
+.media-action-caption {
+  font-size: 0.625rem;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+}
+@media (max-width: 359px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns:
+      66px var(--midi-control) minmax(0, 1fr) var(--midi-control)
+      66px !important;
+    padding: 4px 8px;
+    gap: 2px 0;
+  }
+  .media-surface.is-kidung-media .media-tempo-toggle svg {
+    display: none;
+  }
+}
+
+.media-surface.is-kidung-media .media-playback-row {
+  grid-area: playback;
+  display: grid;
+  grid-template-columns: calc(3 * var(--midi-control));
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.media-surface.is-kidung-media .media-playback-row .media-transport-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+.media-surface.is-kidung-media .media-playback-row .media-control {
+  flex: 0 0 var(--midi-control);
+  width: var(--midi-control);
+  min-width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media .media-playback-row .media-seek-time {
+  grid-area: auto !important;
+}
+
+/* Symmetric side columns keep transport centred independently of labels. */
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta .media-seek-time {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: none;
+  gap: 6px;
+  padding: 0;
+  width: 100%;
+  grid-area: auto !important;
+}
+.media-surface.is-kidung-media .media-meta .media-seek-time > * {
+  grid-area: auto;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-minimize, .media-close-button, .media-advanced-summary) {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.media-surface.is-kidung-media .media-playback-row .media-control {
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-meta
+  .media-seek-time
+  input {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  margin: 0;
+  min-width: 0;
+}
+.media-surface.is-kidung-media .media-meta .media-seek-time > span:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+.media-surface.is-kidung-media .media-meta .media-seek-time > span:last-child {
+  grid-column: 3;
+  grid-row: 1;
+}
+.media-surface.is-kidung-media .media-context-link {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  :is(.media-queue-badge, .media-midi-actions .media-control)
+  > svg {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  :is(.media-queue-badge, .media-midi-actions .media-control)
+  > span {
+  flex: 0 1 auto;
+  width: auto;
+  margin: 0;
+}
+.media-surface.is-kidung-media .media-meta .media-context-link {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Compact settings use five control rows, without stacked field captions. */
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+  padding: 6px 8px;
+  gap: 4px;
+}
+.media-surface.is-kidung-media .media-panel-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  gap: 4px;
+  padding: 0;
+  border: 0;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+}
+.media-surface.is-kidung-media
+  .media-instrument-control
+  > .control-select-label {
+  margin: 0;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-key-control
+  > .control-select-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(
+    .media-control,
+    .media-minimize,
+    .media-advanced-summary,
+    .media-tempo-toggle,
+    .media-queue-badge,
+    .media-transpose button,
+    .control-select-trigger
+  ) {
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-control, .media-minimize, .media-advanced-summary) {
+  width: var(--midi-control);
+  min-width: var(--midi-control);
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control {
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+  min-height: var(--midi-control);
+  height: var(--midi-control);
+  box-sizing: content-box;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-meta
+  .media-seek-time
+  input {
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+@media (pointer: fine) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+    height: auto;
+    min-height: 20px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    .media-meta
+    .media-seek-time
+    input {
+    height: 20px;
+    min-height: 20px;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+  --midi-control: inherit;
+}
+.media-surface.is-kidung-media .media-instrument-control .control-select-menu {
+  grid-column: 1 / -1;
+}
+
+body:has(.hymn-detail-page.is-text-viewer)
+  .media-surface.is-kidung-media:not(.is-minimized) {
+  bottom: calc(var(--midi-control) + 28px + env(safe-area-inset-bottom));
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 480px) {
+  .media-surface.is-kidung-media:not(.is-minimized)
+    .media-context-link
+    .media-activity {
+    display: none;
+  }
+}
+
+/* Both player surfaces use one instrument/key/transpose component. */
+.lyrics-extra .media-music-controls {
   --midi-control: 44px;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 4px;
+  min-width: 0;
+}
+.lyrics-extra .media-instrument-control {
+  grid-column: 1 / -1 !important;
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 4px;
+  align-items: center;
+}
+.lyrics-extra .media-instrument-control > .control-select-label {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.lyrics-extra .media-instrument-control .control-select-menu {
+  grid-column: 1 / -1;
+}
+.lyrics-extra .media-key-control {
+  min-width: 0;
+}
+.lyrics-extra .media-transpose {
+  align-items: center;
+}
+.lyrics-extra .media-transpose button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+.midi-tempo-stepper {
+  --tempo-target: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+.midi-tempo-stepper > button {
+  display: grid;
+  place-items: center;
+  width: var(--tempo-target);
+  min-width: var(--tempo-target);
+  height: var(--tempo-target);
+  min-height: var(--tempo-target);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 1.125rem;
+}
+.midi-tempo-stepper > label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--tempo-target);
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+.midi-tempo-stepper input {
+  width: 3.5ch;
+  min-width: var(--tempo-target);
+  height: var(--tempo-target);
+  min-height: var(--tempo-target);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  appearance: textfield;
+}
+.midi-tempo-stepper input::-webkit-inner-spin-button,
+.midi-tempo-stepper input::-webkit-outer-spin-button {
+  appearance: none;
+}
+.midi-tempo-stepper label > span {
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+.midi-tempo-stepper button:disabled {
+  opacity: 0.35;
+}
+@media (pointer: fine) {
+  .lyrics-extra .media-music-controls {
+    --midi-control: 32px;
+  }
+  .midi-tempo-stepper {
+    --tempo-target: 32px;
+  }
+}
+
+.media-surface.is-kidung-media .media-tempo-popover {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 6px 8px;
+}
+.midi-tempo-stepper > label {
+  flex: 0 0 auto;
+  min-width: 80px;
+  justify-content: center;
+}
+.media-surface.is-kidung-media .media-tempo-popover .midi-tempo-stepper input {
+  width: 3.5ch;
+  min-width: var(--tempo-target);
+  min-height: var(--tempo-target);
+  flex: 0 0 auto;
+}
+.lyrics-extra .lyrics-text-line {
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Reader settings use the same bounded musical fields as the player. */
+.hymn-music-settings .media-music-controls {
+  --midi-control: 32px;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 4px;
+  min-width: 0;
+}
+.hymn-music-settings .media-instrument-control {
+  grid-column: 1 / -1 !important;
+}
+.hymn-music-settings .media-music-controls .media-transpose {
+  display: grid;
+  grid-template-columns:
+    var(--midi-control) minmax(24px, 1fr) var(--midi-control)
+    var(--midi-control);
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+}
+.hymn-music-settings .media-music-controls .media-transpose button {
+  display: grid;
+  place-items: center;
+  min-width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  padding: 0;
+}
+.hymn-key-description {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+@media (pointer: coarse) {
+  .hymn-music-settings .media-music-controls {
+    --midi-control: 44px;
+  }
+}
+.hymn-music-settings .hymn-midi-reader-controls {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+.hymn-music-settings .hymn-midi-volume input {
+  min-width: 0;
+}
+.hymn-music-settings .media-music-controls .control-select {
+  min-width: 0;
+}
+
+.hymn-music-settings .media-instrument-control .control-select-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hymn-music-settings .media-instrument-control .control-select-value > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hymn-music-settings .media-instrument-control .control-select-icon {
+  flex: none;
+  margin: 0;
+}
+.hymn-music-settings .hymn-midi-volume button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
 }

@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-11",
+  "statusScope": "Historical local audit; Git status and verification reflect measurement time",
+  "baselineHead": "b695d423a7341d83f81aee09e707f67d8480d136",
+  "remoteMain": "b695d423a7341d83f81aee09e707f67d8480d136",
+  "committed": false,
+  "pushed": false,
+  "baseline_output_bytes": 47260284,
+  "optimized_output_bytes": 40152934,
+  "optimized_file_count": 133,
+  "tb_sha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c",
+  "source_sqlite_sha256": "08173f05e2bbbcb1bfba7b4b12e78d57cbf67004e1fc92ad5879b9ba27b8f57c",
+  "saved_output_bytes": 7107350,
+  "output_reduction_percent": 15.038737388882387,
+  "initialJavascriptGzipBytes": 179221,
+  "initialJavascriptBudgetBytes": 184320,
+  "localStartup": {
+    "samplesPerRun": 30,
+    "before": {
+      "medianMs": 479.8,
+      "p95Ms": 602.8
+    },
+    "after": {
+      "medianMs": 457.9,
+      "p95Ms": 597.7
+    },
+    "method": "Repeated production Chromium loads; no cold Android/public-network claim"
+  },
+  "bibleHeader": {
+    "windowMs": 1500,
+    "beforeRenders": 6,
+    "afterRenders": 0
+  },
+  "verification": {
+    "prepush": "passed",
+    "contractsTests": 20,
+    "domainTests": 45,
+    "testkitTests": 2,
+    "bffTests": 74,
+    "webTests": 475,
+    "policyTests": 3,
+    "scriptTests": 62,
+    "responsiveBrowserCases": 102,
+    "readerBrowserCases": 66,
+    "performanceBrowserCases": 1,
+    "browserRetries": 0,
+    "readerCasesFirstPass": 65,
+    "remainingCase": "Old tempo helper disambiguated to the slider; PCM cache regression then passed",
+    "nativeAssetCheck": "passed",
+    "runtimeCoreFiles": 24,
+    "runtimeCoreBytes": 17282483,
+    "runtimeFingerprintsUnchangedAfterPackingFixAndPrepush": 94
+  },
+  "runtimeBuildId": "30286bd33c695063",
+  "nativeBuildsRun": false,
+  "nativeArchiveSizeMeasured": false,
+  "nativeDeviceRuntimeVerified": false,
+  "preservedTBReaderSha256": "7b022c06f36ef2d0fedef894f9297ddc8f4573d08184c77f4ba2d00352a83d3c"
+}

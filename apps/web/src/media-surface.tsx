@@ -1,3 +1,4 @@
+import { useHymnNotation } from "./hymn-notation.js";
 import {
   useEffect,
   useLayoutEffect,
@@ -9,7 +10,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { midiPlayer } from "./midi-player.js";
 import { speechPlayer } from "./speech-player.js";
@@ -21,8 +22,7 @@ import {
 } from "./midi-playlist.js";
 import { playAdjacentMidiHymn } from "./midi-queue.js";
 import { mediaSessionBridge } from "./media-session.js";
-import { chordKeyName } from "./chord-viewer.js";
-import { MidiMusicControls } from "./midi-music-controls.js";
+import { MidiMusicControls, MidiTempoStepper } from "./midi-music-controls.js";
 import { Icon } from "./icons.js";
 import { getHymnPdfMeta, subscribeHymnPdfMeta } from "./hymn-pdf-meta.js";
 import { createSnapshotSelector } from "./snapshot-selector.js";
@@ -143,6 +143,7 @@ function MidiSeek({
 
 export function MediaSurface({ locale }: { locale: Locale }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const snapshot = useSyncExternalStore(
     midiPlayer.subscribe,
     readMediaState,
@@ -231,13 +232,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   latestMediaKindRef.current = activeMediaKind;
   // gyschordweb mini-player parity: key/accidental mirror the hymn transpose
   // state; the displayed key is derived from the current transpose offset.
-  const [keyAccidental, setKeyAccidental] = useState<"sharp" | "flat">(
-    () =>
-      (readPreference("gys-hymn-accidental") as "sharp" | "flat") ?? "sharp",
-  );
-  useEffect(() => {
-    writePreference("gys-hymn-accidental", keyAccidental);
-  }, [keyAccidental]);
+  const [keyAccidental, setKeyAccidental] = useHymnNotation();
   const [tempoOpen, setTempoOpen] = useState(false);
   const tempoRef = useRef<HTMLDivElement>(null);
   const tempoPresent = useMenuPresence(tempoOpen, tempoRef);
@@ -351,6 +346,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       dockTransitionRun.current++;
       animationRef.current?.cancel();
       document.documentElement.style.removeProperty("--reader-media-space");
+      document.documentElement.style.removeProperty("--reader-media-clearance");
     },
     [],
   );
@@ -570,22 +566,42 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   useLayoutEffect(() => {
     const surface = surfaceRef.current;
     if (!surface || !isKidungMedia || minimized) {
-      if (!isKidungMedia || dockSettled)
+      if (!isKidungMedia || dockSettled) {
         document.documentElement.style.removeProperty("--reader-media-space");
+        document.documentElement.style.removeProperty(
+          "--reader-media-clearance",
+        );
+      }
       return;
     }
-    const measure = (entries?: ResizeObserverEntry[]) =>
-      document.documentElement.style.setProperty(
-        "--reader-media-space",
-        `${Math.ceil(entries?.[0]?.borderBoxSize[0]?.blockSize ?? surface.offsetHeight + 1) + 20}px`,
+    const measure = (entries?: ResizeObserverEntry[]) => {
+      const height = Math.ceil(
+        entries?.[0]?.borderBoxSize[0]?.blockSize ?? surface.offsetHeight,
       );
+      const bottom = parseFloat(getComputedStyle(surface).bottom) || 0;
+      const style = document.documentElement.style;
+      style.setProperty("--reader-media-space", `${height + 20}px`);
+      // PDF docks have a different bottom inset from text and narrow layouts.
+      style.setProperty("--reader-media-clearance", `${height + bottom + 8}px`);
+    };
     const observer = new ResizeObserver(measure);
     observer.observe(surface);
     measure();
+    let frame = 0;
+    const onResize = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        measure();
+      });
+    };
+    window.addEventListener("resize", onResize);
     return () => {
       observer.disconnect();
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(frame);
     };
-  }, [minimized, isKidungMedia, dockSettled]);
+  }, [minimized, isKidungMedia, dockSettled, location.key]);
   useLayoutEffect(() => {
     const anchor = document.querySelector<HTMLElement>(".sidebar-media-anchor");
     if (!anchor) return;
@@ -823,7 +839,15 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       <button
         type="button"
         className="media-tempo-toggle"
-        onClick={() => setTempoOpen((open) => !open)}
+        onClick={(event) => {
+          if (!tempoOpen) {
+            const music = event.currentTarget
+              .closest(".media-surface")
+              ?.querySelector<HTMLDetailsElement>(".media-advanced-controls");
+            if (music) music.open = false;
+          }
+          setTempoOpen((open) => !open);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") setTempoOpen(false);
         }}
@@ -861,7 +885,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             step="1"
             {...tempoRange}
           />
-          <span>{tempoRange.value} BPM</span>
+          <MidiTempoStepper locale={locale} tempo={snapshot.tempo} />
         </div>
       )}
     </div>
@@ -880,7 +904,13 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           title={translate(locale, "media.loopTitle", { mode: loopLabel })}
         >
           <Icon name="repeat" size={16} />
-          <small aria-hidden="true">{loopBadge}</small>
+          {isKidungMedia ? (
+            <span className="media-action-caption" aria-hidden="true">
+              {translate(locale, "media.loopTitle", { mode: loopLabel })}
+            </span>
+          ) : (
+            <small aria-hidden="true">{loopBadge}</small>
+          )}
         </button>
         <button
           className="media-control"
@@ -899,6 +929,11 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           }
         >
           {keyAccidental === "sharp" ? "♯" : "♭"}
+          {isKidungMedia && (
+            <span className="media-action-caption" aria-hidden="true">
+              {translate(locale, "media.notationShort")}
+            </span>
+          )}
         </button>
         <button
           className="media-control"
@@ -908,6 +943,11 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           title={translate(locale, "media.lyrics")}
         >
           <Icon name="menuBook" size={16} />
+          {isKidungMedia && (
+            <span className="media-action-caption" aria-hidden="true">
+              {translate(locale, "kidung.text")}
+            </span>
+          )}
         </button>
       </div>
     </>
@@ -964,6 +1004,73 @@ export function MediaSurface({ locale }: { locale: Locale }) {
     </>
   );
 
+  const transportControls = (
+    <div
+      className="media-transport-controls"
+      aria-label={translate(
+        locale,
+        speechActive ? "media.controlsSpeech" : "media.controlsMidi",
+      )}
+    >
+      {
+        <button
+          className="media-control media-secondary-control media-previous-control"
+          type="button"
+          onClick={() =>
+            speechActive
+              ? void speechPlayer.previous().catch(() => undefined)
+              : void playAdjacentMidiHymn(-1).catch(() => undefined)
+          }
+          aria-label={translate(
+            locale,
+            speechActive ? "media.previousVerse" : "media.previousSong",
+          )}
+          disabled={
+            speechActive ? speechSnapshot.currentIndex <= 0 : !canPlayPrevious
+          }
+        >
+          <Icon name="skipPrevious" size={17} />
+        </button>
+      }
+      <button
+        className="media-control media-primary-control"
+        type="button"
+        onClick={togglePlayback}
+        aria-label={
+          playing
+            ? translate(locale, "shell.pause")
+            : translate(locale, "shell.play")
+        }
+      >
+        <span className="media-play-glyph" key={playing ? "pause" : "play"}>
+          <Icon name={playing ? "pause" : "play"} size={18} />
+        </span>
+      </button>
+      {
+        <button
+          className="media-control media-secondary-control media-next-control"
+          type="button"
+          onClick={() =>
+            speechActive
+              ? void speechPlayer.next().catch(() => undefined)
+              : void playAdjacentMidiHymn(1).catch(() => undefined)
+          }
+          aria-label={translate(
+            locale,
+            speechActive ? "media.nextVerse" : "media.nextSong",
+          )}
+          disabled={
+            speechActive
+              ? speechSnapshot.currentIndex < 0 ||
+                speechSnapshot.currentIndex >= speechSnapshot.total - 1
+              : !canPlayNext
+          }
+        >
+          <Icon name="skipNext" size={17} />
+        </button>
+      }
+    </div>
+  );
   return (
     <aside
       id="persistent-media-player"
@@ -1056,6 +1163,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
           ) : (
             <strong>{mediaTitle}</strong>
           )}
+          {isKidungMedia && !minimized && <MidiSeek locale={locale} times />}
           {!isKidungMedia && (
             <span>
               {speechActive ? (
@@ -1172,21 +1280,26 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                     <span>{translate(locale, "media.midiQueue")}</span>
                   </div>
                 )}
-                <MidiSeek locale={locale} times />
+                {!isKidungMedia && <MidiSeek locale={locale} times />}
                 {isKidungMedia && midiTempoControls}
                 {isKidungMedia ? (
-                  <details className="media-advanced-controls">
-                    <summary className="media-advanced-summary">
-                      <span className="sr-only">
-                        {translate(locale, "media.advanced")}
-                      </span>
-                      <Icon name="settings" size={16} />
-                      <small>
-                        {chordKeyName(keyIndex, keyAccidental)} ·{" "}
-                        {snapshot.tempo} BPM
-                      </small>
+                  <details
+                    className="media-advanced-controls"
+                    name="hymn-music-controls"
+                    onToggle={(event) => {
+                      if (event.currentTarget.open) setTempoOpen(false);
+                    }}
+                  >
+                    <summary
+                      className="media-advanced-summary"
+                      aria-label={translate(locale, "media.advanced")}
+                    >
+                      <Icon name="settings" size={18} />
                     </summary>
                     <div className="media-advanced-panel">
+                      <h3 className="media-panel-heading">
+                        {translate(locale, "media.musicGroup")}
+                      </h3>
                       {isKidungMedia && (
                         <MidiMusicControls
                           locale={locale}
@@ -1197,6 +1310,9 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                         />
                       )}
 
+                      <h3 className="media-panel-heading">
+                        {translate(locale, "media.playbackGroup")}
+                      </h3>
                       <div className="media-utility-controls">
                         <label className="media-volume-control">
                           <span>{translate(locale, "media.volumeShort")}</span>
@@ -1261,73 +1377,11 @@ export function MediaSurface({ locale }: { locale: Locale }) {
         )}
       </div>
       {!minimized ? (
-        <div
-          className="media-transport-controls"
-          aria-label={translate(
-            locale,
-            speechActive ? "media.controlsSpeech" : "media.controlsMidi",
-          )}
-        >
-          {
-            <button
-              className="media-control media-secondary-control media-previous-control"
-              type="button"
-              onClick={() =>
-                speechActive
-                  ? void speechPlayer.previous().catch(() => undefined)
-                  : void playAdjacentMidiHymn(-1).catch(() => undefined)
-              }
-              aria-label={translate(
-                locale,
-                speechActive ? "media.previousVerse" : "media.previousSong",
-              )}
-              disabled={
-                speechActive
-                  ? speechSnapshot.currentIndex <= 0
-                  : !canPlayPrevious
-              }
-            >
-              <Icon name="skipPrevious" size={17} />
-            </button>
-          }
-          <button
-            className="media-control media-primary-control"
-            type="button"
-            onClick={togglePlayback}
-            aria-label={
-              playing
-                ? translate(locale, "shell.pause")
-                : translate(locale, "shell.play")
-            }
-          >
-            <span className="media-play-glyph" key={playing ? "pause" : "play"}>
-              <Icon name={playing ? "pause" : "play"} size={18} />
-            </span>
-          </button>
-          {
-            <button
-              className="media-control media-secondary-control media-next-control"
-              type="button"
-              onClick={() =>
-                speechActive
-                  ? void speechPlayer.next().catch(() => undefined)
-                  : void playAdjacentMidiHymn(1).catch(() => undefined)
-              }
-              aria-label={translate(
-                locale,
-                speechActive ? "media.nextVerse" : "media.nextSong",
-              )}
-              disabled={
-                speechActive
-                  ? speechSnapshot.currentIndex < 0 ||
-                    speechSnapshot.currentIndex >= speechSnapshot.total - 1
-                  : !canPlayNext
-              }
-            >
-              <Icon name="skipNext" size={17} />
-            </button>
-          }
-        </div>
+        isKidungMedia ? (
+          <div className="media-playback-row">{transportControls}</div>
+        ) : (
+          transportControls
+        )
       ) : isKidungMedia ? null : (
         <button
           className="media-control media-primary-control"

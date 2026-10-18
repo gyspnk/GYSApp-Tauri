@@ -293,23 +293,54 @@ export async function resolveForkPdfSource(
   sources: readonly string[],
   fetcher: typeof fetch = fetch,
 ): Promise<string> {
-  for (const source of sources) {
-    try {
-      const response = await fetcher(source, {
-        signal: AbortSignal.timeout(8000),
-        cache: "force-cache",
-        headers: {
-          accept: "application/pdf,application/octet-stream",
-          range: "bytes=0-4",
-        },
-      });
-      if (!response.ok && response.status !== 206) continue;
+  const candidates = [...new Set(sources)];
+  if (!candidates.length) throw new Error("Fork PDF source is unavailable");
+  const controller = new AbortController();
+  let headStartTimer: ReturnType<typeof setTimeout> | undefined;
+  let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_resolve, reject) => {
+    deadlineTimer = setTimeout(() => {
+      controller.abort();
+      reject(new Error("Fork PDF source is unavailable"));
+    }, 8_000);
+  });
+  const probe = async (source: string): Promise<string> => {
+    const response = await fetcher(source, {
+      signal: controller.signal,
+      cache: "force-cache",
+      headers: {
+        accept: "application/pdf,application/octet-stream",
+        range: "bytes=0-4",
+      },
+    });
+    if (response.ok || response.status === 206) {
       if (await hasPdfHeader(response)) return source;
-    } catch {
-      // Continue to the next immutable source.
+    } else {
+      void response.body?.cancel().catch(() => undefined);
     }
+    throw new Error("Invalid Fork PDF source");
+  };
+  try {
+    const preferred = probe(candidates[0]!);
+    const early = await Promise.race([
+      preferred.catch(() => undefined),
+      new Promise<undefined>((resolve) => {
+        headStartTimer = setTimeout(() => resolve(undefined), 250);
+      }),
+      deadline,
+    ]);
+    if (early) return early;
+    return await Promise.race([
+      Promise.any([preferred, ...candidates.slice(1).map(probe)]),
+      deadline,
+    ]);
+  } catch {
+    throw new Error("Fork PDF source is unavailable");
+  } finally {
+    clearTimeout(headStartTimer);
+    clearTimeout(deadlineTimer);
+    controller.abort();
   }
-  throw new Error("Fork PDF source is unavailable");
 }
 
 export function forkManifestSongKey(value: number | string): string {

@@ -39,7 +39,7 @@ const mocks = vi.hoisted(() => ({
   naturalChords: vi.fn(() => true),
 }));
 
-vi.mock("@gys/domain", () => ({
+vi.mock("@gys/domain/midi-loader", () => ({
   MidiLoader: class {
     load = mocks.parseMidi;
   },

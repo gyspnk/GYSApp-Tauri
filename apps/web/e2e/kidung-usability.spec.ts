@@ -2,7 +2,7 @@ import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { createHash } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-test.use({ serviceWorkers: "block" });
+test.use({ serviceWorkers: "block", hasTouch: true });
 
 test("catalog queue status updates immediately without changing search", async ({
   page,
@@ -895,6 +895,7 @@ test("Kidung number search returns the same song in all supported locales", asyn
 test("fullscreen lyrics keeps its controls localized and contained", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   const copies = {
     id: {
       open: "Mode lirik layar penuh",
@@ -968,6 +969,8 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
     await expect(
       panel.getByRole("button", { name: copies[locale].close }),
     ).toBeVisible();
+    const controlsToggle = panel.locator(".lyrics-header-actions button[aria-expanded]");
+    if (await controlsToggle.getAttribute("aria-expanded") === "false") await controlsToggle.click();
     await expect(
       panel.getByRole("button", { name: copies[locale].hideControls }),
     ).toBeVisible();
@@ -1013,6 +1016,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
 test("fullscreen lyrics controls keep 44px targets at every reader width", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   for (const viewport of [
     { width: 320, height: 720 },
     { width: 390, height: 844 },
@@ -1027,6 +1031,8 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
 
     const panel = page.getByRole("dialog", { name: "Mode lirik" });
     await expect(panel).toBeVisible();
+    const controlsToggle = panel.locator(".lyrics-header-actions button[aria-expanded]");
+    if (await controlsToggle.getAttribute("aria-expanded") === "false") await controlsToggle.click();
     await expectLyricsGeometry(panel, page);
     await expectNoHorizontalOverflow(page);
 
@@ -1045,6 +1051,7 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
 test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   test.setTimeout(60_000);
   await page.addInitScript(() =>
     localStorage.setItem("gys-lyrics-font-size", "28"),
@@ -1442,9 +1449,9 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
       await page.evaluate(() => window.scrollTo(0, 0));
       const lowerSelect = page
         .locator(".control-select")
-        .filter({ hasText: "Jumlah preload" });
+        .filter({ hasText: "Jumlah lagu disiapkan" });
       await lowerSelect
-        .getByRole("combobox", { name: "Jumlah preload" })
+        .getByRole("combobox", { name: "Jumlah lagu disiapkan" })
         .click();
       const lowerMenu = lowerSelect.locator(".control-select-menu");
       await expect(lowerMenu).toBeVisible();

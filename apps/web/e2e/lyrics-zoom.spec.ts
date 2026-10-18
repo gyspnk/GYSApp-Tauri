@@ -39,6 +39,16 @@ for (const width of [390, 768, 1440]) {
     await zoom(-10000);
     await page.waitForTimeout(400);
     expect(await baseFontSize()).toBe(56);
+    await expect
+      .poll(() =>
+        sheet.evaluate(
+          (el) =>
+            el
+              .getAnimations({ subtree: true })
+              .filter((a) => a.id === "gys-lyrics-reflow").length,
+        ),
+      )
+      .toBe(0);
     const collisions = await sheet.evaluate((el) => {
       const lyrics = [...el.querySelectorAll("[data-chord-char-index]")]
         .filter((char) => char.textContent?.trim())

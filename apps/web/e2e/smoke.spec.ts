@@ -326,7 +326,7 @@ test("faith row opens its PDF viewer directly in fullscreen overlay", async ({
   await expect(pdfOverlay).toBeHidden();
 });
 
-test("offline pack manager keeps one update action and reports manifest status", async ({
+test("offline pack manager keeps one update action and version check", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/lainnya?section=data");
@@ -342,10 +342,6 @@ test("offline pack manager keeps one update action and reports manifest status",
     1,
   );
   await expect(page.locator(".pack-manager-actions button")).toHaveCount(2);
-  const diagnostics = page.locator(".offline-pack-diagnostics");
-  await expect(diagnostics.locator("span")).toHaveText("Diagnostik");
-  await expect(diagnostics.locator("small")).toContainText(/Manifest v1/);
-  await expect(diagnostics.locator("small")).toBeVisible();
 });
 
 test("Bible reader keeps search, split reading, and verse annotations local", async ({

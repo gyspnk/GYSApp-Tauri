@@ -47,6 +47,43 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+it("rejects an HTML image response, cancels its body, and uses the publisher mirror", async () => {
+  const cancel = vi.fn();
+  const html = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(
+        new TextEncoder().encode("<html>Temporarily unavailable</html>"),
+      );
+    },
+    cancel,
+  });
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      new Response(html, { headers: { "content-type": "text/html" } }),
+    )
+    .mockResolvedValueOnce(
+      new Response(new Uint8Array([137, 80, 78, 71]), {
+        headers: { "content-type": "image/png" },
+      }),
+    );
+  vi.stubGlobal("fetch", fetcher);
+  const app = createApp({
+    allowedOrigins: [],
+    chordManifest: manifest,
+    content: [],
+  });
+  const response = await app.request(
+    `/api/v1/content/image?url=${encodeURIComponent("https://tjc.org/id/wp-content/uploads/cover.png")}`,
+  );
+  expect(response.headers.get("content-type")).toBe("image/png");
+  expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+    new Uint8Array([137, 80, 78, 71]),
+  );
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(cancel).toHaveBeenCalledOnce();
+});
+
 it("public article requests paint stale content, refresh once through waitUntil, and keep a stable ETag", async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-06T00:00:00Z"));

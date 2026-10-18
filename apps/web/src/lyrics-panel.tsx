@@ -1,3 +1,5 @@
+import { useHymnNotation } from "./hymn-notation.js";
+import { useLyricReflow } from "./lyric-reflow.js";
 import { useGestureFont } from "./gesture-font.js";
 import {
   useEffect,
@@ -9,21 +11,15 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from "react";
-import {
-  chordKeyName,
-  transposeBetweenKeys,
-  ChordCapability,
-  type ChordTextLine,
-} from "./chord-viewer.js";
-import { GM_INSTRUMENTS } from "./midi-instruments.js";
+import { ChordCapability, type ChordTextLine } from "./chord-viewer.js";
+import { MidiMusicControls, MidiTempoStepper } from "./midi-music-controls.js";
 import { midiPlayer } from "./midi-player.js";
 import { Icon } from "./icons.js";
-import { autoFitFontSize } from "./hymn-autofit.js";
+import { measureHymnFontFit } from "./hymn-autofit.js";
 import { translate, type Locale } from "./i18n.js";
 import type { HymnCatalogEntry } from "@gys/contracts";
 import { createSnapshotSelector } from "./snapshot-selector.js";
 import { getHymnPdfMeta } from "./hymn-pdf-meta.js";
-import { Select } from "./select.js";
 
 const readLyricsMidiState = createSnapshotSelector(
   midiPlayer.snapshot,
@@ -114,6 +110,10 @@ export type LyricsPanelProps = {
     verseIndex: number,
   ) => Array<ChordTextLine | undefined>;
   initialVerseIndex?: number;
+  transpose?: number;
+  sourceKeyIndex?: number;
+  chordTranspose?: number;
+  onTransposeChange?: (value: number) => void;
   onNavigateSong: (delta: -1 | 1) => void;
   onClose: () => void;
 };
@@ -129,6 +129,10 @@ export function LyricsPanel({
   verses,
   getChordLinesForVerse,
   initialVerseIndex = 0,
+  transpose: readerTranspose,
+  sourceKeyIndex: readerSourceKey,
+  chordTranspose,
+  onTransposeChange,
   onNavigateSong,
   onClose,
 }: LyricsPanelProps) {
@@ -145,13 +149,9 @@ export function LyricsPanel({
     readBoolean(SHOW_CHORDS_KEY, true),
   );
   const [headerCollapsed, setHeaderCollapsed] = useState(() =>
-    readBoolean(HEADER_COLLAPSED_KEY, false),
+    readBoolean(HEADER_COLLAPSED_KEY, true),
   );
-  const [accidental, setAccidental] = useState<"sharp" | "flat">(
-    () =>
-      (window.localStorage.getItem("gys-hymn-accidental") as
-        "sharp" | "flat") ?? "sharp",
-  );
+  const [accidental, setAccidental] = useHymnNotation();
   const [fitFontSize, setFitFontSize] = useState(fontSize);
   const [isPinching, setIsPinching] = useState(false);
   const verseTextRef = useRef<HTMLDivElement>(null);
@@ -166,6 +166,7 @@ export function LyricsPanel({
   const manualFont = useRef(false);
   const gestureFont = useGestureFont(verseTextRef);
   const gestureTarget = useRef<HTMLElement | null>(null);
+  const controlsToggle = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     writeValue(FONT_SIZE_KEY, fontSize);
@@ -179,9 +180,6 @@ export function LyricsPanel({
   useEffect(() => {
     writeValue(HEADER_COLLAPSED_KEY, headerCollapsed ? 1 : 0);
   }, [headerCollapsed]);
-  useEffect(() => {
-    window.localStorage.setItem("gys-hymn-accidental", accidental);
-  }, [accidental]);
 
   const midiSettings = useSyncExternalStore(
     midiPlayer.subscribeSettings,
@@ -194,6 +192,7 @@ export function LyricsPanel({
     readLyricsMidiState,
   );
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
+  useLyricReflow(verseTextRef, `${item.id}-${safeVerseIndex}`);
   useEffect(() => {
     setIsPinching(false);
     return () => {
@@ -211,8 +210,10 @@ export function LyricsPanel({
   }, [item.id, safeVerseIndex]);
 
   const verseLines = (verses[safeVerseIndex] ?? "").split("\n");
-  const sourceKey = getHymnPdfMeta(item.id)?.keySemitone ?? 0;
-  const keyIndex = (((sourceKey + midiSettings.transpose) % 12) + 12) % 12;
+  const sourceKey =
+    readerSourceKey ?? getHymnPdfMeta(item.id)?.keySemitone ?? 0;
+  const displayedTranspose = readerTranspose ?? midiSettings.transpose;
+  const keyIndex = (((sourceKey + displayedTranspose) % 12) + 12) % 12;
 
   // Autofit: reduce the preferred font size until the verse fits both the
   // width and the height of the content area. Refits on resize, visualViewport
@@ -225,25 +226,17 @@ export function LyricsPanel({
     const measure = () => {
       frame = 0;
       if (disposed || pinchStart.current) return;
-      element.style.fontSize = `${fontSize / 16}rem`;
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
       const next = manualFont.current
         ? fontSize
-        : autoFitFontSize({
-            preferredFontSize: fontSize,
-            availableWidth: element.clientWidth,
-            measuredWidth: element.scrollWidth,
-            ...(parent
-              ? {
-                  availableHeight: parent.clientHeight - 12,
-                  measuredHeight: parent.scrollHeight,
-                }
-              : {}),
-            lastFittedFontSize: lastFitRef.current,
-          });
+        : measureHymnFontFit(
+            element,
+            fontSize,
+            parent ? parent.clientHeight - 12 : element.clientHeight,
+            lastFitRef.current,
+          );
       lastFitRef.current = next;
-      element.style.fontSize = `${next / 16}rem`;
       setFitFontSize(next);
     };
     const schedule = () => {
@@ -395,9 +388,8 @@ export function LyricsPanel({
   };
 
   const chordLinesForVerse = useMemo(() => {
-    if (!showChords) return [];
     return getChordLinesForVerse(safeVerseIndex) ?? [];
-  }, [getChordLinesForVerse, safeVerseIndex, showChords]);
+  }, [getChordLinesForVerse, safeVerseIndex]);
 
   const togglePlayback = () => {
     void (
@@ -481,7 +473,7 @@ export function LyricsPanel({
                     : "kidung.lyrics.showChords",
                 )}
               >
-                <Icon name="music" size={16} />
+                <Icon name="chord" size={16} />
               </button>
               <button
                 type="button"
@@ -495,6 +487,7 @@ export function LyricsPanel({
               <button
                 type="button"
                 className="lyrics-ctrl-btn"
+                ref={controlsToggle}
                 onClick={() => setHeaderCollapsed((current) => !current)}
                 aria-expanded={!headerCollapsed}
                 aria-label={translate(
@@ -510,141 +503,45 @@ export function LyricsPanel({
                     : "kidung.lyrics.hideControls",
                 )}
               >
-                <Icon name="tune" size={16} />
+                <Icon name="settings" size={16} />
               </button>
             </div>
           </div>
           {!headerCollapsed && (
-            <div className="lyrics-extra">
-              <div className="lyrics-tune-line">
-                <label className="lyrics-midi-group">
-                  <span className="sr-only">
-                    {translate(locale, "kidung.lyrics.instrument")}
-                  </span>
-                  <select
-                    className="lyrics-instrument-select"
-                    value={midiSettings.instrument}
-                    onChange={(event) =>
-                      void midiPlayer
-                        .setInstrument(Number(event.target.value))
-                        .catch(() => undefined)
-                    }
-                    aria-label={translate(
-                      locale,
-                      "kidung.lyrics.selectInstrument",
-                    )}
-                  >
-                    {GM_INSTRUMENTS.map((name, program) => (
-                      <option key={program} value={program}>
-                        {String(program + 1).padStart(3, "0")} · {name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="lyrics-midi-group">
-                  <button
-                    type="button"
-                    className="lyrics-hdr-btn"
-                    onClick={() =>
-                      void midiPlayer.setTempo(midiSettings.tempo - 2)
-                    }
-                    aria-label={translate(
-                      locale,
-                      "kidung.lyrics.decreaseTempo",
-                    )}
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    className="lyrics-tempo-input"
-                    min={30}
-                    max={220}
-                    value={midiSettings.tempo}
-                    onChange={(event) => {
-                      const value = Number(event.target.value);
-                      if (Number.isFinite(value))
-                        void midiPlayer.setTempo(value);
-                    }}
-                    onBlur={(event) => {
-                      const value = Number(event.target.value);
-                      if (!Number.isFinite(value))
-                        void midiPlayer.setTempo(midiSettings.tempo);
-                    }}
-                    aria-label={translate(locale, "kidung.lyrics.tempoBpm")}
-                    title={translate(locale, "kidung.lyrics.enterTempo")}
-                  />
-                  <button
-                    type="button"
-                    className="lyrics-hdr-btn"
-                    onClick={() =>
-                      void midiPlayer.setTempo(midiSettings.tempo + 2)
-                    }
-                    aria-label={translate(
-                      locale,
-                      "kidung.lyrics.increaseTempo",
-                    )}
-                  >
-                    +
-                  </button>
-                </div>
-                <div className="lyrics-midi-group lyrics-key-group">
-                  <Select
-                    className="lyrics-key-select"
-                    value={keyIndex}
-                    label={translate(locale, "kidung.lyrics.selectKey")}
-                    options={Array.from({ length: 12 }, (_, value) => ({
-                      value,
-                      label: chordKeyName(value, accidental),
-                    }))}
-                    onChange={(value) =>
-                      void midiPlayer
-                        .setTranspose(
-                          midiSettings.transpose +
-                            transposeBetweenKeys(keyIndex, value),
-                        )
-                        .catch(() => undefined)
-                    }
-                  />
-                </div>
-                <div className="lyrics-midi-group">
-                  <button
-                    type="button"
-                    className="lyrics-hdr-btn"
-                    onClick={() =>
-                      void midiPlayer.setTranspose(midiSettings.transpose - 1)
-                    }
-                    aria-label={translate(
-                      locale,
-                      "kidung.lyrics.transposeDown",
-                    )}
-                  >
-                    <Icon name="south" size={15} />
-                  </button>
-                  <span className="lyrics-transpose-label">
-                    {midiSettings.transpose > 0
-                      ? `+${midiSettings.transpose}`
-                      : midiSettings.transpose}
-                  </span>
-                  <button
-                    type="button"
-                    className="lyrics-hdr-btn"
-                    onClick={() =>
-                      void midiPlayer.setTranspose(midiSettings.transpose + 1)
-                    }
-                    aria-label={translate(locale, "kidung.lyrics.transposeUp")}
-                  >
-                    <Icon name="north" size={15} />
-                  </button>
-                </div>
-              </div>
+            <div
+              className="lyrics-extra"
+              onKeyDown={(event) => {
+                if (event.key !== "Escape") return;
+                event.preventDefault();
+                event.stopPropagation();
+                setHeaderCollapsed(true);
+                controlsToggle.current?.focus({ preventScroll: true });
+              }}
+            >
+              <h3 className="media-panel-heading">
+                {translate(locale, "media.musicGroup")}
+              </h3>
+              <MidiMusicControls
+                locale={locale}
+                keyIndex={keyIndex}
+                accidental={accidental}
+                transpose={displayedTranspose}
+                {...(onTransposeChange ? { onTransposeChange } : {})}
+                instrument={midiSettings.instrument}
+                surface="fullscreen"
+              />
+              <MidiTempoStepper locale={locale} tempo={midiSettings.tempo} />
+              <h3 className="media-panel-heading">
+                {translate(locale, "kidung.textSettings")}
+              </h3>
               <div className="lyrics-text-line">
                 <button
                   type="button"
                   className="lyrics-ctrl-btn"
-                  onClick={() =>
-                    setFontSize((current) => Math.max(14, current - 4))
-                  }
+                  onClick={() => {
+                    manualFont.current = true;
+                    setFontSize((current) => Math.max(14, current - 4));
+                  }}
                   aria-label={translate(locale, "kidung.lyrics.decreaseFont")}
                   title={translate(locale, "kidung.lyrics.decreaseFont")}
                 >
@@ -653,9 +550,10 @@ export function LyricsPanel({
                 <button
                   type="button"
                   className="lyrics-ctrl-btn"
-                  onClick={() =>
-                    setFontSize((current) => Math.min(72, current + 4))
-                  }
+                  onClick={() => {
+                    manualFont.current = true;
+                    setFontSize((current) => Math.min(72, current + 4));
+                  }}
                   aria-label={translate(locale, "kidung.lyrics.increaseFont")}
                   title={translate(locale, "kidung.lyrics.increaseFont")}
                 >
@@ -693,38 +591,6 @@ export function LyricsPanel({
                 >
                   <Icon name="lineWeight" size={16} />
                 </button>
-                <button
-                  type="button"
-                  className="lyrics-ctrl-btn lyrics-verse-nav"
-                  onClick={() =>
-                    setVerseIndex((current) => Math.max(0, current - 1))
-                  }
-                  disabled={safeVerseIndex === 0}
-                  aria-label={translate(locale, "kidung.lyrics.previousVerse")}
-                  title={translate(locale, "kidung.lyrics.previousVerse")}
-                >
-                  <Icon name="chevronLeft" size={15} />
-                </button>
-                <span className="lyrics-verse-indicator">
-                  {translate(locale, "kidung.lyrics.verseCount", {
-                    current: safeVerseIndex + 1,
-                    total: verses.length,
-                  })}
-                </span>
-                <button
-                  type="button"
-                  className="lyrics-ctrl-btn lyrics-verse-nav"
-                  onClick={() =>
-                    setVerseIndex((current) =>
-                      Math.min(verses.length - 1, current + 1),
-                    )
-                  }
-                  disabled={safeVerseIndex >= verses.length - 1}
-                  aria-label={translate(locale, "kidung.lyrics.nextVerse")}
-                  title={translate(locale, "kidung.lyrics.nextVerse")}
-                >
-                  <Icon name="chevronRight" size={15} />
-                </button>
               </div>
             </div>
           )}
@@ -748,26 +614,55 @@ export function LyricsPanel({
               }}
             >
               {verseLines.map((line, index) => {
-                const chordLine = showChords
-                  ? chordLinesForVerse[index]
-                  : undefined;
+                const chordLine = chordLinesForVerse[index];
                 return (
                   <p key={`${index}-${line}`}>
-                    {chordLine && chordLine.chords.length > 0 ? (
-                      <ChordCapability
-                        lines={[chordLine]}
-                        transpose={midiSettings.transpose}
-                        accidental={accidental}
-                        locale={locale}
-                      />
-                    ) : (
-                      line || "\u00A0"
-                    )}
+                    <ChordCapability
+                      lines={[
+                        chordLine ?? { text: line || "\u00A0", chords: [] },
+                      ]}
+                      active={showChords}
+                      transpose={chordTranspose ?? displayedTranspose}
+                      accidental={accidental}
+                      locale={locale}
+                    />
                   </p>
                 );
               })}
             </div>
           </div>
+        </div>
+        <div className="lyrics-verse-footer">
+          <button
+            type="button"
+            className="lyrics-ctrl-btn lyrics-verse-nav"
+            onClick={() => setVerseIndex((current) => Math.max(0, current - 1))}
+            disabled={safeVerseIndex === 0}
+            aria-label={translate(locale, "kidung.lyrics.previousVerse")}
+            title={translate(locale, "kidung.lyrics.previousVerse")}
+          >
+            <Icon name="chevronLeft" size={15} />
+          </button>
+          <span className="lyrics-verse-indicator">
+            {translate(locale, "kidung.lyrics.verseCount", {
+              current: safeVerseIndex + 1,
+              total: verses.length,
+            })}
+          </span>
+          <button
+            type="button"
+            className="lyrics-ctrl-btn lyrics-verse-nav"
+            onClick={() =>
+              setVerseIndex((current) =>
+                Math.min(verses.length - 1, current + 1),
+              )
+            }
+            disabled={safeVerseIndex >= verses.length - 1}
+            aria-label={translate(locale, "kidung.lyrics.nextVerse")}
+            title={translate(locale, "kidung.lyrics.nextVerse")}
+          >
+            <Icon name="chevronRight" size={15} />
+          </button>
         </div>
       </div>
     </div>

@@ -160,6 +160,57 @@ describe("MIDI song tempo defaults", () => {
   });
 });
 
+describe("MIDI control state integrity", () => {
+  it("ignores non-finite controls instead of corrupting playback and preferences", async () => {
+    const player = new BrowserMidiPlayer();
+    await player.load("song", "Song", { ppq: 96, tempo: 100, events: [] });
+    const before = player.snapshot();
+    await player.setVolume(NaN);
+    await player.setTempo(Infinity);
+    await player.setTranspose(NaN);
+    expect(player.snapshot()).toEqual(before);
+    expect(player.hasTransposePreference()).toBe(false);
+  });
+
+  it("does not notify or write preferences for unchanged volume and mute", async () => {
+    const player = new BrowserMidiPlayer();
+    const notify = vi.fn();
+    const write = vi.fn();
+    player.subscribe(notify);
+    vi.stubGlobal("window", { localStorage: { setItem: write } });
+    try {
+      await player.setVolume(player.snapshot().volume);
+      await player.setMuted(player.snapshot().muted);
+      expect(notify).not.toHaveBeenCalled();
+      expect(write).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("persists a manual tempo override even when its numeric value is unchanged", async () => {
+    const player = new BrowserMidiPlayer();
+    await player.load(
+      "song",
+      "Song",
+      { ppq: 96, tempo: 100, events: [] },
+      { tempo: 76 },
+    );
+    const write = vi.fn();
+    vi.stubGlobal("window", { localStorage: { setItem: write } });
+    try {
+      await player.setTempo(76);
+      expect(write).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(write.mock.calls[0]![1])).toMatchObject({
+        tempo: 76,
+        tempoOverride: true,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 class FakeWorker extends EventTarget {
   public terminated = false;
 

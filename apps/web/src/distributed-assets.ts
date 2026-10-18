@@ -8,6 +8,7 @@ import {
   type DistributedAssetKind,
   type DistributedAssetTrack,
 } from "@gys/contracts";
+import { withRequestDeadline } from "./request-deadline.js";
 
 export const DISTRIBUTED_ASSET_MANIFEST_URLS =
   DISTRIBUTED_ASSET_CONFIG.manifestUrls;
@@ -30,6 +31,7 @@ export type DistributedAssetCatalogLoaderOptions = {
   fetcher?: typeof fetch;
   fallback?: unknown;
   urls?: Partial<Record<DistributedAssetTrack, string>>;
+  signal?: AbortSignal;
 };
 
 function manifestTrackForKind(
@@ -165,10 +167,15 @@ function fallbackCatalogUrl(): string {
   return `${import.meta.env.BASE_URL.replace(/\/$/, "")}/offline/distributed-assets.json`;
 }
 
-async function readJson(fetcher: typeof fetch, url: string): Promise<unknown> {
+async function readJson(
+  fetcher: typeof fetch,
+  url: string,
+  signal: AbortSignal,
+): Promise<unknown> {
   const response = await fetcher(url, {
     cache: "no-store",
     headers: { accept: "application/json" },
+    signal,
   });
   if (!response.ok)
     throw new Error(`Distributed manifest request failed: ${response.status}`);
@@ -177,9 +184,15 @@ async function readJson(fetcher: typeof fetch, url: string): Promise<unknown> {
 
 export async function loadBundledDistributedAssetCatalog(
   fetcher: typeof fetch = fetch,
+  signal?: AbortSignal,
 ): Promise<DistributedAssetCatalog> {
-  return parseDistributedAssetCatalog(
-    await readJson(fetcher, fallbackCatalogUrl()),
+  return withRequestDeadline(
+    async (signal) =>
+      parseDistributedAssetCatalog(
+        await readJson(fetcher, fallbackCatalogUrl(), signal),
+      ),
+    8_000,
+    signal,
   );
 }
 
@@ -189,17 +202,22 @@ export async function loadDistributedAssetCatalog(
   const fetcher = options.fetcher ?? fetch;
   const urls = { ...DISTRIBUTED_ASSET_MANIFEST_URLS, ...options.urls };
   try {
-    const [bibles, hymnals, soundfont] = await Promise.all([
-      readJson(fetcher, urls.bibles!),
-      readJson(fetcher, urls.hymnals!),
-      readJson(fetcher, urls.soundfont!),
-    ]);
-    return normalizeDistributedManifests({ bibles, hymnals, soundfont });
+    return await withRequestDeadline(
+      async (signal) => {
+        const [bibles, hymnals, soundfont] = await Promise.all([
+          readJson(fetcher, urls.bibles!, signal),
+          readJson(fetcher, urls.hymnals!, signal),
+          readJson(fetcher, urls.soundfont!, signal),
+        ]);
+        return normalizeDistributedManifests({ bibles, hymnals, soundfont });
+      },
+      8_000,
+      options.signal,
+    );
   } catch (error) {
+    options.signal?.throwIfAborted();
     if (options.fallback !== undefined)
       return parseDistributedAssetCatalog(options.fallback);
-    return parseDistributedAssetCatalog(
-      await readJson(fetcher, fallbackCatalogUrl()),
-    );
+    return loadBundledDistributedAssetCatalog(fetcher, options.signal);
   }
 }

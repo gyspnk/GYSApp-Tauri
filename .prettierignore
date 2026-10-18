@@ -1,5 +1,6 @@
 apps/web/public/offline/bible/tb-reader.json
 .playwright-mcp/
+.typecheck/
 .githooks/
 apps/web/public/vendor/
 apps/web/public/offline/distributed-hymn-catalog.json

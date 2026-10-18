@@ -24,6 +24,34 @@ import { Select } from "./select.js";
 import { Icon } from "./icons.js";
 import { useBibleHeaderState } from "./bible-header-store.js";
 import { useMenuPresence } from "./use-menu-presence.js";
+import { createSnapshotSelector } from "./snapshot-selector.js";
+
+const readMidiHeaderState = createSnapshotSelector(
+  midiPlayer.snapshot,
+  ({ status, songId }) => ({ status, songId }),
+);
+const readSpeechHeaderState = createSnapshotSelector(
+  speechPlayer.snapshot,
+  ({
+    playerOpen,
+    engine,
+    voices,
+    edgeVoices,
+    voiceId,
+    rate,
+    pitch,
+    volume,
+  }) => ({
+    playerOpen,
+    engine,
+    voices,
+    edgeVoices,
+    voiceId,
+    rate,
+    pitch,
+    volume,
+  }),
+);
 
 export function BibleHeader({
   locale,
@@ -62,8 +90,8 @@ export function BibleHeader({
 
   const midiSnapshot = useSyncExternalStore(
     midiPlayer.subscribe,
-    midiPlayer.snapshot,
-    midiPlayer.snapshot,
+    readMidiHeaderState,
+    readMidiHeaderState,
   );
   const midiPlaylist = useSyncExternalStore(
     subscribeMidiPlaylist,
@@ -76,8 +104,8 @@ export function BibleHeader({
 
   const speechSnapshot = useSyncExternalStore(
     speechPlayer.subscribe,
-    speechPlayer.snapshot,
-    speechPlayer.snapshot,
+    readSpeechHeaderState,
+    readSpeechHeaderState,
   );
 
   useEffect(() => {
@@ -380,9 +408,6 @@ export function BibleHeader({
                                 <strong>
                                   {translate(locale, "bible.splitView")}
                                 </strong>
-                                <small>
-                                  {translate(locale, "bible.splitViewHint")}
-                                </small>
                               </div>
                               <div
                                 className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
@@ -404,9 +429,6 @@ export function BibleHeader({
                                   <strong>
                                     {translate(locale, "bible.syncScroll")}
                                   </strong>
-                                  <small>
-                                    {translate(locale, "bible.syncScrollHint")}
-                                  </small>
                                 </div>
                                 <div
                                   className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
@@ -448,15 +470,6 @@ export function BibleHeader({
                                 <strong>
                                   {translate(locale, "bible.audioPlayer")}
                                 </strong>
-                                <small>
-                                  {speechSnapshot.playerOpen ||
-                                  bibleHeader.speaking
-                                    ? translate(locale, "bible.audioActive")
-                                    : translate(
-                                        locale,
-                                        "bible.showAudioPlayer",
-                                      )}
-                                </small>
                               </div>
                               <span
                                 className={`hamburger-badge ${speechSnapshot.playerOpen || bibleHeader.speaking ? "is-playing" : ""}`}
@@ -481,14 +494,6 @@ export function BibleHeader({
                                 <strong>
                                   {translate(locale, "bible.audioSettings")}
                                 </strong>
-                                <small>
-                                  {bibleHeader.speechControlsOpen
-                                    ? translate(
-                                        locale,
-                                        "bible.closeAudioOptions",
-                                      )
-                                    : translate(locale, "bible.configureAudio")}
-                                </small>
                               </div>
                               <div className="hamburger-expand-badge">
                                 <Icon

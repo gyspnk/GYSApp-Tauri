@@ -2101,11 +2101,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
                   );
                 })}
               </div>
-              <p className="bible-crossref-hint">
-                {translate(locale, "bible.crossReferenceHint", {
-                  count: crossRefModal.refs.length,
-                })}
-              </p>
             </div>
           </div>,
           document.body,

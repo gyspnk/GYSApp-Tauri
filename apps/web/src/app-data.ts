@@ -1,6 +1,7 @@
 import { resetHymnViewerMode } from "./hymn-view-mode.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { clearPlatformStorage } from "./platform.js";
+import { clearPendingLiteratureProgress } from "./literature-progress.js";
 
 export async function clearAppData() {
   await import("./chords.js").then((module) =>
@@ -24,5 +25,7 @@ export async function clearAppData() {
     recordDiagnostic("warn", "storage.reset", error);
   }
   if (resetError) throw resetError;
+  clearPendingLiteratureProgress();
+  window.dispatchEvent(new Event("gys-reminder-change"));
   resetHymnViewerMode();
 }

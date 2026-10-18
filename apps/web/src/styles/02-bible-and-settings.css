@@ -488,12 +488,6 @@
 .bible-crossref-snippet:hover {
   color: var(--blue);
 }
-.bible-crossref-hint {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.6875rem;
-  text-align: center;
-}
 .bible-notes-backdrop {
   position: fixed;
   inset: 0;
@@ -1120,6 +1114,14 @@
 .lyrics-break {
   height: 18px;
 }
+.progress-save-notice {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 .toast {
   position: fixed;
   right: 24px;
@@ -1713,20 +1715,6 @@
   margin-top: 16px;
 }
 .pack-manager-actions > small {
-  color: var(--muted);
-  font-size: 0.625rem;
-}
-.offline-pack-diagnostics {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 12px;
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-.offline-pack-diagnostics > small {
-  display: block;
   color: var(--muted);
   font-size: 0.625rem;
 }

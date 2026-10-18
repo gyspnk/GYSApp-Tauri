@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   isLiteratureProgressCompatible,
   getRecentLiteratureIds,
@@ -9,7 +9,12 @@ import {
   readLiteratureProgress,
   removeLiteratureProgress,
   saveLiteratureProgress,
+  clearPendingLiteratureProgress,
 } from "./literature-progress.js";
+import {
+  collectPortableBackupSettings,
+  restorePortableBackupSettings,
+} from "./backup-settings.js";
 
 describe("literature reading progress", () => {
   beforeEach(() => {
@@ -26,12 +31,17 @@ describe("literature reading progress", () => {
     };
     Object.defineProperty(globalThis, "window", {
       configurable: true,
-      value: { localStorage: storage, dispatchEvent: () => true },
+      value: {
+        localStorage: storage,
+        location: { pathname: "/literatur" },
+        dispatchEvent: () => true,
+      },
     });
     Object.defineProperty(globalThis, "localStorage", {
       configurable: true,
       value: storage,
     });
+    clearPendingLiteratureProgress();
   });
 
   it("retains furthest progress and completion when rereading an earlier position", () => {
@@ -70,6 +80,52 @@ describe("literature reading progress", () => {
     expect(readLiteratureProgress().article?.completed).toBeUndefined();
   });
 
+  it("keeps reading progress usable when storage is full, then persists it after recovery", () => {
+    const base = {
+      version: 2 as const,
+      resourceVersion: "storage-pressure-v1",
+      updatedAt: "2026-10-11T12:00:00Z",
+      lastOpenedAt: "2026-10-11T12:00:00Z",
+    };
+    saveLiteratureProgress("storage-pressure", {
+      ...base,
+      percent: 80,
+      location: { kind: "scroll", ratio: 0.8 },
+    });
+    const lastGood = localStorage.getItem("gys-literature-progress-v2");
+    const write = vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("storage full", "QuotaExceededError");
+    });
+    try {
+      expect(() =>
+        saveLiteratureProgress("storage-pressure", {
+          ...base,
+          percent: 30,
+          location: { kind: "scroll", ratio: 0.3 },
+        }),
+      ).not.toThrow();
+      expect(localStorage.getItem("gys-literature-progress-v2")).toBe(lastGood);
+      expect(readLiteratureProgress()["storage-pressure"]).toMatchObject({
+        percent: 80,
+        location: { kind: "scroll", ratio: 0.3 },
+        furthestLocation: { kind: "scroll", ratio: 0.8 },
+      });
+      const backup = collectPortableBackupSettings();
+      expect(
+        JSON.parse(backup["gys-literature-progress-v2"]!)["storage-pressure"]
+          .location.ratio,
+      ).toBe(0.3);
+    } finally {
+      write.mockRestore();
+    }
+    saveLiteratureProgress("storage-pressure-other", { ...base, percent: 10 });
+    const stored = JSON.parse(
+      localStorage.getItem("gys-literature-progress-v2")!,
+    );
+    expect(stored["storage-pressure"].location.ratio).toBe(0.3);
+    expect(stored["storage-pressure-other"].percent).toBe(10);
+  });
+
   it("migrates a legacy entry and keeps the latest location", () => {
     localStorage.setItem(
       "gys-literature-progress-v1",
@@ -88,6 +144,88 @@ describe("literature reading progress", () => {
       resourceVersion: "v2",
       downloadedAt: "2026-08-14T00:01:00.000Z",
     });
+  });
+
+  it("allows backup restoration to supersede pending progress from full storage", () => {
+    const base = {
+      version: 2 as const,
+      resourceVersion: "v1",
+      updatedAt: "2026-10-11T12:00:00Z",
+      lastOpenedAt: "2026-10-11T12:00:00Z",
+    };
+    const write = vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    try {
+      saveLiteratureProgress("restored-pending", { ...base, percent: 80 });
+    } finally {
+      write.mockRestore();
+    }
+    restorePortableBackupSettings({
+      "gys-literature-progress-v2": JSON.stringify({
+        "restored-pending": { ...base, percent: 10 },
+      }),
+    });
+    expect(readLiteratureProgress()["restored-pending"]?.percent).toBe(10);
+  });
+
+  it("does not overwrite a newer durable reading while flushing pending entries", () => {
+    const base = {
+      version: 2 as const,
+      resourceVersion: "v1",
+      updatedAt: "2026-10-11T12:00:00Z",
+      lastOpenedAt: "2026-10-11T12:00:00Z",
+    };
+    const write = vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    try {
+      saveLiteratureProgress("concurrent-reading", {
+        ...base,
+        percent: 30,
+        location: { kind: "scroll", ratio: 0.3 },
+      });
+    } finally {
+      write.mockRestore();
+    }
+    localStorage.setItem(
+      "gys-literature-progress-v2",
+      JSON.stringify({
+        "concurrent-reading": {
+          ...base,
+          updatedAt: "2026-10-11T13:00:00Z",
+          percent: 90,
+          location: { kind: "scroll", ratio: 0.9 },
+          completed: true,
+        },
+      }),
+    );
+    saveLiteratureProgress("other-reading", { ...base, percent: 1 });
+    expect(readLiteratureProgress()["concurrent-reading"]).toMatchObject({
+      percent: 90,
+      location: { kind: "scroll", ratio: 0.9 },
+      furthestLocation: { kind: "scroll", ratio: 0.9 },
+      completed: true,
+    });
+  });
+
+  it("can remove a new pending reading even before its first durable save", () => {
+    const write = vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+    try {
+      saveLiteratureProgress("pending-only", {
+        version: 2,
+        resourceVersion: "v1",
+        percent: 10,
+        updatedAt: "2026-10-11T12:00:00Z",
+        lastOpenedAt: "2026-10-11T12:00:00Z",
+      });
+      removeLiteratureProgress("pending-only");
+      expect(readLiteratureProgress()["pending-only"]).toBeUndefined();
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it("keeps separate last and furthest PDF pages", () => {

@@ -1,11 +1,38 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useMenuPresence } from "./use-menu-presence.js";
 import { Icon } from "./icons.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   readLiteratureProgress,
   saveLiteratureProgress,
+  subscribeLiteratureProgress,
+  hasUnsavedLiteratureProgress,
 } from "./literature-progress.js";
+
+export function ProgressSaveNotice({
+  id,
+  locale,
+}: {
+  id: string;
+  locale: Locale;
+}) {
+  const pending = useSyncExternalStore(
+    subscribeLiteratureProgress,
+    () => hasUnsavedLiteratureProgress(id),
+    () => false,
+  );
+  return pending ? (
+    <span className="progress-save-notice" role="status">
+      {translate(locale, "literature.progressPending")}
+    </span>
+  ) : null;
+}
 
 /** Last position is a bookmark; maximum progress never decreases on rereads. */
 export function ArticleProgress({
@@ -126,6 +153,7 @@ export function ArticleProgress({
           <Icon name="bookmark" size={16} />
         </button>
       </div>
+      <ProgressSaveNotice id={id} locale={locale} />
       {choicesPresent && (
         <div
           ref={choicesRef}

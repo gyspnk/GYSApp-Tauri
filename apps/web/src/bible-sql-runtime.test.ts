@@ -6,9 +6,14 @@ import {
   resolveSqlWasmUrl,
 } from "./bible-sql-runtime.js";
 
-it("bundled SQLite retains the complete reader content and references", async () => {
+it("build-source SQLite projects the complete bundled reader content and references", async () => {
   const root = new URL("../public/offline/bible/", import.meta.url);
-  const bytes = readFileSync(new URL("b_tb.db", root));
+  const bytes = readFileSync(
+    new URL(
+      "../../../packages/contracts/source/bible/b_tb.db",
+      import.meta.url,
+    ),
+  );
   const reader = JSON.parse(
     readFileSync(new URL("tb-reader.json", root), "utf8"),
   );

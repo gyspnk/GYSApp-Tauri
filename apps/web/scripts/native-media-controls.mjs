@@ -26,7 +26,7 @@ export async function focusMidiTempo(page) {
   const toggle = surface.locator(".media-tempo-toggle");
   if ((await toggle.getAttribute("aria-expanded")) !== "true")
     await toggle.click();
-  const tempo = surface.locator(".media-tempo-popover input");
+  const tempo = surface.locator('.media-tempo-popover input[type="range"]');
   await focusMediaControl(tempo);
   return tempo;
 }

@@ -55,6 +55,11 @@ for (const width of [320, 390, 768, 1440]) {
         .getByRole("button", { name: "Tampilkan chord", exact: true })
         .click();
       await expect(page.locator(".chord-rich-line")).toHaveCount(4);
+      // Plain lyric words now stay mounted as chord-rich lines too. Wait for
+      // actual score data before measuring MIDI's SoundFont independence.
+      await expect(page.locator(".chord-visual-marker").first()).toBeVisible({
+        timeout: 30_000,
+      });
       const sheet = page.locator(".lyrics-sheet");
       const toggle = page.locator(".hymn-midi-toggle");
       await toggle.click();
@@ -156,12 +161,19 @@ for (const width of [320, 390, 768, 1440]) {
         "open",
         "",
       );
+      const minimumTarget = await page.evaluate(() =>
+        matchMedia("(pointer: coarse)").matches ? 44 : 32,
+      );
       const panel = player.locator(".media-advanced-panel");
       for (const control of await panel.locator("button, select").all()) {
         if (!(await control.isVisible())) continue;
         const box = (await control.boundingBox())!;
-        expect(Math.round(box.width * 100) / 100).toBeGreaterThanOrEqual(44);
-        expect(Math.round(box.height * 100) / 100).toBeGreaterThanOrEqual(44);
+        expect(Math.round(box.width * 100) / 100).toBeGreaterThanOrEqual(
+          minimumTarget,
+        );
+        expect(Math.round(box.height * 100) / 100).toBeGreaterThanOrEqual(
+          minimumTarget,
+        );
       }
       await page.waitForTimeout(300);
       const audit = await new AxeBuilder({ page })

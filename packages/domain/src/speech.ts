@@ -28,7 +28,9 @@ export class SpeechOrchestrator {
   ): Promise<SpeechResult> {
     let lastError: unknown;
     for (const provider of this.providers) {
+      signal?.throwIfAborted();
       const status = await provider.status();
+      signal?.throwIfAborted();
       if (!status.available) continue;
       try {
         // Set the active provider before awaiting its speech promise so a
@@ -37,9 +39,11 @@ export class SpeechOrchestrator {
         // no-op because `active` was assigned only after `speak` completed.
         this.active = provider;
         await provider.speak(text, options, signal);
+        signal?.throwIfAborted();
         return { providerId: provider.id, offline: status.offline };
       } catch (error) {
         if (this.active === provider) this.active = undefined;
+        signal?.throwIfAborted();
         lastError = error;
       }
     }

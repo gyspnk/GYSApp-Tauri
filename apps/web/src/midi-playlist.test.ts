@@ -105,4 +105,49 @@ describe("MIDI playlist backup recovery", () => {
     ).toBe(true);
     expect(queue.getMidiPlaylist().items).toHaveLength(2);
   });
+
+  it("updates the live queue for another tab without rewriting storage or reviving an older backup", async () => {
+    const { queue, finish } = await open();
+    const listener = vi.fn();
+    const unsubscribe = queue.subscribeMidiPlaylist(listener);
+    const external = {
+      ...queue.getMidiPlaylist(),
+      items: [{ songId: "hymn-003", title: "Another tab" }],
+      currentIndex: 0,
+    };
+    const event = new Event("storage");
+    Object.assign(event, {
+      key: "gys-midi-playlist-v1",
+      newValue: JSON.stringify(external),
+      storageArea: localStorage,
+    });
+    window.dispatchEvent(event);
+    finish();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(queue.getMidiPlaylist().items).toEqual(external.items);
+    expect(listener).toHaveBeenCalledOnce();
+    expect(setItem).not.toHaveBeenCalled();
+    unsubscribe();
+  });
+
+  it("ignores unrelated and invalid storage messages, and clears the queue when the saved queue is removed", async () => {
+    const { queue } = await open();
+    queue.addMidiPlaylistItem({ songId: "hymn-005", title: "Saved" });
+    const listener = vi.fn();
+    const unsubscribe = queue.subscribeMidiPlaylist(listener);
+    const send = (key: string, newValue: string | null) => {
+      const event = new Event("storage");
+      Object.assign(event, { key, newValue, storageArea: localStorage });
+      window.dispatchEvent(event);
+    };
+    send("gys-shell-settings-v1", "{}");
+    send("gys-midi-playlist-v1", "invalid");
+    expect(queue.getMidiPlaylist().items).toHaveLength(1);
+    expect(listener).not.toHaveBeenCalled();
+    send("gys-midi-playlist-v1", null);
+    expect(queue.getMidiPlaylist().items).toEqual([]);
+    expect(listener).toHaveBeenCalledOnce();
+    unsubscribe();
+  });
 });

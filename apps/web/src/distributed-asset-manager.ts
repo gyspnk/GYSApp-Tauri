@@ -98,6 +98,8 @@ export class DistributedAssetManager {
   private readonly downloadBaseUrl?: string;
   private readonly directDownloads: boolean;
   private catalog?: DistributedAssetCatalog;
+  private initialCatalogRequest: Promise<DistributedAssetCatalog> | undefined;
+  private catalogRefreshRequest: Promise<DistributedAssetCatalog> | undefined;
   private readonly inFlight = new Map<string, Promise<void>>();
 
   private notifyChanged(): void {
@@ -123,13 +125,45 @@ export class DistributedAssetManager {
   }
 
   public async refresh(): Promise<ManagedDistributedAsset[]> {
-    this.catalog = await this.catalogLoader();
+    await this.refreshCatalog();
     return this.loadStatuses();
   }
 
+  private refreshCatalog(): Promise<DistributedAssetCatalog> {
+    if (!this.catalogRefreshRequest) {
+      const request = this.catalogLoader()
+        .then((catalog) => {
+          this.catalog = catalog;
+          return catalog;
+        })
+        .finally(() => {
+          if (this.catalogRefreshRequest === request)
+            this.catalogRefreshRequest = undefined;
+        });
+      this.catalogRefreshRequest = request;
+    }
+    return this.catalogRefreshRequest;
+  }
+
+  private initialCatalog(): Promise<DistributedAssetCatalog> {
+    if (!this.initialCatalogRequest) {
+      const request = this.initialCatalogLoader()
+        .then((catalog) => {
+          // A cold bundled snapshot must not replace a completed live refresh.
+          this.catalog ??= catalog;
+          return this.catalog;
+        })
+        .finally(() => {
+          if (this.initialCatalogRequest === request)
+            this.initialCatalogRequest = undefined;
+        });
+      this.initialCatalogRequest = request;
+    }
+    return this.initialCatalogRequest;
+  }
+
   public async loadStatuses(): Promise<ManagedDistributedAsset[]> {
-    const catalog =
-      this.catalog ?? (this.catalog = await this.initialCatalogLoader());
+    const catalog = this.catalog ?? (await this.initialCatalog());
     const items = new Map(catalog.items.map((item) => [item.code, item]));
     const records = new Map<string, InstalledDistributedAssetRecord>();
     for (const record of await this.store.listRecords()) {
@@ -176,7 +210,7 @@ export class DistributedAssetManager {
     code: string,
     options: DistributedAssetInstallOptions,
   ): Promise<void> {
-    const catalog = this.catalog ?? (this.catalog = await this.catalogLoader());
+    const catalog = this.catalog ?? (await this.refreshCatalog());
     const item = catalog.items.find((candidate) => candidate.code === code);
     if (!item) throw new Error(`Distributed asset is unavailable: ${code}`);
     if (item.bundledByDefault) {

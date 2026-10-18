@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { decryptBackupV2, encryptBackupV2 } from "@gys/domain";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.use({ serviceWorkers: "block" });
 
@@ -307,7 +307,7 @@ test("legacy backup imports portable settings without a password", async ({
   await panel.getByRole("button", { name: "Impor" }).click();
 
   await expect(
-    page.getByText(/Backup lama diimpor/, { exact: false }),
+    page.getByText(/Backup lama berhasil diimpor/, { exact: false }),
   ).toBeVisible();
   await expect
     .poll(() =>
@@ -398,4 +398,63 @@ test("disabling the daily reminder removes the persisted reminder immediately", 
       page.evaluate(() => localStorage.getItem("gys-reminder-time-v1")),
     )
     .toBeNull();
+});
+
+async function prepareReminderClock(page: Page, time: string) {
+  await page.clock.install({ time: new Date("2026-10-11T19:59:00Z") });
+  await page.addInitScript((time) => {
+    localStorage.setItem("gys-reminder-time-v1", time);
+    Reflect.set(window, "__gysReminderNotifications", []);
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      value: class {
+        static permission = "granted";
+        static async requestPermission() {
+          return "granted";
+        }
+        constructor(title: string) {
+          Reflect.get(window, "__gysReminderNotifications").push(title);
+        }
+      },
+    });
+  }, time);
+}
+
+test("a saved daily reminder keeps running after leaving Settings", async ({
+  page,
+}) => {
+  await prepareReminderClock(page, "20:00");
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await expect(page.locator(".more-page")).toBeVisible();
+  await page.locator('a.nav-item[href$="/bible"]').click();
+  await expect(page.locator(".bible-reader")).toBeVisible();
+  await page.clock.fastForward(61_000);
+  await expect
+    .poll(() =>
+      page.evaluate(() => Reflect.get(window, "__gysReminderNotifications")),
+    )
+    .toEqual(["Waktu teduh GYS"]);
+});
+
+test("editing an unsaved reminder time leaves the active schedule unchanged", async ({
+  page,
+}) => {
+  await prepareReminderClock(page, "20:01");
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator('[data-setting="hymns"] > summary').click();
+  await page.getByRole("button", { name: /Pengingat/ }).click();
+  const panel = page.getByRole("region", { name: "Pengingat harian" });
+  await panel.getByLabel("Waktu").fill("20:00");
+  await page.clock.fastForward(61_000);
+  expect(
+    await page.evaluate(() =>
+      Reflect.get(window, "__gysReminderNotifications"),
+    ),
+  ).toEqual([]);
+  await page.clock.fastForward(60_000);
+  await expect
+    .poll(() =>
+      page.evaluate(() => Reflect.get(window, "__gysReminderNotifications")),
+    )
+    .toEqual(["Waktu teduh GYS"]);
 });

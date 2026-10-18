@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
+import { assertNoBuildSourceAssets } from "./native-asset-boundary.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const dist = resolve(root, "apps/web/dist");
 const tauriConfigPath = resolve(root, "apps/native/src-tauri/tauri.conf.json");
+await assertNoBuildSourceAssets(dist);
 
 const required = [
   "assets/soundfont/TimGM6mb.sf2",
@@ -22,7 +24,6 @@ const required = [
   "offline/fork-hymnal-manifest.json",
   "offline/bible/manifest.json",
   "offline/bible/tb-reader.json",
-  "offline/bible/b_tb.db",
   "vendor/midi-render-worker.js",
   "vendor/js-synthesizer/js-synthesizer.min.js",
   "vendor/js-synthesizer/libfluidsynth-2.4.6.js",

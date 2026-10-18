@@ -162,19 +162,20 @@ export async function fetchLiteratureCatalog(
   sourceUrl = SOURCE,
 ): Promise<LiteratureCatalog> {
   const generatedAt = new Date().toISOString();
-  const html = await readHtml(sourceUrl);
+  const [html, bookItems] = await Promise.all([
+    readHtml(sourceUrl),
+    readHtml(BOOK_SOURCE)
+      .then((bookHtml) =>
+        parseSection(bookHtml, "buku", "table_1", generatedAt, BOOK_SOURCE),
+      )
+      .catch(() => []),
+  ]);
   const items: LiteratureItem[] = [];
   for (const [category, marker] of sections) {
     items.push(...parseSection(html, category, marker, generatedAt));
   }
-  try {
-    const bookHtml = await readHtml(BOOK_SOURCE);
-    items.push(
-      ...parseSection(bookHtml, "buku", "table_1", generatedAt, BOOK_SOURCE),
-    );
-  } catch {
-    // The primary catalogue remains available when the optional PDF index is down.
-  }
+  // A failed optional book index never discards the main catalogue.
+  items.push(...bookItems);
   const unique = [...new Map(items.map((item) => [item.id, item])).values()];
   return LiteratureCatalogSchema.parse({
     source: "tjc.org",

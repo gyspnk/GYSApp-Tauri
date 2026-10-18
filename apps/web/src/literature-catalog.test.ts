@@ -33,6 +33,7 @@ async function until(assertion: () => void): Promise<void> {
 describe("Literature persistent + incremental catalog", () => {
   let storage: Map<string, string>;
   let fetchCalls: string[];
+  let scheduledTimers: Set<ReturnType<typeof setTimeout>>;
 
   beforeEach(() => {
     vi.resetModules();
@@ -41,10 +42,15 @@ describe("Literature persistent + incremental catalog", () => {
     vi.stubEnv("VITE_BFF_BASE_URL", "");
     storage = new Map();
     fetchCalls = [];
+    scheduledTimers = new Set();
     const events = new EventTarget();
     vi.stubGlobal("navigator", { onLine: true });
     vi.stubGlobal("window", {
-      setTimeout,
+      setTimeout: (callback: () => void, delay?: number) => {
+        const timer = setTimeout(callback, delay);
+        scheduledTimers.add(timer);
+        return timer;
+      },
       clearTimeout,
       location: { href: "http://localhost:4173/GYSApp-Tauri/", port: "4173" },
       localStorage: {
@@ -59,6 +65,7 @@ describe("Literature persistent + incremental catalog", () => {
   });
 
   afterEach(() => {
+    for (const timer of scheduledTimers) clearTimeout(timer);
     vi.unstubAllGlobals();
   });
 
@@ -280,6 +287,75 @@ describe("Literature persistent + incremental catalog", () => {
       "newer-entry",
       "older-entry",
     ]);
+  });
+  it("recovers a stalled background refresh with the local snapshot and permits a later retry", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("window", { ...window, setTimeout, clearTimeout });
+    const saved = item({ id: "saved" });
+    const bundled = item({ id: "bundled-new" });
+    const remote = item({ id: "remote-new" });
+    storage.set(
+      PERSIST_KEY,
+      JSON.stringify({ items: [saved], fetchedAt: new Date().toISOString() }),
+    );
+    let remoteCalls = 0;
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>((input, init) => {
+        if (String(input).includes("offline/literature.json"))
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                source: "tjc.org",
+                generatedAt: new Date().toISOString(),
+                items: [saved, bundled],
+              }),
+            ),
+          );
+        remoteCalls++;
+        if (remoteCalls > 1)
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                source: "tjc.org",
+                generatedAt: new Date().toISOString(),
+                items: [remote],
+              }),
+            ),
+          );
+        if (init?.signal) signals.push(init.signal);
+        return new Promise((_resolve, reject) =>
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          ),
+        );
+      }),
+    );
+    try {
+      const { fetchLiteratureCatalog, getCachedLiteratureCatalog } =
+        await import("./literature-catalog.js");
+      expect((await fetchLiteratureCatalog()).map((entry) => entry.id)).toEqual(
+        ["saved"],
+      );
+      await vi.advanceTimersByTimeAsync(8_100);
+      expect(getCachedLiteratureCatalog()?.map((entry) => entry.id)).toContain(
+        "bundled-new",
+      );
+      expect(signals.every((signal) => signal.aborted)).toBe(true);
+      expect(signals).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(60_000);
+      await fetchLiteratureCatalog();
+      await vi.advanceTimersByTimeAsync(100);
+      expect(getCachedLiteratureCatalog()?.map((entry) => entry.id)).toContain(
+        "remote-new",
+      );
+      expect(remoteCalls).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

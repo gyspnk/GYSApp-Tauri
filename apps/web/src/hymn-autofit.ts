@@ -2,10 +2,8 @@ const MIN_AUTOFIT_FONT_SIZE = 14;
 
 /**
  * Hysteresis to prevent oscillation between two sizes on wrap.
- * Kept per-module for the width-fit path; the height-aware path carries its
- * own previous value via `lastFittedFontSize`.
+ * Reader instances carry their own previous value via `lastFittedFontSize`.
  */
-let _lastFitPx = 0;
 
 export type AutoFitFontSizeInput = {
   preferredFontSize: number;
@@ -59,24 +57,66 @@ export function autoFitFontSize({
   }
   const ratio = Math.min(widthRatio, heightRatio);
   if (preferred <= minimum || ratio >= 1) {
-    _lastFitPx = Math.max(minimum, preferred);
-    return _lastFitPx;
+    return Math.max(minimum, preferred);
   }
   const candidate = Math.floor(preferred * ratio);
   const next = Math.max(minimum, Math.min(preferred, candidate));
   // Hysteresis: if we just fitted 16 and now candidate is 17, but last was 16,
   // keep 16 to avoid 16->17->16 loop when chord wraps at 17.
-  const last = lastFittedFontSize ?? _lastFitPx;
+  const last = lastFittedFontSize;
   if (last && Math.abs(next - last) < 0.6 && next > last) {
     return last;
   }
-  _lastFitPx = next;
   return next;
 }
 
-/** Exposed for testing hysteresis boundary */
-export function _resetAutoFitHysteresis(): void {
-  _lastFitPx = 0;
-}
-
 export { MIN_AUTOFIT_FONT_SIZE };
+
+/** Measure an isolated preferred-size copy, without animated or previously fitted
+ * geometry feeding back into the next fit. Rem units preserve device text scale. */
+export function measureHymnFontFit(
+  element: HTMLElement,
+  preferred: number,
+  availableHeight: number,
+  lastFittedFontSize: number,
+): number {
+  const clone = element.cloneNode(true) as HTMLElement;
+  clone.removeAttribute("id");
+  clone.setAttribute("aria-hidden", "true");
+  clone.inert = true;
+  Object.assign(clone.style, {
+    position: "fixed",
+    left: "-100000px",
+    top: "0",
+    visibility: "hidden",
+    width: `${element.clientWidth}px`,
+    height: "auto",
+    minHeight: "0",
+    maxHeight: "none",
+    display: "block",
+    overflow: "visible",
+    fontSize: `${preferred / 16}rem`,
+    margin: "0",
+  });
+  for (const node of [clone, ...clone.querySelectorAll<HTMLElement>("*")]) {
+    node.style.setProperty("transition", "none", "important");
+    node.style.setProperty("animation", "none", "important");
+  }
+  // Padding/line height reserves the chord lanes. Absolute overlay offsets
+  // belong to the previous font and must not inflate this measurement.
+  for (const row of clone.querySelectorAll<HTMLElement>(".chord-visual-row"))
+    row.style.display = "none";
+  element.parentElement!.append(clone);
+  try {
+    return autoFitFontSize({
+      preferredFontSize: preferred,
+      availableWidth: element.clientWidth,
+      measuredWidth: clone.scrollWidth,
+      availableHeight,
+      measuredHeight: clone.scrollHeight,
+      lastFittedFontSize,
+    });
+  } finally {
+    clone.remove();
+  }
+}

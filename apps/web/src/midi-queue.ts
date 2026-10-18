@@ -1,5 +1,5 @@
 import type { HymnCatalogEntry, MidiPlaylistItem } from "@gys/contracts";
-import { MidiLoader } from "@gys/domain";
+import type { MidiLoader } from "@gys/domain/midi-loader";
 import { midiPlayer } from "./midi-player.js";
 import {
   findMusicAsset,
@@ -19,6 +19,7 @@ type CatalogState = HymnCatalogEntry[];
 
 let catalogPromise: Promise<CatalogState> | undefined;
 let loader: MidiLoader | undefined;
+let loaderPromise: Promise<MidiLoader> | undefined;
 const inFlight = new Map<string, Promise<void>>();
 let coordinatorInstalled = false;
 /** gyschordweb shuffleHistory: previous-song jumps back through history. */
@@ -51,8 +52,17 @@ async function loadItem(
 ): Promise<void> {
   // The shell installs queue coordination before any audio is requested.
   // Load PDF-derived song defaults only with playback, alongside the catalog.
-  const [catalog, { resolveHymnMidiDefaults, warmHymnPdfMeta }] =
-    await Promise.all([loadCatalog(), import("./hymn-pdf-meta.js")]);
+  const [catalog, { resolveHymnMidiDefaults, warmHymnPdfMeta }, midiLoader] =
+    await Promise.all([
+      loadCatalog(),
+      import("./hymn-pdf-meta.js"),
+      (loaderPromise ??= import("@gys/domain/midi-loader")
+        .then(({ MidiLoader }) => (loader ??= new MidiLoader()))
+        .catch((error) => {
+          loaderPromise = undefined;
+          throw error;
+        })),
+    ]);
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
   const songMetaPromise = warmHymnPdfMeta(hymn);
@@ -62,8 +72,7 @@ async function loadItem(
   if (item.sourceHash && item.sourceHash !== ref.sha256)
     throw new Error("MIDI antrean sudah berubah; tambahkan ulang lagu ini");
   const bytes = await loadMusicAsset(ref);
-  loader ??= new MidiLoader();
-  const parsed = await loader.load({
+  const parsed = await midiLoader.load({
     id: hymn.id,
     url: `https://raw.githubusercontent.com/gyspnk/gyschordweb/${lock.sourceCommit}/docs/${ref.path}`,
     sourceHash: ref.sha256,

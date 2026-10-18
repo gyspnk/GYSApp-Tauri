@@ -96,6 +96,16 @@ prose, own size/SHA/count evidence. TimGM and local synthesis runtime are
 packaged; GeneralUser is an optional verified installation. Ten official
 Indonesian Faith PDFs are local on-demand files with their own provenance map.
 
+TB runtime reads the complete canonical `offline/bible/tb-reader.json`. Its
+SQLite generator input lives at `packages/contracts/source/bible/b_tb.db`,
+outside Vite public assets. Optional installed SQL translations retain their
+SQL.js/native loading path. `verify:native-assets` rejects SQLite source files
+copied into the web/runtime output.
+
+Web TypeScript checking emits into `.typecheck`, separately from Vite's `dist`.
+The runtime boundary also rejects declarations, source maps and unbundled
+root JavaScript so checking a finished build cannot repack compiler/test output.
+
 ```mermaid
 stateDiagram-v2
   [*] --> Missing
@@ -249,9 +259,14 @@ flowchart TB
 ```
 
 Starting MIDI pauses TTS; starting TTS pauses MIDI, without automatically
-resuming the previous session. Expanded MIDI is two rows on tablet/desktop,
-three on phone, maximum 900 px wide, with 36 px mouse/40 px touch controls.
+resuming the previous session. Expanded MIDI is two rows at every viewport,
+maximum 900 px wide, with 32 px mouse/44 px touch controls.
 Utilities remain in one bounded menu. Expanded height reserves reader space.
+
+Queue edits synchronize across tabs without rewriting the external change or
+allowing an older IndexedDB backup to overwrite it. Cancellation stops TTS
+provider fallback as well as the current utterance. The Bible header observes
+transport/voice controls independently of MIDI's position ticks.
 
 Minimize exposes one 28 px visible half-circle inside a 44 × 60 px hit area,
 flush to either edge. A 6 px drag threshold distinguishes move from restore.
@@ -375,8 +390,18 @@ The v2 progress record keeps `location` as the last position and
 maximum percentage and completion when rereading; a changed resource starts a
 new record. Legacy records derive the furthest position from their bookmark.
 Scroll writes are throttled and the captured position flushes on leaving.
+Storage pressure preserves the durable record while buffering pending positions;
+the reader remains usable and identifies unsaved progress. Recovery and backup
+retain that buffered data without overwriting a newer durable reading.
 Article cache freshness uses retrieval time, independently of the publisher's
 modification date, so older articles still reuse their fresh local content.
+
+Daily reminders belong to the app lifetime rather than the settings route.
+Only a saved preference changes the active schedule; draft edits have no effect.
+Save, disable, backup restore, reset and cross-tab changes reschedule the one
+timer. Resume can deliver one overdue reminder on its scheduled calendar day;
+notifications use the current locale and never request permission from a timer.
+This is an open-app scheduler, not an OS alarm for a closed process.
 
 The shell resets window scroll in a layout effect for pathname changes and
 owns manual browser-history scroll restoration. Reader-specific PDF scroll and

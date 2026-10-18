@@ -314,7 +314,6 @@ export function SuaraPage({ locale }: { locale: Locale }) {
         <div>
           <p className="date-line">{translate(locale, "suara.eyebrow")}</p>
           <h1>{translate(locale, "suara.title")}</h1>
-          <p className="sr-only">{translate(locale, "suara.intro")}</p>
         </div>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (

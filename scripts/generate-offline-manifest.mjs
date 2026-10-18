@@ -10,7 +10,6 @@ import {
 import { join } from "node:path";
 
 const files = [
-  ["bible-tb", "offline/bible/b_tb.db"],
   ["bible-tb-reader", "offline/bible/tb-reader.json"],
   ["hymn-catalog", "offline/hymn-catalog.json"],
   ["hymn-metadata", "offline/hymn-metadata.json"],
@@ -48,14 +47,16 @@ const catalog = JSON.parse(
   ),
 );
 const generatedAt = new Date().toISOString();
-const bibleItem = items.find((item) => item.id === "bible-tb");
-if (!bibleItem) throw new Error("bible-tb item was not generated");
+const bibleItem = items.find((item) => item.id === "bible-tb-reader");
+if (!bibleItem) throw new Error("bible-tb-reader item was not generated");
 await writeFile(
   join("apps", "web", "public", "offline", "bible", "manifest.json"),
   `${JSON.stringify(
     {
       version: "1",
       translation: "TB",
+      format: "json",
+      path: "tb-reader.json",
       generatedAt,
       sha256: bibleItem.sha256,
       bytes: bibleItem.bytes,
@@ -73,7 +74,6 @@ await writeFile(
 );
 
 const localKind = new Map([
-  ["bible-tb", "bible"],
   ["bible-tb-reader", "bible"],
   ["hymn-catalog", "hymn-catalog"],
   ["distributed-asset-catalog", "pack"],

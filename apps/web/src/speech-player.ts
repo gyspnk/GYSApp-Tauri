@@ -1,4 +1,4 @@
-import { SpeechOrchestrator } from "@gys/domain";
+import { SpeechOrchestrator } from "@gys/domain/speech";
 import type {
   SpeechEnginePreference,
   SpeechProvider,

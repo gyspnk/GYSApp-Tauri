@@ -266,7 +266,7 @@ test.describe("distributed Bible lifecycle", () => {
       if (await downloadButton.isDisabled()) {
         await expect(
           installerPage.locator(".distributed-assets-card > .inline-error"),
-        ).toContainText("Layanan unduhan belum dikonfigurasi");
+        ).toContainText("Unduhan tambahan belum tersedia");
         await expect(downloadButton).toBeDisabled();
         test.skip(
           true,
@@ -356,7 +356,7 @@ test.describe("distributed Bible lifecycle", () => {
       if (await downloadButton.isDisabled()) {
         await expect(
           page.locator(".distributed-assets-card > .inline-error"),
-        ).toContainText("Layanan unduhan belum dikonfigurasi");
+        ).toContainText("Unduhan tambahan belum tersedia");
         await expect(downloadButton).toBeDisabled();
         test.skip(
           true,

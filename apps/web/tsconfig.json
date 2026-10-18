@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": ".typecheck",
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },

@@ -1,6 +1,6 @@
 # Cache, loading and preload reference
 
-Reviewed 2026-10-08. This describes implementation bounds; cold network, device
+Reviewed 2026-10-11. This describes implementation bounds; cold network, device
 performance and storage eviction remain external to a cache-hit guarantee.
 
 ## Startup and route intent
@@ -26,20 +26,21 @@ User preload/data-saving preferences remain authoritative.
 
 ## Cache owners
 
-| Store                     | Identity / bound                                                                                    | Recovery                                                                                              |
-| ------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Build shell               | `gysapp-shell-v25` plus emitted build identity; integrity of bootstrap/modules/core                 | Reject partial/mixed build; retain usable active shell until explicit activation.                     |
-| Editorial JSON            | Separate `gysapp-content-v1`; cached first paint + shared background refresh                        | Keep usable snapshot when live refresh fails; daily Sauh selection still follows publisher/day rules. |
-| Remote covers             | `gysapp-remote-media-v1`, at most 96 successful entries                                             | Bounded cleanup; reserved image geometry/fallback avoids layout spikes.                               |
-| Chord disk                | Immutable commit/path/SHA pointers, 25 MiB LRU, pinned entries protected, 14-day rollback retention | Preserve previous verified bytes on failure; repair missing/corrupt data on read.                     |
-| Chord memory              | Verified parsed results, 32 entries / 1 MiB                                                         | Evict cold parses; disk remains independently reusable.                                               |
-| MIDI raw / parse          | Immutable source hash and shared loader/model                                                       | Share concurrent requests, retry failed fetches, reject stale load generations.                       |
-| MIDI PCM / AudioBuffer    | Source, SoundFont, tempo, transpose, instrument and sample rate; 128 MiB default cap                | Reuse completed renders; failed/superseded work cannot replace current playback.                      |
-| Hymn PDF bytes            | Resolved immutable source identity and integrity checks                                             | Cache validated bytes; prune on writes, not on each MIDI read.                                        |
-| PDF document workers      | Shared leases, at most two idle documents, 30-second idle lifetime                                  | Retry invalidates only its source; active readers retain their own lease.                             |
-| Literature PDF links      | Validated issue→official URL; up to 64, 24-hour freshness                                           | Share requests, bound time, retry failed discovery and fall back for older Worker metadata.           |
-| Literature resume         | Resource version + page/scroll                                                                      | Validate version/page before reuse; clamp invalid positions.                                          |
-| Preferences / annotations | Versioned local records                                                                             | Validate/migrate affected records; reset is explicit.                                                 |
+| Store                     | Identity / bound                                                                                    | Recovery                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Build shell               | `gysapp-shell-v25` plus emitted build identity; integrity of bootstrap/modules/core                 | Reject partial/mixed build; retain usable active shell until explicit activation.                           |
+| Editorial JSON            | Separate `gysapp-content-v1`; cached first paint + shared background refresh                        | Keep usable snapshot when live refresh fails; daily Sauh selection still follows publisher/day rules.       |
+| Remote covers             | `gysapp-remote-media-v1`, at most 96 successful entries                                             | Bounded cleanup; reserved image geometry/fallback avoids layout spikes.                                     |
+| Chord disk                | Immutable commit/path/SHA pointers, 25 MiB LRU, pinned entries protected, 14-day rollback retention | Preserve previous verified bytes on failure; repair missing/corrupt data on read.                           |
+| Chord memory              | Verified parsed results, 32 entries / 1 MiB                                                         | Evict cold parses; disk remains independently reusable.                                                     |
+| MIDI raw / parse          | Immutable source hash; 32 entries each, 2 MiB raw / 8 MiB estimated parsed events                   | Share consumer-aware requests; retry failure; oversized active songs remain playable without raw retention. |
+| MIDI PCM / AudioBuffer    | Source, SoundFont, tempo, transpose, instrument and sample rate; 128 MiB default cap                | Reuse completed renders; failed/superseded work cannot replace current playback.                            |
+| Hymn PDF bytes            | Resolved immutable source identity and integrity checks                                             | Cache validated bytes; prune on writes, not on each MIDI read.                                              |
+| PDF document workers      | Shared leases, at most two idle documents, 30-second idle lifetime                                  | Retry invalidates only its source; active readers retain their own lease.                                   |
+| Literature PDF links      | Validated issue→official URL; up to 64, 24-hour freshness                                           | Share requests, bound time, retry failed discovery and fall back for older Worker metadata.                 |
+| Literature resume         | Resource version + page/scroll                                                                      | Validate version/page before reuse; clamp invalid positions.                                                |
+| Preferences / annotations | Versioned local records                                                                             | Validate/migrate affected records; reset is explicit.                                                       |
+| Full article text         | 32 memory entries / 4 MiB string estimate; one persistent copy, session fallback when needed        | Refresh after 24 hours; retain the last good complete body offline; cancellation never launches fallback.   |
 
 Consult the implementations for exact units and evolving budget constants;
 these caches are separate allocations, not a single global memory reservation.
@@ -65,6 +66,26 @@ Canonical chord key and score key can differ: hymn 001's canonical chords are
 C while its score is Es. The shared base offset bridges them before user
 transpose/capo; no second unrelated PDF is used for overlay coordinates.
 
+MIDI parsing is imported lazily through the dedicated domain export when playback
+starts, alongside the catalog/song-default requests. Queue snapshots observe
+validated cross-tab edits without duplicate writes or an obsolete IDB restore.
+
+Preference migrations keep complete validated article text and the active build
+shell intact; full storage cannot prevent app startup. Shell eviction remains
+owned by the worker/recovery lifecycle.
+
+Catalog revalidation starts independent sources together and bounds each
+literature source to eight seconds, including JSON decoding. The three remote
+distributed manifests share one eight-second deadline; failure retires remaining
+probes before using the bundled snapshot. Cold status consumers share their
+catalog load, and a late bundled response cannot replace a newer live refresh.
+
+If a progress write fails, keep the last durable record and buffer the latest
+position in memory. Reading and resume continue; the reader shows a concise
+unsaved-state notice. The next successful write flushes pending readers together,
+preserving newer durable positions, maximum progress and completion. Backup
+includes pending progress; explicit restoration/reset retires that buffer.
+
 ## MIDI work scheduling
 
 TimGM is packaged; GeneralUser remains optional. Opening the UI does not start
@@ -80,6 +101,11 @@ cannot run. It is not described as equivalent SoundFont playback. Media Session
 callbacks read current refs instead of reinstalling at every position tick.
 
 ## PDF transport, zoom and cleanup
+
+Immutable hymnal source probes request only `bytes=0-4`. The preferred source
+gets a 250 ms head start; an explicit failure starts alternatives immediately.
+The remaining sources race under one 8-second deadline, and failed/losing
+response bodies are cancelled before PDF.js opens the winning URL.
 
 Official literature URLs use the public content Worker even when the optional
 login/build BFF variable is empty. Source discovery requests the minimal

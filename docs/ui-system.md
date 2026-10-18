@@ -1,6 +1,6 @@
 # UI, sizing and motion system
 
-Reviewed 2026-10-07 against the current browser implementation. The default
+Reviewed 2026-10-11 against the current browser implementation. The default
 visual language is Church blue, clear icon actions, compact grouped controls
 and readable content that uses the available page width.
 
@@ -18,6 +18,14 @@ Reserved thumbnail ratios prevent initial oversized artwork. Catalog rows,
 search fields and header controls share consistent corners, accent, icon
 weight and focus treatment.
 
+Use one clear label for each action. Omit repeated headings, instructions for
+self-explanatory buttons, decorative help paragraphs and implementation details
+from routine screens. Appearance choices use their labels and visual samples;
+selected states remain visible and accessible. Keep concise information about
+destructive actions, backup scope, network requirements, loading/recovery and
+settings whose effects need explanation. Reading content and useful progress,
+dates, download sizes and account status remain available in all three locales.
+
 Sauh thumbnails clip loading and decoded media to the same rounded frame.
 The Home card uses the page gutter once at every breakpoint; highlighted article
 quotations fill their reading column with compact padding and show the complete
@@ -25,24 +33,29 @@ verse on phones.
 
 Navigation is a fixed sidebar/rail on desktop and a bottom bar on phones.
 Collapsing the rail preserves icon/toggle positions while its label column clips
-and fades. Kidung catalog, playlist and settings retain the same local-nav
-positions. The floating player is viewport-positioned and independent of page
+and fades. Kidung local navigation contains the catalog and playlist; Kidung
+preferences live in the application's main settings. The floating player is viewport-positioned and independent of page
 scroll; minimized MIDI consumes no sidebar content slot.
+
+Fullscreen lyrics uses one header row on wide screens and two on small screens,
+with persistent verse navigation
+at the bottom. Its optional music/text controls open in a bounded popover;
+Escape closes that popover and restores focus to its toggle.
 
 ## Control contracts
 
-| Surface           | Layout / target                                                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Main header       | Adaptive logo/account photo, search, locale and appearance/account actions; no connectivity badge.                                   |
-| Kidung catalog    | Category, destination shortcuts and one icon-changing text/score mode action in the same field; search sits close to flat list rows. |
-| Text/score viewer | Compact title/action row with consistent mode glyph/scale and contextual secondary menu; shared verse/song navigation.               |
-| Expanded MIDI     | Two rows from 680 px, three below; 900 px maximum width; 36 px mouse or 40 px coarse-pointer/mobile controls.                        |
-| MIDI musical row  | Instrument, 52 px key field and compact transpose/reset group in one row, including 320 px layouts.                                  |
-| MIDI utilities    | One bounded scrollable popover; secondary buttons retain 44 px targets.                                                              |
-| Minimized MIDI    | One 28 px visible half-circle, 56 px circle diameter, inside a 44 × 60 px hit area, flush left/right.                                |
-| Bible picker      | Book/chapter/verse address row, shared dropdown, numeric keypad and explicit apply action; no automatic chapter jump on digit input. |
-| Faith             | Full-width number/word search, full justified text, compact PDF/note actions at card lower right.                                    |
-| Shared PDF        | Contextual icon tools, compact page/zoom/footer actions; separate page and hymn navigation names.                                    |
+| Surface           | Layout / target                                                                                                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main header       | Adaptive logo/account photo, search, locale and appearance/account actions; no connectivity badge.                                                                           |
+| Kidung catalog    | Category, destination shortcuts and one icon-changing text/score mode action in the same field; search sits close to flat list rows.                                         |
+| Text/score viewer | One compact title/action row; phone actions use distinct icons and accessible names; secondary actions and verse/scroll choices occupy two menu rows.                        |
+| Expanded MIDI     | Two primary rows at every width; title/progress/dock actions above centred transport flanked by tempo and settings; 32 px mouse / 44 px touch targets; maximum width 900 px. |
+| MIDI musical row  | A labelled Music group in the settings popover; full-width instrument selector above key and transpose controls.                                                             |
+| MIDI utilities    | One bounded scrollable popover; secondary buttons use the same mouse/touch target sizes.                                                                                     |
+| Minimized MIDI    | One 28 px visible half-circle, 56 px circle diameter, inside a 44 × 60 px hit area, flush left/right.                                                                        |
+| Bible picker      | Book/chapter/verse address row, shared dropdown, numeric keypad and explicit apply action; no automatic chapter jump on digit input.                                         |
+| Faith             | Full-width number/word search, full justified text, compact PDF/note actions at card lower right.                                                                            |
+| Shared PDF        | Contextual icon tools, compact page/zoom/footer actions; separate page and hymn navigation names.                                                                            |
 
 Targets are contextual rather than forced to one giant size. Keep icons centered
 inside the actual hit rectangle. A visually half-hidden edge tab retains a full
@@ -69,12 +82,16 @@ their own explicit dimensions instead of shrinking the compact logo to zero.
   History/programmatic changes cancel earlier route-preload generations, and
   snapshot callbacks recheck the current generation before committing or scrolling.
 - Theme transitions freeze pending smooth scrolling and retain state/position.
-- Lyric/chord row spacing and score-overlay opacity animate their own content.
-  Chord labels remain above notation while enabling/disabling.
+- `lyric-reflow.ts` moves stable word and chord boxes to their new positions
+  over 340 ms after wrapping or font/spacing changes. Text layout and chord
+  measurement use untransformed geometry. Pinch previews bypass this animation.
+  Hidden chord lanes inherit lyric spacing; repeated toggles restore the same
+  scale. Autofit measures an isolated preferred-size copy with per-reader history.
 - `pdf-zoom.ts` animates anchored preview geometry; `pdf-detail-layer.tsx`
   adds sharp visible-region detail after the correct page preview is ready.
-- MIDI docking records the previous rectangle and animates position for 320 ms,
-  preserving glyph sizes. Tab reveal uses a 220 ms transform; four equalizer
+- MIDI minimize/restore fades out for 200 ms before changing geometry and fades
+  in for 480 ms, retaining the reserved reader space through the entrance.
+  Edge movement uses 340 ms and preserves glyph sizes; four equalizer
   bars animate with CSS only while playing, without a React clock loop.
 - Images reserve dimensions, decode and fade; loading never begins at full
   intrinsic image size before shrinking.
@@ -116,3 +133,31 @@ Current player screenshots combine phone/tablet/desktop and expanded/minimized
 states into one image; no repeated desktop/mobile prefix is needed. Keep capture
 scripts/raw logs outside the repository unless deliberately publishing an audit
 artifact. Dated screenshots describe their captured revision.
+
+Reader chrome uses 32 px rows with a fine pointer and 44 px rows with a coarse
+pointer. The main Kidung title and actions share one row, including at 320 px;
+long titles truncate visually while their full text remains available to assistive
+technology. MIDI settings use five tightly spaced control rows, with inline
+instrument labels and accessible group headings that do not consume extra rows.
+
+Reader settings, dock and fullscreen share the same instrument, key and transpose controls and
+settings icon. Instrument menus offer only presets from the active SoundFont;
+key changes wrap by an octave at the ±24 semitone limits, and both surfaces expose
+reset. The shared BPM editor supports typing, ±2 buttons and the 30–220 bounds;
+clearing its field preserves playback tempo until a valid value is entered.
+The dock keeps its slider and places the editor in the existing tempo popover,
+so primary controls remain within two rows. Settings changes persist when moving
+between the dock and fullscreen.
+
+Sharp/flat notation is one preference observed by text, PDF, dock and fullscreen,
+including changes in another tab. Music steppers repeat while held, stop on
+pointer cancellation/unmount and use the latest value instead of a stale render.
+Reader transpose uses the same ±24 bounds as playback; capo still changes chord
+shapes independently. Empty tempo drafts preserve playback; unchanged settings
+avoid redundant player updates and preference writes.
+
+Reader text and music sections open one at a time inside their existing popover,
+keeping the selected section compact while preserving every adjustment.
+PDF music and dock settings also open one at a time. On phones, the PDF music
+sheet clears the dock's measured height and stays scrollable after resizing,
+so playback controls cannot intercept its notation or key controls.

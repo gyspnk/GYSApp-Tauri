@@ -73,13 +73,18 @@ function bffUrl(url: string): string {
 }
 
 const articleMemoryCache = new Map<string, OnlineArticle>();
+const ARTICLE_MEMORY_ENTRIES = 32;
+const ARTICLE_MEMORY_BYTES = 4 * 1024 * 1024;
+let articleMemoryBytes = 0;
 const ARTICLE_STORAGE_PREFIX = "gys_article_cache_";
-// 24 jam — auto-expire jadi perbaikan parsing / styling langsung kelihatan tanpa hard refresh
+// Refresh after 24 hours, retaining the last good body for offline reading.
 const ARTICLE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function isExpiredArticle(article: OnlineArticle): boolean {
   const age = Date.now() - Date.parse(article.fetchedAt);
-  return Number.isFinite(age) && age > ARTICLE_CACHE_TTL_MS;
+  return (
+    !Number.isFinite(age) || age < -5 * 60 * 1000 || age > ARTICLE_CACHE_TTL_MS
+  );
 }
 
 function isStaleSuaraCache(article: OnlineArticle): boolean {
@@ -91,60 +96,116 @@ function isStaleSuaraCache(article: OnlineArticle): boolean {
   );
 }
 
-function isStaleArticle(article: OnlineArticle): boolean {
-  return isStaleSuaraCache(article) || isExpiredArticle(article);
+function articleBytes(article: OnlineArticle): number {
+  return (
+    2 *
+    (article.body.length +
+      article.title.length +
+      article.url.length +
+      article.id.length +
+      article.source.length +
+      article.fetchedAt.length)
+  );
+}
+
+function forgetArticle(url: string): void {
+  const previous = articleMemoryCache.get(url);
+  if (previous) articleMemoryBytes -= articleBytes(previous);
+  articleMemoryCache.delete(url);
+}
+
+function rememberArticle(url: string, article: OnlineArticle): void {
+  forgetArticle(url);
+  const bytes = articleBytes(article);
+  if (bytes > ARTICLE_MEMORY_BYTES) return;
+  articleMemoryCache.set(url, article);
+  articleMemoryBytes += bytes;
+  while (
+    articleMemoryCache.size > ARTICLE_MEMORY_ENTRIES ||
+    articleMemoryBytes > ARTICLE_MEMORY_BYTES
+  ) {
+    const oldest = articleMemoryCache.keys().next().value;
+    if (oldest === undefined) break;
+    forgetArticle(oldest);
+  }
+}
+
+function removeStoredArticle(
+  url: string,
+  names: ReadonlyArray<"localStorage" | "sessionStorage"> = [
+    "localStorage",
+    "sessionStorage",
+  ],
+): void {
+  if (typeof window === "undefined") return;
+  for (const name of names) {
+    try {
+      window[name].removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+    } catch {
+      /* Storage can be disabled. */
+    }
+  }
 }
 
 export function getCachedArticle(url: string): OnlineArticle | undefined {
   const mem = articleMemoryCache.get(url);
-  if (mem && !isStaleArticle(mem)) return mem;
-  if (mem && isStaleArticle(mem)) {
-    articleMemoryCache.delete(url);
-    try {
-      window.localStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
-      window.sessionStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
-    } catch {
-      // ignore
+  if (mem) {
+    if (!isStaleSuaraCache(mem)) {
+      rememberArticle(url, mem);
+      return mem;
     }
+    forgetArticle(url);
+    removeStoredArticle(url);
     return undefined;
   }
   if (typeof window === "undefined") return undefined;
-  try {
-    const raw =
-      window.localStorage?.getItem(`${ARTICLE_STORAGE_PREFIX}${url}`) ||
-      window.sessionStorage?.getItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
-    if (!raw) return undefined;
-    const parsed = OnlineArticleSchema.safeParse(JSON.parse(raw));
-    if (parsed.success) {
-      if (isStaleArticle(parsed.data)) {
-        window.localStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
-        window.sessionStorage?.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
-        return undefined;
+  let stored: OnlineArticle | undefined;
+  for (const name of ["localStorage", "sessionStorage"] as const) {
+    try {
+      const raw = window[name].getItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+      if (!raw) continue;
+      const parsed = OnlineArticleSchema.safeParse(JSON.parse(raw));
+      if (
+        !parsed.success ||
+        parsed.data.url !== url ||
+        isStaleSuaraCache(parsed.data)
+      ) {
+        removeStoredArticle(url, [name]);
+        continue;
       }
-      articleMemoryCache.set(url, parsed.data);
-      return parsed.data;
+      if (
+        !stored ||
+        Date.parse(parsed.data.fetchedAt) > Date.parse(stored.fetchedAt)
+      )
+        stored = parsed.data;
+    } catch (error) {
+      if (error instanceof SyntaxError) removeStoredArticle(url, [name]);
+      // Try the session fallback when persistent storage is unavailable.
     }
-  } catch {
-    // ignore parse error
   }
-  return undefined;
+  if (stored) rememberArticle(url, stored);
+  return stored;
 }
 
 function setCachedArticle(url: string, article: OnlineArticle) {
-  articleMemoryCache.set(url, article);
+  rememberArticle(url, article);
   if (typeof window === "undefined") return;
+  const serialized = JSON.stringify(article);
   try {
-    window.localStorage?.setItem(
-      `${ARTICLE_STORAGE_PREFIX}${url}`,
-      JSON.stringify(article),
-    );
+    window.localStorage.setItem(`${ARTICLE_STORAGE_PREFIX}${url}`, serialized);
+    try {
+      window.sessionStorage.removeItem(`${ARTICLE_STORAGE_PREFIX}${url}`);
+    } catch {
+      /* Best effort migration. */
+    }
+    return;
   } catch {
-    // ignore quota error
+    // Keep a session fallback only when persistent storage is unavailable/full.
   }
   try {
-    window.sessionStorage?.setItem(
+    window.sessionStorage.setItem(
       `${ARTICLE_STORAGE_PREFIX}${url}`,
-      JSON.stringify(article),
+      serialized,
     );
   } catch {
     // ignore quota error
@@ -155,8 +216,9 @@ export async function fetchOnlineArticle(
   url: string,
   signal?: AbortSignal,
 ): Promise<OnlineArticle> {
+  signal?.throwIfAborted();
   const cached = getCachedArticle(url);
-  if (cached) return cached;
+  if (cached && !isExpiredArticle(cached)) return cached;
 
   const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
   if (base) {
@@ -168,6 +230,7 @@ export async function fetchOnlineArticle(
       });
       if (response.ok) {
         const payload: unknown = await response.json();
+        signal?.throwIfAborted();
         const parsed = OnlineArticleSchema.safeParse(payload);
         if (parsed.success) {
           setCachedArticle(url, parsed.data);
@@ -175,6 +238,7 @@ export async function fetchOnlineArticle(
         }
       }
     } catch (error) {
+      signal?.throwIfAborted();
       recordDiagnostic("warn", "article.bff", error);
     }
   }
@@ -204,6 +268,7 @@ export async function fetchOnlineArticle(
     });
     if (response.ok) {
       const payload: unknown = await response.json();
+      signal?.throwIfAborted();
       const post = Array.isArray(payload) ? payload[0] : undefined;
       if (post && typeof post === "object") {
         const record = post as {
@@ -240,6 +305,7 @@ export async function fetchOnlineArticle(
       }
     }
   } catch (error) {
+    signal?.throwIfAborted();
     recordDiagnostic("warn", "article.wp-json", error);
   }
 
@@ -256,6 +322,7 @@ export async function fetchOnlineArticle(
     });
     if (response.ok) {
       const payload: unknown = await response.json();
+      signal?.throwIfAborted();
       const post = Array.isArray(payload) ? payload[0] : undefined;
       if (post && typeof post === "object") {
         const record = post as {
@@ -292,8 +359,11 @@ export async function fetchOnlineArticle(
       }
     }
   } catch (error) {
+    signal?.throwIfAborted();
     recordDiagnostic("warn", "article.search", error);
   }
 
+  signal?.throwIfAborted();
+  if (cached) return cached;
   throw new Error("Artikel belum dapat dimuat di aplikasi");
 }

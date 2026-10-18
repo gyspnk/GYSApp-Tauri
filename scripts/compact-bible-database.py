@@ -69,6 +69,6 @@ if __name__ == "__main__":
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--drop-legacy", action="store_true", help="Omit the unused bible_old archive; verify every active table and row ID")
     arguments = parser.parse_args()
-    source = Path(__file__).resolve().parents[1] / "apps/web/public/offline/bible/b_tb.db"
+    source = Path(__file__).resolve().parents[1] / "packages/contracts/source/bible/b_tb.db"
     before, after = compact_database(source, arguments.write, arguments.drop_legacy)
     print(f"Bible SQLite: {before:,} -> {after:,} bytes; schema, rows and row IDs verified")

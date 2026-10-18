@@ -7,6 +7,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./midi-loader": {
+      "types": "./dist/midi-loader.d.ts",
+      "import": "./dist/midi-loader.js"
+    },
+    "./midi-playlist": {
+      "types": "./dist/midi-playlist.d.ts",
+      "import": "./dist/midi-playlist.js"
+    },
+    "./speech": {
+      "types": "./dist/speech.d.ts",
+      "import": "./dist/speech.js"
     }
   },
   "scripts": {

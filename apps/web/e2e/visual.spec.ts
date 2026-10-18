@@ -119,13 +119,18 @@ for (const surface of surfaces) {
           .evaluateAll((elements) =>
             elements.flatMap((element) => {
               const rect = element.getBoundingClientRect();
+              const minimum =
+                element.closest(".hymn-detail-page.is-text-viewer") &&
+                !matchMedia("(pointer: coarse)").matches
+                  ? 31.5
+                  : 43.5;
               return element.checkVisibility({
                 checkOpacity: true,
                 checkVisibilityCSS: true,
               }) &&
                 rect.width > 0 &&
                 rect.height > 0 &&
-                (rect.width < 43.5 || rect.height < 43.5)
+                (rect.width < minimum || rect.height < minimum)
                 ? [
                     `${element.tagName}.${element.className}: ${rect.width}x${rect.height}px`,
                   ]

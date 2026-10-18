@@ -20,13 +20,23 @@ test("every instrument control migrates file-program defaults to the selected So
   await page.locator(".hymn-more-actions > summary").click();
   await page.locator(".hymn-fullscreen-action").click();
   await expect(page.locator(".lyrics-panel")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Tampilkan kontrol lain", exact: true })
+    .click();
   expect(await options()).toBe(0);
   const instrument = page
-    .locator(".lyrics-panel select")
-    .filter({ has: page.locator('option[value="127"]') });
-  await expect(instrument).toHaveValue("0");
-  await instrument.selectOption("40");
-  await expect(instrument).toHaveValue("40");
+    .locator(".lyrics-panel")
+    .getByRole("combobox", { name: "Pilih alat musik", exact: true });
+  await expect(instrument).toContainText("Acoustic Grand Piano");
+  await instrument.click();
+  await expect(
+    page.locator(".lyrics-panel .media-instrument-control [role=option]"),
+  ).toHaveCount(128);
+  await page
+    .locator(".lyrics-panel .media-instrument-control [role=option]")
+    .nth(40)
+    .click();
+  await expect(instrument).toContainText("Violin");
   const stored = await page.evaluate(
     () =>
       JSON.parse(localStorage.getItem("gys-midi-preferences-v1")!).instrument,

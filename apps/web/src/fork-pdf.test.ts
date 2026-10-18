@@ -6,12 +6,93 @@ import {
 } from "./fork-pdf.js";
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   vi.resetModules();
 });
 
 describe("GYSApp-Fork hymn PDF mapping", () => {
+  it("gives the preferred probe 250 ms before starting alternatives together and cancels the loser", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const sources = [
+      "https://preferred.example/book.pdf",
+      "https://second.example/book.pdf",
+      "https://third.example/book.pdf",
+    ];
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const signal = init!.signal as AbortSignal;
+      signals.push(signal);
+      expect(new Headers(init?.headers).get("range")).toBe("bytes=0-4");
+      if (String(input) === sources[2]) return new Response("%PDF-");
+      return new Promise<Response>((_resolve, reject) =>
+        signal.addEventListener("abort", () => reject(signal.reason), {
+          once: true,
+        }),
+      );
+    });
+    const pending = resolveForkPdfSource(sources, fetcher);
+    await vi.advanceTimersByTimeAsync(249);
+    expect(fetcher).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await pending).toBe(sources[2]);
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("uses one 8-second deadline across stalled sources rather than restarting it for each mirror", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const fetcher = vi.fn<typeof fetch>(async (_input, init) => {
+      const signal = init!.signal as AbortSignal;
+      signals.push(signal);
+      return new Promise<Response>((_resolve, reject) =>
+        signal.addEventListener("abort", () => reject(signal.reason), {
+          once: true,
+        }),
+      );
+    });
+    let failure: unknown;
+    const pending = resolveForkPdfSource(
+      ["https://one.example", "https://two.example", "https://three.example"],
+      fetcher,
+    ).catch((error) => {
+      failure = error;
+    });
+    await vi.advanceTimersByTimeAsync(8_001);
+    expect(failure).toEqual(new Error("Fork PDF source is unavailable"));
+    await pending;
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("accepts a fast preferred signature without starting another download or reading the master", async () => {
+    vi.useFakeTimers();
+    const cancel = vi.fn();
+    const response = new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("%PDF-"));
+        },
+        cancel,
+      }),
+    );
+    const readWholeDocument = vi.spyOn(response, "arrayBuffer");
+    const fetcher = vi.fn<typeof fetch>(async () => response);
+    expect(
+      await resolveForkPdfSource(
+        ["https://one.example", "https://two.example"],
+        fetcher,
+      ),
+    ).toBe("https://one.example");
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(readWholeDocument).not.toHaveBeenCalled();
+  });
+
   it("preserves suffixed hymn identities from the source database", () => {
     expect(forkManifestSongKey("hymn-051A")).toBe("051A");
     expect(forkManifestSongKey("124b")).toBe("124B");

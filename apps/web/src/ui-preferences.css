@@ -72,30 +72,10 @@
 }
 
 .ui-preferences-entry {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
+  display: flex;
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--line);
-}
-
-.ui-preferences-entry-copy {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.ui-preferences-entry-copy strong {
-  font-size: var(--text-ui);
-  line-height: 1.25;
-}
-
-.ui-preferences-entry-copy small {
-  color: var(--muted);
-  font-size: 0.78125rem;
-  line-height: 1.45;
 }
 
 .ui-preferences-open {
@@ -193,21 +173,6 @@
   line-height: 1.15;
 }
 
-.ui-preferences-header p {
-  max-width: 58ch;
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.ui-preferences-eyebrow {
-  color: var(--blue) !important;
-  font-size: 0.6875rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .ui-preferences-close {
   display: grid;
   place-items: center;
@@ -255,23 +220,6 @@
   line-height: 1.25;
 }
 
-.ui-preferences-section-heading p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.78125rem;
-  line-height: 1.45;
-}
-
-.ui-preferences-current {
-  flex: none;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: var(--surface-soft);
-  color: var(--muted);
-  font-size: 0.71875rem;
-  font-weight: 700;
-}
-
 .ui-preference-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -284,7 +232,7 @@
   grid-template-columns: auto minmax(0, 1fr) 20px;
   align-items: center;
   gap: 10px;
-  min-height: 74px;
+  min-height: max(var(--control-hit), 56px);
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--ui-preference-radius);
@@ -353,12 +301,6 @@
   line-height: 1.25;
 }
 
-.ui-preference-choice-copy small {
-  color: var(--muted);
-  font-size: 0.71875rem;
-  line-height: 1.35;
-}
-
 .ui-preference-check {
   display: grid;
   place-items: center;
@@ -380,15 +322,9 @@
 .ui-preferences-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   padding-top: 20px;
-}
-
-.ui-preferences-footer > span {
-  color: var(--muted);
-  font-size: 0.75rem;
-  line-height: 1.4;
 }
 
 .ui-preferences-footer .primary-button {
@@ -427,11 +363,6 @@
 }
 
 @media (max-width: 599px) {
-  .ui-preferences-entry {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
   .ui-preferences-open {
     width: 100%;
   }

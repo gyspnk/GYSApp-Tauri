@@ -1,8 +1,8 @@
 """Generate the browser reader/search pack from the canonical TB SQLite file.
 
-The SQLite database remains the native source. The compact JSON projection is
-used by the web worker boundary because browser builds do not ship a SQLite
-runtime just to render a chapter.
+SQLite is a build source outside the runtime bundle. Web and native readers
+share the complete JSON projection; optional installed SQL translations retain
+their separate runtime support.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATABASE = ROOT / "apps" / "web" / "public" / "offline" / "bible" / "b_tb.db"
+DATABASE = ROOT / "packages" / "contracts" / "source" / "bible" / "b_tb.db"
 OUTPUT = ROOT / "apps" / "web" / "public" / "offline" / "bible" / "tb-reader.json"
 
 

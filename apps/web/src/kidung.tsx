@@ -1,3 +1,5 @@
+import { useHymnNotation } from "./hymn-notation.js";
+import { useLyricReflow } from "./lyric-reflow.js";
 import { useGestureFont } from "./gesture-font.js";
 import { PdfReader, preloadPdfReader } from "./pdf-reader-loader.js";
 import { LoadingProgress } from "./loading-progress.js";
@@ -8,6 +10,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
@@ -29,6 +32,7 @@ import {
   inferChordDocumentKey,
   matchChordLinesToLyrics,
   transposeBetweenKeys,
+  transposeToKey,
   transposeChord,
 } from "./chord-viewer.js";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
@@ -47,7 +51,7 @@ const readMidiReaderState = createSnapshotSelector(
   midiPlayer.snapshot,
   ({ position: _position, ...reader }) => reader,
 );
-import { GM_INSTRUMENTS } from "./midi-instruments.js";
+import { MidiMusicControls, MidiTempoStepper } from "./midi-music-controls.js";
 import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
 import { Icon } from "./icons.js";
@@ -90,7 +94,7 @@ import {
   writeHymnTypography,
   type HymnTypography,
 } from "./hymn-preferences.js";
-import { autoFitFontSize } from "./hymn-autofit.js";
+import { measureHymnFontFit } from "./hymn-autofit.js";
 import { LyricsPanel } from "./lyrics-panel.js";
 import {
   type CatalogState,
@@ -142,6 +146,7 @@ export function HymnDetail({
     state.status === "ready"
       ? state.items.find((candidate) => candidate.id === songId)
       : undefined;
+  const readerControlGroup = useId();
   const [verseIndex, setVerseIndex] = useState(() => {
     const last = getActivity().hymn;
     return last?.id === songId ? Math.max(0, last.verseIndex) : 0;
@@ -155,7 +160,7 @@ export function HymnDetail({
     const initialTranspose = midiPlayer.settingsSnapshot().transpose;
     return ((initialTranspose % 12) + 12) % 12;
   });
-  const [accidental, setAccidental] = useState<"sharp" | "flat">("sharp");
+  const [accidental, setAccidental] = useHymnNotation();
   const [capo, setCapo] = useState(0);
   const [viewScope, setViewScope] = useState<"all" | "verse">(() => {
     if (typeof window === "undefined") return "verse";
@@ -311,6 +316,7 @@ export function HymnDetail({
   const midiLoader = useMemo(() => new MidiLoader(), []);
   const lyricsRef = useRef<HTMLElement>(null);
   const gestureFont = useGestureFont(lyricsRef);
+  const allLyricsRef = useRef<HTMLDivElement>(null);
   const gestureTarget = useRef<HTMLElement | null>(null);
 
   const [fitFontSize, setFitFontSize] = useState(
@@ -349,6 +355,14 @@ export function HymnDetail({
   ]);
   const verses = useMemo(() => getHymnVerses(item), [item]);
   const safeVerseIndex = Math.min(verseIndex, Math.max(0, verses.length - 1));
+  useLyricReflow(
+    lyricsRef,
+    `${songId}-${safeVerseIndex}-${viewScope}-${viewerMode}-${Boolean(item)}`,
+  );
+  useLyricReflow(
+    allLyricsRef,
+    `${songId}-${viewScope}-${viewerMode}-${Boolean(item)}`,
+  );
   useEffect(() => {
     setGestureActive(false);
     return () => {
@@ -761,8 +775,12 @@ export function HymnDetail({
     const wheel = (event: WheelEvent) => {
       if (!event.ctrlKey) return;
       event.preventDefault();
-      if (timer === undefined)
-        target = parseFloat(getComputedStyle(element).fontSize) || target;
+      if (timer === undefined) {
+        const rootScale =
+          parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+        target =
+          parseFloat(getComputedStyle(element).fontSize) / rootScale || target;
+      }
       const units =
         event.deltaMode === 1
           ? 16
@@ -820,7 +838,9 @@ export function HymnDetail({
       let lineFit = preferred;
       if (context && !hasHymnTypography(songId)) {
         const style = getComputedStyle(element);
-        context.font = `${style.fontWeight} ${preferred}px ${style.fontFamily}`;
+        const rootScale =
+          parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+        context.font = `${style.fontWeight} ${preferred * rootScale}px ${style.fontFamily}`;
         const lines = Array.from(element.querySelectorAll("p"));
         const widest = Math.max(
           1,
@@ -841,19 +861,15 @@ export function HymnDetail({
           ),
         );
       }
-      element.style.fontSize = `${lineFit / 16}rem`;
       const next = hasHymnTypography(songId)
         ? clampHymnFontSize(lineFit)
-        : autoFitFontSize({
-            preferredFontSize: lineFit,
-            availableWidth: element.clientWidth,
-            measuredWidth: element.scrollWidth,
-            availableHeight: element.clientHeight,
-            measuredHeight: element.scrollHeight,
-            lastFittedFontSize: lastFitRef.current,
-          });
+        : measureHymnFontFit(
+            element,
+            lineFit,
+            element.clientHeight,
+            lastFitRef.current,
+          );
       lastFitRef.current = next;
-      element.style.fontSize = `${next / 16}rem`;
       setFitFontSize((current) => (current === next ? current : next));
     };
     const schedule = () => {
@@ -1528,7 +1544,7 @@ export function HymnDetail({
     );
   };
   const updateTranspose = (next: number) => {
-    const bounded = Math.max(-11, Math.min(11, next));
+    const bounded = Math.max(-24, Math.min(24, next));
     userSetTransposeRef.current = true;
     transposeRef.current = bounded;
     setTranspose(bounded);
@@ -1549,7 +1565,7 @@ export function HymnDetail({
             <Icon name="chevronLeft" size={18} />
             <span className="sr-only">{translate(locale, "kidung.back")}</span>
           </Link>
-          <h1>{item.title}</h1>
+          <h1 title={item.title}>{item.title}</h1>
         </div>
         {/* gyschordweb two-mode presentation: text and PDF are equal citizens
             switched straight from the header, persisted per hymn. */}
@@ -1611,6 +1627,9 @@ export function HymnDetail({
                 >
                   <Icon name="chord" size={17} />
                 </span>
+                <span className="hymn-action-caption" aria-hidden="true">
+                  Chord
+                </span>
                 <span className="hymn-action-label">
                   {chordStatus === "loading"
                     ? translate(locale, "kidung.loadingChord")
@@ -1647,6 +1666,9 @@ export function HymnDetail({
                 >
                   <Icon name="piano" size={17} />
                 </span>
+                <span className="hymn-action-caption" aria-hidden="true">
+                  MIDI
+                </span>
                 <span className="hymn-action-label">
                   {translate(
                     locale,
@@ -1671,6 +1693,9 @@ export function HymnDetail({
               onClick={() => selectViewerMode("pdf")}
             >
               <Icon name="file" size={18} />
+              <span className="hymn-action-caption" aria-hidden="true">
+                PDF
+              </span>
             </button>
           )}
           <details className="hymn-more-actions" name="hymn-text-toolbar-menu">
@@ -1680,6 +1705,9 @@ export function HymnDetail({
               title={translate(locale, "kidung.options")}
             >
               <Icon name="more" size={18} />
+              <span className="hymn-action-caption" aria-hidden="true">
+                {translate(locale, "kidung.moreShort")}
+              </span>
               <span className="sr-only">
                 {translate(locale, "kidung.options")}
               </span>
@@ -1776,6 +1804,9 @@ export function HymnDetail({
                 <span className="hymn-action-icon" aria-hidden="true">
                   <Icon name="fullscreen" size={17} />
                 </span>
+                <span className="hymn-action-caption" aria-hidden="true">
+                  {translate(locale, "kidung.fullscreenShort")}
+                </span>
                 <span className="hymn-action-label">
                   {translate(locale, "kidung.fullscreenLyrics")}
                 </span>
@@ -1788,6 +1819,9 @@ export function HymnDetail({
               >
                 <span className="hymn-action-icon" aria-hidden="true">
                   <Icon name="heart" size={17} />
+                </span>
+                <span className="hymn-action-caption" aria-hidden="true">
+                  {translate(locale, "kidung.favoriteShort")}
                 </span>
                 <span className="hymn-action-label">
                   {favorite
@@ -1822,6 +1856,9 @@ export function HymnDetail({
                   <span className="hymn-action-icon" aria-hidden="true">
                     <Icon name="playlist" size={17} />
                   </span>
+                  <span className="hymn-action-caption" aria-hidden="true">
+                    {translate(locale, "kidung.queueShort")}
+                  </span>
                   <span className="hymn-action-label">
                     {playlist.items.some((entry) => entry.songId === item.id)
                       ? translate(locale, "kidung.queueCount", {
@@ -1846,6 +1883,9 @@ export function HymnDetail({
                 >
                   <span className="hymn-action-icon" aria-hidden="true">
                     <Icon name="bookmark" size={17} />
+                  </span>
+                  <span className="hymn-action-caption" aria-hidden="true">
+                    {translate(locale, "kidung.save")}
                   </span>
                   <span className="hymn-action-label">
                     {translate(locale, "kidung.saveToPlaylist")}
@@ -1895,6 +1935,9 @@ export function HymnDetail({
                   <span className="reader-aa-label" aria-hidden="true">
                     Aa
                   </span>
+                  <span className="hymn-action-caption" aria-hidden="true">
+                    {translate(locale, "kidung.text")}
+                  </span>
                   <span className="reader-settings-copy">
                     {translate(locale, "kidung.readerSettings")}
                   </span>
@@ -1902,6 +1945,7 @@ export function HymnDetail({
                 <div className="song-controls">
                   <details
                     className="reader-settings-group hymn-reading-settings"
+                    name={readerControlGroup}
                     open
                   >
                     <summary>{translate(locale, "kidung.textSpacing")}</summary>
@@ -2019,7 +2063,10 @@ export function HymnDetail({
                       </div>
                     </div>
                   </details>
-                  <details className="reader-settings-group hymn-music-settings">
+                  <details
+                    className="reader-settings-group hymn-music-settings"
+                    name={readerControlGroup}
+                  >
                     <summary>{translate(locale, "kidung.musicChord")}</summary>
                     <div className="reader-settings-group-body">
                       {midiAvailable && (
@@ -2078,106 +2125,6 @@ export function HymnDetail({
                               />
                             ) : null
                           ) : null}
-                          <label className="hymn-instrument-select">
-                            <span>
-                              {translate(locale, "kidung.instrument")}
-                            </span>
-                            <select
-                              aria-label={translate(
-                                locale,
-                                "kidung.instrument",
-                              )}
-                              value={midiSettings.instrument}
-                              onChange={(event) =>
-                                void midiPlayer
-                                  .setInstrument(Number(event.target.value))
-                                  .catch(() => undefined)
-                              }
-                            >
-                              {GM_INSTRUMENTS.map((name, program) => (
-                                <option key={program} value={program}>
-                                  {String(program + 1).padStart(3, "0")} ·{" "}
-                                  {name}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                          <div className="hymn-tempo-control">
-                            <span>{translate(locale, "kidung.tempo")}</span>
-                            <button
-                              type="button"
-                              onPointerDown={() =>
-                                holdStart(
-                                  () =>
-                                    void midiPlayer.setTempo(
-                                      midiSettings.tempo - 2,
-                                    ),
-                                )
-                              }
-                              onPointerUp={holdStop}
-                              onPointerLeave={holdStop}
-                              onPointerCancel={holdStop}
-                              onClick={tapStep(
-                                () =>
-                                  void midiPlayer.setTempo(
-                                    midiSettings.tempo - 2,
-                                  ),
-                              )}
-                              aria-label={translate(locale, "kidung.tempoDown")}
-                            >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min={30}
-                              max={220}
-                              value={midiSettings.tempo}
-                              onChange={(event) => {
-                                const v = Number(event.target.value);
-                                if (Number.isFinite(v))
-                                  void midiPlayer
-                                    .setTempo(v)
-                                    .catch(() => undefined);
-                              }}
-                              onBlur={(event) => {
-                                const v = Number(event.target.value);
-                                if (!Number.isFinite(v))
-                                  void midiPlayer
-                                    .setTempo(midiSettings.tempo)
-                                    .catch(() => undefined);
-                              }}
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter")
-                                  (event.target as HTMLInputElement).blur();
-                              }}
-                              aria-label={translate(locale, "media.tempoInput")}
-                              style={{ width: 56, textAlign: "center" }}
-                            />
-                            <span style={{ fontSize: "0.8rem" }}>BPM</span>
-                            <button
-                              type="button"
-                              onPointerDown={() =>
-                                holdStart(
-                                  () =>
-                                    void midiPlayer.setTempo(
-                                      midiSettings.tempo + 2,
-                                    ),
-                                )
-                              }
-                              onPointerUp={holdStop}
-                              onPointerLeave={holdStop}
-                              onPointerCancel={holdStop}
-                              onClick={tapStep(
-                                () =>
-                                  void midiPlayer.setTempo(
-                                    midiSettings.tempo + 2,
-                                  ),
-                              )}
-                              aria-label={translate(locale, "kidung.tempoUp")}
-                            >
-                              +
-                            </button>
-                          </div>
                           <div
                             className="hymn-midi-volume"
                             style={{
@@ -2227,20 +2174,24 @@ export function HymnDetail({
                           </div>
                         </div>
                       )}
-                      <Select
-                        value={keyIndex}
-                        onChange={(value) => {
-                          setKeyIndex(value);
-                          updateTranspose(
-                            transposeBetweenKeys(sourceKeyIndex, value),
-                          );
-                        }}
-                        label={translate(locale, "kidung.key")}
-                        options={Array.from({ length: 12 }, (_, value) => ({
-                          value,
-                          label: chordKeyName(value, accidental),
-                        }))}
+                      <MidiMusicControls
+                        locale={locale}
+                        keyIndex={keyIndex}
+                        accidental={accidental}
+                        transpose={transpose}
+                        instrument={
+                          midiAvailable ? midiSettings.instrument : undefined
+                        }
+                        surface="reader"
+                        onTransposeChange={updateTranspose}
                       />
+                      {midiAvailable && (
+                        <MidiTempoStepper
+                          locale={locale}
+                          tempo={midiSettings.tempo}
+                          reader
+                        />
+                      )}
                       <Select
                         value={accidental}
                         onChange={setAccidental}
@@ -2256,71 +2207,14 @@ export function HymnDetail({
                           },
                         ]}
                       />
-                      <div className="transpose-control">
-                        <span>
-                          {translate(locale, "kidung.displayedKey", {
-                            key: renderedKey,
-                          })}
-                          {capo > 0
-                            ? ` (${translate(locale, "kidung.shapeKey", {
-                                key: chordKeyName(
-                                  (((sourceKeyIndex + transpose - capo) % 12) +
-                                    12) %
-                                    12,
-                                  accidental,
-                                ),
-                              })})`
-                            : ""}
-                        </span>
-                        <div className="transpose-btn-group">
-                          <button
-                            type="button"
-                            onPointerDown={() =>
-                              holdStart(() => updateTranspose(transpose - 1))
-                            }
-                            onPointerUp={holdStop}
-                            onPointerLeave={holdStop}
-                            onPointerCancel={holdStop}
-                            onClick={tapStep(() =>
-                              updateTranspose(transpose - 1),
-                            )}
-                            aria-label={translate(
-                              locale,
-                              "kidung.transposeDown",
-                            )}
-                          >
-                            −
-                          </button>
-                          <strong>
-                            {transpose > 0 ? `+${transpose}` : transpose}
-                          </strong>
-                          <button
-                            type="button"
-                            onPointerDown={() =>
-                              holdStart(() => updateTranspose(transpose + 1))
-                            }
-                            onPointerUp={holdStop}
-                            onPointerLeave={holdStop}
-                            onPointerCancel={holdStop}
-                            onClick={tapStep(() =>
-                              updateTranspose(transpose + 1),
-                            )}
-                            aria-label={translate(locale, "kidung.transposeUp")}
-                          >
-                            +
-                          </button>
-                          {transpose !== 0 && (
-                            <button
-                              type="button"
-                              className="transpose-reset-btn"
-                              onClick={() => updateTranspose(0)}
-                              title={translate(locale, "kidung.resetTranspose")}
-                            >
-                              <Icon name="repeat" size={17} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      <output className="hymn-key-description">
+                        {translate(locale, "kidung.displayedKey", {
+                          key: renderedKey,
+                        })}
+                        {capo > 0
+                          ? ` (${translate(locale, "kidung.shapeKey", { key: chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental) })})`
+                          : ""}
+                      </output>
                       <div className="capo-control">
                         <span>
                           {translate(locale, "kidung.capo", {
@@ -2439,7 +2333,7 @@ export function HymnDetail({
               {(midiAvailable || !item.assetCode) && (
                 <details
                   className="pdf-music-menu"
-                  name="hymn-pdf-toolbar-menu"
+                  name="hymn-music-controls"
                   onToggle={(event) => {
                     if (event.currentTarget.open) setNotice("");
                   }}
@@ -2538,11 +2432,11 @@ export function HymnDetail({
                                       : undefined
                                   }
                                   onClick={() => {
-                                    setKeyIndex(value);
                                     updateTranspose(
-                                      transposeBetweenKeys(
-                                        sourceKeyIndex,
+                                      transposeToKey(
+                                        keyIndex,
                                         value,
+                                        transpose,
                                       ),
                                     );
                                     setPdfKeyMenuOpen(false);
@@ -2719,7 +2613,7 @@ export function HymnDetail({
 
         {viewerMode !== "pdf" &&
           (viewScope === "all" ? (
-            <div className="hymn-all-verses-container">
+            <div className="hymn-all-verses-container" ref={allLyricsRef}>
               {verses.map((verseText, vIdx) => {
                 const vLines = verseText.split("\n");
                 const vChordLines = allVersesChordLines[vIdx] ?? [];
@@ -2741,17 +2635,18 @@ export function HymnDetail({
                       const chordLine = vChordLines[index];
                       return (
                         <p key={`${index}-${line}`}>
-                          {chordLine && chordLine.chords.length > 0 ? (
-                            <ChordCapability
-                              lines={[chordLine]}
-                              active={chordsVisible}
-                              transpose={transpose - capo + chordBaseOffset}
-                              accidental={accidental}
-                              locale={locale}
-                            />
-                          ) : (
-                            line || "\u00A0"
-                          )}
+                          <ChordCapability
+                            lines={[
+                              chordLine ?? {
+                                text: line || "\u00A0",
+                                chords: [],
+                              },
+                            ]}
+                            active={chordsVisible}
+                            transpose={transpose - capo + chordBaseOffset}
+                            accidental={accidental}
+                            locale={locale}
+                          />
                         </p>
                       );
                     })}
@@ -2780,17 +2675,15 @@ export function HymnDetail({
                 const chordLine = chordLines[index];
                 return (
                   <p key={`${index}-${line}`}>
-                    {chordLine && chordLine.chords.length > 0 ? (
-                      <ChordCapability
-                        lines={[chordLine]}
-                        active={chordsVisible}
-                        transpose={transpose - capo + chordBaseOffset}
-                        accidental={accidental}
-                        locale={locale}
-                      />
-                    ) : (
-                      line || "\u00A0"
-                    )}
+                    <ChordCapability
+                      lines={[
+                        chordLine ?? { text: line || "\u00A0", chords: [] },
+                      ]}
+                      active={chordsVisible}
+                      transpose={transpose - capo + chordBaseOffset}
+                      accidental={accidental}
+                      locale={locale}
+                    />
                   </p>
                 );
               })}
@@ -2901,6 +2794,10 @@ export function HymnDetail({
             )
           }
           initialVerseIndex={safeVerseIndex}
+          transpose={transpose}
+          sourceKeyIndex={sourceKeyIndex}
+          chordTranspose={transpose - capo + chordBaseOffset}
+          onTransposeChange={updateTranspose}
           onNavigateSong={(delta) => changeVerse(delta)}
           onClose={() => setLyricsPanelOpen(false)}
         />

@@ -2,6 +2,114 @@ import { expect, test } from "@playwright/test";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { STORAGE_SCHEMA_VERSION } from "../src/storage.js";
 
+test("an article stays readable when progress storage fills and recovers without losing position", async ({
+  page,
+}) => {
+  const item = {
+    id: "quota-article",
+    category: "kesaksian",
+    title: "Artikel pemulihan penyimpanan",
+    description: "",
+    url: "https://tjc.org/id/kesaksian/quota-article/",
+    format: "article",
+    publishedAt: "2026-10-10T00:00:00.000Z",
+    updatedAt: "2026-10-10T00:00:00.000Z",
+    source: "tjc.org",
+  };
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route(
+    /(?:offline\/literature\.json|api\/v1\/content\/literature)/,
+    (route) =>
+      route.fulfill({
+        json: {
+          source: "tjc.org",
+          generatedAt: "2026-10-11T00:00:00.000Z",
+          items: [item],
+        },
+      }),
+  );
+  await page.addInitScript(
+    ({ item, schema }) => {
+      localStorage.setItem(
+        "gys-storage-meta-v1",
+        JSON.stringify({
+          version: schema,
+          migratedAt: new Date().toISOString(),
+        }),
+      );
+      localStorage.setItem(
+        `gys_article_cache_${item.url}`,
+        JSON.stringify({
+          ...item,
+          body: Array.from({ length: 60 }, (_, i) =>
+            `Paragraf ${i + 1}. Tuhan menyertai setiap langkah kehidupan kita. `.repeat(
+              7,
+            ),
+          ).join("\n\n"),
+          fetchedAt: new Date().toISOString(),
+        }),
+      );
+    },
+    { item, schema: STORAGE_SCHEMA_VERSION },
+  );
+  await page.goto("/GYSApp-Tauri/literatur/quota-article/read");
+  await expect(
+    page.getByRole("heading", { name: item.title, exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".literature-article-reader .online-article-body p").first(),
+  ).toContainText("Paragraf 1");
+  const durableBefore = await page.evaluate(() =>
+    localStorage.getItem("gys-literature-progress-v2"),
+  );
+  await page.evaluate(() => {
+    Reflect.set(window, "__gysOriginalStorageWrite", Storage.prototype.setItem);
+    Storage.prototype.setItem = () => {
+      throw new DOMException("storage full", "QuotaExceededError");
+    };
+  });
+  await page.mouse.wheel(0, 100_000);
+  await expect(page.locator(".article-progress-main output")).toHaveText(
+    "100%",
+  );
+  await expect(page.locator(".progress-save-notice")).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("gys-literature-progress-v2"),
+    ),
+  ).toBe(durableBefore);
+  await expect(page.locator(".route-error-panel")).toHaveCount(0);
+  await page.evaluate(() => {
+    Storage.prototype.setItem = Reflect.get(
+      window,
+      "__gysOriginalStorageWrite",
+    );
+  });
+  await page.mouse.wheel(0, -200);
+  await expect(page.locator(".progress-save-notice")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("gys-literature-progress-v2")!)[
+            "quota-article"
+          ].percent,
+      ),
+    )
+    .toBe(100);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("gys-literature-progress-v2")!)[
+            "quota-article"
+          ].furthestLocation.ratio,
+      ),
+    )
+    .toBeCloseTo(1, 2);
+});
+
 test("history navigation resets window scroll before entering another page", async ({
   page,
 }) => {

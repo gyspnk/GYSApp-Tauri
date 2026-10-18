@@ -76,7 +76,6 @@ export function BibleNotesPopup({
       >
         <div className="bible-notes-header">
           <div>
-            <small>{translate(locale, "bible.savedReading")}</small>
             <strong>{translate(locale, "bible.notes")}</strong>
           </div>
           <span className="bible-notes-count">

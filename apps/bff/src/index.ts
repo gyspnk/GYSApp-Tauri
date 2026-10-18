@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { ContentCache, contentEtag } from "./content-cache.js";
 import { fetchOfficialPdf } from "./pdf-proxy.js";
+import { fetchOfficialImage } from "./image-proxy.js";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -820,54 +821,28 @@ export function createApp(
     )
       return errorResponse(c, "FORBIDDEN", "Image source is not allowlisted");
 
-    const candidates: string[] = [url.toString()];
-    if (
-      hostname.includes("tjc.org") &&
-      url.pathname.includes("wp-content/uploads/")
-    ) {
-      candidates.push(
-        `https://tjcorguploads.s3.amazonaws.com/tjcorg${url.pathname.replace(/^\/id/, "")}`,
-      );
-      candidates.push(
-        `https://tjcorguploads.s3.amazonaws.com${url.pathname.replace(/^\/id/, "")}`,
-      );
-    } else if (hostname.includes("amazonaws.com")) {
-      candidates.push(
-        `https://tjc.org/id${url.pathname.replace(/^\/tjcorg/, "")}`,
-      );
+    try {
+      const upstream = await fetchOfficialImage(url, c.req.raw.signal);
+      if (upstream) {
+        c.header(
+          "content-type",
+          upstream.headers.get("content-type") || "image/jpeg",
+        );
+        c.header(
+          "cache-control",
+          "public, max-age=604800, stale-while-revalidate=2592000",
+        );
+        c.header("access-control-allow-origin", "*");
+        c.header("cross-origin-resource-policy", "cross-origin");
+        return new Response(upstream.body, {
+          status: 200,
+          headers: c.res.headers,
+        });
+      }
+    } catch {
+      // Reader cancellation must not start another source request.
     }
 
-    for (const target of candidates) {
-      try {
-        const upstream = await fetch(target, {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            Accept:
-              "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-            Referer: "https://tjc.org/",
-          },
-          signal: c.req.raw.signal,
-        });
-        if (upstream.ok) {
-          const contentType =
-            upstream.headers.get("content-type") || "image/jpeg";
-          c.header("content-type", contentType);
-          c.header(
-            "cache-control",
-            "public, max-age=604800, stale-while-revalidate=2592000",
-          );
-          c.header("access-control-allow-origin", "*");
-          c.header("cross-origin-resource-policy", "cross-origin");
-          return new Response(upstream.body, {
-            status: 200,
-            headers: c.res.headers,
-          });
-        }
-      } catch {
-        // try next candidate
-      }
-    }
     return errorResponse(c, "UPSTREAM_UNAVAILABLE", "Image source unavailable");
   });
 

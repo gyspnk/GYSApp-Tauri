@@ -1,3 +1,5 @@
+import { recordDiagnostic } from "./diagnostics.js";
+
 export type LiteratureLocation =
   | { kind: "page"; page: number; totalPages: number }
   | { kind: "scroll"; ratio: number };
@@ -50,6 +52,18 @@ export function literaturePagePercent(
 export const LITERATURE_PROGRESS_KEY = "gys-literature-progress-v2";
 const LEGACY_PROGRESS_KEY = "gys-literature-progress-v1";
 const CHANGE_EVENT = "gys-literature-progress-change";
+const pendingProgress = new Map<string, LiteratureProgress>();
+
+export function hasUnsavedLiteratureProgress(id?: string): boolean {
+  return id === undefined ? pendingProgress.size > 0 : pendingProgress.has(id);
+}
+
+export function clearPendingLiteratureProgress(): void {
+  if (!pendingProgress.size) return;
+  pendingProgress.clear();
+  if (typeof window !== "undefined")
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
+}
 
 function isIsoDate(value: unknown): value is string {
   return typeof value === "string" && !Number.isNaN(Date.parse(value));
@@ -140,7 +154,44 @@ export function readLiteratureProgress(
     const normalized = normalizeLiteratureProgress(value, resourceVersion);
     if (normalized) result[id] = normalized;
   }
+  for (const [id, pending] of pendingProgress) {
+    const durable = result[id];
+    if (!durable || durable.resourceVersion !== pending.resourceVersion) {
+      result[id] =
+        !durable ||
+        Date.parse(pending.updatedAt) >= Date.parse(durable.updatedAt)
+          ? pending
+          : durable;
+      continue;
+    }
+    const latest =
+      Date.parse(pending.updatedAt) >= Date.parse(durable.updatedAt)
+        ? pending
+        : durable;
+    const furthest =
+      locationRatio(pending.furthestLocation ?? pending.location) >
+      locationRatio(durable.furthestLocation ?? durable.location)
+        ? (pending.furthestLocation ?? pending.location)
+        : (durable.furthestLocation ?? durable.location);
+    const downloadedAt =
+      latest.downloadedAt ?? durable.downloadedAt ?? pending.downloadedAt;
+    result[id] = {
+      ...latest,
+      percent: Math.max(pending.percent, durable.percent),
+      ...(furthest ? { furthestLocation: furthest } : {}),
+      ...(downloadedAt ? { downloadedAt } : {}),
+      ...(pending.completed || durable.completed ? { completed: true } : {}),
+    };
+  }
   return result;
+}
+
+function locationRatio(location?: LiteratureLocation): number {
+  return !location
+    ? -1
+    : location.kind === "scroll"
+      ? location.ratio
+      : location.page / location.totalPages;
 }
 
 export function saveLiteratureProgress(
@@ -151,23 +202,17 @@ export function saveLiteratureProgress(
   const next = readLiteratureProgress();
   const previous = next[id];
   const compatible = previous?.resourceVersion === progress.resourceVersion;
-  const ratio = (location?: LiteratureLocation) =>
-    !location
-      ? -1
-      : location.kind === "scroll"
-        ? location.ratio
-        : location.page / location.totalPages;
   const previousFurthest = compatible
     ? (previous.furthestLocation ?? previous.location)
     : undefined;
   const furthest =
-    ratio(progress.furthestLocation) > ratio(previousFurthest)
+    locationRatio(progress.furthestLocation) > locationRatio(previousFurthest)
       ? progress.furthestLocation
       : previousFurthest;
   const location =
     progress.location ?? (compatible ? previous.location : undefined);
   const furthestLocation =
-    ratio(location) > ratio(furthest) ? location : furthest;
+    locationRatio(location) > locationRatio(furthest) ? location : furthest;
   const saved: LiteratureProgress = {
     ...progress,
     percent: Math.max(progress.percent, compatible ? previous.percent : 0),
@@ -178,7 +223,15 @@ export function saveLiteratureProgress(
       : {}),
   };
   next[id] = saved;
-  localStorage.setItem(LITERATURE_PROGRESS_KEY, JSON.stringify(next));
+  try {
+    localStorage.setItem(LITERATURE_PROGRESS_KEY, JSON.stringify(next));
+    // The write includes pending entries from every reader, not just this id.
+    pendingProgress.clear();
+  } catch (error) {
+    if (!pendingProgress.has(id))
+      recordDiagnostic("warn", "literature.progress.persist", error);
+    pendingProgress.set(id, saved);
+  }
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
   return saved;
 }
@@ -189,7 +242,7 @@ export function removeLiteratureProgress(id: string): void {
   const legacy = readMapFrom(LEGACY_PROGRESS_KEY);
   const hadCurrent = Object.hasOwn(current, id);
   const hadLegacy = Object.hasOwn(legacy, id);
-  if (!hadCurrent && !hadLegacy) return;
+  if (!hadCurrent && !hadLegacy && !pendingProgress.has(id)) return;
 
   if (hadCurrent) {
     delete current[id];
@@ -205,6 +258,7 @@ export function removeLiteratureProgress(id: string): void {
     const key = localStorage.key(index);
     if (key?.startsWith(pagePrefix)) localStorage.removeItem(key);
   }
+  pendingProgress.delete(id);
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 

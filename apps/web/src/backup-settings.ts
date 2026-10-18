@@ -1,3 +1,10 @@
+import {
+  clearPendingLiteratureProgress,
+  hasUnsavedLiteratureProgress,
+  readLiteratureProgress,
+  LITERATURE_PROGRESS_KEY,
+} from "./literature-progress.js";
+
 type PortableStorage = Pick<Storage, "getItem" | "setItem" | "length" | "key">;
 
 const PORTABLE_BACKUP_KEYS = new Set([
@@ -73,12 +80,22 @@ export function collectPortableBackupSettings(
     const key = storage.key(index);
     if (key && isPortableBackupSetting(key)) keys.add(key);
   }
-  return Object.fromEntries(
+  const settings = Object.fromEntries(
     [...keys].flatMap((key) => {
       const value = storage.getItem(key);
       return value === null ? [] : [[key, value]];
     }),
   );
+  if (
+    typeof window !== "undefined" &&
+    storage === window.localStorage &&
+    hasUnsavedLiteratureProgress()
+  ) {
+    settings[LITERATURE_PROGRESS_KEY] = JSON.stringify(
+      readLiteratureProgress(),
+    );
+  }
+  return settings;
 }
 
 export function restorePortableBackupSettings(
@@ -88,10 +105,20 @@ export function restorePortableBackupSettings(
   if (!settings || typeof settings !== "object" || Array.isArray(settings))
     throw new Error("settings missing");
   let restored = 0;
+  let progressRestored = false;
   for (const [key, value] of Object.entries(settings)) {
     if (!isPortableBackupSetting(key) || typeof value !== "string") continue;
     storage.setItem(key, value);
+    if (
+      key === "gys-literature-progress-v2" ||
+      key === "gys-literature-progress-v1"
+    )
+      progressRestored = true;
     restored += 1;
+  }
+  if (typeof window !== "undefined" && storage === window.localStorage) {
+    if (progressRestored) clearPendingLiteratureProgress();
+    window.dispatchEvent(new Event("gys-reminder-change"));
   }
   return restored;
 }

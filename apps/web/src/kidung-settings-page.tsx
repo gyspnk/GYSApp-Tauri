@@ -81,7 +81,6 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
         className="kidung-settings-section"
         aria-labelledby="kidung-player-heading"
       >
-        <p className="date-line">{translate(locale, "kidung.settingsAudio")}</p>
         <h2 id="kidung-player-heading">
           {translate(locale, "kidung.settingsMidiPlayer")}
         </h2>
@@ -93,9 +92,6 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
           />
           <span>
             <strong>{translate(locale, "kidung.settingsCompactPlayer")}</strong>
-            <small>
-              {translate(locale, "kidung.settingsCompactPlayerDescription")}
-            </small>
           </span>
         </label>
         <div className="kidung-settings-controls">
@@ -165,9 +161,6 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
           />
           <span>
             <strong>{translate(locale, "kidung.settingsPreloadNext")}</strong>
-            <small>
-              {translate(locale, "kidung.settingsPreloadNextDescription")}
-            </small>
           </span>
         </label>
         <div className="kidung-settings-controls">
@@ -237,7 +230,6 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
         className="kidung-settings-section"
         aria-labelledby="kidung-chord-heading"
       >
-        <p className="date-line">{translate(locale, "kidung.settingsChord")}</p>
         <details className="kidung-settings-disclosure">
           <summary>
             <h2 id="kidung-chord-heading">

@@ -412,9 +412,7 @@ export function GlobalSearch({
     if (status !== "ready") return "";
     const normalized = deferredQuery.trim();
     if (normalized.length < 2) {
-      return translate(locale, "search.ready", {
-        count: entries.length.toLocaleString(locale),
-      });
+      return "";
     }
     if (!mergedResults.length) {
       return translate(locale, "search.empty", { query: normalized });
@@ -423,7 +421,7 @@ export function GlobalSearch({
       count: mergedResults.length.toLocaleString(locale),
       query: normalized,
     });
-  }, [deferredQuery, entries.length, locale, mergedResults.length, status]);
+  }, [deferredQuery, locale, mergedResults.length, status]);
 
   const submit = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
   const openResult = (entry: SearchEntry | BibleSearchEntry) => {
@@ -453,7 +451,6 @@ export function GlobalSearch({
       >
         <div className="global-search-heading">
           <div>
-            <p className="sr-only">{translate(locale, "search.eyebrow")}</p>
             <h2 id="global-search-title">
               {translate(locale, "search.title")}
             </h2>

@@ -147,4 +147,64 @@ describe("distributed asset catalog", () => {
       }),
     ).not.toThrow();
   });
+
+  it("retires stalled remote manifests and recovers through the bundled snapshot", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const fallback = {
+      version: 1,
+      generatedAt: "2026-06-30T00:00:00.000Z",
+      sourceRepo: "ThenGB/GYSApp-Data",
+      items: [],
+    };
+    const fetcher = vi.fn<typeof fetch>((_input, init) => {
+      if (init?.signal) signals.push(init.signal);
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(init.signal?.reason),
+          { once: true },
+        );
+      });
+    });
+    try {
+      const loading = loadDistributedAssetCatalog({ fetcher, fallback });
+      await vi.advanceTimersByTimeAsync(8_000);
+      await expect(
+        Promise.race([loading, Promise.resolve("still pending")]),
+      ).resolves.toEqual(fallback);
+      expect(signals).toHaveLength(3);
+      expect(signals.every((signal) => signal.aborted)).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels remaining manifest probes when one source fails immediately", async () => {
+    const signals: AbortSignal[] = [];
+    const fallback = {
+      version: 1,
+      generatedAt: "2026-06-30T00:00:00.000Z",
+      sourceRepo: "ThenGB/GYSApp-Data",
+      items: [],
+    };
+    let calls = 0;
+    const fetcher = vi.fn<typeof fetch>((_input, init) => {
+      if (init?.signal) signals.push(init.signal);
+      if (calls++ === 0) return Promise.reject(new Error("offline"));
+      return new Promise((_resolve, reject) =>
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(init.signal?.reason),
+          { once: true },
+        ),
+      );
+    });
+    await expect(
+      loadDistributedAssetCatalog({ fetcher, fallback }),
+    ).resolves.toEqual(fallback);
+    expect(signals).toHaveLength(3);
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+  });
 });

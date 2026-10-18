@@ -82,6 +82,37 @@ const catalog: DistributedAssetCatalog = {
 describe("DistributedAssetManager", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it("shares a cold status lookup without overwriting a newer catalog refresh", async () => {
+    let release!: (value: DistributedAssetCatalog) => void;
+    const initial = new Promise<DistributedAssetCatalog>((resolve) => {
+      release = resolve;
+    });
+    const initialLoader = vi.fn(() => initial);
+    const newer = {
+      ...catalog,
+      items: catalog.items.map((item) => ({ ...item, version: "2026.10.11" })),
+    };
+    const store = new DistributedAssetStore({
+      cacheStorage: cacheStorage(),
+      registry: storage(),
+    });
+    const manager = new DistributedAssetManager({
+      initialCatalogLoader: initialLoader,
+      catalogLoader: async () => newer,
+      store,
+    });
+    const first = manager.loadStatuses();
+    const second = manager.loadStatuses();
+    await manager.refresh();
+    release(catalog);
+    await Promise.all([first, second]);
+    expect(initialLoader).toHaveBeenCalledOnce();
+    expect(
+      (await manager.loadStatuses()).find((item) => item.code === "b_kjv")?.item
+        ?.version,
+    ).toBe("2026.10.11");
+  });
+
   it("reports optional downloads only when a BFF is configured", () => {
     expect(distributedDownloadsConfigured("")).toBe(false);
     expect(distributedDownloadsConfigured("   ")).toBe(false);

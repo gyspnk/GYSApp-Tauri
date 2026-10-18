@@ -63,6 +63,7 @@ import {
 } from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { UiPreferencesPanel } from "./ui-preferences-panel.js";
+import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
 import { AccountAvatar } from "./account-avatar.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -433,35 +434,6 @@ export function MorePage({
   const changeTheme = (next: ShellTheme) => {
     setTheme(next);
   };
-
-  useEffect(() => {
-    if (!reminderTime) return;
-    let timer: number | undefined;
-    const schedule = () => {
-      const [hours, minutes] = reminderTime.split(":").map(Number);
-      const next = new Date();
-      next.setHours(hours || 0, minutes || 0, 0, 0);
-      if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
-      timer = window.setTimeout(
-        () => {
-          if (
-            "Notification" in window &&
-            Notification.permission === "granted"
-          ) {
-            new Notification(translate(locale, "more.notificationTitle"), {
-              body: translate(locale, "more.notificationBody"),
-            });
-          }
-          schedule();
-        },
-        Math.max(1_000, next.getTime() - Date.now()),
-      );
-    };
-    schedule();
-    return () => {
-      if (timer !== undefined) window.clearTimeout(timer);
-    };
-  }, [reminderTime]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -842,6 +814,7 @@ export function MorePage({
   const saveReminder = async () => {
     if (!reminderTime) {
       localStorage.removeItem("gys-reminder-time-v1");
+      window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
       setReminderOpen(false);
       show(translate(locale, "more.reminderDisabled"));
       return;
@@ -850,6 +823,7 @@ export function MorePage({
       await Notification.requestPermission();
     }
     localStorage.setItem("gys-reminder-time-v1", reminderTime);
+    window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
     setReminderOpen(false);
     const notificationGranted =
       "Notification" in window && Notification.permission === "granted";
@@ -863,6 +837,7 @@ export function MorePage({
   const disableReminder = () => {
     setReminderTime("");
     localStorage.removeItem("gys-reminder-time-v1");
+    window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
     setReminderOpen(false);
     show(translate(locale, "more.reminderDisabled"));
   };
@@ -1011,23 +986,17 @@ export function MorePage({
         <div className="more-library-grid">
           {(
             [
-              [
-                "/literatur",
-                "literature.title",
-                "more.exploreLiterature",
-                "book",
-              ],
-              ["/suara", "suara.title", "more.exploreSuara", "person"],
-              ["/sauh", "sauh.title", "more.exploreSauh", "sun"],
+              ["/literatur", "literature.title", "book"],
+              ["/suara", "suara.title", "person"],
+              ["/sauh", "sauh.title", "sun"],
             ] as const
-          ).map(([path, title, description, icon]) => (
+          ).map(([path, title, icon]) => (
             <Link className="more-library-link" to={path} key={path}>
               <span className="more-library-icon">
                 <Icon name={icon} size={24} />
               </span>
               <span>
                 <strong>{translate(locale, title)}</strong>
-                <small>{translate(locale, description)}</small>
               </span>
               <Icon name="chevronRight" size={18} />
             </Link>
@@ -1371,7 +1340,6 @@ export function MorePage({
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
-            <p>{translate(locale, "bible.configureAudio")}</p>
             <Link className="more-settings-link" to="/bible?settings=audio">
               {translate(locale, "bible.audioSettings")}
               <Icon name="chevronRight" size={16} />
@@ -1418,16 +1386,16 @@ export function MorePage({
                   <Icon name="queueMusic" size={22} />
                 </span>
                 <strong>{translate(locale, "more.midiQueue")}</strong>
-                <small>
-                  {playlist.items.length
-                    ? translate(locale, "more.queueStatus", {
-                        count: playlist.items.length,
-                        mode: playlist.autoNext
-                          ? translate(locale, "more.queueAutomatic")
-                          : translate(locale, "more.queueManual"),
-                      })
-                    : translate(locale, "more.prepareQueue")}
-                </small>
+                {playlist.items.length > 0 && (
+                  <small>
+                    {translate(locale, "more.queueStatus", {
+                      count: playlist.items.length,
+                      mode: playlist.autoNext
+                        ? translate(locale, "more.queueAutomatic")
+                        : translate(locale, "more.queueManual"),
+                    })}
+                  </small>
+                )}
               </button>
               <button
                 className="more-card more-action"
@@ -1438,7 +1406,6 @@ export function MorePage({
                   <Icon name="sun" size={22} />
                 </span>
                 <strong>{translate(locale, "more.reminder")}</strong>
-                <small>{translate(locale, "more.reminderDesc")}</small>
               </button>
             </div>
           </div>
@@ -1543,17 +1510,6 @@ export function MorePage({
                     </small>
                   )}
                 </div>
-                <div className="offline-pack-diagnostics">
-                  <span>{translate(locale, "more.offlineDiagnostics")}</span>
-                  <small>
-                    Manifest v{manifest?.version ?? 1} ·{" "}
-                    {manifest
-                      ? new Date(manifest.generatedAt).toLocaleDateString(
-                          locale,
-                        )
-                      : translate(locale, "more.loading")}
-                  </small>
-                </div>
               </article>
 
               <DistributedAssetPanel
@@ -1579,7 +1535,6 @@ export function MorePage({
               <div className="device-data-summary">
                 <span>
                   <strong>{translate(locale, "more.deviceData")}</strong>
-                  <small>{translate(locale, "more.deviceDataDesc")}</small>
                 </span>
               </div>
               <div className="device-data-body">
@@ -1627,7 +1582,6 @@ export function MorePage({
                 <Icon name="download" size={22} />
               </span>
               <strong>{translate(locale, "more.backupImport")}</strong>
-              <small>{translate(locale, "more.backupImportDesc")}</small>
             </button>
           </div>
         </details>
@@ -1692,7 +1646,6 @@ export function MorePage({
         >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">{translate(locale, "more.localData")}</p>
               <h2>{translate(locale, "more.encryptedBackup")}</h2>
             </div>
             <button
@@ -1747,9 +1700,6 @@ export function MorePage({
         >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">
-                {translate(locale, "more.deviceNotifications")}
-              </p>
               <h2>{translate(locale, "more.reminderPanel")}</h2>
             </div>
             <button
@@ -1760,7 +1710,6 @@ export function MorePage({
               {translate(locale, "more.close")}
             </button>
           </div>
-          <p>{translate(locale, "more.reminderDescription")}</p>
           <label className="search-field">
             <span>{translate(locale, "more.time")}</span>
             <input
@@ -1794,7 +1743,6 @@ export function MorePage({
         >
           <div className="more-card-heading">
             <div>
-              <p className="date-line">{translate(locale, "more.hymnLabel")}</p>
               <h2>{translate(locale, "more.playlist")}</h2>
             </div>
             <button
@@ -1950,7 +1898,6 @@ export function MorePage({
               {translate(locale, "more.clear")}
             </button>
           </div>
-          <small>{translate(locale, "more.playlistNote")}</small>
         </section>
       )}
       {notice && (

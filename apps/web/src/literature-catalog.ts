@@ -6,6 +6,7 @@ import {
 } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import { withRequestDeadline } from "./request-deadline.js";
 
 export const literatureCategoryLabels: Record<
   LiteratureCategory | "all",
@@ -265,15 +266,23 @@ function scheduleCatalogRevalidate() {
 async function loadMergedCatalog(current: LiteratureItem[]) {
   let refreshed = current;
   let changed = false;
-  for (const url of bffCandidates()) {
-    try {
-      const response = await fetch(url, { cache: "default" });
-      if (!response.ok)
-        throw new Error(`Literature request failed: ${response.status}`);
-      const contentType = response.headers.get("content-type");
-      if (contentType?.includes("text/html"))
-        throw new Error(`Expected JSON from ${url}, got HTML`);
-      const incoming = LiteratureCatalogSchema.parse(await response.json());
+  const sources = await Promise.allSettled(
+    bffCandidates().map((url) =>
+      withRequestDeadline(async (signal) => {
+        const response = await fetch(url, { cache: "default", signal });
+        if (!response.ok)
+          throw new Error(`Literature request failed: ${response.status}`);
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("text/html"))
+          throw new Error(`Expected JSON from ${url}, got HTML`);
+        return LiteratureCatalogSchema.parse(await response.json());
+      }, 8_000),
+    ),
+  );
+  // Apply in the existing source order regardless of network completion order.
+  for (const source of sources) {
+    if (source.status === "fulfilled") {
+      const incoming = source.value;
       const covers = new Map(
         refreshed
           .filter((item) => item.imageUrl)
@@ -289,8 +298,6 @@ async function loadMergedCatalog(current: LiteratureItem[]) {
         refreshed = merged;
         changed = true;
       }
-    } catch {
-      // try the next candidate
     }
   }
   return changed ? refreshed : undefined;

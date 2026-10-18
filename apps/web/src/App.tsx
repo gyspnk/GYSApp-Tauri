@@ -54,6 +54,7 @@ import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
+import { installDailyReminder } from "./daily-reminder.js";
 import { getShellSettingsStorage } from "./settings.js";
 import {
   readShellSettings,
@@ -669,6 +670,9 @@ function RoutedApp() {
   }
   const settings = useAppSettings();
   const locale = settings.locale;
+  const reminderLocale = useRef(locale);
+  reminderLocale.current = locale;
+  useEffect(() => installDailyReminder(() => reminderLocale.current), []);
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void import("./chords.js")

@@ -9,6 +9,7 @@ for (const width of [320, 390, 768, 1440]) {
   test(`MIDI's visible musical controls, playback motion and dock persist at ${width}px`, async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     await page.setViewportSize({ width, height: 780 });
     await page.route(/^https:\/\//, (route) => route.abort());
     await preparePinnedReaderAssets(page);
@@ -75,7 +76,7 @@ for (const width of [320, 390, 768, 1440]) {
       await menu.evaluate(
         (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length,
       ),
-    ).toBe(6);
+    ).toBe(5);
     if ([390, 768, 1440].includes(width)) {
       await page.screenshot({ path: `/tmp/gys-kidung-simple-${width}.png` });
     }
@@ -112,8 +113,8 @@ for (const width of [320, 390, 768, 1440]) {
       .all()) {
       if (!(await control.isVisible())) continue;
       const box = (await control.boundingBox())!;
-      expect(box.width).toBeGreaterThanOrEqual(width < 680 ? 39.9 : 35.9);
-      expect(box.height).toBeGreaterThanOrEqual(width < 680 ? 39.9 : 35.9);
+      expect(box.width).toBeGreaterThanOrEqual(31.9);
+      expect(box.height).toBeGreaterThanOrEqual(31.9);
     }
     for (const control of await player
       .locator(
@@ -121,8 +122,8 @@ for (const width of [320, 390, 768, 1440]) {
       )
       .all()) {
       const box = (await control.boundingBox())!;
-      expect(box.width).toBe(width < 680 ? 40 : 36);
-      expect(box.height).toBe(width < 680 ? 40 : 36);
+      expect(box.width).toBe(32);
+      expect(box.height).toBe(32);
     }
     const row = (await player.locator(".media-music-controls").boundingBox())!;
     expect(row.height).toBeLessThan(110);

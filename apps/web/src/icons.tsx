@@ -44,6 +44,7 @@ export type IconName =
   | "playlist"
   | "bookmark"
   | "repeat"
+  | "reset"
   | "menuBook"
   | "tune"
   | "textDecrease"
@@ -247,6 +248,12 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />
       <path d="M9 8h6" />
+    </>
+  ),
+  reset: (
+    <>
+      <path d="M3 10a9 9 0 1 1 2.6 8.4" />
+      <path d="M3 4v6h6" />
     </>
   ),
   repeat: (

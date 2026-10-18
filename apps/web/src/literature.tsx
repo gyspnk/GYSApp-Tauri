@@ -2,7 +2,7 @@ import {
   PdfReader as LiteraturePdfReader,
   preloadPdfReader,
 } from "./pdf-reader-loader.js";
-import { ArticleProgress } from "./article-progress.js";
+import { ArticleProgress, ProgressSaveNotice } from "./article-progress.js";
 import { navigateSmooth } from "./route-transitions.js";
 import { transitionReader } from "./reader-transition.js";
 import { preloadRoute } from "./route-preload.js";
@@ -301,7 +301,6 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         <div>
           <p className="date-line">{translate(locale, "literature.eyebrow")}</p>
           <h1>{translate(locale, "literature.title")}</h1>
-          <p className="sr-only">{translate(locale, "literature.intro")}</p>
         </div>
         <span className="pack-badge">
           {translate(locale, "literature.itemCount", {
@@ -871,16 +870,15 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     const cached = getCachedArticle(item.url);
     setArticleBody(cached?.body);
     setArticleStatus(cached ? "ready" : "loading");
-    if (!cached)
-      void fetchOnlineArticle(item.url, controller.signal)
-        .then((article) => {
-          if (controller.signal.aborted) return;
-          setArticleBody(article.body);
-          setArticleStatus("ready");
-        })
-        .catch(() => {
-          if (!controller.signal.aborted) setArticleStatus("error");
-        });
+    void fetchOnlineArticle(item.url, controller.signal)
+      .then((article) => {
+        if (controller.signal.aborted) return;
+        setArticleBody(article.body);
+        setArticleStatus("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setArticleStatus("error");
+      });
     return () => controller.abort();
   }, [directArticleRead, item?.id, item?.url, sourceAttempt]);
 
@@ -1091,15 +1089,9 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           fetchPriority="high"
         />
         <div className="literature-detail-copy">
-          <p className="date-line">
-            {translate(locale, "literature.detailEyebrow")} ·{" "}
-            {itemCategoryLabel}
-          </p>
+          <p className="date-line">{itemCategoryLabel}</p>
           <h1>{item.title}</h1>
-          <p className="intro-copy">
-            {item.description ||
-              translate(locale, "literature.detailDescriptionFallback")}
-          </p>
+          {item.description && <p className="intro-copy">{item.description}</p>}
           <div className="literature-detail-meta">
             <span>{formatLabel(locale, item.format)}</span>
             <span>{dateLabel(item.publishedAt, locale)}</span>
@@ -1257,21 +1249,24 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
             )}
           </div>
         </details>
-        <small className="literature-progress-note">
-          {progress?.location?.kind === "page" &&
-            translate(locale, "literature.lastPage", {
-              page: progress.location.page,
-              totalPages: progress.location.totalPages,
-            })}
-          {progress?.lastOpenedAt
-            ? ` ${translate(locale, "literature.lastOpened", {
-                date: new Date(progress.lastOpenedAt).toLocaleDateString(
-                  locale,
-                ),
-              })}`
-            : !progress?.location &&
-              translate(locale, "literature.progressStored")}
-        </small>
+        <ProgressSaveNotice id={item.id} locale={locale} />
+        {(progress?.location?.kind === "page" ||
+          Boolean(progress?.lastOpenedAt)) && (
+          <small className="literature-progress-note">
+            {progress?.location?.kind === "page" &&
+              translate(locale, "literature.lastPage", {
+                page: progress.location.page,
+                totalPages: progress.location.totalPages,
+              })}
+            {progress?.lastOpenedAt
+              ? ` ${translate(locale, "literature.lastOpened", {
+                  date: new Date(progress.lastOpenedAt).toLocaleDateString(
+                    locale,
+                  ),
+                })}`
+              : null}
+          </small>
+        )}
       </section>
       {showReader &&
         createPortal(
@@ -1320,6 +1315,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                     </button>
                   </div>
                 </div>
+                <ProgressSaveNotice id={item.id} locale={locale} />
                 {isPdfUnavailable ? (
                   <div
                     className="literature-pdf-preparing error-panel"

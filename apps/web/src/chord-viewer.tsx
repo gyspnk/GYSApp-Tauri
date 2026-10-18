@@ -1,4 +1,10 @@
-import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import { translate, type Locale } from "./i18n.js";
@@ -129,6 +135,18 @@ export function chordKeyName(
 ): string {
   const notes = accidental === "flat" ? FLAT_NOTES : SHARP_NOTES;
   return notes[((Math.trunc(index) % 12) + 12) % 12] ?? "C";
+}
+
+/** Keep octave adjustments when selecting a key, wrapping within playback bounds. */
+export function transposeToKey(
+  currentKey: number,
+  targetKey: number,
+  transpose: number,
+): number {
+  let next = transpose + transposeBetweenKeys(currentKey, targetKey);
+  if (next > 24) next -= 12;
+  if (next < -24) next += 12;
+  return next;
 }
 
 /**
@@ -519,7 +537,16 @@ function ChordLine({
   accidental: "sharp" | "flat";
 }) {
   const textRef = useRef<HTMLSpanElement>(null);
-  const chars = [...line.text];
+  const lineId = useId();
+  let offset = 0;
+  const words = line.text
+    .split(/(\s+)/)
+    .filter(Boolean)
+    .map((text) => {
+      const index = offset;
+      offset += [...text].length;
+      return { text, index };
+    });
   const [visualRows, setVisualRows] = useState<ChordVisualRow[]>(() =>
     groupChordMarkersByVisualRow(line.text, line.chords, [], {
       left: 0,
@@ -530,6 +557,10 @@ function ChordLine({
   useLayoutEffect(() => {
     const textElement = textRef.current;
     if (!textElement) return;
+    if (line.chords.length === 0) {
+      setVisualRows((current) => (current.length ? [] : current));
+      return;
+    }
     let frame = 0;
     const measure = () => {
       frame = 0;
@@ -537,21 +568,34 @@ function ChordLine({
       const rects = Array.from(
         textElement.querySelectorAll<HTMLElement>("[data-chord-char-index]"),
       ).map((element) => {
-        const rect = element.getBoundingClientRect();
+        // Read layout offsets, not the transforms used to animate a word.
+        // Otherwise a moving word can temporarily attach its chord to the
+        // previous row and trigger another layout adjustment.
+        const word = element.parentElement!;
+        const left = bounds.left + word.offsetLeft + element.offsetLeft;
+        const top = bounds.top + word.offsetTop + element.offsetTop;
         return {
           index: Number(element.dataset.chordCharIndex),
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          bottom: rect.bottom,
+          left,
+          right: left + element.offsetWidth,
+          top,
+          bottom: top + element.offsetHeight,
         } satisfies ChordTextCharRect;
       });
-      setVisualRows(
-        groupChordMarkersByVisualRow(line.text, line.chords, rects, {
+      const nextRows = groupChordMarkersByVisualRow(
+        line.text,
+        line.chords,
+        rects,
+        {
           left: bounds.left,
           width: bounds.width,
           top: bounds.top,
-        }),
+        },
+      );
+      setVisualRows((current) =>
+        JSON.stringify(current) === JSON.stringify(nextRows)
+          ? current
+          : nextRows,
       );
     };
     const schedule = () => {
@@ -582,13 +626,25 @@ function ChordLine({
       className={`chord-rich-line${visualRows.length > 1 ? " is-wrapped" : ""}`}
     >
       <span className="chord-text-layer" ref={textRef}>
-        {chars.map((character, index) => (
+        {words.map((word) => (
           <span
-            className="chord-text-char"
-            data-chord-char-index={index}
-            key={`${index}-${character}`}
+            key={word.index}
+            className={
+              /^\s+$/.test(word.text) ? "chord-text-space" : "chord-text-word"
+            }
+            {...(/^\s+$/.test(word.text)
+              ? {}
+              : { "data-reflow-key": `${lineId}-word-${word.index}` })}
           >
-            {character}
+            {[...word.text].map((character, index) => (
+              <span
+                className="chord-text-char"
+                data-chord-char-index={word.index + index}
+                key={word.index + index}
+              >
+                {character}
+              </span>
+            ))}
           </span>
         ))}
       </span>
@@ -607,6 +663,7 @@ function ChordLine({
             <small
               className="chord-visual-marker"
               key={`${marker.index}-${marker.token}-${markerIndex}`}
+              data-reflow-key={`${lineId}-marker-${marker.index}-${marker.token}`}
               style={
                 {
                   "--chord-position": `${marker.position * 100}%`,
@@ -648,7 +705,7 @@ export function ChordCapability({
     () => subscribeAccentColor(() => setAccent(getAccentColor())),
     [],
   );
-  if (!visible) return null;
+  if (!lines.some(Boolean)) return null;
   const textColor = chordTextColor(prefs, accent);
   const fillColor = chordFillColor(prefs, accent);
   const fillStyle =
@@ -659,8 +716,10 @@ export function ChordCapability({
         }, #ffffff)`;
   return (
     <span
-      className={`chord-capability${active ? "" : " is-hidden"}`}
-      aria-label={active ? translate(locale, "kidung.chordLayer") : undefined}
+      className={`chord-capability${active && visible ? "" : " is-hidden"}`}
+      aria-label={
+        active && visible ? translate(locale, "kidung.chordLayer") : undefined
+      }
       style={
         {
           "--chord-text-color": textColor,
@@ -672,7 +731,7 @@ export function ChordCapability({
       }
     >
       {lines.map((line, index) =>
-        line && line.chords.length > 0 ? (
+        line ? (
           <ChordLine
             key={`${index}-${line.text}`}
             line={line}

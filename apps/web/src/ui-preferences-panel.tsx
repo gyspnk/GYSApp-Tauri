@@ -20,51 +20,25 @@ import { useMenuPresence } from "./use-menu-presence.js";
 type PreferenceOption<T extends string> = {
   value: T;
   label: string;
-  description: string;
   sample: string;
 };
 
-const DENSITY_OPTIONS: readonly PreferenceOption<UiDensity>[] = [
-  {
-    value: "comfortable",
-    label: "Nyaman",
-    description: "Teks dan kontrol lebih lapang untuk membaca lebih lama.",
-    sample: "Aa+",
-  },
-  {
-    value: "standard",
-    label: "Standar",
-    description: "Seimbang untuk penggunaan sehari-hari di semua perangkat.",
-    sample: "Aa",
-  },
-  {
-    value: "compact",
-    label: "Ringkas",
-    description:
-      "Lebih banyak konten di desktop tanpa mengecilkan target sentuh.",
-    sample: "Aa−",
-  },
+const DENSITY_OPTIONS: readonly Pick<
+  PreferenceOption<UiDensity>,
+  "value" | "sample"
+>[] = [
+  { value: "comfortable", sample: "Aa+" },
+  { value: "standard", sample: "Aa" },
+  { value: "compact", sample: "Aa−" },
 ] as const;
 
-const FONT_OPTIONS: readonly PreferenceOption<UiFont>[] = [
-  {
-    value: "auto",
-    label: "Otomatis",
-    description: "Mengikuti tipografi utama aplikasi.",
-    sample: "Aa",
-  },
-  {
-    value: "hymnal",
-    label: "Himne",
-    description: "Judul bernuansa buku himne, isi tetap mudah dibaca.",
-    sample: "Ag",
-  },
-  {
-    value: "sans",
-    label: "Sans modern",
-    description: "Tipografi sistem yang bersih dan familier.",
-    sample: "Aa",
-  },
+const FONT_OPTIONS: readonly Pick<
+  PreferenceOption<UiFont>,
+  "value" | "sample"
+>[] = [
+  { value: "auto", sample: "Aa" },
+  { value: "hymnal", sample: "Ag" },
+  { value: "sans", sample: "Aa" },
 ] as const;
 
 function focusableElements(container: HTMLElement): HTMLElement[] {
@@ -102,7 +76,6 @@ function PreferenceChoice<T extends string>({
       </span>
       <span className="ui-preference-choice-copy">
         <strong>{option.label}</strong>
-        <small>{option.description}</small>
       </span>
       <span className="ui-preference-check" aria-hidden="true">
         {selected ? "✓" : ""}
@@ -171,21 +144,15 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
   const densityOptions = DENSITY_OPTIONS.map((option) => ({
     ...option,
     label: translate(locale, `more.density.${option.value}`),
-    description: translate(locale, `more.density.${option.value}Description`),
   }));
   const fontOptions = FONT_OPTIONS.map((option) => ({
     ...option,
     label: translate(locale, `more.font.${option.value}`),
-    description: translate(locale, `more.font.${option.value}Description`),
   }));
   useModalKeyboard(open, panelRef, openerRef, close);
 
   const launcher = (
     <div className="ui-preferences-entry">
-      <div className="ui-preferences-entry-copy">
-        <strong>{translate(locale, "more.readabilityTitle")}</strong>
-        <small>{translate(locale, "more.readabilityDescription")}</small>
-      </div>
       <button
         ref={openerRef}
         type="button"
@@ -223,20 +190,13 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
               role="dialog"
               aria-modal="true"
               aria-labelledby="ui-preferences-title"
-              aria-describedby="ui-preferences-description"
               tabIndex={-1}
             >
               <div className="ui-preferences-header">
                 <div>
-                  <p className="ui-preferences-eyebrow">
-                    {translate(locale, "more.appearanceEyebrow")}
-                  </p>
                   <h2 id="ui-preferences-title">
                     {translate(locale, "more.readabilityTitle")}
                   </h2>
-                  <p id="ui-preferences-description">
-                    {translate(locale, "more.appearanceDescription")}
-                  </p>
                 </div>
                 <button
                   type="button"
@@ -250,15 +210,7 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
 
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
-                  <div>
-                    <h3>{translate(locale, "more.densityTitle")}</h3>
-                    <p>{translate(locale, "more.densityDescription")}</p>
-                  </div>
-                  <span className="ui-preferences-current">
-                    {densityOptions.find(
-                      (option) => option.value === preferences.density,
-                    )?.label ?? translate(locale, "more.density.standard")}
-                  </span>
+                  <h3>{translate(locale, "more.densityTitle")}</h3>
                 </div>
                 <div
                   className="ui-preference-grid"
@@ -278,15 +230,7 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
 
               <div className="ui-preferences-section">
                 <div className="ui-preferences-section-heading">
-                  <div>
-                    <h3>{translate(locale, "more.fontTitle")}</h3>
-                    <p>{translate(locale, "more.fontDescription")}</p>
-                  </div>
-                  <span className="ui-preferences-current">
-                    {fontOptions.find(
-                      (option) => option.value === preferences.font,
-                    )?.label ?? translate(locale, "more.font.auto")}
-                  </span>
+                  <h3>{translate(locale, "more.fontTitle")}</h3>
                 </div>
                 <div
                   className="ui-preference-grid"
@@ -306,7 +250,6 @@ export function UiPreferencesPanel({ locale }: { locale: Locale }) {
               </div>
 
               <footer className="ui-preferences-footer">
-                <span>{translate(locale, "more.touchTargetHint")}</span>
                 <button
                   type="button"
                   className="primary-button"

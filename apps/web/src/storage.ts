@@ -8,13 +8,15 @@
  */
 export const STORAGE_SCHEMA_VERSION = 3 as const;
 const META_KEY = "gys-storage-meta-v1";
-const VOLATILE_STORAGE_PREFIXES = [
-  "gys_article_cache_",
-  "gys_sauh_cached_",
-] as const;
+// Article bodies validate on read and must survive an offline preference upgrade.
+const VOLATILE_STORAGE_PREFIXES = ["gys_sauh_cached_"] as const;
 
 function hasStorage(): boolean {
-  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+  try {
+    return typeof window !== "undefined" && typeof localStorage !== "undefined";
+  } catch {
+    return false;
+  }
 }
 
 function readJson(key: string): unknown {
@@ -164,20 +166,8 @@ function clearVolatileCaches(): void {
   } catch {
     // ignore
   }
-  // Also clear the volatile SW/CacheStorage entries for app shell when version bumps
-  // (best-effort, SW will also clean on activate, this is for immediate stale-data removal)
-  if (typeof caches !== "undefined" && typeof window !== "undefined") {
-    void caches
-      .keys()
-      .then((names) =>
-        Promise.all(
-          names
-            .filter((name) => name.startsWith("gysapp-shell-"))
-            .map((name) => caches.delete(name).catch(() => undefined)),
-        ),
-      )
-      .catch(() => undefined);
-  }
+  // Shell caches have their own build/integrity lifecycle. Preference versions
+  // cannot invalidate the active worker's verified offline modules.
 }
 
 /** Run all known migrations once per app start. Safe to call repeatedly. */
@@ -193,24 +183,28 @@ export function runStorageMigrations(): { version: number; changed: boolean } {
   )
     return { version: current.version, changed: false };
 
-  // On any version bump, auto-clear volatile caches so old parsing / stale feeds
-  // don't require a hard refresh or "hapus data site"
+  // Retire obsolete transient feed parses while keeping validated offline data.
   if (needsVersionBump) {
     clearVolatileCaches();
   }
 
-  const changed = [
-    migrateLegacyActivity(),
-    migrateLegacyFavorites(),
-    migrateLegacyLiteratureProgress(),
-  ].some(Boolean);
-  writeJson(META_KEY, {
-    version: STORAGE_SCHEMA_VERSION,
-    migratedAt: new Date().toISOString(),
-  });
+  let changed = false;
+  try {
+    changed = migrateLegacyActivity() || changed;
+    changed = migrateLegacyFavorites() || changed;
+    changed = migrateLegacyLiteratureProgress() || changed;
+    writeJson(META_KEY, {
+      version: STORAGE_SCHEMA_VERSION,
+      migratedAt: new Date().toISOString(),
+    });
+    changed ||= needsVersionBump;
+  } catch {
+    // A full/restricted store cannot prevent startup. Keep legacy data and
+    // retry uncompleted migration/metadata writes on the next launch.
+  }
   return {
     version: STORAGE_SCHEMA_VERSION,
-    changed: changed || needsVersionBump,
+    changed,
   };
 }
 

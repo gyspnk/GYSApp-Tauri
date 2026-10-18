@@ -1,4 +1,4 @@
-import { MidiPlaylistController } from "@gys/domain";
+import { MidiPlaylistController } from "@gys/domain/midi-playlist";
 import type {
   AutoNextMode,
   MidiPlaylist,
@@ -19,6 +19,28 @@ const controller = new MidiPlaylistController();
 let hydrated = false;
 let revision = 0;
 let stableSnapshot: MidiPlaylist = controller.snapshot();
+const listeners = new Set<() => void>();
+
+function notifyPlaylist(): void {
+  for (const listener of listeners) listener();
+}
+
+function receivePlaylist(event: StorageEvent): void {
+  if (event.key !== STORAGE_KEY && event.key !== null) return;
+  try {
+    if (event.storageArea && event.storageArea !== localStorage) return;
+    controller.import(
+      event.newValue ?? JSON.stringify({ version: 1, items: [] }),
+    );
+    // An older IDB restore must never replace a later cross-tab edit.
+    revision++;
+    hydrated = true;
+    stableSnapshot = controller.snapshot();
+    window.dispatchEvent(new Event(EVENT_NAME));
+  } catch {
+    // Preserve the last valid queue when another tab writes corrupt data.
+  }
+}
 
 function openBackupDb(mode: "readonly" | "readwrite"): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -178,12 +200,17 @@ export function getMidiPlaylist(): MidiPlaylist {
 
 export function subscribeMidiPlaylist(listener: () => void): () => void {
   if (typeof window === "undefined") return () => undefined;
-  const onChange = () => listener();
-  window.addEventListener(EVENT_NAME, onChange);
-  window.addEventListener("storage", onChange);
+  listeners.add(listener);
+  if (listeners.size === 1) {
+    window.addEventListener(EVENT_NAME, notifyPlaylist);
+    window.addEventListener("storage", receivePlaylist);
+  }
   return () => {
-    window.removeEventListener(EVENT_NAME, onChange);
-    window.removeEventListener("storage", onChange);
+    listeners.delete(listener);
+    if (!listeners.size) {
+      window.removeEventListener(EVENT_NAME, notifyPlaylist);
+      window.removeEventListener("storage", receivePlaylist);
+    }
   };
 }
 

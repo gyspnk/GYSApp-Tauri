@@ -1,6 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
+import {
+  preparePinnedReaderAssets,
+  preparePinnedMidiAsset,
+} from "./pinned-reader-fixtures.js";
 
 async function hasNoHorizontalOverflow(page: Page) {
   return page.evaluate(
@@ -971,6 +974,8 @@ test.describe("responsive reader navigation", () => {
   test("Kidung plays with the bundled SoundFont without installing optional assets", async ({
     page,
   }) => {
+    await preparePinnedReaderAssets(page);
+    await preparePinnedMidiAsset(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
@@ -1032,10 +1037,16 @@ test.describe("responsive reader navigation", () => {
     await expect(
       page.getByText("GeneralUser-GS", { exact: true }),
     ).toBeVisible();
-    const instrument = page.getByLabel("Instrumen MIDI");
-    await expect(instrument).toHaveValue("0");
-    await instrument.selectOption("40");
-    await expect(instrument).toHaveValue("40");
+    const instrument = page
+      .locator(".hymn-music-settings")
+      .getByRole("combobox", { name: "Instrumen MIDI", exact: true });
+    await expect(instrument).toContainText("Acoustic Grand Piano");
+    await instrument.click();
+    await page
+      .locator(".hymn-music-settings .media-instrument-control [role=option]")
+      .nth(40)
+      .click();
+    await expect(instrument).toContainText("Violin");
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
   });
 
