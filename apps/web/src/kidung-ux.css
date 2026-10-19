@@ -1,4 +1,4 @@
-﻿/* Kidung usability layer
+/* Kidung usability layer
    Feature-owned layout for the hymn catalog and reader. Keep this layer
    content-first and quiet: rows behave like a library index, while elevated
    surfaces are reserved for contextual menus/sheets. */
@@ -1533,60 +1533,4 @@
 .hymn-page .pujian-list > .pujian-item {
   content-visibility: auto;
   contain-intrinsic-size: auto 60px;
-}
-
-/* PDF chrome mirrors the text toolbar: one flexible row so chord, MIDI, text
-   and music keep the same order and rhythm in both reader modes. */
-.hymn-pdf-viewer-chrome,
-.hymn-pdf-viewer-chrome.is-no-music {
-  display: flex;
-  flex-wrap: nowrap;
-  grid-template-columns: none;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 8px;
-  overflow: hidden;
-}
-.hymn-pdf-viewer-chrome .hymn-pdf-viewer-title {
-  flex: 1 1 0;
-  min-width: 0;
-  overflow: hidden;
-}
-.hymn-pdf-viewer-chrome .hymn-pdf-viewer-title > :is(strong, small) {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.hymn-pdf-viewer-chrome > .viewer-chrome-button,
-.hymn-pdf-viewer-chrome .pdf-music-menu {
-  flex: 0 0 auto;
-  min-width: 40px;
-}
-.hymn-pdf-viewer-chrome .pdf-quick-action {
-  padding-inline: 9px;
-}
-@media (max-width: 480px) {
-  .hymn-pdf-viewer-chrome .hymn-pdf-viewer-title small {
-    display: none;
-  }
-  .hymn-pdf-viewer-chrome {
-    gap: 2px;
-    padding: 4px 6px;
-  }
-}
-/* Text and score chrome share one control size and one glyph scale so switching
-   modes never resizes the toolbar. */
-.hymn-pdf-viewer-chrome .viewer-chrome-button,
-.hymn-pdf-viewer-chrome .pdf-music-menu > summary {
-  width: var(--reader-control, 44px);
-  height: var(--reader-control, 44px);
-  min-width: var(--reader-control, 44px);
-  min-height: var(--reader-control, 44px);
-  flex: 0 0 var(--reader-control, 44px);
-  padding: 0;
-}
-.hymn-pdf-viewer-chrome .hymn-pdf-text-toggle .reader-mode-glyph {
-  font-size: 18px;
-  line-height: 1;
 }

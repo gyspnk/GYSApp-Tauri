@@ -10,6 +10,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
@@ -145,6 +146,7 @@ export function HymnDetail({
     state.status === "ready"
       ? state.items.find((candidate) => candidate.id === songId)
       : undefined;
+  const readerControlGroup = useId();
   const [verseIndex, setVerseIndex] = useState(() => {
     const last = getActivity().hymn;
     return last?.id === songId ? Math.max(0, last.verseIndex) : 0;
@@ -1941,10 +1943,12 @@ export function HymnDetail({
                   </span>
                 </summary>
                 <div className="song-controls">
-                  <section className="reader-settings-group hymn-reading-settings">
-                    <h3 className="reader-settings-group-title">
-                      {translate(locale, "kidung.textSpacing")}
-                    </h3>
+                  <details
+                    className="reader-settings-group hymn-reading-settings"
+                    name={readerControlGroup}
+                    open
+                  >
+                    <summary>{translate(locale, "kidung.textSpacing")}</summary>
                     <div className="reader-settings-group-body">
                       <div
                         className="reader-preferences"
@@ -2058,11 +2062,12 @@ export function HymnDetail({
                         </button>
                       </div>
                     </div>
-                  </section>
-                  <section className="reader-settings-group hymn-music-settings">
-                    <h3 className="reader-settings-group-title">
-                      {translate(locale, "kidung.musicChord")}
-                    </h3>
+                  </details>
+                  <details
+                    className="reader-settings-group hymn-music-settings"
+                    name={readerControlGroup}
+                  >
+                    <summary>{translate(locale, "kidung.musicChord")}</summary>
                     <div className="reader-settings-group-body">
                       {midiAvailable && (
                         <div className="hymn-midi-reader-controls">
@@ -2272,7 +2277,7 @@ export function HymnDetail({
                         </div>
                       </div>
                     </div>
-                  </section>
+                  </details>
                 </div>
               </details>
             </div>
@@ -2314,50 +2319,6 @@ export function HymnDetail({
                   No. {numberLabel(item.number, item.id)}
                 </small>
               </div>
-              {/* Same one-tap actions as the text toolbar: chord and MIDI stay
-                  outside menus so both reader modes read as one surface. */}
-              {!item.assetCode && (
-                <button
-                  type="button"
-                  className="viewer-chrome-button pdf-quick-action"
-                  onClick={toggleChords}
-                  disabled={chordStatus === "loading"}
-                  aria-pressed={chordsVisible}
-                  aria-label={
-                    chordStatus === "loading"
-                      ? translate(locale, "kidung.loadingChord")
-                      : chordsVisible
-                        ? translate(locale, "kidung.hideChord")
-                        : translate(locale, "kidung.showChord")
-                  }
-                  title={
-                    chordsVisible
-                      ? translate(locale, "kidung.hideChord")
-                      : translate(locale, "kidung.showChord")
-                  }
-                >
-                  <Icon name="chord" size={17} />
-                </button>
-              )}
-              {!item.assetCode && (
-                <button
-                  type="button"
-                  className="viewer-chrome-button pdf-quick-action"
-                  onClick={() => void toggleMidiPlayer()}
-                  aria-pressed={midiPlayerEnabled}
-                  aria-busy={midiStatus === "loading"}
-                  aria-label={translate(
-                    locale,
-                    midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
-                  )}
-                  title={translate(
-                    locale,
-                    midiPlayerEnabled ? "kidung.closeMidi" : "kidung.openMidi",
-                  )}
-                >
-                  <Icon name="piano" size={17} />
-                </button>
-              )}
               <button
                 type="button"
                 className="viewer-chrome-button hymn-pdf-text-toggle reader-mode-button"
@@ -2387,6 +2348,50 @@ export function HymnDetail({
                     </span>
                   </summary>
                   <div className="pdf-music-menu-panel">
+                    {midiAvailable && (
+                      <button
+                        type="button"
+                        className="quiet-button pdf-music-action"
+                        aria-expanded={midiPlayerEnabled}
+                        aria-pressed={midiPlayerEnabled}
+                        onClick={(event) => {
+                          const menu = event.currentTarget.closest("details");
+                          if (menu) menu.open = false;
+                          void toggleMidiPlayer();
+                        }}
+                      >
+                        <Icon
+                          name={midiPlayerEnabled ? "cross" : "music"}
+                          size={17}
+                        />
+                        <span>
+                          {translate(
+                            locale,
+                            midiPlayerEnabled
+                              ? "kidung.closeMidi"
+                              : "kidung.openMidi",
+                          )}
+                        </span>
+                      </button>
+                    )}
+                    {!item.assetCode && (
+                      <button
+                        type="button"
+                        className="quiet-button pdf-music-action"
+                        onClick={toggleChords}
+                        disabled={chordStatus === "loading"}
+                        aria-pressed={chordsVisible}
+                      >
+                        <Icon name="musicNote" size={17} />
+                        <span>
+                          {chordStatus === "loading"
+                            ? translate(locale, "kidung.loadingChord")
+                            : chordsVisible
+                              ? translate(locale, "kidung.hideChord")
+                              : translate(locale, "kidung.showChord")}
+                        </span>
+                      </button>
+                    )}
                     {!item.assetCode && (
                       <div
                         className="pdf-transpose-inline"
