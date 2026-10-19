@@ -2807,3 +2807,16 @@
 .more-page .appearance-setting-row {
   max-width: 640px;
 }
+/* Group headers use the neutral surface like every other row; the blue band
+   read as a selected item rather than a section heading. */
+.more-page .more-setting-section > .more-setting-row {
+  background: transparent !important;
+  padding-inline: 2px;
+}
+.more-page .more-setting-section > .more-setting-row:hover,
+.more-page .more-setting-section > .more-setting-row:focus-visible {
+  background: var(--blue-soft);
+}
+.more-page .more-setting-section {
+  border-top: 1px solid var(--line);
+}
