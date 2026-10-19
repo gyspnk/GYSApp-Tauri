@@ -2803,3 +2803,7 @@
 .more-page .egys-google-control:has(.egys-google-fallback) .egys-google-face {
   display: none;
 }
+/* Label/value rows stay readable instead of stretching across the full card. */
+.more-page .appearance-setting-row {
+  max-width: 640px;
+}
