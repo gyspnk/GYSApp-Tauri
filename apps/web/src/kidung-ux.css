@@ -1,4 +1,4 @@
-/* Kidung usability layer
+﻿/* Kidung usability layer
    Feature-owned layout for the hymn catalog and reader. Keep this layer
    content-first and quiet: rows behave like a library index, while elevated
    surfaces are reserved for contextual menus/sheets. */
@@ -1200,7 +1200,7 @@
   font-weight: 650;
 }
 .kidung-collection-select .control-select-option.is-selected::after {
-  content: "✓";
+  content: "âœ“";
 }
 .kidung-local-nav-links {
   position: relative;
@@ -1574,4 +1574,19 @@
     gap: 2px;
     padding: 4px 6px;
   }
+}
+/* Text and score chrome share one control size and one glyph scale so switching
+   modes never resizes the toolbar. */
+.hymn-pdf-viewer-chrome .viewer-chrome-button,
+.hymn-pdf-viewer-chrome .pdf-music-menu > summary {
+  width: var(--reader-control, 44px);
+  height: var(--reader-control, 44px);
+  min-width: var(--reader-control, 44px);
+  min-height: var(--reader-control, 44px);
+  flex: 0 0 var(--reader-control, 44px);
+  padding: 0;
+}
+.hymn-pdf-viewer-chrome .hymn-pdf-text-toggle .reader-mode-glyph {
+  font-size: 18px;
+  line-height: 1;
 }

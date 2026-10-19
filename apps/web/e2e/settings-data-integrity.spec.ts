@@ -94,10 +94,8 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     { durableSettings, excludedSettings },
   );
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page
-    .locator('.more-setting-section[data-setting="backup"] > summary')
-    .click();
-  await page.getByRole("button", { name: /Backup & import/ }).click();
+  // Settings render expanded on first paint and the backup form is inline, so
+  // there is no disclosure or second "Backup & import" click any more.
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await expect(panel).toBeVisible();
   await panel.getByLabel("Kata sandi backup").fill("integrity-1234");
