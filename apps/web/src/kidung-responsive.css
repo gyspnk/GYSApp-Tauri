@@ -227,3 +227,26 @@
     height: 44px;
   }
 }
+/* Reader mode toggles share one literal metric. The reader context shrinks
+   --reader-control to 32px, so a literal clamp keeps both chromes equal and
+   inside the 44-56px touch range. */
+.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle,
+.hymn-detail-page .gys-pdf-overlay .hymn-pdf-text-toggle {
+  width: clamp(44px, 4vw, 56px) !important;
+  height: clamp(44px, 4vw, 56px) !important;
+  min-width: clamp(44px, 4vw, 56px) !important;
+  min-height: clamp(44px, 4vw, 56px) !important;
+  flex: 0 0 auto !important;
+  padding: 0 !important;
+  border-radius: 11px !important;
+  background: var(--blue-soft) !important;
+  color: var(--blue) !important;
+}
+.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+.hymn-detail-page .hymn-pdf-text-toggle .reader-mode-glyph {
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
