@@ -1006,18 +1006,7 @@ export function MorePage({
       <h2 className="more-settings-heading">
         {translate(locale, "more.preferences")}
       </h2>
-      <section
-        className="more-settings-list"
-        onClickCapture={(event) => {
-          // A summary is a heading here, not a second menu level. Preventing
-          // the native toggle keeps every group open without a click target
-          // that Playwright (or a keyboard user) would mistake for a control.
-          const summary = (event.target as HTMLElement | null)?.closest(
-            "summary",
-          );
-          if (summary?.closest(".more-setting-section")) event.preventDefault();
-        }}
-      >
+      <section className="more-settings-list">
         <details
           className="more-setting-section more-account-section"
           data-setting="account"

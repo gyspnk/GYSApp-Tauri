@@ -1,4 +1,4 @@
-﻿.selection-toolbar {
+.selection-toolbar {
   position: fixed;
   z-index: var(--z-toolbar);
   display: flex;
@@ -2711,9 +2711,7 @@
 .more-page .more-setting-section > summary {
   cursor: default;
 }
-.more-page .more-setting-section > .more-setting-row > svg:last-child {
-  display: none;
-}
+
 /* Inline backup card keeps the neutral card frame, not the accent panel one. */
 .more-page .backup-inline {
   border: 1px solid var(--line);
@@ -2750,4 +2748,28 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+/* One settings rhythm: identical header metric for every group (the account
+   group used an h2 at 16px while the rest used a 15px strong), identical body
+   inset, and one card radius. */
+.more-page .more-setting-row > :is(strong, h2) {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.more-page .more-settings-content {
+  padding: 0 0 14px;
+}
+.more-page .more-settings-content > :is(.more-card, .utility-panel, form) {
+  border-radius: 12px;
+}
+.more-page .more-setting-row > svg:last-child {
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform 0.16s ease;
+}
+.more-page .more-setting-section[open] > .more-setting-row > svg:last-child {
+  transform: rotate(180deg);
 }
