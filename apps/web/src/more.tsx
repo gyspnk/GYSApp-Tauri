@@ -1,4 +1,4 @@
-﻿import {
+import {
   lazy,
   Suspense,
   useEffect,
@@ -1405,7 +1405,10 @@ export function MorePage({
                   </small>
                 )}
               </button>
-              <div className="more-card more-reminder-inline">
+              <div
+                className="more-card more-reminder-inline"
+                aria-label={translate(locale, "more.reminderPanel")}
+              >
                 <span className="more-icon">
                   <Icon name="sun" size={22} />
                 </span>
@@ -1614,6 +1617,9 @@ export function MorePage({
                 <div>
                   <h2>{translate(locale, "more.encryptedBackup")}</h2>
                 </div>
+                <span className="sr-only">
+                  {translate(locale, "more.backupImport")}
+                </span>
               </div>
               <p>{translate(locale, "more.backupDescription")}</p>
               <label className="search-field">
