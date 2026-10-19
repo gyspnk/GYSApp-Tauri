@@ -2877,3 +2877,33 @@
   max-width: none !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
+/* Accent picker as a compact tray of colour chips: the swatch is the control,
+   the long palette names live in the aria-label/title only. */
+.more-page .accent-palette-grid {
+  width: auto !important;
+  max-width: none !important;
+  justify-content: start !important;
+  grid-template-columns: repeat(auto-fit, 44px) !important;
+  gap: 8px !important;
+  margin: 8px 0 10px !important;
+}
+.more-page .accent-palette-grid > .accent-palette-item {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+  border-radius: 50%;
+}
+.more-page .accent-palette-item .accent-swatch-name {
+  display: none;
+}
+.more-page .accent-palette-item .accent-swatch-circle {
+  margin: 0;
+}
+.more-page .accent-palette-item.is-active {
+  border-color: transparent;
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--blue);
+}
