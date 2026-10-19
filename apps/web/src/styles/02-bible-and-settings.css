@@ -2820,3 +2820,53 @@
 .more-page .more-setting-section {
   border-top: 1px solid var(--line);
 }
+/* Inline audio settings: same row rhythm as the appearance group. */
+.audio-settings-inline {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-width: 640px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.audio-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.audio-setting-row + .audio-setting-row {
+  border-top: 1px solid var(--line);
+}
+.audio-setting-select {
+  min-width: 160px;
+  max-width: 60%;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+}
+.audio-setting-row input[type="range"] {
+  width: 180px;
+  accent-color: var(--blue);
+}
+.audio-setting-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.audio-setting-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  margin-top: 4px;
+}

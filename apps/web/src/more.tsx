@@ -50,6 +50,7 @@ import { useCallback } from "react";
 import { EgysWhatsApp } from "./egys-whatsapp.js";
 import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
 import { EgysLoginMethods } from "./egys-login-methods.js";
+import { AudioSettingsInline } from "./audio-settings-inline.js";
 import {
   clearMidiPlaylist,
   downloadMidiPlaylist,
@@ -1353,10 +1354,7 @@ export function MorePage({
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
-            <Link className="more-settings-link" to="/bible?settings=audio">
-              {translate(locale, "bible.audioSettings")}
-              <Icon name="chevronRight" size={16} />
-            </Link>
+            <AudioSettingsInline locale={locale} />
           </div>
         </details>
 
