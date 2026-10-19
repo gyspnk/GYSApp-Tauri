@@ -48,6 +48,13 @@ export function EgysGoogleButton({
       className="egys-provider egys-provider-google egys-google-control"
       aria-busy={status === "loading"}
     >
+      {/* One visual face for every provider. The Google Identity control stays
+          on top (transparent) so its own click flow keeps working while the row
+          reads as three identical buttons. */}
+      <span className="egys-google-face" aria-hidden="true">
+        <GoogleMark />
+        <span>Google</span>
+      </span>
       <div
         ref={host}
         className="egys-google-button"

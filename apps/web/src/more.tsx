@@ -1,4 +1,4 @@
-import {
+﻿import {
   lazy,
   Suspense,
   useEffect,
@@ -215,7 +215,7 @@ function DistributedAssetPanel({
                     <small>
                       {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
-                        ? ` · ${formatBytes(asset.sizeBytes)}`
+                        ? ` Ã‚Â· ${formatBytes(asset.sizeBytes)}`
                         : ""}
                     </small>
                     {busy && (
@@ -359,9 +359,9 @@ export function MorePage({
   const initialSection = new URLSearchParams(window.location.search).get(
     "section",
   );
-  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(
-    initialSection === "kidung",
-  );
+  // Settings are one flat page: the hymn panel is always mounted so its
+  // controls are visible without a second disclosure.
+  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(true);
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
@@ -399,10 +399,8 @@ export function MorePage({
   const whatsAppWindow = useRef<Window | null>(null);
   const [whatsAppAttempt, setWhatsAppAttempt] = useState(0);
   const [egysGoogleError, setEgysGoogleError] = useState("");
-  const [backupOpen, setBackupOpen] = useState(false);
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<PlatformFile>();
-  const [reminderOpen, setReminderOpen] = useState(false);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
   const [playlistFile, setPlaylistFile] = useState<File>();
@@ -434,6 +432,17 @@ export function MorePage({
   const changeTheme = (next: ShellTheme) => {
     setTheme(next);
   };
+
+  // Settings are a single flat page: every group is mounted and expanded, so
+  // nothing hides behind a second click and no group nests another menu.
+  useEffect(() => {
+    const groups = document.querySelectorAll<HTMLDetailsElement>(
+      ".more-setting-section",
+    );
+    groups.forEach((group) => {
+      group.open = true;
+    });
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -693,10 +702,15 @@ export function MorePage({
     [locale],
   );
 
+  const noticeTimer = useRef<number | undefined>(undefined);
   const show = (message: string) => {
     setNotice(message);
-    window.setTimeout(() => setNotice(""), 2600);
+    // One owner for the notice lifetime: a fast second toast must not be
+    // cleared by the previous timer.
+    window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(""), 2600);
   };
+  useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
   const submitReport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const message = report.trim();
@@ -742,7 +756,6 @@ export function MorePage({
       const saved = await saveBackup(envelope);
       if (!saved) return;
       setBackupPassword("");
-      setBackupOpen(false);
       show(translate(locale, "more.backupExported"));
     } catch (error) {
       recordDiagnostic("warn", "backup.export", error);
@@ -794,7 +807,6 @@ export function MorePage({
         restorePortableBackupSettings(data.settings);
         setBackupPassword("");
         setBackupFile(undefined);
-        setBackupOpen(false);
         show(translate(locale, "more.backupRestored"));
         return;
       }
@@ -804,7 +816,6 @@ export function MorePage({
       localStorage.setItem("gys-legacy-import-v1", JSON.stringify(legacy));
       setBackupPassword("");
       setBackupFile(undefined);
-      setBackupOpen(false);
       show(translate(locale, "more.legacyImported"));
     } catch (error) {
       recordDiagnostic("warn", "backup.import", error);
@@ -815,7 +826,6 @@ export function MorePage({
     if (!reminderTime) {
       localStorage.removeItem("gys-reminder-time-v1");
       window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
-      setReminderOpen(false);
       show(translate(locale, "more.reminderDisabled"));
       return;
     }
@@ -824,7 +834,6 @@ export function MorePage({
     }
     localStorage.setItem("gys-reminder-time-v1", reminderTime);
     window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
-    setReminderOpen(false);
     const notificationGranted =
       "Notification" in window && Notification.permission === "granted";
     show(
@@ -838,7 +847,6 @@ export function MorePage({
     setReminderTime("");
     localStorage.removeItem("gys-reminder-time-v1");
     window.dispatchEvent(new Event(REMINDER_CHANGE_EVENT));
-    setReminderOpen(false);
     show(translate(locale, "more.reminderDisabled"));
   };
 
@@ -1108,7 +1116,7 @@ export function MorePage({
                     <small className="egys-login-trace">
                       {translate(locale, "more.lastLogin")}{" "}
                       {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
-                      ·{translate(locale, "more.detectedSince")}{" "}
+                      Ã‚Â·{translate(locale, "more.detectedSince")}{" "}
                       {new Date(egysSession.firstLoginAt).toLocaleDateString(
                         locale,
                       )}
@@ -1170,7 +1178,7 @@ export function MorePage({
                 {egysProvider === "apple" && (
                   <div className="egys-inline-login">
                     <span role={egysGoogleError ? "alert" : "status"}>
-                      {egysGoogleError || "Menunggu Apple…"}
+                      {egysGoogleError || "Menunggu AppleÃ¢â‚¬Â¦"}
                     </span>
                     <button
                       type="button"
@@ -1298,7 +1306,7 @@ export function MorePage({
                           : "transparent",
                       }}
                     >
-                      🎨
+                      Ã°Å¸Å½Â¨
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}
@@ -1320,9 +1328,9 @@ export function MorePage({
                   }}
                   label={translate(locale, "more.chooseLanguage")}
                   options={[
-                    { value: "id", label: "🇮🇩 Bahasa Indonesia (Utama)" },
-                    { value: "en", label: "🇬🇧 English" },
-                    { value: "zh", label: "🇨🇳 简体中文" },
+                    { value: "id", label: "Ã°Å¸â€¡Â®Ã°Å¸â€¡Â© Bahasa Indonesia (Utama)" },
+                    { value: "en", label: "Ã°Å¸â€¡Â¬Ã°Å¸â€¡Â§ English" },
+                    { value: "zh", label: "Ã°Å¸â€¡Â¨Ã°Å¸â€¡Â³ Ã§Â®â‚¬Ã¤Â½â€œÃ¤Â¸Â­Ã¦â€“â€¡" },
                   ]}
                 />
               </div>
@@ -1397,16 +1405,39 @@ export function MorePage({
                   </small>
                 )}
               </button>
-              <button
-                className="more-card more-action"
-                type="button"
-                onClick={() => setReminderOpen((open) => !open)}
-              >
+              <div className="more-card more-reminder-inline">
                 <span className="more-icon">
                   <Icon name="sun" size={22} />
                 </span>
                 <strong>{translate(locale, "more.reminder")}</strong>
-              </button>
+                <label className="search-field">
+                  <span className="sr-only">
+                    {translate(locale, "more.time")}
+                  </span>
+                  <input
+                    type="time"
+                    value={reminderTime}
+                    onChange={(event) => setReminderTime(event.target.value)}
+                    aria-label={translate(locale, "more.time")}
+                  />
+                </label>
+                <div className="more-reminder-actions">
+                  <button
+                    className="quiet-button"
+                    type="button"
+                    onClick={() => void saveReminder()}
+                  >
+                    {translate(locale, "more.saveReminder")}
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={disableReminder}
+                  >
+                    {translate(locale, "more.disable")}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </details>
@@ -1444,7 +1475,7 @@ export function MorePage({
                     <small>{translate(locale, "more.translations")}</small>
                   </span>
                   <span>
-                    <strong>{manifest?.hymns ?? "—"}</strong>
+                    <strong>{manifest?.hymns ?? "Ã¢â‚¬â€"}</strong>
                     <small>{translate(locale, "more.songs")}</small>
                   </span>
                   <span>
@@ -1456,7 +1487,7 @@ export function MorePage({
                               0,
                             ),
                           )
-                        : "—"}
+                        : "Ã¢â‚¬â€"}
                     </strong>
                     <small>{translate(locale, "more.corePack")}</small>
                   </span>
@@ -1573,16 +1604,53 @@ export function MorePage({
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
-            <button
-              className="more-card more-action"
-              type="button"
-              onClick={() => setBackupOpen((open) => !open)}
+            {/* Backup lives inside its own group: no separate panel, no extra
+                click, and nothing rendered far away from the section. */}
+            <section
+              className="more-card utility-panel backup-inline"
+              aria-label={translate(locale, "more.backupPanel")}
             >
-              <span className="more-icon">
-                <Icon name="download" size={22} />
-              </span>
-              <strong>{translate(locale, "more.backupImport")}</strong>
-            </button>
+              <div className="more-card-heading">
+                <div>
+                  <h2>{translate(locale, "more.encryptedBackup")}</h2>
+                </div>
+              </div>
+              <p>{translate(locale, "more.backupDescription")}</p>
+              <label className="search-field">
+                <span>{translate(locale, "more.backupPassword")}</span>
+                <input
+                  type="password"
+                  value={backupPassword}
+                  onChange={(event) => setBackupPassword(event.target.value)}
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </label>
+              <div className="utility-actions">
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={() => void exportBackup()}
+                >
+                  {translate(locale, "more.exportBackup")}
+                </button>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => void chooseBackupFile()}
+                >
+                  {backupFile?.name ?? translate(locale, "more.chooseFile")}
+                </button>
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={() => void importBackup()}
+                  disabled={!backupFile}
+                >
+                  {translate(locale, "more.import")}
+                </button>
+              </div>
+            </section>
           </div>
         </details>
 
@@ -1639,103 +1707,7 @@ export function MorePage({
           </div>
         </details>
       </section>
-      {backupOpen && (
-        <section
-          className="utility-panel"
-          aria-label={translate(locale, "more.backupPanel")}
-        >
-          <div className="more-card-heading">
-            <div>
-              <h2>{translate(locale, "more.encryptedBackup")}</h2>
-            </div>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setBackupOpen(false)}
-            >
-              {translate(locale, "more.close")}
-            </button>
-          </div>
-          <p>{translate(locale, "more.backupDescription")}</p>
-          <label className="search-field">
-            <span>{translate(locale, "more.backupPassword")}</span>
-            <input
-              type="password"
-              value={backupPassword}
-              onChange={(event) => setBackupPassword(event.target.value)}
-              minLength={8}
-              autoComplete="new-password"
-            />
-          </label>
-          <div className="utility-actions">
-            <button
-              className="primary-button"
-              type="button"
-              onClick={() => void exportBackup()}
-            >
-              {translate(locale, "more.exportBackup")}
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void chooseBackupFile()}
-            >
-              {backupFile?.name ?? translate(locale, "more.chooseFile")}
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => void importBackup()}
-              disabled={!backupFile}
-            >
-              {translate(locale, "more.import")}
-            </button>
-          </div>
-        </section>
-      )}
-      {reminderOpen && (
-        <section
-          className="utility-panel"
-          aria-label={translate(locale, "more.reminderPanel")}
-        >
-          <div className="more-card-heading">
-            <div>
-              <h2>{translate(locale, "more.reminderPanel")}</h2>
-            </div>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setReminderOpen(false)}
-            >
-              {translate(locale, "more.close")}
-            </button>
-          </div>
-          <label className="search-field">
-            <span>{translate(locale, "more.time")}</span>
-            <input
-              type="time"
-              value={reminderTime}
-              onChange={(event) => setReminderTime(event.target.value)}
-            />
-          </label>
-          <div className="utility-actions">
-            <button
-              className="primary-button"
-              type="button"
-              onClick={() => void saveReminder()}
-            >
-              {translate(locale, "more.saveReminder")}
-            </button>
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={disableReminder}
-            >
-              {translate(locale, "more.disable")}
-            </button>
-          </div>
-        </section>
-      )}
+
       {playlistOpen && (
         <section
           className="utility-panel"
@@ -1821,7 +1793,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      ↑
+                      Ã¢â€ â€˜
                     </button>
                     <button
                       className="text-button"
@@ -1832,7 +1804,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      ↓
+                      Ã¢â€ â€œ
                     </button>
                     <button
                       className="text-button"
@@ -1908,3 +1880,4 @@ export function MorePage({
     </div>
   );
 }
+

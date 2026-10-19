@@ -15,16 +15,47 @@ html[data-theme="sepia"] {
     background: #101820;
   }
 }
+
+/* Boot splash sits above the shell until the first frame is styled and the
+   reading fonts are ready. It never captures input, so automation and fast
+   users are not trapped behind the overlay. */
 .shell-startup {
   position: fixed;
   inset: 0;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 24px;
+  pointer-events: none;
+  opacity: 1;
+  background: #fff;
+  transition: opacity 220ms ease;
+}
+html[data-theme="dark"] .shell-startup {
+  background: #101820;
+}
+html[data-theme="amoled"] .shell-startup {
+  background: #000;
+}
+html[data-theme="sepia"] .shell-startup {
+  background: #f4efe4;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .shell-startup {
+    background: #101820;
+  }
+}
+html[data-boot="ready"] .shell-startup {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 220ms ease,
+    visibility 0s linear 220ms;
 }
 .shell-startup img {
+  display: block;
   width: min(240px, 60vw);
   height: auto;
 }
@@ -52,6 +83,9 @@ html[data-theme="sepia"] {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .shell-startup {
+    transition: none;
+  }
   .shell-startup-track > span {
     animation: none;
     width: 100%;

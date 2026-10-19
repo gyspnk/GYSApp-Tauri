@@ -16,10 +16,16 @@ export function transitionReader(
     flushSync(update);
     afterUpdate?.();
   };
-  if (
-    !document.startViewTransition ||
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
+  // Page navigation deliberately skips the snapshot: a view transition freezes
+  // the whole document (topbar + sidebar included) for its duration, which read
+  // as the shell flickering on every route change. Page surfaces cross-fade
+  // through route-transitions.ts instead; reader surfaces (lyrics, PDF) keep
+  // the snapshot because their chrome must stay frozen.
+  const useSnapshot =
+    scope !== "page" &&
+    typeof document.startViewTransition === "function" &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!useSnapshot) {
     root.classList.remove("is-reader-transition");
     delete root.dataset.readerTransition;
     pending = undefined;

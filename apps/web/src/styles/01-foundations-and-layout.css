@@ -165,14 +165,17 @@ a:focus-visible {
   display: inline-block;
 }
 .account-button {
-  border: 1px solid var(--line);
-  background: var(--surface);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 4px 13px 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition:
@@ -180,6 +183,29 @@ a:focus-visible {
     background var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out),
     transform var(--motion-fast) var(--ease-out);
+}
+.account-button-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--blue) 12%, var(--surface));
+  color: var(--blue);
+}
+.account-button-avatar img,
+.account-button-avatar .account-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.account-button-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .account-button:hover {
   border-color: var(--blue);
@@ -189,11 +215,6 @@ a:focus-visible {
 }
 .account-button:active {
   transform: scale(0.95);
-}
-.account-button span {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--blue);
 }
 .account-button svg {
   color: var(--muted);
@@ -502,8 +523,11 @@ a:focus-visible {
   outline: 0;
 }
 .route-view {
-  /* A transformed route traps descendant fixed dialogs and toolbars. */
-  animation: fade-in var(--motion-normal) var(--ease-out);
+  /* Page entrances are owned by route-transitions.ts (one fade per settled
+     route, Web Animations or the snapshot transition), so the CSS entry stays
+     off to avoid a second, differently timed fade. A transformed route would
+     also trap descendant fixed dialogs and toolbars. */
+  animation: none;
 }
 .route-loading {
   max-width: 520px;

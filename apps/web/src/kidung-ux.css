@@ -982,52 +982,19 @@
   background: var(--surface-soft);
 }
 
-.reader-settings-group > summary {
+/* Reader groups are labelled content inside the single settings disclosure,
+   not a second accordion level. */
+.reader-settings-group-title {
   display: flex;
   min-height: var(--control-hit, 44px);
   align-items: center;
-  justify-content: space-between;
+  margin: 0;
   padding: 0 11px;
-  list-style: none;
-  color: var(--muted);
+  color: var(--blue);
   font-size: 0.75rem;
   font-weight: 720;
-  cursor: pointer;
-  transition:
-    background-color var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out);
-}
-
-.reader-settings-group > summary::-webkit-details-marker {
-  display: none;
-}
-
-.reader-settings-group > summary::after {
-  content: "+";
-  color: var(--muted);
-  font-size: 1rem;
-  font-weight: 600;
-  transition: transform var(--motion-fast) var(--ease-out);
-}
-
-.reader-settings-group[open] > summary {
   background: color-mix(in srgb, var(--blue-soft) 44%, transparent);
-  color: var(--blue);
-}
-
-.reader-settings-group[open] > summary::after {
-  content: "−";
-}
-
-.reader-settings-group > summary:hover,
-.reader-settings-group > summary:focus-visible {
-  background: color-mix(in srgb, var(--blue-soft) 50%, transparent);
-  color: var(--blue);
-}
-
-.reader-settings-group > summary:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--blue) 42%, transparent);
-  outline-offset: -3px;
+  border-radius: 11px 11px 0 0;
 }
 
 .reader-settings-group-body {
@@ -1058,8 +1025,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reader-settings-group > summary,
-  .reader-settings-group > summary::after,
   .reader-settings-group-body {
     transition: none;
     animation: none;
@@ -1485,4 +1450,128 @@
 .hymn-page .hymn-catalog-shell {
   padding-top: 0;
   border-top: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Compact catalog toolbar. One 38px rhythm on pointer devices, one accent
+   surface, and a mode toggle that reads as a toggle instead of a filled block.
+   Coarse pointers keep the 44px hit target. */
+.hymn-page .kidung-controls-field {
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 35 64 / 4%);
+}
+.kidung-controls-field .kidung-local-nav a {
+  min-height: 38px;
+  padding-inline: 11px;
+  gap: 7px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.kidung-controls-field .kidung-local-nav a.is-active {
+  background: var(--blue-soft);
+  box-shadow: none;
+}
+.hymn-page .kidung-controls-field .control-select-trigger {
+  min-height: 38px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+}
+.kidung-mode-control {
+  padding-left: 2px;
+  border-left-color: var(--line);
+}
+.kidung-mode-cycle {
+  width: 38px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--blue);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+.kidung-mode-cycle:hover {
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 22%, transparent);
+  color: var(--blue);
+}
+.kidung-mode-cycle[aria-pressed="true"] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+.kidung-mode-cycle[aria-pressed="true"]:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.hymn-page .hymn-search-field input {
+  min-height: 44px;
+  border-radius: 12px;
+}
+@media (pointer: coarse) {
+  .kidung-controls-field .kidung-local-nav a,
+  .hymn-page .kidung-controls-field .control-select-trigger {
+    min-height: 44px;
+  }
+  .kidung-mode-cycle {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* 533-row catalog: let the browser skip offscreen rows instead of laying out
+   the whole list on every filter keystroke. */
+.hymn-page .pujian-list > .pujian-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
+}
+
+/* PDF chrome mirrors the text toolbar: one flexible row so chord, MIDI, text
+   and music keep the same order and rhythm in both reader modes. */
+.hymn-pdf-viewer-chrome,
+.hymn-pdf-viewer-chrome.is-no-music {
+  display: flex;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  overflow: hidden;
+}
+.hymn-pdf-viewer-chrome .hymn-pdf-viewer-title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.hymn-pdf-viewer-chrome .hymn-pdf-viewer-title > :is(strong, small) {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hymn-pdf-viewer-chrome > .viewer-chrome-button,
+.hymn-pdf-viewer-chrome .pdf-music-menu {
+  flex: 0 0 auto;
+  min-width: 40px;
+}
+.hymn-pdf-viewer-chrome .pdf-quick-action {
+  padding-inline: 9px;
+}
+@media (max-width: 480px) {
+  .hymn-pdf-viewer-chrome .hymn-pdf-viewer-title small {
+    display: none;
+  }
+  .hymn-pdf-viewer-chrome {
+    gap: 2px;
+    padding: 4px 6px;
+  }
 }

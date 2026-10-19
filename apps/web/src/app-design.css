@@ -241,6 +241,17 @@
   line-height: 1.45;
   max-height: none;
 }
+/* Literature cards: category eyebrow, title, then the date. The issue format
+   line ("ISSUE · TJC Indonesia") carried no information and is gone. */
+.home-literature-shelf .suara-card-meta {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  text-transform: none;
+  text-shadow: none;
+}
 
 /* Catalog rows use distinct number, title and icon-action lanes. */
 .hymn-index-heading {
@@ -344,6 +355,20 @@
   box-shadow: none;
 }
 .kidung-settings-section > .date-line {
+  margin: 0;
+}
+/* Chord appearance is content, not a second accordion level: the settings page
+   owns the only expandable disclosure. */
+.kidung-settings-disclosure {
+  display: grid;
+  gap: 12px;
+}
+.kidung-settings-disclosure-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kidung-settings-disclosure-heading > h2 {
   margin: 0;
 }
 .kidung-settings-controls {
@@ -1274,9 +1299,27 @@
   color: inherit;
 }
 .topbar .account-button {
-  width: 44px;
+  width: auto;
   height: 44px;
-  flex: 0 0 44px;
+  flex: 0 1 auto;
+  padding: 0 14px 0 7px;
+  gap: 9px;
+}
+.topbar .account-button-avatar {
+  flex-basis: 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+@media (max-width: 880px) {
+  .topbar .account-button-label {
+    display: none;
+  }
+  .topbar .account-button {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
 }
 .topbar
   :is(
@@ -3827,8 +3870,10 @@ body:has(.hymn-detail-page.is-text-viewer)
     overscroll-behavior: contain;
   }
   .app-frame.is-reader-route .navigation-shell {
-    top: 0;
-    height: 100dvh;
+    /* Same geometry on every route: the rail must never jump when the shell
+       toggles reader context during a navigation. */
+    top: var(--topbar-height, 58px);
+    height: calc(100dvh - var(--topbar-height, 58px));
   }
 }
 .app-frame:has(.is-edge-player) .sidebar-media-anchor {

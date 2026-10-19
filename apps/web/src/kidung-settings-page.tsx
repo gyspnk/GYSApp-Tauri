@@ -230,12 +230,12 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
         className="kidung-settings-section"
         aria-labelledby="kidung-chord-heading"
       >
-        <details className="kidung-settings-disclosure">
-          <summary>
+        <div className="kidung-settings-disclosure is-flat">
+          <div className="kidung-settings-disclosure-heading">
             <h2 id="kidung-chord-heading">
               {translate(locale, "kidung.settingsChordAppearance")}
             </h2>
-          </summary>
+          </div>
           <div className="kidung-settings-controls">
             <label className="kidung-settings-switch">
               <input
@@ -408,7 +408,7 @@ export function HymnSettingsPanel({ locale }: { locale: Locale }) {
               />
             </label>
           </div>
-        </details>
+        </div>
       </section>
     </div>
   );

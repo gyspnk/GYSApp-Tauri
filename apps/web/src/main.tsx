@@ -76,11 +76,51 @@ if (restoredPath) {
   );
 }
 
+/** The shell must never appear mid-swap: keep the boot splash until the two
+ * reading faces are resolved, then reveal the already-painted app. */
+const BOOT_FONT_TIMEOUT_MS = 1200;
+const CRITICAL_FONT_FACES = [
+  '400 1em "GYS Reading Sans"',
+  '400 1em "Source Serif 4"',
+];
+
+function releaseBootSplash() {
+  const root = document.documentElement;
+  if (root.dataset.boot === "ready") return;
+  root.dataset.boot = "ready";
+  const splash = document.getElementById("boot-splash");
+  if (!splash) return;
+  splash.setAttribute("aria-hidden", "true");
+  window.setTimeout(() => splash.remove(), 260);
+}
+
+async function waitForBootFonts(): Promise<void> {
+  if (typeof document.fonts === "undefined") return;
+  const fontsLoaded = Promise.all(
+    CRITICAL_FONT_FACES.map((font) => document.fonts.load(font)),
+  )
+    .then(() => document.fonts.ready)
+    .catch(() => undefined);
+  await Promise.race([
+    fontsLoaded,
+    new Promise((resolve) => window.setTimeout(resolve, BOOT_FONT_TIMEOUT_MS)),
+  ]);
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 );
+void waitForBootFonts().then(() => {
+  // One frame resolves the fonts, the second settles layout before revealing.
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      releaseBootSplash();
+      performance.mark("gys-shell-visible");
+    }),
+  );
+});
 installRouteSectionDeepLinks();
 
 if (import.meta.env.PROD && !isTauriShell() && "serviceWorker" in navigator) {

@@ -125,8 +125,14 @@ export function HomePage({ locale }: { locale: Locale }) {
       .then((items) => {
         if (signal?.aborted) return;
         const todays = selectTodaySauh(items);
-        setSauh(todays);
-        setSauhStatus(todays.length > 0 ? "ready" : "error");
+        // Same stale-safe rule as the other shelves: an empty refresh keeps the
+        // already-painted reading instead of collapsing the section.
+        if (todays.length) {
+          setSauh(todays);
+          setSauhStatus("ready");
+          return;
+        }
+        setSauhStatus((status) => (status === "ready" ? "ready" : "error"));
       })
       .catch(() => {
         if (!signal?.aborted) setSauhStatus("error");
@@ -156,10 +162,15 @@ export function HomePage({ locale }: { locale: Locale }) {
       try {
         const items = await fetchSuara(signal);
         if (signal?.aborted) return;
-        setSuara(items);
-        setSuaraStatus(items.length > 0 ? "ready" : "error");
+        // Keep an already-painted shelf when a refresh returns nothing.
+        if (items.length) {
+          setSuara(items);
+          setSuaraStatus("ready");
+        } else
+          setSuaraStatus((status) => (status === "ready" ? "ready" : "error"));
       } catch {
-        if (!signal?.aborted && !displayedSnapshot) setSuaraStatus("error");
+        if (!signal?.aborted && !displayedSnapshot)
+          setSuaraStatus((status) => (status === "ready" ? "ready" : "error"));
       }
     })();
   }, []);
@@ -181,13 +192,23 @@ export function HomePage({ locale }: { locale: Locale }) {
     void fetchLiteratureCatalog(signal)
       .then((items) => {
         if (signal?.aborted) return;
-        setLiterature(items);
-        setLiteratureStatus(items.length > 0 ? "ready" : "error");
+        // A refresh that comes back empty must never erase the list the reader
+        // is already looking at: that collapsed the whole section mid-scroll.
+        if (items.length) {
+          setLiterature(items);
+          setLiteratureStatus("ready");
+          return;
+        }
+        setLiteratureStatus((status) =>
+          status === "ready" ? "ready" : "error",
+        );
       })
       .catch((error: unknown) => {
         if (signal?.aborted) return;
         recordDiagnostic("warn", "home.literature", error);
-        setLiteratureStatus("error");
+        setLiteratureStatus((status) =>
+          status === "ready" ? "ready" : "error",
+        );
       });
   }, []);
 
@@ -526,7 +547,10 @@ export function HomePage({ locale }: { locale: Locale }) {
                   </div>
                   <div className="suara-card-content">
                     <span className="suara-date">
-                      {literatureCategoryLabel(locale, item.category)} ·{" "}
+                      {literatureCategoryLabel(locale, item.category)}
+                    </span>
+                    <strong>{item.title}</strong>
+                    <span className="suara-card-meta">
                       {item.publishedAt
                         ? new Date(item.publishedAt).toLocaleDateString(
                             locale,
@@ -538,12 +562,6 @@ export function HomePage({ locale }: { locale: Locale }) {
                           )
                         : translate(locale, "home.archiveTjc")}
                     </span>
-                    <strong>{item.title}</strong>
-                    {item.description ? (
-                      <small>{item.description}</small>
-                    ) : (
-                      <small>{item.format.toUpperCase()} · TJC Indonesia</small>
-                    )}
                   </div>
                 </Link>
               ))}

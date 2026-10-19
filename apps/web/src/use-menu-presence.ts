@@ -13,17 +13,25 @@ export function useMenuPresence(
       return;
     }
     let current = true;
-    const animations = ref.current?.getAnimations() ?? [];
-    if (!animations.length) setPresent(false);
-    else {
+    const finish = () => {
+      if (current) setPresent(false);
+    };
+    // Closed styles (and their transitions) only exist after the next style
+    // resolution, so reading animations in the layout effect raced the CSS and
+    // dropped the exit motion on some renders.
+    const frame = requestAnimationFrame(() => {
+      const animations = ref.current?.getAnimations?.() ?? [];
+      if (!animations.length) {
+        finish();
+        return;
+      }
       void Promise.allSettled(
         animations.map((animation) => animation.finished),
-      ).then(() => {
-        if (current) setPresent(false);
-      });
-    }
+      ).then(finish);
+    });
     return () => {
       current = false;
+      cancelAnimationFrame(frame);
     };
   }, [open, ref]);
   return open || present;

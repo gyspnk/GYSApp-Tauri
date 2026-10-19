@@ -1312,7 +1312,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.localPack": "Paket lokal",
     "more.ready": "Siap",
     "more.localPackDescription":
-      "TB dan Kidung inti tersedia offline. Aset tambahan diunduh saat diperlukan.",
+      "TB dan Kidung inti offline; aset lain diunduh saat perlu.",
     "more.translations": "terjemahan",
     "more.songs": "lagu",
     "more.corePack": "paket inti",
@@ -1344,7 +1344,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.backupPanel": "Backup dan import",
     "more.encryptedBackup": "Backup terenkripsi",
     "more.backupDescription":
-      "Memuat catatan, bookmark, progres, dan preferensi; tanpa sesi akun atau cache. Kata sandi tidak diunggah.",
+      "Catatan, bookmark, progres, dan preferensi. Kata sandi tidak diunggah.",
     "more.backupPassword": "Kata sandi backup",
     "more.exportBackup": "Ekspor .gysbk",
     "more.chooseFile": "Pilih file",

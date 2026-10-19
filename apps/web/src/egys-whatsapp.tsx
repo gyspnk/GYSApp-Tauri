@@ -154,6 +154,11 @@ export function EgysWhatsApp({
               void confirm(String(message.otp), sender);
           };
         };
+        // Open WhatsApp in the same tick as the challenge. Tracking is a
+        // best-effort side channel: gating the tab behind a WebSocket `open`
+        // left every user without a socket (blocked upgrade, stale session,
+        // retry backoff) staring at a countdown that never opened WhatsApp.
+        launchWhatsApp();
         connect();
       })
       .catch((err) =>

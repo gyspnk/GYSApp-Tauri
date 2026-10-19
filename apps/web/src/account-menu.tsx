@@ -89,8 +89,14 @@ export function AccountMenu({ locale }: { locale: Locale }) {
       setError("");
       try {
         await action();
-      } catch {
-        setError(translate(locale, "more.profileReadFailed"));
+      } catch (error) {
+        // Surface the provider's own reason; the generic copy hid real
+        // failures (expired session, rejected OAuth, blocked popup).
+        setError(
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : translate(locale, "more.profileReadFailed"),
+        );
       } finally {
         setBusy(false);
       }
@@ -126,7 +132,13 @@ export function AccountMenu({ locale }: { locale: Locale }) {
         aria-controls="header-account-panel"
         onClick={() => setOpen((value) => !value)}
       >
-        <AccountAvatar />
+        <span className="account-button-avatar" aria-hidden="true">
+          <AccountAvatar />
+        </span>
+        <span className="account-button-label">
+          {profile?.displayName?.trim().split(/\s+/)[0] ||
+            translate(locale, "shell.account")}
+        </span>
       </button>
       {present && (
         <div

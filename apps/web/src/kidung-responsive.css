@@ -193,3 +193,37 @@
 .more-settings-content .kidung-settings-section {
   min-width: 0;
 }
+
+/* Compact catalog toolbar: a 44px shell around 36px controls on pointer
+   devices. Coarse pointers keep the full 44px hit target. */
+.hymn-page .kidung-controls-field {
+  padding: 3px;
+  border-radius: 13px;
+}
+.hymn-page .kidung-controls-field .kidung-local-nav a {
+  min-height: 36px;
+  padding-block: 0;
+  padding-inline: 10px;
+  border-radius: 10px;
+}
+.hymn-page .kidung-controls-field .control-select-trigger {
+  min-height: 36px;
+}
+.hymn-page .kidung-controls-field .kidung-mode-cycle {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+@media (pointer: coarse) {
+  .hymn-page .kidung-controls-field {
+    padding: 4px;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav a,
+  .hymn-page .kidung-controls-field .control-select-trigger {
+    min-height: 44px;
+  }
+  .hymn-page .kidung-controls-field .kidung-mode-cycle {
+    width: 44px;
+    height: 44px;
+  }
+}

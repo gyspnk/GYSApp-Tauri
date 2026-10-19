@@ -1,6 +1,13 @@
 import { routeModules } from "./route-pages.js";
 type RouteId = keyof typeof routeModules;
-const pending = new Map<RouteId, Promise<unknown>>();
+type PreloadOptions = {
+  /** Warm only the route's code. Data packs stay lazy until the route is
+   * actually opened or hovered, so background warming never parses a 7.6 MB
+   * Bible pack on the main thread. */
+  data?: boolean;
+};
+
+const codePending = new Map<RouteId, Promise<unknown>>();
 const routes: Record<string, RouteId> = {
   "/": "home",
   "/bible": "bible",
@@ -12,52 +19,65 @@ const routes: Record<string, RouteId> = {
   "/suara": "articles",
 };
 
-export function preloadRoute(path: string): Promise<unknown> {
+function loadRouteCode(id: RouteId): Promise<unknown> {
+  let pending = codePending.get(id);
+  if (!pending) {
+    pending = routeModules[id]().catch((error: unknown) => {
+      codePending.delete(id);
+      throw error;
+    });
+    codePending.set(id, pending);
+  }
+  return pending;
+}
+
+/** Data is not cached here: each loader owns its own request/validation cache
+ * and must still run when a code-only warm already resolved. */
+async function loadRouteData(id: RouteId): Promise<void> {
+  if (id === "faith")
+    await import("./faith-payloads.js").then((m) => m.loadFaithPack());
+  if (id === "bible")
+    await import("./bible-pack-loader.js").then((m) =>
+      m.loadBundledBiblePack(),
+    );
+  if (id === "kidung")
+    await Promise.all([
+      import("./kidung-page.js").then((m) => m.preloadKidungCatalog()),
+      import("./hymn-payloads.js").then((m) => m.loadCoreHymnMetadata()),
+    ]);
+  if (id === "literature")
+    await import("./literature-catalog.js").then((m) =>
+      m.fetchLiteratureCatalog(),
+    );
+}
+
+export function preloadRoute(
+  path: string,
+  { data = true }: PreloadOptions = {},
+): Promise<unknown> {
   const pathname = path.split(/[?#]/)[0] ?? "/";
   const id = routes[pathname] ?? routes[`/${pathname.split("/")[1]}`];
   if (!id) return Promise.resolve();
-  if (!pending.has(id)) {
-    const task = routeModules[id]()
-      .then(async (module) => {
-        if (id === "faith")
-          await import("./faith-payloads.js").then((m) => m.loadFaithPack());
-        if (id === "bible")
-          await import("./bible-pack-loader.js").then((m) =>
-            m.loadBundledBiblePack(),
-          );
-        if (id === "kidung")
-          await Promise.all([
-            import("./kidung-page.js").then((m) => m.preloadKidungCatalog()),
-            import("./hymn-payloads.js").then((m) => m.loadCoreHymnMetadata()),
-          ]);
-        if (id === "literature")
-          await import("./literature-catalog.js").then((m) =>
-            m.fetchLiteratureCatalog(),
-          );
-        performance.mark(`gys-route-preloaded:${id}`);
-        return module;
-      })
-      .catch((error) => {
-        pending.delete(id);
-        throw error;
-      });
-    pending.set(id, task);
-  }
-  const route =
+  const route = loadRouteCode(id).then(async (module) => {
+    if (data) await loadRouteData(id).catch(() => undefined);
+    performance.mark(`gys-route-preloaded:${id}`);
+    return module;
+  });
+  const withView =
     id === "kidung"
       ? Promise.all([
-          pending.get(id)!,
+          route,
           import("./kidung-page.js").then((m) => m.preloadKidungView(path)),
         ])
-      : pending.get(id)!;
+      : route;
   return (pathname.startsWith("/literatur/") &&
     /[?&]read=1(?:&|$)/.test(path)) ||
     (pathname.startsWith("/kidung/") && /[?&]mode=pdf(?:&|$)/.test(path))
     ? Promise.all([
-        route,
+        withView,
         import("./pdf-reader-loader.js").then((m) => m.preloadPdfReader()),
       ])
-    : route;
+    : withView;
 }
 
 /** Warm sequentially after first paint, avoiding optional downloads and data-saving connections. */
@@ -85,7 +105,7 @@ export function warmNavigation(): () => void {
     if (cancelled || !paths.length) return;
     const run = () => {
       if (cancelled) return;
-      void preloadRoute(paths.shift()!)
+      void preloadRoute(paths.shift()!, { data: false })
         .catch(() => undefined)
         .finally(() => {
           if (!cancelled) timer = window.setTimeout(next, 100);
