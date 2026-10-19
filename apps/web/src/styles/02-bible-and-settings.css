@@ -2776,6 +2776,7 @@
 /* Accent swatches align with the row labels instead of indenting under the
    value column, in one equal three-column grid. */
 .more-page .accent-palette-grid {
+  width: 100%;
   margin: 6px 0 10px;
   padding: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2805,7 +2806,7 @@
 }
 /* Label/value rows stay readable instead of stretching across the full card. */
 .more-page .appearance-setting-row {
-  max-width: 640px;
+  max-width: none;
 }
 /* Group headers use the neutral surface like every other row; the blue band
    read as a selected item rather than a section heading. */
@@ -2825,7 +2826,7 @@
   display: grid;
   gap: 4px;
   width: 100%;
-  max-width: 640px;
+  max-width: none;
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -2869,4 +2870,10 @@
   gap: 6px;
   justify-self: start;
   margin-top: 4px;
+}
+/* The swatch grid must span the card, not shrink to its intrinsic columns. */
+.more-page .accent-palette-grid {
+  width: 100% !important;
+  max-width: none !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
