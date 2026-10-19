@@ -2784,3 +2784,22 @@
 .more-page .accent-palette-grid > .accent-palette-item {
   min-height: 40px;
 }
+/* Appearance fills the group width (it was capped at 700px, leaving the block
+   visibly narrower than its own header) and the account login row gets the same
+   card frame as every other group body. */
+.more-page .appearance-settings {
+  max-width: none;
+  width: 100%;
+}
+.more-page .egys-login-box {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+/* The shared Google face exists only when the Identity control renders; while
+   the fallback button is visible it would duplicate the label. */
+.more-page .egys-google-control:has(.egys-google-fallback) .egys-google-face {
+  display: none;
+}
