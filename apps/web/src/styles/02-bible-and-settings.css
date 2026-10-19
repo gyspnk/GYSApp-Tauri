@@ -2773,3 +2773,14 @@
 .more-page .more-setting-section[open] > .more-setting-row > svg:last-child {
   transform: rotate(180deg);
 }
+/* Accent swatches align with the row labels instead of indenting under the
+   value column, in one equal three-column grid. */
+.more-page .accent-palette-grid {
+  margin: 6px 0 10px;
+  padding: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.more-page .accent-palette-grid > .accent-palette-item {
+  min-height: 40px;
+}
