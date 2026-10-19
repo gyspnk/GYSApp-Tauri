@@ -1328,9 +1328,15 @@ export function MorePage({
                   }}
                   label={translate(locale, "more.chooseLanguage")}
                   options={[
-                    { value: "id", label: "Ã°Å¸â€¡Â®Ã°Å¸â€¡Â© Bahasa Indonesia (Utama)" },
+                    {
+                      value: "id",
+                      label: "Ã°Å¸â€¡Â®Ã°Å¸â€¡Â© Bahasa Indonesia (Utama)",
+                    },
                     { value: "en", label: "Ã°Å¸â€¡Â¬Ã°Å¸â€¡Â§ English" },
-                    { value: "zh", label: "Ã°Å¸â€¡Â¨Ã°Å¸â€¡Â³ Ã§Â®â‚¬Ã¤Â½â€œÃ¤Â¸Â­Ã¦â€“â€¡" },
+                    {
+                      value: "zh",
+                      label: "Ã°Å¸â€¡Â¨Ã°Å¸â€¡Â³ Ã§Â®â‚¬Ã¤Â½â€œÃ¤Â¸Â­Ã¦â€“â€¡",
+                    },
                   ]}
                 />
               </div>
@@ -1886,4 +1892,3 @@ export function MorePage({
     </div>
   );
 }
-
