@@ -1200,7 +1200,7 @@
   font-weight: 650;
 }
 .kidung-collection-select .control-select-option.is-selected::after {
-  content: "âœ“";
+  content: "✓";
 }
 .kidung-local-nav-links {
   position: relative;

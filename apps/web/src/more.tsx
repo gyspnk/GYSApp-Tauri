@@ -215,7 +215,7 @@ function DistributedAssetPanel({
                     <small>
                       {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
-                        ? ` Ãƒâ€šÃ‚Â· ${formatBytes(asset.sizeBytes)}`
+                        ? ` · ${formatBytes(asset.sizeBytes)}`
                         : ""}
                     </small>
                     {busy && (
@@ -1119,7 +1119,7 @@ export function MorePage({
                     <small className="egys-login-trace">
                       {translate(locale, "more.lastLogin")}{" "}
                       {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
-                      Ãƒâ€šÃ‚Â·{translate(locale, "more.detectedSince")}{" "}
+                      ·{translate(locale, "more.detectedSince")}{" "}
                       {new Date(egysSession.firstLoginAt).toLocaleDateString(
                         locale,
                       )}
@@ -1181,7 +1181,7 @@ export function MorePage({
                 {egysProvider === "apple" && (
                   <div className="egys-inline-login">
                     <span role={egysGoogleError ? "alert" : "status"}>
-                      {egysGoogleError || "Menunggu AppleÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦"}
+                      {egysGoogleError || "Menunggu Apple…"}
                     </span>
                     <button
                       type="button"
@@ -1313,7 +1313,7 @@ export function MorePage({
                           : "transparent",
                       }}
                     >
-                      ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¨
+                      🎨
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}
@@ -1337,17 +1337,15 @@ export function MorePage({
                   options={[
                     {
                       value: "id",
-                      label:
-                        "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â®ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â© Bahasa Indonesia (Utama)",
+                      label: "🇮🇩 Bahasa Indonesia (Utama)",
                     },
                     {
                       value: "en",
-                      label: "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¬ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â§ English",
+                      label: "🇬🇧 English",
                     },
                     {
                       value: "zh",
-                      label:
-                        "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¨ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â³ ÃƒÂ§Ã‚Â®Ã¢â€šÂ¬ÃƒÂ¤Ã‚Â½Ã¢â‚¬Å“ÃƒÂ¤Ã‚Â¸Ã‚Â­ÃƒÂ¦Ã¢â‚¬â€œÃ¢â‚¬Â¡",
+                      label: "🇨🇳 简体中文",
                     },
                   ]}
                 />
@@ -1492,7 +1490,7 @@ export function MorePage({
                     <small>{translate(locale, "more.translations")}</small>
                   </span>
                   <span>
-                    <strong>{manifest?.hymns ?? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</strong>
+                    <strong>{manifest?.hymns ?? "—"}</strong>
                     <small>{translate(locale, "more.songs")}</small>
                   </span>
                   <span>
@@ -1504,7 +1502,7 @@ export function MorePage({
                               0,
                             ),
                           )
-                        : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
+                        : "—"}
                     </strong>
                     <small>{translate(locale, "more.corePack")}</small>
                   </span>
@@ -1809,7 +1807,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ
+                      ↑
                     </button>
                     <button
                       className="text-button"
@@ -1820,7 +1818,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
+                      ↓
                     </button>
                     <button
                       className="text-button"
