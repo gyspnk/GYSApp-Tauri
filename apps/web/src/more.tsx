@@ -215,7 +215,7 @@ function DistributedAssetPanel({
                     <small>
                       {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
-                        ? ` Ã‚Â· ${formatBytes(asset.sizeBytes)}`
+                        ? ` Ãƒâ€šÃ‚Â· ${formatBytes(asset.sizeBytes)}`
                         : ""}
                     </small>
                     {busy && (
@@ -433,17 +433,8 @@ export function MorePage({
     setTheme(next);
   };
 
-  // Settings are a single flat page: every group is mounted and expanded, so
-  // nothing hides behind a second click and no group nests another menu.
-  useEffect(() => {
-    const groups = document.querySelectorAll<HTMLDetailsElement>(
-      ".more-setting-section",
-    );
-    groups.forEach((group) => {
-      group.open = true;
-    });
-  }, []);
-
+  // Settings are a single flat page: every group renders expanded on the
+  // first paint, so nothing shifts after mount and no group nests a menu.
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -1015,10 +1006,22 @@ export function MorePage({
       <h2 className="more-settings-heading">
         {translate(locale, "more.preferences")}
       </h2>
-      <section className="more-settings-list">
+      <section
+        className="more-settings-list"
+        onClickCapture={(event) => {
+          // A summary is a heading here, not a second menu level. Preventing
+          // the native toggle keeps every group open without a click target
+          // that Playwright (or a keyboard user) would mistake for a control.
+          const summary = (event.target as HTMLElement | null)?.closest(
+            "summary",
+          );
+          if (summary?.closest(".more-setting-section")) event.preventDefault();
+        }}
+      >
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
+          open
         >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
@@ -1116,7 +1119,7 @@ export function MorePage({
                     <small className="egys-login-trace">
                       {translate(locale, "more.lastLogin")}{" "}
                       {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
-                      Ã‚Â·{translate(locale, "more.detectedSince")}{" "}
+                      Ãƒâ€šÃ‚Â·{translate(locale, "more.detectedSince")}{" "}
                       {new Date(egysSession.firstLoginAt).toLocaleDateString(
                         locale,
                       )}
@@ -1178,7 +1181,7 @@ export function MorePage({
                 {egysProvider === "apple" && (
                   <div className="egys-inline-login">
                     <span role={egysGoogleError ? "alert" : "status"}>
-                      {egysGoogleError || "Menunggu AppleÃ¢â‚¬Â¦"}
+                      {egysGoogleError || "Menunggu AppleÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦"}
                     </span>
                     <button
                       type="button"
@@ -1194,7 +1197,11 @@ export function MorePage({
           </article>
         </details>
 
-        <details className="more-setting-section" data-setting="appearance">
+        <details
+          className="more-setting-section"
+          data-setting="appearance"
+          open
+        >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
@@ -1306,7 +1313,7 @@ export function MorePage({
                           : "transparent",
                       }}
                     >
-                      Ã°Å¸Å½Â¨
+                      ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¨
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}
@@ -1330,12 +1337,17 @@ export function MorePage({
                   options={[
                     {
                       value: "id",
-                      label: "Ã°Å¸â€¡Â®Ã°Å¸â€¡Â© Bahasa Indonesia (Utama)",
+                      label:
+                        "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â®ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â© Bahasa Indonesia (Utama)",
                     },
-                    { value: "en", label: "Ã°Å¸â€¡Â¬Ã°Å¸â€¡Â§ English" },
+                    {
+                      value: "en",
+                      label: "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¬ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â§ English",
+                    },
                     {
                       value: "zh",
-                      label: "Ã°Å¸â€¡Â¨Ã°Å¸â€¡Â³ Ã§Â®â‚¬Ã¤Â½â€œÃ¤Â¸Â­Ã¦â€“â€¡",
+                      label:
+                        "ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¨ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¡Ã‚Â³ ÃƒÂ§Ã‚Â®Ã¢â€šÂ¬ÃƒÂ¤Ã‚Â½Ã¢â‚¬Å“ÃƒÂ¤Ã‚Â¸Ã‚Â­ÃƒÂ¦Ã¢â‚¬â€œÃ¢â‚¬Â¡",
                     },
                   ]}
                 />
@@ -1345,7 +1357,7 @@ export function MorePage({
           </article>
         </details>
 
-        <details className="more-setting-section" data-setting="audio">
+        <details className="more-setting-section" data-setting="audio" open>
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
@@ -1451,11 +1463,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details
-          className="more-setting-section"
-          data-setting="offline"
-          open={initialSection === "data"}
-        >
+        <details className="more-setting-section" data-setting="offline" open>
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
@@ -1484,7 +1492,7 @@ export function MorePage({
                     <small>{translate(locale, "more.translations")}</small>
                   </span>
                   <span>
-                    <strong>{manifest?.hymns ?? "Ã¢â‚¬â€"}</strong>
+                    <strong>{manifest?.hymns ?? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</strong>
                     <small>{translate(locale, "more.songs")}</small>
                   </span>
                   <span>
@@ -1496,7 +1504,7 @@ export function MorePage({
                               0,
                             ),
                           )
-                        : "Ã¢â‚¬â€"}
+                        : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
                     </strong>
                     <small>{translate(locale, "more.corePack")}</small>
                   </span>
@@ -1604,7 +1612,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="backup">
+        <details className="more-setting-section" data-setting="backup" open>
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
@@ -1666,11 +1674,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details
-          className="more-setting-section"
-          data-setting="about"
-          open={initialSection === "help"}
-        >
+        <details className="more-setting-section" data-setting="about" open>
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
@@ -1805,7 +1809,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      Ã¢â€ â€˜
+                      ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ
                     </button>
                     <button
                       className="text-button"
@@ -1816,7 +1820,7 @@ export function MorePage({
                         title: item.title,
                       })}
                     >
-                      Ã¢â€ â€œ
+                      ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“
                     </button>
                     <button
                       className="text-button"

@@ -2709,7 +2709,6 @@
 /* Every setting group is permanently expanded: the summary is a heading, not a
    second menu, so nothing collapses and no chevron implies another level. */
 .more-page .more-setting-section > summary {
-  pointer-events: none;
   cursor: default;
 }
 .more-page .more-setting-section > .more-setting-row > svg:last-child {
