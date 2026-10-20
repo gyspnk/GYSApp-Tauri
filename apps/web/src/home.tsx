@@ -322,15 +322,6 @@ export function HomePage({ locale }: { locale: Locale }) {
             </div>
           )}
           <div className="sauh-card-content">
-            <div className="section-heading">
-              <span>{translate(locale, "home.sauh")}</span>
-              <small>
-                {selectedToday
-                  ? (selectedToday.reference ??
-                    translate(locale, "home.sauhNoReference"))
-                  : translate(locale, "home.directSource")}
-              </small>
-            </div>
             {!selectedToday && sauhStatus !== "error" && (
               <SauhSkeleton locale={locale} />
             )}
@@ -349,7 +340,13 @@ export function HomePage({ locale }: { locale: Locale }) {
             )}
             {selectedToday && sauhStatus !== "error" && (
               <div className="sauh-card-body">
-                <p className="sauh-title">{selectedToday.title}</p>
+                <div className="sauh-title-row">
+                  <p className="sauh-title">{selectedToday.title}</p>
+                  <small className="sauh-reference">
+                    {selectedToday.reference ??
+                      translate(locale, "home.sauhNoReference")}
+                  </small>
+                </div>
                 <blockquote>“{dailyText}”</blockquote>
               </div>
             )}

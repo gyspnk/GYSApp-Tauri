@@ -4885,3 +4885,22 @@ body:has(.hymn-detail-page.is-text-viewer)
     min-height: 340px;
   }
 }
+/* Sauh reference sits beside the title instead of in a separate eyebrow row. */
+.home-page .sauh-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 14px;
+}
+.home-page .sauh-title-row .sauh-title {
+  margin: 0;
+}
+.home-page .sauh-reference {
+  flex: 0 0 auto;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
