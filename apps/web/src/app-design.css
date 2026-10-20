@@ -4775,14 +4775,15 @@ body:has(.hymn-detail-page.is-text-viewer)
     flex-direction: column;
     grid-template-columns: none;
     justify-content: flex-end;
-    min-height: 440px;
+    min-height: 340px;
     overflow: hidden;
   }
   .home-page .sauh-card-media {
     position: absolute;
     inset: 0;
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     aspect-ratio: auto;
     flex: 1 1 auto;
   }
