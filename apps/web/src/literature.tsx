@@ -83,6 +83,7 @@ import {
   fetchLiteratureCatalog,
   literatureCategoryLabels,
   literatureCategoryLabel as categoryLabel,
+  conciseLiteratureTitle,
 } from "./literature-catalog.js";
 
 export { fetchLiteratureCatalog, literatureCategoryLabels };
@@ -427,7 +428,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                     fetchPriority={index === 0 ? "high" : "auto"}
                   />
                   <span>
-                    <strong>{item.title}</strong>
+                    <strong>{conciseLiteratureTitle(item.title)}</strong>
                     <small>
                       {categoryLabel(locale, item.category)} ·{" "}
                       {dateLabel(item.publishedAt, locale)}
@@ -492,7 +493,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                         })}
                       />
                       <span>
-                        <strong>{item.title}</strong>
+                        <strong>{conciseLiteratureTitle(item.title)}</strong>
                         <small>
                           {percent > 0
                             ? translate(locale, "literature.percentComplete", {
@@ -603,7 +604,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                       })}
                     />
                     <span className="literature-copy">
-                      <strong>{item.title}</strong>
+                      <strong>{conciseLiteratureTitle(item.title)}</strong>
                       <small>
                         {formatLabel(locale, item.format)} ·{" "}
                         {dateLabel(item.publishedAt, locale)}

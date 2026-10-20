@@ -20,6 +20,7 @@ import {
   fetchLiteratureCatalog,
   getCachedLiteratureCatalog,
   literatureCategoryLabel,
+  conciseLiteratureTitle,
   subscribeLiterature,
 } from "./literature-catalog.js";
 import {
@@ -549,7 +550,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                     <span className="suara-date">
                       {literatureCategoryLabel(locale, item.category)}
                     </span>
-                    <strong>{item.title}</strong>
+                    <strong>{conciseLiteratureTitle(item.title)}</strong>
                     <span className="suara-card-meta">
                       {item.publishedAt
                         ? new Date(item.publishedAt).toLocaleDateString(

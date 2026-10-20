@@ -378,3 +378,13 @@ export function literatureCategoryLabel(
 ) {
   return translate(locale, categoryKeys[category]);
 }
+const CATEGORY_TITLE_PREFIX =
+  /^(?:warta sejati|pelita kecil|panduan alkitab|kesaksian|renungan|pujian|buku pdf)\s*[–—:-]?\s*/i;
+
+/** Cards already print the category above the title, so the title drops the
+ * repeated category prefix: "Pelita Kecil Edisi 46 – X" → "Edisi 46 – X". */
+export function conciseLiteratureTitle(title: string): string {
+  const trimmed = title.trim();
+  const stripped = trimmed.replace(CATEGORY_TITLE_PREFIX, "").trim();
+  return stripped.length >= 4 ? stripped : trimmed;
+}
