@@ -4873,8 +4873,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: linear-gradient(
     180deg,
     rgba(var(--surface-rgb), 0) 0%,
-    rgba(var(--surface-rgb), 0.72) 24%,
-    rgba(var(--surface-rgb), 0.95) 60%,
+    rgba(var(--surface-rgb), 0.55) 14%,
+    rgba(var(--surface-rgb), 0.85) 38%,
+    rgba(var(--surface-rgb), 0.97) 68%,
     var(--surface) 100%
   ) !important;
   backdrop-filter: none !important;
