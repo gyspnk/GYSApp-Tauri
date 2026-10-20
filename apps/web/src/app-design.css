@@ -4826,3 +4826,62 @@ body:has(.hymn-detail-page.is-text-viewer)
     -webkit-backdrop-filter: none;
   }
 }
+/* One merged Sauh card in every orientation: full-bleed artwork, a scrim that
+   fades into the copy, and no inset edge on either side of the text block. */
+.home-page .verse-panel:has(.sauh-card-media) {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  min-height: 460px;
+  overflow: hidden;
+}
+.home-page .sauh-card-media {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+  aspect-ratio: auto !important;
+  border-radius: inherit !important;
+  flex: none !important;
+}
+.home-page .sauh-card-media .sauh-image,
+.home-page .sauh-card-media .sauh-image-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 20% !important;
+}
+.home-page .sauh-card-media .sauh-media-overlay {
+  display: block !important;
+  position: absolute;
+  inset: 0;
+}
+.home-page .sauh-card-content {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  height: 100% !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  align-self: stretch !important;
+  border-radius: 0 0 18px 18px !important;
+  padding: 22px 20px 20px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--surface-rgb), 0) 0%,
+    rgba(var(--surface-rgb), 0.72) 24%,
+    rgba(var(--surface-rgb), 0.95) 60%,
+    var(--surface) 100%
+  ) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+@media (min-width: 900px) {
+  .home-page .verse-panel:has(.sauh-card-media) {
+    min-height: 340px;
+  }
+}
