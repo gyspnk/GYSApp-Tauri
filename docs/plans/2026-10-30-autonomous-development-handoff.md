@@ -37,7 +37,7 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 | Audit UI browser lokal     | **PASS dasar**: 8 route × 4 viewport (320/390/768/1440) = 32 render, semua `200`, `boot=ready`, tanpa page error, tanpa gambar rusak, tanpa overflow horizontal.                                                                                                             |
 | Baseline performa pengguna | SEBAGIAN: bundle terukur; hero Beranda cold 5,3 s / warm 0,49 s (B-05, MEASURED). Belum ada median/p95 startup berulang seperti audit 2026-10-11.                                                                                                                            |
 | Perbaikan dalam sesi ini   | 5 commit slice: determinisme tes unit + watcher Windows + format gate + kunci i18n; toleransi/diagnostik tracking WhatsApp + kontrak e-GYS + clipping provider 320 px; target sentuh tautan kembali; indeks pencarian tidak lagi menunggu Worker; asersi smoke Beranda/More. |
-| Blocker eksternal          | Konfirmasi pesan WhatsApp nyata, langkah kredensial Apple, akun e-GYS nyata, deploy Worker (termasuk endpoint `suara-sejati` yang menggantung), signing, perangkat fisik — **BELUM diverifikasi**; rincian bukti di 2.4.                                                     |
+| Blocker eksternal          | Konfirmasi pesan WhatsApp nyata, langkah kredensial Apple, akun e-GYS nyata, deploy Worker (termasuk endpoint `suara-sejati` yang menggantung), signing, perangkat fisik — **BELUM diverifikasi**; rincian bukti di 2.5.                                                     |
 
 ## 2. Baseline terukur (30 Oktober 2026)
 
@@ -78,8 +78,8 @@ performa hosted.
 | Route        | Render | h1                | Overflow horizontal | Page error | Catatan                                                   |
 | ------------ | ------ | ----------------- | ------------------- | ---------- | --------------------------------------------------------- |
 | `/`          | PASS   | Bacaan & nyanyian | tidak               | tidak      | hero Sauh butuh jaringan (B-05)                           |
-| `/sauh`      | PASS   | Sauh Bagi Jiwa    | tidak               | tidak      | tautan kembali 18–20 px (B-06)                            |
-| `/suara`     | PASS   | Suara Sejati      | tidak               | tidak      | 165 gambar, render 4,1–7,6 s (keluarga B-05)              |
+| `/sauh`      | PASS   | Sauh Bagi Jiwa    | tidak               | tidak      | tautan kembali diperbaiki pada B-06                       |
+| `/suara`     | PASS   | Suara Sejati      | tidak               | tidak      | 164 kartu dari snapshot dalam 924 ms walau Worker macet   |
 | `/bible`     | PASS   | Alkitab           | tidak               | tidak      | Kejadian 1 tampil; crossref 40×40 via pseudo-element (OK) |
 | `/kidung`    | PASS   | Kidung            | tidak               | tidak      | 533 tombol lagu; klik mengubah URL ke `/kidung/hymn-001`  |
 | `/iman`      | PASS   | Dasar Kepercayaan | tidak               | tidak      | 10 pokok iman                                             |
@@ -90,7 +90,24 @@ Temuan konsol yang **bukan** bug produk: `401 /api/v1/account/profile` (belum
 login), `403 accounts.google.com/gsi/button` (origin localhost tidak diizinkan
 untuk client ID tersebut). Tidak ada `pageerror` di seluruh 32 render.
 
-### 2.4 Bukti login e-GYS (permintaan pemilik, 30 Oktober 2026)
+### 2.4 Audit lintas-sumbu (tema, ukuran teks, keyboard, offline, media)
+
+Diukur pada preview produksi (`http://127.0.0.1:4173/GYSApp-Tauri/`) dan dev
+`5173`, Chromium Playwright 1.62.1, viewport 390×844 dan 1280×900.
+
+| Sumbu                                  | Metode                                                                                                                  | Hasil                                                                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Tema gelap & AMOLED                    | 8 route × 2 tema × 2 skala = 32 render; cek overflow, teks terpotong, rasio kontras WCAG AA dihitung dari warna efektif | **PASS** — 0 overflow, 0 teks terpotong, 0 pelanggaran kontras (4,5:1 teks normal, 3:1 teks besar)                                |
+| Skala teks 200%                        | `html` 16px → 32px (mekanisme `rem` yang sama dengan e2e `system-text-scale`)                                           | **PASS** — tidak ada overflow horizontal di 7 route; judul display tetap 56px sesuai token                                        |
+| Keyboard                               | 22 Tab per route; fokus hilang/tertutup, indikator fokus, posisi elemen                                                 | **PASS** — 21–22 stop unik, fokus tidak pernah jatuh ke `body`, indikator ada (via `:focus-within` pembungkus)                    |
+| Offline (service worker)               | Kunjungi sekali, tunggu SW mengontrol, `setOffline(true)`, reload + 4 route                                             | **PASS** — 4 cache shell; reload offline **91 ms**; `/bible`, `/kidung`, `/literatur`, `/iman` penuh                              |
+| Disiplin gambar katalog                | `/suara` (165 `<img>`) dan `/literatur` (307 `<img>`) selama 4 s + satu kali scroll                                     | **PASS** — hanya 14–17 permintaan gambar; 302/307 bertanda `lazy`; bertambah 3–9 setelah scroll                                   |
+| PDF Literatur (range, halaman pertama) | Buka item `?read=1`, tunggu canvas pertama                                                                              | **PASS** — halaman pertama tergambar **5,0 s** (discovery `pdf-source` 4,3 s di Worker; eksternal)                                |
+| MIDI Kidung (FluidSynth + timGM6mb)    | Buka hymn-001, chip MIDI, tunggu transport, klik "Putar"                                                                | **PASS** — seek 0 → 1 → 5 dtk, tampilan `0:05 / 2:44`, tombol berubah "Jeda", tanpa error; aset `.mid`/`.sf2`/`libfluidsynth` 200 |
+| Suara saat endpoint Worker menggantung | `/suara` dengan `suara-sejati` menggantung                                                                              | **PASS** — 164 kartu dari snapshot dalam 924 ms (baseline offline-first bekerja)                                                  |
+| Asersi fokus per-elemen (metode awal)  | Heuristik `outline`/`box-shadow` pada elemen fokus                                                                      | **FALSE POSITIVE** — indikator sebenarnya ada di pembungkus `:focus-within`; diverifikasi ulang per elemen                        |
+
+### 2.5 Bukti login e-GYS (permintaan pemilik, 30 Oktober 2026)
 
 Diuji terhadap **Worker hosted** yang dikonfigurasi `apps/web/.env.local`
 (`gysapp-tauri-bff.pas-presensi.workers.dev`), bukan mock, dan bukan akun nyata.
@@ -130,7 +147,7 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 | B-12 | P2        | Label "WhatsApp" terpotong 2 px di layar 320 px (tombol provider overflow)                                                                               | e2e `egys-v1` 320 px: `scrollWidth 74 > clientWidth 72`; probe mengukur `overflow: 2`                                                                                                                                                 | DONE     | — (ikon-saja ≤280 px container, aria-label tetap)                                                |
 | B-13 | P1        | Dua kontrak e2e e-GYS basi membuat suite merah di HEAD (geometri baris provider & badge akun bergantung env)                                             | uji A/B: 7 gagal di HEAD; sesudah perbaikan 0 gagal                                                                                                                                                                                   | DONE     | —                                                                                                |
 | B-14 | P1        | Tracking WhatsApp hanya menerima satu bentuk field dan gagal senyap bila payload berbeda                                                                 | parser lama: `message.refid === reference` + `mobilePhone` + `otp` saja; kini ada unit test 20 kasus                                                                                                                                  | DONE     | Pantau diagnosa `egys.whatsapp.tracking.event` pada percobaan pemilik                            |
-| B-15 | P2        | Konfirmasi WhatsApp nyata belum terbukti; kegagalan tidak terlihat di UI                                                                                 | 2.4: semua langkah sebelum pesan nyata PASS; Diagnostik kini mencatat frame & field yang tidak lengkap                                                                                                                                | NEXT     | Minta pemilik mengirim pesan lalu membaca entri `egys.whatsapp.*`                                |
+| B-15 | P2        | Konfirmasi WhatsApp nyata belum terbukti; kegagalan tidak terlihat di UI                                                                                 | 2.5: semua langkah sebelum pesan nyata PASS; Diagnostik kini mencatat frame & field yang tidak lengkap                                                                                                                                | NEXT     | Minta pemilik mengirim pesan lalu membaca entri `egys.whatsapp.*`                                |
 | B-16 | P2        | Apple belum diuji sampai kredensial                                                                                                                      | popup resmi Apple tampil; langkah kredensial butuh Apple ID                                                                                                                                                                           | BLOCKED  | Uji di origin terdaftar dengan akun nyata                                                        |
 | B-17 | P1        | Pencarian global macet "Menyiapkan indeks lokal…" dan hanya mengembalikan ayat Alkitab                                                                   | `/api/v1/content/suara-sejati` di Worker hosted tidak pernah menjawab (timeout >25 s, 2×); indeks menunggu refresh tanpa batas; sesudah `withRequestDeadline(3 s)` indeks siap ~2 s dan "Pujilah Allah" mengembalikan 4 kidung + ayat | DONE     | Endpoint Worker tetap perlu diperbaiki pemilik (deploy terpisah)                                 |
 | B-18 | P2        | Tiga asersi smoke basi: eyebrow "Sauh hari ini" (dihapus `6a85347`) dan klik `summary` yang kini membalik grup terbuka default                           | `home and more fixed chrome…` gagal di `getByText("Today’s Sauh")` lalu `.appearance-card` hidden; `home uses Sauh…` gagal di `.verse-panel .section-heading`; sesudah perbaikan keduanya lulus                                       | DONE     | —                                                                                                |
@@ -326,6 +343,42 @@ NEXT: B-15 (bukti WhatsApp dari pemilik), B-10 (snapshot Sauh), B-09 (alias
   /alkitab), dan perbaikan endpoint `suara-sejati` di Worker oleh pemilik.
 ```
 
+```text
+Cycle: 6 | 2026-10-30 11:05–11:25 WIB | codex/autonomous-hardening-20261030
+Issue & priority: lanjutan Fase 1/Fase 3 pada sumbu yang belum pernah diukur
+  (tema, skala teks, keyboard, offline, media) untuk menemukan P1 baru; tidak
+  ada bug produk yang muncul, sehingga hasilnya dicatat sebagai bukti PASS dan
+  satu penjaga regresi ditambahkan untuk perbaikan siklus 4.
+Reproduction / baseline:
+  - Tema gelap/AMOLED × 8 route × skala 100/200% = 32 render.
+  - Keyboard: 22 Tab per route pada 7 route.
+  - Offline: preview 4173, SW mengontrol, `setOffline(true)`, reload + 4 route.
+  - Gambar katalog: /suara (165 <img>) dan /literatur (307 <img>).
+  - PDF Literatur: item `?read=1`, tunggu canvas pertama.
+  - MIDI Kidung: chip MIDI pada hymn-001, klik "Putar".
+Hasil: lihat tabel 2.4. Semua sumbu PASS; tidak ada overflow, teks terpotong,
+  pelanggaran kontras, fokus hilang, atau aset yang gagal dimuat.
+False positive yang diverifikasi ulang: indikator fokus per-elemen tidak ada,
+  padahal pembungkus `:focus-within` (`.faith-search-bar`, `.search-field`)
+  memberi ring 3px + border biru; `button.faith-row-summary` berubah warna.
+  Panel pencarian Alkitab yang tertutup memang `pointer-events: none` sampai
+  dibuka — bukan bug.
+File dan perubahan:
+  apps/web/e2e/smoke.spec.ts — tes baru "global search stays usable when a
+    content refresh never answers": route `suara-sejati` sengaja digantung,
+    indeks harus tetap siap ≤10 s dan tanpa teks "Menyiapkan indeks lokal…".
+Verifikasi: PASS — `GYS_E2E_PREBUILT=1 pnpm test:e2e smoke.spec.ts -g
+  "global search stays usable"` → 1/1 lulus (5,6 s, termasuk tenggat 3 s).
+UX dan performa sebelum -> sesudah: tidak ada perubahan produk pada siklus ini;
+  bukti untuk matriks dan satu penjaga regresi baru.
+Screenshot/log/commit/PR: D:\GYSApp-audit\out15..out25,
+  D:\GYSApp-audit\e2e-search-hang.log.
+Risiko/regresi, blocker, rollback: tes hanya menambah cakupan; rollback = 1 berkas.
+Status: DONE
+NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
+  di Worker; tanpa itu, lanjutkan ke B-09/B-10.
+```
+
 ## 5. Risiko dan batasan bukti
 
 - Angka latensi berasal dari satu jaringan rumah, bukan CI. Jangan membandingkannya
@@ -333,7 +386,7 @@ NEXT: B-15 (bukti WhatsApp dari pemilik), B-10 (snapshot Sauh), B-09 (alias
 - Service worker diblokir pada probe UI sehingga cache offline tidak diuji di sesi
   ini. Semua klaim offline perlu tes tersendiri (`runtime-health.spec.ts`,
   `service-worker-upgrade.spec.ts`).
-- Worker hosted adalah artefak terpisah: hasil 2.4 adalah performa dan perilaku
+- Worker hosted adalah artefak terpisah: hasil 2.5 adalah performa dan perilaku
   deployment saat ini, bukan kode repo ini. Perubahan `apps/bff` **belum** dideploy.
 - `apps/web/.env.local` adalah konfigurasi lokal pemilik (2026-08-18). Perbaikan
   B-01 menyesuaikan tes, bukan menghapus konfigurasi tersebut.

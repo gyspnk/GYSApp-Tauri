@@ -1373,6 +1373,25 @@ test("global search indexes real offline content and navigates to a result", asy
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
 });
 
+test("global search stays usable when a content refresh never answers", async ({
+  page,
+}) => {
+  // The hosted feed once hung for minutes. The curated index must not wait for
+  // it: the bundled catalogs publish within the three-second refresh deadline.
+  await page.route("**/api/v1/content/suara-sejati**", () => {
+    // Never fulfilled on purpose; the page has to abandon the request itself.
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("button", { name: /Cari di seluruh aplikasi/ }).click();
+  await page
+    .getByLabel("Cari Alkitab, Kidung, Literatur, Iman, atau media")
+    .fill("Pujilah Allah Yang Maha Esa");
+  await expect(
+    page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }).first(),
+  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("Menyiapkan indeks lokal…")).toHaveCount(0);
+});
+
 test("global search finds Bible verses and deep-links into the internal reader", async ({
   page,
 }) => {
