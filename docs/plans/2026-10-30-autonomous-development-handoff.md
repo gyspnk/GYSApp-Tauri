@@ -207,7 +207,7 @@ Catatan lingkungan yang memengaruhi pembacaan hasil:
 | B-27 | P1        | Tautan "Akun e-GYS" tidak membuka baris akun di 768/1440 px karena installer DOM membuka elemen yang sudah diganti React saat navigasi                                               | probe 390/768/1440: `open=""` hanya di 390; sesudah reveal lewat `useEffect(location.search)` di `MorePage`: 3/3 lulus                                                                                                                                  | DONE     | —                                                                                                                                                                                                     |
 | B-28 | P1        | Tiga cacat a11y baru terlihat saat grup tertutup: landmark `landmark-unique` duplikat di kartu Diagnostik, kontras label akun 4,26:1, live region pencarian hilang saat indeks cepat | axe 4.13: dua region bernama "Diagnostik perangkat"; `.account-button-label` #0079a8 pada #e3f2fa = 4,26:1 (13 px); `role=status` kosong saat indeks siap                                                                                               | DONE     | —                                                                                                                                                                                                     |
 | B-29 | P2        | Grid kontrol Kidung mereservasi 44 px untuk tombol 36 px sehingga menyisakan 12 px sel mati di semua lebar ≤1100 px                                                                  | `unused` 12 px di 320/390/430/600/601/768/820/1024/1100; sesudah kolom `max-content` menjadi 4 px; tes coarse-pointer baru menjaga target 44 px                                                                                                         | DONE     | —                                                                                                                                                                                                     |
-| B-30 | P2        | Sisa suite penuh: `instant-navigation` ×2 gagal pada host ARM karena anggaran navigasi hangat 1000 ms; suite penuh harus dijalankan ulang setelah commit siklus 12                   | Serial: `instant-navigation` tetap gagal (performa host, bukan kontrak); 12 kegagalan lain diklasifikasi dan diperbaiki di siklus 12                                                                                                                    | NEXT     | Jalankan suite penuh sendirian di perangkat pemilik; jangan longgarkan anggaran 1000 ms tanpa bukti dari mesin itu                                                                                    |
+| B-30 | P2        | Sisa suite penuh: 744/76/3 pada host ARM; 29 kegagalan adalah drift baseline visual `-linux`, sisanya tekanan memori + kontrak basi yang sudah diperbaiki di siklus 13               | `--workers=3 --retries=0`: 76 gagal; setelah perbaikan, 13 spec tersentuh lulus **114/114**; `instant-navigation` tetap gagal serial (anggaran 1000 ms, batas host)                                                                                     | NEXT     | Review visual di CI/mesin pemilik (`visual*.spec.ts`, jangan update buta); ukur ulang `instant-navigation` di mesin itu                                                                               |
 
 ## 4. Log siklus
 
@@ -671,6 +671,52 @@ NEXT: tunggu suite penuh bersih; verifikasi ulang `instant-navigation` di
   perangkat pemilik sebelum menyentuh anggarannya.
 ```
 
+```text
+Cycle: 13 | 2026-10-30 23:05–31 Okt 02:35 WIB | codex/autonomous-hardening-20261030
+Issue & priority: suite penuh pada build final memberi 744 lulus / 76 gagal /
+  3 skip (35,8 mnt, 3 worker). Harus dipisahkan regresi produk, kontrak basi,
+  drift baseline visual, dan tekanan memori host (P1).
+Reproduction / baseline:
+  - `npx playwright test --workers=3 --retries=0` (823 tes). 29 kegagalan ada
+    di `visual*.spec.ts` (pixel diff 1–2% terhadap snapshot `-linux`), 8 di
+    `sauh-loading-layout`, 7 di `settings-data-integrity`, 8 di
+    `ui-session-refinement`, 6 di `ui-elements`, 4 di `score-seamless`, sisanya
+    tersebar.
+  - Uji ulang SERIAL pada server preview baru: sebagian besar kegagalan akhir
+    (ui-elements, ui-polish, editorial, media-load, menu-motion, page-transitions)
+    hilang → tekanan memori (swap 5,9 GiB) dan kontensi 3 worker, bukan produk.
+Temuan nyata:
+  - Bug: installer deep link melakukan alignment sebelum React membuka grup;
+    setelah grup terbuka baris bergeser >160 px dan koreksi berhenti, sehingga
+    `?section=data` tertinggal di atas (y=568, seharusnya <100). Diperbaiki:
+    alignment dilewati selama disclosure pemilik masih tertutup.
+  - a11y: toggle mode reader ("Aa", 18 px) memakai `--blue` pada `--blue-soft`
+    = 4,26:1; axe `score-seamless` gagal di 4 lebar. Kini `--navy`.
+  - Kontrak basi: tombol "Backup & import" sudah tidak ada (panel inline),
+    kartu Pengingat bukan tombol/region, nav Kidung punya dua presentasi
+    (katalog ikon 36/44 px vs tab tool page 44 px), dock MIDI 32/44 px,
+    kartu Sauh merged 460 px (portrait) / 340 px (≥900), tombol tutup pencarian
+    diukur saat animasi 0,98 (43,12 px) padahal layout box 44 px, dan sweep
+    200% perlu menunggu font + dua frame.
+File dan perubahan:
+  apps/web/src/route-section-deeplink.ts — guard disclosure tertutup.
+  apps/web/src/kidung-responsive.css — toggle reader memakai `--navy`.
+  apps/web/e2e/{settings-data-integrity,ui-session-refinement,ui-polish,
+    ui-elements,sauh-loading-layout,kidung-style-behavior}.spec.ts — kontrak.
+Verifikasi: PASS — `pnpm test` (511 web + 131 paket + 62 skrip); `build`;
+  `verify:bundle` 179,0/180; `format:check`; `typecheck`; e2e gabungan 13 spec
+  yang tersentuh: **114/114 lulus** (`--workers=3 --retries=0`), termasuk
+  `settings-data-integrity` 9/9, `ui-polish` 14/14, `ui-session-refinement`
+  12/12, `sauh-loading-layout` 8/8, `score-seamless` 4/4, `account-menu` 4/4,
+  `more-section-deeplink` 5/5.
+  Baseline visual (`visual*.spec.ts`, 29 tes) **NOT VALID** di host ini:
+  selisih 1–2% terhadap snapshot `-linux` milik CI dan sebagian karena perubahan
+  warna yang disengaja; jangan `--update-snapshots` tanpa review visual.
+Status: DONE (sisa: verifikasi visual di CI/mesin pemilik; B-30)
+NEXT: jalankan `visual.spec.ts` di mesin/CI yang menjadi sumber baseline;
+  `instant-navigation` tetap gagal di host ARM karena anggaran 1000 ms.
+```
+
 ## 5. Risiko dan batasan bukti
 
 - **Kebijakan uji terbaru (permintaan pemilik, 30 Oktober 2026): uji penuh dijalankan
@@ -708,6 +754,14 @@ NEXT: tunggu suite penuh bersih; verifikasi ulang `instant-navigation` di
 - Spesifikasi axe yang berat (`accessibility`, `editorial-ui`) membutuhkan
   `--workers≤2` di host ARM ini; pada empat worker keduanya timeout 40 dtk
   tanpa kegagalan asersi. Perlakukan sebagai batas host, bukan flake produk.
+- Suite penuh di host ini (11 GiB RAM, swap terpakai 5,9 GiB) mulai gagal
+  secara acak setelah ~700 tes: kegagalan tersebar di spec yang tidak
+  berhubungan dan hilang saat diuji ulang serial. Jalankan suite penuh
+  **sendirian** dan curigai batas host sebelum menyebutnya regresi.
+- Snapshot visual (`visual*.spec.ts`) memakai akhiran `-linux` dari CI. Di host
+  ini selisihnya 1–2% (font/GPU berbeda) dan sebagian berasal dari perubahan
+  warna yang disengaja; **jangan** `--update-snapshots` tanpa review visual di
+  mesin/CI pemilik baseline.
 - Preview pemilik memakai dev server 5173 dengan `VITE_BFF_BASE_URL` sebagai env
   proses. Jangan menulis nilai itu ke `apps/web/.env.local`: `pnpm build` akan
   membakukannya ke `dist` dan mengubah perilaku e2e (yang mengandalkan origin
@@ -788,6 +842,9 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 - `pnpm audit --prod` bersih setelah zod 4.6.6.
 - e2e terarah lokal: `egys-v1` 20/20 (dua kali), `smoke` 44/44,
   `responsive-touch-targets` 4/4, `more-device-data` 2/2, alias `/alkitab` 1/1.
+- e2e gabungan siklus 13: 13 spec yang tersentuh lulus **114/114** pada
+  `--workers=3 --retries=0` (settings, reminder, backup, Kidung nav/dock,
+  Sauh loading/thumbnail, search, a11y).
 - e2e terarah siklus 11 (Linux, `--retries=0`): `more-section-deeplink` 5/5,
   `universal-usability` 10/10, `menu-motion` 12/12, `account-menu` 4/4 (390/768/
   1440), `kidung-section-navigation` 6/6, `accessibility`+`editorial-ui` 35/35,
