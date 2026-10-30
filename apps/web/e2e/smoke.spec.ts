@@ -1,5 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Settings groups open on first paint, so a blind summary click would close
+// them. Assert the open state the assertions need instead of toggling.
+async function ensureSettingOpen(page: Page, setting: string) {
+  const section = page.locator(
+    `.more-setting-section[data-setting="${setting}"]`,
+  );
+  if ((await section.getAttribute("open")) === null)
+    await section.locator("summary").click();
+  await expect(section).toHaveAttribute("open", "");
+}
+
 async function setBibleAddress(
   page: Page,
   book: string,
@@ -53,19 +64,19 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   await page.goto("/GYSApp-Tauri/");
   await page.getByRole("combobox", { name: "Bahasa" }).click();
   await page.getByRole("option", { name: "EN" }).click();
-  await expect(page.getByText("Today’s Sauh", { exact: true })).toBeVisible();
+  // The hero eyebrow was removed on purpose when the Sauh reference moved next
+  // to the title, so assert localized page chrome instead of publisher copy.
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Readings & hymns" }),
+  ).toBeVisible();
   await expect(page.locator(".home-suara-section .date-line")).toHaveText(
     "Testimonies",
   );
   await expect(page.getByText("Kesaksian", { exact: true })).toHaveCount(0);
 
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page
-    .locator('.more-setting-section[data-setting="appearance"] > summary')
-    .click();
-  await page
-    .locator('.more-setting-section[data-setting="offline"] > summary')
-    .click();
+  await ensureSettingOpen(page, "appearance");
+  await ensureSettingOpen(page, "offline");
   const appearanceRow = page.locator(
     '.more-setting-section[data-setting="appearance"] > summary strong',
   );
@@ -81,12 +92,8 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
   await page.reload();
-  await page
-    .locator('.more-setting-section[data-setting="appearance"] > summary')
-    .click();
-  await page
-    .locator('.more-setting-section[data-setting="offline"] > summary')
-    .click();
+  await ensureSettingOpen(page, "appearance");
+  await ensureSettingOpen(page, "offline");
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.locator(".appearance-card")).toBeVisible();
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
@@ -908,8 +915,8 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
   await expect(
     page.getByRole("heading", { name: "Literatur Terbaru" }),
   ).toBeVisible();
-  await expect(page.locator(".verse-panel .section-heading")).toContainText(
-    "Sauh hari ini",
+  await expect(page.locator(".verse-panel .sauh-reference")).toContainText(
+    "Yohanes 3:16",
   );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
   await expect(
@@ -1515,9 +1522,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page
-    .locator('.more-setting-section[data-setting="hymns"] > summary')
-    .click();
+  await ensureSettingOpen(page, "hymns");
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
   await expect(
@@ -1526,9 +1531,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
     }),
   ).toBeVisible();
   await page.reload();
-  await page
-    .locator('.more-setting-section[data-setting="hymns"] > summary')
-    .click();
+  await ensureSettingOpen(page, "hymns");
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
 });
