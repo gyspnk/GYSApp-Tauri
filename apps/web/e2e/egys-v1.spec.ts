@@ -364,6 +364,197 @@ test("web providers authenticate inline and refresh the detected account", async
   expect(context.pages()).toHaveLength(1);
 });
 
+test("a rejected confirm still signs in when the WhatsApp reply already created the session", async ({
+  page,
+  context,
+}) => {
+  let loggedIn = false;
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({
+      json: {
+        profile: loggedIn
+          ? { id: "42", displayName: "Jemaat WhatsApp", locale: "id" }
+          : null,
+      },
+    }),
+  );
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-bot-first",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-bot-first",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  let confirmCalls = 0;
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", async (route) => {
+    confirmCalls++;
+    // The bot completed the login on its side first, so the provider rejects a
+    // second confirmation even though the session already exists.
+    loggedIn = true;
+    await route.fulfill({
+      status: 401,
+      json: {
+        error: { message: "WhatsApp code could not be verified" },
+      },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/apple", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await page.route("**/api/v1/auth/logout", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-bot-first",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat WhatsApp", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(confirmCalls).toBe(1);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("a profile that lags the confirmation is retried instead of failing", async ({
+  page,
+  context,
+}) => {
+  let profileCalls = 0;
+  await page.route("**/api/v1/account/profile", (route) => {
+    profileCalls++;
+    // The first read can land before the session cookie is visible to the
+    // profile route; the client must retry instead of showing a failure.
+    return route.fulfill({
+      json:
+        profileCalls >= 2
+          ? { profile: { id: "43", displayName: "Jemaat Sabar", locale: "id" } }
+          : { profile: null },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-slow-profile",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-slow-profile",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-slow-profile",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat Sabar", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(profileCalls).toBeGreaterThanOrEqual(2);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("a WhatsApp attempt that really fails shows the reason in the account card", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-rejected",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-rejected",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({
+      status: 401,
+      json: { error: { message: "WhatsApp code could not be verified" } },
+    }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-rejected",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  const badge = page.locator(".egys-whatsapp-countdown.is-error");
+  await expect(badge).toHaveText("!");
+  await expect(page.locator(".egys-whatsapp-notice")).toContainText(
+    "WhatsApp code could not be verified",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat WhatsApp", exact: true }),
+  ).toHaveCount(0);
+});
+
 test("WhatsApp timeout removes its badge without closing the messaging tab", async ({
   page,
   context,
