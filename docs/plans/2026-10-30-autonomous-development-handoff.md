@@ -407,7 +407,11 @@ File dan perubahan:
     untuk tes reset yang juga menutup grup `offline` (kontrak basi yang sama).
 Verifikasi: PASS — `pnpm typecheck`; unit `i18n` + `diagnostics` (6 tes);
   `pnpm build`; `pnpm verify:bundle` **172,4 KiB** (batas 180);
-  `GYS_E2E_PREBUILT=1 pnpm test:e2e more-device-data.spec.ts` → 2/2 lulus.
+  `GYS_E2E_PREBUILT=1 pnpm test:e2e more-device-data.spec.ts` → 2/2 lulus;
+  `egys-v1.spec.ts` 20/20 dan `smoke` 44/44 pada build yang sama. Uji hidup:
+  menekan "Login dengan WhatsApp" di 5173 merekam
+  `egys.whatsapp.start — Prepared reference …` dan entri itu tampil di panel
+  (`out32/diagnostics-live.png`), sehingga jalur rekam → pengguna terbukti.
 UX dan performa sebelum -> sesudah: kegagalan login/unduhan kini dapat dibaca
   dan disalin dari Pengaturan (sebelumnya hanya di localStorage); +0,4 KiB gzip.
 Screenshot/log/commit/PR: D:\GYSApp-audit\out32\diagnostics-card.png,
