@@ -6,17 +6,33 @@ for (const width of [390, 768, 1440]) {
   }, testInfo) => {
     await page.setViewportSize({ width, height: 720 });
     await page.addInitScript(() => {
-      const start = document.startViewTransition.bind(document);
-      (window as unknown as { sectionTransitions: number }).sectionTransitions =
-        0;
-      document.startViewTransition = ((...args: Parameters<typeof start>) => {
-        (window as unknown as { sectionTransitions: number })
-          .sectionTransitions++;
-        return start(...args);
-      }) as typeof document.startViewTransition;
+      // Page navigation fades the route view through the Web Animations API
+      // (reader surfaces keep the snapshot transition), so count that motion.
+      const original = Element.prototype.animate;
+      (window as unknown as { routeFades: number }).routeFades = 0;
+      Element.prototype.animate = function (
+        this: Element,
+        keyframes: Keyframe[] | PropertyIndexedKeyframes | null,
+        options?: number | KeyframeAnimationOptions,
+      ) {
+        const frames = Array.isArray(keyframes) ? keyframes : [keyframes];
+        const fades = frames.some(
+          (frame) =>
+            frame !== null && typeof frame === "object" && "opacity" in frame,
+        );
+        if (fades && this.classList.contains("route-view"))
+          (window as unknown as { routeFades: number }).routeFades += 1;
+        return original.call(this, keyframes, options);
+      } as typeof Element.prototype.animate;
     });
     await page.goto("/GYSApp-Tauri/kidung?section=playlist");
-    let original: unknown;
+    // Two nav presentations share the component: the compact catalog shell
+    // (icon links, 36px on a fine pointer / 44px on a coarse one) and the tool
+    // pages (labelled 44px tabs). Each surface must stay stable on its own.
+    const coarse = await page.evaluate(
+      () => matchMedia("(pointer: coarse)").matches,
+    );
+    const originals = new Map<string, unknown>();
     for (const [index, label] of [
       "Playlist",
       "Kidung",
@@ -56,9 +72,15 @@ for (const width of [390, 768, 1440]) {
             icon: [svg.width, svg.height],
           };
         });
-      if (!index) original = styles;
+      const catalogNav = await nav.evaluate((node) =>
+        Boolean(node.closest(".kidung-controls-field")),
+      );
+      const minTarget = catalogNav ? (coarse ? 44 : 36) : 44;
+      const key = `${label}:${catalogNav ? "catalog" : "tool"}`;
+      const original = originals.get(key);
+      if (!original) originals.set(key, styles);
       else expect(styles).toEqual(original);
-      expect(styles.height).toBeGreaterThanOrEqual(44);
+      expect(styles.height).toBeGreaterThanOrEqual(minTarget - 0.5);
       const navBox = await nav.boundingBox();
       expect(navBox!.x).toBeGreaterThanOrEqual(0);
       expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(width);
@@ -70,11 +92,9 @@ for (const width of [390, 768, 1440]) {
     }
     expect(
       await page.evaluate(
-        () =>
-          (window as unknown as { sectionTransitions: number })
-            .sectionTransitions,
+        () => (window as unknown as { routeFades: number }).routeFades,
       ),
-    ).toBe(3);
+    ).toBeGreaterThanOrEqual(4);
   });
 }
 

@@ -9,6 +9,13 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
     await page.goto("/GYSApp-Tauri/kidung");
     const field = page.locator(".kidung-controls-field");
     await expect(field.locator(".control-select-trigger")).toBeVisible();
+    // Pointer devices keep 36px controls inside the compact 44px shell; a
+    // coarse pointer is what must reach the full 44px finger target.
+    const minTarget = (await page.evaluate(
+      () => matchMedia("(pointer: coarse)").matches,
+    ))
+      ? 43.5
+      : 35.5;
     const inspect = () =>
       field.evaluate((e) => {
         const container = e.getBoundingClientRect();
@@ -47,7 +54,7 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
       expect(geometry.navGap).toBeLessThanOrEqual(1);
       for (const link of geometry.links) {
         expect(link.width).toBeGreaterThanOrEqual(43.5);
-        expect(link.height).toBeGreaterThanOrEqual(43.5);
+        expect(link.height).toBeGreaterThanOrEqual(minTarget);
       }
     }
     await page.locator(".add-to-playlist-btn").first().click();
@@ -61,6 +68,42 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
   });
 }
 
+test.describe("responsive Kidung field with a coarse pointer", () => {
+  test.use({ hasTouch: true });
+
+  test("keeps 44px finger targets inside the compact shell", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/kidung");
+    const field = page.locator(".kidung-controls-field");
+    await expect(field.locator(".control-select-trigger")).toBeVisible();
+    const geometry = await field.evaluate((element) => {
+      const container = element.getBoundingClientRect();
+      const mode = element
+        .querySelector(".kidung-mode-cycle")!
+        .getBoundingClientRect();
+      return {
+        unused: container.right - mode.right,
+        mode: { width: mode.width, height: mode.height },
+        links: [...element.querySelectorAll(".kidung-local-nav a")].map(
+          (link) => {
+            const box = link.getBoundingClientRect();
+            return { width: box.width, height: box.height };
+          },
+        ),
+      };
+    });
+    for (const link of geometry.links) {
+      expect(link.width).toBeGreaterThanOrEqual(43.5);
+      expect(link.height).toBeGreaterThanOrEqual(43.5);
+    }
+    expect(geometry.mode.width).toBeGreaterThanOrEqual(43.5);
+    expect(geometry.mode.height).toBeGreaterThanOrEqual(43.5);
+    expect(geometry.unused).toBeLessThanOrEqual(6);
+  });
+});
 test("page boundaries remain anchored while scrolling at either end", async ({
   page,
 }) => {

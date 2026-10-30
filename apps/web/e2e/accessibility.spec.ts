@@ -200,9 +200,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("button", { name: "Close menu", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", {
-        name: "Split view Compare two chapters / translations",
-      }),
+      page.getByRole("button", { name: "Split view", exact: true }),
     ).toBeVisible();
     await expect(page.getByText("Menu Bacaan", { exact: true })).toHaveCount(0);
 
@@ -241,10 +239,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       settings.getByRole("heading", { name: "MIDI player", exact: true }),
     ).toBeVisible();
-    const chordDisclosure = settings.locator("details");
-    await chordDisclosure.locator("summary").click();
+    // The chord palette is a flat settings section, not a disclosure.
     await expect(
-      page.getByRole("group", { name: "Chord letter theme", exact: true }),
+      settings.getByRole("group", { name: "Chord letter theme", exact: true }),
     ).toBeVisible();
     await page
       .locator(".topbar")
@@ -372,7 +369,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
         name: "Search the Bible, hymns, literature, faith, or media",
       }),
     ).toBeFocused();
-    await expect(enDialog.getByRole("status")).toContainText("Search");
+    await expect(enDialog.getByRole("status")).toContainText(
+      "Type at least 2 characters",
+    );
     await enDialog.getByRole("button", { name: "Close", exact: true }).click();
     await expect(enTrigger).toBeFocused();
 
@@ -386,7 +385,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
         name: "搜索圣经、诗歌、文献、信仰或媒体",
       }),
     ).toBeFocused();
-    await expect(zhDialog.getByRole("status")).toContainText("搜索");
+    await expect(zhDialog.getByRole("status")).toContainText(
+      "输入至少 2 个字符",
+    );
     await zhDialog.getByRole("button", { name: "关闭", exact: true }).click();
     await expect(zhTrigger).toBeFocused();
     await expect(idTrigger).toHaveCount(0);
@@ -568,7 +569,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(
-      page.getByText(/official source or its connector is unreachable/i),
+      page.getByText("Try again or open the official source.", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(page.getByText(/Worker article/i)).toHaveCount(0);
     await expect(

@@ -66,7 +66,7 @@ for (const viewport of [
     await expect.poll(async () => (await starts()).length).toBe(before + 2);
 
     await player.locator(".media-tempo-toggle").click();
-    const tempo = player.locator(".media-tempo-popover input");
+    const tempo = player.locator(".media-tempo-popover input[type='range']");
     await tempo.scrollIntoViewIfNeeded();
     await expect(tempo).toBeVisible();
     expect(
@@ -82,8 +82,16 @@ for (const viewport of [
     await tempo.focus();
     await tempo.press("ArrowRight");
     await expect(tempo).toHaveValue(String(value + 1));
-    await expect(player.locator(".media-tempo-popover")).toContainText(
-      `${value + 1} BPM`,
+    // The numeric stepper mirrors the slider and the dock repeats the tempo,
+    // so the settled value is observable even though the input holds the text.
+    await expect(
+      player.getByRole("spinbutton", {
+        name: "Tempo dalam BPM",
+        exact: true,
+      }),
+    ).toHaveValue(String(value + 1));
+    await expect(player.locator(".media-tempo-toggle strong")).toHaveText(
+      String(value + 1),
     );
     const settings = (await player
       .locator(".media-tempo-popover")

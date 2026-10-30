@@ -119,13 +119,13 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     };
     return {
       media: rect(":scope"),
-      transport: rect(":scope > .media-transport-controls"),
+      transport: rect(".media-playback-row .media-transport-controls"),
       previous: rect(
-        ":scope > .media-transport-controls .media-previous-control",
+        ".media-playback-row .media-previous-control",
       ),
-      play: rect(":scope > .media-transport-controls .media-primary-control"),
-      next: rect(":scope > .media-transport-controls .media-next-control"),
-      minimize: rect(":scope > .media-minimize"),
+      play: rect(".media-playback-row .media-primary-control"),
+      next: rect(".media-playback-row .media-next-control"),
+      minimize: rect(".media-minimize"),
       advanced: rect(".media-advanced-summary"),
       title: rect(".media-meta"),
     };
@@ -155,8 +155,9 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     Math.max(...controls.map((box) => box.y)) -
       Math.min(...controls.map((box) => box.y)),
   ).toBeLessThan(1.5);
-  const rowAnchor =
-    viewportWidth <= 600 ? geometry.title! : geometry.transport!;
+  // The compact dock anchors the minimize control to the metadata row at every
+  // width; the transport stays centred on its own row underneath.
+  const rowAnchor = geometry.title!;
   expect(
     Math.abs(
       geometry.minimize!.y +
@@ -482,7 +483,9 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await expect(position).toHaveAttribute("max", "10");
   // This test edits musical controls after the pinned song's PDF defaults.
   // A separate player regression covers defaults arriving during playback.
-  await expect(media.locator(".media-advanced-summary")).toContainText("88 BPM", {
+  // The compact dock keeps the tempo readout on its own toggle; the advanced
+  // summary is an icon-only disclosure with an aria-label.
+  await expect(media.locator(".media-tempo-toggle strong")).toHaveText("88", {
     timeout: 15_000,
   });
   await play.click();
@@ -516,13 +519,16 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await expect(instrument).toHaveText("Violin");
   await media.locator(".media-advanced-summary").click();
   await media.locator(".media-tempo-toggle").click();
-  const tempo = media.locator(".media-tempo-popover input");
+  const tempo = media.locator(".media-tempo-popover input[type='range']");
   const currentTempo = Number(await tempo.inputValue());
   await tempo.focus();
   await tempo.press("ArrowRight");
   await expect(tempo).toHaveValue(String(currentTempo + 1));
-  await expect(media.locator(".media-tempo-popover")).toContainText(
-    `${currentTempo + 1} BPM`,
+  await expect(
+    media.getByRole("spinbutton", { name: "Tempo dalam BPM", exact: true }),
+  ).toHaveValue(String(currentTempo + 1));
+  await expect(media.locator(".media-tempo-toggle strong")).toHaveText(
+    String(currentTempo + 1),
   );
 
   // Tempo is now on the visible dock; opening it closes the utility disclosure.
