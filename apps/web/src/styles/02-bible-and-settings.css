@@ -1666,6 +1666,18 @@
     text-overflow: ellipsis !important;
   }
 }
+@container (max-width: 280px) {
+  /* A 320px phone leaves each provider roughly 74px. "WhatsApp" alone needs
+     more than that beside its icon, so the widest label clipped by 2px. Keep
+     the three equal, icon-only targets at that width: the buttons already carry
+     their localized accessible name, and the trailing countdown still fits. */
+  .egys-provider-all .egys-provider-label {
+    display: none;
+  }
+  .egys-provider-all .egys-provider {
+    padding-inline: 6px;
+  }
+}
 .egys-google-error {
   color: var(--danger, #b3261e);
   font-size: 0.75rem;

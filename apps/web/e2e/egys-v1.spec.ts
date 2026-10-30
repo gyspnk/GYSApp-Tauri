@@ -109,8 +109,21 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const controls = account.locator(".egys-provider-all .egys-provider");
     await expect(controls).toHaveCount(3);
     const row = await account.locator(".egys-provider-all").boundingBox();
-    const body = await account.locator(".egys-login-box").boundingBox();
-    expect(Math.abs(row!.width - body!.width)).toBeLessThan(1);
+    // The provider row fills the login card's content box. The card itself is
+    // framed with padding and a hairline border, so compare against the padded
+    // content width instead of the border box.
+    const body = await account.locator(".egys-login-box").evaluate((node) => {
+      const style = getComputedStyle(node);
+      const width = node.getBoundingClientRect().width;
+      return (
+        width -
+        Number.parseFloat(style.paddingLeft) -
+        Number.parseFloat(style.paddingRight) -
+        Number.parseFloat(style.borderLeftWidth) -
+        Number.parseFloat(style.borderRightWidth)
+      );
+    });
+    expect(Math.abs(row!.width - body)).toBeLessThan(1);
     expect(
       await controls.evaluateAll((nodes) =>
         nodes.every((node) => node.scrollWidth <= node.clientWidth + 1),
@@ -632,20 +645,25 @@ test("Google retries a failed SDK within the same provider row", async ({
 test("active e-GYS session displays the member profile badge", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      "gys-egys-profile-v1",
-      JSON.stringify({
-        id: "member-123",
-        displayName: "Sdr. Yohanes",
-        branchName: "Semarang",
-        branchCode: "SMG",
-        isMember: true,
-        membershipNo: "GYS-SMG-001",
-        locale: "id",
-      }),
-    );
-  });
+  const profile = {
+    id: "member-123",
+    displayName: "Sdr. Yohanes",
+    branchName: "Semarang",
+    branchCode: "SMG",
+    isMember: true,
+    membershipNo: "GYS-SMG-001",
+    locale: "id",
+  };
+  await page.addInitScript((value) => {
+    localStorage.setItem("gys-egys-profile-v1", JSON.stringify(value));
+  }, profile);
+  // State the session precondition instead of inheriting it from the build's
+  // configured BFF: without an answer the app correctly reports no session and
+  // clears the cached member, so the badge assertion would only hold on a
+  // checkout that happens to have no Worker configured.
+  await page.route("**/api/v1/account/profile**", (route) =>
+    route.fulfill({ json: { profile } }),
+  );
 
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(

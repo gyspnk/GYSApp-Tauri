@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { recordDiagnostic } from "./diagnostics.js";
 import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
+import {
+  describeTrackingGap,
+  parseWhatsAppTrackingEvent,
+} from "./egys-whatsapp-tracking.js";
 
 type Challenge = {
   referenceid?: string;
@@ -85,6 +89,11 @@ export function EgysWhatsApp({
           fail("Tab ditutup. Tekan WhatsApp lagi.");
           return;
         }
+        recordDiagnostic(
+          "info",
+          "egys.whatsapp.start",
+          new Error(`Prepared reference ${reference}`),
+        );
         const launchWhatsApp = () => {
           if (launched || controller.signal.aborted) return;
           try {
@@ -113,13 +122,15 @@ export function EgysWhatsApp({
           current.onerror = () => {
             if (current.readyState < WebSocket.CLOSING) current.close();
           };
-          current.onclose = () => {
+          current.onclose = (event) => {
             if (controller.signal.aborted || confirming || socket !== current)
               return;
             recordDiagnostic(
               "warn",
               "egys.whatsapp.tracking",
-              new Error(`Tracking disconnected (${current.readyState})`),
+              new Error(
+                `Tracking disconnected (code=${event.code}${event.reason ? ` reason=${event.reason}` : ""})`,
+              ),
             );
             setStatus("Menghubungkan kembali WhatsApp");
             reconnect = window.setTimeout(
@@ -129,29 +140,48 @@ export function EgysWhatsApp({
           };
           current.onmessage = (event) => {
             if (controller.signal.aborted || socket !== current) return;
-            let message;
+            let payload: unknown;
             try {
-              message = JSON.parse(event.data);
+              payload = JSON.parse(event.data);
             } catch {
               return;
             }
-            if (!message || typeof message !== "object") return;
-            if (message.type === "info" && !confirming)
-              setStatus("Menunggu pesan WhatsApp");
-            if (message.type === "error") {
+            const parsed = parseWhatsAppTrackingEvent(payload, reference);
+            if (!parsed) {
+              // A matching reference whose payload cannot authorise a session
+              // is the one failure mode nobody can see from the UI; record
+              // which fields were missing so support has a concrete cause.
+              const gap = describeTrackingGap(payload, reference);
+              if (gap)
+                recordDiagnostic(
+                  "warn",
+                  "egys.whatsapp.tracking.event",
+                  new Error(gap),
+                );
+              return;
+            }
+            if (parsed.type === "info") {
+              if (!confirming) setStatus("Menunggu pesan WhatsApp");
+              return;
+            }
+            if (parsed.type === "incomplete") return;
+            if (parsed.type === "error") {
+              recordDiagnostic(
+                "warn",
+                "egys.whatsapp.tracking.error",
+                new Error(parsed.message || "Tracking error frame"),
+              );
               fail("Pesan belum dapat diverifikasi. Tekan WhatsApp lagi.");
               return;
             }
+            recordDiagnostic(
+              "info",
+              "egys.whatsapp.tracking.confirm",
+              new Error("Confirmation event received"),
+            );
             // The challenge phone belongs to the bot. Confirmation requires
             // the sender's phone reported by the official tracking channel.
-            const sender = message.mobilePhone ?? message.mobilephone;
-            if (
-              message.refid === reference &&
-              /^[0-9]{4,12}$/.test(String(message.otp ?? "")) &&
-              typeof sender === "string" &&
-              /^\+?[0-9]{6,20}$/.test(sender)
-            )
-              void confirm(String(message.otp), sender);
+            void confirm(parsed.otp, parsed.senderPhone);
           };
         };
         // Open WhatsApp in the same tick as the challenge. Tracking is a

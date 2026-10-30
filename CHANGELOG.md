@@ -2,6 +2,25 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — WhatsApp tracking tolerance and e-GYS browser contracts
+
+- Normalise the official WhatsApp tracking frame before confirming a session:
+  accept the reference as string or number, read the sender from the documented
+  camelCase or lowercase fields, and keep validating the reference match, the
+  numeric code and the sender phone. A payload that cannot authorise a session
+  is dropped instead of failing the whole attempt.
+- Record the attempt lifecycle in diagnostics (`egys.whatsapp.start`,
+  `egys.whatsapp.tracking`, `…tracking.event`, `…tracking.confirm`) including the
+  socket close code and the exact fields missing from a matching-reference frame,
+  so a failed WhatsApp login has a concrete cause instead of a silent countdown.
+- Keep the three provider buttons inside their card at 320 px: below a 280 px
+  container the row becomes icon-only targets, with the existing localized
+  accessible names and the trailing WhatsApp countdown preserved.
+- Rebase two stale e-GYS browser contracts on the current design: the provider
+  row is compared against the login card's padded content box, and the member
+  badge test states its active-session precondition by routing the profile
+  endpoint instead of mingling with the build's configured Worker.
+
 ### 2026-10-30 — deterministic local gates and a stable dev server
 
 - Pin the deployment `VITE_*` variables to empty for unit tests so a checkout
