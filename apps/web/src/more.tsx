@@ -1212,6 +1212,11 @@ export function MorePage({
                             translate(locale, "more.whatsappExpired"),
                           )
                         }
+                        onError={(message) =>
+                          setWhatsAppNotice(
+                            message || translate(locale, "more.whatsappFailed"),
+                          )
+                        }
                       />
                     ) : undefined
                   }
@@ -1232,7 +1237,7 @@ export function MorePage({
                       : undefined
                   }
                 />
-                {whatsAppNotice && egysProvider !== "whatsapp" && (
+                {whatsAppNotice && (
                   <p className="egys-whatsapp-notice" role="status">
                     {whatsAppNotice}
                   </p>

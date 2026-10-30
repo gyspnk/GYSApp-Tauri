@@ -20,12 +20,15 @@ export function EgysWhatsApp({
   onComplete,
   onCancel,
   onExpire,
+  onError,
   messagingWindow,
 }: {
   onComplete: (signal: AbortSignal) => Promise<void>;
   onCancel: () => void;
   /** The deadline passed without a tracking confirmation. */
   onExpire?: () => void;
+  /** A terminal failure, surfaced next to the badge so it is readable. */
+  onError?: (message: string) => void;
   messagingWindow: Window | null;
 }) {
   const [seconds, setSeconds] = useState(LOGIN_TIMEOUT_MS / 1000);
@@ -34,9 +37,11 @@ export function EgysWhatsApp({
   // Keep the expiry callback off the attempt's dependency list: a fresh closure
   // from the parent would otherwise restart the socket and reset the deadline.
   const onExpireRef = useRef(onExpire);
+  const onErrorRef = useRef(onError);
   useEffect(() => {
     onExpireRef.current = onExpire;
-  }, [onExpire]);
+    onErrorRef.current = onError;
+  }, [onExpire, onError]);
   useEffect(() => {
     const controller = new AbortController();
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
@@ -74,6 +79,7 @@ export function EgysWhatsApp({
       if (controller.signal.aborted) return;
       recordDiagnostic("warn", "egys.whatsapp", new Error(message));
       setError(message);
+      onErrorRef.current?.(message);
       stop();
     };
     if (!messagingWindow || messagingWindow.closed) {
@@ -84,16 +90,57 @@ export function EgysWhatsApp({
       if (confirming || controller.signal.aborted) return;
       confirming = true;
       setStatus("Memverifikasi akun");
+      let confirmError: unknown;
       try {
         await requestEgysProvider(
           "whatsapp/confirm",
           { otp: code, mobilephone },
           controller.signal,
         );
-        if (!controller.signal.aborted) await onComplete(controller.signal);
       } catch (err) {
-        fail(err instanceof Error ? err.message : "Login belum berhasil");
+        confirmError = err;
+        recordDiagnostic("warn", "egys.whatsapp.confirm", err);
       }
+      if (controller.signal.aborted) return;
+      if (confirmError) {
+        // The WhatsApp reply is authoritative too: the bot can complete the
+        // login before this POST reaches the provider, so a rejected confirm
+        // is not fatal while a session already exists. Check the profile once
+        // before surfacing the exclamation mark.
+        try {
+          await onComplete(controller.signal);
+          return;
+        } catch {
+          fail(
+            confirmError instanceof Error
+              ? confirmError.message
+              : "Login e-GYS belum berhasil",
+          );
+          return;
+        }
+      }
+      // A confirmed login can land a moment before the profile endpoint knows
+      // about the new session; retry briefly instead of reporting failure for
+      // a login the user already completed on WhatsApp.
+      const backoff = [0, 350, 800, 1500];
+      let profileError: unknown;
+      for (const delay of backoff) {
+        if (delay)
+          await new Promise((resolve) => window.setTimeout(resolve, delay));
+        if (controller.signal.aborted) return;
+        try {
+          await onComplete(controller.signal);
+          return;
+        } catch (err) {
+          profileError = err;
+          recordDiagnostic("warn", "egys.whatsapp.profile", err);
+        }
+      }
+      fail(
+        profileError instanceof Error
+          ? profileError.message
+          : "Login belum berhasil",
+      );
     };
     void requestEgysProvider<Challenge>("whatsapp/start", {}, controller.signal)
       .then((data) => {
