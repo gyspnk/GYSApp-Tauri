@@ -496,6 +496,13 @@ NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
 
 ## 5. Risiko dan batasan bukti
 
+- **Beban uji penuh dipindahkan ke GitHub Actions (permintaan pemilik, 30 Oktober
+  2026).** Mesin lokal hanya untuk iterasi cepat: dev 5173, `typecheck`, unit test,
+  `verify:bundle`, dan e2e terarah. `pnpm test:e2e` penuh tidak dijalankan berulang
+  di mesin ini; percobaan penuh pada siklus 9 dihentikan setelah 272 tes karena
+  memakan CPU/jaringan. CI (`\.github/workflows/ci\.yml`) hanya berjalan pada
+  `push` ke `main` dan pada `pull_request`, sehingga branch kerja diverifikasi
+  melalui PR — bukan dengan push langsung ke `main`.
 - Angka latensi berasal dari satu jaringan rumah, bukan CI. Jangan membandingkannya
   dengan audit 2026-10-11 tanpa metode identik.
 - Probe UI umumnya memblokir service worker. Siklus 6 menguji cache offline secara
@@ -513,19 +520,20 @@ NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
   B-01 menyesuaikan tes, bukan menghapus konfigurasi tersebut.
 - Konfirmasi WhatsApp dan langkah kredensial Apple tidak dapat dijalankan tanpa
   ponsel/akun pemilik. Jangan menandainya selesai.
-- e2e hanya `egys-v1.spec.ts` yang dijalankan di sesi ini. Suite penuh, visual,
-  dan performance **NOT RUN**.
+- e2e terarah sudah dijalankan (`egys-v1` 20/20, `smoke` 44/44,
+  `responsive-touch-targets` 4/4, `more-device-data` 2/2, `navigation-layout`
+  alias + Escape). Suite penuh di mesin ini **dihentikan** (272 tes, 67 gagal
+  sebelum dihentikan) karena beban lokal; verifikasi penuh menjadi tugas CI.
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
-1. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
+1. **CI** — Buka PR dari branch kerja agar `ci.yml` menjalankan verifikasi penuh
+   (verify, unit, browser shard) di runner Linux; baca hasilnya sebagai bukti
+   resmi dan catat nomor run di sini.
+2. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
    membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
    datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-2. **B-10** — Periksa generator `offline/sauh.json`; tentukan apakah snapshot memang
-   hanya berisi enam entri dan bagaimana ia disegarkan sebelum rilis.
-3. **B-09** — Pertimbangkan redirect `/alkitab` → `/bible` agar URL berbahasa
-   Indonesia tidak berakhir di halaman 404.
-4. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
+3. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
    saat Worker boleh dideploy, konversi format adalah tuas utamanya.
-5. Jalankan `pnpm test:e2e:smoke` dan `pnpm test:e2e:changed` pada build final
-   sebelum mengubah baseline visual.
+4. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
+   generator; cache disegarkan otomatis saat online).
