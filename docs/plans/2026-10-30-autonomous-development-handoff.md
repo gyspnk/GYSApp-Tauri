@@ -33,7 +33,7 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 | `pnpm verify:docs`         | **PASS**.                                                                                                                                                                                                                                                                    |
 | `pnpm format:check`        | **FAIL → PASS**. Awal gagal pada 4 berkas di `.superpowers/sdd/` (workspace lokal yang meng-ignore dirinya sendiri; B-03).                                                                                                                                                   |
 | `pnpm test:e2e` (egys-v1)  | **FAIL 8 → PASS 20** (Chromium, preview produksi, `--workers=2 --retries=0`). Kedelapan kegagalan sudah ada di HEAD (dibuktikan dengan uji A/B), bukan akibat perubahan sesi ini; lihat B-12 dan B-13.                                                                       |
-| `pnpm verify:prepush`      | NOT RUN (dijalankan menjelang commit slice berikutnya).                                                                                                                                                                                                                      |
+| `pnpm verify:prepush`      | **PASS** (siklus 8, pada seluruh branch): format, docs, provenance, tipe, unit, policy, dan 62 tes skrip root lulus.                                                                                                                                                         |
 | Audit UI browser lokal     | **PASS dasar**: 8 route × 4 viewport (320/390/768/1440) = 32 render, semua `200`, `boot=ready`, tanpa page error, tanpa gambar rusak, tanpa overflow horizontal.                                                                                                             |
 | Baseline performa pengguna | SEBAGIAN: bundle terukur; hero Beranda cold 5,3 s / warm 0,49 s (B-05, MEASURED). Belum ada median/p95 startup berulang seperti audit 2026-10-11.                                                                                                                            |
 | Perbaikan dalam sesi ini   | 5 commit slice: determinisme tes unit + watcher Windows + format gate + kunci i18n; toleransi/diagnostik tracking WhatsApp + kontrak e-GYS + clipping provider 320 px; target sentuh tautan kembali; indeks pencarian tidak lagi menunggu Worker; asersi smoke Beranda/More. |
@@ -142,7 +142,7 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 | B-06 | P2        | Tautan kembali `a.text-button` di Sauh/Suara hanya 17–20 px tinggi (di bawah minimum 24 px)                                                              | sebelum: `55x18`, klik 10 px di atas/bawah meleset; sesudah: pseudo `inset-block:-12px` → 71×42 px, `elementFromPoint` kena, baris tetap 17–18 px                                                                                     | DONE     | — (dijaga e2e `responsive-touch-targets`)                                                           |
 | B-07 | —         | `span.bible-crossref-inline` 8×25 px ternyata **bukan** cacat (area klik 40×40 via `::before`)                                                           | `apps/web/src/ui-hardening.css` aturan `.bible-crossref-inline::before`                                                                                                                                                               | CLOSED   | —                                                                                                   |
 | B-08 | —         | Angka "18 px" pada tombol Google ternyata elemen label internal GIS; kontrol provider sebenarnya 363×51 px (1440) dan 97×44 px (390)                     | probe `probe-google`: `.egys-google-control` 363×51; rantai elemen dalam 21/20 px; iframe GIS 0×0 karena origin localhost ditolak                                                                                                     | CLOSED   | Bukan cacat; tombol GIS nyata hanya bisa diukur pada origin yang diizinkan Google                   |
-| B-09 | P3        | Alias route bahasa Indonesia tidak ada: `/alkitab` → 404, hanya `/bible`                                                                                 | probe: `h1=Halaman tidak ditemukan` untuk `/alkitab`                                                                                                                                                                                  | TODO     | Pertimbangkan redirect `/alkitab` → `/bible`                                                        |
+| B-09 | P3        | Alias route bahasa Indonesia tidak ada: `/alkitab` → 404, hanya `/bible`                                                                                 | probe awal: `h1=Halaman tidak ditemukan`; sesudah redirect, e2e `navigation-layout` membuktikan `/alkitab` → `/bible` dan Kejadian 1 tampil                                                                                           | DONE     | —                                                                                                   |
 | B-10 | P2        | Snapshot `offline/sauh.json` berhenti di 2026-09-28 (32 hari)                                                                                            | item terbaru `sbj260928` pada `apps/web/public/offline/sauh.json`                                                                                                                                                                     | TODO     | Cek generator; tentukan apakah snapshot memang hanya 6 item                                         |
 | B-11 | BLOCKED   | Deploy Worker/akun nyata/signing/perangkat fisik                                                                                                         | butuh kredensial & perangkat pemilik                                                                                                                                                                                                  | BLOCKED  | Jangan diklaim; uji hanya yang lokal                                                                |
 | B-12 | P2        | Label "WhatsApp" terpotong 2 px di layar 320 px (tombol provider overflow)                                                                               | e2e `egys-v1` 320 px: `scrollWidth 74 > clientWidth 72`; probe mengukur `overflow: 2`                                                                                                                                                 | DONE     | — (ikon-saja ≤280 px container, aria-label tetap)                                                   |
@@ -463,6 +463,35 @@ Risiko/regresi, blocker, rollback: notice murni informatif; tenggat, socket,
   nyata tetap BLOCKED sampai pemilik mengirim pesan dan menyalin Diagnostik.
 Status: DONE
 NEXT: B-15 (bukti WhatsApp dari pemilik), B-09 (/alkitab), B-10 (snapshot Sauh).
+```
+
+```text
+Cycle: 9 | 2026-10-30 12:15–12:30 WIB | codex/autonomous-hardening-20261030
+Issue & priority: gate `pnpm verify:prepush` belum pernah dijalankan pada branch
+  (P1 rilis); `/alkitab` masih 404 meski antarmuka berbahasa Indonesia (P3,
+  dikerjakan karena tidak ada P0/P1/P2 lain yang actionable).
+Reproduction / baseline:
+  - `pnpm verify:prepush` → PASS (format, docs, provenance, tipe, unit, policy,
+    62 tes skrip root) pada commit 3624b5c.
+  - `/alkitab` → halaman "Halaman tidak ditemukan"; hanya `/bible` dan `/more`
+    (alias Inggris) yang punya redirect (`App.tsx`).
+File dan perubahan:
+  apps/web/src/App.tsx — `<Route path="/alkitab" element={<Navigate to="/bible" replace />} />`
+    mengikuti pola `/more` → `/lainnya`.
+  apps/web/e2e/navigation-layout.spec.ts — tes baru: `/alkitab` berakhir di
+    `/bible` dan judul "Kejadian 1" tampil.
+Verifikasi: PASS — `pnpm build`; `GYS_E2E_PREBUILT=1 pnpm test:e2e
+  navigation-layout.spec.ts -g "Indonesian Bible alias"` → 1/1 lulus.
+UX dan performa sebelum -> sesudah: URL berbahasa Indonesia tidak lagi menjadi
+  jalan buntu; tidak ada biaya bundle yang berarti (satu rute redirect).
+Screenshot/log/commit/PR: D:\GYSApp-audit\e2e-alias.log,
+  D:\GYSApp-audit\prepush.log.
+Risiko/regresi, blocker, rollback: rute tambahan bersifat `replace`, tanpa
+  riwayat ganda. Rollback = 2 berkas.
+Status: DONE
+NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
+  di Worker; B-10 (snapshot Sauh) perlu keputusan pemilik karena tidak ada
+  generator di repo.
 ```
 
 ## 5. Risiko dan batasan bukti

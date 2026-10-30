@@ -722,6 +722,9 @@ function RoutedApp() {
           }
         />
         <Route path="/more" element={<Navigate to="/lainnya" replace />} />
+        {/* The interface is Indonesian, so a typed or shared /alkitab link must
+            reach the Bible reader instead of the not-found page. */}
+        <Route path="/alkitab" element={<Navigate to="/bible" replace />} />
         <Route path="*" element={<NotFoundPage locale={locale} />} />
       </Route>
     </Routes>

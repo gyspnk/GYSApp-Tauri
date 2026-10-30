@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — the Indonesian Bible address reaches the reader
+
+- Redirect `/alkitab` to `/bible` so an Indonesian address typed or shared by a
+  member opens the Bible instead of the not-found page; `/kidung`, `/iman`,
+  `/literatur` and `/lainnya` already use their Indonesian paths.
+
 ### 2026-10-30 — an expired WhatsApp attempt explains the next step
 
 - Keep an explanation in the account card when the 120-second WhatsApp attempt

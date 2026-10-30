@@ -1626,3 +1626,17 @@ test.describe("responsive reader navigation", () => {
     }
   }
 });
+
+test("the Indonesian Bible alias opens the reader instead of a 404", async ({
+  page,
+}) => {
+  // Provider SDKs are covered elsewhere; keep this route check deterministic.
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({ contentType: "application/javascript", body: "void 0;" }),
+  );
+  await page.goto("/GYSApp-Tauri/alkitab");
+  await expect(page).toHaveURL(/\/bible$/);
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+});
