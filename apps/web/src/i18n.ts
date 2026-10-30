@@ -1230,6 +1230,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.label": "Cari Alkitab, Kidung, Literatur, Iman, atau media",
     "search.placeholder": "Ketik minimal 2 karakter…",
     "search.loading": "Menyiapkan indeks lokal…",
+    "search.hint":
+      "Ketik minimal 2 karakter untuk mencari di seluruh aplikasi.",
     "search.error": "Indeks belum tersedia. Coba muat ulang aplikasi.",
     "search.empty": "Tidak ada hasil untuk “{query}”.",
     "search.resultCount": "{count} hasil ditemukan untuk “{query}”.",
@@ -1339,6 +1341,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.draftSaved": "Draft tersimpan di perangkat.",
     "more.characterCount": "{count}/2.000 karakter",
     "more.diagnostics": "Diagnostik perangkat",
+    "more.diagnosticsLog": "Log diagnostik perangkat",
     "more.diagnosticsHint":
       "Catatan terakhir dari perangkat ini, misalnya saat login atau unduhan gagal. Tidak berisi kata sandi atau token.",
     "more.diagnosticsEmpty": "Belum ada catatan.",
@@ -1938,6 +1941,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.label": "Search the Bible, hymns, literature, faith, or media",
     "search.placeholder": "Type at least 2 characters…",
     "search.loading": "Preparing the local index…",
+    "search.hint": "Type at least 2 characters to search the whole app.",
     "search.error": "The index is unavailable. Reload the app and try again.",
     "search.empty": "No results for “{query}”.",
     "search.resultCount": "{count} results found for “{query}”.",
@@ -2048,6 +2052,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.draftSaved": "Draft saved on this device.",
     "more.characterCount": "{count}/2,000 characters",
     "more.diagnostics": "Device diagnostics",
+    "more.diagnosticsLog": "Device diagnostics log",
     "more.diagnosticsHint":
       "Recent events from this device, for example when a sign-in or download failed. No passwords or tokens are stored.",
     "more.diagnosticsEmpty": "No events recorded yet.",
@@ -2640,6 +2645,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.label": "搜索圣经、诗歌、文献、信仰或媒体",
     "search.placeholder": "输入至少 2 个字符…",
     "search.loading": "正在准备本地索引…",
+    "search.hint": "输入至少 2 个字符即可搜索整个应用。",
     "search.error": "索引暂不可用，请重新加载应用。",
     "search.empty": "没有找到“{query}”的结果。",
     "search.resultCount": "找到 {count} 个关于“{query}”的结果。",
@@ -2748,6 +2754,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.draftSaved": "草稿已保存在此设备。",
     "more.characterCount": "{count}/2,000 个字符",
     "more.diagnostics": "设备诊断",
+    "more.diagnosticsLog": "设备诊断日志",
     "more.diagnosticsHint":
       "此设备最近的记录，例如登录或下载失败时。不会保存密码或令牌。",
     "more.diagnosticsEmpty": "暂无记录。",

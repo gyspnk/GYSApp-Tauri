@@ -427,8 +427,10 @@ export function GlobalSearch({
     if (status === "loading") return translate(locale, "search.loading");
     if (status !== "ready") return "";
     const normalized = deferredQuery.trim();
+    // Keep the polite live region mounted with a real sentence: assistive
+    // technology needs a stable node, and an empty one is invisible.
     if (normalized.length < 2) {
-      return "";
+      return translate(locale, "search.hint");
     }
     if (!mergedResults.length) {
       return translate(locale, "search.empty", { query: normalized });

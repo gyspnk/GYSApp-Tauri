@@ -21,7 +21,7 @@
 @media (max-width: 1100px) {
   .hymn-page .kidung-controls-field {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr) 44px;
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
     gap: 3px;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav,

@@ -1305,6 +1305,11 @@
   padding: 0 14px 0 7px;
   gap: 9px;
 }
+/* The shared soft-blue field puts 13px labels below WCAG AA on --blue, so the
+   account label follows the search trigger and language select onto --navy. */
+.topbar .account-button-label {
+  color: var(--navy);
+}
 .topbar .account-button-avatar {
   flex-basis: 30px;
   width: 30px;

@@ -7,7 +7,7 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   type AccountProfile,
   type AssetManifestV1,
@@ -351,6 +351,17 @@ const HymnSettingsPanel = lazy(() =>
   })),
 );
 
+/**
+ * A deep link names a section; each one belongs to exactly one disclosure row.
+ * The reveal runs inside React so it always targets the committed element.
+ */
+const MORE_SECTION_SETTINGS: Record<string, string> = {
+  account: "account",
+  data: "offline",
+  help: "about",
+  kidung: "hymns",
+};
+
 export function MorePage({
   locale,
   theme,
@@ -363,12 +374,29 @@ export function MorePage({
   setTheme: (value: ShellTheme) => void;
 }) {
   const nativeShell = isTauriShell();
-  const initialSection = new URLSearchParams(window.location.search).get(
-    "section",
+  const location = useLocation();
+  // Settings are seven collapsed disclosure rows: the category list stays
+  // scannable on a phone and the heavy hymn panel mounts on first request.
+  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(
+    () =>
+      new URLSearchParams(window.location.search).get("section") === "kidung",
   );
-  // Settings are one flat page: the hymn panel is always mounted so its
-  // controls are visible without a second disclosure.
-  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(true);
+  // `/kidung?section=settings` redirects here with section=kidung, and the
+  // account/data/help shortcuts arrive by pushState on this same route. The
+  // effect runs after commit, so it never touches a node React replaced.
+  useEffect(() => {
+    const requested = new URLSearchParams(location.search).get("section");
+    const setting = requested ? MORE_SECTION_SETTINGS[requested] : undefined;
+    if (!setting) return;
+    if (setting === "hymns") {
+      setHymnSettingsOpen(true);
+      return;
+    }
+    const disclosure = document.querySelector<HTMLDetailsElement>(
+      `.more-setting-section[data-setting="${setting}"]`,
+    );
+    if (disclosure && !disclosure.open) disclosure.open = true;
+  }, [location.search]);
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
@@ -444,8 +472,8 @@ export function MorePage({
     setTheme(next);
   };
 
-  // Settings are a single flat page: every group renders expanded on the
-  // first paint, so nothing shifts after mount and no group nests a menu.
+  // Settings are seven collapsed disclosure rows: each category stays one
+  // 44px tap target and no group nests another menu.
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -1048,7 +1076,6 @@ export function MorePage({
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
-          open
         >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
@@ -1234,11 +1261,7 @@ export function MorePage({
           </article>
         </details>
 
-        <details
-          className="more-setting-section"
-          data-setting="appearance"
-          open
-        >
+        <details className="more-setting-section" data-setting="appearance">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
@@ -1392,7 +1415,7 @@ export function MorePage({
           </article>
         </details>
 
-        <details className="more-setting-section" data-setting="audio" open>
+        <details className="more-setting-section" data-setting="audio">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
@@ -1495,7 +1518,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="offline" open>
+        <details className="more-setting-section" data-setting="offline">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
@@ -1644,7 +1667,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="backup" open>
+        <details className="more-setting-section" data-setting="backup">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
@@ -1706,7 +1729,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="about" open>
+        <details className="more-setting-section" data-setting="about">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
@@ -1784,12 +1807,13 @@ export function MorePage({
               </p>
               {diagnostics.length ? (
                 // The log scrolls once it is long; the wrapper owns the scroll
-                // and the tab stop so the list keeps its own semantics.
+                // and the tab stop so the list keeps its own semantics. Its
+                // landmark name differs from the card so both stay unique.
                 <div
                   className="diagnostics-log-scroll"
                   tabIndex={0}
                   role="region"
-                  aria-label={translate(locale, "more.diagnostics")}
+                  aria-label={translate(locale, "more.diagnosticsLog")}
                 >
                   <ol className="diagnostics-log">
                     {diagnostics
