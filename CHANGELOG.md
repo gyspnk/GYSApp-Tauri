@@ -2,6 +2,18 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-31 — a WhatsApp login the bot already completed no longer fails
+
+- Treat a rejected `whatsapp/confirm` as non-fatal while a session already
+  exists: the bot can finish the login before the browser's confirmation POST
+  arrives, and the app turned that rejection into the exclamation badge even
+  though WhatsApp had reported success.
+- Retry the profile read briefly (0/350/800/1500 ms) after a confirmation, so a
+  session that becomes visible a moment later is accepted instead of failed.
+- Surface the reason in the account card and record `egys.whatsapp.confirm` /
+  `egys.whatsapp.profile` in the device diagnostics; previously the only trace
+  was the "!" tooltip and a log nobody could reach from the failed attempt.
+
 ### 2026-10-30 — settings stay scannable and accessible
 
 - Restore the documented "seven collapsed categories" layout on More: the
