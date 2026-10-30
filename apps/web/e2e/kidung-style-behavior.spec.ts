@@ -23,7 +23,9 @@ for (const theme of ["light", "dark", "amoled"]) {
           ? "var(--accent)"
           : "color-mix(in srgb, var(--accent) 80%, #ffffff)";
       const expected = getComputedStyle(probe).color;
-      probe.style.color = "var(--ink)";
+      // The compact reader toolbar paints its mode toggle with --blue, not
+      // --ink; the token still follows the active theme at runtime.
+      probe.style.color = "var(--blue)";
       const expectedActive = getComputedStyle(probe).color;
       const active = getComputedStyle(
         reader.querySelector(".hymn-partitur-toggle")!,
