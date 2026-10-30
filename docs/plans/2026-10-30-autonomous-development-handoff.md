@@ -105,6 +105,7 @@ Diukur pada preview produksi (`http://127.0.0.1:4173/GYSApp-Tauri/`) dan dev
 | PDF Literatur (range, halaman pertama) | Buka item `?read=1`, tunggu canvas pertama                                                                              | **PASS** — halaman pertama tergambar **5,0 s** (discovery `pdf-source` 4,3 s di Worker; eksternal)                                |
 | MIDI Kidung (FluidSynth + timGM6mb)    | Buka hymn-001, chip MIDI, tunggu transport, klik "Putar"                                                                | **PASS** — seek 0 → 1 → 5 dtk, tampilan `0:05 / 2:44`, tombol berubah "Jeda", tanpa error; aset `.mid`/`.sf2`/`libfluidsynth` 200 |
 | Suara saat endpoint Worker menggantung | `/suara` dengan `suara-sejati` menggantung                                                                              | **PASS** — 164 kartu dari snapshot dalam 924 ms (baseline offline-first bekerja)                                                  |
+| Pencarian Alkitab di ponsel            | 390 px, klik ikon "Buka pencarian ayat di Alkitab", ketik "kasih", Enter, worker + hasil                                | **PASS** — panel `is-open` 126 px, input benar-benar dapat diklik, worker `bible-search-worker` jalan, hasil "Kejadian 6:8 …"     |
 | Asersi fokus per-elemen (metode awal)  | Heuristik `outline`/`box-shadow` pada elemen fokus                                                                      | **FALSE POSITIVE** — indikator sebenarnya ada di pembungkus `:focus-within`; diverifikasi ulang per elemen                        |
 
 ### 2.5 Bukti login e-GYS (permintaan pemilik, 30 Oktober 2026)
@@ -383,9 +384,15 @@ NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
 
 - Angka latensi berasal dari satu jaringan rumah, bukan CI. Jangan membandingkannya
   dengan audit 2026-10-11 tanpa metode identik.
-- Service worker diblokir pada probe UI sehingga cache offline tidak diuji di sesi
-  ini. Semua klaim offline perlu tes tersendiri (`runtime-health.spec.ts`,
-  `service-worker-upgrade.spec.ts`).
+- Probe UI umumnya memblokir service worker. Siklus 6 menguji cache offline secara
+  khusus dengan SW aktif (reload offline 91 ms, 4 route penuh) — lihat 2.4. Klaim
+  offline lain di luar itu (misalnya unduhan aset terdistribusi) tetap perlu tes
+  tersendiri (`runtime-health.spec.ts`, `service-worker-upgrade.spec.ts`).
+- Pelajaran harness: di 390 px kontrol "CARI ALKITAB" versi desktop ada di DOM tapi
+  tersembunyi 1 px; kontrol sebenarnya adalah ikon "Buka pencarian ayat di Alkitab".
+  Mengklik elemen tersembunyi dengan `force` membuat pemeriksaan tampak gagal
+  padahal bukan bug produk. Verifikasi dulu bahwa titik klik benar-benar mengenai
+  target (`elementFromPoint`) sebelum menyimpulkan cacat.
 - Worker hosted adalah artefak terpisah: hasil 2.5 adalah performa dan perilaku
   deployment saat ini, bukan kode repo ini. Perubahan `apps/bff` **belum** dideploy.
 - `apps/web/.env.local` adalah konfigurasi lokal pemilik (2026-08-18). Perbaikan
