@@ -19,7 +19,7 @@
   "dependencies": {
     "@gys/contracts": "workspace:*",
     "hono": "4.13.11",
-    "zod": "4.4.3"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260814.1",

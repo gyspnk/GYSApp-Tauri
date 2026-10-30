@@ -2,6 +2,14 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — security: patched zod advisory
+
+- Bump `zod` from 4.4.3 to 4.6.6 in `packages/contracts` and `apps/bff` to clear
+  GHSA-mrhx-c7xc-m3w5 (high: memory exhaustion while validating oversized
+  constrained collections), which `pnpm audit --prod` reported and the CI verify
+  job rejected. Contract and reader behaviour is unchanged; the initial JS graph
+  grows by 6.8 KiB gzip (172.0 → 179.3 KiB, budget 180 KiB).
+
 ### 2026-10-30 — the Indonesian Bible address reaches the reader
 
 - Redirect `/alkitab` to `/bible` so an Indonesian address typed or shared by a

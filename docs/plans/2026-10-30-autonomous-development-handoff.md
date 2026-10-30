@@ -28,7 +28,7 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 | `pnpm typecheck`           | **PASS** (5 paket).                                                                                                                                                                                                                                                          |
 | `pnpm test`                | **FAIL → PASS**. Awal: 6 tes gagal pada checkout dengan `apps/web/.env.local` (B-01, B-04). Sekarang contracts 20, domain 45, testkit 2, bff 74, web 511, plus policy/script — semua lulus.                                                                                  |
 | `pnpm build`               | **PASS** (dijalankan 4×; build terakhir memuat seluruh perubahan sesi ini).                                                                                                                                                                                                  |
-| `pnpm verify:bundle`       | **PASS**. Initial JS gzip **172,0 KiB** dari 24 modul + `startup.js` (batas 180 KiB); chunk `index-*.js` **84,5 KiB** gzip (batas 250 KiB).                                                                                                                                  |
+| `pnpm verify:bundle`       | **PASS**. Initial JS gzip **179,3 KiB** (naik dari 172,0 setelah `zod` 4.6.6, lihat B-23) dari 24 modul + `startup.js`; batas 180 KiB → sisa **0,7 KiB**. Chunk `index-*.js` **84,5 KiB** (batas 250 KiB).                                                                   |
 | `pnpm verify:generated`    | **PASS**.                                                                                                                                                                                                                                                                    |
 | `pnpm verify:docs`         | **PASS**.                                                                                                                                                                                                                                                                    |
 | `pnpm format:check`        | **FAIL → PASS**. Awal gagal pada 4 berkas di `.superpowers/sdd/` (workspace lokal yang meng-ignore dirinya sendiri; B-03).                                                                                                                                                   |
@@ -156,6 +156,7 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 | B-20 | P1        | Diagnostik direkam tetapi **tidak pernah ditampilkan**: tidak ada UI yang memanggil `getDiagnostics()`                                                   | `grep getDiagnostics` hanya menemukan definisi + unit test; saran "buka Diagnostik" pada laporan siklus 2 tidak dapat diikuti pengguna                                                                                                | DONE     | Panel baca-saja + salin/hapus di bagian Tentang; e2e `more-device-data` menjaga regresi                                                                                         |
 | B-21 | P1        | Percobaan WhatsApp yang kedaluwarsa hanya menghapus badge — pengguna tidak tahu apa yang harus dilakukan                                                 | e2e `WhatsApp timeout…`: badge hilang, tab tetap terbuka, tidak ada pesan apa pun                                                                                                                                                     | DONE     | Notice `role="status"` di kartu akun + diagnosa `egys.whatsapp.timeout`; hilang saat percobaan baru                                                                             |
 | B-22 | P1        | Asersi e2e "tracking subscribes before the message link opens" bertentangan dengan desain dan flaky (gagal 2/3 kali dengan `--workers=2`)                | route `api.whatsapp.com` melempar bila socket belum ada; implementasi sengaja membuka tab lebih dulu. Sesudah diperbaiki: `egys-v1` 20/20 dua kali berturut-turut                                                                     | DONE     | —                                                                                                                                                                               |
+| B-23 | P0        | **Kerentanan keamanan**: `zod < 4.6.6` (GHSA-mrhx-c7xc-m3w5, high) di `apps/bff` dan `packages/contracts`                                                | `pnpm audit --prod` gagal di CI run 41017133824 dan lokal; sesudah bump `zod` 4.4.3 → 4.6.6 audit bersih, typecheck + 511 tes web + 131 paket lulus                                                                                   | DONE     | Biaya: initial JS 172,0 → **179,3 KiB** (sisa 0,7 KiB dari batas 180) — pantau sebelum menambah kode di graph awal                                                              |
 
 ## 4. Log siklus
 
@@ -492,6 +493,39 @@ Status: DONE
 NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
   di Worker; B-10 (snapshot Sauh) perlu keputusan pemilik karena tidak ada
   generator di repo.
+```
+
+```text
+Cycle: 10 | 2026-10-30 13:50�14:05 WIB | codex/autonomous-hardening-20261030
+Issue & priority: beban uji penuh di mesin lokal (permintaan pemilik) dan
+  sinkronisasi ke GitHub Actions; CI kemudian menemukan kerentanan high pada
+  dependensi (P0 keamanan).
+Reproduction / baseline:
+  - `pnpm test:e2e` penuh dihentikan setelah 272 tes (67 gagal) karena memakan
+    CPU/jaringan mesin ini; `ci.yml` hanya jalan pada `pull_request` atau push
+    ke `main`.
+  - Push branch + draft PR #11 ? CI run 41017133824; job `verify` gagal di
+    langkah `pnpm audit --prod`.
+  - `pnpm audit --prod` lokal: `zod <4.6.6`, GHSA-mrhx-c7xc-m3w5 (high), jalur
+    `apps/bff>zod` dan `packages/contracts>zod` (terpasang 4.4.3).
+Root cause: dependensi produksi tertinggal dari versi perbaikan; beban verifikasi
+  penuh belum didelegasikan ke CI.
+File dan perubahan:
+  apps/bff/package.json, packages/contracts/package.json � `zod` 4.4.3 ? 4.6.6.
+  pnpm-lock.yaml � lockfile diperbarui lewat `pnpm install`.
+  docs/plans/... � kebijakan delegasi CI, status bundle, backlog B-23.
+Verifikasi: PASS � `pnpm audit --prod` bersih; `pnpm typecheck`; `pnpm test`
+  (511 web + 131 workspace + 62 skrip); `pnpm build`; `pnpm verify:bundle`
+  179,3 KiB / 180.
+UX dan performa sebelum -> sesudah: tidak ada perubahan UX; initial JS naik
+  6,8 KiB karena zod lebih besar � dicatat sebagai trade-off keamanan.
+Screenshot/log/commit/PR: PR #11 https://github.com/gyspnk/GYSApp-Tauri/pull/11,
+  CI run 41017133824, D:\GYSApp-audit\test-zod.log, bundle-zod.log.
+Risiko/regresi, blocker, rollback: sisa headroom bundle 0,7 KiB; rollback =
+  kembalikan 3 berkas bila CI menemukan regresi zod.
+Status: DONE (menunggu CI ulang setelah push)
+NEXT: pantau CI run berikutnya; triase kegagalan browser shard yang tersisa
+  (banyak di antaranya membutuhkan fixture jaringan atau kontrak basi).
 ```
 
 ## 5. Risiko dan batasan bukti
