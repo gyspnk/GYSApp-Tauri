@@ -240,7 +240,9 @@
   padding: 0 !important;
   border-radius: 11px !important;
   background: var(--blue-soft) !important;
-  color: var(--blue) !important;
+  /* 4.26:1 for --blue on --blue-soft; the 18px glyph needs 4.5:1, so the
+     toggles use the darker navy like the shell's other small labels. */
+  color: var(--navy) !important;
 }
 .hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle svg {
   width: 18px !important;

@@ -74,7 +74,13 @@ export function installRouteSectionDeepLinks(
     const target = document.querySelector<HTMLElement>(selector);
     if (!target) return;
     // MorePage reveals the linked disclosure from React state; this installer
-    // only keeps the revealed row aligned below the top bar.
+    // only keeps the revealed row aligned below the top bar. A collapsed owner
+    // has no measurable content, so wait for its `open` mutation instead of
+    // recording an alignment that the reveal would then invalidate.
+    const disclosure = target.closest<HTMLDetailsElement>(
+      ".more-setting-section",
+    );
+    if (disclosure && !disclosure.open) return;
     // The More route renders the account card before its asynchronous profile
     // check finishes. Scrolling while that loading box is still present leaves
     // the linked section stranded when the card later shrinks.
