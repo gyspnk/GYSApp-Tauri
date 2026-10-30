@@ -1783,22 +1783,35 @@ export function MorePage({
                 {translate(locale, "more.diagnosticsHint")}
               </p>
               {diagnostics.length ? (
-                <ol className="diagnostics-log">
-                  {diagnostics
-                    .slice(-20)
-                    .reverse()
-                    .map((event) => (
-                      <li key={event.id} data-level={event.level}>
-                        <time dateTime={event.timestamp}>
-                          {new Date(event.timestamp).toLocaleTimeString(locale)}
-                        </time>
-                        <span className="diagnostics-scope">{event.scope}</span>
-                        <span className="diagnostics-message">
-                          {event.message}
-                        </span>
-                      </li>
-                    ))}
-                </ol>
+                // The log scrolls once it is long; the wrapper owns the scroll
+                // and the tab stop so the list keeps its own semantics.
+                <div
+                  className="diagnostics-log-scroll"
+                  tabIndex={0}
+                  role="region"
+                  aria-label={translate(locale, "more.diagnostics")}
+                >
+                  <ol className="diagnostics-log">
+                    {diagnostics
+                      .slice(-20)
+                      .reverse()
+                      .map((event) => (
+                        <li key={event.id} data-level={event.level}>
+                          <time dateTime={event.timestamp}>
+                            {new Date(event.timestamp).toLocaleTimeString(
+                              locale,
+                            )}
+                          </time>
+                          <span className="diagnostics-scope">
+                            {event.scope}
+                          </span>
+                          <span className="diagnostics-message">
+                            {event.message}
+                          </span>
+                        </li>
+                      ))}
+                  </ol>
+                </div>
               ) : (
                 <p className="catalog-note">
                   {translate(locale, "more.diagnosticsEmpty")}

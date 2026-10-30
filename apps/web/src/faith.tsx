@@ -171,6 +171,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
   );
   const pdfDialogRef = useRef<HTMLDivElement | null>(null);
   const pdfOpenerRef = useRef<HTMLElement | null>(null);
+  const faithModalRef = useRef<HTMLDivElement | null>(null);
+  const faithOpenerRef = useRef<HTMLElement | null>(null);
+  const noteDialogRef = useRef<HTMLDivElement | null>(null);
+  const noteOpenerRef = useRef<HTMLElement | null>(null);
 
   const closeModal = () => {
     if (isModalClosing) return;
@@ -325,6 +329,23 @@ export function FaithPage({ locale }: { locale: Locale }) {
     onClose: closeReadMore,
     initialFocusSelector: ".faith-pdf-close",
   });
+  // The belief sheet and its note editor are dialogs too: Escape has to close
+  // them and focus has to return to the row, exactly as the PDF reader does.
+  // Only the topmost sheet stays armed so one Escape closes one layer.
+  useDialogFocus({
+    open: Boolean(active) && !notePopupOpen,
+    dialogRef: faithModalRef,
+    openerRef: faithOpenerRef,
+    onClose: closeModal,
+    initialFocusSelector: ".faith-selection-close",
+  });
+  useDialogFocus({
+    open: notePopupOpen,
+    dialogRef: noteDialogRef,
+    openerRef: noteOpenerRef,
+    onClose: closeNote,
+    initialFocusSelector: ".bible-notes-close",
+  });
 
   const onPageChange = (page: number, totalPages: number) => {
     if (!pdfRead || totalPages < 1) return;
@@ -458,6 +479,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
           {active &&
             createPortal(
               <div
+                ref={faithModalRef}
                 className={`faith-modal-backdrop${isModalClosing ? " is-closing" : ""}`}
                 role="dialog"
                 aria-modal="true"
@@ -532,6 +554,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
       {notePopupOpen &&
         createPortal(
           <div
+            ref={noteDialogRef}
             className={`bible-notes-backdrop${isNoteClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"

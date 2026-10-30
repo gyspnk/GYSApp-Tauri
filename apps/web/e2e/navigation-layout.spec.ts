@@ -1640,3 +1640,34 @@ test("the Indonesian Bible alias opens the reader instead of a 404", async ({
     timeout: 15_000,
   });
 });
+
+test("Iman belief sheet and note editor close with Escape and restore focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/iman");
+  const row = page.locator(".faith-row-summary").first();
+  await expect(row).toBeVisible();
+  await row.click();
+  const sheet = page.locator(".faith-modal-backdrop");
+  await expect(sheet).toBeVisible();
+  await expect
+    .poll(() => sheet.evaluate((node) => node.contains(document.activeElement)))
+    .toBe(true);
+
+  // The note editor is a second layer: one Escape closes only the note.
+  await page
+    .getByRole("button", { name: "Catatan pribadi", exact: true })
+    .click();
+  const note = page.locator(".bible-notes-backdrop");
+  await expect(note).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(note).toHaveCount(0);
+  await expect(sheet).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => document.activeElement?.className ?? ""))
+    .toContain("faith-row-summary");
+});

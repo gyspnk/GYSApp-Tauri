@@ -2943,13 +2943,20 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+.diagnostics-log-scroll {
+  max-height: 260px;
+  margin-top: 8px;
+  overflow: auto;
+}
+.diagnostics-log-scroll:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
 .diagnostics-log {
   display: grid;
   gap: 6px;
-  max-height: 260px;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
-  overflow: auto;
   list-style: none;
   font-size: 0.75rem;
 }
