@@ -2,6 +2,14 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — device diagnostics are readable in the app
+
+- Show the recorded device log on the About settings panel: newest first, with
+  the time, the subsystem scope and the redacted message, plus "copy" and
+  "clear". Failures such as a rejected WhatsApp tracking frame or a download
+  error were previously written to storage with no way to read them without
+  developer tools.
+
 ### 2026-10-30 — cross-app search no longer waits on a stalled Worker
 
 - Bound the optional BFF refresh of the curated search index to three seconds

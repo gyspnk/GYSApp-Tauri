@@ -2919,3 +2919,57 @@
   background: var(--surface);
   box-shadow: 0 0 0 2px var(--blue);
 }
+
+/* Device diagnostics stay readable without developer tools: a bounded log with
+   level colouring and the redacted message wrapped inside its own row. */
+.diagnostics-card {
+  margin-top: 14px;
+}
+.diagnostics-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.diagnostics-log {
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  font-size: 0.75rem;
+}
+.diagnostics-log li {
+  /* Stacked rows keep the message readable even when the scope identifier is
+     long; a three-column grid collapsed the message to a few characters on a
+     390px phone. */
+  display: block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border-inline-start: 3px solid var(--line-strong);
+  background: var(--surface-soft);
+}
+.diagnostics-log li[data-level="warn"] {
+  border-inline-start-color: #c98a00;
+}
+.diagnostics-log li[data-level="error"] {
+  border-inline-start-color: #c62828;
+}
+.diagnostics-log time {
+  margin-inline-end: 8px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.diagnostics-scope {
+  margin-inline-end: 8px;
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.diagnostics-message {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}

@@ -67,7 +67,13 @@ import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
 import { AccountAvatar } from "./account-avatar.js";
-import { recordDiagnostic } from "./diagnostics.js";
+import {
+  clearDiagnostics,
+  getDiagnostics,
+  recordDiagnostic,
+  subscribeDiagnostics,
+  type DiagnosticEvent,
+} from "./diagnostics.js";
 import { createPlatformServices } from "./platform.js";
 import { clearAppData } from "./app-data.js";
 
@@ -377,6 +383,9 @@ export function MorePage({
     "idle" | "sending" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
+  const [diagnostics, setDiagnostics] = useState<DiagnosticEvent[]>(() =>
+    getDiagnostics(),
+  );
   const [accountProfile, setAccountProfile] = useState<
     AccountProfile | undefined
   >(() => readCachedEgysProfile());
@@ -703,6 +712,31 @@ export function MorePage({
     noticeTimer.current = window.setTimeout(() => setNotice(""), 2600);
   };
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
+  // The log is recorded across the app; mirror it here so a failed provider or
+  // download can be read without developer tools.
+  useEffect(() => {
+    setDiagnostics(getDiagnostics());
+    return subscribeDiagnostics(() => setDiagnostics(getDiagnostics()));
+  }, []);
+  const copyDiagnostics = async () => {
+    const text = diagnostics
+      .map(
+        (event) =>
+          `${event.timestamp} [${event.level}] ${event.scope}: ${event.message}`,
+      )
+      .join("\n");
+    try {
+      await navigator.clipboard?.writeText(text);
+      show(translate(locale, "more.diagnosticsCopied"));
+    } catch {
+      // Clipboard permission may be denied; the log stays readable on screen.
+    }
+  };
+  const resetDiagnostics = () => {
+    clearDiagnostics();
+    setDiagnostics(getDiagnostics());
+    show(translate(locale, "more.diagnosticsCleared"));
+  };
   const submitReport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const message = report.trim();
@@ -1705,6 +1739,59 @@ export function MorePage({
                     })}
               </small>
             </form>
+            <section
+              className="more-card diagnostics-card"
+              aria-label={translate(locale, "more.diagnostics")}
+            >
+              <div className="more-card-heading">
+                <div>
+                  <h2>{translate(locale, "more.diagnostics")}</h2>
+                </div>
+                <div className="diagnostics-actions">
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => void copyDiagnostics()}
+                    disabled={!diagnostics.length}
+                  >
+                    {translate(locale, "more.diagnosticsCopy")}
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={resetDiagnostics}
+                    disabled={!diagnostics.length}
+                  >
+                    {translate(locale, "more.diagnosticsClear")}
+                  </button>
+                </div>
+              </div>
+              <p className="catalog-note">
+                {translate(locale, "more.diagnosticsHint")}
+              </p>
+              {diagnostics.length ? (
+                <ol className="diagnostics-log">
+                  {diagnostics
+                    .slice(-20)
+                    .reverse()
+                    .map((event) => (
+                      <li key={event.id} data-level={event.level}>
+                        <time dateTime={event.timestamp}>
+                          {new Date(event.timestamp).toLocaleTimeString(locale)}
+                        </time>
+                        <span className="diagnostics-scope">{event.scope}</span>
+                        <span className="diagnostics-message">
+                          {event.message}
+                        </span>
+                      </li>
+                    ))}
+                </ol>
+              ) : (
+                <p className="catalog-note">
+                  {translate(locale, "more.diagnosticsEmpty")}
+                </p>
+              )}
+            </section>
           </div>
         </details>
       </section>

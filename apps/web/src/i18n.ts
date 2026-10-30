@@ -1338,6 +1338,14 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.sendReport": "Kirim laporan",
     "more.draftSaved": "Draft tersimpan di perangkat.",
     "more.characterCount": "{count}/2.000 karakter",
+    "more.diagnostics": "Diagnostik perangkat",
+    "more.diagnosticsHint":
+      "Catatan terakhir dari perangkat ini, misalnya saat login atau unduhan gagal. Tidak berisi kata sandi atau token.",
+    "more.diagnosticsEmpty": "Belum ada catatan.",
+    "more.diagnosticsCopy": "Salin catatan",
+    "more.diagnosticsCopied": "Catatan disalin.",
+    "more.diagnosticsClear": "Hapus catatan",
+    "more.diagnosticsCleared": "Catatan dihapus.",
     "more.backupPanel": "Backup dan import",
     "more.encryptedBackup": "Backup terenkripsi",
     "more.backupDescription":
@@ -2037,6 +2045,14 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.sendReport": "Send report",
     "more.draftSaved": "Draft saved on this device.",
     "more.characterCount": "{count}/2,000 characters",
+    "more.diagnostics": "Device diagnostics",
+    "more.diagnosticsHint":
+      "Recent events from this device, for example when a sign-in or download failed. No passwords or tokens are stored.",
+    "more.diagnosticsEmpty": "No events recorded yet.",
+    "more.diagnosticsCopy": "Copy log",
+    "more.diagnosticsCopied": "Log copied.",
+    "more.diagnosticsClear": "Clear log",
+    "more.diagnosticsCleared": "Log cleared.",
     "more.backupPanel": "Backup and import",
     "more.encryptedBackup": "Encrypted backup",
     "more.backupDescription":
@@ -2727,6 +2743,14 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.sendReport": "发送报告",
     "more.draftSaved": "草稿已保存在此设备。",
     "more.characterCount": "{count}/2,000 个字符",
+    "more.diagnostics": "设备诊断",
+    "more.diagnosticsHint":
+      "此设备最近的记录，例如登录或下载失败时。不会保存密码或令牌。",
+    "more.diagnosticsEmpty": "暂无记录。",
+    "more.diagnosticsCopy": "复制记录",
+    "more.diagnosticsCopied": "记录已复制。",
+    "more.diagnosticsClear": "清除记录",
+    "more.diagnosticsCleared": "记录已清除。",
     "more.backupPanel": "备份和导入",
     "more.encryptedBackup": "加密备份",
     "more.backupDescription":

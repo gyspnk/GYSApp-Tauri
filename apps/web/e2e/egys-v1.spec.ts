@@ -603,14 +603,23 @@ test("Apple completes after a real cold script load instead of hanging at initia
 test("Lainnya renders unified settings and account panels cleanly", async ({
   page,
 }) => {
+  // Groups open on first paint; open them explicitly instead of toggling.
+  const openSetting = async (setting: string) => {
+    const section = page.locator(
+      `.more-setting-section[data-setting="${setting}"]`,
+    );
+    if ((await section.getAttribute("open")) === null)
+      await section.locator("summary").click();
+    await expect(section).toHaveAttribute("open", "");
+  };
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
-  await page.locator('[data-setting="appearance"] > summary').click();
+  await openSetting("appearance");
   await expect(
     page.getByRole("combobox", { name: "Pilih Tema", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".accent-palette-grid")).toBeVisible();
-  await page.locator('[data-setting="offline"] > summary').click();
+  await openSetting("offline");
   await expect(
     page.getByRole("heading", { name: "Paket lokal" }),
   ).toBeVisible();

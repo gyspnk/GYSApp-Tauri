@@ -153,6 +153,7 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 | B-17 | P1        | Pencarian global macet "Menyiapkan indeks lokal…" dan hanya mengembalikan ayat Alkitab                                                                   | `/api/v1/content/suara-sejati` di Worker hosted tidak pernah menjawab (timeout >25 s, 2×); indeks menunggu refresh tanpa batas; sesudah `withRequestDeadline(3 s)` indeks siap ~2 s dan "Pujilah Allah" mengembalikan 4 kidung + ayat | DONE     | Endpoint Worker tetap perlu diperbaiki pemilik (deploy terpisah)                                 |
 | B-18 | P2        | Tiga asersi smoke basi: eyebrow "Sauh hari ini" (dihapus `6a85347`) dan klik `summary` yang kini membalik grup terbuka default                           | `home and more fixed chrome…` gagal di `getByText("Today’s Sauh")` lalu `.appearance-card` hidden; `home uses Sauh…` gagal di `.verse-panel .section-heading`; sesudah perbaikan keduanya lulus                                       | DONE     | —                                                                                                |
 | B-19 | P2        | Tes smoke "MIDI queue" juga menutup grup `hymns` dengan klik `summary` (default terbuka), lalu tombol "Antrean MIDI" bergeser di bawah heading `offline` | smoke `MIDI queue persists…`: 73 retry + `<div class="more-card-heading">` menutupi pointer; bukan bug overlay produk — sesudah `ensureSettingOpen(page,"hymns")` tes lulus 3,4 s                                                     | DONE     | —                                                                                                |
+| B-20 | P1        | Diagnostik direkam tetapi **tidak pernah ditampilkan**: tidak ada UI yang memanggil `getDiagnostics()`                                                   | `grep getDiagnostics` hanya menemukan definisi + unit test; saran "buka Diagnostik" pada laporan siklus 2 tidak dapat diikuti pengguna                                                                                                | DONE     | Panel baca-saja + salin/hapus di bagian Tentang; e2e `more-device-data` menjaga regresi          |
 
 ## 4. Log siklus
 
@@ -378,6 +379,45 @@ Risiko/regresi, blocker, rollback: tes hanya menambah cakupan; rollback = 1 berk
 Status: DONE
 NEXT: B-15 (bukti WhatsApp dari pemilik) dan perbaikan endpoint `suara-sejati`
   di Worker; tanpa itu, lanjutkan ke B-09/B-10.
+```
+
+```text
+Cycle: 7 | 2026-10-30 11:25–11:45 WIB | codex/autonomous-hardening-20261030
+Issue & priority: saat memverifikasi saran pemantauan WhatsApp, ditemukan bahwa
+  `getDiagnostics()` tidak pernah dipanggil UI mana pun (P1: bukti kegagalan
+  direkam tetapi tidak bisa dibaca pengguna). Saran pada siklus 2 karena itu
+  tidak dapat diikuti.
+Reproduction / baseline:
+  - `grep -r getDiagnostics apps/web/src` → hanya definisi + unit test.
+  - Tidak ada kunci i18n "diagnostik" dan tidak ada elemen UI yang membaca
+    `localStorage["gys-diagnostics-v1"]`.
+  - Probe: menyemai dua entri lalu membuka /lainnya?section=about → tidak ada
+    panel apa pun.
+Root cause: diagnostics dibangun sebagai saluran internal (record + redact)
+  tanpa permukaan baca; tidak ada rencana UI-nya.
+File dan perubahan:
+  apps/web/src/diagnostics.ts — ekspor `clearDiagnostics()`.
+  apps/web/src/more.tsx — panel baca-saja di bagian "Tentang & Bantuan":
+    langganan `subscribeDiagnostics`, 20 entri terbaru (waktu, scope, pesan),
+    tombol "Salin catatan" (clipboard) dan "Hapus catatan".
+  apps/web/src/i18n.ts — 7 kunci baru di id/en/zh.
+  apps/web/src/styles/02-bible-and-settings.css — kartu log; baris ditumpuk
+    (bukan grid 3 kolom) karena grid menyempitkan pesan pada 390 px.
+  apps/web/e2e/more-device-data.spec.ts — tes panel + `ensureSettingOpen`
+    untuk tes reset yang juga menutup grup `offline` (kontrak basi yang sama).
+Verifikasi: PASS — `pnpm typecheck`; unit `i18n` + `diagnostics` (6 tes);
+  `pnpm build`; `pnpm verify:bundle` **172,4 KiB** (batas 180);
+  `GYS_E2E_PREBUILT=1 pnpm test:e2e more-device-data.spec.ts` → 2/2 lulus.
+UX dan performa sebelum -> sesudah: kegagalan login/unduhan kini dapat dibaca
+  dan disalin dari Pengaturan (sebelumnya hanya di localStorage); +0,4 KiB gzip.
+Screenshot/log/commit/PR: D:\GYSApp-audit\out32\diagnostics-card.png,
+  D:\GYSApp-audit\e2e-diag2.log.
+Risiko/regresi, blocker, rollback: data yang ditampilkan sudah diredaksi
+  (`recordDiagnostic` menulis `[redacted]` untuk token/authorization) dan
+  dibatasi 20 baris; tombol hapus hanya mengosongkan log lokal. Rollback = 5 berkas.
+Status: DONE
+NEXT: minta pemilik mengulang login WhatsApp lalu membuka Pengaturan → Tentang
+  & Bantuan → Diagnostik perangkat, dan menyalin entri `egys.whatsapp.*`.
 ```
 
 ## 5. Risiko dan batasan bukti
