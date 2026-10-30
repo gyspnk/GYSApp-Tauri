@@ -65,6 +65,21 @@ button.text-button {
   transform: translate(-50%, -50%);
 }
 
+/* "Kembali" links are the only way out of the Sauh and Suara readers. At the
+   breadcrumb's 12px text they measured 17-20px tall, below the 24px pointer
+   minimum. The hit area grows on a pseudo-element so the breadcrumb row keeps
+   its painted geometry. */
+.detail-back .text-button {
+  position: relative;
+}
+
+.detail-back .text-button::before {
+  content: "";
+  position: absolute;
+  inset-block: -12px;
+  inset-inline: -8px;
+}
+
 /* Song titles are the primary row action. Give the full title zone a reliable
    finger-sized height without turning the catalog into oversized cards. */
 .pujian-title {

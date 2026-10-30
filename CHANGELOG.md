@@ -2,6 +2,12 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — reader back links are tappable
+
+- Grow the "← Beranda" / "Kembali ke kesaksian" hit area on the Sauh and Suara
+  readers to 71×42 px with a pseudo-element. The breadcrumb keeps its 17–20 px
+  painted row, and pointer hits now land 11 px above and below the text.
+
 ### 2026-10-30 — WhatsApp tracking tolerance and e-GYS browser contracts
 
 - Normalise the official WhatsApp tracking frame before confirming a session:

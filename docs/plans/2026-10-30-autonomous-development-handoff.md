@@ -114,24 +114,24 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 
 ## 3. Backlog aktif
 
-| ID   | Prioritas | Temuan / sasaran                                                                                             | Bukti                                                                                                  | Status  | NEXT spesifik                                                                 |
-| ---- | --------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ------- | ----------------------------------------------------------------------------- |
-| B-01 | P1        | `pnpm test` merah pada checkout dengan `apps/web/.env.local` (variabel BFF ikut masuk tes unit)              | 6 tes gagal: `online-article` 2, `lazy-image` 2, `music-assets` 1, `i18n` 1                            | DONE    | —                                                                             |
-| B-02 | P1        | `pnpm dev` mati `EBUSY` di Windows saat tes berjalan (watcher memantau tmpdir konfigurasi Vitest)            | stack trace `FSWatcher … .vitest.config.ts.<pid>.<uuid>.tmpdir` di log job dev                         | DONE    | —                                                                             |
-| B-03 | P2        | `pnpm format:check` gagal karena Prettier memindai `.superpowers/sdd/**` (di-ignore Git)                     | 4 berkas `[warn]` lalu `ELIFECYCLE`                                                                    | DONE    | —                                                                             |
-| B-04 | P2        | Kunci i18n mati `home.directSource` tertinggal setelah commit `6a85347`                                      | tes penjaga i18n: `id has keys no component uses`                                                      | DONE    | —                                                                             |
-| B-05 | P1        | Beranda cold-start: konten Sauh 2,0 s + ilustrasi PNG 692 KB → hero kosong ~7 s                              | konten BFF 1.994 ms/2.525 B; PNG 708.825 B (3,3 s langsung, 0,8 s lewat proxy)                         | NEXT    | Ukur ulang dengan cache hangat + SW aktif, lalu perkecil muatan hero          |
-| B-06 | P2        | Tautan kembali `a.text-button` di Sauh/Suara hanya 18–20 px tinggi (di bawah minimum 24 px)                  | probe target-size: `a.text-button 55x18 "← Beranda"` di `/sauh`, `/suara`, detail Suara                | NEXT    | Perluas area klik tanpa menggeser layout; verifikasi keyboard/touch           |
-| B-07 | —         | `span.bible-crossref-inline` 8×25 px ternyata **bukan** cacat (area klik 40×40 via `::before`)               | `apps/web/src/ui-hardening.css` aturan `.bible-crossref-inline::before`                                | CLOSED  | —                                                                             |
-| B-08 | P2        | Tombol Google Identity Services setinggi 18 px di `/lainnya` (1440)                                          | probe: `div.nsm7Bb… 174x18 "Login dengan Google"`                                                      | TODO    | Cek apakah tinggi dibatasi container kita; kalau SDK, catat sebagai eksternal |
-| B-09 | P3        | Alias route bahasa Indonesia tidak ada: `/alkitab` → 404, hanya `/bible`                                     | probe: `h1=Halaman tidak ditemukan` untuk `/alkitab`                                                   | TODO    | Pertimbangkan redirect `/alkitab` → `/bible`                                  |
-| B-10 | P2        | Snapshot `offline/sauh.json` berhenti di 2026-09-28 (32 hari)                                                | item terbaru `sbj260928` pada `apps/web/public/offline/sauh.json`                                      | TODO    | Cek generator; tentukan apakah snapshot memang hanya 6 item                   |
-| B-11 | BLOCKED   | Deploy Worker/akun nyata/signing/perangkat fisik                                                             | butuh kredensial & perangkat pemilik                                                                   | BLOCKED | Jangan diklaim; uji hanya yang lokal                                          |
-| B-12 | P2        | Label "WhatsApp" terpotong 2 px di layar 320 px (tombol provider overflow)                                   | e2e `egys-v1` 320 px: `scrollWidth 74 > clientWidth 72`; probe mengukur `overflow: 2`                  | DONE    | — (ikon-saja ≤280 px container, aria-label tetap)                             |
-| B-13 | P1        | Dua kontrak e2e e-GYS basi membuat suite merah di HEAD (geometri baris provider & badge akun bergantung env) | uji A/B: 7 gagal di HEAD; sesudah perbaikan 0 gagal                                                    | DONE    | —                                                                             |
-| B-14 | P1        | Tracking WhatsApp hanya menerima satu bentuk field dan gagal senyap bila payload berbeda                     | parser lama: `message.refid === reference` + `mobilePhone` + `otp` saja; kini ada unit test 20 kasus   | DONE    | Pantau diagnosa `egys.whatsapp.tracking.event` pada percobaan pemilik         |
-| B-15 | P2        | Konfirmasi WhatsApp nyata belum terbukti; kegagalan tidak terlihat di UI                                     | 2.4: semua langkah sebelum pesan nyata PASS; Diagnostik kini mencatat frame & field yang tidak lengkap | NEXT    | Minta pemilik mengirim pesan lalu membaca entri `egys.whatsapp.*`             |
-| B-16 | P2        | Apple belum diuji sampai kredensial                                                                          | popup resmi Apple tampil; langkah kredensial butuh Apple ID                                            | BLOCKED | Uji di origin terdaftar dengan akun nyata                                     |
+| ID   | Prioritas | Temuan / sasaran                                                                                                                     | Bukti                                                                                                                                             | Status   | NEXT spesifik                                                                                    |
+| ---- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| B-01 | P1        | `pnpm test` merah pada checkout dengan `apps/web/.env.local` (variabel BFF ikut masuk tes unit)                                      | 6 tes gagal: `online-article` 2, `lazy-image` 2, `music-assets` 1, `i18n` 1                                                                       | DONE     | —                                                                                                |
+| B-02 | P1        | `pnpm dev` mati `EBUSY` di Windows saat tes berjalan (watcher memantau tmpdir konfigurasi Vitest)                                    | stack trace `FSWatcher … .vitest.config.ts.<pid>.<uuid>.tmpdir` di log job dev                                                                    | DONE     | —                                                                                                |
+| B-03 | P2        | `pnpm format:check` gagal karena Prettier memindai `.superpowers/sdd/**` (di-ignore Git)                                             | 4 berkas `[warn]` lalu `ELIFECYCLE`                                                                                                               | DONE     | —                                                                                                |
+| B-04 | P2        | Kunci i18n mati `home.directSource` tertinggal setelah commit `6a85347`                                                              | tes penjaga i18n: `id has keys no component uses`                                                                                                 | DONE     | —                                                                                                |
+| B-05 | P1        | Beranda cold-start: konten Sauh 2,0 s + ilustrasi PNG 692 KB → hero kosong ~5,3 s di kunjungan pertama                               | cold: boot 581 ms, hero 5.318 ms; warm: boot 260 ms, hero 485 ms; warmer: 510 ms; gambar 754×528, 708.825 B                                       | MEASURED | Tidak ada perubahan kode: biaya sekali di kunjungan pertama; konversi format butuh deploy Worker |
+| B-06 | P2        | Tautan kembali `a.text-button` di Sauh/Suara hanya 17–20 px tinggi (di bawah minimum 24 px)                                          | sebelum: `55x18`, klik 10 px di atas/bawah meleset; sesudah: pseudo `inset-block:-12px` → 71×42 px, `elementFromPoint` kena, baris tetap 17–18 px | DONE     | — (dijaga e2e `responsive-touch-targets`)                                                        |
+| B-07 | —         | `span.bible-crossref-inline` 8×25 px ternyata **bukan** cacat (area klik 40×40 via `::before`)                                       | `apps/web/src/ui-hardening.css` aturan `.bible-crossref-inline::before`                                                                           | CLOSED   | —                                                                                                |
+| B-08 | —         | Angka "18 px" pada tombol Google ternyata elemen label internal GIS; kontrol provider sebenarnya 363×51 px (1440) dan 97×44 px (390) | probe `probe-google`: `.egys-google-control` 363×51; rantai elemen dalam 21/20 px; iframe GIS 0×0 karena origin localhost ditolak                 | CLOSED   | Bukan cacat; tombol GIS nyata hanya bisa diukur pada origin yang diizinkan Google                |
+| B-09 | P3        | Alias route bahasa Indonesia tidak ada: `/alkitab` → 404, hanya `/bible`                                                             | probe: `h1=Halaman tidak ditemukan` untuk `/alkitab`                                                                                              | TODO     | Pertimbangkan redirect `/alkitab` → `/bible`                                                     |
+| B-10 | P2        | Snapshot `offline/sauh.json` berhenti di 2026-09-28 (32 hari)                                                                        | item terbaru `sbj260928` pada `apps/web/public/offline/sauh.json`                                                                                 | TODO     | Cek generator; tentukan apakah snapshot memang hanya 6 item                                      |
+| B-11 | BLOCKED   | Deploy Worker/akun nyata/signing/perangkat fisik                                                                                     | butuh kredensial & perangkat pemilik                                                                                                              | BLOCKED  | Jangan diklaim; uji hanya yang lokal                                                             |
+| B-12 | P2        | Label "WhatsApp" terpotong 2 px di layar 320 px (tombol provider overflow)                                                           | e2e `egys-v1` 320 px: `scrollWidth 74 > clientWidth 72`; probe mengukur `overflow: 2`                                                             | DONE     | — (ikon-saja ≤280 px container, aria-label tetap)                                                |
+| B-13 | P1        | Dua kontrak e2e e-GYS basi membuat suite merah di HEAD (geometri baris provider & badge akun bergantung env)                         | uji A/B: 7 gagal di HEAD; sesudah perbaikan 0 gagal                                                                                               | DONE     | —                                                                                                |
+| B-14 | P1        | Tracking WhatsApp hanya menerima satu bentuk field dan gagal senyap bila payload berbeda                                             | parser lama: `message.refid === reference` + `mobilePhone` + `otp` saja; kini ada unit test 20 kasus                                              | DONE     | Pantau diagnosa `egys.whatsapp.tracking.event` pada percobaan pemilik                            |
+| B-15 | P2        | Konfirmasi WhatsApp nyata belum terbukti; kegagalan tidak terlihat di UI                                                             | 2.4: semua langkah sebelum pesan nyata PASS; Diagnostik kini mencatat frame & field yang tidak lengkap                                            | NEXT     | Minta pemilik mengirim pesan lalu membaca entri `egys.whatsapp.*`                                |
+| B-16 | P2        | Apple belum diuji sampai kredensial                                                                                                  | popup resmi Apple tampil; langkah kredensial butuh Apple ID                                                                                       | BLOCKED  | Uji di origin terdaftar dengan akun nyata                                                        |
 
 ## 4. Log siklus
 
@@ -214,6 +214,47 @@ NEXT: B-05 (hero Beranda) atau B-06 (target sentuh tautan kembali), lalu
   jalankan `pnpm test:e2e:smoke` pada build final.
 ```
 
+```text
+Cycle: 3 | 2026-10-30 10:20–10:35 WIB | codex/autonomous-hardening-20261030
+Issue & priority: B-06 tautan kembali 17–20 px (P2 aksesibilitas); B-05 hero
+  Beranda butuh keputusan berbasis ukuran (P1); B-08 kecurigaan tinggi tombol
+  Google (P2) perlu diverifikasi, bukan diasumsikan.
+Reproduction / baseline:
+  - `elementFromPoint` 10 px di atas/bawah tautan "← Beranda" pada /sauh,
+    /suara, dan detail Suara tidak mengenai tautan (painted 55×18 / 107×17).
+  - Hero Beranda (preview produksi, service worker aktif): cold boot 581 ms,
+    hero ter-paint 5.318 ms; warm boot 260 ms, hero 485 ms; warmer 510 ms.
+    Gambar 754×528 px, 708.825 B (PNG penerbit) lewat proxy BFF.
+  - `.egys-google-control` ternyata 363×51 px (1440) / 97×44 px (390); angka
+    18 px berasal dari elemen label internal GIS, bukan target klik.
+Root cause / keputusan:
+  (a) tautan kembali hanya setinggi teks 12 px → area klik diperluas dengan
+      pseudo-element, sama seperti pola crossref yang sudah ada;
+  (b) biaya hero adalah sekali-per-kunjungan dan didominasi respons Worker
+      (2 s) + PNG penerbit (692 KB); konversi format memerlukan deploy Worker
+      yang tidak diizinkan → tidak ada perubahan kode, dicatat sebagai MEASURED;
+  (c) tinggi tombol Google bukan cacat pada cakupan kita.
+File dan perubahan:
+  apps/web/src/ui-hardening.css — `.detail-back .text-button::before` dengan
+    inset -12px/-8px dan `position: relative` pada tautan.
+  apps/web/e2e/responsive-touch-targets.spec.ts — regresi baru: area klik
+    harus kena 11 px di atas dan di bawah teks pada tiga route.
+Verifikasi: PASS — `pnpm build`; `GYS_E2E_PREBUILT=1 pnpm test:e2e
+  responsive-touch-targets.spec.ts --workers=1 --retries=0` → 4/4 lulus
+  (termasuk tes baru). Probe: hit atas/bawah/kanan mengenai tautan, baris
+  breadcrumb tetap 17–18 px (tidak ada pergeseran layout).
+UX dan performa sebelum -> sesudah: target efektif 71×42 px dari 55×18 px tanpa
+  memindahkan isi halaman; bundle tidak berubah.
+Screenshot/log/commit/PR: D:\GYSApp-audit\e2e-touch.log,
+  out13/home-cold.png, out13/home-warm.png.
+Risiko/regresi, blocker, rollback: pseudo-element hanya memperluas hit area,
+  tidak menutupi kontrol lain (tetangga adalah teks non-interaktif). Rollback =
+  kembalikan 2 berkas.
+Status: DONE
+NEXT: B-10 (snapshot Sauh basi) dan B-09 (alias /alkitab) setelah memastikan
+  tidak ada P1 lain; lalu `pnpm test:e2e:smoke` pada build final.
+```
+
 ## 5. Risiko dan batasan bukti
 
 - Angka latensi berasal dari satu jaringan rumah, bukan CI. Jangan membandingkannya
@@ -235,12 +276,11 @@ NEXT: B-05 (hero Beranda) atau B-06 (target sentuh tautan kembali), lalu
 1. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
    membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
    datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-2. **B-05** — Ukur hero Beranda dengan cache hangat + service worker aktif,
-   bandingkan dengan cold start, lalu putuskan apakah 692 KB perlu diganti varian
-   pratinjau atau prioritas fetch diturunkan.
-3. **B-06** — Perluas area klik tautan kembali Sauh/Suara minimal 40 px tanpa
-   menggeser layout yang sudah diuji.
-4. **B-08/B-09/B-10** — Verifikasi tinggi tombol Google, alias `/alkitab`, dan
-   kesegaran snapshot Sauh sebelum menyentuh kode.
+2. **B-10** — Periksa generator `offline/sauh.json`; tentukan apakah snapshot memang
+   hanya berisi enam entri dan bagaimana ia disegarkan sebelum rilis.
+3. **B-09** — Pertimbangkan redirect `/alkitab` → `/bible` agar URL berbahasa
+   Indonesia tidak berakhir di halaman 404.
+4. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
+   saat Worker boleh dideploy, konversi format adalah tuas utamanya.
 5. Jalankan `pnpm test:e2e:smoke` dan `pnpm test:e2e:changed` pada build final
    sebelum mengubah baseline visual.
