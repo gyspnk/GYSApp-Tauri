@@ -2,6 +2,24 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — settings stay scannable and accessible
+
+- Restore the documented "seven collapsed categories" layout on More: the
+  collapsible rework left six groups expanded, so the category rows no longer
+  fitted one phone viewport and every "open this group" click closed it instead.
+  `?section=account`, `data` and `help` still reveal their own row, and the
+  `/kidung?section=settings` shortcut still mounts the hymn panel.
+- Reveal the linked row from React state rather than the DOM installer. Above
+  768px the router replaces the disclosure during navigation, so the previous
+  write landed on a detached node and the account shortcut appeared dead.
+- Give the diagnostics log its own landmark name (axe `landmark-unique` fired
+  once the About card was open) and move the 13px account label onto `--navy`
+  (4.26:1 → about 9:1 on the shared soft-blue field).
+- Keep a sentence in the search live region while the index is ready, so the
+  polite `role="status"` node no longer disappears once loading got fast, and
+  give the Kidung catalog grid a `max-content` control column (12px dead cell
+  below 1100px).
+
 ### 2026-10-30 — security: patched zod advisory
 
 - Bump `zod` from 4.4.3 to 4.6.6 in `packages/contracts` and `apps/bff` to clear
