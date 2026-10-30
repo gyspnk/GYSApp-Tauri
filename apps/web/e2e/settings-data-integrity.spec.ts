@@ -94,8 +94,11 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
     { durableSettings, excludedSettings },
   );
   await page.goto("/GYSApp-Tauri/lainnya");
-  // Settings render expanded on first paint and the backup form is inline, so
-  // there is no disclosure or second "Backup & import" click any more.
+  // Categories start collapsed; the backup form itself stays inline inside
+  // its category, so one click on the row is the only disclosure.
+  await page
+    .locator('.more-setting-section[data-setting="backup"] > summary')
+    .click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await expect(panel).toBeVisible();
   await panel.getByLabel("Kata sandi backup").fill("integrity-1234");
@@ -132,7 +135,6 @@ test("encrypted backup round-trips Bible notes, highlights, and bookmarks", asyn
   await page
     .locator('.more-setting-section[data-setting="backup"] > summary')
     .click();
-  await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await panel.getByLabel("Kata sandi backup").fill(password);
   const downloadPromise = page.waitForEvent("download");
@@ -156,7 +158,6 @@ test("encrypted backup round-trips Bible notes, highlights, and bookmarks", asyn
       ),
     )
     .toEqual(Object.values(annotations).map(() => null));
-  await page.getByRole("button", { name: /Backup & import/ }).click();
   const importPanel = page.getByRole("region", { name: "Backup dan import" });
   await importPanel.getByLabel("Kata sandi backup").fill(password);
   const chooserPromise = page.waitForEvent("filechooser");
@@ -241,7 +242,6 @@ test("backup import restores only portable settings from a valid envelope", asyn
   await page
     .locator('.more-setting-section[data-setting="backup"] > summary')
     .click();
-  await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await panel.getByLabel("Kata sandi backup").fill(password);
   const chooserPromise = page.waitForEvent("filechooser");
@@ -290,7 +290,6 @@ test("legacy backup imports portable settings without a password", async ({
   await page
     .locator('.more-setting-section[data-setting="backup"] > summary')
     .click();
-  await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   const chooserPromise = page.waitForEvent("filechooser");
   await panel.getByRole("button", { name: "Pilih file" }).click();
@@ -345,7 +344,6 @@ test("malformed backup import preserves existing local data", async ({
   await page
     .locator('.more-setting-section[data-setting="backup"] > summary')
     .click();
-  await page.getByRole("button", { name: /Backup & import/ }).click();
   const panel = page.getByRole("region", { name: "Backup dan import" });
   await panel.getByLabel("Kata sandi backup").fill("malformed-import-123");
   const chooserPromise = page.waitForEvent("filechooser");
@@ -386,8 +384,9 @@ test("disabling the daily reminder removes the persisted reminder immediately", 
   await page
     .locator('.more-setting-section[data-setting="hymns"] > summary')
     .click();
-  await page.getByRole("button", { name: /Pengingat/ }).click();
-  const panel = page.getByRole("region", { name: "Pengingat harian" });
+  // The reminder is an inline card in the hymn category, not a disclosure
+  // button or a landmark of its own.
+  const panel = page.locator(".more-reminder-inline");
   await expect(panel.getByLabel("Waktu")).toHaveValue("20:00");
   await panel.getByRole("button", { name: "Nonaktifkan" }).click();
 
@@ -440,8 +439,9 @@ test("editing an unsaved reminder time leaves the active schedule unchanged", as
   await prepareReminderClock(page, "20:01");
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.locator('[data-setting="hymns"] > summary').click();
-  await page.getByRole("button", { name: /Pengingat/ }).click();
-  const panel = page.getByRole("region", { name: "Pengingat harian" });
+  // The reminder is an inline card in the hymn category, not a disclosure
+  // button or a landmark of its own.
+  const panel = page.locator(".more-reminder-inline");
   await panel.getByLabel("Waktu").fill("20:00");
   await page.clock.fastForward(61_000);
   expect(

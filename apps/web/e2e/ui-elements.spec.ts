@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
+// Reader chrome keeps 32px controls for a mouse and 44px for a finger; this
+// file asserts the touch targets, so it runs with a coarse pointer.
+test.use({ hasTouch: true });
+
 const copies = [
   {
     locale: "id",
