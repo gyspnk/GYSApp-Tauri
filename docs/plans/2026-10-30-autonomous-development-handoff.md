@@ -158,6 +158,8 @@ diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 | B-21 | P1        | Percobaan WhatsApp yang kedaluwarsa hanya menghapus badge — pengguna tidak tahu apa yang harus dilakukan                                                 | e2e `WhatsApp timeout…`: badge hilang, tab tetap terbuka, tidak ada pesan apa pun                                                                                                                                                     | DONE     | Notice `role="status"` di kartu akun + diagnosa `egys.whatsapp.timeout`; hilang saat percobaan baru                                                                             |
 | B-22 | P1        | Asersi e2e "tracking subscribes before the message link opens" bertentangan dengan desain dan flaky (gagal 2/3 kali dengan `--workers=2`)                | route `api.whatsapp.com` melempar bila socket belum ada; implementasi sengaja membuka tab lebih dulu. Sesudah diperbaiki: `egys-v1` 20/20 dua kali berturut-turut                                                                     | DONE     | —                                                                                                                                                                               |
 | B-23 | P0        | **Kerentanan keamanan**: `zod < 4.6.6` (GHSA-mrhx-c7xc-m3w5, high) di `apps/bff` dan `packages/contracts`                                                | `pnpm audit --prod` gagal di CI run 41017133824 dan lokal; sesudah bump `zod` 4.4.3 → 4.6.6 audit bersih, typecheck + 511 tes web + 131 paket lulus                                                                                   | DONE     | Biaya: initial JS 172,0 → **179,3 KiB** (sisa 0,7 KiB dari batas 180) — pantau sebelum menambah kode di graph awal                                                              |
+| B-24 | P1        | Headroom anggaran bundle hanya **0,7 KiB** (179,3/180 gzip) setelah patch zod; fitur berikutnya akan menembus batas                                      | `pnpm verify:bundle` siklus 10; chunk `dist-*` (contracts) tumbuh 21,0 → 27,8 KiB, `bible-search-worker` 23,0 → 29,8 KiB                                                                                                              | NEXT     | Ukur tiap perubahan; pindahkan modul berat ke chunk lazy sebelum menambah kode graph awal                                                                                       |
+| B-25 | P1        | CI `e2e-shard (2)` gagal pada run 41027417626 (shard 1/3 belum selesai saat handoff) — penyebab belum diketahui                                          | `gh run view 41027417626`; log job 123969059078 belum tersedia saat run masih berjalan                                                                                                                                                | NEXT     | Reproduksi lokal: `pnpm test:e2e --shard=2/3 --workers=2 --retries=0` pada build stabil, lalu klasifikasikan bug produk / kontrak basi / lingkungan                             |
 
 ## 4. Log siklus
 
@@ -531,13 +533,12 @@ NEXT: pantau CI run berikutnya; triase kegagalan browser shard yang tersisa
 
 ## 5. Risiko dan batasan bukti
 
-- **Beban uji penuh dipindahkan ke GitHub Actions (permintaan pemilik, 30 Oktober
-  2026).** Mesin lokal hanya untuk iterasi cepat: dev 5173, `typecheck`, unit test,
-  `verify:bundle`, dan e2e terarah. `pnpm test:e2e` penuh tidak dijalankan berulang
-  di mesin ini; percobaan penuh pada siklus 9 dihentikan setelah 272 tes karena
-  memakan CPU/jaringan. CI (`\.github/workflows/ci\.yml`) hanya berjalan pada
-  `push` ke `main` dan pada `pull_request`, sehingga branch kerja diverifikasi
-  melalui PR — bukan dengan push langsung ke `main`.
+- **Kebijakan uji terbaru (permintaan pemilik, 30 Oktober 2026): uji penuh dijalankan
+  LOKAL di perangkat pemilik yang lebih kuat; GitHub Actions bukan lagi gate.**
+  Mesin ini hanya untuk iterasi cepat (dev 5173, `typecheck`, unit test,
+  `verify:bundle`, e2e terarah). Bukti CI yang sempat didapat tetap dicatat di §1,
+  tetapi kegagalan/pending shard tidak boleh memblokir pekerjaan; lihat B-25 untuk
+  reproduksi lokalnya. `main` tetap tidak disentuh dan tidak ada merge.
 - Angka latensi berasal dari satu jaringan rumah, bukan CI. Jangan membandingkannya
   dengan audit 2026-10-11 tanpa metode identik.
 - Probe UI umumnya memblokir service worker. Siklus 6 menguji cache offline secara
@@ -562,13 +563,104 @@ NEXT: pantau CI run berikutnya; triase kegagalan browser shard yang tersisa
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
-1. **CI** — Buka PR dari branch kerja agar `ci.yml` menjalankan verifikasi penuh
-   (verify, unit, browser shard) di runner Linux; baca hasilnya sebagai bukti
-   resmi dan catat nomor run di sini.
+1. **Uji penuh lokal** di perangkat pemilik yang lebih kuat (kebijakan baru: lokal,
+   bukan GitHub Actions). Mulai dari shard yang gagal di CI: `e2e-shard (2)` run
+   `41027417626` — jalankan `pnpm test:e2e --shard=2/3 --workers=2 --retries=0`
+   pada build yang sudah diverifikasi dan catat nama tes yang gagal.
 2. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
    membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
    datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-3. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
+3. **B-24** — Headroom bundle tinggal **0,7 KiB** (179,3/180) setelah `zod` 4.6.6.
+   Setiap penambahan kode di graph awal akan menembus anggaran; ukur dulu, dan
+   pertimbangkan memindahkan modul berat ke chunk lazy sebelum menambah fitur.
+4. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
    saat Worker boleh dideploy, konversi format adalah tuas utamanya.
-4. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
+5. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
    generator; cache disegarkan otomatis saat online).
+
+## 7. Prompt handoff untuk sesi berikutnya
+
+Tempelkan blok berikut sebagai pesan pertama di sesi baru. Isinya lengkap dan tidak
+bergantung pada riwayat percakapan sebelumnya.
+
+```text
+Kamu adalah coding agent untuk repo GYSApp-Tauri. Lanjutkan pekerjaan dari titik
+handoff 30 Oktober 2026. Baca dokumen hidup ini lebih dulu:
+docs/plans/2026-10-30-autonomous-development-handoff.md — itu satu-satunya
+sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
+
+## Keadaan repo saat handoff
+- Remote: https://github.com/gyspnk/GYSApp-Tauri (branch default `main`, dilindungi).
+- Branch kerja: `codex/autonomous-hardening-20261030` (sudah di-push, HEAD 47e6a14,
+  worktree bersih, lokal == remote).
+- PR: #11 "Autonomous hardening: local gates, WhatsApp diagnostics, search index,
+  a11y" (status ready-for-review; JANGAN merge sendiri).
+- 13 commit sejak 37ffbd0: gate tes lokal, watcher Windows, format gate, kunci i18n
+  mati; toleransi+diagnostik tracking WhatsApp; notice kedaluwarsa WhatsApp; indeks
+  pencarian tidak lagi menunggu Worker; target sentuh tautan kembali; panel
+  Diagnostik; Escape/focus sheet Iman; `/alkitab` → `/bible`; patch zod 4.6.6;
+  perbaikan kontrak e2e yang basi; catatan CI.
+
+## Lingkungan
+- Windows, Node v24.18.0, pnpm 11.21.0, Playwright 1.62.1 (Chromium terpasang).
+- `pnpm dev` → http://127.0.0.1:5173/ (WAJIB hidup dan terverifikasi HTTP 200).
+- `pnpm preview` → http://127.0.0.1:4173/GYSApp-Tauri/ untuk e2e produksi.
+- `cargo`/Java TIDAK terpasang di mesin ini; native check/packaging butuh mesin lain.
+- `apps/web/.env.local` milik pemilik berisi VITE_BFF_BASE_URL ke Worker hosted.
+
+## Kebijakan pemilik (berlaku)
+1. Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
+   GitHub Actions tidak lagi menjadi gate; jangan menghabiskan waktu mengejar CI.
+2. Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
+   disentuh, tidak ada merge/force-push.
+3. Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
+4. Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
+5. Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
+   dan perangkat fisik. Tulis PASS/FAIL/NOT RUN, bukan "semua aman".
+
+## Yang sudah terbukti (jangan diulang tanpa alasan)
+- `pnpm typecheck`, `pnpm test` (511 web + contracts 20 + domain 45 + testkit 2 +
+  bff 74 + 62 skrip root), `pnpm build`, `pnpm verify:generated`, `pnpm verify:docs`,
+  `pnpm format:check`, `pnpm verify:prepush`.
+- `pnpm audit --prod` bersih setelah zod 4.6.6.
+- e2e terarah lokal: `egys-v1` 20/20 (dua kali), `smoke` 44/44,
+  `responsive-touch-targets` 4/4, `more-device-data` 2/2, alias `/alkitab` 1/1.
+- Audit lintas-sumbu (lihat §2.4): tema gelap/AMOLED + teks 200% tanpa overflow
+  maupun pelanggaran kontras; keyboard tanpa fokus hilang; offline (SW) reload
+  91 ms dengan 4 route penuh; gambar katalog lazy (14–17 request); PDF Literatur
+  halaman pertama 5,0 s; MIDI Kidung benar-benar berjalan (seek 0→5 dtk).
+- Login WhatsApp: `start` 200 + cookie HttpOnly, tab wa.me terbuka dengan referensi,
+  WS tracking tersambung, rute `confirm` sehat — semua terhadap Worker hosted nyata.
+
+## Yang belum terbukti / terbuka
+- **Klaim pesan WhatsApp nyata**: butuh pemilik mengirim pesan lalu menyalin
+  Pengaturan → Tentang & Bantuan → Diagnostik perangkat (entri `egys.whatsapp.*`).
+- **Apple**: popup resmi + client_id + state terbukti; langkah kredensial butuh
+  Apple ID nyata.
+- **Worker hosted `/api/v1/content/suara-sejati`** menggantung (>25 s) → perlu
+  deploy/perbaikan Worker oleh pemilik. Kode BFF sudah membatasi 15 s.
+- **CI shard 2** gagal pada run 41027417626 (`e2e-shard (2)`); detail belum sempat
+  diambil. Reproduksi lokal: `pnpm test:e2e --shard=2/3 --workers=2 --retries=0`
+  pada build stabil. Anggap ini petunjuk, bukan kebenaran.
+- **Headroom bundle 0,7 KiB** (179,3/180 gzip). Ukur sebelum menambah kode di
+  graph awal; modul berat harus tetap lazy.
+- Native (Rust/Android/Windows installer), signing, perangkat fisik: NOT RUN.
+
+## Urutan kerja yang disarankan
+1. Jalankan dev server, verifikasi HTTP 200, buka UI dan pastikan build lokal sehat.
+2. Reproduksi kegagalan shard 2 secara lokal; klasifikasikan bug produk vs kontrak
+   basi vs lingkungan; perbaiki akar masalahnya dan tambahkan tes yang gagal dulu.
+3. Lanjut ke item P1/P2 di backlog §3 (B-24 headroom bundle, B-15 bukti WhatsApp).
+4. Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
+   di dokumen hidup; commit + push.
+
+## Perintah yang tersedia
+pnpm dev | pnpm preview | pnpm typecheck | pnpm test | pnpm build |
+pnpm verify:bundle | pnpm verify:generated | pnpm verify:docs | pnpm format:check |
+pnpm verify:prepush | pnpm test:e2e --shard=2/3 | pnpm test:e2e:smoke |
+GYS_E2E_PREBUILT=1 pnpm test:e2e <spec>
+
+Aturan e2e: jangan rebuild `dist` saat tes browser terhadap aset ber-hash berjalan;
+gunakan `GYS_E2E_PREBUILT=1` bila build sudah final. Jangan mengubah snapshot atau
+retry demi tes hijau.
+```
