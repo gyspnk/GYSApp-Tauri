@@ -2,6 +2,19 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — an expired WhatsApp attempt explains the next step
+
+- Keep an explanation in the account card when the 120-second WhatsApp attempt
+  expires instead of only removing the countdown: the prepared message has to be
+  sent from WhatsApp, and a new attempt replaces the notice. The expiry is also
+  recorded as `egys.whatsapp.timeout` in the device diagnostics.
+- Keep the expiry callback out of the attempt's dependency list so a fresh
+  closure from the parent cannot restart the socket and reset the deadline.
+- Replace the flaky "tracking subscribes before the message link opens" browser
+  assertion, which contradicted the deliberate order (open the tab, then
+  subscribe), with a poll that requires the socket within the same attempt;
+  the e-GYS suite now passes twice in a row under parallel workers.
+
 ### 2026-10-30 — device diagnostics are readable in the app
 
 - Show the recorded device log on the About settings panel: newest first, with

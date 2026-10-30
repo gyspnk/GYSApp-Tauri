@@ -306,13 +306,12 @@ test("web providers authenticate inline and refresh the detected account", async
     loggedIn = false;
     await route.fulfill({ json: { ok: true } });
   });
-  await context.route("https://api.whatsapp.com/**", (route) => {
-    expect(
-      tracking,
-      "tracking subscribes before the message link opens",
-    ).toBeDefined();
-    return route.fulfill({ body: "WhatsApp", contentType: "text/html" });
-  });
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    // The tab opens before the socket connects on purpose: gating the link on
+    // an upgrade left users without a socket on a countdown. Subscribe in the
+    // same attempt, which is what "before the user can send" requires.
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const messagingTab = page.waitForEvent("popup");
   await page
@@ -322,6 +321,11 @@ test("web providers authenticate inline and refresh the detected account", async
   await expect(whatsapp).toHaveURL(
     "https://api.whatsapp.com/send?phone=628123456789&text=LOGIN%20test-ref",
   );
+  await expect
+    .poll(() => tracking !== undefined, {
+      message: "tracking socket subscribes within the attempt",
+    })
+    .toBe(true);
   expect(await whatsapp.evaluate(() => window.opener)).toBeNull();
   await expect(page.getByRole("timer")).toHaveAttribute(
     "aria-label",
@@ -393,9 +397,19 @@ test("WhatsApp timeout removes its badge without closing the messaging tab", asy
   await expect(page.getByRole("timer")).toHaveText("0:01");
   await page.clock.fastForward(1_000);
   await expect(page.getByRole("timer")).toHaveCount(0);
+  // The badge disappears, but the panel keeps an explanation of the next step.
+  const expired = page
+    .getByRole("status")
+    .filter({ hasText: "Pesan WhatsApp belum terdeteksi" });
+  await expect(expired).toBeVisible();
   expect(context.pages()).toHaveLength(2);
   await messagingTab.close();
   await expect(page.locator(".egys-inline-login")).toHaveCount(0);
+  // Starting another attempt replaces the stale explanation.
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await expect(expired).toHaveCount(0);
 });
 
 test("clicking WhatsApp again replaces the request and ignores the old socket", async ({

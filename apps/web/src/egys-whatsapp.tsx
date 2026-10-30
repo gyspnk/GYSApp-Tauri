@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { recordDiagnostic } from "./diagnostics.js";
 import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
 import {
@@ -19,15 +19,24 @@ const LOGIN_TIMEOUT_MS = 120_000;
 export function EgysWhatsApp({
   onComplete,
   onCancel,
+  onExpire,
   messagingWindow,
 }: {
   onComplete: (signal: AbortSignal) => Promise<void>;
   onCancel: () => void;
+  /** The deadline passed without a tracking confirmation. */
+  onExpire?: () => void;
   messagingWindow: Window | null;
 }) {
   const [seconds, setSeconds] = useState(LOGIN_TIMEOUT_MS / 1000);
   const [status, setStatus] = useState("Menyiapkan WhatsApp");
   const [error, setError] = useState("");
+  // Keep the expiry callback off the attempt's dependency list: a fresh closure
+  // from the parent would otherwise restart the socket and reset the deadline.
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
   useEffect(() => {
     const controller = new AbortController();
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
@@ -48,6 +57,16 @@ export function EgysWhatsApp({
       setSeconds(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
     }, 1000);
     const timeout = window.setTimeout(() => {
+      // The badge disappears either way, but the account panel keeps an
+      // explanation: a silent expiry reads as "nothing happened".
+      if (!controller.signal.aborted) {
+        recordDiagnostic(
+          "warn",
+          "egys.whatsapp.timeout",
+          new Error("No tracking confirmation before the deadline"),
+        );
+        onExpireRef.current?.();
+      }
       stop();
       onCancel();
     }, LOGIN_TIMEOUT_MS);

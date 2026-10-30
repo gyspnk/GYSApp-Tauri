@@ -1683,6 +1683,19 @@
   font-size: 0.75rem;
 }
 
+/* A WhatsApp attempt that expires leaves this explanation behind instead of
+   only removing its countdown badge. */
+.egys-whatsapp-notice {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--blue) 26%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--blue-soft) 55%, var(--surface));
+  color: var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
 /* Theme and language values stay visible while their full pickers stay closed. */
 .appearance-settings {
   display: grid;

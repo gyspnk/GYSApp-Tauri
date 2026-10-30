@@ -1374,6 +1374,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "Kosongkan",
     "more.googleLogin": "Login dengan Google",
     "more.whatsappLogin": "Login dengan WhatsApp",
+    "more.whatsappExpired":
+      "Pesan WhatsApp belum terdeteksi. Kirim pesan yang sudah disiapkan dari WhatsApp, lalu tekan WhatsApp lagi.",
     "more.appleLogin": "Login dengan Apple",
     "more.close": "Tutup",
     "more.confirmDeleteData":
@@ -2081,6 +2083,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "Clear",
     "more.googleLogin": "Sign in with Google",
     "more.whatsappLogin": "Sign in with WhatsApp",
+    "more.whatsappExpired":
+      "No WhatsApp message was detected. Send the prepared message in WhatsApp, then tap WhatsApp again.",
     "more.appleLogin": "Sign in with Apple",
     "more.close": "Close",
     "more.confirmDeleteData":
@@ -2779,6 +2783,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "清空",
     "more.googleLogin": "使用 Google 登录",
     "more.whatsappLogin": "使用 WhatsApp 登录",
+    "more.whatsappExpired":
+      "未检测到 WhatsApp 消息。请在 WhatsApp 中发送已准备好的消息，然后再次点击 WhatsApp。",
     "more.appleLogin": "使用 Apple 登录",
     "more.close": "关闭",
     "more.confirmDeleteData":

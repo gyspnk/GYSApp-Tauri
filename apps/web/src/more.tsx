@@ -408,6 +408,7 @@ export function MorePage({
   const [egysProvider, setEgysProvider] = useState<"whatsapp" | "apple">();
   const whatsAppWindow = useRef<Window | null>(null);
   const [whatsAppAttempt, setWhatsAppAttempt] = useState(0);
+  const [whatsAppNotice, setWhatsAppNotice] = useState("");
   const [egysGoogleError, setEgysGoogleError] = useState("");
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<PlatformFile>();
@@ -622,6 +623,7 @@ export function MorePage({
     saveEgysProfile(profile);
     setEgysSession(trackEgysProfileSeen(profile));
     setEgysProvider(undefined);
+    setWhatsAppNotice("");
   }, []);
   useEffect(() => {
     if (!nativeShell) void loadEgysApple().catch(() => undefined);
@@ -651,6 +653,7 @@ export function MorePage({
   );
   const startEgysProvider = (provider: "whatsapp" | "apple") => {
     closePendingWhatsAppWindow();
+    setWhatsAppNotice("");
     if (provider === "whatsapp") {
       // Reserve the messaging tab during the click, before asynchronous setup.
       whatsAppWindow.current = window.open("about:blank", "_blank");
@@ -1177,6 +1180,11 @@ export function MorePage({
                         messagingWindow={whatsAppWindow.current}
                         onComplete={completeProviderLogin}
                         onCancel={cancelEgysProvider}
+                        onExpire={() =>
+                          setWhatsAppNotice(
+                            translate(locale, "more.whatsappExpired"),
+                          )
+                        }
                       />
                     ) : undefined
                   }
@@ -1197,6 +1205,11 @@ export function MorePage({
                       : undefined
                   }
                 />
+                {whatsAppNotice && egysProvider !== "whatsapp" && (
+                  <p className="egys-whatsapp-notice" role="status">
+                    {whatsAppNotice}
+                  </p>
+                )}
                 {egysGoogleError && egysProvider !== "apple" && (
                   <p className="egys-google-error" role="alert">
                     {egysGoogleError}
