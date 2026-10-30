@@ -2,6 +2,14 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — cross-app search no longer waits on a stalled Worker
+
+- Bound the optional BFF refresh of the curated search index to three seconds
+  and keep the bundled catalogs when it does not answer. One hanging content
+  endpoint previously held the whole index, so the search dialog stayed on
+  "Menyiapkan indeks lokal…" and returned Bible verses only; hymn, literature,
+  faith, Sauh and Suara results now appear while the static packs are ready.
+
 ### 2026-10-30 — reader back links are tappable
 
 - Grow the "← Beranda" / "Kembali ke kesaksian" hit area on the Sauh and Suara

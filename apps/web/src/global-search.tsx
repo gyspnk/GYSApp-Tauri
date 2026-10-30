@@ -30,6 +30,10 @@ import {
 import { BibleSearchClient } from "./bible-search.js";
 import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
 import { getDistributedAssetManager } from "./distributed-asset-manager.js";
+import { withRequestDeadline } from "./request-deadline.js";
+
+/** How long the optional BFF refresh may delay the bundled search index. */
+const ONLINE_REFRESH_DEADLINE_MS = 3_000;
 
 type SearchKind = "hymn" | "literature" | "faith" | "sauh" | "suara" | "bible";
 type SearchEntry = {
@@ -60,8 +64,11 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
-async function readJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, { cache: "force-cache" });
+async function readJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(url, {
+    cache: "force-cache",
+    ...(signal ? { signal } : {}),
+  });
   if (!response.ok) throw new Error(`Search source failed: ${response.status}`);
   return (await response.json()) as T;
 }
@@ -188,10 +195,19 @@ async function loadSearchIndex(): Promise<SearchEntry[]> {
   // A configured BFF can provide fresher online catalogs. Static packs remain
   // the reliable baseline, so a transient BFF failure never empties search.
   if (base && typeof navigator !== "undefined" && navigator.onLine) {
+    // The refresh must never hold the curated index hostage: one stalled
+    // endpoint otherwise leaves search reporting "preparing the local index"
+    // and serving Bible verses only, because every static source already
+    // arrived. Keep the bundled baseline and abandon a slow refresh.
+    const refresh = <T,>(path: string) =>
+      withRequestDeadline(
+        (signal) => readJson<T>(`${base}${path}`, signal),
+        ONLINE_REFRESH_DEADLINE_MS,
+      );
     const online = await Promise.allSettled([
-      readJson<LiteratureCatalog>(`${base}/api/v1/content/literature`),
-      readJson<{ items: unknown[] }>(`${base}/api/v1/content/sauh`),
-      readJson<SuaraSejatiFeed>(`${base}/api/v1/content/suara-sejati`),
+      refresh<LiteratureCatalog>("/api/v1/content/literature"),
+      refresh<{ items: unknown[] }>("/api/v1/content/sauh"),
+      refresh<SuaraSejatiFeed>("/api/v1/content/suara-sejati"),
     ]);
     const freshLiterature =
       online[0]?.status === "fulfilled"
