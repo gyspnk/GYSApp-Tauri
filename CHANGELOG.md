@@ -2,6 +2,20 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-30 — deterministic local gates and a stable dev server
+
+- Pin the deployment `VITE_*` variables to empty for unit tests so a checkout
+  that points `VITE_BFF_BASE_URL` at the deployed Worker no longer fails the
+  "Worker absent", image-proxy and raw-CDN contracts. Tests that need a
+  deployment value still opt in with `vi.stubEnv`.
+- Ignore Vitest's transient `.tmpdir` config bundles in the dev watcher;
+  `pnpm dev` no longer dies with `EBUSY` on Windows when a test run overlaps it.
+- Skip the self-ignored `.superpowers/` SDD workspace in Prettier so
+  `pnpm format:check` and the pre-push hook pass on working checkouts.
+- Drop the `home.directSource` key left unused by the Sauh header rework.
+- Record the current baseline, route matrix and backlog in
+  `docs/plans/2026-10-30-autonomous-development-handoff.md`.
+
 ### 2026-10-09 — Android audio, text scale and hymn navigation
 
 - Avoid silent audio activation during ordinary navigation or idle app resume.

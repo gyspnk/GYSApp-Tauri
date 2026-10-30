@@ -284,6 +284,15 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: false,
+    watch: {
+      // Vitest bundles this package's config into a short-lived
+      // `.vitest.config.ts.<pid>.<uuid>.tmpdir` beside it. On Windows the dev
+      // watcher picks that directory up and dies with `EBUSY` when the temp
+      // file is locked or removed, tearing down `pnpm dev` whenever a test run
+      // overlaps it. Vite already ignores `test-results`, `node_modules` and
+      // the cache dir; only these transient config bundles need adding.
+      ignored: ["**/*.tmpdir/**"],
+    },
   },
   preview: {
     host: "127.0.0.1",
