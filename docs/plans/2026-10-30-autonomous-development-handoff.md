@@ -1078,6 +1078,13 @@ keputusan yang dibutuhkan: batasi tinggi/aspek media Sauh (perbaikan produk)
 lalu regenerasi, atau terima state baru setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
 `perf-budget`, dan agregat `e2e` lulus untuk `workflow_dispatch`.
 
+**CI HIJAU (31 Okt):** run `41177779035` (commit `571e9a4`) **sukses penuh** —
+`changes`, `verify`, `secret-scan`, `web-build`, tiga shard e2e, dan agregat
+`e2e` semuanya hijau; `native-check`, `perf-budget`, `update-visual-baselines`
+dilewati sesuai desain. Ini run sukses pertama di branch, jadi classifier
+"since last success" sekarang mengizinkan push dokumentasi berikutnya melewati
+build/browser.
+
 **Baseline visual keluar dari shard (31 Okt):** karena shard 3 merah hanya pada
 `visual.spec.ts`/`visual-reading.spec.ts` dan regenerasi hosted menghasilkan
 state Sauh yang belum benar, kedua spec itu dikeluarkan dari
