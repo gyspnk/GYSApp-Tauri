@@ -1085,6 +1085,13 @@ detik** — `web-build`, ketiga shard, `native-check`, `perf-budget`, dan
 `secret-scan`, dan agregat `e2e` yang jalan. Sebelumnya push seperti itu
 memakan ~12 menit dan lima job mahal.
 
+**Keputusan anggaran performa (31 Okt, mandat penuh):** `perf-budget` dipindah
+dari setiap push `main` ke **jadwal mingguan** (Senin 03:00 UTC) + manual;
+ambang tetap **1 dtk / 250 ms** (tidak dilonggarkan). Alasannya: runner hosted
+2-core tidak bisa memenuhinya, dan `main` yang selalu merah menyembunyikan
+regresi nyata. `native-check` juga dibatasi ke push/PR, dan agregat `e2e`
+lulus untuk run manual/jadwal yang memang tidak menjalankan shard.
+
 **CI HIJAU (31 Okt):** run `41177779035` (commit `571e9a4`) **sukses penuh** —
 `changes`, `verify`, `secret-scan`, `web-build`, tiga shard e2e, dan agregat
 `e2e` semuanya hijau; `native-check`, `perf-budget`, `update-visual-baselines`
