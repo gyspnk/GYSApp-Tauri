@@ -1222,6 +1222,12 @@ ada polling atau `sleep` panjang; run > 60 dtk selalu background.
 (pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
 baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
 
+**Insiden CI (31 Okt):** run `41206770552` (commit `a8622b4`) tertahan >70 menit
+dengan `e2e-selective: in_progress` dan `updatedAt` tidak bergerak — runner
+macet, bukan kegagalan tes. Run dibatalkan manual; pohon yang sama sudah
+terverifikasi oleh run lain. Bila terulang, batalkan lalu jalankan ulang, dan
+catat sebagai flake infrastruktur.
+
 ### Duplikasi kontrol → satu tempat kanonik (31 Okt)
 
 | Kontrol                  | Sebelum (dua tempat)                  | Kanonik sekarang               | Tindakan                                                                                                                         |

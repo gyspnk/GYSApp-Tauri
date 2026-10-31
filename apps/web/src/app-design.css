@@ -1290,11 +1290,6 @@
 .topbar .topbar-select .control-select-trigger {
   padding-inline: 12px;
 }
-.topbar .language-select .control-select-value {
-  color: var(--navy);
-  font-size: 0.75rem;
-  font-weight: 650;
-}
 .topbar .control-select-chevron {
   color: inherit;
 }
@@ -1365,9 +1360,6 @@
 .topbar .control-select-menu {
   border-radius: 16px;
   padding: 6px;
-}
-.topbar .language-select .control-select-menu {
-  animation: none;
 }
 .topbar .control-select-option {
   border-radius: 10px;
@@ -2557,7 +2549,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   overflow: auto;
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: 0 12px 40px #163f6126;
   animation: midi-settings-enter 180ms ease-out;
