@@ -2839,7 +2839,10 @@ body.gys-viewer-active {
 @media (max-width: 374px) {
   .brand-mark img {
     width: 40px;
-    height: 40px;
+    /* 40x28 keeps the whole dove in frame: a 40x40 window covers only 320 of
+       the 420 artwork pixels the mark needs, which clipped the beak. The 40x44
+       link keeps the touch target. */
+    height: 28px;
     max-width: 40px;
     object-fit: cover;
     object-position: left center;

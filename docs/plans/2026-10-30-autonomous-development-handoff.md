@@ -1264,10 +1264,12 @@ ulang seluruh berkas CSS, bukan sampel — pass pertama melewatkan 58 deklarasi.
 Di 320 px kata merek pada logo (`gys-logo.png`, rasio 2263×288) terpotong di
 tengah kata karena baris hanya menyisakan 100 px untuk merek sementara lima
 kontrol 44 px memakan 194 px. Perbaikan: di bawah 375 px logo memakai **crop
-merpati** dari artwork yang sama (`object-fit: cover; object-position: left
-center`), kotak 40 px agar tetap memenuhi lantai sentuh 40 px yang diuji
-`responsive-touch-targets`; mulai 390 px kata merek penuh kembali. Verifikasi:
-`responsive-touch-targets` 4/4 dan screenshot 320/390.
+merpati** dari artwork yang sama. Kotaknya 40x28, bukan 40x40: jendela 40x40 hanya
+menutup 320 dari 420 piksel artwork yang dibutuhkan merpati sehingga paruhnya
+terpotong, sedangkan 40x28 menampilkan merpati dan gelombangnya utuh. Tautan
+merek tetap 40x44 sehingga lantai sentuh 40 px yang diuji
+`responsive-touch-targets` (4/4) terpenuhi; mulai 390 px kata merek penuh
+kembali.
 
 Konsekuensi kontrak: baris bahasa dihapus dari Tampilan, jadi
 `more-section-deeplink` tidak lagi mencari "Pilih Bahasa"/"Bahasa Aplikasi" di
