@@ -143,6 +143,7 @@ GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 766 tests, ~35 min, run it as a bac
 pnpm preview                              # terminal 1, serves 4173 for the browser runs
 pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
 pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report
+pnpm ui:audit                             # overflow/clipping sweep over every real route
 pnpm test:performance
 pnpm verify:native-assets
 ```
@@ -155,7 +156,13 @@ machine (the same 55 tests take 179s at two workers and 217s at four), so a wide
 run belongs in the background while work continues. `test:e2e:gate` keeps
 behaviour coverage and leaves the nine heaviest specs to CI; `test:e2e:local`
 leaves out the `-linux` visual baselines and the runtime-performance budgets
-because neither can be judged outside CI. `pnpm test:e2e:dev` is the local HMR
+because neither can be judged outside CI. `pnpm ui:audit` walks the twelve
+real routes (including `/kidung/1` and the three settings sections) across
+320/360/390/414/768/1440 px in the light and dark themes, reporting document
+overflow, clipped text and overlapping top-bar controls; deliberate
+`text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
+`UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES` and `UI_AUDIT_BASE`
+narrow a run. `pnpm test:e2e:dev` is the local HMR
 alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Full browser,
 native and signed-device gates remain separate from quick iteration. See
 [testing and maintenance](docs/testing-and-maintenance.md).
