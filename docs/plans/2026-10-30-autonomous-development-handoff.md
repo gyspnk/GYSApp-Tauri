@@ -1370,6 +1370,21 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Sudut yang lolos di shorthand (1 Nov)
+
+Penjaga sebelumnya hanya membaca satu angka `px` per deklarasi, sehingga
+shorthand dan `clamp()` menyimpan sudut di luar skala: `0 0 18px 18px`
+(2×), `16px 18px 0 0`, `24px 22px 0 0` (2×), `24px 20px 0 0`,
+`12px 14px 10px 10px`, `12px 11px 0 0`, `clamp(11px, 1vw, 14px)` (6×),
+`clamp(16px, 1.5vw, 22px)` (2×). Semua kini 10/12/16/24 px; parser penjaga
+memeriksa **setiap** angka di dalam deklarasi (px, rem, nol tanpa satuan) dan
+mengabaikan satuan viewport seperti `1vw` di tengah `clamp()` — kegagalan itu
+sendiri sempat muncul sebagai pelanggaran palsu sebelum parser diperbaiki.
+Dibuktikan gagal-dulu: penjaga melaporkan 10 deklarasi, lalu hijau 3/3.
+
+Verifikasi: `kidung-hymn-alias` + `kidung-section-navigation` +
+`accessibility` **25/25**; build tetap 179,7 KiB.
+
 ### Radius yang bersembunyi di satuan rem (1 Nov)
 
 Penjaga skala radius hanya memindai `px`, jadi **12 deklarasi** lolos dengan

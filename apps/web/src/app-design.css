@@ -1432,7 +1432,7 @@
 @media (max-width: 959px) {
   .navigation-shell {
     border-top: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-    border-radius: 16px 18px 0 0;
+    border-radius: 16px 16px 0 0;
     background: var(--surface);
     box-shadow: 0 -3px 14px color-mix(in srgb, var(--blue) 5%, transparent);
   }
@@ -2197,7 +2197,7 @@
   min-width: var(--reader-control);
   min-height: var(--reader-control);
   flex: 0 0 var(--reader-control);
-  border-radius: clamp(11px, 1vw, 14px);
+  border-radius: clamp(10px, 1vw, 12px);
   display: grid;
   place-items: center;
   padding: 0;
@@ -2215,7 +2215,7 @@
 .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
   gap: clamp(2px, 0.4vw, 6px);
   padding: clamp(3px, 0.4vw, 6px);
-  border-radius: clamp(16px, 1.5vw, 22px);
+  border-radius: clamp(16px, 1.5vw, 24px);
 }
 .hymn-detail-page.is-text-viewer .hymn-text-toolbar .hymn-more-actions {
   width: var(--reader-control);
@@ -3347,7 +3347,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: grid;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: clamp(11px, 1vw, 14px);
+  border-radius: clamp(10px, 1vw, 12px);
   background: var(--blue-soft);
   color: var(--ink);
   box-shadow: none;
@@ -4865,7 +4865,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   max-width: none !important;
   margin: 0 !important;
   align-self: stretch !important;
-  border-radius: 0 0 18px 18px !important;
+  border-radius: 0 0 16px 16px !important;
   padding: 22px 20px 20px !important;
   background: linear-gradient(
     180deg,

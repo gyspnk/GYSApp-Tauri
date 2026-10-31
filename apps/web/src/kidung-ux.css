@@ -560,7 +560,7 @@
     width: auto;
     max-width: none;
     max-height: min(72dvh, 620px);
-    border-radius: 12px 14px 10px 10px;
+    border-radius: 12px 12px 10px 10px;
     animation: kidung-sheet-in var(--motion-normal) var(--ease-out) both;
   }
 
@@ -994,7 +994,7 @@
   font-size: 0.75rem;
   font-weight: 720;
   background: color-mix(in srgb, var(--blue-soft) 44%, transparent);
-  border-radius: 12px 11px 0 0;
+  border-radius: 12px 12px 0 0;
 }
 
 .reader-settings-group-body {

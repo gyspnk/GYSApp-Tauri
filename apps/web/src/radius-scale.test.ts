@@ -26,9 +26,22 @@ describe("radius scale", () => {
     const offenders: string[] = [];
     for (const file of cssFiles()) {
       const css = readFileSync(new URL(file, SRC), "utf8");
-      for (const match of css.matchAll(/border-radius:\s*([1-9]\d*)px/g)) {
-        const value = Number(match[1]);
-        if (!SCALE.has(value)) offenders.push(`${file}: ${value}px`);
+      // Check every number inside the declaration, not just a single `px`
+      // value: multi-corner shorthands (24px 22px 0 0) and clamp() bounds hid
+      // 14/18/20/22 px corners for months.
+      for (const match of css.matchAll(/border-radius:\s*([^;]+);/g)) {
+        const declaration = match[1].trim();
+        if (declaration.includes("var(") || declaration.includes("%")) continue;
+        for (const number of declaration.matchAll(/([\d.]+)([a-z%]*)/g)) {
+          const unit = number[2];
+          // Only px, rem, and bare zeros live on the scale; a clamp() middle
+          // term such as 1vw is a viewport length, not a radius.
+          if (unit && unit !== "px" && unit !== "rem") continue;
+          if (!unit && Number(number[1]) === 0) continue;
+          const pixels =
+            unit === "rem" ? Number(number[1]) * 16 : Number(number[1]);
+          if (!SCALE.has(pixels)) offenders.push(`${file}: ${declaration}`);
+        }
       }
     }
     expect(offenders).toEqual([]);
