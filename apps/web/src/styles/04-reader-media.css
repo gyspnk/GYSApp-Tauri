@@ -2832,3 +2832,16 @@ body.gys-viewer-active {
     padding-block: 10px;
   }
 }
+
+/* Below 375 px the wordmark cannot share the row with the five controls, so the
+   brand falls back to the dove crop of the same artwork instead of clipping the
+   name mid-word. */
+@media (max-width: 374px) {
+  .brand-mark img {
+    width: 40px;
+    height: 40px;
+    max-width: 40px;
+    object-fit: cover;
+    object-position: left center;
+  }
+}

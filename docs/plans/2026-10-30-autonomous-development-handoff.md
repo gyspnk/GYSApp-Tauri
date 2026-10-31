@@ -1259,6 +1259,22 @@ dengan baseline visual + `select-dropdown`/`menu-motion`.
 **Pelajaran:** klaim "sudah dinormalisasi" harus dibuktikan dengan pemindaian
 ulang seluruh berkas CSS, bukan sampel — pass pertama melewatkan 58 deklarasi.
 
+### Merek di layar sempit (31 Okt)
+
+Di 320 px kata merek pada logo (`gys-logo.png`, rasio 2263×288) terpotong di
+tengah kata karena baris hanya menyisakan 100 px untuk merek sementara lima
+kontrol 44 px memakan 194 px. Perbaikan: di bawah 375 px logo memakai **crop
+merpati** dari artwork yang sama (`object-fit: cover; object-position: left
+center`), kotak 40 px agar tetap memenuhi lantai sentuh 40 px yang diuji
+`responsive-touch-targets`; mulai 390 px kata merek penuh kembali. Verifikasi:
+`responsive-touch-targets` 4/4 dan screenshot 320/390.
+
+Konsekuensi kontrak: baris bahasa dihapus dari Tampilan, jadi
+`more-section-deeplink` tidak lagi mencari "Pilih Bahasa"/"Bahasa Aplikasi" di
+kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
+"Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
+`.appearance-setting-select` pertama, yang kini memang select tema.
+
 ### Empty state seragam (31 Okt)
 
 Empat pola berbeda dipakai: `.empty-state` (Literatur — tanpa gaya sama
