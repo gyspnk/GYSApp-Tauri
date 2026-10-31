@@ -995,7 +995,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .hymn-scope-pill-btn.is-active {
   background: var(--surface);
   color: var(--blue);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 .hymn-autoscroll-control {
   display: inline-flex;
@@ -1852,7 +1852,7 @@ body:has(.home-page)::-webkit-scrollbar {
     border-inline-start: 0;
     border-radius: 0 10px 10px 0;
     background: var(--surface);
-    color: var(--text);
+    color: var(--ink);
     cursor: pointer;
     transition:
       border-color var(--motion-fast, 150ms) var(--ease-out, ease-out),
@@ -1966,7 +1966,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 
 .media-surface {
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 13%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 13%, transparent);
 }
 
 .nav-item,

@@ -2361,7 +2361,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .egys-inline-login [role="alert"] {
   width: 100%;
-  color: var(--danger, #b42318);
+  color: var(--danger);
 }
 
 /* One document title above the page; everyday controls stay in a bottom dock. */

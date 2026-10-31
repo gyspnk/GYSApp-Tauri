@@ -1370,6 +1370,37 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Token bayangan & variabel hilang (31 Okt)
+
+219 deklarasi `box-shadow`, tetapi lima aturan memakai `var(--shadow-xs)` /
+`var(--shadow-sm)` yang **tidak pernah didefinisikan** — `var()` tanpa definisi
+menghitung `unset`, jadi kartu catatan Alkitab dan empat panel kidung tidak
+punya bayangan sama sekali. Sekarang ada tiga elevasi
+(`--shadow-xs`, `--shadow-sm`, `--shadow-float`) yang di-retint per tema
+(light/dark/system-dark/amoled/sepia), dan `--shadow-lift` mode gelap tidak lagi
+mewarisi bayangan biru terang. Sebelas literal ganda
+(`0 1px 2px rgba(0,0,0,.03)`, `0 1px 3px rgba(0,0,0,.08)`,
+`0 8px 26px rgba(31,66,112,.12)`) dimigrasikan ke token itu.
+
+Pemindaian seluruh `var(--…)` menemukan empat referensi tanpa definisi:
+`--danger` (tiga nilai fallback berbeda di lima tempat), `--gold` (tanpa
+fallback, sehingga bingkai/latar emas kartu anggota e-GYS hilang), `--text`
+(dua tempat, termasuk bayangan `media-surface` yang ikut hilang), dan
+`--safe-area-top` (fallback `0` alih-alih `env()`). Kini semuanya token kanonik:
+`--danger` `#b3261e` (6,5:1 di putih) / `#ffb4ab` (9,5:1 di permukaan gelap) /
+`#a4342a` (6,2:1 sepia), `--gold` `#7a5c00` / `#e8c46a` / `#8a6a2a`, dan
+`--safe-area-top: env(safe-area-inset-top, 0px)`.
+
+Dua penjaga baru: `apps/web/src/shadow-tokens.test.ts` (setiap `var(--shadow-*)`
+harus punya definisi; lima blok tema wajib punya tiga elevasi) dan
+`apps/web/src/css-tokens.test.ts` (setiap `var(--…)` di CSS harus dideklarasikan
+di CSS atau sebagai literal di TS/TSX). Dibuktikan gagal-dulu: menghapus
+`--shadow-xs` memunculkan 10 referensi, mengganti nama `--gold` memunculkan satu
+konsumen. Verifikasi: probe `getComputedStyle` pada `.egys-member-badge` kini
+menghasilkan bingkai emas di light/dark/sepia, `.media-surface` punya bayangan,
+`accessibility` + `settings-data-integrity` + `kidung-style-behavior` **34/34**,
+bundle tetap 179,3 KiB.
+
 ### Ketahanan tes drag (31 Okt)
 
 `tier:core` 87/88 lulus; satu-satunya kegagalan adalah

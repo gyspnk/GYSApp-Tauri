@@ -116,7 +116,7 @@
   text-decoration-thickness: 2px;
 }
 .bible-address-trigger[aria-invalid="true"] {
-  border-color: var(--danger, #b42318);
+  border-color: var(--danger);
 }
 .bible-address-menu {
   position: absolute;

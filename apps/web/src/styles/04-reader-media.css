@@ -1282,7 +1282,7 @@
   z-index: var(--z-modal, 60);
   display: flex;
   flex-direction: column;
-  padding: var(--safe-area-top, 0) 0 0;
+  padding: var(--safe-area-top) 0 0;
   background: var(--surface);
   transform: translateX(100%);
   transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1);
@@ -1764,7 +1764,7 @@ body.gys-viewer-active {
 .kidung-local-nav a.is-active {
   color: var(--blue);
   background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   font-weight: 700;
 }
 .kidung-local-nav a.is-active::after {
@@ -1846,7 +1846,7 @@ body.gys-viewer-active {
 }
 .kidung-inline-error {
   margin: 14px 0 0;
-  color: var(--danger, #b42318);
+  color: var(--danger);
   font-size: 0.75rem;
 }
 .kidung-empty-state {
