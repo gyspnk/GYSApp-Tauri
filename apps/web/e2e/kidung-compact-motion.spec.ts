@@ -216,17 +216,37 @@ test("MIDI dock fades the old geometry before restoring the new geometry", async
   // the 200 ms exit already ended on a busy runner.
   expect(immediately).toEqual({ minimized: false, exitDuration: 200 });
   await expect(player).toHaveClass(/is-minimized/);
+  // The 480 ms enter animation can finish before Playwright returns from the
+  // click on a loaded runner, so record what the surface animates from inside
+  // the page while the restore is triggered.
+  await player.evaluate((surface) => {
+    const seen: Array<{ id: string; duration: number | null }> = [];
+    (window as Window & { __dockAnimations?: typeof seen }).__dockAnimations =
+      seen;
+    const started = performance.now();
+    const sample = () => {
+      for (const animation of surface.getAnimations()) {
+        if (!seen.some((entry) => entry.id === animation.id))
+          seen.push({
+            id: animation.id,
+            duration: animation.effect?.getTiming().duration ?? null,
+          });
+      }
+      if (performance.now() - started < 1_500) requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
   await player.locator(".media-drag-handle").click();
   await expect(player).not.toHaveClass(/is-minimized/);
-  const animations = await player.evaluate((el) =>
-    el
-      .getAnimations()
-      .map((a) => ({ id: a.id, duration: a.effect!.getTiming().duration })),
-  );
-  expect(animations).toContainEqual({
-    id: "gys-midi-dock-enter",
-    duration: 480,
-  });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as Window & { __dockAnimations?: unknown[] })
+            .__dockAnimations ?? [],
+      ),
+    )
+    .toContainEqual({ id: "gys-midi-dock-enter", duration: 480 });
   await expect
     .poll(() => player.evaluate((el) => getComputedStyle(el).opacity))
     .toBe("1");
