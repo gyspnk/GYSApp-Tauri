@@ -891,8 +891,11 @@ Reproduction / baseline:
 Root cause: workflow memperlakukan semua perubahan sama; satu-satunya
   penghematan yang ada adalah concurrency-cancel dan artifact build bersama.
 File dan perubahan:
-  .github/workflows/ci.yml — job `changes` (git diff base..head, dengan fallback
-    HEAD^ HEAD) mengeluarkan `web`/`native`; `web-build` hanya bila `web`,
+  .github/workflows/ci.yml — job `changes` mengklasifikasi **rentang push**
+    (`event.before..head`) dengan fallback ke base PR untuk PR yang baru
+    dibuka, lalu `HEAD^ HEAD`; mengeluarkan `web`/`native`. Guard API: bila push
+    hanya dokumentasi tetapi run untuk head sebelumnya tidak sukses, `web`
+    dipaksa true agar run yang dibatalkan tidak tertutup; `web-build` hanya bila `web`,
     `native-check` hanya bila `native`; cache `~/.cache/ms-playwright` di kedua
     job e2e; agregat `e2e` lulus saat web tidak tersentuh, dan GAGAL bila job
     klasifikasi gagal (tidak boleh menyembunyikan verifikasi).
