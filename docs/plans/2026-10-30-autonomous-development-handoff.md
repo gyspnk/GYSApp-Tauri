@@ -1309,6 +1309,19 @@ kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
 "Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
 `.appearance-setting-select` pertama, yang kini memang select tema.
 
+### Dialog catatan Alkitab (31 Okt)
+
+Popup catatan (`apps/web/src/bible-notes-popup.tsx`) memakai `role="dialog"`
+
+- `aria-modal`, tetapi tidak memindahkan fokus ke dalam, tidak menahan Tab, dan
+  tidak menutup dengan Escape — Tab dari tombol simpan langsung keluar ke bilah
+  pembaca. Sekarang komponen memakai `useDialogFocus` (ref ke modal, opener
+  tersimpan, Escape menutup, Tab berputar di dalam, fokus kembali ke tombol
+  toolbar ayat). Verifikasi: `e2e/bible-annotations.spec.ts` mendapat tes
+  “notes dialog keeps focus inside and returns it to the verse toolbar” —
+  sebelum perbaikan tes gagal (fokus keluar ke `BODY` setelah Tab ketiga),
+  sesudahnya lulus; total berkas 3/3 dan `smoke` 44/44.
+
 ### Empty state seragam (31 Okt)
 
 Empat pola berbeda dipakai: `.empty-state` (Literatur — tanpa gaya sama

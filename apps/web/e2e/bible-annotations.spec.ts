@@ -152,3 +152,52 @@ test("custom Bible highlights can be cleared and persist in the palette", async 
     )
     .toBe("#ca7231");
 });
+
+test("notes dialog keeps focus inside and returns it to the verse toolbar", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.locator(".verse-text").nth(0).click();
+  const trigger = page
+    .getByRole("toolbar", { name: "Aksi ayat terpilih" })
+    .getByRole("button", { name: "Catatan ayat" });
+  await trigger.click();
+
+  const dialog = page.getByRole("dialog", { name: "Catatan ayat" });
+  await expect(dialog).toBeVisible();
+  // The reader moves focus straight to the note field; either way it must land
+  // inside the modal instead of staying on the trigger.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document
+            .querySelector(".bible-notes-modal")
+            ?.contains(document.activeElement) ?? false,
+      ),
+    )
+    .toBe(true);
+
+  for (let step = 0; step < 6; step += 1) {
+    await page.keyboard.press("Tab");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document
+              .querySelector(".bible-notes-modal")
+              ?.contains(document.activeElement) ?? false,
+        ),
+      )
+      .toBe(true);
+  }
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});

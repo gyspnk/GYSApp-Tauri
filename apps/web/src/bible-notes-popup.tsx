@@ -1,9 +1,10 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import type { BibleBook } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
 import type { BibleNotes } from "./bible-reader-storage.js";
+import { useDialogFocus } from "./dialog-focus.js";
 export type SavedNoteRow = {
   id: string;
   verseId: string;
@@ -61,6 +62,15 @@ export function BibleNotesPopup({
   setNotes,
   selectedNoteId,
 }: BibleNotesPopupProps) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  useDialogFocus({
+    open: notesPopupOpen,
+    dialogRef,
+    openerRef,
+    onClose: () => setNotesPopupOpen(false),
+    initialFocusSelector: ".bible-notes-close",
+  });
   if (!notesPopupOpen) return null;
   return createPortal(
     <div
@@ -71,6 +81,7 @@ export function BibleNotesPopup({
       onClick={() => setNotesPopupOpen(false)}
     >
       <div
+        ref={dialogRef}
         className="bible-notes-modal"
         onClick={(event) => event.stopPropagation()}
       >
