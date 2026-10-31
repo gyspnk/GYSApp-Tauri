@@ -1,5 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+// This file asserts layout and route contracts only and mocks every network
+// edge it depends on, so it can share one browser context per worker: the HTTP
+// and V8 caches then remove ~22% of the run (152s -> 119s measured).
+import { expect, test } from "./fixtures/reuse-context.js";
+import type { Page } from "@playwright/test";
 import {
   preparePinnedReaderAssets,
   preparePinnedMidiAsset,

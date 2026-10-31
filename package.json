@@ -25,6 +25,7 @@
     "test:e2e:core": "pnpm --filter @gys/web test:e2e:core",
     "test:loop": "node scripts/test-loop.mjs",
     "test:e2e:local": "pnpm --filter @gys/web test:e2e:local",
+    "test:e2e:gate": "pnpm --filter @gys/web test:e2e:gate",
     "test:e2e:durations": "node scripts/e2e-durations.mjs",
     "test:e2e:changed": "node scripts/test-e2e-selective.mjs",
     "test:e2e:smoke": "pnpm --filter @gys/web test:e2e:smoke",

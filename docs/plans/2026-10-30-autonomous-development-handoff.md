@@ -962,6 +962,29 @@ memakai mesin ber-core lebih banyak (shard). Jangan menjalankan dua proses
 browser bersamaan; `GYS_E2E_PREBUILT=1` selalu dipakai bila `dist` sudah final;
 jangan rebuild saat run berjalan.
 
+### Opsi memangkas gate lokal (butuh keputusan pemilik)
+
+Dari laporan JSON 826 tes (**74,0 mnt waktu tes**; dinding ≈ tes/2 pada 2 worker):
+
+| Opsi             | Yang dipindah ke CI                                                                                          | Sisa waktu tes | Perkiraan dinding  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ | -------------- | ------------------ |
+| Penuh (sekarang) | —                                                                                                            | 74,0 mnt       | 39,1 mnt           |
+| Lokal sekarang   | visual `-linux` + perf                                                                                       | 69,5 mnt       | 34,7 mnt (terukur) |
+| **A**            | kidung-usability, editorial-ui, roadmap-ui-matrix, pdf-shared-viewer                                         | 57,8 mnt       | ~28,9 mnt          |
+| **B**            | A + navigation-layout, appearance-preferences, ui-polish, reader-motion-continuity, responsive-layout-matrix | 44,9 mnt       | ~22,4 mnt          |
+| **C**            | gate ~300 tes inti                                                                                           | ~24 mnt        | ~12–15 mnt         |
+
+Rekomendasi agent: **B** untuk gate pre-push (jalur berat tetap dijalankan saat
+tersentuh lewat `test:loop`/`test:e2e:changed`, dan penuh di CI/mesin pemilik).
+C hanya masuk akal bila CI menjadi gate wajib.
+
+Opsi B sudah tersedia sebagai `pnpm test:e2e:gate` (480 tes) dan diukur;
+lihat log siklus. Eksperimen context/cache per worker (B-33a) juga diukur:
+`navigation-layout` 41 tes turun **152 dtk → 119 dtk (−22%)** dengan satu
+context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
+semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
+Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
+
 **Aturan nonstop (agentic coding):** setiap run > 60 dtk WAJIB menjadi background
 job; agent langsung mengerjakan item lain (dokumen, unit test, spec) dan membaca
 hasil saat notifikasi. Run browser penuh bukan gate per perubahan — ia gate
