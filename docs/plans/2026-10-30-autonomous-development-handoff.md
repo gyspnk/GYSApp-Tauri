@@ -1024,6 +1024,14 @@ context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
 semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
 Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
 
+**CI gating — bukti hosted (31 Okt):** run `41171323460` (commit `e32b8c3`,
+perubahan hanya `ci.yml` + dokumen) menunjukkan `changes`, `verify`,
+`secret-scan` selesai dan **`native-check` dilewati**; `web-build` tetap jalan
+karena guard melihat run sebelumnya (`41170979357`) **dibatalkan**, sehingga
+aplikasi sengaja diverifikasi ulang. Ini perilaku yang diinginkan: pembatalan
+tidak boleh menyembunyikan kode yang belum terverifikasi. Push dokumentasi
+berikutnya (setelah run sukses) akan menguji jalur cepat tanpa `web-build`.
+
 **Bukti keamanan loop (failing-first, 31 Okt):** menambahkan error tipe ke
 `egys-whatsapp-tracking.ts` membuat loop gagal dalam **5 dtk** dengan
 `error TS2322`; mengubah perilaku `normalizeSenderPhone` membuat loop gagal
