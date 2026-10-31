@@ -1222,6 +1222,17 @@ ada polling atau `sleep` panjang; run > 60 dtk selalu background.
 (pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
 baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
 
+### Backlog poles UI (setelah pass 1–3)
+
+| Kandidat                                | Alasan                                         | Cara verifikasi                                        |
+| --------------------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
+| Kepadatan daftar Kidung di 320–390      | Judul sering pecah 2 baris; tinggi baris besar | `kidung-density`, `kidung-small-phone-nav`, screenshot |
+| Placeholder gambar Suara/Literatur      | Blok pucat + garis progres, belum shimmer utuh | `suara-image`, `thumbnail-recovery`, screenshot        |
+| Empty state "Belum ada bacaan terakhir" | Teks datar tanpa ilustrasi/CTA yang jelas      | `smoke`, `home-continue` (bila ada), screenshot        |
+| Konsistensi dialog/popover              | Radius/shadow berbeda antar surface            | `ui-elements`, `menu-motion`, visual                   |
+| Kontras teks muted di dark/amoled       | Beberapa label sekunder mendekati batas        | `accessibility`, axe, cek 4.5:1                        |
+| Skala tipografi antar layar             | Judul 28–34 px tidak seragam                   | screenshot 320/390/768/1440                            |
+
 ### Audit UI + engine (kebijakan wajib, 31 Okt)
 
 Setiap audit harus mencakup **UI dan engine backend**, bukan hanya tampilan.
