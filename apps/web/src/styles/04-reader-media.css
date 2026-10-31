@@ -2506,7 +2506,13 @@ body.gys-viewer-active {
   }
   .topbar-select .control-select-trigger {
     min-height: 44px;
-    padding-inline: 6px;
+    justify-content: center;
+    padding-inline: 4px;
+  }
+  /* A 44 px locale control cannot fit the two-letter code and a chevron, and
+     the clipped glyph looked like stray text next to the theme button. */
+  .topbar-select .control-select-chevron {
+    display: none;
   }
   .account-button {
     width: 44px;
