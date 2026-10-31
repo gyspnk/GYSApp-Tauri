@@ -234,7 +234,7 @@ for (const surface of surfaces) {
           // over the title and verse drawn on top of it.
           mask: [],
           maskColor: "#ded6c8",
-          maxDiffPixelRatio: 0.005,
+          maxDiffPixelRatio: 0.001,
         },
       );
     });
@@ -449,7 +449,7 @@ for (const viewport of [viewports[0], viewports[2]]) {
     await expect(page).toHaveScreenshot(`kidung-pdf-${viewport.name}.png`, {
       animations: "disabled",
       caret: "hide",
-      maxDiffPixelRatio: 0.005,
+      maxDiffPixelRatio: 0.001,
     });
   });
 }

@@ -361,7 +361,7 @@ for (const viewport of viewports) {
       {
         animations: "disabled",
         caret: "hide",
-        maxDiffPixelRatio: 0.005,
+        maxDiffPixelRatio: 0.001,
       },
     );
   });
@@ -383,7 +383,7 @@ for (const viewport of viewports) {
     await expect(page).toHaveScreenshot(`faith-catalog-${viewport.name}.png`, {
       animations: "disabled",
       caret: "hide",
-      maxDiffPixelRatio: 0.005,
+      maxDiffPixelRatio: 0.001,
     });
   });
 }
@@ -431,7 +431,7 @@ for (const viewport of readerViewports) {
       {
         animations: "disabled",
         caret: "hide",
-        maxDiffPixelRatio: 0.005,
+        maxDiffPixelRatio: 0.001,
       },
     );
   });
@@ -475,7 +475,7 @@ for (const viewport of readerViewports) {
       {
         animations: "disabled",
         caret: "hide",
-        maxDiffPixelRatio: 0.005,
+        maxDiffPixelRatio: 0.001,
       },
     );
   });
@@ -502,7 +502,7 @@ test("dark literature catalog theme sample", async ({ page }) => {
   await expect(page).toHaveScreenshot("literature-catalog-dark-390x844.png", {
     animations: "disabled",
     caret: "hide",
-    maxDiffPixelRatio: 0.005,
+    maxDiffPixelRatio: 0.001,
   });
 });
 
@@ -551,7 +551,7 @@ test("sepia literature direct reader theme sample", async ({ page }) => {
   await expect(page).toHaveScreenshot("literature-reader-sepia-1440x900.png", {
     animations: "disabled",
     caret: "hide",
-    maxDiffPixelRatio: 0.005,
+    maxDiffPixelRatio: 0.001,
   });
 });
 
@@ -595,7 +595,7 @@ test("AMOLED faith overlay theme sample", async ({ page }) => {
   await expect(page).toHaveScreenshot("faith-overlay-amoled-390x844.png", {
     animations: "disabled",
     caret: "hide",
-    maxDiffPixelRatio: 0.005,
+    maxDiffPixelRatio: 0.001,
   });
 });
 
@@ -688,7 +688,7 @@ test("AMOLED Faith overlay unavailable state keeps localized source actions", as
         {
           animations: "disabled",
           caret: "hide",
-          maxDiffPixelRatio: 0.005,
+          maxDiffPixelRatio: 0.001,
         },
       );
     }
