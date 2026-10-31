@@ -1370,6 +1370,24 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Judul literatur dua baris + audit luapan (31 Okt)
+
+`apps/web/scripts/ui-overflow-audit.mjs` ternyata memakai rute yang salah
+(`/literature` adalah halaman 404; rutenya `/literatur`), hanya 4 viewport, dan
+satu tema — sehingga “0 masalah” sebelumnya tidak mewakili layar nyata.
+Sekarang skrip memakai 12 rute asli (termasuk `/kidung/1` dan tiga bagian
+Pengaturan), dua tema (light/dark), dan mengabaikan pemotongan yang memang
+disengaja (`text-overflow: ellipsis`, `-webkit-line-clamp`). Hasil 72
+pemuatan halaman (12 rute × 3 viewport × 2 tema): 6 temuan, semuanya judul
+`.literature-copy strong` yang terpotong satu baris di `/literatur`
+(320/390/768). Perbaikan: di ≤700 px judul memakai dua baris
+(`-webkit-line-clamp: 2`, `white-space: normal`) dan
+`contain-intrinsic-size: 96px` agar gulir tetap stabil; baris tumbuh 84 → 102 px
+tetapi informasinya utuh. Verifikasi: audit ulang **0 masalah**,
+`catalog-discovery` 5/5, tes literatur `editorial-ui` +
+`reading-family-usability` 13/13, dan tangkapan 390 px menunjukkan judul
+terbaca penuh tanpa baris terpotong.
+
 ### Cincin fokus (31 Okt)
 
 Probe Tab pada topbar menunjukkan dua gaya cincin fokus: `3px` biru

@@ -890,6 +890,23 @@
   font-size: 0.9375rem;
 }
 
+/* Phones cannot afford a single-line ellipsis on every title: the list becomes
+   a column of half-sentences. Two lines keep the list scannable and still cap
+   the row height. */
+@media (max-width: 700px) {
+  .literature-copy strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+  }
+
+  .literature-row {
+    contain-intrinsic-size: 96px;
+  }
+}
+
 .literature-copy small {
   color: var(--muted);
   font-size: 0.75rem;
