@@ -975,6 +975,24 @@ Verifikasi: build lulus, bundle 179,4/180,0 KiB; screenshot preview
 Status: DONE (menunggu regenerasi baseline)
 ```
 
+```text
+Cycle: 21 | 2026-10-31 17:00–17:30 WIB | codex/autonomous-hardening-20261030
+Mandat: UI sebagai bagian utama goal — lanjutan pass pertama.
+Temuan audit:
+  - Reader kidung di ponsel menempatkan satu bait di tengah layar dengan
+    ~300 px ruang kosong di atasnya; posisi baca tidak predictable.
+  - (Pass sebelumnya) teks justify dan skeleton Sauh sudah diperbaiki.
+Perbaikan:
+  - `app-design.css` ≤700 px: `.lyrics-sheet:not(.is-continuous)` memakai
+    `place-content: start center` + padding atas, sehingga bait mulai di bawah
+    header.
+Verifikasi: 17/17 kontrak scroll/geometri kidung lulus
+  (`mobile-scroll-kidung`, `kidung-section-navigation`); screenshot preview
+  menunjukkan teks mulai pada y≈74 (sebelumnya ~370); baseline `reader` 390
+  diregenerasi lewat job hosted.
+Status: DONE (baseline diadopsi pada commit berikutnya)
+```
+
 ## 5. Risiko dan batasan bukti
 
 - **Kebijakan uji terbaru (permintaan pemilik, 30 Oktober 2026): uji penuh dijalankan
