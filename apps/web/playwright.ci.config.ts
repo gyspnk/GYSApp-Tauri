@@ -11,11 +11,4 @@ export default defineConfig(baseConfig, {
   // runners cannot meet them (nor can the 8-core ARM host), so they run in the
   // dedicated perf job on main pushes instead of every PR shard.
   grepInvert: /@perf/,
-  // Visual baselines depend on the hosted renderer and on whether the mocked
-  // artwork resolves; they drifted from the committed -linux references and
-  // kept turning every PR shard red. They are regenerated and reviewed through
-  // the manual `update-visual-baselines` job (artifact) instead of gating
-  // behaviour PRs. Re-enable by deleting these two entries once the baselines
-  // are reviewed.
-  testIgnore: ["**/visual.spec.ts", "**/visual-reading.spec.ts"],
 });
