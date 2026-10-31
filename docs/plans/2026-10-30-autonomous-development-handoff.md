@@ -1401,6 +1401,12 @@ menghasilkan bingkai emas di light/dark/sepia, `.media-surface` punya bayangan,
 `accessibility` + `settings-data-integrity` + `kidung-style-behavior` **34/34**,
 bundle tetap 179,3 KiB.
 
+Baseline job `41247943610` menghasilkan empat PNG yang berbeda byte, tetapi
+`ffmpeg` difference-blend menunjukkan **nol piksel berubah** (hanya metadata
+kompresi), jadi baseline tidak diadopsi. Suite unit web **522/522 dalam 20,4
+dtk**, `test:e2e:core` **88/88 dalam 4,3 mnt**, dan `pnpm ui:audit` **96
+pemuatan → 0 masalah**, CI hijau untuk keempat run `8b936fc`.
+
 ### Ketahanan tes drag (31 Okt)
 
 `tier:core` 87/88 lulus; satu-satunya kegagalan adalah
