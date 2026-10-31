@@ -1074,7 +1074,10 @@ untuk gambar Sauh (perbaikan produk) lalu regenerasi, atau terima state baru
 setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
 `perf-budget`, dan agregat `e2e` lulus untuk `workflow_dispatch`.
 
-**CI gating — bukti hosted (31 Okt):** run `41171323460` mencatat durasi job
+**CI gating — bukti hosted (31 Okt):** run `41176969482` (edge workflow) hanya
+menjalankan job `changes`; `packaged-native-smoke` (Windows, 20–30 mnt)
+**dilewati** karena push itu hanya menyentuh `ci.yml` + dokumen — penghematan
+runner Windows yang nyata. run `41171323460` mencatat durasi job
 sebenarnya: `changes` 7 dtk, `verify` 34 dtk, `secret-scan` 11 dtk,
 `web-build` **50 dtk**, `native-check` **dilewati**, tiga shard 9–11 mnt.
 Run `41173787196` (setelah tag `@perf`): **shard 1 dan 2 lulus**, `perf-budget`
