@@ -40,10 +40,10 @@ jobs:
           pr_base="${{ github.event.pull_request.base.sha }}"
           event_before="${{ github.event.before }}"
           head="${{ github.event.pull_request.head.sha || github.sha }}"
-          # Prefer the push range (event.before is the previous head for a PR
-          # synchronize and the previous commit for a main push), so a
-          # documentation push does not rebuild the application. Opened or
-          # reopened PRs have no previous head and fall back to the PR base.
+          branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          # Prefer the push range so a documentation push does not rebuild the
+          # application. Opened or reopened pull requests have no previous head
+          # and fall back to the PR base.
           if [ -n "$event_before" ] && [ "$event_before" != "0000000000000000000000000000000000000000" ]; then
             base="$event_before"
             range_kind="push"
@@ -58,8 +58,35 @@ jobs:
             git fetch --no-tags --depth=1 origin "$base" || true
           fi
           files=$(git diff --name-only "$base" "$head" || git diff --name-only HEAD^ HEAD)
+          # A cancelled or failed run must not be masked by a later docs push:
+          # widen the range to everything since the last *successful* CI run on
+          # this branch. When that lookup fails, verify (safe default).
+          failed_lookup=false
+          successful_head=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?branch=$branch&per_page=30" \
+            | jq -r '[.workflow_runs[] | select(.name == "CI" and .status == "completed" and .conclusion == "success")][0].head_sha // ""' 2>/dev/null) || failed_lookup=true
+          if [ "$failed_lookup" = "true" ]; then
+            echo "Cannot read the last successful run: verifying the application."
+            web_hint=true
+          else
+            web_hint=false
+          fi
+          if [ -z "${successful_head:-}" ]; then
+            echo "No successful CI run on this branch yet: verifying the application."
+            web_hint=true
+          fi
+          if [ -n "${successful_head:-}" ] && [ "$successful_head" != "$head" ]; then
+            if ! git cat-file -e "$successful_head^{commit}" 2>/dev/null; then
+              git fetch --no-tags --depth=1 origin "$successful_head" || true
+            fi
+            since=$(git diff --name-only "$successful_head" "$head" 2>/dev/null || true)
+            if [ -n "$since" ]; then
+              files="$since"
+              range_kind="since-last-success"
+            fi
+          fi
           printf 'Range: %s (%s..%s)\nChanged files:\n%s\n' "$range_kind" "$base" "$head" "$files"
-          web=false
+          web=$web_hint
           native=false
           if printf '%s\n' "$files" | grep -Eq '^(apps/(web|bff)/|packages/|scripts/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json)'; then
             web=true
@@ -67,20 +94,8 @@ jobs:
           if printf '%s\n' "$files" | grep -Eq '^apps/native/'; then
             native=true
           fi
-          # A cancelled or failed run for the previous head must not be masked by
-          # a later documentation push: verify the application in that case.
-          if [ "$web" = "false" ] && [ "$range_kind" = "push" ]; then
-            conclusion=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$event_before&per_page=1" \
-              | jq -r '.workflow_runs[0].conclusion // "missing"' 2>/dev/null || echo "unknown")
-            if [ "$conclusion" != "success" ]; then
-              echo "Previous run for $event_before finished with '$conclusion': verifying the app."
-              web=true
-            fi
-          fi
           echo "web=$web" >> "$GITHUB_OUTPUT"
           echo "native=$native" >> "$GITHUB_OUTPUT"
-
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10

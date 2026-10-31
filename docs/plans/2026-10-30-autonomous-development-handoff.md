@@ -1066,12 +1066,16 @@ Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
 visual, 4 mnt) dan mengunggah 149 PNG; 22 berbeda dari repo. Setelah penantian
 `.sauh-title` ditambahkan, `home-390x844` **tetap** menangkap blok Sauh
 ter-mask setinggi ~460 px tanpa teks, sedangkan baseline lama menampilkan isi.
-Artinya selisih itu **bukan** sekadar label akun `--navy`: kartu Sauh berada
-dalam state berbeda (gambar gagal dimuat / cache dingin) dibanding saat
-baseline lama dibuat. Baseline **tidak** di-commit — memperbaruinya akan
-membekukan state yang salah. Keputusan yang dibutuhkan: beri aspek-rasio tetap
-untuk gambar Sauh (perbaikan produk) lalu regenerasi, atau terima state baru
-setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
+Artinya selisih itu **bukan** sekadar label akun `--navy`. Probe lokal dengan
+jam yang sama (`2026-09-28`) menunjukkan penyebabnya: slot media Sauh dirender
+**~460 px** tinggi di 390 px (placeholder `data-image-state="missing"` /
+gambar 1×1), sehingga judul dan ayat terdorong ke bawah lipatan; baseline lama
+hanya ~180 px dan teksnya terlihat. Ini perubahan layout hero, bukan warna
+label. `visual.spec.ts` kini (a) menunggu `.sauh-title` berisi sebelum
+screenshot dan (b) memakai artwork transparan 1200×800 (rasio 3:2) alih-alih
+piksel 1×1 agar slot media deterministik. Baseline **tidak** di-commit;
+keputusan yang dibutuhkan: batasi tinggi/aspek media Sauh (perbaikan produk)
+lalu regenerasi, atau terima state baru setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
 `perf-budget`, dan agregat `e2e` lulus untuk `workflow_dispatch`.
 
 **CI gating — bukti hosted (31 Okt):** run `41176969482` (edge workflow) hanya
