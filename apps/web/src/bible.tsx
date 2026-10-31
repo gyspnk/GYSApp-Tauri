@@ -1,6 +1,7 @@
 import { createChapterSwipe } from "./chapter-swipe.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
+import { useDialogFocus } from "./dialog-focus.js";
 import {
   type BibleNotes,
   BOOK_KEY,
@@ -236,6 +237,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
       }
     | undefined
   >(undefined);
+  const crossRefDialogRef = useRef<HTMLDivElement>(null);
+  const crossRefOpenerRef = useRef<HTMLElement | null>(null);
+  useDialogFocus({
+    open: crossRefModal !== undefined,
+    dialogRef: crossRefDialogRef,
+    openerRef: crossRefOpenerRef,
+    onClose: () => setCrossRefModal(undefined),
+    initialFocusSelector: ".bible-crossref-close",
+  });
   const {
     splitView,
     setSplitView,
@@ -2019,6 +2029,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
           >
             <div
               className="bible-crossref-modal"
+              ref={crossRefDialogRef}
+              tabIndex={-1}
               onClick={(event) => event.stopPropagation()}
             >
               <div className="bible-crossref-header">
@@ -2028,6 +2040,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 </div>
                 <button
                   type="button"
+                  className="bible-crossref-close"
                   aria-label={translate(locale, "bible.closeCrossReferences")}
                   onClick={() => setCrossRefModal(undefined)}
                 >

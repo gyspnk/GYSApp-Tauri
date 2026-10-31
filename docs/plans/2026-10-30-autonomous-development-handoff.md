@@ -1388,6 +1388,23 @@ konten utama”) lalu lulus pada CSS baru. Tes kedua menjalankan probe yang sama
 gelap (`data-theme="dark"` dari `gys-shell-settings-v1` berisi locale+theme)
 agar token `--focus` terbukti aman di kedua tema. `accessibility` **17/17**.
 
+### Dialog rujukan silang (31 Okt)
+
+Audit overlay menemukan `bible-crossref-backdrop` (dialog “Referensi silang”)
+tanpa pengelolaan fokus: saat dibuka fokus tetap di chip pemicu di belakang
+lapisan, Tab pertama langsung lolos ke `BUTTON.verse-number`, dan Escape tidak
+menutup apa pun (probe: `open:true, inside:false`). Perbaikan memakai
+`useDialogFocus` yang sama dengan dialog catatan: `ref` + `tabIndex={-1}` pada
+`.bible-crossref-modal`, kelas `.bible-crossref-close` sebagai fokus awal,
+Escape menutup, dan fokus kembali ke chip. Tes
+“inline cross-reference stays with the verse and supports the keyboard”
+(`e2e/editorial-ui.spec.ts`) diperluas: tombol tutup harus fokus, lima Tab tetap
+di dalam dialog, Escape menutup, chip kembali fokus. Dibuktikan gagal-dulu
+dengan `git stash` pada `src/bible.tsx` (3 kegagalan `toBeFocused`), lalu hijau
+setelah dipulihkan; probe sesudah perbaikan `open:true, inside:true,
+focus:BUTTON.bible-crossref-close`, “held 10”, dan fokus kembali ke
+`SPAN.bible-crossref-inline` setelah Escape.
+
 ### Dialog catatan Alkitab (31 Okt)
 
 Popup catatan (`apps/web/src/bible-notes-popup.tsx`) memakai `role="dialog"`
