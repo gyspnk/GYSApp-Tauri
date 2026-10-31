@@ -55,7 +55,7 @@
   --muted: #586b7d;
   --line: #dce5ee;
   --line-strong: #bdcedd;
-  --blue: #0079a8;
+  --blue: #00719c;
   --accent-fill: var(--blue);
   --on-accent: #ffffff;
   --success: #23642b;
@@ -63,11 +63,11 @@
   --navy: #163f61;
   --shadow: 0 14px 40px rgba(31, 66, 112, 0.08);
   --shadow-lift: 0 18px 42px rgba(31, 66, 112, 0.14);
-  --radius-sm: 5px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-card: 16px;
-  --radius-feature: 20px;
+  --radius-feature: 24px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-fast: 150ms;
   --motion-normal: 220ms;

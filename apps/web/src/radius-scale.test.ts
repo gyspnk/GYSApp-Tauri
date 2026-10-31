@@ -33,4 +33,17 @@ describe("radius scale", () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  it("keeps every radius token on the shared scale", () => {
+    // Declarations were normalised first, but the token layer kept its own
+    // stray values (--radius-sm: 5px, --radius-feature: 20px). Guard it too so
+    // a token cannot reintroduce what the declaration test already rejects.
+    const tokens = readFileSync(new URL("styles/00-tokens.css", SRC), "utf8");
+    const offenders: string[] = [];
+    for (const match of tokens.matchAll(/--radius-[a-z-]+:\s*(\d+)px/g)) {
+      const value = Number(match[1]);
+      if (!SCALE.has(value)) offenders.push(`styles/00-tokens.css ${match[0]}`);
+    }
+    expect(offenders).toEqual([]);
+  });
 });

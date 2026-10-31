@@ -1259,6 +1259,26 @@ dengan baseline visual + `select-dropdown`/`menu-motion`.
 **Pelajaran:** klaim "sudah dinormalisasi" harus dibuktikan dengan pemindaian
 ulang seluruh berkas CSS, bukan sampel — pass pertama melewatkan 58 deklarasi.
 
+### Kontras tema terang & token radius (31 Okt)
+
+Audit kontras dengan axe (`wcag2aa`) pada enam rute (Beranda, Alkitab, Kidung,
+Lainnya, Literatur, Suara) x tema terang/gelap x 390/1440 px menemukan dua
+pelanggaran di tema terang saja: label pemilih kitab (`#0079a8` pada
+`--blue-soft`) dan label `Kidung` pada navigasi, keduanya **4.26:1** — di bawah
+4.5:1 untuk teks 13 px. Akarnya satu token: `--blue` hanya lolos di atas putih
+(4.88), tidak di atas `--blue-soft`. Token terang digelapkan ke **`#00719c`**
+(4.78 di atas `--blue-soft`, 5.47 di atas putih) sehingga seluruh teks biru di
+permukaan biru ikut lolos, bukan hanya dua node yang kebetulan terdeteksi.
+Sesudah perubahan audit yang sama melaporkan **semua rute AA** di kedua tema
+dan kedua lebar; `accessibility.spec.ts` 15/15.
+
+Lapisan token juga masih menyimpan nilai radius di luar skala — `--radius-sm:
+5px` dan `--radius-feature: 20px` — yang lolos dari penyisiran deklarasi karena
+hanya memeriksa `border-radius: Npx`. Keduanya dipindahkan ke **6 px** dan
+**24 px**, dan `src/radius-scale.test.ts` kini memeriksa token juga; bukti
+gagal-dulu: mengembalikan 5 px menghasilkan
+`styles/00-tokens.css --radius-sm: 5px`, lalu hijau lagi setelah dipulihkan.
+
 ### Merek di layar sempit (31 Okt)
 
 Di 320 px kata merek pada logo (`gys-logo.png`, rasio 2263×288) terpotong di
