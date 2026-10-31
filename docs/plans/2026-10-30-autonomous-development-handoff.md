@@ -947,14 +947,14 @@ Aturan yang mengikat setiap siklus:
 
 ### Ladder yang optimal untuk host ini (8 core, 11 GiB, ARM)
 
-| Kapan                      | Perintah                                                         | Anggaran              | Catatan                                                                                             |
-| -------------------------- | ---------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
-| Setelah edit apa pun       | `pnpm test:loop` (default, tanpa browser)                        | **0–5 dtk**           | docs 2 dtk, scripts 3 dtk, web source **3,9–5 dtk** (typecheck + `vitest related` + format paralel) |
-| Spec/UI yang butuh browser | `pnpm test:loop --with-e2e` atau `test:e2e:changed` (background) | 10 dtk – 3 mnt        | spec yang tersentuh selalu dijalankan; sumber UI hanya jika diminta                                 |
-| Sebelum commit             | `pnpm test:e2e:core`                                             | 3,4 mnt               | 87 tes shell/settings/e-GYS                                                                         |
-| Sebelum push               | `pnpm test:e2e:gate` (background)                                | **22,7 mnt terukur**  | 480 tes; 475 lulus, 2 gagal batas host; sembilan spec terberat ke CI                                |
-| Milestone                  | `pnpm test:e2e:local` (background)                               | ~35 mnt               | 766 tes, tanpa baseline `-linux`                                                                    |
-| Handoff/CI                 | `pnpm test:e2e` atau `test:e2e:shards`                           | ~39 mnt / mesin besar | suite penuh                                                                                         |
+| Kapan                      | Perintah                                                         | Anggaran              | Catatan                                                                                                                        |
+| -------------------------- | ---------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Setelah edit apa pun       | `pnpm test:loop` (default, tanpa browser)                        | **0–5 dtk**           | docs **1,3 dtk**, scripts **1,7 dtk**, web source **3,9–5 dtk** (typecheck + `vitest related` + format paralel); config 10 dtk |
+| Spec/UI yang butuh browser | `pnpm test:loop --with-e2e` atau `test:e2e:changed` (background) | 10 dtk – 3 mnt        | spec yang tersentuh selalu dijalankan; sumber UI hanya jika diminta                                                            |
+| Sebelum commit             | `pnpm test:e2e:core`                                             | 3,4 mnt               | 87 tes shell/settings/e-GYS                                                                                                    |
+| Sebelum push               | `pnpm test:e2e:gate` (background)                                | **22,7 mnt terukur**  | 480 tes; 475 lulus, 2 gagal batas host; sembilan spec terberat ke CI                                                           |
+| Milestone                  | `pnpm test:e2e:local` (background)                               | ~35 mnt               | 766 tes, tanpa baseline `-linux`                                                                                               |
+| Handoff/CI                 | `pnpm test:e2e` atau `test:e2e:shards`                           | ~39 mnt / mesin besar | suite penuh                                                                                                                    |
 
 Aturan host: 2 worker adalah batas (179 dtk @2 vs 217 dtk @4 pada 55 tes yang
 sama; tiga spec berat — kidung-usability, pdf-shared-viewer, editorial-ui —
@@ -986,6 +986,13 @@ lihat log siklus. Eksperimen context/cache per worker (B-33a) juga diukur:
 context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
 semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
 Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
+
+**Bukti keamanan loop (failing-first, 31 Okt):** menambahkan error tipe ke
+`egys-whatsapp-tracking.ts` membuat loop gagal dalam **5 dtk** dengan
+`error TS2322`; mengubah perilaku `normalizeSenderPhone` membuat loop gagal
+dalam **4 dtk** pada unit test terkait (`rejects 12345`). Jadi sinyal < 5 dtk
+bukan no-op: ia menangkap kesalahan tipe dan regresi logika yang tercakup unit
+test, lalu browser tetap tersedia sebagai opt-in/background untuk perubahan UI.
 
 **Aturan nonstop (agentic coding):** setiap run > 60 dtk WAJIB menjadi background
 job; agent langsung mengerjakan item lain (dokumen, unit test, spec) dan membaca
