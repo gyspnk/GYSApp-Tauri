@@ -49,7 +49,12 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     "Pujian berikutnya",
   ].entries()) {
     const button = pagerButtons.nth(index);
-    await expect(button).toHaveAttribute("aria-label", label);
+    // The hymn navigation context can resolve after the reader frame under a
+    // loaded two-worker run; wait for the hymn-specific label instead of the
+    // generic PDF chrome fallback.
+    await expect(button).toHaveAttribute("aria-label", label, {
+      timeout: 20_000,
+    });
     await expect(button).toHaveAttribute("title", label);
     await expect(button.locator("svg")).toHaveCount(1);
   }
@@ -171,10 +176,12 @@ test("Kidung PDF localizes its internal reader chrome", async ({ page }) => {
     await expect(pagerButtons.nth(0)).toHaveAttribute(
       "aria-label",
       copy[locale].previous,
+      { timeout: 20_000 },
     );
     await expect(pagerButtons.nth(1)).toHaveAttribute(
       "aria-label",
       copy[locale].next,
+      { timeout: 20_000 },
     );
     await expect(
       reader.getByRole("button", { name: copy[locale].settings, exact: true }),
