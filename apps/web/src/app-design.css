@@ -4969,3 +4969,29 @@ body:has(.hymn-detail-page.is-text-viewer)
     padding-block: clamp(16px, 5vw, 32px);
   }
 }
+
+/* Loading artwork keeps the card alive: a soft sheen travels across the same
+   frame the image will occupy instead of a flat pale block. */
+.img-skeleton-wrapper[data-image-state="loading"] {
+  background-image: linear-gradient(
+    100deg,
+    var(--surface-soft) 30%,
+    color-mix(in srgb, var(--surface) 70%, var(--surface-soft)) 45%,
+    var(--surface-soft) 60%
+  );
+  background-size: 220% 100%;
+  animation: image-skeleton-sheen 1.7s ease-in-out infinite;
+}
+@keyframes image-skeleton-sheen {
+  from {
+    background-position: 220% 0;
+  }
+  to {
+    background-position: -220% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton-wrapper[data-image-state="loading"] {
+    animation: none;
+  }
+}
