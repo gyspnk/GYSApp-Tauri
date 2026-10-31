@@ -1061,14 +1061,18 @@ context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
 semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
 Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
 
-**Baseline visual via job manual (31 Okt):** job `update-visual-baselines` pada
-run `41174643671` **sukses** dan mengunggah 149 PNG; 22 berbeda dari repo.
-Namun `home-390x844` menangkap **skeleton Sauh** (feed belum selesai) — bukti
-bahwa regenerasi otomatis tanpa penantian konten akan membekukan state
-loading. `visual.spec.ts` kini menunggu `.sauh-title` berisi sebelum screenshot;
-regenerasi berikutnya harus dijalankan setelah perbaikan ini. Job manual juga
-dipersempit: hanya tiga spec visual, `--workers=2`, dan dispatch tidak lagi
-menjalankan shard/Windows/`perf-budget`.
+**Baseline visual via job manual (31 Okt):** job `update-visual-baselines`
+**sukses** dua kali (`41174643671` full suite, `41176447426` hanya tiga spec
+visual, 4 mnt) dan mengunggah 149 PNG; 22 berbeda dari repo. Setelah penantian
+`.sauh-title` ditambahkan, `home-390x844` **tetap** menangkap blok Sauh
+ter-mask setinggi ~460 px tanpa teks, sedangkan baseline lama menampilkan isi.
+Artinya selisih itu **bukan** sekadar label akun `--navy`: kartu Sauh berada
+dalam state berbeda (gambar gagal dimuat / cache dingin) dibanding saat
+baseline lama dibuat. Baseline **tidak** di-commit — memperbaruinya akan
+membekukan state yang salah. Keputusan yang dibutuhkan: beri aspek-rasio tetap
+untuk gambar Sauh (perbaikan produk) lalu regenerasi, atau terima state baru
+setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
+`perf-budget`, dan agregat `e2e` lulus untuk `workflow_dispatch`.
 
 **CI gating — bukti hosted (31 Okt):** run `41171323460` mencatat durasi job
 sebenarnya: `changes` 7 dtk, `verify` 34 dtk, `secret-scan` 11 dtk,

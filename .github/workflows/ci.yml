@@ -15,7 +15,7 @@ permissions:
 concurrency:
   # A newer commit supersedes an older verification run while the PR event
   # remains the single source of truth for feature branches.
-  group: ci-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -264,6 +264,10 @@ jobs:
     steps:
       - name: Require the applicable browser verification path to pass
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual run: browser verification is not part of this workflow."
+            exit 0
+          fi
           if [ "${{ needs.changes.result }}" != "success" ]; then
             echo "Change classification failed; refusing to skip browser verification."
             exit 1
