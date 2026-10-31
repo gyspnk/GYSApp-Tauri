@@ -54,6 +54,37 @@ const transparentArtwork = Buffer.from(
   "base64",
 );
 
+// A fixed WP REST payload keeps the Sauh card deterministic: the live feed is
+// blocked in these tests, and without it the card can fall back to its loading
+// skeleton right before the screenshot (which baked an empty card into a
+// regenerated baseline). The date matches the fixed clock below.
+const sauhFeed = [
+  {
+    id: 1,
+    slug: "sbj260928",
+    date: "2026-09-28T00:56:35",
+    modified: "2026-09-28T00:56:35",
+    link: "https://tjc.org/id/gerakan-baca-alkitab/sbj260928/",
+    title: { rendered: "Buah Pertobatan" },
+    reference: "Matius 21:43",
+    verse:
+      "Sebab itu, Aku berkata kepadamu, bahwa Kerajaan Allah akan diambil dari padamu dan akan diberikan kepada suatu bangsa yang akan menghasilkan buah Kerajaan itu",
+    content: {
+      rendered:
+        "<p>Renungan pagi tentang buah pertobatan yang nyata dalam kehidupan sehari-hari.</p>",
+    },
+    excerpt: { rendered: "<p>Renungan pagi tentang buah pertobatan.</p>" },
+    _embedded: {
+      "wp:featuredmedia": [
+        {
+          source_url:
+            "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/2026/09/cover.jpg",
+        },
+      ],
+    },
+  },
+];
+
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-09-28T10:00:00Z"));
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -71,6 +102,14 @@ async function prepare(page: Page): Promise<void> {
     if (route.request().resourceType() === "image") return route.abort();
     await route.abort();
   });
+  // Registered after the blanket abort: Playwright matches the last route first.
+  await page.route("https://tjc.org/id/wp-json/wp/v2/posts**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(sauhFeed),
+    }),
+  );
   await page.route("https://tjcorguploads.s3.amazonaws.com/**", (route) =>
     route.fulfill({ body: transparentArtwork, contentType: "image/png" }),
   );
