@@ -171,6 +171,15 @@ function requestId(c: AppContext): string {
   );
 }
 
+class ProviderRejection extends Error {
+  public constructor(
+    public readonly status: number,
+    public readonly detail: string,
+  ) {
+    super(`e-GYS rejected the login request (HTTP ${status})`);
+  }
+}
+
 function errorResponse(c: AppContext, code: ErrorCode, message: string) {
   const id = requestId(c);
   c.header("x-request-id", id);
@@ -1350,8 +1359,19 @@ export function createApp(
       redirect: "manual",
     });
     const payload = (await response.json()) as Record<string, unknown>;
-    if (!response.ok || payload.error === true)
-      throw new Error("e-GYS rejected the login request");
+    if (!response.ok || payload.error === true) {
+      // Keep the upstream reason in the failure so a client diagnostic can show
+      // exactly which field the provider rejected (phone format, expired code,
+      // unknown reference) instead of one opaque message.
+      const reason =
+        typeof payload.message === "string"
+          ? payload.message
+          : typeof payload.error === "string"
+            ? payload.error
+            : "";
+      const detail = reason.replace(/\s+/g, " ").slice(0, 160);
+      throw new ProviderRejection(response.status, detail);
+    }
     return payload;
   };
   const saveProviderSession = (
@@ -1521,11 +1541,15 @@ export function createApp(
       if (result.status === 200)
         deleteCookie(c, "egys_wa_reference", egysSessionCookieOptions(c));
       return result;
-    } catch {
+    } catch (error) {
+      const rejection = error instanceof ProviderRejection ? error : undefined;
+      const suffix = rejection
+        ? ` (e-GYS ${rejection.status}${rejection.detail ? `: ${rejection.detail}` : ""})`
+        : "";
       return errorResponse(
         c,
         "UNAUTHORIZED",
-        "WhatsApp code could not be verified",
+        `WhatsApp code could not be verified${suffix}`,
       );
     }
   });

@@ -113,6 +113,13 @@ export function EgysWhatsApp({
         }
         return lastError;
       };
+      recordDiagnostic(
+        "info",
+        "egys.whatsapp.confirm.request",
+        new Error(
+          `phone=${mobilephone.replace(/[^0-9]/g, "").slice(0, 2)}… (${mobilephone.replace(/[^0-9]/g, "").length} digits, plus=${mobilephone.startsWith("+")}), otp=${code.length} digits`,
+        ),
+      );
       let confirmError: unknown;
       try {
         await requestConfirm();
