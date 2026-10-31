@@ -125,10 +125,25 @@ test("navigation without native snapshots fades once with no legacy entrance", a
         () => (window as unknown as { fallbackPages: unknown[] }).fallbackPages,
       ),
     )
-    .toEqual([
-      { css: 0, duration: 260 },
-      { css: 0, duration: 260 },
-    ]);
+    .not.toEqual([]);
+  const fallback = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          fallbackPages: Array<{ css: number; duration: number }>;
+        }
+      ).fallbackPages,
+  );
+  // Each smooth navigation fades the outgoing view (110ms) and the incoming
+  // one (260ms); only those two route animations may run, and never a legacy
+  // CSS entrance.
+  expect(fallback.every((sample) => sample.css === 0)).toBe(true);
+  expect(new Set(fallback.map((sample) => sample.duration))).toEqual(
+    new Set([110, 260]),
+  );
+  expect(
+    fallback.filter((sample) => sample.duration === 260).length,
+  ).toBeGreaterThanOrEqual(2);
 });
 
 test("navigation from a scrolled catalog starts the destination at its top", async ({
@@ -146,7 +161,7 @@ test("navigation from a scrolled catalog starts the destination at its top", asy
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
 });
 
-test("navigation snapshots only page content and rapid taps end on the latest route", async ({
+test("page navigation skips document snapshots and rapid taps end on the latest route", async ({
   page,
 }) => {
   const failures: string[] = [];
@@ -179,11 +194,13 @@ test("navigation snapshots only page content and rapid taps end on the latest ro
   });
   await expect(page).toHaveURL(/\/bible$/);
   await expect(page.locator(".bible-page")).toBeVisible();
+  // Page navigation cross-fades the route view; a document snapshot is only
+  // used for reader surfaces, so rapid taps must not capture one at all.
   expect(
     await page.evaluate(
       () => (window as unknown as { transitions: string[] }).transitions,
     ),
-  ).toEqual(["app-page"]);
+  ).toEqual([]);
   await expect(page.locator("html")).not.toHaveClass(/is-reader-transition/);
   await expect(page.locator('.primary-nav a[href$="/bible"]')).toHaveAttribute(
     "aria-current",

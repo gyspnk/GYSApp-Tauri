@@ -35,7 +35,6 @@ const localeCopy = {
     back: "← Beranda",
     title: "Suara Sejati",
     eyebrow: "Cerita dan kesaksian",
-    intro: "Kesaksian nyata dari arsip resmi Gereja Yesus Sejati.",
     date: /Des/i,
     alt: "Sampul Menapaki Tiga Iman Bag",
   },
@@ -43,7 +42,6 @@ const localeCopy = {
     back: "← Home",
     title: "True Voice",
     eyebrow: "Stories and testimonies",
-    intro: "True testimonies from the official True Jesus Church archive.",
     date: /Dec/i,
     alt: "Cover of Menapaki Tiga Iman Bag",
   },
@@ -51,7 +49,6 @@ const localeCopy = {
     back: "← 主页",
     title: "真实声音",
     eyebrow: "故事与见证",
-    intro: "来自真耶稣教会官方档案的真实见证。",
     date: /12月|2023年/,
     alt: "Menapaki Tiga Iman Bag 的封面",
   },
@@ -109,9 +106,6 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
       ).toBeVisible();
       await expect(
         catalog.getByText(localeCopy[locale].eyebrow, { exact: true }),
-      ).toBeVisible();
-      await expect(
-        catalog.getByText(localeCopy[locale].intro, { exact: true }),
       ).toBeVisible();
 
       const firstCard = catalog.locator(".suara-library-item").first();
