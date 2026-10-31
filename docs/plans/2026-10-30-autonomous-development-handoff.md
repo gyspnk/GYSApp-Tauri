@@ -953,6 +953,28 @@ NEXT: jalankan `update-visual-baselines` dari tab Actions, review artifact,
   commit snapshot; lalu ukur jalur cepat docs-only.
 ```
 
+```text
+Cycle: 20 | 2026-10-31 16:00–16:40 WIB | codex/autonomous-hardening-20261030
+Mandat: kualitas UI menjadi bagian utama goal (permintaan pemilik).
+Audit: screenshot 8 layar × 390/1440 × light/dark dari preview produksi.
+Temuan:
+  1. Teks Alkitab/Iman/artikel di ponsel memakai `text-align: justify` pada
+     measure ~316 px → celah kata besar ("Dan Roh Allah melayang-layang di
+     atas" pecah). Ini cacat tipografi paling terlihat.
+  2. Skeleton kartu Sauh hanya satu progress bar di panel kosong ±300 px,
+     terbaca seperti halaman rusak.
+Perbaikan:
+  - `app-design.css`: di ≤767 px, verse/faith/artikel menjadi `text-align:
+    start`, `text-justify: auto`, `text-wrap: pretty`.
+  - `.sauh-skeleton`: kolom terpusat + bar shimmer, min-height 132–180 px,
+    animasi dimatikan untuk `prefers-reduced-motion`.
+Verifikasi: build lulus, bundle 179,4/180,0 KiB; screenshot preview
+  menunjukkan ayat rata kiri dengan spasi normal (lebar 316 px) dan skeleton
+  kartu yang utuh. Baseline visual `bible` 390/320 berubah → diregenerasi lewat
+  job hosted sebelum run berikutnya.
+Status: DONE (menunggu regenerasi baseline)
+```
+
 ## 5. Risiko dan batasan bukti
 
 - **Kebijakan uji terbaru (permintaan pemilik, 30 Oktober 2026): uji penuh dijalankan

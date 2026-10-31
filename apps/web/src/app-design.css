@@ -4910,3 +4910,53 @@ body:has(.hymn-detail-page.is-text-viewer)
   text-transform: uppercase;
   color: var(--blue);
 }
+
+/* Phone reading: justification on a 330px measure opens huge word gaps with
+   Indonesian compounds, so long-form text runs ragged-right instead. */
+@media (max-width: 767px) {
+  .bible-reader .verse-content,
+  .faith-page .faith-statement,
+  .online-article-body > p {
+    text-align: start;
+    text-justify: auto;
+    text-wrap: pretty;
+  }
+}
+
+/* The Sauh card keeps a visible skeleton while the feed resolves: a lone
+   progress bar in an empty panel read as a broken page. */
+.sauh-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: clamp(132px, 22vw, 180px);
+}
+.sauh-skeleton::after {
+  content: "";
+  width: min(100%, 280px);
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 25%,
+    var(--surface) 50%,
+    var(--surface-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: sauh-skeleton-sheen 1.8s ease-in-out infinite;
+}
+@keyframes sauh-skeleton-sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sauh-skeleton::after {
+    animation: none;
+  }
+}
