@@ -392,56 +392,14 @@ function Header({
           <span>{translate(locale, "shell.search")}</span>
           <kbd>⌘K</kbd>
         </button>
-        <Select
-          value={locale}
-          onChange={setLocale}
-          className="topbar-select language-select"
-          animated
-          label={translate(locale, "shell.language")}
-          options={[
-            { value: "id", label: "ID" },
-            { value: "en", label: "EN" },
-            { value: "zh", label: "中文" },
-          ]}
-        />
-        <Select
-          value={theme}
-          onChange={setTheme}
-          className="topbar-select theme-select"
-          label={translate(locale, "shell.theme")}
-          options={[
-            {
-              value: "system",
-              label: translate(locale, "shell.themeSystem"),
-              shortLabel: "",
-              icon: "system",
-            },
-            {
-              value: "light",
-              label: translate(locale, "shell.themeLight"),
-              shortLabel: "",
-              icon: "sun",
-            },
-            {
-              value: "dark",
-              label: translate(locale, "shell.themeDark"),
-              shortLabel: "",
-              icon: "moon",
-            },
-            {
-              value: "amoled",
-              label: translate(locale, "shell.themeAmoled"),
-              shortLabel: "",
-              icon: "amoled",
-            },
-            {
-              value: "sepia",
-              label: translate(locale, "shell.themeSepia"),
-              shortLabel: "",
-              icon: "sepia",
-            },
-          ]}
-        />
+        <Link
+          className="topbar-appearance-button"
+          to="/lainnya?section=appearance"
+          aria-label={translate(locale, "more.categoryAppearance")}
+          title={translate(locale, "more.categoryAppearance")}
+        >
+          <Icon name="sun" size={18} />
+        </Link>
         <AccountMenu locale={locale} />
       </div>
     </header>

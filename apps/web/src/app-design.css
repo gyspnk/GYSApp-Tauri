@@ -4995,3 +4995,35 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation: none;
   }
 }
+
+/* One canonical home for speech voice/speed/pitch: the drawer links to the
+   Audio settings instead of duplicating those controls. */
+.drawer-speech-link {
+  margin: 2px 0 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+.drawer-speech-link a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* One entry point for appearance: the top bar links to the canonical
+   Appearance section instead of duplicating theme and language selects. */
+.topbar-appearance-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--navy);
+  text-decoration: none;
+}
+.topbar-appearance-button:hover {
+  background: var(--blue-soft);
+}

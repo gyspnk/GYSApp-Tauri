@@ -175,7 +175,7 @@ for (const surface of surfaces) {
       if (viewport.width <= 390) {
         const undersizedTargets = await page
           .locator(
-            ".search-trigger, .account-button, .topbar-select .control-select-trigger, .navigation-shell .nav-item, .more-cat-btn, .primary-button, .quiet-button",
+            ".search-trigger, .account-button, .topbar-appearance-button, .navigation-shell .nav-item, .more-cat-btn, .primary-button, .quiet-button",
           )
           .evaluateAll((elements) =>
             elements.flatMap((element) => {

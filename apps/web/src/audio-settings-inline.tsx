@@ -77,7 +77,7 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
           max="2"
           step="0.1"
           value={speech.pitch}
-          aria-label={translate(locale, "bible.readingPitch")}
+          aria-label={translate(locale, "bible.voicePitch")}
           onChange={(event) =>
             speechPlayer.setPitch(Number(event.target.value))
           }

@@ -1222,6 +1222,21 @@ ada polling atau `sleep` panjang; run > 60 dtk selalu background.
 (pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
 baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
 
+### Duplikasi kontrol → satu tempat kanonik (31 Okt)
+
+| Kontrol                  | Sebelum (dua tempat)                  | Kanonik sekarang               | Tindakan                                                                                                                         |
+| ------------------------ | ------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Tema                     | select topbar + Pengaturan → Tampilan | **Pengaturan → Tampilan**      | select topbar dihapus; tombol Tampilan 44 px menautkan ke `?section=appearance`; label diseragamkan memakai kunci `shell.theme*` |
+| Bahasa aplikasi          | select topbar + Pengaturan → Tampilan | **Pengaturan → Tampilan**      | select topbar dihapus (tombol Tampilan membuka bagian yang sama)                                                                 |
+| Suara/kecepatan/nada TTS | drawer Alkitab + Pengaturan → Audio   | **Pengaturan → Audio & Suara** | kontrol duplikat di drawer dihapus; drawer menyisakan mesin TTS, gateway, volume, dan tautan ke Pengaturan Audio                 |
+| Mesin TTS & gateway      | drawer Alkitab                        | drawer Alkitab                 | tetap (konfigurasi lingkungan, bukan preferensi)                                                                                 |
+| Ukuran font reader       | kontrol Aa di reader                  | reader                         | tidak diduplikasi di Pengaturan                                                                                                  |
+
+Deep link `?section=appearance` dan `?section=audio` ditambahkan ke peta
+`MORE_SECTION_SETTINGS`. Verifikasi: `select-dropdown` 2/2,
+`appearance-preferences` 15/15, `menu-motion` 16/16; baseline visual
+diregenerasi karena topbar berubah di semua layar.
+
 ### Backlog poles UI (setelah pass 1–3)
 
 | Kandidat                                | Alasan                                                                                                                                                                              | Cara verifikasi                                        |

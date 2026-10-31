@@ -5,7 +5,7 @@ import {
   useSyncExternalStore,
   type RefObject,
 } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { SpeechEnginePreferenceSchema } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import type { ShellTheme as Theme } from "./settings.js";
@@ -548,46 +548,14 @@ export function BibleHeader({
                                   </select>
                                 </label>
 
-                                <label className="drawer-speech-row">
-                                  <span>
-                                    {translate(locale, "bible.voice")}
-                                  </span>
-                                  <select
-                                    className="drawer-speech-select"
-                                    value={
-                                      speechSnapshot.voices.some(
-                                        (v) => v.id === speechSnapshot.voiceId,
-                                      )
-                                        ? speechSnapshot.voiceId
-                                        : ""
-                                    }
-                                    onChange={(e) =>
-                                      speechPlayer.setVoice(e.target.value)
-                                    }
-                                  >
-                                    <option value="">
-                                      {translate(locale, "bible.defaultVoice")}
-                                    </option>
-                                    {(speechSnapshot.engine === "edge"
-                                      ? (speechSnapshot.edgeVoices ?? [])
-                                      : speechSnapshot.voices.filter((voice) =>
-                                          speechSnapshot.engine === "local"
-                                            ? voice.local
-                                            : true,
-                                        )
-                                    ).map((voice) => (
-                                      <option value={voice.id} key={voice.id}>
-                                        {voice.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  {speechSnapshot.engine !== "local" &&
-                                    !isEdgeSpeechConfigured() && (
-                                      <small className="drawer-speech-hint">
-                                        {translate(locale, "bible.edgeHint")}
-                                      </small>
+                                <p className="drawer-speech-link">
+                                  <Link to="/lainnya?section=audio">
+                                    {translate(
+                                      locale,
+                                      "bible.audioSettingsLink",
                                     )}
-                                </label>
+                                  </Link>
+                                </p>
 
                                 {speechSnapshot.engine === "edge" && (
                                   <label className="drawer-speech-row">
@@ -613,62 +581,6 @@ export function BibleHeader({
                                     />
                                   </label>
                                 )}
-
-                                <div className="drawer-speech-row">
-                                  <div className="drawer-speech-row-header">
-                                    <span className="drawer-speech-label">
-                                      {translate(locale, "bible.readingSpeed")}
-                                    </span>
-                                    <span className="drawer-speech-val">
-                                      {speechSnapshot.rate.toFixed(1)}×
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    className="drawer-speech-range"
-                                    aria-label={translate(
-                                      locale,
-                                      "bible.voiceRate",
-                                    )}
-                                    min="0.5"
-                                    max="2"
-                                    step="0.1"
-                                    value={speechSnapshot.rate}
-                                    onChange={(e) =>
-                                      speechPlayer.setRate(
-                                        Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </div>
-
-                                <div className="drawer-speech-row">
-                                  <div className="drawer-speech-row-header">
-                                    <span className="drawer-speech-label">
-                                      {translate(locale, "bible.readingPitch")}
-                                    </span>
-                                    <span className="drawer-speech-val">
-                                      {speechSnapshot.pitch.toFixed(1)}×
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    className="drawer-speech-range"
-                                    aria-label={translate(
-                                      locale,
-                                      "bible.voicePitch",
-                                    )}
-                                    min="0.5"
-                                    max="2"
-                                    step="0.1"
-                                    value={speechSnapshot.pitch}
-                                    onChange={(e) =>
-                                      speechPlayer.setPitch(
-                                        Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </div>
 
                                 <div className="drawer-speech-row">
                                   <div className="drawer-speech-row-header">

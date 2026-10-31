@@ -360,6 +360,8 @@ const MORE_SECTION_SETTINGS: Record<string, string> = {
   data: "offline",
   help: "about",
   kidung: "hymns",
+  appearance: "appearance",
+  audio: "audio",
 };
 
 export function MorePage({
@@ -1288,23 +1290,23 @@ export function MorePage({
                   options={[
                     {
                       value: "system",
-                      label: translate(locale, "more.themeAutomatic"),
+                      label: translate(locale, "shell.themeSystem"),
                     },
                     {
                       value: "light",
-                      label: translate(locale, "more.themeLight"),
+                      label: translate(locale, "shell.themeLight"),
                     },
                     {
                       value: "dark",
-                      label: translate(locale, "more.themeDark"),
+                      label: translate(locale, "shell.themeDark"),
                     },
                     {
                       value: "amoled",
-                      label: translate(locale, "more.themeAmoled"),
+                      label: translate(locale, "shell.themeAmoled"),
                     },
                     {
                       value: "sepia",
-                      label: translate(locale, "more.themeSepia"),
+                      label: translate(locale, "shell.themeSepia"),
                     },
                   ]}
                 />
