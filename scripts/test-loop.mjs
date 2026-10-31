@@ -58,10 +58,15 @@ console.log(
   `Changed: ${changed.length} file(s) — ${docs.length} doc(s), ${code.length} code/config.`,
 );
 
+// Formatting only needs the files that changed; scanning the whole repo costs
+// ~20s on this host and hides the signal behind noise.
+const formatStep = () =>
+  run("format (changed files)", ["exec", "prettier", "--check", ...changed]);
+
 if (code.length === 0) {
   // Documentation-only edits: the browser suite cannot observe them.
   if (run("docs verifier", ["verify:docs"]) !== 0) process.exit(1);
-  if (run("format check", ["format:check"]) !== 0) process.exit(1);
+  if (formatStep() !== 0) process.exit(1);
 } else {
   const webTypecheck = run("web typecheck", [
     "--filter",
@@ -93,6 +98,8 @@ if (code.length === 0) {
       { cwd: rootDir },
     );
   }
+
+  if (formatStep() !== 0) process.exit(1);
 
   const plan = resolveSelectiveTestArgs(code, []);
   if (plan.args.length) {
