@@ -21,6 +21,8 @@
     "native:check": "pnpm --filter @gys/native check",
     "test": "pnpm --filter @gys/contracts test && pnpm --filter @gys/domain test && pnpm --filter @gys/testkit test && pnpm --filter @gys/bff test && pnpm --filter @gys/web test && pnpm test:policy && node --test scripts/configure-android-preview.test.mjs scripts/edge-stop-evidence.test.mjs scripts/verify-documentation.test.mjs scripts/verify-service-worker.test.mjs scripts/test-e2e-selective-core.test.mjs scripts/test-e2e-selective-ui.test.mjs scripts/prepush-plan.test.mjs scripts/bundle-graph.test.mjs scripts/process-result.test.mjs scripts/native-asset-boundary.test.mjs",
     "test:e2e": "pnpm --filter @gys/web test:e2e",
+    "test:e2e:shards": "node scripts/test-e2e-shards.mjs",
+    "test:e2e:core": "pnpm --filter @gys/web test:e2e:core",
     "test:e2e:changed": "node scripts/test-e2e-selective.mjs",
     "test:e2e:smoke": "pnpm --filter @gys/web test:e2e:smoke",
     "test:e2e:nav": "pnpm --filter @gys/web test:e2e:nav",
