@@ -322,7 +322,7 @@
 .media-activity i {
   width: 2px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: 6px;
   background: currentColor;
   transform: scaleY(0.35);
 }

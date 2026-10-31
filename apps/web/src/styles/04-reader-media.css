@@ -64,7 +64,7 @@
   margin-top: 4px;
   padding: 18px 20px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--muted);
   font-size: 0.8125rem;
@@ -117,15 +117,33 @@
   background: var(--blue-soft);
   color: var(--blue);
 }
-.empty-panel {
+/* One empty-state language for every list: dashed surface panel, muted body,
+   a single strong title. Page-level empty states opt into the same look. */
+.empty-state,
+.empty-panel,
+.kidung-empty-state {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  justify-items: start;
   padding: 20px;
   border: 1px dashed var(--line-strong);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 0.8125rem;
+}
+.empty-state strong,
+.empty-panel strong,
+.kidung-empty-state strong {
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.empty-state > span,
+.empty-panel > span,
+.kidung-empty-state p {
+  margin: 0;
+  line-height: 1.5;
 }
 /* Bible empty search result state inherits panel language above. */
 /* Kidung playlist tool pages. */
@@ -676,7 +694,7 @@
   .global-search {
     max-height: calc(100vh - 16px);
     padding: 18px 14px;
-    border-radius: 14px;
+    border-radius: 12px;
   }
   .global-search-heading .text-button {
     padding: 4px;
@@ -1030,7 +1048,7 @@
     top: 50%;
     padding: 7px 9px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--surface);
     box-shadow: var(--shadow-lift);
     color: var(--ink);
@@ -1420,7 +1438,7 @@ body.gys-viewer-active {
   min-height: 44px;
   padding: 0 10px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
@@ -1583,7 +1601,7 @@ body.gys-viewer-active {
     gap: 9px;
     padding: 10px;
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 10px;
     background: var(--surface-soft);
   }
   .pdf-reader-hymn .pdf-advanced-controls.is-open {
@@ -1804,7 +1822,7 @@ body.gys-viewer-active {
   gap: 14px;
   flex-wrap: wrap;
   padding: 16px 20px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-xs);
@@ -1832,24 +1850,15 @@ body.gys-viewer-active {
   font-size: 0.75rem;
 }
 .kidung-empty-state {
-  display: grid;
-  gap: 8px;
-  padding: 34px 0;
-  color: var(--muted);
-}
-.kidung-empty-state strong,
-.kidung-empty-state p {
-  margin: 0;
-}
-.kidung-empty-state strong {
-  color: var(--ink);
-  font-size: 1rem;
+  justify-items: center;
+  padding: 34px 20px;
+  text-align: center;
 }
 .kidung-playlist-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -1933,7 +1942,7 @@ body.gys-viewer-active {
 .kidung-saved-playlists {
   margin-top: 12px;
   padding: 20px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-xs);

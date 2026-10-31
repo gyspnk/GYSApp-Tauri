@@ -1245,12 +1245,32 @@ Distribusi `border-radius` saat ini: **12 px (30×)**, 10 (29), 14 (23), 16 (16)
 Bayangan: `--shadow`/`--shadow-lift` dipakai konsisten (6+2), sisanya `none`.
 
 **DIEKSEKUSI 31 Okt:** outlier dinormalisasi ke skala **6 · 8 · 10 · 12 · 16 ·
-24 · 999** (29+33 deklarasi di 9 berkas CSS: 11→12, 9→10, 7→8, 5/4→6,
-14→12, 18→16, 20→22→24/18, 99→999). Distribusi kini: 12 (64×), 10 (36),
-16 (24), 8 (14), 999 (10), 6 (7), 24 (3). Baseline visual diregenerasi karena
-perubahan 2 px terdeteksi gate (toleransi 0,1%). Prioritas permukaan yang
-terlihat (menu, panel reader, kartu pengaturan); tiap langkah diverifikasi
+24 · 999**. Pass pertama (62 deklarasi) ternyata hanya menangkap deklarasi satu
+baris; audit ulang memakai `grep -rhoE "border-radius: [0-9]+px"` menemukan
+**350** deklarasi dengan **58** masih di luar skala (16×9, 7×12, 14×7, 5×5,
+11×5, 4×3, 3×1, 2×1, 20×3, 18×2, 22×1, 15×1, 13×1). Normalisasi penuh:
+2/3/4/5→6, 7→8, 9→10, 11/13/14/15→12, 18→16, 20/22→24. Distribusi final:
+**12 (106×), 10 (74), 8 (65), 999 (43), 16 (30), 6 (27), 24 (7)** — **0 nilai
+di luar skala**, dijaga dengan grep yang sama. Baseline visual diregenerasi
+karena perubahan 2 px terdeteksi gate (toleransi 0,1%). Prioritas permukaan
+yang terlihat (menu, panel reader, kartu pengaturan); tiap langkah diverifikasi
 dengan baseline visual + `select-dropdown`/`menu-motion`.
+
+**Pelajaran:** klaim "sudah dinormalisasi" harus dibuktikan dengan pemindaian
+ulang seluruh berkas CSS, bukan sampel — pass pertama melewatkan 58 deklarasi.
+
+### Empty state seragam (31 Okt)
+
+Empat pola berbeda dipakai: `.empty-state` (Literatur — tanpa gaya sama
+sekali), `.empty-panel` (Suara), `.kidung-empty-state` (playlist Kidung), dan
+`.empty-inline` (kartu Beranda/daftar di Pengaturan). Ketiga pola panel kini
+berbagi satu permukaan: latar `--surface-soft`, garis putus-putus
+`--line-strong`, radius 12, padding 20, judul `strong` 0,875 rem dengan warna
+`--ink`, badan 0,8125 rem muted; `.kidung-empty-state` hanya menambah
+perataan tengah. `.empty-inline` tetap inline karena hidup di dalam kartu
+(garis panel di dalam kartu akan terlihat seperti kotak bersarang), tetapi
+tipografinya memakai muted yang sama. Verifikasi: `accessibility`,
+`literature-*`, `suara-*`.
 
 ### Duplikasi kontrol → satu tempat kanonik (31 Okt)
 

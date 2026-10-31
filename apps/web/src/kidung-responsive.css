@@ -198,7 +198,7 @@
    devices. Coarse pointers keep the full 44px hit target. */
 .hymn-page .kidung-controls-field {
   padding: 3px;
-  border-radius: 13px;
+  border-radius: 12px;
 }
 .hymn-page .kidung-controls-field .kidung-local-nav a {
   min-height: 36px;
