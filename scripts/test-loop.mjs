@@ -167,8 +167,14 @@ console.log(
 
 if (code.length === 0) {
   // Documentation-only edits: nothing the browser or the bundler can see.
-  if (run("docs verifier", ["verify:docs"]) !== 0) process.exit(1);
-  if (formatChanged() !== 0) process.exit(1);
+  const finished = await runParallel([
+    { label: "docs verifier", args: ["verify:docs"] },
+    {
+      label: "format (changed files)",
+      args: ["exec", "prettier", "--check", ...changed],
+    },
+  ]);
+  if (finished.some((step) => step.code !== 0)) process.exit(1);
 } else if (
   !hasWebSource &&
   !hasE2E &&
@@ -177,8 +183,14 @@ if (code.length === 0) {
   !hasOther
 ) {
   // scripts/** only: the repository's maintained Node suites are the signal.
-  if (formatChanged() !== 0) process.exit(1);
-  if (run("script tests", ["test:scripts"]) !== 0) process.exit(1);
+  const finished = await runParallel([
+    {
+      label: "format (changed files)",
+      args: ["exec", "prettier", "--check", ...changed],
+    },
+    { label: "script tests", args: ["test:scripts"] },
+  ]);
+  if (finished.some((step) => step.code !== 0)) process.exit(1);
 } else if (hasWebSource && !hasPackageSource && !hasBuildConfig) {
   // The seconds-level path: independent checks run together.
   const sources = code
