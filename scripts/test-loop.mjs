@@ -102,7 +102,14 @@ if (code.length === 0) {
   if (formatStep() !== 0) process.exit(1);
 
   const plan = resolveSelectiveTestArgs(code, []);
-  if (plan.args.length) {
+  const specs = plan.args.filter((arg) => arg.endsWith(".spec.ts"));
+  const fullCoverage =
+    plan.description.includes("Full browser coverage") ||
+    plan.args.length === 0;
+  // A loop command must stay bounded: a change that maps to half the suite gets
+  // the core tier (3.4 min) and a pointer to the explicit selective run, rather
+  // than silently spending forty minutes in the inner loop.
+  if (!fullCoverage && specs.length > 0 && specs.length <= 6) {
     run(
       `browser: ${plan.description}`,
       [
@@ -121,7 +128,16 @@ if (code.length === 0) {
       { cwd: rootDir, env: { ...process.env, GYS_E2E_PREBUILT: "1" } },
     );
   } else {
-    console.log("\nNo browser spec maps to these changes.");
+    console.log(
+      `\n↳ ${fullCoverage ? "Shared/unclassified change" : `${specs.length} mapped specs`}: running the 87-test core tier instead of the full suite.`,
+    );
+    console.log(
+      `  For the exact mapping run: pnpm test:e2e:changed ${plan.description.includes("Full browser coverage") ? "" : plan.args.join(" ")}`,
+    );
+    run("browser: core tier", ["test:e2e:core"], {
+      cwd: rootDir,
+      env: { ...process.env, GYS_E2E_PREBUILT: "1" },
+    });
   }
 }
 
