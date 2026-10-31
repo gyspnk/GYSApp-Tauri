@@ -2,6 +2,23 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-31 — a fast test loop, and a measured worker ceiling
+
+- Add a fast local loop so development stops paying for the full browser
+  suite: `pnpm test:e2e:core` (87 tests, ~3.4 min across the shell, settings and
+  e-GYS), `pnpm test:e2e:changed` (~1.7 min for the specs a change touches) and
+  `pnpm test:e2e:shards` (parallel shards over one preview server). A 637-test
+  "broad functional" profile was tried and dropped: it still takes ~35 minutes
+  on this host, so it would only hide the full suite behind a faster name.
+- Measure the ceiling instead of guessing: on the 8-core ARM runner the same 55
+  tests take 179s with two workers, 184s with three and 217s with four, so the
+  profiles default to two workers and the runner only scales on bigger
+  machines. `pnpm test` is 46s and `pnpm build` 14s, so neither is the
+  bottleneck.
+- Keep deep-link alignment correcting for the first three seconds after the
+  row is revealed; a profile card that collapses above it can move the row more
+  than the 160px “user navigated away” window and leave it stranded.
+
 ### 2026-10-31 — a WhatsApp login the bot already completed no longer fails
 
 - Treat a rejected `whatsapp/confirm` as non-fatal while a session already

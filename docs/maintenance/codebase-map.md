@@ -410,21 +410,22 @@ with a 37-flow smoke suite after the one-flow deduplication.
 
 ## Documentation and skill cadence
 
-- Last maintenance skill review: 2026-10-01
-- Skill review frontier: CF-205
+- Last maintenance skill review: 2026-10-31
+- Skill review frontier: CF-213
 - Review triggers: 30 calendar days or 10 new resolved frontier decisions,
   whichever comes first.
 - Review scope: compare the maintenance skill, `AGENTS.md`, `CONTEXT.md`,
   `scripts/verify-documentation.mjs`, the active spec, and this map; update
   every affected pointer and retain proof, protected prerequisites, and the
   next frontier.
-- Review result: on 2026-10-01 the user-requested full roadmap, documentation
-  verifier, plan and evidence receipts were reconciled. The available skill
-  catalog contains no gysapp-maintenance skill; workspace AGENTS.md, CONTEXT.md
-  and a separate maintenance spec remain absent. No policy was invented.
-  CF-205 covers the current roadmap implementation and verification gates.
-  Physical-device, signed-installation, first audio sample and configured
-  provider prerequisites retain their separate evidence requirements.
+- Review result: on 2026-10-31 the map was re-read against the session that
+  added the test ladder, restored collapsed settings, fixed the WhatsApp
+  confirm path, and corrected three a11y surfaces. The maintenance skill still
+  does not exist in the available catalog; `AGENTS.md`, `CONTEXT.md` and a
+  separate maintenance spec remain absent, so no policy is invented. The
+  verifier, relative links and cadence gate were re-run after the update.
+  CF-213 records the new decisions; physical-device, signed-installation,
+  hosted-Worker and visual-baseline evidence retain their separate gates.
 
 ## Frontier
 
@@ -2035,3 +2036,25 @@ checks pass. This receipt proves local behavior and
 mocked provider integration, not real-account acceptance, hosted Worker success,
 physical-device or signed native release. Remote commit delivery is verified
 separately from deployment; old receipts retain their original no-push status.
+
+- `2026-10-31 / CF-213`: keep More categories collapsed until requested and
+  reveal `?section=` rows from committed React state; accept an e-GYS WhatsApp
+  login the bot already completed by re-checking the profile before failing,
+  retrying a lagging profile read and surfacing the reason; adopt a tiered local
+  test ladder (changed specs → 87-test core → full suite/shards) after measuring
+  that two workers saturate the 8-core ARM runner while four are slower.
+  Restore AA contrast on the account label and reader mode toggles, give the
+  diagnostics log its own landmark, and keep the search live region mounted.
+
+Validation for CF-213: `pnpm test:e2e:core` passes 87/87 in 3.4 minutes with two
+workers and no retries; `test:e2e:changed` runs two specs (28 tests) in 100s;
+`egys-v1` passes 23/23 including three new regressions (rejected confirm with an
+existing session, lagging profile, visible failure reason) and the first one
+fails on the pre-fix tree in an A/B run. `more-section-deeplink` passes 5/5
+three times in a row after the settling window fix, and a shard-runner smoke
+(2 shards × 1 worker) passes 4/4 in 13.6s. Unit suites (511 web + 131 workspace
+
+- 62 scripts), types, build, `verify:bundle` 179.1 KiB and `pnpm audit --prod`
+  pass. The full 826-test suite reaches 744 passed with 29 `-linux` visual
+  baselines that are not valid on this host; that remains a CI/owner-machine
+  gate. Worker scaling on the same 55 tests: 179s @2, 184s @3, 217s @4.

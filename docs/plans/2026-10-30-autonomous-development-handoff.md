@@ -19,26 +19,26 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 
 ## 1. Status eksekusi
 
-| Bidang                     | Status pada 30 Oktober 2026 (sesi ini)                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Git/worktree               | `main` pada `37ffbd0`; sesi lanjutan ini bekerja dari clone bersih `codex/autonomous-hardening-20261030` (HEAD awal `20de439`, 17 commit di atas `main`). `main` tidak disentuh; setiap siklus di-commit dan di-push.                                                                                                                                                                                                                                            |
-| Toolchain                  | Host sesi lanjutan: **Linux aarch64**, Node `v26.12.1`, pnpm `11.21.0` (dipasang via npm; corepack tidak tersedia), Playwright `1.62.1` + Chromium `151.0.7922.34` (unduhan + lib sistem Arch ARM). `apps/web/.env.local` **tidak ada** di clone ini, jadi tes unit deterministik.                                                                                                                                                                               |
-| Dev server 5173            | **AKTIF** di `http://127.0.0.1:5173/` dengan `VITE_BFF_BASE_URL` Worker hosted (env proses, bukan `.env.local`). Probe 4 route: `boot=ready`, 0 gambar rusak, 0 overflow; satu-satunya 403 adalah tombol GIS (origin tak terdaftar). Dipakai pemilik untuk preview tiap perubahan.                                                                                                                                                                               |
-| Preview produksi 4173      | **AKTIF** di `http://127.0.0.1:4173/GYSApp-Tauri/` (dist tanpa env BFF); dipakai seluruh e2e.                                                                                                                                                                                                                                                                                                                                                                    |
-| `pnpm typecheck`           | **PASS** (5 paket).                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `pnpm test`                | **PASS** (dijalankan ulang di host ini): contracts 20, domain 45, testkit 2, bff 74, web 511, plus 62 tes skrip root.                                                                                                                                                                                                                                                                                                                                            |
-| `pnpm build`               | **PASS** (dijalankan 7×; build terakhir `index-BJ_eAuG7.js`).                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `pnpm verify:bundle`       | **PASS**. Initial JS gzip **179,0 KiB** dari 24 modul + `startup.js`; batas 180 KiB → sisa **1,0 KiB**. Chunk `index-*.js` **84,4 KiB** (batas 250 KiB).                                                                                                                                                                                                                                                                                                         |
-| `pnpm verify:generated`    | **PASS** (1229 music items, 533 hymns, 10 offline assets, 299/300 literature covers).                                                                                                                                                                                                                                                                                                                                                                            |
-| `pnpm verify:docs`         | **PASS** (sebelum dan sesudah pembaruan dokumen ini).                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `pnpm format:check`        | **PASS** (Prettier memeriksa seluruh repo, termasuk berkas yang diubah siklus 11).                                                                                                                                                                                                                                                                                                                                                                               |
-| e2e terarah (Chromium 151) | **PASS**: `more-section-deeplink` 5/5, `universal-usability` 10/10, `menu-motion` 12/12, `account-menu` 4/4, `kidung-section-navigation` 6/6, `accessibility`+`editorial-ui` 35/35, `mobile-scroll-kidung` 10/10 (termasuk coarse pointer), `midi-scrub` 3/3, `kidung-loading` 2/2, `kidung-usability` dock 2/2. Semua `--retries=0`.; siklus 12: `kidung-small-phone-nav` 1/1, `kidung-style-behavior` 9/9, `kidung-density` 4/4, `distributed-assets` 3+1 skip |
-| `pnpm verify:prepush`      | **PASS** pada siklus 8; siklus 11 menjalankan gate yang sama secara terpisah (format, docs, provenance, tipe, unit, policy, skrip root).                                                                                                                                                                                                                                                                                                                         |
-| Audit UI browser lokal     | **PASS dasar**: 8 route × 4 viewport (320/390/768/1440) = 32 render, semua `200`, `boot=ready`, tanpa page error, tanpa gambar rusak, tanpa overflow horizontal.                                                                                                                                                                                                                                                                                                 |
-| Baseline performa pengguna | SEBAGIAN: bundle terukur; hero Beranda cold 5,3 s / warm 0,49 s (B-05, MEASURED). Belum ada median/p95 startup berulang seperti audit 2026-10-11.                                                                                                                                                                                                                                                                                                                |
-| Perbaikan siklus 11        | Grup More dikembalikan ke **collapsed** + reveal deep link dari React (bug 768/1440); grid kontrol Kidung `max-content` (12 px sel mati); kontras label akun `--navy`; landmark Diagnostik unik; live region pencarian persisten; delapan kontrak e2e basi (dock, tempo, split view, chord, literatur, nav) diperbarui.                                                                                                                                          |
-| Blocker eksternal          | Konfirmasi pesan WhatsApp nyata, langkah kredensial Apple, akun e-GYS nyata, deploy Worker (termasuk endpoint `suara-sejati` yang menggantung), signing, perangkat fisik — **BELUM diverifikasi**; rincian bukti di 2.5.                                                                                                                                                                                                                                         |
-| CI (GitHub Actions)        | Bukan gate lagi (kebijakan pemilik: uji penuh lokal). PR **#11** tetap terbuka untuk review; **jangan merge sendiri**.                                                                                                                                                                                                                                                                                                                                           |
+| Bidang                     | Status pada 30 Oktober 2026 (sesi ini)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Git/worktree               | `main` pada `37ffbd0`; sesi lanjutan ini bekerja dari clone bersih `codex/autonomous-hardening-20261030` (HEAD awal `20de439`, 17 commit di atas `main`). `main` tidak disentuh; setiap siklus di-commit dan di-push.                                                                                                                                                                                                                                                                                                                                                                              |
+| Toolchain                  | Host sesi lanjutan: **Linux aarch64**, Node `v26.12.1`, pnpm `11.21.0` (dipasang via npm; corepack tidak tersedia), Playwright `1.62.1` + Chromium `151.0.7922.34` (unduhan + lib sistem Arch ARM). `apps/web/.env.local` **tidak ada** di clone ini, jadi tes unit deterministik.                                                                                                                                                                                                                                                                                                                 |
+| Dev server 5173            | **AKTIF** di `http://127.0.0.1:5173/` dengan `VITE_BFF_BASE_URL` Worker hosted (env proses, bukan `.env.local`). Probe 4 route: `boot=ready`, 0 gambar rusak, 0 overflow; satu-satunya 403 adalah tombol GIS (origin tak terdaftar). Dipakai pemilik untuk preview tiap perubahan.                                                                                                                                                                                                                                                                                                                 |
+| Preview produksi 4173      | **AKTIF** di `http://127.0.0.1:4173/GYSApp-Tauri/` (dist tanpa env BFF); dipakai seluruh e2e.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm typecheck`           | **PASS** (5 paket).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `pnpm test`                | **PASS** (dijalankan ulang di host ini): contracts 20, domain 45, testkit 2, bff 74, web 511, plus 62 tes skrip root.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm build`               | **PASS** (dijalankan 7×; build terakhir `index-BJ_eAuG7.js`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm verify:bundle`       | **PASS**. Initial JS gzip **179,0 KiB** dari 24 modul + `startup.js`; batas 180 KiB → sisa **1,0 KiB**. Chunk `index-*.js` **84,4 KiB** (batas 250 KiB).                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `pnpm verify:generated`    | **PASS** (1229 music items, 533 hymns, 10 offline assets, 299/300 literature covers).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm verify:docs`         | **PASS** (sebelum dan sesudah pembaruan dokumen ini).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm format:check`        | **PASS** (Prettier memeriksa seluruh repo, termasuk berkas yang diubah siklus 11).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| e2e terarah (Chromium 151) | **PASS**: `more-section-deeplink` 5/5, `universal-usability` 10/10, `menu-motion` 12/12, `account-menu` 4/4, `kidung-section-navigation` 6/6, `accessibility`+`editorial-ui` 35/35, `mobile-scroll-kidung` 10/10 (termasuk coarse pointer), `midi-scrub` 3/3, `kidung-loading` 2/2, `kidung-usability` dock 2/2. Semua `--retries=0`.; siklus 12: `kidung-small-phone-nav` 1/1, `kidung-style-behavior` 9/9, `kidung-density` 4/4, `distributed-assets` 3+1 skip; **tier cepat siklus 15:** `test:e2e:changed` 28 tes/100 dtk, `test:e2e:core` 87 tes/3,4 mnt, `test:e2e:shards` untuk suite penuh |
+| `pnpm verify:prepush`      | **PASS** pada siklus 8; siklus 11 menjalankan gate yang sama secara terpisah (format, docs, provenance, tipe, unit, policy, skrip root).                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Audit UI browser lokal     | **PASS dasar**: 8 route × 4 viewport (320/390/768/1440) = 32 render, semua `200`, `boot=ready`, tanpa page error, tanpa gambar rusak, tanpa overflow horizontal.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Baseline performa pengguna | SEBAGIAN: bundle terukur; hero Beranda cold 5,3 s / warm 0,49 s (B-05, MEASURED). Belum ada median/p95 startup berulang seperti audit 2026-10-11.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Perbaikan siklus 11        | Grup More dikembalikan ke **collapsed** + reveal deep link dari React (bug 768/1440); grid kontrol Kidung `max-content` (12 px sel mati); kontras label akun `--navy`; landmark Diagnostik unik; live region pencarian persisten; delapan kontrak e2e basi (dock, tempo, split view, chord, literatur, nav) diperbarui.                                                                                                                                                                                                                                                                            |
+| Blocker eksternal          | Konfirmasi pesan WhatsApp nyata, langkah kredensial Apple, akun e-GYS nyata, deploy Worker (termasuk endpoint `suara-sejati` yang menggantung), signing, perangkat fisik — **BELUM diverifikasi**; rincian bukti di 2.5.                                                                                                                                                                                                                                                                                                                                                                           |
+| CI (GitHub Actions)        | Bukan gate lagi (kebijakan pemilik: uji penuh lokal). PR **#11** tetap terbuka untuk review; **jangan merge sendiri**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ## 2. Baseline terukur (30 Oktober 2026)
 
@@ -142,18 +142,18 @@ Repo di-clone bersih dari remote; `main` tidak disentuh. Angka di bawah adalah
 pengukuran baru dan **tidak boleh dibandingkan** dengan tabel 2.1 tanpa metode
 identik.
 
-| Perintah / bukti          | Hasil host ini | Catatan                                                                |
-| ------------------------- | -------------- | ---------------------------------------------------------------------- |
-| `pnpm typecheck`          | PASS (5 paket) | `tsc -b` bersih setelah seluruh perubahan siklus 11                    |
-| `pnpm test`               | PASS           | 20 + 45 + 2 + 74 + 511 tes + 62 tes skrip root                         |
-| `pnpm build`              | PASS           | `index-BJ_eAuG7.js`; dist dipakai semua e2e                            |
-| `pnpm verify:bundle`      | PASS           | **179,0 KiB / 180**; `index-*.js` **84,4 KiB**                         |
-| `pnpm verify:generated`   | PASS           | provenance aset dan font editorial                                     |
-| `pnpm verify:docs`        | PASS           | sebelum dan sesudah dokumen ini diperbarui                             |
-| `pnpm format:check`       | PASS           | seluruh repo, termasuk 11 berkas yang diubah                           |
-| `pnpm audit --prod`       | NOT RUN        | tidak dijalankan ulang; hasil `zod` 4.6.6 dari siklus 10 tetap berlaku |
-| `pnpm native:check`       | NOT RUN        | Rust/Android tidak terpasang di host ini                               |
-| Suite penuh e2e (823 tes) | lihat §4       | `--workers=3 --retries=0` tanpa proses browser lain yang berjalan      |
+| Perintah / bukti          | Hasil host ini | Catatan                                                           |
+| ------------------------- | -------------- | ----------------------------------------------------------------- |
+| `pnpm typecheck`          | PASS (5 paket) | `tsc -b` bersih setelah seluruh perubahan siklus 11               |
+| `pnpm test`               | PASS           | 20 + 45 + 2 + 74 + 511 tes + 62 tes skrip root                    |
+| `pnpm build`              | PASS           | `index-BJ_eAuG7.js`; dist dipakai semua e2e                       |
+| `pnpm verify:bundle`      | PASS           | **179,0 KiB / 180**; `index-*.js` **84,4 KiB**                    |
+| `pnpm verify:generated`   | PASS           | provenance aset dan font editorial                                |
+| `pnpm verify:docs`        | PASS           | sebelum dan sesudah dokumen ini diperbarui                        |
+| `pnpm format:check`       | PASS           | seluruh repo, termasuk 11 berkas yang diubah                      |
+| `pnpm audit --prod`       | PASS           | dijalankan 31 Okt: "No known vulnerabilities found"               |
+| `pnpm native:check`       | NOT RUN        | Rust/Android tidak terpasang di host ini                          |
+| Suite penuh e2e (823 tes) | lihat §4       | `--workers=3 --retries=0` tanpa proses browser lain yang berjalan |
 
 Catatan lingkungan yang memengaruhi pembacaan hasil:
 
@@ -212,6 +212,8 @@ Catatan lingkungan yang memengaruhi pembacaan hasil:
 | B-29 | P2        | Grid kontrol Kidung mereservasi 44 px untuk tombol 36 px sehingga menyisakan 12 px sel mati di semua lebar ≤1100 px                                                                  | `unused` 12 px di 320/390/430/600/601/768/820/1024/1100; sesudah kolom `max-content` menjadi 4 px; tes coarse-pointer baru menjaga target 44 px                                                                                                                                                  | DONE     | —                                                                                                                                                                                                     |
 | B-30 | P2        | Sisa suite penuh: 744/76/3 pada host ARM; 29 kegagalan adalah drift baseline visual `-linux`, sisanya tekanan memori + kontrak basi yang sudah diperbaiki di siklus 13               | `--workers=3 --retries=0`: 76 gagal; setelah perbaikan, 13 spec tersentuh lulus **114/114**; `instant-navigation` tetap gagal serial (anggaran 1000 ms, batas host)                                                                                                                              | NEXT     | Review visual di CI/mesin pemilik (`visual*.spec.ts`, jangan update buta); ukur ulang `instant-navigation` di mesin itu                                                                               |
 | B-31 | P1        | **Laporan pemilik 31 Okt:** pesan WhatsApp sudah dikirim dan balasan bot menyatakan berhasil, tetapi timer aplikasi langsung menampilkan gagal (tanda seru)                          | A/B: tanpa perbaikan, tes "rejected confirm still signs in" GAGAL; dengan perbaikan 3/3 lulus. Akar: `whatsapp/confirm` ditolak (kode sudah dikonsumsi bot) diperlakukan fatal padahal sesi sudah ada; kegagalan profil juga tidak terlihat (notice hanya dirender saat percobaan sudah ditutup) | DONE     | Minta pemilik mengulang; bila masih "!", buka Tentang → Diagnostik dan salin entri `egys.whatsapp.*`                                                                                                  |
+| B-32 | P0        | **Test terlalu lambat sehingga development lambat** (permintaan pemilik 31 Okt). Tidak ada tier cepat, `pnpm test:e2e` selalu menjalankan 826 tes, dan worker default tidak diukur   | Baseline: suite penuh **35,8 mnt @3 worker**; sampel 55 tes = **179 dtk @2**, 184 dtk @3, 217 dtk @4 (lebih banyak worker = lebih lambat di host 8-core ini); unit 46-59 dtk; build 14 dtk                                                                                                       | DONE     | Pakai `pnpm test:e2e:core` (87 tes, **3,4 mnt**), `pnpm test:e2e:changed` (28 tes, **100 dtk**), `pnpm test:e2e:shards` untuk suite penuh di mesin ber-core banyak                                    |
+| B-33 | P1        | Sisa percepatan suite penuh: biaya didominasi per-test page load (setiap tes = konteks baru tanpa cache HTTP; katalog 917 KB diunduh ulang), bukan paralelisme                       | 2 worker sudah saturasi CPU (~350% CPU, load 8); menambah worker memperlambat                                                                                                                                                                                                                    | NEXT     | Kandidat: context/fixture berbagi cache per worker untuk spec read-only, atau gabungkan navigasi berulang; ukur dengan reporter JSON sebelum/sesudah                                                  |
 
 ## 4. Log siklus
 
@@ -763,6 +765,46 @@ Status: DONE (menunggu verifikasi pemilik)
 NEXT: pemilik mengulang login WhatsApp; bila masih gagal, salin Diagnostik.
 ```
 
+```text
+Cycle: 15 | 2026-10-31 05:40–07:00 WIB | codex/autonomous-hardening-20261030
+Issue & priority: permintaan pemilik — test menjadi hambatan utama development
+  (P0). Suite penuh 826 tes butuh 35,8 mnt dan tidak ada jalur cepat.
+Reproduction / baseline (mesin tenang, setelah membersihkan 48 browser yatim
+  dari run yang dibatalkan — load average sempat 22 sehingga pengukuran pertama
+  tidak sah):
+  - `pnpm test` 46 dtk; `pnpm build` 14 dtk.
+  - Suite penuh 826 tes @3 worker: 35,8 mnt (data run sebelumnya).
+  - Sampel 55 tes (navigation-layout + settings-data-integrity + deeplink):
+    179 dtk @2 worker, 184 dtk @3, 217 dtk @4 → host 8-core ini saturasi di 2
+    worker (~350% CPU, load 8), menambah worker justru memperlambat.
+  - `test:e2e:changed` dengan 2 spec (28 tes): 100 dtk.
+Root cause: tidak ada tier pengujian; suite penuh selalu dijalankan dan
+  `retries: 1` + build ulang menambah biaya; paralelisme bukan tuas karena
+  CPU-bound per page load.
+File dan perubahan:
+  apps/web/playwright.core.config.ts — 87 tes (smoke, settings, deeplink,
+    more-device-data, account-menu, egys) fullyParallel, 2 worker, retries 0.
+  (profil `fast` 637 tes sempat dibuat lalu dihapus: masih ~35 mnt di host ini.)
+  scripts/test-e2e-shards.mjs — menjalankan N shard paralel terhadap satu
+    preview, agregasi exit code + waktu dinding (default 2×2, bisa diatur).
+  package.json — `test:e2e:core`, `test:e2e:shards`.
+  apps/web/src/route-section-deeplink.ts — koreksi alignment dipertahankan 3 dtk
+    pertama setelah reveal, karena kartu profil yang menyusut >160 px membuat
+    baris tertinggal (muncul saat core loop di bawah beban).
+Verifikasi: PASS — `test:e2e:core` **87/87 dalam 3,4 mnt**; `more-section-deeplink`
+  3× berturut 5/5; shard runner smoke 2 shard × 1 worker 4/4 dalam 13,6 dtk;
+  unit 511 + 131 paket + 62 skrip; `format:check`; `typecheck`; build.
+  Profil `fast` (637 tes) diukur terpisah; lihat B-32 di backlog.
+UX dan performa sebelum -> sesudah: loop perubahan biasa turun dari 35,8 mnt
+  (suite penuh) menjadi **1,7 mnt** (spec berubah) atau **3,4 mnt** (core 87
+  tes); tidak ada tes yang dihapus atau dilonggarkan — tier penuh tetap ada.
+Risiko/regresi, blocker, rollback: `core` sengaja tidak mencakup visual/matrix/
+  axe/PDF; itu tetap dijalankan sebelum push. Rollback = hapus 2 config + script.
+Status: DONE (sisa percepatan suite penuh: B-33)
+NEXT: ukur dan pangkas biaya per-test (B-33); jalankan suite penuh lewat shard
+  di mesin pemilik.
+```
+
 ## 5. Risiko dan batasan bukti
 
 - **Kebijakan uji terbaru (permintaan pemilik, 30 Oktober 2026): uji penuh dijalankan
@@ -815,26 +857,32 @@ NEXT: pemilik mengulang login WhatsApp; bila masih gagal, salin Diagnostik.
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
-1. **B-31 — verifikasi pemilik**: ulangi login WhatsApp. Bila badge "!" masih
+1. **B-32/B-33 — loop cepat**: pakai `pnpm test:e2e:changed` (≈1,7 mnt) saat
+   mengubah beberapa spec, `pnpm test:e2e:core` (≈3,4 mnt) sebelum commit, dan
+   `pnpm test:e2e:shards` di mesin ber-core banyak untuk suite penuh. Jangan
+   menaikkan worker di host 8-core ini: 2 worker sudah saturasi (179 dtk @2 vs
+   217 dtk @4 pada 55 tes yang sama). Sisa percepatan ada di biaya per page
+   load (B-33), bukan di jumlah worker.
+2. **B-31 — verifikasi pemilik**: ulangi login WhatsApp. Bila badge "!" masih
    muncul, buka Tentang & Bantuan → Diagnostik perangkat dan salin entri
    `egys.whatsapp.confirm` / `egys.whatsapp.profile`; pesan itu kini juga tampil
    di kartu akun. Tanpa data itu, jangan klaim penyebab lain.
-2. **B-30 — selesaikan suite penuh** `pnpm test:e2e --workers=3 --retries=0`
+3. **B-30 — selesaikan suite penuh** `pnpm test:e2e --workers=3 --retries=0`
    pada build final (823 tes) dan triase sisanya. Jalankan sendirian: proses
    browser lain, termasuk `pnpm test:e2e -g`, membuat tes berbasis waktu gagal
    palsu (terbukti pada `account-menu` dan 200% text di siklus 11).
-3. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
+4. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
    membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
    datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-4. **B-24** — Headroom bundle tinggal **1,0 KiB** (179,0/180) di host Linux.
+5. **B-24** — Headroom bundle tinggal **1,0 KiB** (179,0/180) di host Linux.
    Setiap penambahan kode di graph awal akan menembus anggaran; ukur dulu. Kandidat
    termurah: impor dinamis `midi-queue`/`music-assets` setelah paint pertama,
    diukur dengan `verify:bundle` (chunk `dist-` juga diimpor entry, jadi
    penghematannya belum terbukti) dan diuji dengan `smoke` MIDI queue serta
    `kidung-usability` dock.
-5. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
+6. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
    saat Worker boleh dideploy, konversi format adalah tuas utamanya.
-6. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
+7. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
    generator; cache disegarkan otomatis saat online).
 
 ## 7. Prompt handoff untuk sesi berikutnya
@@ -876,13 +924,13 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 - `cargo`/Java TIDAK terpasang; native check/packaging butuh mesin lain.
 
 ## Kebijakan pemilik (berlaku)
-1. Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
+8 Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
    GitHub Actions tidak lagi menjadi gate; jangan menghabiskan waktu mengejar CI.
-2. Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
+9 Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
    disentuh, tidak ada merge/force-push.
-3. Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
-4. Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
-5. Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
+10 Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
+11 Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
+12 Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
    dan perangkat fisik. Tulis PASS/FAIL/NOT RUN, bukan "semua aman".
 
 ## Yang sudah terbukti (jangan diulang tanpa alasan)
@@ -924,19 +972,27 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 - Native (Rust/Android/Windows installer), signing, perangkat fisik: NOT RUN.
 
 ## Urutan kerja yang disarankan
-1. Jalankan dev server (5173) dan preview (4173), verifikasi HTTP 200, pastikan UI
+13 Jalankan dev server (5173) dan preview (4173), verifikasi HTTP 200, pastikan UI
    sehat sebelum menyentuh kode.
-2. **B-30**: jalankan suite penuh sendirian dan triase sisa kegagalan (klasifikasikan
+14 **B-30**: jalankan suite penuh sendirian dan triase sisa kegagalan (klasifikasikan
    bug produk vs kontrak basi vs batas host); tambahkan tes yang gagal lebih dulu.
-3. Lanjut ke item P1/P2 di backlog §3 (B-24 headroom 1,0 KiB, B-15 bukti WhatsApp).
-4. Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
+15 Lanjut ke item P1/P2 di backlog §3 (B-24 headroom 1,0 KiB, B-15 bukti WhatsApp).
+16 Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
    di dokumen hidup; commit + push.
 
 ## Perintah yang tersedia
 pnpm dev | pnpm preview | pnpm typecheck | pnpm test | pnpm build |
 pnpm verify:bundle | pnpm verify:generated | pnpm verify:docs | pnpm format:check |
-pnpm verify:prepush | pnpm test:e2e --shard=2/3 | pnpm test:e2e:smoke |
-GYS_E2E_PREBUILT=1 pnpm test:e2e <spec>
+pnpm verify:prepush | pnpm test:e2e:smoke |
+
+Loop cepat (pakai `GYS_E2E_PREBUILT=1` agar tidak build ulang):
+pnpm test:e2e:changed        # spec yang tersentuh, ~1,7 mnt untuk 2 spec
+pnpm test:e2e:core           # 87 tes lintas shell/settings/e-GYS, ~3,4 mnt
+pnpm test:e2e:shards --shards 2 --workers 2   # suite penuh, preview harus hidup
+pnpm preview                 # terminal terpisah: 4173 untuk semua e2e
+
+Aturan worker: host 8-core ini saturasi di 2 worker (179 dtk @2 vs 217 dtk @4
+pada 55 tes yang sama). Naikkan hanya di mesin dengan core/RAM lebih banyak.
 
 Aturan e2e: jangan rebuild `dist` saat tes browser terhadap aset ber-hash berjalan;
 gunakan `GYS_E2E_PREBUILT=1` bila build sudah final. Jangan mengubah snapshot atau
