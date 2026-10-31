@@ -1087,6 +1087,16 @@ detik** — `web-build`, ketiga shard, `native-check`, `perf-budget`, dan
 `secret-scan`, dan agregat `e2e` yang jalan. Sebelumnya push seperti itu
 memakan ~12 menit dan lima job mahal.
 
+**PR selektif + reuse build (31 Okt):** setiap push PR — draft maupun ready —
+kini hanya menjalankan spec yang dipetakan dari rentang push; perubahan shared
+yang tak terklasifikasi jatuh ke **tier core 6 spec**, bukan 824 tes. Suite
+penuh tetap berjalan pada push `main` atau PR berlabel `full-ci`. `web-build`
+juga menghitung hash pohon sumber (`git ls-tree` atas src/packages/scripts/
+lockfile/konfigurasi) dan memakai cache `apps/web/dist` + `packages/*/dist`
+untuk pohon identik, sehingga build, typecheck, dan unit test dilewati saat
+cache kena. Dampak terukur dari run sebelumnya: shard 3 = 9m27, shard 2 = 8m41,
+shard 1 = 7m28 (beban tidak seimbang; kandidat rebalance berikutnya).
+
 **Keputusan anggaran performa (31 Okt, mandat penuh):** `perf-budget` dipindah
 dari setiap push `main` ke **jadwal mingguan** (Senin 03:00 UTC) + manual;
 ambang tetap **1 dtk / 250 ms** (tidak dilonggarkan). Alasannya: runner hosted
