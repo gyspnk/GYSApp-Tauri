@@ -4960,3 +4960,12 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation: none;
   }
 }
+
+/* A short stanza no longer floats in the middle of the phone screen: start it
+   under the header so the reading position is predictable. */
+@media (max-width: 700px) {
+  .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+    place-content: start center;
+    padding-block: clamp(16px, 5vw, 32px);
+  }
+}
