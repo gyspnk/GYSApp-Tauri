@@ -2,6 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
 // Representative visual baselines cover phone, tablet, and desktop widths.
+// Service workers can answer the Sauh feed from cache before Playwright's
+// routes see the request, which made the hosted screenshots non-deterministic.
+test.use({ serviceWorkers: "block" });
+
 const viewports = [
   { name: "390x844", width: 390, height: 844 },
   { name: "768x1024", width: 768, height: 1024 },
@@ -224,14 +228,11 @@ for (const surface of surfaces) {
         {
           animations: "disabled",
           caret: "hide",
-          mask:
-            surface.name === "home"
-              ? [
-                  page.locator(
-                    ".home-page .date-line, .home-page .sauh-source, .home-page .sauh-image, .home-page .suara-card img, .home-page .suara-library-item img",
-                  ),
-                ]
-              : [],
+          // Every image and the date are pinned by `prepare()` (fixed clock,
+          // transparent artwork), so masking is unnecessary. The old mask
+          // covered `.sauh-image`, which in the merged card design also paints
+          // over the title and verse drawn on top of it.
+          mask: [],
           maskColor: "#ded6c8",
           maxDiffPixelRatio: 0.005,
         },

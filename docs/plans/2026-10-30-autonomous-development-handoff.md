@@ -1096,9 +1096,14 @@ build/browser.
 mem-mock endpoint WP REST Sauh (`https://tjc.org/id/wp-json/wp/v2/posts...`)
 dengan satu post tetap — judul "Buah Pertobatan", referensi Matius 21:43, ayat,
 body, dan gambar s3 — sehingga kartu selalu berisi dan screenshot tidak lagi
-menangkap skeleton. Verifikasi lokal: judul/ayat/referensi tampil deterministik
-di 390 px. Langkah berikutnya: regenerasi manual, review artefak, commit
-baseline, lalu hapus `testIgnore` di `playwright.ci.config.ts`.
+menangkap skeleton. Akar kedua ditemukan: mask `.sauh-image` di kartu gabungan (full-bleed)
+menutupi **teks** yang digambar di atasnya, sehingga screenshot terlihat kosong
+meski kartu berisi; service worker juga bisa menjawab feed dari cache sebelum
+route Playwright. Perbaikan: mask dihapus untuk home (gambar sudah
+deterministik lewat artwork transparan + jam tetap), service worker diblokir,
+dan feed di-mock. Verifikasi lokal: judul, referensi "MATIUS 21:43", ayat, dan
+tombol tampil (screenshot 50 KB vs 22 KB yang kosong). Langkah berikutnya:
+regenerasi manual, review artefak, commit baseline, lalu hapus `testIgnore`.
 
 **Temuan regenerasi (31 Okt):** artefak `41176447426` menunjukkan kartu Sauh
 **kosong di 390, 768, dan 1440 px** — bukan media 460 px yang mendorong teks,
