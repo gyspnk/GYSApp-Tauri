@@ -15,6 +15,18 @@ type Challenge = {
 };
 const LOGIN_TIMEOUT_MS = 120_000;
 
+/**
+ * The provider follows the same convention as its own start response (digits
+ * with the country code, e.g. `6285176756451`), so the tracking event's sender
+ * number is normalized before confirmation: no `+`, no separators, and local
+ * `0…` numbers become `62…`.
+ */
+export function providerPhone(raw: string): string {
+  let digits = raw.replace(/[^0-9]/g, "");
+  if (digits.startsWith("0")) digits = `62${digits.slice(1)}`;
+  return digits;
+}
+
 /** Lives inside the provider button; clicking that button starts a fresh attempt. */
 export function EgysWhatsApp({
   onComplete,
@@ -95,7 +107,7 @@ export function EgysWhatsApp({
       const requestConfirm = () =>
         requestEgysProvider(
           "whatsapp/confirm",
-          { otp: code, mobilephone },
+          { otp: code, mobilephone: providerPhone(mobilephone) },
           controller.signal,
         );
       const pollProfile = async (backoff: readonly number[]) => {
