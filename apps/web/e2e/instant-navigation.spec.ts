@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("warm navigation reuses core payloads without optional downloads", async ({
+test("warm navigation reuses core payloads without optional downloads @perf", async ({
   page,
 }) => {
   // Measure route readiness independently of the intentional page snapshot fade.
@@ -52,7 +52,7 @@ test("warm navigation reuses core payloads without optional downloads", async ({
   expect(pdfRequests).toBe(0);
 });
 
-test("preloaded first visits render without the React Suspense reveal delay", async ({
+test("preloaded first visits render without the React Suspense reveal delay @perf", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });

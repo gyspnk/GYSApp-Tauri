@@ -7,4 +7,8 @@ export default defineConfig(baseConfig, {
   // layout contention observed at four workers. Local runs remain conservative.
   fullyParallel: true,
   workers: 3,
+  // The two @perf cases assert sub-second warm navigation. Hosted two-core
+  // runners cannot meet them (nor can the 8-core ARM host), so they run in the
+  // dedicated perf job on main pushes instead of every PR shard.
+  grepInvert: /@perf/,
 });
