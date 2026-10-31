@@ -68,6 +68,22 @@
   --radius-lg: 10px;
   --radius-card: 16px;
   --radius-feature: 24px;
+  /* Type scale: every absolute font-size uses one of these steps. Density
+     tokens (--text-ui/--text-meta in the density layer) stay separate because
+     they scale with the user's compact/comfortable choice. */
+  --type-micro: 0.625rem; /* 10px */
+  --type-caption: 0.6875rem; /* 11px */
+  --type-meta: 0.75rem; /* 12px */
+  --type-body-sm: 0.8125rem; /* 13px */
+  --type-body: 0.875rem; /* 14px */
+  --type-body-lg: 0.9375rem; /* 15px */
+  --type-base: 1rem; /* 16px */
+  --type-title-sm: 1.0625rem; /* 17px */
+  --type-title: 1.125rem; /* 18px */
+  --type-title-lg: 1.25rem; /* 20px */
+  --type-display-sm: 1.375rem; /* 22px */
+  --type-display: 1.5rem; /* 24px */
+  --type-display-lg: 1.75rem; /* 28px */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-fast: 150ms;
   --motion-normal: 220ms;

@@ -363,7 +363,7 @@
   flex: 1;
   min-width: 0;
   color: var(--ink);
-  font-size: 1.09375rem;
+  font-size: 1.0625rem;
   letter-spacing: -0.015em;
   line-height: 1.35;
 }
@@ -394,7 +394,7 @@
 
 .faith-row-progress {
   color: var(--blue);
-  font-size: max(var(--text-meta), 0.71875rem);
+  font-size: max(var(--text-meta), 0.6875rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.4;
@@ -482,7 +482,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--ink);
-  font-size: 0.96875rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -491,7 +491,7 @@
   flex: 1;
   min-width: 0;
   color: var(--muted);
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -510,7 +510,7 @@
   align-items: center;
   justify-content: center;
   padding-inline: 12px;
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   white-space: nowrap;
 }
 
@@ -553,7 +553,7 @@
   display: grid;
   gap: 0.95rem;
   color: var(--ink);
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.9;
 }
 
@@ -658,7 +658,7 @@
 
 .literature-recent-item small {
   color: var(--muted);
-  font-size: max(var(--text-meta), 0.71875rem);
+  font-size: max(var(--text-meta), 0.6875rem);
   line-height: 1.4;
 }
 
@@ -734,7 +734,7 @@
 
 .literature-shelf-item small {
   color: var(--muted);
-  font-size: max(var(--text-meta), 0.71875rem);
+  font-size: max(var(--text-meta), 0.6875rem);
   line-height: 1.4;
 }
 
@@ -812,7 +812,7 @@
 }
 .literature-cover .img-fallback-placeholder > strong {
   font-family: var(--font-reading);
-  font-size: 1.4375rem;
+  font-size: 1.375rem;
   font-weight: 500;
 }
 .literature-cover .img-fallback-placeholder > small {
@@ -832,7 +832,7 @@
 }
 
 .literature-cover small {
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   line-height: 1.15;
   text-align: left;
   opacity: 0.82;
@@ -840,7 +840,7 @@
 
 .literature-cover strong {
   align-self: end;
-  font-size: 1.4375rem;
+  font-size: 1.375rem;
   letter-spacing: 0.04em;
 }
 
@@ -1254,7 +1254,7 @@
   background: var(--surface);
   color: var(--muted);
   font: inherit;
-  font-size: max(var(--text-meta), 0.71875rem);
+  font-size: max(var(--text-meta), 0.6875rem);
   font-weight: 650;
   line-height: 1.4;
   white-space: nowrap;
@@ -1288,7 +1288,7 @@
   }
 
   .faith-row-progress {
-    font-size: max(var(--text-meta), 0.71875rem);
+    font-size: max(var(--text-meta), 0.6875rem);
   }
 }
 

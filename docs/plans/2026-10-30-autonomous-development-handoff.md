@@ -1309,6 +1309,24 @@ kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
 "Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
 `.appearance-setting-select` pertama, yang kini memang select tema.
 
+### Skala tipe (31 Okt)
+
+580 deklarasi `font-size` tersebar tanpa skala: nilai setengah piksel
+(0,84375/0,78125/0,71875/0,65625 rem), ukuran artikel 1,02 rem, dan judul
+16,32–23 px bercampur dengan langkah utama. Sekarang semua ukuran absolut memakai
+13 langkah: **0,625 · 0,6875 · 0,75 · 0,8125 · 0,875 · 0,9375 · 1 · 1,0625 ·
+1,125 · 1,25 · 1,375 · 1,5 · 1,75 rem** (token `--type-*` di
+`styles/00-tokens.css`; token density `--text-ui`/`--text-meta` tetap terpisah
+karena ikut pilihan compact/comfortable). 43 deklarasi digeser ≤1 px
+(contoh 0,84375 → 0,875; 1,4375 → 1,375; 1,1875 → 1,25), sisanya sudah pas.
+`apps/web/src/type-scale.test.ts` memindai `src/*.css` + `src/styles/*.css`,
+mengabaikan nilai relatif (`em`, `%`, `clamp()`, `calc()`, `var()`), dan gagal
+pada langkah di luar skala; dibuktikan gagal-dulu dengan probe
+`font-size: 0.9rem` (offender `styles/05-responsive-refinements.css`), lalu
+hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
+Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
+`universal-usability` + `bible-picker` 21/21 lulus.
+
 ### Dialog catatan Alkitab (31 Okt)
 
 Popup catatan (`apps/web/src/bible-notes-popup.tsx`) memakai `role="dialog"`

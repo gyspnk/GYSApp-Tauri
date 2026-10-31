@@ -69,7 +69,7 @@
 .reader-context-title span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-overflow: ellipsis;
@@ -275,7 +275,7 @@
   line-height: 1;
 }
 .typography-step-btn small {
-  font-size: 0.59375rem;
+  font-size: 0.625rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -440,7 +440,7 @@
   justify-content: space-between;
 }
 .drawer-speech-label {
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   font-weight: 650;
   color: var(--ink);
 }
@@ -470,7 +470,7 @@
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);

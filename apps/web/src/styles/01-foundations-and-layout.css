@@ -1307,7 +1307,7 @@ blockquote {
   border-radius: 8px;
   padding: 0 12px;
   cursor: pointer;
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   color: var(--ink);
@@ -1517,7 +1517,7 @@ blockquote {
 }
 
 .suara-card-content .suara-date {
-  font-size: 0.65625rem;
+  font-size: 0.625rem;
   font-weight: 700;
   color: var(--blue);
   letter-spacing: 0.04em;
@@ -1527,7 +1527,7 @@ blockquote {
 }
 
 .suara-card-content strong {
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   font-weight: 750;
   line-height: 1.32;
   color: var(--ink);
@@ -1755,7 +1755,7 @@ blockquote {
     system-ui,
     -apple-system,
     sans-serif;
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.92;
   gap: 1.05rem;
   color: var(--ink);
@@ -1801,7 +1801,7 @@ blockquote {
   display: grid;
   gap: 0.9rem;
   color: var(--ink);
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.85;
 }
 
@@ -1849,7 +1849,7 @@ blockquote {
     max-width: none;
   }
   .suara-detail-page .online-article-body.suara-article-body {
-    font-size: 0.98rem;
+    font-size: 1rem;
     line-height: 1.82;
   }
 }
@@ -1860,7 +1860,7 @@ blockquote {
     padding: 2.4rem 2.85rem;
   }
   .suara-detail-page .online-article-body.suara-article-body {
-    font-size: 1.05rem;
+    font-size: 1.0625rem;
     line-height: 1.98;
   }
 }
@@ -1894,7 +1894,7 @@ blockquote {
   border-radius: 0 8px 8px 0;
   background: color-mix(in srgb, var(--blue-soft) 55%, transparent);
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.9375rem;
   line-height: 1.6;
   font-style: italic;
   font-weight: 500;
@@ -1909,7 +1909,7 @@ blockquote {
     system-ui,
     -apple-system,
     sans-serif;
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.95;
   gap: 1.1rem;
   color: var(--ink);
@@ -2902,7 +2902,7 @@ body.is-resizing-bible {
 }
 .reader-toolbar-title > span {
   color: var(--muted);
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -2972,13 +2972,13 @@ body.is-resizing-bible {
 }
 
 .quick-nav-floater strong {
-  font-size: 1.15rem;
+  font-size: 1.125rem;
   color: var(--ink);
 }
 
 .quick-nav-floater span {
   color: var(--blue);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 

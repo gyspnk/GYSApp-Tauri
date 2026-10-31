@@ -557,7 +557,7 @@
     gap: 3px;
   }
   .suara-card-content strong {
-    font-size: 0.84375rem;
+    font-size: 0.875rem;
     font-weight: 750;
     line-height: 1.32;
     display: -webkit-box;
@@ -847,7 +847,7 @@ body:has(.home-page)::-webkit-scrollbar {
   text-align: left;
 }
 .navigation-shell .nav-copy strong {
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   font-weight: 650;
   line-height: 1.25;
 }
@@ -952,7 +952,7 @@ body:has(.home-page)::-webkit-scrollbar {
   font-size: 0.6875rem;
 }
 .accent-swatch-name {
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 550;
   color: var(--ink);
 }
@@ -1350,7 +1350,7 @@ body:has(.home-page)::-webkit-scrollbar {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1488,7 +1488,7 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 .media-tempo-toggle small {
   color: var(--muted);
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
 }
 .media-tempo-popover {
   position: absolute;

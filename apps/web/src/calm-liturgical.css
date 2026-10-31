@@ -102,11 +102,11 @@ button.text-button {
 }
 
 .global-search-result strong {
-  font-size: 0.90625rem;
+  font-size: 0.875rem;
 }
 
 .global-search-result small {
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
 }
 
 .more-card > p {
@@ -352,7 +352,7 @@ summary:focus-visible {
   cursor: pointer;
   list-style: none;
   color: var(--blue);
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   font-weight: 650;
 }
 

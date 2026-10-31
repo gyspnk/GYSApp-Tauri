@@ -244,7 +244,7 @@
 /* Literature cards: category eyebrow, title, then the date. The issue format
    line ("ISSUE · TJC Indonesia") carried no information and is gone. */
 .home-literature-shelf .suara-card-meta {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0.01em;
@@ -4179,7 +4179,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: color-mix(in srgb, var(--blue) 6%, var(--surface));
   color: var(--muted);
   text-align: start;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
   animation: pdf-notice-in 180ms var(--ease-out) both;
 }
@@ -4470,7 +4470,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 /* A title row and a labelled action row form predictable phone chrome. */
 .hymn-detail-page.is-text-viewer .hymn-action-caption {
-  font-size: 0.65rem;
+  font-size: 0.625rem;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;

@@ -28,7 +28,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -105,7 +105,7 @@
   color: var(--ink);
   cursor: pointer;
   font: inherit;
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   transition:
     border-color 0.16s ease,
@@ -283,7 +283,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -648,7 +648,7 @@
   }
   .hymn-detail-page .detail-hero h1 {
     margin-bottom: 0;
-    font-size: 1.1875rem;
+    font-size: 1.25rem;
   }
   /* Outranks the global is-text-viewer flex rule above (0-3-0 vs 0-4-0):
      phones navigate songs from the text footer / pdf chrome instead. */

@@ -20,7 +20,7 @@
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 
@@ -389,7 +389,7 @@
 }
 .bible-crossref-header small {
   color: var(--muted);
-  font-size: 0.65625rem;
+  font-size: 0.625rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 700;
@@ -453,7 +453,7 @@
 }
 .bible-crossref-ref-tag {
   color: var(--navy);
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   font-weight: 750;
 }
 .bible-crossref-nav-btn {
@@ -465,7 +465,7 @@
   border-radius: 999px;
   background: var(--surface);
   color: var(--blue);
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   font-weight: 650;
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
@@ -589,7 +589,7 @@
   background: var(--surface-soft);
   color: var(--ink);
   cursor: pointer;
-  font-size: 1.1875rem;
+  font-size: 1.25rem;
   line-height: 1;
   transition: all var(--motion-fast) var(--ease-out);
 }
@@ -613,7 +613,7 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--muted);
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -877,7 +877,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: inherit;
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
   transition:
@@ -1917,7 +1917,7 @@
   border-radius: 8px;
   background: var(--blue-soft);
   color: var(--blue);
-  font-size: 1.1875rem;
+  font-size: 1.25rem;
 }
 .report-card {
   display: grid;
@@ -2021,7 +2021,7 @@
 }
 .media-mini-context small {
   color: var(--muted);
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
 }
 .media-surface.is-dragging {
   transition: none;
@@ -2448,7 +2448,7 @@
   }
   blockquote {
     margin: 26px 0 22px;
-    font-size: 1.5625rem;
+    font-size: 1.5rem;
   }
   .feature-empty {
     margin-top: 55px;
