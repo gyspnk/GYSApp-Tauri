@@ -1509,7 +1509,11 @@
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
+  /* At 200 % text the single-line label was clipped inside the pill; let it
+     wrap inside the same 44 px target instead of hiding characters. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
   cursor: pointer;
   transition:
     background var(--motion-fast) var(--ease-out),

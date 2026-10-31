@@ -1402,6 +1402,22 @@ screenshot 390 px `/suara` dan detail menunjukkan kartu artikel dengan sudut
 24 px yang konsisten. Baseline visual diambil ulang lewat job CI karena
 perubahan radius menyentuh kartu artikel.
 
+### Teks 200 % di navigasi dan tombol e-GYS (1 Nov)
+
+Audit teks 200 % (root font-size 200 %, 320/390 px) menemukan dua tempat yang
+memotong kata: label navigasi bawah (`.nav-copy strong` memakai
+`white-space: nowrap` + ellipsis) dan tombol penyedia e-GYS
+(`.egys-provider` memakai `white-space: nowrap`, label “Login dengan Google”
+terpotong 14 px). Keduanya kini membungkus: label navigasi `white-space: normal;
+overflow-wrap: anywhere; text-overflow: clip; overflow: visible`, tombol
+penyedia `white-space: normal; overflow-wrap: anywhere; text-align: center`.
+Hasil terukur: pada 200 % tidak ada label terpotong (`scrollWidth ===
+clientWidth`), tanpa overflow dokumen, tinggi navigasi 71 → 109 px dan tombol
+penyedia 44 → 88–107 px; pada 100 % tinggi navigasi tetap 71 px dan tombol tetap
+44 px, jadi baseline visual tidak berubah.
+Verifikasi: `accessibility` + `responsive-touch-targets` + `page-transitions` +
+`egys-v1` **53/53**.
+
 ### Kepadatan daftar Kidung (1 Nov)
 
 Daftar 533 pujian memberi nomor 36 px dan indent judul 46 px (sebelumnya

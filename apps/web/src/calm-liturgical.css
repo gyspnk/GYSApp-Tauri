@@ -461,6 +461,11 @@ summary:focus-visible {
   }
 
   .navigation-shell .nav-copy strong {
+    /* At 200 % text an 11 px label no longer fits one line; wrap inside the
+       44 px target instead of truncating the destination name. */
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
     font-size: 0.6875rem;
     line-height: 1.15;
   }
