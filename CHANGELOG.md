@@ -2,6 +2,18 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-31 — CI verifies only what a push can affect
+
+- Add a `changes` job that classifies the pushed range from git: documentation
+  pushes now run only `verify` and `secret-scan`, web pushes run the build plus
+  the existing e2e path, and `native-check` runs only when `apps/native/`
+  changed. The classification falls back to `HEAD^ HEAD` when the recorded base
+  is not available, and the `e2e` aggregate fails if classification itself
+  fails, so a skipped job can never hide a broken verification.
+- Cache the Playwright browser download across the e2e jobs and keep reusing the
+  single build artifact. Validated statically with actionlint 1.7.12 (all
+  workflows clean); the hosted run itself is NOT RUN from this machine.
+
 ### 2026-10-31 — measure where the browser suite spends its time
 
 - Add `scripts/e2e-durations.mjs` (`pnpm test:e2e:durations <report.json>`) to

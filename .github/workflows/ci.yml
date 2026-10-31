@@ -18,6 +18,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # One cheap classification job keeps the expensive jobs honest: a docs-only
+  # push must not build the workspace, download a browser or boot three shards.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      native: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Classify the pushed range
+        run: |
+          set -eu
+          base="${{ github.event.pull_request.base.sha || github.event.before }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base=$(git rev-list --max-parents=0 HEAD)
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base" || true
+          fi
+          files=$(git diff --name-only "$base" "$head" || git diff --name-only HEAD^ HEAD)
+          printf 'Changed files:\n%s\n' "$files"
+          web=false
+          native=false
+          if printf '%s\n' "$files" | grep -Eq '^(apps/(web|bff)/|packages/|scripts/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json)'; then
+            web=true
+          fi
+          if printf '%s\n' "$files" | grep -Eq '^apps/native/'; then
+            native=true
+          fi
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "native=$native" >> "$GITHUB_OUTPUT"
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -47,6 +84,8 @@ jobs:
       - run: pnpm audit --prod
 
   web-build:
+    needs: changes
+    if: ${{ needs.changes.result == 'success' && needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -107,6 +146,10 @@ jobs:
       # Playwright's apt/font bootstrap and download only the headless browser
       # payload actually exercised by CI. The browser contract below proves the
       # runner remains sufficient on every image revision.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run browser contracts affected by this draft update
         env:
@@ -159,6 +202,10 @@ jobs:
       # CI runs Chromium headlessly. The hosted image already provides the
       # runtime libraries, so skip redundant apt/font installation and fetch
       # only the headless shell used by Playwright.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run full browser shard ${{ matrix.shard }}/3
         env:
@@ -185,12 +232,20 @@ jobs:
   # for ready PRs/main.
   e2e:
     if: ${{ always() }}
-    needs: [e2e-selective, e2e-shard]
+    needs: [changes, e2e-selective, e2e-shard]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Require the applicable browser verification path to pass
         run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "Change classification failed; refusing to skip browser verification."
+            exit 1
+          fi
+          if [ "${{ needs.changes.outputs.web }}" != "true" ]; then
+            echo "No web-affecting changes: browser verification is not applicable."
+            exit 0
+          fi
           if [ "${{ needs.e2e-selective.result }}" = "success" ] || [ "${{ needs.e2e-shard.result }}" = "success" ]; then
             exit 0
           fi
@@ -208,6 +263,8 @@ jobs:
         run: docker run --rm -v "${{ github.workspace }}:/repo" zricethezav/gitleaks:latest detect --source=/repo --no-banner --redact
 
   native-check:
+    needs: changes
+    if: ${{ needs.changes.result == 'success' && needs.changes.outputs.native == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 15
     steps:

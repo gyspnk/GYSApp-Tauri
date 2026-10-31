@@ -214,6 +214,7 @@ Catatan lingkungan yang memengaruhi pembacaan hasil:
 | B-31 | P1        | **Laporan pemilik 31 Okt:** pesan WhatsApp sudah dikirim dan balasan bot menyatakan berhasil, tetapi timer aplikasi langsung menampilkan gagal (tanda seru)                          | A/B: tanpa perbaikan, tes "rejected confirm still signs in" GAGAL; dengan perbaikan 3/3 lulus. Akar: `whatsapp/confirm` ditolak (kode sudah dikonsumsi bot) diperlakukan fatal padahal sesi sudah ada; kegagalan profil juga tidak terlihat (notice hanya dirender saat percobaan sudah ditutup)                               | DONE     | Minta pemilik mengulang; bila masih "!", buka Tentang → Diagnostik dan salin entri `egys.whatsapp.*`                                                                                                                                                                                                                  |
 | B-32 | P0        | **Test terlalu lambat sehingga development lambat** (permintaan pemilik 31 Okt). Tidak ada tier cepat, `pnpm test:e2e` selalu menjalankan 826 tes, dan worker default tidak diukur   | Baseline: suite penuh **35,8 mnt @3 worker**; sampel 55 tes = **179 dtk @2**, 184 dtk @3, 217 dtk @4 (lebih banyak worker = lebih lambat di host 8-core ini); unit 46-59 dtk; build 14 dtk                                                                                                                                     | DONE     | Pakai `pnpm test:e2e:core` (87 tes, **3,4 mnt**), `pnpm test:e2e:changed` (28 tes, **100 dtk**), `pnpm test:e2e:shards` untuk suite penuh di mesin ber-core banyak                                                                                                                                                    |
 | B-33 | P1        | Percepatan struktural suite: 826 tes = **74,0 mnt waktu browser**; wall ≈ tes/2 karena 2 worker saturasi. Loop per-edit kini **0–5 dtk**; gate lebar **22,7 mnt** terukur            | Fixture context per worker: `navigation-layout` **152 → 119 dtk (−22%)**. `test:loop` paralel: web source **3,9–5 dtk**, docs 2 dtk, scripts 3 dtk. `test:e2e:gate` 480 tes = **22,7 mnt**, 475 lulus, 2 gagal `instant-navigation` (batas host). Opsi A ~29 mnt, C ~13 mnt. Worker tambahan tidak menolong (179 @2 vs 217 @4) | DONE     | Keputusan pemilik bila ingin <20 mnt: pilih Opsi C atau pindahkan lebih banyak matriks ke CI                                                                                                                                                                                                                          |
+| B-34 | P1        | Verifikasi GitHub memakai resource berlebihan: perubahan dokumentasi tetap memicu `web-build`, tiga shard e2e, dan `native-check` Windows; Chromium diunduh ulang setiap job e2e     | Sebelum: docs-only = 5 job mahal; native-check selalu jalan; tidak ada cache browser                                                                                                                                                                                                                                           | DONE     | `changes` job mengklasifikasi `web`/`native`; docs-only hanya `verify` + `secret-scan`; `native-check` hanya bila `apps/native/**`; cache `~/.cache/ms-playwright`; `e2e` agregat lulus saat web tidak tersentuh dan gagal bila klasifikasi gagal. actionlint 1.7.12 bersih; **eksekusi GitHub NOT RUN**              |
 
 ## 4. Log siklus
 
@@ -875,6 +876,39 @@ Sisa: konfirmasi `test:e2e:local` penuh (2 kegagalan instant-navigation yang
 Status: DONE
 NEXT: jalankan `test:e2e:local` async sekali untuk angka final; lalu B-33
   (context/cache per worker) atau B-31 sesuai verifikasi pemilik.
+```
+
+```text
+Cycle: 18 | 2026-10-31 11:50–12:25 WIB | codex/autonomous-hardening-20261030
+Issue & priority: permintaan pemilik — verifikasi GitHub saat push harus cepat
+  dan tidak membuang resource, tanpa mengurangi kapabilitas (P1).
+Reproduction / baseline:
+  - `ci.yml` menjalankan `verify`, `web-build`, `e2e-selective`/`e2e-shard`
+    (3 shard), `secret-scan`, dan `native-check` (Windows) untuk setiap event.
+  - Tidak ada klasifikasi perubahan: push dokumentasi tetap membangun workspace,
+    mengunduh Chromium, dan menjalankan cargo di Windows.
+  - Chromium diunduh ulang di setiap job e2e (tidak ada cache).
+Root cause: workflow memperlakukan semua perubahan sama; satu-satunya
+  penghematan yang ada adalah concurrency-cancel dan artifact build bersama.
+File dan perubahan:
+  .github/workflows/ci.yml — job `changes` (git diff base..head, dengan fallback
+    HEAD^ HEAD) mengeluarkan `web`/`native`; `web-build` hanya bila `web`,
+    `native-check` hanya bila `native`; cache `~/.cache/ms-playwright` di kedua
+    job e2e; agregat `e2e` lulus saat web tidak tersentuh, dan GAGAL bila job
+    klasifikasi gagal (tidak boleh menyembunyikan verifikasi).
+Verifikasi: PASS (statis) — `actionlint 1.7.12` bersih untuk seluruh workflow;
+  Prettier mem-parse `ci.yml`; `pnpm verify:docs` lulus. **Eksekusi nyata di
+  GitHub Actions NOT RUN** dari mesin ini (tidak ada runner) — jangan klaim hijau.
+Dampak yang diharapkan (proyeksi, bukan hasil ukur):
+  - Push dokumentasi: hanya `verify` + `secret-scan` → sekitar 2–3 mnt, tanpa
+    build/browser/cargo.
+  - Push kode web: `web-build` + 3 shard (jalur sama), `native-check` dilewati
+    kecuali file native berubah; cache browser memotong unduhan tiap job.
+Risiko/regresi, blocker, rollback: regex klasifikasi bisa salah; mitigasi
+  fallback diff dan guard agregat. Rollback = kembalikan `ci.yml` (1 berkas).
+Status: DONE (statis; menunggu run GitHub berikutnya untuk bukti waktu)
+NEXT: pada push berikutnya, catat durasi job dan konfirmasi `web-build`,
+  `native-check` benar-benar dilewati untuk perubahan dokumentasi.
 ```
 
 ## 5. Risiko dan batasan bukti
