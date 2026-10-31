@@ -1179,20 +1179,20 @@ Untuk tiap area: catat metode bukti (unit / mocked / browser / hosted / native),
 status PASS/FAIL/UNKNOWN, dan bila FAIL atau "tidak bagus" buat entri backlog
 dengan rencana perbaikan lalu **eksekusi** — bukan hanya catatan.
 
-| Area                                        | Bukti minimum          | Status                                |
-| ------------------------------------------- | ---------------------- | ------------------------------------- |
-| Shell, topbar, navigasi, dialog, deep link  | browser (core + shard) | PASS (hijau hosted `41181021819`)     |
-| Home (Sauh, Suara, Lanjutkan)               | browser + visual       | PASS (baseline deterministik)         |
-| Alkitab: reader, pencarian, offline pack    | unit + browser         | PASS                                  |
-| Kidung: katalog, detail, pengaturan, PDF    | unit + browser         | PASS                                  |
-| Iman, Literatur, Suara, Lainnya             | browser                | PASS                                  |
-| Responsif 320–1440, 200% teks, tema         | browser + visual       | PASS                                  |
-| Aksesibilitas (axe, target 44 px)           | browser (touch)        | PASS                                  |
-| Engine MIDI (queue, playback, scrub, dock)  | unit + browser         | PASS (flaky historis dipantau)        |
-| Engine PDF (worker, cache, zoom)            | unit + browser         | PASS                                  |
-| **TTS Edge**                                | live smoke + perangkat | **FAIL** (HTTP 403) → B-35            |
-| **TTS lokal (register)**                    | perangkat              | **FAIL** (nada "Allah" Islami) → B-36 |
-| Aset terdistribusi, service worker, storage | unit + browser         | PASS                                  |
+| Area                                        | Bukti minimum          | Status                                                                                                           |
+| ------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Shell, topbar, navigasi, dialog, deep link  | browser (core + shard) | PASS (hijau hosted `41181021819`)                                                                                |
+| Home (Sauh, Suara, Lanjutkan)               | browser + visual       | PASS (baseline deterministik)                                                                                    |
+| Alkitab: reader, pencarian, offline pack    | unit + browser         | PASS                                                                                                             |
+| Kidung: katalog, detail, pengaturan, PDF    | unit + browser         | PASS                                                                                                             |
+| Iman, Literatur, Suara, Lainnya             | browser                | PASS                                                                                                             |
+| Responsif 320–1440, 200% teks, tema         | browser + visual       | PASS                                                                                                             |
+| Aksesibilitas (axe, target 44 px)           | browser (touch)        | PASS                                                                                                             |
+| Engine MIDI (queue, playback, scrub, dock)  | unit + browser         | PASS (flaky historis dipantau)                                                                                   |
+| Engine PDF (worker, cache, zoom)            | unit + browser         | PASS — 2 kasus flake saat gate penuh (label hymn vs chrome generik); spec kini menunggu label hymn hingga 20 dtk |
+| **TTS Edge**                                | live smoke + perangkat | **FAIL** (HTTP 403) → B-35                                                                                       |
+| **TTS lokal (register)**                    | perangkat              | **FAIL** (nada "Allah" Islami) → B-36                                                                            |
+| Aset terdistribusi, service worker, storage | unit + browser         | PASS                                                                                                             |
 
 **Aturan nonstop (agentic coding):** setiap run > 60 dtk WAJIB menjadi background
 job; agent langsung mengerjakan item lain (dokumen, unit test, spec) dan membaca
