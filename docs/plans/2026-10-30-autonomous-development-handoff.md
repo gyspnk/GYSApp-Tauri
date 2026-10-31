@@ -1159,6 +1159,17 @@ dalam **4 dtk** pada unit test terkait (`rejects 12345`). Jadi sinyal < 5 dtk
 bukan no-op: ia menangkap kesalahan tipe dan regresi logika yang tercakup unit
 test, lalu browser tetap tersedia sebagai opt-in/background untuk perubahan UI.
 
+**Kerja simultan (31 Okt):** saat run panjang (gate, suite, CI) berjalan,
+pekerjaan independen berikutnya langsung dikerjakan — dokumen, unit test, spec,
+analisis, review backlog — dan notifikasi job menjadi titik sinkronisasi. Tidak
+ada polling atau `sleep` panjang; run > 60 dtk selalu background.
+
+**Kepemilikan commit (31 Okt):** seluruh commit memakai identitas pemilik
+`KernelXtream <thengilbert@gmail.com>` (konfigurasi git repo disetel ke sana).
+52 commit lama milik agent di branch ini ditulis ulang ke identitas pemilik
+(pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
+baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
+
 **Aturan nonstop (agentic coding):** setiap run > 60 dtk WAJIB menjadi background
 job; agent langsung mengerjakan item lain (dokumen, unit test, spec) dan membaca
 hasil saat notifikasi. Run browser penuh bukan gate per perubahan — ia gate
