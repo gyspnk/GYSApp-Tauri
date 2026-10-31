@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -8,18 +9,21 @@ import {
 import { pnpmInvocation } from "./process-result.mjs";
 
 /**
- * One command for the inner loop, tuned for this repository and host.
+ * The inner loop for this repository. One command, seconds for most edits:
  *
  *   pnpm test:loop
  *
- * - docs-only changes run the documentation verifier and Prettier (seconds);
- * - code changes run the incremental typecheck, the unit tests that actually
- *   import the touched modules (`vitest related`), and only the browser specs
- *   the change maps to (fully parallel, two workers, no retries);
- * - the preview build is reused when it exists (`GYS_E2E_PREBUILT=1`).
+ * Classification:
+ *   docs only          → verify:docs + Prettier on the changed files  (~1.5s)
+ *   scripts/**         → node script tests + Prettier                 (~2s)
+ *   packages/* /src    → workspace typecheck + that package's tests   (~5s)
+ *   build config       → build + verify:bundle                        (~16s)
+ *   apps/web/src/**    → typecheck + `vitest related` + mapped specs  (12s–3m)
+ *   e2e/**             → only the touched spec files                 (~10–60s)
  *
- * The full suite stays a background/pre-push job: 826 tests need ~40 minutes
- * of browser work on the 8-core ARM host.
+ * A browser step never starts the full suite by accident: changes that map to
+ * more than six specs, or to shared/unclassified files, fall back to the
+ * 87-test core tier after rebuilding a stale `dist`.
  */
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,11 +35,6 @@ if (!changed.length) {
   console.log("No changed files. Nothing to run.");
   process.exit(0);
 }
-
-const isDocs = (file) =>
-  file.startsWith("docs/") || file.endsWith(".md") || file === "CHANGELOG.md";
-const docs = changed.filter(isDocs);
-const code = changed.filter((file) => !isDocs(file));
 
 const results = [];
 function run(label, args, { cwd = rootDir, env = process.env } = {}) {
@@ -54,39 +53,130 @@ function run(label, args, { cwd = rootDir, env = process.env } = {}) {
   return code;
 }
 
+const isDocs = (file) =>
+  file.startsWith("docs/") || file.endsWith(".md") || file === "CHANGELOG.md";
+const docs = changed.filter(isDocs);
+const code = changed.filter((file) => !isDocs(file));
+
+const hasWebSource = code.some((file) => file.startsWith("apps/web/src/"));
+const hasPackageSource = code.some((file) =>
+  /^packages\/[^/]+\/src\//.test(file),
+);
+const hasScripts = code.some((file) => file.startsWith("scripts/"));
+const hasE2E = code.some(
+  (file) => file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"),
+);
+const hasBuildConfig = code.some((file) =>
+  /(?:^|\/)(?:vite\.config\.ts|playwright[^/]*\.ts|package\.json|tsconfig[^/]*\.json|pnpm-lock\.yaml)$/.test(
+    file,
+  ),
+);
+const hasOther = code.some(
+  (file) =>
+    !file.startsWith("apps/web/src/") &&
+    !file.startsWith("apps/web/e2e/") &&
+    !file.startsWith("packages/") &&
+    !file.startsWith("scripts/") &&
+    !hasBuildConfig,
+);
+
+const formatChanged = () =>
+  run("format (changed files)", ["exec", "prettier", "--check", ...changed]);
+
+/** Newest mtime under a path (file or directory); 0 when missing. */
+async function newestMtime(target) {
+  try {
+    const info = await stat(target);
+    if (!info.isDirectory()) return info.mtimeMs;
+    let newest = info.mtimeMs;
+    for (const entry of await readdir(target, { withFileTypes: true })) {
+      const childTime = await newestMtime(path.join(target, entry.name));
+      if (childTime > newest) newest = childTime;
+    }
+    return newest;
+  } catch {
+    return 0;
+  }
+}
+
+/** A browser test against a stale `dist` proves nothing. */
+async function ensureFreshBuild() {
+  const dist = await newestMtime(path.join(webDir, "dist", "index.html"));
+  if (!dist) {
+    console.log("\nNo dist build yet: building before the browser step.");
+    return run("build", ["build"]) === 0;
+  }
+  const sources = await Promise.all(
+    [
+      "apps/web/src",
+      "apps/web/index.html",
+      "apps/web/vite.config.ts",
+      "apps/web/public",
+    ].map((entry) => newestMtime(path.join(rootDir, entry))),
+  );
+  if (Math.max(...sources) <= dist) return true;
+  console.log(
+    "\nSource is newer than dist: rebuilding before the browser step.",
+  );
+  return run("build", ["build"]) === 0;
+}
+
 console.log(
   `Changed: ${changed.length} file(s) — ${docs.length} doc(s), ${code.length} code/config.`,
 );
 
-// Formatting only needs the files that changed; scanning the whole repo costs
-// ~20s on this host and hides the signal behind noise.
-const formatStep = () =>
-  run("format (changed files)", ["exec", "prettier", "--check", ...changed]);
-
 if (code.length === 0) {
-  // Documentation-only edits: the browser suite cannot observe them.
+  // Documentation-only edits: nothing the browser or the bundler can see.
   if (run("docs verifier", ["verify:docs"]) !== 0) process.exit(1);
-  if (formatStep() !== 0) process.exit(1);
+  if (formatChanged() !== 0) process.exit(1);
+} else if (
+  !hasWebSource &&
+  !hasE2E &&
+  !hasPackageSource &&
+  !hasBuildConfig &&
+  !hasOther
+) {
+  // scripts/** only: the repository's maintained Node suites are the signal.
+  if (formatChanged() !== 0) process.exit(1);
+  if (run("script tests", ["test:scripts"]) !== 0) process.exit(1);
 } else {
-  const webTypecheck = run("web typecheck", [
-    "--filter",
-    "@gys/web",
-    "typecheck",
-  ]);
-  if (webTypecheck !== 0) process.exit(1);
+  if (hasPackageSource) {
+    if (run("workspace typecheck", ["typecheck"]) !== 0) process.exit(1);
+    for (const packageName of new Set(
+      code
+        .filter((file) => /^packages\/[^/]+\/src\//.test(file))
+        .map((file) => file.split("/")[1]),
+    )) {
+      if (
+        run(`unit tests: @gys/${packageName}`, [
+          "--filter",
+          `@gys/${packageName}`,
+          "test",
+        ]) !== 0
+      )
+        process.exit(1);
+    }
+  } else if (hasWebSource || hasBuildConfig) {
+    if (run("web typecheck", ["--filter", "@gys/web", "typecheck"]) !== 0)
+      process.exit(1);
+  }
 
-  const sources = code
-    .filter(
-      (file) =>
-        file.startsWith("apps/web/src/") &&
-        /\.(?:ts|tsx)$/.test(file) &&
-        !/\.test\./.test(file),
-    )
-    .map((file) => path.relative(webDir, path.join(rootDir, file)));
-  if (sources.length) {
-    run(
-      "unit tests that import the change",
-      [
+  if (hasBuildConfig) {
+    if (run("build", ["build"]) !== 0) process.exit(1);
+    if (run("bundle budget", ["verify:bundle"]) !== 0) process.exit(1);
+  }
+
+  if (hasWebSource) {
+    const sources = code
+      .filter(
+        (file) =>
+          file.startsWith("apps/web/src/") &&
+          /\.(?:ts|tsx)$/.test(file) &&
+          !/\.test\./.test(file),
+      )
+      .map((file) => path.relative(webDir, path.join(rootDir, file)));
+    if (sources.length) {
+      run("unit tests that import the change", [
         "--filter",
         "@gys/web",
         "exec",
@@ -94,50 +184,46 @@ if (code.length === 0) {
         "related",
         "--run",
         ...sources,
-      ],
-      { cwd: rootDir },
-    );
+      ]);
+    }
   }
 
-  if (formatStep() !== 0) process.exit(1);
+  if (formatChanged() !== 0) process.exit(1);
 
-  const plan = resolveSelectiveTestArgs(code, []);
-  const specs = plan.args.filter((arg) => arg.endsWith(".spec.ts"));
-  const fullCoverage =
-    plan.description.includes("Full browser coverage") ||
-    plan.args.length === 0;
-  // A loop command must stay bounded: a change that maps to half the suite gets
-  // the core tier (3.4 min) and a pointer to the explicit selective run, rather
-  // than silently spending forty minutes in the inner loop.
-  if (!fullCoverage && specs.length > 0 && specs.length <= 6) {
-    run(
-      `browser: ${plan.description}`,
-      [
-        "--filter",
-        "@gys/web",
-        "exec",
-        "playwright",
-        "test",
-        "--workers",
-        "2",
-        "--fully-parallel",
-        "--retries",
-        "0",
-        ...plan.args,
-      ],
-      { cwd: rootDir, env: { ...process.env, GYS_E2E_PREBUILT: "1" } },
-    );
-  } else {
-    console.log(
-      `\n↳ ${fullCoverage ? "Shared/unclassified change" : `${specs.length} mapped specs`}: running the 87-test core tier instead of the full suite.`,
-    );
-    console.log(
-      `  For the exact mapping run: pnpm test:e2e:changed ${plan.description.includes("Full browser coverage") ? "" : plan.args.join(" ")}`,
-    );
-    run("browser: core tier", ["test:e2e:core"], {
-      cwd: rootDir,
-      env: { ...process.env, GYS_E2E_PREBUILT: "1" },
-    });
+  if (hasWebSource || hasE2E) {
+    const plan = resolveSelectiveTestArgs(code, []);
+    const specs = plan.args.filter((arg) => arg.endsWith(".spec.ts"));
+    const fullCoverage =
+      plan.description.includes("Full browser coverage") ||
+      plan.args.length === 0;
+    if ((fullCoverage || specs.length > 0) && !(await ensureFreshBuild()))
+      process.exit(1);
+    if (!fullCoverage && specs.length > 0 && specs.length <= 6) {
+      run(
+        `browser: ${plan.description}`,
+        [
+          "--filter",
+          "@gys/web",
+          "exec",
+          "playwright",
+          "test",
+          "--workers",
+          "2",
+          "--fully-parallel",
+          "--retries",
+          "0",
+          ...plan.args,
+        ],
+        { env: { ...process.env, GYS_E2E_PREBUILT: "1" } },
+      );
+    } else {
+      console.log(
+        `\n↳ ${fullCoverage ? "Shared/unclassified change" : `${specs.length} mapped specs`}: running the 87-test core tier instead of the full suite.`,
+      );
+      run("browser: core tier", ["test:e2e:core"], {
+        env: { ...process.env, GYS_E2E_PREBUILT: "1" },
+      });
+    }
   }
 }
 

@@ -135,17 +135,28 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 `dist` underneath an active browser run.
 
 ```sh
-GYS_E2E_PREBUILT=1 pnpm test:e2e bible-picker-mobile.spec.ts midi-edge.spec.ts midi-player-design.spec.ts --fully-parallel --workers=2 --retries=0
-pnpm test:e2e:changed
+GYS_E2E_PREBUILT=1 pnpm test:loop          # seconds: docs ~1.5s, one spec ~12s, otherwise core
+GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 87 tests, ~3.4 min, before committing
+GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
+GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 766 tests, ~35 min, run it as a background job
+pnpm preview                              # terminal 1, serves 4173 for the browser runs
+pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
+pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report
 pnpm test:performance
 pnpm verify:native-assets
 ```
 
-Browser mode uses production assets. `pnpm test:e2e:dev` is the local HMR
-alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Selective tests
-use conservative dependency routing; shared unknown changes select the full
-suite. Full browser, native and signed-device gates remain separate from quick
-iteration. See [testing and maintenance](docs/testing-and-maintenance.md).
+Browser mode uses production assets. `test:loop` classifies the working tree
+(docs, scripts, packages, build config, web source, specs) and runs only what
+can observe the change; it rebuilds a stale `dist` before any browser step and
+never starts the full suite by accident. Two workers saturate an 8-core ARM
+machine (the same 55 tests take 179s at two workers and 217s at four), so a wide
+run belongs in the background while work continues. `test:e2e:local` leaves out
+the `-linux` visual baselines and the runtime-performance budgets because
+neither can be judged outside CI. `pnpm test:e2e:dev` is the local HMR
+alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Full browser,
+native and signed-device gates remain separate from quick iteration. See
+[testing and maintenance](docs/testing-and-maintenance.md).
 
 Repository hooks check staged formatting at commit and deterministic formatting,
 documentation, provenance, types and unit tests at push. Neither hook silently
