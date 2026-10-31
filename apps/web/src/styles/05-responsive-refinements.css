@@ -1757,7 +1757,7 @@ body:has(.home-page)::-webkit-scrollbar {
   -webkit-overflow-scrolling: touch;
 }
 .lyrics-panel :is(input, select):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 .lyrics-verse-container {

@@ -642,3 +642,118 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expectNoAxeViolations(page);
   });
 });
+
+function parseColor(value: string): [number, number, number, number] {
+  // Chromium reports color-mix() results as color(srgb r g b / a) with 0–1
+  // channels; rgb()/rgba() use 0–255.
+  const srgb = value.match(
+    /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/,
+  );
+  if (srgb) {
+    return [
+      Number(srgb[1]) * 255,
+      Number(srgb[2]) * 255,
+      Number(srgb[3]) * 255,
+      srgb[4] === undefined ? 1 : Number(srgb[4]),
+    ];
+  }
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return [0, 0, 0, 1];
+  const parts = match[1]!.split(",").map((part) => Number(part.trim()));
+  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 1];
+}
+
+function composite(
+  foreground: [number, number, number, number],
+  background: [number, number, number, number],
+): [number, number, number, number] {
+  const alpha = foreground[3];
+  return [
+    foreground[0] * alpha + background[0] * (1 - alpha),
+    foreground[1] * alpha + background[1] * (1 - alpha),
+    foreground[2] * alpha + background[2] * (1 - alpha),
+    1,
+  ];
+}
+
+function relativeLuminance([red, green, blue]: [
+  number,
+  number,
+  number,
+  number,
+]) {
+  const channel = (value: number) => {
+    const normalized = value / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  return (
+    0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue)
+  );
+}
+
+function contrastRatio(foreground: string, background: string) {
+  const surface = parseColor(background);
+  const ring = composite(parseColor(foreground), surface);
+  const first = relativeLuminance(ring);
+  const second = relativeLuminance(surface);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+test("keyboard focus rings clear 3:1 on every control they reach", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  const inspected: Array<{ label: string; ratio: number; width: number }> = [];
+  for (let stop = 0; stop < 6; stop++) {
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const element = document.activeElement as HTMLElement | null;
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      const opaque = (value: string) => {
+        const numbers = value.match(/rgba?\(([^)]+)\)/);
+        if (!numbers) return false;
+        const parts = numbers[1]!.split(",").map((part) => Number(part));
+        return (parts[3] ?? 1) > 0.9;
+      };
+      // The ring is drawn outside the box (positive offset), so the surface it
+      // must contrast with is the parent's, not the control's own fill.
+      let node: HTMLElement | null = element.parentElement;
+      let background = "rgb(255, 255, 255)";
+      while (node) {
+        const value = getComputedStyle(node).backgroundColor;
+        if (value !== "rgba(0, 0, 0, 0)" && opaque(value)) {
+          background = value;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return {
+        label:
+          element.getAttribute("aria-label") ??
+          element.textContent?.trim().slice(0, 24) ??
+          element.tagName,
+        color: style.outlineColor,
+        width: Number.parseFloat(style.outlineWidth),
+        style: style.outlineStyle,
+        background,
+      };
+    });
+    expect(ring).not.toBeNull();
+    if (!ring) continue;
+    expect(ring.style, ring.label).not.toBe("none");
+    expect(ring.width, ring.label).toBeGreaterThanOrEqual(2);
+    inspected.push({
+      label: ring.label,
+      ratio: contrastRatio(ring.color, ring.background),
+      width: ring.width,
+    });
+  }
+  for (const item of inspected) {
+    expect(item.ratio, `${item.label} focus ring`).toBeGreaterThanOrEqual(3);
+  }
+});

@@ -332,7 +332,7 @@ button.text-button {
 input:focus-visible,
 select:focus-visible,
 summary:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 

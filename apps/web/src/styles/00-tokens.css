@@ -56,6 +56,9 @@
   --line: #dce5ee;
   --line-strong: #bdcedd;
   --blue: #00719c;
+  /* One focus ring for every control: the solid blue clears 3:1 on every
+     surface, unlike the translucent variants it replaces. */
+  --focus: var(--blue);
   --accent-fill: var(--blue);
   --on-accent: #ffffff;
   --success: #23642b;

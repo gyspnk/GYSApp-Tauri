@@ -1370,6 +1370,22 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Cincin fokus (31 Okt)
+
+Probe Tab pada topbar menunjukkan dua gaya cincin fokus: `3px` biru
+`color-mix(--blue 45%)` untuk anchor (merek, tombol Tampilan, portal) dan `2px
+solid --blue` untuk tombol. Yang transparan hanya mencapai **1,95:1** di atas
+putih (dan satu varian kidung memakai 16 %), di bawah syarat 3:1 untuk indikator
+fokus (WCAG 2.2 SC 1.4.11). Perbaikan: token `--focus: var(--blue)` di
+`styles/00-tokens.css`; semua cincin transparan (45 % dan 16 %) diganti
+`3px solid var(--focus)` di `styles/01-foundations-and-layout.css`,
+`styles/05-responsive-refinements.css`, `calm-liturgical.css`, `kidung-ux.css`.
+Cincin 2 px yang sudah solid dibiarkan. Tes baru di
+`apps/web/e2e/accessibility.spec.ts` menekan Tab enam kali, mengukur warna/
+ketebalan outline, mengompositkan alpha di atas latar induk, dan menuntut
+kontras ≥3:1; dibuktikan gagal-dulu pada CSS lama (**1,95:1**, “Lewati ke
+konten utama”) lalu lulus pada CSS baru. `accessibility` **16/16**.
+
 ### Dialog catatan Alkitab (31 Okt)
 
 Popup catatan (`apps/web/src/bible-notes-popup.tsx`) memakai `role="dialog"`
