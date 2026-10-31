@@ -1024,7 +1024,17 @@ context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
 semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
 Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
 
-**CI gating — bukti hosted (31 Okt):** run `41171323460` (commit `e32b8c3`,
+**CI gating — bukti hosted (31 Okt):** run `41171323460` mencatat durasi job
+sebenarnya: `changes` 7 dtk, `verify` 34 dtk, `secret-scan` 11 dtk,
+`web-build` **50 dtk**, `native-check` **dilewati**, tiga shard 9–11 mnt.
+Kegagalan shard saat itu: baseline visual `-linux` (perlu review pemilik) dan
+dua tes anggaran performa (`instant-navigation`) yang memang tidak tercapai di
+runner 2-core; satu asersi matriks visual juga menuntut target 44 px pada
+pointer halus padahal desain memakai 36 px — itu sudah diperbaiki dengan
+`hasTouch: true` di matriks (lulus lokal 1/1). Anggaran 1 dtk/250 ms **tidak**
+dilonggarkan tanpa keputusan pemilik.
+
+run `41171323460` (commit `e32b8c3`,
 perubahan hanya `ci.yml` + dokumen) menunjukkan `changes`, `verify`,
 `secret-scan` selesai dan **`native-check` dilewati**; `web-build` tetap jalan
 karena guard melihat run sebelumnya (`41170979357`) **dibatalkan**, sehingga
