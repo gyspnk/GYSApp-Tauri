@@ -1224,8 +1224,10 @@ baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
 
 **Dampak unifikasi pada tes (31 Okt):** `smoke` mengalihkan locale lewat select
 topbar dan mengatur pitch lewat drawer Alkitab — keduanya sudah tidak ada. Tes
-kini beralih bahasa lewat **Pengaturan → Tampilan** (helper `switchLocale`,
-opsi "English"/"简体中文"/"Bahasa Indonesia") dan mengatur pitch lewat
+kini beralih bahasa lewat **select bahasa di topbar** (helper `switchLocale`
+membaca locale aktif dari `gys-shell-settings-v1`, lalu memilih opsi
+`ID`/`EN`/`中文`), termasuk saat berada di halaman Pengaturan — jadi tidak ada
+lagi kontrol bahasa kedua di dalam kartu Tampilan. Pitch diatur lewat
 **Pengaturan → Audio** dengan navigasi in-app agar sesi bicara + media surface
 tetap hidup. `smoke` **44/44 lulus**; ini memperbaiki run CI yang sempat merah
 setelah unifikasi.
@@ -1252,13 +1254,13 @@ dengan baseline visual + `select-dropdown`/`menu-motion`.
 
 ### Duplikasi kontrol → satu tempat kanonik (31 Okt)
 
-| Kontrol                  | Sebelum (dua tempat)                  | Kanonik sekarang               | Tindakan                                                                                                                         |
-| ------------------------ | ------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Tema                     | select topbar + Pengaturan → Tampilan | **Pengaturan → Tampilan**      | select topbar dihapus; tombol Tampilan 44 px menautkan ke `?section=appearance`; label diseragamkan memakai kunci `shell.theme*` |
-| Bahasa aplikasi          | select topbar + Pengaturan → Tampilan | **Pengaturan → Tampilan**      | select topbar dihapus (tombol Tampilan membuka bagian yang sama)                                                                 |
-| Suara/kecepatan/nada TTS | drawer Alkitab + Pengaturan → Audio   | **Pengaturan → Audio & Suara** | kontrol duplikat di drawer dihapus; drawer menyisakan mesin TTS, gateway, volume, dan tautan ke Pengaturan Audio                 |
-| Mesin TTS & gateway      | drawer Alkitab                        | drawer Alkitab                 | tetap (konfigurasi lingkungan, bukan preferensi)                                                                                 |
-| Ukuran font reader       | kontrol Aa di reader                  | reader                         | tidak diduplikasi di Pengaturan                                                                                                  |
+| Kontrol                  | Sebelum (dua tempat)                  | Kanonik sekarang               | Tindakan                                                                                                                                                    |
+| ------------------------ | ------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tema                     | select topbar + Pengaturan → Tampilan | **Pengaturan → Tampilan**      | select topbar dihapus; tombol Tampilan 44 px menautkan ke `?section=appearance`; label diseragamkan memakai kunci `shell.theme*`                            |
+| Bahasa aplikasi          | select topbar + Pengaturan → Tampilan | **Select topbar**              | baris bahasa di Pengaturan dihapus; bahasa global harus bisa diganti tanpa meninggalkan halaman, dan spec aksesibilitas + smoke sudah memakai select topbar |
+| Suara/kecepatan/nada TTS | drawer Alkitab + Pengaturan → Audio   | **Pengaturan → Audio & Suara** | kontrol duplikat di drawer dihapus; drawer menyisakan mesin TTS, gateway, volume, dan tautan ke Pengaturan Audio                                            |
+| Mesin TTS & gateway      | drawer Alkitab                        | drawer Alkitab                 | tetap (konfigurasi lingkungan, bukan preferensi)                                                                                                            |
+| Ukuran font reader       | kontrol Aa di reader                  | reader                         | tidak diduplikasi di Pengaturan                                                                                                                             |
 
 Deep link `?section=appearance` dan `?section=audio` ditambahkan ke peta
 `MORE_SECTION_SETTINGS`. Verifikasi: `select-dropdown` 2/2,

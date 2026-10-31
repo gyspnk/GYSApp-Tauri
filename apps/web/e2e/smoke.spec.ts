@@ -1,28 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The top bar no longer duplicates the language picker: Appearance owns it.
+// Language lives in the top bar only; Appearance owns theme, accent and font.
 async function switchLocale(page: Page, target: "EN" | "中文" | "ID") {
-  await page.goto("/GYSApp-Tauri/lainnya?section=appearance");
   const name = await page.evaluate(() => {
     const raw = localStorage.getItem("gys-shell-settings-v1");
     const locale = raw ? (JSON.parse(raw).locale ?? "id") : "id";
-    return locale === "en"
-      ? "Choose language"
-      : locale === "zh"
-        ? "选择语言"
-        : "Pilih Bahasa";
+    return locale === "en" ? "Language" : locale === "zh" ? "语言" : "Bahasa";
   });
   await page.getByRole("combobox", { name }).click();
-  const option = {
-    EN: /English/,
-    中文: /简体中文/,
-    ID: /Bahasa Indonesia/,
-  }[target];
-  await page.getByRole("option", { name: option }).click();
+  await page.getByRole("option", { name: target, exact: true }).click();
 }
 
-// Settings groups open on first paint, so a blind summary click would close
-// them. Assert the open state the assertions need instead of toggling.
 async function ensureSettingOpen(page: Page, setting: string) {
   const section = page.locator(
     `.more-setting-section[data-setting="${setting}"]`,
@@ -108,10 +96,7 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
     page.getByText("Tampilan & Bahasa", { exact: true }),
   ).toHaveCount(0);
 
-  await page
-    .getByRole("combobox", { name: "Choose language", exact: true })
-    .click();
-  await page.getByRole("option", { name: "中文" }).click();
+  await switchLocale(page, "中文");
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
   await page.reload();

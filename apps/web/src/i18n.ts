@@ -1312,8 +1312,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.accent.sunset": "Oranye Senja",
     "more.customAccent": "Pilih Warna Kustom",
     "more.custom": "Kustom",
-    "more.appLanguage": "Bahasa Aplikasi",
-    "more.chooseLanguage": "Pilih Bahasa",
     "more.localPack": "Paket lokal",
     "more.ready": "Siap",
     "more.localPackDescription":
@@ -2020,8 +2018,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.accent.sunset": "Sunset orange",
     "more.customAccent": "Choose custom color",
     "more.custom": "Custom",
-    "more.appLanguage": "App language",
-    "more.chooseLanguage": "Choose language",
     "more.localPack": "Local pack",
     "more.ready": "Ready",
     "more.localPackDescription":
@@ -2719,8 +2715,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.accent.sunset": "夕阳橙",
     "more.customAccent": "选择自定义颜色",
     "more.custom": "自定义",
-    "more.appLanguage": "应用语言",
-    "more.chooseLanguage": "选择语言",
     "more.localPack": "本地包",
     "more.ready": "已就绪",
     "more.localPackDescription":

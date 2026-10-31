@@ -392,6 +392,18 @@ function Header({
           <span>{translate(locale, "shell.search")}</span>
           <kbd>⌘K</kbd>
         </button>
+        <Select
+          value={locale}
+          onChange={setLocale}
+          className="topbar-select language-select"
+          animated
+          label={translate(locale, "shell.language")}
+          options={[
+            { value: "id", label: "ID" },
+            { value: "en", label: "EN" },
+            { value: "zh", label: "中文" },
+          ]}
+        />
         <Link
           className="topbar-appearance-button"
           to="/lainnya?section=appearance"

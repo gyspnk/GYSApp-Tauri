@@ -1388,35 +1388,6 @@ export function MorePage({
                   </label>
                 </div>
               </section>
-
-              <div className="appearance-setting-row">
-                <span className="appearance-setting-name">
-                  {translate(locale, "more.appLanguage")}
-                </span>
-                <Select
-                  className="appearance-setting-select"
-                  value={locale}
-                  onChange={(val) => {
-                    const next = val as Locale;
-                    setLocale(next);
-                  }}
-                  label={translate(locale, "more.chooseLanguage")}
-                  options={[
-                    {
-                      value: "id",
-                      label: "🇮🇩 Bahasa Indonesia (Utama)",
-                    },
-                    {
-                      value: "en",
-                      label: "🇬🇧 English",
-                    },
-                    {
-                      value: "zh",
-                      label: "🇨🇳 简体中文",
-                    },
-                  ]}
-                />
-              </div>
             </div>
             <UiPreferencesPanel locale={locale} />
           </article>
