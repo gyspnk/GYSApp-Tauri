@@ -46,6 +46,13 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
           {translate(locale, "bible.edgeHint")}
         </p>
       )}
+      {speech.engine !== "local" &&
+        isEdgeSpeechConfigured() &&
+        speech.providerId === "browser-system" && (
+          <p className="audio-setting-hint" role="status">
+            {translate(locale, "bible.edgeFallback")}
+          </p>
+        )}
       <label className="audio-setting-row">
         <span>
           {translate(locale, "bible.readingSpeed")} · {speech.rate.toFixed(1)}×

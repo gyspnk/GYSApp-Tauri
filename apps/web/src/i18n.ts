@@ -178,6 +178,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.localTts": "TTS lokal",
     "bible.edgeHint":
       "Edge neural perlu internet. Otomatis memakai suara sistem di browser; TTS lokal hanya memakai suara perangkat.",
+    "bible.edgeFallback":
+      "Suara sistem dipakai karena Edge gagal atau tidak tersedia. Kualitas dan intonasi mengikuti voice perangkat — pilih voice lain di atas bila terdengar kurang pas.",
     "bible.gatewayEndpoint": "Endpoint Gateway",
     "bible.edgeEndpointPlaceholder": "https://... (bawaan)",
     "bible.optional": "Opsional",
@@ -423,6 +425,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.localTts": "Local TTS",
     "bible.edgeHint":
       "Edge neural needs internet. Automatic uses system voices in browsers; local TTS uses only device voices.",
+    "bible.edgeFallback":
+      "System speech is in use because Edge failed or is unavailable. Quality and intonation follow the device voice — pick another voice above if it sounds off.",
     "bible.gatewayEndpoint": "Gateway endpoint",
     "bible.edgeEndpointPlaceholder": "https://... (default)",
     "bible.optional": "Optional",
@@ -660,6 +664,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.localTts": "本地 TTS",
     "bible.edgeHint":
       "Edge 神经语音需要联网。浏览器中自动模式使用系统语音；本地 TTS 仅使用设备语音。",
+    "bible.edgeFallback":
+      "Edge 失败或不可用，正在使用系统语音。音质和语调取决于设备语音——如不合适可在上方选择其他语音。",
     "bible.gatewayEndpoint": "网关端点",
     "bible.edgeEndpointPlaceholder": "https://...（默认）",
     "bible.optional": "可选",

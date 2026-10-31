@@ -215,6 +215,8 @@ Catatan lingkungan yang memengaruhi pembacaan hasil:
 | B-32 | P0        | **Test terlalu lambat sehingga development lambat** (permintaan pemilik 31 Okt). Tidak ada tier cepat, `pnpm test:e2e` selalu menjalankan 826 tes, dan worker default tidak diukur                                                       | Baseline: suite penuh **35,8 mnt @3 worker**; sampel 55 tes = **179 dtk @2**, 184 dtk @3, 217 dtk @4 (lebih banyak worker = lebih lambat di host 8-core ini); unit 46-59 dtk; build 14 dtk                                                                                                                                     | DONE      | Pakai `pnpm test:e2e:core` (87 tes, **3,4 mnt**), `pnpm test:e2e:changed` (28 tes, **100 dtk**), `pnpm test:e2e:shards` untuk suite penuh di mesin ber-core banyak                                                                                                                                                                                                                                                                 |
 | B-33 | P1        | Percepatan struktural suite: 826 tes = **74,0 mnt waktu browser**; wall ≈ tes/2 karena 2 worker saturasi. Loop per-edit kini **0–5 dtk**; gate lebar **22,7 mnt** terukur                                                                | Fixture context per worker: `navigation-layout` **152 → 119 dtk (−22%)**. `test:loop` paralel: web source **3,9–5 dtk**, docs 2 dtk, scripts 3 dtk. `test:e2e:gate` 480 tes = **22,7 mnt**, 475 lulus, 2 gagal `instant-navigation` (batas host). Opsi A ~29 mnt, C ~13 mnt. Worker tambahan tidak menolong (179 @2 vs 217 @4) | DONE      | Keputusan pemilik bila ingin <20 mnt: pilih Opsi C atau pindahkan lebih banyak matriks ke CI                                                                                                                                                                                                                                                                                                                                       |
 | B-34 | P1        | Verifikasi GitHub memakai resource berlebihan dan selalu merah karena tes batas-host: docs memicu 5 job, Chromium diunduh ulang, `native-check` Windows selalu jalan, dan dua tes `@perf` + baseline `-linux` membuat setiap shard merah | Hosted run `41171323460`: changes 7 dtk, verify 34 dtk, web-build 50 dtk, native **skipped**; run `41172622341`: shard 1 gagal hanya 2 `@perf`, shard 3 hanya baseline visual; matriks visual sudah lulus setelah `hasTouch`                                                                                                   | DONE      | `changes` job (push range + guard), cache browser, `native-check` hanya native, `@perf` dipindah ke job main/manual, job manual `update-visual-baselines`; baseline visual menunggu review pemilik                                                                                                                                                                                                                                 |
+| B-35 | P1        | **Edge TTS tidak bekerja** (laporan pemilik 31 Okt): handshake `wss://speech.platform.bing.com` mengembalikan **HTTP 403**                                                                                                               | `node scripts/edge-tts-live-smoke.mjs` dari host ini: **403** untuk versi 143, 157, dan 158 serta host `api.msedgeservices.com`; konstanta kini `1-158.0.4357.0` (Edge stabil 2026-10-27). Aplikasi sudah fallback ke engine lokal dan mencatat `tts.edge.retry` di Diagnostik                                                 | OPEN      | (1) uji smoke yang sama di perangkat pemilik (IP residensial) — jika lulus, blokir hanya IP datacenter; (2) jika tetap 403, perbarui protokol (token `Sec-MS-GEC`, header, host) mengikuti klien yang dipelihara; (3) probe kemampuan + notifikasi UI saat Edge gagal; (4) dokumentasikan opsi gateway `gys-custom-edge-endpoint-v1`                                                                                               |
+| B-36 | P1        | **Register suara engine lokal salah** (laporan pemilik): kata "Allah" diucapkan dengan nada/intonasi versi Islam, bukan register Kristen                                                                                                 | Engine lokal adalah `speechSynthesis` OS; orchestrator mencoba Edge lalu browser, jadi saat Edge 403 pengguna mendengar voice OS (model umum/Islami)                                                                                                                                                                           | OPEN      | (a) Edge neural `id-ID-GadisNeural/ArdiNeural` adalah perbaikan utama — bergantung B-35; (b) tambah leksikon pelafalan (Allah, Yesus, Kristus, Roh Kudus, Injil) yang bisa diperluas; (c) pilih voice netral secara default + pratinjau di Pengaturan Audio; (d) uji di perangkat pemilik                                                                                                                                          |
 
 ## 4. Log siklus
 
@@ -1169,6 +1171,28 @@ ada polling atau `sleep` panjang; run > 60 dtk selalu background.
 52 commit lama milik agent di branch ini ditulis ulang ke identitas pemilik
 (pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
 baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
+
+### Audit UI + engine (kebijakan wajib, 31 Okt)
+
+Setiap audit harus mencakup **UI dan engine backend**, bukan hanya tampilan.
+Untuk tiap area: catat metode bukti (unit / mocked / browser / hosted / native),
+status PASS/FAIL/UNKNOWN, dan bila FAIL atau "tidak bagus" buat entri backlog
+dengan rencana perbaikan lalu **eksekusi** — bukan hanya catatan.
+
+| Area                                        | Bukti minimum          | Status                                |
+| ------------------------------------------- | ---------------------- | ------------------------------------- |
+| Shell, topbar, navigasi, dialog, deep link  | browser (core + shard) | PASS (hijau hosted `41181021819`)     |
+| Home (Sauh, Suara, Lanjutkan)               | browser + visual       | PASS (baseline deterministik)         |
+| Alkitab: reader, pencarian, offline pack    | unit + browser         | PASS                                  |
+| Kidung: katalog, detail, pengaturan, PDF    | unit + browser         | PASS                                  |
+| Iman, Literatur, Suara, Lainnya             | browser                | PASS                                  |
+| Responsif 320–1440, 200% teks, tema         | browser + visual       | PASS                                  |
+| Aksesibilitas (axe, target 44 px)           | browser (touch)        | PASS                                  |
+| Engine MIDI (queue, playback, scrub, dock)  | unit + browser         | PASS (flaky historis dipantau)        |
+| Engine PDF (worker, cache, zoom)            | unit + browser         | PASS                                  |
+| **TTS Edge**                                | live smoke + perangkat | **FAIL** (HTTP 403) → B-35            |
+| **TTS lokal (register)**                    | perangkat              | **FAIL** (nada "Allah" Islami) → B-36 |
+| Aset terdistribusi, service worker, storage | unit + browser         | PASS                                  |
 
 **Aturan nonstop (agentic coding):** setiap run > 60 dtk WAJIB menjadi background
 job; agent langsung mengerjakan item lain (dokumen, unit test, spec) dan membaca
