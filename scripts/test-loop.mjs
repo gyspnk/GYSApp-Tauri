@@ -6,6 +6,7 @@ import {
   collectChangedFiles,
   resolveSelectiveTestArgs,
 } from "./test-e2e-selective-core.mjs";
+import { classifyChanges } from "./test-loop-core.mjs";
 import { pnpmInvocation } from "./process-result.mjs";
 
 /**
@@ -53,32 +54,16 @@ function run(label, args, { cwd = rootDir, env = process.env } = {}) {
   return code;
 }
 
-const isDocs = (file) =>
-  file.startsWith("docs/") || file.endsWith(".md") || file === "CHANGELOG.md";
-const docs = changed.filter(isDocs);
-const code = changed.filter((file) => !isDocs(file));
-
-const hasWebSource = code.some((file) => file.startsWith("apps/web/src/"));
-const hasPackageSource = code.some((file) =>
-  /^packages\/[^/]+\/src\//.test(file),
-);
-const hasScripts = code.some((file) => file.startsWith("scripts/"));
-const hasE2E = code.some(
-  (file) => file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"),
-);
-const hasBuildConfig = code.some((file) =>
-  /(?:^|\/)(?:vite\.config\.ts|playwright[^/]*\.ts|package\.json|tsconfig[^/]*\.json|pnpm-lock\.yaml)$/.test(
-    file,
-  ),
-);
-const hasOther = code.some(
-  (file) =>
-    !file.startsWith("apps/web/src/") &&
-    !file.startsWith("apps/web/e2e/") &&
-    !file.startsWith("packages/") &&
-    !file.startsWith("scripts/") &&
-    !hasBuildConfig,
-);
+const {
+  docs,
+  code,
+  hasWebSource,
+  hasPackageSource,
+  hasScripts,
+  hasE2E,
+  hasBuildConfig,
+  hasOther,
+} = classifyChanges(changed);
 
 const formatChanged = () =>
   run("format (changed files)", ["exec", "prettier", "--check", ...changed]);

@@ -35,7 +35,7 @@
     "test:e2e:home": "pnpm --filter @gys/web test:e2e:home",
     "test:e2e:visual": "pnpm --filter @gys/web test:e2e:visual",
     "test:policy": "node --test scripts/verify-egys-local-only.test.mjs",
-    "test:scripts": "node --test scripts/configure-android-preview.test.mjs scripts/edge-stop-evidence.test.mjs scripts/verify-documentation.test.mjs scripts/verify-service-worker.test.mjs scripts/test-e2e-selective-core.test.mjs scripts/test-e2e-selective-ui.test.mjs scripts/prepush-plan.test.mjs scripts/bundle-graph.test.mjs scripts/process-result.test.mjs scripts/native-asset-boundary.test.mjs",
+    "test:scripts": "node --test scripts/configure-android-preview.test.mjs scripts/edge-stop-evidence.test.mjs scripts/verify-documentation.test.mjs scripts/verify-service-worker.test.mjs scripts/test-e2e-selective-core.test.mjs scripts/test-e2e-selective-ui.test.mjs scripts/prepush-plan.test.mjs scripts/bundle-graph.test.mjs scripts/process-result.test.mjs scripts/native-asset-boundary.test.mjs scripts/test-loop-core.test.mjs",
     "lint": "pnpm --filter @gys/contracts lint && pnpm --filter @gys/domain lint && pnpm --filter @gys/testkit lint && pnpm --filter @gys/bff lint && pnpm --filter @gys/web lint",
     "format:check": "pnpm exec prettier --check .",
     "format": "pnpm exec prettier --write .",
