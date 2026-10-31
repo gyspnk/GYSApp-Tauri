@@ -138,6 +138,7 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 GYS_E2E_PREBUILT=1 pnpm test:loop          # seconds: docs ~1.5s, one spec ~12s, otherwise core
 GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 87 tests, ~3.4 min, before committing
 GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
+GYS_E2E_PREBUILT=1 pnpm test:e2e:gate      # 480 behaviour tests, ~22 min (option B)
 GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 766 tests, ~35 min, run it as a background job
 pnpm preview                              # terminal 1, serves 4173 for the browser runs
 pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
@@ -151,9 +152,10 @@ Browser mode uses production assets. `test:loop` classifies the working tree
 can observe the change; it rebuilds a stale `dist` before any browser step and
 never starts the full suite by accident. Two workers saturate an 8-core ARM
 machine (the same 55 tests take 179s at two workers and 217s at four), so a wide
-run belongs in the background while work continues. `test:e2e:local` leaves out
-the `-linux` visual baselines and the runtime-performance budgets because
-neither can be judged outside CI. `pnpm test:e2e:dev` is the local HMR
+run belongs in the background while work continues. `test:e2e:gate` keeps
+behaviour coverage and leaves the nine heaviest specs to CI; `test:e2e:local`
+leaves out the `-linux` visual baselines and the runtime-performance budgets
+because neither can be judged outside CI. `pnpm test:e2e:dev` is the local HMR
 alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Full browser,
 native and signed-device gates remain separate from quick iteration. See
 [testing and maintenance](docs/testing-and-maintenance.md).
