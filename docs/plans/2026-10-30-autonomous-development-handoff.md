@@ -1370,6 +1370,16 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Ketahanan tes drag (31 Okt)
+
+`tier:core` 87/88 lulus; satu-satunya kegagalan adalah
+`smoke.spec.ts:627` (“Bible title drag …”) yang memakai `waitForTimeout(1_100)`
+lalu langsung menuntut `data-step` berubah — di mesin berbeban timer dwell dan
+event `mousemove` bisa datang terlambat sehingga langkah belum berpindah.
+Diisolasi tes itu lulus (10,5 dtk), jadi flake. Perbaikan: dua tunggu tetap
+diganti `toHaveAttribute("data-step", …, { timeout: 8_000 })` yang mengulang
+pemeriksaan sampai timer menyelesaikan dwell; `smoke` **44/44** dengan 2 worker.
+
 ### Judul literatur dua baris + audit luapan (31 Okt)
 
 `apps/web/scripts/ui-overflow-audit.mjs` ternyata memakai rute yang salah
@@ -1654,6 +1664,7 @@ pnpm test:e2e:core           # 87 tes lintas shell/settings/e-GYS, ~3,4 mnt
 pnpm test:e2e:local          # 766 tes, tanpa baseline visual -linux & perf
 pnpm test:e2e:shards --shards 2 --workers 2   # suite penuh, preview harus hidup
 pnpm test:e2e:durations /tmp/e2e.json         # ranking spec/tes dari JSON report
+pnpm ui:audit                # 12 rute asli × 5 viewport × 2 tema: luapan/kliping/overlap
 pnpm preview                 # terminal terpisah: 4173 untuk semua e2e
 
 Aturan worker: host 8-core ini saturasi di 2 worker (179 dtk @2 vs 217 dtk @4

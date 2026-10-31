@@ -673,10 +673,12 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     matthewBox.x + matthewBox.width / 2,
     matthewBox.y + matthewBox.height / 2,
   );
-  await page.waitForTimeout(1_100);
+  // The dwell timer fires on its own; retrying the assertion waits for it
+  // instead of racing a fixed sleep on a loaded machine.
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "chapter",
+    { timeout: 8_000 },
   );
   const chapterFive = page.locator('[data-quick-nav-value="5"]');
   const chapterBox = await chapterFive.boundingBox();
@@ -687,10 +689,10 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     chapterBox.y + chapterBox.height / 2,
   );
   await expect(chapterFive).toHaveClass(/is-selected/);
-  await page.waitForTimeout(1_100);
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "verse",
+    { timeout: 8_000 },
   );
   const verseThree = page.locator('[data-quick-nav-value="3"]');
   const verseBox = await verseThree.boundingBox();
