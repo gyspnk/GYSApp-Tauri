@@ -1370,6 +1370,23 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Radius yang bersembunyi di satuan rem (1 Nov)
+
+Penjaga skala radius hanya memindai `px`, jadi **12 deklarasi** lolos dengan
+`rem`: 0,5 (8 px), 0,75 (12), 0,9 (14,4), 0,95 (15,2), 1 (16), 1,2 (19,2), dan
+1,25 (24 px tampak) — nilai 14,4/15,2/19,2 tidak pernah ada di skala
+6/8/10/12/16/24/999. Semua kini memakai px skala: 0,5→8, 0,75→12, 0,9→16,
+0,95→16, 1→16, 1,2→24, 1,25→24. Kasus ketiga
+`apps/web/src/radius-scale.test.ts` menolak `border-radius` ber-satuan `rem`
+yang tidak setara skala (×16), dibuktikan gagal-dulu: 12 pelanggaran muncul
+(`styles/01-foundations-and-layout.css: 0.95rem` …), lalu hijau 3/3 setelah
+konversi.
+
+Verifikasi: `suara-catalog` + `accessibility` + `catalog-discovery` **23/23**;
+screenshot 390 px `/suara` dan detail menunjukkan kartu artikel dengan sudut
+24 px yang konsisten. Baseline visual diambil ulang lewat job CI karena
+perubahan radius menyentuh kartu artikel.
+
 ### Alias nomor kidung (1 Nov)
 
 Tautan `/kidung/1` atau `/kidung/51` (nomor yang diketik anggota, atau dikutip

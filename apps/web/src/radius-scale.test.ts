@@ -34,6 +34,20 @@ describe("radius scale", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("does not hide a stray radius behind rem units", () => {
+    // The first sweep only looked at `px`, so twelve cards kept values such as
+    // 0.95rem (15.2px) and 1.2rem (19.2px) that never matched the scale.
+    const offenders: string[] = [];
+    for (const file of cssFiles()) {
+      const css = readFileSync(new URL(file, SRC), "utf8");
+      for (const match of css.matchAll(/border-radius:\s*([\d.]+)rem/g)) {
+        const pixels = Number(match[1]) * 16;
+        if (!SCALE.has(pixels)) offenders.push(`${file}: ${match[1]}rem`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("keeps every radius token on the shared scale", () => {
     // Declarations were normalised first, but the token layer kept its own
     // stray values (--radius-sm: 5px, --radius-feature: 20px). Guard it too so
