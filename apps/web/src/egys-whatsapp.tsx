@@ -141,9 +141,17 @@ export function EgysWhatsApp({
       }
       if (controller.signal.aborted) return;
       if (!confirmError) {
-        const result = await pollProfile([0, 350, 800, 1500]);
+        // The provider accepted the reply, so a lagging profile endpoint is a
+        // sync delay rather than a failed login. Keep the countdown (and the
+        // WhatsApp success message) honest instead of flashing the red "!".
+        const result = await pollProfile([0, 350, 800, 1500, 3000, 5000, 8000]);
         if (result === true) return;
-        fail(result instanceof Error ? result.message : "Login belum berhasil");
+        if (controller.signal.aborted) return;
+        const late =
+          "Login WhatsApp diterima, tetapi profil akun belum siap. Muat ulang halaman ini sebentar lagi.";
+        recordDiagnostic("warn", "egys.whatsapp.profile.late", new Error(late));
+        setStatus("Login diterima, menunggu profil akun");
+        onErrorRef.current?.(late);
         return;
       }
       // The WhatsApp reply may have completed the login even though this POST

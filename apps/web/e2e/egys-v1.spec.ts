@@ -498,6 +498,68 @@ test("a profile that lags the confirmation is retried instead of failing", async
   await expect(page.getByRole("alert")).toHaveCount(0);
 });
 
+test("a slow profile keeps the countdown instead of the failure mark", async ({
+  page,
+  context,
+}) => {
+  let profileCalls = 0;
+  await page.route("**/api/v1/account/profile", (route) => {
+    profileCalls++;
+    // Six misses cover roughly five seconds of retries: enough that the old
+    // 2.65 s budget gave up even though WhatsApp had already accepted the code.
+    return route.fulfill({
+      json:
+        profileCalls >= 7
+          ? { profile: { id: "44", displayName: "Jemaat Telat", locale: "id" } }
+          : { profile: null },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-late-profile",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-late-profile",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-late-profile",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat Telat", exact: true }),
+  ).toBeVisible({ timeout: 20_000 });
+  expect(profileCalls).toBeGreaterThanOrEqual(7);
+  await expect(page.locator(".egys-whatsapp-countdown.is-error")).toHaveCount(
+    0,
+  );
+});
+
 test("a WhatsApp attempt that really fails shows the reason in the account card", async ({
   page,
   context,

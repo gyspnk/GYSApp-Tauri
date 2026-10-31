@@ -130,7 +130,21 @@ terhadap layanan nyata**, tetapi konfirmasi pesan WhatsApp yang dilaporkan gagal
 belum dapat direproduksi tanpa ponsel/akun pemilik. Pada 31 Oktober pemilik
 melaporkan pesan terkirim dan bot menjawab berhasil, tetapi aplikasi menampilkan
 "!"; penanganan fatalnya diperbaiki di siklus 14 (B-31) dan menunggu verifikasi
-pemilik. Yang diperbaiki di sesi ini
+pemilik.
+
+Siklus 17 menambahkan satu penyebab yang cocok dengan gejala itu: setelah
+`whatsapp/confirm` **diterima**, klien hanya menunggu profil ≈2,65 detik
+(`[0, 350, 800, 1500]`), lalu memanggil `fail()` sehingga badge berubah "!"
+tepat setelah WhatsApp menyatakan berhasil. Jendela itu kini
+`[0, 350, 800, 1500, 3000, 5000, 8000]` (≈18,6 detik), status berubah menjadi
+"Login diterima, menunggu profil akun", dan bila profil tetap belum siap badge
+**tetap countdown** dengan notice "Login WhatsApp diterima, tetapi profil akun
+belum siap. Muat ulang halaman ini sebentar lagi." — bukan "!" palsu. Tes baru
+`egys-v1` "a slow profile keeps the countdown instead of the failure mark"
+(enam pembacaan profil gagal dulu, sukses pada ketujuh) gagal pada kode lama dan
+lulus sesudahnya; berkas `egys-v1` 24/24.
+
+Yang diperbaiki di sesi ini
 adalah bagian yang bisa salah secara diam-diam: pembacaan frame tracking dan
 diagnostiknya (B-14), bukan klaim bahwa penyebabnya sudah ditemukan.
 
