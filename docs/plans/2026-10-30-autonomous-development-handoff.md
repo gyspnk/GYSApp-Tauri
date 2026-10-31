@@ -1078,6 +1078,13 @@ keputusan yang dibutuhkan: batasi tinggi/aspek media Sauh (perbaikan produk)
 lalu regenerasi, atau terima state baru setelah review visual. Job manual kini juga tidak menjalankan shard/Windows/
 `perf-budget`, dan agregat `e2e` lulus untuk `workflow_dispatch`.
 
+**JALUR CEPAT DOKUMENTASI TERBUKTI (31 Okt):** setelah run hijau, push
+`00ea4f9` (hanya dokumen) memicu run `41178652929` yang **selesai dalam 28
+detik** — `web-build`, ketiga shard, `native-check`, `perf-budget`, dan
+`update-visual-baselines` semuanya **dilewati**; hanya `changes`, `verify`,
+`secret-scan`, dan agregat `e2e` yang jalan. Sebelumnya push seperti itu
+memakan ~12 menit dan lima job mahal.
+
 **CI HIJAU (31 Okt):** run `41177779035` (commit `571e9a4`) **sukses penuh** —
 `changes`, `verify`, `secret-scan`, `web-build`, tiga shard e2e, dan agregat
 `e2e` semuanya hijau; `native-check`, `perf-budget`, `update-visual-baselines`
