@@ -2,6 +2,21 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-31 — measure where the browser suite spends its time
+
+- Add `scripts/e2e-durations.mjs` (`pnpm test:e2e:durations <report.json>`) to
+  rank specs and tests from a Playwright JSON report. A full 826-test report
+  shows 74 minutes of browser time (39 minutes wall at two workers); the
+  heaviest specs are kidung-usability (5.7m), editorial-ui (4.3m),
+  navigation-layout (4.1m) and appearance-preferences (3.7m), and the two 200%
+  text sweeps alone take 3.3 minutes.
+- Add `pnpm test:e2e:local` (766 tests): the pre-push run without the `-linux`
+  visual baselines and the runtime-performance budgets, which cannot be judged
+  outside CI and otherwise spend time writing traces for 24 expected diffs.
+  Measured at 34.7 minutes with 757 passing, six failures (two host-bound
+  `instant-navigation` budgets and four animation-timing flakes), versus 39.1
+  minutes and 37 failures for the unconditional suite.
+
 ### 2026-10-31 — a fast test loop, and a measured worker ceiling
 
 - Add a fast local loop so development stops paying for the full browser
