@@ -49,6 +49,7 @@ export function installRouteSectionDeepLinks(
   if (!root) return () => undefined;
 
   let alignedLocation = "";
+  let alignedAt = 0;
   let trackedLocation = "";
   let userInterrupted = false;
   let frame = 0;
@@ -90,11 +91,16 @@ export function installRouteSectionDeepLinks(
     const alreadyAligned = alignedLocation === locationKey;
 
     // After the initial alignment, keep correcting nearby async layout shifts
-    // (manifest/profile/catalog text can change height). If the target is far
-    // from the anchor, assume the user has intentionally navigated elsewhere.
-    if (alreadyAligned && Math.abs(delta) > REALIGN_WINDOW_PX) return;
+    // (manifest/profile/catalog text can change height). During the first
+    // seconds the page is still settling — a profile card can collapse several
+    // hundred pixels above the row — so only the later, larger moves are
+    // treated as the user navigating away.
+    const settling = Date.now() - alignedAt < 3_000;
+    if (alreadyAligned && Math.abs(delta) > REALIGN_WINDOW_PX && !settling)
+      return;
 
     alignedLocation = locationKey;
+    alignedAt = Date.now();
     if (Math.abs(delta) <= ALIGN_TOLERANCE_PX) return;
 
     cancelAnimationFrame(frame);
