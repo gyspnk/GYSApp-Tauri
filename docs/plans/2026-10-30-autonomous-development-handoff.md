@@ -1370,6 +1370,25 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Alias nomor kidung (1 Nov)
+
+Tautan `/kidung/1` atau `/kidung/51` (nomor yang diketik anggota, atau dikutip
+dari warta) berakhir di panel **“Pujian tidak ditemukan”**, karena id kanonik
+selalu `hymn-001`. Sekarang `apps/web/src/kidung-ids.ts` menyelesaikan alias:
+`canonicalHymnId("1") → "hymn-001"`, `"51a" → "hymn-051A"`, dan bila nomor polos
+tidak ada karena kidung dipecah (051A/051B, 124A/124B)
+`splitHymnFallback("hymn-051", …) → "hymn-051A"`. Redirect memakai
+`<Navigate replace>` sehingga URL akhir tetap kanonik dan parameter kueri ikut
+terbawa.
+
+Bukti: unit **5/5**; dua kasus e2e baru di `e2e/kidung-hymn-alias.spec.ts`
+(`/kidung/1` → `hymn-001` judul “Pujilah Allah Yang Maha Esa”, `/kidung/51` →
+`hymn-051A` judul “Batu Zaman”); dibuktikan gagal-dulu — build lama membiarkan
+URL di `/kidung/1` tanpa redirect. Regresi kidung: `kidung-hymn-alias`,
+`kidung-usability`, `kidung-section-navigation`, `kidung-unified-controls`,
+`kidung-loading`, `kidung-density` **65/65 (6,1 m)**. Spec baru masuk tier inti
+(`playwright.core.config.ts`).
+
 ### Login WhatsApp: pesan abort mentah (1 Nov)
 
 Laporan pemilik: login e-GYS gagal dengan pesan **“Signal is aborted without

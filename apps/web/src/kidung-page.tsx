@@ -6,7 +6,12 @@ import {
 } from "./hymn-payloads.js";
 import { useEffect, useState } from "react";
 import { preloadable } from "./preloadable.js";
-import { Navigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
@@ -16,6 +21,7 @@ import {
   parseCatalog,
   parseHymnMetadata,
 } from "./kidung-shared.js";
+import { canonicalHymnId, splitHymnFallback } from "./kidung-ids.js";
 
 const HymnCatalog = preloadable(() =>
   import("./kidung-catalog.js").then((module) => ({
@@ -128,6 +134,14 @@ function KidungReaderDataPage({
   songId: string;
 }) {
   const { catalog, musicLock } = useHymnData(true, loadCoreHymns, parseCatalog);
+  const split =
+    catalog.status === "ready"
+      ? splitHymnFallback(
+          songId,
+          catalog.items.map((item) => item.id),
+        )
+      : undefined;
+  if (split) return <Navigate to={`/kidung/${split}`} replace />;
   return (
     <HymnDetail
       key={songId}
@@ -163,10 +177,14 @@ function KidungCatalogDataPage({
 
 export function KidungPage({ locale }: { locale: Locale }) {
   const { songId } = useParams();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const section = searchParams.get("section");
   if (!songId && section === "settings")
     return <Navigate to="/lainnya?section=kidung" replace />;
+  const canonical = songId ? canonicalHymnId(songId) : undefined;
+  if (canonical && canonical !== songId)
+    return <Navigate to={`/kidung/${canonical}${location.search}`} replace />;
 
   return songId ? (
     <KidungReaderDataPage locale={locale} songId={songId} />

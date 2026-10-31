@@ -25,5 +25,6 @@ export default defineConfig(baseConfig, {
     "**/more-device-data.spec.ts",
     "**/account-menu.spec.ts",
     "**/egys-v1.spec.ts",
+    "**/kidung-hymn-alias.spec.ts",
   ],
 });
