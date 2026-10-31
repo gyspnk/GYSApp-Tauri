@@ -1386,7 +1386,10 @@ pemuatan halaman (12 rute × 3 viewport × 2 tema): 6 temuan, semuanya judul
 tetapi informasinya utuh. Verifikasi: audit ulang **0 masalah**,
 `catalog-discovery` 5/5, tes literatur `editorial-ui` +
 `reading-family-usability` 13/13, dan tangkapan 390 px menunjukkan judul
-terbaca penuh tanpa baris terpotong.
+terbaca penuh tanpa baris terpotong. Kartu rak “Pilihan terbaru” juga
+dipotong tanpa elipsis (`strong` hanya `overflow: hidden`), sehingga baris
+keempat terlihat separuh; sekarang `-webkit-line-clamp: 3` membuat akhir
+judul rapi (63 px untuk tiga baris) dan `catalog-discovery` 5/5 tetap lulus.
 
 ### Cincin fokus (31 Okt)
 

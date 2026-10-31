@@ -727,6 +727,11 @@
 }
 
 .literature-shelf-item strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* Three lines fit the 148 px shelves; clamping keeps the card from growing a
+     fourth, half-cut line when a title is long. */
+  -webkit-line-clamp: 3;
   font-size: 0.8125rem;
   white-space: normal;
   overflow-wrap: anywhere;
