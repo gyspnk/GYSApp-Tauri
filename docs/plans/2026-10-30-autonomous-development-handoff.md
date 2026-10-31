@@ -1370,6 +1370,41 @@ hijau (2/2 bersama penjaga radius). Verifikasi visual 390 px: Kidung, Suara,
 Literatur, Alkitab tidak berubah tata letaknya; `accessibility` +
 `universal-usability` + `bible-picker` 21/21 lulus.
 
+### Login WhatsApp: pesan abort mentah (1 Nov)
+
+Laporan pemilik: login e-GYS gagal dengan pesan **“Signal is aborted without
+reason”**. Rantainya: `request()` di `apps/web/src/egys.ts` memanggil
+`controller.abort()` **tanpa alasan** setelah 8 detik, sehingga `fetch` menolak
+dengan DOMException berpesan “signal is aborted without reason”; pesan itu
+diteruskan apa adanya oleh `fail(err.message)` ke kartu akun. Sisi BFF memakai
+`AbortSignal.timeout(8000)` (kelas pesan yang sama), dan route
+`whatsapp/start` membuang alasan provider sepenuhnya.
+
+Perbaikan:
+
+- Endpoint login WhatsApp memakai batas **20 detik** (`EGYS_LOGIN_TIMEOUT_MS`)
+  karena round trip provider memang bisa melewati 8 detik; `request()` sekarang
+  selalu abort **dengan alasan** (`TimeoutError` / `AbortError`).
+- `describeEgysError()` menjadi satu-satunya pintu pesan ke kartu akun: timeout →
+  “e-GYS tidak menjawab tepat waktu…”, batal → “…dibatalkan sebelum selesai”,
+  koneksi putus → “Tidak dapat menghubungi server e-GYS…”, dan kata-kata route
+  BFF diterjemahkan (“Login WhatsApp sedang tidak tersedia…”, “Kode WhatsApp
+  tidak dapat diverifikasi…”) sambil **mempertahankan detail `(e-GYS …)`** untuk
+  dukungan.
+- BFF: `providerRequest` memakai `AbortController` 15 detik dan melempar
+  `ProviderRejection(504, "timeout 15 detik")`; route `whatsapp/start` kini
+  menambahkan sufiks `(e-GYS <status>: <detail>)` seperti route `confirm`.
+
+Bukti: unit pemetaan pesan **6/6**; tes BFF memakai fake timer membuktikan
+timeout menghasilkan 503 dengan “timeout 15 detik” dan **tanpa** kata “aborted”;
+dua kasus e2e baru (koneksi putus, timeout BFF) lulus; dibuktikan gagal-dulu
+dengan build lama — kartu menampilkan **“Failed to fetch”** mentah (locator
+mengulang 14×). `egys-v1` **26/26**, BFF **75/75**, web **528/528**, typecheck
+bersih, bundle 179,3 KiB.
+
+Catatan penerapan: perbaikan klien berlaku begitu web di-deploy; sufiks detail
+dan batas 15 detik di BFF baru terlihat setelah Worker BFF ikut di-deploy.
+
 ### Token bayangan & variabel hilang (31 Okt)
 
 219 deklarasi `box-shadow`, tetapi lima aturan memakai `var(--shadow-xs)` /

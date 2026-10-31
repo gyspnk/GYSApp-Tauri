@@ -1342,23 +1342,41 @@ export function createApp(
   ) => {
     const base = egysBase(c);
     if (!base) throw new Error("e-GYS is not configured");
-    const response = await fetch(`${base}${path}`, {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type":
+    // The provider's own round trip sometimes passes eight seconds, and the old
+    // `AbortSignal.timeout(8000)` surfaced as "Signal is aborted without
+    // reason" in the account panel. Fifteen seconds plus an explicit message
+    // keeps a slow provider diagnosable instead of opaque.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15_000);
+    let response: Response;
+    try {
+      response = await fetch(`${base}${path}`, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type":
+            path !== "/login/whatsapp-login-confirm"
+              ? "application/json"
+              : "application/x-www-form-urlencoded",
+        },
+        body:
           path !== "/login/whatsapp-login-confirm"
-            ? "application/json"
-            : "application/x-www-form-urlencoded",
-      },
-      body:
-        path !== "/login/whatsapp-login-confirm"
-          ? JSON.stringify({ ...data, ismobile: 1 })
-          : new URLSearchParams(data),
-      signal: AbortSignal.timeout(8000),
-      redirect: "manual",
-    });
-    const payload = (await response.json()) as Record<string, unknown>;
+            ? JSON.stringify({ ...data, ismobile: 1 })
+            : new URLSearchParams(data),
+        signal: controller.signal,
+        redirect: "manual",
+      });
+    } catch (error) {
+      if (controller.signal.aborted)
+        throw new ProviderRejection(504, "timeout 15 detik");
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+    const payload = (await response.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     if (!response.ok || payload.error === true) {
       // Keep the upstream reason in the failure so a client diagnostic can show
       // exactly which field the provider rejected (phone format, expired code,
@@ -1418,11 +1436,15 @@ export function createApp(
         maxAge: 600,
       });
       return c.json(parsed.data);
-    } catch {
+    } catch (error) {
+      const rejection = error instanceof ProviderRejection ? error : undefined;
+      const suffix = rejection
+        ? ` (e-GYS ${rejection.status}${rejection.detail ? `: ${rejection.detail}` : ""})`
+        : "";
       return errorResponse(
         c,
         "UPSTREAM_UNAVAILABLE",
-        "WhatsApp login is unavailable",
+        `WhatsApp login is unavailable${suffix}`,
       );
     }
   });

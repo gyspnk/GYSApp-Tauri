@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { recordDiagnostic } from "./diagnostics.js";
-import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
+import {
+  describeEgysError,
+  EGYS_LOGIN_TIMEOUT_MS as EGYS_REQUEST_TIMEOUT_MS,
+  requestEgysProvider,
+  egysWhatsAppTrackingUrl,
+} from "./egys.js";
 import {
   describeTrackingGap,
   parseWhatsAppTrackingEvent,
@@ -109,6 +114,7 @@ export function EgysWhatsApp({
           "whatsapp/confirm",
           { otp: code, mobilephone: providerPhone(mobilephone) },
           controller.signal,
+          EGYS_REQUEST_TIMEOUT_MS,
         );
       const pollProfile = async (backoff: readonly number[]) => {
         let lastError: unknown;
@@ -178,9 +184,14 @@ export function EgysWhatsApp({
       // is only a symptom and would hide the actionable message.
       const failure =
         confirmError ?? (result instanceof Error ? result : undefined);
-      fail(failure instanceof Error ? failure.message : "Login belum berhasil");
+      fail(describeEgysError(failure));
     };
-    void requestEgysProvider<Challenge>("whatsapp/start", {}, controller.signal)
+    void requestEgysProvider<Challenge>(
+      "whatsapp/start",
+      {},
+      controller.signal,
+      EGYS_REQUEST_TIMEOUT_MS,
+    )
       .then((data) => {
         if (controller.signal.aborted) return;
         const reference = data.referenceid ?? data.referenceId;
@@ -295,9 +306,7 @@ export function EgysWhatsApp({
         launchWhatsApp();
         connect();
       })
-      .catch((err) =>
-        fail(err instanceof Error ? err.message : "WhatsApp tidak tersedia"),
-      );
+      .catch((err) => fail(describeEgysError(err)));
     return () => stop(false);
   }, [onComplete, onCancel, messagingWindow]);
   return (

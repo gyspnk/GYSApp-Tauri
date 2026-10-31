@@ -1608,6 +1608,42 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("reports a provider timeout with a sentence instead of an abort message", async () => {
+    const originalFetch = globalThis.fetch;
+    vi.useFakeTimers();
+    globalThis.fetch = ((_input, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () =>
+          reject(
+            new DOMException("signal is aborted without reason", "AbortError"),
+          ),
+        );
+      })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const pending = app.request(
+        "/api/v1/auth/egys/whatsapp/start",
+        { method: "POST", headers: { origin: "http://localhost:5173" } },
+        { EGYS_API_BASE_URL: "https://e.gys.or.id" },
+      );
+      await vi.advanceTimersByTimeAsync(15_000);
+      const response = await pending;
+      expect(response.status).toBe(503);
+      const body = (await response.json()) as {
+        error: { message: string };
+      };
+      expect(body.error.message).toContain("timeout 15 detik");
+      expect(body.error.message).not.toContain("aborted");
+    } finally {
+      globalThis.fetch = originalFetch;
+      vi.useRealTimers();
+    }
+  });
+
   it("does not expose draft e-GYS v2 login routes", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],

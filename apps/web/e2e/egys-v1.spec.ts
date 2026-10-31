@@ -611,12 +611,78 @@ test("a WhatsApp attempt that really fails shows the reason in the account card"
   // The client gives a rejected confirm a short grace window (profile check +
   // one retry) before it shows the exclamation mark.
   await expect(badge).toHaveText("!", { timeout: 15_000 });
+  // The provider's reason reaches the card in Indonesian; the raw BFF route
+  // wording stays in the diagnostics log.
   await expect(page.locator(".egys-whatsapp-notice")).toContainText(
-    "WhatsApp code could not be verified",
+    "Kode WhatsApp tidak dapat diverifikasi",
   );
   await expect(
     page.getByRole("heading", { name: "Jemaat WhatsApp", exact: true }),
   ).toHaveCount(0);
+});
+
+test("a lost provider connection explains itself instead of showing the browser error", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  // A dropped connection used to surface the raw Fetch/DOMException text
+  // ("Failed to fetch", "Signal is aborted without reason") in the account
+  // card, which tells a member nothing they can act on.
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.abort("failed"),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup").catch(() => undefined);
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  const notice = page.locator(".egys-whatsapp-notice");
+  await expect(notice).toContainText("Tidak dapat menghubungi server e-GYS");
+  await expect(notice).not.toContainText("Failed to fetch");
+  await expect(notice).not.toContainText("aborted");
+});
+
+test("a provider timeout at the BFF reads as a sentence in the account card", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  // The owner-visible symptom this covers: e-GYS answers past the upstream
+  // deadline, the BFF reports the timeout, and the card used to print the raw
+  // abort message instead of what happened.
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      status: 503,
+      json: {
+        error: {
+          code: "UPSTREAM_UNAVAILABLE",
+          message:
+            "WhatsApp login is unavailable (e-GYS 504: timeout 15 detik)",
+        },
+      },
+    }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup").catch(() => undefined);
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  const notice = page.locator(".egys-whatsapp-notice");
+  await expect(notice).toContainText("Login WhatsApp sedang tidak tersedia");
+  await expect(notice).toContainText("(e-GYS 504: timeout 15 detik)");
 });
 
 test("WhatsApp timeout removes its badge without closing the messaging tab", async ({
