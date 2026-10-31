@@ -1222,6 +1222,14 @@ ada polling atau `sleep` panjang; run > 60 dtk selalu background.
 (pohon tidak berubah — `git diff` 0 file), lalu di-force-push; run CI untuk HEAD
 baru selesai **33 detik** karena klasifikasi melihat pohon yang identik.
 
+**Dampak unifikasi pada tes (31 Okt):** `smoke` mengalihkan locale lewat select
+topbar dan mengatur pitch lewat drawer Alkitab — keduanya sudah tidak ada. Tes
+kini beralih bahasa lewat **Pengaturan → Tampilan** (helper `switchLocale`,
+opsi "English"/"简体中文"/"Bahasa Indonesia") dan mengatur pitch lewat
+**Pengaturan → Audio** dengan navigasi in-app agar sesi bicara + media surface
+tetap hidup. `smoke` **44/44 lulus**; ini memperbaiki run CI yang sempat merah
+setelah unifikasi.
+
 **Insiden CI (31 Okt):** run `41206770552` (commit `a8622b4`) tertahan >70 menit
 dengan `e2e-selective: in_progress` dan `updatedAt` tidak bergerak — runner
 macet, bukan kegagalan tes. Run dibatalkan manual; pohon yang sama sudah

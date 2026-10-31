@@ -1,5 +1,26 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// The top bar no longer duplicates the language picker: Appearance owns it.
+async function switchLocale(page: Page, target: "EN" | "中文" | "ID") {
+  await page.goto("/GYSApp-Tauri/lainnya?section=appearance");
+  const name = await page.evaluate(() => {
+    const raw = localStorage.getItem("gys-shell-settings-v1");
+    const locale = raw ? (JSON.parse(raw).locale ?? "id") : "id";
+    return locale === "en"
+      ? "Choose language"
+      : locale === "zh"
+        ? "选择语言"
+        : "Pilih Bahasa";
+  });
+  await page.getByRole("combobox", { name }).click();
+  const option = {
+    EN: /English/,
+    中文: /简体中文/,
+    ID: /Bahasa Indonesia/,
+  }[target];
+  await page.getByRole("option", { name: option }).click();
+}
+
 // Settings groups open on first paint, so a blind summary click would close
 // them. Assert the open state the assertions need instead of toggling.
 async function ensureSettingOpen(page: Page, setting: string) {
@@ -46,8 +67,8 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Bacaan & nyanyian" }),
   ).toBeVisible();
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await switchLocale(page, "EN");
+  await page.goto("/GYSApp-Tauri/");
   await expect(
     page.getByRole("heading", { name: "Readings & hymns" }),
   ).toBeVisible();
@@ -62,8 +83,8 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/");
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await switchLocale(page, "EN");
+  await page.goto("/GYSApp-Tauri/");
   // The hero eyebrow was removed on purpose when the Sauh reference moved next
   // to the title, so assert localized page chrome instead of publisher copy.
   await expect(
@@ -87,7 +108,9 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
     page.getByText("Tampilan & Bahasa", { exact: true }),
   ).toHaveCount(0);
 
-  await page.getByRole("combobox", { name: "Language", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Choose language", exact: true })
+    .click();
   await page.getByRole("option", { name: "中文" }).click();
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
@@ -103,21 +126,18 @@ test("feature-critical hymn actions follow the selected locale", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await switchLocale(page, "EN");
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("button", { name: "Show chords" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "Language" }).click();
-  await page.getByRole("option", { name: "中文" }).click();
+  await switchLocale(page, "中文");
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "语言" }).click();
-  await page.getByRole("option", { name: "ID" }).click();
+  await switchLocale(page, "ID");
 });
 
 test("compact section headings stay smaller than page and catalog titles", async ({
@@ -1315,13 +1335,19 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(page).toHaveURL(/\/bible#bible-verse-/);
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
-  const pitch = page.getByLabel("Nada bacaan suara");
   const volume = page.getByLabel("Volume bacaan suara");
-  await pitch.fill("1.4");
   await volume.fill("0.65");
-  await expect(pitch).toHaveValue("1.4");
   await expect(volume).toHaveValue("0.65");
   await page.getByRole("button", { name: "Tutup menu" }).click();
+  // Pitch is a preference: Audio settings owns it now. Navigate in-app so the
+  // speaking session and its media surface survive the detour.
+  await page.getByRole("link", { name: "Lainnya" }).first().click();
+  await ensureSettingOpen(page, "audio");
+  const pitch = page.getByLabel("Nada bacaan suara");
+  await pitch.fill("1.4");
+  await expect(pitch).toHaveValue("1.4");
+  await page.getByRole("link", { name: "Alkitab" }).first().click();
+  await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
   // Docked geometry follows the viewport without arbitrary saved positions.
   await page.setViewportSize({ width: 320, height: 480 });
   await expect
@@ -1348,8 +1374,9 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
-  await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
   await expect(page.getByLabel("Volume bacaan suara")).toHaveValue("0.65");
+  await page.goto("/GYSApp-Tauri/lainnya?section=audio");
+  await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
 });
 
 test("global search indexes real offline content and navigates to a result", async ({
