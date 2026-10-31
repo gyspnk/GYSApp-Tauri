@@ -95,6 +95,21 @@ for (const surface of surfaces) {
           ),
         )
         .toBe(true);
+      if (surface.name === "home") {
+        // The Sauh card paints a skeleton until its feed resolves; a baseline
+        // captured mid-load would bake the skeleton in (seen in the first
+        // hosted regeneration), so wait for real content first.
+        await expect
+          .poll(
+            () =>
+              page
+                .locator(".home-page .sauh-title")
+                .innerText()
+                .catch(() => ""),
+            { timeout: 15_000 },
+          )
+          .not.toBe("");
+      }
       if (surface.name === "home" && viewport.width === 390) {
         await expect
           .poll(

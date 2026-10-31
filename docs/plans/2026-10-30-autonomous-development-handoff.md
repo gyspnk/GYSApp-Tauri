@@ -1061,9 +1061,21 @@ context per worker dan cache HTTP/V8; fixture-nya kini dipakai file itu karena
 semua jalur jaringannya di-mock sehingga semantik cold-start tetap terjaga.
 Untuk spec yang bergantung pada cache dingin, pola ini **tidak** dipakai.
 
+**Baseline visual via job manual (31 Okt):** job `update-visual-baselines` pada
+run `41174643671` **sukses** dan mengunggah 149 PNG; 22 berbeda dari repo.
+Namun `home-390x844` menangkap **skeleton Sauh** (feed belum selesai) — bukti
+bahwa regenerasi otomatis tanpa penantian konten akan membekukan state
+loading. `visual.spec.ts` kini menunggu `.sauh-title` berisi sebelum screenshot;
+regenerasi berikutnya harus dijalankan setelah perbaikan ini. Job manual juga
+dipersempit: hanya tiga spec visual, `--workers=2`, dan dispatch tidak lagi
+menjalankan shard/Windows/`perf-budget`.
+
 **CI gating — bukti hosted (31 Okt):** run `41171323460` mencatat durasi job
 sebenarnya: `changes` 7 dtk, `verify` 34 dtk, `secret-scan` 11 dtk,
 `web-build` **50 dtk**, `native-check` **dilewati**, tiga shard 9–11 mnt.
+Run `41173787196` (setelah tag `@perf`): **shard 1 dan 2 lulus**, `perf-budget`
+dilewati pada PR, `native-check` dilewati; **hanya shard 3 merah karena
+`visual.spec.ts`** (baseline `-linux` dari UI yang sengaja berubah).
 Kegagalan shard saat itu: baseline visual `-linux` (perlu review pemilik) dan
 dua tes anggaran performa (`instant-navigation`) yang memang tidak tercapai di
 runner 2-core; satu asersi matriks visual juga menuntut target 44 px pada
