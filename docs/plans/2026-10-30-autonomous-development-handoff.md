@@ -945,6 +945,21 @@ Aturan yang mengikat setiap siklus:
    unit test, atau perubahan spec yang tidak membutuhkan `dist` baru.
 5. **Ukur dengan jam dinding** dan `pnpm test:e2e:durations`; jangan menebak.
 
+### Ladder yang optimal untuk host ini (8 core, 11 GiB, ARM)
+
+| Kapan                | Perintah                               | Anggaran              | Catatan                                                                             |
+| -------------------- | -------------------------------------- | --------------------- | ----------------------------------------------------------------------------------- |
+| Setelah edit apa pun | `pnpm test:loop`                       | 10 dtk – 3 mnt        | docs → verifier+prettier; kode → typecheck + `vitest related` + spec yang dipetakan |
+| Sebelum commit       | `pnpm test:e2e:core`                   | 3,4 mnt               | 87 tes shell/settings/e-GYS                                                         |
+| Sebelum push         | `pnpm test:e2e:local` (background)     | ~35 mnt               | 766 tes, tanpa baseline `-linux`                                                    |
+| Handoff/CI           | `pnpm test:e2e` atau `test:e2e:shards` | ~39 mnt / mesin besar | suite penuh                                                                         |
+
+Aturan host: 2 worker adalah batas (179 dtk @2 vs 217 dtk @4 pada 55 tes yang
+sama); jangan menjalankan dua proses browser bersamaan; `GYS_E2E_PREBUILT=1`
+selalu dipakai bila `dist` sudah final; jangan rebuild saat run berjalan.
+Perubahan dokumentasi tidak memerlukan browser sama sekali — `test:loop`
+mengenali dan melewatinya.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 1. **B-32/B-33 — loop cepat**: `pnpm test:e2e:changed` (≈1,7 mnt) saat mengubah
