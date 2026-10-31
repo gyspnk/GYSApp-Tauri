@@ -42,7 +42,7 @@
 .kidung-local-nav a {
   min-height: var(--control-hit, 44px);
   padding: 0 14px;
-  border-radius: 7px;
+  border-radius: 8px;
   justify-content: center;
   transition:
     background-color var(--motion-fast) var(--ease-out),
@@ -560,7 +560,7 @@
     width: auto;
     max-width: none;
     max-height: min(72dvh, 620px);
-    border-radius: 14px 14px 10px 10px;
+    border-radius: 12px 14px 10px 10px;
     animation: kidung-sheet-in var(--motion-normal) var(--ease-out) both;
   }
 
@@ -856,7 +856,7 @@
   overflow: auto;
   padding: 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
   animation: kidung-sheet-in var(--motion-fast) var(--ease-out) both;
@@ -978,7 +978,7 @@
   width: 100%;
   overflow: visible;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface-soft);
 }
 
@@ -994,7 +994,7 @@
   font-size: 0.75rem;
   font-weight: 720;
   background: color-mix(in srgb, var(--blue-soft) 44%, transparent);
-  border-radius: 11px 11px 0 0;
+  border-radius: 12px 11px 0 0;
 }
 
 .reader-settings-group-body {
@@ -1144,7 +1144,7 @@
   min-height: 48px;
   padding: 10px 14px 10px 44px;
   border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--blue) 3%, var(--surface));
   box-shadow: none;
   color: var(--ink);
@@ -1227,7 +1227,7 @@
   gap: 0;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--surface);
   overflow: hidden;
 }
@@ -1332,7 +1332,7 @@
   min-width: 84px;
   padding-inline: 10px;
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: transparent;
 }
 .kidung-controls-field .kidung-local-nav {
@@ -1361,7 +1361,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--blue);
   color: white;
   cursor: pointer;
@@ -1460,7 +1460,7 @@
   gap: 2px;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 1px 2px rgb(0 35 64 / 4%);
 }

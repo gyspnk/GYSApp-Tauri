@@ -11,7 +11,7 @@
   width: min(304px, calc(100vw - 28px));
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--surface);
   color: var(--ink);
   box-shadow: 0 18px 48px rgb(0 35 64 / 18%);
@@ -88,7 +88,7 @@
   min-height: 42px;
   width: 100%;
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   padding: 9px 10px;
   background: transparent;
   color: inherit;

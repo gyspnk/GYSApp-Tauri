@@ -137,7 +137,7 @@
 }
 .media-music-controls .control-select-menu {
   max-height: min(280px, var(--select-available-space, 280px));
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 8px 28px color-mix(in srgb, var(--navy) 16%, transparent);
 }
 .media-music-controls .media-instrument-control .control-select-option {
@@ -194,7 +194,7 @@
   grid-template-columns: minmax(0, 1fr);
   max-height: min(480px, calc(100dvh - var(--reader-media-space, 0px) - 86px));
   padding: 12px;
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
   display: flex;

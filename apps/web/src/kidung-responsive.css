@@ -99,7 +99,7 @@
   gap: 6px;
   min-height: 44px;
   padding: 8px 6px;
-  border-radius: 11px;
+  border-radius: 12px;
   line-height: 1.25;
 }
 .hymn-page .kidung-local-nav a > svg {
@@ -117,7 +117,7 @@
   padding-inline: 3px;
 }
 .hymn-page .kidung-nav-indicator {
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--blue-soft);
 }
 .hymn-page.kidung-tool-page > .kidung-local-nav {
@@ -238,7 +238,7 @@
   min-height: clamp(44px, 4vw, 56px) !important;
   flex: 0 0 auto !important;
   padding: 0 !important;
-  border-radius: 11px !important;
+  border-radius: 12px !important;
   background: var(--blue-soft) !important;
   /* 4.26:1 for --blue on --blue-soft; the 18px glyph needs 4.5:1, so the
      toggles use the darker navy like the shell's other small labels. */

@@ -79,7 +79,7 @@
 }
 .search-trigger {
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .page:not(.hymn-page) > .page-intro,
 .faith-page-title {
@@ -143,7 +143,7 @@
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -561,7 +561,7 @@
   gap: 12px;
   padding: 8px 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 2px 4px color-mix(in srgb, var(--blue) 5%, transparent);
 }
 .faith-page .faith-search-bar:focus-within {
@@ -925,7 +925,7 @@
   width: 48px;
   height: 48px;
   flex: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--blue);
 }
@@ -1102,7 +1102,7 @@
   min-height: 48px;
   padding-inline: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   letter-spacing: normal;
   transition:
@@ -1147,7 +1147,7 @@
 }
 .literature-toolbar .control-select-trigger {
   min-height: 48px;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: none;
 }
 .literature-page > .catalog-filter-status {
@@ -1268,7 +1268,7 @@
   ) {
   min-height: 44px;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--blue);
   box-shadow: none;
@@ -1309,7 +1309,7 @@
   flex-basis: 30px;
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: 10px;
 }
 @media (max-width: 880px) {
   .topbar .account-button-label {
@@ -1391,7 +1391,7 @@
 
 /* Consistent navigation icon weight, blue selection and quiet surfaces. */
 .navigation-shell .nav-item {
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--muted);
   box-shadow: none;
 }
@@ -1432,7 +1432,7 @@
 @media (max-width: 959px) {
   .navigation-shell {
     border-top: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-    border-radius: 18px 18px 0 0;
+    border-radius: 16px 18px 0 0;
     background: var(--surface);
     box-shadow: 0 -3px 14px color-mix(in srgb, var(--blue) 5%, transparent);
   }
@@ -1660,7 +1660,7 @@
     .lyrics-ctrl-btn
   ) {
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--navy);
   box-shadow: none;
@@ -1674,7 +1674,7 @@
 }
 .hymn-detail-page.is-text-viewer .hymn-mode-button {
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: transparent;
   color: var(--navy);
   box-shadow: none;
@@ -1749,7 +1749,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: transparent;
   color: var(--navy);
   box-shadow: none;
@@ -1953,7 +1953,7 @@
   grid-template-rows: repeat(3, 44px);
   gap: 4px;
   padding: 8px 5px;
-  border-radius: 18px;
+  border-radius: 16px;
   transform: none;
   overflow: hidden;
 }
@@ -2035,7 +2035,7 @@
   width: 36px;
   height: 36px;
   min-height: 36px;
-  border-radius: 11px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -2372,7 +2372,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .faith-pdf-head {
   display: flex;
@@ -2429,7 +2429,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 4px;
   padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 12px 32px #163f6124;
   animation: midi-settings-enter 180ms ease-out;
@@ -2525,7 +2525,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: 36px;
   padding: 0 4px;
   text-align: center;
-  border-radius: 9px;
+  border-radius: 10px;
   appearance: textfield;
 }
 .pdf-reader .pdf-page-jump input::-webkit-inner-spin-button {
@@ -2647,7 +2647,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 35px;
   height: 25px;
   padding-inline: 4px;
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--blue-soft);
   color: var(--blue);
   font-size: 0.6875rem;
@@ -2728,7 +2728,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: 5px;
   overflow: hidden;
   isolation: isolate;
-  border-radius: 99px;
+  border-radius: 999px;
   background: color-mix(in srgb, var(--blue) 10%, var(--surface));
 }
 .loading-progress-track > span {
@@ -3563,7 +3563,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .home-grid .verse-panel {
   min-height: 0;
   padding: clamp(12px, 1.3vw, 18px);
-  border-radius: 18px;
+  border-radius: 16px;
   transform: none;
 }
 .home-grid .sauh-card-media {
@@ -3572,7 +3572,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: clamp(170px, 27vw, 240px);
   min-height: 0;
   flex: none;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .home-grid .sauh-card-media .sauh-image-wrap {
   width: 100%;
@@ -3644,14 +3644,14 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .home-grid .continue-panel {
   padding: clamp(12px, 1.3vw, 18px);
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .home-grid :is(.verse-panel, .continue-panel):hover {
   background: color-mix(in srgb, var(--blue-soft) 25%, var(--surface));
 }
 .home-grid :is(.suara-library-item, .literature-shelf-item) {
   padding: 10px;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .home-grid :is(.suara-library-item, .literature-shelf-item):hover {
   background: var(--surface-soft);
@@ -3712,7 +3712,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 6px;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
 }
@@ -3832,7 +3832,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   max-width: 100%;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-soft);
   margin: 0 0 16px;
 }
@@ -3905,7 +3905,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 0;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 10px;
 }
 :is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) strong {
   min-width: 28px;
@@ -4148,7 +4148,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   width: 200px;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px #163f6126;
   z-index: 1;
@@ -4175,7 +4175,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin-top: 12px;
   padding: 12px;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
-  border-radius: 14px;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--blue) 6%, var(--surface));
   color: var(--muted);
   text-align: start;
@@ -4431,7 +4431,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 12px;
   gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--navy) 14%, transparent);
 }

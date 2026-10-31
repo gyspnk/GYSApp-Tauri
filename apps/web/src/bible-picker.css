@@ -15,7 +15,7 @@
   max-height: calc(100dvh - 24px);
   padding: 14px;
   border: 1px solid var(--line-strong);
-  border-radius: 22px;
+  border-radius: 24px;
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-lift);
@@ -129,7 +129,7 @@
   gap: 8px;
   padding: 8px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
   transform-origin: top center;
@@ -163,7 +163,7 @@
 .bible-picker-testament-pills button {
   padding: 5px 8px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   color: var(--muted);
   font-size: 0.6875rem;

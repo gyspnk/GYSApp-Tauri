@@ -1234,9 +1234,11 @@ Distribusi `border-radius` saat ini: **12 px (30×)**, 10 (29), 14 (23), 16 (16)
 8 (11), 11 (11), 999 (9), 9 (7), 18 (7), lalu outlier 4–7, 20, dan 22.
 Bayangan: `--shadow`/`--shadow-lift` dipakai konsisten (6+2), sisanya `none`.
 
-Rencana skala: `--radius-sm 8` · `--radius-md 10` · `--radius-lg 12` ·
-`--radius-xl 16` · `--radius-2xl 18` · `--radius-pill 999`; normalisasi
-outlier 11→12, 9→10, 7→8, 5–6→6, 20/22→18/24. Prioritas permukaan yang
+**DIEKSEKUSI 31 Okt:** outlier dinormalisasi ke skala **6 · 8 · 10 · 12 · 16 ·
+24 · 999** (29+33 deklarasi di 9 berkas CSS: 11→12, 9→10, 7→8, 5/4→6,
+14→12, 18→16, 20→22→24/18, 99→999). Distribusi kini: 12 (64×), 10 (36),
+16 (24), 8 (14), 999 (10), 6 (7), 24 (3). Baseline visual diregenerasi karena
+perubahan 2 px terdeteksi gate (toleransi 0,1%). Prioritas permukaan yang
 terlihat (menu, panel reader, kartu pengaturan); tiap langkah diverifikasi
 dengan baseline visual + `select-dropdown`/`menu-motion`.
 
