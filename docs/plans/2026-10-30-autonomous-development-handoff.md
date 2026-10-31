@@ -1402,6 +1402,22 @@ screenshot 390 px `/suara` dan detail menunjukkan kartu artikel dengan sudut
 24 px yang konsisten. Baseline visual diambil ulang lewat job CI karena
 perubahan radius menyentuh kartu artikel.
 
+### Kepadatan daftar Kidung (1 Nov)
+
+Daftar 533 pujian memberi nomor 36 px dan indent judul 46 px (sebelumnya
+40–48 px nomor, indent 58–64 px), sehingga kolom judul bertambah 14 px dan
+baris dua-baris berkurang tanpa mengorbankan target sentuh 44 px. Diukur pada
+build yang sama: judul yang pecah **127 → 74** pada 390 px (−42 %), **393 → 336**
+pada 320 px (−15 %), **0** pada 768 px; tidak ada tumpang tindih nomor/judul
+(0 baris), tinggi baris tetap ≥60 px. Garis pemisah antar-baris ikut digeser
+(`inset: 0 12px auto 46px`). Varian “margin 8 px” justru menambah pecahan
+(336 → 373), jadi tidak dipakai.
+
+Verifikasi: `kidung-section-navigation` + `kidung-hymn-alias` + `kidung-density`
+
+- `kidung-small-phone-nav` + `kidung-unified-controls` **15/15**; screenshot 320
+  dan 390 px menunjukkan 10–11 baris per layar dengan judul utuh.
+
 ### Alias nomor kidung (1 Nov)
 
 Tautan `/kidung/1` atau `/kidung/51` (nomor yang diketik anggota, atau dikutip
