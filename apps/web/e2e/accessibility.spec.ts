@@ -703,12 +703,9 @@ function contrastRatio(foreground: string, background: string) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-test("keyboard focus rings clear 3:1 on every control they reach", async ({
-  page,
-}) => {
-  await page.goto("/GYSApp-Tauri/");
-  const inspected: Array<{ label: string; ratio: number; width: number }> = [];
-  for (let stop = 0; stop < 6; stop++) {
+async function inspectFocusRings(page: Page, stops: number) {
+  const rings: Array<{ label: string; ratio: number; width: number }> = [];
+  for (let stop = 0; stop < stops; stop++) {
     await page.keyboard.press("Tab");
     const ring = await page.evaluate(() => {
       const element = document.activeElement as HTMLElement | null;
@@ -747,13 +744,36 @@ test("keyboard focus rings clear 3:1 on every control they reach", async ({
     if (!ring) continue;
     expect(ring.style, ring.label).not.toBe("none");
     expect(ring.width, ring.label).toBeGreaterThanOrEqual(2);
-    inspected.push({
+    rings.push({
       label: ring.label,
       ratio: contrastRatio(ring.color, ring.background),
       width: ring.width,
     });
   }
-  for (const item of inspected) {
-    expect(item.ratio, `${item.label} focus ring`).toBeGreaterThanOrEqual(3);
+  return rings;
+}
+
+test("keyboard focus rings clear 3:1 on every control they reach", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  const rings = await inspectFocusRings(page, 6);
+  for (const ring of rings) {
+    expect(ring.ratio, `${ring.label} focus ring`).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("focus rings keep their contrast in the dark theme", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale: "id", theme: "dark" }),
+    );
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const rings = await inspectFocusRings(page, 6);
+  for (const ring of rings) {
+    expect(ring.ratio, `${ring.label} focus ring`).toBeGreaterThanOrEqual(3);
   }
 });

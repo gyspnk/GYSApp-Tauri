@@ -1384,7 +1384,9 @@ Cincin 2 px yang sudah solid dibiarkan. Tes baru di
 `apps/web/e2e/accessibility.spec.ts` menekan Tab enam kali, mengukur warna/
 ketebalan outline, mengompositkan alpha di atas latar induk, dan menuntut
 kontras ≥3:1; dibuktikan gagal-dulu pada CSS lama (**1,95:1**, “Lewati ke
-konten utama”) lalu lulus pada CSS baru. `accessibility` **16/16**.
+konten utama”) lalu lulus pada CSS baru. Tes kedua menjalankan probe yang sama dengan tema
+gelap (`data-theme="dark"` dari `gys-shell-settings-v1` berisi locale+theme)
+agar token `--focus` terbukti aman di kedua tema. `accessibility` **17/17**.
 
 ### Dialog catatan Alkitab (31 Okt)
 
