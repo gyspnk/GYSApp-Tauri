@@ -1016,13 +1016,13 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 - `cargo`/Java TIDAK terpasang; native check/packaging butuh mesin lain.
 
 ## Kebijakan pemilik (berlaku)
-8 Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
+1. Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
    GitHub Actions tidak lagi menjadi gate; jangan menghabiskan waktu mengejar CI.
-9 Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
+2. Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
    disentuh, tidak ada merge/force-push.
-10 Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
-11 Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
-12 Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
+3. Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
+4. Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
+5. Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
    dan perangkat fisik. Tulis PASS/FAIL/NOT RUN, bukan "semua aman".
 
 ## Yang sudah terbukti (jangan diulang tanpa alasan)
@@ -1063,13 +1063,22 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
   graph awal; modul berat harus tetap lazy.
 - Native (Rust/Android/Windows installer), signing, perangkat fisik: NOT RUN.
 
+## Protokol kerja (WAJIB)
+1. Jangan menunggu lama di foreground: tidak ada `sleep` > 60 dtk. Run panjang
+   dijalankan sebagai background job; lanjutkan pekerjaan lain sambil menunggu
+   notifikasi.
+2. Verifikasi default: `test:e2e:changed` (≈100 dtk) → `test:e2e:core` (≈3,4 mnt)
+   → `test:e2e:local` async sebelum push. Suite penuh hanya untuk handoff/CI.
+3. Jangan rebuild `dist` saat ada run berjalan; pakai `GYS_E2E_PREBUILT=1`.
+4. Ukur dengan jam dinding + `pnpm test:e2e:durations`, jangan menebak.
+
 ## Urutan kerja yang disarankan
-13 Jalankan dev server (5173) dan preview (4173), verifikasi HTTP 200, pastikan UI
+1. Jalankan dev server (5173) dan preview (4173), verifikasi HTTP 200, pastikan UI
    sehat sebelum menyentuh kode.
-14 **B-30**: jalankan suite penuh sendirian dan triase sisa kegagalan (klasifikasikan
+2. **B-30**: jalankan suite penuh sendirian dan triase sisa kegagalan (klasifikasikan
    bug produk vs kontrak basi vs batas host); tambahkan tes yang gagal lebih dulu.
-15 Lanjut ke item P1/P2 di backlog §3 (B-24 headroom 1,0 KiB, B-15 bukti WhatsApp).
-16 Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
+3. Lanjut ke item P1/P2 di backlog §3 (B-24 headroom 1,0 KiB, B-15 bukti WhatsApp).
+4. Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
    di dokumen hidup; commit + push.
 
 ## Perintah yang tersedia
