@@ -63,6 +63,16 @@ export function collectChangedFiles({
   return [...files];
 }
 
+/** The always-cheap tier: shell, settings, deep links and e-GYS login. */
+const CORE_SPECS = [
+  "e2e/smoke.spec.ts",
+  "e2e/settings-data-integrity.spec.ts",
+  "e2e/more-section-deeplink.spec.ts",
+  "e2e/more-device-data.spec.ts",
+  "e2e/account-menu.spec.ts",
+  "e2e/egys-v1.spec.ts",
+];
+
 export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   if (userArgs.includes("--all") || userArgs.includes("-a")) {
     const filtered = userArgs.filter((arg) => arg !== "--all" && arg !== "-a");
@@ -92,9 +102,12 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     );
   });
   if (unknownShared.length)
+    // Bounded fallback: an unclassified shared change could touch anything, so
+    // run the same core tier used locally instead of the whole 824-test suite.
+    // The full suite still runs on main pushes and on a `full-ci` label.
     return {
-      description: `Full browser coverage for unclassified shared changes: ${unknownShared.join(", ")}`,
-      args: userArgs,
+      description: `Core browser tier for unclassified shared changes: ${unknownShared.join(", ")}`,
+      args: [...CORE_SPECS, ...userArgs],
       changedFiles,
     };
 

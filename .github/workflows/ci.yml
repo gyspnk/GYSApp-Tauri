@@ -144,9 +144,33 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - id: source-hash
+        name: Hash the source tree
+        run: |
+          hash=$(git ls-tree -r HEAD -- \
+            apps/web/src apps/web/index.html apps/web/vite.config.ts \
+            apps/web/package.json apps/bff/src apps/bff/package.json \
+            packages scripts pnpm-lock.yaml package.json pnpm-workspace.yaml \
+            tsconfig.json | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+      - name: Restore a previously verified build for this exact tree
+        id: build-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+            apps/web/tsconfig.tsbuildinfo
+            apps/bff/tsconfig.tsbuildinfo
+          key: build-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
       - name: Build and typecheck once
+        if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm build
       - name: Run unit and policy suites against the built workspace
+        if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm test
       - run: pnpm verify:native-assets
       - run: pnpm verify:bundle
@@ -167,7 +191,9 @@ jobs:
   # synchronize event supplies the prior head SHA, so ordinary pushes exercise
   # only the changed surface. Open/reopened draft PRs fall back to the PR base.
   e2e-selective:
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+    # Every pull-request push (draft or ready) runs only the specs the pushed
+    # range can affect; add the `full-ci` label to force the full shards.
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') }}
     needs: web-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -220,7 +246,9 @@ jobs:
           retention-days: 7
 
   e2e-shard:
-    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) }}
+    # The full suite runs on main pushes, or on a pull request explicitly
+    # labelled `full-ci`; ordinary PR pushes stay on the selective path.
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'full-ci') }}
     needs: web-build
     runs-on: ubuntu-latest
     timeout-minutes: 15

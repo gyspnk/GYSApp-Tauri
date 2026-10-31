@@ -121,8 +121,20 @@ test("unknown shared code broadens coverage even beside a known feature", () => 
       ["apps/web/src/bible.tsx", path],
       ["--retries=0"],
     );
-    assert.deepEqual(result.args, ["--retries=0"], path);
-    assert.match(result.description, /Full browser coverage/);
+    assert.deepEqual(
+      result.args,
+      [
+        "e2e/smoke.spec.ts",
+        "e2e/settings-data-integrity.spec.ts",
+        "e2e/more-section-deeplink.spec.ts",
+        "e2e/more-device-data.spec.ts",
+        "e2e/account-menu.spec.ts",
+        "e2e/egys-v1.spec.ts",
+        "--retries=0",
+      ],
+      path,
+    );
+    assert.match(result.description, /Core browser tier/);
   }
 });
 

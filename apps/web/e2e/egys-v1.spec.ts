@@ -546,7 +546,9 @@ test("a WhatsApp attempt that really fails shows the reason in the account card"
     }),
   );
   const badge = page.locator(".egys-whatsapp-countdown.is-error");
-  await expect(badge).toHaveText("!");
+  // The client gives a rejected confirm a short grace window (profile check +
+  // one retry) before it shows the exclamation mark.
+  await expect(badge).toHaveText("!", { timeout: 15_000 });
   await expect(page.locator(".egys-whatsapp-notice")).toContainText(
     "WhatsApp code could not be verified",
   );

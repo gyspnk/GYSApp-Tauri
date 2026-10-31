@@ -90,57 +90,68 @@ export function EgysWhatsApp({
       if (confirming || controller.signal.aborted) return;
       confirming = true;
       setStatus("Memverifikasi akun");
-      let confirmError: unknown;
-      try {
-        await requestEgysProvider(
+      const sleep = (delay: number) =>
+        new Promise((resolve) => window.setTimeout(resolve, delay));
+      const requestConfirm = () =>
+        requestEgysProvider(
           "whatsapp/confirm",
           { otp: code, mobilephone },
           controller.signal,
         );
+      const pollProfile = async (backoff: readonly number[]) => {
+        let lastError: unknown;
+        for (const delay of backoff) {
+          if (delay) await sleep(delay);
+          if (controller.signal.aborted) return true;
+          try {
+            await onComplete(controller.signal);
+            return true;
+          } catch (err) {
+            lastError = err;
+            recordDiagnostic("warn", "egys.whatsapp.profile", err);
+          }
+        }
+        return lastError;
+      };
+      let confirmError: unknown;
+      try {
+        await requestConfirm();
       } catch (err) {
         confirmError = err;
         recordDiagnostic("warn", "egys.whatsapp.confirm", err);
       }
       if (controller.signal.aborted) return;
-      if (confirmError) {
-        // The WhatsApp reply is authoritative too: the bot can complete the
-        // login before this POST reaches the provider, so a rejected confirm
-        // is not fatal while a session already exists. Check the profile once
-        // before surfacing the exclamation mark.
-        try {
-          await onComplete(controller.signal);
-          return;
-        } catch {
-          fail(
-            confirmError instanceof Error
-              ? confirmError.message
-              : "Login e-GYS belum berhasil",
-          );
-          return;
-        }
+      if (!confirmError) {
+        const result = await pollProfile([0, 350, 800, 1500]);
+        if (result === true) return;
+        fail(result instanceof Error ? result.message : "Login belum berhasil");
+        return;
       }
-      // A confirmed login can land a moment before the profile endpoint knows
-      // about the new session; retry briefly instead of reporting failure for
-      // a login the user already completed on WhatsApp.
-      const backoff = [0, 350, 800, 1500];
-      let profileError: unknown;
-      for (const delay of backoff) {
-        if (delay)
-          await new Promise((resolve) => window.setTimeout(resolve, delay));
-        if (controller.signal.aborted) return;
-        try {
-          await onComplete(controller.signal);
-          return;
-        } catch (err) {
-          profileError = err;
-          recordDiagnostic("warn", "egys.whatsapp.profile", err);
-        }
+      // The WhatsApp reply may have completed the login even though this POST
+      // was rejected. Check the profile once before retrying, then give the
+      // provider a short grace window for a reply that is still in flight.
+      const immediate = await pollProfile([0]);
+      if (immediate === true) return;
+      await sleep(800);
+      if (controller.signal.aborted) return;
+      try {
+        await requestConfirm();
+        confirmError = undefined;
+      } catch (err) {
+        confirmError = err;
+        recordDiagnostic("warn", "egys.whatsapp.confirm.retry", err);
       }
-      fail(
-        profileError instanceof Error
-          ? profileError.message
-          : "Login belum berhasil",
-      );
+      if (!confirmError) {
+        const result = await pollProfile([0, 350, 800]);
+        if (result === true) return;
+      }
+      const result = await pollProfile([0, 700, 1600, 3000]);
+      if (result === true) return;
+      // Prefer the provider's reason for rejecting the code: the profile miss
+      // is only a symptom and would hide the actionable message.
+      const failure =
+        confirmError ?? (result instanceof Error ? result : undefined);
+      fail(failure instanceof Error ? failure.message : "Login belum berhasil");
     };
     void requestEgysProvider<Challenge>("whatsapp/start", {}, controller.signal)
       .then((data) => {
