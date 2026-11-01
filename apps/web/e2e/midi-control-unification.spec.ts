@@ -131,6 +131,7 @@ for (const { width, touch } of [
   { width: 320, touch: true },
   { width: 390, touch: true },
   { width: 768, touch: true },
+  { width: 1024, touch: false },
   { width: 1440, touch: false },
 ]) {
   test.describe(`${width}px ${touch ? "touch" : "mouse"}`, () => {
