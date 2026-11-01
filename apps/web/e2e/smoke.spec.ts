@@ -669,7 +669,8 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     markBox.x + markBox.width / 2,
     markBox.y + markBox.height / 2,
   );
-  await page.waitForTimeout(600);
+  // Each held level advances after 1000 ms. Assert the still-held book step
+  // right away; a fixed 600 ms sleep used to race that timer on a loaded host.
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "book",

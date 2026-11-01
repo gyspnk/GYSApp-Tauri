@@ -1787,6 +1787,16 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Balapan dengan timer dwell 1000 ms (1 Nov)
+
+Tes “Bible title drag advances through book, chapter, and verse before commit”
+gagal dua kali berturut-turut di core run: setelah menahan buku Matius ia
+menunggu **600 ms** lalu mengharap langkah masih `book`, padahal penahanan
+maju ke `chapter` tepat pada **1000 ms** — di host yang lambat jendelanya
+terlewat. Penantian tetap itu dihapus; tes sekarang langsung memeriksa
+`data-step="book"` sebelum timer sempat menyala. Dua kali lulus (13,7 dan
+10,2 detik).
+
 ### Satu istilah untuk ukuran dan jarak teks (1 Nov)
 
 Aksi yang sama punya tiga nama: “Perbesar teks” (Alkitab), “Perbesar ukuran
