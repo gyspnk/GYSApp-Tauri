@@ -1787,6 +1787,18 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Takaran baca halaman Iman (1 Nov, putaran 39)
+
+Di 1440 px paragraf “Percaya bahwa…” melebar **1126 px** — sekitar **92
+karakter per baris**, jauh di atas takaran baca yang nyaman, dan tombol
+PDF/Catatan melayang di ujung kanan baris yang panjang. Aturan baru
+`@media (min-width: 900px) { .faith-page .faith-row { grid-template-columns:
+28px minmax(0, 74ch); justify-content: start } }` di `apps/web/src/app-design.css`
+membatasi kolom teks ke **74ch (≈592 px, ≈55 karakter/baris)** dan membuat
+tombol aksi duduk tepat di bawah kolom itu. Di 768 px dan 390 px tidak ada
+perubahan (390 px tetap `text-align: start`). Verifikasi: `faith-pdf` +
+`faith-zoom` **12/12 lulus (50,6 dtk)**; pengukuran 1440/768/390 → 592/591/326 px.
+
 ### Tema sepia & AMOLED ikut diaudit (1 Nov, putaran 39)
 
 Sebelumnya axe hanya dijalankan untuk tema terang dan gelap, dan cincin fokus

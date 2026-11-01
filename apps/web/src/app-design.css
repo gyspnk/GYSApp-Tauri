@@ -5283,3 +5283,13 @@ body:has(.hymn-detail-page.is-text-viewer)
     line-height: 1.25;
   }
 }
+
+/* Faith statements are long-form reading: cap the measure so a wide desktop
+   does not stretch a line past ~75 characters, and keep the PDF/notes actions
+   inside that column instead of floating at the far right edge. */
+@media (min-width: 900px) {
+  .faith-page .faith-row {
+    grid-template-columns: 28px minmax(0, 74ch);
+    justify-content: start;
+  }
+}
