@@ -23,7 +23,7 @@ import {
   collectPortableBackupSettings,
   restorePortableBackupSettings,
 } from "./backup-settings.js";
-import { translate, type Locale } from "./i18n.js";
+import { formatDecimal, translate, type Locale } from "./i18n.js";
 import {
   applyAssetManifestUpdate,
   checkAssetManifest,
@@ -114,9 +114,9 @@ type AssetCheckState =
       url: string;
     };
 
-function formatBytes(bytes: number): string {
+function formatBytes(bytes: number, locale: Locale): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${formatDecimal(bytes / (1024 * 1024), locale)} MB`;
 }
 
 function distributedAssetStateLabel(
@@ -222,7 +222,7 @@ function DistributedAssetPanel({
                     <small>
                       {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
-                        ? ` · ${formatBytes(asset.sizeBytes)}`
+                        ? ` · ${formatBytes(asset.sizeBytes, locale)}`
                         : ""}
                     </small>
                     {busy && (
@@ -1539,6 +1539,7 @@ export function MorePage({
                               (sum, item) => sum + item.bytes,
                               0,
                             ),
+                            locale,
                           )
                         : "—"}
                     </strong>

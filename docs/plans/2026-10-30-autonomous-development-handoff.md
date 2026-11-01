@@ -1787,6 +1787,17 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Desimal mengikuti bahasa (1 Nov)
+
+“Kecepatan Baca · 0.9×” dan “Tinggi Nada (Pitch) · 1.0” memakai titik di
+antarmuka Indonesia. `formatDecimal(nilai, locale, digit)` di
+`apps/web/src/i18n.ts` sekarang memakai `Intl.NumberFormat`, dipakai untuk
+kecepatan/nada di `apps/web/src/audio-settings-inline.tsx` dan untuk ukuran
+unduhan di `apps/web/src/more.tsx` (`formatBytes(bytes, locale)`), sehingga
+id menampilkan **0,9× / 1,0** dan en tetap **0.9× / 1.0**. Tes
+`apps/web/src/format-decimal.test.ts` (3/3) mengunci ketiga bahasa; baris
+pengaturan yang dirender ikut diperiksa.
+
 ### Permukaan utama mengisi tinggi layar (1 Nov)
 
 Di 390 px kartu putih `main` berakhir di y≈535 pada halaman pendek (`/sauh`),

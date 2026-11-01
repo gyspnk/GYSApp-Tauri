@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { speechPlayer } from "./speech-player.js";
 import { isEdgeSpeechConfigured } from "./edge-speech.js";
-import { translate, type Locale } from "./i18n.js";
+import { formatDecimal, translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 
 /** The audio settings that matter day to day, inline in the settings page.
@@ -55,7 +55,8 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
         )}
       <label className="audio-setting-row">
         <span>
-          {translate(locale, "bible.readingSpeed")} · {speech.rate.toFixed(1)}×
+          {translate(locale, "bible.readingSpeed")} ·{" "}
+          {formatDecimal(speech.rate, locale)}×
         </span>
         <input
           type="range"
@@ -69,7 +70,8 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
       </label>
       <label className="audio-setting-row">
         <span>
-          {translate(locale, "bible.readingPitch")} · {speech.pitch.toFixed(1)}
+          {translate(locale, "bible.readingPitch")} ·{" "}
+          {formatDecimal(speech.pitch, locale)}
         </span>
         <input
           type="range"

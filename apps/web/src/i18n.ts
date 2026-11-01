@@ -1,5 +1,18 @@
 export type Locale = "id" | "en" | "zh";
 
+/** One decimal separator per locale: Indonesian writes 0,9 while English and
+ * Chinese keep the dot. Used for speech rate/pitch and asset sizes. */
+export function formatDecimal(
+  value: number,
+  locale: Locale,
+  digits = 1,
+): string {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+}
+
 type MessageValues = Record<string, string | number>;
 
 export const messages: Record<Locale, Record<string, string>> = {
