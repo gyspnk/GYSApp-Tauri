@@ -1419,6 +1419,16 @@ Nama tes kini “theme choices in settings and speech endpoints stay localized�
 dan lulus dalam 1,0 menit. Tes ini juga menjadi bukti bahwa jalur selektif
 menjangkau spec navigasi ketika file CSS berubah.
 
+### Dua kegagalan hanya di bawah beban (1 Nov)
+
+Menjalankan seluruh `navigation-layout.spec.ts` (41 tes) dengan 2 worker di host
+ini memberi **39 lulus, 2 gagal**: “Lainnya keeps its settings rows compact…”
+(`locator.click: Target page, context or browser has been closed`) dan “Kidung
+plays with the bundled SoundFont…” (`#soundfont-player` tidak muncul dalam 30
+detik, lalu `ENOENT` saat artefak dihapus). Dijalankan ulang berurutan keduanya
+**lulus dalam 24,3 detik**, jadi ini batas host (2 worker, 11 GiB, swap), bukan
+regresi produk.
+
 ### Tema di laci Alkitab (1 Nov)
 
 Laci Alkitab masih memuat select **Tema** dan **Bahasa** di bagian “Tampilan”,
