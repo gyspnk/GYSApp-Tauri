@@ -138,6 +138,7 @@ function useLiteratureCatalog() {
     const items = getCachedLiteratureCatalog();
     return items ? { status: "ready", items } : { status: "loading" };
   });
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     void fetchLiteratureCatalog(controller.signal)
@@ -146,8 +147,14 @@ function useLiteratureCatalog() {
         if (!controller.signal.aborted) setState({ status: "error" });
       });
     return () => controller.abort();
-  }, []);
-  return state;
+  }, [attempt]);
+  return {
+    state,
+    retry: () => {
+      setState({ status: "loading" });
+      setAttempt((value) => value + 1);
+    },
+  };
 }
 
 function dateLabel(value: string | undefined, locale: Locale) {
@@ -197,7 +204,7 @@ function Cover({
 
 export function LiteraturePage({ locale }: { locale: Locale }) {
   const searchRef = useRef<HTMLInputElement>(null);
-  const catalogState = useLiteratureCatalog();
+  const { state: catalogState, retry: retryCatalog } = useLiteratureCatalog();
   const items = catalogState.status === "ready" ? catalogState.items : [];
   const status = catalogState.status;
   const [category, setCategory] = useState<LiteratureCategory | "all">("all");
@@ -551,6 +558,13 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "literature.errorTitle")}</strong>
           <span>{translate(locale, "common.errorBody")}</span>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={retryCatalog}
+          >
+            {translate(locale, "home.retry")}
+          </button>
         </div>
       )}
       {status === "ready" && !filtered.length && (
@@ -656,7 +670,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
   const [searchParams] = useSearchParams();
   const directRead = searchParams.get("read") === "1";
   const directArticleRead = useLocation().pathname.endsWith("/read");
-  const catalogState = useLiteratureCatalog();
+  const { state: catalogState, retry: retryCatalog } = useLiteratureCatalog();
   const item =
     catalogState.status === "ready"
       ? itemFromRoute(catalogState.items, itemId)

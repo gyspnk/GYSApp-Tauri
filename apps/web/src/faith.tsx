@@ -152,6 +152,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
   }, []);
   const [searchParams] = useSearchParams();
   const [pack, setPack] = useState<FaithPack | undefined>(getCachedFaithPack);
+  const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState("");
   // Seperti Alkitab: tidak ada seleksi otomatis — user memilih sendiri.
   const [selected, setSelected] = useState<string>(
@@ -206,7 +207,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [attempt]);
 
   const group =
     pack?.faith.find(
@@ -374,7 +375,18 @@ export function FaithPage({ locale }: { locale: Locale }) {
       )}
       {pack && !group && (
         <div className="error-panel" role="alert">
-          {translate(locale, "faith.unavailable")}
+          <strong>{translate(locale, "faith.unavailable")}</strong>
+          <span>{translate(locale, "common.errorBody")}</span>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => {
+              setPack(undefined);
+              setAttempt((value) => value + 1);
+            }}
+          >
+            {translate(locale, "home.retry")}
+          </button>
         </div>
       )}
       {group && (

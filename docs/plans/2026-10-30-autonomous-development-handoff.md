@@ -1571,6 +1571,35 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Setiap panel galat punya jalan pulih (1 Nov)
+
+Audit keadaan galat memperlihatkan pola yang tidak seragam: panel paket Alkitab
+dan Suara Sejati punya tombol “Coba lagi”, panel Literatur hanya teks, panel
+Pokok Iman hanya satu kalimat tanpa penjelasan, dan panel katalog Kidung tidak
+punya jalan pulih sama sekali. Halaman pembaca Kidung bahkan menyalahkan
+pengguna: ketika katalog gagal dimuat, `/kidung/hymn-001` menulis
+“Pujian tidak ditemukan” padahal lagunya ada.
+
+Sekarang kelima panel data memakai pola yang sama — judul tebal, kalimat
+“Periksa koneksi lalu coba lagi.”, dan tombol `primary-button` **Coba lagi**:
+
+- `apps/web/src/literature.tsx` — `useLiteratureCatalog()` mengembalikan
+  `{ state, retry }`; `retry()` mengembalikan status ke `loading` lalu menaikkan
+  penghitung percobaan yang menjadi dependensi efek.
+- `apps/web/src/faith.tsx` — `attempt` baru di dependensi efek; tombol
+  mengosongkan `pack` dan menaikkan `attempt` (promise yang gagal memang sudah
+  dilepas oleh `loadFaithPack`, jadi percobaan ulang benar-benar memuat lagi).
+- `apps/web/src/kidung-page.tsx` — `retry()` dari `useHymnData` dipakai panel
+  katalog **dan** panel pembaca baru; pembaca tidak lagi menampilkan “Pujian
+  tidak ditemukan” saat katalognya yang gagal.
+- Paket Alkitab sudah punya tombol sejak awal; hanya kalimatnya yang disamakan.
+
+Bukti: uji baru `apps/web/e2e/offline-retry.spec.ts` (Literatur, Pokok Iman)
+dan `kidung-catalog-error` yang diperluas (katalog + pembaca) semuanya melepas
+pemblokiran lalu menekan **Coba lagi** sampai isi muncul; `offline-retry` +
+`catalog-discovery` + `faith-pdf` + `faith-zoom` + `kidung-catalog-error`
+**21/21 (38 dtk)**; bundle tetap 179,8 KiB.
+
 ### Satu kalimat galat untuk semua panel data (1 Nov)
 
 Audit keadaan galat (8 rute × 4 tema, semua permintaan data diblokir) tidak

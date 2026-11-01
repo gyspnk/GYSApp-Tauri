@@ -138,7 +138,11 @@ function KidungReaderDataPage({
   locale: Locale;
   songId: string;
 }) {
-  const { catalog, musicLock } = useHymnData(true, loadCoreHymns, parseCatalog);
+  const { catalog, musicLock, retry } = useHymnData(
+    true,
+    loadCoreHymns,
+    parseCatalog,
+  );
   const split =
     catalog.status === "ready"
       ? splitHymnFallback(
@@ -147,6 +151,16 @@ function KidungReaderDataPage({
         )
       : undefined;
   if (split) return <Navigate to={`/kidung/${split}`} replace />;
+  if (catalog.status === "error")
+    return (
+      <div className="error-panel" role="alert">
+        <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
+        <span>{translate(locale, "common.errorBody")}</span>
+        <button className="primary-button" type="button" onClick={retry}>
+          {translate(locale, "home.retry")}
+        </button>
+      </div>
+    );
   return (
     <HymnDetail
       key={songId}
