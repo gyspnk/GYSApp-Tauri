@@ -2731,19 +2731,22 @@ mengenali dan melewatinya.
    muncul, buka Tentang & Bantuan → Diagnostik perangkat dan salin entri
    `egys.whatsapp.confirm` / `egys.whatsapp.profile`; pesan itu kini juga tampil
    di kartu akun. Tanpa data itu, jangan klaim penyebab lain.
-3. **B-30 — selesaikan suite penuh** `pnpm test:e2e --workers=3 --retries=0`
-   pada build final (823 tes) dan triase sisanya. Jalankan sendirian: proses
+3. **B-30 — selesaikan suite penuh** `pnpm test:e2e --workers=2 --retries=0`
+   pada build final (826 tes) dan triase sisanya. Jalankan sendirian: proses
    browser lain, termasuk `pnpm test:e2e -g`, membuat tes berbasis waktu gagal
    palsu (terbukti pada `account-menu` dan 200% text di siklus 11).
 4. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
    membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
    datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-5. **B-24** — Headroom bundle tinggal **1,0 KiB** (179,0/180) di host Linux.
-   Setiap penambahan kode di graph awal akan menembus anggaran; ukur dulu. Kandidat
-   termurah: impor dinamis `midi-queue`/`music-assets` setelah paint pertama,
-   diukur dengan `verify:bundle` (chunk `dist-` juga diimpor entry, jadi
-   penghematannya belum terbukti) dan diuji dengan `smoke` MIDI queue serta
-   `kidung-usability` dock.
+5. **B-24** — Headroom bundle tinggal **0,4 KiB** (179,6/180,0) dan dua jalan
+   pintas sudah diukur gagal: impor dinamis `midi-queue` justru menaikkan graf
+   awal (179,1 → 179,3 KiB) karena `media-session.ts` mengimpornya statis, dan
+   jejak jaringan menunjukkan 62 chunk `/assets/*.js` tetap diambil karena
+   `route-preload` menghangatkan setiap rute — jadi angka anggaran lebih ketat
+   daripada muatan nyata. Perbaikan yang tersisa bersifat struktural: fasad
+   async untuk `MidiPlaylistController` (zod 27,8 KiB lewat 15 pemanggil
+   `.parse` sinkron) atau memisahkan katalog i18n en/zh (≈19 KiB). Setiap kode
+   JS baru harus masuk chunk rute, bukan menaikkan anggaran.
 6. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
    saat Worker boleh dideploy, konversi format adalah tuas utamanya.
 7. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
