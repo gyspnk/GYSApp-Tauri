@@ -15,8 +15,6 @@ const CANONICAL_LABELS = [
   "Tempo MIDI",
 ];
 
-const DOCK_MUTE_LABELS = ["Bisukan MIDI", "Suara MIDI aktif", "Bisukan suara"];
-
 type Control = {
   label: string;
   tag: string;
@@ -237,3 +235,103 @@ test.describe("fullscreen lyrics", () => {
     }
   });
 });
+
+async function measureTransport(page: Page, root: string) {
+  return page.locator(root).evaluate((surface) => {
+    const pick = (selector: string) =>
+      Array.from(surface.querySelectorAll<HTMLElement>(selector))
+        .filter((element) => {
+          const box = element.getBoundingClientRect();
+          return box.width > 2 && box.height > 2;
+        })
+        .map((element) => {
+          const box = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {
+            label: (element.getAttribute("aria-label") ?? "").trim(),
+            width: Math.round(box.width),
+            height: Math.round(box.height),
+            radius: Number.parseFloat(style.borderTopLeftRadius) || 0,
+            background: style.backgroundColor,
+            disabled:
+              element.getAttribute("aria-disabled") === "true" ||
+              (element as HTMLButtonElement).disabled === true,
+          };
+        });
+    return {
+      secondary: pick(
+        ".media-previous-control, .media-next-control, .lyrics-transport .lyrics-hdr-btn:not(.lyrics-play-toggle)",
+      ),
+      play: pick(".media-primary-control, .lyrics-play-toggle")[0],
+    };
+  });
+}
+
+for (const { width, touch } of [
+  { width: 390, touch: true },
+  { width: 1440, touch: false },
+]) {
+  test.describe(`transport ${width}px`, () => {
+    test.use({ hasTouch: touch });
+    test("dock and fullscreen share one transport geometry", async ({
+      page,
+    }) => {
+      test.setTimeout(150_000);
+      await page.setViewportSize({ width, height: 844 });
+      await page.route(/^https:\/\//, (route) => route.abort());
+      await preparePinnedReaderAssets(page);
+      await preparePinnedMidiAsset(page);
+      await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+      const tap = async (locator: ReturnType<Page["locator"]>) => {
+        if (touch) await locator.tap();
+        else await locator.click();
+      };
+      await tap(page.locator(".hymn-midi-toggle"));
+      const player = page.locator(".media-surface.is-kidung-media");
+      await expect(player).toBeVisible({ timeout: 30_000 });
+      const dock = await measureTransport(
+        page,
+        ".media-surface.is-kidung-media",
+      );
+      await tap(player.locator(".media-close-button"));
+      await expect(player).toBeHidden({ timeout: 15_000 });
+      await tap(page.locator(".hymn-more-actions-summary"));
+      await tap(page.getByRole("button", { name: "Mode lirik layar penuh" }));
+      const panel = page.locator(".lyrics-panel");
+      await expect(panel).toBeVisible({ timeout: 20_000 });
+      const full = await measureTransport(page, ".lyrics-panel");
+
+      const expected = touch ? 44 : 32;
+      for (const source of [dock, full]) {
+        expect(source.secondary.length).toBe(2);
+        for (const control of source.secondary) {
+          expect(control.height, `${control.label} height`).toBe(expected);
+          expect(control.width, `${control.label} width`).toBe(expected);
+          expect(control.radius, `${control.label} radius`).toBe(12);
+        }
+        expect(source.play, "play button exists").toBeTruthy();
+        expect(source.play!.width, "play width").toBe(source.play!.height);
+        expect(
+          source.play!.radius,
+          "play radius covers half the button (circular)",
+        ).toBeGreaterThanOrEqual(source.play!.width / 2);
+      }
+      expect(full.play!.height, "fullscreen play height").toBe(
+        expected === 32 ? 32 : 44,
+      );
+      expect(dock.play!.background, "dock play colour").toBe(
+        "rgb(0, 113, 156)",
+      );
+      if (!full.play!.disabled) {
+        expect(full.play!.background, "fullscreen play colour").toBe(
+          dock.play!.background,
+        );
+      } else {
+        // Without a MIDI track the primary action shows its disabled token;
+        // it must still be a themed surface colour, never the UA grey.
+        expect(full.play!.background).not.toBe(dock.play!.background);
+        expect(full.play!.background).toContain("rgb(");
+      }
+    });
+  });
+}

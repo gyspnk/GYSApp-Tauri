@@ -5083,18 +5083,33 @@ body:has(.hymn-detail-page.is-text-viewer)
     flex-shrink: 0;
   }
 }
-.lyrics-panel .lyrics-play-toggle {
-  width: 48px;
-  min-width: 48px;
-  height: 48px;
-  border-radius: 50%;
+/* One transport contract for the dock and the fullscreen lyric panel: square
+   secondary buttons with the control radius, a circular primary action in the
+   accent colour, and 44px whenever the pointer is coarse. */
+.lyrics-panel {
+  --transport-control: 32px;
+}
+@media (pointer: coarse), (hover: none) {
+  .lyrics-panel {
+    --transport-control: 44px;
+  }
+}
+.lyrics-panel .lyrics-transport .lyrics-hdr-btn {
+  width: var(--transport-control);
+  min-width: var(--transport-control);
+  height: var(--transport-control);
+  min-height: var(--transport-control);
+  border-radius: var(--radius-control);
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle {
+  border-radius: 999px;
   background: var(--blue);
   color: var(--on-accent);
 }
-.lyrics-panel .lyrics-play-toggle:hover:not(:disabled) {
+.lyrics-panel .lyrics-transport .lyrics-play-toggle:hover:not(:disabled) {
   background: color-mix(in srgb, var(--blue) 86%, #000);
 }
-.lyrics-panel .lyrics-play-toggle:disabled {
+.lyrics-panel .lyrics-transport .lyrics-play-toggle:disabled {
   background: var(--surface-soft);
   color: var(--muted);
 }

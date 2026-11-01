@@ -138,6 +138,9 @@
     --midi-control: 44px;
   }
 }
+.media-tempo-toggle {
+  border-radius: var(--radius-control);
+}
 .media-music-controls .media-transpose {
   overflow: hidden;
 }

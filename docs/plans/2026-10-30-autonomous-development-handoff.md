@@ -1617,6 +1617,31 @@ Bukti: panel 390 px menjadi 360×388 dengan `scroll=340`; tinggi grup
 154/45 px (yang tertutup tetap 44 px agar bisa disentuh); tombol seragam
 106×44; uji fungsional kidung + aksesibilitas dijalankan setelah perubahan.
 
+### Satu kontrak transport MIDI (1 Nov)
+
+Audit mengukur baris transport di dock dan di lirik layar penuh pada 390 dan
+1440: dock 32 px (radius 12, play lingkaran biru), lirik layar penuh 32 px dengan
+radius **10**, play **48×32** (bukan lingkaran penuh) dan latar transparan —
+aturan `width: 48px` menang tetapi `height` kalah oleh blok
+`@media (pointer: fine)` yang lebih akhir di bundel CSS.
+
+Perbaikan: kontrak tunggal `.lyrics-panel .lyrics-transport` dengan
+`--transport-control` **32 px** (pointer halus) / **44 px** (kasar), radius
+`--radius-control` untuk tombol sekunder, play berbentuk lingkaran penuh dengan
+`--blue`/`--on-accent` (disabled memakai `--surface-soft`), dan selektor
+spesifisitas lebih tinggi (`.lyrics-transport .lyrics-hdr-btn`) agar menang
+terhadap blok fine-pointer. `.media-tempo-toggle` kini memakai radius kontrol,
+bukan 8–10 px.
+
+Bukti: dua kasus baru di `apps/web/e2e/midi-control-unification.spec.ts`
+(“dock and fullscreen share one transport geometry”, 390 sentuh dan 1440 mouse)
+menuntut tinggi/lebar 44/32, radius 12 untuk prev/next, play persegi-lingkaran
+dengan radius ≥ setengah lebar, serta latar play yang sama di kedua permukaan;
+lulus 2/2 (13,7 dtk). Regresi `kidung-usability` (termasuk visual) tinggal satu
+kegagalan label karena label kanonik baru — salinan locale diperbarui
+(`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
+14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
+
 ### Satu geometri kontrol MIDI di semua layout (1 Nov)
 
 Keluhan pemilik: “kontrol midi player dan kontrol semua pengaturannya harus bisa
