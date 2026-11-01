@@ -1642,6 +1642,21 @@ kegagalan label karena label kanonik baru — salinan locale diperbarui
 (`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
 14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
 
+### Judul kidung di 320 px (1 Nov)
+
+Di 320 px hero pembaca menampung tombol kembali 44 px lalu empat aksi 44 px
+(chord, MIDI, partitur, lainnya) dengan jarak 6 px, sehingga kolom judul hanya
+tersisa ~52 px dan judul terpotong menjadi “Pujil…”. Perbaikan di
+`apps/web/src/app-design.css` (`@media (max-width: 359px)`): judul boleh dua
+baris (`-webkit-line-clamp: 2`, ukuran 0,8125 rem, tinggi baris 1,25, tanpa
+`nowrap`/`ellipsis`) sehingga terbaca “Pujilah Allah…”. Tinggi hero tetap
+**52 px** (budget `kidung-density` ≤56 px) dan `kidung-density` **4/4** lulus.
+
+Batasnya jujur: lebar tetap menjadi kendala, bukan ukuran font. Menampilkan
+seluruh judul di 320 px menuntut salah satu aksi pindah ke lembar “Lainnya”
+(atau hero dua baris yang memakan ~44 px ruang baca); keduanya perubahan
+struktural yang belum diambil.
+
 ### Audit kotak bersarang (1 Nov)
 
 Keluhan pemilik “UI seperti box dalam box” sekarang punya alat: `pnpm ui:boxes`

@@ -5269,3 +5269,18 @@ body:has(.hymn-detail-page.is-text-viewer)
   color: var(--navy);
   box-shadow: none;
 }
+
+/* At 320px the reader hero keeps four 44px actions, so a single-line title
+   collapses to "Pujil…". Two lines at the same control height read better. */
+@media (max-width: 359px) {
+  .hymn-detail-page.is-text-viewer .hymn-text-title h1 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: normal;
+    font-size: 0.8125rem;
+    line-height: 1.25;
+  }
+}
