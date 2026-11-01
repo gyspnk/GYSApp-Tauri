@@ -1787,6 +1787,16 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Sorotan pencarian terbaca di tema gelap (1 Nov)
+
+`mark` pada ayat memakai `color-mix(#f4d35e 50%, transparent)` dengan
+`color: inherit`. Di tema gelap campuran itu jatuh ke cokelat kusam dan teks
+terang di atasnya hanya **≈3,5:1**; di AMOLED sama. Tema gelap dan AMOLED
+sekarang memakai sorotan **80%** dengan tinta `#1f2a33`, dan tema `system`
+mengikuti `prefers-color-scheme: dark`. Terukur: terang **11,39:1**, gelap
+**6,68:1**, sepia **9,39:1**, AMOLED **6,32:1**, system gelap **6,68:1**.
+`accessibility`, `bible-picker`, dan `smoke` lulus **66/66 (2,8 menit)**.
+
 ### Warna galat mengikuti tema (1 Nov)
 
 Empat permukaan galat masih memakai warna tema terang: teks galat pencarian

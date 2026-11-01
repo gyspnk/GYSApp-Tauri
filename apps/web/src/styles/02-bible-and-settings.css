@@ -729,6 +729,20 @@
   background: color-mix(in srgb, #f4d35e 50%, transparent);
   color: inherit;
 }
+/* On a dark page the translucent yellow stays dark enough that light verse
+   text loses contrast; a denser highlight with ink-coloured text keeps the
+   match readable in both dark themes. */
+:root[data-theme="dark"] .verse-text mark,
+:root[data-theme="amoled"] .verse-text mark {
+  background: color-mix(in srgb, #f4d35e 80%, transparent);
+  color: #1f2a33;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .verse-text mark {
+    background: color-mix(in srgb, #f4d35e 80%, transparent);
+    color: #1f2a33;
+  }
+}
 .bible-jw {
   color: #c0362c;
   font-weight: 600;
