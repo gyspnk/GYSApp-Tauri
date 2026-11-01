@@ -1402,6 +1402,38 @@ screenshot 390 px `/suara` dan detail menunjukkan kartu artikel dengan sudut
 24 px yang konsisten. Baseline visual diambil ulang lewat job CI karena
 perubahan radius menyentuh kartu artikel.
 
+### Kontrak tema yang basi (1 Nov)
+
+CI `e2e-selective` merah pada `0108048`: `navigation-layout.spec.ts` menunggu
+combobox **“Tema”** di topbar sampai timeout 120 detik. Kontraknya basi — tema
+sudah pindah ke Pengaturan → Tampilan (tombol `.topbar-appearance-button`),
+tetapi tesnya hanya muncul di jalur selektif/full sehingga tidak pernah
+menangkap perubahan itu.
+
+Tes ditulis ulang: buka `[data-setting="appearance"]`, klik select
+“Pilih Tema”/“Choose theme”/“选择主题”, pastikan lima label tema terlokalisasi di
+lima viewport (320/390/768/1024/1440) dan popup-nya tetap di dalam layar, tutup
+dengan Escape; pemeriksaan endpoint suara di laci Alkitab tidak berubah;
+pemeriksaan tema di `/kidung` diganti menjadi tautan “Tampilan” di topbar.
+Nama tes kini “theme choices in settings and speech endpoints stay localized”
+dan lulus dalam 1,0 menit. Tes ini juga menjadi bukti bahwa jalur selektif
+menjangkau spec navigasi ketika file CSS berubah.
+
+### Tema di laci Alkitab (1 Nov)
+
+Laci Alkitab masih memuat select **Tema** dan **Bahasa** di bagian “Tampilan”,
+padahal tema sudah punya satu rumah di Pengaturan → Tampilan dan labelnya di laci
+memakai kunci berbeda (`theme.*` vs `shell.theme*`). Select tema dihapus dan
+diganti tautan “Tema diatur di Pengaturan Tampilan →” menuju
+`/lainnya?section=appearance`; select **Bahasa** dipertahankan karena rute
+pembaca memakai topbar sendiri yang tidak memuat pemilih bahasa (diukur: di
+`/bible` 1440 px tidak ada `language-select`).
+
+Diukur di laci pada 390/768/1440 px: combobox tersisa `["Versi", "Bahasa",
+"Kitab"]`, tanpa “Tema”. Tes baru “reader drawer keeps language and sends the
+theme to settings” membuktikan urutannya (laci → tautan → select “Pilih Tema” di
+Pengaturan) dan lulus 5 detik.
+
 ### Paginasi Alkitab pada teks 200 % (1 Nov)
 
 `.reader-pagination` adalah flex satu baris tanpa `flex-wrap`; pada teks 200 %

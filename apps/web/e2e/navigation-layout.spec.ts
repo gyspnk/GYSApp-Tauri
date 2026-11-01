@@ -1278,28 +1278,57 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("topbar theme and speech endpoint settings stay localized", async ({
+  test("reader drawer keeps language and sends the theme to settings", async ({
     page,
   }) => {
-    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/bible");
+    await page.locator(".reader-hamburger-btn").click();
+    await expect(
+      page.getByRole("combobox", { name: "Bahasa", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: "Tema", exact: true }),
+    ).toHaveCount(0);
+    const link = page.getByRole("link", {
+      name: "Tema diatur di Pengaturan Tampilan →",
+      exact: true,
+    });
+    await expect(link).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/lainnya?section=appearance",
+    );
+    await link.click();
+    await expect(
+      page.getByRole("combobox", { name: "Pilih Tema", exact: true }),
+    ).toBeVisible();
+  });
+
+  test("theme choices in settings and speech endpoints stay localized", async ({
+    page,
+  }) => {
+    test.setTimeout(240_000);
     const copies = {
       id: {
         locale: "id",
-        theme: "Tema",
+        theme: "Pilih Tema",
+        appearance: "Tampilan",
         themes: ["Otomatis", "Terang", "Gelap", "AMOLED Gelap", "Sepia Hangat"],
         engine: "Mesin",
         endpoint: "https://... (bawaan)",
       },
       en: {
         locale: "en",
-        theme: "Theme",
+        theme: "Choose theme",
+        appearance: "Appearance",
         themes: ["Automatic", "Light", "Dark", "AMOLED Dark", "Warm Sepia"],
         engine: "Engine",
         endpoint: "https://... (default)",
       },
       zh: {
         locale: "zh",
-        theme: "主题",
+        theme: "选择主题",
+        appearance: "外观",
         themes: ["自动", "明亮", "深色", "AMOLED 深色", "暖褐"],
         engine: "引擎",
         endpoint: "https://...（默认）",
@@ -1329,30 +1358,30 @@ test.describe("responsive reader navigation", () => {
     for (const selected of Object.values(copies)) {
       for (const viewport of viewports) {
         await page.setViewportSize(viewport);
-        await page.goto(`/GYSApp-Tauri/?__gys_locale=${selected.locale}`);
-
-        if (viewport.width >= 600) {
-          const themeTrigger = page.getByRole("combobox", {
-            name: selected.theme,
-            exact: true,
-          });
-          await themeTrigger.click();
-          const themeMenu = page.getByRole("listbox", {
-            name: selected.theme,
-            exact: true,
-          });
-          await expect(themeMenu).toBeVisible();
-          await expect(themeMenu.getByRole("option")).toHaveText(
-            selected.themes,
-          );
-          const themeBox = await themeMenu.boundingBox();
-          expect(themeBox).not.toBeNull();
-          expect(themeBox!.x).toBeGreaterThanOrEqual(0);
-          expect(themeBox!.x + themeBox!.width).toBeLessThanOrEqual(
-            viewport.width + 1,
-          );
-          await themeTrigger.click();
-        }
+        await page.goto(
+          `/GYSApp-Tauri/lainnya?__gys_locale=${selected.locale}`,
+        );
+        await page.locator('[data-setting="appearance"] > summary').click();
+        const themeTrigger = page.getByRole("combobox", {
+          name: selected.theme,
+          exact: true,
+        });
+        await expect(themeTrigger).toBeVisible();
+        await themeTrigger.click();
+        const themeMenu = page.getByRole("listbox", {
+          name: selected.theme,
+          exact: true,
+        });
+        await expect(themeMenu).toBeVisible();
+        await expect(themeMenu.getByRole("option")).toHaveText(selected.themes);
+        const themeBox = await themeMenu.boundingBox();
+        expect(themeBox).not.toBeNull();
+        expect(themeBox!.x).toBeGreaterThanOrEqual(0);
+        expect(themeBox!.x + themeBox!.width).toBeLessThanOrEqual(
+          viewport.width + 1,
+        );
+        await page.keyboard.press("Escape");
+        await expect(themeMenu).toHaveCount(0);
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
         await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${selected.locale}`);
@@ -1379,19 +1408,12 @@ test.describe("responsive reader navigation", () => {
       ]) {
         await page.setViewportSize(viewport);
         await page.goto(`/GYSApp-Tauri/kidung?__gys_locale=${selected.locale}`);
-        const themeTrigger = page.getByRole("combobox", {
-          name: selected.theme,
+        const appearance = page.getByRole("link", {
+          name: selected.appearance,
           exact: true,
         });
-        await themeTrigger.click();
-        const themeMenu = page.getByRole("listbox", {
-          name: selected.theme,
-          exact: true,
-        });
-        await expect(themeMenu).toBeVisible();
-        await expect(themeMenu.getByRole("option")).toHaveText(selected.themes);
+        await expect(appearance).toBeVisible();
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
-        await themeTrigger.click();
       }
     }
   });

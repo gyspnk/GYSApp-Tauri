@@ -614,19 +614,16 @@ export function BibleHeader({
                           )}
                         </div>
 
-                        {/* Section 4: Tampilan & Bahasa */}
+                        {/* Section 4: languages stay switchable here because the
+                            reader has its own top bar; the theme keeps its one
+                            home in Settings, so the drawer links there. */}
                         <div className="hamburger-section">
                           <span className="hamburger-section-label">
                             {translate(locale, "more.appearance")}
                           </span>
                           <div
                             className="hamburger-group"
-                            style={{
-                              padding: "12px 14px",
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: "10px",
-                            }}
+                            style={{ padding: "12px 14px" }}
                           >
                             <Select
                               value={locale}
@@ -639,45 +636,15 @@ export function BibleHeader({
                                 { value: "zh", label: "中文" },
                               ]}
                             />
-                            <Select
-                              value={theme}
-                              onChange={setTheme}
-                              className="topbar-select theme-select"
-                              label={translate(locale, "shell.theme")}
-                              options={[
-                                {
-                                  value: "system",
-                                  label: translate(locale, "theme.system"),
-                                  shortLabel: "",
-                                  icon: "system",
-                                },
-                                {
-                                  value: "light",
-                                  label: translate(locale, "theme.light"),
-                                  shortLabel: "",
-                                  icon: "sun",
-                                },
-                                {
-                                  value: "dark",
-                                  label: translate(locale, "theme.dark"),
-                                  shortLabel: "",
-                                  icon: "moon",
-                                },
-                                {
-                                  value: "amoled",
-                                  label: translate(locale, "theme.amoled"),
-                                  shortLabel: "",
-                                  icon: "amoled",
-                                },
-                                {
-                                  value: "sepia",
-                                  label: translate(locale, "theme.sepia"),
-                                  shortLabel: "",
-                                  icon: "sepia",
-                                },
-                              ]}
-                            />
                           </div>
+                          <p className="drawer-speech-link">
+                            <Link to="/lainnya?section=appearance">
+                              {translate(
+                                locale,
+                                "bible.appearanceSettingsLink",
+                              )}
+                            </Link>
+                          </p>
                         </div>
                       </div>
                     </div>
