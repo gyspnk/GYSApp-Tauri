@@ -119,6 +119,41 @@
   border-color: var(--blue);
   background: var(--blue-soft);
 }
+
+/* One geometry for the reader sheet and the fullscreen lyrics; the dock keeps
+   its own clamp so its transport stays the largest control on screen. */
+.hymn-more-actions-panel,
+.lyrics-panel .lyrics-extra {
+  --midi-control: 40px;
+}
+@media (pointer: coarse), (hover: none) {
+  .hymn-more-actions-panel,
+  .lyrics-panel .lyrics-extra {
+    --midi-control: 44px;
+  }
+}
+.media-music-controls .media-transpose {
+  overflow: hidden;
+}
+.media-music-controls .media-transpose button,
+.media-music-controls .media-transpose-reset {
+  border-radius: 0;
+}
+.media-mute-button {
+  display: grid;
+  place-items: center;
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
+  height: var(--midi-control, 40px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.capo-control button {
+  border-radius: var(--radius-control);
+}
 .media-music-controls .media-instrument-control .control-select-value {
   display: block;
   overflow: hidden;
@@ -171,7 +206,7 @@
   min-height: var(--midi-control);
   border: 0;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: transparent;
   font-size: 1.125rem;
 }
@@ -889,7 +924,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
 }
 .midi-tempo-stepper {
-  --tempo-target: 44px;
+  --tempo-target: var(--midi-control, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -946,14 +981,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 .midi-tempo-stepper button:disabled {
   opacity: 0.35;
 }
-@media (pointer: fine) {
-  .lyrics-extra .media-music-controls {
-    --midi-control: 32px;
-  }
-  .midi-tempo-stepper {
-    --tempo-target: 32px;
-  }
-}
 
 .media-surface.is-kidung-media .media-tempo-popover {
   grid-template-columns: minmax(0, 1fr);
@@ -978,7 +1005,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Reader settings use the same bounded musical fields as the player. */
 .hymn-music-settings .media-music-controls {
-  --midi-control: 32px;
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
   gap: 4px;
@@ -1009,11 +1035,6 @@ body:has(.hymn-detail-page.is-text-viewer)
   color: var(--muted);
   font-size: 0.6875rem;
 }
-@media (pointer: coarse) {
-  .hymn-music-settings .media-music-controls {
-    --midi-control: 44px;
-  }
-}
 .hymn-music-settings .hymn-midi-reader-controls {
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
@@ -1023,6 +1044,15 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-music-settings .media-music-controls .control-select {
   min-width: 0;
+}
+.hymn-music-settings .control-select-trigger,
+.hymn-music-settings .capo-control button {
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+}
+.hymn-music-settings .capo-control button {
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
 }
 
 .hymn-music-settings .media-instrument-control .control-select-value {
@@ -1041,8 +1071,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0;
 }
 .hymn-music-settings .hymn-midi-volume button {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
   padding: 0;
   display: grid;
   place-items: center;

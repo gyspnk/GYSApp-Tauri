@@ -1647,12 +1647,6 @@
   .hymn-more-actions-panel .media-music-controls {
     gap: 10px;
   }
-  .hymn-detail-page
-    .hymn-more-actions-panel
-    .media-instrument-control
-    .control-select-trigger {
-    background: var(--surface);
-  }
   .hymn-more-actions-panel .media-transpose {
     gap: 6px;
   }

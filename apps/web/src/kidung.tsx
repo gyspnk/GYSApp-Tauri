@@ -2158,13 +2158,13 @@ export function HymnDetail({
                                   .setMuted(!midiState.muted)
                                   .catch(() => undefined)
                               }
+                              className="media-mute-button"
                               aria-label={translate(
                                 locale,
                                 midiState.muted
                                   ? "media.unmuteMidi"
                                   : "media.muteMidi",
                               )}
-                              style={{ fontSize: "0.8rem" }}
                             >
                               <Icon
                                 name={midiState.muted ? "volumeOff" : "volume"}

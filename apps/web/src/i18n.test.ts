@@ -133,7 +133,6 @@ const DYNAMIC_KEYS = [
   "kidung.lyrics.showChords",
   "kidung.lyrics.showControls",
   "kidung.lyrics.hideControls",
-  "kidung.lyrics.selectInstrument",
   "kidung.removeSongFromPlaylist",
   "kidung.queueSongExists",
   "kidung.queueSongAdd",

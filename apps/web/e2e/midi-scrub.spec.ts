@@ -86,7 +86,7 @@ for (const viewport of [
     // so the settled value is observable even though the input holds the text.
     await expect(
       player.getByRole("spinbutton", {
-        name: "Tempo dalam BPM",
+        name: "Tempo MIDI",
         exact: true,
       }),
     ).toHaveValue(String(value + 1));

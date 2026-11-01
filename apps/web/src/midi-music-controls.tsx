@@ -109,13 +109,7 @@ export function MidiMusicControls({
       {instrument !== undefined && (
         <Select
           className="media-instrument-control"
-          label={
-            reader
-              ? translate(locale, "kidung.instrument")
-              : fullscreen
-                ? translate(locale, "kidung.lyrics.selectInstrument")
-                : translate(locale, "media.instrumentMidi")
-          }
+          label={translate(locale, "media.instrumentMidi")}
           value={instrument}
           options={instruments}
           onChange={(value) =>
@@ -125,13 +119,7 @@ export function MidiMusicControls({
       )}
       <Select
         className={`media-key-control${fullscreen ? " lyrics-key-select" : ""}`}
-        label={
-          reader
-            ? translate(locale, "kidung.key")
-            : fullscreen
-              ? translate(locale, "kidung.lyrics.selectKey")
-              : translate(locale, "media.keySelect")
-        }
+        label={translate(locale, "media.keySelect")}
         value={keyIndex}
         options={Array.from({ length: 12 }, (_, value) => ({
           value,
@@ -149,13 +137,7 @@ export function MidiMusicControls({
         <StepButton
           onStep={() => onTransposeChange(transpose - 1)}
           disabled={transpose <= -24}
-          label={
-            reader
-              ? translate(locale, "kidung.transposeDown")
-              : fullscreen
-                ? translate(locale, "kidung.lyrics.transposeDown")
-                : translate(locale, "media.transposeDown")
-          }
+          label={translate(locale, "media.transposeDown")}
         >
           −
         </StepButton>
@@ -169,13 +151,7 @@ export function MidiMusicControls({
         <StepButton
           onStep={() => onTransposeChange(transpose + 1)}
           disabled={transpose >= 24}
-          label={
-            reader
-              ? translate(locale, "kidung.transposeUp")
-              : fullscreen
-                ? translate(locale, "kidung.lyrics.transposeUp")
-                : translate(locale, "media.transposeUp")
-          }
+          label={translate(locale, "media.transposeUp")}
         >
           +
         </StepButton>
@@ -213,22 +189,14 @@ export function MidiTempoStepper({
     void midiPlayer.setTempo(value).catch(() => undefined);
   return (
     <div
-      className="midi-tempo-stepper"
+      className={`midi-tempo-stepper${reader ? " is-reader" : ""}`}
       role="group"
-      aria-label={
-        reader
-          ? translate(locale, "kidung.tempo")
-          : translate(locale, "media.tempoControl")
-      }
+      aria-label={translate(locale, "media.tempoControl")}
     >
       <StepButton
         disabled={tempo <= 30}
         onStep={() => change(Math.max(30, tempo - 2))}
-        label={
-          reader
-            ? translate(locale, "kidung.tempoDown")
-            : translate(locale, "kidung.lyrics.decreaseTempo")
-        }
+        label={translate(locale, "kidung.tempoDown")}
       >
         −
       </StepButton>
@@ -239,11 +207,7 @@ export function MidiTempoStepper({
           max={220}
           step={1}
           value={draft}
-          aria-label={
-            reader
-              ? translate(locale, "media.tempoInput")
-              : translate(locale, "kidung.lyrics.tempoBpm")
-          }
+          aria-label={translate(locale, "media.tempoInput")}
           title={translate(locale, "kidung.lyrics.enterTempo")}
           onFocus={() => setEditing(true)}
           onChange={(event) => {
@@ -277,11 +241,7 @@ export function MidiTempoStepper({
       <StepButton
         disabled={tempo >= 220}
         onStep={() => change(Math.min(220, tempo + 2))}
-        label={
-          reader
-            ? translate(locale, "kidung.tempoUp")
-            : translate(locale, "kidung.lyrics.increaseTempo")
-        }
+        label={translate(locale, "kidung.tempoUp")}
       >
         +
       </StepButton>

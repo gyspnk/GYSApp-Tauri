@@ -178,7 +178,7 @@ for (const width of [320, 390, 768, 1440]) {
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
     await lyrics
-      .getByRole("spinbutton", { name: "Tempo dalam BPM", exact: true })
+      .getByRole("spinbutton", { name: "Tempo MIDI", exact: true })
       .press("Escape");
     await expect(lyrics.locator(".lyrics-extra")).toHaveCount(0);
     await expect(controlsToggle).toBeFocused();

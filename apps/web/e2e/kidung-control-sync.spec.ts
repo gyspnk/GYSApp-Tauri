@@ -113,7 +113,7 @@ for (const { width, touch } of [
         await toggle.click();
       await expect(
         fullscreen.getByRole("spinbutton", {
-          name: "Tempo dalam BPM",
+          name: "Tempo MIDI",
           exact: true,
         }),
       ).toHaveValue("116");

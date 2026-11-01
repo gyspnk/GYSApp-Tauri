@@ -1617,6 +1617,41 @@ Bukti: panel 390 px menjadi 360×388 dengan `scroll=340`; tinggi grup
 154/45 px (yang tertutup tetap 44 px agar bisa disentuh); tombol seragam
 106×44; uji fungsional kidung + aksesibilitas dijalankan setelah perubahan.
 
+### Satu set kontrol MIDI (1 Nov)
+
+Permintaan pemilik: kontrol MIDI player dan seluruh pengaturannya harus
+terunifikasi dan optimal di semua layout. Audit 16 kontrol di panel pengaturan
+pembaca (320/390/768/1440) menemukan empat bahasa desain sekaligus: select
+instrumen/nada **32 px** (dock 44–56 px), tombol transpose radius **10**,
+tombol tempo radius 12 dengan isian `--blue-soft`, tombol mute radius **0**
+dengan abu-abu bawaan peramban, dan label berbeda per permukaan
+(`kidung.instrument` vs `kidung.lyrics.selectInstrument` vs
+`media.instrumentMidi`).
+
+Perbaikan:
+
+- `apps/web/src/midi-music-controls.tsx` memakai **satu set label** untuk dock,
+  panel pembaca, dan lirik layar penuh: `media.instrumentMidi`,
+  `media.keySelect`, `media.transposeDown/Up`, `kidung.resetTranspose`,
+  `media.tempoControl`, `kidung.tempoDown/Up`, dan `media.tempoInput` untuk
+  isian BPM (sebelumnya "Tempo dalam BPM" hanya di dock).
+- `apps/web/src/midi-player.css`: `--midi-control` untuk panel pembaca dan
+  lirik layar penuh = **40 px** (pointer halus) / **44 px** (kasar); dock tetap
+  memakai clamp 44–56 px agar transport tetap kontrol terbesar. Semua tombol
+  transpose berada di dalam kontainer ber-radius 12 (tombol dalam persegi),
+  mute menjadi tombol bertoken `--surface` 40/44 px, dan select notasi, capo,
+  serta tombol volume mengikuti variabel yang sama.
+- Override per-permukaan dihapus: isian `--surface` khusus pembaca dan
+  override 32 px pada `.lyrics-extra`/`.midi-tempo-stepper` hilang, sehingga
+  tiga permukaan berbagi satu geometri.
+
+Hasil pengukuran: 390 px sentuh — instrumen 334×44, nada 108×44, transpose
+44×44, tempo 44×44, mute 44×44, notasi 334×44, capo 44×44, semuanya radius 12;
+1440 px pointer halus — seluruh kontrol 40 px dengan radius 12. Verifikasi:
+`kidung-control-sync`, `kidung-density`, `kidung-unified-controls`,
+`midi-scrub`, `kidung-compact-motion`, `accessibility` hijau; bundle tetap
+179,8 KiB; baseline visual diperbarui dari CI setelah perubahan tinggi kontrol.
+
 ### Panel musik desktop: satu kontrol satu baris (1 Nov)
 
 Panel “Lanjutan” di dock desktop masih menumpuk label “Instrumen MIDI” di atas

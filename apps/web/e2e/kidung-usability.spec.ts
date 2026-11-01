@@ -525,7 +525,7 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await tempo.press("ArrowRight");
   await expect(tempo).toHaveValue(String(currentTempo + 1));
   await expect(
-    media.getByRole("spinbutton", { name: "Tempo dalam BPM", exact: true }),
+    media.getByRole("spinbutton", { name: "Tempo MIDI", exact: true }),
   ).toHaveValue(String(currentTempo + 1));
   await expect(media.locator(".media-tempo-toggle strong")).toHaveText(
     String(currentTempo + 1),
@@ -933,7 +933,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
       close: "Tutup lirik",
       hideControls: "Sembunyikan kontrol lain",
       instrument: "Pilih alat musik",
-      tempo: "Tempo dalam BPM",
+      tempo: "Tempo MIDI",
       previousVerse: "Bait sebelumnya",
       verse: "Bait 1 dari",
     },
