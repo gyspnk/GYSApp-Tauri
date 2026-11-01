@@ -2607,6 +2607,13 @@ blockquote {
 .search-field input::placeholder {
   color: var(--muted);
 }
+/* A field without a bespoke rule must not fall back to the browser grey, which
+ * only reaches 3,1:1 on the dark surface (4,0:1 on light). */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
 .search-results {
   margin-top: 24px;
   padding: 20px;

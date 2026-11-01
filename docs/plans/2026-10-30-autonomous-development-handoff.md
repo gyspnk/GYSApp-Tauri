@@ -1571,6 +1571,24 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Warna placeholder (1 Nov)
+
+Kolom pencarian di panel “Temukan sesuatu” memakai abu-abu bawaan peramban
+(`rgb(117,117,117)`) karena tidak ada aturan `::placeholder` yang berlaku untuk
+kolom itu; kontrasnya **4,02** (light), **3,11** (dark), **3,64** (sepia), dan
+**4,00** (amoled) terhadap latar kolom — di bawah 4,5:1, dan warnanya sama di
+semua tema sehingga terlihat asing di AMOLED.
+
+Perbaikan: aturan dasar di `apps/web/src/styles/01-foundations-and-layout.css`
+untuk `input::placeholder, textarea::placeholder` memakai `var(--muted)` dengan
+`opacity: 1`. Hasil: **4,80 / 6,76 / 5,25 / 8,70** untuk light/dark/sepia/amoled.
+
+Bukti: tes baru “search placeholders clear 4.5:1 in every theme” di
+`apps/web/e2e/accessibility.spec.ts` membaca warna `::placeholder` dan latar
+kolom lalu menghitung rasio WCAG; dibuktikan gagal-dulu dengan aturan itu
+di-stash (`Expected: >= 4.5`, `Received: 4.0163516651767255` pada tema light).
+`accessibility.spec.ts` penuh **18/18** (1,2 mnt).
+
 ### Skala tipe (31 Okt)
 
 580 deklarasi `font-size` tersebar tanpa skala: nilai setengah piksel

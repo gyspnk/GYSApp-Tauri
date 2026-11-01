@@ -763,6 +763,45 @@ test("keyboard focus rings clear 3:1 on every control they reach", async ({
   }
 });
 
+test("search placeholders clear 4.5:1 in every theme", async ({ page }) => {
+  for (const theme of ["light", "dark", "sepia", "amoled"]) {
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    await page.locator(".search-trigger").first().click();
+    await expect(page.locator("#global-search-input")).toBeVisible();
+    const sample = await page.evaluate(() => {
+      const input = document.querySelector<HTMLInputElement>(
+        "#global-search-input",
+      );
+      if (!input) return null;
+      const placeholder = getComputedStyle(input, "::placeholder").color;
+      let node: HTMLElement | null = input;
+      let background = "rgb(255, 255, 255)";
+      while (node) {
+        const value = getComputedStyle(node).backgroundColor;
+        if (value !== "rgba(0, 0, 0, 0)") {
+          background = value;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return { placeholder, background };
+    });
+    expect(sample, theme).not.toBeNull();
+    if (!sample) continue;
+    expect(
+      contrastRatio(sample.placeholder, sample.background),
+      `${theme} placeholder`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
 test("focus rings keep their contrast in the dark theme", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
