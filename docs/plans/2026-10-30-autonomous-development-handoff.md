@@ -1787,6 +1787,19 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Permukaan utama mengisi tinggi layar (1 Nov)
+
+Di 390 px kartu putih `main` berakhir di y≈535 pada halaman pendek (`/sauh`),
+lalu warna bingkai `rgb(243,246,250)` tampil sebagai pita abu-abu sampai bawah —
+terlihat seperti halaman terpotong. Aturan
+`.app-frame:not(.is-reader-route) .main-content { min-height: calc(100dvh -
+var(--topbar-height, 58px)) }` membuat permukaan putih selalu mencapai bawah.
+Verifikasi: `/sauh` 390 → `main` 477 → **786 px**, `scrollHeight` tetap **844**
+(tidak menambah scrollbar); 1440 → `main` **842**, `scrollHeight` **900**;
+beranda 390 tetap 1426 (memang panjang). Rute reader dikecualikan seperti
+sebelumnya. `sauh-error`, `sauh-loading-layout`, `ui-polish`, `navigation-layout`
+**67/67 lulus (5,3 mnt)**.
+
 ### Keadaan kosong Sauh di tengah kartu (1 Nov)
 
 Halaman `/sauh` saat gagal memuat menaruh pesan pendek di pojok kiri atas kartu
