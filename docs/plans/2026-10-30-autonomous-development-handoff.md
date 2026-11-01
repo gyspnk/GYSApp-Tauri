@@ -1468,7 +1468,9 @@ Swatch “warna kustom” memakai emoji 🎨, yang pada host tanpa font emoji
 (Chromium minimal) tampil sebagai kotak tofu — terlihat jelas di screenshot 390
 px. Diganti dengan `Icon name="tune"` (13 px) dari set ikon yang sudah dipakai
 seluruh UI: warna putih saat lingkaran terisi warna aksen, `--muted` saat
-transparan. Verifikasi: `appearance-preferences` + `accessibility` **32/32**.
+transparan. Verifikasi: `appearance-preferences` + `accessibility` **32/32**; dua baseline
+`appearance-accent-390/1440` diperbarui dari artefak CI `41256250593` (satu-satunya
+selisih byte dari 149 berkas) dan diadopsi.
 
 ### Teks 200 % di navigasi dan tombol e-GYS (1 Nov)
 
