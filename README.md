@@ -144,6 +144,7 @@ pnpm preview                              # terminal 1, serves 4173 for the brow
 pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
 pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report
 pnpm ui:audit                             # overflow/clipping sweep over every real route
+pnpm ui:consistency                       # peer controls must share one paint
 pnpm test:performance
 pnpm verify:native-assets
 ```
@@ -162,7 +163,11 @@ real routes (including `/kidung/1` and the three settings sections) across
 overflow, clipped text and overlapping top-bar controls; deliberate
 `text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
 `UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES`, `UI_AUDIT_BASE` and
-`UI_AUDIT_FONT_SCALE` narrow or zoom a run. `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
+`UI_AUDIT_FONT_SCALE` narrow or zoom a run. `pnpm ui:consistency` is the
+sibling report: for every row that holds three or more peer controls it lists
+groups whose background, radius, border or height disagree, skipping deliberately
+emphasized actions (primary/danger/active) and hidden popovers
+(`UI_CONSISTENCY_ROUTES`, `UI_CONSISTENCY_VIEWPORTS`, `UI_AUDIT_THEMES`). `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
 is the low-vision pass: it raises the root font size to 200% and verifies that no
 label is clipped and nothing overflows its box (48 loads at 320/390 px, light and
 dark, reported clean on 1 Nov). `pnpm test:e2e:dev` is the local HMR

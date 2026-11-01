@@ -1401,6 +1401,22 @@ diperbarui lewat job CI `41260654618` (hanya `kidung-390/768/1440` yang berubah
 dari 149 berkas; 320 tetap karena kolom judul sudah penuh) dan diadopsi;
 `test:e2e:core` **92/92 (5,0 m)** pada build yang sama.
 
+### Audit kesetaraan kontrol (1 Nov)
+
+Keluhan pemilik "kontrol yang sama beda gaya" sebelumnya diperiksa manual. Sekarang
+ada alat yang sama untuk seluruh aplikasi: `pnpm ui:consistency`
+(`apps/web/scripts/ui-consistency-audit.mjs`) membuka setiap rute, mencari induk
+dengan **≥3 kontrol saudara**, lalu membandingkan latar, radius, bingkai, dan
+tinggi tiap anggota. Aksi yang sengaja ditonjolkan (`primary`, `danger`,
+`is-active`, `aria-pressed`) dan popover tersembunyi dikecualikan supaya
+laporannya tidak bising.
+
+Hasil pada 9 rute × 390/1440: **0 penyimpangan** setelah tombol skor diperbaiki;
+sebelumnya alat ini menunjuk baris PDF Kidung (kini selesai) dan dua temuan palsu
+dari popover preferensi pembaca yang belum terbuka (karena itu filter
+`checkVisibility` ditambahkan). Laporan ini bersifat laporan, bukan penjaga:
+penjaga tetap `radius-scale`, `type-scale`, `spacing-scale`, dan kontrak e2e.
+
 ### Tombol skor di toolbar Kidung (1 Nov)
 
 Di toolbar pembaca, tombol **PDF** tampil sebagai kotak biru muda 44–56 px
