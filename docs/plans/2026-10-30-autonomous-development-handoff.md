@@ -1787,6 +1787,19 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Tema sepia & AMOLED ikut diaudit (1 Nov, putaran 39)
+
+Sebelumnya axe hanya dijalankan untuk tema terang dan gelap, dan cincin fokus
+hanya diuji di dua tema itu. Sekarang:
+
+- Probe axe `wcag2aa` untuk **sepia** dan **amoled** pada delapan rute
+  (beranda, Alkitab, Kidung, Iman, Literatur, Suara, Lainnya, Lainnya →
+  Tampilan) menghasilkan **0 pelanggaran**.
+- `apps/web/e2e/accessibility.spec.ts` menguji cincin fokus di **empat tema**
+  (terang, gelap, sepia, amoled) dengan ambang 3:1, dan menambahkan satu tes axe
+  per tema hangat/gelap-pekat untuk rute beranda, Kidung, dan pengaturan.
+- Suite aksesibilitas menjadi **22/22 lulus (1,6 mnt)**.
+
 ### Satu ukuran bidang MIDI untuk semua permukaan (1 Nov, putaran 38)
 
 Setelah transport disatukan, pengukuran ulang pada 1440 dan 390 menunjukkan

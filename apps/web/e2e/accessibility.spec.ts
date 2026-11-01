@@ -802,17 +802,49 @@ test("search placeholders clear 4.5:1 in every theme", async ({ page }) => {
   }
 });
 
-test("focus rings keep their contrast in the dark theme", async ({ page }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      "gys-shell-settings-v1",
-      JSON.stringify({ version: 1, locale: "id", theme: "dark" }),
-    );
+for (const theme of ["dark", "sepia", "amoled"]) {
+  test(`focus rings keep their contrast in the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    const rings = await inspectFocusRings(page, 6);
+    for (const ring of rings) {
+      expect(
+        ring.ratio,
+        `${theme} ${ring.label} focus ring`,
+      ).toBeGreaterThanOrEqual(3);
+    }
   });
-  await page.goto("/GYSApp-Tauri/");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  const rings = await inspectFocusRings(page, 6);
-  for (const ring of rings) {
-    expect(ring.ratio, `${ring.label} focus ring`).toBeGreaterThanOrEqual(3);
-  }
-});
+}
+
+for (const theme of ["sepia", "amoled"]) {
+  test(`${theme} keeps every audited route free of axe violations`, async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    for (const route of ["/", "/kidung", "/lainnya?section=appearance"]) {
+      await page.goto(`/GYSApp-Tauri${route}`);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await page.waitForTimeout(900);
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2aa"])
+        .analyze();
+      expect(
+        results.violations.map((violation) => `${route} ${violation.id}`),
+      ).toEqual([]);
+    }
+  });
+}
