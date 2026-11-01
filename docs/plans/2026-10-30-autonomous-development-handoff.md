@@ -1397,7 +1397,9 @@ sendiri punya padding internal — itu inset kartu, bukan gutter halaman.
 Verifikasi: `kidung-density`, `kidung-section-navigation`, `kidung-hymn-alias`,
 `kidung-small-phone-nav`, `kidung-unified-controls` **15/15**, plus screenshot
 390/1440 yang menunjukkan judul satu baris dan tepi rata. Baseline Kidung
-diperbarui lewat job CI, bukan lokal.
+diperbarui lewat job CI `41260654618` (hanya `kidung-390/768/1440` yang berubah
+dari 149 berkas; 320 tetap karena kolom judul sudah penuh) dan diadopsi;
+`test:e2e:core` **92/92 (5,0 m)** pada build yang sama.
 
 ### Target sentuh 44 px untuk pointer kasar (1 Nov)
 
