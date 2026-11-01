@@ -2737,8 +2737,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   pointer-events: none;
 }
 .egys-whatsapp-countdown.is-error {
-  color: #a33737;
-  background: #fff0f0;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 @container (max-width: 420px) {
   .egys-provider-whatsapp.is-tracking .egys-provider-label {

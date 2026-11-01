@@ -1787,6 +1787,19 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Warna galat mengikuti tema (1 Nov)
+
+Empat permukaan galat masih memakai warna tema terang: teks galat pencarian
+`#ad552f`, aksi hapus kidung `#a84545`, tombol keluar akun `#c62828`, dan chip
+hitung mundur WhatsApp `#a33737` di atas `#fff0f0`. Di tema gelap ketiganya
+hanya mencapai **3,1–3,4:1**. Semuanya kini memakai token `--danger`
+(#b3261e terang, #ffb4ab gelap/AMOLED, #a4342a sepia) dan tint chip dibuat
+dengan `color-mix(in srgb, var(--danger) 10%, transparent)`. Setelah
+perbaikan: teks galat pencarian **6,54:1** terang / **9,48:1** gelap /
+**6,22:1** sepia / **11,66:1** AMOLED; tombol keluar dan aksi hapus
+**5,68:1** terang dan **8,5:1** gelap. `account-menu`, `playlist-parity`,
+`accessibility`, dan `egys-v1` lulus **55/55 (1,5 menit)**.
+
 ### Balapan dengan timer dwell 1000 ms (1 Nov)
 
 Tes “Bible title drag advances through book, chapter, and verse before commit”

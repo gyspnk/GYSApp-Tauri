@@ -1488,7 +1488,7 @@
   border-top: 1px solid color-mix(in srgb, var(--gold) 25%, var(--line));
 }
 .account-signout {
-  color: #c62828;
+  color: var(--danger);
 }
 
 /* e-GYS Login Box */

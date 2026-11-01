@@ -797,7 +797,7 @@
 }
 
 .kidung-danger-action {
-  color: #a84545;
+  color: var(--danger);
 }
 
 .kidung-manage-saved-items {

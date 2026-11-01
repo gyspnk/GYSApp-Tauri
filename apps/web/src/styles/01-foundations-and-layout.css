@@ -334,7 +334,7 @@ a:focus-visible {
   font-size: 0.8125rem;
 }
 .global-search-status.is-error {
-  color: #ad552f;
+  color: var(--danger);
 }
 .global-search-results {
   display: grid;
