@@ -5144,3 +5144,89 @@ body:has(.hymn-detail-page.is-text-viewer)
     text-overflow: ellipsis;
   }
 }
+
+/* On a mouse the "more" panel is a menu, not the phone action sheet. */
+@media (min-width: 721px) {
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions[open]
+    > .hymn-more-actions-panel {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    max-width: min(320px, calc(100vw - 48px));
+    gap: 2px;
+    padding: 6px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    order: 2;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-action,
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-reader-settings-summary {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
+    gap: 10px;
+    border-radius: 8px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-action-caption {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+}
+
+@media (min-width: 721px) {
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings {
+    width: 100%;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings-summary {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings-summary
+    .hymn-action-caption {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+}

@@ -1571,6 +1571,22 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Panel “Lainnya” desktop jadi menu (1 Nov)
+
+Di desktop panel “Lainnya” masih memakai tata letak lembar ponsel: lima tombol
+70 px berjajar dengan keterangan di bawah ikon, mengambang di bawah topbar —
+terbaca sebagai sheet ponsel yang nyasar. Sekarang panel itu **menu vertikal
+240 px**: satu baris per aksi (ikon kiri + label 0,8125rem rata kiri, tinggi
+40 px), baris “Aa Teks” ikut satu baris, lalu garis rambut dan baris cakupan
+“Semua / Bait n / unduh”. Keterangan pendek (`hymn-action-caption`) dipakai
+sebagai label menu; label panjang yang sebelumnya hanya untuk pembaca layar
+tetap tersedia.
+
+Bukti: panel 320×261 di kanan topbar (lebar 240 memotong 25 px di grup
+pengaturan musik, jadi 320 yang dipakai); baris aksi 306×40 seragam; scope
+pindah ke bawah lewat `order: 2`; `kidung-usability`, `kidung-control-sync`,
+`kidung-unified-controls`, `accessibility` dijalankan setelah perubahan.
+
 ### Lembar pengaturan baca ponsel: tanpa kotak di dalam kotak (1 Nov)
 
 Lembar “Lainnya” menampilkan grup “Teks & jarak” dan “Musik & chord” sebagai
