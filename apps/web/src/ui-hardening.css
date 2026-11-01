@@ -101,7 +101,7 @@ button.text-button {
   min-height: 44px;
   display: flex;
   align-items: center;
-  padding-block: 7px;
+  padding-block: 8px;
 }
 
 .add-to-playlist-btn {

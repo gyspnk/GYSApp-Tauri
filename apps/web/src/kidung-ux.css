@@ -32,8 +32,8 @@
 }
 
 .kidung-local-nav-links {
-  gap: 3px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-soft);
@@ -156,7 +156,7 @@
   width: 100%;
   min-width: 0;
   min-height: 56px;
-  padding: 6px 8px 6px 46px;
+  padding: 6px 8px 6px 48px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -260,13 +260,13 @@
   min-width: 44px;
   min-height: var(--control-hit, 44px);
   padding: 0 12px;
-  gap: 7px;
+  gap: 8px;
   border-radius: 8px;
   justify-content: center;
 }
 
 .hymn-text-toolbar .detail-actions .hymn-action-primary {
-  padding-inline: 15px;
+  padding-inline: 16px;
   box-shadow: none;
 }
 
@@ -416,7 +416,7 @@
   width: auto;
   min-width: 44px;
   padding-inline: 10px;
-  gap: 7px;
+  gap: 8px;
 }
 .hymn-more-actions-panel .hymn-autoscroll-btn .hymn-action-label {
   display: inline;
@@ -535,7 +535,7 @@
   .hymn-text-toolbar .hymn-scope-pill-btn {
     width: 100%;
     min-width: 0;
-    padding-inline: 7px;
+    padding-inline: 8px;
   }
 
   .hymn-text-toolbar .hymn-autoscroll-control {
@@ -575,8 +575,8 @@
 
 @media (max-width: 420px) {
   .kidung-local-nav a {
-    gap: 5px;
-    padding-inline: 5px;
+    gap: 4px;
+    padding-inline: 4px;
     font-size: 0.6875rem;
   }
 
@@ -586,7 +586,7 @@
   }
 
   .hymn-page .pujian-title {
-    padding-left: 46px;
+    padding-left: 48px;
     font-size: 0.875rem !important;
     line-height: 1.35;
     white-space: normal !important;
@@ -816,7 +816,7 @@
 
 .kidung-manage-saved-items > div {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   max-height: 220px;
   overflow: auto;
   padding-bottom: 6px;
@@ -989,7 +989,7 @@
   min-height: var(--control-hit, 44px);
   align-items: center;
   margin: 0;
-  padding: 0 11px;
+  padding: 0 12px;
   color: var(--blue);
   font-size: 0.75rem;
   font-weight: 720;
@@ -1252,7 +1252,7 @@
 }
 .hymn-page .pujian-list .pujian-title {
   min-height: 60px;
-  padding: 10px 8px 10px 46px;
+  padding: 10px 8px 10px 48px;
   border-radius: 12px;
   font-family: inherit;
   font-size: 0.875rem;
@@ -1294,7 +1294,7 @@
 }
 @media (max-width: 600px) {
   .hymn-page .pujian-list {
-    padding: 3px;
+    padding: 4px;
     border-radius: 16px;
   }
   .hymn-page .pujian-list > .pujian-item,
@@ -1466,8 +1466,8 @@
 }
 .kidung-controls-field .kidung-local-nav a {
   min-height: 38px;
-  padding-inline: 11px;
-  gap: 7px;
+  padding-inline: 12px;
+  gap: 8px;
   border-radius: 10px;
   font-size: 0.8125rem;
   font-weight: 600;

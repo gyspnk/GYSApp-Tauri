@@ -51,7 +51,7 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 .account-popover-identity strong {
   font-size: 0.9375rem;
@@ -76,9 +76,9 @@
 }
 .account-popover-actions {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   border-top: 1px solid var(--line);
-  padding-top: 7px;
+  padding-top: 8px;
 }
 .account-popover-actions > :is(a, button),
 .account-menu-login > a {
@@ -89,7 +89,7 @@
   width: 100%;
   border: 0;
   border-radius: 12px;
-  padding: 9px 10px;
+  padding: 8px 10px;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -115,7 +115,7 @@
 .account-menu-login {
   display: grid;
   gap: 6px;
-  margin-bottom: 9px;
+  margin-bottom: 8px;
 }
 .account-menu-login[aria-busy="true"] {
   pointer-events: none;

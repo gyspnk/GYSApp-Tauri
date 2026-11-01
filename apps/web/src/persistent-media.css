@@ -88,7 +88,7 @@
   left: 12px;
   width: 64px;
   grid-template-columns: 44px;
-  padding: 9px;
+  padding: 8px;
 }
 .app-frame:has(.is-pdf-viewer)
   .persistent-media.is-minimized

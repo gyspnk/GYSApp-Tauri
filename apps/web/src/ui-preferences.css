@@ -106,7 +106,7 @@
   place-items: center;
   min-width: 28px;
   height: 28px;
-  padding-inline: 5px;
+  padding-inline: 4px;
   border: 1px solid color-mix(in srgb, var(--blue) 28%, var(--line));
   border-radius: 8px;
   color: var(--blue);
@@ -292,7 +292,7 @@
 
 .ui-preference-choice-copy {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 

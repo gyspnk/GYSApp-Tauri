@@ -1401,6 +1401,34 @@ diperbarui lewat job CI `41260654618` (hanya `kidung-390/768/1440` yang berubah
 dari 149 berkas; 320 tetap karena kolom judul sudah penuh) dan diadopsi;
 `test:e2e:core` **92/92 (5,0 m)** pada build yang sama.
 
+### Skala jarak (1 Nov)
+
+Satu-satunya dimensi konsistensi yang tersisa. Inventaris nilai literal pada
+`padding`, `margin`, dan `gap` di `apps/web/src/*.css` + `apps/web/src/styles/*.css`:
+**1 982 deklarasi, 59 nilai berbeda**, dengan **246 deklarasi di luar grid** —
+angka ganjil 3/5/7/9/11/13/15/17/19/21 px dan langkah besar yang tidak kelipatan
+empat (26/30/34/46 px), plus sisa `0,95rem` (15,2 px) dan `10,4 px`.
+
+Aturan yang dipilih: **grid 2 px sampai 24 px, kelipatan 4 px di atasnya**.
+Semua nilai ganjil digeser ≤1 px ke tetangga terdekat (5→4, 9→8, 11→12, 13→12,
+15→16, 17→16, 19→20, 21→20, 23→24, 26→24, 30→32, 34→32, 46→48), nilai `rem`
+dikonversi ke px, dan `var()`/`calc()`/`clamp()`/`min()`/`max()`/`env()` serta
+margin negatif (koreksi optik) tidak disentuh. Sesudah sapuan: **23 nilai
+berbeda, 0 pelanggaran**, dengan 8/4/12/10/6 px sebagai lima teratas — sesuai
+ritme yang sudah dipakai komponen.
+
+Penjaga: `apps/web/src/spacing-scale.test.ts` memindai seluruh CSS, melewati
+fungsi matematis dan nilai negatif, lalu gagal bila ada padding/margin/gap di
+luar grid. Dibuktikan gagal-dulu dengan probe `gap: 7px` → pesan
+`styles/05-responsive-refinements.css gap: 7px`, lalu hijau (2/2 bersama penjaga
+radius dan tipe = 5/5).
+
+Verifikasi: `vite build` hijau, bundle **179,8 KiB** (tidak berubah karena CSS
+tidak masuk graf awal), screenshot 390/1440 untuk Beranda, Kidung, Alkitab,
+Iman, dan Pengaturan→Audio tidak menunjukkan pergeseran yang terlihat, dan
+`test:e2e:core` dijalankan pada build ini. Baseline visual diregenerasi lewat job
+CI setelah commit.
+
 ### Target sentuh 44 px untuk pointer kasar (1 Nov)
 
 Audit seluruh rute pada 390×844 dengan `hasTouch`/`isMobile`

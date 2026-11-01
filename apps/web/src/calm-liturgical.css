@@ -411,7 +411,7 @@ summary:focus-visible {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     align-content: center;
-    gap: 5px;
+    gap: 4px;
     padding: 8px 4px;
     text-align: center;
   }

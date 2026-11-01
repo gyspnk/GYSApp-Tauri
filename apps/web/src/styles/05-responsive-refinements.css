@@ -167,7 +167,7 @@
 }
 .hymn-detail-page.is-text-viewer .detail-hero {
   min-height: 58px;
-  padding: 7px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--line);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -292,7 +292,7 @@
   .hymn-detail-page.is-text-viewer .detail-hero {
     min-height: 52px;
     gap: 8px;
-    padding: 5px 0;
+    padding: 4px 0;
   }
   .hymn-detail-page.is-text-viewer .detail-hero h1 {
     font-size: 1.0625rem;
@@ -554,7 +554,7 @@
     margin-top: auto;
     flex: 0 0 auto;
     padding: 10px 14px 12px;
-    gap: 3px;
+    gap: 4px;
   }
   .suara-card-content strong {
     font-size: 0.875rem;
@@ -724,7 +724,7 @@
 }
 @media (max-width: 359px) {
   .reader-context-bar {
-    gap: 3px;
+    gap: 4px;
   }
   .reader-context-button {
     min-width: var(--control-hit, 44px);
@@ -967,7 +967,7 @@ body:has(.home-page)::-webkit-scrollbar {
   background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 3px;
+  padding: 4px;
   gap: 2px;
 }
 .hymn-mode-pill-btn,
@@ -975,7 +975,7 @@ body:has(.home-page)::-webkit-scrollbar {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 11px;
+  padding: 6px 12px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -1446,7 +1446,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .media-midi-actions .media-transpose {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 .media-midi-actions .media-transpose button {
   width: 26px;
@@ -2076,7 +2076,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .device-data-summary > span:first-child {
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 
 .device-data-summary small,
@@ -2208,7 +2208,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .media-surface.is-kidung-media:not(.is-minimized) .media-midi-actions {
   flex-wrap: nowrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .media-surface.is-kidung-media:not(.is-minimized)
@@ -2477,7 +2477,7 @@ body:has(.home-page)::-webkit-scrollbar {
     grid-column: auto;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
   .media-surface.is-kidung-media:not(.is-minimized) .media-volume-control span {
@@ -2571,8 +2571,8 @@ body:has(.home-page)::-webkit-scrollbar {
 .bible-loading-heading {
   display: grid;
   justify-items: center;
-  gap: 11px;
-  padding: 26px 24px 18px;
+  gap: 12px;
+  padding: 24px 24px 18px;
 }
 
 .bible-loading-line,
@@ -2612,7 +2612,7 @@ body:has(.home-page)::-webkit-scrollbar {
 
 .bible-loading-verse-list {
   display: grid;
-  padding: 0 30px 26px;
+  padding: 0 32px 24px;
 }
 
 .bible-loading-verse {
@@ -2632,7 +2632,7 @@ body:has(.home-page)::-webkit-scrollbar {
 .bible-loading-copy {
   display: grid;
   align-content: center;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -2662,11 +2662,11 @@ body:has(.home-page)::-webkit-scrollbar {
   }
 
   .bible-loading-heading {
-    padding: 22px 19px 14px;
+    padding: 22px 20px 14px;
   }
 
   .bible-loading-verse-list {
-    padding-inline: 19px;
+    padding-inline: 20px;
   }
 }
 

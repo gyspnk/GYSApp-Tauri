@@ -46,7 +46,7 @@
 .media-surface.is-kidung-media .media-context-link {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 .media-surface.is-kidung-media .media-context-link strong {
   overflow: hidden;
@@ -410,7 +410,7 @@
 }
 @media (max-height: 500px) and (min-width: 481px) {
   .media-surface.is-kidung-media:not(.is-minimized) {
-    gap: 3px 6px;
+    gap: 4px 6px;
     padding-block: 6px;
   }
   .media-surface.is-kidung-media .media-music-controls {
@@ -556,7 +556,7 @@
   height: auto;
   clip-path: none;
   display: block;
-  margin: 0 0 5px;
+  margin: 0 0 4px;
   font-size: 0.6875rem;
   color: var(--muted);
 }
@@ -586,7 +586,7 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-height: 44px;
   height: 44px;
   padding: 4px;

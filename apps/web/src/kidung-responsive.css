@@ -22,7 +22,7 @@
   .hymn-page .kidung-controls-field {
     display: grid;
     grid-template-columns: 96px minmax(0, 1fr) max-content;
-    gap: 3px;
+    gap: 4px;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav,
   .hymn-page .kidung-controls-field .kidung-header-filter {
@@ -37,7 +37,7 @@
   .hymn-page .kidung-controls-field .kidung-local-nav-links {
     display: grid;
     grid-template-columns: repeat(2, minmax(44px, 1fr));
-    gap: 3px;
+    gap: 4px;
     width: 100%;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav a {
@@ -86,7 +86,7 @@
     text-overflow: ellipsis;
     font-size: 0.625rem;
     line-height: 16px;
-    padding-inline: 3px;
+    padding-inline: 4px;
   }
 }
 
@@ -114,7 +114,7 @@
   margin: 0;
   font-size: 0.625rem;
   line-height: 16px;
-  padding-inline: 3px;
+  padding-inline: 4px;
 }
 .hymn-page .kidung-nav-indicator {
   border-radius: 12px;
@@ -133,7 +133,7 @@
 .hymn-page.kidung-tool-page .kidung-local-nav-links {
   display: grid;
   grid-template-columns: repeat(2, minmax(44px, 1fr));
-  gap: 3px;
+  gap: 4px;
   width: 100%;
 }
 .hymn-page.kidung-tool-page .kidung-local-nav a {
@@ -197,7 +197,7 @@
 /* Compact catalog toolbar: a 44px shell around 36px controls on pointer
    devices. Coarse pointers keep the full 44px hit target. */
 .hymn-page .kidung-controls-field {
-  padding: 3px;
+  padding: 4px;
   border-radius: 12px;
 }
 .hymn-page .kidung-controls-field .kidung-local-nav a {

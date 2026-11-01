@@ -250,7 +250,7 @@
   align-items: center;
   gap: 8px;
   max-width: calc(100% - 16px);
-  padding: 7px 12px;
+  padding: 8px 12px;
   overflow-x: auto;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -269,8 +269,8 @@
 .pdf-view-scroll-toggle,
 .pdf-zoom-controls {
   display: inline-flex;
-  gap: 3px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -323,7 +323,7 @@
 .detail-actions .hymn-action {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-height: 38px;
   padding-inline: 10px;
   font-size: 0.6875rem;
@@ -505,7 +505,7 @@
 .playlist-item-main {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
-  gap: 9px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
   min-height: 40px;
@@ -659,7 +659,7 @@
     gap: 12px;
   }
   .hymn-mode-toggle {
-    padding: 3px;
+    padding: 4px;
   }
   .hymn-mode-button {
     min-height: 34px;
@@ -847,7 +847,7 @@
 .reader-action-group {
   display: flex;
   align-items: end;
-  gap: 11px;
+  gap: 12px;
   min-width: 0;
 }
 .reader-navigation-group {
@@ -857,7 +857,7 @@
 .reader-selectors {
   display: flex;
   align-items: end;
-  gap: 11px;
+  gap: 12px;
   min-width: 0;
   flex: 0 1 auto;
 }
@@ -1046,7 +1046,7 @@
     z-index: var(--z-popover);
     left: calc(100% + 10px);
     top: 50%;
-    padding: 7px 9px;
+    padding: 8px 8px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--surface);
@@ -1089,7 +1089,7 @@
     box-shadow: none;
   }
   .bible-page-header .bible-search {
-    gap: 7px;
+    gap: 8px;
     max-height: 700px;
     overflow: hidden;
     padding-top: 8px;
@@ -1106,7 +1106,7 @@
       border-width 0s linear 180ms;
   }
   .bible-search-options {
-    gap: 5px 9px;
+    gap: 4px 8px;
   }
   .hymn-page-header .hymn-catalog-controls {
     grid-template-columns: minmax(0, 1fr);
@@ -1197,7 +1197,7 @@
     display: none;
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 8px;
     align-items: end;
     padding: 12px;
     border: 1px solid var(--line);
@@ -1470,7 +1470,7 @@ body.gys-viewer-active {
   min-width: 0;
   justify-items: center;
   gap: 2px;
-  padding: 5px 12px;
+  padding: 4px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -1537,7 +1537,7 @@ body.gys-viewer-active {
     white-space: nowrap;
   }
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title {
-    padding-inline: 7px;
+    padding-inline: 8px;
   }
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
     font-size: 0.6875rem;
@@ -1546,13 +1546,13 @@ body.gys-viewer-active {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
-    padding: 9px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--line);
   }
   .pdf-reader-hymn .pdf-page-navigation {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 7px;
+    gap: 8px;
   }
   .pdf-reader-hymn .pdf-page-navigation > button:first-child {
     grid-column: 1;
@@ -1598,7 +1598,7 @@ body.gys-viewer-active {
   .pdf-reader-hymn .pdf-advanced-controls {
     display: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 8px;
     padding: 10px;
     border: 1px solid var(--line);
     border-radius: 10px;
@@ -1745,7 +1745,7 @@ body.gys-viewer-active {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-height: 36px;
   padding: 6px 14px;
   border-radius: 8px;
@@ -1775,7 +1775,7 @@ body.gys-viewer-active {
   min-width: 18px;
   height: 18px;
   place-items: center;
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: 999px;
   background: var(--blue-soft);
   color: var(--blue);
@@ -1851,7 +1851,7 @@ body.gys-viewer-active {
 }
 .kidung-empty-state {
   justify-items: center;
-  padding: 34px 20px;
+  padding: 32px 20px;
   text-align: center;
 }
 .kidung-playlist-list {
@@ -1913,7 +1913,7 @@ body.gys-viewer-active {
   color: var(--ink);
 }
 .kidung-playlist-song small {
-  margin-top: 3px;
+  margin-top: 4px;
   color: var(--muted);
   font-size: 0.6875rem;
 }
@@ -2252,10 +2252,10 @@ body.gys-viewer-active {
   }
   .kidung-playlist-list li {
     grid-template-columns: 1fr;
-    gap: 9px;
+    gap: 8px;
   }
   .kidung-playlist-actions {
-    padding-left: 42px;
+    padding-left: 40px;
   }
   .media-surface.is-kidung-media:not(.is-minimized) {
     right: 10px;
@@ -2403,7 +2403,7 @@ body.gys-viewer-active {
   }
   .navigation-shell .nav-item {
     min-height: 44px;
-    padding: 9px 8px;
+    padding: 8px 8px;
   }
   .main-content {
     padding: 40px clamp(20px, 4vw, 38px) 100px;
@@ -2415,7 +2415,7 @@ body.gys-viewer-active {
     display: none;
   }
   .app-frame.is-reader-route .reader-context-actions {
-    gap: 5px;
+    gap: 4px;
   }
   .app-frame.is-reader-route .reader-toolbar {
     padding: 10px 12px;
@@ -2440,7 +2440,7 @@ body.gys-viewer-active {
   }
   .home-grid {
     gap: 18px;
-    padding-top: 26px;
+    padding-top: 24px;
   }
   .verse-panel,
   .continue-panel,
@@ -2624,7 +2624,7 @@ body.gys-viewer-active {
     min-height: 140px;
   }
   .sauh-card-content {
-    margin-top: 70px;
+    margin-top: 72px;
     padding: 14px 16px 16px;
     gap: 8px;
   }
@@ -2726,7 +2726,7 @@ body.gys-viewer-active {
     min-height: 44px;
     max-width: 100%;
     gap: 8px;
-    padding-inline: 11px;
+    padding-inline: 12px;
     font-size: 0.75rem;
   }
   .text-button {
@@ -2755,7 +2755,7 @@ body.gys-viewer-active {
     max-width: 100%;
   }
   .search-row {
-    gap: 7px;
+    gap: 8px;
     grid-template-columns: minmax(0, 1fr) auto;
   }
   .search-row input,
@@ -2803,7 +2803,7 @@ body.gys-viewer-active {
     grid-template-columns: minmax(0, 1fr) minmax(112px, 0.45fr);
   }
   .hymn-page-heading .date-line {
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
   .hymn-catalog-shell,
   .bible-reader-shell {
