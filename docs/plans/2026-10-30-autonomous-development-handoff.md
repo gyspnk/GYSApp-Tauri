@@ -1401,6 +1401,31 @@ diperbarui lewat job CI `41260654618` (hanya `kidung-390/768/1440` yang berubah
 dari 149 berkas; 320 tetap karena kolom judul sudah penuh) dan diadopsi;
 `test:e2e:core` **92/92 (5,0 m)** pada build yang sama.
 
+### Tombol skor di toolbar Kidung (1 Nov)
+
+Di toolbar pembaca, tombol **PDF** tampil sebagai kotak biru muda 44–56 px
+(radius 12) sementara **MIDI**, **Chord**, dan **Lainnya** di baris yang sama
+transparan tanpa bingkai (radius 10–12, tinggi 44 px di ponsel). Penyebabnya
+aturan `!important` di `apps/web/src/kidung-responsive.css` yang berlaku untuk
+dua chrome sekaligus, plus gaya `reader-mode-button` di `apps/web/src/app-design.css`.
+Satu baris aksi berisi empat peran yang setara, jadi tampilan berbeda itu terbaca
+sebagai tombol "aktif" padahal mode yang aktif adalah teks.
+
+Perbaikan: blok `!important` dipersempit ke chrome PDF saja
+(`.gys-pdf-overlay .hymn-pdf-text-toggle`), dan tombol skor di toolbar teks
+memakai aturan baru
+`.hymn-detail-page:not(.is-pdf-viewer) .hymn-text-toolbar .hymn-partitur-toggle`
+yang menyamakan lebar otomatis, tinggi minimum 44 px, radius, latar transparan,
+dan hover biru muda dengan tombol sebelahnya. Di dalam penampil PDF tombol itu
+tetap berupa kotak biru karena di sana ia memang salah satu tombol chrome.
+
+Terukur pada build yang sama (1440/390): keempat tombol kini **64–77 × 32 px**
+(desktop) dan **44 × 44 px** (ponsel), latar transparan, bingkai 0, radius sama
+dengan tetangganya; sebelumnya PDF 44–56 px biru sementara tiga lainnya
+transparan. Verifikasi: `direct-manipulation`, `hymn-session-mode`,
+`kidung-control-sync`, `kidung-density`, `kidung-offline`, `kidung-style-behavior`
+**23/23 (1,5 m)**; baseline pembaca diperbarui lewat job CI.
+
 ### Skala jarak (1 Nov)
 
 Satu-satunya dimensi konsistensi yang tersisa. Inventaris nilai literal pada

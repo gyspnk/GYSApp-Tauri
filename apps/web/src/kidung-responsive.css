@@ -227,10 +227,9 @@
     height: 44px;
   }
 }
-/* Reader mode toggles share one literal metric. The reader context shrinks
-   --reader-control to 32px, so a literal clamp keeps both chromes equal and
-   inside the 44-56px touch range. */
-.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle,
+/* The PDF/score toggle in the chrome keeps one literal metric. The reader
+   context shrinks --reader-control to 32px, so a literal clamp keeps the chrome
+   toggles equal and inside the 44-56px touch range. */
 .hymn-detail-page .gys-pdf-overlay .hymn-pdf-text-toggle {
   width: clamp(44px, 4vw, 56px) !important;
   height: clamp(44px, 4vw, 56px) !important;
@@ -244,9 +243,36 @@
      toggles use the darker navy like the shell's other small labels. */
   color: var(--navy) !important;
 }
-.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle svg {
-  width: 18px !important;
-  height: 18px !important;
+/* In the lyrics toolbar the score button is one action among peers (MIDI,
+   Chord, Lainnya), so it reads as the same pill instead of a lone filled tile. */
+.hymn-detail-page:not(.is-pdf-viewer) .hymn-text-toolbar .hymn-partitur-toggle {
+  width: auto;
+  height: auto;
+  min-width: 44px;
+  min-height: var(--control-hit, 44px);
+  flex: 0 0 auto;
+  padding: 0 12px;
+  gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--navy);
+}
+.hymn-detail-page:not(.is-pdf-viewer)
+  .hymn-text-toolbar
+  .hymn-partitur-toggle:hover:not(:disabled) {
+  background: var(--blue-soft);
+}
+.hymn-detail-page:not(.is-pdf-viewer)
+  .hymn-text-toolbar
+  .hymn-partitur-toggle
+  svg {
+  width: 18px;
+  height: 18px;
 }
 .hymn-detail-page .hymn-pdf-text-toggle .reader-mode-glyph {
   font-size: 1.125rem !important;
