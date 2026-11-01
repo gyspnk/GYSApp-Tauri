@@ -1787,6 +1787,23 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Satu bingkai, bukan bingkai di dalam bingkai (1 Nov)
+
+Bagian pengaturan yang terbuka masih menumpuk kartu di dalam kartu: kartu
+rincian di panel Data Offline memakai `border-top: 3px solid var(--blue)` di
+atas radius 16 px (terbaca seperti garis biru terpotong), dan panel Audio
+memakai kotak putih berbingkai sendiri. Keduanya sekarang datar di dalam
+bagiannya: `.more-page .more-setting-section .more-card` menjadi bagian
+berpemisah _hairline_ (`padding: 16px 0`, tanpa bingkai/latar), dan
+`.audio-settings-inline` ikut datar. Di layar ≥600 px baris audio dibatasi
+**620 px** dengan grid `minmax(0, 1fr) 200px` supaya label dan kontrol tidak
+berjauhan; di ≤599 px label dan kontrol bertumpuk dan slider memakai lebar
+penuh. Terukur: 390 px baris 84 px, select/range **334 px**, 1440 px baris
+620 px (label 404 / kontrol 200), `scrollWidth == clientWidth` di 390 dan
+1440 untuk section data/audio/backup. Bukti: `more-section-deeplink`,
+`more-device-data`, `settings-data-integrity`, `accessibility`,
+`responsive-touch-targets` **43/43 (1,5 m)**, plus tangkapan layar 390/1440.
+
 ### Anggaran boot Alkitab (1 Nov)
 
 Dua tes `smoke` gagal di core run di bawah tekanan host: menunggu judul

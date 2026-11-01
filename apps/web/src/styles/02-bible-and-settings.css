@@ -2882,6 +2882,7 @@
 .audio-setting-row + .audio-setting-row {
   border-top: 1px solid var(--line);
 }
+
 .audio-setting-select {
   min-width: 160px;
   max-width: 60%;
@@ -3010,4 +3011,49 @@
   margin-top: 2px;
   color: var(--ink);
   overflow-wrap: anywhere;
+}
+
+/* On phones the label and the slider cannot share a line without the value
+   breaking off it; stack them and let the range take the full width. */
+@media (max-width: 599px) {
+  .audio-settings-inline .audio-setting-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-block: 8px;
+  }
+
+  .audio-settings-inline .audio-setting-row input[type="range"] {
+    width: 100%;
+  }
+
+  .audio-settings-inline .audio-setting-select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+/* A settings row reads best when its label and control sit near each other;
+   on wide screens the row is capped instead of stretching across the page. */
+@media (min-width: 600px) {
+  .more-page .more-setting-section .audio-settings-inline {
+    max-width: 620px;
+  }
+
+  .more-page .more-setting-section .audio-setting-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .more-page .more-setting-section .audio-setting-row input[type="range"] {
+    width: 100%;
+  }
+
+  .more-page .more-setting-section .audio-setting-select {
+    width: 100%;
+    max-width: none;
+  }
 }

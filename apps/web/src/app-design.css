@@ -1238,6 +1238,29 @@
   background: transparent;
 }
 
+/* Detail panels inside an expanded settings section are sections, not cards
+   inside a card: one hairline between them, no second frame, and no blue
+   accent stripe that reads as a clipped border on a rounded card. */
+.more-page .more-setting-section .more-card {
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.more-page .more-setting-section .more-card:first-child {
+  border-top: 0;
+}
+
+.more-page .more-setting-section .audio-settings-inline {
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .catalog-search .empty-state,
 .literature-page > .empty-state {
   display: grid;
