@@ -1465,6 +1465,15 @@ tidak muncul, lalu lulus 4,0 dtk setelah dipulihkan. Tes regresi baru di
 `apps/web/e2e/kidung-usability.spec.ts` (“empty Kidung search explains itself and
 clears in one tap”). Bundle tetap **179,8/180,0 KiB**.
 
+CI menangkap satu regresi sesudahnya: panel itu juga dirender saat korpus lirik
+masih dimuat, sehingga `apps/web/e2e/reader-data-loading.spec.ts` menemukan
+**dua** `[role=status]` di `.hymn-catalog-shell` (status pemuatan + panel kosong)
+— dan panel “tidak ada hasil” memang tidak benar selama korpus belum datang.
+Panel sekarang ditahan sampai korpus siap
+(`filtered.length === 0 && (!needsCorpus || corpus || corpusError)`); tes
+`reader-data-loading` + “empty Kidung search” lulus 2/2, panel tetap muncul untuk
+pencarian kosong yang sebenarnya.
+
 ### Tombol skor di toolbar Kidung (1 Nov)
 
 Di toolbar pembaca, tombol **PDF** tampil sebagai kotak biru muda 44–56 px
