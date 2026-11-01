@@ -69,7 +69,7 @@ performa hosted.
 
 ### 2.2 Bundle (gzip, `dist` lokal)
 
-- Initial JS: **179,3 KiB** pada 24 modul + `startup.js` → 0,7 KiB di bawah batas 180,0 KiB (per 31 Okt, `node scripts/check-bundle-budget.mjs`).
+- Initial JS: **179,8 KiB** pada 24 modul + `startup.js` → **0,2 KiB** di bawah batas 180,0 KiB (per 1 Nov, `pnpm verify:bundle`). Sisa ini tidak cukup untuk fitur baru: kode JS harus masuk chunk rute atau disertai eviction, bukan menaikkan anggaran.
 - Chunk utama `index-*.js`: **84,5 KiB** (271,9 KiB mentah) → jauh di bawah batas 250 KiB.
 - Runtime besar tetap lazy: `pdf.worker.min` 365,3 KiB, `pdf-document-cache` 123,6 KiB, `bible-search-worker` 23,0 KiB.
 - Kesimpulan: budget tidak dilanggar; tidak ada pekerjaan optimisasi mendesak dari angka ini.
