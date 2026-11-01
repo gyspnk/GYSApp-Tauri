@@ -1787,6 +1787,15 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Flaky login WhatsApp: popup yang belum terpasang (1 Nov)
+
+Core run `820bebb` menandai “a WhatsApp attempt that really fails…” sebagai
+flaky: `page.waitForEvent("popup")` tidak pernah terpenuhi karena klik
+mendarat sebelum handler React terpasang (host lambat, hidrasi tertinggal).
+Tes sekarang menunggu popup maksimal 10 detik dan mengulang **satu kali** klik;
+jika tombolnya benar-benar rusak, percobaan kedua tetap gagal. Tiga kali
+berturut-turut lulus (10,2 / 9,6 / 8,9 detik).
+
 ### Bukti core dan baseline untuk panel datar (1 Nov)
 
 `pnpm test:e2e:core` pada `820bebb`: **101 lulus + 1 flaky** (egys-v1

@@ -415,11 +415,20 @@ test("a rejected confirm still signs in when the WhatsApp reply already created 
     route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
   );
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
-  const messagingTab = page.waitForEvent("popup");
-  await page
-    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
-    .click();
-  await messagingTab;
+  // Hydration can lag behind the first paint on a loaded host; a click that
+  // lands before the handler is attached opens nothing. One retry is enough,
+  // and a genuinely broken button still fails on the second attempt.
+  const openLogin = async () => {
+    const popup = page
+      .waitForEvent("popup", { timeout: 10_000 })
+      .catch(() => null);
+    await page
+      .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+      .click();
+    return popup;
+  };
+  const messagingTab = (await openLogin()) ?? (await openLogin());
+  if (!messagingTab) throw new Error("WhatsApp login never opened a window");
   await expect(page.getByRole("timer")).toHaveAttribute(
     "aria-label",
     /Menunggu pesan WhatsApp/,
