@@ -782,6 +782,10 @@
 }
 .reader-pagination {
   display: flex;
+  /* At 200 % text both chapter buttons no longer fit one row; wrapping keeps
+     the next/previous controls reachable instead of hiding one behind
+     `overflow: hidden` on the reader. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;

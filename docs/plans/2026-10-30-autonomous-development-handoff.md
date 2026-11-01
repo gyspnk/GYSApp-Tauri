@@ -1402,6 +1402,25 @@ screenshot 390 px `/suara` dan detail menunjukkan kartu artikel dengan sudut
 24 px yang konsisten. Baseline visual diambil ulang lewat job CI karena
 perubahan radius menyentuh kartu artikel.
 
+### Paginasi Alkitab pada teks 200 % (1 Nov)
+
+`.reader-pagination` adalah flex satu baris tanpa `flex-wrap`; pada teks 200 %
+isinya menjadi **464 px** di dalam reader 320 px yang memakai
+`overflow: hidden`, sehingga tombol “Berikutnya” tidak bisa dijangkau sama
+sekali. Ditambahkan `flex-wrap: wrap` pada aturan dasar: pada 320/390 px kedua
+tombol kembali terlihat (di 390 px bertumpuk dua baris), pada 1440 px tetap satu
+baris. Diukur: `scrollWidth === clientWidth` di ketiga lebar.
+
+Verifikasi: `accessibility` + `smoke` **61/61**.
+
+### Ikon aksen kustom (1 Nov)
+
+Swatch “warna kustom” memakai emoji 🎨, yang pada host tanpa font emoji
+(Chromium minimal) tampil sebagai kotak tofu — terlihat jelas di screenshot 390
+px. Diganti dengan `Icon name="tune"` (13 px) dari set ikon yang sudah dipakai
+seluruh UI: warna putih saat lingkaran terisi warna aksen, `--muted` saat
+transparan. Verifikasi: `appearance-preferences` + `accessibility` **32/32**.
+
 ### Teks 200 % di navigasi dan tombol e-GYS (1 Nov)
 
 Audit teks 200 % (root font-size 200 %, 320/390 px) menemukan dua tempat yang

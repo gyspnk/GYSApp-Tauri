@@ -1378,9 +1378,12 @@ export function MorePage({
                         backgroundColor: !selectedAccent
                           ? accentColor
                           : "transparent",
+                        // Filled state carries the chosen colour; the glyph has
+                        // to stay legible on any of them, so it flips to white.
+                        color: !selectedAccent ? "#fff" : "var(--muted)",
                       }}
                     >
-                      🎨
+                      <Icon name="tune" size={13} aria-hidden />
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}
