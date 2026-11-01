@@ -1571,6 +1571,17 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Baseline setelah placeholder & baris ayat (1 Nov)
+
+Regenerasi CI (`41268972672`, 149 snapshot) menghasilkan **7** perbedaan, semuanya
+di rute Alkitab: `bible-search-390`, `bible-search-1440`, `bible-search-filters-1440`,
+`bible-notes-390`, `bible-390`, `bible-768`, `bible-1440`. Perbedaan berasal dari dua
+perubahan yang memang disengaja — warna placeholder kolom pencarian (abu-abu bawaan
+peramban → `--muted`) dan baris ayat pertama yang kini dicat langsung (perbaikan
+CLS). Dibandingkan piksel: 362–8.582 piksel berbeda per berkas (≤0,7 % dari
+gambar), tanpa perubahan tata letak yang terlihat; versi lama dan baru
+diperiksa berdampingan pada 1440×900.
+
 ### Warna placeholder (1 Nov)
 
 Kolom pencarian di panel “Temukan sesuatu” memakai abu-abu bawaan peramban
