@@ -1571,6 +1571,24 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Satu kalimat galat untuk semua panel data (1 Nov)
+
+Audit keadaan galat (8 rute × 4 tema, semua permintaan data diblokir) tidak
+menemukan pelanggaran axe, tetapi dua panel menampilkan pesan mentah peramban:
+katalog Kidung dan **paket Alkitab** sama-sama menulis “Failed to fetch”.
+Sekarang kalimat “Periksa koneksi lalu coba lagi.” dipakai bersama oleh panel
+Literatur, katalog Kidung, dan paket Alkitab lewat kunci `common.errorBody`
+(sebelumnya `literature.errorBody`; hanya diganti nama, tanpa biaya bundle).
+Pesan asli tetap terekam untuk diagnosis: `kidung.catalog.error`,
+`kidung.search.error`, dan `bible.pack.error` lewat `recordDiagnostic`.
+Pencarian Alkitab mempertahankan kalimat khususnya
+(`bible.searchUnavailable`).
+
+Bukti: `apps/web/e2e/smoke.spec.ts` (uji pemulihan paket) kini juga memastikan
+panel memuat kalimat tersebut dan **tidak** memuat “Failed to fetch”;
+`kidung-catalog-error` + `literature-offline` + `bible-annotations` + `smoke`
+**49/49 (3,0 mnt)**; bundle tetap 179,8 KiB.
+
 ### Pesan galat katalog Kidung (1 Nov)
 
 Audit keadaan galat (8 rute × 4 tema, semua permintaan data diblokir) menemukan

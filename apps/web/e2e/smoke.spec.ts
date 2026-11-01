@@ -242,9 +242,10 @@ test.describe("offline Bible recovery", () => {
     });
 
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("alert")).toContainText(
-      "Paket Alkitab belum tersedia",
-    );
+    const alert = page.getByRole("alert");
+    await expect(alert).toContainText("Paket Alkitab belum tersedia");
+    await expect(alert).toContainText("Periksa koneksi lalu coba lagi.");
+    await expect(alert).not.toContainText("Failed to fetch");
     await page.getByRole("button", { name: "Coba lagi" }).click();
     await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
       {

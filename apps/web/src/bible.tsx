@@ -269,6 +269,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const [notesPopupOpen, setNotesPopupOpen] = useState(false);
   const [packAttempt, setPackAttempt] = useState(0);
+  useEffect(() => {
+    if (packState.status === "error")
+      recordDiagnostic(
+        "warn",
+        "bible.pack.error",
+        new Error(packState.message),
+      );
+  }, [packState]);
   const [quickNavDrag, setQuickNavDrag] = useState<
     QuickNavDragState | undefined
   >(undefined);
@@ -1136,11 +1144,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     } catch (error: unknown) {
       if (!controller.signal.aborted) {
         recordDiagnostic("error", "bible.search", error);
-        setSearchError(
-          error instanceof Error
-            ? error.message
-            : translate(locale, "bible.searchUnavailable"),
-        );
+        setSearchError(translate(locale, "bible.searchUnavailable"));
       }
     } finally {
       if (searchAbortRef.current === controller) {
@@ -1612,7 +1616,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       {packState.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "bible.offlineError")}</strong>
-          <span>{packState.message}</span>
+          <span>{translate(locale, "common.errorBody")}</span>
           <button
             className="primary-button"
             type="button"

@@ -97,7 +97,7 @@ export function HymnCatalog({
       (error) => {
         if (!active) return;
         recordDiagnostic("warn", "kidung.search.error", error);
-        setCorpusError(translate(locale, "literature.errorBody"));
+        setCorpusError(translate(locale, "common.errorBody"));
       },
     );
     return () => {
@@ -268,7 +268,7 @@ export function HymnCatalog({
       {state.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
-          <span>{translate(locale, "literature.errorBody")}</span>
+          <span>{translate(locale, "common.errorBody")}</span>
         </div>
       )}
       {state.status === "ready" && (

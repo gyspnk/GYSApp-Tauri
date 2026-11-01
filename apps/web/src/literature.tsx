@@ -550,7 +550,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
       {status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "literature.errorTitle")}</strong>
-          <span>{translate(locale, "literature.errorBody")}</span>
+          <span>{translate(locale, "common.errorBody")}</span>
         </div>
       )}
       {status === "ready" && !filtered.length && (
