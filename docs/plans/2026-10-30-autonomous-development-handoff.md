@@ -1781,6 +1781,12 @@ Anggaran tinggi panel desktop di `kidung-density`
 dinaikkan 230 → 280 px dengan komentar karena bidang kontrol kini 44 px di
 semua permukaan (bukan mengecilkan teks).
 
+Bukti tambahan putaran 38: matriks `apps/web/e2e/midi-control-unification.spec.ts`
+diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji —
+**8/8 lulus (34,6 dtk)**, dan tier core **101/101 (2,9 mnt)**. Baseline visual dari
+CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
+grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
+
 ### Satu ukuran bidang MIDI untuk semua permukaan (1 Nov, putaran 38)
 
 Setelah transport disatukan, pengukuran ulang pada 1440 dan 390 menunjukkan
