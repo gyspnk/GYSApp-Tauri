@@ -38,10 +38,12 @@ export function HymnCatalog({
   locale,
   state,
   musicLock,
+  onRetry,
 }: {
   locale: Locale;
   state: CatalogState<HymnMetadata>;
   musicLock?: UpstreamMusicLock;
+  onRetry?: () => void;
 }) {
   useReadinessMarker("gys-hymn-catalog-ready", state.status === "ready");
   const navigate = useNavigate();
@@ -269,6 +271,11 @@ export function HymnCatalog({
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
           <span>{translate(locale, "common.errorBody")}</span>
+          {onRetry && (
+            <button className="primary-button" type="button" onClick={onRetry}>
+              {translate(locale, "home.retry")}
+            </button>
+          )}
         </div>
       )}
       {state.status === "ready" && (

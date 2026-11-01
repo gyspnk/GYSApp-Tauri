@@ -1589,6 +1589,15 @@ panel memuat kalimat tersebut dan **tidak** memuat “Failed to fetch”;
 `kidung-catalog-error` + `literature-offline` + `bible-annotations` + `smoke`
 **49/49 (3,0 mnt)**; bundle tetap 179,8 KiB.
 
+Panel katalog Kidung juga belum punya jalan pulih: satu-satunya cara adalah
+memuat ulang halaman. `useHymnData` di `apps/web/src/kidung-page.tsx` sekarang
+mengembalikan `retry()` yang menaikkan penghitung muat ulang, dan panel galat
+menampilkan tombol **Coba lagi** (`primary-button`, sama seperti panel paket
+Alkitab). Uji `kidung-catalog-error` diperluas: blokir berkas → panel muncul →
+pemblokiran dilepas → klik Coba lagi → baris kidung pertama tampil (lulus
+4,4 dtk); `kidung-density` + `kidung-section-navigation` + `reader-data-loading`
+**13/13**.
+
 ### Pesan galat katalog Kidung (1 Nov)
 
 Audit keadaan galat (8 rute × 4 tema, semua permintaan data diblokir) menemukan

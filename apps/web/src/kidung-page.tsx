@@ -63,6 +63,7 @@ function useHymnData<T extends HymnMetadata>(
     return cached ? { status: "ready", items: cached } : { status: "loading" };
   });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     let generation = 0;
@@ -110,7 +111,7 @@ function useHymnData<T extends HymnMetadata>(
         onAssetsChanged,
       );
     };
-  }, [loadCore, parse]);
+  }, [loadCore, parse, reload]);
   useEffect(() => {
     if (!loadMusicLock) return;
     const controller = new AbortController();
@@ -123,7 +124,11 @@ function useHymnData<T extends HymnMetadata>(
       });
     return () => controller.abort();
   }, [loadMusicLock]);
-  return { catalog, musicLock };
+  return {
+    catalog,
+    musicLock,
+    retry: () => setReload((value) => value + 1),
+  };
 }
 
 function KidungReaderDataPage({
@@ -160,7 +165,7 @@ function KidungCatalogDataPage({
   locale: Locale;
   playlist: boolean;
 }) {
-  const { catalog, musicLock } = useHymnData(
+  const { catalog, musicLock, retry } = useHymnData(
     !playlist,
     loadCoreHymnMetadata,
     parseHymnMetadata,
@@ -170,6 +175,7 @@ function KidungCatalogDataPage({
     <HymnCatalog
       locale={locale}
       state={catalog}
+      onRetry={retry}
       {...(musicLock ? { musicLock } : {})}
     />
   );
