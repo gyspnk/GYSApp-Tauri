@@ -214,7 +214,7 @@ test("offline reader packs open without a network request", async ({
     page.getByRole("heading", { name: "Alkitab", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page.getByRole("link", { name: /Iman/ }).first().click();
   await expect(
@@ -362,7 +362,7 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -407,7 +407,7 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
 test("Bible search narrows results to a testament", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -473,7 +473,7 @@ test("Bible search phrase and whole-word filters work offline", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const appOrigin = new URL(page.url()).origin;
@@ -521,7 +521,7 @@ test("Bible search matches book names from the offline pack", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   // A bare book name must surface verses from that book even though other
   // books also mention the name in their verse text (Matius 3:1 begins with
@@ -558,9 +558,10 @@ test("Bible search matches book names from the offline pack", async ({
 test("Bible typed references match and open the exact verse", async ({
   page,
 }) => {
+  test.slow();
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -579,9 +580,10 @@ test("Bible typed references match and open the exact verse", async ({
 });
 
 test("Bible reader typography persists across reloads", async ({ page }) => {
+  test.slow();
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const verseText = page.locator(".verse-text").first();
   const initialSize = Number(
@@ -608,7 +610,7 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
   // The preference survives a full reload.
   await page.reload();
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await expect
     .poll(() =>
@@ -631,7 +633,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const handle = page.locator(".quick-nav-handle");
   const box = await handle.boundingBox();
@@ -724,7 +726,7 @@ test("Bible drag release defaults incomplete book and chapter choices to verse o
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const dragTo = async (value: number) => {
@@ -787,7 +789,7 @@ test("Bible blocks native content actions while retaining verse notes", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const verse = page.locator(".verse-text").first();
   await expect(verse).toHaveCSS("user-select", "none");
@@ -1578,7 +1580,7 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const handle = page.getByRole("button", {
     name: "Geser judul untuk berpindah pasal",
@@ -1621,7 +1623,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   // Enable split view via Hamburger menu
@@ -1751,7 +1753,7 @@ test("Bible split keeps the reader usable when a secondary pack is unavailable",
   });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const secondaryPane = page.locator(".bible-pane-secondary");

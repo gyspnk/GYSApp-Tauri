@@ -1787,6 +1787,17 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Anggaran boot Alkitab (1 Nov)
+
+Dua tes `smoke` gagal di core run di bawah tekanan host: menunggu judul
+“Kejadian 1” hanya 15 detik, sementara paket TB 7,9 MB harus di-fetch dan
+di-parse saat RAM tinggal ~2 GB. Keempat belas penantian boot
+`getByRole("heading", { name: /Kejadian 1/ })` sekarang memakai **30 detik**,
+dan dua tes yang memuat paket dari keadaan dingin (“Bible typed references…”,
+“Bible reader typography…”) ditandai `test.slow()` sehingga anggaran tesnya
+tiga kali lipat. Bukti: keduanya lulus lagi (11,7 detik) dan core run
+berikutnya dipakai sebagai gerbang.
+
 ### Desimal mengikuti bahasa (1 Nov)
 
 “Kecepatan Baca · 0.9×” dan “Tinggi Nada (Pitch) · 1.0” memakai titik di
