@@ -442,6 +442,9 @@ test("a profile that lags the confirmation is retried instead of failing", async
   page,
   context,
 }) => {
+  // The popup + socket handshake + two profile reads exceed the 40 s default
+  // once the two-worker host is busy; the assertions stay the same.
+  test.slow();
   let profileCalls = 0;
   await page.route("**/api/v1/account/profile", (route) => {
     profileCalls++;
