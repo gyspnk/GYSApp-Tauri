@@ -1124,7 +1124,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
     left: 0;
     right: 0;
-    bottom: 100%;
+    /* One pixel of air: the dock's own rounding must never overlap the sheet. */
+    bottom: calc(100% + 1px);
     width: auto;
     padding: 14px 12px 10px;
     border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
