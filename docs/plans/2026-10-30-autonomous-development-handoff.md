@@ -1571,6 +1571,26 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Lembar pengaturan baca ponsel: tanpa kotak di dalam kotak (1 Nov)
+
+Lembar “Lainnya” menampilkan grup “Teks & jarak” dan “Musik & chord” sebagai
+kartu berbingkai di dalam sheet, dan baris ukuran huruf membungkus tujuh
+kontrol dengan lebar berbeda (42/46/54 px) plus tombol reset yang tampak
+berbeda. Sekarang:
+
+- grup memakai satu garis rambut sebagai pemisah, tanpa bingkai/latar kartu;
+- judul grup 44 px, gunakan `--ink` (bukan biru) agar terbaca sebagai label;
+- baris ukuran huruf menjadi **grid 3 × 2**: `A− | 18 px | A+` lalu
+  `−Spasi | +Spasi | reset`, semuanya **106×44 px** seragam;
+- label “TEKS” dihapus (judul grup sudah menyebutkannya);
+- reset memakai kotak yang sama dengan empat pengatur lain;
+- sheet dibatasi `max-height: min(72dvh, 620px)` dengan gulir internal supaya
+  lirik tidak tertutup seluruhnya saat panel terbuka.
+
+Bukti: panel 390 px menjadi 360×388 dengan `scroll=340`; tinggi grup
+154/45 px (yang tertutup tetap 44 px agar bisa disentuh); tombol seragam
+106×44; uji fungsional kidung + aksesibilitas dijalankan setelah perubahan.
+
 ### Panel musik desktop: satu kontrol satu baris (1 Nov)
 
 Panel “Lanjutan” di dock desktop masih menumpuk label “Instrumen MIDI” di atas

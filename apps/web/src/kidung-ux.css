@@ -1535,3 +1535,80 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 60px;
 }
+
+/* The phone reader sheet is one flat surface: sections are separated by a
+   hairline, not by a card inside a card. */
+@media (max-width: 599px) {
+  .hymn-detail-page .hymn-more-actions-panel {
+    max-height: min(72dvh, 620px);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .hymn-more-actions-panel .reader-settings-group {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    border-top: 1px solid var(--line);
+  }
+  .hymn-more-actions-panel .reader-settings-group:first-of-type {
+    border-top: 0;
+  }
+  .hymn-more-actions-panel .reader-settings-group-title {
+    justify-content: space-between;
+    padding: 0 2px;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 0.8125rem;
+    font-weight: 650;
+  }
+  .hymn-more-actions-panel .reader-settings-group-body {
+    gap: 8px;
+    padding: 4px 2px 10px;
+    border-top: 0;
+    background: transparent;
+  }
+}
+
+@media (max-width: 599px) {
+  .hymn-more-actions-panel .reader-preferences {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 8px;
+  }
+  .hymn-more-actions-panel .reader-preferences > span:first-child {
+    display: none;
+  }
+  .hymn-more-actions-panel .reader-preferences > button,
+  .hymn-more-actions-panel .reader-preferences > output {
+    width: 100%;
+    min-height: var(--control-hit, 44px);
+    margin: 0;
+  }
+  .hymn-more-actions-panel .reader-preferences > output {
+    display: grid;
+    place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .hymn-more-actions-panel .reader-settings-group > summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--control-hit, 44px);
+  }
+}
+
+@media (max-width: 599px) {
+  /* Reset sits in the same row as the four adjusters, so it wears the same box. */
+  .hymn-more-actions-panel .reader-preferences > .text-button {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink);
+    justify-content: center;
+  }
+  .hymn-more-actions-panel .reader-preferences > .text-button:hover {
+    background: var(--blue-soft);
+    border-color: var(--blue);
+  }
+}
