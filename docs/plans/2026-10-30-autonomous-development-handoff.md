@@ -1571,6 +1571,16 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Kontrol musik di ponsel (1 Nov)
+
+Setelah lembar pengaturan diratakan, baris kontrol musik masih tidak rata:
+`C` (108 px) berdampingan dengan `− 0 + reset` (222 px) dengan nilai transposisi
+selebar **82 px** untuk satu digit, pemilih instrumen berlatar biru sementara dua
+pemilih lain putih, dan jarak antar-baris 8 px. Sekarang: pemilih instrumen
+memakai permukaan putih yang sama, nilai transposisi **44×44** (tabular), tombol
+`−/+` 44 px, jarak baris 10 px, dan pemilih kunci minimal 96 px. Diukur ulang:
+baris transposisi 222 px tanpa luapan, grup musik 334×94, panel tidak meluap.
+
 ### Panel “Lainnya” desktop jadi menu (1 Nov)
 
 Di desktop panel “Lainnya” masih memakai tata letak lembar ponsel: lima tombol
