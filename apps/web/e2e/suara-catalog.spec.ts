@@ -143,8 +143,9 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
               const caption = card
                 .querySelector(".suara-card-content")!
                 .getBoundingClientRect();
+              const coverRatio = media.width / media.height;
               return (
-                media.height === 112 &&
+                Math.abs(coverRatio - 16 / 9) <= 0.05 &&
                 caption.top >= media.bottom - 1 &&
                 caption.bottom <= card.getBoundingClientRect().bottom + 1
               );

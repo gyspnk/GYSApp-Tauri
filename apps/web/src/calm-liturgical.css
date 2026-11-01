@@ -608,6 +608,13 @@ summary:focus-visible {
   flex: 0 0 112px;
   border-radius: 0;
 }
+/* The library grid is the article shelf, so its covers keep the artwork's
+   own 16:9 shape instead of a 3.4:1 strip that crops faces and headings. */
+.suara-library-grid .suara-card-media {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  flex: 0 0 auto;
+}
 .suara-media-overlay {
   display: none;
 }

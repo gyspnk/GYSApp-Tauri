@@ -1787,6 +1787,19 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Sampul Suara 16:9 di rak perpustakaan (1 Nov)
+
+Kartu Suara memakai pita gambar **112 px** untuk semua lebar, sehingga di
+1440 px sampul 300×166 dirender menjadi **383×112 (3,4:1)** — wajah dan judul
+di dalam gambar terpotong. Aturan baru
+`.suara-library-grid .suara-card-media { aspect-ratio: 16 / 9; height: auto;
+flex: 0 0 auto }` membuat rak perpustakaan menampilkan sampul utuh
+(**383×215** di 1440, **366×206** di 390), sementara rak beranda tetap memakai
+pita 112 px karena di sana gambar berfungsi sebagai thumbnail baris. Kontrak
+`apps/web/e2e/suara-catalog.spec.ts` diperbarui dari “tinggi tepat 112 px”
+menjadi “rasio sampul 16:9 (±0,05) dan keterangan tepat di bawahnya”.
+`suara-catalog` + `accessibility` **23/23 lulus**.
+
 ### Flake dapat kelima: mengukur sel sebelum daftar siap (1 Nov)
 
 `test:e2e:core` untuk `6b76333` memberi **101 lulus / 1 gagal (6,0 mnt)**:
