@@ -1787,6 +1787,16 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Keadaan kosong Sauh di tengah kartu (1 Nov)
+
+Halaman `/sauh` saat gagal memuat menaruh pesan pendek di pojok kiri atas kartu
+52 rem, menyisakan hamparan putih besar, dan baris meta “Sauh Bagi Jiwa ·
+hari ini” menduplikasi judul `h1` yang sama. Sekarang pesan galat/loading
+dipusatkan di dalam kartu (`min-height: 220px; align-content: center;
+justify-items: center; text-align: center`) dan baris meta hanya dirender saat
+status `ready` (saat `h1` berisi judul renungan, bukan judul halaman).
+Diukur: blok galat 784 px di 1440 dan 318 px di 390, judul tetap di kiri.
+
 ### Petunjuk pintasan pencarian di tablet (1 Nov)
 
 Di 768–900 px tombol pencarian di topbar terhimpit sampai **105 px** padahal

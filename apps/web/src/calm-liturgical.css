@@ -649,6 +649,16 @@ summary:focus-visible {
 .sauh-inline-error {
   padding: 0;
 }
+/* The card keeps its 52rem frame while loading or failing, so centre the
+   message instead of parking a short paragraph in the top-left corner. */
+.sauh-page
+  .online-article-card.sauh-article:not(.has-image)
+  :is(.sauh-inline-error, .sauh-inline-loading) {
+  min-height: 220px;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
 .bible-crossref-inline:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 3px;

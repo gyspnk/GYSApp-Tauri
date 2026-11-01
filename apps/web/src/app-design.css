@@ -73,6 +73,9 @@
 }
 .app-frame:not(.is-reader-route) .main-content {
   padding: var(--page-start) var(--page-gutter) var(--page-end);
+  /* Short pages used to end their white surface mid-viewport and expose the
+     frame grey below it; the main surface should always reach the bottom. */
+  min-height: calc(100dvh - var(--topbar-height, 58px));
 }
 .app-frame .main-content:has(.bible-reader) {
   padding: 0;
