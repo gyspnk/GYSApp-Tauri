@@ -1647,7 +1647,11 @@ lirik layar penuh pada 320/390/768/1440; menuntut tinggi 44 px (sentuh) /
 40 px (halus) untuk pembaca & lirik, tinggi 44–56 px untuk dock, radius 12 px
 (transpose dalam 0 karena kontainer yang membulatkan), delapan label kanonik
 yang sama, dan warna instrumen yang identik antara dock dan panel pembaca.
-Lulus 5/5 (26,3 dtk). Anggaran tinggi panel desktop di `kidung-density`
+Lulus 5/5 (26,3 dtk) dan ikut serta di tier core (**99/99, 3,2 mnt**).
+Baseline visual dari CI (`41318433194`, 149 berkas) dibandingkan byte-per-byte:
+**0 perbedaan**, karena grup “Musik & chord” tertutup di snapshot. Bundle turun
+ke **179,6/180,0 KiB** setelah pemangkasan kunci i18n, jadi sisa ruang 0,4 KiB.
+Anggaran tinggi panel desktop di `kidung-density`
 dinaikkan 230 → 280 px dengan komentar karena bidang kontrol kini 44 px di
 semua permukaan (bukan mengecilkan teks).
 
