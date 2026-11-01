@@ -1605,3 +1605,40 @@
   align-items: center;
   min-height: var(--control-hit, 44px);
 }
+
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .hymn-reader-settings-summary {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: var(--control-hit, 44px);
+  padding: 0 8px;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-more-actions-panel
+  .hymn-reader-settings-summary
+  .hymn-action-caption {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hymn-detail-page.is-text-viewer
+  .hymn-text-toolbar
+  .hymn-more-actions-panel
+  .hymn-reader-settings-summary {
+  justify-content: flex-start;
+}
+
+.hymn-more-actions-panel .reader-settings-group > summary::after {
+  content: "▾";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.hymn-more-actions-panel .reader-settings-group[open] > summary::after {
+  transform: rotate(180deg);
+}
