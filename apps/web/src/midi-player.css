@@ -1047,3 +1047,200 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: grid;
   place-items: center;
 }
+
+/* Phone dock: three honest rows — identity (with progress under it), then
+   tempo, transport, and the disclosure, so nothing sits 2 px out of line. */
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: 60px minmax(0, 1fr) 44px 44px;
+    grid-template-areas:
+      "title title minimize close"
+      "tempo playback playback advanced";
+    grid-template-rows: auto 48px;
+    padding: 8px 10px;
+    gap: 4px 6px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    /* app-design.css pins this to the `title` area with !important. */
+    grid-area: 1 / 1 / 2 / -1 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding-right: 96px;
+    min-height: 44px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+    min-height: 24px;
+    line-height: 1.3;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-minimize,
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-close-button {
+    align-self: center;
+    justify-self: end;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-playback-row {
+    grid-area: playback;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    display: contents;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-tempo-toggle {
+    grid-area: tempo;
+    justify-self: start;
+    align-self: center;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ink);
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-tempo-toggle:hover {
+    background: var(--blue-soft);
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+    grid-area: advanced;
+    justify-self: end;
+    align-self: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    width: auto;
+    padding: 14px 12px 10px;
+    border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: none;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized):has(
+      .media-advanced-controls[open]
+    ) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.media-surface.is-kidung-media .media-advanced-panel {
+  gap: 10px;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .control-select-label {
+  overflow: hidden;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 6px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-music-controls
+  .media-instrument-control {
+  grid-column: 1 / -1;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-utility-controls {
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-volume-control
+  input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
+  grid-column: 1 / -1;
+  justify-self: start;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reader mode buttons share one radius with the rest of the controls. */
+.hymn-reader-actions .hymn-action,
+.hymn-reader-actions .reader-mode-button {
+  border-radius: var(--radius-control);
+}
+
+/* The instrument label is a full sentence in two locales; give it the width it
+   needs and let the select take the remainder. */
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-template-columns: max-content minmax(0, 1fr) !important;
+  column-gap: 8px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-instrument-control
+  .control-select-label {
+  overflow: visible;
+  text-overflow: clip;
+}

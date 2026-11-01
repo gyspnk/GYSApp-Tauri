@@ -4969,11 +4969,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* A short stanza no longer floats in the middle of the phone screen: start it
-   under the header so the reading position is predictable. */
+/* A short stanza sits in the optical middle of the reading area; a long hymn
+   still starts at the top because `safe` stops centering once it overflows. */
 @media (max-width: 700px) {
   .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
-    place-content: start center;
+    place-content: safe center;
     padding-block: clamp(16px, 5vw, 32px);
   }
 }

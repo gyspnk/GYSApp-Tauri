@@ -1571,6 +1571,53 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Lirik di tengah & dock MIDI (1 Nov)
+
+Laporan pemilik: lirik Kidung belum center secara vertikal, tombol di mode
+mobile dan MIDI player buruk, panel mengambang MIDI buruk, dan UI terlalu banyak
+“kotak di dalam kotak”.
+
+**Lirik.** Aturan ponsel di `apps/web/src/app-design.css` memakai
+`place-content: start center`, jadi bait pendek menempel di atas dengan ruang
+kosong besar di bawah. Sekarang `place-content: safe center`: bait pendek duduk
+di tengah optis, bait panjang tetap mulai dari atas karena `safe` berhenti
+memusatkan begitu isinya melebihi tinggi. Terukur di 390: hymn-001 sheet
+`52..786`, bait `350..488`, jarak atas = bawah = **298 px**; desktop sama
+(259 px); hymn-200 277/221. Dengan dock terbuka sheet menyusut ke `52..662`
+sehingga tidak ada baris yang tertutup.
+
+**Dock.** Grid ponsel lama `"title title title minimize close"` /
+`"tempo playback playback playback advanced"` menaruh `.media-main` sebagai
+`display: contents`, sehingga meta hanya kebagian area `title` selebar 230 px:
+judul dan progress berdesakan dalam 48 px dan judul meleset 2 px dari tombol.
+Sekarang di ≤720 px ada empat kolom `60 / 1fr / 44 / 44`: baris pertama meta
+(judul + progress, membentang penuh dengan ruang kanan 96 px untuk dua tombol),
+baris kedua `tempo | transport | gear`. `.media-adjustments` menjadi
+`display: contents`, transpor di tengah dengan jarak 8 px, chip BPM dihapus
+(tombol datar tanpa kotak), dan gear tetap satu tombol 44 px. Hasil: dock
+`366×124` di y=648, transpor `95..295` (persis di tengah), tanpa tumpang tindih.
+
+**Panel lanjutan.** Sebelumnya kartu terpisah `350×252` dengan border dan
+bayangan di atas dock — itulah “kotak dalam kotak”. Sekarang lembar yang
+menempel: `left/right: 0; bottom: 100%`, radius `16 16 0 0`, tanpa border bawah,
+dan dock kehilangan radius atas lewat `:has(.media-advanced-controls[open])`
+sehingga keduanya terbaca satu permukaan. Isinya diratakan: tanpa kotak per
+baris, pemisah hairline, instrumen dapat barisnya sendiri dengan label utuh
+(“Instrumen MIDI”, `max-content`), volume dan aksi memakai tombol datar, antrean
+rata kiri dengan angka tabular. Desktop tetap popover `360×229` di kanan.
+
+**Kontrak tes.** `apps/web/e2e/kidung-density.spec.ts` menaikkan plafon tinggi
+dock ponsel **104 → 128 px** (satu baris progress yang disengaja) dan panel
+**276 → 300 px**; plafon desktop tidak berubah (84/230). Nama aksesibel
+“Instrumen MIDI” dipertahankan karena `kidung-control-sync` dan
+`kidung-unified-controls` memakainya sebagai kontrak — label i18n tidak diubah,
+hanya kolom label yang dilebarkan.
+
+**Bukti.** `kidung-density` 4/4, `kidung-unified-controls` 4/4,
+`kidung-control-sync` 2/2, `kidung-style-behavior`, `midi-scrub`,
+`direct-manipulation`, dan `accessibility` — **42/42 lulus (2,0 mnt)**; bundle
+tetap 179,8/180,0 KiB (CSS di luar graf JS awal).
+
 ### Satu bentuk kontrol, satu ukuran ikon (1 Nov)
 
 Sensus kontrol di 11 rute × 2 viewport (390 dan 1440) mengelompokkan tiap
