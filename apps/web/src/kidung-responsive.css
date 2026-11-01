@@ -212,7 +212,7 @@
 .hymn-page .kidung-controls-field .kidung-mode-cycle {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
 }
 @media (pointer: coarse) {
   .hymn-page .kidung-controls-field {

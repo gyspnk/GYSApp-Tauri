@@ -77,6 +77,8 @@
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-card: 16px;
+  /* Buttons, selects and icon buttons share this corner. */
+  --radius-control: 12px;
   --radius-feature: 24px;
   /* Type scale: every absolute font-size uses one of these steps. Density
      tokens (--text-ui/--text-meta in the density layer) stay separate because

@@ -23,6 +23,21 @@ button.text-button {
 
 /* Keep verse numbers visually compact while making the actual button easier
    to acquire with touch, pen, trackpad, or motor-impaired pointer input. */
+/* Link-style text actions are 40 px tall by default; coarse pointers need 44. */
+@media (hover: none), (pointer: coarse) {
+  :is(
+      .section-title-row,
+      .pack-manager-actions,
+      .more-card-heading,
+      .version-actions
+    )
+    .text-button,
+  a.text-button,
+  button.text-button {
+    min-height: 44px;
+  }
+}
+
 .verse-number {
   inline-size: 40px;
   min-inline-size: 40px;

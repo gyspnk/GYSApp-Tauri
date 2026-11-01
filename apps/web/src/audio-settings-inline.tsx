@@ -87,7 +87,7 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
         className="text-button audio-setting-link"
         to="/bible?settings=audio"
       >
-        {translate(locale, "bible.audioSettings")}
+        {translate(locale, "bible.audioEngineSettings")}
         <Icon name="chevronRight" size={16} />
       </Link>
     </div>

@@ -1352,6 +1352,32 @@ kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
 "Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
 `.appearance-setting-select` pertama, yang kini memang select tema.
 
+### Satu sudut untuk kontrol, satu target untuk tombol teks (1 Nov)
+
+Inventaris tombol nyata pada 390 px (sentuh) menunjukkan campuran sudut yang
+tidak punya alasan: select dan tombol ikon **12 px**, `primary-button` dan
+`quiet-button` **8 px**, tetapi `kidung-mode-cycle` dan `.egys-provider`
+**10 px** — padahal ketiganya duduk di kartu yang sama dengan select 12 px.
+Sekarang ada token `--radius-control: 12px` di `styles/00-tokens.css`, dipakai
+oleh `.kidung-mode-cycle` (dua berkas) dan `.egys-provider`; tombol kecil
+(chip 8 px) dan swatch (50 %) tetap seperti sebelumnya karena perannya beda.
+
+`text-button` (aksi bergaya tautan) masih 40 px karena aturan
+`button.text-button` di `ui-hardening.css` mengalahkan aturan 44 px yang lebih
+umum. Sekarang `a.text-button` dan `button.text-button` mendapat 44 px khusus
+pointer kasar; terukur **44 px di sentuh, 40 px di mouse** — jadi desktop tidak
+ikut menggemuk.
+
+Tautan “Pengaturan Suara” di halaman Pengaturan → Audio ternyata membuka
+**laci Alkitab** (`/bible?settings=audio`), bukan halaman yang sedang dibuka,
+dan labelnya sama dengan judul halaman. Diganti label yang jujur: “Mesin &
+gateway suara di laci Alkitab →” (kunci baru `bible.audioEngineSettings`, tiga
+bahasa).
+
+Bukti: `pnpm --filter @gys/web test` **534/534**, `responsive-touch-targets`
+**5/5** (termasuk tautan 44 px di sentuh), `kidung-unified-controls` +
+`egys-v1` + `settings-data-integrity` **37/37**.
+
 ### Satu gutter untuk semua rute (1 Nov)
 
 Tepi kiri konten berbeda antar layar: `/`, `/literatur`, `/suara`, `/lainnya`

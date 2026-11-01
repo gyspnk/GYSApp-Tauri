@@ -223,5 +223,7 @@ test.describe("coarse pointers get the full 44 px target", () => {
     const audioSelect = page.locator(".audio-setting-select").first();
     await expect(audioSelect).toBeVisible();
     await expectTouchTarget(audioSelect);
+    // Link-style actions are 40 px by default; a coarse pointer gets 44.
+    await expectTouchTarget(page.locator(".audio-setting-link").first());
   });
 });

@@ -1490,7 +1490,8 @@
   width: 38px;
   height: 38px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  /* Sits in the same card as the 12 px selects. */
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--blue);
   transition:

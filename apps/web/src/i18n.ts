@@ -182,6 +182,7 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Suara sistem dipakai karena Edge gagal atau tidak tersedia. Kualitas dan intonasi mengikuti voice perangkat — pilih voice lain di atas bila terdengar kurang pas.",
     "bible.audioSettingsLink":
       "Suara, kecepatan, dan nada diatur di Pengaturan Audio →",
+    "bible.audioEngineSettings": "Mesin & gateway suara di laci Alkitab →",
     "bible.appearanceSettingsLink": "Tema diatur di Pengaturan Tampilan →",
     "bible.gatewayEndpoint": "Endpoint Gateway",
     "bible.edgeEndpointPlaceholder": "https://... (bawaan)",
@@ -432,6 +433,7 @@ export const messages: Record<Locale, Record<string, string>> = {
       "System speech is in use because Edge failed or is unavailable. Quality and intonation follow the device voice — pick another voice above if it sounds off.",
     "bible.audioSettingsLink":
       "Voice, speed and pitch are set in Audio settings →",
+    "bible.audioEngineSettings": "Voice engine & gateway in the Bible drawer →",
     "bible.appearanceSettingsLink": "The theme is set in Appearance settings →",
     "bible.gatewayEndpoint": "Gateway endpoint",
     "bible.edgeEndpointPlaceholder": "https://... (default)",
@@ -673,6 +675,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.edgeFallback":
       "Edge 失败或不可用，正在使用系统语音。音质和语调取决于设备语音——如不合适可在上方选择其他语音。",
     "bible.audioSettingsLink": "语音、速度和音调在音频设置中调整 →",
+    "bible.audioEngineSettings": "语音引擎与网关在圣经抽屉中 →",
     "bible.appearanceSettingsLink": "主题在外观设置中调整 →",
     "bible.gatewayEndpoint": "网关端点",
     "bible.edgeEndpointPlaceholder": "https://...（默认）",
