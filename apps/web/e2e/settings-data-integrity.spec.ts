@@ -118,6 +118,9 @@ test("encrypted backup preserves durable preferences but excludes sensitive devi
 test("encrypted backup round-trips Bible notes, highlights, and bookmarks", async ({
   page,
 }) => {
+  // The export builds an encrypted envelope on the main thread; under a loaded
+  // host the download event can take longer than the default budget.
+  test.slow();
   const password = "bible-backup-1234";
   const annotations = {
     "gys-bible-bookmarks": JSON.stringify(["1:1:1"]),

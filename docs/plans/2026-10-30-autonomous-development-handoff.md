@@ -1429,6 +1429,13 @@ detik, lalu `ENOENT` saat artefak dihapus). Dijalankan ulang berurutan keduanya
 **lulus dalam 24,3 detik**, jadi ini batas host (2 worker, 11 GiB, swap), bukan
 regresi produk.
 
+Tier inti (92 tes, 2 worker) menambah satu contoh lagi: “encrypted backup
+round-trips Bible notes…” menunggu event `download` lebih dari 40 detik, lalu
+lulus sendiri dalam 9,2 detik. Ketiganya kini punya anggaran eksplisit yang
+mencerminkan beban (`test.slow()` untuk lima viewport dan untuk ekspor backup,
+60 detik untuk boot SoundFont) dengan komentar alasannya — bukan menaikkan
+batas global yang akan menyembunyikan regresi sungguhan.
+
 ### Tema di laci Alkitab (1 Nov)
 
 Laci Alkitab masih memuat select **Tema** dan **Bahasa** di bagian “Tampilan”,

@@ -644,6 +644,9 @@ test.describe("responsive reader navigation", () => {
   test("Lainnya keeps its settings rows compact and reveals tools on demand", async ({
     page,
   }) => {
+    // Five viewports with full app boots; under a loaded host the default
+    // 40 s budget is not enough, and the run otherwise fails for load, not UI.
+    test.slow();
     for (const viewport of [
       { width: 320, height: 720 },
       { width: 390, height: 844 },
@@ -984,7 +987,8 @@ test.describe("responsive reader navigation", () => {
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
     const player = page.locator(".media-surface.is-kidung-media");
-    await expect(player).toBeVisible({ timeout: 30_000 });
+    // SoundFont boot competes with a parallel worker; 30 s is tight under load.
+    await expect(player).toBeVisible({ timeout: 60_000 });
     await player.getByRole("button", { name: "Putar", exact: true }).click();
     await expect(
       player.getByRole("button", { name: "Jeda", exact: true }),
