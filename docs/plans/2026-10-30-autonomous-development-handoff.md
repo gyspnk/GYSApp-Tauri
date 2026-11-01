@@ -1571,6 +1571,26 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Pesan galat katalog Kidung (1 Nov)
+
+Audit keadaan galat (8 rute × 4 tema, semua permintaan data diblokir) menemukan
+**nol pelanggaran axe**, tetapi memperlihatkan satu pesan mentah: panel
+“Katalog kidung belum tersedia” menampilkan **“Failed to fetch”** apa adanya —
+kelas kesalahan yang sama dengan “Signal is aborted without reason” pada login
+WhatsApp. Rantainya `apps/web/src/kidung-page.tsx` menyimpan `error.message`
+ke `CatalogState.message`, lalu `apps/web/src/kidung-catalog.tsx`
+menampilkannya.
+
+Perbaikan: panel memakai kalimat “Periksa koneksi lalu coba lagi.”
+(`literature.errorBody`, dipakai bersama tanpa kunci baru demi ruang bundle),
+sedangkan pesan asli dicatat lewat `recordDiagnostic("warn", "kidung.catalog.error", …)`
+dan `recordDiagnostic("warn", "kidung.search.error", …)` untuk korpus pencarian.
+Spesifikasi baru `apps/web/e2e/kidung-catalog-error.spec.ts` memblokir
+`hymn-catalog.json` + `hymn-metadata.json` dan memastikan panel menjelaskan
+masalahnya serta **tidak** memuat “Failed to fetch”; dibuktikan gagal-dulu
+(build lama: `"Katalog kidung belum tersediaFailed to fetch"`), lalu lulus 2,4 dtk.
+Spesifikasi itu masuk tier `test:e2e:core`.
+
 ### Performa paket Alkitab (1 Nov)
 
 Sisa kelambatan `/bible` (2,4–2,7 detik pada baseline) ternyata **bukan** parsing

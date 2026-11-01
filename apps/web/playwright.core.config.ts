@@ -26,5 +26,6 @@ export default defineConfig(baseConfig, {
     "**/account-menu.spec.ts",
     "**/egys-v1.spec.ts",
     "**/kidung-hymn-alias.spec.ts",
+    "**/kidung-catalog-error.spec.ts",
   ],
 });

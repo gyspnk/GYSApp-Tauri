@@ -12,6 +12,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
+import { recordDiagnostic } from "./diagnostics.js";
 import { findMusicAsset } from "./music-assets.js";
 import { Select } from "./select.js";
 import { Icon } from "./icons.js";
@@ -76,6 +77,14 @@ export function HymnCatalog({
     useState<Awaited<ReturnType<typeof loadHymnSearchCorpus>>>();
   const [corpusError, setCorpusError] = useState<string>();
   const [corpusAttempt, setCorpusAttempt] = useState(0);
+  useEffect(() => {
+    if (state.status === "error")
+      recordDiagnostic(
+        "warn",
+        "kidung.catalog.error",
+        new Error(state.message),
+      );
+  }, [state]);
   const needsCorpus = Boolean(deferredQuery.trim());
   useEffect(() => {
     if (!needsCorpus) return;
@@ -86,16 +95,15 @@ export function HymnCatalog({
         if (active) setCorpus(items);
       },
       (error) => {
-        if (active)
-          setCorpusError(
-            error instanceof Error ? error.message : "Search unavailable",
-          );
+        if (!active) return;
+        recordDiagnostic("warn", "kidung.search.error", error);
+        setCorpusError(translate(locale, "literature.errorBody"));
       },
     );
     return () => {
       active = false;
     };
-  }, [needsCorpus, allItems, corpusAttempt]);
+  }, [needsCorpus, allItems, corpusAttempt, locale]);
   const searchableItems = useMemo(() => {
     const byId = new Map(corpus?.map((item) => [item.id, item]));
     return allItems.map((item) => byId.get(item.id) ?? item);
@@ -260,7 +268,7 @@ export function HymnCatalog({
       {state.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
-          <span>{state.message}</span>
+          <span>{translate(locale, "literature.errorBody")}</span>
         </div>
       )}
       {state.status === "ready" && (
