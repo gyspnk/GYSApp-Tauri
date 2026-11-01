@@ -1787,6 +1787,17 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Bukti core dan baseline untuk panel datar (1 Nov)
+
+`pnpm test:e2e:core` pada `820bebb`: **101 lulus + 1 flaky** (egys-v1
+“a WhatsApp attempt that really fails…”) dalam 4,0 menit dengan `retries: 1`;
+kegagalan pertama tetap dilaporkan sebagai flaky, bukan disembunyikan. Job
+baseline `41354642357` (dispatch untuk `820bebb`) selesai sukses dan
+artefaknya berbeda di **6 tangkapan**: `assets` 390/768/1440 dan
+`appearance-accent` 320/390/1440 — semuanya akibat panel yang sekarang datar.
+Keenam berkas diadopsi dari artefak CI (bukan dari mesin lokal) di commit
+`402b741`. Bundel awal **179,7/180,0 KiB** (sisa 0,3 KiB) → B-24 makin mendesak.
+
 ### Satu bingkai, bukan bingkai di dalam bingkai (1 Nov)
 
 Bagian pengaturan yang terbuka masih menumpuk kartu di dalam kartu: kartu
