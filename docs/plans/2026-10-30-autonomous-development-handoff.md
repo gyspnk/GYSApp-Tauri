@@ -1571,6 +1571,23 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Performa paket Alkitab (1 Nov)
+
+Sisa kelambatan `/bible` (2,4–2,7 detik pada baseline) ternyata **bukan** parsing
+JSON. Diukur di preview: `public/offline/bible/tb-reader.json` berukuran
+**7,9 MB** (rincian: `verses` 7.143 KB, `pericopes` 304 KB, `crossRefs` 303 KB,
+`books` 4 KB), `JSON.parse` hanya **35 ms**, sedangkan `fetch` butuh **1.086 ms**
+saat berkas belum ada di cache OS dan **95–146 ms** setelahnya. `gzip` berkas itu
+**1.689 KB**, jadi latensi reader didominasi transfer dan kompresi host, bukan
+kerja JS. Tidak ada perubahan klien yang perlu dibuat; host produksi (Cloudflare
+Pages/GitHub Pages) sudah mengompres otomatis, dan service worker menyimpan paket
+setelah kunjungan pertama.
+
+Katalog Kidung terukur **1,4–1,5 detik** sampai `.pujian-item` pertama
+(`gys-hymn-catalog-ready` 1.403 ms) pada mesin ini; angka 2,0–3,0 detik di
+baseline berasal dari 21 pemuatan rute berurutan dalam satu worker, bukan dari
+katalognya.
+
 ### Baseline setelah placeholder & baris ayat (1 Nov)
 
 Regenerasi CI (`41268972672`, 149 snapshot) menghasilkan **7** perbedaan, semuanya
