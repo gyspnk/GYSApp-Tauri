@@ -5245,3 +5245,27 @@ body:has(.hymn-detail-page.is-text-viewer)
     color: var(--ink);
   }
 }
+
+/* Inside the reader sheet every control stands on its own: the sheet is the
+   only card, so a segmented group must not paint a second frame inside it. */
+.hymn-more-actions-panel .hymn-scope-pill-group,
+.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group) {
+  padding: 0;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn.is-active {
+  border-color: color-mix(in srgb, var(--blue) 24%, var(--line));
+  background: var(--blue-soft);
+  color: var(--navy);
+  box-shadow: none;
+}

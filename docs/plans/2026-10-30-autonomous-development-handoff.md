@@ -1642,6 +1642,27 @@ kegagalan label karena label kanonik baru — salinan locale diperbarui
 (`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
 14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
 
+### Kotak di dalam kotak: grup bersegmen (1 Nov)
+
+Audit sarang visual menemukan sisa kotak-dalam-kotak di lembar pembaca:
+`.hymn-scope-pill-group` (kerangka bergaris + latar `--surface-soft`, padding 4)
+dan `.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group)` duduk di
+dalam panel yang sudah berupa kartu, sehingga satu kontrol tampil sebagai dua
+bingkai. Di ponsel, grup itu juga membuat tombol “Semua”/“Bait 1” tampak
+terkurung dua kali.
+
+Perbaikan di `apps/web/src/app-design.css` (akhir berkas): grup tidak lagi
+memiliki bingkai sendiri (`border: 0; background: transparent; padding: 0`) dan
+tombol segmented memakai bingkai tipis `--line` + radius kontrol, dengan keadaan
+aktif `--blue-soft` tanpa bayangan. Panel tetap satu-satunya kartu; tombol
+menjadi satu-satunya lapisan di atasnya.
+
+Bukti: `kidung-density` + `kidung-control-sync` + `kidung-unified-controls` +
+`accessibility` + `kidung-usability` (tanpa snapshot visual) **57/57 (5,2 m)**;
+`node apps/web/scripts/ui-consistency-audit.mjs` **22 muat, 0 temuan**; potret
+390/1440 menunjukkan lembar sebagai satu kartu dengan lima aksi datar dan baris
+scope di dalamnya.
+
 ### Audit perataan konten (1 Nov)
 
 `ui:consistency` sebelumnya hanya membandingkan _cat_ kontrol sebaris. Sekarang
