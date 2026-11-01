@@ -1645,10 +1645,17 @@ Perbaikan:
   override 32 px pada `.lyrics-extra`/`.midi-tempo-stepper` hilang, sehingga
   tiga permukaan berbagi satu geometri.
 
+- Label per-permukaan yang tidak lagi dipakai dihapus dari kamus:
+  `kidung.lyrics.selectInstrument`, `selectKey`, `transposeDown/Up`,
+  `decreaseTempo`, `increaseTempo`, `tempoBpm` (21 baris di tiga bahasa) dan
+  daftar `DYNAMIC_KEYS` di `apps/web/src/i18n.test.ts` ikut dipangkas supaya
+  penjaga "tidak ada kunci menganggur" tetap hijau.
+
 Hasil pengukuran: 390 px sentuh — instrumen 334×44, nada 108×44, transpose
 44×44, tempo 44×44, mute 44×44, notasi 334×44, capo 44×44, semuanya radius 12;
-1440 px pointer halus — seluruh kontrol 40 px dengan radius 12. Verifikasi:
-`kidung-control-sync`, `kidung-density`, `kidung-unified-controls`,
+1440 px pointer halus — seluruh kontrol 40 px dengan radius 12. Verifikasi: tema gelap pada 390 px diperiksa ulang (select, stepper, mute, capo
+semuanya `--surface` bertoken, radius 12, tinggi 44); unit `@gys/web`
+**536/536**; `kidung-control-sync`, `kidung-density`, `kidung-unified-controls`,
 `midi-scrub`, `kidung-compact-motion`, `accessibility` hijau; bundle tetap
 179,8 KiB; baseline visual diperbarui dari CI setelah perubahan tinggi kontrol.
 
