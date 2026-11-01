@@ -1571,6 +1571,21 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Lembar “Lainnya” di ponsel (1 Nov)
+
+Panel “Lainnya” pada mode baca ponsel menumpuk lima tombol 70 px dengan
+keterangan 10 px di atas baris cakupan, sehingga label terbaca seperti sisa
+ruang dan setiap tombol tampil sebagai kotak sendiri. Sekarang panel itu grid
+dua baris: **lima aksi sama lebar** (48 px, ikon 16, keterangan `0,6875rem`,
+satu baris dengan elipsis) lalu baris cakupan “Semua / Bait n / unduh” dengan
+tinggi 44 px. Latar tombol transparan; hanya aksi aktif yang memakai
+`--blue-soft`, dan pembatas antar-baris cukup satu garis rambut.
+
+Bukti: panel 390 px menjadi **360×129** di y=703 (sebelumnya 360×111 dengan
+tumpukan 70 px), kelima label terbaca penuh, dan baris cakupan sejajar 44 px.
+Uji `kidung-density`, `kidung-unified-controls`, `kidung-control-sync`,
+`kidung-style-behavior`, `accessibility` dijalankan setelah perubahan.
+
 ### Lirik layar penuh: satu bahasa kontrol (1 Nov)
 
 Pemilik menilai panel lirik masih “box dalam box” dan tombolnya tidak rapi.
