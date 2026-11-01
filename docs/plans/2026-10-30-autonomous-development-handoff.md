@@ -1781,6 +1781,29 @@ Anggaran tinggi panel desktop di `kidung-density`
 dinaikkan 230 → 280 px dengan komentar karena bidang kontrol kini 44 px di
 semua permukaan (bukan mengecilkan teks).
 
+### Satu ukuran bidang MIDI untuk semua permukaan (1 Nov, putaran 38)
+
+Setelah transport disatukan, pengukuran ulang pada 1440 dan 390 menunjukkan
+kontrol **bidang** masih berbeda antar permukaan: panel pembaca 40 px, popover
+dock 44 px, sedangkan transport dock dan lirik layar penuh 32 px. Karena pemilik
+meminta satu set kontrol, ambang 40 px itu dihapus:
+
+- `:is(.hymn-more-actions-panel, .lyrics-panel .lyrics-extra,
+.media-advanced-panel, .media-tempo-popover) { --midi-control: 32px }` dengan
+  override `@media (pointer: coarse), (hover: none)` menjadi **44 px**.
+- Dua deklarasi yang menimpa token tersebut dihapus: `.lyrics-extra
+.media-music-controls { --midi-control: 44px }` di `midi-player.css` dan
+  `.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel
+{ --midi-control: 44px }` di `app-design.css`.
+- `apps/web/e2e/midi-control-unification.spec.ts` kini menuntut panel pembaca
+  **32 px** pada pointer halus (44 px saat sentuh), sama dengan transport dan
+  bidang dock.
+
+Hasil pengukuran: 390 sentuh — select 334×44, tempo 44×44, mute 44×44, capo
+44×44, transport dock 44×44, bidang dock 44×44, radius 12 px (transpose dalam
+0). 1440 halus — semuanya **32 px**, radius 12 px. Kontraknya sekarang: **satu
+ukuran per jenis pointer, bukan per permukaan.**
+
 ### Satu set kontrol MIDI (1 Nov)
 
 Permintaan pemilik: kontrol MIDI player dan seluruh pengaturannya harus

@@ -120,21 +120,25 @@
   background: var(--blue-soft);
 }
 
-/* One geometry for the reader sheet and the fullscreen lyrics; the dock keeps
-   its own clamp so its transport stays the largest control on screen. */
-.hymn-more-actions-panel,
-.lyrics-panel .lyrics-extra {
-  --midi-control: 40px;
-}
-/* The dock's own popovers stay on the dock scale (44px and up) so the panel
-   and the tempo popover never disagree with the transport below them. */
-.media-advanced-panel,
-.media-tempo-popover {
-  --midi-control: 44px;
+/* One geometry for every MIDI field: the reader sheet, the fullscreen lyrics
+   and the dock's popovers all use the same 32px row on a precise pointer and
+   44px when the pointer is coarse, so the same control never changes size just
+   because it lives on another surface. */
+:is(
+  .hymn-more-actions-panel,
+  .lyrics-panel .lyrics-extra,
+  .media-advanced-panel,
+  .media-tempo-popover
+) {
+  --midi-control: 32px;
 }
 @media (pointer: coarse), (hover: none) {
-  .hymn-more-actions-panel,
-  .lyrics-panel .lyrics-extra {
+  :is(
+    .hymn-more-actions-panel,
+    .lyrics-panel .lyrics-extra,
+    .media-advanced-panel,
+    .media-tempo-popover
+  ) {
     --midi-control: 44px;
   }
 }
@@ -893,7 +897,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Both player surfaces use one instrument/key/transpose component. */
 .lyrics-extra .media-music-controls {
-  --midi-control: 44px;
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
   gap: 4px;

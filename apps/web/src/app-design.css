@@ -3147,7 +3147,6 @@ body:has(.hymn-detail-page.is-text-viewer)
   transition: transform 180ms var(--ease-out);
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
-  --midi-control: 44px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 8px;

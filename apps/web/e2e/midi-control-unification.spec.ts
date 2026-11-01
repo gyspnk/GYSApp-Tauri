@@ -58,7 +58,11 @@ async function measureControls(
   });
 }
 
-function expectDockGeometry(controls: Control[], surface: string) {
+function expectDockGeometry(
+  controls: Control[],
+  expectedHeight: number,
+  surface: string,
+) {
   expect(controls.length, `${surface} exposes MIDI controls`).toBeGreaterThan(
     1,
   );
@@ -68,14 +72,12 @@ function expectDockGeometry(controls: Control[], surface: string) {
     // are square by design; the container carries the radius.
     if (/transpose|nada/i.test(control.label)) continue;
     expect(control.radius, `${surface} ${control.label} radius`).toBe(12);
-    expect(
-      control.height,
-      `${surface} ${control.label} height inside the dock clamp`,
-    ).toBeGreaterThanOrEqual(44);
-    expect(
-      control.height,
-      `${surface} ${control.label} height inside the dock clamp`,
-    ).toBeLessThanOrEqual(56);
+    // The dock's fields follow the same pointer-based geometry as the reader
+    // sheet and the fullscreen lyrics: 32px on a precise pointer, 44px coarse.
+    // Only the transport keeps the wider 44-56px clamp.
+    expect(control.height, `${surface} ${control.label} height`).toBe(
+      expectedHeight,
+    );
   }
 }
 
@@ -157,13 +159,13 @@ for (const { width, touch } of [
       await tap(player.locator(".media-advanced-summary"));
       await expect(player.locator(".media-advanced-panel")).toBeVisible();
       const dockPanel = await measureControls(page, ".media-advanced-panel");
-      expectDockGeometry(dockPanel, `${width} dock panel`);
+      expectDockGeometry(dockPanel, touch ? 44 : 32, `${width} dock panel`);
 
       await tap(player.locator(".media-tempo-toggle"));
       const tempoPopover = page.locator(".media-tempo-popover");
       await expect(tempoPopover).toBeVisible();
       const dockTempo = await measureControls(page, ".media-tempo-popover");
-      expectDockGeometry(dockTempo, `${width} dock tempo`);
+      expectDockGeometry(dockTempo, touch ? 44 : 32, `${width} dock tempo`);
 
       const dockLabels = [
         ...dockPanel.map((control) => control.label),
@@ -185,7 +187,7 @@ for (const { width, touch } of [
       await expect(player).toBeHidden({ timeout: 15_000 });
       await openReaderSheet(page, touch);
       const reader = await measureControls(page, ".hymn-music-settings");
-      expectOneGeometry(reader, touch ? 44 : 40, `${width} reader`);
+      expectOneGeometry(reader, touch ? 44 : 32, `${width} reader`);
 
       const readerLabels = reader.map((control) => control.label);
       for (const label of CANONICAL_LABELS) {
