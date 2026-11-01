@@ -502,6 +502,9 @@ test("a slow profile keeps the countdown instead of the failure mark", async ({
   page,
   context,
 }) => {
+  // Seven profile attempts span ~19 s of retries, close to the 30 s default
+  // budget on a loaded two-worker host.
+  test.slow();
   let profileCalls = 0;
   await page.route("**/api/v1/account/profile", (route) => {
     profileCalls++;

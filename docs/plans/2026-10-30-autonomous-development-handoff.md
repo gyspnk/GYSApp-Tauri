@@ -1784,6 +1784,12 @@ mencerminkan beban (`test.slow()` untuk lima viewport dan untuk ekspor backup,
 60 detik untuk boot SoundFont) dengan komentar alasannya — bukan menaikkan
 batas global yang akan menyembunyikan regresi sungguhan.
 
+Contoh keempat muncul di tier inti (93 tes): satu tes `egys-v1` gagal di bawah
+beban lalu lulus berdua dalam 19,8 detik. Penyebabnya tes “a slow profile keeps
+the countdown…” memang menunggu tujuh percobaan profil (±19 detik) ditambah boot
+aplikasi, nyaris menyentuh batas 30 detik; tes itu sekarang `test.slow()`
+(26/26 di `egys-v1`).
+
 ### Tema di laci Alkitab (1 Nov)
 
 Laci Alkitab masih memuat select **Tema** dan **Bahasa** di bagian “Tampilan”,
