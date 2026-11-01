@@ -75,7 +75,7 @@ for (const { width, touch } of [
       await tempo.fill("112");
       await tempo.press("Enter");
       const instrument = fullscreen.getByRole("combobox", {
-        name: "Pilih alat musik",
+        name: "Instrumen MIDI",
         exact: true,
       });
       await instrument.focus();

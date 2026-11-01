@@ -126,6 +126,12 @@
 .lyrics-panel .lyrics-extra {
   --midi-control: 40px;
 }
+/* The dock's own popovers stay on the dock scale (44px and up) so the panel
+   and the tempo popover never disagree with the transport below them. */
+.media-advanced-panel,
+.media-tempo-popover {
+  --midi-control: 44px;
+}
 @media (pointer: coarse), (hover: none) {
   .hymn-more-actions-panel,
   .lyrics-panel .lyrics-extra {
@@ -862,9 +868,6 @@
     min-height: 20px;
   }
 }
-.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
-  --midi-control: inherit;
-}
 .media-surface.is-kidung-media .media-instrument-control .control-select-menu {
   grid-column: 1 / -1;
 }
@@ -1323,27 +1326,30 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 @media (min-width: 721px) and (pointer: fine) {
+  /* Fine pointers get the same 40px field height as the reader sheet and the
+     fullscreen lyric panel; only the transpose buttons stay square inside
+     their rounded container. */
   .media-surface.is-kidung-media
     .media-advanced-panel
     .media-music-controls
     .control-select-trigger,
   .media-surface.is-kidung-media .media-advanced-panel .media-transpose {
-    height: 32px;
-    min-height: 32px;
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
   }
   .media-surface.is-kidung-media .media-advanced-panel .media-transpose button {
-    width: 32px;
-    min-width: 32px;
-    height: 32px;
-    min-height: 32px;
+    width: var(--midi-control, 40px);
+    min-width: var(--midi-control, 40px);
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
   }
   .media-surface.is-kidung-media
     .media-advanced-panel
     .media-control.media-secondary-control {
-    width: 32px;
-    min-width: 32px;
-    height: 32px;
-    min-height: 32px;
+    width: var(--midi-control, 40px);
+    min-width: var(--midi-control, 40px);
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
   }
 }
 

@@ -1617,6 +1617,40 @@ Bukti: panel 390 px menjadi 360×388 dengan `scroll=340`; tinggi grup
 154/45 px (yang tertutup tetap 44 px agar bisa disentuh); tombol seragam
 106×44; uji fungsional kidung + aksesibilitas dijalankan setelah perubahan.
 
+### Satu geometri kontrol MIDI di semua layout (1 Nov)
+
+Keluhan pemilik: “kontrol midi player dan kontrol semua pengaturannya harus bisa
+terunifikasi dan optimal di semua layout”. Audit awal menunjukkan tiga geometri
+berbeda untuk kontrol yang sama: panel dock 32 px di pointer halus (44 px di
+sentuh), panel pembaca 32 px karena tidak mewarisi `--midi-control`, dan lirik
+layar penuh 32 px lewat `@media (pointer: fine)`.
+
+Akar masalah yang ditemukan: `.media-surface.is-kidung-media:not(.is-minimized)
+.media-advanced-panel { --midi-control: inherit }` mengembalikan variabel ke
+32 px milik dock, dan blok `@media (min-width: 721px) and (pointer: fine)`
+menulis tinggi 32 px secara literal untuk select, transpose, dan tombol utilitas.
+
+Perbaikan:
+
+- `.hymn-more-actions-panel` dan `.lyrics-panel .lyrics-extra` memakai
+  `--midi-control: 40px` (44 px untuk pointer kasar).
+- Popover dock (`.media-advanced-panel`, `.media-tempo-popover`) tetap pada
+  skala dock **44 px** supaya panel dan popover tempo tidak berbeda dengan
+  transport di bawahnya; blok `pointer: fine` yang menulis 32 px literal diganti
+  `var(--midi-control, 40px)`.
+- Reset `inherit` dihapus sehingga panel mengikuti token, bukan mewarisi angka
+  dock yang lebih kecil.
+
+Verifikasi baru: `apps/web/e2e/midi-control-unification.spec.ts` (masuk tier
+core) mengukur tiap kontrol di dock (panel + popover tempo), panel pembaca, dan
+lirik layar penuh pada 320/390/768/1440; menuntut tinggi 44 px (sentuh) /
+40 px (halus) untuk pembaca & lirik, tinggi 44–56 px untuk dock, radius 12 px
+(transpose dalam 0 karena kontainer yang membulatkan), delapan label kanonik
+yang sama, dan warna instrumen yang identik antara dock dan panel pembaca.
+Lulus 5/5 (26,3 dtk). Anggaran tinggi panel desktop di `kidung-density`
+dinaikkan 230 → 280 px dengan komentar karena bidang kontrol kini 44 px di
+semua permukaan (bukan mengecilkan teks).
+
 ### Satu set kontrol MIDI (1 Nov)
 
 Permintaan pemilik: kontrol MIDI player dan seluruh pengaturannya harus

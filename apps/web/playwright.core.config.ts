@@ -27,5 +27,6 @@ export default defineConfig(baseConfig, {
     "**/egys-v1.spec.ts",
     "**/kidung-hymn-alias.spec.ts",
     "**/kidung-catalog-error.spec.ts",
+    "**/midi-control-unification.spec.ts",
   ],
 });
