@@ -3831,13 +3831,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* A shared leading navigation field keeps the same controls in place. */
-.hymn-page {
-  --kidung-gutter: clamp(16px, 2vw, 28px);
-}
-.app-frame:not(.is-reader-route) .main-content:has(.hymn-page) {
-  padding-inline: var(--kidung-gutter, clamp(16px, 2vw, 28px));
-}
+/* Kidung used to widen the shell gutter (16-28 px) while every other route
+   used --page-gutter (12-24 px); the catalogue now shares the shell gutter so
+   headings line up across routes. */
 .kidung-controls-field {
   gap: 8px;
 }
@@ -4051,9 +4047,10 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* Catalog, playlist and settings share one leading navigation footprint. */
+/* Catalog, playlist and settings share one leading navigation footprint — and
+   the shell gutter, so headings line up with every other route. */
 .app-frame .workspace .main-content:has(.hymn-page) {
-  padding: var(--page-start) clamp(16px, 2vw, 28px) var(--page-end);
+  padding: var(--page-start) var(--page-gutter) var(--page-end);
 }
 .hymn-page .kidung-index-toolbar {
   padding-top: 0;

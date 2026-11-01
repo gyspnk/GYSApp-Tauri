@@ -1352,6 +1352,27 @@ kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
 "Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
 `.appearance-setting-select` pertama, yang kini memang select tema.
 
+### Satu gutter untuk semua rute (1 Nov)
+
+Tepi kiri konten berbeda antar layar: `/`, `/literatur`, `/suara`, `/lainnya`
+memakai `--page-gutter: clamp(12px, 1.6vw, 24px)` (12 px di 390, 12,288 di 768,
+23,04 di 1440), sedangkan katalog Kidung memakai
+`clamp(16px, 2vw, 28px)` (16/16/28) lewat aturan
+`.app-frame .workspace .main-content:has(.hymn-page)`. Akibatnya judul dan kartu
+Kidung bergeser 4–5 px dari halaman lain pada setiap lebar.
+
+Sekarang aturan itu memakai `var(--page-gutter)`, dan variabel `--kidung-gutter`
+yang hanya dipakai di situ dihapus. Terukur di build yang sama: padding konten
+**12 / 12,288 / 23,04 px** untuk semua rute pada 390/768/1440, sehingga tepi
+kartu dan kolom pencarian Kidung sejajar dengan Beranda, Literatur, dan
+Lainnya. Heading di dalam kartu kontrol tetap 4 px lebih masuk karena kartu itu
+sendiri punya padding internal — itu inset kartu, bukan gutter halaman.
+
+Verifikasi: `kidung-density`, `kidung-section-navigation`, `kidung-hymn-alias`,
+`kidung-small-phone-nav`, `kidung-unified-controls` **15/15**, plus screenshot
+390/1440 yang menunjukkan judul satu baris dan tepi rata. Baseline Kidung
+diperbarui lewat job CI, bukan lokal.
+
 ### Target sentuh 44 px untuk pointer kasar (1 Nov)
 
 Audit seluruh rute pada 390×844 dengan `hasTouch`/`isMobile`
