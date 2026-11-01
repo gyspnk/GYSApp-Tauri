@@ -279,24 +279,27 @@ export function HymnCatalog({
               </button>
             </div>
           )}
-          {filtered.length === 0 && (
-            <div className="empty-state kidung-search-empty" role="status">
-              <strong>{translate(locale, "literature.emptyTitle")}</strong>
-              <span>{translate(locale, "literature.emptyBody")}</span>
-              {(query.trim().length > 0 || book !== "all") && (
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => {
-                    setQuery("");
-                    setBook("all");
-                  }}
-                >
-                  {translate(locale, "catalog.reset")}
-                </button>
-              )}
-            </div>
-          )}
+          {/* While the deferred corpus is still loading the "no results" panel
+           * would be a lie and would double the single status landmark. */}
+          {filtered.length === 0 &&
+            (!needsCorpus || Boolean(corpus) || Boolean(corpusError)) && (
+              <div className="empty-state kidung-search-empty" role="status">
+                <strong>{translate(locale, "literature.emptyTitle")}</strong>
+                <span>{translate(locale, "literature.emptyBody")}</span>
+                {(query.trim().length > 0 || book !== "all") && (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => {
+                      setQuery("");
+                      setBook("all");
+                    }}
+                  >
+                    {translate(locale, "catalog.reset")}
+                  </button>
+                )}
+              </div>
+            )}
           <ol className="pujian-list" ref={listRef}>
             {filtered.map((item) => {
               const inQueue = queueIds.has(item.id);
