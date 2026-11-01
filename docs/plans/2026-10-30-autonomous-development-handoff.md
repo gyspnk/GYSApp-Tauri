@@ -1426,8 +1426,12 @@ radius dan tipe = 5/5).
 Verifikasi: `vite build` hijau, bundle **179,8 KiB** (tidak berubah karena CSS
 tidak masuk graf awal), screenshot 390/1440 untuk Beranda, Kidung, Alkitab,
 Iman, dan Pengaturan→Audio tidak menunjukkan pergeseran yang terlihat, dan
-`test:e2e:core` dijalankan pada build ini. Baseline visual diregenerasi lewat job
-CI setelah commit.
+`test:e2e:core` **92/92 (2,9 m)** pada build ini, plus `ui-elements` + `ui-polish`
+
+- `midi-scrub` + `reading-family-usability` **36/36 (3,4 m)**. Job baseline
+  `41262620558` mengubah **34 dari 149** snapshot (pergeseran sub-piksel pada teks
+  dan tepi kartu; SSIM Beranda 0,98, Alkitab 0,73 karena seluruh blok teks bergeser
+  1 px) dan semuanya diadopsi setelah dibandingkan secara visual.
 
 ### Target sentuh 44 px untuk pointer kasar (1 Nov)
 
