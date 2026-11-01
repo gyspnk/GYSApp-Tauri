@@ -1805,7 +1805,9 @@ baseline `41354642357` (dispatch untuk `820bebb`) selesai sukses dan
 artefaknya berbeda di **6 tangkapan**: `assets` 390/768/1440 dan
 `appearance-accent` 320/390/1440 — semuanya akibat panel yang sekarang datar.
 Keenam berkas diadopsi dari artefak CI (bukan dari mesin lokal) di commit
-`402b741`. Bundel awal **179,7/180,0 KiB** (sisa 0,3 KiB) → B-24 makin mendesak.
+`402b741`. Sesudah perbaikan popup WhatsApp (`3eb021a`), core run kembali
+**102/102 lulus (2,7 menit)** tanpa flaky. Bundel awal **179,7/180,0 KiB**
+(sisa 0,3 KiB) → B-24 makin mendesak.
 
 ### Satu bingkai, bukan bingkai di dalam bingkai (1 Nov)
 
