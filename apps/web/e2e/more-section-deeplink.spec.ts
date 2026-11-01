@@ -207,7 +207,11 @@ test("More audio settings link opens the existing Bible voice controls", async (
   await page.goto("/GYSApp-Tauri/lainnya");
   const audio = page.locator('[data-setting="audio"]');
   await audio.locator("summary").click();
-  await audio.getByRole("link", { name: "Pengaturan Suara" }).click();
+  // The link is labelled for what it opens (the drawer's engine/gateway),
+  // not with the settings page's own title.
+  await audio
+    .getByRole("link", { name: "Mesin & gateway suara di laci Alkitab →" })
+    .click();
 
   await expect(page.locator(".reader-hamburger-drawer")).toBeVisible({
     timeout: 15_000,
