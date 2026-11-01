@@ -1352,6 +1352,32 @@ kartu tersebut — bahasa diuji lewat select topbar, dan label Tampilan tinggal
 "Tema Layar" + "Warna Aksen". `select-dropdown`/`theme-transition` memakai
 `.appearance-setting-select` pertama, yang kini memang select tema.
 
+### Target sentuh 44 px untuk pointer kasar (1 Nov)
+
+Audit seluruh rute pada 390×844 dengan `hasTouch`/`isMobile`
+(`matchMedia("(pointer: coarse)")` benar) menemukan tiga kontrol di bawah 44 px:
+
+| Kontrol                                                                      | Sebelum | Sesudah |
+| ---------------------------------------------------------------------------- | ------- | ------- |
+| Tombol PDF & catatan Pokok Iman (`.faith-row-heading`, `.faith-row-summary`) | 32 px   | 44 px   |
+| Pemilih mesin suara (`.audio-setting-select`)                                | 38 px   | 44 px   |
+| Area tekan nomor ayat (pseudo `::before`)                                    | 40 px   | 44 px   |
+
+Dua yang pertama adalah satu-satunya jalan masuk ke PDF/catatan iman dan ke
+pengaturan suara di ponsel, jadi bukan hiasan. Nomor ayat sendiri tetap kecil
+(35 px) secara visual; yang diperbesar hanya kotak tekan pseudo-nya, dan hanya
+pada pointer kasar — mouse tetap 40 px seperti sebelumnya. Perbaikan ketiga
+semula ditaruh di `ui-hardening.css`, tetapi kalah oleh aturan pembaca di
+`apps/web/src/app-design.css` (spesifisitas sama, urutan lebih akhir), jadi
+dipindahkan ke berkas yang sama tepat setelah aturan 40 px.
+
+Bukti: tes baru di `apps/web/e2e/responsive-touch-targets.spec.ts` (describe
+“coarse pointers get the full 44 px target”) mengukur tinggi kotak dan pseudo
+pada konteks sentuh; dibuktikan gagal-dulu dengan `git stash` pada tiga berkas
+CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
+`responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
+**23/23**, `faith-pdf` 14/14.
+
 ### Skala tipe (31 Okt)
 
 580 deklarasi `font-size` tersebar tanpa skala: nilai setengah piksel

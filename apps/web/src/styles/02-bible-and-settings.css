@@ -2888,6 +2888,11 @@
   font: inherit;
   font-size: 0.875rem;
 }
+@media (hover: none), (pointer: coarse) {
+  .audio-setting-select {
+    min-height: 44px;
+  }
+}
 .audio-setting-row input[type="range"] {
   width: 180px;
   accent-color: var(--blue);

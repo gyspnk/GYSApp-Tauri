@@ -676,6 +676,13 @@
 .faith-page .faith-row-heading {
   color: var(--blue);
 }
+/* These compact icon buttons are the only way into the PDF and notes on a
+   phone, so a coarse pointer gets the 44 px target rather than 32 px. */
+@media (hover: none), (pointer: coarse) {
+  .faith-page :is(.faith-row-heading, .faith-row-summary) {
+    min-height: 44px;
+  }
+}
 .faith-page :is(.faith-row-heading, .faith-row-summary) svg {
   width: 13px;
   height: 13px;
@@ -1604,6 +1611,13 @@
   width: max(40px, 100%);
   height: max(40px, 100%);
   transform: translate(-50%, -50%);
+}
+/* Coarse pointers need 44 px to acquire the tap without hunting. */
+@media (hover: none), (pointer: coarse) {
+  .bible-reader .verse-number::before {
+    width: max(44px, 100%);
+    height: max(44px, 100%);
+  }
 }
 .control-select-menu.is-animated {
   animation: none;
