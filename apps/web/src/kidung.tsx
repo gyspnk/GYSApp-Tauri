@@ -1625,7 +1625,7 @@ export function HymnDetail({
                   className={`hymn-action-icon${chordStatus === "loading" ? " is-loading" : ""}`}
                   aria-hidden="true"
                 >
-                  <Icon name="chord" size={17} />
+                  <Icon name="chord" size={18} />
                 </span>
                 <span className="hymn-action-caption" aria-hidden="true">
                   Chord
@@ -1664,7 +1664,7 @@ export function HymnDetail({
                   className={`hymn-action-icon${midiStatus === "loading" ? " is-loading" : ""}`}
                   aria-hidden="true"
                 >
-                  <Icon name="piano" size={17} />
+                  <Icon name="piano" size={18} />
                 </span>
                 <span className="hymn-action-caption" aria-hidden="true">
                   MIDI
@@ -1692,7 +1692,7 @@ export function HymnDetail({
               onFocus={() => void preloadPdfReader().catch(() => undefined)}
               onClick={() => selectViewerMode("pdf")}
             >
-              <Icon name="file" size={18} />
+              <Icon name="file" size={20} />
               <span className="hymn-action-caption" aria-hidden="true">
                 PDF
               </span>
@@ -1802,7 +1802,7 @@ export function HymnDetail({
                 aria-label={translate(locale, "kidung.fullscreenLyrics")}
               >
                 <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name="fullscreen" size={17} />
+                  <Icon name="fullscreen" size={18} />
                 </span>
                 <span className="hymn-action-caption" aria-hidden="true">
                   {translate(locale, "kidung.fullscreenShort")}
@@ -1818,7 +1818,7 @@ export function HymnDetail({
                 aria-pressed={favorite}
               >
                 <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name="heart" size={17} />
+                  <Icon name="heart" size={18} />
                 </span>
                 <span className="hymn-action-caption" aria-hidden="true">
                   {translate(locale, "kidung.favoriteShort")}
@@ -1854,7 +1854,7 @@ export function HymnDetail({
                   }}
                 >
                   <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="playlist" size={17} />
+                    <Icon name="playlist" size={18} />
                   </span>
                   <span className="hymn-action-caption" aria-hidden="true">
                     {translate(locale, "kidung.queueShort")}
@@ -1882,7 +1882,7 @@ export function HymnDetail({
                   }}
                 >
                   <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="bookmark" size={17} />
+                    <Icon name="bookmark" size={18} />
                   </span>
                   <span className="hymn-action-caption" aria-hidden="true">
                     {translate(locale, "kidung.save")}
@@ -1916,7 +1916,7 @@ export function HymnDetail({
                   }}
                 >
                   <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="download" size={17} />
+                    <Icon name="download" size={18} />
                   </span>
                   <span className="hymn-action-label">
                     {translate(locale, "kidung.downloadPdf")}
@@ -2058,7 +2058,7 @@ export function HymnDetail({
                             updateTypography(DEFAULT_HYMN_TYPOGRAPHY)
                           }
                         >
-                          <Icon name="repeat" size={17} />
+                          <Icon name="repeat" size={18} />
                         </button>
                       </div>
                     </div>
@@ -2271,7 +2271,7 @@ export function HymnDetail({
                               onClick={() => setCapo(0)}
                               title={translate(locale, "kidung.resetCapo")}
                             >
-                              <Icon name="repeat" size={17} />
+                              <Icon name="repeat" size={18} />
                             </button>
                           )}
                         </div>
@@ -2362,7 +2362,7 @@ export function HymnDetail({
                       >
                         <Icon
                           name={midiPlayerEnabled ? "cross" : "music"}
-                          size={17}
+                          size={18}
                         />
                         <span>
                           {translate(
@@ -2382,7 +2382,7 @@ export function HymnDetail({
                         disabled={chordStatus === "loading"}
                         aria-pressed={chordsVisible}
                       >
-                        <Icon name="musicNote" size={17} />
+                        <Icon name="musicNote" size={18} />
                         <span>
                           {chordStatus === "loading"
                             ? translate(locale, "kidung.loadingChord")
@@ -2497,7 +2497,7 @@ export function HymnDetail({
                               onClick={() => updateTranspose(0)}
                               title={translate(locale, "kidung.resetTranspose")}
                             >
-                              <Icon name="repeat" size={17} />
+                              <Icon name="repeat" size={18} />
                             </button>
                           )}
                         </div>

@@ -222,6 +222,7 @@
 .faith-row-heading.is-selected {
   color: var(--blue);
   background: var(--blue-soft);
+  border-radius: var(--radius-control);
 }
 
 .faith-row-heading strong {
@@ -1272,7 +1273,7 @@
   margin: 0;
   padding: 6px 10px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--muted);
   font: inherit;

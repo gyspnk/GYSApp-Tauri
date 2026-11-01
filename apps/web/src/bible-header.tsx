@@ -158,7 +158,7 @@ export function BibleHeader({
                 aria-label={translate(locale, "bible.bookPickerAria")}
                 title={translate(locale, "bible.pickBookChapter")}
               >
-                <Icon name="book" size={15} />
+                <Icon name="book" size={16} />
                 <strong className="picker-book-title">
                   {bibleHeader.bookName} {bibleHeader.chapter}
                 </strong>
@@ -217,7 +217,7 @@ export function BibleHeader({
                 title={translate(locale, "bible.searchVerses")}
                 onClick={bibleHeader.onToggleSearch}
               >
-                <Icon name="search" size={15} />
+                <Icon name="search" size={16} />
               </button>
               {bibleHeader.speechAvailable && (
                 <button
@@ -250,7 +250,7 @@ export function BibleHeader({
                             ? "stop"
                             : "play"
                     }
-                    size={15}
+                    size={16}
                   />
                 </button>
               )}
@@ -502,7 +502,7 @@ export function BibleHeader({
                                       ? "chevronUp"
                                       : "chevronDown"
                                   }
-                                  size={15}
+                                  size={16}
                                 />
                               </div>
                             </button>
@@ -670,7 +670,7 @@ export function BibleHeader({
                       : "Buka pencarian lagu"
                   }
                 >
-                  <Icon name="search" size={15} />
+                  <Icon name="search" size={16} />
                 </button>
               ) : null}
               <button
@@ -680,7 +680,7 @@ export function BibleHeader({
                 aria-label={translate(locale, "bible.musicPlayer")}
                 title={translate(locale, "bible.musicPlayer")}
               >
-                <Icon name="music" size={15} />
+                <Icon name="music" size={16} />
               </button>
             </>
           )}

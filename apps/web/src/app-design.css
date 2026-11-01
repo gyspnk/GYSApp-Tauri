@@ -542,12 +542,16 @@
   color: var(--ink);
 }
 :is(.primary-button, .quiet-button, .secondary-button) {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   padding-inline: 14px;
   font-weight: 550;
 }
 :is(.icon-button, .media-control) {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
+}
+/* Any select trigger, however deeply a panel nests it, shares one radius. */
+.control-select .control-select-trigger {
+  border-radius: var(--radius-control);
 }
 
 /* These paragraphs are deliberately complete; only the surrounding tools shrink. */
@@ -1270,6 +1274,7 @@
     .search-trigger,
     .topbar-select .control-select-trigger,
     .account-button,
+    .topbar-appearance-button,
     .reader-context-button,
     .reader-context-book-picker
   ) {
@@ -3361,7 +3366,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: grid;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: clamp(10px, 1vw, 12px);
+  border-radius: var(--radius-control);
   background: var(--blue-soft);
   color: var(--ink);
   box-shadow: none;
@@ -5022,7 +5027,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   width: 44px;
   height: 44px;
   border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--navy);
   text-decoration: none;

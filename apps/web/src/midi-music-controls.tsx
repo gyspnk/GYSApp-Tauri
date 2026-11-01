@@ -187,7 +187,7 @@ export function MidiMusicControls({
           aria-label={translate(locale, "kidung.resetTranspose")}
           title={translate(locale, "kidung.resetTranspose")}
         >
-          <Icon name="reset" size={17} />
+          <Icon name="reset" size={18} />
         </button>
       </div>
     </div>

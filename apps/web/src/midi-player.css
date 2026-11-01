@@ -107,7 +107,7 @@
   width: 100%;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
   font-size: 0.8125rem;
@@ -161,7 +161,7 @@
   gap: 2px;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
 }
@@ -905,7 +905,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-height: var(--tempo-target);
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
   font-size: 1.125rem;
@@ -917,7 +917,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: var(--tempo-target);
   padding: 0 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
 }
 .midi-tempo-stepper input {

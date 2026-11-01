@@ -418,7 +418,7 @@ export function LyricsPanel({
                 aria-label={translate(locale, "kidung.lyrics.previousSong")}
                 title={translate(locale, "kidung.lyrics.previousSong")}
               >
-                <Icon name="skipPrevious" size={17} />
+                <Icon name="skipPrevious" size={18} />
               </button>
               <button
                 type="button"
@@ -434,7 +434,7 @@ export function LyricsPanel({
               >
                 <Icon
                   name={midiState.status === "playing" ? "pause" : "play"}
-                  size={17}
+                  size={18}
                 />
               </button>
               <LyricsMidiProgress locale={locale} />
@@ -445,7 +445,7 @@ export function LyricsPanel({
                 aria-label={translate(locale, "kidung.lyrics.nextSong")}
                 title={translate(locale, "kidung.lyrics.nextSong")}
               >
-                <Icon name="skipNext" size={17} />
+                <Icon name="skipNext" size={18} />
               </button>
             </div>
             <div className="lyrics-title">
@@ -641,7 +641,7 @@ export function LyricsPanel({
             aria-label={translate(locale, "kidung.lyrics.previousVerse")}
             title={translate(locale, "kidung.lyrics.previousVerse")}
           >
-            <Icon name="chevronLeft" size={15} />
+            <Icon name="chevronLeft" size={16} />
           </button>
           <span className="lyrics-verse-indicator">
             {translate(locale, "kidung.lyrics.verseCount", {
@@ -661,7 +661,7 @@ export function LyricsPanel({
             aria-label={translate(locale, "kidung.lyrics.nextVerse")}
             title={translate(locale, "kidung.lyrics.nextVerse")}
           >
-            <Icon name="chevronRight" size={15} />
+            <Icon name="chevronRight" size={16} />
           </button>
         </div>
       </div>

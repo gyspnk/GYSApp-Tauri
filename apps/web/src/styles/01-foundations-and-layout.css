@@ -982,10 +982,11 @@ h1 {
 .primary-button {
   border: 1px solid var(--line-strong);
   background: var(--surface);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
   min-height: 44px;
   padding: 0 16px;
   cursor: pointer;
@@ -2623,6 +2624,7 @@ textarea::placeholder {
 }
 .text-button {
   border: 0;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--blue);
   cursor: pointer;

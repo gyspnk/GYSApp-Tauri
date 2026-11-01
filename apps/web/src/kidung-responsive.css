@@ -257,7 +257,7 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   box-shadow: none;
   color: var(--navy);
@@ -271,8 +271,8 @@
   .hymn-text-toolbar
   .hymn-partitur-toggle
   svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 .hymn-detail-page .hymn-pdf-text-toggle .reader-mode-glyph {
   font-size: 1.125rem !important;

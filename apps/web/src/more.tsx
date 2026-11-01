@@ -202,7 +202,7 @@ function DistributedAssetPanel({
         {groups.map((group) => (
           <section className="distributed-asset-group" key={group.key}>
             <div className="distributed-asset-group-label">
-              <Icon name={group.icon} size={15} />
+              <Icon name={group.icon} size={16} />
               <strong>{translate(locale, group.labelKey)}</strong>
               <span>{group.items.length}</span>
             </div>
@@ -273,7 +273,7 @@ function DistributedAssetPanel({
                             { title: asset.title },
                           )}
                         >
-                          <Icon name="download" size={17} />
+                          <Icon name="download" size={18} />
                           <span className="asset-action-copy">
                             {asset.state === "update"
                               ? translate(locale, "more.update")
@@ -305,7 +305,7 @@ function DistributedAssetPanel({
                           title: asset.title,
                         })}
                       >
-                        <Icon name="download" size={17} />
+                        <Icon name="download" size={18} />
                         <span className="asset-action-copy">
                           {translate(locale, "more.download")}
                         </span>
@@ -1383,7 +1383,7 @@ export function MorePage({
                         color: !selectedAccent ? "#fff" : "var(--muted)",
                       }}
                     >
-                      <Icon name="tune" size={13} aria-hidden />
+                      <Icon name="tune" size={14} aria-hidden />
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}

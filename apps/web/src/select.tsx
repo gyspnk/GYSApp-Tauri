@@ -205,14 +205,14 @@ export function Select<T extends string | number>({
           {selected?.icon && (
             <Icon
               name={selected.icon}
-              size={15}
+              size={16}
               className="control-select-icon"
             />
           )}
           {selected?.shortLabel ?? selected?.label ?? "—"}
         </span>
         <span className="control-select-chevron" aria-hidden="true">
-          <Icon name="chevronDown" size={13} />
+          <Icon name="chevronDown" size={14} />
         </span>
       </button>
       {menuPresent && (
@@ -247,7 +247,7 @@ export function Select<T extends string | number>({
                 {option.icon && (
                   <Icon
                     name={option.icon}
-                    size={15}
+                    size={16}
                     className="control-select-icon"
                   />
                 )}

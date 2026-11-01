@@ -1029,7 +1029,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
             speechActive ? speechSnapshot.currentIndex <= 0 : !canPlayPrevious
           }
         >
-          <Icon name="skipPrevious" size={17} />
+          <Icon name="skipPrevious" size={18} />
         </button>
       }
       <button
@@ -1066,7 +1066,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
               : !canPlayNext
           }
         >
-          <Icon name="skipNext" size={17} />
+          <Icon name="skipNext" size={18} />
         </button>
       }
     </div>
@@ -1220,7 +1220,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 }
                 aria-label={translate(locale, "media.previousSong")}
               >
-                <Icon name="skipPrevious" size={17} />
+                <Icon name="skipPrevious" size={18} />
               </button>
               <button
                 className="media-control"
@@ -1230,7 +1230,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
                 }
                 aria-label={translate(locale, "media.nextSong")}
               >
-                <Icon name="skipNext" size={17} />
+                <Icon name="skipNext" size={18} />
               </button>
             </div>
           )}

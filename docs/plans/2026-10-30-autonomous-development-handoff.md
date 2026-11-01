@@ -1571,6 +1571,42 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Satu bentuk kontrol, satu ukuran ikon (1 Nov)
+
+Sensus kontrol di 11 rute × 2 viewport (390 dan 1440) mengelompokkan tiap
+kontrol berdasarkan kelas dan mencatat radius serta tingginya. Hasilnya: radius
+tombol bercampur **8/10/12/999 px** dan ukuran ikon **15/16/17/18/20 px**.
+Sekarang aturannya satu:
+
+- Tombol, select, dan tombol ikon memakai **`--radius-control` (12 px)**.
+- Tombol teks memakai **6 px**; panel tetap 8 px (`--radius-md`) dan kartu 16 px.
+- Ikon: **20 px** di toolbar teks pembaca, **18 px** di topbar/tombol ikon,
+  **16 px** di chevron navigasi, **14 px` di dalam chip.
+
+Perbaikan yang dilakukan: `.primary-button`/`.quiet-button`/`.secondary-button`
+8 → 12 (`apps/web/src/app-design.css:544`), `.icon-button`/`.media-control` →
+12, `.topbar-appearance-button` 999 → 12 **dan** masuk ke grup medan biru
+topbar (`.topbar :is(.search-trigger, …)`) sehingga keempat kontrol topbar
+identik, chip baris iman 10 → 12 (termasuk keadaan terpilih), tombol mode
+pembaca `clamp(11px,1vw,14px)` → 12, tombol skor 8 → 12 **dan** ikonnya 18 → 20
+(`kidung-responsive.css`), semua trigger select 10 → 12 (`kidung-ux.css`,
+`midi-player.css`, plus satu aturan otoritatif di `app-design.css`), tombol teks
+beradius 6, dan toggle sidebar `0 10 10 0` → `0 12 12 0`. Ukuran ikon
+dinormalkan di 12 berkas (17 → 18, 15 → 16, 13 → 14).
+
+Bukti: probe memastikan **setiap trigger select 12 px** di 6 rute; keempat
+kontrol topbar terukur **44×44, radius 12, latar `--blue-soft`, ikon 18**;
+toolbar pembaca **20/20/20 px** pada 390 dan 1440; `accessibility` +
+`responsive-touch-targets` + `select-dropdown` + `kidung-control-sync` +
+`kidung-density` **49/49** lalu **34/34** setelah perubahan radius terakhir;
+`pnpm ui:consistency` 0 temuan; bundle 179,8 KiB.
+
+Pelajaran: audit kesetaraan sebelumnya buta pada topbar karena mensyaratkan ≥3
+kontrol **bersaudara langsung** — di sana kontrol dibungkus `div.control-select`
+dan `div.account-menu`. Audit kini juga menghitung tautan berbentuk kontrol
+(`a[class*=button|trigger|action|portal]`) dan membandingkan kontrol yang berada
+pada satu baris horizontal dengan jarak ≤40 px, bukan hanya satu induk.
+
 ### Setiap panel galat punya jalan pulih (1 Nov)
 
 Audit keadaan galat memperlihatkan pola yang tidak seragam: panel paket Alkitab

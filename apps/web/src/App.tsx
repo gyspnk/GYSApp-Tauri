@@ -553,7 +553,7 @@ function Shell({
           >
             <Icon
               name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}
-              size={15}
+              size={16}
             />
           </button>
           <Navigation locale={locale} />

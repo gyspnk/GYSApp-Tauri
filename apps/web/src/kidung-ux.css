@@ -78,7 +78,7 @@
 .hymn-catalog-controls .control-select-trigger {
   min-height: var(--control-hit, 44px);
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--navy) 4%, transparent);
   transition:
@@ -1479,7 +1479,7 @@
 .hymn-page .kidung-controls-field .control-select-trigger {
   min-height: 38px;
   padding-inline: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   font-size: 0.8125rem;
 }
 .kidung-mode-control {
