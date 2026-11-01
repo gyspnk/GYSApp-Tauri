@@ -1597,7 +1597,7 @@ Bukti: ponsel 390 px → **24,75 px, 6 baris seimbang** (sebelumnya 31,5 px,
 10 baris), judul satu baris (tinggi 23 px), desktop 28 px / 4 baris; 42 tes
 lulus (`lyrics-zoom`, `kidung-style-behavior`, `kidung-density`,
 `accessibility`, `direct-manipulation`, `reader-motion`, 2,6 menit); bundle
-tetap 179,3 KiB.
+tetap 179,8 KiB.
 
 ### Lirik di tengah & dock MIDI (1 Nov)
 
@@ -2052,7 +2052,7 @@ di CSS atau sebagai literal di TS/TSX). Dibuktikan gagal-dulu: menghapus
 konsumen. Verifikasi: probe `getComputedStyle` pada `.egys-member-badge` kini
 menghasilkan bingkai emas di light/dark/sepia, `.media-surface` punya bayangan,
 `accessibility` + `settings-data-integrity` + `kidung-style-behavior` **34/34**,
-bundle tetap 179,3 KiB.
+bundle tetap 179,8 KiB.
 
 Baseline job `41247943610` menghasilkan empat PNG yang berbeda byte, tetapi
 `ffmpeg` difference-blend menunjukkan **nol piksel berubah** (hanya metadata
