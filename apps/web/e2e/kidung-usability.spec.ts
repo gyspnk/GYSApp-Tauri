@@ -853,6 +853,28 @@ test("phone Kidung catalog prioritizes search, compact filtering, and large libr
   await expectNoHorizontalOverflow(page);
 });
 
+test("empty Kidung search explains itself and clears in one tap", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
+
+  await page
+    .locator(".hymn-catalog-controls .search-field input")
+    .fill("zzzqqq");
+  const empty = page.locator(".kidung-search-empty");
+  await expect(empty).toBeVisible();
+  await expect(empty).toContainText("Tidak ada judul yang cocok.");
+  await expect(empty).toContainText("Coba kata kunci lain atau ubah filter");
+  await expect(page.locator(".pujian-item")).toHaveCount(0);
+
+  await empty
+    .getByRole("button", { name: "Hapus filter" })
+    .click();
+  await expect(page.locator(".kidung-search-empty")).toHaveCount(0);
+  await expect(page.locator(".pujian-item").first()).toBeVisible();
+});
+
 test("Kidung number search returns the same song in all supported locales", async ({
   page,
 }) => {

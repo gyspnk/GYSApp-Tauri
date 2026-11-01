@@ -1417,6 +1417,29 @@ dari popover preferensi pembaca yang belum terbuka (karena itu filter
 `checkVisibility` ditambahkan). Laporan ini bersifat laporan, bukan penjaga:
 penjaga tetap `radius-scale`, `type-scale`, `spacing-scale`, dan kontrak e2e.
 
+### Keadaan kosong pencarian Kidung (1 Nov)
+
+Mencari kata yang tidak ada di katalog Kidung menghasilkan **halaman kosong**:
+kolom pencarian berisi kata kunci, lalu tidak ada apa pun di bawahnya — tanpa
+penjelasan, tanpa tombol untuk kembali. Suara dan Literatur pada keadaan yang sama
+sudah menampilkan “0 bacaan ditemukan / Tidak ada judul yang cocok / Hapus filter”,
+jadi ini juga penyimpangan konsistensi.
+
+Perbaikan: `apps/web/src/kidung-catalog.tsx` merender panel
+`.empty-state.kidung-search-empty` (`role="status"`) berisi judul, penjelasan, dan
+tombol “Hapus filter” yang mengosongkan kata kunci **dan** koleksi sekaligus.
+Teksnya memakai kunci yang sudah ada (`literature.emptyTitle`, `catalog.reset`)
+dan kalimat `literature.emptyBody` digeneralisasi menjadi “Coba kata kunci lain
+atau ubah filter.” supaya masuk untuk Kidung maupun Literatur — menghindari tiga
+kunci baru yang akan memakan sisa anggaran bundle.
+
+Bukti: pada build yang sama, pencarian `zzzqqq` menampilkan panel 366×164 px di
+390 px (533 baris kembali setelah tombol ditekan); dibuktikan gagal-dulu dengan
+`git stash` pada `kidung-catalog.tsx` + rebuild — tes berhenti pada panel yang
+tidak muncul, lalu lulus 4,0 dtk setelah dipulihkan. Tes regresi baru di
+`apps/web/e2e/kidung-usability.spec.ts` (“empty Kidung search explains itself and
+clears in one tap”). Bundle tetap **179,8/180,0 KiB**.
+
 ### Tombol skor di toolbar Kidung (1 Nov)
 
 Di toolbar pembaca, tombol **PDF** tampil sebagai kotak biru muda 44–56 px
