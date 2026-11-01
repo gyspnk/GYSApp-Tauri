@@ -28,6 +28,9 @@ const routes = (
   ].join(",")
 ).split(",");
 const themes = (process.env.UI_AUDIT_THEMES ?? "light,dark").split(",");
+// Zooming the root font size is how a reader with low vision sees the app; the
+// audit runs at 100% by default and at 200% with UI_AUDIT_FONT_SCALE=200.
+const fontScale = Number(process.env.UI_AUDIT_FONT_SCALE ?? "100");
 
 const browser = await chromium.launch();
 const findings = [];
@@ -36,12 +39,16 @@ for (const viewport of viewports) {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
     });
-    await context.addInitScript((value) => {
-      window.localStorage.setItem(
-        "gys-shell-settings-v1",
-        JSON.stringify({ version: 1, locale: "id", theme: value }),
-      );
-    }, theme);
+    await context.addInitScript(
+      ({ value, scale }) => {
+        window.localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({ version: 1, locale: "id", theme: value }),
+        );
+        document.documentElement.style.fontSize = `${scale}%`;
+      },
+      { value: theme, scale: fontScale },
+    );
     const page = await context.newPage();
     for (const route of routes) {
       await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
@@ -118,7 +125,13 @@ for (const viewport of viewports) {
           overlaps,
         };
       });
-      findings.push({ viewport: viewport.name, theme, route, ...report });
+      findings.push({
+        viewport: viewport.name,
+        theme,
+        fontScale,
+        route,
+        ...report,
+      });
     }
     await context.close();
   }

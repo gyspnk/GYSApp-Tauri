@@ -161,8 +161,11 @@ real routes (including `/kidung/1` and the three settings sections) across
 320/360/390/414/768/1440 px in the light and dark themes, reporting document
 overflow, clipped text and overlapping top-bar controls; deliberate
 `text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
-`UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES` and `UI_AUDIT_BASE`
-narrow a run. `pnpm test:e2e:dev` is the local HMR
+`UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES`, `UI_AUDIT_BASE` and
+`UI_AUDIT_FONT_SCALE` narrow or zoom a run. `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
+is the low-vision pass: it raises the root font size to 200% and verifies that no
+label is clipped and nothing overflows its box (48 loads at 320/390 px, light and
+dark, reported clean on 1 Nov). `pnpm test:e2e:dev` is the local HMR
 alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Full browser,
 native and signed-device gates remain separate from quick iteration. See
 [testing and maintenance](docs/testing-and-maintenance.md).

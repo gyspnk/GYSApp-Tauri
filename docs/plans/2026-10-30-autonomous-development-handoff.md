@@ -1433,6 +1433,20 @@ Iman, dan Pengaturan→Audio tidak menunjukkan pergeseran yang terlihat, dan
   dan tepi kartu; SSIM Beranda 0,98, Alkitab 0,73 karena seluruh blok teks bergeser
   1 px) dan semuanya diadopsi setelah dibandingkan secara visual.
 
+### Audit teks 200 % lewat alat yang sama (1 Nov)
+
+Sebelumnya audit 200 % dijalankan dengan skrip sekali pakai dan menghasilkan
+kebisingan: label tersembunyi untuk pembaca layar (`.hymn-action-label`,
+`.control-select-label` berukuran 1 px) terhitung sebagai teks terpotong. Sekarang
+`apps/web/scripts/ui-overflow-audit.mjs` menerima **`UI_AUDIT_FONT_SCALE`**
+(default 100) dan menyetel `document.documentElement.style.fontSize` sebelum
+aplikasi dimuat, sehingga filter yang sama (abaikan `.sr-only`, ellipsis, line
+clamp, kotak < 8 px) dipakai untuk kedua mode.
+
+Hasil `UI_AUDIT_FONT_SCALE=200 UI_AUDIT_VIEWPORTS=320x720,390x844 pnpm ui:audit`:
+**48 muat (12 rute × 2 lebar × 2 tema), 0 masalah** — termasuk `/kidung/1` yang
+dialihkan ke `hymn-001`. Angka ini menggantikan klaim audit manual sebelumnya.
+
 ### Target sentuh 44 px untuk pointer kasar (1 Nov)
 
 Audit seluruh rute pada 390×844 dengan `hasTouch`/`isMobile`
