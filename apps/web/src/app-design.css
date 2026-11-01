@@ -1684,6 +1684,35 @@
   color: var(--navy);
   box-shadow: none;
 }
+
+/* Icon chrome reads as icons, not tiles: flat by default, filled only when the
+   control is the active mode. This is the reader's version of the dock rules. */
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .hymn-text-footer > button,
+    .hymn-scope-pill-btn,
+    .hymn-autoscroll-btn,
+    .hymn-reader-settings-summary,
+    .lyrics-ctrl-btn,
+    .lyrics-hdr-btn
+  ) {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.hymn-detail-page.is-text-viewer
+  :is(.hymn-action, .lyrics-ctrl-btn, .lyrics-hdr-btn):is(
+    .is-active,
+    [aria-pressed="true"]
+  ) {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
 .hymn-detail-page.is-text-viewer .hymn-mode-toggle {
   padding: 4px;
   gap: 4px;
@@ -5034,4 +5063,45 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .topbar-appearance-button:hover {
   background: var(--blue-soft);
+}
+
+/* Fullscreen lyrics on phones: one header line that truncates instead of
+   wrapping, a circular primary transport, and honest 12 px timestamps. */
+@media (max-width: 599px) {
+  .lyrics-title {
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .lyrics-title h2 {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .lyrics-header-actions {
+    flex-shrink: 0;
+  }
+}
+.lyrics-panel .lyrics-play-toggle {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: var(--on-accent);
+}
+.lyrics-panel .lyrics-play-toggle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--blue) 86%, #000);
+}
+.lyrics-panel .lyrics-play-toggle:disabled {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.lyrics-panel .lyrics-midi-label,
+.lyrics-panel .lyrics-verse-indicator {
+  font-size: 0.75rem;
+}
+.lyrics-verse-text p {
+  text-wrap: balance;
 }

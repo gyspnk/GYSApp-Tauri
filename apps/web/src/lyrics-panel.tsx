@@ -228,11 +228,15 @@ export function LyricsPanel({
       if (disposed || pinchStart.current) return;
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
+      // A narrow sheet wraps long lines long before it runs out of height, so
+      // cap the preferred size instead of letting it shrink line by line.
+      const preferred =
+        element.clientWidth < 520 ? Math.min(fontSize, 22) : fontSize;
       const next = manualFont.current
-        ? fontSize
+        ? preferred
         : measureHymnFontFit(
             element,
-            fontSize,
+            preferred,
             parent ? parent.clientHeight - 12 : element.clientHeight,
             lastFitRef.current,
           );

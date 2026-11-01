@@ -1571,6 +1571,34 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Lirik layar penuh: satu bahasa kontrol (1 Nov)
+
+Pemilik menilai panel lirik masih “box dalam box” dan tombolnya tidak rapi.
+Penyebabnya satu aturan lama: `.hymn-detail-page.is-text-viewer :is(…,
+.lyrics-ctrl-btn)` mewarnai **semua** tombol ikon panel dengan `--blue-soft`
+plus garis 1 px, sementara tombol transport (`.lyrics-hdr-btn`) transparan —
+dua bahasa kontrol dalam satu header. Selain itu judul membungkus dua baris
+(font 16,875 px), dan autofit tidak pernah mengecil karena
+`measureHymnFontFit` membandingkan `scrollWidth` dengan `clientWidth`, yang
+selalu sama pada teks yang sudah membungkus — hasilnya 31,5 px dengan 10 baris.
+
+Perbaikan:
+
+- Blok “ikon tetap ikon” ditulis **setelah** aturan medan biru: transparan,
+  `--ink`, tanpa garis/bayangan; hanya `.is-active`/`aria-pressed="true"` yang
+  memakai `--blue-soft`.
+- Tombol putar menjadi lingkaran **48 px** `--blue` (nonaktif: `--surface-soft`).
+- Di ≤599 px judul dipaksa satu baris dengan elipsis, dan label waktu serta
+  indikator bait naik ke `0,75rem`.
+- Baris lirik memakai `text-wrap: balance`; ukuran di layar sempit dibatasi
+  `Math.min(fontSize, 22)` sebelum autofit.
+
+Bukti: ponsel 390 px → **24,75 px, 6 baris seimbang** (sebelumnya 31,5 px,
+10 baris), judul satu baris (tinggi 23 px), desktop 28 px / 4 baris; 42 tes
+lulus (`lyrics-zoom`, `kidung-style-behavior`, `kidung-density`,
+`accessibility`, `direct-manipulation`, `reader-motion`, 2,6 menit); bundle
+tetap 179,3 KiB.
+
 ### Lirik di tengah & dock MIDI (1 Nov)
 
 Laporan pemilik: lirik Kidung belum center secara vertikal, tombol di mode
