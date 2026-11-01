@@ -68,6 +68,38 @@ The dev wrapper builds small dependencies and starts Vite; stop production
 preview first. It is rejected in CI and with the prebuilt production flag.
 Resource budgets, offline artifact checks and performance use production mode.
 
+## Local surfaces and deploy checklist
+
+```sh
+# HMR shell wired to the shared BFF
+VITE_BFF_BASE_URL=https://gysapp-tauri-bff.pas-presensi.workers.dev pnpm dev
+
+# production build served by the common Playwright server
+pnpm build && pnpm preview --host 127.0.0.1 --port 4173
+```
+
+| Surface        | Runs there                                 | Requirement                                                                                                             |
+| -------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| dev (5173)     | Vite HMR, env read from the shell          | `VITE_BFF_BASE_URL` exported in the process, never in `.env.local`                                                      |
+| preview (4173) | hashed production build, E2E base URL      | a fresh `pnpm build`; never rebuild while browser checks run                                                            |
+| Worker BFF     | content, PDF proxy, chord, e-GYS, Edge TTS | the deployed `gysapp-tauri-bff`; `wrangler dev` needs >1 GiB and dies inside this 11 GiB container with `MmapAligned()` |
+| GitHub Pages   | public app                                 | `pages.yml` on `main` plus the `VITE_*` repository variables                                                            |
+
+The Worker deploys from `worker.yml`: a push to `main` under `apps/bff/**`,
+`packages/contracts/**`, the workflow, or the lockfile, plus manual dispatch from
+any branch (`gh workflow run worker.yml --ref <branch>`). The repository secrets
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are configured, so
+`wrangler login` is only needed for a deploy made outside CI. Dispatching a
+branch deploys branch code to the shared worker — record which branch is live and
+redeploy `main` when the experiment ends.
+
+Health checks for a deployed worker:
+
+```sh
+curl -s -o /dev/null -w '%{http_code}\n' https://gysapp-tauri-bff.pas-presensi.workers.dev/api/v1/content/catalog
+curl -s -o /dev/null -w '%{http_code}\n' https://gysapp-tauri-bff.pas-presensi.workers.dev/api/v1/content/sauh
+```
+
 ## Regression map
 
 | Spec / unit family                                            | Contract                                                                                                                      |
