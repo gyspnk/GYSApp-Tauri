@@ -1245,3 +1245,138 @@ body:has(.hymn-detail-page.is-text-viewer)
   overflow: visible;
   text-overflow: clip;
 }
+
+/* Desktop sheet: one control per line, compact rows on a mouse pointer. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    left: auto;
+    right: 0;
+    width: 380px;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 6px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .media-instrument-control {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .media-key-control
+    .control-select-trigger {
+    width: 100%;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-utility-controls,
+  .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+    border-top: 1px solid var(--line);
+    padding-top: 4px;
+  }
+}
+@media (min-width: 721px) and (pointer: fine) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .control-select-trigger,
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+    height: 32px;
+    min-height: 32px;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose button {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-control.media-secondary-control {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+  }
+}
+
+/* The instrument picker owns its whole row; the transpose value stays legible. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control,
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    width: 100%;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose-value {
+    min-width: 22px;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    display: flex;
+    align-items: center;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+}

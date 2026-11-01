@@ -1571,6 +1571,29 @@ CSS — `Expected: >= 43.99, Received: 32` — lalu hijau setelah dipulihkan.
 `responsive-touch-targets` **5/5**, `accessibility` + `universal-usability`
 **23/23**, `faith-pdf` 14/14.
 
+### Panel musik desktop: satu kontrol satu baris (1 Nov)
+
+Panel “Lanjutan” di dock desktop masih menumpuk label “Instrumen MIDI” di atas
+select (label 77×15 menempel tepi panel), memakai kontrol 32 px yang tidak
+sejajar, dan kotak transpose berisi empat tombol kecil — persis keluhan
+“box dalam box”. Sekarang panel memakai satu kolom penuh:
+
+- select instrumen **selebar panel** (358 px) pada barisnya sendiri;
+- baris kedua: select kunci (1fr) + grup transpose sejajar;
+- baris ketiga: volume + dua tombol utilitas; baris keempat aksi teks; baris
+  kelima antrean — dipisah garis rambut, tanpa kotak bersarang;
+- panel 380 px, rata kanan dock, tinggi **227 px** (batas uji desktop 230 px);
+  pada pointer halus kontrol 32 px, pada pointer kasar tetap 44 px.
+
+Catatan teknis: select instrumen sempat tetap 176 px karena `.control-select`
+membagi dua kolom grid (nilai 176 + 174); barisnya dijadikan flex dengan
+trigger `flex: 1 1 auto` sehingga mengisi 358 px.
+
+Bukti: `kidung-usability` (panel harus berakhir di atas dock) dan
+`kidung-density` (tinggi panel ≤230 desktop), ditambah `kidung-unified-controls`,
+`kidung-control-sync`, `midi-scrub`, `accessibility` dijalankan setelah
+perubahan.
+
 ### Lembar “Lainnya” di ponsel (1 Nov)
 
 Panel “Lainnya” pada mode baca ponsel menumpuk lima tombol 70 px dengan
