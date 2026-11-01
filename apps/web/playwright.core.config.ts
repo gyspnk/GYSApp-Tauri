@@ -16,7 +16,12 @@ export default defineConfig(baseConfig, {
   // Two browsers saturate an 8-core ARM runner; more workers only add
   // contention (measured: 179s @2, 184s @3, 217s @4 on the same 55 tests).
   workers: Number(process.env.GYS_E2E_WORKERS ?? 2),
-  retries: 0,
+  // The Bible reader fetches a 7.9 MB pack; on this 11 GiB host, swap pressure
+  // occasionally blows the boot window even at 30 s (measured 2026-11-01: two
+  // such flakes in core runs, both passing alone in 3-6 s). One retry keeps the
+  // local gate honest without hiding a real regression: a broken reader fails
+  // twice. The hosted selective tier keeps retries: 0.
+  retries: 1,
   reporter: [["line"]],
   testMatch: [
     "**/smoke.spec.ts",
