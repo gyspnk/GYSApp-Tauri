@@ -360,7 +360,7 @@ export function BibleHeader({
                               }
                               aria-label={translate(
                                 locale,
-                                "bible.decreaseText",
+                                "common.decreaseText",
                               )}
                             >
                               <span className="step-label">A−</span>
@@ -379,7 +379,7 @@ export function BibleHeader({
                               }
                               aria-label={translate(
                                 locale,
-                                "bible.increaseText",
+                                "common.increaseText",
                               )}
                             >
                               <span className="step-label">A+</span>

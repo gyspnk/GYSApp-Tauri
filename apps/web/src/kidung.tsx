@@ -1973,7 +1973,7 @@ export function HymnDetail({
                             }),
                           )}
                           disabled={fitFontSize <= MIN_HYMN_FONT_SIZE}
-                          aria-label={translate(locale, "kidung.decreaseText")}
+                          aria-label={translate(locale, "common.decreaseText")}
                         >
                           A−
                         </button>
@@ -1998,7 +1998,7 @@ export function HymnDetail({
                             }),
                           )}
                           disabled={fitFontSize >= MAX_HYMN_FONT_SIZE}
-                          aria-label={translate(locale, "kidung.increaseText")}
+                          aria-label={translate(locale, "common.increaseText")}
                         >
                           A+
                         </button>

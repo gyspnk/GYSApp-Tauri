@@ -358,7 +358,7 @@ test("hymn reader preferences persist and PDF layout adapts to a phone", async (
   await expect(page.locator(".lyrics-sheet")).toBeVisible({ timeout: 15_000 });
   await page.locator(".hymn-more-actions-summary").click();
   await page.locator(".hymn-reader-settings-summary").click();
-  await page.getByRole("button", { name: "Perbesar ukuran teks" }).click();
+  await page.getByRole("button", { name: "Perbesar teks" }).click();
   await expect(page.locator(".lyrics-sheet")).toHaveCSS("font-size", "19px");
   await expect(page.locator(".lyrics-sheet")).toHaveAttribute(
     "data-autofit-font-size",

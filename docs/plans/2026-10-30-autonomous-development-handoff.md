@@ -1787,6 +1787,19 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Satu istilah untuk ukuran dan jarak teks (1 Nov)
+
+Aksi yang sama punya tiga nama: “Perbesar teks” (Alkitab), “Perbesar ukuran
+teks” (pembaca kidung), dan “Perbesar font” (lirik layar penuh). Sekarang ada
+satu pasangan kanonik `common.decreaseText` / `common.increaseText` yang
+dipakai ketiga permukaan, dan kontrol jarak baris di lirik memakai
+`kidung.decreaseSpacing` / `kidung.increaseSpacing` yang sama dengan panel
+pembaca. **18 string duplikat dihapus** (6 kunci × 3 bahasa); penjaga
+`apps/web/src/i18n.test.ts` membuktikan tidak ada kunci yatim, dan dua tes
+(`kidung-chord-reflow`, `media-load`) diperbarui ke label baru — **14/14
+lulus**. Audit empat tema tetap bersih: overflow **192 pemuatan, 0 masalah**;
+kotak-dalam-kotak **96 pemuatan, 0 temuan**.
+
 ### Flaky login WhatsApp: popup yang belum terpasang (1 Nov)
 
 Core run `820bebb` menandai “a WhatsApp attempt that really fails…” sebagai

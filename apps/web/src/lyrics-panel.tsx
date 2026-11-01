@@ -546,8 +546,8 @@ export function LyricsPanel({
                     manualFont.current = true;
                     setFontSize((current) => Math.max(14, current - 4));
                   }}
-                  aria-label={translate(locale, "kidung.lyrics.decreaseFont")}
-                  title={translate(locale, "kidung.lyrics.decreaseFont")}
+                  aria-label={translate(locale, "common.decreaseText")}
+                  title={translate(locale, "common.decreaseText")}
                 >
                   <Icon name="textDecrease" size={16} />
                 </button>
@@ -558,8 +558,8 @@ export function LyricsPanel({
                     manualFont.current = true;
                     setFontSize((current) => Math.min(72, current + 4));
                   }}
-                  aria-label={translate(locale, "kidung.lyrics.increaseFont")}
-                  title={translate(locale, "kidung.lyrics.increaseFont")}
+                  aria-label={translate(locale, "common.increaseText")}
+                  title={translate(locale, "common.increaseText")}
                 >
                   <Icon name="textIncrease" size={16} />
                 </button>
@@ -571,11 +571,8 @@ export function LyricsPanel({
                       Math.max(1, Math.round((current - 0.2) * 10) / 10),
                     )
                   }
-                  aria-label={translate(
-                    locale,
-                    "kidung.lyrics.decreaseSpacing",
-                  )}
-                  title={translate(locale, "kidung.lyrics.decreaseSpacing")}
+                  aria-label={translate(locale, "kidung.decreaseSpacing")}
+                  title={translate(locale, "kidung.decreaseSpacing")}
                 >
                   <Icon name="formatLineSpacing" size={16} />
                 </button>
@@ -587,11 +584,8 @@ export function LyricsPanel({
                       Math.min(3.5, Math.round((current + 0.2) * 10) / 10),
                     )
                   }
-                  aria-label={translate(
-                    locale,
-                    "kidung.lyrics.increaseSpacing",
-                  )}
-                  title={translate(locale, "kidung.lyrics.increaseSpacing")}
+                  aria-label={translate(locale, "kidung.increaseSpacing")}
+                  title={translate(locale, "kidung.increaseSpacing")}
                 >
                   <Icon name="lineWeight" size={16} />
                 </button>

@@ -109,7 +109,7 @@ test("fullscreen chord toggles restore the same fitted scale and explicit font a
     .getByRole("button", { name: "Tampilkan kontrol lain", exact: true })
     .click();
   await panel
-    .getByRole("button", { name: "Perbesar font", exact: true })
+    .getByRole("button", { name: "Perbesar teks", exact: true })
     .click();
   const rootScale = await page.evaluate(
     () => parseFloat(getComputedStyle(document.documentElement).fontSize) / 16,
