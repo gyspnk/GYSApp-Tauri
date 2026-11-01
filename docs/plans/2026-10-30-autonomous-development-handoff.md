@@ -1787,6 +1787,18 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Flake dapat kelima: mengukur sel sebelum daftar siap (1 Nov)
+
+`test:e2e:core` untuk `6b76333` memberi **101 lulus / 1 gagal (6,0 mnt)**:
+“Bible title drag advances through book, chapter, and verse before commit”
+melempar `Error: Quick navigation book is not measurable` karena
+`boundingBox()` untuk `[data-quick-nav-value="40"]`/`"41"]` dipanggil sebelum
+sel buku benar-benar terlihat saat host tertekan (RAM terpakai 9,2 GB, hanya
+2,3 GB tersedia). Perbaikannya bukan menaikkan timeout global, melainkan
+menunggu elemennya: `await expect(matthew).toBeVisible({ timeout: 10_000 })`
+dan hal yang sama untuk `mark` sebelum pengukuran. Tes tunggal lulus **8,4 dtk**
+setelah patch, dan `faith-pdf`/`faith-zoom` tetap 12/12.
+
 ### Takaran baca halaman Iman (1 Nov, putaran 39)
 
 Di 1440 px paragraf “Percaya bahwa…” melebar **1126 px** — sekitar **92

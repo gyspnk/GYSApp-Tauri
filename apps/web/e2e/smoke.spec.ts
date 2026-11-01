@@ -650,6 +650,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     "book",
   );
   const matthew = page.locator('[data-quick-nav-value="40"]');
+  await expect(matthew).toBeVisible({ timeout: 10_000 });
   const matthewBox = await matthew.boundingBox();
   if (!matthewBox) throw new Error("Quick navigation book is not measurable");
   await page.mouse.move(
@@ -659,6 +660,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
   await expect(matthew).toHaveClass(/is-selected/);
   await page.waitForTimeout(600);
   const mark = page.locator('[data-quick-nav-value="41"]');
+  await expect(mark).toBeVisible({ timeout: 10_000 });
   const markBox = await mark.boundingBox();
   if (!markBox) throw new Error("Quick navigation book is not measurable");
   await page.mouse.move(
