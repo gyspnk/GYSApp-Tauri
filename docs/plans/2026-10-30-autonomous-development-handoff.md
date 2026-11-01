@@ -1642,6 +1642,24 @@ kegagalan label karena label kanonik baru — salinan locale diperbarui
 (`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
 14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
 
+### Audit kotak bersarang (1 Nov)
+
+Keluhan pemilik “UI seperti box dalam box” sekarang punya alat: `pnpm ui:boxes`
+(`apps/web/scripts/ui-box-audit.mjs`). Alat ini menganggap “kartu” sebagai elemen
+terlihat yang punya bingkai **atau** latar terisi, radius > 0, lebar ≥ 160 px dan
+tinggi ≥ 48 px, lalu melaporkan kartu yang punya kartu leluhur. Kontrol
+(`button`, `select`, `input`, `textarea`, `summary`, `a`, `[role=button]`,
+`[role=tab]`, `label`) sengaja **tidak** dihitung sebagai kotak dalam, karena
+kontrol memang duduk di atas kartu; popover tersembunyi dilewati lewat
+`checkVisibility`.
+
+Validasi: uji sintetis (menyisipkan dua kotak bersarang di halaman) terdeteksi
+`["DIV"]`; run bawaan 12 rute × 390/1440 **24 muat, 0 temuan**; run lebar
+12 rute × 320/390/768/1440 × terang/gelap **96 muat, 0 temuan** — artinya setelah
+perbaikan grup bersegmen tidak ada lagi kartu di dalam kartu pada rute utama.
+Temuan sah yang pernah muncul (grup scope di lembar pembaca, `egys-login-box`
+yang berisi tombol penyedia) sudah hilang atau memang kontrol di atas kartu.
+
 ### Kotak di dalam kotak: grup bersegmen (1 Nov)
 
 Audit sarang visual menemukan sisa kotak-dalam-kotak di lembar pembaca:

@@ -144,7 +144,8 @@ pnpm preview                              # terminal 1, serves 4173 for the brow
 pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
 pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report
 pnpm ui:audit                             # overflow/clipping sweep over every real route
-pnpm ui:consistency                       # peer controls must share one paint
+pnpm ui:consistency                       # peer controls share one paint and one centre line
+pnpm ui:boxes                             # cards must not sit inside other cards
 pnpm test:performance
 pnpm verify:native-assets
 ```
@@ -161,7 +162,10 @@ because neither can be judged outside CI. `pnpm ui:audit` walks the twelve
 real routes (including `/kidung/1` and the three settings sections) across
 320/360/390/414/768/1440 px in the light and dark themes, reporting document
 overflow, clipped text and overlapping top-bar controls; deliberate
-`text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
+`pnpm ui:boxes` walks the same routes and reports any rounded, framed or filled
+container that sits inside another one; buttons, selects, inputs and summaries are
+controls, so they never count as the inner box (`UI_BOX_ROUTES`, `UI_BOX_VIEWPORTS`,
+`UI_AUDIT_THEMES`). `text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
 `UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES`, `UI_AUDIT_BASE` and
 `UI_AUDIT_FONT_SCALE` narrow or zoom a run. `pnpm ui:consistency` is the
 sibling report with two passes: for every row that holds three or more peer

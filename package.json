@@ -68,7 +68,8 @@
     "generate:hymn-metadata": "node scripts/generate-hymn-metadata.mjs",
     "test:performance:browser-roadmap": "pnpm --filter @gys/web test:performance:browser-roadmap",
     "verify:upstream-parity": "node scripts/verify-upstream-parity.mjs",
-    "ui:consistency": "node apps/web/scripts/ui-consistency-audit.mjs"
+    "ui:consistency": "node apps/web/scripts/ui-consistency-audit.mjs",
+    "ui:boxes": "node apps/web/scripts/ui-box-audit.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
