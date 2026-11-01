@@ -1299,6 +1299,13 @@
   color: var(--navy);
   opacity: 1;
 }
+/* Tablets have no hardware keyboard, so the shortcut hint would only push the
+   search pill past its column and clip both the label and the badge. */
+@media (max-width: 1023px) {
+  .topbar .search-trigger kbd {
+    display: none;
+  }
+}
 .topbar .topbar-select .control-select-trigger {
   padding-inline: 12px;
 }

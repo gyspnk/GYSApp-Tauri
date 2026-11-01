@@ -1787,6 +1787,17 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Petunjuk pintasan pencarian di tablet (1 Nov)
+
+Di 768–900 px tombol pencarian di topbar terhimpit sampai **105 px** padahal
+isinya butuh ~135 px, sehingga label “Cari” dan lencana `⌘K` terpotong (terlihat
+di tangkapan lanskap 844×390). Tablet tidak punya papan ketik fisik, jadi
+lencana pintasan memang tidak berguna di sana: aturan
+`@media (max-width: 1023px) { .topbar .search-trigger kbd { display: none } }`
+menyembunyikannya. Setelah itu tombol **83 px** dengan `scrollWidth ==
+clientWidth` di 768/844/900, dan lencana kembali muncul di 1024+ (100 px).
+`select-dropdown` + `accessibility` (11 tes terkait) lulus.
+
 ### Sampul Suara 16:9 di rak perpustakaan (1 Nov)
 
 Kartu Suara memakai pita gambar **112 px** untuk semua lebar, sehingga di
