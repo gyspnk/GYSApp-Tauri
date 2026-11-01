@@ -1642,6 +1642,23 @@ kegagalan label karena label kanonik baru — salinan locale diperbarui
 (`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
 14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
 
+### Audit perataan konten (1 Nov)
+
+`ui:consistency` sebelumnya hanya membandingkan _cat_ kontrol sebaris. Sekarang
+ia punya pass kedua: setiap kontrol terlihat diperiksa apakah isinya duduk di
+garis tengah — ikon yang pusatnya lebih dari 1,5 px dari label, atau anak
+tunggal yang tidak di tengah kotaknya (ambang 2 px). Filter yang ditambahkan
+setelah tiga putaran salah-tangkap: label `.sr-only` (kotak 1 px) tidak
+dibandingkan, chevron yang disembunyikan di ponsel (kotak 0 px) dilewati,
+ikon yang **ditumpuk di atas** label (kartu) bukan temuan karena memang
+vertikal, dan _swatch_ warna dikecualikan karena catnya adalah isinya.
+
+Hasil: 72 muat (12 rute × 320/390/768/1440 × terang/gelap) **0 temuan**, dan
+run bawaan yang kini mencakup `/lainnya?section=audio` serta
+`/lainnya?section=kidung` (22 muat) juga **0 temuan**. Satu-satunya temuan nyata
+sebelum filter adalah kartu aksi `.more-card.more-action` (ikon di atas label)
+dan palet aksen — keduanya sengaja vertikal/berwarna.
+
 ### Transport MIDI yang sama di dock dan lirik penuh (1 Nov)
 
 Kontrol musik sudah satu, tetapi baris transportnya belum: di 390 maupun 1440

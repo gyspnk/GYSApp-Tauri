@@ -164,10 +164,13 @@ overflow, clipped text and overlapping top-bar controls; deliberate
 `text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
 `UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES`, `UI_AUDIT_BASE` and
 `UI_AUDIT_FONT_SCALE` narrow or zoom a run. `pnpm ui:consistency` is the
-sibling report: for every row that holds three or more peer controls it lists
-groups whose background, radius, border or height disagree, skipping deliberately
-emphasized actions (primary/danger/active) and hidden popovers
-(`UI_CONSISTENCY_ROUTES`, `UI_CONSISTENCY_VIEWPORTS`, `UI_AUDIT_THEMES`). `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
+sibling report with two passes: for every row that holds three or more peer
+controls it lists groups whose background, radius, border or height disagree, and
+for every visible control it flags content that does not sit on the middle line —
+an icon whose centre is more than 1.5 px away from its label, or an only child
+parked off-centre in its own button. Deliberately emphasized actions
+(primary/danger/active), hidden popovers and screen-reader-only labels are
+skipped (`UI_CONSISTENCY_ROUTES`, `UI_CONSISTENCY_VIEWPORTS`, `UI_AUDIT_THEMES`). `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
 is the low-vision pass: it raises the root font size to 200% and verifies that no
 label is clipped and nothing overflows its box (48 loads at 320/390 px, light and
 dark, reported clean on 1 Nov). `pnpm test:e2e:dev` is the local HMR

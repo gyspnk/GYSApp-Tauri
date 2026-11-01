@@ -26,6 +26,8 @@ const routes = (
     "/suara",
     "/lainnya",
     "/lainnya?section=appearance",
+    "/lainnya?section=audio",
+    "/lainnya?section=kidung",
   ].join(",")
 ).split(",");
 const themes = (process.env.UI_AUDIT_THEMES ?? "light").split(",");
@@ -91,6 +93,10 @@ for (const viewport of viewports) {
                   checkVisibilityCSS: true,
                 })) &&
               !el.hasAttribute("aria-pressed") &&
+              // Swatches are colour pickers: their paint IS the content.
+              !/swatch/.test(
+                typeof el.className === "string" ? el.className : "",
+              ) &&
               el.dataset.variant !== "primary" &&
               !emphasized(el),
           );
@@ -126,6 +132,10 @@ for (const viewport of viewports) {
           (el) => {
             const rect = el.getBoundingClientRect();
             return (
+              // Swatches are colour pickers: their paint IS the content.
+              !/swatch/.test(
+                typeof el.className === "string" ? el.className : "",
+              ) &&
               rect.width >= 24 &&
               rect.height >= 24 &&
               (typeof el.checkVisibility !== "function" ||
@@ -189,8 +199,96 @@ for (const viewport of viewports) {
         }
         return out.slice(0, 8);
       });
-      if (groups.length)
-        findings.push({ viewport: viewport.name, theme, route, groups });
+      // Content centring: a control may be the right size and colour but still
+      // push its icon or its only child off the middle line.
+      const centering = await page.evaluate(() => {
+        const label = (el) => {
+          const cls =
+            typeof el.className === "string" && el.className.trim()
+              ? `.${el.className.trim().split(/\s+/).slice(0, 3).join(".")}`
+              : "";
+          return `${el.tagName.toLowerCase()}${cls}`;
+        };
+        const selector =
+          "button, a[role='button'], a[class*='button'], a[class*='trigger'], a[class*='action'], a[class*='portal'], summary, .hymn-action, .hymn-partitur-toggle, .hymn-more-actions-summary";
+        const out = [];
+        for (const el of document.querySelectorAll(selector)) {
+          if (
+            typeof el.checkVisibility === "function" &&
+            !el.checkVisibility({
+              checkOpacity: true,
+              checkVisibilityCSS: true,
+            })
+          )
+            continue;
+          const box = el.getBoundingClientRect();
+          if (box.width < 24 || box.height < 24) continue;
+          const style = getComputedStyle(el);
+          if (!/flex|grid/.test(style.display)) continue;
+          const svg = [
+            ...el.querySelectorAll(":scope > svg, :scope > span > svg"),
+          ].find((node) => {
+            const box = node.getBoundingClientRect();
+            // A chevron hidden at phone widths still renders a zero box.
+            return box.width >= 8 && box.height >= 8;
+          });
+          const text = [
+            ...el.querySelectorAll(
+              ":scope > span, :scope > strong, :scope > label",
+            ),
+          ].find((node) => {
+            if (!(node.textContent ?? "").trim().length) return false;
+            if (node.querySelector("svg")) return false;
+            const box = node.getBoundingClientRect();
+            // Screen-reader-only labels are 1px wide boxes parked off the
+            // visible line; comparing against them invents a huge offset.
+            return box.width >= 8 && box.height >= 8;
+          });
+          if (svg && text) {
+            const a = svg.getBoundingClientRect();
+            const b = text.getBoundingClientRect();
+            const delta = Math.abs(
+              a.top + a.height / 2 - (b.top + b.height / 2),
+            );
+            // Cards stack the icon above its label on purpose; only a
+            // side-by-side row is expected to share one middle line.
+            const stacked =
+              Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) <= 0;
+            if (delta > 1.5 && !stacked)
+              out.push({
+                element: label(el),
+                kind: "icon-text",
+                delta: Number(delta.toFixed(1)),
+              });
+          }
+          const kids = [...el.children].filter(
+            (node) => node.getBoundingClientRect().height > 0,
+          );
+          if (kids.length === 1) {
+            const child = kids[0].getBoundingClientRect();
+            if (child.height < box.height - 4) {
+              const delta = Math.abs(
+                child.top + child.height / 2 - (box.top + box.height / 2),
+              );
+              if (delta > 2)
+                out.push({
+                  element: label(el),
+                  kind: "only-child",
+                  delta: Number(delta.toFixed(1)),
+                });
+            }
+          }
+        }
+        return out.slice(0, 12);
+      });
+      if (groups.length || centering.length)
+        findings.push({
+          viewport: viewport.name,
+          theme,
+          route,
+          groups,
+          centering,
+        });
     }
     await context.close();
   }
