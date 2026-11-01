@@ -2700,6 +2700,11 @@ textarea::placeholder {
 .error-panel strong {
   color: var(--ink);
 }
+.error-panel .primary-button {
+  justify-self: start;
+  width: auto;
+  margin-top: 4px;
+}
 .bible-reader {
   margin-top: 28px;
   border: 1px solid var(--line);

@@ -1594,11 +1594,18 @@ Sekarang kelima panel data memakai pola yang sama — judul tebal, kalimat
   tidak ditemukan” saat katalognya yang gagal.
 - Paket Alkitab sudah punya tombol sejak awal; hanya kalimatnya yang disamakan.
 
+Tombol pemulihan juga disamakan ukurannya: `.primary-button` di dalam
+`.error-panel` semula melebar penuh selebar panel, sekarang
+`justify-self: start; width: auto` sehingga menjadi tombol inline 84×44 px
+seperti panel Suara Sejati.
+
 Bukti: uji baru `apps/web/e2e/offline-retry.spec.ts` (Literatur, Pokok Iman)
 dan `kidung-catalog-error` yang diperluas (katalog + pembaca) semuanya melepas
 pemblokiran lalu menekan **Coba lagi** sampai isi muncul; `offline-retry` +
 `catalog-discovery` + `faith-pdf` + `faith-zoom` + `kidung-catalog-error`
-**21/21 (38 dtk)**; bundle tetap 179,8 KiB.
+**21/21 (38 dtk)**; setelah perbaikan ukuran tombol, `offline-retry` +
+`kidung-catalog-error` + `accessibility` **22/22 (1,2 mnt)**; bundle tetap
+179,8 KiB.
 
 ### Satu kalimat galat untuk semua panel data (1 Nov)
 
