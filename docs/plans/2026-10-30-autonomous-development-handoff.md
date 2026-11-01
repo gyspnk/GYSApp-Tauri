@@ -1417,6 +1417,31 @@ dari popover preferensi pembaca yang belum terbuka (karena itu filter
 `checkVisibility` ditambahkan). Laporan ini bersifat laporan, bukan penjaga:
 penjaga tetap `radius-scale`, `type-scale`, `spacing-scale`, dan kontrak e2e.
 
+### Geser tata letak Alkitab 0,25 → 0,01 (1 Nov)
+
+Spesifikasi performa bawaan mencatat `layoutShift` **0,2478** di `/bible` ponsel
+dan **0,2350** di desktop — jauh di atas ambang "baik" Core Web Vitals (≤0,1) dan
+hanya lolos karena anggaran lama 0,35.
+
+Penyebabnya bukan font (memblokir semua `*.woff2` tetap 0,2347) melainkan
+`content-visibility: auto; contain-intrinsic-size: 78px` pada `.verse-row` di
+`apps/web/src/styles/02-bible-and-settings.css`: setiap baris ayat pertama-tama
+memakai tinggi placeholder 78 px, lalu tinggi aslinya (87–296 px) masuk satu
+frame kemudian sehingga baris-baris di bawahnya bergeser. Bukti: menyuntik
+`.verse-row { content-visibility: visible }` menurunkan CLS ke **0,0002**.
+
+Perbaikannya: 16 pembungkus ayat pertama (lebih dari satu layar) selalu
+di-layout, dan `content-visibility` hanya dipakai mulai pembungkus ke-17
+(`.verse-list > div:nth-child(n + 17) .verse-row`) dengan
+`contain-intrinsic-size: auto 120px`. Hasil: ponsel **0,0134**, tablet
+**0,0249**, desktop **0,0017**; waktu long task tidak berubah (177–207 ms).
+
+Penjaga: `apps/web/e2e/runtime-performance-baseline.spec.ts` sekarang memakai
+anggaran **0,1** untuk rute `/bible` (rute lain tetap 0,35). Dibuktikan
+gagal-dulu dengan CSS lama: `Expected: < 0.1` pada `bible-phone` 0,2478. Setelah
+perbaikan spec lulus (2 tes, 42,6 dtk) dan 12 tes Alkitab (`bible-annotations`,
+`bible-picker-mobile`, `bible-zoom`) hijau.
+
 ### Keadaan kosong pencarian Kidung (1 Nov)
 
 Mencari kata yang tidak ada di katalog Kidung menghasilkan **halaman kosong**:

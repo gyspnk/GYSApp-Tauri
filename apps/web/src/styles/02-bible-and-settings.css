@@ -178,9 +178,14 @@
   gap: 14px;
   padding: 14px 16px;
   border-top: 1px solid var(--line);
-  content-visibility: auto;
-  contain-intrinsic-size: 78px;
   scroll-margin-block: 180px 40px;
+}
+/* Rows past the first screenful can skip layout until they scroll in; the rows
+ * above it must lay out eagerly, or their real heights land a frame late and
+ * push everything below them (CLS 0,23 on phone). */
+.verse-list > div:nth-child(n + 17) .verse-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
 }
 .verse-row.is-selected {
   border-radius: 8px;

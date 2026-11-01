@@ -285,7 +285,10 @@ test("primary routes runtime performance baseline", async ({
     expect(result.scrollWidth, result.id).toBeLessThanOrEqual(
       result.clientWidth + 1,
     );
-    expect(result.layoutShift, result.id).toBeLessThan(0.35);
+    // The reader previously painted placeholder rows first and shifted 0,23;
+    // it must now stay inside the "good" Core Web Vitals band (<= 0,1).
+    const shiftBudget = result.route === "/bible" ? 0.1 : 0.35;
+    expect(result.layoutShift, result.id).toBeLessThan(shiftBudget);
     expect(result.longTaskDuration, result.id).toBeLessThan(8_000);
     expect(result.duplicateAssets, result.id).toEqual([]);
     expect(result.errors, result.id).toEqual([]);
