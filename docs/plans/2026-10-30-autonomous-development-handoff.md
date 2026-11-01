@@ -1642,6 +1642,36 @@ kegagalan label karena label kanonik baru — salinan locale diperbarui
 (`MIDI instrument`/`MIDI tempo`, `MIDI 乐器`/`MIDI 速度`) dan tesnya lulus
 14,8 dtk. Set suite 88 lulus + 1 gagal itu menjadi 89 lulus setelah perbaikan.
 
+### Transport MIDI yang sama di dock dan lirik penuh (1 Nov)
+
+Kontrol musik sudah satu, tetapi baris transportnya belum: di 390 maupun 1440
+tombol sebelumnya/berikutnya berukuran 32×32 dengan radius **10** di lirik layar
+penuh dan **12** di dock, sementara tombol putar 32×32 biru di dock tetapi
+48×32 transparan di lirik penuh — akibat `@media (pointer: fine)` di
+`app-design.css` yang menulis tinggi 32 px untuk `.lyrics-hdr-btn` setelah rule
+putar 48 px, ditambah radius dasar 10 px.
+
+Perbaikan di `apps/web/src/app-design.css`: token `--transport-control`
+(32 px pointer halus, **44 px** pointer kasar) dipakai kedua permukaan; semua
+tombol sekunder memakai `border-radius: var(--radius-control)`; tombol putar
+selalu lingkaran penuh (`999px`) dengan `--blue`/`--on-accent` dan keadaan
+nonaktif `--surface-soft`; `midi-player.css` menyamakan `.media-tempo-toggle`
+ke radius kontrol. Rule baru berada di akhir berkas dengan selektor
+`.lyrics-panel .lyrics-transport …` (0,3,0) agar mengalahkan blok
+`(pointer: fine)` tanpa `!important`.
+
+Bukti: `midi-control-unification.spec.ts` mendapat dua kasus transport
+(390 sentuh, 1440 mouse) yang mengukur tombol di **dock dan panel lirik** dan
+menuntut tinggi/lebar sama (44/32), radius 12 untuk tombol sekunder, radius
+lingkaran untuk tombol putar, serta warna putar yang sama saat aktif —
+lulus 2/2 (13,7 s). Suite regresi `midi-control-unification` + `kidung-density`
+
+- `kidung-control-sync` + `kidung-unified-controls` + `midi-scrub` +
+  `accessibility` + `kidung-usability` **88/89** sebelum label uji diperbarui
+  (satu kegagalan karena label lama “Pilih alat musik”), lalu **89/89** setelah
+  `kidung-usability.spec.ts` memakai label kanonik `MIDI instrument` / `MIDI tempo`
+  / `MIDI 乐器` / `MIDI 速度`.
+
 ### Satu geometri kontrol MIDI di semua layout (1 Nov)
 
 Keluhan pemilik: “kontrol midi player dan kontrol semua pengaturannya harus bisa
