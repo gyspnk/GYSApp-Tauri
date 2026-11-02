@@ -3178,3 +3178,20 @@ grup **115 → 258 px**, tombol **57/52 → 126/126 px**, celah kosong **0**.
 Bukti hosted: QA `41451539435` **success 2,7 mnt**, **52 PNG**, audit overflow
 **96/0**, box **48/0**, consistency **44/0**; `kidung-reader-options-1440-light.png`
 dari artefak memperlihatkan sakelar penuh selebar baris.
+
+### Putaran 52 — Dock tanpa judul ganda, terverifikasi empat tema (2 Nov)
+
+Dock desktop masih mengulang judul kidung yang sudah ada di header pembaca.
+Aturan baru di `apps/web/src/persistent-media.css` (≥900 px): `.media-context-link`
+disembunyikan untuk dock kidung/speech; judul tetap tampil di ponsel, tempat
+header terpotong dan judul dock menambah informasi.
+
+Terukur lokal (1440): dock **84 → 76 px** tinggi, track seek **588 px**, judul
+tidak dirender, `media-dock` + `midi-player-design` **15/15 (1,4 mnt)**.
+
+Bukti hosted `41465965233` (tema light/dark/sepia/amoled × 390/1440): **104 PNG**,
+manifest `overflow: 0` di seluruh 88 tangkapan dasar + 16 langkah MIDI/opsi,
+audit overflow **192/0**, kotak bersarang **96/0**, konsistensi **88/0**.
+Ditinjau dari artefak: `kidung-reader-midi-1440-{sepia,amoled}` (seek lega,
+tanpa judul ganda), `beranda-1440-sepia` (rail 224 px, baris aktif cokelat
+dengan teks terang).
