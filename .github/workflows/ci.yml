@@ -529,34 +529,32 @@ jobs:
           SHOT_THEMES: ${{ inputs.qa_themes }}
           SHOT_DIR: ui-screenshots
         run: pnpm --filter @gys/web exec node scripts/ui-screenshots.mjs
-      - name: Overflow and clipping audit
-        id: overflow
+      # The three audits launch their own browsers and mostly wait on the
+      # same preview server, so running them side by side cuts the wall time
+      # of this job by roughly two thirds without more runners.
+      - name: Overflow, card-in-card and alignment audits
+        id: audits
         continue-on-error: true
         env:
           UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
           UI_AUDIT_VIEWPORTS: 320x720,390x844,768x1024,1440x900
         run: |
-          set -o pipefail
-          pnpm ui:audit | tee ui-overflow-audit.json
-          jq -e '.problems | length == 0' ui-overflow-audit.json
-      - name: Card-in-card audit
-        id: boxes
-        continue-on-error: true
-        env:
-          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
-        run: |
-          set -o pipefail
-          pnpm ui:boxes | tee ui-box-audit.json
-          jq -e '.findings | length == 0' ui-box-audit.json
-      - name: Alignment audit
-        id: consistency
-        continue-on-error: true
-        env:
-          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
-        run: |
-          set -o pipefail
-          pnpm ui:consistency | tee ui-consistency-audit.json
-          jq -e '.findings | length == 0' ui-consistency-audit.json
+          set -uo pipefail
+          pnpm ui:audit > ui-overflow-audit.json 2>ui-overflow-audit.log & p1=$!
+          pnpm ui:boxes > ui-box-audit.json 2>ui-box-audit.log & p2=$!
+          pnpm ui:consistency > ui-consistency-audit.json 2>ui-consistency-audit.log & p3=$!
+          failed=0
+          wait "$p1" || failed=1
+          wait "$p2" || failed=1
+          wait "$p3" || failed=1
+          for file in ui-overflow-audit.json ui-box-audit.json ui-consistency-audit.json; do
+            echo "--- $file"
+            cat "$file" || true
+          done
+          jq -e '.problems | length == 0' ui-overflow-audit.json || failed=1
+          jq -e '.findings | length == 0' ui-box-audit.json || failed=1
+          jq -e '.findings | length == 0' ui-consistency-audit.json || failed=1
+          exit "$failed"
       - name: Fail when a QA check reported problems
         if: ${{ always() }}
         run: |
@@ -565,14 +563,8 @@ jobs:
           if [ "${{ steps.shots.outcome }}" = "failure" ]; then
             echo "route screenshots reported problems"; failed=1
           fi
-          if [ "${{ steps.overflow.outcome }}" = "failure" ]; then
-            echo "overflow audit reported problems"; failed=1
-          fi
-          if [ "${{ steps.boxes.outcome }}" = "failure" ]; then
-            echo "card-in-card audit reported problems"; failed=1
-          fi
-          if [ "${{ steps.consistency.outcome }}" = "failure" ]; then
-            echo "alignment audit reported problems"; failed=1
+          if [ "${{ steps.audits.outcome }}" = "failure" ]; then
+            echo "a UI audit reported problems"; failed=1
           fi
           if [ "$failed" = "1" ]; then exit 1; fi
           echo "all QA checks passed"
@@ -593,5 +585,8 @@ jobs:
             ui-overflow-audit.json
             ui-box-audit.json
             ui-consistency-audit.json
+            ui-overflow-audit.log
+            ui-box-audit.log
+            ui-consistency-audit.log
           if-no-files-found: warn
           retention-days: 7
