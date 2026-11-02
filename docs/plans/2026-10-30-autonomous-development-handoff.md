@@ -2912,6 +2912,22 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 62 — Push `main` tidak lagi saling membatalkan (2 Nov)
+
+Insiden: verifikasi push `85f3641` (perubahan CSS) dibatalkan oleh push
+dokumentasi `ece3e6d` 5 menit kemudian, karena `cancel-in-progress: true`
+berlaku untuk semua event. Pohon CSS itu sudah terbit (Pages), jadi
+membatalkan verifikasinya meninggalkan perubahan tanpa bukti browser.
+
+Perbaikan di `.github/workflows/ci.yml`:
+`cancel-in-progress: ${{ github.event_name == 'pull_request' }}`. PR tetap
+saling menggantikan (commit terbaru adalah kebenaran), push `main` mengantre
+sampai selesai. Konsekuensi: push dokumentasi di belakang run browser menunggu
+giliran; itu disengaja — lebih baik menunggu daripada kehilangan bukti.
+
+Verifikasi: push `109b4dc` (CSS + workflow) memakai jalur selektif dengan
+sapuan layout, dan tidak dibatalkan oleh push berikutnya.
+
 ### Putaran 61 — "Semua | Bait 1" kembali terbaca sebagai kontrol (2 Nov)
 
 Tangkapan QA hosted (`kidung-reader-options-390-dark`) memperlihatkan separuh
