@@ -93,7 +93,6 @@ test("Bible render modules include annotation migration and visual contracts wit
     for (const spec of [
       "bible-annotations",
       "navigation-layout",
-      "visual",
       "accessibility",
     ]) {
       assert.ok(
@@ -101,6 +100,12 @@ test("Bible render modules include annotation migration and visual contracts wit
         `${module}: ${spec}`,
       );
     }
+    // The `-linux` baselines are compared by the nightly full run; the
+    // selective path must not spend minutes re-checking them.
+    assert.ok(
+      !result.args.includes("e2e/visual.spec.ts"),
+      `${module}: visual baselines stay on the nightly run`,
+    );
     assert.ok(
       !result.args.includes("-g"),
       `${module}: include untitled legacy migration`,

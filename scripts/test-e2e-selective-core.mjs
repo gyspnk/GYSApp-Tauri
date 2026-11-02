@@ -262,6 +262,17 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
   }
 
+  // The `-linux` baselines are rendered by the hosted image; comparing them in
+  // the selective path costs minutes and repeats what the nightly shards do.
+  // Only a change that touches the baselines themselves still pays for them.
+  const visualSpecs = ["e2e/visual.spec.ts", "e2e/visual-reading.spec.ts"];
+  const touchesVisuals = changedFiles.some(
+    (file) => file.includes("-snapshots/") || file.includes("e2e/visual"),
+  );
+  if (!touchesVisuals) {
+    for (const spec of visualSpecs) specFiles.delete(spec);
+  }
+
   if (!specFiles.size && !grepPatterns.size) {
     return {
       description:
