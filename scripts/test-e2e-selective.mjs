@@ -17,6 +17,13 @@ const plan = resolveSelectiveTestArgs(changedFiles, userArgs);
 // existing bounded worker pool instead of serializing large spec files.
 if (!userArgs.some((arg) => arg.startsWith("--fully-parallel")))
   plan.args.push("--fully-parallel");
+// CI runs this job in parallel shards; each shard plans the same spec set and
+// lets Playwright divide the tests.
+if (process.env.GYS_E2E_SHARD && process.env.GYS_E2E_SHARDS) {
+  plan.args.push(
+    `--shard=${process.env.GYS_E2E_SHARD}/${process.env.GYS_E2E_SHARDS}`,
+  );
+}
 
 console.log(`\n🔍 [Selective E2E] ${plan.description}`);
 if (plan.changedFiles?.length) {

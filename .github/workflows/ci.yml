@@ -246,6 +246,13 @@ jobs:
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      # Two shards halve the wall clock of the slowest routine job. The planner
+      # runs in each shard, so both pick the same specs and Playwright splits
+      # them; an idle shard simply finishes in seconds.
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -277,19 +284,21 @@ jobs:
           GYS_E2E_PREBUILT: "1"
           GYS_E2E_BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           GYS_E2E_HEAD: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
+          GYS_E2E_SHARD: ${{ matrix.shard }}
+          GYS_E2E_SHARDS: "2"
         run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
       - name: Upload selective browser diagnostics on failure
         if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-selective-failures-${{ github.run_id }}
+          name: e2e-selective-failures-${{ github.run_id }}-${{ matrix.shard }}
           path: apps/web/test-results
           if-no-files-found: ignore
       - name: Upload selective visual QA previews
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ui-preview-selective-${{ github.run_id }}
+          name: ui-preview-selective-${{ github.run_id }}-${{ matrix.shard }}
           path: apps/web/test-results/ui-preview
           if-no-files-found: ignore
           retention-days: 7
