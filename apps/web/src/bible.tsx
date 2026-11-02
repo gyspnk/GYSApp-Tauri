@@ -261,6 +261,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (pageZoomRef.current) return installReadingZoom(pageZoomRef.current);
   }, []);
+  // Remember that this reader opened the Bible so the next home visit can
+  // warm the 7.6 MB pack in the background (see route-preload).
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("gys-bible-visited", "1");
+    } catch {
+      // Private modes may refuse storage; the marker is only an optimization.
+    }
+  }, []);
   const primaryScrollRef = useRef<HTMLDivElement | null>(null);
   const secondaryScrollRef = useRef<HTMLDivElement | null>(null);
   const isSyncingRef = useRef(false);

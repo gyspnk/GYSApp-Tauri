@@ -122,20 +122,44 @@ export function warmNavigation(): () => void {
   // The first destination's payloads are what its first click actually waits
   // for. Warm them once the current page has finished loading, so the fetch
   // never competes with the page the reader is already looking at.
+  // The Bible pack is 7.6 MB, so it is only warmed for readers who have
+  // opened the Bible before: the first visit teaches us, and every visit after
+  // it opens instantly without making every home page pay for the pack.
+  const visitedBible = (() => {
+    try {
+      return window.localStorage.getItem("gys-bible-visited") === "1";
+    } catch {
+      return false;
+    }
+  })();
+  const payloads = visitedBible ? ["/kidung", "/bible"] : ["/kidung"];
   const warmPayloads = () => {
     if (cancelled) return;
-    void preloadRoute("/kidung", { data: true }).catch(() => undefined);
+    const path = payloads.shift();
+    if (!path) return;
+    void preloadRoute(path, { data: true })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) timer = window.setTimeout(warmPayloads, 300);
+      });
   };
-  if (document.readyState === "complete")
-    timer = window.setTimeout(warmPayloads, 150);
-  else
-    window.addEventListener(
-      "load",
-      () => {
-        timer = window.setTimeout(warmPayloads, 150);
-      },
-      { once: true },
-    );
+  const memory = (navigator as Navigator & { deviceMemory?: number })
+    .deviceMemory;
+  const payloadWarmAllowed =
+    !/(^|-)2g$|(^|-)3g$/.test(connection?.effectiveType ?? "") &&
+    (memory ?? 8) >= 4;
+  if (payloadWarmAllowed) {
+    if (document.readyState === "complete")
+      timer = window.setTimeout(warmPayloads, 150);
+    else
+      window.addEventListener(
+        "load",
+        () => {
+          timer = window.setTimeout(warmPayloads, 150);
+        },
+        { once: true },
+      );
+  }
   timer = window.setTimeout(next, 200);
   return () => {
     cancelled = true;

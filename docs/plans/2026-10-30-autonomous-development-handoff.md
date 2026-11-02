@@ -2865,6 +2865,29 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625`       | dispatch regenerasi baseline                                                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672`       | selektif dipecah dua shard                                                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 60 — Alkitab instan untuk pembaca yang kembali (2 Nov)
+
+Membuka Alkitab dari beranda masih **925 ms** (dingin) karena paket 7,6 MB baru
+diambil saat rute dibuka. Kompromi yang dipakai: paket hanya dipanaskan untuk
+pembaca yang **sudah pernah** membuka Alkitab.
+
+- `apps/web/src/bible.tsx` menulis penanda `gys-bible-visited=1` saat pembaca
+  pertama kali membuka rute (dibungkus try/catch untuk mode privat).
+- `apps/web/src/route-preload.ts` menambahkan `/bible` ke daftar payload hangat
+  hanya bila penanda itu ada; `/kidung` tetap selalu dipanaskan.
+- Penjaga tambahan: `saveData`, `effectiveType` 2G/3G, atau `deviceMemory < 4`
+  mematikan pemanasan payload (pemanasan kode tetap berjalan).
+
+| Kondisi (390×844, klik beranda → ayat pertama) | Sebelum | Sesudah                                               |
+| ---------------------------------------------- | ------- | ----------------------------------------------------- |
+| Kunjungan pertama (belum ada penanda)          | 925 ms  | **441 ms** (kode tetap hangat, paket tidak diunduh)   |
+| Kunjungan berikutnya (paket dipanaskan)        | 925 ms  | **106 ms**                                            |
+| Boot beranda                                   | —       | tidak berubah (680 ms vs 840 ms pada mode `saveData`) |
+
+Biaya: paket 7,6 MB (≈1,7 MB gzip di GitHub Pages) hanya diunduh di latar
+belakang bagi pembaca yang memang sudah pernah membuka Alkitab, bukan untuk
+setiap kunjungan beranda.
+
 ### Putaran 59 — Rute pertama membawa datanya, dua kontrak terberat pindah malam (2 Nov)
 
 Klik pertama ke Kidung dari beranda masih **325 ms** walau kodenya sudah
