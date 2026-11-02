@@ -45,7 +45,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { DESTINATIONS, type Destination } from "./navigation.js";
-import { translate, type Locale } from "./i18n.js";
+import { loadLocaleMessages, translate, type Locale } from "./i18n.js";
 import { midiPlayer } from "./midi-player.js";
 import { installMidiQueueCoordinator } from "./midi-queue.js";
 import { installMediaSessionBridge } from "./media-session.js";
@@ -178,7 +178,11 @@ function useAppSettings() {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
   const setLocale = useCallback((locale: Locale) => {
-    setSettings((current) => ({ ...current, locale }));
+    // Switching to a shipped-elsewhere table waits for its chunk, so the first
+    // frame in the new language is already translated.
+    void loadLocaleMessages(locale)
+      .catch(() => undefined)
+      .then(() => setSettings((current) => ({ ...current, locale })));
   }, []);
   const setTheme = useCallback((theme: Theme) => {
     // Freeze dropdown focus scroll before the lazy transition import can wait.

@@ -2853,7 +2853,7 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41372225032` | dispatch QA, rute Alkitab diperbaiki    | **8m32s**; screenshot 217s (132 gambar, serial), overflow 110s (192 muat), boxes 79s (96), alignment 73s (88) |
 | 2 Nov   | `8de3b70`     | tangkapan 3 worker + tiga audit paralel | **8m32s → 4m14s**; screenshot 217→93s, audit 262→131s (`41373429560`)                                         |
 | 2 Nov   | `41380071830` | push `main`, suite penuh 856 tes        | **12,7 mnt** wall; shard 11,3 / 6,9 / 7,6 mnt — timpang karena Playwright membagi urutan tes                  |
-| 2 Nov   | berikutnya    | push docs/tooling melewati shard        | target ≈1,5 mnt (`changes.web=false`, aggregator keluar 0 dengan alasan)                                      |
+| 2 Nov   | `41381475091` | push docs/tooling melewati shard        | **12,7 → 0,5 mnt** (`changes.web=false`, agregator keluar 0 dengan alasan)                                    |
 | 2 Nov   | berikutnya    | shard 3 → 4                             | target ≈10 mnt wall (kritikal path turun, bukan suite berubah)                                                |
 
 Bukti artefak dari `41372225032` (semua diperiksa, bukan diasumsikan):
@@ -3036,6 +3036,33 @@ Aturan e2e: jangan rebuild `dist` saat tes browser terhadap aset ber-hash berjal
 gunakan `GYS_E2E_PREBUILT=1` bila build sudah final. Jangan mengubah snapshot atau
 retry demi tes hijau.
 ```
+
+### Tabel bahasa dimuat sesuai permintaan (2 Nov, putaran 46)
+
+Bahasa Inggris dan Mandarin dulu ikut di chunk awal: 895 kunci per bahasa
+berada di `apps/web/src/i18n.ts`, sehingga setiap pengunjung mengunduh tabel
+yang tidak dia pakai. Tabel itu sekarang tinggal di
+`apps/web/src/i18n-en.ts` dan `apps/web/src/i18n-zh.ts` (masing-masing
+`enMessages`/`enFeatureMessages`, `zhMessages`/`zhFeatureMessages`) dan dimuat
+lewat `loadLocaleMessages(locale)` di `apps/web/src/i18n.ts`.
+
+Urutan boot (`apps/web/src/main.tsx`): baca locale dari shell settings → muat
+tabel bahasa itu → render `App` → tahan boot splash sampai font siap. Locale
+Indonesia tetap inline, jadi pengguna Indonesia tidak menunggu unduhan apa pun.
+`setLocale` di `apps/web/src/App.tsx` menunggu tabel sebelum mengganti bahasa,
+jadi frame pertama sudah diterjemahkan.
+
+| Ukuran                            | Sebelum              | Sesudah                                                     |
+| --------------------------------- | -------------------- | ----------------------------------------------------------- |
+| Initial JS gzip (`verify:bundle`) | 179,6 KiB / 24 modul | **162,3 KiB / 24 modul**                                    |
+| Chunk `i18n` di initial graph     | 29,4 KiB             | 11,6 KiB (hanya kunci inti)                                 |
+| Chunk bahasa terpisah             | —                    | `i18n-zh` 11,9 KiB, `i18n-en` 11,6 KiB (unduh saat dipakai) |
+
+Verifikasi: `@gys/web` **539/539 unit (13,0 dtk)**; boot nyata di preview 4173
+(kidung reader **735 ms**, Alkitab **1.718 ms**, beranda Inggris **1.547 ms**,
+0 error konsol); `verify:bundle` lulus dengan sisa 17,7 KiB di bawah batas
+180 KiB. Catatan: `App` sengaja tetap impor statis — versi dinamis membuat
+meteran bundle hanya menghitung chunk entry dan menyembunyikan biaya nyata.
 
 ### Kontrak desain lama setelah merge ke main (2 Nov, putaran 45)
 

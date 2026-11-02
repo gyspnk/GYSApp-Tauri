@@ -1,9 +1,14 @@
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import {
   installDailyReminder,
   REMINDER_CHANGE_EVENT,
 } from "./daily-reminder.js";
-import type { Locale } from "./i18n.js";
+import { loadLocaleMessages, type Locale } from "./i18n.js";
+
+// The notification text comes from the English chunk, so load it once.
+beforeAll(async () => {
+  await loadLocaleMessages("en");
+});
 
 let time: string | null;
 let locale: Locale;

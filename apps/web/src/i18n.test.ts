@@ -1,7 +1,20 @@
-import { describe, expect, it } from "vitest";
-import { featureMessages, messages, translate, type Locale } from "./i18n.js";
+import { beforeAll, describe, expect, it } from "vitest";
+import {
+  featureMessages,
+  loadLocaleMessages,
+  messages,
+  translate,
+  type Locale,
+} from "./i18n.js";
 
 const LOCALES: Locale[] = ["id", "en", "zh"];
+
+// English and Chinese ship as separate chunks, so a unit test that inspects
+// the tables has to ask for them first.
+beforeAll(async () => {
+  await loadLocaleMessages("en");
+  await loadLocaleMessages("zh");
+});
 
 function allKeys(locale: Locale): Set<string> {
   return new Set([

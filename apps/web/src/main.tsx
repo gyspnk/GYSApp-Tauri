@@ -1,9 +1,11 @@
+import App from "./App.js";
 import { installImmersiveInteractions } from "./immersive-interactions.js";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.js";
 import { isTauriShell } from "./native-platform.js";
 import { installGlobalDiagnostics, recordDiagnostic } from "./diagnostics.js";
+import { loadLocaleMessages } from "./i18n.js";
+import { getShellSettingsStorage, readShellSettings } from "./settings.js";
 import { installRouteSectionDeepLinks } from "./route-section-deeplink.js";
 import { runStorageMigrations } from "./storage.js";
 import { initializeUiPreferences } from "./ui-preferences.js";
@@ -107,20 +109,28 @@ async function waitForBootFonts(): Promise<void> {
   ]);
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
-void waitForBootFonts().then(() => {
-  // One frame resolves the fonts, the second settles layout before revealing.
-  requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      releaseBootSplash();
-      performance.mark("gys-shell-visible");
-    }),
+async function boot(): Promise<void> {
+  // A stored English or Chinese locale loads its table before the shell renders;
+  // the default Indonesian table is already in the initial chunk.
+  const storage = getShellSettingsStorage();
+  const locale = storage ? readShellSettings(storage).locale : "id";
+  await loadLocaleMessages(locale).catch(() => undefined);
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
   );
-});
+  void waitForBootFonts().then(() => {
+    // One frame resolves the fonts, the second settles layout before revealing.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        releaseBootSplash();
+        performance.mark("gys-shell-visible");
+      }),
+    );
+  });
+}
+void boot();
 installRouteSectionDeepLinks();
 
 if (import.meta.env.PROD && !isTauriShell() && "serviceWorker" in navigator) {
