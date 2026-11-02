@@ -2862,6 +2862,27 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625`       | dispatch regenerasi baseline                                                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672`       | selektif dipecah dua shard                                                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 57 — Ukur di host idle, katalog mengalah saat mengetik (2 Nov)
+
+Dua pelajaran pengukuran:
+
+- `npx prettier --check .` sempat terukur **8–10 mnt** dan membuat kesimpulan
+  "Prettier memakan verify job" terlihat masuk akal. Ternyata penyebabnya satu
+  proses `chromium_headless_shell` sisa run Playwright yang dibatalkan: 33,8 %
+  CPU selama berjam-jam. Setelah proses itu dimatikan, perintah yang sama
+  **36 dtk**. Aturan: sebelum mengukur, cek `ps` untuk `headless_shell` dan
+  pastikan host idle; angka kinerja dari host yang sibuk tidak dipakai.
+- `.prettierignore` tetap ditambah `dist/`, `test-results/`,
+  `playwright-report/`, `coverage/`, `apps/web/ui-screenshots/` sebagai
+  higiene, bukan sebagai "perbaikan kecepatan" — pengukurannya tidak berubah
+  setelah entri itu ditambahkan.
+
+Set rutin jalur selektif pada host idle: **61 tes, 90 dtk wall** (sebelumnya
+114 dtk saat host menanggung proses sisa). Ekspansi katalog Kidung sekarang
+memakai `startTransition`, jadi 473 baris sisanya bisa diinterupsi saat pembaca
+mengetik atau berpindah halaman; urutan cat tetap: 60 baris → `h1`, sisanya
+**+138 ms** (diukur 390×844: `h1` 362 ms, 533 baris 500 ms).
+
 ### Putaran 56 — Jalur selektif berhenti di kontrak fitur (2 Nov)
 
 Push `f518447` (satu berkas `kidung-catalog.tsx`) memilih **12 spec** dan
