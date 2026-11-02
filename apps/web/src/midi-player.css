@@ -1422,3 +1422,15 @@ body:has(.hymn-detail-page.is-text-viewer)
     min-width: 0;
   }
 }
+
+/* The advanced sheet reads as one form: every row label shares a size and the
+   rows breathe on the same rhythm, so instrument/nada/transpose/tempo look like
+   peers instead of separate widgets. */
+.media-surface.is-kidung-media .media-advanced-panel label > span:first-child {
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  row-gap: 10px;
+}

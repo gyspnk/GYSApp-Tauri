@@ -3137,3 +3137,10 @@ halaman. Sekarang `max-width: min(760px, calc(100vw - 48px))` dengan
 0,6875 rem tabular; track seek 4 px; tepi 10×12 di ponsel. Kontrak yang menuntut
 lebar >1300 px diperbarui menjadi takaran 600–800 px (desktop), dan loop
 pengukuran chrome kini melewati kontrol yang disembunyikan breakpoint.
+
+### Panel “Musik & chord”: label satu ukuran, baris satu irama (2 Nov, putaran 49)
+
+Panel lanjutan kini membaca seperti satu formulir: label baris 0,75 rem warna
+`--muted`, jarak baris 10 px, kontrol tetap `--midi-control` 32/44. Diukur di
+390: panel 366 px, baris 334 px, select/soundfont 334×44, transpose 44×44,
+input tempo 74×44.
