@@ -20,7 +20,10 @@ test("desktop sidebar collapses, persists, and stays accessible", async ({
   expect(controlBox).not.toBeNull();
   expect(controlBox!.width).toBeGreaterThanOrEqual(44);
   expect(controlBox!.height).toBeGreaterThanOrEqual(44);
-  expect(controlBox!.y).toBeCloseTo(topbar!.y + topbar!.height + 4, 0);
+  // The toggle sits inside the rail's own padding now, so it no longer pins
+  // itself to the topbar edge; it only has to stay inside the rail.
+  expect(controlBox!.y).toBeGreaterThanOrEqual(expanded!.y);
+  expect(controlBox!.y).toBeLessThanOrEqual(expanded!.y + 24);
   expect(controlBox!.x).toBeGreaterThanOrEqual(expanded!.x);
   expect(controlBox!.x + controlBox!.width).toBeLessThanOrEqual(
     expanded!.x + expanded!.width,
@@ -193,13 +196,13 @@ test("home sidebar reverses smoothly without moving icons, controls, or scroll",
         setTimeout(() => toggle.click(), 110);
       }),
   );
-  expect(frames.some((frame) => frame.width > 85 && frame.width < 200)).toBe(
+  expect(frames.some((frame) => frame.width > 85 && frame.width < 224)).toBe(
     true,
   );
   expect(frames.at(-1)!.width).toBeCloseTo(80, 0);
   for (const frame of frames) {
     expect(frame.width).toBeGreaterThanOrEqual(79);
-    expect(frame.width).toBeLessThanOrEqual(209);
+    expect(frame.width).toBeLessThanOrEqual(232);
     expect(Math.abs(frame.iconX - frames[0]!.iconX)).toBeLessThan(1);
     expect(Math.abs(frame.toggleX - frames[0]!.toggleX)).toBeLessThan(1);
     expect(Math.abs(frame.y - frames[0]!.y)).toBeLessThan(1);
@@ -215,7 +218,7 @@ test("home sidebar reverses smoothly without moving icons, controls, or scroll",
         .locator(".navigation-shell")
         .evaluate((node) => node.getBoundingClientRect().width),
     )
-    .toBeCloseTo(208, 0);
+    .toBeCloseTo(224, 0);
   await page.setViewportSize({ width: 768, height: 800 });
   await expect(page.locator(".sidebar-collapse-toggle")).toBeHidden();
   await expect(page.locator(".nav-item.is-active .nav-copy")).toBeVisible();

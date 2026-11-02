@@ -142,8 +142,10 @@ test("shell adapts across responsive breakpoints", async ({ page }) => {
       expect(navBox!.width).toBeGreaterThanOrEqual(88);
       expect(navBox!.width).toBeLessThanOrEqual(96);
     } else {
-      expect(navBox!.width).toBeGreaterThanOrEqual(200);
-      expect(navBox!.width).toBeLessThanOrEqual(216);
+      // The desktop rail widened to 224 px when the sidebar became one row
+      // per destination; keep a small tolerance for sub-pixel rounding.
+      expect(navBox!.width).toBeGreaterThanOrEqual(216);
+      expect(navBox!.width).toBeLessThanOrEqual(232);
     }
 
     const labels = nav.locator(".nav-copy strong");
