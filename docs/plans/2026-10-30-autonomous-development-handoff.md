@@ -2846,15 +2846,18 @@ lokal hanya untuk melihat perubahan hidup.
 3. Jalankan, ukur lagi, catat sebelum→sesudah. Bila tidak membaik, kembalikan
    dan coba tuas lain (jangan menumpuk perubahan tanpa bukti).
 
-| Tanggal | Run           | Perubahan                               | Wall sebelum → sesudah                                                                                        |
-| ------- | ------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 2 Nov   | `41368310260` | baseline PR selektif (tanpa perubahan)  | 3,0 mnt                                                                                                       |
-| 2 Nov   | `41370712244` | dispatch QA pertama                     | gagal: rute `/bible/kejadian/1` tidak ada (12 tangkapan timeout), audit tidak sempat jalan                    |
-| 2 Nov   | `41372225032` | dispatch QA, rute Alkitab diperbaiki    | **8m32s**; screenshot 217s (132 gambar, serial), overflow 110s (192 muat), boxes 79s (96), alignment 73s (88) |
-| 2 Nov   | `8de3b70`     | tangkapan 3 worker + tiga audit paralel | **8m32s → 4m14s**; screenshot 217→93s, audit 262→131s (`41373429560`)                                         |
-| 2 Nov   | `41380071830` | push `main`, suite penuh 856 tes        | **12,7 mnt** wall; shard 11,3 / 6,9 / 7,6 mnt — timpang karena Playwright membagi urutan tes                  |
-| 2 Nov   | `41381475091` | push docs/tooling melewati shard        | **12,7 → 0,5 mnt** (`changes.web=false`, agregator keluar 0 dengan alasan)                                    |
-| 2 Nov   | berikutnya    | shard 3 → 4                             | target ≈10 mnt wall (kritikal path turun, bukan suite berubah)                                                |
+| Tanggal | Run           | Perubahan                                     | Wall sebelum → sesudah                                                                                        |
+| ------- | ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 2 Nov   | `41368310260` | baseline PR selektif (tanpa perubahan)        | 3,0 mnt                                                                                                       |
+| 2 Nov   | `41370712244` | dispatch QA pertama                           | gagal: rute `/bible/kejadian/1` tidak ada (12 tangkapan timeout), audit tidak sempat jalan                    |
+| 2 Nov   | `41372225032` | dispatch QA, rute Alkitab diperbaiki          | **8m32s**; screenshot 217s (132 gambar, serial), overflow 110s (192 muat), boxes 79s (96), alignment 73s (88) |
+| 2 Nov   | `8de3b70`     | tangkapan 3 worker + tiga audit paralel       | **8m32s → 4m14s**; screenshot 217→93s, audit 262→131s (`41373429560`)                                         |
+| 2 Nov   | `41380071830` | push `main`, suite penuh 856 tes              | **12,7 mnt** wall; shard 11,3 / 6,9 / 7,6 mnt — timpang karena Playwright membagi urutan tes                  |
+| 2 Nov   | `41381475091` | push docs/tooling melewati shard              | **12,7 → 0,5 mnt** (`changes.web=false`, agregator keluar 0 dengan alasan)                                    |
+| 2 Nov   | `41391763891` | push web: jalur selektif menggantikan 4 shard | **3,5 mnt** wall; `e2e-selective` 2,4 mnt, verify 0,5, web-build 0,7                                          |
+| 2 Nov   | `41451538833` | push CSS: selektif ikut memuat spec visual    | **9,3 mnt** — spec visual menarik seluruh baseline `-linux`, jadi jalur selektif justru termahal              |
+| 2 Nov   | `41459606131` | baseline visual dipindah ke nightly           | **2,0 mnt** wall; `e2e-selective` **1,7 mnt** (tanpa spec visual), verify 0,6, web-build 0,7                  |
+| 2 Nov   | `41459728625` | dispatch regenerasi baseline                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                         |
 
 Bukti artefak dari `41372225032` (semua diperiksa, bukan diasumsikan):
 `ui-screenshots` berisi 132 PNG (4 tema × 3 lebar × 11 rute) dengan
