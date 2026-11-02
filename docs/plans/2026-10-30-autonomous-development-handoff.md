@@ -3128,3 +3128,12 @@ kolom, dan baris aktif berupa kotak biru muda tipis. Sekarang:
 - Aturan lama yang saling menimpa di `05-responsive-refinements.css` dan
   `app-design.css` diganti satu blok; kontrak `navigation-layout` +
   `responsive-touch-targets` **47/47 (4,7 mnt)**.
+
+### Dock MIDI: satu takaran baca, bukan bilah selebar layar (2 Nov, putaran 48)
+
+Dock pemutar 900 px di 1440 terasa memanjang dan judulnya menduplikasi judul
+halaman. Sekarang `max-width: min(760px, calc(100vw - 48px))` dengan
+`margin-inline: auto` untuk permukaan kidung dan pidato; waktu seek naik ke
+0,6875 rem tabular; track seek 4 px; tepi 10×12 di ponsel. Kontrak yang menuntut
+lebar >1300 px diperbarui menjadi takaran 600–800 px (desktop), dan loop
+pengukuran chrome kini melewati kontrol yang disembunyikan breakpoint.

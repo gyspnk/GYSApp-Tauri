@@ -220,7 +220,9 @@ test("persistent media defaults to the sidebar and animates into a bottom dock",
     .poll(() => media.evaluate((node) => node.getAnimations().length))
     .toBe(0);
   const expanded = await media.boundingBox();
-  expect(expanded!.width).toBeGreaterThan(1300);
+  // The dock keeps a reading measure on desktop instead of stretching edge to edge.
+  expect(expanded!.width).toBeGreaterThan(600);
+  expect(expanded!.width).toBeLessThanOrEqual(800);
   expect(expanded!.y + expanded!.height).toBeGreaterThan(850);
   await expect(page.getByRole("button", { name: "Ciutkan panel" })).toHaveCount(
     0,

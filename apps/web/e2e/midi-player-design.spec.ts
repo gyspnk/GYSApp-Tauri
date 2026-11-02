@@ -126,6 +126,8 @@ for (const width of [320, 390, 768, 1440]) {
         ".media-transport-controls button, .media-close-button, .media-minimize, .media-advanced-summary",
       )
       .all()) {
+      // Chrome that is hidden for this breakpoint cannot be measured.
+      if (!(await control.isVisible())) continue;
       const box = (await control.boundingBox())!;
       expect(box.width).toBe(32);
       expect(box.height).toBe(32);

@@ -209,3 +209,33 @@
     transition: none;
   }
 }
+
+/* Dock refinement: one calm surface instead of a stretched bar. The panel keeps
+   a readable measure on desktop and drops the redundant collapse control on
+   phones, where the close button is the only exit needed. */
+@media (min-width: 900px) {
+  .media-surface.persistent-media.is-kidung-media:not(.is-minimized),
+  .media-surface.persistent-media.is-speech-media:not(.is-minimized) {
+    max-width: min(760px, calc(100vw - 48px));
+    margin-inline: auto;
+  }
+}
+.persistent-media:not(.is-minimized) .media-meta strong,
+.persistent-media:not(.is-minimized) .media-context-link strong {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.002em;
+}
+.persistent-media:not(.is-minimized) .media-meta small,
+.persistent-media:not(.is-minimized) .media-seek-time span {
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+.persistent-media:not(.is-minimized) .media-seek-time input[type="range"] {
+  height: 4px;
+}
+@media (max-width: 599px) {
+  .media-surface.persistent-media:not(.is-minimized) {
+    padding: 10px 12px;
+  }
+}
