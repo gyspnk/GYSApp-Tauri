@@ -2912,6 +2912,32 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 61 — "Semua | Bait 1" kembali terbaca sebagai kontrol (2 Nov)
+
+Tangkapan QA hosted (`kidung-reader-options-390-dark`) memperlihatkan separuh
+non-aktif dari segmented control di sheet pembaca tampil seperti teks biasa:
+`border-top-width: 0px`, `background: transparent`. Penyebabnya aturan
+"flat" pembaca (`.hymn-detail-page.is-text-viewer :is(..., .hymn-scope-pill-btn, ...)`,
+tiga kelas) menang atas aturan sheet (dua kelas).
+
+Perbaikan di ujung `apps/web/src/app-design.css` dengan empat kelas
+(`.hymn-more-actions-panel .hymn-segmented-toolbar .hymn-scope-pill-group .hymn-scope-pill-btn`):
+kedua separuh kembali punya bidang berbingkai, dan separuh aktif memakai bidang
+biru (`--blue` + `--on-accent`) seperti kontrol tersegmentasi lain.
+
+| Ukuran (390×844) | Sebelum       | Sesudah                                   |
+| ---------------- | ------------- | ----------------------------------------- |
+| Border non-aktif | 0 px          | **1 px**                                  |
+| Latar non-aktif  | transparan    | `--surface` (dark 34,33,30 / light putih) |
+| Latar aktif      | `--blue-soft` | `--blue` + `--on-accent`                  |
+| Tinggi tiap pill | 44 px         | 44 px                                     |
+
+`kidung-compact-motion` + `responsive-touch-targets` **10/10 (37 s)**; commit
+`85f3641`. Catatan CLS: pengamatan lokal dengan snapshot Suara ditunda 1,5 dtk
+menunjukkan tinggi bagian tetap **346 px** dari 1,0 dtk sampai 5,5 dtk dan node
+tidak diganti, jadi pergeseran yang dilaporkan `layout-shift` berasal dari
+momen boot sebelum pengamatan, bukan dari pemuatan rak.
+
 ### Putaran 59 — Beranda: ruang kesaksian, dan pergeseran yang bukan dari tinggi (2 Nov)
 
 CLS beranda hosted (390×844, dua run) **0,0845**, seluruhnya satu pergeseran
