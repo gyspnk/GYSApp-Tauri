@@ -1964,7 +1964,11 @@ menunggu elemennya: `await expect(matthew).toBeVisible({ timeout: 10_000 })`
 dan hal yang sama untuk `mark` sebelum pengukuran. Tes tunggal lulus **8,4 dtk**
 setelah patch, dan `faith-pdf`/`faith-zoom` tetap 12/12.
 
-### Takaran baca halaman Iman (1 Nov, putaran 39)
+### Takaran baca halaman Iman (1 Nov, putaran 39) — digantikan 2 Nov
+
+> **Digantikan** oleh “Lebar teks Iman mengikuti field (2 Nov)” di bawah.
+> Batas 74ch menyisakan pita kosong ±594 px di dalam setiap baris; pemilik
+> meminta teks mengikuti lebar field, jadi aturan 74ch sudah dihapus.
 
 Di 1440 px paragraf “Percaya bahwa…” melebar **1126 px** — sekitar **92
 karakter per baris**, jauh di atas takaran baca yang nyaman, dan tombol
@@ -1975,6 +1979,38 @@ membatasi kolom teks ke **74ch (≈592 px, ≈55 karakter/baris)** dan membuat
 tombol aksi duduk tepat di bawah kolom itu. Di 768 px dan 390 px tidak ada
 perubahan (390 px tetap `text-align: start`). Verifikasi: `faith-pdf` +
 `faith-zoom` **12/12 lulus (50,6 dtk)**; pengukuran 1440/768/390 → 592/591/326 px.
+
+### Lebar teks Iman mengikuti field (2 Nov, putaran 44)
+
+Pemilik melaporkan blok “Dasar Kepercayaan” di `/iman`: lebar teks tidak
+mengikuti lebar field, sehingga ada pita kosong besar di kanan setiap baris.
+Pengukuran membuktikannya: di 1440 px `.faith-search-bar` dan `.faith-row`
+selebar **1186 px**, tetapi `.faith-row-copy`/`.faith-statement` hanya
+**592 px** (sisa **594 px** kosong di dalam baris), dan tombol PDF/Catatan
+mengambang di tengah halaman.
+
+Perbaikan: aturan `74ch` dihapus dari `apps/web/src/app-design.css`; baris
+kembali memakai `grid-template-columns: 44px minmax(0, 1fr)` sehingga teks
+mengisi field-nya persis (kolom 44 px + gap 16 px). Diukur ulang:
+
+| Lebar | `.faith-row` | `.faith-statement` | selisih |
+| ----- | ------------ | ------------------ | ------- |
+| 1440  | 1186 px      | 1126 px            | 60 px   |
+| 1024  | 783 px       | 723 px             | 60 px   |
+| 768   | 651 px       | 591 px             | 60 px   |
+| 390   | 366 px       | 326 px             | 60 px   |
+
+`scrollWidth == clientWidth` di keempat lebar (tidak ada overflow horizontal).
+Konsekuensi jujur: di 1440 px satu baris menjadi ≈113 karakter (font 20 px,
+`text-align: justify`); ini pertukaran yang diminta pemilik — alternatifnya
+adalah mengecilkan field (bukan kolom teks), yang akan mengubah lebar kotak
+pencarian juga.
+
+**Evaluasi hal serupa** (permintaan pemilik): diukur blok teks utama di
+beranda, Alkitab, Kidung (daftar + pembaca), Iman, Literatur, Suara, panel
+`?section=data`, dan Sauh pada 1440 px. Tidak ada paragraf >700 px yang
+kehilangan >140 px di dalam kotaknya; Sauh sudah memakai kartu baca 832 px dan
+Literatur mengisi 1097/1186 px, jadi Iman adalah satu-satunya outlier.
 
 ### Tema sepia & AMOLED ikut diaudit (1 Nov, putaran 39)
 
@@ -2763,6 +2799,53 @@ mengenali dan melewatinya.
 7. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
    generator; cache disegarkan otomatis saat online).
 
+## Beban kerja pindah ke GitHub Actions (2 Nov 2026)
+
+Keputusan pemilik: device ini tidak lagi memikul suite berat. Semua verifikasi
+yang butuh browser, build, visual, audit, atau perf berjalan di GitHub Actions;
+lokal hanya untuk melihat perubahan hidup.
+
+**Pembagian tugas**
+
+- Lokal (device ini): `pnpm dev` (5173) dan `pnpm preview` (4173) untuk melihat
+  perubahan; `pnpm build` hanya untuk menyegarkan `dist`; screenshot kecil bila
+  perlu memeriksa satu hal. `pnpm test:loop` masih ada sebagai sinyal cepat
+  (docs ~1,5 dtk, satu spec ~12 dtk) tetapi bukan gate.
+- Hosted fungsional: `.github/workflows/ci.yml` — `changes`, `verify`
+  (dokumen/format/audit/secret), `web-build` (build + suite unit/policy +
+  `verify:bundle`), `e2e-selective`/shard, `perf-budget` mingguan,
+  `update-visual-baselines`.
+- Hosted visual: `.github/workflows/qa.yml` (dispatch manual) — satu job
+  `build`, lalu `screens` (screenshot rute × tema × lebar) dan `audits`
+  (overflow, kotak bersarang, perataan). Artefak: `ui-screenshots-<run>`,
+  `ui-audit-<run>`, `qa-build-<run>` (7 hari).
+- Mengambil bukti:
+  `gh run watch <id> --exit-status`,
+  `gh run download <id> -n ui-screenshots-<id> -D /tmp/shots`,
+  `gh run download <id> -n ui-audit-<id> -D /tmp/audits`.
+
+**Baseline terukur (sebelum tuning, run `41368310260`, event PR selektif)**
+
+- Wall **3,0 mnt**, antrean 0 mnt, total durasi job 3,7 mnt (paralel).
+- `e2e-selective` **2,2 mnt** (langkah terlama “Run browser contracts affected by
+  this draft update” 1,7 mnt), `verify` 0,6 mnt, `web-build` 0,4 mnt,
+  `secret-scan` 0,3 mnt, `changes` 0,2 mnt. Job shard/baseline/native di-skip
+  pada event itu.
+
+**Loop adaptif (wajib, satu tuas per putaran)**
+
+1. Ukur dengan `node scripts/ci-timings.mjs --limit 5` (antrean, wall, durasi
+   job, dua langkah terlama). Angka masuk tabel di bawah, bukan ingatan.
+2. Pilih satu tuas dari data: cache Playwright/build, jumlah shard, path
+   filter, `concurrency.cancel-in-progress`, pakai ulang artefak build antar
+   job, retensi artefak, atau pemecahan matrix.
+3. Jalankan, ukur lagi, catat sebelum→sesudah. Bila tidak membaik, kembalikan
+   dan coba tuas lain (jangan menumpuk perubahan tanpa bukti).
+
+| Tanggal | Run           | Perubahan                              | Wall sebelum → sesudah |
+| ------- | ------------- | -------------------------------------- | ---------------------- |
+| 2 Nov   | `41368310260` | baseline PR selektif (tanpa perubahan) | 3,0 mnt                |
+
 ## 7. Prompt handoff untuk sesi berikutnya
 
 Tempelkan blok berikut sebagai pesan pertama di sesi baru. Isinya lengkap dan tidak
@@ -2853,36 +2936,49 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 1. Jangan menunggu lama di foreground: tidak ada `sleep` > 60 dtk. Run panjang
    dijalankan sebagai background job; lanjutkan pekerjaan lain sambil menunggu
    notifikasi.
-2. Verifikasi default: `test:e2e:changed` (≈100 dtk) → `test:e2e:core` (≈3,4 mnt)
-   → `test:e2e:local` async sebelum push. Suite penuh hanya untuk handoff/CI.
+2. Verifikasi berat berjalan di GitHub Actions (`ci.yml` untuk fungsional,
+   `qa.yml` untuk screenshot/audit). Lokal cukup `test:loop` + preview. Bila
+   mereproduksi kegagalan hosted: `test:e2e:changed` → `test:e2e:core` (≈3 mnt),
+   bukan kebiasaan harian.
 3. Jangan rebuild `dist` saat ada run berjalan; pakai `GYS_E2E_PREBUILT=1`.
-4. Ukur dengan jam dinding + `pnpm test:e2e:durations`, jangan menebak.
+4. Ukur dengan jam dinding, `pnpm test:e2e:durations`, dan
+   `node scripts/ci-timings.mjs`, jangan menebak.
 
 ## Urutan kerja yang disarankan
 1. Jalankan dev server (5173) dan preview (4173), verifikasi HTTP 200, pastikan UI
    sehat sebelum menyentuh kode.
-2. **B-30**: jalankan suite penuh sendirian dan triase sisa kegagalan (klasifikasikan
-   bug produk vs kontrak basi vs batas host); tambahkan tes yang gagal lebih dulu.
+2. **B-30**: pantau suite penuh di GitHub Actions dan triase kegagalan
+   (klasifikasikan bug produk vs kontrak basi vs batas host); tambahkan tes yang
+   gagal lebih dulu.
 3. Lanjut ke item P1/P2 di backlog §3 (B-24 headroom 1,0 KiB, B-15 bukti WhatsApp).
 4. Setiap siklus: perbarui §1 Status, §3 Backlog, §4 Log siklus, §5 Risiko, §6 NEXT
    di dokumen hidup; commit + push.
 
 ## Perintah yang tersedia
-pnpm dev | pnpm preview | pnpm typecheck | pnpm test | pnpm build |
+Lokal (melihat perubahan hidup):
+pnpm dev | pnpm preview | pnpm build | pnpm typecheck | pnpm test |
 pnpm verify:bundle | pnpm verify:generated | pnpm verify:docs | pnpm format:check |
-pnpm verify:prepush | pnpm test:e2e:smoke |
+pnpm test:e2e:smoke
 
-Loop cepat (pakai `GYS_E2E_PREBUILT=1` agar tidak build ulang):
-pnpm test:e2e:changed        # spec yang tersentuh, ~1,7 mnt untuk 2 spec
-pnpm test:e2e:core           # 87 tes lintas shell/settings/e-GYS, ~3,4 mnt
-pnpm test:e2e:local          # 766 tes, tanpa baseline visual -linux & perf
+Hosted (bukti utama):
+gh run list --workflow ci.yml --limit 5
+gh run watch <run-id> --exit-status
+gh workflow run qa.yml -f themes=light,dark,sepia,amoled -f widths=390,768,1440
+gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
+gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
+node scripts/ci-timings.mjs --limit 5        # antrean/wall/durasi job hosted
+
+Reproduksi kegagalan hosted (pakai `GYS_E2E_PREBUILT=1`):
+pnpm test:e2e:changed        # spec yang tersentuh
+pnpm test:e2e:core           # 102 tes lintas shell/settings/e-GYS, ~3 mnt
+pnpm test:e2e:local          # 796 tes, tanpa baseline visual -linux & perf
 pnpm test:e2e:shards --shards 2 --workers 2   # suite penuh, preview harus hidup
 pnpm test:e2e:durations /tmp/e2e.json         # ranking spec/tes dari JSON report
-pnpm ui:audit                # 12 rute asli × 5 viewport × 2 tema: luapan/kliping/overlap
+pnpm ui:audit                # 12 rute asli × 5 viewport × 4 tema: luapan/kliping/overlap
 pnpm preview                 # terminal terpisah: 4173 untuk semua e2e
 
-Aturan worker: host 8-core ini saturasi di 2 worker (179 dtk @2 vs 217 dtk @4
-pada 55 tes yang sama). Naikkan hanya di mesin dengan core/RAM lebih banyak.
+Aturan worker: host ini saturasi di 2 worker (179 dtk @2 vs 217 dtk @4 pada 55 tes
+yang sama) — hanya relevan bila mereproduksi lokal; CI memakai runner sendiri.
 
 Aturan e2e: jangan rebuild `dist` saat tes browser terhadap aset ber-hash berjalan;
 gunakan `GYS_E2E_PREBUILT=1` bila build sudah final. Jangan mengubah snapshot atau
