@@ -200,9 +200,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("button", { name: "Close menu", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", {
-        name: "Split view Compare two chapters / translations",
-      }),
+      page.getByRole("button", { name: "Split view", exact: true }),
     ).toBeVisible();
     await expect(page.getByText("Menu Bacaan", { exact: true })).toHaveCount(0);
 
@@ -241,10 +239,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       settings.getByRole("heading", { name: "MIDI player", exact: true }),
     ).toBeVisible();
-    const chordDisclosure = settings.locator("details");
-    await chordDisclosure.locator("summary").click();
+    // The chord palette is a flat settings section, not a disclosure.
     await expect(
-      page.getByRole("group", { name: "Chord letter theme", exact: true }),
+      settings.getByRole("group", { name: "Chord letter theme", exact: true }),
     ).toBeVisible();
     await page
       .locator(".topbar")
@@ -372,7 +369,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
         name: "Search the Bible, hymns, literature, faith, or media",
       }),
     ).toBeFocused();
-    await expect(enDialog.getByRole("status")).toContainText("Search");
+    await expect(enDialog.getByRole("status")).toContainText(
+      "Type at least 2 characters",
+    );
     await enDialog.getByRole("button", { name: "Close", exact: true }).click();
     await expect(enTrigger).toBeFocused();
 
@@ -386,7 +385,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
         name: "搜索圣经、诗歌、文献、信仰或媒体",
       }),
     ).toBeFocused();
-    await expect(zhDialog.getByRole("status")).toContainText("搜索");
+    await expect(zhDialog.getByRole("status")).toContainText(
+      "输入至少 2 个字符",
+    );
     await zhDialog.getByRole("button", { name: "关闭", exact: true }).click();
     await expect(zhTrigger).toBeFocused();
     await expect(idTrigger).toHaveCount(0);
@@ -568,7 +569,9 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(
-      page.getByText(/official source or its connector is unreachable/i),
+      page.getByText("Try again or open the official source.", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(page.getByText(/Worker article/i)).toHaveCount(0);
     await expect(
@@ -639,3 +642,222 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expectNoAxeViolations(page);
   });
 });
+
+function parseColor(value: string): [number, number, number, number] {
+  // Chromium reports color-mix() results as color(srgb r g b / a) with 0–1
+  // channels; rgb()/rgba() use 0–255.
+  const srgb = value.match(
+    /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/,
+  );
+  if (srgb) {
+    return [
+      Number(srgb[1]) * 255,
+      Number(srgb[2]) * 255,
+      Number(srgb[3]) * 255,
+      srgb[4] === undefined ? 1 : Number(srgb[4]),
+    ];
+  }
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return [0, 0, 0, 1];
+  const parts = match[1]!.split(",").map((part) => Number(part.trim()));
+  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 1];
+}
+
+function composite(
+  foreground: [number, number, number, number],
+  background: [number, number, number, number],
+): [number, number, number, number] {
+  const alpha = foreground[3];
+  return [
+    foreground[0] * alpha + background[0] * (1 - alpha),
+    foreground[1] * alpha + background[1] * (1 - alpha),
+    foreground[2] * alpha + background[2] * (1 - alpha),
+    1,
+  ];
+}
+
+function relativeLuminance([red, green, blue]: [
+  number,
+  number,
+  number,
+  number,
+]) {
+  const channel = (value: number) => {
+    const normalized = value / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  return (
+    0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue)
+  );
+}
+
+function contrastRatio(foreground: string, background: string) {
+  const surface = parseColor(background);
+  const ring = composite(parseColor(foreground), surface);
+  const first = relativeLuminance(ring);
+  const second = relativeLuminance(surface);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+async function inspectFocusRings(page: Page, stops: number) {
+  const rings: Array<{ label: string; ratio: number; width: number }> = [];
+  for (let stop = 0; stop < stops; stop++) {
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const element = document.activeElement as HTMLElement | null;
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      const opaque = (value: string) => {
+        const numbers = value.match(/rgba?\(([^)]+)\)/);
+        if (!numbers) return false;
+        const parts = numbers[1]!.split(",").map((part) => Number(part));
+        return (parts[3] ?? 1) > 0.9;
+      };
+      // The ring is drawn outside the box (positive offset), so the surface it
+      // must contrast with is the parent's, not the control's own fill.
+      let node: HTMLElement | null = element.parentElement;
+      let background = "rgb(255, 255, 255)";
+      while (node) {
+        const value = getComputedStyle(node).backgroundColor;
+        if (value !== "rgba(0, 0, 0, 0)" && opaque(value)) {
+          background = value;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return {
+        label:
+          element.getAttribute("aria-label") ??
+          element.textContent?.trim().slice(0, 24) ??
+          element.tagName,
+        color: style.outlineColor,
+        width: Number.parseFloat(style.outlineWidth),
+        style: style.outlineStyle,
+        background,
+      };
+    });
+    expect(ring).not.toBeNull();
+    if (!ring) continue;
+    expect(ring.style, ring.label).not.toBe("none");
+    expect(ring.width, ring.label).toBeGreaterThanOrEqual(2);
+    rings.push({
+      label: ring.label,
+      ratio: contrastRatio(ring.color, ring.background),
+      width: ring.width,
+    });
+  }
+  return rings;
+}
+
+test("keyboard focus rings clear 3:1 on every control they reach", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  const rings = await inspectFocusRings(page, 6);
+  for (const ring of rings) {
+    expect(ring.ratio, `${ring.label} focus ring`).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("search placeholders clear 4.5:1 in every theme", async ({ page }) => {
+  for (const theme of ["light", "dark", "sepia", "amoled"]) {
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    await page.locator(".search-trigger").first().click();
+    await expect(page.locator("#global-search-input")).toBeVisible();
+    const sample = await page.evaluate(() => {
+      const input = document.querySelector<HTMLInputElement>(
+        "#global-search-input",
+      );
+      if (!input) return null;
+      const placeholder = getComputedStyle(input, "::placeholder").color;
+      let node: HTMLElement | null = input;
+      let background = "rgb(255, 255, 255)";
+      while (node) {
+        const value = getComputedStyle(node).backgroundColor;
+        if (value !== "rgba(0, 0, 0, 0)") {
+          background = value;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return { placeholder, background };
+    });
+    expect(sample, theme).not.toBeNull();
+    if (!sample) continue;
+    expect(
+      contrastRatio(sample.placeholder, sample.background),
+      `${theme} placeholder`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+for (const theme of ["dark", "sepia", "amoled"]) {
+  test(`focus rings keep their contrast in the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    const rings = await inspectFocusRings(page, 6);
+    for (const ring of rings) {
+      expect(
+        ring.ratio,
+        `${theme} ${ring.label} focus ring`,
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+}
+
+const THEME_ROUTES = [
+  "/",
+  "/bible",
+  "/bible/kejadian/1",
+  "/kidung",
+  "/kidung/hymn-001",
+  "/suara",
+  "/iman",
+  "/literatur",
+  "/sauh",
+  "/lainnya?section=appearance",
+];
+
+for (const theme of ["light", "dark", "sepia", "amoled"]) {
+  test(`${theme} keeps every audited route free of axe violations`, async ({
+    page,
+  }) => {
+    test.setTimeout(300_000);
+    await page.addInitScript((value) => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    for (const route of THEME_ROUTES) {
+      await page.goto(`/GYSApp-Tauri${route}`);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await page.waitForTimeout(900);
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2aa"])
+        .analyze();
+      expect(
+        results.violations.map((violation) => `${route} ${violation.id}`),
+      ).toEqual([]);
+    }
+  });
+}

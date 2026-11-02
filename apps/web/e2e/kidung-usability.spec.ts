@@ -119,13 +119,11 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     };
     return {
       media: rect(":scope"),
-      transport: rect(":scope > .media-transport-controls"),
-      previous: rect(
-        ":scope > .media-transport-controls .media-previous-control",
-      ),
-      play: rect(":scope > .media-transport-controls .media-primary-control"),
-      next: rect(":scope > .media-transport-controls .media-next-control"),
-      minimize: rect(":scope > .media-minimize"),
+      transport: rect(".media-playback-row .media-transport-controls"),
+      previous: rect(".media-playback-row .media-previous-control"),
+      play: rect(".media-playback-row .media-primary-control"),
+      next: rect(".media-playback-row .media-next-control"),
+      minimize: rect(".media-minimize"),
       advanced: rect(".media-advanced-summary"),
       title: rect(".media-meta"),
     };
@@ -155,8 +153,9 @@ async function expectMediaDockGeometry(media: Locator, viewportWidth: number) {
     Math.max(...controls.map((box) => box.y)) -
       Math.min(...controls.map((box) => box.y)),
   ).toBeLessThan(1.5);
-  const rowAnchor =
-    viewportWidth <= 600 ? geometry.title! : geometry.transport!;
+  // The compact dock anchors the minimize control to the metadata row at every
+  // width; the transport stays centred on its own row underneath.
+  const rowAnchor = geometry.title!;
   expect(
     Math.abs(
       geometry.minimize!.y +
@@ -311,9 +310,7 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
       return;
     }
     if (/\.mid(?:\?|$)/i.test(url) || url.includes("/api/v1/content/music")) {
-      const bytes = url.includes("002_Pujilah")
-        ? MIDI_NEXT_FIXTURE
-        : firstMidi;
+      const bytes = url.includes("002_Pujilah") ? MIDI_NEXT_FIXTURE : firstMidi;
       await route.fulfill({
         body: bytes,
         headers: { "content-type": "application/octet-stream" },
@@ -332,8 +329,9 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
     const cache = await caches.open(cacheName);
     // Playback tests need a valid SF2, not the old one-byte badge placeholder.
     // Reuse the packaged bank as fixture bytes for an installed optional bank.
-    const bank = await fetch("/GYSApp-Tauri/assets/soundfont/TimGM6mb.sf2")
-      .then((response) => response.arrayBuffer());
+    const bank = await fetch(
+      "/GYSApp-Tauri/assets/soundfont/TimGM6mb.sf2",
+    ).then((response) => response.arrayBuffer());
     const checksum = Array.from(
       new Uint8Array(await crypto.subtle.digest("SHA-256", bank)),
       (byte) => byte.toString(16).padStart(2, "0"),
@@ -407,7 +405,9 @@ test("Kidung MIDI dock keeps core playback visible and discloses advanced contro
     const dockBox = await media.boundingBox();
     expect(panelBox!.y + panelBox!.height).toBeLessThanOrEqual(dockBox!.y);
     await expect(queueBadge).toBeVisible();
-    await expect(media.getByRole("combobox", { name: "Instrumen MIDI" })).toBeVisible();
+    await expect(
+      media.getByRole("combobox", { name: "Instrumen MIDI" }),
+    ).toBeVisible();
     for (const control of await media
       .locator(".media-advanced-panel button, .media-advanced-panel select")
       .all()) {
@@ -477,12 +477,17 @@ test("MIDI dock transport and sound controls update playback state", async ({
   const media = page.locator(".media-surface.is-kidung-media");
   const play = media.locator(".media-primary-control");
   const position = media.getByLabel("Posisi MIDI");
-  await expect(page.locator(".hymn-midi-toggle")).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator(".hymn-midi-toggle")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
   await expect(media.locator(".media-load-track")).toHaveCount(0);
   await expect(position).toHaveAttribute("max", "10");
   // This test edits musical controls after the pinned song's PDF defaults.
   // A separate player regression covers defaults arriving during playback.
-  await expect(media.locator(".media-advanced-summary")).toContainText("88 BPM", {
+  // The compact dock keeps the tempo readout on its own toggle; the advanced
+  // summary is an icon-only disclosure with an aria-label.
+  await expect(media.locator(".media-tempo-toggle strong")).toHaveText("88", {
     timeout: 15_000,
   });
   await play.click();
@@ -506,23 +511,34 @@ test("MIDI dock transport and sound controls update playback state", async ({
   await expect(mute).toHaveAttribute("aria-pressed", "false");
 
   const transpose = media.locator(".media-transpose");
-  const initialTranspose = Number(await transpose.locator("strong").textContent());
-  await transpose.getByRole("button", { name: "Naikkan nada", exact: true }).click();
+  const initialTranspose = Number(
+    await transpose.locator("strong").textContent(),
+  );
+  await transpose
+    .getByRole("button", { name: "Naikkan nada", exact: true })
+    .click();
   const nextTranspose = initialTranspose + 1;
-  await expect(transpose.locator("strong")).toHaveText(nextTranspose > 0 ? `+${nextTranspose}` : String(nextTranspose));
-  const instrument = media.locator(".media-instrument-control").getByRole("combobox");
+  await expect(transpose.locator("strong")).toHaveText(
+    nextTranspose > 0 ? `+${nextTranspose}` : String(nextTranspose),
+  );
+  const instrument = media
+    .locator(".media-instrument-control")
+    .getByRole("combobox");
   await instrument.click();
   await media.getByRole("option", { name: /Violin/ }).click();
   await expect(instrument).toHaveText("Violin");
   await media.locator(".media-advanced-summary").click();
   await media.locator(".media-tempo-toggle").click();
-  const tempo = media.locator(".media-tempo-popover input");
+  const tempo = media.locator(".media-tempo-popover input[type='range']");
   const currentTempo = Number(await tempo.inputValue());
   await tempo.focus();
   await tempo.press("ArrowRight");
   await expect(tempo).toHaveValue(String(currentTempo + 1));
-  await expect(media.locator(".media-tempo-popover")).toContainText(
-    `${currentTempo + 1} BPM`,
+  await expect(
+    media.getByRole("spinbutton", { name: "Tempo MIDI", exact: true }),
+  ).toHaveValue(String(currentTempo + 1));
+  await expect(media.locator(".media-tempo-toggle strong")).toHaveText(
+    String(currentTempo + 1),
   );
 
   // Tempo is now on the visible dock; opening it closes the utility disclosure.
@@ -823,10 +839,15 @@ test("phone Kidung catalog prioritizes search, compact filtering, and large libr
   expect(searchBox).not.toBeNull();
   expect(searchBox!.width).toBeGreaterThanOrEqual(340);
 
-  const filterTrigger = page.getByRole("combobox", { name: "Koleksi", exact: true });
+  const filterTrigger = page.getByRole("combobox", {
+    name: "Koleksi",
+    exact: true,
+  });
   await expectTarget(filterTrigger);
   await filterTrigger.click();
-  await expect(page.getByRole("listbox", { name: "Koleksi", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("listbox", { name: "Koleksi", exact: true }),
+  ).toBeVisible();
   await page.keyboard.press("Escape");
 
   const firstOpen = page.locator(".pujian-title").first();
@@ -840,11 +861,33 @@ test("phone Kidung catalog prioritizes search, compact filtering, and large libr
   expect(openBox!.width).toBeGreaterThanOrEqual(230);
   expect(openBox!.x).toBeLessThanOrEqual(numberBox!.x);
   const rowBox = (await page.locator(".pujian-item").first().boundingBox())!;
-  expect(openBox!.x + openBox!.width).toBeLessThanOrEqual(rowBox.x + rowBox.width);
+  expect(openBox!.x + openBox!.width).toBeLessThanOrEqual(
+    rowBox.x + rowBox.width,
+  );
   await expect(firstOpen).toContainText("Pujilah Allah Yang Maha Esa");
 
   await expectTarget(page.locator(".add-to-playlist-btn").first());
   await expectNoHorizontalOverflow(page);
+});
+
+test("empty Kidung search explains itself and clears in one tap", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page);
+
+  await page
+    .locator(".hymn-catalog-controls .search-field input")
+    .fill("zzzqqq");
+  const empty = page.locator(".kidung-search-empty");
+  await expect(empty).toBeVisible();
+  await expect(empty).toContainText("Tidak ada judul yang cocok.");
+  await expect(empty).toContainText("Coba kata kunci lain atau ubah filter");
+  await expect(page.locator(".pujian-item")).toHaveCount(0);
+
+  await empty.getByRole("button", { name: "Hapus filter" }).click();
+  await expect(page.locator(".kidung-search-empty")).toHaveCount(0);
+  await expect(page.locator(".pujian-item").first()).toBeVisible();
 });
 
 test("Kidung number search returns the same song in all supported locales", async ({
@@ -904,8 +947,8 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
       play: "Putar",
       close: "Tutup lirik",
       hideControls: "Sembunyikan kontrol lain",
-      instrument: "Pilih alat musik",
-      tempo: "Tempo dalam BPM",
+      instrument: "Instrumen MIDI",
+      tempo: "Tempo MIDI",
       previousVerse: "Bait sebelumnya",
       verse: "Bait 1 dari",
     },
@@ -916,8 +959,8 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
       play: "Play",
       close: "Close lyrics",
       hideControls: "Hide more controls",
-      instrument: "Choose an instrument",
-      tempo: "Tempo in BPM",
+      instrument: "MIDI instrument",
+      tempo: "MIDI tempo",
       previousVerse: "Previous verse",
       verse: "Verse 1 of",
     },
@@ -928,8 +971,8 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
       play: "播放",
       close: "关闭歌词",
       hideControls: "隐藏更多控制",
-      instrument: "选择乐器",
-      tempo: "BPM 速度",
+      instrument: "MIDI 乐器",
+      tempo: "MIDI 速度",
       previousVerse: "上一节",
       verse: "第 1 节，共",
     },
@@ -969,8 +1012,11 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
     await expect(
       panel.getByRole("button", { name: copies[locale].close }),
     ).toBeVisible();
-    const controlsToggle = panel.locator(".lyrics-header-actions button[aria-expanded]");
-    if (await controlsToggle.getAttribute("aria-expanded") === "false") await controlsToggle.click();
+    const controlsToggle = panel.locator(
+      ".lyrics-header-actions button[aria-expanded]",
+    );
+    if ((await controlsToggle.getAttribute("aria-expanded")) === "false")
+      await controlsToggle.click();
     await expect(
       panel.getByRole("button", { name: copies[locale].hideControls }),
     ).toBeVisible();
@@ -1031,8 +1077,11 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
 
     const panel = page.getByRole("dialog", { name: "Mode lirik" });
     await expect(panel).toBeVisible();
-    const controlsToggle = panel.locator(".lyrics-header-actions button[aria-expanded]");
-    if (await controlsToggle.getAttribute("aria-expanded") === "false") await controlsToggle.click();
+    const controlsToggle = panel.locator(
+      ".lyrics-header-actions button[aria-expanded]",
+    );
+    if ((await controlsToggle.getAttribute("aria-expanded")) === "false")
+      await controlsToggle.click();
     await expectLyricsGeometry(panel, page);
     await expectNoHorizontalOverflow(page);
 
@@ -1351,12 +1400,22 @@ test("catalog branding and title metrics stay stable through font readiness", as
 
   // Compact collection and search fields share a toolbar without visible labels.
   const search = page.getByRole("searchbox", { name: "Cari lagu" });
-  const collection = page.getByRole("combobox", { name: "Koleksi", exact: true });
+  const collection = page.getByRole("combobox", {
+    name: "Koleksi",
+    exact: true,
+  });
   await expectTarget(search);
   await expectTarget(collection);
   const searchBox = (await search.boundingBox())!;
   const collectionBox = (await collection.boundingBox())!;
-  expect(Math.abs(searchBox.y + searchBox.height / 2 - collectionBox.y - collectionBox.height / 2)).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(
+      searchBox.y +
+        searchBox.height / 2 -
+        collectionBox.y -
+        collectionBox.height / 2,
+    ),
+  ).toBeLessThanOrEqual(2);
   await expectNoHorizontalOverflow(page);
 });
 
@@ -1431,7 +1490,9 @@ test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
     await openCatalog(page);
 
     const filter = page.locator(".kidung-header-filter");
-    await filter.getByRole("combobox", { name: "Koleksi", exact: true }).click();
+    await filter
+      .getByRole("combobox", { name: "Koleksi", exact: true })
+      .click();
     const menu = filter.locator(".control-select-menu");
     await expect(menu).toBeVisible();
     const catalogMenuBox = await menu.boundingBox();
@@ -1511,10 +1572,14 @@ test("PDF reader exposes contextual music controls with direct song navigation",
 
   const chrome = page.locator(".hymn-pdf-viewer-chrome");
   await expect(
-    page.locator(".pdf-reader-hymn").getByRole("button", { name: "Pujian sebelumnya", exact: true }),
+    page
+      .locator(".pdf-reader-hymn")
+      .getByRole("button", { name: "Pujian sebelumnya", exact: true }),
   ).toBeVisible();
   await expect(
-    page.locator(".pdf-reader-hymn").getByRole("button", { name: "Pujian berikutnya", exact: true }),
+    page
+      .locator(".pdf-reader-hymn")
+      .getByRole("button", { name: "Pujian berikutnya", exact: true }),
   ).toBeVisible();
 
   const music = chrome.locator('summary[aria-label="Opsi musik"]');
@@ -1638,7 +1703,10 @@ test("wide hymn text reader keeps controls in a compact, non-overlapping toolbar
           "button:where(:not([hidden])), select:where(:not([hidden]))",
         ),
       ].filter((control) => {
-        return control.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+        return control.checkVisibility({
+          checkOpacity: true,
+          checkVisibilityCSS: true,
+        });
       });
       const boxes = controls.map((control) => {
         const rect = control.getBoundingClientRect();

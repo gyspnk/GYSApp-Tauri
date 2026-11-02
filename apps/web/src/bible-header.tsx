@@ -5,7 +5,7 @@ import {
   useSyncExternalStore,
   type RefObject,
 } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { SpeechEnginePreferenceSchema } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import type { ShellTheme as Theme } from "./settings.js";
@@ -158,7 +158,7 @@ export function BibleHeader({
                 aria-label={translate(locale, "bible.bookPickerAria")}
                 title={translate(locale, "bible.pickBookChapter")}
               >
-                <Icon name="book" size={15} />
+                <Icon name="book" size={16} />
                 <strong className="picker-book-title">
                   {bibleHeader.bookName} {bibleHeader.chapter}
                 </strong>
@@ -217,7 +217,7 @@ export function BibleHeader({
                 title={translate(locale, "bible.searchVerses")}
                 onClick={bibleHeader.onToggleSearch}
               >
-                <Icon name="search" size={15} />
+                <Icon name="search" size={16} />
               </button>
               {bibleHeader.speechAvailable && (
                 <button
@@ -250,7 +250,7 @@ export function BibleHeader({
                             ? "stop"
                             : "play"
                     }
-                    size={15}
+                    size={16}
                   />
                 </button>
               )}
@@ -360,7 +360,7 @@ export function BibleHeader({
                               }
                               aria-label={translate(
                                 locale,
-                                "bible.decreaseText",
+                                "common.decreaseText",
                               )}
                             >
                               <span className="step-label">A−</span>
@@ -379,7 +379,7 @@ export function BibleHeader({
                               }
                               aria-label={translate(
                                 locale,
-                                "bible.increaseText",
+                                "common.increaseText",
                               )}
                             >
                               <span className="step-label">A+</span>
@@ -502,7 +502,7 @@ export function BibleHeader({
                                       ? "chevronUp"
                                       : "chevronDown"
                                   }
-                                  size={15}
+                                  size={16}
                                 />
                               </div>
                             </button>
@@ -548,46 +548,14 @@ export function BibleHeader({
                                   </select>
                                 </label>
 
-                                <label className="drawer-speech-row">
-                                  <span>
-                                    {translate(locale, "bible.voice")}
-                                  </span>
-                                  <select
-                                    className="drawer-speech-select"
-                                    value={
-                                      speechSnapshot.voices.some(
-                                        (v) => v.id === speechSnapshot.voiceId,
-                                      )
-                                        ? speechSnapshot.voiceId
-                                        : ""
-                                    }
-                                    onChange={(e) =>
-                                      speechPlayer.setVoice(e.target.value)
-                                    }
-                                  >
-                                    <option value="">
-                                      {translate(locale, "bible.defaultVoice")}
-                                    </option>
-                                    {(speechSnapshot.engine === "edge"
-                                      ? (speechSnapshot.edgeVoices ?? [])
-                                      : speechSnapshot.voices.filter((voice) =>
-                                          speechSnapshot.engine === "local"
-                                            ? voice.local
-                                            : true,
-                                        )
-                                    ).map((voice) => (
-                                      <option value={voice.id} key={voice.id}>
-                                        {voice.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  {speechSnapshot.engine !== "local" &&
-                                    !isEdgeSpeechConfigured() && (
-                                      <small className="drawer-speech-hint">
-                                        {translate(locale, "bible.edgeHint")}
-                                      </small>
+                                <p className="drawer-speech-link">
+                                  <Link to="/lainnya?section=audio">
+                                    {translate(
+                                      locale,
+                                      "bible.audioSettingsLink",
                                     )}
-                                </label>
+                                  </Link>
+                                </p>
 
                                 {speechSnapshot.engine === "edge" && (
                                   <label className="drawer-speech-row">
@@ -613,62 +581,6 @@ export function BibleHeader({
                                     />
                                   </label>
                                 )}
-
-                                <div className="drawer-speech-row">
-                                  <div className="drawer-speech-row-header">
-                                    <span className="drawer-speech-label">
-                                      {translate(locale, "bible.readingSpeed")}
-                                    </span>
-                                    <span className="drawer-speech-val">
-                                      {speechSnapshot.rate.toFixed(1)}×
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    className="drawer-speech-range"
-                                    aria-label={translate(
-                                      locale,
-                                      "bible.voiceRate",
-                                    )}
-                                    min="0.5"
-                                    max="2"
-                                    step="0.1"
-                                    value={speechSnapshot.rate}
-                                    onChange={(e) =>
-                                      speechPlayer.setRate(
-                                        Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </div>
-
-                                <div className="drawer-speech-row">
-                                  <div className="drawer-speech-row-header">
-                                    <span className="drawer-speech-label">
-                                      {translate(locale, "bible.readingPitch")}
-                                    </span>
-                                    <span className="drawer-speech-val">
-                                      {speechSnapshot.pitch.toFixed(1)}×
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    className="drawer-speech-range"
-                                    aria-label={translate(
-                                      locale,
-                                      "bible.voicePitch",
-                                    )}
-                                    min="0.5"
-                                    max="2"
-                                    step="0.1"
-                                    value={speechSnapshot.pitch}
-                                    onChange={(e) =>
-                                      speechPlayer.setPitch(
-                                        Number(e.target.value),
-                                      )
-                                    }
-                                  />
-                                </div>
 
                                 <div className="drawer-speech-row">
                                   <div className="drawer-speech-row-header">
@@ -702,19 +614,16 @@ export function BibleHeader({
                           )}
                         </div>
 
-                        {/* Section 4: Tampilan & Bahasa */}
+                        {/* Section 4: languages stay switchable here because the
+                            reader has its own top bar; the theme keeps its one
+                            home in Settings, so the drawer links there. */}
                         <div className="hamburger-section">
                           <span className="hamburger-section-label">
                             {translate(locale, "more.appearance")}
                           </span>
                           <div
                             className="hamburger-group"
-                            style={{
-                              padding: "12px 14px",
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: "10px",
-                            }}
+                            style={{ padding: "12px 14px" }}
                           >
                             <Select
                               value={locale}
@@ -727,45 +636,15 @@ export function BibleHeader({
                                 { value: "zh", label: "中文" },
                               ]}
                             />
-                            <Select
-                              value={theme}
-                              onChange={setTheme}
-                              className="topbar-select theme-select"
-                              label={translate(locale, "shell.theme")}
-                              options={[
-                                {
-                                  value: "system",
-                                  label: translate(locale, "theme.system"),
-                                  shortLabel: "",
-                                  icon: "system",
-                                },
-                                {
-                                  value: "light",
-                                  label: translate(locale, "theme.light"),
-                                  shortLabel: "",
-                                  icon: "sun",
-                                },
-                                {
-                                  value: "dark",
-                                  label: translate(locale, "theme.dark"),
-                                  shortLabel: "",
-                                  icon: "moon",
-                                },
-                                {
-                                  value: "amoled",
-                                  label: translate(locale, "theme.amoled"),
-                                  shortLabel: "",
-                                  icon: "amoled",
-                                },
-                                {
-                                  value: "sepia",
-                                  label: translate(locale, "theme.sepia"),
-                                  shortLabel: "",
-                                  icon: "sepia",
-                                },
-                              ]}
-                            />
                           </div>
+                          <p className="drawer-speech-link">
+                            <Link to="/lainnya?section=appearance">
+                              {translate(
+                                locale,
+                                "bible.appearanceSettingsLink",
+                              )}
+                            </Link>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -791,7 +670,7 @@ export function BibleHeader({
                       : "Buka pencarian lagu"
                   }
                 >
-                  <Icon name="search" size={15} />
+                  <Icon name="search" size={16} />
                 </button>
               ) : null}
               <button
@@ -801,7 +680,7 @@ export function BibleHeader({
                 aria-label={translate(locale, "bible.musicPlayer")}
                 title={translate(locale, "bible.musicPlayer")}
               >
-                <Icon name="music" size={15} />
+                <Icon name="music" size={16} />
               </button>
             </>
           )}

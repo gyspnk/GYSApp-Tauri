@@ -139,6 +139,32 @@ test("phone navigation and compact text actions remain easy to tap", async ({
   );
 });
 
+test("Sauh and Suara back links stay reachable around their inline text", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const route of ["sauh", "suara", "suara/147-menapaki-tiga-iman"]) {
+    await page.goto(`/GYSApp-Tauri/${route}`);
+    const link = page.locator(".detail-back .text-button").first();
+    await expect(link).toBeVisible();
+    // The breadcrumb keeps its compact painted row; the target must still be at
+    // least 40px tall, so hit testing has to work 11px above and below the text.
+    const hit = await link.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const at = (x: number, y: number) =>
+        document.elementFromPoint(x, y) === element;
+      return {
+        above: at(rect.left + rect.width / 2, rect.top - 11),
+        below: at(rect.left + rect.width / 2, rect.bottom + 11),
+        height: Math.round(rect.height),
+      };
+    });
+    expect(hit.height).toBeLessThan(24);
+    expect(hit.above, `${route}: hit area extends above the text`).toBe(true);
+    expect(hit.below, `${route}: hit area extends below the text`).toBe(true);
+  }
+});
+
 test("desktop Sauh outage uses a compact recovery state instead of an empty hero", async ({
   page,
 }) => {
@@ -161,4 +187,43 @@ test("desktop Sauh outage uses a compact recovery state instead of an empty hero
   expect(box).not.toBeNull();
   expect(box!.height).toBeLessThanOrEqual(420);
   await expectTouchTarget(state.getByRole("button", { name: "Coba lagi" }), 44);
+});
+
+test.describe("coarse pointers get the full 44 px target", () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  test("faith actions, audio picker, and the verse marker reach 44 px", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+    ).toBe(true);
+
+    // The PDF and notes buttons are the only way into those documents on a
+    // phone; they used to collapse to 32 px.
+    await page.goto("/GYSApp-Tauri/iman");
+    await expect(
+      page.getByRole("heading", { name: "Dasar Kepercayaan", exact: true }),
+    ).toBeVisible();
+    await expectTouchTarget(page.locator(".faith-row-heading").first());
+    await expectTouchTarget(page.locator(".faith-row-summary").first());
+
+    // The reader rule keeps the visible number small, so the hit area is the
+    // measurement that matters.
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(
+      page.getByRole("heading", { name: "Kejadian 1" }),
+    ).toBeVisible();
+    await expectPseudoTouchTarget(
+      page.getByRole("button", { name: "Tandai ayat 1", exact: true }),
+    );
+
+    await page.goto("/GYSApp-Tauri/lainnya?section=audio");
+    const audioSelect = page.locator(".audio-setting-select").first();
+    await expect(audioSelect).toBeVisible();
+    await expectTouchTarget(audioSelect);
+    // Link-style actions are 40 px by default; a coarse pointer gets 44.
+    await expectTouchTarget(page.locator(".audio-setting-link").first());
+  });
 });

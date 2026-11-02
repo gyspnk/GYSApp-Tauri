@@ -15,7 +15,7 @@
   max-height: calc(100dvh - 24px);
   padding: 14px;
   border: 1px solid var(--line-strong);
-  border-radius: 22px;
+  border-radius: 24px;
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-lift);
@@ -77,8 +77,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5px;
-  padding: 9px 10px;
+  gap: 4px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface-soft);
@@ -116,7 +116,7 @@
   text-decoration-thickness: 2px;
 }
 .bible-address-trigger[aria-invalid="true"] {
-  border-color: var(--danger, #b42318);
+  border-color: var(--danger);
 }
 .bible-address-menu {
   position: absolute;
@@ -129,7 +129,7 @@
   gap: 8px;
   padding: 8px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
   transform-origin: top center;
@@ -161,9 +161,9 @@
   gap: 4px;
 }
 .bible-picker-testament-pills button {
-  padding: 5px 8px;
+  padding: 4px 8px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   color: var(--muted);
   font-size: 0.6875rem;
@@ -177,11 +177,11 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   display: grid;
-  gap: 3px;
+  gap: 4px;
   scrollbar-width: thin;
 }
 .bible-address-options button {
-  padding: 9px 12px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -206,7 +206,7 @@
 }
 .bible-address-options .bible-picker-verse-item {
   display: grid;
-  gap: 5px;
+  gap: 4px;
 }
 .bible-picker-verse-item small {
   display: -webkit-box;

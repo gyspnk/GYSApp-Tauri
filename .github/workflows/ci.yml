@@ -7,6 +7,25 @@ on:
     # incorrectly block an otherwise green PR.
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      qa:
+        description: "Capture route screenshots and run the visual audits"
+        type: boolean
+        default: false
+      qa_themes:
+        description: "Comma-separated themes for the QA artifacts"
+        type: string
+        default: "light,dark,sepia,amoled"
+      qa_widths:
+        description: "Comma-separated widths for the QA screenshots"
+        type: string
+        default: "390,768,1440"
+  # Strict navigation budgets run weekly instead of on every main push: the
+  # hosted two-core runners cannot meet 1s/250ms, and a permanently red main
+  # hides real regressions. The thresholds themselves are unchanged.
+  schedule:
+    - cron: "0 3 * * 1"
 
 permissions:
   contents: read
@@ -14,10 +33,87 @@ permissions:
 concurrency:
   # A newer commit supersedes an older verification run while the PR event
   # remains the single source of truth for feature branches.
-  group: ci-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
+  # One cheap classification job keeps the expensive jobs honest: a docs-only
+  # push must not build the workspace, download a browser or boot three shards.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      native: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Classify the pushed range
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          pr_base="${{ github.event.pull_request.base.sha }}"
+          event_before="${{ github.event.before }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          # Prefer the push range so a documentation push does not rebuild the
+          # application. Opened or reopened pull requests have no previous head
+          # and fall back to the PR base.
+          if [ -n "$event_before" ] && [ "$event_before" != "0000000000000000000000000000000000000000" ]; then
+            base="$event_before"
+            range_kind="push"
+          else
+            base="$pr_base"
+            range_kind="pr"
+          fi
+          if [ -z "$base" ]; then
+            base=$(git rev-list --max-parents=0 HEAD)
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base" || true
+          fi
+          files=$(git diff --name-only "$base" "$head" || git diff --name-only HEAD^ HEAD)
+          # A cancelled or failed run must not be masked by a later docs push:
+          # widen the range to everything since the last *successful* CI run on
+          # this branch. When that lookup fails, verify (safe default).
+          failed_lookup=false
+          successful_head=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?branch=$branch&per_page=30" \
+            | jq -r '[.workflow_runs[] | select(.name == "CI" and .status == "completed" and .conclusion == "success")][0].head_sha // ""' 2>/dev/null) || failed_lookup=true
+          if [ "$failed_lookup" = "true" ]; then
+            echo "Cannot read the last successful run: verifying the application."
+            web_hint=true
+          else
+            web_hint=false
+          fi
+          if [ -z "${successful_head:-}" ]; then
+            echo "No successful CI run on this branch yet: verifying the application."
+            web_hint=true
+          fi
+          if [ -n "${successful_head:-}" ] && [ "$successful_head" != "$head" ]; then
+            if ! git cat-file -e "$successful_head^{commit}" 2>/dev/null; then
+              git fetch --no-tags --depth=1 origin "$successful_head" || true
+            fi
+            since=$(git diff --name-only "$successful_head" "$head" 2>/dev/null || true)
+            if [ -n "$since" ]; then
+              files="$since"
+              range_kind="since-last-success"
+            fi
+          fi
+          printf 'Range: %s (%s..%s)\nChanged files:\n%s\n' "$range_kind" "$base" "$head" "$files"
+          web=$web_hint
+          native=false
+          if printf '%s\n' "$files" | grep -Eq '^(apps/(web|bff)/|packages/|scripts/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig[^/]*\.json)'; then
+            web=true
+          fi
+          if printf '%s\n' "$files" | grep -Eq '^apps/native/'; then
+            native=true
+          fi
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "native=$native" >> "$GITHUB_OUTPUT"
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -47,6 +143,8 @@ jobs:
       - run: pnpm audit --prod
 
   web-build:
+    needs: changes
+    if: ${{ github.event_name != 'workflow_dispatch' && needs.changes.result == 'success' && needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -59,9 +157,33 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - id: source-hash
+        name: Hash the source tree
+        run: |
+          hash=$(git ls-tree -r HEAD -- \
+            apps/web/src apps/web/index.html apps/web/vite.config.ts \
+            apps/web/package.json apps/bff/src apps/bff/package.json \
+            packages scripts pnpm-lock.yaml package.json pnpm-workspace.yaml \
+            tsconfig.json | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+      - name: Restore a previously verified build for this exact tree
+        id: build-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+            apps/web/tsconfig.tsbuildinfo
+            apps/bff/tsconfig.tsbuildinfo
+          key: build-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
       - name: Build and typecheck once
+        if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm build
       - name: Run unit and policy suites against the built workspace
+        if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm test
       - run: pnpm verify:native-assets
       - run: pnpm verify:bundle
@@ -82,7 +204,9 @@ jobs:
   # synchronize event supplies the prior head SHA, so ordinary pushes exercise
   # only the changed surface. Open/reopened draft PRs fall back to the PR base.
   e2e-selective:
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+    # Every pull-request push (draft or ready) runs only the specs the pushed
+    # range can affect; add the `full-ci` label to force the full shards.
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') }}
     needs: web-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -107,6 +231,10 @@ jobs:
       # Playwright's apt/font bootstrap and download only the headless browser
       # payload actually exercised by CI. The browser contract below proves the
       # runner remains sufficient on every image revision.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run browser contracts affected by this draft update
         env:
@@ -131,7 +259,9 @@ jobs:
           retention-days: 7
 
   e2e-shard:
-    if: ${{ github.event_name == 'push' || github.event.pull_request.draft == false }}
+    # The full suite runs on main pushes, or on a pull request explicitly
+    # labelled `full-ci`; ordinary PR pushes stay on the selective path.
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'full-ci') }}
     needs: web-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -159,6 +289,10 @@ jobs:
       # CI runs Chromium headlessly. The hosted image already provides the
       # runtime libraries, so skip redundant apt/font installation and fetch
       # only the headless shell used by Playwright.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
       - name: Run full browser shard ${{ matrix.shard }}/3
         env:
@@ -185,17 +319,99 @@ jobs:
   # for ready PRs/main.
   e2e:
     if: ${{ always() }}
-    needs: [e2e-selective, e2e-shard]
+    needs: [changes, e2e-selective, e2e-shard]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Require the applicable browser verification path to pass
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Manual/scheduled run: browser shards are not part of this workflow."
+            exit 0
+          fi
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "Change classification failed; refusing to skip browser verification."
+            exit 1
+          fi
+          if [ "${{ needs.changes.outputs.web }}" != "true" ]; then
+            echo "No web-affecting changes: browser verification is not applicable."
+            exit 0
+          fi
           if [ "${{ needs.e2e-selective.result }}" = "success" ] || [ "${{ needs.e2e-shard.result }}" = "success" ]; then
             exit 0
           fi
           echo "Neither selective nor full browser verification succeeded."
           exit 1
+
+  # Sub-second warm-navigation budgets are measured on main pushes (or by
+  # hand). Hosted pull-request runners cannot meet them — the same two cases
+  # fail on the 8-core ARM host — so they no longer turn every PR shard red.
+  perf-budget:
+    if: ${{ github.event_name == 'schedule' && needs.changes.outputs.web == 'true' }}
+    needs: [changes, web-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore verified build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-build-${{ github.run_id }}
+          path: .
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Measure the warm-navigation budgets
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: pnpm --filter @gys/web exec playwright test e2e/instant-navigation.spec.ts --grep @perf --workers=2 --retries=0
+
+  # The `-linux` visual baselines must be regenerated on the hosted renderer
+  # whenever a UI change is intentional. This manual job uploads fresh
+  # screenshots for review instead of committing them blindly.
+  update-visual-baselines:
+    # A plain dispatch regenerates the baselines; `-f qa=true` only asks for
+    # screenshots and audits, so it must not pay for a second build.
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Regenerate the visual baselines
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts e2e/visual-consistency-matrix.spec.ts --update-snapshots --workers=2 --retries=0
+      - name: Upload the regenerated baselines for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-${{ github.run_id }}
+          path: apps/web/e2e/**/*-snapshots
+          if-no-files-found: error
+          retention-days: 7
 
   secret-scan:
     runs-on: ubuntu-latest
@@ -208,6 +424,8 @@ jobs:
         run: docker run --rm -v "${{ github.workspace }}:/repo" zricethezav/gitleaks:latest detect --source=/repo --no-banner --redact
 
   native-check:
+    needs: changes
+    if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && needs.changes.result == 'success' && needs.changes.outputs.native == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -230,3 +448,145 @@ jobs:
         run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked
       - name: Run native clippy
         run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked -- -D warnings
+
+  # Manual visual evidence: route screenshots per theme/width plus the
+  # overflow, card-in-card and alignment audits. The authoring device no longer
+  # carries browser workload (owner decision, 2 Nov), so this runs on demand
+  # and publishes artifacts instead of gating every push. `--ref` selects the
+  # branch, and the artifacts are downloaded with `gh run download`.
+  qa-artifacts:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.qa }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Reuse the build produced by the push/PR run for this exact tree. A
+      # repeat dispatch on an unchanged tree then skips the build entirely,
+      # which is the difference between a ~2 minute and a ~4 minute job.
+      - name: Hash the build inputs
+        id: source-hash
+        run: |
+          set -eu
+          hash=$(git ls-tree -r HEAD -- \
+            apps/web/src apps/web/index.html apps/web/vite.config.ts \
+            apps/web/package.json apps/bff/src apps/bff/package.json \
+            packages scripts pnpm-lock.yaml package.json pnpm-workspace.yaml \
+            tsconfig.json | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+      - name: Restore a previously verified build for this exact tree
+        id: build-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+            apps/web/tsconfig.tsbuildinfo
+            apps/bff/tsconfig.tsbuildinfo
+          key: build-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
+      - name: Build the workspace
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: pnpm build
+      - run: pnpm verify:bundle
+      # The hosted image already provides Chromium runtime libraries; fetch
+      # only the headless shell, as the other browser jobs do.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Serve the built app
+        run: |
+          set -eu
+          pnpm --filter @gys/web exec vite preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/preview.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://127.0.0.1:4173/GYSApp-Tauri/; then
+              echo "preview ready after ${attempt}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/preview.log
+          exit 1
+      # Keep every artifact even when one check finds a problem: the audit
+      # reports are the reason this job exists, so a failing screenshot must
+      # not hide them. A final step turns the outcomes into the job status.
+      - name: Capture route screenshots
+        id: shots
+        continue-on-error: true
+        env:
+          SHOT_WIDTHS: ${{ inputs.qa_widths }}
+          SHOT_THEMES: ${{ inputs.qa_themes }}
+          SHOT_DIR: ui-screenshots
+        run: pnpm --filter @gys/web exec node scripts/ui-screenshots.mjs
+      # The three audits launch their own browsers and mostly wait on the
+      # same preview server, so running them side by side cuts the wall time
+      # of this job by roughly two thirds without more runners.
+      - name: Overflow, card-in-card and alignment audits
+        id: audits
+        continue-on-error: true
+        env:
+          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
+          UI_AUDIT_VIEWPORTS: 320x720,390x844,768x1024,1440x900
+        run: |
+          set -uo pipefail
+          pnpm ui:audit > ui-overflow-audit.json 2>ui-overflow-audit.log & p1=$!
+          pnpm ui:boxes > ui-box-audit.json 2>ui-box-audit.log & p2=$!
+          pnpm ui:consistency > ui-consistency-audit.json 2>ui-consistency-audit.log & p3=$!
+          failed=0
+          wait "$p1" || failed=1
+          wait "$p2" || failed=1
+          wait "$p3" || failed=1
+          for file in ui-overflow-audit.json ui-box-audit.json ui-consistency-audit.json; do
+            echo "--- $file"
+            cat "$file" || true
+          done
+          jq -e '.problems | length == 0' ui-overflow-audit.json || failed=1
+          jq -e '.findings | length == 0' ui-box-audit.json || failed=1
+          jq -e '.findings | length == 0' ui-consistency-audit.json || failed=1
+          exit "$failed"
+      - name: Fail when a QA check reported problems
+        if: ${{ always() }}
+        run: |
+          set -eu
+          failed=0
+          if [ "${{ steps.shots.outcome }}" = "failure" ]; then
+            echo "route screenshots reported problems"; failed=1
+          fi
+          if [ "${{ steps.audits.outcome }}" = "failure" ]; then
+            echo "a UI audit reported problems"; failed=1
+          fi
+          if [ "$failed" = "1" ]; then exit 1; fi
+          echo "all QA checks passed"
+      - name: Upload route screenshots
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots-${{ github.run_id }}
+          path: apps/web/ui-screenshots
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload audit reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit-${{ github.run_id }}
+          path: |
+            ui-overflow-audit.json
+            ui-box-audit.json
+            ui-consistency-audit.json
+            ui-overflow-audit.log
+            ui-box-audit.log
+            ui-consistency-audit.log
+          if-no-files-found: warn
+          retention-days: 7

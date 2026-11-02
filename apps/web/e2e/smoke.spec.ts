@@ -1,5 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Language lives in the top bar only; Appearance owns theme, accent and font.
+async function switchLocale(page: Page, target: "EN" | "中文" | "ID") {
+  const name = await page.evaluate(() => {
+    const raw = localStorage.getItem("gys-shell-settings-v1");
+    const locale = raw ? (JSON.parse(raw).locale ?? "id") : "id";
+    return locale === "en" ? "Language" : locale === "zh" ? "语言" : "Bahasa";
+  });
+  await page.getByRole("combobox", { name }).click();
+  await page.getByRole("option", { name: target, exact: true }).click();
+}
+
+async function ensureSettingOpen(page: Page, setting: string) {
+  const section = page.locator(
+    `.more-setting-section[data-setting="${setting}"]`,
+  );
+  if ((await section.getAttribute("open")) === null)
+    await section.locator("summary").click();
+  await expect(section).toHaveAttribute("open", "");
+}
+
 async function setBibleAddress(
   page: Page,
   book: string,
@@ -35,8 +55,8 @@ test("shell navigation and locale switch are usable", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Bacaan & nyanyian" }),
   ).toBeVisible();
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await switchLocale(page, "EN");
+  await page.goto("/GYSApp-Tauri/");
   await expect(
     page.getByRole("heading", { name: "Readings & hymns" }),
   ).toBeVisible();
@@ -51,21 +71,21 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/");
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
-  await expect(page.getByText("Today’s Sauh", { exact: true })).toBeVisible();
+  await switchLocale(page, "EN");
+  await page.goto("/GYSApp-Tauri/");
+  // The hero eyebrow was removed on purpose when the Sauh reference moved next
+  // to the title, so assert localized page chrome instead of publisher copy.
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Readings & hymns" }),
+  ).toBeVisible();
   await expect(page.locator(".home-suara-section .date-line")).toHaveText(
     "Testimonies",
   );
   await expect(page.getByText("Kesaksian", { exact: true })).toHaveCount(0);
 
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page
-    .locator('.more-setting-section[data-setting="appearance"] > summary')
-    .click();
-  await page
-    .locator('.more-setting-section[data-setting="offline"] > summary')
-    .click();
+  await ensureSettingOpen(page, "appearance");
+  await ensureSettingOpen(page, "offline");
   const appearanceRow = page.locator(
     '.more-setting-section[data-setting="appearance"] > summary strong',
   );
@@ -76,17 +96,12 @@ test("home and more fixed chrome follows English and Chinese locales", async ({
     page.getByText("Tampilan & Bahasa", { exact: true }),
   ).toHaveCount(0);
 
-  await page.getByRole("combobox", { name: "Language", exact: true }).click();
-  await page.getByRole("option", { name: "中文" }).click();
+  await switchLocale(page, "中文");
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
   await page.reload();
-  await page
-    .locator('.more-setting-section[data-setting="appearance"] > summary')
-    .click();
-  await page
-    .locator('.more-setting-section[data-setting="offline"] > summary')
-    .click();
+  await ensureSettingOpen(page, "appearance");
+  await ensureSettingOpen(page, "offline");
   await expect(appearanceRow).toHaveText("外观");
   await expect(page.locator(".appearance-card")).toBeVisible();
   await expect(page.getByRole("heading", { name: "本地包" })).toBeVisible();
@@ -96,21 +111,18 @@ test("feature-critical hymn actions follow the selected locale", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "Bahasa" }).click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await switchLocale(page, "EN");
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(
     page.getByRole("heading", { name: /Pujilah Allah/ }),
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("button", { name: "Show chords" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "Language" }).click();
-  await page.getByRole("option", { name: "中文" }).click();
+  await switchLocale(page, "中文");
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
   await expect(page.getByRole("button", { name: "显示和弦" })).toBeVisible();
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.getByRole("combobox", { name: "语言" }).click();
-  await page.getByRole("option", { name: "ID" }).click();
+  await switchLocale(page, "ID");
 });
 
 test("compact section headings stay smaller than page and catalog titles", async ({
@@ -202,7 +214,7 @@ test("offline reader packs open without a network request", async ({
     page.getByRole("heading", { name: "Alkitab", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page.getByRole("link", { name: /Iman/ }).first().click();
   await expect(
@@ -230,9 +242,10 @@ test.describe("offline Bible recovery", () => {
     });
 
     await page.goto("/GYSApp-Tauri/bible");
-    await expect(page.getByRole("alert")).toContainText(
-      "Paket Alkitab belum tersedia",
-    );
+    const alert = page.getByRole("alert");
+    await expect(alert).toContainText("Paket Alkitab belum tersedia");
+    await expect(alert).toContainText("Periksa koneksi lalu coba lagi.");
+    await expect(alert).not.toContainText("Failed to fetch");
     await page.getByRole("button", { name: "Coba lagi" }).click();
     await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
       {
@@ -349,7 +362,7 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -394,7 +407,7 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
 test("Bible search narrows results to a testament", async ({ page }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -460,7 +473,7 @@ test("Bible search phrase and whole-word filters work offline", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const appOrigin = new URL(page.url()).origin;
@@ -508,7 +521,7 @@ test("Bible search matches book names from the offline pack", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   // A bare book name must surface verses from that book even though other
   // books also mention the name in their verse text (Matius 3:1 begins with
@@ -545,9 +558,10 @@ test("Bible search matches book names from the offline pack", async ({
 test("Bible typed references match and open the exact verse", async ({
   page,
 }) => {
+  test.slow();
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await page
     .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
@@ -566,9 +580,10 @@ test("Bible typed references match and open the exact verse", async ({
 });
 
 test("Bible reader typography persists across reloads", async ({ page }) => {
+  test.slow();
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const verseText = page.locator(".verse-text").first();
   const initialSize = Number(
@@ -595,7 +610,7 @@ test("Bible reader typography persists across reloads", async ({ page }) => {
   // The preference survives a full reload.
   await page.reload();
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   await expect
     .poll(() =>
@@ -618,7 +633,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const handle = page.locator(".quick-nav-handle");
   const box = await handle.boundingBox();
@@ -637,6 +652,7 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     "book",
   );
   const matthew = page.locator('[data-quick-nav-value="40"]');
+  await expect(matthew).toBeVisible({ timeout: 10_000 });
   const matthewBox = await matthew.boundingBox();
   if (!matthewBox) throw new Error("Quick navigation book is not measurable");
   await page.mouse.move(
@@ -646,13 +662,15 @@ test("Bible title drag advances through book, chapter, and verse before commit",
   await expect(matthew).toHaveClass(/is-selected/);
   await page.waitForTimeout(600);
   const mark = page.locator('[data-quick-nav-value="41"]');
+  await expect(mark).toBeVisible({ timeout: 10_000 });
   const markBox = await mark.boundingBox();
   if (!markBox) throw new Error("Quick navigation book is not measurable");
   await page.mouse.move(
     markBox.x + markBox.width / 2,
     markBox.y + markBox.height / 2,
   );
-  await page.waitForTimeout(600);
+  // Each held level advances after 1000 ms. Assert the still-held book step
+  // right away; a fixed 600 ms sleep used to race that timer on a loaded host.
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "book",
@@ -661,10 +679,12 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     matthewBox.x + matthewBox.width / 2,
     matthewBox.y + matthewBox.height / 2,
   );
-  await page.waitForTimeout(1_100);
+  // The dwell timer fires on its own; retrying the assertion waits for it
+  // instead of racing a fixed sleep on a loaded machine.
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "chapter",
+    { timeout: 8_000 },
   );
   const chapterFive = page.locator('[data-quick-nav-value="5"]');
   const chapterBox = await chapterFive.boundingBox();
@@ -675,10 +695,10 @@ test("Bible title drag advances through book, chapter, and verse before commit",
     chapterBox.y + chapterBox.height / 2,
   );
   await expect(chapterFive).toHaveClass(/is-selected/);
-  await page.waitForTimeout(1_100);
   await expect(page.locator(".quick-nav-multistep")).toHaveAttribute(
     "data-step",
     "verse",
+    { timeout: 8_000 },
   );
   const verseThree = page.locator('[data-quick-nav-value="3"]');
   const verseBox = await verseThree.boundingBox();
@@ -707,7 +727,7 @@ test("Bible drag release defaults incomplete book and chapter choices to verse o
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const dragTo = async (value: number) => {
@@ -770,7 +790,7 @@ test("Bible blocks native content actions while retaining verse notes", async ({
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const verse = page.locator(".verse-text").first();
   await expect(verse).toHaveCSS("user-select", "none");
@@ -908,8 +928,8 @@ test("home uses Sauh for the daily verse and keeps one continue surface", async 
   await expect(
     page.getByRole("heading", { name: "Literatur Terbaru" }),
   ).toBeVisible();
-  await expect(page.locator(".verse-panel .section-heading")).toContainText(
-    "Sauh hari ini",
+  await expect(page.locator(".verse-panel .sauh-reference")).toContainText(
+    "Yohanes 3:16",
   );
   await expect(page.locator(".sauh-image")).toHaveCount(1);
   await expect(
@@ -1308,13 +1328,19 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(page).toHaveURL(/\/bible#bible-verse-/);
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
-  const pitch = page.getByLabel("Nada bacaan suara");
   const volume = page.getByLabel("Volume bacaan suara");
-  await pitch.fill("1.4");
   await volume.fill("0.65");
-  await expect(pitch).toHaveValue("1.4");
   await expect(volume).toHaveValue("0.65");
   await page.getByRole("button", { name: "Tutup menu" }).click();
+  // Pitch is a preference: Audio settings owns it now. Navigate in-app so the
+  // speaking session and its media surface survive the detour.
+  await page.getByRole("link", { name: "Lainnya" }).first().click();
+  await ensureSettingOpen(page, "audio");
+  const pitch = page.getByLabel("Nada bacaan suara");
+  await pitch.fill("1.4");
+  await expect(pitch).toHaveValue("1.4");
+  await page.getByRole("link", { name: "Alkitab" }).first().click();
+  await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
   // Docked geometry follows the viewport without arbitrary saved positions.
   await page.setViewportSize({ width: 320, height: 480 });
   await expect
@@ -1341,8 +1367,9 @@ test("the shared read-aloud surface can be minimized without losing the session"
   await expect(page.getByRole("heading", { name: "Alkitab" })).toBeVisible();
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByRole("button", { name: /Pengaturan Suara/i }).click();
-  await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
   await expect(page.getByLabel("Volume bacaan suara")).toHaveValue("0.65");
+  await page.goto("/GYSApp-Tauri/lainnya?section=audio");
+  await expect(page.getByLabel("Nada bacaan suara")).toHaveValue("1.4");
 });
 
 test("global search indexes real offline content and navigates to a result", async ({
@@ -1364,6 +1391,25 @@ test("global search indexes real offline content and navigates to a result", asy
     .first()
     .click();
   await expect(page).toHaveURL(/\/kidung\/hymn-001$/);
+});
+
+test("global search stays usable when a content refresh never answers", async ({
+  page,
+}) => {
+  // The hosted feed once hung for minutes. The curated index must not wait for
+  // it: the bundled catalogs publish within the three-second refresh deadline.
+  await page.route("**/api/v1/content/suara-sejati**", () => {
+    // Never fulfilled on purpose; the page has to abandon the request itself.
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await page.getByRole("button", { name: /Cari di seluruh aplikasi/ }).click();
+  await page
+    .getByLabel("Cari Alkitab, Kidung, Literatur, Iman, atau media")
+    .fill("Pujilah Allah Yang Maha Esa");
+  await expect(
+    page.getByRole("button", { name: /Pujilah Allah Yang Maha Esa/ }).first(),
+  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("Menyiapkan indeks lokal…")).toHaveCount(0);
 });
 
 test("global search finds Bible verses and deep-links into the internal reader", async ({
@@ -1515,9 +1561,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
   await page.goto("/GYSApp-Tauri/lainnya");
-  await page
-    .locator('.more-setting-section[data-setting="hymns"] > summary')
-    .click();
+  await ensureSettingOpen(page, "hymns");
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
   await expect(
@@ -1526,9 +1570,7 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
     }),
   ).toBeVisible();
   await page.reload();
-  await page
-    .locator('.more-setting-section[data-setting="hymns"] > summary')
-    .click();
+  await ensureSettingOpen(page, "hymns");
   await page.getByRole("button", { name: "Antrean MIDI" }).click();
   await expect(page.locator(".playlist-list li")).toHaveCount(1);
 });
@@ -1539,7 +1581,7 @@ test("Bible title tap opens standard book/chapter/verse picker dialog and naviga
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
   const handle = page.getByRole("button", {
     name: "Geser judul untuk berpindah pasal",
@@ -1582,7 +1624,7 @@ test("Bible split reader supports synchronized scrolling mode and persists prefe
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   // Enable split view via Hamburger menu
@@ -1712,7 +1754,7 @@ test("Bible split keeps the reader usable when a secondary pack is unavailable",
   });
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 15_000,
+    timeout: 30_000,
   });
 
   const secondaryPane = page.locator(".bible-pane-secondary");

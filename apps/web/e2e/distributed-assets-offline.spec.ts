@@ -13,7 +13,10 @@ test("an installed Bible remains readable after an offline app restart", async (
   );
   // This local SQLite fixture proves offline storage/readback, not KJV content.
   const payload = await readFile(
-    new URL("../public/offline/bible/b_tb.db", import.meta.url),
+    new URL(
+      "../../../packages/contracts/source/bible/b_tb.db",
+      import.meta.url,
+    ),
   );
   const catalog = JSON.parse(
     await readFile(

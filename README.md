@@ -135,17 +135,67 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 `dist` underneath an active browser run.
 
 ```sh
-GYS_E2E_PREBUILT=1 pnpm test:e2e bible-picker-mobile.spec.ts midi-edge.spec.ts midi-player-design.spec.ts --fully-parallel --workers=2 --retries=0
-pnpm test:e2e:changed
-pnpm test:performance
-pnpm verify:native-assets
+# On this machine: view the live application only (owner decision, 2 Nov).
+pnpm dev                                   # 5173; VITE_BFF_BASE_URL comes from the process env
+pnpm preview                               # 4173, the built app under /GYSApp-Tauri/
+pnpm build                                 # refresh dist so the preview shows the change
+
+# Heavy verification runs in GitHub Actions, not here.
+#   CI (on every push/PR): changes, verify (docs/format/audit/secret scan),
+#     web-build (build + unit/policy suites + bundle budget), selective or full
+#     browser shards, weekly navigation budgets.
+gh run list --workflow ci.yml --limit 5
+gh run watch <run-id> --exit-status
+
+#   QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
+#   card-in-card and alignment audits, published as artifacts.
+gh workflow run ci.yml --ref codex/autonomous-hardening-20261030 -f qa=true \
+  -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
+gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
+gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
+node scripts/ci-timings.mjs                # measured wall time and slowest job per run
+
+# Reproduce a hosted failure locally (not the default loop):
+GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
+GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 102 tests, ~3-5 min
+pnpm test:e2e:durations /tmp/e2e.json      # rank specs/tests from a JSON report
 ```
 
-Browser mode uses production assets. `pnpm test:e2e:dev` is the local HMR
-alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Selective tests
-use conservative dependency routing; shared unknown changes select the full
-suite. Full browser, native and signed-device gates remain separate from quick
-iteration. See [testing and maintenance](docs/testing-and-maintenance.md).
+`scripts/ci-timings.mjs` is the feedback loop for CI cost: it prints queue time,
+wall time, every job's duration and the slowest step, so the next optimisation
+(cache, shard, filter) is chosen from measurements. the `qa-artifacts` job in `ci.yml` builds once, then
+captures screenshots and runs the audits on hosted runners for each theme and
+width; artifacts are retained for seven days.
+
+Browser mode uses production assets. The per-spec commands above exist to
+reproduce a hosted failure, not as the day-to-day loop: this device keeps the
+dev server (5173) and the preview (4173) for live viewing, while CI owns the
+build, unit, browser and visual evidence. `test:e2e:gate` keeps behaviour
+coverage and leaves the nine heaviest specs to CI; `test:e2e:local` leaves out
+the `-linux` visual baselines and the runtime-performance budgets because
+neither can be judged outside CI. `pnpm ui:audit` walks the twelve real routes
+(including `/kidung/1` and the three settings sections) across
+320/360/390/414/768/1440 px in the light and dark themes, reporting document
+overflow, clipped text and overlapping top-bar controls; deliberate
+`pnpm ui:boxes` walks the same routes and reports any rounded, framed or filled
+container that sits inside another one; buttons, selects, inputs and summaries are
+controls, so they never count as the inner box (`UI_BOX_ROUTES`, `UI_BOX_VIEWPORTS`,
+`UI_AUDIT_THEMES`). `text-overflow: ellipsis` and `-webkit-line-clamp` truncation is ignored, and
+`UI_AUDIT_VIEWPORTS`, `UI_AUDIT_THEMES`, `UI_AUDIT_ROUTES`, `UI_AUDIT_BASE` and
+`UI_AUDIT_FONT_SCALE` narrow or zoom a run. `pnpm ui:consistency` is the
+sibling report with two passes: for every row that holds three or more peer
+controls it lists groups whose background, radius, border or height disagree, and
+for every visible control it flags content that does not sit on the middle line —
+an icon whose centre is more than 1.5 px away from its label, or an only child
+parked off-centre in its own button. Deliberately emphasized actions
+(primary/danger/active), hidden popovers and screen-reader-only labels are
+skipped (`UI_CONSISTENCY_ROUTES`, `UI_CONSISTENCY_VIEWPORTS`, `UI_AUDIT_THEMES`). `UI_AUDIT_FONT_SCALE=200 pnpm ui:audit`
+is the low-vision pass: it raises the root font size to 200% and verifies that no
+label is clipped and nothing overflows its box (48 loads at 320/390 px, light and
+dark, reported clean on 1 Nov). `pnpm test:e2e:dev` is the local HMR
+alternative; it is rejected in CI or with `GYS_E2E_PREBUILT=1`. Full browser,
+native and signed-device gates remain separate from quick iteration. See
+[testing and maintenance](docs/testing-and-maintenance.md).
 
 Repository hooks check staged formatting at commit and deterministic formatting,
 documentation, provenance, types and unit tests at push. Neither hook silently

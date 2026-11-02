@@ -12,6 +12,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
+import { recordDiagnostic } from "./diagnostics.js";
 import { findMusicAsset } from "./music-assets.js";
 import { Select } from "./select.js";
 import { Icon } from "./icons.js";
@@ -37,10 +38,12 @@ export function HymnCatalog({
   locale,
   state,
   musicLock,
+  onRetry,
 }: {
   locale: Locale;
   state: CatalogState<HymnMetadata>;
   musicLock?: UpstreamMusicLock;
+  onRetry?: () => void;
 }) {
   useReadinessMarker("gys-hymn-catalog-ready", state.status === "ready");
   const navigate = useNavigate();
@@ -76,6 +79,14 @@ export function HymnCatalog({
     useState<Awaited<ReturnType<typeof loadHymnSearchCorpus>>>();
   const [corpusError, setCorpusError] = useState<string>();
   const [corpusAttempt, setCorpusAttempt] = useState(0);
+  useEffect(() => {
+    if (state.status === "error")
+      recordDiagnostic(
+        "warn",
+        "kidung.catalog.error",
+        new Error(state.message),
+      );
+  }, [state]);
   const needsCorpus = Boolean(deferredQuery.trim());
   useEffect(() => {
     if (!needsCorpus) return;
@@ -86,16 +97,15 @@ export function HymnCatalog({
         if (active) setCorpus(items);
       },
       (error) => {
-        if (active)
-          setCorpusError(
-            error instanceof Error ? error.message : "Search unavailable",
-          );
+        if (!active) return;
+        recordDiagnostic("warn", "kidung.search.error", error);
+        setCorpusError(translate(locale, "common.errorBody"));
       },
     );
     return () => {
       active = false;
     };
-  }, [needsCorpus, allItems, corpusAttempt]);
+  }, [needsCorpus, allItems, corpusAttempt, locale]);
   const searchableItems = useMemo(() => {
     const byId = new Map(corpus?.map((item) => [item.id, item]));
     return allItems.map((item) => byId.get(item.id) ?? item);
@@ -260,7 +270,12 @@ export function HymnCatalog({
       {state.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
-          <span>{state.message}</span>
+          <span>{translate(locale, "common.errorBody")}</span>
+          {onRetry && (
+            <button className="primary-button" type="button" onClick={onRetry}>
+              {translate(locale, "home.retry")}
+            </button>
+          )}
         </div>
       )}
       {state.status === "ready" && (
@@ -279,6 +294,27 @@ export function HymnCatalog({
               </button>
             </div>
           )}
+          {/* While the deferred corpus is still loading the "no results" panel
+           * would be a lie and would double the single status landmark. */}
+          {filtered.length === 0 &&
+            (!needsCorpus || Boolean(corpus) || Boolean(corpusError)) && (
+              <div className="empty-state kidung-search-empty" role="status">
+                <strong>{translate(locale, "literature.emptyTitle")}</strong>
+                <span>{translate(locale, "literature.emptyBody")}</span>
+                {(query.trim().length > 0 || book !== "all") && (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => {
+                      setQuery("");
+                      setBook("all");
+                    }}
+                  >
+                    {translate(locale, "catalog.reset")}
+                  </button>
+                )}
+              </div>
+            )}
           <ol className="pujian-list" ref={listRef}>
             {filtered.map((item) => {
               const inQueue = queueIds.has(item.id);

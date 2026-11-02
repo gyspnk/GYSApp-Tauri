@@ -37,7 +37,7 @@ test("More keeps all settings collapsed until requested", async ({ page }) => {
   await expect(page.locator(".accent-palette-grid")).toBeVisible();
 });
 
-test("appearance choices are contextual and preserve theme, accent, and language", async ({
+test("appearance choices preserve theme and accent while language stays in the top bar", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -76,12 +76,12 @@ test("appearance choices are contextual and preserve theme, accent, and language
     )
     .toBe("#059669");
 
+  // Language has one home: the top-bar select. Appearance only carries theme,
+  // accent and the reader font.
+  await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
   await page
-    .getByRole("combobox", { name: "Pilih Bahasa", exact: true })
-    .click();
-  await page
-    .getByRole("listbox", { name: "Pilih Bahasa", exact: true })
-    .getByRole("option", { name: /English$/ })
+    .getByRole("listbox", { name: "Bahasa", exact: true })
+    .getByRole("option", { name: "EN", exact: true })
     .click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(accent.locator(".appearance-setting-name")).toHaveText(
@@ -150,9 +150,9 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
     ],
   } as const;
   const appearanceLabels = {
-    id: ["Tema Layar", "Warna Aksen", "Bahasa Aplikasi"],
-    en: ["Screen theme", "Accent color", "App language"],
-    zh: ["屏幕主题", "强调色", "应用语言"],
+    id: ["Tema Layar", "Warna Aksen"],
+    en: ["Screen theme", "Accent color"],
+    zh: ["屏幕主题", "强调色"],
   } as const;
 
   for (const locale of ["id", "en", "zh"] as const) {
@@ -207,7 +207,11 @@ test("More audio settings link opens the existing Bible voice controls", async (
   await page.goto("/GYSApp-Tauri/lainnya");
   const audio = page.locator('[data-setting="audio"]');
   await audio.locator("summary").click();
-  await audio.getByRole("link", { name: "Pengaturan Suara" }).click();
+  // The link is labelled for what it opens (the drawer's engine/gateway),
+  // not with the settings page's own title.
+  await audio
+    .getByRole("link", { name: "Mesin & gateway suara di laci Alkitab →" })
+    .click();
 
   await expect(page.locator(".reader-hamburger-drawer")).toBeVisible({
     timeout: 15_000,

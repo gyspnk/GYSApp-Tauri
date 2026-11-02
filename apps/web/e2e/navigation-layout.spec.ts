@@ -1,5 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+// This file asserts layout and route contracts only and mocks every network
+// edge it depends on, so it can share one browser context per worker: the HTTP
+// and V8 caches then remove ~22% of the run (152s -> 119s measured).
+import { expect, test } from "./fixtures/reuse-context.js";
+import type { Page } from "@playwright/test";
 import {
   preparePinnedReaderAssets,
   preparePinnedMidiAsset,
@@ -640,6 +644,9 @@ test.describe("responsive reader navigation", () => {
   test("Lainnya keeps its settings rows compact and reveals tools on demand", async ({
     page,
   }) => {
+    // Five viewports with full app boots; under a loaded host the default
+    // 40 s budget is not enough, and the run otherwise fails for load, not UI.
+    test.slow();
     for (const viewport of [
       { width: 320, height: 720 },
       { width: 390, height: 844 },
@@ -980,7 +987,8 @@ test.describe("responsive reader navigation", () => {
     await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
     await page.getByRole("button", { name: "Buka MIDI", exact: true }).click();
     const player = page.locator(".media-surface.is-kidung-media");
-    await expect(player).toBeVisible({ timeout: 30_000 });
+    // SoundFont boot competes with a parallel worker; 30 s is tight under load.
+    await expect(player).toBeVisible({ timeout: 60_000 });
     await player.getByRole("button", { name: "Putar", exact: true }).click();
     await expect(
       player.getByRole("button", { name: "Jeda", exact: true }),
@@ -1274,28 +1282,57 @@ test.describe("responsive reader navigation", () => {
     }
   });
 
-  test("topbar theme and speech endpoint settings stay localized", async ({
+  test("reader drawer keeps language and sends the theme to settings", async ({
     page,
   }) => {
-    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/GYSApp-Tauri/bible");
+    await page.locator(".reader-hamburger-btn").click();
+    await expect(
+      page.getByRole("combobox", { name: "Bahasa", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: "Tema", exact: true }),
+    ).toHaveCount(0);
+    const link = page.getByRole("link", {
+      name: "Tema diatur di Pengaturan Tampilan →",
+      exact: true,
+    });
+    await expect(link).toHaveAttribute(
+      "href",
+      "/GYSApp-Tauri/lainnya?section=appearance",
+    );
+    await link.click();
+    await expect(
+      page.getByRole("combobox", { name: "Pilih Tema", exact: true }),
+    ).toBeVisible();
+  });
+
+  test("theme choices in settings and speech endpoints stay localized", async ({
+    page,
+  }) => {
+    test.setTimeout(240_000);
     const copies = {
       id: {
         locale: "id",
-        theme: "Tema",
+        theme: "Pilih Tema",
+        appearance: "Tampilan",
         themes: ["Otomatis", "Terang", "Gelap", "AMOLED Gelap", "Sepia Hangat"],
         engine: "Mesin",
         endpoint: "https://... (bawaan)",
       },
       en: {
         locale: "en",
-        theme: "Theme",
+        theme: "Choose theme",
+        appearance: "Appearance",
         themes: ["Automatic", "Light", "Dark", "AMOLED Dark", "Warm Sepia"],
         engine: "Engine",
         endpoint: "https://... (default)",
       },
       zh: {
         locale: "zh",
-        theme: "主题",
+        theme: "选择主题",
+        appearance: "外观",
         themes: ["自动", "明亮", "深色", "AMOLED 深色", "暖褐"],
         engine: "引擎",
         endpoint: "https://...（默认）",
@@ -1325,30 +1362,30 @@ test.describe("responsive reader navigation", () => {
     for (const selected of Object.values(copies)) {
       for (const viewport of viewports) {
         await page.setViewportSize(viewport);
-        await page.goto(`/GYSApp-Tauri/?__gys_locale=${selected.locale}`);
-
-        if (viewport.width >= 600) {
-          const themeTrigger = page.getByRole("combobox", {
-            name: selected.theme,
-            exact: true,
-          });
-          await themeTrigger.click();
-          const themeMenu = page.getByRole("listbox", {
-            name: selected.theme,
-            exact: true,
-          });
-          await expect(themeMenu).toBeVisible();
-          await expect(themeMenu.getByRole("option")).toHaveText(
-            selected.themes,
-          );
-          const themeBox = await themeMenu.boundingBox();
-          expect(themeBox).not.toBeNull();
-          expect(themeBox!.x).toBeGreaterThanOrEqual(0);
-          expect(themeBox!.x + themeBox!.width).toBeLessThanOrEqual(
-            viewport.width + 1,
-          );
-          await themeTrigger.click();
-        }
+        await page.goto(
+          `/GYSApp-Tauri/lainnya?__gys_locale=${selected.locale}`,
+        );
+        await page.locator('[data-setting="appearance"] > summary').click();
+        const themeTrigger = page.getByRole("combobox", {
+          name: selected.theme,
+          exact: true,
+        });
+        await expect(themeTrigger).toBeVisible();
+        await themeTrigger.click();
+        const themeMenu = page.getByRole("listbox", {
+          name: selected.theme,
+          exact: true,
+        });
+        await expect(themeMenu).toBeVisible();
+        await expect(themeMenu.getByRole("option")).toHaveText(selected.themes);
+        const themeBox = await themeMenu.boundingBox();
+        expect(themeBox).not.toBeNull();
+        expect(themeBox!.x).toBeGreaterThanOrEqual(0);
+        expect(themeBox!.x + themeBox!.width).toBeLessThanOrEqual(
+          viewport.width + 1,
+        );
+        await page.keyboard.press("Escape");
+        await expect(themeMenu).toHaveCount(0);
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
         await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${selected.locale}`);
@@ -1375,19 +1412,12 @@ test.describe("responsive reader navigation", () => {
       ]) {
         await page.setViewportSize(viewport);
         await page.goto(`/GYSApp-Tauri/kidung?__gys_locale=${selected.locale}`);
-        const themeTrigger = page.getByRole("combobox", {
-          name: selected.theme,
+        const appearance = page.getByRole("link", {
+          name: selected.appearance,
           exact: true,
         });
-        await themeTrigger.click();
-        const themeMenu = page.getByRole("listbox", {
-          name: selected.theme,
-          exact: true,
-        });
-        await expect(themeMenu).toBeVisible();
-        await expect(themeMenu.getByRole("option")).toHaveText(selected.themes);
+        await expect(appearance).toBeVisible();
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
-        await themeTrigger.click();
       }
     }
   });
@@ -1625,4 +1655,49 @@ test.describe("responsive reader navigation", () => {
       });
     }
   }
+});
+
+test("the Indonesian Bible alias opens the reader instead of a 404", async ({
+  page,
+}) => {
+  // Provider SDKs are covered elsewhere; keep this route check deterministic.
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({ contentType: "application/javascript", body: "void 0;" }),
+  );
+  await page.goto("/GYSApp-Tauri/alkitab");
+  await expect(page).toHaveURL(/\/bible$/);
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 15_000,
+  });
+});
+
+test("Iman belief sheet and note editor close with Escape and restore focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/iman");
+  const row = page.locator(".faith-row-summary").first();
+  await expect(row).toBeVisible();
+  await row.click();
+  const sheet = page.locator(".faith-modal-backdrop");
+  await expect(sheet).toBeVisible();
+  await expect
+    .poll(() => sheet.evaluate((node) => node.contains(document.activeElement)))
+    .toBe(true);
+
+  // The note editor is a second layer: one Escape closes only the note.
+  await page
+    .getByRole("button", { name: "Catatan pribadi", exact: true })
+    .click();
+  const note = page.locator(".bible-notes-backdrop");
+  await expect(note).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(note).toHaveCount(0);
+  await expect(sheet).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => document.activeElement?.className ?? ""))
+    .toContain("faith-row-summary");
 });

@@ -111,7 +111,11 @@ export class TauriEdgeSocketAdapter implements EdgeSocket {
 }
 
 const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
-const SEC_MS_GEC_VERSION = "1-143.0.3650.75";
+// Microsoft validates this against a recent Edge build. 158.0.4357.0 is the
+// stable version published on 2026-10-27; bump it from
+// https://edgeupdates.microsoft.com/api/products?view=enterprise when the
+// handshake starts returning 403 again.
+const SEC_MS_GEC_VERSION = "1-158.0.4357.0";
 const EDGE_WSS =
   "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
 const WINDOWS_EPOCH_OFFSET_SECONDS = 11_644_473_600n;
@@ -320,7 +324,7 @@ export async function synthesizeEdgeDirect(
     socket = await connect(url.toString(), {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0",
         "Accept-Language": "en-US,en;q=0.9",
         "Accept-Encoding": "gzip, deflate, br, zstd",
         Pragma: "no-cache",

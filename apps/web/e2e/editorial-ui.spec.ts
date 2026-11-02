@@ -210,7 +210,21 @@ for (const [locale, close] of [
     await expect(reference).toBeFocused();
     await reference.press("Enter");
     await expect(page.locator(".bible-crossref-modal")).toBeVisible();
-    await page.locator(".bible-crossref-header button").click();
+    // The dialog takes focus, keeps Tab inside, closes on Escape, and hands
+    // focus back to the chip that opened it.
+    const closeButton = page.locator(".bible-crossref-close");
+    await expect(closeButton).toBeFocused();
+    for (let press = 0; press < 5; press += 1) await page.keyboard.press("Tab");
+    const stayedInside = await page.evaluate(
+      () =>
+        document
+          .querySelector(".bible-crossref-modal")
+          ?.contains(document.activeElement) ?? false,
+    );
+    expect(stayedInside).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".bible-crossref-modal")).toHaveCount(0);
+    await expect(reference).toBeFocused();
     await reference.focus();
     await reference.press("Space");
     await expect(page.locator(".bible-crossref-modal")).toBeVisible();

@@ -12,3 +12,8 @@ packages/contracts/generated/hymn-catalog.json
 apps/web/e2e/kidung-usability.spec.ts
 .tmp-ui-*/
 apps/web/.tmp-*.ts
+# Local Superpowers SDD workspace: `.superpowers/sdd/.gitignore` ignores all of
+# its own contents, so Prettier must skip the same files. Without this,
+# `pnpm format:check` (and therefore `pnpm verify:prepush`) fails on any
+# checkout where the workflow has run, even though Git has nothing to commit.
+.superpowers/

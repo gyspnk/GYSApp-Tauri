@@ -23,7 +23,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The workflow-level `paths` filter evaluates the whole pull request, so a
+  # documentation push re-runs the 20-minute Windows soak because the PR once
+  # touched an edge file. Classify the pushed range instead and skip the
+  # expensive job when this push cannot affect the native speech path.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Decide whether the native speech path changed
+        run: |
+          set -eu
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          pr_base="${{ github.event.pull_request.base.sha }}"
+          event_before="${{ github.event.before }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ -n "$event_before" ] && [ "$event_before" != "0000000000000000000000000000000000000000" ]; then
+            base="$event_before"
+          else
+            base="$pr_base"
+          fi
+          if [ -z "$base" ]; then
+            base=$(git rev-list --max-parents=0 HEAD)
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base" || true
+          fi
+          files=$(git diff --name-only "$base" "$head" || git diff --name-only HEAD^ HEAD || true)
+          printf 'Changed files:\n%s\n' "$files"
+          relevant=false
+          if printf '%s\n' "$files" | grep -Eq '^(apps/native/|apps/web/src/edge-direct|apps/web/src/edge-speech\.ts|apps/web/src/speech-player\.ts|apps/web/scripts/|scripts/edge-stop-evidence|apps/web/package\.json|\.github/workflows/edge-tts-native\.yml)'; then
+            relevant=true
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
   packaged-native-smoke:
+    needs: changes
+    if: ${{ needs.changes.outputs.relevant == 'true' }}
     runs-on: windows-latest
     # Full LTO, 30 process relaunches, full-track media soak and cache cleanup
     # exceeded 20 minutes on a cold runner even after all acceptance steps passed.

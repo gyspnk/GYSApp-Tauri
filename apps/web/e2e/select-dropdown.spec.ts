@@ -156,18 +156,22 @@ test("shared Select keeps touch, keyboard, locale, and viewport contracts", asyn
       await expect(versionTrigger).toBeFocused();
 
       if (viewport.width >= 600) {
-        await page.goto(`/GYSApp-Tauri/?__gys_locale=${locale}`);
-        const themeTrigger = page.locator(
-          ".topbar-select.theme-select .control-select-trigger",
+        // Appearance has one canonical home now: the settings section. The
+        // top bar links there instead of duplicating theme/language selects.
+        await page.goto(
+          `/GYSApp-Tauri/lainnya?section=appearance&__gys_locale=${locale}`,
         );
-        await expect(themeTrigger).toBeVisible();
+        const themeTrigger = page
+          .locator(".appearance-setting-select .control-select-trigger")
+          .first();
+        await expect(themeTrigger).toBeVisible({ timeout: 15_000 });
         await expectTouchTarget(themeTrigger);
         await themeTrigger.focus();
         await page.keyboard.press("Enter");
 
-        const themeMenu = page.locator(
-          ".topbar-select.theme-select .control-select-menu",
-        );
+        const themeMenu = page
+          .locator(".appearance-setting-select .control-select-menu")
+          .first();
         await expect(themeMenu).toBeVisible();
         await expect(themeMenu.getByRole("option")).toHaveText(
           themeCopies[locale],

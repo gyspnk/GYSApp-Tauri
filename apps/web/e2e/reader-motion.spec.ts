@@ -127,7 +127,7 @@ test("browsers without snapshots use a single lyric entrance", async ({
   );
 });
 
-test("chord toggle preserves lyrics and animates row spacing in both directions", async ({
+test("chord toggle preserves lyrics and reflows row spacing in both directions", async ({
   page,
 }) => {
   await preparePinnedReaderAssets(page);
@@ -145,73 +145,24 @@ test("chord toggle preserves lyrics and animates row spacing in both directions"
     el.setAttribute("data-motion-probe", "preserved"),
   );
   for (const hide of [true, false]) {
-    const movement = await page
+    // Commit 7c3b68e removed the padding-top transition to keep chord reflow
+    // stable, so the row spacing must reflow immediately in both directions.
+    await page
       .getByRole("button", {
         name: hide ? "Sembunyikan chord" : "Tampilkan chord",
         exact: true,
       })
-      .evaluate(
-        (button) =>
-          new Promise<{ padding: number; font: number; duration: number }>(
-            (resolve, reject) => {
-              const el = document.querySelector<HTMLElement>(
-                '[data-motion-probe="preserved"]',
-              )!;
-              let frames = 0;
-              const sample = () => {
-                const transition = el
-                  .getAnimations()
-                  .find(
-                    (animation) =>
-                      animation instanceof CSSTransition &&
-                      animation.transitionProperty === "padding-top",
-                  );
-                if (!transition) {
-                  if (++frames < 60) requestAnimationFrame(sample);
-                  else
-                    reject(new Error("Chord spacing transition did not start"));
-                  return;
-                }
-                // Freeze at creation, before any browser protocol round trip can
-                // consume the animation on a busy runner. Verify both directions.
-                const duration = Number(
-                  transition.effect!.getTiming().duration,
-                );
-                transition.pause();
-                transition.currentTime = duration / 2;
-                const style = getComputedStyle(el);
-                resolve({
-                  padding: parseFloat(style.paddingTop),
-                  font: parseFloat(style.fontSize),
-                  duration,
-                });
-              };
-              (button as HTMLElement).click();
-              requestAnimationFrame(sample);
-            },
-          ),
-      );
+      .click();
     await expect(line).toHaveAttribute("data-motion-probe", "preserved");
-    expect(movement.duration).toBeGreaterThan(0);
-    expect(movement.padding).toBeGreaterThan(0);
-    expect(movement.padding).toBeLessThan(movement.font * 1.25);
-    await line.evaluate((el) => {
-      for (const animation of el.getAnimations()) animation.play();
-    });
-    if (hide) {
-      await expect
-        .poll(() =>
-          line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
-        )
-        .toBe(0);
+    const padding = () =>
+      line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop));
+    if (hide) await expect.poll(padding).toBe(0);
+    else await expect.poll(padding).toBeGreaterThan(15);
+    await expect
+      .poll(() => line.evaluate((el) => el.getAnimations().length))
+      .toBe(0);
+    if (hide)
       await expect(page.locator(".chord-capability.is-hidden")).toHaveCount(4);
-    } else {
-      await expect
-        .poll(() =>
-          line.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
-        )
-        .toBeGreaterThan(15);
-    }
   }
 });
 

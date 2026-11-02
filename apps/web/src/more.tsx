@@ -7,7 +7,7 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   type AccountProfile,
   type AssetManifestV1,
@@ -23,7 +23,7 @@ import {
   collectPortableBackupSettings,
   restorePortableBackupSettings,
 } from "./backup-settings.js";
-import { translate, type Locale } from "./i18n.js";
+import { formatDecimal, translate, type Locale } from "./i18n.js";
 import {
   applyAssetManifestUpdate,
   checkAssetManifest,
@@ -67,7 +67,13 @@ import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
 import { AccountAvatar } from "./account-avatar.js";
-import { recordDiagnostic } from "./diagnostics.js";
+import {
+  clearDiagnostics,
+  getDiagnostics,
+  recordDiagnostic,
+  subscribeDiagnostics,
+  type DiagnosticEvent,
+} from "./diagnostics.js";
 import { createPlatformServices } from "./platform.js";
 import { clearAppData } from "./app-data.js";
 
@@ -108,9 +114,9 @@ type AssetCheckState =
       url: string;
     };
 
-function formatBytes(bytes: number): string {
+function formatBytes(bytes: number, locale: Locale): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${formatDecimal(bytes / (1024 * 1024), locale)} MB`;
 }
 
 function distributedAssetStateLabel(
@@ -196,7 +202,7 @@ function DistributedAssetPanel({
         {groups.map((group) => (
           <section className="distributed-asset-group" key={group.key}>
             <div className="distributed-asset-group-label">
-              <Icon name={group.icon} size={15} />
+              <Icon name={group.icon} size={16} />
               <strong>{translate(locale, group.labelKey)}</strong>
               <span>{group.items.length}</span>
             </div>
@@ -216,7 +222,7 @@ function DistributedAssetPanel({
                     <small>
                       {distributedAssetStateLabel(locale, asset)}
                       {asset.sizeBytes
-                        ? ` · ${formatBytes(asset.sizeBytes)}`
+                        ? ` · ${formatBytes(asset.sizeBytes, locale)}`
                         : ""}
                     </small>
                     {busy && (
@@ -267,7 +273,7 @@ function DistributedAssetPanel({
                             { title: asset.title },
                           )}
                         >
-                          <Icon name="download" size={17} />
+                          <Icon name="download" size={18} />
                           <span className="asset-action-copy">
                             {asset.state === "update"
                               ? translate(locale, "more.update")
@@ -299,7 +305,7 @@ function DistributedAssetPanel({
                           title: asset.title,
                         })}
                       >
-                        <Icon name="download" size={17} />
+                        <Icon name="download" size={18} />
                         <span className="asset-action-copy">
                           {translate(locale, "more.download")}
                         </span>
@@ -345,6 +351,19 @@ const HymnSettingsPanel = lazy(() =>
   })),
 );
 
+/**
+ * A deep link names a section; each one belongs to exactly one disclosure row.
+ * The reveal runs inside React so it always targets the committed element.
+ */
+const MORE_SECTION_SETTINGS: Record<string, string> = {
+  account: "account",
+  data: "offline",
+  help: "about",
+  kidung: "hymns",
+  appearance: "appearance",
+  audio: "audio",
+};
+
 export function MorePage({
   locale,
   theme,
@@ -357,12 +376,29 @@ export function MorePage({
   setTheme: (value: ShellTheme) => void;
 }) {
   const nativeShell = isTauriShell();
-  const initialSection = new URLSearchParams(window.location.search).get(
-    "section",
+  const location = useLocation();
+  // Settings are seven collapsed disclosure rows: the category list stays
+  // scannable on a phone and the heavy hymn panel mounts on first request.
+  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(
+    () =>
+      new URLSearchParams(window.location.search).get("section") === "kidung",
   );
-  // Settings are one flat page: the hymn panel is always mounted so its
-  // controls are visible without a second disclosure.
-  const [hymnSettingsOpen, setHymnSettingsOpen] = useState(true);
+  // `/kidung?section=settings` redirects here with section=kidung, and the
+  // account/data/help shortcuts arrive by pushState on this same route. The
+  // effect runs after commit, so it never touches a node React replaced.
+  useEffect(() => {
+    const requested = new URLSearchParams(location.search).get("section");
+    const setting = requested ? MORE_SECTION_SETTINGS[requested] : undefined;
+    if (!setting) return;
+    if (setting === "hymns") {
+      setHymnSettingsOpen(true);
+      return;
+    }
+    const disclosure = document.querySelector<HTMLDetailsElement>(
+      `.more-setting-section[data-setting="${setting}"]`,
+    );
+    if (disclosure && !disclosure.open) disclosure.open = true;
+  }, [location.search]);
   const [manifest, setManifest] = useState<PackManifest | undefined>();
   const [assetManifest, setAssetManifest] = useState<AssetManifestV1>();
   const [assetCheck, setAssetCheck] = useState<AssetCheckState>({
@@ -377,6 +413,9 @@ export function MorePage({
     "idle" | "sending" | "error"
   >("idle");
   const [notice, setNotice] = useState("");
+  const [diagnostics, setDiagnostics] = useState<DiagnosticEvent[]>(() =>
+    getDiagnostics(),
+  );
   const [accountProfile, setAccountProfile] = useState<
     AccountProfile | undefined
   >(() => readCachedEgysProfile());
@@ -399,6 +438,7 @@ export function MorePage({
   const [egysProvider, setEgysProvider] = useState<"whatsapp" | "apple">();
   const whatsAppWindow = useRef<Window | null>(null);
   const [whatsAppAttempt, setWhatsAppAttempt] = useState(0);
+  const [whatsAppNotice, setWhatsAppNotice] = useState("");
   const [egysGoogleError, setEgysGoogleError] = useState("");
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<PlatformFile>();
@@ -434,8 +474,8 @@ export function MorePage({
     setTheme(next);
   };
 
-  // Settings are a single flat page: every group renders expanded on the
-  // first paint, so nothing shifts after mount and no group nests a menu.
+  // Settings are seven collapsed disclosure rows: each category stays one
+  // 44px tap target and no group nests another menu.
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`${import.meta.env.BASE_URL}offline/pack-manifest.json`, {
@@ -613,6 +653,7 @@ export function MorePage({
     saveEgysProfile(profile);
     setEgysSession(trackEgysProfileSeen(profile));
     setEgysProvider(undefined);
+    setWhatsAppNotice("");
   }, []);
   useEffect(() => {
     if (!nativeShell) void loadEgysApple().catch(() => undefined);
@@ -642,6 +683,7 @@ export function MorePage({
   );
   const startEgysProvider = (provider: "whatsapp" | "apple") => {
     closePendingWhatsAppWindow();
+    setWhatsAppNotice("");
     if (provider === "whatsapp") {
       // Reserve the messaging tab during the click, before asynchronous setup.
       whatsAppWindow.current = window.open("about:blank", "_blank");
@@ -703,6 +745,31 @@ export function MorePage({
     noticeTimer.current = window.setTimeout(() => setNotice(""), 2600);
   };
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
+  // The log is recorded across the app; mirror it here so a failed provider or
+  // download can be read without developer tools.
+  useEffect(() => {
+    setDiagnostics(getDiagnostics());
+    return subscribeDiagnostics(() => setDiagnostics(getDiagnostics()));
+  }, []);
+  const copyDiagnostics = async () => {
+    const text = diagnostics
+      .map(
+        (event) =>
+          `${event.timestamp} [${event.level}] ${event.scope}: ${event.message}`,
+      )
+      .join("\n");
+    try {
+      await navigator.clipboard?.writeText(text);
+      show(translate(locale, "more.diagnosticsCopied"));
+    } catch {
+      // Clipboard permission may be denied; the log stays readable on screen.
+    }
+  };
+  const resetDiagnostics = () => {
+    clearDiagnostics();
+    setDiagnostics(getDiagnostics());
+    show(translate(locale, "more.diagnosticsCleared"));
+  };
   const submitReport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const message = report.trim();
@@ -1011,7 +1078,6 @@ export function MorePage({
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
-          open
         >
           <summary className="more-setting-row">
             <span className="more-setting-icon">
@@ -1143,6 +1209,16 @@ export function MorePage({
                         messagingWindow={whatsAppWindow.current}
                         onComplete={completeProviderLogin}
                         onCancel={cancelEgysProvider}
+                        onExpire={() =>
+                          setWhatsAppNotice(
+                            translate(locale, "more.whatsappExpired"),
+                          )
+                        }
+                        onError={(message) =>
+                          setWhatsAppNotice(
+                            message || translate(locale, "more.whatsappFailed"),
+                          )
+                        }
                       />
                     ) : undefined
                   }
@@ -1163,6 +1239,11 @@ export function MorePage({
                       : undefined
                   }
                 />
+                {whatsAppNotice && (
+                  <p className="egys-whatsapp-notice" role="status">
+                    {whatsAppNotice}
+                  </p>
+                )}
                 {egysGoogleError && egysProvider !== "apple" && (
                   <p className="egys-google-error" role="alert">
                     {egysGoogleError}
@@ -1187,11 +1268,7 @@ export function MorePage({
           </article>
         </details>
 
-        <details
-          className="more-setting-section"
-          data-setting="appearance"
-          open
-        >
+        <details className="more-setting-section" data-setting="appearance">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
@@ -1213,23 +1290,23 @@ export function MorePage({
                   options={[
                     {
                       value: "system",
-                      label: translate(locale, "more.themeAutomatic"),
+                      label: translate(locale, "shell.themeSystem"),
                     },
                     {
                       value: "light",
-                      label: translate(locale, "more.themeLight"),
+                      label: translate(locale, "shell.themeLight"),
                     },
                     {
                       value: "dark",
-                      label: translate(locale, "more.themeDark"),
+                      label: translate(locale, "shell.themeDark"),
                     },
                     {
                       value: "amoled",
-                      label: translate(locale, "more.themeAmoled"),
+                      label: translate(locale, "shell.themeAmoled"),
                     },
                     {
                       value: "sepia",
-                      label: translate(locale, "more.themeSepia"),
+                      label: translate(locale, "shell.themeSepia"),
                     },
                   ]}
                 />
@@ -1301,9 +1378,12 @@ export function MorePage({
                         backgroundColor: !selectedAccent
                           ? accentColor
                           : "transparent",
+                        // Filled state carries the chosen colour; the glyph has
+                        // to stay legible on any of them, so it flips to white.
+                        color: !selectedAccent ? "#fff" : "var(--muted)",
                       }}
                     >
-                      🎨
+                      <Icon name="tune" size={14} aria-hidden />
                     </span>
                     <span className="accent-swatch-name">
                       {translate(locale, "more.custom")}
@@ -1311,41 +1391,12 @@ export function MorePage({
                   </label>
                 </div>
               </section>
-
-              <div className="appearance-setting-row">
-                <span className="appearance-setting-name">
-                  {translate(locale, "more.appLanguage")}
-                </span>
-                <Select
-                  className="appearance-setting-select"
-                  value={locale}
-                  onChange={(val) => {
-                    const next = val as Locale;
-                    setLocale(next);
-                  }}
-                  label={translate(locale, "more.chooseLanguage")}
-                  options={[
-                    {
-                      value: "id",
-                      label: "🇮🇩 Bahasa Indonesia (Utama)",
-                    },
-                    {
-                      value: "en",
-                      label: "🇬🇧 English",
-                    },
-                    {
-                      value: "zh",
-                      label: "🇨🇳 简体中文",
-                    },
-                  ]}
-                />
-              </div>
             </div>
             <UiPreferencesPanel locale={locale} />
           </article>
         </details>
 
-        <details className="more-setting-section" data-setting="audio" open>
+        <details className="more-setting-section" data-setting="audio">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
@@ -1448,7 +1499,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="offline" open>
+        <details className="more-setting-section" data-setting="offline">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
@@ -1488,6 +1539,7 @@ export function MorePage({
                               (sum, item) => sum + item.bytes,
                               0,
                             ),
+                            locale,
                           )
                         : "—"}
                     </strong>
@@ -1597,7 +1649,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="backup" open>
+        <details className="more-setting-section" data-setting="backup">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
@@ -1659,7 +1711,7 @@ export function MorePage({
           </div>
         </details>
 
-        <details className="more-setting-section" data-setting="about" open>
+        <details className="more-setting-section" data-setting="about">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
@@ -1705,6 +1757,73 @@ export function MorePage({
                     })}
               </small>
             </form>
+            <section
+              className="more-card diagnostics-card"
+              aria-label={translate(locale, "more.diagnostics")}
+            >
+              <div className="more-card-heading">
+                <div>
+                  <h2>{translate(locale, "more.diagnostics")}</h2>
+                </div>
+                <div className="diagnostics-actions">
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => void copyDiagnostics()}
+                    disabled={!diagnostics.length}
+                  >
+                    {translate(locale, "more.diagnosticsCopy")}
+                  </button>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={resetDiagnostics}
+                    disabled={!diagnostics.length}
+                  >
+                    {translate(locale, "more.diagnosticsClear")}
+                  </button>
+                </div>
+              </div>
+              <p className="catalog-note">
+                {translate(locale, "more.diagnosticsHint")}
+              </p>
+              {diagnostics.length ? (
+                // The log scrolls once it is long; the wrapper owns the scroll
+                // and the tab stop so the list keeps its own semantics. Its
+                // landmark name differs from the card so both stay unique.
+                <div
+                  className="diagnostics-log-scroll"
+                  tabIndex={0}
+                  role="region"
+                  aria-label={translate(locale, "more.diagnosticsLog")}
+                >
+                  <ol className="diagnostics-log">
+                    {diagnostics
+                      .slice(-20)
+                      .reverse()
+                      .map((event) => (
+                        <li key={event.id} data-level={event.level}>
+                          <time dateTime={event.timestamp}>
+                            {new Date(event.timestamp).toLocaleTimeString(
+                              locale,
+                            )}
+                          </time>
+                          <span className="diagnostics-scope">
+                            {event.scope}
+                          </span>
+                          <span className="diagnostics-message">
+                            {event.message}
+                          </span>
+                        </li>
+                      ))}
+                  </ol>
+                </div>
+              ) : (
+                <p className="catalog-note">
+                  {translate(locale, "more.diagnosticsEmpty")}
+                </p>
+              )}
+            </section>
           </div>
         </details>
       </section>

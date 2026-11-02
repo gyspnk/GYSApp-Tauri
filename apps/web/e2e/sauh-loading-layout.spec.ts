@@ -34,12 +34,10 @@ for (const width of [320, 390, 768, 1440]) {
         const track = node
           .querySelector(".loading-progress-track")!
           .getBoundingClientRect();
-        const heading = node
-          .closest(".verse-panel")!
-          .querySelector(".section-heading")!
-          .getBoundingClientRect();
+        // The Sauh card no longer renders a section heading of its own, so the
+        // compact contract is the label/track rhythm inside the panel.
         return {
-          gap: track.top - heading.bottom,
+          gap: label.top - track.bottom,
           items: [label, track].map((rect) => ({
             left: rect.left - panel.left,
             right: panel.right - rect.right,

@@ -109,8 +109,21 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const controls = account.locator(".egys-provider-all .egys-provider");
     await expect(controls).toHaveCount(3);
     const row = await account.locator(".egys-provider-all").boundingBox();
-    const body = await account.locator(".egys-login-box").boundingBox();
-    expect(Math.abs(row!.width - body!.width)).toBeLessThan(1);
+    // The provider row fills the login card's content box. The card itself is
+    // framed with padding and a hairline border, so compare against the padded
+    // content width instead of the border box.
+    const body = await account.locator(".egys-login-box").evaluate((node) => {
+      const style = getComputedStyle(node);
+      const width = node.getBoundingClientRect().width;
+      return (
+        width -
+        Number.parseFloat(style.paddingLeft) -
+        Number.parseFloat(style.paddingRight) -
+        Number.parseFloat(style.borderLeftWidth) -
+        Number.parseFloat(style.borderRightWidth)
+      );
+    });
+    expect(Math.abs(row!.width - body)).toBeLessThan(1);
     expect(
       await controls.evaluateAll((nodes) =>
         nodes.every((node) => node.scrollWidth <= node.clientWidth + 1),
@@ -293,13 +306,12 @@ test("web providers authenticate inline and refresh the detected account", async
     loggedIn = false;
     await route.fulfill({ json: { ok: true } });
   });
-  await context.route("https://api.whatsapp.com/**", (route) => {
-    expect(
-      tracking,
-      "tracking subscribes before the message link opens",
-    ).toBeDefined();
-    return route.fulfill({ body: "WhatsApp", contentType: "text/html" });
-  });
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    // The tab opens before the socket connects on purpose: gating the link on
+    // an upgrade left users without a socket on a countdown. Subscribe in the
+    // same attempt, which is what "before the user can send" requires.
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const messagingTab = page.waitForEvent("popup");
   await page
@@ -309,6 +321,11 @@ test("web providers authenticate inline and refresh the detected account", async
   await expect(whatsapp).toHaveURL(
     "https://api.whatsapp.com/send?phone=628123456789&text=LOGIN%20test-ref",
   );
+  await expect
+    .poll(() => tracking !== undefined, {
+      message: "tracking socket subscribes within the attempt",
+    })
+    .toBe(true);
   expect(await whatsapp.evaluate(() => window.opener)).toBeNull();
   await expect(page.getByRole("timer")).toHaveAttribute(
     "aria-label",
@@ -347,6 +364,342 @@ test("web providers authenticate inline and refresh the detected account", async
   expect(context.pages()).toHaveLength(1);
 });
 
+test("a rejected confirm still signs in when the WhatsApp reply already created the session", async ({
+  page,
+  context,
+}) => {
+  let loggedIn = false;
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({
+      json: {
+        profile: loggedIn
+          ? { id: "42", displayName: "Jemaat WhatsApp", locale: "id" }
+          : null,
+      },
+    }),
+  );
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-bot-first",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-bot-first",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  let confirmCalls = 0;
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", async (route) => {
+    confirmCalls++;
+    // The bot completed the login on its side first, so the provider rejects a
+    // second confirmation even though the session already exists.
+    loggedIn = true;
+    await route.fulfill({
+      status: 401,
+      json: {
+        error: { message: "WhatsApp code could not be verified" },
+      },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/apple", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await page.route("**/api/v1/auth/logout", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  // Hydration can lag behind the first paint on a loaded host; a click that
+  // lands before the handler is attached opens nothing. One retry is enough,
+  // and a genuinely broken button still fails on the second attempt.
+  const openLogin = async () => {
+    const popup = page
+      .waitForEvent("popup", { timeout: 10_000 })
+      .catch(() => null);
+    await page
+      .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+      .click();
+    return popup;
+  };
+  const messagingTab = (await openLogin()) ?? (await openLogin());
+  if (!messagingTab) throw new Error("WhatsApp login never opened a window");
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-bot-first",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat WhatsApp", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(confirmCalls).toBe(1);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("a profile that lags the confirmation is retried instead of failing", async ({
+  page,
+  context,
+}) => {
+  // The popup + socket handshake + two profile reads exceed the 40 s default
+  // once the two-worker host is busy; the assertions stay the same.
+  test.slow();
+  let profileCalls = 0;
+  await page.route("**/api/v1/account/profile", (route) => {
+    profileCalls++;
+    // The first read can land before the session cookie is visible to the
+    // profile route; the client must retry instead of showing a failure.
+    return route.fulfill({
+      json:
+        profileCalls >= 2
+          ? { profile: { id: "43", displayName: "Jemaat Sabar", locale: "id" } }
+          : { profile: null },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-slow-profile",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-slow-profile",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-slow-profile",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat Sabar", exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(profileCalls).toBeGreaterThanOrEqual(2);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("a slow profile keeps the countdown instead of the failure mark", async ({
+  page,
+  context,
+}) => {
+  // Seven profile attempts span ~19 s of retries, close to the 30 s default
+  // budget on a loaded two-worker host.
+  test.slow();
+  let profileCalls = 0;
+  await page.route("**/api/v1/account/profile", (route) => {
+    profileCalls++;
+    // Six misses cover roughly five seconds of retries: enough that the old
+    // 2.65 s budget gave up even though WhatsApp had already accepted the code.
+    return route.fulfill({
+      json:
+        profileCalls >= 7
+          ? { profile: { id: "44", displayName: "Jemaat Telat", locale: "id" } }
+          : { profile: null },
+    });
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-late-profile",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-late-profile",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({ json: { ok: true } }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-late-profile",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat Telat", exact: true }),
+  ).toBeVisible({ timeout: 20_000 });
+  expect(profileCalls).toBeGreaterThanOrEqual(7);
+  await expect(page.locator(".egys-whatsapp-countdown.is-error")).toHaveCount(
+    0,
+  );
+});
+
+test("a WhatsApp attempt that really fails shows the reason in the account card", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      json: {
+        referenceid: "ref-rejected",
+        mobilephone: "628123456789",
+        content: "LOGIN ref-rejected",
+      },
+    }),
+  );
+  let tracking: { send(data: string): void } | undefined;
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+    tracking = ws;
+    ws.send(JSON.stringify({ type: "info" }));
+  });
+  await page.route("**/api/v1/auth/egys/whatsapp/confirm", (route) =>
+    route.fulfill({
+      status: 401,
+      json: { error: { message: "WhatsApp code could not be verified" } },
+    }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup");
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  await expect(page.getByRole("timer")).toHaveAttribute(
+    "aria-label",
+    /Menunggu pesan WhatsApp/,
+  );
+  tracking!.send(
+    JSON.stringify({
+      refid: "ref-rejected",
+      otp: "123456",
+      mobilePhone: "628987654321",
+    }),
+  );
+  const badge = page.locator(".egys-whatsapp-countdown.is-error");
+  // The client gives a rejected confirm a short grace window (profile check +
+  // one retry) before it shows the exclamation mark.
+  await expect(badge).toHaveText("!", { timeout: 15_000 });
+  // The provider's reason reaches the card in Indonesian; the raw BFF route
+  // wording stays in the diagnostics log.
+  await expect(page.locator(".egys-whatsapp-notice")).toContainText(
+    "Kode WhatsApp tidak dapat diverifikasi",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Jemaat WhatsApp", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("a lost provider connection explains itself instead of showing the browser error", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  // A dropped connection used to surface the raw Fetch/DOMException text
+  // ("Failed to fetch", "Signal is aborted without reason") in the account
+  // card, which tells a member nothing they can act on.
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.abort("failed"),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup").catch(() => undefined);
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  const notice = page.locator(".egys-whatsapp-notice");
+  await expect(notice).toContainText("Tidak dapat menghubungi server e-GYS");
+  await expect(notice).not.toContainText("Failed to fetch");
+  await expect(notice).not.toContainText("aborted");
+});
+
+test("a provider timeout at the BFF reads as a sentence in the account card", async ({
+  page,
+  context,
+}) => {
+  await page.route("**/api/v1/account/profile", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  // The owner-visible symptom this covers: e-GYS answers past the upstream
+  // deadline, the BFF reports the timeout, and the card used to print the raw
+  // abort message instead of what happened.
+  await page.route("**/api/v1/auth/egys/whatsapp/start", (route) =>
+    route.fulfill({
+      status: 503,
+      json: {
+        error: {
+          code: "UPSTREAM_UNAVAILABLE",
+          message:
+            "WhatsApp login is unavailable (e-GYS 504: timeout 15 detik)",
+        },
+      },
+    }),
+  );
+  await context.route("https://api.whatsapp.com/**", (route) =>
+    route.fulfill({ body: "WhatsApp", contentType: "text/html" }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const messagingTab = page.waitForEvent("popup").catch(() => undefined);
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await messagingTab;
+  const notice = page.locator(".egys-whatsapp-notice");
+  await expect(notice).toContainText("Login WhatsApp sedang tidak tersedia");
+  await expect(notice).toContainText("(e-GYS 504: timeout 15 detik)");
+});
+
 test("WhatsApp timeout removes its badge without closing the messaging tab", async ({
   page,
   context,
@@ -380,9 +733,19 @@ test("WhatsApp timeout removes its badge without closing the messaging tab", asy
   await expect(page.getByRole("timer")).toHaveText("0:01");
   await page.clock.fastForward(1_000);
   await expect(page.getByRole("timer")).toHaveCount(0);
+  // The badge disappears, but the panel keeps an explanation of the next step.
+  const expired = page
+    .getByRole("status")
+    .filter({ hasText: "Pesan WhatsApp belum terdeteksi" });
+  await expect(expired).toBeVisible();
   expect(context.pages()).toHaveLength(2);
   await messagingTab.close();
   await expect(page.locator(".egys-inline-login")).toHaveCount(0);
+  // Starting another attempt replaces the stale explanation.
+  await page
+    .getByRole("button", { name: "Login dengan WhatsApp", exact: true })
+    .click();
+  await expect(expired).toHaveCount(0);
 });
 
 test("clicking WhatsApp again replaces the request and ignores the old socket", async ({
@@ -590,14 +953,23 @@ test("Apple completes after a real cold script load instead of hanging at initia
 test("Lainnya renders unified settings and account panels cleanly", async ({
   page,
 }) => {
+  // Groups open on first paint; open them explicitly instead of toggling.
+  const openSetting = async (setting: string) => {
+    const section = page.locator(
+      `.more-setting-section[data-setting="${setting}"]`,
+    );
+    if ((await section.getAttribute("open")) === null)
+      await section.locator("summary").click();
+    await expect(section).toHaveAttribute("open", "");
+  };
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(page.getByRole("heading", { name: "Akun e-GYS" })).toBeVisible();
-  await page.locator('[data-setting="appearance"] > summary').click();
+  await openSetting("appearance");
   await expect(
     page.getByRole("combobox", { name: "Pilih Tema", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".accent-palette-grid")).toBeVisible();
-  await page.locator('[data-setting="offline"] > summary').click();
+  await openSetting("offline");
   await expect(
     page.getByRole("heading", { name: "Paket lokal" }),
   ).toBeVisible();
@@ -632,20 +1004,25 @@ test("Google retries a failed SDK within the same provider row", async ({
 test("active e-GYS session displays the member profile badge", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      "gys-egys-profile-v1",
-      JSON.stringify({
-        id: "member-123",
-        displayName: "Sdr. Yohanes",
-        branchName: "Semarang",
-        branchCode: "SMG",
-        isMember: true,
-        membershipNo: "GYS-SMG-001",
-        locale: "id",
-      }),
-    );
-  });
+  const profile = {
+    id: "member-123",
+    displayName: "Sdr. Yohanes",
+    branchName: "Semarang",
+    branchCode: "SMG",
+    isMember: true,
+    membershipNo: "GYS-SMG-001",
+    locale: "id",
+  };
+  await page.addInitScript((value) => {
+    localStorage.setItem("gys-egys-profile-v1", JSON.stringify(value));
+  }, profile);
+  // State the session precondition instead of inheriting it from the build's
+  // configured BFF: without an answer the app correctly reports no session and
+  // clears the cached member, so the badge assertion would only hold on a
+  // checkout that happens to have no Worker configured.
+  await page.route("**/api/v1/account/profile**", (route) =>
+    route.fulfill({ json: { profile } }),
+  );
 
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   await expect(

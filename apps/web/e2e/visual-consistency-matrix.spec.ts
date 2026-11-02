@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-test.use({ serviceWorkers: "block" });
+// The 44px target assertion is a touch contract; the compact chrome keeps 36px
+// controls on a fine pointer, so this matrix runs with a coarse pointer.
+test.use({ serviceWorkers: "block", hasTouch: true });
 test.setTimeout(420_000);
 
 const viewports = [

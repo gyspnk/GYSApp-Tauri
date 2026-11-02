@@ -11,7 +11,7 @@
   width: min(304px, calc(100vw - 28px));
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--surface);
   color: var(--ink);
   box-shadow: 0 18px 48px rgb(0 35 64 / 18%);
@@ -29,7 +29,7 @@
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
-  border-radius: 15px;
+  border-radius: 12px;
   overflow: hidden;
   background: color-mix(in srgb, var(--blue) 12%, var(--surface));
   color: var(--blue);
@@ -51,10 +51,10 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 .account-popover-identity strong {
-  font-size: 0.92rem;
+  font-size: 0.9375rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -62,7 +62,7 @@
 .account-popover-identity span:not(.account-menu-avatar),
 .account-popover-email {
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -76,9 +76,9 @@
 }
 .account-popover-actions {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   border-top: 1px solid var(--line);
-  padding-top: 7px;
+  padding-top: 8px;
 }
 .account-popover-actions > :is(a, button),
 .account-menu-login > a {
@@ -88,12 +88,12 @@
   min-height: 42px;
   width: 100%;
   border: 0;
-  border-radius: 11px;
-  padding: 9px 10px;
+  border-radius: 12px;
+  padding: 8px 10px;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   text-decoration: none;
   transition:
     background 150ms ease,
@@ -115,7 +115,7 @@
 .account-menu-login {
   display: grid;
   gap: 6px;
-  margin-bottom: 9px;
+  margin-bottom: 8px;
 }
 .account-menu-login[aria-busy="true"] {
   pointer-events: none;
@@ -129,7 +129,7 @@
 }
 .account-menu-error {
   margin: 8px 4px 0;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .more-account-section .more-setting-icon {
@@ -150,7 +150,7 @@
 }
 .more-account-section .member-church-title {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 .more-account-section .member-badge-body {
   padding: 14px;

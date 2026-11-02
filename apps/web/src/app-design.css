@@ -73,13 +73,16 @@
 }
 .app-frame:not(.is-reader-route) .main-content {
   padding: var(--page-start) var(--page-gutter) var(--page-end);
+  /* Short pages used to end their white surface mid-viewport and expose the
+     frame grey below it; the main surface should always reach the bottom. */
+  min-height: calc(100dvh - var(--topbar-height, 58px));
 }
 .app-frame .main-content:has(.bible-reader) {
   padding: 0;
 }
 .search-trigger {
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .page:not(.hymn-page) > .page-intro,
 .faith-page-title {
@@ -143,7 +146,7 @@
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -244,7 +247,7 @@
 /* Literature cards: category eyebrow, title, then the date. The issue format
    line ("ISSUE · TJC Indonesia") carried no information and is gone. */
 .home-literature-shelf .suara-card-meta {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0.01em;
@@ -398,7 +401,7 @@
   height: 22px;
   min-height: 0;
   margin: 0;
-  padding: 3px;
+  padding: 4px;
   border: 1px solid var(--muted);
   border-radius: 999px;
   background: var(--line-strong);
@@ -542,12 +545,16 @@
   color: var(--ink);
 }
 :is(.primary-button, .quiet-button, .secondary-button) {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   padding-inline: 14px;
   font-weight: 550;
 }
 :is(.icon-button, .media-control) {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
+}
+/* Any select trigger, however deeply a panel nests it, shares one radius. */
+.control-select .control-select-trigger {
+  border-radius: var(--radius-control);
 }
 
 /* These paragraphs are deliberately complete; only the surrounding tools shrink. */
@@ -561,7 +568,7 @@
   gap: 12px;
   padding: 8px 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 2px 4px color-mix(in srgb, var(--blue) 5%, transparent);
 }
 .faith-page .faith-search-bar:focus-within {
@@ -667,7 +674,7 @@
   align-items: center;
   gap: 4px;
   min-height: 32px;
-  padding: 5px 8px;
+  padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   font-size: 0.6875rem;
@@ -675,6 +682,13 @@
 }
 .faith-page .faith-row-heading {
   color: var(--blue);
+}
+/* These compact icon buttons are the only way into the PDF and notes on a
+   phone, so a coarse pointer gets the 44 px target rather than 32 px. */
+@media (hover: none), (pointer: coarse) {
+  .faith-page :is(.faith-row-heading, .faith-row-summary) {
+    min-height: 44px;
+  }
 }
 .faith-page :is(.faith-row-heading, .faith-row-summary) svg {
   width: 13px;
@@ -925,7 +939,7 @@
   width: 48px;
   height: 48px;
   flex: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--blue);
 }
@@ -1102,7 +1116,7 @@
   min-height: 48px;
   padding-inline: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   letter-spacing: normal;
   transition:
@@ -1147,7 +1161,7 @@
 }
 .literature-toolbar .control-select-trigger {
   min-height: 48px;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: none;
 }
 .literature-page > .catalog-filter-status {
@@ -1224,6 +1238,29 @@
   background: transparent;
 }
 
+/* Detail panels inside an expanded settings section are sections, not cards
+   inside a card: one hairline between them, no second frame, and no blue
+   accent stripe that reads as a clipped border on a rounded card. */
+.more-page .more-setting-section .more-card {
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.more-page .more-setting-section .more-card:first-child {
+  border-top: 0;
+}
+
+.more-page .more-setting-section .audio-settings-inline {
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .catalog-search .empty-state,
 .literature-page > .empty-state {
   display: grid;
@@ -1263,12 +1300,13 @@
     .search-trigger,
     .topbar-select .control-select-trigger,
     .account-button,
+    .topbar-appearance-button,
     .reader-context-button,
     .reader-context-book-picker
   ) {
   min-height: 44px;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--blue);
   box-shadow: none;
@@ -1287,13 +1325,15 @@
   color: var(--navy);
   opacity: 1;
 }
+/* Tablets have no hardware keyboard, so the shortcut hint would only push the
+   search pill past its column and clip both the label and the badge. */
+@media (max-width: 1023px) {
+  .topbar .search-trigger kbd {
+    display: none;
+  }
+}
 .topbar .topbar-select .control-select-trigger {
   padding-inline: 12px;
-}
-.topbar .language-select .control-select-value {
-  color: var(--navy);
-  font-size: 0.75rem;
-  font-weight: 650;
 }
 .topbar .control-select-chevron {
   color: inherit;
@@ -1302,14 +1342,19 @@
   width: auto;
   height: 44px;
   flex: 0 1 auto;
-  padding: 0 14px 0 7px;
-  gap: 9px;
+  padding: 0 14px 0 8px;
+  gap: 8px;
+}
+/* The shared soft-blue field puts 13px labels below WCAG AA on --blue, so the
+   account label follows the search trigger and language select onto --navy. */
+.topbar .account-button-label {
+  color: var(--navy);
 }
 .topbar .account-button-avatar {
   flex-basis: 30px;
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: 10px;
 }
 @media (max-width: 880px) {
   .topbar .account-button-label {
@@ -1361,9 +1406,6 @@
   border-radius: 16px;
   padding: 6px;
 }
-.topbar .language-select .control-select-menu {
-  animation: none;
-}
 .topbar .control-select-option {
   border-radius: 10px;
 }
@@ -1394,7 +1436,7 @@
 
 /* Consistent navigation icon weight, blue selection and quiet surfaces. */
 .navigation-shell .nav-item {
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--muted);
   box-shadow: none;
 }
@@ -1435,7 +1477,7 @@
 @media (max-width: 959px) {
   .navigation-shell {
     border-top: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-    border-radius: 18px 18px 0 0;
+    border-radius: 16px 16px 0 0;
     background: var(--surface);
     box-shadow: 0 -3px 14px color-mix(in srgb, var(--blue) 5%, transparent);
   }
@@ -1443,7 +1485,7 @@
     gap: 4px;
   }
   .navigation-shell .nav-item {
-    gap: 5px;
+    gap: 4px;
     border-radius: 12px;
     padding: 8px 2px;
     background: transparent;
@@ -1463,7 +1505,7 @@
 }
 /* Keep verse separation compact while preserving the reader's text spacing. */
 .bible-reader .verse-row {
-  padding-block: 7px;
+  padding-block: 8px;
 }
 .bible-pane > .reader-heading.sr-only {
   padding: 0;
@@ -1608,6 +1650,13 @@
   height: max(40px, 100%);
   transform: translate(-50%, -50%);
 }
+/* Coarse pointers need 44 px to acquire the tap without hunting. */
+@media (hover: none), (pointer: coarse) {
+  .bible-reader .verse-number::before {
+    width: max(44px, 100%);
+    height: max(44px, 100%);
+  }
+}
 .control-select-menu.is-animated {
   animation: none;
 }
@@ -1663,11 +1712,40 @@
     .lyrics-ctrl-btn
   ) {
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--blue-soft);
   color: var(--navy);
   box-shadow: none;
 }
+
+/* Icon chrome reads as icons, not tiles: flat by default, filled only when the
+   control is the active mode. This is the reader's version of the dock rules. */
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .hymn-text-footer > button,
+    .hymn-scope-pill-btn,
+    .hymn-autoscroll-btn,
+    .hymn-reader-settings-summary,
+    .lyrics-ctrl-btn,
+    .lyrics-hdr-btn
+  ) {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.hymn-detail-page.is-text-viewer
+  :is(.hymn-action, .lyrics-ctrl-btn, .lyrics-hdr-btn):is(
+    .is-active,
+    [aria-pressed="true"]
+  ) {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
 .hymn-detail-page.is-text-viewer .hymn-mode-toggle {
   padding: 4px;
   gap: 4px;
@@ -1677,7 +1755,7 @@
 }
 .hymn-detail-page.is-text-viewer .hymn-mode-button {
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: transparent;
   color: var(--navy);
   box-shadow: none;
@@ -1752,7 +1830,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   background: transparent;
   color: var(--navy);
   box-shadow: none;
@@ -1837,7 +1915,7 @@
   }
   .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
     gap: 2px;
-    padding: 3px;
+    padding: 4px;
   }
   .hymn-detail-page.is-text-viewer .hymn-text-toolbar .detail-actions {
     gap: 2px;
@@ -1955,8 +2033,8 @@
   grid-template-columns: 1fr;
   grid-template-rows: repeat(3, 44px);
   gap: 4px;
-  padding: 8px 5px;
-  border-radius: 18px;
+  padding: 8px 4px;
+  border-radius: 16px;
   transform: none;
   overflow: hidden;
 }
@@ -2038,7 +2116,7 @@
   width: 36px;
   height: 36px;
   min-height: 36px;
-  border-radius: 11px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -2200,7 +2278,7 @@
   min-width: var(--reader-control);
   min-height: var(--reader-control);
   flex: 0 0 var(--reader-control);
-  border-radius: clamp(11px, 1vw, 14px);
+  border-radius: clamp(10px, 1vw, 12px);
   display: grid;
   place-items: center;
   padding: 0;
@@ -2218,7 +2296,7 @@
 .hymn-detail-page.is-text-viewer .hymn-text-toolbar {
   gap: clamp(2px, 0.4vw, 6px);
   padding: clamp(3px, 0.4vw, 6px);
-  border-radius: clamp(16px, 1.5vw, 22px);
+  border-radius: clamp(16px, 1.5vw, 24px);
 }
 .hymn-detail-page.is-text-viewer .hymn-text-toolbar .hymn-more-actions {
   width: var(--reader-control);
@@ -2364,7 +2442,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .egys-inline-login [role="alert"] {
   width: 100%;
-  color: var(--danger, #b42318);
+  color: var(--danger);
 }
 
 /* One document title above the page; everyday controls stay in a bottom dock. */
@@ -2375,7 +2453,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .faith-pdf-head {
   display: flex;
@@ -2432,7 +2510,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 4px;
   padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 12px 32px #163f6124;
   animation: midi-settings-enter 180ms ease-out;
@@ -2518,7 +2596,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .pdf-reader .pdf-page-jump {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin: 0;
   font-size: 0.8125rem;
 }
@@ -2528,7 +2606,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: 36px;
   padding: 0 4px;
   text-align: center;
-  border-radius: 9px;
+  border-radius: 10px;
   appearance: textfield;
 }
 .pdf-reader .pdf-page-jump input::-webkit-inner-spin-button {
@@ -2552,7 +2630,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   overflow: auto;
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: 0 12px 40px #163f6126;
   animation: midi-settings-enter 180ms ease-out;
@@ -2638,7 +2716,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 /* A small trailing badge keeps WhatsApp login within the provider row. */
 .egys-provider-whatsapp.is-tracking {
   position: relative;
-  padding-inline-end: 46px;
+  padding-inline-end: 48px;
 }
 .egys-whatsapp-countdown {
   position: absolute;
@@ -2650,7 +2728,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 35px;
   height: 25px;
   padding-inline: 4px;
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--blue-soft);
   color: var(--blue);
   font-size: 0.6875rem;
@@ -2659,8 +2737,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   pointer-events: none;
 }
 .egys-whatsapp-countdown.is-error {
-  color: #a33737;
-  background: #fff0f0;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 @container (max-width: 420px) {
   .egys-provider-whatsapp.is-tracking .egys-provider-label {
@@ -2731,7 +2809,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: 5px;
   overflow: hidden;
   isolation: isolate;
-  border-radius: 99px;
+  border-radius: 999px;
   background: color-mix(in srgb, var(--blue) 10%, var(--surface));
 }
 .loading-progress-track > span {
@@ -3102,7 +3180,6 @@ body:has(.hymn-detail-page.is-text-viewer)
   transition: transform 180ms var(--ease-out);
 }
 .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
-  --midi-control: 44px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 8px;
@@ -3146,7 +3223,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
   min-height: 44px;
   padding-inline: 8px;
-  gap: 3px;
+  gap: 4px;
   color: var(--blue);
   font-size: 0.875rem;
 }
@@ -3350,7 +3427,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: grid;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, var(--line));
-  border-radius: clamp(11px, 1vw, 14px);
+  border-radius: var(--radius-control);
   background: var(--blue-soft);
   color: var(--ink);
   box-shadow: none;
@@ -3566,7 +3643,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .home-grid .verse-panel {
   min-height: 0;
   padding: clamp(12px, 1.3vw, 18px);
-  border-radius: 18px;
+  border-radius: 16px;
   transform: none;
 }
 .home-grid .sauh-card-media {
@@ -3575,7 +3652,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: clamp(170px, 27vw, 240px);
   min-height: 0;
   flex: none;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .home-grid .sauh-card-media .sauh-image-wrap {
   width: 100%;
@@ -3647,14 +3724,14 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .home-grid .continue-panel {
   padding: clamp(12px, 1.3vw, 18px);
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .home-grid :is(.verse-panel, .continue-panel):hover {
   background: color-mix(in srgb, var(--blue-soft) 25%, var(--surface));
 }
 .home-grid :is(.suara-library-item, .literature-shelf-item) {
   padding: 10px;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .home-grid :is(.suara-library-item, .literature-shelf-item):hover {
   background: var(--surface-soft);
@@ -3715,7 +3792,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   gap: 6px;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
 }
@@ -3820,13 +3897,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* A shared leading navigation field keeps the same controls in place. */
-.hymn-page {
-  --kidung-gutter: clamp(16px, 2vw, 28px);
-}
-.app-frame:not(.is-reader-route) .main-content:has(.hymn-page) {
-  padding-inline: var(--kidung-gutter, clamp(16px, 2vw, 28px));
-}
+/* Kidung used to widen the shell gutter (16-28 px) while every other route
+   used --page-gutter (12-24 px); the catalogue now shares the shell gutter so
+   headings line up across routes. */
 .kidung-controls-field {
   gap: 8px;
 }
@@ -3835,7 +3908,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   max-width: 100%;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-soft);
   margin: 0 0 16px;
 }
@@ -3908,7 +3981,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 0;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 10px;
 }
 :is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) strong {
   min-width: 28px;
@@ -4040,9 +4113,10 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* Catalog, playlist and settings share one leading navigation footprint. */
+/* Catalog, playlist and settings share one leading navigation footprint — and
+   the shell gutter, so headings line up with every other route. */
 .app-frame .workspace .main-content:has(.hymn-page) {
-  padding: var(--page-start) clamp(16px, 2vw, 28px) var(--page-end);
+  padding: var(--page-start) var(--page-gutter) var(--page-end);
 }
 .hymn-page .kidung-index-toolbar {
   padding-top: 0;
@@ -4151,7 +4225,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   width: 200px;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px #163f6126;
   z-index: 1;
@@ -4178,11 +4252,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin-top: 12px;
   padding: 12px;
   border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
-  border-radius: 14px;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--blue) 6%, var(--surface));
   color: var(--muted);
   text-align: start;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
   animation: pdf-notice-in 180ms var(--ease-out) both;
 }
@@ -4434,7 +4508,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: 12px;
   gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--navy) 14%, transparent);
 }
@@ -4473,7 +4547,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 /* A title row and a labelled action row form predictable phone chrome. */
 .hymn-detail-page.is-text-viewer .hymn-action-caption {
-  font-size: 0.65rem;
+  font-size: 0.625rem;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -4506,7 +4580,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   height: 48px;
   min-height: 48px;
 }
@@ -4813,7 +4887,7 @@ body:has(.hymn-detail-page.is-text-viewer)
     max-width: none;
     align-self: stretch;
     margin-top: auto;
-    padding: 22px 26px 20px;
+    padding: 22px 24px 20px;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
     background: linear-gradient(
       180deg,
@@ -4868,7 +4942,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   max-width: none !important;
   margin: 0 !important;
   align-self: stretch !important;
-  border-radius: 0 0 18px 18px !important;
+  border-radius: 0 0 16px 16px !important;
   padding: 22px 20px 20px !important;
   background: linear-gradient(
     180deg,
@@ -4904,4 +4978,341 @@ body:has(.hymn-detail-page.is-text-viewer)
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--blue);
+}
+
+/* Phone reading: justification on a 330px measure opens huge word gaps with
+   Indonesian compounds, so long-form text runs ragged-right instead. */
+@media (max-width: 767px) {
+  .bible-reader .verse-content,
+  .faith-page .faith-statement,
+  .online-article-body > p {
+    text-align: start;
+    text-justify: auto;
+    text-wrap: pretty;
+  }
+}
+
+/* The Sauh card keeps a visible skeleton while the feed resolves: a lone
+   progress bar in an empty panel read as a broken page. */
+.sauh-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: clamp(132px, 22vw, 180px);
+}
+.sauh-skeleton::after {
+  content: "";
+  width: min(100%, 280px);
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 25%,
+    var(--surface) 50%,
+    var(--surface-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: sauh-skeleton-sheen 1.8s ease-in-out infinite;
+}
+@keyframes sauh-skeleton-sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sauh-skeleton::after {
+    animation: none;
+  }
+}
+
+/* A short stanza sits in the optical middle of the reading area; a long hymn
+   still starts at the top because `safe` stops centering once it overflows. */
+@media (max-width: 700px) {
+  .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+    place-content: safe center;
+    padding-block: clamp(16px, 5vw, 32px);
+  }
+}
+
+/* Loading artwork keeps the card alive: a soft sheen travels across the same
+   frame the image will occupy instead of a flat pale block. */
+.img-skeleton-wrapper[data-image-state="loading"] {
+  background-image: linear-gradient(
+    100deg,
+    var(--surface-soft) 30%,
+    color-mix(in srgb, var(--surface) 70%, var(--surface-soft)) 45%,
+    var(--surface-soft) 60%
+  );
+  background-size: 220% 100%;
+  animation: image-skeleton-sheen 1.7s ease-in-out infinite;
+}
+@keyframes image-skeleton-sheen {
+  from {
+    background-position: 220% 0;
+  }
+  to {
+    background-position: -220% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton-wrapper[data-image-state="loading"] {
+    animation: none;
+  }
+}
+
+/* One canonical home for speech voice/speed/pitch: the drawer links to the
+   Audio settings instead of duplicating those controls. */
+.drawer-speech-link {
+  margin: 2px 0 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+.drawer-speech-link a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* One entry point for appearance: the top bar links to the canonical
+   Appearance section instead of duplicating theme and language selects. */
+.topbar-appearance-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--navy);
+  text-decoration: none;
+}
+.topbar-appearance-button:hover {
+  background: var(--blue-soft);
+}
+
+/* Fullscreen lyrics on phones: one header line that truncates instead of
+   wrapping, a circular primary transport, and honest 12 px timestamps. */
+@media (max-width: 599px) {
+  .lyrics-title {
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .lyrics-title h2 {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .lyrics-header-actions {
+    flex-shrink: 0;
+  }
+}
+/* One transport contract for the dock and the fullscreen lyric panel: square
+   secondary buttons with the control radius, a circular primary action in the
+   accent colour, and 44px whenever the pointer is coarse. */
+.lyrics-panel {
+  --transport-control: 32px;
+}
+@media (pointer: coarse), (hover: none) {
+  .lyrics-panel {
+    --transport-control: 44px;
+  }
+}
+.lyrics-panel .lyrics-transport .lyrics-hdr-btn {
+  width: var(--transport-control);
+  min-width: var(--transport-control);
+  height: var(--transport-control);
+  min-height: var(--transport-control);
+  border-radius: var(--radius-control);
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle {
+  border-radius: 999px;
+  background: var(--blue);
+  color: var(--on-accent);
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--blue) 86%, #000);
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle:disabled {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.lyrics-panel .lyrics-midi-label,
+.lyrics-panel .lyrics-verse-indicator {
+  font-size: 0.75rem;
+}
+.lyrics-verse-text p {
+  text-wrap: balance;
+}
+
+/* The phone "more" sheet is a labelled action bar, not a stack of boxes:
+   five equal actions on the first row, the scope pills underneath. */
+@media (max-width: 599px) {
+  .hymn-detail-page.is-text-viewer .hymn-more-actions-panel {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-more-actions-panel > .hymn-action,
+  .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel
+    > .hymn-reader-settings-summary {
+    grid-row: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 4px 2px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    gap: 4px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel
+    .hymn-action-caption {
+    font-size: 0.6875rem;
+    line-height: 1.1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* On a mouse the "more" panel is a menu, not the phone action sheet. */
+@media (min-width: 721px) {
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions[open]
+    > .hymn-more-actions-panel {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    max-width: min(320px, calc(100vw - 48px));
+    gap: 2px;
+    padding: 6px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    order: 2;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-action,
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-reader-settings-summary {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
+    gap: 10px;
+    border-radius: 8px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-action-caption {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+}
+
+@media (min-width: 721px) {
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings {
+    width: 100%;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings-summary {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-text-toolbar
+    .hymn-more-actions-panel
+    .hymn-reader-settings-summary
+    .hymn-action-caption {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+}
+
+/* Inside the reader sheet every control stands on its own: the sheet is the
+   only card, so a segmented group must not paint a second frame inside it. */
+.hymn-more-actions-panel .hymn-scope-pill-group,
+.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group) {
+  padding: 0;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn.is-active {
+  border-color: color-mix(in srgb, var(--blue) 24%, var(--line));
+  background: var(--blue-soft);
+  color: var(--navy);
+  box-shadow: none;
+}
+
+/* At 320px the reader hero keeps four 44px actions, so a single-line title
+   collapses to "Pujil…". Two lines at the same control height read better. */
+@media (max-width: 359px) {
+  .hymn-detail-page.is-text-viewer .hymn-text-title h1 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: normal;
+    font-size: 0.8125rem;
+    line-height: 1.25;
+  }
 }

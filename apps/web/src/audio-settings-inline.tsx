@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { speechPlayer } from "./speech-player.js";
 import { isEdgeSpeechConfigured } from "./edge-speech.js";
-import { translate, type Locale } from "./i18n.js";
+import { formatDecimal, translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 
 /** The audio settings that matter day to day, inline in the settings page.
@@ -46,9 +46,17 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
           {translate(locale, "bible.edgeHint")}
         </p>
       )}
+      {speech.engine !== "local" &&
+        isEdgeSpeechConfigured() &&
+        speech.providerId === "browser-system" && (
+          <p className="audio-setting-hint" role="status">
+            {translate(locale, "bible.edgeFallback")}
+          </p>
+        )}
       <label className="audio-setting-row">
         <span>
-          {translate(locale, "bible.readingSpeed")} · {speech.rate.toFixed(1)}×
+          {translate(locale, "bible.readingSpeed")} ·{" "}
+          {formatDecimal(speech.rate, locale)}×
         </span>
         <input
           type="range"
@@ -62,7 +70,8 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
       </label>
       <label className="audio-setting-row">
         <span>
-          {translate(locale, "bible.readingPitch")} · {speech.pitch.toFixed(1)}
+          {translate(locale, "bible.readingPitch")} ·{" "}
+          {formatDecimal(speech.pitch, locale)}
         </span>
         <input
           type="range"
@@ -70,7 +79,7 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
           max="2"
           step="0.1"
           value={speech.pitch}
-          aria-label={translate(locale, "bible.readingPitch")}
+          aria-label={translate(locale, "bible.voicePitch")}
           onChange={(event) =>
             speechPlayer.setPitch(Number(event.target.value))
           }
@@ -80,7 +89,7 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
         className="text-button audio-setting-link"
         to="/bible?settings=audio"
       >
-        {translate(locale, "bible.audioSettings")}
+        {translate(locale, "bible.audioEngineSettings")}
         <Icon name="chevronRight" size={16} />
       </Link>
     </div>

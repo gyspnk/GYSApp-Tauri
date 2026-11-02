@@ -152,6 +152,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
   }, []);
   const [searchParams] = useSearchParams();
   const [pack, setPack] = useState<FaithPack | undefined>(getCachedFaithPack);
+  const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState("");
   // Seperti Alkitab: tidak ada seleksi otomatis — user memilih sendiri.
   const [selected, setSelected] = useState<string>(
@@ -171,6 +172,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
   );
   const pdfDialogRef = useRef<HTMLDivElement | null>(null);
   const pdfOpenerRef = useRef<HTMLElement | null>(null);
+  const faithModalRef = useRef<HTMLDivElement | null>(null);
+  const faithOpenerRef = useRef<HTMLElement | null>(null);
+  const noteDialogRef = useRef<HTMLDivElement | null>(null);
+  const noteOpenerRef = useRef<HTMLElement | null>(null);
 
   const closeModal = () => {
     if (isModalClosing) return;
@@ -202,7 +207,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [attempt]);
 
   const group =
     pack?.faith.find(
@@ -325,6 +330,23 @@ export function FaithPage({ locale }: { locale: Locale }) {
     onClose: closeReadMore,
     initialFocusSelector: ".faith-pdf-close",
   });
+  // The belief sheet and its note editor are dialogs too: Escape has to close
+  // them and focus has to return to the row, exactly as the PDF reader does.
+  // Only the topmost sheet stays armed so one Escape closes one layer.
+  useDialogFocus({
+    open: Boolean(active) && !notePopupOpen,
+    dialogRef: faithModalRef,
+    openerRef: faithOpenerRef,
+    onClose: closeModal,
+    initialFocusSelector: ".faith-selection-close",
+  });
+  useDialogFocus({
+    open: notePopupOpen,
+    dialogRef: noteDialogRef,
+    openerRef: noteOpenerRef,
+    onClose: closeNote,
+    initialFocusSelector: ".bible-notes-close",
+  });
 
   const onPageChange = (page: number, totalPages: number) => {
     if (!pdfRead || totalPages < 1) return;
@@ -353,7 +375,18 @@ export function FaithPage({ locale }: { locale: Locale }) {
       )}
       {pack && !group && (
         <div className="error-panel" role="alert">
-          {translate(locale, "faith.unavailable")}
+          <strong>{translate(locale, "faith.unavailable")}</strong>
+          <span>{translate(locale, "common.errorBody")}</span>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => {
+              setPack(undefined);
+              setAttempt((value) => value + 1);
+            }}
+          >
+            {translate(locale, "home.retry")}
+          </button>
         </div>
       )}
       {group && (
@@ -458,6 +491,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
           {active &&
             createPortal(
               <div
+                ref={faithModalRef}
                 className={`faith-modal-backdrop${isModalClosing ? " is-closing" : ""}`}
                 role="dialog"
                 aria-modal="true"
@@ -532,6 +566,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
       {notePopupOpen &&
         createPortal(
           <div
+            ref={noteDialogRef}
             className={`bible-notes-backdrop${isNoteClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"

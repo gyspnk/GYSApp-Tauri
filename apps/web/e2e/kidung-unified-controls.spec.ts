@@ -26,7 +26,7 @@ for (const { width, touch } of [
       await expect(dock).toBeVisible({ timeout: 30_000 });
       await activate(".media-tempo-toggle");
       const dockTempo = dock.getByRole("spinbutton", {
-        name: "Tempo dalam BPM",
+        name: "Tempo MIDI",
       });
       await expect(dockTempo).toBeVisible();
       await expect
@@ -48,7 +48,7 @@ for (const { width, touch } of [
       if ((await toggle.getAttribute("aria-expanded")) === "false")
         await toggle.click();
       const tempo = fullscreen.getByRole("spinbutton", {
-        name: "Tempo dalam BPM",
+        name: "Tempo MIDI",
       });
       await expect(tempo).toHaveValue("108");
       await expect
@@ -75,7 +75,7 @@ for (const { width, touch } of [
       await tempo.fill("112");
       await tempo.press("Enter");
       const instrument = fullscreen.getByRole("combobox", {
-        name: "Pilih alat musik",
+        name: "Instrumen MIDI",
         exact: true,
       });
       await instrument.focus();

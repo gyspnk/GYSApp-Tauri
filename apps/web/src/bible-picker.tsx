@@ -462,7 +462,7 @@ export function BiblePickerModal({
                       ? (book?.name ?? translate(locale, "bible.pickerChoose"))
                       : draft[field] || "—"}
                   </strong>
-                  <Icon name="chevronDown" size={15} />
+                  <Icon name="chevronDown" size={16} />
                 </button>
               </div>
             ))}
@@ -484,7 +484,7 @@ export function BiblePickerModal({
                 {listField === "book" && (
                   <>
                     <div className="bible-picker-search-field">
-                      <Icon name="search" size={17} />
+                      <Icon name="search" size={18} />
                       <input
                         type="search"
                         className="bible-picker-search"

@@ -63,7 +63,7 @@ html[data-boot="ready"] .shell-startup {
   width: 140px;
   height: 3px;
   background: #178dc526;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .shell-startup-track > span {

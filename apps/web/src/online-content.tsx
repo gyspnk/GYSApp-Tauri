@@ -160,9 +160,12 @@ export function SauhPage({ locale }: { locale: Locale }) {
         <Link className="text-button" to="/">
           {translate(locale, "sauh.backHome")}
         </Link>
-        <span>
-          {translate(locale, "sauh.title")} · {translate(locale, "sauh.today")}
-        </span>
+        {state.status === "ready" && (
+          <span>
+            {translate(locale, "sauh.title")} ·{" "}
+            {translate(locale, "sauh.today")}
+          </span>
+        )}
       </div>
       {state.status !== "ready" && <h1>{translate(locale, "sauh.title")}</h1>}
       {state.status === "ready" && (

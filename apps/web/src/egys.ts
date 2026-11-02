@@ -13,15 +13,65 @@ function apiUrl(path: string): string {
     : `${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`;
 }
 
+/**
+ * A sign-in round trip to the provider outlives a plain data fetch: e-GYS
+ * answers the WhatsApp start/confirm calls after its own upstream round trip,
+ * which regularly passes eight seconds. Twenty seconds keeps the deadline
+ * visible (the countdown owns 120 s) without letting a dead request hang.
+ */
+export const EGYS_LOGIN_TIMEOUT_MS = 20_000;
+
+/** Abort with a reason so a timeout reads as a sentence, not "signal is aborted without reason". */
+function abortReason(seconds: number): DOMException {
+  return new DOMException(
+    `e-GYS tidak menjawab dalam ${seconds} detik.`,
+    "TimeoutError",
+  );
+}
+
+/**
+ * The provider's own failures arrive as provider JSON, but a timeout or a lost
+ * connection surfaces as a DOMException whose message is browser-internal. Any
+ * message that reaches the account panel goes through here first.
+ */
+export function describeEgysError(error: unknown): string {
+  if (error instanceof DOMException || error instanceof Error) {
+    const message = error.message ?? "";
+    // Route wording from the BFF comes first: it names the failed step and the
+    // provider detail in parentheses is what support reads.
+    const detail = message.match(/\(e-GYS [^)]*\)/)?.[0] ?? "";
+    if (/whatsapp login is unavailable/i.test(message))
+      return `Login WhatsApp sedang tidak tersedia. Coba lagi sebentar lagi.${detail ? ` ${detail}` : ""}`;
+    if (/whatsapp code could not be verified/i.test(message))
+      return `Kode WhatsApp tidak dapat diverifikasi.${detail ? ` ${detail}` : ""}`;
+    if (error.name === "TimeoutError" || /timed? ?out/i.test(message))
+      return "e-GYS tidak menjawab tepat waktu. Periksa koneksi lalu coba lagi.";
+    if (error.name === "AbortError" || /aborted without reason/i.test(message))
+      return "Permintaan ke e-GYS dibatalkan sebelum selesai. Coba lagi.";
+    if (
+      /failed to fetch|networkerror|load failed|network request failed/i.test(
+        message,
+      )
+    )
+      return "Tidak dapat menghubungi server e-GYS. Periksa koneksi lalu coba lagi.";
+    if (message.trim()) return message;
+  }
+  return "Login e-GYS belum berhasil. Coba lagi.";
+}
+
 async function request(
   input: RequestInfo | URL,
   init: RequestInit = {},
   timeoutMs = 8_000,
 ): Promise<Response> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timer = window.setTimeout(
+    () => controller.abort(abortReason(Math.round(timeoutMs / 1000))),
+    timeoutMs,
+  );
   const parent = init.signal;
-  const abort = () => controller.abort();
+  const abort = () =>
+    controller.abort(new DOMException("Permintaan dibatalkan.", "AbortError"));
   parent?.addEventListener("abort", abort, { once: true });
   const headers = new Headers(init.headers);
   // Tauri webviews do not always emit browser Fetch Metadata headers. The
@@ -234,17 +284,27 @@ export async function requestEgysProvider<T>(
   provider: string,
   data: object = {},
   signal?: AbortSignal,
+  timeoutMs = 8_000,
 ): Promise<T> {
-  const response = await request(apiUrl(`/api/v1/auth/egys/${provider}`), {
-    method: "POST",
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(data),
-    ...(signal ? { signal } : {}),
-  });
-  const body = await response.json();
-  if (!response.ok)
-    throw new Error(body?.error?.message || "Login e-GYS belum berhasil");
+  const response = await request(
+    apiUrl(`/api/v1/auth/egys/${provider}`),
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+      ...(signal ? { signal } : {}),
+    },
+    timeoutMs,
+  );
+  const body = await response.json().catch(() => undefined);
+  if (!response.ok) {
+    const message =
+      typeof body === "object" && body !== null && "error" in body
+        ? (body as { error?: { message?: string } }).error?.message
+        : undefined;
+    throw new Error(message || "Login e-GYS belum berhasil");
+  }
   return body as T;
 }
 

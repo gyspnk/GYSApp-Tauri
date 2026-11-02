@@ -94,6 +94,11 @@ export function getDiagnostics(): DiagnosticEvent[] {
   return read();
 }
 
+export function clearDiagnostics(): void {
+  write([]);
+  for (const listener of listeners) listener();
+}
+
 export function subscribeDiagnostics(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);

@@ -21,8 +21,8 @@
 @media (max-width: 1100px) {
   .hymn-page .kidung-controls-field {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr) 44px;
-    gap: 3px;
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
+    gap: 4px;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav,
   .hymn-page .kidung-controls-field .kidung-header-filter {
@@ -37,7 +37,7 @@
   .hymn-page .kidung-controls-field .kidung-local-nav-links {
     display: grid;
     grid-template-columns: repeat(2, minmax(44px, 1fr));
-    gap: 3px;
+    gap: 4px;
     width: 100%;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav a {
@@ -86,7 +86,7 @@
     text-overflow: ellipsis;
     font-size: 0.625rem;
     line-height: 16px;
-    padding-inline: 3px;
+    padding-inline: 4px;
   }
 }
 
@@ -99,7 +99,7 @@
   gap: 6px;
   min-height: 44px;
   padding: 8px 6px;
-  border-radius: 11px;
+  border-radius: 12px;
   line-height: 1.25;
 }
 .hymn-page .kidung-local-nav a > svg {
@@ -114,10 +114,10 @@
   margin: 0;
   font-size: 0.625rem;
   line-height: 16px;
-  padding-inline: 3px;
+  padding-inline: 4px;
 }
 .hymn-page .kidung-nav-indicator {
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--blue-soft);
 }
 .hymn-page.kidung-tool-page > .kidung-local-nav {
@@ -133,7 +133,7 @@
 .hymn-page.kidung-tool-page .kidung-local-nav-links {
   display: grid;
   grid-template-columns: repeat(2, minmax(44px, 1fr));
-  gap: 3px;
+  gap: 4px;
   width: 100%;
 }
 .hymn-page.kidung-tool-page .kidung-local-nav a {
@@ -197,8 +197,8 @@
 /* Compact catalog toolbar: a 44px shell around 36px controls on pointer
    devices. Coarse pointers keep the full 44px hit target. */
 .hymn-page .kidung-controls-field {
-  padding: 3px;
-  border-radius: 13px;
+  padding: 4px;
+  border-radius: 12px;
 }
 .hymn-page .kidung-controls-field .kidung-local-nav a {
   min-height: 36px;
@@ -212,7 +212,7 @@
 .hymn-page .kidung-controls-field .kidung-mode-cycle {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
 }
 @media (pointer: coarse) {
   .hymn-page .kidung-controls-field {
@@ -227,10 +227,9 @@
     height: 44px;
   }
 }
-/* Reader mode toggles share one literal metric. The reader context shrinks
-   --reader-control to 32px, so a literal clamp keeps both chromes equal and
-   inside the 44-56px touch range. */
-.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle,
+/* The PDF/score toggle in the chrome keeps one literal metric. The reader
+   context shrinks --reader-control to 32px, so a literal clamp keeps the chrome
+   toggles equal and inside the 44-56px touch range. */
 .hymn-detail-page .gys-pdf-overlay .hymn-pdf-text-toggle {
   width: clamp(44px, 4vw, 56px) !important;
   height: clamp(44px, 4vw, 56px) !important;
@@ -238,15 +237,44 @@
   min-height: clamp(44px, 4vw, 56px) !important;
   flex: 0 0 auto !important;
   padding: 0 !important;
-  border-radius: 11px !important;
+  border-radius: 12px !important;
   background: var(--blue-soft) !important;
-  color: var(--blue) !important;
+  /* 4.26:1 for --blue on --blue-soft; the 18px glyph needs 4.5:1, so the
+     toggles use the darker navy like the shell's other small labels. */
+  color: var(--navy) !important;
 }
-.hymn-detail-page .hymn-text-toolbar .hymn-partitur-toggle svg {
-  width: 18px !important;
-  height: 18px !important;
+/* In the lyrics toolbar the score button is one action among peers (MIDI,
+   Chord, Lainnya), so it reads as the same pill instead of a lone filled tile. */
+.hymn-detail-page:not(.is-pdf-viewer) .hymn-text-toolbar .hymn-partitur-toggle {
+  width: auto;
+  height: auto;
+  min-width: 44px;
+  min-height: var(--control-hit, 44px);
+  flex: 0 0 auto;
+  padding: 0 12px;
+  gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: none;
+  color: var(--navy);
+}
+.hymn-detail-page:not(.is-pdf-viewer)
+  .hymn-text-toolbar
+  .hymn-partitur-toggle:hover:not(:disabled) {
+  background: var(--blue-soft);
+}
+.hymn-detail-page:not(.is-pdf-viewer)
+  .hymn-text-toolbar
+  .hymn-partitur-toggle
+  svg {
+  width: 20px;
+  height: 20px;
 }
 .hymn-detail-page .hymn-pdf-text-toggle .reader-mode-glyph {
-  font-size: 18px !important;
+  font-size: 1.125rem !important;
   line-height: 1 !important;
 }

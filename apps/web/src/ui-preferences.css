@@ -106,9 +106,9 @@
   place-items: center;
   min-width: 28px;
   height: 28px;
-  padding-inline: 5px;
+  padding-inline: 4px;
   border: 1px solid color-mix(in srgb, var(--blue) 28%, var(--line));
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--blue);
   font-family: var(--font-reading);
   font-size: 0.9375rem;
@@ -268,7 +268,7 @@
   width: 38px;
   height: 38px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--surface-soft);
   color: var(--navy);
   font-size: 0.875rem;
@@ -292,12 +292,12 @@
 
 .ui-preference-choice-copy {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
 .ui-preference-choice-copy strong {
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   line-height: 1.25;
 }
 

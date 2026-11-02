@@ -1,6 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { recordDiagnostic } from "./diagnostics.js";
-import { requestEgysProvider, egysWhatsAppTrackingUrl } from "./egys.js";
+import {
+  describeEgysError,
+  EGYS_LOGIN_TIMEOUT_MS as EGYS_REQUEST_TIMEOUT_MS,
+  requestEgysProvider,
+  egysWhatsAppTrackingUrl,
+} from "./egys.js";
+import {
+  describeTrackingGap,
+  parseWhatsAppTrackingEvent,
+} from "./egys-whatsapp-tracking.js";
 
 type Challenge = {
   referenceid?: string;
@@ -11,19 +20,45 @@ type Challenge = {
 };
 const LOGIN_TIMEOUT_MS = 120_000;
 
+/**
+ * The provider follows the same convention as its own start response (digits
+ * with the country code, e.g. `6285176756451`), so the tracking event's sender
+ * number is normalized before confirmation: no `+`, no separators, and local
+ * `0…` numbers become `62…`.
+ */
+export function providerPhone(raw: string): string {
+  let digits = raw.replace(/[^0-9]/g, "");
+  if (digits.startsWith("0")) digits = `62${digits.slice(1)}`;
+  return digits;
+}
+
 /** Lives inside the provider button; clicking that button starts a fresh attempt. */
 export function EgysWhatsApp({
   onComplete,
   onCancel,
+  onExpire,
+  onError,
   messagingWindow,
 }: {
   onComplete: (signal: AbortSignal) => Promise<void>;
   onCancel: () => void;
+  /** The deadline passed without a tracking confirmation. */
+  onExpire?: () => void;
+  /** A terminal failure, surfaced next to the badge so it is readable. */
+  onError?: (message: string) => void;
   messagingWindow: Window | null;
 }) {
   const [seconds, setSeconds] = useState(LOGIN_TIMEOUT_MS / 1000);
   const [status, setStatus] = useState("Menyiapkan WhatsApp");
   const [error, setError] = useState("");
+  // Keep the expiry callback off the attempt's dependency list: a fresh closure
+  // from the parent would otherwise restart the socket and reset the deadline.
+  const onExpireRef = useRef(onExpire);
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+    onErrorRef.current = onError;
+  }, [onExpire, onError]);
   useEffect(() => {
     const controller = new AbortController();
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
@@ -44,6 +79,16 @@ export function EgysWhatsApp({
       setSeconds(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
     }, 1000);
     const timeout = window.setTimeout(() => {
+      // The badge disappears either way, but the account panel keeps an
+      // explanation: a silent expiry reads as "nothing happened".
+      if (!controller.signal.aborted) {
+        recordDiagnostic(
+          "warn",
+          "egys.whatsapp.timeout",
+          new Error("No tracking confirmation before the deadline"),
+        );
+        onExpireRef.current?.();
+      }
       stop();
       onCancel();
     }, LOGIN_TIMEOUT_MS);
@@ -51,6 +96,7 @@ export function EgysWhatsApp({
       if (controller.signal.aborted) return;
       recordDiagnostic("warn", "egys.whatsapp", new Error(message));
       setError(message);
+      onErrorRef.current?.(message);
       stop();
     };
     if (!messagingWindow || messagingWindow.closed) {
@@ -61,18 +107,91 @@ export function EgysWhatsApp({
       if (confirming || controller.signal.aborted) return;
       confirming = true;
       setStatus("Memverifikasi akun");
-      try {
-        await requestEgysProvider(
+      const sleep = (delay: number) =>
+        new Promise((resolve) => window.setTimeout(resolve, delay));
+      const requestConfirm = () =>
+        requestEgysProvider(
           "whatsapp/confirm",
-          { otp: code, mobilephone },
+          { otp: code, mobilephone: providerPhone(mobilephone) },
           controller.signal,
+          EGYS_REQUEST_TIMEOUT_MS,
         );
-        if (!controller.signal.aborted) await onComplete(controller.signal);
+      const pollProfile = async (backoff: readonly number[]) => {
+        let lastError: unknown;
+        for (const delay of backoff) {
+          if (delay) await sleep(delay);
+          if (controller.signal.aborted) return true;
+          try {
+            await onComplete(controller.signal);
+            return true;
+          } catch (err) {
+            lastError = err;
+            recordDiagnostic("warn", "egys.whatsapp.profile", err);
+          }
+        }
+        return lastError;
+      };
+      recordDiagnostic(
+        "info",
+        "egys.whatsapp.confirm.request",
+        new Error(
+          `phone=${mobilephone.replace(/[^0-9]/g, "").slice(0, 2)}… (${mobilephone.replace(/[^0-9]/g, "").length} digits, plus=${mobilephone.startsWith("+")}), otp=${code.length} digits`,
+        ),
+      );
+      let confirmError: unknown;
+      try {
+        await requestConfirm();
       } catch (err) {
-        fail(err instanceof Error ? err.message : "Login belum berhasil");
+        confirmError = err;
+        recordDiagnostic("warn", "egys.whatsapp.confirm", err);
       }
+      if (controller.signal.aborted) return;
+      if (!confirmError) {
+        // The provider accepted the reply, so a lagging profile endpoint is a
+        // sync delay rather than a failed login. Keep the countdown (and the
+        // WhatsApp success message) honest instead of flashing the red "!".
+        const result = await pollProfile([0, 350, 800, 1500, 3000, 5000, 8000]);
+        if (result === true) return;
+        if (controller.signal.aborted) return;
+        const late =
+          "Login WhatsApp diterima, tetapi profil akun belum siap. Muat ulang halaman ini sebentar lagi.";
+        recordDiagnostic("warn", "egys.whatsapp.profile.late", new Error(late));
+        setStatus("Login diterima, menunggu profil akun");
+        onErrorRef.current?.(late);
+        return;
+      }
+      // The WhatsApp reply may have completed the login even though this POST
+      // was rejected. Check the profile once before retrying, then give the
+      // provider a short grace window for a reply that is still in flight.
+      const immediate = await pollProfile([0]);
+      if (immediate === true) return;
+      await sleep(800);
+      if (controller.signal.aborted) return;
+      try {
+        await requestConfirm();
+        confirmError = undefined;
+      } catch (err) {
+        confirmError = err;
+        recordDiagnostic("warn", "egys.whatsapp.confirm.retry", err);
+      }
+      if (!confirmError) {
+        const result = await pollProfile([0, 350, 800]);
+        if (result === true) return;
+      }
+      const result = await pollProfile([0, 700, 1600, 3000]);
+      if (result === true) return;
+      // Prefer the provider's reason for rejecting the code: the profile miss
+      // is only a symptom and would hide the actionable message.
+      const failure =
+        confirmError ?? (result instanceof Error ? result : undefined);
+      fail(describeEgysError(failure));
     };
-    void requestEgysProvider<Challenge>("whatsapp/start", {}, controller.signal)
+    void requestEgysProvider<Challenge>(
+      "whatsapp/start",
+      {},
+      controller.signal,
+      EGYS_REQUEST_TIMEOUT_MS,
+    )
       .then((data) => {
         if (controller.signal.aborted) return;
         const reference = data.referenceid ?? data.referenceId;
@@ -85,6 +204,11 @@ export function EgysWhatsApp({
           fail("Tab ditutup. Tekan WhatsApp lagi.");
           return;
         }
+        recordDiagnostic(
+          "info",
+          "egys.whatsapp.start",
+          new Error(`Prepared reference ${reference}`),
+        );
         const launchWhatsApp = () => {
           if (launched || controller.signal.aborted) return;
           try {
@@ -113,13 +237,15 @@ export function EgysWhatsApp({
           current.onerror = () => {
             if (current.readyState < WebSocket.CLOSING) current.close();
           };
-          current.onclose = () => {
+          current.onclose = (event) => {
             if (controller.signal.aborted || confirming || socket !== current)
               return;
             recordDiagnostic(
               "warn",
               "egys.whatsapp.tracking",
-              new Error(`Tracking disconnected (${current.readyState})`),
+              new Error(
+                `Tracking disconnected (code=${event.code}${event.reason ? ` reason=${event.reason}` : ""})`,
+              ),
             );
             setStatus("Menghubungkan kembali WhatsApp");
             reconnect = window.setTimeout(
@@ -129,29 +255,48 @@ export function EgysWhatsApp({
           };
           current.onmessage = (event) => {
             if (controller.signal.aborted || socket !== current) return;
-            let message;
+            let payload: unknown;
             try {
-              message = JSON.parse(event.data);
+              payload = JSON.parse(event.data);
             } catch {
               return;
             }
-            if (!message || typeof message !== "object") return;
-            if (message.type === "info" && !confirming)
-              setStatus("Menunggu pesan WhatsApp");
-            if (message.type === "error") {
+            const parsed = parseWhatsAppTrackingEvent(payload, reference);
+            if (!parsed) {
+              // A matching reference whose payload cannot authorise a session
+              // is the one failure mode nobody can see from the UI; record
+              // which fields were missing so support has a concrete cause.
+              const gap = describeTrackingGap(payload, reference);
+              if (gap)
+                recordDiagnostic(
+                  "warn",
+                  "egys.whatsapp.tracking.event",
+                  new Error(gap),
+                );
+              return;
+            }
+            if (parsed.type === "info") {
+              if (!confirming) setStatus("Menunggu pesan WhatsApp");
+              return;
+            }
+            if (parsed.type === "incomplete") return;
+            if (parsed.type === "error") {
+              recordDiagnostic(
+                "warn",
+                "egys.whatsapp.tracking.error",
+                new Error(parsed.message || "Tracking error frame"),
+              );
               fail("Pesan belum dapat diverifikasi. Tekan WhatsApp lagi.");
               return;
             }
+            recordDiagnostic(
+              "info",
+              "egys.whatsapp.tracking.confirm",
+              new Error("Confirmation event received"),
+            );
             // The challenge phone belongs to the bot. Confirmation requires
             // the sender's phone reported by the official tracking channel.
-            const sender = message.mobilePhone ?? message.mobilephone;
-            if (
-              message.refid === reference &&
-              /^[0-9]{4,12}$/.test(String(message.otp ?? "")) &&
-              typeof sender === "string" &&
-              /^\+?[0-9]{6,20}$/.test(sender)
-            )
-              void confirm(String(message.otp), sender);
+            void confirm(parsed.otp, parsed.senderPhone);
           };
         };
         // Open WhatsApp in the same tick as the challenge. Tracking is a
@@ -161,9 +306,7 @@ export function EgysWhatsApp({
         launchWhatsApp();
         connect();
       })
-      .catch((err) =>
-        fail(err instanceof Error ? err.message : "WhatsApp tidak tersedia"),
-      );
+      .catch((err) => fail(describeEgysError(err)));
     return () => stop(false);
   }, [onComplete, onCancel, messagingWindow]);
   return (

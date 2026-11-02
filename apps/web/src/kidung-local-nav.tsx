@@ -85,7 +85,7 @@ export function KidungLocalNav({
             }}
             aria-current={active === link.id ? "page" : undefined}
           >
-            <Icon name={link.icon} size={15} />
+            <Icon name={link.icon} size={16} />
             <span>{link.label}</span>
             {link.id === "playlist" && playlist.items.length > 0 && (
               <small>{playlist.items.length}</small>

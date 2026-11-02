@@ -6,6 +6,33 @@ import path from "node:path";
 // acceptance is based on the rendered application rather than a mockup.
 const previewDir = path.resolve("test-results", "ui-preview");
 
+/**
+ * Doubling the root size reflows every surface, so wait for the font set and
+ * two frames before judging overflow. The assertion is unchanged; only the
+ * settle window grows, because a loaded runner can take longer than the
+ * default expect timeout to finish the reflow.
+ */
+async function expectContainedAtDoubleText(page: Page) {
+  await page.evaluate(async () => {
+    document.documentElement.style.fontSize = "200%";
+    await document.fonts.ready;
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+  });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            document.documentElement.scrollWidth <=
+            document.documentElement.clientWidth,
+        ),
+      { timeout: 10_000 },
+    )
+    .toBe(true);
+}
+
 async function openAppearance(
   page: Page,
 ): Promise<{ dialog: Locator; opener: Locator }> {
@@ -265,7 +292,8 @@ test("preferences contain enlarged text without document overflow", async ({
 test("Bible and Kidung stay within a phone viewport for every locale and theme at 200% text", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  // 3 locales x 5 themes x 2 routes, each with a reflow settle window.
+  test.setTimeout(180_000);
   const locales = [
     { value: "id", bible: "Alkitab", kidung: "Kidung" },
     { value: "en", bible: "Bible", kidung: "Hymns" },
@@ -307,18 +335,7 @@ test("Bible and Kidung stay within a phone viewport for every locale and theme a
           exact: true,
         });
         await expect(heading).toBeVisible();
-        await page.evaluate(() => {
-          document.documentElement.style.fontSize = "200%";
-        });
-        await expect
-          .poll(() =>
-            page.evaluate(
-              () =>
-                document.documentElement.scrollWidth <=
-                document.documentElement.clientWidth,
-            ),
-          )
-          .toBe(true);
+        await expectContainedAtDoubleText(page);
         await expect(heading).toBeVisible();
       }
     }
@@ -364,18 +381,7 @@ test("content routes stay contained across every locale and theme at 200% text",
         await expect(page.locator(route.selector)).toBeVisible();
         await expect(page.locator("html")).toHaveAttribute("lang", locale);
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-        await page.evaluate(() => {
-          document.documentElement.style.fontSize = "200%";
-        });
-        await expect
-          .poll(() =>
-            page.evaluate(
-              () =>
-                document.documentElement.scrollWidth <=
-                document.documentElement.clientWidth,
-            ),
-          )
-          .toBe(true);
+        await expectContainedAtDoubleText(page);
       }
     }
   }

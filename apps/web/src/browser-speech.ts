@@ -6,22 +6,39 @@ import type { SpeechProvider, SpeechVoice } from "@gys/contracts";
  * bundled local voices, so speech starts on a natural engine without any
  * network request from the app. Local voices remain as automatic fallback.
  */
+const NATURAL_VOICE_NAME = /natural|neural|online|premium/i;
+
+/** Named neural voices first, then any cloud voice, then bundled local ones. */
+function naturalVoiceRank(voice: SpeechVoice): number {
+  if (NATURAL_VOICE_NAME.test(voice.name)) return 0;
+  return voice.local ? 2 : 1;
+}
+
+function rankedVoices(voices: readonly SpeechVoice[]): SpeechVoice[] {
+  return voices
+    .map((voice, index) => ({ voice, index }))
+    .sort(
+      (left, right) =>
+        naturalVoiceRank(left.voice) - naturalVoiceRank(right.voice) ||
+        left.index - right.index,
+    )
+    .map(({ voice }) => voice);
+}
+
 export function naturalFirstVoices(
   voices: readonly SpeechVoice[],
 ): SpeechVoice[] {
-  const naturals: SpeechVoice[] = [];
-  const locals: SpeechVoice[] = [];
-  for (const voice of voices) (voice.local ? locals : naturals).push(voice);
-  return [...naturals, ...locals];
+  return rankedVoices(voices);
 }
 
 export function selectNaturalPreferredVoice(
   voices: readonly SpeechVoice[],
   language?: string,
 ): SpeechVoice | undefined {
-  const naturals = voices.filter((voice) => !voice.local);
-  const byLanguage = naturals.find((voice) => voice.language === language);
-  return byLanguage ?? naturals[0] ?? voices[0];
+  const ranked = rankedVoices(voices);
+  const preferred = ranked.filter((voice) => naturalVoiceRank(voice) < 2);
+  const byLanguage = preferred.find((voice) => voice.language === language);
+  return byLanguage ?? preferred[0] ?? ranked[0];
 }
 
 export class BrowserSpeechProvider implements SpeechProvider {

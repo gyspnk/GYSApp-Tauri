@@ -126,7 +126,12 @@ for (const width of [320, 1440]) {
       await page.goto("/GYSApp-Tauri/iman");
       const paragraphs = page.locator(".faith-statement");
       await expect(paragraphs).toHaveCount(10);
-      await expect(paragraphs.first()).toHaveCSS("text-align", "justify");
+      // Phones read ragged-right on purpose: narrow justified columns open
+      // rivers between words. See the reading typography note in the plan.
+      await expect(paragraphs.first()).toHaveCSS(
+        "text-align",
+        width <= 767 ? "start" : "justify",
+      );
       const baseFontSize = (element: HTMLElement | SVGElement) =>
         (parseFloat(getComputedStyle(element).fontSize) * 16) /
         parseFloat(getComputedStyle(document.documentElement).fontSize);

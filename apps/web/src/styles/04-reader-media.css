@@ -28,7 +28,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -64,7 +64,7 @@
   margin-top: 4px;
   padding: 18px 20px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--muted);
   font-size: 0.8125rem;
@@ -105,7 +105,7 @@
   color: var(--ink);
   cursor: pointer;
   font: inherit;
-  font-size: 0.78125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   transition:
     border-color 0.16s ease,
@@ -117,15 +117,33 @@
   background: var(--blue-soft);
   color: var(--blue);
 }
-.empty-panel {
+/* One empty-state language for every list: dashed surface panel, muted body,
+   a single strong title. Page-level empty states opt into the same look. */
+.empty-state,
+.empty-panel,
+.kidung-empty-state {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  justify-items: start;
   padding: 20px;
   border: 1px dashed var(--line-strong);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 0.8125rem;
+}
+.empty-state strong,
+.empty-panel strong,
+.kidung-empty-state strong {
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.empty-state > span,
+.empty-panel > span,
+.kidung-empty-state p {
+  margin: 0;
+  line-height: 1.5;
 }
 /* Bible empty search result state inherits panel language above. */
 /* Kidung playlist tool pages. */
@@ -232,7 +250,7 @@
   align-items: center;
   gap: 8px;
   max-width: calc(100% - 16px);
-  padding: 7px 12px;
+  padding: 8px 12px;
   overflow-x: auto;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -251,8 +269,8 @@
 .pdf-view-scroll-toggle,
 .pdf-zoom-controls {
   display: inline-flex;
-  gap: 3px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -265,7 +283,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -305,7 +323,7 @@
 .detail-actions .hymn-action {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-height: 38px;
   padding-inline: 10px;
   font-size: 0.6875rem;
@@ -487,7 +505,7 @@
 .playlist-item-main {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
-  gap: 9px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
   min-height: 40px;
@@ -630,7 +648,7 @@
   }
   .hymn-detail-page .detail-hero h1 {
     margin-bottom: 0;
-    font-size: 1.1875rem;
+    font-size: 1.25rem;
   }
   /* Outranks the global is-text-viewer flex rule above (0-3-0 vs 0-4-0):
      phones navigate songs from the text footer / pdf chrome instead. */
@@ -641,7 +659,7 @@
     gap: 12px;
   }
   .hymn-mode-toggle {
-    padding: 3px;
+    padding: 4px;
   }
   .hymn-mode-button {
     min-height: 34px;
@@ -676,7 +694,7 @@
   .global-search {
     max-height: calc(100vh - 16px);
     padding: 18px 14px;
-    border-radius: 14px;
+    border-radius: 12px;
   }
   .global-search-heading .text-button {
     padding: 4px;
@@ -829,7 +847,7 @@
 .reader-action-group {
   display: flex;
   align-items: end;
-  gap: 11px;
+  gap: 12px;
   min-width: 0;
 }
 .reader-navigation-group {
@@ -839,7 +857,7 @@
 .reader-selectors {
   display: flex;
   align-items: end;
-  gap: 11px;
+  gap: 12px;
   min-width: 0;
   flex: 0 1 auto;
 }
@@ -1028,9 +1046,9 @@
     z-index: var(--z-popover);
     left: calc(100% + 10px);
     top: 50%;
-    padding: 7px 9px;
+    padding: 8px 8px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--surface);
     box-shadow: var(--shadow-lift);
     color: var(--ink);
@@ -1071,7 +1089,7 @@
     box-shadow: none;
   }
   .bible-page-header .bible-search {
-    gap: 7px;
+    gap: 8px;
     max-height: 700px;
     overflow: hidden;
     padding-top: 8px;
@@ -1088,7 +1106,7 @@
       border-width 0s linear 180ms;
   }
   .bible-search-options {
-    gap: 5px 9px;
+    gap: 4px 8px;
   }
   .hymn-page-header .hymn-catalog-controls {
     grid-template-columns: minmax(0, 1fr);
@@ -1179,7 +1197,7 @@
     display: none;
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 8px;
     align-items: end;
     padding: 12px;
     border: 1px solid var(--line);
@@ -1264,7 +1282,7 @@
   z-index: var(--z-modal, 60);
   display: flex;
   flex-direction: column;
-  padding: var(--safe-area-top, 0) 0 0;
+  padding: var(--safe-area-top) 0 0;
   background: var(--surface);
   transform: translateX(100%);
   transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1);
@@ -1420,7 +1438,7 @@ body.gys-viewer-active {
   min-height: 44px;
   padding: 0 10px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
@@ -1452,7 +1470,7 @@ body.gys-viewer-active {
   min-width: 0;
   justify-items: center;
   gap: 2px;
-  padding: 5px 12px;
+  padding: 4px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -1519,7 +1537,7 @@ body.gys-viewer-active {
     white-space: nowrap;
   }
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title {
-    padding-inline: 7px;
+    padding-inline: 8px;
   }
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
     font-size: 0.6875rem;
@@ -1528,13 +1546,13 @@ body.gys-viewer-active {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
-    padding: 9px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--line);
   }
   .pdf-reader-hymn .pdf-page-navigation {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 7px;
+    gap: 8px;
   }
   .pdf-reader-hymn .pdf-page-navigation > button:first-child {
     grid-column: 1;
@@ -1580,10 +1598,10 @@ body.gys-viewer-active {
   .pdf-reader-hymn .pdf-advanced-controls {
     display: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 8px;
     padding: 10px;
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 10px;
     background: var(--surface-soft);
   }
   .pdf-reader-hymn .pdf-advanced-controls.is-open {
@@ -1727,7 +1745,7 @@ body.gys-viewer-active {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-height: 36px;
   padding: 6px 14px;
   border-radius: 8px;
@@ -1746,7 +1764,7 @@ body.gys-viewer-active {
 .kidung-local-nav a.is-active {
   color: var(--blue);
   background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   font-weight: 700;
 }
 .kidung-local-nav a.is-active::after {
@@ -1757,7 +1775,7 @@ body.gys-viewer-active {
   min-width: 18px;
   height: 18px;
   place-items: center;
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: 999px;
   background: var(--blue-soft);
   color: var(--blue);
@@ -1804,7 +1822,7 @@ body.gys-viewer-active {
   gap: 14px;
   flex-wrap: wrap;
   padding: 16px 20px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-xs);
@@ -1828,28 +1846,19 @@ body.gys-viewer-active {
 }
 .kidung-inline-error {
   margin: 14px 0 0;
-  color: var(--danger, #b42318);
+  color: var(--danger);
   font-size: 0.75rem;
 }
 .kidung-empty-state {
-  display: grid;
-  gap: 8px;
-  padding: 34px 0;
-  color: var(--muted);
-}
-.kidung-empty-state strong,
-.kidung-empty-state p {
-  margin: 0;
-}
-.kidung-empty-state strong {
-  color: var(--ink);
-  font-size: 1rem;
+  justify-items: center;
+  padding: 32px 20px;
+  text-align: center;
 }
 .kidung-playlist-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -1904,7 +1913,7 @@ body.gys-viewer-active {
   color: var(--ink);
 }
 .kidung-playlist-song small {
-  margin-top: 3px;
+  margin-top: 4px;
   color: var(--muted);
   font-size: 0.6875rem;
 }
@@ -1933,7 +1942,7 @@ body.gys-viewer-active {
 .kidung-saved-playlists {
   margin-top: 12px;
   padding: 20px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-xs);
@@ -2243,10 +2252,10 @@ body.gys-viewer-active {
   }
   .kidung-playlist-list li {
     grid-template-columns: 1fr;
-    gap: 9px;
+    gap: 8px;
   }
   .kidung-playlist-actions {
-    padding-left: 42px;
+    padding-left: 40px;
   }
   .media-surface.is-kidung-media:not(.is-minimized) {
     right: 10px;
@@ -2394,7 +2403,7 @@ body.gys-viewer-active {
   }
   .navigation-shell .nav-item {
     min-height: 44px;
-    padding: 9px 8px;
+    padding: 8px 8px;
   }
   .main-content {
     padding: 40px clamp(20px, 4vw, 38px) 100px;
@@ -2406,7 +2415,7 @@ body.gys-viewer-active {
     display: none;
   }
   .app-frame.is-reader-route .reader-context-actions {
-    gap: 5px;
+    gap: 4px;
   }
   .app-frame.is-reader-route .reader-toolbar {
     padding: 10px 12px;
@@ -2431,7 +2440,7 @@ body.gys-viewer-active {
   }
   .home-grid {
     gap: 18px;
-    padding-top: 26px;
+    padding-top: 24px;
   }
   .verse-panel,
   .continue-panel,
@@ -2497,7 +2506,13 @@ body.gys-viewer-active {
   }
   .topbar-select .control-select-trigger {
     min-height: 44px;
-    padding-inline: 6px;
+    justify-content: center;
+    padding-inline: 4px;
+  }
+  /* A 44 px locale control cannot fit the two-letter code and a chevron, and
+     the clipped glyph looked like stray text next to the theme button. */
+  .topbar-select .control-select-chevron {
+    display: none;
   }
   .account-button {
     width: 44px;
@@ -2609,7 +2624,7 @@ body.gys-viewer-active {
     min-height: 140px;
   }
   .sauh-card-content {
-    margin-top: 70px;
+    margin-top: 72px;
     padding: 14px 16px 16px;
     gap: 8px;
   }
@@ -2711,7 +2726,7 @@ body.gys-viewer-active {
     min-height: 44px;
     max-width: 100%;
     gap: 8px;
-    padding-inline: 11px;
+    padding-inline: 12px;
     font-size: 0.75rem;
   }
   .text-button {
@@ -2740,7 +2755,7 @@ body.gys-viewer-active {
     max-width: 100%;
   }
   .search-row {
-    gap: 7px;
+    gap: 8px;
     grid-template-columns: minmax(0, 1fr) auto;
   }
   .search-row input,
@@ -2788,7 +2803,7 @@ body.gys-viewer-active {
     grid-template-columns: minmax(0, 1fr) minmax(112px, 0.45fr);
   }
   .hymn-page-heading .date-line {
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
   .hymn-catalog-shell,
   .bible-reader-shell {
@@ -2821,5 +2836,21 @@ body.gys-viewer-active {
   .distributed-asset-row {
     gap: 10px;
     padding-block: 10px;
+  }
+}
+
+/* Below 375 px the wordmark cannot share the row with the five controls, so the
+   brand falls back to the dove crop of the same artwork instead of clipping the
+   name mid-word. */
+@media (max-width: 374px) {
+  .brand-mark img {
+    width: 40px;
+    /* 40x28 keeps the whole dove in frame: a 40x40 window covers only 320 of
+       the 420 artwork pixels the mark needs, which clipped the beak. The 40x44
+       link keeps the touch target. */
+    height: 28px;
+    max-width: 40px;
+    object-fit: cover;
+    object-position: left center;
   }
 }

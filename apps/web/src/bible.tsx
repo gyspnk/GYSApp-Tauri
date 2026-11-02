@@ -1,6 +1,7 @@
 import { createChapterSwipe } from "./chapter-swipe.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
+import { useDialogFocus } from "./dialog-focus.js";
 import {
   type BibleNotes,
   BOOK_KEY,
@@ -236,6 +237,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
       }
     | undefined
   >(undefined);
+  const crossRefDialogRef = useRef<HTMLDivElement>(null);
+  const crossRefOpenerRef = useRef<HTMLElement | null>(null);
+  useDialogFocus({
+    open: crossRefModal !== undefined,
+    dialogRef: crossRefDialogRef,
+    openerRef: crossRefOpenerRef,
+    onClose: () => setCrossRefModal(undefined),
+    initialFocusSelector: ".bible-crossref-close",
+  });
   const {
     splitView,
     setSplitView,
@@ -259,6 +269,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const [notesPopupOpen, setNotesPopupOpen] = useState(false);
   const [packAttempt, setPackAttempt] = useState(0);
+  useEffect(() => {
+    if (packState.status === "error")
+      recordDiagnostic(
+        "warn",
+        "bible.pack.error",
+        new Error(packState.message),
+      );
+  }, [packState]);
   const [quickNavDrag, setQuickNavDrag] = useState<
     QuickNavDragState | undefined
   >(undefined);
@@ -1126,11 +1144,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     } catch (error: unknown) {
       if (!controller.signal.aborted) {
         recordDiagnostic("error", "bible.search", error);
-        setSearchError(
-          error instanceof Error
-            ? error.message
-            : translate(locale, "bible.searchUnavailable"),
-        );
+        setSearchError(translate(locale, "bible.searchUnavailable"));
       }
     } finally {
       if (searchAbortRef.current === controller) {
@@ -1602,7 +1616,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       {packState.status === "error" && (
         <div className="error-panel" role="alert">
           <strong>{translate(locale, "bible.offlineError")}</strong>
-          <span>{packState.message}</span>
+          <span>{translate(locale, "common.errorBody")}</span>
           <button
             className="primary-button"
             type="button"
@@ -2019,6 +2033,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
           >
             <div
               className="bible-crossref-modal"
+              ref={crossRefDialogRef}
+              tabIndex={-1}
               onClick={(event) => event.stopPropagation()}
             >
               <div className="bible-crossref-header">
@@ -2028,6 +2044,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 </div>
                 <button
                   type="button"
+                  className="bible-crossref-close"
                   aria-label={translate(locale, "bible.closeCrossReferences")}
                   onClick={() => setCrossRefModal(undefined)}
                 >

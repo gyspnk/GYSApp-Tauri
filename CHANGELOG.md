@@ -2,6 +2,162 @@
 
 ## Unreleased — GA hardening slice
 
+### 2026-10-31 — CI verifies only what a push can affect
+
+- Add a `changes` job that classifies the pushed range from git: documentation
+  pushes now run only `verify` and `secret-scan`, web pushes run the build plus
+  the existing e2e path, and `native-check` runs only when `apps/native/`
+  changed. The classification falls back to `HEAD^ HEAD` when the recorded base
+  is not available, and the `e2e` aggregate fails if classification itself
+  fails, so a skipped job can never hide a broken verification.
+- Cache the Playwright browser download across the e2e jobs and keep reusing the
+  single build artifact. Validated statically with actionlint 1.7.12 (all
+  workflows clean); the hosted run itself is NOT RUN from this machine.
+
+### 2026-10-31 — measure where the browser suite spends its time
+
+- Add `scripts/e2e-durations.mjs` (`pnpm test:e2e:durations <report.json>`) to
+  rank specs and tests from a Playwright JSON report. A full 826-test report
+  shows 74 minutes of browser time (39 minutes wall at two workers); the
+  heaviest specs are kidung-usability (5.7m), editorial-ui (4.3m),
+  navigation-layout (4.1m) and appearance-preferences (3.7m), and the two 200%
+  text sweeps alone take 3.3 minutes.
+- Add `pnpm test:e2e:local` (766 tests): the pre-push run without the `-linux`
+  visual baselines and the runtime-performance budgets, which cannot be judged
+  outside CI and otherwise spend time writing traces for 24 expected diffs.
+  Measured at 34.7 minutes with 757 passing, six failures (two host-bound
+  `instant-navigation` budgets and four animation-timing flakes), versus 39.1
+  minutes and 37 failures for the unconditional suite.
+
+### 2026-10-31 — a fast test loop, and a measured worker ceiling
+
+- Add a fast local loop so development stops paying for the full browser
+  suite: `pnpm test:e2e:core` (87 tests, ~3.4 min across the shell, settings and
+  e-GYS), `pnpm test:e2e:changed` (~1.7 min for the specs a change touches) and
+  `pnpm test:e2e:shards` (parallel shards over one preview server). A 637-test
+  "broad functional" profile was tried and dropped: it still takes ~35 minutes
+  on this host, so it would only hide the full suite behind a faster name.
+- Measure the ceiling instead of guessing: on the 8-core ARM runner the same 55
+  tests take 179s with two workers, 184s with three and 217s with four, so the
+  profiles default to two workers and the runner only scales on bigger
+  machines. `pnpm test` is 46s and `pnpm build` 14s, so neither is the
+  bottleneck.
+- Keep deep-link alignment correcting for the first three seconds after the
+  row is revealed; a profile card that collapses above it can move the row more
+  than the 160px “user navigated away” window and leave it stranded.
+
+### 2026-10-31 — a WhatsApp login the bot already completed no longer fails
+
+- Treat a rejected `whatsapp/confirm` as non-fatal while a session already
+  exists: the bot can finish the login before the browser's confirmation POST
+  arrives, and the app turned that rejection into the exclamation badge even
+  though WhatsApp had reported success.
+- Retry the profile read briefly (0/350/800/1500 ms) after a confirmation, so a
+  session that becomes visible a moment later is accepted instead of failed.
+- Surface the reason in the account card and record `egys.whatsapp.confirm` /
+  `egys.whatsapp.profile` in the device diagnostics; previously the only trace
+  was the "!" tooltip and a log nobody could reach from the failed attempt.
+
+### 2026-10-30 — settings stay scannable and accessible
+
+- Restore the documented "seven collapsed categories" layout on More: the
+  collapsible rework left six groups expanded, so the category rows no longer
+  fitted one phone viewport and every "open this group" click closed it instead.
+  `?section=account`, `data` and `help` still reveal their own row, and the
+  `/kidung?section=settings` shortcut still mounts the hymn panel.
+- Reveal the linked row from React state rather than the DOM installer. Above
+  768px the router replaces the disclosure during navigation, so the previous
+  write landed on a detached node and the account shortcut appeared dead.
+- Give the diagnostics log its own landmark name (axe `landmark-unique` fired
+  once the About card was open) and move the 13px account label onto `--navy`
+  (4.26:1 → about 9:1 on the shared soft-blue field).
+- Keep a sentence in the search live region while the index is ready, so the
+  polite `role="status"` node no longer disappears once loading got fast, and
+  give the Kidung catalog grid a `max-content` control column (12px dead cell
+  below 1100px).
+
+### 2026-10-30 — security: patched zod advisory
+
+- Bump `zod` from 4.4.3 to 4.6.6 in `packages/contracts` and `apps/bff` to clear
+  GHSA-mrhx-c7xc-m3w5 (high: memory exhaustion while validating oversized
+  constrained collections), which `pnpm audit --prod` reported and the CI verify
+  job rejected. Contract and reader behaviour is unchanged; the initial JS graph
+  grows by 6.8 KiB gzip (172.0 → 179.3 KiB, budget 180 KiB).
+
+### 2026-10-30 — the Indonesian Bible address reaches the reader
+
+- Redirect `/alkitab` to `/bible` so an Indonesian address typed or shared by a
+  member opens the Bible instead of the not-found page; `/kidung`, `/iman`,
+  `/literatur` and `/lainnya` already use their Indonesian paths.
+
+### 2026-10-30 — an expired WhatsApp attempt explains the next step
+
+- Keep an explanation in the account card when the 120-second WhatsApp attempt
+  expires instead of only removing the countdown: the prepared message has to be
+  sent from WhatsApp, and a new attempt replaces the notice. The expiry is also
+  recorded as `egys.whatsapp.timeout` in the device diagnostics.
+- Keep the expiry callback out of the attempt's dependency list so a fresh
+  closure from the parent cannot restart the socket and reset the deadline.
+- Replace the flaky "tracking subscribes before the message link opens" browser
+  assertion, which contradicted the deliberate order (open the tab, then
+  subscribe), with a poll that requires the socket within the same attempt;
+  the e-GYS suite now passes twice in a row under parallel workers.
+
+### 2026-10-30 — device diagnostics are readable in the app
+
+- Show the recorded device log on the About settings panel: newest first, with
+  the time, the subsystem scope and the redacted message, plus "copy" and
+  "clear". Failures such as a rejected WhatsApp tracking frame or a download
+  error were previously written to storage with no way to read them without
+  developer tools.
+
+### 2026-10-30 — cross-app search no longer waits on a stalled Worker
+
+- Bound the optional BFF refresh of the curated search index to three seconds
+  and keep the bundled catalogs when it does not answer. One hanging content
+  endpoint previously held the whole index, so the search dialog stayed on
+  "Menyiapkan indeks lokal…" and returned Bible verses only; hymn, literature,
+  faith, Sauh and Suara results now appear while the static packs are ready.
+
+### 2026-10-30 — reader back links are tappable
+
+- Grow the "← Beranda" / "Kembali ke kesaksian" hit area on the Sauh and Suara
+  readers to 71×42 px with a pseudo-element. The breadcrumb keeps its 17–20 px
+  painted row, and pointer hits now land 11 px above and below the text.
+
+### 2026-10-30 — WhatsApp tracking tolerance and e-GYS browser contracts
+
+- Normalise the official WhatsApp tracking frame before confirming a session:
+  accept the reference as string or number, read the sender from the documented
+  camelCase or lowercase fields, and keep validating the reference match, the
+  numeric code and the sender phone. A payload that cannot authorise a session
+  is dropped instead of failing the whole attempt.
+- Record the attempt lifecycle in diagnostics (`egys.whatsapp.start`,
+  `egys.whatsapp.tracking`, `…tracking.event`, `…tracking.confirm`) including the
+  socket close code and the exact fields missing from a matching-reference frame,
+  so a failed WhatsApp login has a concrete cause instead of a silent countdown.
+- Keep the three provider buttons inside their card at 320 px: below a 280 px
+  container the row becomes icon-only targets, with the existing localized
+  accessible names and the trailing WhatsApp countdown preserved.
+- Rebase two stale e-GYS browser contracts on the current design: the provider
+  row is compared against the login card's padded content box, and the member
+  badge test states its active-session precondition by routing the profile
+  endpoint instead of mingling with the build's configured Worker.
+
+### 2026-10-30 — deterministic local gates and a stable dev server
+
+- Pin the deployment `VITE_*` variables to empty for unit tests so a checkout
+  that points `VITE_BFF_BASE_URL` at the deployed Worker no longer fails the
+  "Worker absent", image-proxy and raw-CDN contracts. Tests that need a
+  deployment value still opt in with `vi.stubEnv`.
+- Ignore Vitest's transient `.tmpdir` config bundles in the dev watcher;
+  `pnpm dev` no longer dies with `EBUSY` on Windows when a test run overlaps it.
+- Skip the self-ignored `.superpowers/` SDD workspace in Prettier so
+  `pnpm format:check` and the pre-push hook pass on working checkouts.
+- Drop the `home.directSource` key left unused by the Sauh header rework.
+- Record the current baseline, route matrix and backlog in
+  `docs/plans/2026-10-30-autonomous-development-handoff.md`.
+
 ### 2026-10-09 — Android audio, text scale and hymn navigation
 
 - Avoid silent audio activation during ordinary navigation or idle app resume.

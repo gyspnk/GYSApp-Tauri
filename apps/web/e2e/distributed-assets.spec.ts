@@ -171,7 +171,10 @@ test.describe("distributed Bible lifecycle", () => {
     const actualKjvPackage = process.env.GYS_KJV_PACKAGE_FIXTURE;
     const payload = await readFile(
       actualKjvPackage ??
-        new URL("../public/offline/bible/b_tb.db", import.meta.url),
+        new URL(
+          "../../../packages/contracts/source/bible/b_tb.db",
+          import.meta.url,
+        ),
     );
     const catalog = JSON.parse(
       await readFile(

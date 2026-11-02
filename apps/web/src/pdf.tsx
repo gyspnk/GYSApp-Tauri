@@ -1652,7 +1652,7 @@ export function PdfReader({
                               ? "swapVert"
                               : "book"
                       }
-                      size={15}
+                      size={16}
                     />
                     <span className="sr-only">
                       {translate(
@@ -1783,7 +1783,7 @@ export function PdfReader({
                         aria-label={translate(locale, "pdf.download")}
                         title={translate(locale, "pdf.download")}
                       >
-                        <Icon name="download" size={15} />
+                        <Icon name="download" size={16} />
                         <span>{translate(locale, "pdf.download")}</span>
                       </a>
                     )}

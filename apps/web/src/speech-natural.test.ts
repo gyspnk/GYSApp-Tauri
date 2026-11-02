@@ -32,6 +32,18 @@ describe("no-key natural speech preference", () => {
     ]);
   });
 
+  it("prefers a named natural voice over a generic cloud voice", () => {
+    const voices = [
+      natural("generic-cloud"),
+      { ...local("ms-natural"), name: "Microsoft Natural" },
+    ];
+    expect(naturalFirstVoices(voices).map((v) => v.id)).toEqual([
+      "ms-natural",
+      "generic-cloud",
+    ]);
+    expect(selectNaturalPreferredVoice(voices, "id-ID")?.id).toBe("ms-natural");
+  });
+
   it("returns an empty list without voices", () => {
     expect(naturalFirstVoices([])).toEqual([]);
   });

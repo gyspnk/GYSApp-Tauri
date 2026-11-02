@@ -6,7 +6,12 @@ import {
 } from "./hymn-payloads.js";
 import { useEffect, useState } from "react";
 import { preloadable } from "./preloadable.js";
-import { Navigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { type UpstreamMusicLock, type HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { loadInstalledDistributedHymnCatalog } from "./distributed-hymnals.js";
@@ -16,6 +21,7 @@ import {
   parseCatalog,
   parseHymnMetadata,
 } from "./kidung-shared.js";
+import { canonicalHymnId, splitHymnFallback } from "./kidung-ids.js";
 
 const HymnCatalog = preloadable(() =>
   import("./kidung-catalog.js").then((module) => ({
@@ -57,6 +63,7 @@ function useHymnData<T extends HymnMetadata>(
     return cached ? { status: "ready", items: cached } : { status: "loading" };
   });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     let generation = 0;
@@ -104,7 +111,7 @@ function useHymnData<T extends HymnMetadata>(
         onAssetsChanged,
       );
     };
-  }, [loadCore, parse]);
+  }, [loadCore, parse, reload]);
   useEffect(() => {
     if (!loadMusicLock) return;
     const controller = new AbortController();
@@ -117,7 +124,11 @@ function useHymnData<T extends HymnMetadata>(
       });
     return () => controller.abort();
   }, [loadMusicLock]);
-  return { catalog, musicLock };
+  return {
+    catalog,
+    musicLock,
+    retry: () => setReload((value) => value + 1),
+  };
 }
 
 function KidungReaderDataPage({
@@ -127,7 +138,29 @@ function KidungReaderDataPage({
   locale: Locale;
   songId: string;
 }) {
-  const { catalog, musicLock } = useHymnData(true, loadCoreHymns, parseCatalog);
+  const { catalog, musicLock, retry } = useHymnData(
+    true,
+    loadCoreHymns,
+    parseCatalog,
+  );
+  const split =
+    catalog.status === "ready"
+      ? splitHymnFallback(
+          songId,
+          catalog.items.map((item) => item.id),
+        )
+      : undefined;
+  if (split) return <Navigate to={`/kidung/${split}`} replace />;
+  if (catalog.status === "error")
+    return (
+      <div className="error-panel" role="alert">
+        <strong>{translate(locale, "kidung.catalogUnavailable")}</strong>
+        <span>{translate(locale, "common.errorBody")}</span>
+        <button className="primary-button" type="button" onClick={retry}>
+          {translate(locale, "home.retry")}
+        </button>
+      </div>
+    );
   return (
     <HymnDetail
       key={songId}
@@ -146,7 +179,7 @@ function KidungCatalogDataPage({
   locale: Locale;
   playlist: boolean;
 }) {
-  const { catalog, musicLock } = useHymnData(
+  const { catalog, musicLock, retry } = useHymnData(
     !playlist,
     loadCoreHymnMetadata,
     parseHymnMetadata,
@@ -156,6 +189,7 @@ function KidungCatalogDataPage({
     <HymnCatalog
       locale={locale}
       state={catalog}
+      onRetry={retry}
       {...(musicLock ? { musicLock } : {})}
     />
   );
@@ -163,10 +197,14 @@ function KidungCatalogDataPage({
 
 export function KidungPage({ locale }: { locale: Locale }) {
   const { songId } = useParams();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const section = searchParams.get("section");
   if (!songId && section === "settings")
     return <Navigate to="/lainnya?section=kidung" replace />;
+  const canonical = songId ? canonicalHymnId(songId) : undefined;
+  if (canonical && canonical !== songId)
+    return <Navigate to={`/kidung/${canonical}${location.search}`} replace />;
 
   return songId ? (
     <KidungReaderDataPage locale={locale} songId={songId} />

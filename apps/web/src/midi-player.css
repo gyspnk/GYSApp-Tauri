@@ -46,7 +46,7 @@
 .media-surface.is-kidung-media .media-context-link {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 .media-surface.is-kidung-media .media-context-link strong {
   overflow: hidden;
@@ -107,7 +107,7 @@
   width: 100%;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
   font-size: 0.8125rem;
@@ -118,6 +118,54 @@
 .media-music-controls .control-select-trigger[aria-expanded="true"] {
   border-color: var(--blue);
   background: var(--blue-soft);
+}
+
+/* One geometry for every MIDI field: the reader sheet, the fullscreen lyrics
+   and the dock's popovers all use the same 32px row on a precise pointer and
+   44px when the pointer is coarse, so the same control never changes size just
+   because it lives on another surface. */
+:is(
+  .hymn-more-actions-panel,
+  .lyrics-panel .lyrics-extra,
+  .media-advanced-panel,
+  .media-tempo-popover
+) {
+  --midi-control: 32px;
+}
+@media (pointer: coarse), (hover: none) {
+  :is(
+    .hymn-more-actions-panel,
+    .lyrics-panel .lyrics-extra,
+    .media-advanced-panel,
+    .media-tempo-popover
+  ) {
+    --midi-control: 44px;
+  }
+}
+.media-tempo-toggle {
+  border-radius: var(--radius-control);
+}
+.media-music-controls .media-transpose {
+  overflow: hidden;
+}
+.media-music-controls .media-transpose button,
+.media-music-controls .media-transpose-reset {
+  border-radius: 0;
+}
+.media-mute-button {
+  display: grid;
+  place-items: center;
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
+  height: var(--midi-control, 40px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.capo-control button {
+  border-radius: var(--radius-control);
 }
 .media-music-controls .media-instrument-control .control-select-value {
   display: block;
@@ -137,7 +185,7 @@
 }
 .media-music-controls .control-select-menu {
   max-height: min(280px, var(--select-available-space, 280px));
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 8px 28px color-mix(in srgb, var(--navy) 16%, transparent);
 }
 .media-music-controls .media-instrument-control .control-select-option {
@@ -161,7 +209,7 @@
   gap: 2px;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
 }
@@ -171,7 +219,7 @@
   min-height: var(--midi-control);
   border: 0;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: transparent;
   font-size: 1.125rem;
 }
@@ -194,7 +242,7 @@
   grid-template-columns: minmax(0, 1fr);
   max-height: min(480px, calc(100dvh - var(--reader-media-space, 0px) - 86px));
   padding: 12px;
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
   display: flex;
@@ -322,7 +370,7 @@
 .media-activity i {
   width: 2px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: 6px;
   background: currentColor;
   transform: scaleY(0.35);
 }
@@ -410,7 +458,7 @@
 }
 @media (max-height: 500px) and (min-width: 481px) {
   .media-surface.is-kidung-media:not(.is-minimized) {
-    gap: 3px 6px;
+    gap: 4px 6px;
     padding-block: 6px;
   }
   .media-surface.is-kidung-media .media-music-controls {
@@ -556,7 +604,7 @@
   height: auto;
   clip-path: none;
   display: block;
-  margin: 0 0 5px;
+  margin: 0 0 4px;
   font-size: 0.6875rem;
   color: var(--muted);
 }
@@ -586,7 +634,7 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-height: 44px;
   height: 44px;
   padding: 4px;
@@ -827,9 +875,6 @@
     min-height: 20px;
   }
 }
-.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
-  --midi-control: inherit;
-}
 .media-surface.is-kidung-media .media-instrument-control .control-select-menu {
   grid-column: 1 / -1;
 }
@@ -852,7 +897,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Both player surfaces use one instrument/key/transpose component. */
 .lyrics-extra .media-music-controls {
-  --midi-control: 44px;
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
   gap: 4px;
@@ -889,7 +933,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
 }
 .midi-tempo-stepper {
-  --tempo-target: 44px;
+  --tempo-target: var(--midi-control, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -905,7 +949,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-height: var(--tempo-target);
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
   font-size: 1.125rem;
@@ -917,7 +961,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: var(--tempo-target);
   padding: 0 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--surface-soft);
 }
 .midi-tempo-stepper input {
@@ -946,14 +990,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 .midi-tempo-stepper button:disabled {
   opacity: 0.35;
 }
-@media (pointer: fine) {
-  .lyrics-extra .media-music-controls {
-    --midi-control: 32px;
-  }
-  .midi-tempo-stepper {
-    --tempo-target: 32px;
-  }
-}
 
 .media-surface.is-kidung-media .media-tempo-popover {
   grid-template-columns: minmax(0, 1fr);
@@ -978,7 +1014,6 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Reader settings use the same bounded musical fields as the player. */
 .hymn-music-settings .media-music-controls {
-  --midi-control: 32px;
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
   gap: 4px;
@@ -1009,11 +1044,6 @@ body:has(.hymn-detail-page.is-text-viewer)
   color: var(--muted);
   font-size: 0.6875rem;
 }
-@media (pointer: coarse) {
-  .hymn-music-settings .media-music-controls {
-    --midi-control: 44px;
-  }
-}
 .hymn-music-settings .hymn-midi-reader-controls {
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
@@ -1023,6 +1053,15 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-music-settings .media-music-controls .control-select {
   min-width: 0;
+}
+.hymn-music-settings .control-select-trigger,
+.hymn-music-settings .capo-control button {
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+}
+.hymn-music-settings .capo-control button {
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
 }
 
 .hymn-music-settings .media-instrument-control .control-select-value {
@@ -1041,9 +1080,345 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0;
 }
 .hymn-music-settings .hymn-midi-volume button {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
   padding: 0;
   display: grid;
   place-items: center;
+}
+
+/* Phone dock: three honest rows — identity (with progress under it), then
+   tempo, transport, and the disclosure, so nothing sits 2 px out of line. */
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: 60px minmax(0, 1fr) 44px 44px;
+    grid-template-areas:
+      "title title minimize close"
+      "tempo playback playback advanced";
+    grid-template-rows: auto 48px;
+    padding: 8px 10px;
+    gap: 4px 6px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    /* app-design.css pins this to the `title` area with !important. */
+    grid-area: 1 / 1 / 2 / -1 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding-right: 96px;
+    min-height: 44px;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+    min-height: 24px;
+    line-height: 1.3;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-minimize,
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-close-button {
+    align-self: center;
+    justify-self: end;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) > .media-playback-row {
+    grid-area: playback;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-adjustments {
+    display: contents;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-tempo-toggle {
+    grid-area: tempo;
+    justify-self: start;
+    align-self: center;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ink);
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-tempo-toggle:hover {
+    background: var(--blue-soft);
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+    grid-area: advanced;
+    justify-self: end;
+    align-self: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    left: 0;
+    right: 0;
+    /* One pixel of air: the dock's own rounding must never overlap the sheet. */
+    bottom: calc(100% + 1px);
+    width: auto;
+    padding: 14px 12px 10px;
+    border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: none;
+  }
+
+  .media-surface.is-kidung-media:not(.is-minimized):has(
+      .media-advanced-controls[open]
+    ) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.media-surface.is-kidung-media .media-advanced-panel {
+  gap: 10px;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .control-select-label {
+  overflow: hidden;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 6px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-music-controls
+  .media-instrument-control {
+  grid-column: 1 / -1;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-utility-controls {
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-volume-control
+  input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
+  grid-column: 1 / -1;
+  justify-self: start;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reader mode buttons share one radius with the rest of the controls. */
+.hymn-reader-actions .hymn-action,
+.hymn-reader-actions .reader-mode-button {
+  border-radius: var(--radius-control);
+}
+
+/* The instrument label is a full sentence in two locales; give it the width it
+   needs and let the select take the remainder. */
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-template-columns: max-content minmax(0, 1fr) !important;
+  column-gap: 8px;
+}
+
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-instrument-control
+  .control-select-label {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Desktop sheet: one control per line, compact rows on a mouse pointer. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    left: auto;
+    right: 0;
+    width: 380px;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 6px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .media-instrument-control {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .media-key-control
+    .control-select-trigger {
+    width: 100%;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-utility-controls,
+  .media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+    border-top: 1px solid var(--line);
+    padding-top: 4px;
+  }
+}
+@media (min-width: 721px) and (pointer: fine) {
+  /* Fine pointers get the same 40px field height as the reader sheet and the
+     fullscreen lyric panel; only the transpose buttons stay square inside
+     their rounded container. */
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-music-controls
+    .control-select-trigger,
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose {
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose button {
+    width: var(--midi-control, 40px);
+    min-width: var(--midi-control, 40px);
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-control.media-secondary-control {
+    width: var(--midi-control, 40px);
+    min-width: var(--midi-control, 40px);
+    height: var(--midi-control, 40px);
+    min-height: var(--midi-control, 40px);
+  }
+}
+
+/* The instrument picker owns its whole row; the transpose value stays legible. */
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control,
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    width: 100%;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel .media-transpose-value {
+    min-width: 22px;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+  }
+  .media-surface.is-kidung-media .media-advanced-panel > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control {
+    display: flex;
+    align-items: center;
+  }
+  .media-surface.is-kidung-media
+    .media-advanced-panel
+    .media-instrument-control
+    .control-select-trigger {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
 }

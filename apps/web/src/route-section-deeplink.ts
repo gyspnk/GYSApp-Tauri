@@ -2,6 +2,9 @@ const MORE_SECTION_TARGETS: Record<string, string> = {
   account: '.more-setting-section[data-setting="account"] > .more-setting-row',
   data: '.more-setting-section[data-setting="offline"] > .more-setting-row',
   help: ".report-card",
+  // `/kidung?section=settings` redirects here; the hymn panel opens from its
+  // own state, so this entry only aligns the row.
+  kidung: '.more-setting-section[data-setting="hymns"] > .more-setting-row',
 };
 
 const ALIGN_TOLERANCE_PX = 1;
@@ -46,7 +49,7 @@ export function installRouteSectionDeepLinks(
   if (!root) return () => undefined;
 
   let alignedLocation = "";
-  let revealedAccountLocation = "";
+  let alignedAt = 0;
   let trackedLocation = "";
   let userInterrupted = false;
   let frame = 0;
@@ -54,7 +57,6 @@ export function installRouteSectionDeepLinks(
   const revealLinkedSection = () => {
     const selector = resolveRouteSectionTarget(window.location);
     if (!selector) {
-      revealedAccountLocation = "";
       alignedLocation = "";
       trackedLocation = "";
       userInterrupted = false;
@@ -72,16 +74,14 @@ export function installRouteSectionDeepLinks(
 
     const target = document.querySelector<HTMLElement>(selector);
     if (!target) return;
-    if (
-      new URLSearchParams(window.location.search).get("section") ===
-        "account" &&
-      revealedAccountLocation !== locationKey
-    ) {
-      const disclosure = target.closest("details");
-      if (disclosure && !disclosure.open) disclosure.open = true;
-      revealedAccountLocation = locationKey;
-    }
-
+    // MorePage reveals the linked disclosure from React state; this installer
+    // only keeps the revealed row aligned below the top bar. A collapsed owner
+    // has no measurable content, so wait for its `open` mutation instead of
+    // recording an alignment that the reveal would then invalidate.
+    const disclosure = target.closest<HTMLDetailsElement>(
+      ".more-setting-section",
+    );
+    if (disclosure && !disclosure.open) return;
     // The More route renders the account card before its asynchronous profile
     // check finishes. Scrolling while that loading box is still present leaves
     // the linked section stranded when the card later shrinks.
@@ -91,11 +91,16 @@ export function installRouteSectionDeepLinks(
     const alreadyAligned = alignedLocation === locationKey;
 
     // After the initial alignment, keep correcting nearby async layout shifts
-    // (manifest/profile/catalog text can change height). If the target is far
-    // from the anchor, assume the user has intentionally navigated elsewhere.
-    if (alreadyAligned && Math.abs(delta) > REALIGN_WINDOW_PX) return;
+    // (manifest/profile/catalog text can change height). During the first
+    // seconds the page is still settling — a profile card can collapse several
+    // hundred pixels above the row — so only the later, larger moves are
+    // treated as the user navigating away.
+    const settling = Date.now() - alignedAt < 3_000;
+    if (alreadyAligned && Math.abs(delta) > REALIGN_WINDOW_PX && !settling)
+      return;
 
     alignedLocation = locationKey;
+    alignedAt = Date.now();
     if (Math.abs(delta) <= ALIGN_TOLERANCE_PX) return;
 
     cancelAnimationFrame(frame);

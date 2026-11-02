@@ -164,7 +164,7 @@ export function AccountMenu({ locale }: { locale: Locale }) {
                   translate(locale, "more.guest")}
               </span>
             </div>
-            {profile && <Icon name="checkCircle" size={17} />}
+            {profile && <Icon name="checkCircle" size={18} />}
           </div>
           {profile?.branchName && profile.email && (
             <p className="account-popover-email">{profile.email}</p>
@@ -193,7 +193,7 @@ export function AccountMenu({ locale }: { locale: Locale }) {
             <Link to="/lainnya?section=account">
               <Icon name="settings" size={18} />
               <span>{translate(locale, "more.accountEgys")}</span>
-              <Icon name="chevronRight" size={15} />
+              <Icon name="chevronRight" size={16} />
             </Link>
             <button
               type="button"
@@ -205,7 +205,7 @@ export function AccountMenu({ locale }: { locale: Locale }) {
             >
               <Icon name="externalLink" size={18} />
               <span>{translate(locale, "account.openPortal")}</span>
-              <Icon name="chevronRight" size={15} />
+              <Icon name="chevronRight" size={16} />
             </button>
             {profile && (
               <button

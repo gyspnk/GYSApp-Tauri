@@ -228,11 +228,15 @@ export function LyricsPanel({
       if (disposed || pinchStart.current) return;
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
+      // A narrow sheet wraps long lines long before it runs out of height, so
+      // cap the preferred size instead of letting it shrink line by line.
+      const preferred =
+        element.clientWidth < 520 ? Math.min(fontSize, 22) : fontSize;
       const next = manualFont.current
-        ? fontSize
+        ? preferred
         : measureHymnFontFit(
             element,
-            fontSize,
+            preferred,
             parent ? parent.clientHeight - 12 : element.clientHeight,
             lastFitRef.current,
           );
@@ -418,7 +422,7 @@ export function LyricsPanel({
                 aria-label={translate(locale, "kidung.lyrics.previousSong")}
                 title={translate(locale, "kidung.lyrics.previousSong")}
               >
-                <Icon name="skipPrevious" size={17} />
+                <Icon name="skipPrevious" size={18} />
               </button>
               <button
                 type="button"
@@ -434,7 +438,7 @@ export function LyricsPanel({
               >
                 <Icon
                   name={midiState.status === "playing" ? "pause" : "play"}
-                  size={17}
+                  size={18}
                 />
               </button>
               <LyricsMidiProgress locale={locale} />
@@ -445,7 +449,7 @@ export function LyricsPanel({
                 aria-label={translate(locale, "kidung.lyrics.nextSong")}
                 title={translate(locale, "kidung.lyrics.nextSong")}
               >
-                <Icon name="skipNext" size={17} />
+                <Icon name="skipNext" size={18} />
               </button>
             </div>
             <div className="lyrics-title">
@@ -542,8 +546,8 @@ export function LyricsPanel({
                     manualFont.current = true;
                     setFontSize((current) => Math.max(14, current - 4));
                   }}
-                  aria-label={translate(locale, "kidung.lyrics.decreaseFont")}
-                  title={translate(locale, "kidung.lyrics.decreaseFont")}
+                  aria-label={translate(locale, "common.decreaseText")}
+                  title={translate(locale, "common.decreaseText")}
                 >
                   <Icon name="textDecrease" size={16} />
                 </button>
@@ -554,8 +558,8 @@ export function LyricsPanel({
                     manualFont.current = true;
                     setFontSize((current) => Math.min(72, current + 4));
                   }}
-                  aria-label={translate(locale, "kidung.lyrics.increaseFont")}
-                  title={translate(locale, "kidung.lyrics.increaseFont")}
+                  aria-label={translate(locale, "common.increaseText")}
+                  title={translate(locale, "common.increaseText")}
                 >
                   <Icon name="textIncrease" size={16} />
                 </button>
@@ -567,11 +571,8 @@ export function LyricsPanel({
                       Math.max(1, Math.round((current - 0.2) * 10) / 10),
                     )
                   }
-                  aria-label={translate(
-                    locale,
-                    "kidung.lyrics.decreaseSpacing",
-                  )}
-                  title={translate(locale, "kidung.lyrics.decreaseSpacing")}
+                  aria-label={translate(locale, "kidung.decreaseSpacing")}
+                  title={translate(locale, "kidung.decreaseSpacing")}
                 >
                   <Icon name="formatLineSpacing" size={16} />
                 </button>
@@ -583,11 +584,8 @@ export function LyricsPanel({
                       Math.min(3.5, Math.round((current + 0.2) * 10) / 10),
                     )
                   }
-                  aria-label={translate(
-                    locale,
-                    "kidung.lyrics.increaseSpacing",
-                  )}
-                  title={translate(locale, "kidung.lyrics.increaseSpacing")}
+                  aria-label={translate(locale, "kidung.increaseSpacing")}
+                  title={translate(locale, "kidung.increaseSpacing")}
                 >
                   <Icon name="lineWeight" size={16} />
                 </button>
@@ -641,7 +639,7 @@ export function LyricsPanel({
             aria-label={translate(locale, "kidung.lyrics.previousVerse")}
             title={translate(locale, "kidung.lyrics.previousVerse")}
           >
-            <Icon name="chevronLeft" size={15} />
+            <Icon name="chevronLeft" size={16} />
           </button>
           <span className="lyrics-verse-indicator">
             {translate(locale, "kidung.lyrics.verseCount", {
@@ -661,7 +659,7 @@ export function LyricsPanel({
             aria-label={translate(locale, "kidung.lyrics.nextVerse")}
             title={translate(locale, "kidung.lyrics.nextVerse")}
           >
-            <Icon name="chevronRight" size={15} />
+            <Icon name="chevronRight" size={16} />
           </button>
         </div>
       </div>

@@ -15,12 +15,21 @@ for (const width of [390, 768, 1440]) {
     await page.goto("/GYSApp-Tauri/kidung");
     const nav = page.locator(".kidung-local-nav");
     await expect(page.locator(".pujian-list > li").first()).toBeVisible();
-    const bounds = await nav.locator("a").evaluateAll((links) =>
-      links.map((link) => {
-        const { y, height } = link.getBoundingClientRect();
-        return { x: links[0]!.getBoundingClientRect().x, y, height };
-      }),
-    );
+    const readBounds = () =>
+      nav.locator("a").evaluateAll((links) =>
+        links.map((link) => {
+          const { y, height } = link.getBoundingClientRect();
+          return { x: links[0]!.getBoundingClientRect().x, y, height };
+        }),
+      );
+    // Two nav presentations share the component: the compact catalog field
+    // and the tool pages' labelled tabs. Each must stay anchored on its own.
+    const surfaceOf = () =>
+      nav.evaluate((node) =>
+        node.closest(".kidung-controls-field") ? "catalog" : "tool",
+      );
+    const bounds = new Map<string, unknown>();
+    bounds.set(await surfaceOf(), await readBounds());
     for (const section of ["Playlist", "Kidung"]) {
       await expect(page.locator("html")).not.toHaveClass(
         /is-reader-transition/,
@@ -32,16 +41,10 @@ for (const width of [390, 768, 1440]) {
       await expect(page.locator("html")).not.toHaveClass(
         /is-reader-transition/,
       );
-      await expect
-        .poll(() =>
-          nav.locator("a").evaluateAll((links) =>
-            links.map((link) => {
-              const { y, height } = link.getBoundingClientRect();
-              return { x: links[0]!.getBoundingClientRect().x, y, height };
-            }),
-          ),
-        )
-        .toEqual(bounds);
+      const surface = await surfaceOf();
+      const expected = bounds.get(surface);
+      if (!expected) bounds.set(surface, await readBounds());
+      else await expect.poll(async () => readBounds()).toEqual(expected);
     }
     await expect(
       nav.getByRole("link", { name: "Pengaturan", exact: true }),
@@ -110,11 +113,17 @@ for (const width of [390, 768, 1440]) {
         .getByRole("button", { name: "Reset transpose", exact: true })
         .locator("svg"),
     ).toBeVisible();
+    // The dock keeps 32px controls for a mouse and 44px for a finger.
+    const minTarget = (await page.evaluate(
+      () => matchMedia("(pointer: coarse)").matches,
+    ))
+      ? 43.9
+      : 31.9;
     for (const button of await panel.locator("button").all()) {
       if (!(await button.isVisible())) continue;
       const box = (await button.boundingBox())!;
-      expect(box.width).toBeGreaterThanOrEqual(43.9);
-      expect(box.height).toBeGreaterThanOrEqual(43.9);
+      expect(box.width).toBeGreaterThanOrEqual(minTarget);
+      expect(box.height).toBeGreaterThanOrEqual(minTarget);
     }
     expect(
       (
@@ -332,7 +341,9 @@ for (const width of [390, 768, 1440]) {
       expect(Math.abs(before.width - after.width)).toBeLessThan(1);
       expect(Math.abs(before.height - after.height)).toBeLessThan(1);
       expect(Math.abs(before.y - after.y)).toBeLessThan(1);
-      expect(after.height).toBeLessThanOrEqual(340);
+      // The merged Sauh card is 460px tall in portrait and 340px from 900px
+      // up; the artwork layer fills it behind the copy.
+      expect(after.height).toBeLessThanOrEqual(width >= 900 ? 340 : 460);
       expect(imageRequests).toHaveLength(1);
       expect(imageRequests[0]).toContain("-300x200.jpg");
       if (width >= 600) {
