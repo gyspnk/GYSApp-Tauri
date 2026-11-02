@@ -3182,9 +3182,14 @@ dari artefak memperlihatkan sakelar penuh selebar baris.
 ### Putaran 52 — Dock tanpa judul ganda, terverifikasi empat tema (2 Nov)
 
 Dock desktop masih mengulang judul kidung yang sudah ada di header pembaca.
-Aturan baru di `apps/web/src/persistent-media.css` (≥900 px): `.media-context-link`
-disembunyikan untuk dock kidung/speech; judul tetap tampil di ponsel, tempat
-header terpotong dan judul dock menambah informasi.
+Percobaan pertama menyembunyikan `.media-context-link` di `apps/web/src/persistent-media.css`
+(≥900 px) untuk dock kidung/speech. **Dibatalkan hari yang sama**: tautan itu
+bukan hiasan — ia satu-satunya jalan kembali ke ayat/himne yang sedang diputar.
+`apps/web/e2e/smoke.spec.ts:1327` mengekliknya untuk melompat ke `#bible-verse-…`
+dan `apps/web/e2e/kidung-usability.spec.ts` membaca judulnya, jadi menyembunyikannya
+membuat rilis gagal (dua smoke merah di `41470618981`). Aturan itu dihapus; judul
+dock tetap tampil di semua lebar, dan penghematan 8 px tidak sepadan dengan
+kehilangan navigasi.
 
 Terukur lokal (1440): dock **84 → 76 px** tinggi, track seek **588 px**, judul
 tidak dirender, `media-dock` + `midi-player-design` **15/15 (1,4 mnt)**.
