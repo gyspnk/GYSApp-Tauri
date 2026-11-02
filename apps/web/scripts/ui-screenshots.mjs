@@ -39,6 +39,11 @@ const routes = [
         click: ".hymn-midi-toggle",
         wait: ".media-surface",
       },
+      {
+        slug: "kidung-reader-options",
+        click: ".hymn-more-actions-summary",
+        wait: ".hymn-more-actions-panel",
+      },
     ],
   },
   { slug: "iman", path: "/iman", marker: ".faith-statement" },
