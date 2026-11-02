@@ -31,6 +31,15 @@ const routes = [
     slug: "kidung-reader",
     path: "/kidung/hymn-001",
     marker: ".hymn-detail-page",
+    // The dock only mounts after the soundfont finishes loading, so the pass
+    // that proves it is not a fixed sleep: it waits for the surface itself.
+    steps: [
+      {
+        slug: "kidung-reader-midi",
+        click: ".hymn-midi-toggle",
+        wait: ".media-surface",
+      },
+    ],
   },
   { slug: "iman", path: "/iman", marker: ".faith-statement" },
   { slug: "literatur", path: "/literatur", marker: ".literature-page" },
@@ -126,11 +135,23 @@ async function capture(browser) {
             : null,
         };
       });
-      await page.screenshot({
-        path: path.join(outDir, file),
-        animations: "disabled",
-        caret: "hide",
-      });
+      const shot = async (name) =>
+        page.screenshot({
+          path: path.join(outDir, name),
+          animations: "disabled",
+          caret: "hide",
+        });
+      await shot(file);
+      for (const step of route.steps ?? []) {
+        await page.locator(step.click).first().click({ timeout: 15_000 });
+        await page
+          .locator(step.wait)
+          .first()
+          .waitFor({ state: "visible", timeout: 30_000 });
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(400);
+        await shot(`${step.slug}-${width}-${theme}.png`);
+      }
       const overflow = metrics.scrollWidth - metrics.clientWidth;
       if (overflow > 0) failures += 1;
       manifest[index] = {
