@@ -1,7 +1,20 @@
 import { translate, type Locale } from "./i18n.js";
-import { EGYS_GOOGLE_ORIGINS, googleOriginRegistered } from "./egys-google.js";
+import { googleOriginNeedsGuidance } from "./egys-google.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+
+function copyWithSelection(text: string, done: () => void): void {
+  const field = document.createElement("textarea");
+  field.value = text;
+  field.setAttribute("readonly", "");
+  field.style.position = "fixed";
+  field.style.opacity = "0";
+  document.body.append(field);
+  field.select();
+  const copied = document.execCommand("copy");
+  field.remove();
+  if (copied) done();
+}
 
 /** Web providers sign in directly; native builds retain the secure login bridge. */
 export function EgysLoginMethods({
@@ -21,12 +34,30 @@ export function EgysLoginMethods({
 }) {
   const googleAvailable = Boolean(onGoogleLogin || googleButton);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
-  const originRegistered = origin === "" || googleOriginRegistered(origin);
+  const originNeedsGuidance = googleOriginNeedsGuidance(origin);
+  const [copied, setCopied] = useState(false);
   useEffect(() => {
-    if (googleAvailable && !originRegistered) {
+    if (googleAvailable && originNeedsGuidance) {
       recordDiagnostic("warn", "egys.google-origin", { origin });
     }
-  }, [googleAvailable, origin, originRegistered]);
+  }, [googleAvailable, origin, originNeedsGuidance]);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+  const copyOrigin = () => {
+    if (!origin) return;
+    const done = () => setCopied(true);
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard
+        .writeText(origin)
+        .then(done)
+        .catch(() => copyWithSelection(origin, done));
+      return;
+    }
+    copyWithSelection(origin, done);
+  };
   return (
     <>
       <div
@@ -97,18 +128,23 @@ export function EgysLoginMethods({
           );
         })}
       </div>
-      {googleAvailable && (
+      {googleAvailable && originNeedsGuidance && (
         <div className="egys-provider-guidance">
-          {!originRegistered && (
-            <p className="egys-google-origin-note" role="status">
-              {translate(locale, "more.googleOriginMismatch")}
-              <ul className="egys-google-origins">
-                {EGYS_GOOGLE_ORIGINS.map((entry) => (
-                  <li key={entry}>{entry}</li>
-                ))}
-              </ul>
-            </p>
-          )}
+          <p className="egys-google-origin-note" role="status">
+            {translate(locale, "more.googleOriginMismatch")}
+          </p>
+          <div className="egys-google-origin-row">
+            <code className="egys-google-origin-current">{origin}</code>
+            <button
+              type="button"
+              className="quiet-button egys-google-origin-copy"
+              onClick={copyOrigin}
+            >
+              {copied
+                ? translate(locale, "more.googleOriginCopied")
+                : translate(locale, "more.googleOriginCopy")}
+            </button>
+          </div>
         </div>
       )}
     </>

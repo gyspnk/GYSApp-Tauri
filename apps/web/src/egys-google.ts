@@ -3,6 +3,16 @@ const GOOGLE_IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
 export const EGYS_GOOGLE_CLIENT_ID =
   "748303683851-46ea0qkq8ti4r6lh8ss5aivf60ct71u7.apps.googleusercontent.com";
 
+/** Google rejects an origin that is missing from the OAuth client, and the
+ * rejection happens inside Google's own window where this app cannot read it.
+ * Only the deployed origin can be assumed registered; a dev origin depends on
+ * the console, so the account card asks for guidance there. */
+export const EGYS_GOOGLE_PRODUCTION_ORIGIN = "https://gyspnk.github.io";
+
+export function googleOriginNeedsGuidance(origin: string): boolean {
+  return origin !== "" && origin !== EGYS_GOOGLE_PRODUCTION_ORIGIN;
+}
+
 type GoogleCredentialResponse = { credential: string };
 type GoogleIdentity = {
   accounts: {

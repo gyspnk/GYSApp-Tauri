@@ -92,14 +92,18 @@ export function warmNavigation(): () => void {
   let cancelled = false;
   let timer: number;
   let idle: number | undefined;
+  // Order is the order people actually leave the home page: the two song and
+  // reading destinations first, with the remaining sections behind them. A
+  // click that lands before its route is warm pays for the chunk cascade
+  // itself, so the first two entries matter more than the rest.
   const paths = [
-    "/iman",
     "/kidung",
     "/bible",
-    "/lainnya",
-    "/",
     "/literatur",
     "/suara",
+    "/lainnya",
+    "/iman",
+    "/",
   ];
   const next = () => {
     if (cancelled || !paths.length) return;

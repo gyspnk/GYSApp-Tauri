@@ -118,6 +118,12 @@ APIs & Services → Credentials → OAuth 2.0 Client IDs:
 | `http://127.0.0.1:4173`    | local preview build (loopback form)   |
 | `https://gyspnk.github.io` | GitHub Pages deployment               |
 
+Google compares scheme, host **and port** exactly: `127.0.0.1` and `localhost`
+are different origins, and an extra preview port (for example `4174`) needs its
+own row. The account card now prints the origin it is running on, with a copy
+button, so the value to paste into the console is exactly the one Google is
+rejecting.
+
 There is no e-GYS password fallback in this build: the provider row offers
 Google, WhatsApp and Apple only. When Google is unavailable (unregistered
 origin or blocked popup), WhatsApp sign-in is the fallback path.

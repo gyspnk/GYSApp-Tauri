@@ -898,7 +898,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.clear": "Kosongkan",
     "more.googleLogin": "Login dengan Google",
     "more.googleOriginMismatch":
-      "Origin ini belum terdaftar untuk login Google, jadi Google akan menampilkan Error 400 origin_mismatch. Pakai login WhatsApp, minta admin mendaftarkan origin ini di Google Cloud Console, atau buka aplikasi dari:",
+      "Login Google hanya berfungsi jika origin ini terdaftar di Google Cloud Console. Muncul Error 400 origin_mismatch? Daftarkan origin di bawah ini (skema, host, dan port harus sama persis), lalu muat ulang. Alternatif tercepat: login WhatsApp.",
+    "more.googleOriginCopy": "Salin origin",
+    "more.googleOriginCopied": "Tersalin",
     "more.whatsappLogin": "Login dengan WhatsApp",
     "more.whatsappFailed":
       "Login WhatsApp gagal. Buka Diagnostik perangkat untuk detailnya.",

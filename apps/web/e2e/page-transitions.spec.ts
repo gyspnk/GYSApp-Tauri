@@ -134,16 +134,15 @@ test("navigation without native snapshots fades once with no legacy entrance", a
         }
       ).fallbackPages,
   );
-  // Each smooth navigation fades the outgoing view (110ms) and the incoming
-  // one (260ms); only those two route animations may run, and never a legacy
-  // CSS entrance.
+  // Each smooth navigation fades the incoming view (260ms) only; waiting for
+  // the outgoing view to fade first added ~110ms to every click, so the swap
+  // happens immediately and the new page eases in. A legacy CSS entrance must
+  // never run alongside it.
   expect(fallback.every((sample) => sample.css === 0)).toBe(true);
   expect(new Set(fallback.map((sample) => sample.duration))).toEqual(
-    new Set([110, 260]),
+    new Set([260]),
   );
-  expect(
-    fallback.filter((sample) => sample.duration === 260).length,
-  ).toBeGreaterThanOrEqual(2);
+  expect(fallback.length).toBeGreaterThanOrEqual(2);
 });
 
 test("navigation from a scrolled catalog starts the destination at its top", async ({

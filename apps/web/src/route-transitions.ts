@@ -8,7 +8,6 @@ let navigationGeneration = 0;
  * second fade on the same page. */
 const animatedViews = new WeakSet<Element>();
 const PAGE_FADE_MS = 260;
-const PAGE_FADE_OUT_MS = 110;
 const PAGE_FADE_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 const PRELOAD_BUDGET_MS = 180;
 
@@ -37,19 +36,6 @@ function animateRouteView(view: HTMLElement) {
   });
 }
 
-/** Fade the outgoing page before its route unmounts. The shell (topbar and
- * sidebar) is untouched, so only the content moves between routes. */
-function fadeOutRouteView(): Animation | undefined {
-  if (prefersReducedMotion()) return undefined;
-  const view = routeView();
-  if (!view) return undefined;
-  return view.animate([{ opacity: 1 }, { opacity: 0 }], {
-    duration: PAGE_FADE_OUT_MS,
-    easing: "ease-in",
-    fill: "forwards",
-  });
-}
-
 /** Warm local route code before taking the incoming snapshot. Remote content
  * never holds navigation; the reader's compact loading state owns that work. */
 export async function navigateSmooth(
@@ -69,14 +55,9 @@ export async function navigateSmooth(
   if (current !== navigationGeneration) return;
   // A history move or another navigation already left this page.
   if (`${location.pathname}${location.search}` !== origin) return;
-  // Page views cross-fade without a document snapshot, so the topbar and
-  // sidebar stay live and never flicker while the content swaps.
-  const fadeOut = fadeOutRouteView();
-  if (fadeOut) await fadeOut.finished.catch(() => undefined);
-  if (current !== navigationGeneration) {
-    fadeOut?.cancel();
-    return;
-  }
+  // The incoming view fades in once it settles (MutationObserver below).
+  // Waiting for the outgoing view to fade first added 110 ms to every click
+  // while the swap itself looked the same.
   await transitionReader(
     () => {
       if (current === navigationGeneration) navigate(path);

@@ -88,14 +88,18 @@ it("an old provider callback cannot sign in after the inline control is disposed
   expect(complete).toHaveBeenCalledOnce();
 });
 
-it("knows which origins the Google client must have registered", async () => {
-  const { EGYS_GOOGLE_ORIGINS, googleOriginRegistered } =
-    await import("./egys-google.js");
+it("guides every origin whose registration it cannot confirm", async () => {
+  const {
+    EGYS_GOOGLE_ORIGINS,
+    EGYS_GOOGLE_PRODUCTION_ORIGIN,
+    googleOriginNeedsGuidance,
+  } = await import("./egys-google.js");
+  expect(googleOriginNeedsGuidance(EGYS_GOOGLE_PRODUCTION_ORIGIN)).toBe(false);
+  expect(googleOriginNeedsGuidance("")).toBe(false);
   for (const origin of EGYS_GOOGLE_ORIGINS) {
-    expect(googleOriginRegistered(origin)).toBe(true);
+    if (origin === EGYS_GOOGLE_PRODUCTION_ORIGIN) continue;
+    expect(googleOriginNeedsGuidance(origin)).toBe(true);
   }
-  expect(googleOriginRegistered("https://gyspnk.github.io")).toBe(true);
-  expect(googleOriginRegistered("http://127.0.0.1:5173")).toBe(true);
-  expect(googleOriginRegistered("http://192.168.1.4:5173")).toBe(false);
-  expect(googleOriginRegistered("https://preview.example.com")).toBe(false);
+  expect(googleOriginNeedsGuidance("http://192.168.1.4:5173")).toBe(true);
+  expect(EGYS_GOOGLE_ORIGINS).toContain("http://127.0.0.1:4173");
 });
