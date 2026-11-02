@@ -1,5 +1,11 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+// These sweeps walk five viewports across every core route. Under a loaded
+// hosted runner the default 40 s budget ran out mid-sweep at /kidung 960 and
+// the page looked unresponsive (the failure reported an overflow with equal
+// widths); the file therefore gets a budget that fits ~35 navigations.
+test.describe.configure({ timeout: 120_000 });
+
 test.use({ serviceWorkers: "block" });
 
 // Cover the narrowest phone, breakpoint edges, and representative wide screens.

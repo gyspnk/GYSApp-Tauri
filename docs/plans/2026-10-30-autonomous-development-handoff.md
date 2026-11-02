@@ -2912,6 +2912,21 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 63 — Sapuan layout diberi anggaran yang cukup (2 Nov)
+
+Run `41547058471` (push CSS `109b4dc`) menghabiskan **7m55s** dan gagal satu
+tes: `e2e/responsive-layout-matrix.spec.ts:158` "primary routes fit from phone
+to wide desktop" — ia menavigasi **35 kali** (7 rute × 5 viewport) dalam satu
+anggaran 40 dtk, dan di runner hosted yang sedang memuat empat worker, tab
+menjadi tidak responsif tepat di `/kidung @ 960px` (percobaan ulang melaporkan
+"horizontal overflow" dengan `clientWidth == scrollWidth == 960` dan tanpa
+pelanggar — itu tanda `page.evaluate` kehabisan waktu, bukan luapan nyata).
+
+Perbaikan: `test.describe.configure({ timeout: 120_000 })` di berkas itu dengan
+komentar alasannya. Tes yang sama lulus **28,1 dtk** di host ini. Pelajaran:
+sapuan multi-viewport butuh anggaran per-tes yang sepadan dengan jumlah
+navigasi, bukan anggaran default.
+
 ### Putaran 62 — Push `main` tidak lagi saling membatalkan (2 Nov)
 
 Insiden: verifikasi push `85f3641` (perubahan CSS) dibatalkan oleh push
