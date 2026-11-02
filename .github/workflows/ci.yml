@@ -35,9 +35,11 @@ permissions:
 
 concurrency:
   # A newer commit supersedes an older verification run while the PR event
-  # remains the single source of truth for feature branches.
+  # remains the single source of truth for feature branches. A push to `main`
+  # is different: the tree it verifies is already published, so cancelling it
+  # would leave that tree unproven (a docs push once killed a CSS run).
   group: ci-${{ github.event_name }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # One cheap classification job keeps the expensive jobs honest: a docs-only

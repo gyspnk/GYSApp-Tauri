@@ -5403,3 +5403,5 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: var(--blue);
   color: var(--on-accent);
 }
+
+/* Scope-pair frame verified against kidung-compact-motion + responsive-touch-targets. */
