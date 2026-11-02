@@ -135,31 +135,45 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 `dist` underneath an active browser run.
 
 ```sh
-GYS_E2E_PREBUILT=1 pnpm test:loop          # seconds: docs ~1.5s, one spec ~12s, otherwise core
-GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 102 tests, ~3-5 min, before committing
+# On this machine: view the live application only (owner decision, 2 Nov).
+pnpm dev                                   # 5173; VITE_BFF_BASE_URL comes from the process env
+pnpm preview                               # 4173, the built app under /GYSApp-Tauri/
+pnpm build                                 # refresh dist so the preview shows the change
+
+# Heavy verification runs in GitHub Actions, not here.
+#   CI (on every push/PR): changes, verify (docs/format/audit/secret scan),
+#     web-build (build + unit/policy suites + bundle budget), selective or full
+#     browser shards, weekly navigation budgets.
+gh run list --workflow ci.yml --limit 5
+gh run watch <run-id> --exit-status
+
+#   QA artifacts (workflow_dispatch): route screenshots plus the overflow,
+#   card-in-card and alignment audits, published as artifacts.
+gh workflow run qa.yml -f themes=light,dark,sepia,amoled -f widths=390,768,1440
+gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
+gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
+node scripts/ci-timings.mjs                # measured wall time and slowest job per run
+
+# Reproduce a hosted failure locally (not the default loop):
 GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
-GYS_E2E_PREBUILT=1 pnpm test:e2e:gate      # 480 behaviour tests, ~22 min (option B)
-GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 796 tests, ~36 min, run it as a background job
-pnpm preview                              # terminal 1, serves 4173 for the browser runs
-pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
-pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report
-pnpm ui:audit                             # overflow/clipping sweep over every real route
-pnpm ui:consistency                       # peer controls share one paint and one centre line
-pnpm ui:boxes                             # cards must not sit inside other cards
-pnpm test:performance
-pnpm verify:native-assets
+GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 102 tests, ~3-5 min
+pnpm test:e2e:durations /tmp/e2e.json      # rank specs/tests from a JSON report
 ```
 
-Browser mode uses production assets. `test:loop` classifies the working tree
-(docs, scripts, packages, build config, web source, specs) and runs only what
-can observe the change; it rebuilds a stale `dist` before any browser step and
-never starts the full suite by accident. Two workers saturate an 8-core ARM
-machine (the same 55 tests take 179s at two workers and 217s at four), so a wide
-run belongs in the background while work continues. `test:e2e:gate` keeps
-behaviour coverage and leaves the nine heaviest specs to CI; `test:e2e:local`
-leaves out the `-linux` visual baselines and the runtime-performance budgets
-because neither can be judged outside CI. `pnpm ui:audit` walks the twelve
-real routes (including `/kidung/1` and the three settings sections) across
+`scripts/ci-timings.mjs` is the feedback loop for CI cost: it prints queue time,
+wall time, every job's duration and the slowest step, so the next optimisation
+(cache, shard, filter) is chosen from measurements. `qa.yml` builds once, then
+captures screenshots and runs the audits on hosted runners for each theme and
+width; artifacts are retained for seven days.
+
+Browser mode uses production assets. The per-spec commands above exist to
+reproduce a hosted failure, not as the day-to-day loop: this device keeps the
+dev server (5173) and the preview (4173) for live viewing, while CI owns the
+build, unit, browser and visual evidence. `test:e2e:gate` keeps behaviour
+coverage and leaves the nine heaviest specs to CI; `test:e2e:local` leaves out
+the `-linux` visual baselines and the runtime-performance budgets because
+neither can be judged outside CI. `pnpm ui:audit` walks the twelve real routes
+(including `/kidung/1` and the three settings sections) across
 320/360/390/414/768/1440 px in the light and dark themes, reporting document
 overflow, clipped text and overlapping top-bar controls; deliberate
 `pnpm ui:boxes` walks the same routes and reports any rounded, framed or filled
