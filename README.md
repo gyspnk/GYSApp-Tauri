@@ -136,10 +136,10 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 
 ```sh
 GYS_E2E_PREBUILT=1 pnpm test:loop          # seconds: docs ~1.5s, one spec ~12s, otherwise core
-GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 87 tests, ~3.4 min, before committing
+GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 102 tests, ~3-5 min, before committing
 GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
 GYS_E2E_PREBUILT=1 pnpm test:e2e:gate      # 480 behaviour tests, ~22 min (option B)
-GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 766 tests, ~35 min, run it as a background job
+GYS_E2E_PREBUILT=1 pnpm test:e2e:local     # 796 tests, ~36 min, run it as a background job
 pnpm preview                              # terminal 1, serves 4173 for the browser runs
 pnpm test:e2e:shards --shards 2 --workers 2   # full suite as parallel shards
 pnpm test:e2e:durations /tmp/e2e.json     # rank specs/tests from a JSON report

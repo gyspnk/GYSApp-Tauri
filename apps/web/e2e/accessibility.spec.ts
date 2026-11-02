@@ -827,7 +827,9 @@ for (const theme of ["dark", "sepia", "amoled"]) {
 const THEME_ROUTES = [
   "/",
   "/bible",
+  "/bible/kejadian/1",
   "/kidung",
+  "/kidung/hymn-001",
   "/suara",
   "/iman",
   "/literatur",
@@ -835,7 +837,7 @@ const THEME_ROUTES = [
   "/lainnya?section=appearance",
 ];
 
-for (const theme of ["dark", "sepia", "amoled"]) {
+for (const theme of ["light", "dark", "sepia", "amoled"]) {
   test(`${theme} keeps every audited route free of axe violations`, async ({
     page,
   }) => {

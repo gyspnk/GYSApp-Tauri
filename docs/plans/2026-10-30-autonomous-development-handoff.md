@@ -167,7 +167,7 @@ identik.
 | `pnpm format:check`       | PASS           | seluruh repo, termasuk 11 berkas yang diubah                      |
 | `pnpm audit --prod`       | PASS           | dijalankan 31 Okt: "No known vulnerabilities found"               |
 | `pnpm native:check`       | NOT RUN        | Rust/Android tidak terpasang di host ini                          |
-| Suite penuh e2e (823 tes) | lihat §4       | `--workers=3 --retries=0` tanpa proses browser lain yang berjalan |
+| Suite penuh e2e (856 tes) | lihat §4       | `--workers=2 --retries=0` tanpa proses browser lain yang berjalan |
 
 Catatan lingkungan yang memengaruhi pembacaan hasil:
 
@@ -1791,11 +1791,12 @@ grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
 Sapuan axe sebelumnya hanya menyentuh tiga rute pada tema sepia dan AMOLED.
 Sekarang `apps/web/e2e/accessibility.spec.ts` menjalankan `wcag2aa` atas
-**delapan rute** (`/`, `/bible`, `/kidung`, `/suara`, `/iman`, `/literatur`,
-`/sauh`, `/lainnya?section=appearance`) untuk **tema gelap, sepia, dan
-AMOLED** — 24 pemuatan. Hasil: **23/23 lulus dalam 3,4 menit**, tanpa
-pelanggaran. Tema terang tetap diperiksa per rute oleh tes yang sudah ada.
-Spesifikasi ini tidak masuk tier core, jadi loop tetap 102 tes.
+**sepuluh rute** (`/`, `/bible`, `/bible/kejadian/1`, `/kidung`,
+`/kidung/hymn-001`, `/suara`, `/iman`, `/literatur`, `/sauh`,
+`/lainnya?section=appearance`) untuk **keempat tema** — 40 pemuatan. Hasil:
+**24/24 lulus dalam 4,2 menit**, tanpa pelanggaran. Spesifikasi ini tidak
+masuk tier core, jadi loop tetap 102 tes; suite penuh kini 856 tes dan profil
+lokal 796 tes.
 
 ### Sorotan pencarian terbaca di tema gelap (1 Nov)
 
