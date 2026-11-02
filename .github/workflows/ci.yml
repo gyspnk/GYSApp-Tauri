@@ -380,7 +380,9 @@ jobs:
   # whenever a UI change is intentional. This manual job uploads fresh
   # screenshots for review instead of committing them blindly.
   update-visual-baselines:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    # A plain dispatch regenerates the baselines; `-f qa=true` only asks for
+    # screenshots and audits, so it must not pay for a second build.
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
