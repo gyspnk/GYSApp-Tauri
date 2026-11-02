@@ -15,7 +15,7 @@ for (const width of [320, 390, 1440]) {
           .getPropertyValue("--blue")
           .trim(),
       ),
-    ).toBe("#0079a8");
+    ).toBe("#00719c");
     await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
     await expect(

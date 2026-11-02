@@ -229,9 +229,11 @@ export function LyricsPanel({
       element.style.lineHeight = String(lineSpacing);
       const parent = element.closest(".lyrics-content") as HTMLElement | null;
       // A narrow sheet wraps long lines long before it runs out of height, so
-      // cap the preferred size instead of letting it shrink line by line.
-      const preferred =
-        element.clientWidth < 520 ? Math.min(fontSize, 22) : fontSize;
+      // cap the *automatic* size instead of letting it shrink line by line. An
+      // explicit choice (the text-size buttons or a pinch) is never capped:
+      // otherwise the controls stop responding past 22 px on a narrow sheet.
+      const narrowSheet = element.clientWidth < 520 && !manualFont.current;
+      const preferred = narrowSheet ? Math.min(fontSize, 22) : fontSize;
       const next = manualFont.current
         ? preferred
         : measureHymnFontFit(

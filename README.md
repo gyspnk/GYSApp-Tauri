@@ -149,7 +149,7 @@ gh run watch <run-id> --exit-status
 
 #   QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
 #   card-in-card and alignment audits, published as artifacts.
-gh workflow run ci.yml --ref codex/autonomous-hardening-20261030 -f qa=true \
+gh workflow run ci.yml --ref main -f qa=true \
   -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
 gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits

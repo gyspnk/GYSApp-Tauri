@@ -72,11 +72,16 @@ for (const width of [320, 390, 768, 1440]) {
         (await player.boundingBox())!.y,
       );
     }
+    // The sheet is a stacked list of rows now: every action keeps its own
+    // full-width row instead of a five-track grid.
     expect(
       await menu.evaluate(
-        (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length,
+        (el) =>
+          [...el.children].filter(
+            (child) => child.getBoundingClientRect().height > 0,
+          ).length,
       ),
-    ).toBe(5);
+    ).toBeGreaterThanOrEqual(5);
     if ([390, 768, 1440].includes(width)) {
       await page.screenshot({ path: `/tmp/gys-kidung-simple-${width}.png` });
     }

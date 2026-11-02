@@ -5,7 +5,7 @@ import {
 } from "./pinned-reader-fixtures.js";
 
 for (const width of [320, 390, 768, 1440]) {
-  test(`Kidung menu and MIDI dock use at most two control rows at ${width}px`, async ({
+  test(`Kidung sheet and MIDI dock stay compact at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 844 });
@@ -28,19 +28,36 @@ for (const width of [320, 390, 768, 1440]) {
         return values.length;
       });
     await page.locator(".hymn-more-actions-summary").click();
-    const menuControls =
-      ".hymn-more-actions-panel > button, .hymn-reader-settings-summary, .hymn-segmented-toolbar button";
-    const positions = await page.locator(menuControls).evaluateAll((els) =>
-      els.map((el) => ({
-        name: el.getAttribute("aria-label") || el.textContent,
-        y: el.getBoundingClientRect().y,
-        h: el.getBoundingClientRect().height,
-      })),
+    // The reader sheet is a stacked list: one row per action, no nested card
+    // and no wider-than-viewport row.
+    const sheet = page.locator(".hymn-more-actions-panel");
+    await expect(sheet).toBeVisible();
+    const sheetBox = await sheet.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        top: r.top,
+        bottom: r.bottom,
+        viewport: innerHeight,
+        overflow: el.scrollWidth - el.clientWidth,
+      };
+    });
+    expect(sheetBox.top).toBeGreaterThanOrEqual(0);
+    expect(sheetBox.bottom).toBeLessThanOrEqual(sheetBox.viewport);
+    expect(sheetBox.overflow).toBeLessThanOrEqual(1);
+    const positions = await sheet.locator(":scope > *").evaluateAll((els) =>
+      els
+        .map((el) => ({
+          name: el.getAttribute("aria-label") || el.textContent,
+          y: Math.round(el.getBoundingClientRect().y),
+          h: Math.round(el.getBoundingClientRect().height),
+        }))
+        .filter((row) => row.h > 0),
     );
+    expect(positions.length).toBeGreaterThanOrEqual(4);
     expect(
-      await rows(menuControls),
+      positions.every((row) => row.h >= 32),
       JSON.stringify(positions),
-    ).toBeLessThanOrEqual(2);
+    ).toBe(true);
     const menuOffset = await page
       .locator(".hymn-more-actions-panel")
       .evaluate((panel) => {

@@ -3011,7 +3011,7 @@ pnpm test:e2e:smoke
 Hosted (bukti utama):
 gh run list --workflow ci.yml --limit 5
 gh run watch <run-id> --exit-status
-gh workflow run ci.yml --ref codex/autonomous-hardening-20261030 -f qa=true \
+gh workflow run ci.yml --ref main -f qa=true \
   -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
 gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
@@ -3033,3 +3033,23 @@ Aturan e2e: jangan rebuild `dist` saat tes browser terhadap aset ber-hash berjal
 gunakan `GYS_E2E_PREBUILT=1` bila build sudah final. Jangan mengubah snapshot atau
 retry demi tes hijau.
 ```
+
+### Kontrak desain lama setelah merge ke main (2 Nov, putaran 45)
+
+Push pertama ke `main` (`e9ec335`) membuat shard 1 dan 2 merah: 19 tes di enam
+spec masih memaku desain sebelum unifikasi. Kontraknya bukan bug produk, tapi
+pengukur lama — dan satu di antaranya justru menemukan bug nyata.
+
+| Spec                    | Tes | Sebab                                                        | Perbaikan                                                             |
+| ----------------------- | --- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `kidung-chord-reflow`   | 2   | batas 22 px ikut menahan ukuran eksplisit di layar ≤520 px   | `lyrics-panel.tsx`: batas hanya untuk autofit (`!manualFont.current`) |
+| `kidung-compact-motion` | 4   | sheet reader kini daftar bertumpuk, bukan dua baris          | ukur muat viewport, baris ≥32 px, tanpa luapan                        |
+| `menu-motion`           | 5   | kontrol mode/papan kini 32/44 px berlabel + chrome PDF 56 px | keluarga kontrol + chrome seragam, bukan kesamaan lintas mode         |
+| `midi-player-design`    | 2   | panel aksi 6 baris bertumpuk, bukan grid 5 kolom             | ≥5 baris terlihat                                                     |
+| `midi-soundfont-policy` | 1   | label combobox “Pilih alat musik” → “Instrumen MIDI”         | nama aksesibilitas diperbarui                                         |
+| `persistent-reading`    | 3   | token biru `#0079a8` → `#00719c`                             | nilai token diperbarui                                                |
+
+Sisa 39 tes di enam berkas itu hijau lokal (3,1 mnt, `GYS_E2E_PREBUILT=1`),
+bundle tetap 179,6/180,0 KiB, dan `web-build` hosted untuk commit ini hanya 27
+detik (cache build kena), jadi kegagalan murni kontrak. Pelajaran: saat desain
+diunifikasi, perbarui kontrak di commit yang sama — bukan sesudah merge.

@@ -26,7 +26,7 @@ test("every instrument control migrates file-program defaults to the selected So
   expect(await options()).toBe(0);
   const instrument = page
     .locator(".lyrics-panel")
-    .getByRole("combobox", { name: "Pilih alat musik", exact: true });
+    .getByRole("combobox", { name: "Instrumen MIDI", exact: true });
   await expect(instrument).toContainText("Acoustic Grand Piano");
   await instrument.click();
   await expect(
