@@ -2912,6 +2912,41 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 59 — Beranda: ruang kesaksian, dan pergeseran yang bukan dari tinggi (2 Nov)
+
+CLS beranda hosted (390×844, dua run) **0,0845**, seluruhnya satu pergeseran
+pada `home-media-section home-suara-section`. Pengukuran tinggi bagian itu
+sebelum dan sesudah rak kesaksian datang menunjukkan **346 px pada kedua
+keadaan**, jadi aturan cadangan di `apps/web/src/styles/01-foundations-and-layout.css`
+
+```css
+.home-suara-section:has(> .loading-panel) {
+  min-height: 329px;
+}
+@media (max-width: 1023px) {
+  .home-suara-section:has(> .loading-panel) {
+    min-height: 384px;
+  }
+}
+@media (max-width: 599px) {
+  .home-suara-section:has(> .loading-panel) {
+    min-height: 346px;
+  }
+}
+```
+
+memang menghapus lompatan spinner→rak (233 → 346 px), tetapi CLS hosted **tidak
+berubah** karena pergeseran dominan bukan tinggi internal: entri `layout-shift`
+mencatat node yang sama berpindah dari `y=611 h=233` ke `y=0 h=0`, yaitu node
+bagian itu **diganti saat boot** (konten beranda dipasang setelah paint awal),
+bukan tumbuh dari spinner.
+
+Keputusan: aturan cadangan tetap dipakai (mencegah lompatan 113 px di jaringan
+lambat), dan penyebab sisa pergeseran dicatat sebagai pekerjaan berikutnya —
+reservasi seluruh tinggi konten boot atau pemasangan bertahap yang tidak
+mengganti node. Angka: `pnpm verify:bundle` tetap **162,5 KiB / 24 modul**;
+`e2e-selective` pada push `8e42802` **2m52s** (jalur sapuan layout, hijau).
+
 ### Putaran 58 — Skor cetak dipanaskan saat idle, build pindah ke job browser (2 Nov)
 
 Membuka PDF pada bacaan Kidung masih **679 ms** (dingin, 390×844) karena chunk
