@@ -3064,6 +3064,32 @@ Verifikasi: `@gys/web` **539/539 unit (13,0 dtk)**; boot nyata di preview 4173
 180 KiB. Catatan: `App` sengaja tetap impor statis — versi dinamis membuat
 meteran bundle hanya menghitung chunk entry dan menyembunyikan biaya nyata.
 
+### Push main memakai jalur selektif; suite penuh tiap malam (2 Nov, putaran 46)
+
+Pemilik: “Saat waiting run per shardnya sangat lambat, formulasikan cara dan
+optimisasi lebih lanjut agar test dan CI bisa jauh lebih cepat”. Shard penuh
+memang jalur termahal: run `41380071830` wall **12,7 mnt** dengan shard
+11,3 / 6,9 / 7,6 mnt, sementara PR selektif hanya **3,0 mnt** dan push
+docs/tooling **0,5 mnt**.
+
+Kebijakan baru di `.github/workflows/ci.yml`:
+
+- **Push biasa ke `main` memakai `e2e-selective`** (spec yang terpengaruh rentang
+  push), bukan 856 tes. `GYS_E2E_BASE` = `github.event.before`,
+  `GYS_E2E_HEAD` = `github.sha`.
+- **Shard penuh** hanya untuk jadwal malam (`0 18 * * *`), label `full-ci`, atau
+  dispatch rilis (dispatch `-f qa=true` tetap hanya screenshot/audit).
+- **Anggaran navigasi mingguan** tetap di cron Senin `0 3 * * 1`; jadwal malam
+  tidak menjalankannya.
+- Gerbang hash pohon tetap: bila isi pohon sudah pernah hijau, jalur browser
+  dilewati dengan menyebut run lama; marker disimpan setelah jalur hijau.
+
+| Jalur                          | Sebelum                               | Sesudah                                                |
+| ------------------------------ | ------------------------------------- | ------------------------------------------------------ |
+| Push `main` yang menyentuh web | 4 shard, **12,7 mnt** (`41380071830`) | selektif, target < 3 mnt (diukur pada push berikutnya) |
+| Push docs/tooling              | 0,5 mnt (`41381475091`)               | 0,5 mnt                                                |
+| Cakupan penuh                  | setiap push main                      | nightly 18:00 UTC + label `full-ci` + dispatch rilis   |
+
 ### Kontrak desain lama setelah merge ke main (2 Nov, putaran 45)
 
 Push pertama ke `main` (`e9ec335`) membuat shard 1 dan 2 merah: 19 tes di enam

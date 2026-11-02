@@ -145,8 +145,10 @@ pnpm build                                 # refresh dist so the preview shows t
 
 # Heavy verification runs in GitHub Actions, not here.
 #   CI (on every push/PR): changes, verify (docs/format/audit/secret scan),
-#     web-build (build + unit/policy suites + bundle budget), selective or full
-#     browser shards, weekly navigation budgets.
+#     web-build (build + unit/policy suites + bundle budget), the selective
+#     browser contracts the range can affect; the complete 856-test suite runs
+#     nightly, on a `full-ci` label and on a release dispatch; navigation
+#     budgets run weekly.
 gh run list --workflow ci.yml --limit 5
 gh run watch <run-id> --exit-status
 

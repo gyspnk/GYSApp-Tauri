@@ -25,7 +25,10 @@ on:
   # hosted two-core runners cannot meet 1s/250ms, and a permanently red main
   # hides real regressions. The thresholds themselves are unchanged.
   schedule:
+    # Weekly navigation budgets, and a nightly full browser suite so main keeps
+    # a complete, dated proof while ordinary pushes stay on the selective path.
     - cron: "0 3 * * 1"
+    - cron: "0 18 * * *"
 
 permissions:
   contents: read
@@ -236,9 +239,10 @@ jobs:
   # synchronize event supplies the prior head SHA, so ordinary pushes exercise
   # only the changed surface. Open/reopened draft PRs fall back to the PR base.
   e2e-selective:
-    # Every pull-request push (draft or ready) runs only the specs the pushed
-    # range can affect; add the `full-ci` label to force the full shards.
-    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
+    # Every routine push — a pull request or a direct `main` push — runs only
+    # the specs its range can affect. The full shards stay for the nightly
+    # schedule, a `full-ci` label and the release dispatch.
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -268,11 +272,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
-      - name: Run browser contracts affected by this draft update
+      - name: Run the browser contracts this range can affect
         env:
           GYS_E2E_PREBUILT: "1"
-          GYS_E2E_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
-          GYS_E2E_HEAD: ${{ github.event.pull_request.head.sha }}
+          GYS_E2E_BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          GYS_E2E_HEAD: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
         run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
       - name: Upload selective browser diagnostics on failure
         if: ${{ failure() || cancelled() }}
@@ -291,11 +295,10 @@ jobs:
           retention-days: 7
 
   e2e-shard:
-    # The full suite runs on main pushes that can change a browser surface, or
-    # on a pull request explicitly labelled `full-ci`. Ordinary PR pushes stay
-    # on the selective path, and a docs/tooling-only push skips the 856 tests
-    # because `changes` already proved no web manifest moved.
-    if: ${{ ((github.event_name == 'push' && needs.changes.outputs.web == 'true') || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
+    # The whole 856-test suite belongs to the nightly schedule, a `full-ci`
+    # labelled pull request, or a manual dispatch (the QA-only dispatch has its
+    # own job). Ordinary pushes use the selective path.
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -360,8 +363,8 @@ jobs:
     steps:
       - name: Require the applicable browser verification path to pass
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "Manual/scheduled run: browser shards are not part of this workflow."
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" = "true" ]; then
+            echo "QA-only dispatch: screenshots and audits, no browser suite."
             exit 0
           fi
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ needs.changes.outputs.web }}" != "true" ]; then
@@ -406,7 +409,7 @@ jobs:
   # hand). Hosted pull-request runners cannot meet them — the same two cases
   # fail on the 8-core ARM host — so they no longer turn every PR shard red.
   perf-budget:
-    if: ${{ github.event_name == 'schedule' && needs.changes.outputs.web == 'true' }}
+    if: ${{ github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1' && needs.changes.outputs.web == 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
