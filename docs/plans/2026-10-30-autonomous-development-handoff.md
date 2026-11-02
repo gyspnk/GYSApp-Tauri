@@ -3161,3 +3161,17 @@ Bukti hosted ini menggantikan klaim lokal untuk desain dock. Yang **belum**
 dibuktikan hosted: panel lanjutan desktop dalam keadaan terbuka, karena QA
 masih memotret keadaan diam ditambah satu langkah klik; menambah langkah
 `steps` berikutnya adalah tuas termurah untuk itu.
+
+### Putaran 51 — Sakelar cakupan pembaca mengisi barisnya (2 Nov)
+
+Potret hosted `41448821784` memperlihatkan cacat yang tidak terlihat dari spec:
+segmented “Semua | Bait 1” di menu pembaca hanya **115 px** di dalam baris
+**306 px**, menyisakan ~191 px kosong sebelum chevron.
+
+Perbaikan `apps/web/src/app-design.css` (≥900 px): baris opsi `display:flex`,
+grup scope `flex:1 1 auto`, tombol `flex:1 1 0` + label terpusat. Diukur lokal:
+grup **115 → 258 px**, tombol **57/52 → 126/126 px**, celah kosong **0**.
+
+Bukti hosted: QA `41451539435` **success 2,7 mnt**, **52 PNG**, audit overflow
+**96/0**, box **48/0**, consistency **44/0**; `kidung-reader-options-1440-light.png`
+dari artefak memperlihatkan sakelar penuh selebar baris.
