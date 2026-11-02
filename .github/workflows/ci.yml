@@ -291,18 +291,21 @@ jobs:
           retention-days: 7
 
   e2e-shard:
-    # The full suite runs on main pushes, or on a pull request explicitly
-    # labelled `full-ci`; ordinary PR pushes stay on the selective path.
-    if: ${{ (github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
+    # The full suite runs on main pushes that can change a browser surface, or
+    # on a pull request explicitly labelled `full-ci`. Ordinary PR pushes stay
+    # on the selective path, and a docs/tooling-only push skips the 856 tests
+    # because `changes` already proved no web manifest moved.
+    if: ${{ ((github.event_name == 'push' && needs.changes.outputs.web == 'true') || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        # Three machines keep the full suite below the job budget even
-        # when cold PDF/audio work contends on the hosted two-core runners.
-        shard: [1, 2, 3]
+        # Four machines: the three-shard run measured 11.3 / 6.9 / 7.6 minutes
+        # (Playwright splits by test order, not by duration), so one more shard
+        # trims the critical path without changing the suite.
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -326,10 +329,10 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
-      - name: Run full browser shard ${{ matrix.shard }}/3
+      - name: Run full browser shard ${{ matrix.shard }}/4
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test --config=playwright.ci.config.ts --shard=${{ matrix.shard }}/3
+        run: pnpm --filter @gys/web exec playwright test --config=playwright.ci.config.ts --shard=${{ matrix.shard }}/4
       - name: Upload shard diagnostics on failure
         if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@v4
@@ -359,6 +362,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
             echo "Manual/scheduled run: browser shards are not part of this workflow."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ needs.changes.outputs.web }}" != "true" ]; then
+            echo "Docs or tooling only: this push cannot change a browser surface."
             exit 0
           fi
           if [ "${{ needs.changes.outputs.verified }}" = "true" ]; then
