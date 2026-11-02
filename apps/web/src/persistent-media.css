@@ -211,13 +211,21 @@
 }
 
 /* Dock refinement: one calm surface instead of a stretched bar. The panel keeps
-   a readable measure on desktop and drops the redundant collapse control on
-   phones, where the close button is the only exit needed. */
+   a readable measure on desktop; both exit controls stay visible because the
+   specs (and thumbs) rely on them. */
 @media (min-width: 900px) {
   .media-surface.persistent-media.is-kidung-media:not(.is-minimized),
   .media-surface.persistent-media.is-speech-media:not(.is-minimized) {
     max-width: min(760px, calc(100vw - 48px));
     margin-inline: auto;
+  }
+  /* The reader header already names the hymn at this width, so repeating it
+     inside the dock only steals room from the seek bar. */
+  .media-surface.persistent-media.is-kidung-media:not(.is-minimized)
+    .media-context-link,
+  .media-surface.persistent-media.is-speech-media:not(.is-minimized)
+    .media-context-link {
+    display: none;
   }
 }
 .persistent-media:not(.is-minimized) .media-meta strong,
