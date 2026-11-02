@@ -2863,6 +2863,38 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625`       | dispatch regenerasi baseline                                                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672`       | selektif dipecah dua shard                                                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 58 — Skor cetak dipanaskan saat idle, build pindah ke job browser (2 Nov)
+
+Membuka PDF pada bacaan Kidung masih **679 ms** (dingin, 390×844) karena chunk
+`pdf-*.js` baru diunduh saat tombol PDF ditekan. Pembaca mode teks hampir selalu
+menawarkan skor cetak berikutnya, jadi chunk itu sekarang dipanaskan saat
+halaman idle:
+
+- `apps/web/src/kidung.tsx` menambahkan efek `setTimeout(..., 400)` yang memanggil
+  `preloadPdfReader()` hanya bila kidung punya `pdfPath`, mode bukan `pdf`, dan
+  `navigator.connection.saveData` tidak aktif; timer dibersihkan saat unmount
+  atau saat mode berubah.
+- Chunk tetap deferred: `pdf-1dWYccGJ.js` **11,2 KiB gzip** (36,6 KiB mentah),
+  total bundel **162,5 KiB / 24 modul** dari batas 180 KiB.
+
+| Kondisi (390×844, klik → kanvas PDF) | Sebelum | Sesudah                                                    |
+| ------------------------------------ | ------- | ---------------------------------------------------------- |
+| Klik 300 ms setelah bacaan tampil    | 679 ms  | 865 ms (masih dingin)                                      |
+| Klik 500 ms                          | 679 ms  | **116 ms**                                                 |
+| Klik 800 ms                          | 679 ms  | **94–103 ms** (4 run; satu outlier 5,9 dtk tidak berulang) |
+| Klik 1,2–2 dtk                       | 679 ms  | 97–139 ms                                                  |
+
+Satu outlier **5.899 ms** sempat muncul di run pertama setelah timer dipindah ke
+400 ms; empat pengulangan berikutnya 100/324/94/103 ms, jadi angka itu dicatat
+sebagai stall fetch sesaat, bukan cacat desain.
+
+Jalur selektif juga berhenti menunggu artefak: `e2e-selective` sekarang
+memulihkan cache build ber-hash pohon yang sama dan membangun sendiri hanya
+saat cache meleset, sedangkan `web-build` hanya berjalan ketika artefaknya
+benar-benar dipakai (shard malam, dispatch rilis, PR `full-ci`). Pemeriksaan
+`verify:bundle` ikut pindah ke job selektif supaya anggaran bundel tetap
+terjaga di setiap push web. Pengukuran wall time-nya menyusul di push ini juga.
+
 ### Putaran 57 — Ukur di host idle, katalog mengalah saat mengetik (2 Nov)
 
 Dua pelajaran pengukuran:
