@@ -5356,3 +5356,24 @@ body:has(.hymn-detail-page.is-text-viewer)
     color: var(--on-accent);
   }
 }
+
+/* The scope switch shares its row with the expand chevron, so it stretches and
+   splits evenly instead of hugging two short labels and leaving a gap. */
+@media (min-width: 900px) {
+  .hymn-more-actions-panel .hymn-segmented-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hymn-more-actions-panel .hymn-segmented-toolbar > .hymn-scope-pill-group {
+    flex: 1 1 auto;
+  }
+
+  .hymn-more-actions-panel .hymn-scope-pill-group .hymn-scope-pill-btn {
+    flex: 1 1 0;
+    /* Each half is a wide field now, so the label sits in its middle. */
+    justify-content: center;
+    text-align: center;
+  }
+}
