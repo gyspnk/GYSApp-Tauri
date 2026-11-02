@@ -5,8 +5,9 @@
 **Repo:** https://github.com/gyspnk/GYSApp-Tauri — branch `main`.
 **HEAD saat rencana ini dimulai:** `37ffbd03869447d583771a0a045c0badeb14e2ca`
 (identik dengan snapshot handoff 30 Oktober 2026).
-**Branch kerja sesi ini:** `codex/autonomous-hardening-20261030` (lokal, belum
-di-push; `main` tidak disentuh).
+**Branch kerja:** `main` — sejak 2 Nov 2026 PR #11 di-merge (`b9e680a`) dan
+seluruh pekerjaan lanjut langsung di `main` (commit + push tiap siklus, tanpa
+branch/PR terpisah). Branch `codex/autonomous-hardening-20261030` diarsipkan.
 
 Dokumen ini adalah **satu-satunya** catatan status, keputusan dan antrean kerja
 otonom untuk pengembangan lanjutan. Rencana historis di `docs/plans/`,
@@ -21,7 +22,7 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 
 | Bidang                     | Status pada 30 Oktober 2026 (sesi ini)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Git/worktree               | `main` pada `37ffbd0`; sesi lanjutan ini bekerja dari clone bersih `codex/autonomous-hardening-20261030` (HEAD awal `20de439`, 17 commit di atas `main`). `main` tidak disentuh; setiap siklus di-commit dan di-push.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Git/worktree               | `main` (merge PR #11 `b9e680a`); pekerjaan langsung di `main`, commit + push tiap siklus. Branch `codex/autonomous-hardening-20261030` diarsipkan.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Toolchain                  | Host sesi lanjutan: **Linux aarch64**, Node `v26.12.1`, pnpm `11.21.0` (dipasang via npm; corepack tidak tersedia), Playwright `1.62.1` + Chromium `151.0.7922.34` (unduhan + lib sistem Arch ARM). `apps/web/.env.local` **tidak ada** di clone ini, jadi tes unit deterministik.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Dev server 5173            | **AKTIF** di `http://127.0.0.1:5173/` dengan `VITE_BFF_BASE_URL` Worker hosted (env proses, bukan `.env.local`). Probe 4 route: `boot=ready`, 0 gambar rusak, 0 overflow; satu-satunya 403 adalah tombol GIS (origin tak terdaftar). Dipakai pemilik untuk preview tiap perubahan.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Preview produksi 4173      | **AKTIF** di `http://127.0.0.1:4173/GYSApp-Tauri/` (dist tanpa env BFF); dipakai seluruh e2e.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -38,7 +39,7 @@ installer bertanda tangan. Yang belum dijalankan ditulis **NOT RUN**.
 | Baseline performa pengguna | SEBAGIAN: bundle terukur; hero Beranda cold 5,3 s / warm 0,49 s (B-05, MEASURED). Belum ada median/p95 startup berulang seperti audit 2026-10-11.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Perbaikan siklus 11        | Grup More dikembalikan ke **collapsed** + reveal deep link dari React (bug 768/1440); grid kontrol Kidung `max-content` (12 px sel mati); kontras label akun `--navy`; landmark Diagnostik unik; live region pencarian persisten; delapan kontrak e2e basi (dock, tempo, split view, chord, literatur, nav) diperbarui.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Blocker eksternal          | Konfirmasi pesan WhatsApp nyata, langkah kredensial Apple, akun e-GYS nyata, deploy Worker (termasuk endpoint `suara-sejati` yang menggantung), signing, perangkat fisik — **BELUM diverifikasi**; rincian bukti di 2.5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| CI (GitHub Actions)        | **Gate utama sejak 2 Nov** (beban berat pindah ke hosted). `ci.yml`: changes, verify, web-build + unit + bundle, e2e selektif/shard, perf mingguan, baseline manual; job `qa-artifacts` (dispatch `-f qa=true`) membuat screenshot rute × tema dan tiga audit UI. Lokal hanya dev 5173 + preview 4173 untuk melihat perubahan. Baseline PR selektif `41368310260` wall 3,0 mnt. PR **#11** tetap terbuka; **jangan merge sendiri**.                                                                                                                                                                                                                                                                                                   |
+| CI (GitHub Actions)        | **Gate utama sejak 2 Nov** (beban berat pindah ke hosted). `ci.yml`: changes, verify, web-build + unit + bundle, e2e selektif/shard, perf mingguan, baseline manual; job `qa-artifacts` (dispatch `-f qa=true`) membuat screenshot rute × tema dan tiga audit UI. Lokal hanya dev 5173 + preview 4173 untuk melihat perubahan. Baseline PR selektif `41368310260` wall 3,0 mnt. Tree yang sudah lolos verifikasi dilewati lewat cache `verified-tree-<hash>`; job browser menyebut run lama sebagai bukti.                                                                                                                                                                                                                            |
 
 ## 2. Baseline terukur (30 Oktober 2026)
 
@@ -2870,6 +2871,28 @@ Baseline visual `-linux` untuk perubahan ini diadopsi dari artefak
 `visual-baselines-41370712244`: tepat tiga snapshot `faith-catalog`
 (1920/1440/1024) berubah, 146 lainnya byte-identik.
 
+### Gerbang “tree ini sudah diverifikasi” (2 Nov 2026)
+
+Pemilik meminta verifikasi yang sama tidak diulang. `ci.yml` sekarang menghitung
+hash isi pohon (`git ls-tree -r HEAD | sha256sum`) di job `changes`. Bila cache
+`verified-tree-<hash>` berisi penanda `.ci/verified/ok` (`<run-id> <sha>`), job
+`e2e-selective` dan `e2e-shard` dilewati dan job `e2e` keluar 0 dengan menyebut
+run yang lebih dulu memverifikasi pohon itu — bukan “hijau” tanpa bukti.
+Sebaliknya, setelah job browser sukses, penanda itu ditulis lalu disimpan dengan
+`actions/cache/save`, sehingga push berikutnya yang isinya identik (commit
+dokumen, re-run, merge tanpa perubahan isi) tidak mengulang suite.
+
+Alasannya: build cache + artefak sudah ada, tetapi verifikasi browser tetap
+dijalankan penuh untuk setiap push. Dengan penanda ini verifikasi hanya
+mengulang saat isi pohon benar-benar berubah.
+
+| Tanggal | Run           | Perubahan                  | Wall                      |
+| ------- | ------------- | -------------------------- | ------------------------- |
+| 2 Nov   | `41368310260` | baseline PR selektif       | 3,0 mnt                   |
+| 2 Nov   | `41370712244` | `qa-artifacts` (serial)    | 8m32s                     |
+| 2 Nov   | `41373429560` | screenshot + audit paralel | 4m14s                     |
+| 2 Nov   | —             | gerbang `verified-tree`    | menunggu run main pertama |
+
 ## 7. Prompt handoff untuk sesi berikutnya
 
 Tempelkan blok berikut sebagai pesan pertama di sesi baru. Isinya lengkap dan tidak
@@ -2883,11 +2906,11 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 
 ## Keadaan repo saat handoff
 - Remote: https://github.com/gyspnk/GYSApp-Tauri (branch default `main`, dilindungi).
-- Branch kerja: `codex/autonomous-hardening-20261030` (sudah di-push; HEAD = commit
-  dokumen ini, worktree bersih, lokal == remote). Commit kode terakhir: `b9a6e6c`
-  (produk) dan `e83b588` (kontrak e2e).
+- Branch kerja: `main` (HEAD = commit dokumen ini, worktree bersih, lokal ==
+  remote). Sejak 2 Nov 2026 semua commit langsung ke `main`.
 - PR: #11 "Autonomous hardening: local gates, WhatsApp diagnostics, search index,
-  a11y" (status ready-for-review; JANGAN merge sendiri).
+  a11y" sudah di-merge ke `main` (`b9e680a`); tidak ada PR baru untuk pekerjaan
+  lanjutan.
 - 19 commit sejak 37ffbd0: gate tes lokal, watcher Windows, format gate, kunci i18n
   mati; toleransi+diagnostik tracking WhatsApp; notice kedaluwarsa WhatsApp; indeks
   pencarian tidak lagi menunggu Worker; target sentuh tautan kembali; panel
@@ -2909,10 +2932,11 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
 - `cargo`/Java TIDAK terpasang; native check/packaging butuh mesin lain.
 
 ## Kebijakan pemilik (berlaku)
-1. Uji penuh dan build berat dijalankan LOKAL di perangkat pemilik yang lebih kuat.
-   GitHub Actions tidak lagi menjadi gate; jangan menghabiskan waktu mengejar CI.
-2. Setiap perubahan harus ter-commit dan ter-push ke branch kerja; `main` tidak
-   disentuh, tidak ada merge/force-push.
+1. Verifikasi berat (browser, build, visual, audit, perf) dijalankan di GitHub
+   Actions — gate utama sejak 2 Nov 2026. Perangkat ini hanya menjalankan
+   `pnpm test:loop` dan server tampilan (dev 5173, preview 4173).
+2. Setiap perubahan harus ter-commit dan ter-push langsung ke `main` (tanpa
+   branch/PR terpisah pada 2 Nov 2026). Jangan `force-push` ke `main`.
 3. Jangan pernah `reset --hard`, `clean -fd`, atau menghapus pekerjaan pengguna.
 4. Iterasi kecil dan terukur; pertahankan semua fitur lama dan kontrak offline/PDF.
 5. Kejujuran bukti: bedakan unit, mocked, browser lokal, hosted Worker, native,
