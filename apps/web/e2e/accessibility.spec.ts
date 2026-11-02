@@ -824,18 +824,29 @@ for (const theme of ["dark", "sepia", "amoled"]) {
   });
 }
 
-for (const theme of ["sepia", "amoled"]) {
+const THEME_ROUTES = [
+  "/",
+  "/bible",
+  "/kidung",
+  "/suara",
+  "/iman",
+  "/literatur",
+  "/sauh",
+  "/lainnya?section=appearance",
+];
+
+for (const theme of ["dark", "sepia", "amoled"]) {
   test(`${theme} keeps every audited route free of axe violations`, async ({
     page,
   }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     await page.addInitScript((value) => {
       window.localStorage.setItem(
         "gys-shell-settings-v1",
         JSON.stringify({ version: 1, locale: "id", theme: value }),
       );
     }, theme);
-    for (const route of ["/", "/kidung", "/lainnya?section=appearance"]) {
+    for (const route of THEME_ROUTES) {
       await page.goto(`/GYSApp-Tauri${route}`);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await page.waitForTimeout(900);

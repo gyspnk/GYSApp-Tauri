@@ -1787,6 +1787,16 @@ diperluas ke **1024 px** sehingga lima breakpoint (320/390/768/1024/1440) diuji 
 CI (`41337987567`, 149 berkas) dibandingkan byte-per-byte: **0 perbedaan** karena
 grup “Musik & chord” tertutup di snapshot; bundle tetap **179,6/180,0 KiB**.
 
+### Sapuan axe untuk setiap tema (2 Nov)
+
+Sapuan axe sebelumnya hanya menyentuh tiga rute pada tema sepia dan AMOLED.
+Sekarang `apps/web/e2e/accessibility.spec.ts` menjalankan `wcag2aa` atas
+**delapan rute** (`/`, `/bible`, `/kidung`, `/suara`, `/iman`, `/literatur`,
+`/sauh`, `/lainnya?section=appearance`) untuk **tema gelap, sepia, dan
+AMOLED** — 24 pemuatan. Hasil: **23/23 lulus dalam 3,4 menit**, tanpa
+pelanggaran. Tema terang tetap diperiksa per rute oleh tes yang sudah ada.
+Spesifikasi ini tidak masuk tier core, jadi loop tetap 102 tes.
+
 ### Sorotan pencarian terbaca di tema gelap (1 Nov)
 
 `mark` pada ayat memakai `color-mix(#f4d35e 50%, transparent)` dengan
