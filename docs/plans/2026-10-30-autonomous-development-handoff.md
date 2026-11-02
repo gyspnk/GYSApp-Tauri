@@ -3195,3 +3195,12 @@ audit overflow **192/0**, kotak bersarang **96/0**, konsistensi **88/0**.
 Ditinjau dari artefak: `kidung-reader-midi-1440-{sepia,amoled}` (seek lega,
 tanpa judul ganda), `beranda-1440-sepia` (rail 224 px, baris aktif cokelat
 dengan teks terang).
+
+### Putaran 53 — Dialog ikut tertangkap QA (2 Nov)
+
+`apps/web/scripts/ui-screenshots.mjs` kini mencatat tangkapan langkah
+(`steps`) ke `manifest.json` beserta `overflow` masing-masing, dan rute
+`beranda` membuka dialog pencarian global sebagai langkah
+`pencarian-global`. Validasi lokal 390 light: **11 rute + 3 langkah**, semua
+`overflow: 0`; tangkapan dialog memperlihatkan scrim, input fokus, dan status
+“Ketik minimal 2 karakter” di atas halaman yang meredup.

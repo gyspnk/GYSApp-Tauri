@@ -22,7 +22,18 @@ const locale = process.env.SHOT_LOCALE ?? "id";
 const settleMs = Number(process.env.SHOT_SETTLE_MS ?? "900");
 
 const routes = [
-  { slug: "beranda", path: "/", marker: ".home-page" },
+  {
+    slug: "beranda",
+    path: "/",
+    marker: ".home-page",
+    steps: [
+      {
+        slug: "pencarian-global",
+        click: ".search-trigger",
+        wait: ".global-search",
+      },
+    ],
+  },
   { slug: "sauh", path: "/sauh", marker: ".sauh-page, .online-content-page" },
   // The reader opens on Kejadian 1; there is no chapter deep link.
   { slug: "alkitab", path: "/bible", marker: ".verse-text" },
@@ -147,6 +158,7 @@ async function capture(browser) {
           caret: "hide",
         });
       await shot(file);
+      const stepShots = [];
       for (const step of route.steps ?? []) {
         await page.locator(step.click).first().click({ timeout: 15_000 });
         await page
@@ -155,7 +167,15 @@ async function capture(browser) {
           .waitFor({ state: "visible", timeout: 30_000 });
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(400);
-        await shot(`${step.slug}-${width}-${theme}.png`);
+        const name = `${step.slug}-${width}-${theme}.png`;
+        await shot(name);
+        const stepOverflow = await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        );
+        if (stepOverflow > 0) failures += 1;
+        stepShots.push({ file: name, overflow: stepOverflow });
       }
       const overflow = metrics.scrollWidth - metrics.clientWidth;
       if (overflow > 0) failures += 1;
@@ -167,6 +187,7 @@ async function capture(browser) {
         theme,
         overflow,
         ...metrics,
+        ...(stepShots.length ? { steps: stepShots } : {}),
       };
     } catch (error) {
       failures += 1;

@@ -30,3 +30,6 @@ __pycache__/
 apps/web/browser-roadmap-benchmark.json
 apps/web/native-benchmark.json
 apps/web/native-smoke-failure.*
+
+# Local QA captures (the hosted job uploads them as artifacts).
+apps/web/ui-screenshots/
