@@ -45,6 +45,9 @@ jobs:
     outputs:
       web: ${{ steps.filter.outputs.web }}
       native: ${{ steps.filter.outputs.native }}
+      tree: ${{ steps.tree.outputs.hash }}
+      verified: ${{ steps.marker.outputs.verified }}
+      verified_run: ${{ steps.marker.outputs.run }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -114,6 +117,35 @@ jobs:
           fi
           echo "web=$web" >> "$GITHUB_OUTPUT"
           echo "native=$native" >> "$GITHUB_OUTPUT"
+      # Content-addressed tree hash: identical trees get identical hashes no
+      # matter which commit (or merge commit) produced them.
+      - id: tree
+        name: Hash the whole tree
+        run: |
+          set -eu
+          hash=$(git ls-tree -r HEAD | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+          echo "tree: $hash"
+      # A run that already verified this exact tree makes the browser suites
+      # redundant. The marker only exists after a green browser job, and the
+      # cache key is the tree, so a stale marker cannot name other content.
+      - id: cache
+        name: Look for a verified run of this tree
+        uses: actions/cache/restore@v4
+        with:
+          path: .ci/verified
+          key: verified-tree-${{ steps.tree.outputs.hash }}
+      - id: marker
+        name: Read the verification marker
+        run: |
+          if [ -f .ci/verified/ok ]; then
+            read -r run sha < .ci/verified/ok
+            echo "verified=true" >> "$GITHUB_OUTPUT"
+            echo "run=$run" >> "$GITHUB_OUTPUT"
+            echo "This tree was already verified by run $run ($sha); browser suites will be reused."
+          else
+            echo "verified=false" >> "$GITHUB_OUTPUT"
+          fi
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -206,8 +238,8 @@ jobs:
   e2e-selective:
     # Every pull-request push (draft or ready) runs only the specs the pushed
     # range can affect; add the `full-ci` label to force the full shards.
-    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') }}
-    needs: web-build
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
+    needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -261,8 +293,8 @@ jobs:
   e2e-shard:
     # The full suite runs on main pushes, or on a pull request explicitly
     # labelled `full-ci`; ordinary PR pushes stay on the selective path.
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'full-ci') }}
-    needs: web-build
+    if: ${{ (github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
+    needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -329,6 +361,10 @@ jobs:
             echo "Manual/scheduled run: browser shards are not part of this workflow."
             exit 0
           fi
+          if [ "${{ needs.changes.outputs.verified }}" = "true" ]; then
+            echo "This exact tree was already verified by run ${{ needs.changes.outputs.verified_run }}; browser suites are reused."
+            exit 0
+          fi
           if [ "${{ needs.changes.result }}" != "success" ]; then
             echo "Change classification failed; refusing to skip browser verification."
             exit 1
@@ -342,6 +378,22 @@ jobs:
           fi
           echo "Neither selective nor full browser verification succeeded."
           exit 1
+      # Only a green browser job may leave the marker behind. The key is the
+      # tree hash, so the next run with identical content skips the suites and
+      # still names the run that did the work.
+      - name: Record the verified tree for later runs
+        if: ${{ needs.changes.outputs.verified != 'true' && (needs.e2e-selective.result == 'success' || needs.e2e-shard.result == 'success') }}
+        run: |
+          set -eu
+          mkdir -p .ci/verified
+          printf '%s %s\n' "${{ github.run_id }}" "${{ github.sha }}" > .ci/verified/ok
+      - name: Remember the verified tree
+        if: ${{ needs.changes.outputs.verified != 'true' && (needs.e2e-selective.result == 'success' || needs.e2e-shard.result == 'success') }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: .ci/verified
+          key: verified-tree-${{ needs.changes.outputs.tree }}
 
   # Sub-second warm-navigation budgets are measured on main pushes (or by
   # hand). Hosted pull-request runners cannot meet them — the same two cases
