@@ -5370,10 +5370,36 @@ body:has(.hymn-detail-page.is-text-viewer)
     flex: 1 1 auto;
   }
 
-  .hymn-more-actions-panel .hymn-scope-pill-group .hymn-scope-pill-btn {
+  .hymn-more-actions-panel
+    .hymn-segmented-toolbar
+    .hymn-scope-pill-group
+    .hymn-scope-pill-btn {
     flex: 1 1 0;
     /* Each half is a wide field now, so the label sits in its middle. */
     justify-content: center;
     text-align: center;
   }
+}
+
+/* The reader-wide flat rule strips every pill's frame, which left the inactive
+   half of this pair looking like a caption (measured 0px border, transparent
+   background). Inside the sheet the pair still has to read as a control. */
+.hymn-more-actions-panel
+  .hymn-segmented-toolbar
+  .hymn-scope-pill-group
+  .hymn-scope-pill-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.hymn-more-actions-panel
+  .hymn-segmented-toolbar
+  .hymn-scope-pill-group
+  .hymn-scope-pill-btn.is-active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--on-accent);
 }
