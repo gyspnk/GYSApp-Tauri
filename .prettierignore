@@ -17,3 +17,11 @@ apps/web/.tmp-*.ts
 # `pnpm format:check` (and therefore `pnpm verify:prepush`) fails on any
 # checkout where the workflow has run, even though Git has nothing to commit.
 .superpowers/
+# Build output and test artifacts: Prettier used to crawl these on every
+# verification, which dominated the `verify` job on Actions.
+dist/
+**/dist/
+test-results/
+playwright-report/
+coverage/
+apps/web/ui-screenshots/
