@@ -178,8 +178,12 @@ jobs:
       - run: pnpm audit --prod
 
   web-build:
+    # Only the jobs that download `e2e-build-<run>` need this artifact: the
+    # nightly shards, a release dispatch and a `full-ci` pull request. Routine
+    # pushes build inside `e2e-selective` from the same cache instead, so the
+    # browser tests no longer wait for a separate build job to upload.
     needs: changes
-    if: ${{ github.event_name != 'workflow_dispatch' && needs.changes.result == 'success' && needs.changes.outputs.web == 'true' }}
+    if: ${{ needs.changes.result == 'success' && needs.changes.outputs.web == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -287,7 +291,7 @@ jobs:
     # the specs its range can affect. The full shards stay for the nightly
     # schedule, a `full-ci` label and the release dispatch.
     if: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && needs.changes.outputs.web == 'true' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
-    needs: [changes, web-build]
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -302,11 +306,35 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Restore verified build outputs
-        uses: actions/download-artifact@v4
+      - id: source-hash
+        name: Hash the source tree
+        run: |
+          hash=$(git ls-tree -r HEAD -- \
+            apps/web/src apps/web/index.html apps/web/vite.config.ts \
+            apps/web/package.json apps/bff/src apps/bff/package.json \
+            packages scripts pnpm-lock.yaml package.json pnpm-workspace.yaml \
+            tsconfig.json | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+      - name: Restore a previously verified build for this exact tree
+        id: build-cache
+        uses: actions/cache@v4
         with:
-          name: e2e-build-${{ github.run_id }}
-          path: .
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+            apps/web/tsconfig.tsbuildinfo
+            apps/bff/tsconfig.tsbuildinfo
+          key: build-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
+      # Building here removes the hand-off: the job that runs the browser
+      # contracts no longer waits for another job to upload an artifact.
+      - name: Build and typecheck once
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: pnpm build
+      - name: Verify the shipped bundle budget
+        run: pnpm verify:bundle
       # GitHub's Ubuntu image already carries Chromium runtime libraries. Avoid
       # Playwright's apt/font bootstrap and download only the headless browser
       # payload actually exercised by CI. The browser contract below proves the
