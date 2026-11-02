@@ -870,6 +870,9 @@ export const enFeatureMessages: Record<string, string> = {
   "more.apply": "Apply",
   "more.clear": "Clear",
   "more.googleLogin": "Sign in with Google",
+  "more.googleOriginHelp": "Google shows origin_mismatch?",
+  "more.googleOriginMismatch":
+    "This origin is not registered for Google sign-in, so Google will show Error 400 origin_mismatch. Use WhatsApp sign-in, ask the administrator to register this origin in Google Cloud Console, or open the app from:",
   "more.whatsappLogin": "Sign in with WhatsApp",
   "more.whatsappFailed":
     "WhatsApp login failed. Check the device diagnostics for details.",

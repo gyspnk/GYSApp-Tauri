@@ -852,6 +852,9 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.apply": "应用",
   "more.clear": "清空",
   "more.googleLogin": "使用 Google 登录",
+  "more.googleOriginHelp": "Google 显示 origin_mismatch？",
+  "more.googleOriginMismatch":
+    "此来源未注册 Google 登录，Google 会显示 Error 400 origin_mismatch。请使用 WhatsApp 登录，请管理员在 Google Cloud Console 注册此来源，或从以下来源打开应用：",
   "more.whatsappLogin": "使用 WhatsApp 登录",
   "more.whatsappFailed": "WhatsApp 登录失败。请查看设备诊断了解详情。",
   "more.whatsappExpired":

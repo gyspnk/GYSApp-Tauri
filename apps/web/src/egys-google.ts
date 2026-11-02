@@ -136,3 +136,19 @@ export async function renderEgysGoogleButton(
     element.replaceChildren();
   };
 }
+
+/** The JavaScript origins the Google Identity client must have registered.
+ * Google answers `origin_mismatch` (400) from accounts.google.com for any
+ * other origin, which the app cannot detect from its own window, so the
+ * account card warns before the click instead of after the rejection. */
+export const EGYS_GOOGLE_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+  "https://gyspnk.github.io",
+] as const;
+
+export function googleOriginRegistered(origin: string): boolean {
+  return (EGYS_GOOGLE_ORIGINS as readonly string[]).includes(origin);
+}

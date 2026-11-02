@@ -73,7 +73,10 @@ provides narrow storage, keyring, lifecycle and login commands.
 ### Account boundary
 
 Web/PWA authenticates through the BFF directly. Google's dynamic Identity
-Services button is inline in the account row, using an icon on compact screens;
+Services button is inline in the account row, using an icon on compact screens
+(it needs every JavaScript origin registered in Google Cloud Console — see
+[the account guide](docs/egys-integration.md#google-javascript-origins), and the
+row explains the `origin_mismatch` rejection instead of failing silently);
 Apple uses its official popup SDK and validates authorization state.
 WhatsApp reserves a messaging tab on the provider click, opens the prepared
 send link and tracks the official internal reference through a BFF WebSocket

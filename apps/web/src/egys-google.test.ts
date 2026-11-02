@@ -87,3 +87,15 @@ it("an old provider callback cannot sign in after the inline control is disposed
   callback({ credential: "stale" });
   expect(complete).toHaveBeenCalledOnce();
 });
+
+it("knows which origins the Google client must have registered", async () => {
+  const { EGYS_GOOGLE_ORIGINS, googleOriginRegistered } =
+    await import("./egys-google.js");
+  for (const origin of EGYS_GOOGLE_ORIGINS) {
+    expect(googleOriginRegistered(origin)).toBe(true);
+  }
+  expect(googleOriginRegistered("https://gyspnk.github.io")).toBe(true);
+  expect(googleOriginRegistered("http://127.0.0.1:5173")).toBe(true);
+  expect(googleOriginRegistered("http://192.168.1.4:5173")).toBe(false);
+  expect(googleOriginRegistered("https://preview.example.com")).toBe(false);
+});

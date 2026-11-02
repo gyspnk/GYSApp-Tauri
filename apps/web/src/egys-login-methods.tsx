@@ -1,5 +1,7 @@
 import { translate, type Locale } from "./i18n.js";
-import type { ReactNode } from "react";
+import { EGYS_GOOGLE_ORIGINS, googleOriginRegistered } from "./egys-google.js";
+import { recordDiagnostic } from "./diagnostics.js";
+import { useEffect, type ReactNode } from "react";
 
 /** Web providers sign in directly; native builds retain the secure login bridge. */
 export function EgysLoginMethods({
@@ -17,70 +19,108 @@ export function EgysLoginMethods({
   googleButton?: ReactNode;
   whatsappStatus?: ReactNode;
 }) {
+  const googleAvailable = Boolean(onGoogleLogin || googleButton);
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const originRegistered = origin === "" || googleOriginRegistered(origin);
+  useEffect(() => {
+    if (googleAvailable && !originRegistered) {
+      recordDiagnostic("warn", "egys.google-origin", { origin });
+    }
+  }, [googleAvailable, origin, originRegistered]);
   return (
-    <div
-      className={`egys-provider-methods${onGoogleLogin || googleButton ? " egys-provider-all" : ""}`}
-    >
-      {googleButton ??
-        (onGoogleLogin && (
-          <button
-            type="button"
-            className="egys-provider egys-provider-google"
-            aria-label={translate(locale, "more.googleLogin")}
-            onClick={onGoogleLogin}
-          >
-            <GoogleMark />
-            <span>Google</span>
-          </button>
-        ))}
-      {(["whatsapp", "apple"] as const).map((provider) => {
-        const content = (
-          <>
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              {provider === "whatsapp" ? (
-                <>
+    <>
+      <div
+        className={`egys-provider-methods${googleAvailable ? " egys-provider-all" : ""}`}
+      >
+        {googleButton ??
+          (onGoogleLogin && (
+            <button
+              type="button"
+              className="egys-provider egys-provider-google"
+              aria-label={translate(locale, "more.googleLogin")}
+              onClick={onGoogleLogin}
+            >
+              <GoogleMark />
+              <span>Google</span>
+            </button>
+          ))}
+        {(["whatsapp", "apple"] as const).map((provider) => {
+          const content = (
+            <>
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                aria-hidden="true"
+              >
+                {provider === "whatsapp" ? (
+                  <>
+                    <path
+                      d="M20 11.5a8 8 0 0 1-12 7L3 20l1.5-5A8 8 0 1 1 20 11.5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M8.5 7.5c-2 3 2 7 5 7l1.5-2-2-1-1 1c-1.5-.5-2.5-1.5-3-3l1-1-1.5-1Z"
+                      fill="currentColor"
+                    />
+                  </>
+                ) : (
                   <path
-                    d="M20 11.5a8 8 0 0 1-12 7L3 20l1.5-5A8 8 0 1 1 20 11.5Z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M8.5 7.5c-2 3 2 7 5 7l1.5-2-2-1-1 1c-1.5-.5-2.5-1.5-3-3l1-1-1.5-1Z"
+                    d="M16.4 12.5c0-2 1.6-3 1.7-3.1-1-1.4-2.5-1.6-3.1-1.6-1.3-.1-2.5.8-3.2.8s-1.7-.8-2.8-.7c-1.5 0-2.9.9-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.5 2.1 2.6 2 .9 0 1.5-.7 2.8-.7s1.8.7 2.9.7 1.8-1 2.5-2c.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.1-.8-2.1-3.7ZM14.3 6.4c.6-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2-.5 2.7-1.3Z"
                     fill="currentColor"
                   />
-                </>
-              ) : (
-                <path
-                  d="M16.4 12.5c0-2 1.6-3 1.7-3.1-1-1.4-2.5-1.6-3.1-1.6-1.3-.1-2.5.8-3.2.8s-1.7-.8-2.8-.7c-1.5 0-2.9.9-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.5 2.1 2.6 2 .9 0 1.5-.7 2.8-.7s1.8.7 2.9.7 1.8-1 2.5-2c.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.1-.8-2.1-3.7ZM14.3 6.4c.6-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2-.5 2.7-1.3Z"
-                  fill="currentColor"
-                />
-              )}
-            </svg>
-            <span className="egys-provider-label">
-              {provider === "whatsapp" ? "WhatsApp" : "Apple"}
-            </span>
-          </>
-        );
-        const label = translate(
-          locale,
-          provider === "whatsapp" ? "more.whatsappLogin" : "more.appleLogin",
-        );
-        return (
-          <button
-            key={provider}
-            type="button"
-            className={`egys-provider egys-provider-${provider}${provider === "whatsapp" && whatsappStatus ? " is-tracking" : ""}`}
-            aria-label={label}
-            onClick={onNativeLogin ?? (() => onProviderLogin(provider))}
-          >
-            {content}
-            {provider === "whatsapp" && whatsappStatus}
-          </button>
-        );
-      })}
-    </div>
+                )}
+              </svg>
+              <span className="egys-provider-label">
+                {provider === "whatsapp" ? "WhatsApp" : "Apple"}
+              </span>
+            </>
+          );
+          const label = translate(
+            locale,
+            provider === "whatsapp" ? "more.whatsappLogin" : "more.appleLogin",
+          );
+          return (
+            <button
+              key={provider}
+              type="button"
+              className={`egys-provider egys-provider-${provider}${provider === "whatsapp" && whatsappStatus ? " is-tracking" : ""}`}
+              aria-label={label}
+              onClick={onNativeLogin ?? (() => onProviderLogin(provider))}
+            >
+              {content}
+              {provider === "whatsapp" && whatsappStatus}
+            </button>
+          );
+        })}
+      </div>
+      {googleAvailable && (
+        <div className="egys-provider-guidance">
+          {!originRegistered && (
+            <p className="egys-google-origin-note" role="status">
+              {translate(locale, "more.googleOriginMismatch")}
+              <ul className="egys-google-origins">
+                {EGYS_GOOGLE_ORIGINS.map((entry) => (
+                  <li key={entry}>{entry}</li>
+                ))}
+              </ul>
+            </p>
+          )}
+          <details className="egys-google-origin-help">
+            <summary>{translate(locale, "more.googleOriginHelp")}</summary>
+            <p>{translate(locale, "more.googleOriginMismatch")}</p>
+            <ul className="egys-google-origins">
+              {EGYS_GOOGLE_ORIGINS.map((entry) => (
+                <li key={entry}>{entry}</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
+    </>
   );
 }
 

@@ -93,6 +93,35 @@ The existing Google BFF exchange and profile detection remain unchanged.
 The web build does not call draft v2 `/auth/providers`, `/auth/exchange/*`,
 or `/api/v1/auth/whatsapp/start` routes.
 
+#### Google JavaScript origins
+
+Google Identity Services only authorizes origins that are registered on the
+OAuth client (`748303683851-46ea0qkq8ti4r6lh8ss5aivf60ct71u7`). An unregistered
+origin is rejected **inside Google's own window** with `Error 400:
+origin_mismatch`; the application cannot read that popup, so it cannot detect
+the rejection after the fact. The account row therefore checks the current
+`window.location.origin` before the click:
+
+- a known origin stays quiet (a short “Google shows origin_mismatch?” disclosure
+  documents the cure),
+- an unknown origin shows an inline note with the exact list below and records
+  the `egys.google-origin` diagnostic.
+
+Register these **Authorized JavaScript origins** in Google Cloud Console →
+APIs & Services → Credentials → OAuth 2.0 Client IDs:
+
+| Origin                     | Used by                               |
+| -------------------------- | ------------------------------------- |
+| `http://localhost:5173`    | local Vite dev server                 |
+| `http://127.0.0.1:5173`    | local Vite dev server (loopback form) |
+| `http://localhost:4173`    | local preview build                   |
+| `http://127.0.0.1:4173`    | local preview build (loopback form)   |
+| `https://gyspnk.github.io` | GitHub Pages deployment               |
+
+There is no e-GYS password fallback in this build: the provider row offers
+Google, WhatsApp and Apple only. When Google is unavailable (unregistered
+origin or blocked popup), WhatsApp sign-in is the fallback path.
+
 ### Public application endpoints
 
 All paths below are relative to the configured BFF origin. The upstream

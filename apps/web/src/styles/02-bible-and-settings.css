@@ -3071,3 +3071,45 @@
     max-width: none;
   }
 }
+
+/* Google rejects unregistered JavaScript origins inside its own popup, so the
+   account card says so before the click and lists the origins to register. */
+.egys-google-origin-note {
+  flex-basis: 100%;
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.egys-google-origins {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.egys-google-origin-help {
+  flex-basis: 100%;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.egys-google-origin-help > summary {
+  cursor: pointer;
+  min-height: 24px;
+  align-content: center;
+  color: var(--ink);
+}
+
+.egys-google-origin-help p {
+  margin: 6px 0 0;
+}
