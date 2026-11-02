@@ -217,9 +217,6 @@ jobs:
       - name: Build and typecheck once
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm build
-      - name: Run unit and policy suites against the built workspace
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        run: pnpm test
       - run: pnpm verify:native-assets
       - run: pnpm verify:bundle
       - name: Upload verified build outputs
@@ -235,6 +232,53 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  unit:
+    # The suites need the built packages, and they used to sit inside
+    # `web-build`, which put them on the critical path of every browser job.
+    # They now restore the same verified build in parallel, so the browser
+    # shards start as soon as the build exists.
+    needs: changes
+    if: ${{ github.event_name != 'workflow_dispatch' && needs.changes.result == 'success' && needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: source-hash
+        name: Hash the source tree
+        run: |
+          hash=$(git ls-tree -r HEAD -- \
+            apps/web/src apps/web/index.html apps/web/vite.config.ts \
+            apps/web/package.json apps/bff/src apps/bff/package.json \
+            packages scripts pnpm-lock.yaml package.json pnpm-workspace.yaml \
+            tsconfig.json | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+      - name: Restore the verified build for this exact tree
+        id: build-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/dist
+            apps/bff/dist
+            packages/contracts/dist
+            packages/domain/dist
+            packages/testkit/dist
+            apps/web/tsconfig.tsbuildinfo
+            apps/bff/tsconfig.tsbuildinfo
+          key: build-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
+      - name: Build when the cache is cold
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: pnpm build
+      - name: Run unit and policy suites
+        run: pnpm test
+
   # Draft PRs need fast feedback while implementation is still moving. The
   # synchronize event supplies the prior head SHA, so ordinary pushes exercise
   # only the changed surface. Open/reopened draft PRs fall back to the PR base.
@@ -246,13 +290,6 @@ jobs:
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      # Two shards halve the wall clock of the slowest routine job. The planner
-      # runs in each shard, so both pick the same specs and Playwright splits
-      # them; an idle shard simply finishes in seconds.
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -284,21 +321,19 @@ jobs:
           GYS_E2E_PREBUILT: "1"
           GYS_E2E_BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           GYS_E2E_HEAD: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
-          GYS_E2E_SHARD: ${{ matrix.shard }}
-          GYS_E2E_SHARDS: "2"
         run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts
       - name: Upload selective browser diagnostics on failure
         if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-selective-failures-${{ github.run_id }}-${{ matrix.shard }}
+          name: e2e-selective-failures-${{ github.run_id }}
           path: apps/web/test-results
           if-no-files-found: ignore
       - name: Upload selective visual QA previews
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ui-preview-selective-${{ github.run_id }}-${{ matrix.shard }}
+          name: ui-preview-selective-${{ github.run_id }}
           path: apps/web/test-results/ui-preview
           if-no-files-found: ignore
           retention-days: 7
